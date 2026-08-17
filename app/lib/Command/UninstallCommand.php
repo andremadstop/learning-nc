@@ -159,6 +159,20 @@ class UninstallCommand extends Command {
 
     private const APP_ID = 'learning';
 
+    /**
+     * Settings this app writes into OTHER apps' namespaces.
+     *
+     * Application.php points the instance-wide legal links at this app's own routes. Left behind
+     * after removal, Impressum and Privacy 404 for every user on the server — a foreign app's
+     * setting, broken by ours, so cleaning it up is our job.
+     *
+     * The value guard matters: an admin may have set their own URL since, and that one is not
+     * ours to delete.
+     */
+    private const FOREIGN_APPCONFIG = [
+        ['app' => 'theming', 'keys' => ['privacyUrl', 'imprintUrl'], 'valueLike' => '%/apps/learning/%'],
+    ];
+
     public function __construct(
         private IDBConnection $db,
         private IConfig $config,
@@ -212,15 +226,21 @@ class UninstallCommand extends Command {
         $output->writeln('');
 
         $totalRows = 0;
+        $unreadable = [];
         if ($tables === []) {
             $output->writeln('  No Learning tables found.');
         } else {
             $output->writeln('  Tables to drop:');
             foreach ($tables as $table) {
-                $rows = $this->countRows($table);
-                $rowCounts[$table] = $rows;
-                $totalRows += $rows;
-                $output->writeln(sprintf('    %-42s %8s rows', $table, number_format($rows)));
+                $probe = $this->probeCount(sprintf('SELECT COUNT(*) FROM %s', $this->quote($table)));
+                if ($probe['state'] !== 'ok') {
+                    $unreadable[] = $table . ' (' . $probe['error'] . ')';
+                    $output->writeln(sprintf('    %-42s %8s', $table, '<error>unreadable</error>'));
+                    continue;
+                }
+                $rowCounts[$table] = $probe['count'];
+                $totalRows += $probe['count'];
+                $output->writeln(sprintf('    %-42s %8s rows', $table, number_format($probe['count'])));
             }
         }
 
@@ -243,17 +263,50 @@ class UninstallCommand extends Command {
         $metaTotal = 0;
         $presentScopes = [];
         foreach ($scopes as $scope) {
-            $count = $this->countScope($scope);
-            $metaTotal += max(0, $count);
-            if ($count >= 0) {
+            $probe = $this->probeScope($scope);
+            if ($probe['state'] === 'ok') {
+                $metaTotal += $probe['count'];
                 $presentScopes[] = $scope;
+            } elseif ($probe['state'] === 'error') {
+                $unreadable[] = $scope['table'] . ' (' . $probe['error'] . ')';
             }
             $output->writeln(sprintf(
                 '    %-42s %8s',
                 $scope['table'] . ' (' . $scope['label'] . ')',
-                $count < 0 ? 'absent' : number_format($count) . ' rows'
+                match ($probe['state']) {
+                    'absent' => 'absent',
+                    'error' => '<error>unreadable</error>',
+                    default => number_format($probe['count']) . ' rows',
+                }
             ));
         }
+
+        // ── settings we planted in other apps ────────────────────────────────
+        $foreign = [];
+        foreach (self::FOREIGN_APPCONFIG as $entry) {
+            $probe = $this->probeForeignAppConfig($prefix, $entry);
+            if ($probe['state'] === 'error') {
+                $unreadable[] = $prefix . 'appconfig/' . $entry['app'] . ' (' . $probe['error'] . ')';
+                continue;
+            }
+            if ($probe['state'] === 'ok' && $probe['count'] > 0) {
+                $foreign[] = $entry;
+                $output->writeln('');
+                $output->writeln(sprintf(
+                    '  Also removing %s rows from %sappconfig (%s: %s) — this app redirected them at itself.',
+                    number_format($probe['count']),
+                    $prefix,
+                    $entry['app'],
+                    implode(', ', $entry['keys'])
+                ));
+            }
+        }
+
+        $output->writeln('');
+        $output->writeln('  <comment>Left for you — foreign rows this command will not edit:</comment>');
+        $output->writeln('    ' . $prefix . 'preferences (dashboard/layout) may still list the "learning" widget.');
+        $output->writeln('    That row holds your other widgets too, so remove the token by hand rather than the row.');
+        $output->writeln('    Files the app created in users\' homes under /Learning/ stay as ordinary user files.');
 
         $output->writeln('');
         $output->writeln(sprintf('  Total: %s tables, %s rows in tables, %s metadata rows.', count($tables), number_format($totalRows), number_format($metaTotal)));
@@ -261,9 +314,28 @@ class UninstallCommand extends Command {
         if (!$execute) {
             $output->writeln('');
             $output->writeln('  Re-run with <info>--execute</info> to apply. Afterwards run <info>occ app:remove learning</info>.');
-            $output->writeln('  Course documents, videos and images live in the users\' own files and are never touched.');
+            $output->writeln('  No files are touched: uploaded course material stays, and so do the files this app');
+            $output->writeln('  created under /Learning/ in each user\'s home — they belong to the user now.');
             $output->writeln('');
             return self::SUCCESS;
+        }
+
+        // ── refuse to act on a plan we could not fully read ──────────────────
+        // Every count above either succeeded or proved the table absent. Anything else — a
+        // permission error, a lost connection, a column that is not what we expect — leaves us
+        // guessing, and every guess here is destructive: an unreadable oc_migrations would be
+        // skipped while the tables are dropped anyway, and an unreadable cert_keys would read as
+        // "no certificates" and disarm the gate below.
+        if ($unreadable !== []) {
+            $output->writeln('');
+            $output->writeln('<error>Refusing to run: some tables could not be read.</error>');
+            foreach ($unreadable as $line) {
+                $output->writeln('  ' . $line);
+            }
+            $output->writeln('');
+            $output->writeln('Fix the access problem and re-run. Nothing was changed.');
+            $output->writeln('');
+            return self::FAILURE;
         }
 
         // ── the one irreversible decision ────────────────────────────────────
@@ -281,7 +353,7 @@ class UninstallCommand extends Command {
             return self::INVALID;
         }
 
-        return $this->applyPlan($output, $tables, $presentScopes);
+        return $this->applyPlan($output, $prefix, $tables, $presentScopes, $foreign);
     }
 
     /**
@@ -298,8 +370,9 @@ class UninstallCommand extends Command {
      *
      * @param list<string>                                                                    $tables
      * @param list<array{label: string, table: string, column: string, values: list<string>}> $scopes
+     * @param list<array{app: string, keys: list<string>, valueLike: string}>                 $foreign
      */
-    private function applyPlan(OutputInterface $output, array $tables, array $scopes): int {
+    private function applyPlan(OutputInterface $output, string $prefix, array $tables, array $scopes, array $foreign): int {
         $output->writeln('');
         $output->writeln('  Deleting metadata rows...');
         $this->db->beginTransaction();
@@ -311,6 +384,12 @@ class UninstallCommand extends Command {
                     $scope['values']
                 );
             }
+            foreach ($foreign as $entry) {
+                $this->db->executeStatement(
+                    $this->foreignAppConfigSql($prefix, $entry, 'DELETE FROM %s'),
+                    $this->foreignAppConfigParams($entry)
+                );
+            }
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollBack();
@@ -319,25 +398,14 @@ class UninstallCommand extends Command {
         }
 
         $output->writeln('  Dropping tables...');
-        $failed = [];
-        foreach ($tables as $table) {
-            try {
-                // CASCADE on PostgreSQL also removes dependent constraints; MySQL/SQLite ignore
-                // the keyword, so it is appended only where it parses.
-                $cascade = $this->platform() === 'pgsql' ? ' CASCADE' : '';
-                $this->db->executeStatement(sprintf('DROP TABLE IF EXISTS %s%s', $this->quote($table), $cascade));
-            } catch (\Throwable $e) {
-                $failed[] = $table . ' (' . $e->getMessage() . ')';
+        if ($tables !== []) {
+            $error = $this->dropTables($tables);
+            if ($error !== null) {
+                $output->writeln('');
+                $output->writeln('<error>Tables could not be dropped: ' . $error . '</error>');
+                $output->writeln('The metadata rows are already gone; re-run after resolving this, or drop the tables by hand.');
+                return self::FAILURE;
             }
-        }
-
-        $output->writeln('');
-        if ($failed !== []) {
-            $output->writeln('<error>Some tables could not be dropped:</error>');
-            foreach ($failed as $line) {
-                $output->writeln('  ' . $line);
-            }
-            return self::FAILURE;
         }
 
         $output->writeln('<info>Learning data removed.</info>');
@@ -386,15 +454,121 @@ class UninstallCommand extends Command {
         return $names;
     }
 
-    private function countRows(string $table): int {
+    /**
+     * Drop every table in ONE statement, because they reference each other.
+     *
+     * The schema has real foreign keys (questions→pools, sessions→pools, user_answers→sessions
+     * and →questions). Dropping one table at a time in alphabetical order therefore fails on
+     * every parent that still has children — verified against MariaDB, where pools, questions
+     * and sessions all refuse. Naming them together resolves the keys between them.
+     *
+     * PostgreSQL: RESTRICT, not CASCADE. CASCADE would also delete a view or a foreign key
+     * belonging to somebody else that happens to depend on a Learning table; RESTRICT makes the
+     * statement fail loudly instead, which is the answer an admin can act on.
+     *
+     * MySQL/MariaDB has no such choice — it refuses to drop a referenced parent at all — so the
+     * checks are disabled around the statement and restored in a finally.
+     *
+     * @param list<string> $tables
+     * @return string|null error message, or null on success
+     */
+    private function dropTables(array $tables): ?string {
+        $quoted = implode(', ', array_map(fn (string $t) => $this->quote($t), $tables));
+        $mysql = $this->platform() === 'mysql';
+
         try {
-            $result = $this->db->executeQuery(sprintf('SELECT COUNT(*) FROM %s', $this->quote($table)));
+            if ($mysql) {
+                $this->db->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+            }
+            $this->db->executeStatement(
+                'DROP TABLE ' . $quoted . ($mysql ? '' : ' RESTRICT')
+            );
+        } catch (\Throwable $e) {
+            return $e->getMessage();
+        } finally {
+            if ($mysql) {
+                try {
+                    $this->db->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+                } catch (\Throwable $e) {
+                    // Session-scoped; a failure here cannot leave the database in a worse state
+                    // than the connection already is.
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{app: string, keys: list<string>, valueLike: string} $entry
+     * @return array{state: 'ok'|'absent'|'error', count: int, error: ?string}
+     */
+    private function probeForeignAppConfig(string $prefix, array $entry): array {
+        return $this->probeCount(
+            $this->foreignAppConfigSql($prefix, $entry, 'SELECT COUNT(*) FROM %s'),
+            $this->foreignAppConfigParams($entry)
+        );
+    }
+
+    /**
+     * @param array{app: string, keys: list<string>, valueLike: string} $entry
+     */
+    private function foreignAppConfigSql(string $prefix, array $entry, string $verb): string {
+        $keyPlaceholders = implode(', ', array_fill(0, count($entry['keys']), '?'));
+        return sprintf($verb, $this->quote($prefix . 'appconfig'))
+            . sprintf(
+                ' WHERE %s = ? AND %s IN (%s) AND %s LIKE ?',
+                $this->quote('appid'),
+                $this->quote('configkey'),
+                $keyPlaceholders,
+                $this->quote('configvalue')
+            );
+    }
+
+    /**
+     * @param array{app: string, keys: list<string>, valueLike: string} $entry
+     * @return list<string>
+     */
+    private function foreignAppConfigParams(array $entry): array {
+        return array_merge([$entry['app']], $entry['keys'], [$entry['valueLike']]);
+    }
+
+    /**
+     * Run a COUNT and say plainly whether it worked, the table is absent, or something else broke.
+     *
+     * The distinction is the whole point: every caller does something destructive with the answer,
+     * and mapping an unexpected failure onto 0 or "absent" is what turns a broken run into one
+     * that looks clean.
+     *
+     * @param list<string> $params
+     * @return array{state: 'ok'|'absent'|'error', count: int, error: ?string}
+     */
+    private function probeCount(string $sql, array $params = []): array {
+        try {
+            $result = $this->db->executeQuery($sql, $params);
             $count = (int)$result->fetchOne();
             $result->closeCursor();
-            return $count;
+            return ['state' => 'ok', 'count' => $count, 'error' => null];
         } catch (\Throwable $e) {
-            return 0;
+            return $this->isMissingTable($e)
+                ? ['state' => 'absent', 'count' => 0, 'error' => null]
+                : ['state' => 'error', 'count' => 0, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Is this exception "no such table", as opposed to any other failure?
+     *
+     * OCP\DB\Exception carries a portable reason; PDO/Doctrine exceptions reaching us unwrapped
+     * carry the SQLSTATE as their code (42P01 on PostgreSQL, 42S02 on MySQL). Anything we cannot
+     * positively identify counts as a real error — the safe direction, since "absent" makes the
+     * command skip work.
+     */
+    private function isMissingTable(\Throwable $e): bool {
+        if ($e instanceof \OCP\DB\Exception && $e->getReason() === \OCP\DB\Exception::REASON_DATABASE_OBJECT_NOT_FOUND) {
+            return true;
+        }
+        return in_array((string)$e->getCode(), ['42P01', '42S02'], true);
     }
 
     /**
@@ -419,21 +593,19 @@ class UninstallCommand extends Command {
 
     /**
      * @param array{label: string, table: string, column: string, values: list<string>} $scope
-     * @return int row count, or -1 when the table does not exist on this instance
+     * @return array{state: 'ok'|'absent'|'error', count: int, error: ?string}
      */
-    private function countScope(array $scope): int {
+    private function probeScope(array $scope): array {
         $placeholders = implode(', ', array_fill(0, count($scope['values']), '?'));
-        try {
-            $result = $this->db->executeQuery(
-                sprintf('SELECT COUNT(*) FROM %s WHERE %s IN (%s)', $this->quote($scope['table']), $this->quote($scope['column']), $placeholders),
-                $scope['values']
-            );
-            $count = (int)$result->fetchOne();
-            $result->closeCursor();
-            return $count;
-        } catch (\Throwable $e) {
-            return -1;
-        }
+        return $this->probeCount(
+            sprintf(
+                'SELECT COUNT(*) FROM %s WHERE %s IN (%s)',
+                $this->quote($scope['table']),
+                $this->quote($scope['column']),
+                $placeholders
+            ),
+            $scope['values']
+        );
     }
 
     /**

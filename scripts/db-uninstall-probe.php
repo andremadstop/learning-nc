@@ -176,13 +176,42 @@ $fixture = [
     'oc_learning_q_translations' => 4,   // a legacy name left behind by a half-finished upgrade
     'oc_learning_user_stats' => 0,
 ];
+// Children first, so a re-run can clear the foreign keys created below.
+if ($platform === 'mysql') {
+    $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+}
+foreach (array_keys($fixture) as $table) {
+    $pdo->exec('DROP TABLE IF EXISTS ' . $q($table) . ($platform === 'pgsql' ? ' CASCADE' : ''));
+}
+foreach (['oc_learning_user_answers', 'oc_learning_sessions', 'oc_learning_pools', 'oc_learningXcollide'] as $table) {
+    $pdo->exec('DROP TABLE IF EXISTS ' . $q($table) . ($platform === 'pgsql' ? ' CASCADE' : ''));
+}
+if ($platform === 'mysql') {
+    $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+}
+
 foreach ($fixture as $table => $rows) {
-    $pdo->exec('DROP TABLE IF EXISTS ' . $q($table));
     $pdo->exec('CREATE TABLE ' . $q($table) . " ($autoPk, note VARCHAR(32))");
     for ($i = 0; $i < $rows; $i++) {
         $pdo->exec('INSERT INTO ' . $q($table) . " (note) VALUES ('x')");
     }
 }
+
+// REAL foreign keys, mirroring the shipped schema (sessions->pools, questions->pools,
+// user_answers->sessions/questions). The first version of this probe used FK-free tables of
+// id+note, and passed while the command's one-table-at-a-time drop was broken: MySQL refuses
+// to drop a referenced parent, so pools, questions and sessions would all have survived.
+$pdo->exec('CREATE TABLE ' . $q('oc_learning_pools') . " ($autoPk)");
+$pdo->exec('CREATE TABLE ' . $q('oc_learning_sessions') . " ($autoPk, pool_id INT,
+    FOREIGN KEY (pool_id) REFERENCES " . $q('oc_learning_pools') . '(id))');
+$pdo->exec('ALTER TABLE ' . $q('oc_learning_questions') . ' ADD COLUMN pool_id INT');
+$pdo->exec('ALTER TABLE ' . $q('oc_learning_questions') . ' ADD FOREIGN KEY (pool_id) REFERENCES ' . $q('oc_learning_pools') . '(id)');
+$pdo->exec('CREATE TABLE ' . $q('oc_learning_user_answers') . " ($autoPk, session_id INT, question_id INT,
+    FOREIGN KEY (session_id) REFERENCES " . $q('oc_learning_sessions') . '(id),
+    FOREIGN KEY (question_id) REFERENCES ' . $q('oc_learning_questions') . '(id))');
+
+// A neighbour that an unescaped LIKE pattern would match — must survive.
+$pdo->exec('CREATE TABLE ' . $q('oc_learningXcollide') . " ($autoPk)");
 // A table a FUTURE version created — this version must report it, not destroy it.
 $pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_learning_future_feature'));
 $pdo->exec('CREATE TABLE ' . $q('oc_learning_future_feature') . " ($autoPk)");
@@ -195,8 +224,15 @@ foreach (['1', '2', '3'] as $v) {
 $pdo->exec('INSERT INTO ' . $q('oc_migrations') . " VALUES ('files', '1')");   // a foreign app — must survive
 
 $pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_appconfig'));
-$pdo->exec('CREATE TABLE ' . $q('oc_appconfig') . ' (appid VARCHAR(255), configkey VARCHAR(255))');
-$pdo->exec('INSERT INTO ' . $q('oc_appconfig') . " VALUES ('learning', 'enabled'), ('learning', 'ai_provider'), ('theming', 'color')");
+$pdo->exec('CREATE TABLE ' . $q('oc_appconfig') . ' (appid VARCHAR(255), configkey VARCHAR(255), configvalue VARCHAR(255))');
+$insCfg = $pdo->prepare('INSERT INTO ' . $q('oc_appconfig') . ' (appid, configkey, configvalue) VALUES (?, ?, ?)');
+$insCfg->execute(['learning', 'enabled', 'yes']);
+$insCfg->execute(['learning', 'ai_provider', 'gemini']);
+$insCfg->execute(['theming', 'color', '#1a3a5c']);
+// The legal links this app redirected at itself — must go.
+$insCfg->execute(['theming', 'privacyUrl', 'https://example.org/apps/learning/privacy']);
+// An imprint the admin set themselves — must NOT be touched.
+$insCfg->execute(['theming', 'imprintUrl', 'https://example.org/legal/imprint']);
 
 $pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_jobs'));
 $pdo->exec('CREATE TABLE ' . $q('oc_jobs') . " ($autoPk, class VARCHAR(255))");
@@ -258,13 +294,34 @@ echo "\n=== ASSERTIONS: execute ===\n";
 $check('exit 0', $exit3 === 0);
 
 $remaining = $pdo->query($catalogueSql)->fetchAll(PDO::FETCH_COLUMN);
-$check('every known learning table is gone', $remaining === ['oc_learning_future_feature']);
+$check(
+    'every known learning table is gone, foreign keys and all',
+    array_values(array_diff($remaining, ['oc_learning_future_feature', 'oc_learningXcollide'])) === []
+);
+$allTables = $pdo->query(
+    $platform === 'pgsql'
+        ? "SELECT tablename FROM pg_tables WHERE schemaname = current_schema()"
+        : 'SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()'
+)->fetchAll(PDO::FETCH_COLUMN);
+$check('the LIKE-collision neighbour survived', in_array('oc_learningXcollide', $allTables, true));
 $check('the unknown table survived', in_array('oc_learning_future_feature', $remaining, true));
 $check('learning migration rows gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_migrations') . " WHERE app='learning'")->fetchColumn() === 0);
 $check('foreign migration rows intact', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_migrations') . " WHERE app='files'")->fetchColumn() === 1);
 $check('learning appconfig gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='learning'")->fetchColumn() === 0);
-$check('foreign appconfig intact', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming'")->fetchColumn() === 1);
+// (replaced by the three targeted theming checks below)
 $check('learning job gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_jobs') . " WHERE class LIKE '%Learning%'")->fetchColumn() === 0);
+$check(
+    'theming link pointing at this app removed',
+    (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming' AND configkey='privacyUrl'")->fetchColumn() === 0
+);
+$check(
+    "the admin's own imprint URL left alone",
+    (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming' AND configkey='imprintUrl'")->fetchColumn() === 1
+);
+$check(
+    'unrelated theming settings intact',
+    (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming' AND configkey='color'")->fetchColumn() === 1
+);
 $check('foreign job intact', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_jobs') . " WHERE class LIKE '%Files%'")->fetchColumn() === 1);
 $check(
     $platform === 'pgsql'

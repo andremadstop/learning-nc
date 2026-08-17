@@ -65,6 +65,9 @@ namespace OCP\DB {
         // (the real class wraps a Doctrine exception; tests only need getReason()).
         class Exception extends \Exception {
             public const REASON_UNIQUE_CONSTRAINT_VIOLATION = 7;
+            // Mirrors the real OCP\DB\Exception value — UninstallCommand uses it to tell an
+            // absent table apart from a query that failed for any other reason.
+            public const REASON_DATABASE_OBJECT_NOT_FOUND = 4;
             private int $reason;
             public function __construct(int $reason = 0, string $message = '') {
                 parent::__construct($message);

@@ -13,15 +13,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\StubConsoleInput;
 
 /**
- * Issue #1 — UninstallCommand.
- *
- * The load-bearing assertion is the first one: APP_TABLES must cover every table any
- * migration has ever created, including the legacy names from both rename waves. A table
- * missing from that list survives the uninstall and silently breaks a later reinstall.
- * The test derives the expected set from the migration sources, so adding a migration
- * without extending APP_TABLES fails here rather than on a stranger's server.
- */
-/**
  * A connection where nominated tables do not exist.
  *
  * FakeDbConnection never throws, so it cannot reach the command's catch-blocks — and those
@@ -35,15 +26,32 @@ final class PartialDbConnection implements \OCP\IDBConnection {
     /** @var list<FakeResult> */
     private array $rawResults;
 
-    /** @param list<string> $missingTables */
-    public function __construct(private array $missingTables, array $rawResults = []) {
+    /**
+     * @param list<string> $missingTables tables that genuinely do not exist
+     * @param list<string> $brokenTables  tables that exist but whose queries fail for another
+     *                                    reason (permissions, connection, a column typo) — the
+     *                                    case the command must NOT confuse with "absent"
+     */
+    public function __construct(
+        private array $missingTables,
+        array $rawResults = [],
+        private array $brokenTables = [],
+    ) {
         $this->rawResults = $rawResults;
     }
 
     private function guard(string $sql): void {
+        foreach ($this->brokenTables as $table) {
+            if (str_contains($sql, $table)) {
+                throw new \OCP\DB\Exception(0, 'permission denied for table ' . $table);
+            }
+        }
         foreach ($this->missingTables as $table) {
             if (str_contains($sql, $table)) {
-                throw new \RuntimeException('relation "' . $table . '" does not exist');
+                throw new \OCP\DB\Exception(
+                    \OCP\DB\Exception::REASON_DATABASE_OBJECT_NOT_FOUND,
+                    'relation "' . $table . '" does not exist'
+                );
             }
         }
     }
@@ -113,7 +121,10 @@ final class PostgresLikeDbConnection implements \OCP\IDBConnection {
                 if ($this->inTx) {
                     $this->poisoned = true;
                 }
-                throw new \RuntimeException('relation "' . $table . '" does not exist');
+                throw new \OCP\DB\Exception(
+                    \OCP\DB\Exception::REASON_DATABASE_OBJECT_NOT_FOUND,
+                    'relation "' . $table . '" does not exist'
+                );
             }
         }
     }
@@ -171,6 +182,15 @@ final class PostgresLikeDbConnection implements \OCP\IDBConnection {
     }
 }
 
+/**
+ * Issue #1 — UninstallCommand.
+ *
+ * The load-bearing assertion is the first one: APP_TABLES must cover every table any
+ * migration has ever created, including the legacy names from both rename waves. A table
+ * missing from that list survives the uninstall and silently breaks a later reinstall.
+ * The test derives the expected set from the migration sources, so adding a migration
+ * without extending APP_TABLES fails here rather than on a stranger's server.
+ */
 class UninstallCommandTest extends TestCase {
 
     private const MIGRATION_DIR = __DIR__ . '/../../../lib/Migration';
@@ -227,10 +247,11 @@ class UninstallCommandTest extends TestCase {
             $isCert = str_contains($table, 'cert');
             $results[] = FakeResult::fromFetchOne($isCert ? $certRows : 0);
         }
-        // Row counts for the metadata scopes.
+        // Row counts for the metadata scopes, then one for the foreign-appconfig probe.
         foreach (range(1, 7) as $ignored) {
             $results[] = FakeResult::fromFetchOne(0);
         }
+        $results[] = FakeResult::fromFetchOne(2);
         $db = new FakeDbConnection([], $results);
 
         $config = $this->createMock(IConfig::class);
@@ -245,7 +266,7 @@ class UninstallCommandTest extends TestCase {
         return [new UninstallCommand($db, $config), $db];
     }
 
-    private function destructiveStatements(FakeDbConnection $db): array {
+    private function destructiveStatements(object $db): array {
         return array_values(array_filter(
             array_column($db->executedStatements, 'sql'),
             static fn (string $sql) => preg_match('/^\s*(DROP|DELETE|TRUNCATE)/i', $sql) === 1
@@ -289,8 +310,9 @@ class UninstallCommandTest extends TestCase {
         );
 
         $dropped = array_filter($sql, static fn (string $s) => stripos($s, 'DROP') === 0);
-        $this->assertCount(2, $dropped);
+        $this->assertCount(1, $dropped, 'one DROP naming every table — see dropTables()');
         $this->assertStringContainsString('oc_learning_cert_keys', implode(' ', $dropped));
+        $this->assertStringContainsString('oc_learning_courses', implode(' ', $dropped));
     }
 
     public function testExecuteRefusesToDestroyIssuerKeyWithoutAnExplicitChoice(): void {
@@ -433,6 +455,159 @@ class UninstallCommandTest extends TestCase {
             'the oc_migrations delete must actually commit — otherwise a reinstall boots broken'
         );
         $this->assertSame(Command::SUCCESS, $exit);
+    }
+
+    /**
+     * @param list<string> $missingTables
+     * @param list<string> $brokenTables
+     */
+    private function makeBrokenCommand(array $existingTables, array $missingTables, array $brokenTables): array {
+        $results = [FakeResult::fromFetchAll(array_map(static fn ($t) => ['table_name' => $t], $existingTables))];
+        foreach (range(1, count($existingTables) + 8) as $ignored) {
+            $results[] = FakeResult::fromFetchOne(1);
+        }
+        $db = new PartialDbConnection($missingTables, $results, $brokenTables);
+
+        $config = $this->createMock(IConfig::class);
+        $config->method('getSystemValue')->willReturnCallback(
+            static fn (string $key, $default = '') => match ($key) {
+                'dbtableprefix' => 'oc_',
+                'dbtype' => 'pgsql',
+                default => $default,
+            }
+        );
+
+        return [new UninstallCommand($db, $config), $db];
+    }
+
+    /**
+     * A count that fails for any reason other than "no such table" must not read as absent.
+     *
+     * If the oc_migrations count fails on a permission or connection error, treating it as absent
+     * skips its delete — and the run still drops 54 tables. Tables gone, migration rows intact:
+     * the state a reinstall cannot recover from, reported as success.
+     */
+    public function testAbortsWhenAMandatoryScopeCannotBeRead(): void {
+        [$command, $db] = $this->makeBrokenCommand(['oc_learning_courses'], [], ['oc_migrations']);
+
+        $exit = $command->run(new StubConsoleInput(['--execute' => true]), $output = new CapturingOutput());
+
+        $this->assertNotSame(Command::SUCCESS, $exit, 'an unreadable oc_migrations must not report success');
+        $this->assertSame([], $this->destructiveStatements($db), 'nothing may be dropped when the plan is not trustworthy');
+        $this->assertStringContainsString('oc_migrations', $output->buffer);
+    }
+
+    /**
+     * countRows() returning 0 on failure would silently disarm the certificate gate: an
+     * unreadable cert_keys table reads as "no certificates", --execute proceeds without a
+     * decision, and the irreversible issuer key is dropped anyway.
+     */
+    public function testAbortsWhenTheCertificateCountCannotBeRead(): void {
+        [$command, $db] = $this->makeBrokenCommand(
+            ['oc_learning_courses', 'oc_learning_cert_keys'],
+            [],
+            ['oc_learning_cert_keys']
+        );
+
+        $exit = $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $this->assertNotSame(Command::SUCCESS, $exit);
+        $this->assertSame([], $this->destructiveStatements($db), 'the issuer key must never be dropped on a guess');
+    }
+
+    /**
+     * The tables reference each other (questions→pools, user_answers→sessions, …). Dropping them
+     * one at a time in alphabetical order fails on every parent that still has children — proven
+     * against MariaDB: pools, questions and sessions all refuse. One statement naming them all
+     * resolves the internal keys; RESTRICT then still refuses if something OUTSIDE the app
+     * depends on them, instead of CASCADE silently deleting a foreign view.
+     */
+    public function testDropsEveryTableInOneStatementWithRestrict(): void {
+        [$command, $db] = $this->makeCommand(['oc_learning_courses', 'oc_learning_pools', 'oc_learning_questions']);
+
+        $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $drops = array_values(array_filter(
+            array_column($db->executedStatements, 'sql'),
+            static fn (string $s) => stripos($s, 'DROP TABLE') === 0
+        ));
+
+        $this->assertCount(1, $drops, 'one DROP naming all tables, not one per table');
+        foreach (['oc_learning_courses', 'oc_learning_pools', 'oc_learning_questions'] as $t) {
+            $this->assertStringContainsString($t, $drops[0]);
+        }
+        $this->assertStringContainsString('RESTRICT', $drops[0]);
+        $this->assertStringNotContainsString('CASCADE', $drops[0], 'CASCADE would destroy foreign views');
+    }
+
+    public function testTogglesForeignKeyChecksAroundTheDropOnMysql(): void {
+        [$command, $db] = $this->makeCommand(['oc_learning_courses', 'oc_learning_pools'], dbType: 'mysql');
+
+        $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $sql = array_column($db->executedStatements, 'sql');
+        $off = array_search('SET FOREIGN_KEY_CHECKS = 0', $sql, true);
+        $drop = null;
+        $on = null;
+        foreach ($sql as $i => $s) {
+            if (stripos($s, 'DROP TABLE') === 0) {
+                $drop = $i;
+            }
+            if ($s === 'SET FOREIGN_KEY_CHECKS = 1') {
+                $on = $i;
+            }
+        }
+
+        $this->assertNotFalse($off, 'MySQL refuses to drop a referenced parent otherwise');
+        $this->assertNotNull($drop);
+        $this->assertNotNull($on, 'the checks must be restored');
+        $this->assertLessThan($drop, $off);
+        $this->assertGreaterThan($drop, $on);
+        $this->assertStringNotContainsString('RESTRICT', $sql[$drop], 'RESTRICT is not MySQL syntax here');
+    }
+
+    /**
+     * The app rewrites the instance-wide legal links to point at its own routes
+     * (Application.php). Left behind, Impressum and Privacy 404 for every user on the server —
+     * a visible breakage in a foreign app's settings, caused by ours.
+     *
+     * Only rows still pointing at /apps/learning/ may go: if the admin has since set their own
+     * URL, that is their setting and not ours to delete.
+     */
+    public function testRemovesTheThemingLinksItSetButOnlyWhenTheyStillPointAtThisApp(): void {
+        [$command, $db] = $this->makeCommand(['oc_learning_courses']);
+
+        $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        // The app name is a bound parameter, not part of the statement text.
+        $theming = array_values(array_filter(
+            $db->executedStatements,
+            static fn (array $s) => stripos($s['sql'], 'DELETE') === 0
+                && str_contains($s['sql'], 'appconfig')
+                && in_array('theming', $s['params'], true)
+        ));
+
+        $this->assertCount(1, $theming, 'the theming links must be cleaned up');
+        $this->assertContains('privacyUrl', $theming[0]['params']);
+        $this->assertContains('imprintUrl', $theming[0]['params']);
+        $this->assertContains('%/apps/learning/%', $theming[0]['params'], 'must be scoped to our own URLs');
+    }
+
+    /**
+     * The Dashboard layout row belongs to the dashboard app and holds the user's other widgets
+     * too. Deleting it would remove somebody's whole dashboard to clean up one token, so the
+     * command reports it and leaves it alone.
+     */
+    public function testReportsButDoesNotTouchForeignRowsItCannotSafelyEdit(): void {
+        [$command, $db] = $this->makeCommand(['oc_learning_courses']);
+
+        $command->run(new StubConsoleInput([]), $output = new CapturingOutput());
+
+        $this->assertStringContainsString('dashboard', $output->buffer);
+        $this->assertSame([], array_values(array_filter(
+            $db->executedStatements,
+            static fn (array $s) => str_contains($s['sql'], 'dashboard')
+        )));
     }
 
     public function testAppJobsCoversEveryBackgroundJobClass(): void {
