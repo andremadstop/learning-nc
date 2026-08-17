@@ -192,6 +192,30 @@ php occ learning:import-vault --path=/data/my-vault --course-id=20
 - Idempotent: re-running deletes previous vault chunks for the same course
 - Existing CourseDocument-based chunks are preserved
 
+#### `learning:uninstall` — Remove all app data from the database
+
+Nextcloud does not drop an app's migration-created tables on removal, and the only hook apps get
+(`<repair-steps><uninstall>`) also fires on a plain *disable* — so an automatic drop would let one
+stray click destroy every course. This command is the explicit alternative.
+
+```bash
+php occ learning:uninstall                               # dry run — prints the plan, changes nothing
+php occ learning:uninstall --execute --keep-certificates # remove everything except issuer/certificates
+php occ learning:uninstall --execute --drop-certificates # remove everything
+php occ app:remove learning                              # then remove the app itself
+```
+
+- Dry run by default; `--execute` is required to change anything
+- Drops all `learning_*` tables (including legacy names from earlier renames) and clears the rows
+  this app leaves in `migrations`, `appconfig`, `preferences`, `jobs`, `notifications` and `activity`
+- Deletes the `migrations` rows **before** dropping tables — leaving them behind makes a later
+  reinstall skip every migration and boot broken
+- Tables carrying the `learning_` prefix that this version does not know about are reported, not touched
+- Refuses to run when issuer/certificate data exists unless you choose `--keep-certificates` or
+  `--drop-certificates`: the Ed25519 issuer key is unrecoverable, and losing it makes every
+  certificate ever issued permanently unverifiable
+- Course documents, videos and images live in the users' own files and are never touched
+
 ## Requirements
 
 - Nextcloud 29, 30, or 31

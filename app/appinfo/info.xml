@@ -119,6 +119,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         <command>OCA\Learning\Command\InitIssuerCommand</command>
         <command>OCA\Learning\Command\ImportUsersCommand</command>
         <command>OCA\Learning\Command\AuditVerifyCommand</command>
+        <command>OCA\Learning\Command\UninstallCommand</command>
     </commands>
 
     <background-jobs>
