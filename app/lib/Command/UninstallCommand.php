@@ -241,9 +241,13 @@ class UninstallCommand extends Command {
         $output->writeln('  Metadata rows to delete:');
         $scopes = $this->metadataScopes($prefix);
         $metaTotal = 0;
+        $presentScopes = [];
         foreach ($scopes as $scope) {
             $count = $this->countScope($scope);
             $metaTotal += max(0, $count);
+            if ($count >= 0) {
+                $presentScopes[] = $scope;
+            }
             $output->writeln(sprintf(
                 '    %-42s %8s',
                 $scope['table'] . ' (' . $scope['label'] . ')',
@@ -277,24 +281,30 @@ class UninstallCommand extends Command {
             return self::INVALID;
         }
 
-        return $this->applyPlan($output, $prefix, $tables, $scopes);
+        return $this->applyPlan($output, $tables, $presentScopes);
     }
 
     /**
      * Delete metadata first, then drop tables. See the class docblock for why that order.
      *
-     * @param list<string>                                                          $tables
+     * $scopes must already be filtered to tables that exist — the caller does that from the
+     * report phase, where countScope() returns -1 for an absent table. Probing in here instead
+     * would mean issuing a query that fails by design, and on PostgreSQL a failed statement
+     * aborts the whole transaction block (SQLSTATE 25P02), after which COMMIT succeeds while
+     * acting as a rollback. A swallowed probe error would therefore discard every delete without
+     * raising anything, and the run would still drop the tables: precisely the unreinstallable
+     * state the delete-before-drop order exists to prevent, reported as success. Verified against
+     * a real PostgreSQL 16 — see scripts/db-uninstall-probe.php.
+     *
+     * @param list<string>                                                                    $tables
      * @param list<array{label: string, table: string, column: string, values: list<string>}> $scopes
      */
-    private function applyPlan(OutputInterface $output, string $prefix, array $tables, array $scopes): int {
+    private function applyPlan(OutputInterface $output, array $tables, array $scopes): int {
         $output->writeln('');
         $output->writeln('  Deleting metadata rows...');
         $this->db->beginTransaction();
         try {
             foreach ($scopes as $scope) {
-                if (!$this->tableExists($scope['table'])) {
-                    continue;
-                }
                 $placeholders = implode(', ', array_fill(0, count($scope['values']), '?'));
                 $this->db->executeStatement(
                     sprintf('DELETE FROM %s WHERE %s IN (%s)', $this->quote($scope['table']), $this->quote($scope['column']), $placeholders),
@@ -423,16 +433,6 @@ class UninstallCommand extends Command {
             return $count;
         } catch (\Throwable $e) {
             return -1;
-        }
-    }
-
-    private function tableExists(string $table): bool {
-        try {
-            $result = $this->db->executeQuery(sprintf('SELECT 1 FROM %s WHERE 1 = 0', $this->quote($table)));
-            $result->closeCursor();
-            return true;
-        } catch (\Throwable $e) {
-            return false;
         }
     }
 

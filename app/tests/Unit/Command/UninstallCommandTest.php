@@ -76,6 +76,101 @@ final class PartialDbConnection implements \OCP\IDBConnection {
     }
 }
 
+/**
+ * A connection with PostgreSQL's transaction semantics.
+ *
+ * On PostgreSQL a failed statement aborts the entire transaction block (SQLSTATE 25P02): every
+ * later statement in it fails, and COMMIT on an aborted block *succeeds* while acting as a
+ * rollback. So a swallowed query error inside a transaction silently discards everything the
+ * transaction did — without raising anything the caller can see.
+ *
+ * MariaDB does not behave this way (a failed statement fails alone), which is why the MariaDB
+ * probe cannot catch it, and PartialDbConnection's no-op transaction methods cannot either.
+ */
+final class PostgresLikeDbConnection implements \OCP\IDBConnection {
+    /** Statements that actually took effect — i.e. survived a commit. */
+    public array $effectiveStatements = [];
+    public bool $silentlyRolledBack = false;
+
+    private bool $inTx = false;
+    private bool $poisoned = false;
+    private array $pending = [];
+
+    /** @var list<FakeResult> */
+    private array $rawResults;
+
+    /** @param list<string> $missingTables */
+    public function __construct(private array $missingTables, array $rawResults = []) {
+        $this->rawResults = $rawResults;
+    }
+
+    private function guard(string $sql): void {
+        if ($this->inTx && $this->poisoned) {
+            throw new \RuntimeException('current transaction is aborted, commands ignored until end of transaction block');
+        }
+        foreach ($this->missingTables as $table) {
+            if (str_contains($sql, $table)) {
+                if ($this->inTx) {
+                    $this->poisoned = true;
+                }
+                throw new \RuntimeException('relation "' . $table . '" does not exist');
+            }
+        }
+    }
+
+    public function getQueryBuilder(): FakeQueryBuilder {
+        return new FakeQueryBuilder();
+    }
+
+    public function executeQuery(string $sql, array $params = []): FakeResult {
+        $this->guard($sql);
+        return array_shift($this->rawResults) ?? new FakeResult();
+    }
+
+    public function executeStatement(string $sql, array $params = []): int {
+        $this->guard($sql);
+        if ($this->inTx) {
+            $this->pending[] = $sql;
+        } else {
+            $this->effectiveStatements[] = $sql;
+        }
+        return 1;
+    }
+
+    public function escapeLikeParameter(string $input): string {
+        return addcslashes($input, '\\%_');
+    }
+
+    public function beginTransaction(): void {
+        $this->inTx = true;
+        $this->poisoned = false;
+        $this->pending = [];
+    }
+
+    public function commit(): void {
+        if ($this->poisoned) {
+            // PostgreSQL answers COMMIT with ROLLBACK here — no error reaches the caller.
+            $this->silentlyRolledBack = true;
+            $this->pending = [];
+        } else {
+            $this->effectiveStatements = array_merge($this->effectiveStatements, $this->pending);
+        }
+        $this->pending = [];
+        $this->inTx = false;
+        $this->poisoned = false;
+    }
+
+    public function rollBack(): void {
+        $this->pending = [];
+        $this->inTx = false;
+        $this->poisoned = false;
+    }
+
+    public function inTransaction(): bool {
+        return $this->inTx;
+    }
+}
+
 class UninstallCommandTest extends TestCase {
 
     private const MIGRATION_DIR = __DIR__ . '/../../../lib/Migration';
@@ -302,6 +397,42 @@ class UninstallCommandTest extends TestCase {
         $this->assertNotEmpty(array_filter($sql, static fn (string $s) => str_contains($s, 'oc_migrations')));
         $this->assertSame([], array_values(array_filter($sql, static fn (string $s) => str_contains($s, 'oc_activity'))));
         $this->assertNotEmpty(array_filter($sql, static fn (string $s) => stripos($s, 'DROP') === 0));
+    }
+
+    /**
+     * The failure this whole command is ordered to prevent: tables gone, oc_migrations rows left
+     * behind, and the operator told it succeeded.
+     *
+     * oc_activity_mq is the LAST scope, and it is absent on every instance without the activity
+     * app. Probing it from inside the transaction aborts the block after the final DELETE — so
+     * nothing raises, COMMIT quietly discards all seven deletes, and the run goes on to drop
+     * every table. Existence must therefore be established before the transaction opens.
+     */
+    public function testMissingLastScopeDoesNotSilentlyDiscardTheMetadataDeletes(): void {
+        $results = [FakeResult::fromFetchAll([['table_name' => 'oc_learning_courses']])];
+        foreach (range(1, 8) as $ignored) {
+            $results[] = FakeResult::fromFetchOne(0);
+        }
+        $db = new PostgresLikeDbConnection(['oc_activity_mq'], $results);
+
+        $config = $this->createMock(IConfig::class);
+        $config->method('getSystemValue')->willReturnCallback(
+            static fn (string $key, $default = '') => match ($key) {
+                'dbtableprefix' => 'oc_',
+                'dbtype' => 'pgsql',
+                default => $default,
+            }
+        );
+
+        $command = new UninstallCommand($db, $config);
+        $exit = $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $this->assertFalse($db->silentlyRolledBack, 'the transaction must never be poisoned from inside');
+        $this->assertNotEmpty(
+            array_filter($db->effectiveStatements, static fn (string $s) => str_contains($s, 'oc_migrations')),
+            'the oc_migrations delete must actually commit — otherwise a reinstall boots broken'
+        );
+        $this->assertSame(Command::SUCCESS, $exit);
     }
 
     public function testAppJobsCoversEveryBackgroundJobClass(): void {

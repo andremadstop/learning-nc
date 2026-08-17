@@ -1,37 +1,54 @@
 <?php
 /**
- * Runs the real UninstallCommand against a real MariaDB.
+ * Runs the real UninstallCommand against a real MariaDB or PostgreSQL.
  *
  * WHY THIS EXISTS
  *
- * The dev instance is PostgreSQL, so a whole branch of UninstallCommand is unreachable there:
- * the information_schema + DATABASE() catalogue query, the TABLE_NAME casing, ESCAPE '!', and
- * backtick identifier quoting. That last one already broke once — ANSI double quotes are string
- * literals on MariaDB, and because the command swallows query errors to stay usable on partial
- * installs, the failure surfaced as "0 rows" and "absent" rather than as an error: a broken run
- * looking exactly like a clean instance. The unit suite can assert the emitted SQL; only a real
- * MariaDB can assert it parses and runs.
+ * Two classes of bug live here that no unit test and no dev-instance run can reach, and both
+ * already bit once:
  *
- * It also exercises the destructive path end to end, which must never be run against the live
- * instance.
+ *   MariaDB — ANSI double quotes are string literals there, not identifiers, so every statement
+ *   was a syntax error. Because the command swallows query errors to stay usable on partial
+ *   installs, that surfaced as "0 rows" and "absent": a broken run looking exactly like a clean
+ *   instance. A unit test can assert the emitted SQL; only a real MariaDB asserts it parses.
+ *
+ *   PostgreSQL — a failed statement aborts the whole transaction block (SQLSTATE 25P02), and
+ *   COMMIT then succeeds while acting as a rollback. A swallowed error inside the transaction
+ *   discards every metadata delete without raising anything, after which the run drops the
+ *   tables anyway: the unreinstallable state, reported as success. Asserting the DELETE was
+ *   *sent* does not catch that — only asserting the rows are gone afterwards does.
+ *
+ * The fixture deliberately leaves four scope tables absent, which is the shape of any instance
+ * without the activity app, and it exercises the destructive path end to end — something that
+ * must never be run against the live instance.
  *
  * HOW TO RUN
  *
  *   HOST=relais NET=devcloud_internal APP=devcloud-app
  *
+ *   # MariaDB
  *   ssh $HOST 'docker run -d --name learning-mysqltest \
  *       -e MARIADB_ROOT_PASSWORD=testonly_throwaway -e MARIADB_DATABASE=nctest mariadb:10.11'
- *   ssh $HOST "docker network connect $NET learning-mysqltest"      # the throwaway joins the net;
- *                                                                   # production containers are untouched
- *   scp scripts/mariadb-uninstall-probe.php $HOST:/tmp/
- *   ssh $HOST "docker cp /tmp/mariadb-uninstall-probe.php $APP:/tmp/ && docker exec $APP php /tmp/mariadb-uninstall-probe.php"
+ *   # PostgreSQL
+ *   ssh $HOST 'docker run -d --name learning-pgtest \
+ *       -e POSTGRES_PASSWORD=testonly_throwaway -e POSTGRES_DB=nctest postgres:16-alpine'
+ *
+ *   # The throwaway container joins the existing network. Production containers are never
+ *   # reconfigured — and a port published on 127.0.0.1 would not be reachable from inside them.
+ *   ssh $HOST "docker network connect $NET learning-mysqltest"
+ *
+ *   scp scripts/db-uninstall-probe.php $HOST:/tmp/
+ *   ssh $HOST "docker cp /tmp/db-uninstall-probe.php $APP:/tmp/ \
+ *              && docker exec -e PROBE_PLATFORM=mysql $APP php /tmp/db-uninstall-probe.php"
+ *   ssh $HOST "docker exec -e PROBE_PLATFORM=pgsql $APP php /tmp/db-uninstall-probe.php"
  *
  *   # afterwards, always:
- *   ssh $HOST "docker exec $APP rm -- /tmp/mariadb-uninstall-probe.php; rm -- /tmp/mariadb-uninstall-probe.php
+ *   ssh $HOST "docker exec $APP rm -- /tmp/db-uninstall-probe.php; rm -- /tmp/db-uninstall-probe.php
  *              docker network disconnect $NET learning-mysqltest
  *              docker stop learning-mysqltest && docker rm learning-mysqltest"
  *
- * Exit 0 when every assertion passes, 1 otherwise. Run it whenever UninstallCommand's SQL changes.
+ * Exit 0 when every assertion passes, 1 otherwise. Run BOTH platforms whenever the command's SQL
+ * or its transaction handling changes.
  *
  * The database is created and destroyed by this script. Point it at a throwaway container only —
  * it drops every table it touches.
@@ -39,16 +56,27 @@
 declare(strict_types=1);
 
 $appPath = getenv('LEARNING_APP_PATH') ?: '/var/www/html/custom_apps/learning';
-$dbHost = getenv('PROBE_DB_HOST') ?: 'learning-mysqltest';
+$platform = getenv('PROBE_PLATFORM') ?: 'mysql';          // mysql | pgsql
+$dbHost = getenv('PROBE_DB_HOST') ?: ($platform === 'pgsql' ? 'learning-pgtest' : 'learning-mysqltest');
 $dbName = getenv('PROBE_DB_NAME') ?: 'nctest';
-$dbUser = getenv('PROBE_DB_USER') ?: 'root';
+$dbUser = getenv('PROBE_DB_USER') ?: ($platform === 'pgsql' ? 'postgres' : 'root');
 $dbPass = getenv('PROBE_DB_PASS') ?: 'testonly_throwaway';
 
 require_once $appPath . '/tests/bootstrap.php';
 
-$pdo = new PDO("mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4", $dbUser, $dbPass, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-]);
+$dsn = $platform === 'pgsql'
+    ? "pgsql:host={$dbHost};dbname={$dbName}"
+    : "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
+$pdo = new PDO($dsn, $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+
+echo "=== platform: {$platform} ===\n";
+
+/** Identifier quoting for the fixture DDL — the command's own quoting is what we are testing. */
+$q = static fn (string $ident): string => $platform === 'pgsql' ? '"' . $ident . '"' : '`' . $ident . '`';
+$autoPk = $platform === 'pgsql' ? 'id SERIAL PRIMARY KEY' : 'id INT PRIMARY KEY AUTO_INCREMENT';
+$catalogueSql = $platform === 'pgsql'
+    ? "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name LIKE 'oc\\_learning\\_%'"
+    : "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE 'oc\\_learning\\_%'";
 
 final class PdoResult {
     public function __construct(private PDOStatement $stmt) {}
@@ -106,6 +134,8 @@ final class PdoConnection implements \OCP\IDBConnection {
 }
 
 final class StaticConfig implements \OCP\IConfig {
+    public function __construct(private string $platform) {}
+
     public function getUserValue(string $userId, string $appName, string $key, string $default = '') {
         return $default;
     }
@@ -113,10 +143,11 @@ final class StaticConfig implements \OCP\IConfig {
         return $default;
     }
     public function setAppValue(string $appName, string $key, string $value) {}
+
     public function getSystemValue(string $key, $default = '') {
         return match ($key) {
             'dbtableprefix' => 'oc_',
-            'dbtype' => 'mysql',
+            'dbtype' => $this->platform,
             default => $default,
         };
     }
@@ -146,37 +177,42 @@ $fixture = [
     'oc_learning_user_stats' => 0,
 ];
 foreach ($fixture as $table => $rows) {
-    $pdo->exec("DROP TABLE IF EXISTS `$table`");
-    $pdo->exec("CREATE TABLE `$table` (id INT PRIMARY KEY AUTO_INCREMENT, note VARCHAR(32))");
+    $pdo->exec('DROP TABLE IF EXISTS ' . $q($table));
+    $pdo->exec('CREATE TABLE ' . $q($table) . " ($autoPk, note VARCHAR(32))");
     for ($i = 0; $i < $rows; $i++) {
-        $pdo->exec("INSERT INTO `$table` (note) VALUES ('x')");
+        $pdo->exec('INSERT INTO ' . $q($table) . " (note) VALUES ('x')");
     }
 }
 // A table a FUTURE version created — this version must report it, not destroy it.
-$pdo->exec('DROP TABLE IF EXISTS `oc_learning_future_feature`');
-$pdo->exec('CREATE TABLE `oc_learning_future_feature` (id INT PRIMARY KEY AUTO_INCREMENT)');
+$pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_learning_future_feature'));
+$pdo->exec('CREATE TABLE ' . $q('oc_learning_future_feature') . " ($autoPk)");
 
-$pdo->exec('DROP TABLE IF EXISTS `oc_migrations`');
-$pdo->exec('CREATE TABLE `oc_migrations` (app VARCHAR(255), version VARCHAR(255))');
+$pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_migrations'));
+$pdo->exec('CREATE TABLE ' . $q('oc_migrations') . ' (app VARCHAR(255), version VARCHAR(255))');
 foreach (['1', '2', '3'] as $v) {
-    $pdo->exec("INSERT INTO `oc_migrations` VALUES ('learning', '$v')");
+    $pdo->exec('INSERT INTO ' . $q('oc_migrations') . " VALUES ('learning', '$v')");
 }
-$pdo->exec("INSERT INTO `oc_migrations` VALUES ('files', '1')");   // a foreign app — must survive
+$pdo->exec('INSERT INTO ' . $q('oc_migrations') . " VALUES ('files', '1')");   // a foreign app — must survive
 
-$pdo->exec('DROP TABLE IF EXISTS `oc_appconfig`');
-$pdo->exec('CREATE TABLE `oc_appconfig` (appid VARCHAR(255), configkey VARCHAR(255))');
-$pdo->exec("INSERT INTO `oc_appconfig` VALUES ('learning', 'enabled'), ('learning', 'ai_provider'), ('theming', 'color')");
+$pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_appconfig'));
+$pdo->exec('CREATE TABLE ' . $q('oc_appconfig') . ' (appid VARCHAR(255), configkey VARCHAR(255))');
+$pdo->exec('INSERT INTO ' . $q('oc_appconfig') . " VALUES ('learning', 'enabled'), ('learning', 'ai_provider'), ('theming', 'color')");
 
-$pdo->exec('DROP TABLE IF EXISTS `oc_jobs`');
-$pdo->exec('CREATE TABLE `oc_jobs` (id INT PRIMARY KEY AUTO_INCREMENT, class VARCHAR(255))');
-$pdo->exec("INSERT INTO `oc_jobs` (class) VALUES ('OCA\\\\Learning\\\\BackgroundJob\\\\SendRemindersJob'), ('OCA\\\\Files\\\\BackgroundJob\\\\ScanFiles')");
+$pdo->exec('DROP TABLE IF EXISTS ' . $q('oc_jobs'));
+$pdo->exec('CREATE TABLE ' . $q('oc_jobs') . " ($autoPk, class VARCHAR(255))");
+// Bound, not interpolated: a backslash inside a SQL string literal is an escape on MySQL and a
+// literal character on PostgreSQL, so an interpolated namespace lands differently on each engine
+// and the fixture would silently not match what the command looks for.
+$insertJob = $pdo->prepare('INSERT INTO ' . $q('oc_jobs') . ' (class) VALUES (?)');
+$insertJob->execute(['OCA\Learning\BackgroundJob\SendRemindersJob']);
+$insertJob->execute(['OCA\Files\BackgroundJob\ScanFiles']);
 
 // oc_preferences / oc_notifications / oc_activity / oc_activity_mq deliberately absent —
 // that is the shape of any instance without the activity app, and it exercises the
 // "table does not exist" path on MariaDB rather than only on the fakes.
 
 $db = new PdoConnection($pdo);
-$command = new \OCA\Learning\Command\UninstallCommand($db, new StaticConfig());
+$command = new \OCA\Learning\Command\UninstallCommand($db, new StaticConfig($platform));
 
 $failures = [];
 $check = static function (string $label, bool $ok) use (&$failures): void {
@@ -200,14 +236,14 @@ $check('legacy table name discovered', str_contains($out->buffer, 'oc_learning_q
 $check('unknown table reported, not planned for removal', str_contains($out->buffer, 'oc_learning_future_feature'));
 $check('oc_migrations counted as 3, not 4 — foreign app not matched', (bool)preg_match('/oc_migrations.*?3 rows/s', $out->buffer));
 $check('absent tables reported as absent', substr_count($out->buffer, 'absent') >= 4);
-$check('dry run changed nothing', (int)$pdo->query('SELECT COUNT(*) FROM `oc_learning_courses`')->fetchColumn() === 3);
+$check('dry run changed nothing', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_learning_courses'))->fetchColumn() === 3);
 
 // ── 2. the certificate gate ──────────────────────────────────────────────────
 echo "\n=== ASSERTIONS: certificate gate ===\n";
 $out2 = new BufferedOutput();
 $exit2 = $command->run(new \Symfony\Component\Console\Tester\StubConsoleInput(['--execute' => true]), $out2);
 $check('refuses --execute without a certificate decision', $exit2 === 2);
-$check('the refused run dropped nothing', (int)$pdo->query('SELECT COUNT(*) FROM `oc_learning_courses`')->fetchColumn() === 3);
+$check('the refused run dropped nothing', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_learning_courses'))->fetchColumn() === 3);
 
 // ── 3. the destructive path ──────────────────────────────────────────────────
 echo "\n=== EXECUTE ===\n";
@@ -221,18 +257,29 @@ echo $out3->buffer;
 echo "\n=== ASSERTIONS: execute ===\n";
 $check('exit 0', $exit3 === 0);
 
-$remaining = $pdo
-    ->query("SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE 'oc\\_learning\\_%'")
-    ->fetchAll(PDO::FETCH_COLUMN);
+$remaining = $pdo->query($catalogueSql)->fetchAll(PDO::FETCH_COLUMN);
 $check('every known learning table is gone', $remaining === ['oc_learning_future_feature']);
 $check('the unknown table survived', in_array('oc_learning_future_feature', $remaining, true));
-$check('learning migration rows gone', (int)$pdo->query("SELECT COUNT(*) FROM `oc_migrations` WHERE app='learning'")->fetchColumn() === 0);
-$check('foreign migration rows intact', (int)$pdo->query("SELECT COUNT(*) FROM `oc_migrations` WHERE app='files'")->fetchColumn() === 1);
-$check('learning appconfig gone', (int)$pdo->query("SELECT COUNT(*) FROM `oc_appconfig` WHERE appid='learning'")->fetchColumn() === 0);
-$check('foreign appconfig intact', (int)$pdo->query("SELECT COUNT(*) FROM `oc_appconfig` WHERE appid='theming'")->fetchColumn() === 1);
-$check('learning job gone', (int)$pdo->query("SELECT COUNT(*) FROM `oc_jobs` WHERE class LIKE '%Learning%'")->fetchColumn() === 0);
-$check('foreign job intact', (int)$pdo->query("SELECT COUNT(*) FROM `oc_jobs` WHERE class LIKE '%Files%'")->fetchColumn() === 1);
-$check('no ANSI-quoted identifier was ever sent to MariaDB', !preg_grep('/"oc_/', $db->log));
+$check('learning migration rows gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_migrations') . " WHERE app='learning'")->fetchColumn() === 0);
+$check('foreign migration rows intact', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_migrations') . " WHERE app='files'")->fetchColumn() === 1);
+$check('learning appconfig gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='learning'")->fetchColumn() === 0);
+$check('foreign appconfig intact', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming'")->fetchColumn() === 1);
+$check('learning job gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_jobs') . " WHERE class LIKE '%Learning%'")->fetchColumn() === 0);
+$check('foreign job intact', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_jobs') . " WHERE class LIKE '%Files%'")->fetchColumn() === 1);
+$check(
+    $platform === 'pgsql'
+        ? 'no backtick identifier was ever sent to PostgreSQL'
+        : 'no ANSI-quoted identifier was ever sent to MariaDB',
+    $platform === 'pgsql' ? !preg_grep('/`oc_/', $db->log) : !preg_grep('/"oc_/', $db->log)
+);
+
+// The poisoned-transaction trap: four scope tables are absent above, and on PostgreSQL a probe
+// that fails inside the transaction turns COMMIT into a silent ROLLBACK. Asserting the DELETE was
+// *sent* would not catch that — only that the rows are actually gone does.
+$check(
+    'metadata deletes really committed despite four absent scope tables',
+    (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_migrations') . " WHERE app='learning'")->fetchColumn() === 0
+);
 
 echo "\n" . ($failures === [] ? "ALL PASS\n" : 'FAILURES: ' . implode(' | ', $failures) . "\n");
 exit($failures === [] ? 0 : 1);
