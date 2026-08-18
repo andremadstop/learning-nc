@@ -209,6 +209,11 @@ class SigningServiceTest extends TestCase {
      * sodium_crypto_sign_verify_detached) must accept the valid JWT and reject a tampered one. The
      * phase gate (155-07) re-runs this on a REAL issued cert and MUST fail if no independent verifier
      * is available — so we do NOT silently skip on a missing module; only python3-absent skips.
+     *
+     * This is deliberate, not an oversight: on a bare Nextcloud app container (no `pip`, no
+     * `cryptography`), this test is EXPECTED to fail rather than skip. Install `cryptography`
+     * there, or run this suite where it is a CI/dev machine with the module present — do not
+     * "fix" it by widening the skip condition to a missing module.
      */
     public function testIndependentPythonVerifier(): void {
         $python = $this->findPython3();
@@ -252,6 +257,7 @@ class SigningServiceTest extends TestCase {
         $candidates = array_filter([
             is_string($env) && $env !== '' ? $env : null,
             __DIR__ . '/../../../../scripts/verify-credential.py', // repo: app/tests/Unit/Service → repo/scripts
+            __DIR__ . '/../../../scripts/verify-credential.py',     // container: custom_apps/learning/tests/Unit/Service → app-root/scripts
             '/tmp/verify-credential.py',                            // container: docker cp'd here
         ]);
         foreach ($candidates as $path) {
