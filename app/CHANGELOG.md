@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.3.0] - 2026-08-18 — Clean Uninstall
 
 ### Added
 - **`occ learning:uninstall`** — removes everything this app leaves in the database, so the app can be uninstalled cleanly ([#1](https://codeberg.org/andremadstop/learning-nc/issues/1)). Dry run by default; `--execute` is required to change anything.
@@ -13,6 +13,12 @@ All notable changes to this project will be documented in this file.
   - Reports rather than touches what it cannot safely change: the `theming` legal links (rewritten by `Application::boot()` on every request, so they can only be cleared after `app:remove` — the command prints the statement), the Dashboard layout row, and the files the app created under `/Learning/` in users' homes.
   - Tables carrying the `learning_` prefix that this version does not know about are reported, not dropped.
 - **`scripts/db-uninstall-probe.php`** — runs the real command against a throwaway MariaDB and PostgreSQL, covering platform behaviour no unit test or PostgreSQL-only dev instance can reach.
+
+### Fixed
+- **`occ learning:import-pool-json` no longer drops valid open questions.** The pre-check demanded at least two answers for every question, which is right for multiple choice but wrong for open (fill-in) questions — those carry exactly one model answer and were skipped silently. The check now mirrors what `QuestionService::create` already enforced.
+
+### Changed
+- The privacy and imprint pages name the operating company, with the registration details an imprint requires, instead of a private individual.
 
 ### Notes
 - No repair step is used for uninstall. Nextcloud executes `<repair-steps><uninstall>` from `AppManager::disableApp()`, so it also fires when an admin merely disables the app — a drop there would let one mis-click destroy every course, pool and certificate. The reasoning, including why a marker-armed variant was rejected, is recorded in `UninstallCommand`'s class docblock.
