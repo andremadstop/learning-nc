@@ -66,7 +66,7 @@
             </div>
             <div class="streak-details">
               <span class="streak-detail">{{ t('learning', 'Freeze-Token: {n}', { n: streakFreezeTokens }) }}</span>
-              <span class="streak-detail">{{ t('learning', 'Laengste: {n} Tage', { n: streakLongest }) }}</span>
+              <span class="streak-detail">{{ t('learning', 'Längste: {n} Tage', { n: streakLongest }) }}</span>
             </div>
           </div>
 

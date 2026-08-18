@@ -125,7 +125,7 @@
 
       <div class="field-row">
         <label for="virtuprof-skin">{{ t('learning', 'Charakter-Auswahl') }}</label>
-        <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Aenderungen wirken sofort.') }}</p>
+        <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Änderungen wirken sofort.') }}</p>
         <NcSelect
           id="virtuprof-skin"
           :model-value="selectedSkinOption"
@@ -150,7 +150,7 @@
 
       <div class="field-row lnc-a11y-toggle">
         <label>{{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}</label>
-        <p class="field-desc">{{ t('learning', 'Stoppt Avatar-Animationen unabhaengig vom Betriebssystem. Setzt OS-Bewegungspraeferenzen nie ausser Kraft.') }}</p>
+        <p class="field-desc">{{ t('learning', 'Stoppt Avatar-Animationen unabhängig vom Betriebssystem. Setzt OS-Bewegungspräferenzen nie ausser Kraft.') }}</p>
         <NcCheckboxRadioSwitch
           :model-value="form.animationsEnabled"
           type="switch"
