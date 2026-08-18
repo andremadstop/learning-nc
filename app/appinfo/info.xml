@@ -70,7 +70,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
 
-**Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Demo available.
+**Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Open an issue with a bit of context and we're happy to walk you through it.
     ]]></description>
 
     <version>5.2.1</version>

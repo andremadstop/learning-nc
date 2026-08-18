@@ -10,7 +10,7 @@ A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate** — turning any course into a real credential.
 
-> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. Demo accounts available. [Open an issue](https://codeberg.org/andremadstop/learning-nc/issues) or email me.
+> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. [Open an issue](https://codeberg.org/andremadstop/learning-nc/issues) or email me.
 
 ![Student dashboard](screenshots/08-en-dashboard.png)
 
@@ -159,7 +159,9 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 ## Try It
 
-A live demo instance runs at **devcloud.andrestiebitz.de** (demo data resets nightly). [Open a Codeberg issue](https://codeberg.org/andremadstop/learning-nc/issues) to request a demo login and I'll set you up — happy to walk you through the instructor and certification views.
+Install it from the [Nextcloud App Store](https://apps.nextcloud.com/apps/learning) on your own instance — Apps → search "Learning". That's also the most informative way to evaluate it: courses, groups, roles and mandatory-training assignments only really show their shape with your own users.
+
+Evaluating it for an organisation? [Open a Codeberg issue](https://codeberg.org/andremadstop/learning-nc/issues) with a bit of context — organisation, rough number of learners, timeline — and I'm happy to give you a guided screenshare walkthrough of the instructor and certification views.
 
 ## Contributing
 
