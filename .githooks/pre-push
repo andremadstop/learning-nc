@@ -170,9 +170,17 @@ if [ $FAILED -ne 0 ]; then
     echo -e "${RED}=== PUSH BLOCKIERT — Fehler oben beheben ===${NC}"
     exit 1
 elif [ $SKIPPED -ne 0 ]; then
-    # Uebersprungene Gates duerfen NICHT als "alle bestanden" durchgehen — sonst liest man
-    # "relais war offline" als "geprueft und in Ordnung".
-    echo -e "${YELLOW}=== Durchgelassen, aber $SKIPPED Gate(s) UEBERSPRUNGEN — nicht geprueft ===${NC}"
+    # FAIL-CLOSED: Ein uebersprungenes Gate ist kein bestandenes Gate. Vorher endete der Hook
+    # hier mit Exit 0 — bei offline-relais liefen PHPStan, PHPUnit und der SQL-Check alle in SKIP
+    # und der Push ging trotzdem durch, ohne dass PHP je geprueft wurde.
+    echo -e "${RED}=== PUSH BLOCKIERT — $SKIPPED Gate(s) konnten nicht laufen ===${NC}"
+    echo -e "${YELLOW}  Diese Gates pruefen ueber relais. Ist der Host absichtlich nicht erreichbar${NC}"
+    echo -e "${YELLOW}  und du willst trotzdem pushen: ALLOW_SKIPPED_GATES=1 git push${NC}"
+    if [ "${ALLOW_SKIPPED_GATES:-0}" = "1" ]; then
+        echo -e "${YELLOW}  ALLOW_SKIPPED_GATES=1 gesetzt — ungeprueft durchgelassen.${NC}"
+    else
+        exit 1
+    fi
 else
     echo -e "${GREEN}=== Alle Gates bestanden ===${NC}"
 fi
