@@ -371,11 +371,15 @@ class CourseSummaryService {
     }
 
     private function getDuelStats(string $userId): array {
+        // Both counts are over FINISHED duels only. A duel that is still waiting for an opponent,
+        // or that expired unplayed, has no winner, so counting it in the denominator would make
+        // win_rate meaningless — on the dev instance that would have read 1 win out of 21 duels
+        // (14 expired, 6 waiting, 1 finished) once the wins query below started working at all.
         $qb = $this->db->getQueryBuilder();
-        // Total duels participated
         $qb->select($qb->createFunction('COUNT(*) as total'))
             ->from('learning_duel_sessions')
-            ->where(
+            ->where($qb->expr()->eq('status', $qb->createNamedParameter('finished')))
+            ->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->eq('creator_uid', $qb->createNamedParameter($userId)),
                     $qb->expr()->eq('opponent_uid', $qb->createNamedParameter($userId))

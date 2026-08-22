@@ -895,6 +895,11 @@ assert_json "Skill map maps the pool to its course" \
 assert_json "Skill map reports the course title" \
     "[.courses[] | select(.id == ${COURSE_ID}) | .name | length > 0] == [true]"
 
+# CACHE: aggregateProfile() caches per user for 300s, and memcache.local is APCu on the dev
+# instance, so it really does persist between requests. The share below therefore has to be
+# created BEFORE the second user's first skill-map call — asking first and sharing afterwards
+# returns the pre-share profile from cache and makes this block fail for the wrong reason.
+#
 # NEGATIVE test for the course-access condition in enrichPoolsWithCourseData: a second user who
 # can reach the pool through a share, but is NOT a member of the course it was added to, must see
 # the pool WITHOUT any course label. Before that condition existed, they got the course id and

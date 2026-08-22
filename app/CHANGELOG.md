@@ -33,7 +33,9 @@ All notable changes to this project will be documented in this file.
   - `CourseSummaryService`: `winner_uid` on `learning_duel_sessions`. That column only exists on
     the league tables; a duel's winner follows from the scores. This query is on the ordinary
     course-summary path, so it took summaries, snapshots, narratives and CSV exports down with it.
-    Wins are now counted from the scores of finished duels.
+    Wins are now counted from the scores of finished duels — and so is the total, because a duel
+    that is still waiting for an opponent or expired unplayed has no winner and would otherwise
+    sit in the denominator of `win_rate`.
 - **`FeedController` reported no course names.** It called `getName()` on the course entity, which
   only has `getTitle()`; the surrounding `catch` turned that into `course_name: null` for every
   feed item rather than an error.
