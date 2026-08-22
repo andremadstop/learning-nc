@@ -139,12 +139,16 @@ def main():
             path = os.path.join(dirpath, filename)
             source = open(path, encoding='utf-8').read()
             aliases = alias_map(source)
-            if not aliases:
+            unaliased = list(unaliased_select_columns(source))
+            # NOT `if not aliases: continue` — that skipped every file whose queries are all
+            # single-table, which was 23 of them, including the two that still had broken columns
+            # when this was written. A file counts as checked if EITHER shape is present.
+            if not aliases and not unaliased:
                 continue
             checked_files += 1
             seen = set()
 
-            for table, column, pos in unaliased_select_columns(source):
+            for table, column, pos in unaliased:
                 if table not in schema or column in schema[table]:
                     continue
                 line_no = source[:pos].count('\n') + 1

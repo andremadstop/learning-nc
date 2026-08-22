@@ -48,7 +48,9 @@ class FeedController extends Controller {
             if (!isset($courseNames[$courseId])) {
                 try {
                     $course = $this->courseMapper->findById($courseId);
-                    $courseNames[$courseId] = $course->getName();
+                    // getTitle(), NOT getName() — the Course entity has no name field, so this
+                    // threw and the catch below quietly filled in null for every course_name.
+                    $courseNames[$courseId] = $course->getTitle();
                 } catch (\Exception $e) {
                     $courseNames[$courseId] = null;
                 }

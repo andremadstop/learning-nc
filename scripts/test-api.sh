@@ -895,6 +895,30 @@ assert_json "Skill map maps the pool to its course" \
 assert_json "Skill map reports the course title" \
     "[.courses[] | select(.id == ${COURSE_ID}) | .name | length > 0] == [true]"
 
+# NEGATIVE test for the course-access condition in enrichPoolsWithCourseData: a second user who
+# can reach the pool through a share, but is NOT a member of the course it was added to, must see
+# the pool WITHOUT any course label. Before that condition existed, they got the course id and
+# title. The positive assertions above cannot catch a filter that lets everything through.
+if [[ -n "$SECOND_USER" ]]; then
+    request POST admin "/apps/learning/api/pools/${POOL_ID}/shares" \
+        "$(jq -nc --arg u "$SECOND_USER" '{sharedWith:$u, permission:"read"}')"
+    assert_status_in "Pool shared with second user for the access test" "200" "201" "409"
+
+    request GET second "/apps/learning/api/profile/skill-map"
+    assert_status "Skill map works for the second user" "200"
+    assert_json "Second user sees the shared pool" \
+        "[.pools[] | select(.pool_id == ${POOL_ID})] | length == 1"
+    assert_json "Second user gets NO course label for it (not a member)" \
+        "[.pools[] | select(.pool_id == ${POOL_ID}) | .course_id] == [null]"
+    assert_json "Second user sees no course entry for that course" \
+        "[.courses[] | select(.id == ${COURSE_ID})] | length == 0"
+
+    request DELETE admin "/apps/learning/api/pools/${POOL_ID}/shares/${SECOND_USER}"
+    assert_status_in "Share cleaned up" "200" "204" "404"
+else
+    skip "Skill map course-access negative test" "SECOND_USER not configured"
+fi
+
 # ── Sharing ───────────────────────────────────────────────────────
 request GET admin "/apps/learning/api/shared"
 assert_status "Shared with me endpoint works" "200"

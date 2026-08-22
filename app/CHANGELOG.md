@@ -30,6 +30,13 @@ All notable changes to this project will be documented in this file.
     runs once a course is set, and a shared `catch` aborted the whole build after it — so
     VirtuProf answered without *any* course context (no chunks, pool questions, Leitner stats or
     weaknesses) and without reporting an error.
+  - `CourseSummaryService`: `winner_uid` on `learning_duel_sessions`. That column only exists on
+    the league tables; a duel's winner follows from the scores. This query is on the ordinary
+    course-summary path, so it took summaries, snapshots, narratives and CSV exports down with it.
+    Wins are now counted from the scores of finished duels.
+- **`FeedController` reported no course names.** It called `getName()` on the course entity, which
+  only has `getTitle()`; the surrounding `catch` turned that into `course_name: null` for every
+  feed item rather than an error.
 - **Skill map and cheat sheet exposed courses the user is not in.** `enrichPoolsWithCourseData`
   accepted a user id and then ignored it, so it returned every course any accessible pool had
   been added to. An instructor can attach a pool that was merely edit-shared with them, which
@@ -40,6 +47,12 @@ All notable changes to this project will be documented in this file.
 - **`LernprofilController` logged nothing when it failed.** All five `catch (\Throwable)` blocks
   returned a 500 without touching the logger, which is why `nextcloud.log` held no trace of an
   endpoint that had been broken since April 2026. They now log the exception before returning.
+
+### Security
+- **`POST /api/courses/{id}/summary/snapshot` did not check course access.** Every other endpoint
+  in `SummaryController` passes through `CourseService::findById()` first; this one called the
+  service directly, so any logged-in user could snapshot an arbitrary course id and read the
+  result back through their own snapshot. It now applies the same gate and answers 403.
 
 ### Added
 - **`scripts/check-sql-columns.py`** — resolves every alias-qualified column reference in

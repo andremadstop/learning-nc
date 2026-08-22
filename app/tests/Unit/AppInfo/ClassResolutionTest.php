@@ -55,6 +55,26 @@ class ClassResolutionTest extends TestCase {
     }
 
     /**
+     * Source with comments and strings removed, so a line inside a block comment cannot pass for
+     * a real declaration. token_get_all() is the parser PHP itself uses, so this cannot drift.
+     */
+    private function codeOnly(string $source): string {
+        $out = '';
+        foreach (token_get_all($source) as $token) {
+            if (is_array($token)) {
+                if (in_array($token[0], [T_COMMENT, T_DOC_COMMENT], true)) {
+                    $out .= str_repeat("\n", substr_count($token[1], "\n"));
+                    continue;
+                }
+                $out .= $token[1];
+                continue;
+            }
+            $out .= $token;
+        }
+        return $out;
+    }
+
+    /**
      * Case-sensitive existence check — is_file() alone passes on case-insensitive filesystems,
      * so it would go green on a Mac while production on ext4 stays broken.
      */
@@ -139,9 +159,12 @@ class ClassResolutionTest extends TestCase {
             if (!$this->fileExistsCaseSensitive($t['path'])) {
                 continue; // reported by the test above
             }
-            $source = file_get_contents($t['path']) ?: '';
-            if (!preg_match('/^\s*(?:final\s+|abstract\s+)?class\s+' . preg_quote($t['class'], '/') . '\b/m', $source)) {
-                $wrong[$t['class']] = sprintf('%s.php must declare "class %s"', $t['class'], $t['class']);
+            $source = $this->codeOnly(file_get_contents($t['path']) ?: '');
+            if (!preg_match('/^\s*(?:final\s+)?class\s+' . preg_quote($t['class'], '/') . '\b/m', $source)) {
+                // 'abstract' is deliberately NOT accepted here: an abstract controller matches a
+                // lenient class regex but Nextcloud cannot instantiate it, so the route would
+                // still fail at runtime.
+                $wrong[$t['class']] = sprintf('%s.php must declare a concrete "class %s"', $t['class'], $t['class']);
             }
         }
 
@@ -167,6 +190,10 @@ class ClassResolutionTest extends TestCase {
             }
             $checked++;
             $reflection = new ReflectionClass($fqcn);
+            if (!$reflection->isInstantiable()) {
+                $missing[] = sprintf("route '%s': %s is not instantiable (abstract or private constructor)", $t['name'], $t['class']);
+                continue;
+            }
             if (!$reflection->hasMethod($t['action'])) {
                 $missing[] = sprintf("route '%s' needs %s::%s()", $t['name'], $t['class'], $t['action']);
                 continue;
@@ -213,7 +240,7 @@ class ClassResolutionTest extends TestCase {
                 continue;
             }
             $shortName = basename($relative);
-            $source = file_get_contents($path) ?: '';
+            $source = $this->codeOnly(file_get_contents($path) ?: '');
             if (!preg_match('/^\s*(?:final\s+|abstract\s+)?class\s+' . preg_quote($shortName, '/') . '\b/m', $source)) {
                 $problems[] = sprintf('lib/%s.php must declare "class %s"', $relative, $shortName);
                 continue;

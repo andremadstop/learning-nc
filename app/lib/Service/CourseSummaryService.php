@@ -383,11 +383,25 @@ class CourseSummaryService {
             );
         $total = (int)$qb->executeQuery()->fetchOne();
 
-        // Wins
+        // Wins. learning_duel_sessions has no winner_uid column — that name only exists on the
+        // league tables — so this query used to fail with SQLSTATE 42703 and take the whole
+        // course summary (and its snapshots, narratives and exports) down with it. The winner is
+        // derived from the scores, and only a finished duel can have one.
         $qb2 = $this->db->getQueryBuilder();
+        $expr2 = $qb2->expr();
         $qb2->select($qb2->createFunction('COUNT(*) as wins'))
             ->from('learning_duel_sessions')
-            ->where($qb2->expr()->eq('winner_uid', $qb2->createNamedParameter($userId)));
+            ->where($expr2->eq('status', $qb2->createNamedParameter('finished')))
+            ->andWhere($expr2->orX(
+                $expr2->andX(
+                    $expr2->eq('creator_uid', $qb2->createNamedParameter($userId)),
+                    $expr2->gt('creator_score', 'opponent_score')
+                ),
+                $expr2->andX(
+                    $expr2->eq('opponent_uid', $qb2->createNamedParameter($userId)),
+                    $expr2->gt('opponent_score', 'creator_score')
+                )
+            ));
         $wins = (int)$qb2->executeQuery()->fetchOne();
 
         return [

@@ -8,6 +8,7 @@ YELLOW='\033[0;33m'
 NC='\033[0m'
 
 FAILED=0
+SKIPPED=0
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 APP_DIR="$ROOT_DIR/app"
 
@@ -37,13 +38,16 @@ fi
 
 # 3. Vitest (alle JS Unit-Tests)
 echo -n "Vitest... "
+# Exitcode entscheidet, nicht der Text: 'Tests 1 failed | 1220 passed' enthaelt "passed" und
+# wurde dadurch als OK gewertet — derselbe Fehler, der das PHPUnit-Gate wertlos machte.
 VITEST_OUT=$(npm run test 2>&1)
-if echo "$VITEST_OUT" | grep -q "passed"; then
+VITEST_RC=$?
+if [ $VITEST_RC -eq 0 ]; then
     PASSED=$(echo "$VITEST_OUT" | grep "Tests" | grep -o "[0-9]* passed")
     echo -e "${GREEN}OK ($PASSED)${NC}"
 else
-    echo -e "${RED}FAIL${NC}"
-    echo "$VITEST_OUT" | tail -5
+    echo -e "${RED}FAIL (exit $VITEST_RC)${NC}"
+    echo "$VITEST_OUT" | tail -8
     FAILED=1
 fi
 cd "$ROOT_DIR"
@@ -57,6 +61,7 @@ PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custo
 PHPSTAN_RC=$?
 if [ $PHPSTAN_RC -eq 255 ]; then
     echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
+    SKIPPED=$((SKIPPED + 1))
 elif [ $PHPSTAN_RC -eq 0 ] && echo "$PHPSTAN_OUT" | grep -q "No errors"; then
     echo -e "${GREEN}OK (Level 5)${NC}"
 else
@@ -80,6 +85,7 @@ PHPUNIT_RC=$?
 # "OK, but there were issues!" und liefert trotzdem Exit 0.
 if [ $PHPUNIT_RC -eq 255 ]; then
     echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
+    SKIPPED=$((SKIPPED + 1))
 elif [ $PHPUNIT_RC -ne 0 ]; then
     echo -e "${RED}FAIL (exit $PHPUNIT_RC)${NC}"
     echo "$PHPUNIT_OUT" | grep -E "^[0-9]+\)|^(FAILURES|ERRORS)!|^Tests:" | head -10
@@ -101,6 +107,7 @@ SQLCOL_OUT=$(python3 "$ROOT_DIR/scripts/check-sql-columns.py" 2>&1)
 SQLCOL_RC=$?
 if [ $SQLCOL_RC -eq 2 ]; then
     echo -e "${YELLOW}SKIP (DB-Schema nicht erreichbar)${NC}"
+    SKIPPED=$((SKIPPED + 1))
 elif [ $SQLCOL_RC -ne 0 ]; then
     echo -e "${RED}FAIL${NC}"
     echo "$SQLCOL_OUT" | head -12
@@ -162,6 +169,10 @@ echo ""
 if [ $FAILED -ne 0 ]; then
     echo -e "${RED}=== PUSH BLOCKIERT — Fehler oben beheben ===${NC}"
     exit 1
+elif [ $SKIPPED -ne 0 ]; then
+    # Uebersprungene Gates duerfen NICHT als "alle bestanden" durchgehen — sonst liest man
+    # "relais war offline" als "geprueft und in Ordnung".
+    echo -e "${YELLOW}=== Durchgelassen, aber $SKIPPED Gate(s) UEBERSPRUNGEN — nicht geprueft ===${NC}"
 else
     echo -e "${GREEN}=== Alle Gates bestanden ===${NC}"
 fi

@@ -76,7 +76,7 @@ class NoteGeneratorService {
         }
 
         $poolName = $poolInfo['name'];
-        $chapterRef = $poolInfo['chapter_ref'] ?? '';
+        $chapterTitle = $poolInfo['chapter_title'] ?? '';
 
         // 2. Load user's error rate for this pool from profile
         $errorRate = $this->getPoolErrorRate($userId, $poolId, $courseId);
@@ -94,7 +94,7 @@ class NoteGeneratorService {
             && $this->noteFileExists($userId, $filename);
 
         // 6. Build prompt and call Gemini (NOTE-01)
-        $systemPrompt = $this->buildSystemPrompt($poolName, $chapterRef, $languageName);
+        $systemPrompt = $this->buildSystemPrompt($poolName, $chapterTitle, $languageName);
         $userPrompt = $this->buildUserPrompt($poolName, $errorRate, $wrongQuestions, $language);
 
         // MED-09: file-intent note generation counts against the shared AI rate limit.
@@ -108,7 +108,7 @@ class NoteGeneratorService {
             'source' => 'VirtuProf',
             'topic' => $poolName,
             'status' => '#schwach',
-            'chapter' => $chapterRef !== '' ? $chapterRef : $poolName,
+            'chapter' => $chapterTitle !== '' ? $chapterTitle : $poolName,
             'tags' => ['#schwach', '#lernbot'],
         ];
 
@@ -155,7 +155,7 @@ class NoteGeneratorService {
      * chapter_key / chapter_title / chapter_order). Selecting it raised SQLSTATE 42703, so every
      * authorised POST /api/notes/generate died here, before ever reaching Gemini.
      *
-     * @return array{name: string, chapter_ref: string}|null
+     * @return array{name: string, chapter_title: string}|null
      */
     private function loadPoolInfo(int $poolId): ?array {
         $qb = $this->db->getQueryBuilder();
@@ -172,7 +172,7 @@ class NoteGeneratorService {
 
         return [
             'name' => (string)$row['name'],
-            'chapter_ref' => (string)($row['chapter_title'] ?? ''),
+            'chapter_title' => (string)($row['chapter_title'] ?? ''),
         ];
     }
 
@@ -240,8 +240,8 @@ class NoteGeneratorService {
      * System prompt: instructs Gemini on the desired output format.
      * Contains NO PII — only topic name and language instruction.
      */
-    private function buildSystemPrompt(string $poolName, string $chapterRef, string $languageName): string {
-        $chapter = $chapterRef !== '' ? $chapterRef : $poolName;
+    private function buildSystemPrompt(string $poolName, string $chapterTitle, string $languageName): string {
+        $chapter = $chapterTitle !== '' ? $chapterTitle : $poolName;
         return <<<PROMPT
 Du bist ein Lern-Assistent. Erstelle eine Zusammenfassung zum Thema "{$poolName}".
 

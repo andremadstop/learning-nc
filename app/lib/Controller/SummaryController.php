@@ -60,6 +60,15 @@ class SummaryController extends Controller {
      * @NoAdminRequired
      */
     public function createSnapshot(int $courseId): DataResponse {
+        // findById() is the course access gate — every other endpoint in this controller passes
+        // through it first. This one did not, so any logged-in user could snapshot an arbitrary
+        // course id and read back what it contains.
+        try {
+            $this->courseService->findById($courseId, $this->userId);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'No access to this course'], Http::STATUS_FORBIDDEN);
+        }
+
         try {
             $id = $this->summaryService->createSnapshot($courseId, $this->userId);
             return new DataResponse(['id' => $id], Http::STATUS_CREATED);
