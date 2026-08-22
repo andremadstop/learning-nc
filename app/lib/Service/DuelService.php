@@ -62,6 +62,14 @@ class DuelService {
     // ---------- Public API ----------
 
     public function createDuel(int $poolId, string $userId, int $numQuestions = 10, ?int $courseId = null): array {
+        // Pool access was only ever checked when a courseId was passed, and this endpoint accepts
+        // courseId = null. Two cooperating users could therefore start a duel on any pool id and
+        // read its questions, answer options and — after answering — the correct answer id.
+        // TrainingService has always gated its equivalent path this way.
+        if (!$this->questionService->hasPoolAccess($poolId, $userId)) {
+            throw new \RuntimeException('Pool not found or no access');
+        }
+
         $questionIds = $this->selectQuestions($poolId, $numQuestions, $userId, $courseId);
         if (empty($questionIds)) {
             throw new \RuntimeException('No questions available in this pool');

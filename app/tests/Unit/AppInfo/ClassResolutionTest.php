@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 /**
- * Regression lock for Codeberg issue #2 ("Could not resolve OCA\Learning\Controller\AiController").
+ * Regression lock for Codeberg issue #3 ("Could not resolve OCA\Learning\Controller\AiController").
  *
  * Nextcloud derives class and method names from STRINGS in two places, and the PSR-4 autoloader
  * then resolves them against the filesystem CASE-SENSITIVELY:

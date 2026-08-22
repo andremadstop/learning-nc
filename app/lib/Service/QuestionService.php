@@ -43,7 +43,12 @@ class QuestionService {
         $this->logger = $logger;
     }
 
-    private function hasPoolAccess(int $poolId, string $userId): bool {
+    /**
+     * Read access to a pool: owned, shared with the user, or reachable through a course they are
+     * in. Public because DuelService and GameshowService need exactly this check and had none —
+     * see the note on their create paths. Duplicating it a sixth time was the alternative.
+     */
+    public function hasPoolAccess(int $poolId, string $userId): bool {
         try {
             $this->poolMapper->find($poolId, $userId);
             return true;

@@ -94,6 +94,13 @@ class GameshowService {
         }
         $maxPlayers = max(2, min(5, $maxPlayers));
 
+        // Same gap as DuelService::createDuel had: the pool check only ran when a courseId was
+        // given, and this endpoint accepts none. Without it any pool id could be turned into a
+        // gameshow and read out question by question.
+        if (!$this->questionService->hasPoolAccess($poolId, $userId)) {
+            throw new \RuntimeException('Pool not found or no access');
+        }
+
         $questionIds = $this->selectQuestions($poolId, 15, $userId, $courseId);
         $code = $this->generateCode();
         $now = time();

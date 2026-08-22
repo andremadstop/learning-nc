@@ -943,7 +943,7 @@ assert_status "My data export works" "200"
 
 # ── AI ────────────────────────────────────────────────────────────
 # NOT assert_status_in 200/500: available() always answers 200 with {available:bool},
-# also when no API key is configured. Tolerating 500 here hid Codeberg #2 (the router
+# also when no API key is configured. Tolerating 500 here hid Codeberg #3 (the router
 # resolved 'ai#available' to AiController while the file was named AIController.php)
 # for the whole life of the endpoint — five months, 23 tagged releases.
 request GET admin "/apps/learning/api/ai/available"

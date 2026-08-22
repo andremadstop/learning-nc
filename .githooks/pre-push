@@ -71,7 +71,7 @@ else
 fi
 
 # 4b. PHPUnit (remote, non-blocking wenn relais weg)
-# Ohne dieses Gate laufen die PHP-Tests in keinem Pflichtlauf — genau deshalb konnte Codeberg #2
+# Ohne dieses Gate laufen die PHP-Tests in keinem Pflichtlauf — genau deshalb konnte Codeberg #3
 # (AiController, alle AI-Endpoints 500) fuenf Monate lang durchrutschen. Achtung, gleiche
 # Einschraenkung wie bei PHPStan oben: geprueft wird der Stand IM CONTAINER, nicht der Working
 # Tree. Nach PHP-Aenderungen also erst deployen, dann pushen.

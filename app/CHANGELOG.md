@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
-- **Every AI endpoint returned HTTP 500 instead of working** ([#2](https://codeberg.org/andremadstop/learning-nc/issues/2)). Nextcloud derives the controller class from the route name, so `'name' => 'ai#available'` resolves to `OCA\Learning\Controller\AiController`. The file was named `AIController.php` and declared `class AIController`; because PSR-4 autoloading is case-sensitive, the class was never found and the App Framework threw `QueryNotFoundException` before the request reached any of our code. All five `ai#*` routes — `available`, `generate`, `status`, `import` and `explain` — have been broken this way since they were introduced in v2.7.0.
+- **Every AI endpoint returned HTTP 500 instead of working** ([#3](https://codeberg.org/andremadstop/learning-nc/issues/3)). Nextcloud derives the controller class from the route name, so `'name' => 'ai#available'` resolves to `OCA\Learning\Controller\AiController`. The file was named `AIController.php` and declared `class AIController`; because PSR-4 autoloading is case-sensitive, the class was never found and the App Framework threw `QueryNotFoundException` before the request reached any of our code. All five `ai#*` routes — `available`, `generate`, `status`, `import` and `explain` — have been broken this way since they were introduced in v2.7.0.
   - Visible effect was mostly log noise: the callers in `QuestionList.vue`, `LeitnerMode.vue` and `TrainingMode.vue` swallow the failure and fall back to `aiAvailable = false`, so the AI buttons simply never appeared. Nothing was lost, but nothing worked either, and every page that asked wrote a stack trace to `nextcloud.log`.
   - The class-resolution failure happens *before* the authentication middleware, which is why the endpoint answered 500 to anonymous callers where every healthy route answers 401. That difference is what pinned the diagnosis.
 
@@ -51,6 +51,13 @@ All notable changes to this project will be documented in this file.
   endpoint that had been broken since April 2026. They now log the exception before returning.
 
 ### Security
+- **Duels and gameshows could be started on any pool.** `DuelService::createDuel` and
+  `GameshowService::createSession` only checked pool access when a `courseId` was supplied, and
+  both endpoints accept none — so two cooperating users could start a session on an arbitrary
+  pool id and read its questions, its answer options, and after answering the correct answer id.
+  `TrainingService` has always gated its equivalent path. Both now call the same check, which is
+  made public on `QuestionService` rather than copied a sixth time. Verified live in both
+  directions: a pool the caller cannot reach is refused, one they can reach still works.
 - **`POST /api/courses/{id}/summary/snapshot` did not check course access.** Every other endpoint
   in `SummaryController` passes through `CourseService::findById()` first; this one called the
   service directly, so any logged-in user could snapshot an arbitrary course id and read the
