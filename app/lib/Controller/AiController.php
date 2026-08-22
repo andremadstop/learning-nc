@@ -13,7 +13,7 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 
-class AIController extends Controller {
+class AiController extends Controller {
     private AIService $aiService;
     private QuestionService $questionService;
     private IDBConnection $db;

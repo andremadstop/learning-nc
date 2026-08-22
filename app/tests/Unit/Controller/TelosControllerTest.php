@@ -13,8 +13,8 @@ use PHPUnit\Framework\TestCase;
  * AUDIT v5.2.1 (pre-live review R2, finding #1 — Telos interview consent gate):
  * TelosController::processInterview() sends free-text conversation to Gemini via
  * TelosService::processInterview() and previously had NO per-user AI-consent check at all
- * (unlike AIController::generate()/explain() and VirtuProfController::chat()/interviewTurn(),
- * which are already consent-gated — see AIControllerTest / VirtuProfControllerTest).
+ * (unlike AiController::generate()/explain() and VirtuProfController::chat()/interviewTurn(),
+ * which are already consent-gated — see AiControllerTest / VirtuProfControllerTest).
  *
  * The fix adds a `hasAiConsent()` gate right after the `userId === null` check (but — note —
  * the pre-existing `conversation === null` check actually runs BEFORE it; see

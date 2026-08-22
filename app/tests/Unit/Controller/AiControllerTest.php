@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Controller;
 
-use OCA\Learning\Controller\AIController;
+use OCA\Learning\Controller\AiController;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\TelosService;
@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 /**
- * AUDIT v5.2.1 (finding A — consent gate): AIController::generate() and ::explain() must gate on
+ * AUDIT v5.2.1 (finding A — consent gate): AiController::generate() and ::explain() must gate on
  * TelosService::hasAiConsent() BEFORE any AIService/QuestionService call reaches the LLM. When
  * consent is missing, both must return 403 with `consent_required=true` and never touch AIService.
  *
  * @group audit-a-consent
  */
-class AIControllerTest extends TestCase {
+class AiControllerTest extends TestCase {
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
     private $requestMock;
     /** @var AIService&\PHPUnit\Framework\MockObject\MockObject */
@@ -42,8 +42,8 @@ class AIControllerTest extends TestCase {
         $this->telosMock = $this->createMock(TelosService::class);
     }
 
-    private function makeController(?string $userId): AIController {
-        return new AIController(
+    private function makeController(?string $userId): AiController {
+        return new AiController(
             'learning',
             $this->requestMock,
             $this->aiServiceMock,

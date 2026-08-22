@@ -882,8 +882,12 @@ assert_status "Weakest topics endpoint works" "200"
 request GET admin "/apps/learning/api/profile/history"
 assert_status "Learn history endpoint works" "200"
 
+# KNOWN BUG, not a passing check: this endpoint answers 500 with
+# {"error":"Skill map data could not be retrieved"} (LernprofilController::skillMap catches and
+# rethrows as 500). Tolerated here only so the suite still runs end-to-end — the same construct
+# that hid Codeberg #2 for five months, so do not read a green run as "skill map works".
 request GET admin "/apps/learning/api/profile/skill-map"
-assert_status_in "Skill map endpoint works" "200" "500"
+assert_status_in "Skill map endpoint answers (200 expected, 500 = known bug)" "200" "500"
 
 # ── Sharing ───────────────────────────────────────────────────────
 request GET admin "/apps/learning/api/shared"
@@ -903,8 +907,13 @@ request GET admin "/apps/learning/api/export/my-data"
 assert_status "My data export works" "200"
 
 # ── AI ────────────────────────────────────────────────────────────
+# NOT assert_status_in 200/500: available() always answers 200 with {available:bool},
+# also when no API key is configured. Tolerating 500 here hid Codeberg #2 (the router
+# resolved 'ai#available' to AiController while the file was named AIController.php)
+# for the whole life of the endpoint — five months, 23 tagged releases.
 request GET admin "/apps/learning/api/ai/available"
-assert_status_in "AI available endpoint works" "200" "500"
+assert_status "AI available endpoint works" "200"
+assert_json "AI available reports a boolean flag" '.available | type == "boolean"'
 
 # ── Starter Pools ────────────────────────────────────────────────
 request GET admin "/apps/learning/api/starter-pools"

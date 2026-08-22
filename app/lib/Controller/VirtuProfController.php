@@ -711,7 +711,7 @@ class VirtuProfController extends Controller {
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
             // MED-10: during an active exam on the pool, withhold answer-bearing RAG context so
-            // VirtuProf cannot be turned into an exam oracle (mirrors AIController::explain).
+            // VirtuProf cannot be turned into an exam oracle (mirrors AiController::explain).
             $suppressAnswers = $poolId !== null
                 && $this->questionService->isExamActiveOnPool($poolId, $this->userId);
             $ragContext = $this->ragContextService->buildContext(

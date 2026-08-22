@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- **Every AI endpoint returned HTTP 500 instead of working** ([#2](https://codeberg.org/andremadstop/learning-nc/issues/2)). Nextcloud derives the controller class from the route name, so `'name' => 'ai#available'` resolves to `OCA\Learning\Controller\AiController`. The file was named `AIController.php` and declared `class AIController`; because PSR-4 autoloading is case-sensitive, the class was never found and the App Framework threw `QueryNotFoundException` before the request reached any of our code. All five `ai#*` routes — `available`, `generate`, `status`, `import` and `explain` — have been broken this way since they were introduced in v2.7.0.
+  - Visible effect was mostly log noise: the callers in `QuestionList.vue`, `LeitnerMode.vue` and `TrainingMode.vue` swallow the failure and fall back to `aiAvailable = false`, so the AI buttons simply never appeared. Nothing was lost, but nothing worked either, and every page that asked wrote a stack trace to `nextcloud.log`.
+  - The class-resolution failure happens *before* the authentication middleware, which is why the endpoint answered 500 to anonymous callers where every healthy route answers 401. That difference is what pinned the diagnosis.
+
+### Added
+- **`ClassResolutionTest`** — walks both places where Nextcloud builds a class name from a string (`appinfo/routes.php` route names and the FQCNs in `appinfo/info.xml`) and asserts each one resolves to a file whose name matches exactly, plus that the file declares the class name the router will ask for. Neither PHPStan nor the controllers' own unit tests can catch this: those tests `use` the real class name, so they load and pass while HTTP is broken.
+
+### Changed
+- The API test for `/api/ai/available` asserts `200` and a boolean payload. It previously accepted `200` **or** `500`, which is what let a total outage ship through 23 tagged releases over five months — the endpoint always answers 200 with `{available:bool}`, including when no API key is configured, so a 500 was never an acceptable outcome.
+
 ## [5.3.0] - 2026-08-18 — Clean Uninstall
 
 ### Added
