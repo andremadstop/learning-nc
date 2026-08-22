@@ -873,6 +873,16 @@ class GameshowService {
             throw new \RuntimeException('Not in question phase');
         }
 
+        // The category is a pool id chosen by the caller, and selectQuestions() below does not
+        // check pool access — so an arbitrary id would read out of a pool the session has nothing
+        // to do with. Authorise against the SESSION, not against the caller's own pool access:
+        // players who joined a session legitimately are not required to have access to its pool,
+        // so checking hasPoolAccess() here would break the mode for exactly the people meant to
+        // play it.
+        if (!$this->isPoolInSessionScope($session, $categoryPoolId)) {
+            throw new \RuntimeException('That category does not belong to this session');
+        }
+
         // Load a question from the chosen pool/category
         $questionIds = $this->selectQuestions($categoryPoolId, 1, $userId);
         if (empty($questionIds)) {
@@ -1275,5 +1285,30 @@ class GameshowService {
 
         shuffle($allIds);
         return array_slice($allIds, 0, $numQuestions);
+    }
+
+    /**
+     * A Wissensturm category must be a pool the session itself covers: the pool it was created
+     * with, or — for a course session — any pool of that course. Anything else is a pool the
+     * session was never scoped to.
+     */
+    private function isPoolInSessionScope(GameshowSession $session, int $poolId): bool {
+        if ((int)$session->getPoolId() === $poolId) {
+            return true;
+        }
+        $courseId = $session->getCourseId();
+        if ($courseId === null) {
+            return false;
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('cp.id')
+           ->from('learning_course_pools', 'cp')
+           ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter((int)$courseId, IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('cp.pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
+           ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row !== false;
     }
 }

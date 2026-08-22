@@ -58,6 +58,11 @@ All notable changes to this project will be documented in this file.
   `TrainingService` has always gated its equivalent path. Both now call the same check, which is
   made public on `QuestionService` rather than copied a sixth time. Verified live in both
   directions: a pool the caller cannot reach is refused, one they can reach still works.
+  - The Wissensturm category endpoint had the same hole from a different angle: it took any pool
+    id as the chosen category and read a question from it. It is now authorised against the
+    *session* — the pool the session was created with, or any pool of its course — rather than
+    against the caller's own pool access, because players who join a session legitimately are not
+    required to have access to its pool.
 - **`POST /api/courses/{id}/summary/snapshot` did not check course access.** Every other endpoint
   in `SummaryController` passes through `CourseService::findById()` first; this one called the
   service directly, so any logged-in user could snapshot an arbitrary course id and read the
