@@ -50,13 +50,17 @@ cd "$ROOT_DIR"
 
 # 4. PHPStan (remote, non-blocking)
 echo -n "PHPStan... "
-PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpstan analyse --no-progress 2>&1' 2>/dev/null || echo "UNREACHABLE")
-if echo "$PHPSTAN_OUT" | grep -q "No errors"; then
-    echo -e "${GREEN}OK (Level 5)${NC}"
-elif echo "$PHPSTAN_OUT" | grep -q "UNREACHABLE"; then
+# Exitcode SEPARAT erfassen: ein '|| echo UNREACHABLE' verschluckt jeden Nicht-null-Exit und
+# macht aus einem echten Fehlschlag ein SKIP. Nur SSH-255 heisst "Host nicht erreichbar";
+# alles andere kommt aus dem Container und muss blockieren.
+PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpstan analyse --no-progress 2>&1')
+PHPSTAN_RC=$?
+if [ $PHPSTAN_RC -eq 255 ]; then
     echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
+elif [ $PHPSTAN_RC -eq 0 ] && echo "$PHPSTAN_OUT" | grep -q "No errors"; then
+    echo -e "${GREEN}OK (Level 5)${NC}"
 else
-    echo -e "${RED}FAIL${NC}"
+    echo -e "${RED}FAIL (exit $PHPSTAN_RC)${NC}"
     echo "$PHPSTAN_OUT" | head -10
     FAILED=1
 fi
@@ -67,20 +71,23 @@ fi
 # Einschraenkung wie bei PHPStan oben: geprueft wird der Stand IM CONTAINER, nicht der Working
 # Tree. Nach PHP-Aenderungen also erst deployen, dann pushen.
 echo -n "PHPUnit... "
-PHPUNIT_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpunit 2>&1' 2>/dev/null || echo "UNREACHABLE")
-# Erfolg wird NICHT an "OK (" erkannt: bei Deprecations/Skips schreibt PHPUnit stattdessen
-# "OK, but there were issues!". Deshalb umgekehrt pruefen — nur FAILURES/ERRORS sind ein Fehler,
-# und eine fehlende "Tests:"-Zeile heisst, der Lauf kam gar nicht zustande (auch ein Fehler).
-if echo "$PHPUNIT_OUT" | grep -q "UNREACHABLE"; then
+PHPUNIT_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpunit 2>&1')
+PHPUNIT_RC=$?
+# Exitcode ZUERST, Text nur zur Anzeige. Die erste Fassung dieses Gates haengte
+# '|| echo UNREACHABLE' an und meldete deshalb bei Exit 1 (= fehlgeschlagene Tests) ein SKIP —
+# es schuetzte genau vor dem Fall nicht, fuer den es gebaut wurde.
+# Ausserdem: Erfolg NICHT an "OK (" erkennen, bei Deprecations/Skips schreibt PHPUnit
+# "OK, but there were issues!" und liefert trotzdem Exit 0.
+if [ $PHPUNIT_RC -eq 255 ]; then
     echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
-elif echo "$PHPUNIT_OUT" | grep -qE "^(FAILURES|ERRORS)!"; then
-    echo -e "${RED}FAIL${NC}"
+elif [ $PHPUNIT_RC -ne 0 ]; then
+    echo -e "${RED}FAIL (exit $PHPUNIT_RC)${NC}"
     echo "$PHPUNIT_OUT" | grep -E "^[0-9]+\)|^(FAILURES|ERRORS)!|^Tests:" | head -10
     FAILED=1
 elif echo "$PHPUNIT_OUT" | grep -qE "^Tests: [0-9]+"; then
     echo -e "${GREEN}OK ($(echo "$PHPUNIT_OUT" | grep -oE "^Tests: [0-9]+" | grep -oE "[0-9]+") Tests)${NC}"
 else
-    echo -e "${RED}FAIL (unerwartete PHPUnit-Ausgabe — Lauf kam nicht zustande)${NC}"
+    echo -e "${RED}FAIL (Exit 0, aber keine Tests gelaufen)${NC}"
     echo "$PHPUNIT_OUT" | tail -5
     FAILED=1
 fi

@@ -252,7 +252,11 @@ class RagContextService {
      */
     private function loadCourseName(int $courseId): ?string {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('name')
+        // 'title', NOT 'name'. This is the FIRST query buildContext() runs when a courseId is set,
+        // and the shared catch below swallowed the resulting error — so VirtuProf silently lost
+        // its entire course context (chunks, pool questions, Leitner stats, weaknesses), without
+        // ever returning an error.
+        $qb->select('title')
            ->from('learning_courses')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($courseId)));
         $result = $qb->executeQuery();

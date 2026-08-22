@@ -887,6 +887,13 @@ assert_status "Learn history endpoint works" "200"
 request GET admin "/apps/learning/api/profile/skill-map"
 assert_status "Skill map endpoint works" "200"
 assert_json "Skill map returns courses and pools" '(.courses | type == "array") and (.pools | type == "array")'
+# Checks the repaired query end to end, not just the response shape: the pool created above was
+# attached to the course above, so it must come back carrying that course id and its real title.
+# A "type == array" assertion passed happily while this query was returning nothing at all.
+assert_json "Skill map maps the pool to its course" \
+    "[.pools[] | select(.pool_id == ${POOL_ID}) | .course_id] == [${COURSE_ID}]"
+assert_json "Skill map reports the course title" \
+    "[.courses[] | select(.id == ${COURSE_ID}) | .name | length > 0] == [true]"
 
 # ── Sharing ───────────────────────────────────────────────────────
 request GET admin "/apps/learning/api/shared"

@@ -23,9 +23,23 @@ All notable changes to this project will be documented in this file.
   - `CourseSummaryService` additionally compared the boolean `is_correct` against the integer `1`,
     a type error on PostgreSQL. It now tests the column directly, which is portable across
     PostgreSQL and MariaDB.
+  - `NoteGeneratorService`: `chapter_ref` on `learning_pools`, a column that never existed (the
+    chapter columns are `chapter_key` / `chapter_title` / `chapter_order`). Every authorised
+    `POST /api/notes/generate` died in this query, before reaching the model at all.
+  - `RagContextService`: `name` on `learning_courses`. This is the first query `buildContext()`
+    runs once a course is set, and a shared `catch` aborted the whole build after it — so
+    VirtuProf answered without *any* course context (no chunks, pool questions, Leitner stats or
+    weaknesses) and without reporting an error.
+- **Skill map and cheat sheet exposed courses the user is not in.** `enrichPoolsWithCourseData`
+  accepted a user id and then ignored it, so it returned every course any accessible pool had
+  been added to. An instructor can attach a pool that was merely edit-shared with them, which
+  handed the pool's owner the id and title of a course they are not a member of. Both queries now
+  apply the same membership test the rest of the service already used, and both order their
+  results — a pool can belong to several courses and the mapping keeps the first row, which
+  without an explicit order was whatever the database happened to return first.
 - **`LernprofilController` logged nothing when it failed.** All five `catch (\Throwable)` blocks
-  returned a 500 without touching the logger, which is why `nextcloud.log` held no trace of a
-  years-old broken endpoint. They now log the exception before returning.
+  returned a 500 without touching the logger, which is why `nextcloud.log` held no trace of an
+  endpoint that had been broken since April 2026. They now log the exception before returning.
 
 ### Added
 - **`scripts/check-sql-columns.py`** — resolves every alias-qualified column reference in

@@ -149,13 +149,17 @@ class NoteGeneratorService {
     // -------------------------------------------------------------------------
 
     /**
-     * Load pool name and chapter_ref from DB.
+     * Load pool name and chapter title from DB.
+     *
+     * 'chapter_title', NOT 'chapter_ref' — learning_pools never had a chapter_ref column (it has
+     * chapter_key / chapter_title / chapter_order). Selecting it raised SQLSTATE 42703, so every
+     * authorised POST /api/notes/generate died here, before ever reaching Gemini.
      *
      * @return array{name: string, chapter_ref: string}|null
      */
     private function loadPoolInfo(int $poolId): ?array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('name', 'chapter_ref')
+        $qb->select('name', 'chapter_title')
            ->from('learning_pools')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($poolId)));
         $result = $qb->executeQuery();
@@ -168,7 +172,7 @@ class NoteGeneratorService {
 
         return [
             'name' => (string)$row['name'],
-            'chapter_ref' => (string)($row['chapter_ref'] ?? ''),
+            'chapter_ref' => (string)($row['chapter_title'] ?? ''),
         ];
     }
 

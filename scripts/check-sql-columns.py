@@ -31,10 +31,17 @@ Usage
 Dump format for SCHEMA_FILE (one per line, no oc_ prefix needed — it is stripped):
     oc_learning_courses|title
 
+Two shapes are checked
+----------------------
+  1. Alias-qualified references (`alias.column`) resolved through the file's from()/join() map.
+  2. Unaliased single-table queries — `select('a','b')->from('table')` with no alias argument.
+     Leaving this out is what let `chapter_ref` on learning_pools and `name` on learning_courses
+     survive the first run of this script.
+
 Limitations (deliberate, not oversights)
 ----------------------------------------
-  * Only alias-qualified references are checked. Unqualified columns in single-table queries are
-    not resolvable without full SQL parsing.
+  * Unqualified columns in where()/orderBy() of unaliased queries are not resolved — they are not
+    distinguishable from expression aliases without parsing the SQL.
   * The alias map is per FILE, not per method. A file that reuses one alias for two different
     tables can produce a false positive — read the finding before believing it.
   * Pure comment lines are skipped (they describe past bugs by name, e.g. "use q.text, not
@@ -90,12 +97,29 @@ def load_schema():
     return schema
 
 
+def unaliased_select_columns(source):
+    """Yield (table, column, position) for `select('a', 'b')->from('table')` with no alias.
+
+    The negative lookahead on the from() argument is what distinguishes this from an aliased
+    query — `from('t', 'x')` is handled by the alias map instead.
+    """
+    pattern = re.compile(
+        r"->select\(\s*((?:['\"][a-z_0-9]+['\"]\s*,?\s*)+)\)\s*"
+        r"->from\(\s*['\"]([a-z_0-9]+)['\"]\s*\)",
+        re.S,
+    )
+    for match in pattern.finditer(source):
+        columns, table = match.group(1), match.group(2)
+        for col in re.finditer(r"['\"]([a-z_0-9]+)['\"]", columns):
+            yield table, col.group(1), match.start() + col.start()
+
+
 def alias_map(source):
     aliases = {}
-    for match in re.finditer(r"->from\(\s*'([a-z_0-9]+)'\s*,\s*'([a-zA-Z_0-9]+)'", source):
+    for match in re.finditer(r"->from\(\s*['\"]([a-z_0-9]+)['\"]\s*,\s*['\"]([a-zA-Z_0-9]+)['\"]", source):
         aliases[match.group(2)] = match.group(1)
     for match in re.finditer(
-        r"->(?:innerJoin|leftJoin|rightJoin)\(\s*'[^']*'\s*,\s*'([a-z_0-9]+)'\s*,\s*'([a-zA-Z_0-9]+)'",
+        r"->(?:innerJoin|leftJoin|rightJoin)\(\s*['\"][^'\"]*['\"]\s*,\s*['\"]([a-z_0-9]+)['\"]\s*,\s*['\"]([a-zA-Z_0-9]+)['\"]",
         source,
     ):
         aliases[match.group(2)] = match.group(1)
@@ -119,6 +143,16 @@ def main():
                 continue
             checked_files += 1
             seen = set()
+
+            for table, column, pos in unaliased_select_columns(source):
+                if table not in schema or column in schema[table]:
+                    continue
+                line_no = source[:pos].count('\n') + 1
+                line = source.splitlines()[line_no - 1].strip()
+                if line.startswith(('//', '*', '/*', '#')):
+                    continue
+                findings.append((os.path.relpath(path), line_no, f'{table}.{column}', table, line))
+
             for match in re.finditer(r"\b([a-zA-Z_][a-zA-Z_0-9]*)\.([a-z_][a-z_0-9]*)\b", source):
                 alias, column = match.group(1), match.group(2)
                 if alias not in aliases or column in SQL_KEYWORDS:

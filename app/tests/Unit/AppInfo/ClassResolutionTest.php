@@ -75,9 +75,16 @@ class ClassResolutionTest extends TestCase {
     private function routeTargets(): array {
         $routes = require self::APP_ROOT . '/appinfo/routes.php';
         $targets = [];
-        foreach ($routes['routes'] as $route) {
-            if (!isset($route['name']) || !str_contains($route['name'], '#')) {
-                continue;
+        foreach ($routes['routes'] as $index => $route) {
+            // No silent skipping: a route without a name, or with a name this test cannot split,
+            // is a route nobody is checking. Fail instead of quietly shrinking the coverage.
+            if (!isset($route['name']) || substr_count($route['name'], '#') !== 1) {
+                throw new \RuntimeException(sprintf(
+                    'routes.php entry #%d (%s) has no parseable "controller#action" name — extend '
+                        . 'this test rather than leaving that route unchecked.',
+                    $index,
+                    isset($route['name']) ? $route['name'] : json_encode($route)
+                ));
             }
             [$controller, $action] = explode('#', $route['name'], 2);
             $class = $this->buildControllerName($controller);
@@ -148,18 +155,30 @@ class ClassResolutionTest extends TestCase {
     public function testEveryRouteResolvesToAnExistingControllerMethod(): void {
         $missing = [];
         $checked = 0;
+        $unloadable = [];
         foreach ($this->routeTargets() as $t) {
             $fqcn = self::CONTROLLER_NS . $t['class'];
             if (!class_exists($fqcn)) {
-                continue; // reported by the file/class tests above
+                // Recorded, not skipped: the file may exist under the right name while the class
+                // inside it sits in the wrong namespace, and the per-file checks above cannot see
+                // that. Skipping here would let the global count guard stay green.
+                $unloadable[$fqcn] = sprintf("route '%s': %s is not autoloadable", $t['name'], $fqcn);
+                continue;
             }
             $checked++;
             $reflection = new ReflectionClass($fqcn);
             if (!$reflection->hasMethod($t['action'])) {
                 $missing[] = sprintf("route '%s' needs %s::%s()", $t['name'], $t['class'], $t['action']);
+                continue;
+            }
+            // The dispatcher can only call public methods; a private one resolves in reflection
+            // but fails at runtime.
+            if (!$reflection->getMethod($t['action'])->isPublic()) {
+                $missing[] = sprintf("route '%s': %s::%s() must be public", $t['name'], $t['class'], $t['action']);
             }
         }
 
+        $this->assertSame([], array_values($unloadable), "Route controllers that do not autoload:\n" . implode("\n", $unloadable));
         // Without this, a bootstrap that cannot autoload OCA\Learning would skip every route and
         // still report green — the same "failure looks like success" shape as the bug this file
         // guards against.
@@ -197,6 +216,18 @@ class ClassResolutionTest extends TestCase {
             $source = file_get_contents($path) ?: '';
             if (!preg_match('/^\s*(?:final\s+|abstract\s+)?class\s+' . preg_quote($shortName, '/') . '\b/m', $source)) {
                 $problems[] = sprintf('lib/%s.php must declare "class %s"', $relative, $shortName);
+                continue;
+            }
+            // File and class name can both be right while the namespace is not — Nextcloud
+            // resolves the FQCN, so the namespace has to match the path.
+            //
+            // Checked by reading the declaration, NOT with class_exists(): loading these classes
+            // pulls in server interfaces (OCP\Settings\ISettings and friends) that the unit-test
+            // stub set does not ship, so class_exists() raises a fatal error instead of returning
+            // false — an environment gap, not a defect in the app.
+            $expectedNamespace = 'OCA\\Learning' . (str_contains($relative, '/') ? '\\' . str_replace('/', '\\', dirname($relative)) : '');
+            if (!preg_match('/^\s*namespace\s+' . preg_quote($expectedNamespace, '/') . '\s*;/m', $source)) {
+                $problems[] = sprintf('lib/%s.php must declare "namespace %s;" for %s to resolve', $relative, $expectedNamespace, $class);
             }
         }
 

@@ -276,13 +276,32 @@ class LernprofilService {
         // 'title', NOT 'name' — learning_courses has no name column (Course entity: $title).
         // Selecting c.name made every skill-map request fail with SQLSTATE 42703 from 2026-04-09
         // until 2026-08-22; the API test tolerated the resulting 500 and reported it as passing.
+        //
+        // The course-access condition is not optional here. $userId used to be accepted and then
+        // ignored, so this returned every course any accessible pool had been added to. An
+        // instructor can attach a pool that was merely edit-shared with them, which handed the
+        // pool's owner the id and title of a course they are not in. Same membership test as
+        // resolvePoolIds() uses.
         $qb->select('cp.pool_id', 'c.id AS course_id', 'c.title AS course_name')
            ->from('learning_course_pools', 'cp')
            ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+               $expr->eq('cm.course_id', 'c.id'),
+               $expr->eq('cm.user_id', $qb->createNamedParameter($userId))
+           ))
            ->where($expr->in('cp.pool_id', $qb->createNamedParameter(
                $poolIds,
                \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
-           )));
+           )))
+           ->andWhere($expr->orX(
+               $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
+               $expr->isNotNull('cm.id')
+           ))
+           // A pool can belong to several courses and the mapping below keeps the first row.
+           // Without an explicit order that "first" is whatever the database happens to return,
+           // so the same request could label a pool differently between calls.
+           ->orderBy('cp.pool_id', 'ASC')
+           ->addOrderBy('c.id', 'ASC');
 
         $result = $qb->executeQuery();
         $rows = $result->fetchAll();
@@ -446,14 +465,25 @@ class LernprofilService {
         // Pool-to-course mapping
         $qb4 = $this->db->getQueryBuilder();
         $expr4 = $qb4->expr();
-        // 'title', NOT 'name' — same defect as in enrichPoolsWithCourseData above.
+        // 'title', NOT 'name' — same defect as in enrichPoolsWithCourseData above, and the same
+        // missing course-access condition and missing order.
         $qb4->select('cp.pool_id', 'c.id AS course_id', 'c.title AS course_name')
             ->from('learning_course_pools', 'cp')
             ->innerJoin('cp', 'learning_courses', 'c', $expr4->eq('cp.course_id', 'c.id'))
+            ->leftJoin('c', 'learning_course_members', 'cm', $expr4->andX(
+                $expr4->eq('cm.course_id', 'c.id'),
+                $expr4->eq('cm.user_id', $qb4->createNamedParameter($userId))
+            ))
             ->where($expr4->in('cp.pool_id', $qb4->createNamedParameter(
                 $poolIdsInResult,
                 \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
-            )));
+            )))
+            ->andWhere($expr4->orX(
+                $expr4->eq('c.instructor_id', $qb4->createNamedParameter($userId)),
+                $expr4->isNotNull('cm.id')
+            ))
+            ->orderBy('cp.pool_id', 'ASC')
+            ->addOrderBy('c.id', 'ASC');
         $result4 = $qb4->executeQuery();
         $courseRows = $result4->fetchAll();
         $result4->closeCursor();
