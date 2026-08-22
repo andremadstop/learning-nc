@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.3.1] - 2026-08-22 — Broken endpoints, broken queries, broken gates
 
 ### Fixed
 - **Every AI endpoint returned HTTP 500 instead of working** ([#3](https://codeberg.org/andremadstop/learning-nc/issues/3)). Nextcloud derives the controller class from the route name, so `'name' => 'ai#available'` resolves to `OCA\Learning\Controller\AiController`. The file was named `AIController.php` and declared `class AIController`; because PSR-4 autoloading is case-sensitive, the class was never found and the App Framework threw `QueryNotFoundException` before the request reached any of our code. All five `ai#*` routes — `available`, `generate`, `status`, `import` and `explain` — have been broken this way since they were introduced in v2.7.0.
