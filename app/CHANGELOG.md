@@ -9,10 +9,36 @@ All notable changes to this project will be documented in this file.
   - Visible effect was mostly log noise: the callers in `QuestionList.vue`, `LeitnerMode.vue` and `TrainingMode.vue` swallow the failure and fall back to `aiAvailable = false`, so the AI buttons simply never appeared. Nothing was lost, but nothing worked either, and every page that asked wrote a stack trace to `nextcloud.log`.
   - The class-resolution failure happens *before* the authentication middleware, which is why the endpoint answered 500 to anonymous callers where every healthy route answers 401. That difference is what pinned the diagnosis.
 
+- **Four SQL queries referenced columns that do not exist**, each failing with SQLSTATE 42703 every
+  time it ran. All four were invisible to PHPStan — the defect lives in a string — and each sat
+  behind a `catch (\Throwable)` that turned the error into a 500 or an empty result.
+  - `LernprofilService`: `c.name` on `learning_courses`, which has `title`. In
+    `enrichPoolsWithCourseData` this broke `/api/profile/skill-map` outright (since 2026-04-09);
+    the identical mistake in the cheat-sheet query hit only users who actually had wrong answers
+    to report, so it stayed hidden behind an empty-result early return on fresh accounts.
+  - `RagContextService` and `CourseSummaryService`: `ua.user_id` on `learning_user_answers`, which
+    has no user column at all — the user hangs off the session. Both now join
+    `learning_sessions` the way `NoteGeneratorService` already did. User weaknesses and trouble
+    spots never loaded; they threw.
+  - `CourseSummaryService` additionally compared the boolean `is_correct` against the integer `1`,
+    a type error on PostgreSQL. It now tests the column directly, which is portable across
+    PostgreSQL and MariaDB.
+- **`LernprofilController` logged nothing when it failed.** All five `catch (\Throwable)` blocks
+  returned a 500 without touching the logger, which is why `nextcloud.log` held no trace of a
+  years-old broken endpoint. They now log the exception before returning.
+
 ### Added
+- **`scripts/check-sql-columns.py`** — resolves every alias-qualified column reference in
+  `app/lib` against the live database schema. It found all four SQL defects above in one run.
 - **`ClassResolutionTest`** — walks both places where Nextcloud builds a class name from a string (`appinfo/routes.php` route names and the FQCNs in `appinfo/info.xml`) and asserts each one resolves to a file whose name matches exactly, plus that the file declares the class name the router will ask for. Neither PHPStan nor the controllers' own unit tests can catch this: those tests `use` the real class name, so they load and pass while HTTP is broken.
 
 ### Changed
+- `.githooks/pre-push` now runs PHPUnit and the SQL column check. Neither the PHP test suite nor
+  any schema check ran in a mandatory gate before, which is the reason both classes of defect
+  survived for months. Note that the versioned hook was not the active one — `core.hooksPath`
+  pointed at a stale copy in `.git/hooks`.
+- The API test for `/api/profile/skill-map` asserts `200` and a payload shape; it accepted `500`
+  before, and so reported a hard SQL error as passing for four months.
 - The API test for `/api/ai/available` asserts `200` and a boolean payload. It previously accepted `200` **or** `500`, which is what let a total outage ship through 23 tagged releases over five months — the endpoint always answers 200 with `{available:bool}`, including when no API key is configured, so a 500 was never an acceptable outcome.
 
 ## [5.3.0] - 2026-08-18 — Clean Uninstall

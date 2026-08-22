@@ -315,7 +315,11 @@ class RagContextService {
            )
            ->from('learning_user_answers', 'ua')
            ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
-           ->where($qb->expr()->eq('ua.user_id', $qb->createNamedParameter($userId)))
+           // The user hangs off the session, not off the answer: learning_user_answers has no
+           // user_id column. Filtering on ua.user_id raised SQLSTATE 42703 on every call, so this
+           // never returned weaknesses — it threw. Same join as NoteGeneratorService uses.
+           ->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('ua.session_id', 's.id'))
+           ->where($qb->expr()->eq('s.user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId)))
            ->groupBy('ua.question_id')
            ->orderBy('wrong_count', 'DESC')

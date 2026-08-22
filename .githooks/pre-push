@@ -68,14 +68,38 @@ fi
 # Tree. Nach PHP-Aenderungen also erst deployen, dann pushen.
 echo -n "PHPUnit... "
 PHPUNIT_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpunit 2>&1' 2>/dev/null || echo "UNREACHABLE")
+# Erfolg wird NICHT an "OK (" erkannt: bei Deprecations/Skips schreibt PHPUnit stattdessen
+# "OK, but there were issues!". Deshalb umgekehrt pruefen — nur FAILURES/ERRORS sind ein Fehler,
+# und eine fehlende "Tests:"-Zeile heisst, der Lauf kam gar nicht zustande (auch ein Fehler).
 if echo "$PHPUNIT_OUT" | grep -q "UNREACHABLE"; then
     echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
-elif echo "$PHPUNIT_OUT" | grep -qE "^OK \("; then
-    echo -e "${GREEN}OK ($(echo "$PHPUNIT_OUT" | grep -oE "OK \([0-9]+ tests" | grep -oE "[0-9]+") Tests)${NC}"
-else
+elif echo "$PHPUNIT_OUT" | grep -qE "^(FAILURES|ERRORS)!"; then
     echo -e "${RED}FAIL${NC}"
-    echo "$PHPUNIT_OUT" | grep -E "^[0-9]+\)|FAILURES|Tests:" | head -10
+    echo "$PHPUNIT_OUT" | grep -E "^[0-9]+\)|^(FAILURES|ERRORS)!|^Tests:" | head -10
     FAILED=1
+elif echo "$PHPUNIT_OUT" | grep -qE "^Tests: [0-9]+"; then
+    echo -e "${GREEN}OK ($(echo "$PHPUNIT_OUT" | grep -oE "^Tests: [0-9]+" | grep -oE "[0-9]+") Tests)${NC}"
+else
+    echo -e "${RED}FAIL (unerwartete PHPUnit-Ausgabe — Lauf kam nicht zustande)${NC}"
+    echo "$PHPUNIT_OUT" | tail -5
+    FAILED=1
+fi
+
+# 4c. SQL-Spalten gegen das echte Schema (remote, SKIP wenn DB nicht erreichbar)
+# Fand am 22.08.2026 vier stille Totalausfaelle auf einmal: c.name auf learning_courses (zweimal)
+# und ua.user_id auf learning_user_answers (zweimal). Alle vier sind fuer PHPStan unsichtbar, weil
+# der Defekt im String steckt, und alle vier sassen hinter einem catch(Throwable).
+echo -n "SQL-Spalten... "
+SQLCOL_OUT=$(python3 "$ROOT_DIR/scripts/check-sql-columns.py" 2>&1)
+SQLCOL_RC=$?
+if [ $SQLCOL_RC -eq 2 ]; then
+    echo -e "${YELLOW}SKIP (DB-Schema nicht erreichbar)${NC}"
+elif [ $SQLCOL_RC -ne 0 ]; then
+    echo -e "${RED}FAIL${NC}"
+    echo "$SQLCOL_OUT" | head -12
+    FAILED=1
+else
+    echo -e "${GREEN}OK${NC}"
 fi
 
 # 5. Umlaut-Check: ae/ue/oe in deutschen UI-Texten erkennen

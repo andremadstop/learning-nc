@@ -882,12 +882,11 @@ assert_status "Weakest topics endpoint works" "200"
 request GET admin "/apps/learning/api/profile/history"
 assert_status "Learn history endpoint works" "200"
 
-# KNOWN BUG, not a passing check: this endpoint answers 500 with
-# {"error":"Skill map data could not be retrieved"} (LernprofilController::skillMap catches and
-# rethrows as 500). Tolerated here only so the suite still runs end-to-end — the same construct
-# that hid Codeberg #2 for five months, so do not read a green run as "skill map works".
+# Was assert_status_in 200/500 until 2026-08-22, which reported a hard SQL error (c.name on
+# learning_courses, which has title) as "works" from 2026-04-09 on. 500 is not an outcome.
 request GET admin "/apps/learning/api/profile/skill-map"
-assert_status_in "Skill map endpoint answers (200 expected, 500 = known bug)" "200" "500"
+assert_status "Skill map endpoint works" "200"
+assert_json "Skill map returns courses and pools" '(.courses | type == "array") and (.pools | type == "array")'
 
 # ── Sharing ───────────────────────────────────────────────────────
 request GET admin "/apps/learning/api/shared"

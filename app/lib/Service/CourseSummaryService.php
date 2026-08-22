@@ -403,12 +403,17 @@ class CourseSummaryService {
         }
         // Questions with 3+ wrong and <30% accuracy
         $qb = $this->db->getQueryBuilder();
+        // Two defects fixed here, both of which made this query throw rather than return data:
+        //   1. is_correct is a boolean column — comparing it to the integer 1 is a type error on
+        //      PostgreSQL. Testing the column directly is portable across PostgreSQL and MariaDB.
+        //   2. learning_user_answers has no user_id column; the user hangs off the session.
         $qb->select('ua.question_id',
                 $qb->createFunction('COUNT(*) as attempts'),
-                $qb->createFunction('SUM(CASE WHEN ua.is_correct = 1 THEN 1 ELSE 0 END) as correct'))
+                $qb->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) as correct'))
             ->from('learning_user_answers', 'ua')
             ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
-            ->where($qb->expr()->eq('ua.user_id', $qb->createNamedParameter($userId)))
+            ->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('ua.session_id', 's.id'))
+            ->where($qb->expr()->eq('s.user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->in('q.pool_id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)))
             ->groupBy('ua.question_id')
             ->having('COUNT(*) >= 3');

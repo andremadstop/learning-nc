@@ -273,7 +273,10 @@ class LernprofilService {
         // Query course assignments for these pools
         $qb = $this->db->getQueryBuilder();
         $expr = $qb->expr();
-        $qb->select('cp.pool_id', 'c.id AS course_id', 'c.name AS course_name')
+        // 'title', NOT 'name' — learning_courses has no name column (Course entity: $title).
+        // Selecting c.name made every skill-map request fail with SQLSTATE 42703 from 2026-04-09
+        // until 2026-08-22; the API test tolerated the resulting 500 and reported it as passing.
+        $qb->select('cp.pool_id', 'c.id AS course_id', 'c.title AS course_name')
            ->from('learning_course_pools', 'cp')
            ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
            ->where($expr->in('cp.pool_id', $qb->createNamedParameter(
@@ -443,7 +446,8 @@ class LernprofilService {
         // Pool-to-course mapping
         $qb4 = $this->db->getQueryBuilder();
         $expr4 = $qb4->expr();
-        $qb4->select('cp.pool_id', 'c.id AS course_id', 'c.name AS course_name')
+        // 'title', NOT 'name' — same defect as in enrichPoolsWithCourseData above.
+        $qb4->select('cp.pool_id', 'c.id AS course_id', 'c.title AS course_name')
             ->from('learning_course_pools', 'cp')
             ->innerJoin('cp', 'learning_courses', 'c', $expr4->eq('cp.course_id', 'c.id'))
             ->where($expr4->in('cp.pool_id', $qb4->createNamedParameter(

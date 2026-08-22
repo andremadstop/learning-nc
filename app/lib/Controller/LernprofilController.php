@@ -8,6 +8,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 /**
  * LernprofilController — Phase 22: Persönlicher Lernbot
@@ -21,16 +22,19 @@ use OCP\IRequest;
 class LernprofilController extends Controller {
     private ?string $userId;
     private LernprofilService $lernprofilService;
+    private LoggerInterface $logger;
 
     public function __construct(
         string $appName,
         IRequest $request,
         ?string $userId,
-        LernprofilService $lernprofilService
+        LernprofilService $lernprofilService,
+        LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);
         $this->userId = $userId;
         $this->lernprofilService = $lernprofilService;
+        $this->logger = $logger;
     }
 
     /**
@@ -58,6 +62,7 @@ class LernprofilController extends Controller {
                 'cached_at' => $profile['cached_at'],
             ]);
         } catch (\Throwable $e) {
+            $this->logger->error('LernprofilController::profile failed: ' . $e->getMessage(), ['exception' => $e, 'app' => 'learning']);
             return new DataResponse(['error' => 'Profile aggregation failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
@@ -79,6 +84,7 @@ class LernprofilController extends Controller {
             $topics = $this->lernprofilService->getWeakestTopics($this->userId, $courseId, $limit);
             return new DataResponse(['topics' => $topics]);
         } catch (\Throwable $e) {
+            $this->logger->error('LernprofilController::weakest failed: ' . $e->getMessage(), ['exception' => $e, 'app' => 'learning']);
             return new DataResponse(['error' => 'Could not retrieve weakest topics'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
@@ -99,6 +105,7 @@ class LernprofilController extends Controller {
             $history = $this->lernprofilService->getLernhistorie($this->userId, $days);
             return new DataResponse($history);
         } catch (\Throwable $e) {
+            $this->logger->error('LernprofilController::history failed: ' . $e->getMessage(), ['exception' => $e, 'app' => 'learning']);
             return new DataResponse(['error' => 'Could not retrieve learning history'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
@@ -120,6 +127,7 @@ class LernprofilController extends Controller {
             $data = $this->lernprofilService->getCheatSheet($this->userId, $limit);
             return new DataResponse($data);
         } catch (\Throwable $e) {
+            $this->logger->error('LernprofilController::cheatSheet failed: ' . $e->getMessage(), ['exception' => $e, 'app' => 'learning']);
             return new DataResponse(['error' => 'Cheat sheet generation failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
@@ -160,6 +168,7 @@ class LernprofilController extends Controller {
                 'summary' => $profile['summary'],
             ]);
         } catch (\Throwable $e) {
+            $this->logger->error('LernprofilController::skillMap failed: ' . $e->getMessage(), ['exception' => $e, 'app' => 'learning']);
             return new DataResponse(['error' => 'Skill map data could not be retrieved'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
