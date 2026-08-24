@@ -31,8 +31,8 @@ deploy_php() {
   rsync -az app/templates/ "$HOST:~/learning-nc/app/templates/"
   scp -q app/appinfo/routes.php "$HOST:~/learning-nc/app/appinfo/"
   scp -q app/appinfo/info.xml "$HOST:~/learning-nc/app/appinfo/"
-  # Sync all 5 supported language files (en/de/fr/ru/ar) — parity-script enforces same key-set across all
-  for lang in de en fr ru ar; do
+  # Sync all 6 supported language files (en/de/fr/ru/ar/uk) — parity-script enforces same key-set across all
+  for lang in de en fr ru ar uk; do
     for ext in json js; do
       f="app/l10n/${lang}.${ext}"
       [ -f "$f" ] && scp -q "$f" "$HOST:~/learning-nc/app/l10n/"

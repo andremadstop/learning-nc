@@ -21,7 +21,7 @@ import difflib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 L10N = os.path.join(ROOT, "app", "l10n")
-LANGS = ["de", "en", "fr", "ru", "ar"]
+LANGS = ["de", "en", "fr", "ru", "ar", "uk"]
 DEFAULT_PLURAL = "nplurals=2; plural=(n != 1);"
 
 

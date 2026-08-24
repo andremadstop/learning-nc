@@ -22,7 +22,12 @@ use OCP\IRequest;
 use OCP\IUserManager;
 
 class VirtuProfController extends Controller {
-    private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'ru', 'ar'];
+    // Must stay in sync with ALLOWED in src/utils/virtuprof-i18n.js and the exported
+    // dictionaries in src/l10n/virtuprof-strings.js. A language missing here is silently
+    // coerced to '' by normalizeInterfaceLanguage(), so the user's choice is discarded
+    // without any error — 'fr' was in the frontend list but not here, which is exactly
+    // that failure.
+    private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'fr', 'ru', 'ar', 'uk'];
     private const ALLOWED_SKINS = [
         'nova',
         'prof_lern_classic',
