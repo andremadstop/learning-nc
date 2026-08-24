@@ -77,6 +77,12 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://codeberg.org/andremadstop">Andre</author>
     <namespace>Learning</namespace>
+
+    <documentation>
+        <user>https://codeberg.org/andremadstop/learning-nc/src/branch/main/docs/MANUAL.md</user>
+        <admin>https://codeberg.org/andremadstop/learning-nc/src/branch/main/docs/MANUAL.md</admin>
+    </documentation>
+
     <category>organization</category>
     <category>tools</category>
 
