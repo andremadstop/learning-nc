@@ -6,7 +6,7 @@ A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 ![Tests](https://img.shields.io/badge/Tests-1220%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-5.2.1-orange)
+![Version](https://img.shields.io/badge/Version-5.4.0-orange)
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate** — turning any course into a real credential.
 
@@ -175,7 +175,10 @@ Evaluating it for an organisation? [Open a Codeberg issue](https://codeberg.org/
 
 Contributions are welcome! Whether it's bug reports, feature ideas, translations, or code — feel free to open an issue or PR.
 
-The app is primarily developed in German (l10n), but the codebase and documentation are in English.
+The interface ships in six languages — German (source), English, French, Russian, Arabic and
+Ukrainian. The codebase and documentation are in English. Ukrainian is a first pass and has
+not been reviewed by a native speaker; corrections are welcome, see
+[the manual](docs/MANUAL.md#7-languages-and-translations) for how to submit them.
 
 ## License
 

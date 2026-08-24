@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] — Ukrainian, and the strings that were never translatable
+## [5.4.0] - 2026-08-24 — Ukrainian, and the strings that were never translatable
 
 Prompted by a report from a system administrator piloting Learning at a manufacturing
 company in Vinnytsia, Ukraine ([#3](https://codeberg.org/andremadstop/learning-nc/issues/3)),
