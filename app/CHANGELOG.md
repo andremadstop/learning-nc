@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] — Ukrainian, and the strings that were never translatable
+
+Prompted by a report from a system administrator piloting Learning at a manufacturing
+company in Vinnytsia, Ukraine ([#3](https://codeberg.org/andremadstop/learning-nc/issues/3)),
+who raised two problems: parts of the interface appear only in English or German, and there
+is no manual. Both turned out to be real defects, and the first one was considerably larger
+than the report suggested.
+
+### Added
+- **Ukrainian interface language (`uk`)** — the sixth language, complete at 2,940 keys in
+  the main catalogue plus 252 in the VirtuProf runtime catalogue. Plural form is the
+  three-form Slavic rule, not the two-form default.
+  - This is a first pass and has not been reviewed by a native speaker. It is labelled as
+    such in the manual, with instructions for submitting corrections without touching code.
+- **`docs/MANUAL.md`** — a user and administrator manual covering the chain the reporter
+  asked for: course → learning materials → pool → questions → students → test attempt →
+  results → completion, plus admin setup, the `occ` commands, mandatory training and
+  compliance, the AI consent model, and how to add or fix a translation.
+  - Linked from `README.md` and from a new `<documentation>` element in `info.xml`. That
+    element was absent, so the App Store listing offered no documentation link at all —
+    the direct reason the reporter could not find any.
+- **Two new i18n gates**, both wired into `check-i18n-parity.sh`:
+  - `scripts/check-i18n-coverage.py` compares the **source** against the catalogue. Gates
+    1–3 all compare the language files against *each other*, so a string missing from all
+    of them at once passes every one of them. Verified by reconstructing the defect:
+    removing a key from all six files leaves gates 1–3 green and turns this one red. It
+    covers JS/Vue `t()`/`n()`, PHP `$l->t()` and the indirect `toolCatalog.js` keys.
+  - `scripts/check-i18n-placeholders.py` asserts that every translated value carries the
+    same placeholders (`{n}`, `%1$s`, …) as its German source, and that no value is
+    written in the wrong script. With six languages and machine-assisted translation, a
+    dropped placeholder became the likeliest remaining defect.
+
+### Fixed
+- **635 interface strings were absent from the translation catalogue entirely.** They were
+  passed through `t()` but had no entry in `de.json`, so Nextcloud's l10n fell back to the
+  source string and rendered them **in German in every language, including English**.
+  - 618 came from JS/Vue, 10 from PHP `$l->t()` calls (notification subjects, the legal
+    notice and privacy links), and 7 from `toolCatalog.js`, which reaches `t()` through a
+    variable and is invisible to any literal scan.
+  - The most-used casualties: the course materials tab almost in full, parts of course
+    administration, and the answer-type selector in the question form —
+    `Einzelauswahl` / `Mehrfachauswahl` / `Freitext`, the three options every author picks
+    between when writing a question.
+  - All 635 are now in the catalogue and translated into all six languages.
+- **VirtuProf keeps its own 252-key runtime catalogue** (`src/l10n/virtuprof-strings.js`)
+  which is separate from `l10n/*.json` and was not covered by any gate. A language added
+  to the main catalogue alone would leave the assistant speaking German or English. It now
+  carries a `uk` dictionary, and `virtuprof-i18n.js` lists it.
+- **VirtuProf's backend language allow-list silently discarded valid choices.**
+  `VirtuProfController::ALLOWED_INTERFACE_LANGUAGES` did not contain `fr`, although the
+  frontend has offered French all along; `normalizeInterfaceLanguage()` coerces anything
+  unlisted to `''` and returns no error, so a French user's choice was dropped without a
+  trace. Both `fr` and `uk` are now listed, with a comment naming the three places that
+  must stay in sync.
+- **`scripts/deploy-prod.sh` synced a hard-coded five-language list.** A new language would
+  have been generated, guarded and committed — and then never copied to the server.
+  Now six, alongside `l10n_js_sync.py` and `check-i18n-parity.sh`.
+
+### Known limits
+- Some strings still reach `t()` through variables that the coverage gate cannot enumerate
+  (onboarding slide definitions, dashboard tiles, a few config objects). Run
+  `python3 scripts/check-i18n-coverage.py --list-indirect` to see the remaining call sites.
+  Those were not audited in this pass.
+- The **content language** layer — optional parallel translations of question text, held in
+  `learning_q_translations` / `learning_a_translations` — still accepts only `de`, `en`,
+  `ru`, `ar`. Adding `uk` means a DB migration against a CHECK constraint and a re-test on
+  both PostgreSQL and MariaDB, so it is deliberately out of scope here. It is not a blocker
+  for Ukrainian use: questions authored directly in Ukrainian are stored and displayed
+  unchanged, because the base question row has no language constraint.
+
 ## [5.3.1] - 2026-08-22 — Broken endpoints, broken queries, broken gates
 
 ### Fixed
