@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Activity;
 
+use OCP\Activity\Exceptions\UnknownActivityException;
 use OCP\Activity\IEvent;
 use OCP\Activity\IProvider;
 use OCP\IURLGenerator;
@@ -18,7 +19,7 @@ class Provider implements IProvider {
 
     public function parse(mixed $language, IEvent $event, ?IEvent $previousEvent = null): IEvent {
         if ($event->getApp() !== 'learning') {
-            throw new \InvalidArgumentException('Wrong app');
+            throw new UnknownActivityException('Wrong app');
         }
 
         $l = $this->l10nFactory->get('learning', (string) $language);
@@ -36,7 +37,7 @@ class Provider implements IProvider {
                 break;
 
             default:
-                throw new \InvalidArgumentException('Unknown subject: ' . $event->getSubject());
+                throw new UnknownActivityException('Unknown subject: ' . $event->getSubject());
         }
 
         return $event;

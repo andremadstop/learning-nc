@@ -115,4 +115,147 @@ class TelosControllerTest extends TestCase {
         $this->assertSame(400, $resp->getStatus());
         $this->assertArrayNotHasKey('consent_required', $resp->getData());
     }
+
+    // =========================================================================
+    // Codeberg #4 — TypeError in saveTelos(): '' where ?array was declared
+    // =========================================================================
+
+    /**
+     * The exact call from the reporter's stack trace:
+     *   TelosController->saveTelos(Array, '', '', '', 'private')
+     *
+     * The onboarding wizard posted the list fields as empty strings. With the old
+     * `?array $help_offer` hint PHP raised a TypeError inside NC's Dispatcher — BEFORE the
+     * method body ran, so the controller's own try/catch could not see it. Result: an
+     * unhandled 500 and no telos profile ever saved for anyone finishing onboarding.
+     *
+     * RED against the pre-fix signature: the call itself raises TypeError, so the test errors.
+     */
+    public function testSaveTelosAcceptsEmptyStringHelpLists(): void {
+        $telos = ['role' => 'student', 'experience_level' => 'beginner'];
+
+        $this->telosMock->expects($this->once())
+            ->method('saveTelos')
+            ->with('user-A', $telos, ['bio' => '', 'visibility' => 'private'])
+            ->willReturn(['onboarding_completed' => true]);
+
+        $resp = $this->makeController('user-A')->saveTelos($telos, '', '', '', 'private');
+
+        $this->assertSame(200, $resp->getStatus());
+    }
+
+    /**
+     * A client that posts the raw textarea value instead of splitting it must end up with the
+     * same list the profile form produces — same separators as the frontend's splitListValue().
+     */
+    public function testSaveTelosSplitsCommaSeparatedHelpLists(): void {
+        $telos = ['role' => 'student'];
+        $captured = null;
+
+        $this->telosMock->expects($this->once())
+            ->method('saveTelos')
+            ->willReturnCallback(function (string $userId, array $t, array $extra) use (&$captured) {
+                $captured = $extra;
+                return ['onboarding_completed' => true];
+            });
+
+        $resp = $this->makeController('user-A')->saveTelos(
+            $telos,
+            null,
+            "PHP, Linux; Docker\nBash",
+            'Kubernetes',
+            null
+        );
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertSame(['PHP', 'Linux', 'Docker', 'Bash'], $captured['help_offer']);
+        $this->assertSame(['Kubernetes'], $captured['help_wanted']);
+    }
+
+    /**
+     * Arrays must keep behaving exactly as before — the union type is additive, not a rewrite.
+     */
+    public function testSaveTelosStillAcceptsArrayHelpLists(): void {
+        $telos = ['role' => 'student'];
+        $captured = null;
+
+        $this->telosMock->expects($this->once())
+            ->method('saveTelos')
+            ->willReturnCallback(function (string $userId, array $t, array $extra) use (&$captured) {
+                $captured = $extra;
+                return ['onboarding_completed' => true];
+            });
+
+        $resp = $this->makeController('user-A')->saveTelos($telos, null, ['PHP', ' PHP ', ''], ['Linux'], null);
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertSame(['PHP'], $captured['help_offer']);
+        $this->assertSame(['Linux'], $captured['help_wanted']);
+    }
+
+    /**
+     * A malformed `telos` must give a 400 with a readable error, not a TypeError-500.
+     */
+    public function testSaveTelosRejectsNonArrayTelosWithBadRequest(): void {
+        $this->telosMock->expects($this->never())->method('saveTelos');
+
+        $resp = $this->makeController('user-A')->saveTelos('not-an-array');
+
+        $this->assertSame(400, $resp->getStatus());
+        $this->assertSame('Telos payload is required', $resp->getData()['error']);
+    }
+
+    /**
+     * updateTelos() carries the identical signature and the identical trap.
+     */
+    public function testUpdateTelosAcceptsStringHelpLists(): void {
+        $captured = null;
+
+        $this->telosMock->expects($this->once())
+            ->method('updateFields')
+            ->willReturnCallback(function (string $userId, array $fields) use (&$captured) {
+                $captured = $fields;
+                return ['onboarding_completed' => true];
+            });
+
+        $resp = $this->makeController('user-A')->updateTelos(null, null, 'PHP, Linux', null, null);
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertSame(['PHP', 'Linux'], $captured['help_offer']);
+        $this->assertArrayNotHasKey('help_wanted', $captured);
+    }
+
+    /**
+     * Deliberate semantic, locked in: an empty string on updateTelos() CLEARS the list.
+     * That matches the profile form, where emptying the textarea posts [] to clear it — the
+     * string form is just the unsplit spelling of the same intent.
+     */
+    public function testUpdateTelosEmptyStringClearsHelpList(): void {
+        $captured = null;
+
+        $this->telosMock->expects($this->once())
+            ->method('updateFields')
+            ->willReturnCallback(function (string $userId, array $fields) use (&$captured) {
+                $captured = $fields;
+                return ['onboarding_completed' => true];
+            });
+
+        $resp = $this->makeController('user-A')->updateTelos(null, null, '', null, null);
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertSame([], $captured['help_offer']);
+    }
+
+    /**
+     * A non-array `telos` on updateTelos() must not reach the service as a merge source
+     * (updateFields() would silently ignore it, but the 400 is the honest answer).
+     */
+    public function testUpdateTelosIgnoresNonArrayTelos(): void {
+        $this->telosMock->expects($this->never())->method('updateFields');
+
+        $resp = $this->makeController('user-A')->updateTelos('not-an-array');
+
+        $this->assertSame(400, $resp->getStatus());
+        $this->assertSame('No fields to update', $resp->getData()['error']);
+    }
 }

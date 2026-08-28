@@ -54,6 +54,7 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { useOnboardingStore } from '../stores/onboardingStore.js'
 import { INTENSITY_TILES } from '../utils/onboarding-slides.js'
+import { buildTelosPayload, createTelosForm } from '../utils/telosProfile.js'
 import OnbSplash from './onboarding/OnbSplash.vue'
 import OnbRoleSelect from './onboarding/OnbRoleSelect.vue'
 import OnbTour from './onboarding/OnbTour.vue'
@@ -164,17 +165,18 @@ export default {
     async finalize() {
       const uid = this.getUid()
 
-      try {
-        if (!this.store.skipped) {
-          await this.saveTelosProfile()
-          await this.saveAiConsent()
-        }
+      // Codeberg #4: these three steps used to share ONE try/catch, so the 500 from
+      // saveTelosProfile() also silently cancelled the AI consent and the starter-pool import —
+      // three losses from one bug, none of them visible to the user, and the empty catch made
+      // sure nothing was ever logged. Settle each step on its own so a failure in one can never
+      // swallow the others again.
+      if (!this.store.skipped) {
+        await this.runFinalizeStep('telos profile', () => this.saveTelosProfile())
+        await this.runFinalizeStep('AI consent', () => this.saveAiConsent())
+      }
 
-        if (this.store.selectedStarterPoolId) {
-          await this.importStarterPool()
-        }
-      } catch {
-        // Best-effort — don't block onboarding completion
+      if (this.store.selectedStarterPoolId) {
+        await this.runFinalizeStep('starter pool import', () => this.importStarterPool())
       }
 
       // Set compat flag so old code doesn't re-trigger
@@ -197,39 +199,41 @@ export default {
       }, 600)
     },
 
+    /**
+     * Runs one finalize step best-effort: onboarding completion must never be blocked by a
+     * backend hiccup, but the failure has to leave a trace instead of vanishing.
+     */
+    async runFinalizeStep(label, step) {
+      try {
+        await step()
+      } catch (e) {
+        console.error(`[learning] onboarding finalize step failed: ${label}`, e)
+      }
+    },
+
     async saveTelosProfile() {
       const choices = this.store.profileChoices
       const intensityTile = INTENSITY_TILES.find(t => t.id === choices.intensity)
 
-      const telos = {
-        role: this.store.role || '',
-        experience_level: 'beginner',
-        hours_per_week: intensityTile ? intensityTile.hours : '',
-        learning_style: 'solo',
-        motivation: '',
-        target_cert: '',
-        strengths: '',
-        weaknesses: '',
-        target_date: '',
-        notes: '',
-      }
+      // Codeberg #4: this wizard used to hand-roll its own payload shape and sent '' for the
+      // list fields (help_offer/help_wanted/strengths/weaknesses) where every other caller sends
+      // an array — the backend's ?array hint turned that into a TypeError, so onboarding never
+      // saved a profile at all. Build the payload through the shared util so there is exactly
+      // one payload shape in the app instead of two that can drift apart again.
+      const form = createTelosForm()
+      form.telos.role = this.store.role || ''
+      form.telos.hours_per_week = intensityTile ? String(intensityTile.hours) : ''
 
       // Map goal tile to telos fields
       if (choices.goal === 'certification') {
-        telos.target_cert = 'certification'
+        form.telos.target_cert = 'certification'
       } else if (choices.goal === 'career') {
-        telos.motivation = 'career'
+        form.telos.motivation = 'career'
       } else if (choices.goal === 'hobby') {
-        telos.motivation = 'hobby'
+        form.telos.motivation = 'hobby'
       }
 
-      const payload = {
-        telos,
-        bio: '',
-        help_offer: '',
-        help_wanted: '',
-        visibility: 'private',
-      }
+      const payload = buildTelosPayload(form)
 
       await axios.post(generateUrl('/apps/learning/api/profile/telos'), payload)
     },

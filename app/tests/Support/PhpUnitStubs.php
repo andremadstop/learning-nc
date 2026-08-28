@@ -499,6 +499,40 @@ namespace OCP\Activity {
         interface IManager {
         }
     }
+
+    if (!interface_exists(IEvent::class)) {
+        interface IEvent {
+            public function setApp(string $app): self;
+            public function setType(string $type): self;
+            public function setAffectedUser(string $user): self;
+            public function setSubject(string $subject, array $parameters = []): self;
+            public function setParsedSubject(string $subject): self;
+            public function setIcon(string $icon): self;
+            public function setLink(string $link): self;
+            public function getApp(): string;
+            public function getSubject(): string;
+            public function getSubjectParameters(): array;
+        }
+    }
+
+    // Signature mirrors the real OCP\Activity\IProvider: $language is untyped there and the
+    // method declares no return type, so the app's narrowed `mixed $language ... : IEvent`
+    // stays a legal override under both this stub and the shipped interface.
+    if (!interface_exists(IProvider::class)) {
+        interface IProvider {
+            public function parse($language, IEvent $event, ?IEvent $previousEvent = null);
+        }
+    }
+}
+
+namespace OCP\Activity\Exceptions {
+    // Codeberg #4: NC 30 introduced this as the contract for "provider does not know this event".
+    // It extends \InvalidArgumentException in NC itself, so the migration is backwards compatible
+    // — but NC 39 will log a bare \InvalidArgumentException as an error, not just a warning.
+    if (!class_exists(UnknownActivityException::class)) {
+        class UnknownActivityException extends \InvalidArgumentException {
+        }
+    }
 }
 
 namespace OCP\AppFramework {

@@ -66,16 +66,16 @@ class TelosController extends Controller {
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function saveTelos(
-        ?array $telos = null,
+        array|string|null $telos = null,
         ?string $bio = null,
-        ?array $help_offer = null,
-        ?array $help_wanted = null,
+        array|string|null $help_offer = null,
+        array|string|null $help_wanted = null,
         ?string $visibility = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
-        if ($telos === null || $telos === []) {
+        if (!is_array($telos) || $telos === []) {
             return new DataResponse(['error' => 'Telos payload is required'], Http::STATUS_BAD_REQUEST);
         }
 
@@ -110,10 +110,10 @@ class TelosController extends Controller {
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function updateTelos(
-        ?array $telos = null,
+        array|string|null $telos = null,
         ?string $bio = null,
-        ?array $help_offer = null,
-        ?array $help_wanted = null,
+        array|string|null $help_offer = null,
+        array|string|null $help_wanted = null,
         ?string $visibility = null
     ): DataResponse {
         if ($this->userId === null) {
@@ -121,7 +121,7 @@ class TelosController extends Controller {
         }
 
         $fields = [];
-        if ($telos !== null) {
+        if (is_array($telos)) {
             $fields['telos'] = $telos;
         }
         if ($bio !== null) {
@@ -318,16 +318,28 @@ class TelosController extends Controller {
     }
 
     /**
-     * @param array<int, mixed>|null $values
+     * @param array<int, mixed>|string|null $values
      * @return string[]
      */
-    private function normalizeStringList(?array $values): array {
+    private function normalizeStringList(array|string|null $values): array {
         if ($values === null) {
             return [];
         }
 
+        // Codeberg #4: the NC dispatcher passes request parameters through untyped, so this field
+        // arrives as an array from the profile form but as the raw textarea string from clients that
+        // post it unsplit (the onboarding wizard sent ''). A strict ?array hint turned that into a
+        // TypeError *before* the method body ran — an uncatchable 500 that killed the whole save.
+        // Split on the same separators as the frontend's splitListValue() so both sides agree.
+        if (is_string($values)) {
+            $values = preg_split('/[\n,;]+/', $values) ?: [];
+        }
+
         $normalized = [];
         foreach ($values as $value) {
+            if (!is_scalar($value)) {
+                continue;
+            }
             $value = trim((string)$value);
             if ($value !== '') {
                 $normalized[] = $value;
