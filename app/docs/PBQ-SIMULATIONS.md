@@ -1,30 +1,32 @@
-# PBQ-Simulationen — Network+ N10-009 (Pool 81)
+# PBQ simulations — Network+ N10-009 (pool 81)
 
-> Erstellt: 2026-03-17 | Basis: ODT-Notizen zu 6 Original-Simulationsszenarien
+> Written 2026-03-17, from notes on six original simulation scenarios.
+> Translated to English 2026-08-28.
 
 ---
 
-## Wie PBQ-Fragen funktionieren
+## How PBQ questions work
 
-PBQ (Performance-Based Questions) sind interaktive Prüfungsaufgaben, die praktisches Wissen testen statt reines Auswendiglernen. In der echten CompTIA-Prüfung laufen sie in einer speziellen Browser-Umgebung.
+PBQs — performance-based questions — are interactive exam tasks that test practical knowledge
+rather than recall. In the real CompTIA exam they run inside a dedicated browser environment.
 
-### Architektur
+### Architecture
 
-Die App unterstützt 5 Core-PBQ-Subtypen + N+-Custom-Subtypen:
+The app supports five core PBQ subtypes plus several Network+-specific ones:
 
-| Subtype | Komponente | Beschreibung |
-|---------|-----------|--------------|
-| `cli` | `PbqCli.vue` | Terminal-Emulator mit Cisco IOS / Linux / Windows / SQL / Generic CLI |
-| `placement` | `PbqPlacement.vue` | Geräte per Klick auf Netzwerktopologie-Positionen platzieren |
-| `dropdown` | `PbqDropdown.vue` | Multiple-Choice-Fragen mit Sections (Tabs) + Multi-Select |
-| `cable` | `PbqCable.vue` | Kabelfehler identifizieren (Pin-Mapping) — nur N+ |
-| `ranking` | `PbqRanking.vue` | Items per Drag-and-Drop in die richtige Reihenfolge sortieren (NEU 2026-05-22) |
-| `multi_panel` | `PbqMultiPanel.vue` | CLI links + Dropdown/Placement rechts im Splitscreen |
-| `switch_config` | `PbqSwitchConfig.vue` | N+-Custom: Switchport-Konfiguration |
-| `routing_config` | `PbqRoutingConfig.vue` | N+-Custom: Routing-Tabellen-Eingabe |
-| `diagnostic` | `PbqDiagnostic.vue` | N+-Custom: Multi-Komponenten-Diagnose |
+| Subtype | Component | Description |
+|---------|-----------|-------------|
+| `cli` | `PbqCli.vue` | Terminal emulator: Cisco IOS, Linux, Windows, SQL or a generic CLI |
+| `placement` | `PbqPlacement.vue` | Place devices onto positions in a network topology by clicking |
+| `dropdown` | `PbqDropdown.vue` | Multiple-choice questions with sections (tabs) and multi-select |
+| `cable` | `PbqCable.vue` | Identify cabling faults through pin mapping — Network+ only |
+| `ranking` | `PbqRanking.vue` | Drag items into the correct order (added 2026-05-22) |
+| `multi_panel` | `PbqMultiPanel.vue` | Split screen: CLI on the left, dropdown or placement on the right |
+| `switch_config` | `PbqSwitchConfig.vue` | Network+ specific: switchport configuration |
+| `routing_config` | `PbqRoutingConfig.vue` | Network+ specific: routing-table entry |
+| `diagnostic` | `PbqDiagnostic.vue` | Network+ specific: multi-component diagnosis |
 
-### Daten-Flow
+### Data flow
 
 ```
 DB: oc_learning_questions
@@ -32,68 +34,78 @@ DB: oc_learning_questions
   ├── pbq_subtype = 'cli' | 'placement' | 'dropdown' | 'cable'
   └── pbq_config = { ... } (JSONB)
          ↓
-PbqRenderer.vue  ─── liest pbq_subtype + pbq_config
+PbqRenderer.vue  ─── reads pbq_subtype + pbq_config
          ↓
 PbqCli.vue / PbqDropdown.vue / PbqPlacement.vue / PbqCable.vue
          ↓
-cliStateMachine.js (für CLI: Zustandsautomat mit domain-Schemas)
+cliStateMachine.js (for CLI: a state machine with per-domain schemas)
          ↓
-Scoring: evaluation[] Array (CLI) | positions[].correct (Placement) | questions[].correct (Dropdown)
+Scoring: the evaluation[] array (CLI) | positions[].correct (placement) | questions[].correct (dropdown)
 ```
 
-### CLI State Machine
+### The CLI state machine
 
-Die CLI-Simulation nutzt `app/src/utils/cliStateMachine.js` mit 5 Domains:
+The CLI simulation uses `app/src/utils/cliStateMachine.js` with five domains:
 
-- `cisco_ios` — Modi: `exec` (`SW1>`), `config` (`SW1(config)#`), `config-if` (`SW1(config-if)#`)
+- `cisco_ios` — modes: `exec` (`SW1>`), `config` (`SW1(config)#`), `config-if` (`SW1(config-if)#`)
 - `linux` — `user@host:~$ `
 - `windows` — `C:\Users\Administrator> `
 - `sql` — `mysql> `
 - `generic` — `hostname> `
 
-Command-Outputs werden in `pbq_config.command_outputs[terminalName][command]` gespeichert. Matching ist case-insensitive.
+Command output lives in `pbq_config.command_outputs[terminalName][command]`. Matching is
+case-insensitive.
 
 ---
 
-## Die 6 Simulationsszenarien (Pool 81)
+## The six simulation scenarios (pool 81)
 
-### Szenario 1 — Switch VLAN / LACP Konfiguration
-**DB-ID:** 12460 | **Subtype:** `cli` | **Terminals:** SW1, SW2
+### Scenario 1 — switch VLAN / LACP configuration
 
-**Beschreibung:**
-Ein Access-Layer-Switch (SW1) wurde ausgetauscht und muss neu konfiguriert werden. PC3 wurde in VLAN 90 (Management) versetzt, der Port ist aber noch nicht konfiguriert. LACP Port-Channel zwischen SW1 und SW2 soll überprüft werden.
+**Question ID:** 12460 | **Subtype:** `cli` | **Terminals:** SW1, SW2
 
-**Konfiguration:**
-- SW1 Port-Mapping: Gi0/1→PC1 (VLAN 10), Gi0/2→PC2 (VLAN 20), **Gi0/3→PC3 (VLAN 90, FEHLT)**, Gi0/4→Drucker (VLAN 30), Gi0/5→CCTV (VLAN 60)
-- LACP: Gi0/7+Gi0/8 als Port-Channel 1 (mode active, 802.3ad)
-- SW2: VLAN 90 auf Gi0/2, LACP zu SW1
+**Description**
 
-**Korrekte Lösung:**
+An access-layer switch (SW1) has been replaced and needs reconfiguring. PC3 was moved into
+VLAN 90 (management) but its port has not been configured yet. The LACP port channel between
+SW1 and SW2 needs verifying.
+
+**Configuration**
+
+- SW1 port mapping: Gi0/1→PC1 (VLAN 10), Gi0/2→PC2 (VLAN 20), **Gi0/3→PC3 (VLAN 90, MISSING)**,
+  Gi0/4→printer (VLAN 30), Gi0/5→CCTV (VLAN 60)
+- LACP: Gi0/7 and Gi0/8 as port channel 1 (mode active, 802.3ad)
+- SW2: VLAN 90 on Gi0/2, LACP towards SW1
+
+**Correct solution**
+
 ```
 SW1# conf t
 SW1(config)# interface gi0/3
 SW1(config-if)# switchport mode access
 SW1(config-if)# switchport access vlan 90
 SW1(config-if)# end
-SW1# show vlan brief         (Verifizierung)
+SW1# show vlan brief         (verification)
 ```
 
-**Bewertung (5 Punkte):**
-- `switchport access vlan 90` auf SW1 → 3 Punkte
-- `show vlan brief` auf SW1 → 1 Punkt
-- `show interfaces trunk` auf SW2 → 1 Punkt
+**Scoring (5 points)**
 
-**ODT-Quelle:** Key "1" — "Switch 1 Port 3: ein Endgerät im nur VLAN 90 untagged, LACP disabled"
+- `switchport access vlan 90` on SW1 → 3 points
+- `show vlan brief` on SW1 → 1 point
+- `show interfaces trunk` on SW2 → 1 point
 
----
+### Scenario 2 — MAC table and routing diagnosis
 
-### Szenario 2 — MAC-Tabelle und Routing-Diagnose
-**DB-ID:** 12465 | **Subtype:** `cli` | **Terminals:** SW1, SW2
+**Question ID:** 12465 | **Subtype:** `cli` | **Terminals:** SW1, SW2
 
-**Beschreibung:**
-Ein neu eingestellter Netzwerktechniker soll das Netzwerk dokumentieren. Verdacht auf Verbindungsprobleme wegen sich ändernder MAC-Tabellen. Topologie kartieren durch Analyse der MAC-Tabellen und Routing-Infos.
+**Description**
 
-**Korrekte Lösung:**
+A newly hired network technician is asked to document the network. Connection problems are
+suspected because the MAC tables keep changing. Map the topology by analysing the MAC tables and
+the routing information.
+
+**Correct solution**
+
 ```
 SW1# show mac address-table
 SW1# show running-config
@@ -101,129 +113,130 @@ SW2# show mac address-table
 SW2# show ip route
 ```
 
-**Wichtige Befunde:**
-- SW1 MAC-Tabelle: 7 Einträge, 2 MAC-Adressen auf mehreren Ports (möglicher Loop)
-- SW2: Nur 3 Einträge (gesünder), Dateiserver in VLAN 10 auf Gi0/1
-- Routing: Default Route 0.0.0.0/0 via 10.0.0.1
+**Key findings**
 
-**Bewertung (5 Punkte):**
-- `show mac address-table` auf SW1 → 2 Punkte
-- `show mac address-table` auf SW2 → 2 Punkte
-- `show running-config` auf SW1 → 1 Punkt
+- SW1's MAC table: seven entries, two MAC addresses appearing on several ports — a possible loop
+- SW2: only three entries (healthier); the file server sits in VLAN 10 on Gi0/1
+- Routing: default route 0.0.0.0/0 via 10.0.0.1
 
-**ODT-Quelle:** Key "2" — "Commands über Help – show mac address-table, show running-config, show ip route"
+**Scoring (5 points)**
 
----
+- `show mac address-table` on SW1 → 2 points
+- `show mac address-table` on SW2 → 2 points
+- `show running-config` on SW1 → 1 point
 
-### Szenario 3 — Router IP-Adressen / Routing-Lücke
-**DB-ID:** 12461 | **Subtype:** `cli` | **Terminals:** Router A, Router B, Router C
+### Scenario 3 — router addressing and a routing gap
 
-**Beschreibung:**
-Benutzer können nicht auf Dateiserver 2 (10.0.4.x) zugreifen. Routing zwischen Router A, B, C untersuchen.
+**Question ID:** 12461 | **Subtype:** `cli` | **Terminals:** Router A, Router B, Router C
 
-**Netz-Layout (aus ODT Key "3"):**
+**Description**
+
+Users cannot reach file server 2 (10.0.4.x). Investigate the routing between routers A, B and C.
+
+**Network layout**
+
 ```
 Router A: Gi1=10.0.5.0/24, Gi2=10.0.6.0/24, Gi3=10.0.0.0/22
-Router B: Gi1=10.0.4.0/22 (BC 10.0.7.255), Gi2=10.0.1.0/24, Gi3=10.0.0.0/24
+Router B: Gi1=10.0.4.0/22 (broadcast 10.0.7.255), Gi2=10.0.1.0/24, Gi3=10.0.0.0/24
 Router C: Gi1=10.0.0.0/22, Gi2=10.0.4.0/22
 ```
 
-**Korrekte Diagnose:**
-- Router A hat **keine Route** zu 10.0.4.0/22 in der Tabelle
-- `ping 10.0.4.1` von Router A schlägt fehl
-- Router B kennt 10.0.4.0/22 direkt (Gi1)
-- Router C hat keine Route zu 10.0.5.0/24 oder 10.0.6.0/24
+**Correct diagnosis**
 
-**Korrekte Lösung:** OSPF-Konfiguration auf Router C erweitern, damit Routes nach 10.0.5.0/24 und 10.0.6.0/24 propagiert werden. Alternativ: statische Route auf Router A.
+- Router A has **no route** to 10.0.4.0/22 in its table
+- `ping 10.0.4.1` from router A fails
+- Router B knows 10.0.4.0/22 directly, on Gi1
+- Router C has no route to 10.0.5.0/24 or 10.0.6.0/24
 
-**Bewertung (6 Punkte):**
-- `show ip route` auf Router A → 2 Punkte
-- `show ip route` auf Router B → 2 Punkte
-- `show ip route` auf Router C → 2 Punkte
+**Correct solution:** extend the OSPF configuration on router C so that routes to 10.0.5.0/24
+and 10.0.6.0/24 are propagated. Alternatively, add a static route on router A.
 
-**ODT-Quelle:** Key "3" — exakte IP-Adressen für Router A/B/C
+**Scoring (6 points)**
 
----
+- `show ip route` on router A → 2 points
+- `show ip route` on router B → 2 points
+- `show ip route` on router C → 2 points
 
-### Szenario 4 — Netzwerk-Placement (Topologie-Design)
-**DB-ID:** 12468 | **Subtype:** `placement`
+### Scenario 4 — network placement (topology design)
 
-**Beschreibung:**
-Netzwerktopologie für neues Bürogebäude entwerfen. 4 Positionen (A–D) mit den richtigen Geräten belegen. Ein Switch ist bereits gesetzt.
+**Question ID:** 12468 | **Subtype:** `placement`
 
-**Positionen und korrekte Geräte:**
+**Description**
 
-| Position | Beschreibung | Korrektes Gerät |
+Design the network topology for a new office building. Four positions (A–D) have to be filled
+with the right devices. One switch is already placed.
+
+**Positions and correct devices**
+
+| Position | Description | Correct device |
 |----------|-------------|----------------|
-| Gerät A | Internet-Gateway (direkt unter der Cloud) | **Firewall** |
-| Gerät B | LAN-Verbindungsgerät (unter der Firewall) | **Router** |
-| Gerät C | Wireless-Gerät im Büro-Bereich (unten links) | **WAP** |
-| Gerät D | Wireless-Gerät im Erweiterungsbereich (unten rechts) | **Wireless Range Extender** |
+| Device A | Internet gateway, directly below the cloud | **Firewall** |
+| Device B | LAN interconnect, below the firewall | **Router** |
+| Device C | Wireless device in the office area, bottom left | **WAP** |
+| Device D | Wireless device in the extension area, bottom right | **Wireless range extender** |
 
-**Logik:**
-- Firewall = erste Verteidigungslinie gegen Internet
-- Router = Layer-3-Gerät, verbindet Segmente
-- WAP = stellt eigenes WLAN-SSID bereit (direkter Client-Zugang)
-- Wireless Range Extender = verstärkt/verlängert ein bestehendes WLAN
+**Reasoning**
 
-**Scoring:** `partial` (Teilpunkte pro korrekt platzierten Gerät)
+- Firewall: the first line of defence towards the internet
+- Router: the layer-3 device that joins the segments
+- WAP: provides its own SSID, so clients associate with it directly
+- Wireless range extender: amplifies and extends an existing wireless network
 
-**ODT-Quelle:** Key "4" — "links Switch Mitte ganz oben Firewall (zum Internet), darunter Router, einzeln unten WAP, rechts Wireless range extender ODER unten Wireless range extender und rechts WAP"
+**Scoring:** `partial` — points per correctly placed device.
 
----
+### Scenario 5 — APIPA / DHCP failure (dropdown)
 
-### Szenario 5 — APIPA / DHCP-Ausfall (Dropdown)
-**DB-ID:** 12472 | **Subtype:** `dropdown`
+**Question ID:** 12472 | **Subtype:** `dropdown`
 
-**Beschreibung:**
-Mehrere Workstations (PC-A, PC-B, PC-C) haben Adressen im 169.254.x.x/16 Bereich und können nicht auf den Dateiserver (192.168.1.100) zugreifen.
+**Description**
 
-**Fragen und Antworten:**
+Several workstations (PC-A, PC-B, PC-C) hold addresses in 169.254.x.x/16 and cannot reach the
+file server at 192.168.1.100.
 
-| Frage | Korrekte Antwort | Erklärung |
-|-------|-----------------|-----------|
-| Welche IP weist auf Konfigurationsproblem hin? | **169.254.x.x / 16 (APIPA-Bereich)** | APIPA = RFC 3927, Windows/Linux Fallback wenn kein DHCP antwortet |
-| Welcher Dienst ist ausgefallen? | **DHCP** | DHCP weist IPs automatisch zu; ohne DHCP → APIPA |
-| Wie beheben? | **DHCP-Server neu starten + ipconfig /renew** | Schnellste Lösung; statische IPs wären Workaround |
+**Questions and answers**
 
-**ODT-Quelle:** Key "5" — "169.254.x.x/16"
+| Question | Correct answer | Explanation |
+|----------|----------------|-------------|
+| Which address range indicates a configuration problem? | **169.254.x.x/16 (the APIPA range)** | APIPA — RFC 3927 — is the Windows/Linux fallback when no DHCP server answers |
+| Which service has failed? | **DHCP** | DHCP assigns addresses automatically; without it, clients fall back to APIPA |
+| How do you fix it? | **Restart the DHCP server, then `ipconfig /renew`** | The fastest route back; static addresses would only be a workaround |
 
----
+### Scenario 6 — WAN selection and traffic analysis (dropdown)
 
-### Szenario 6 — WAN-Selektion / Traffic-Analyse (Dropdown)
-**DB-ID:** 12464 | **Subtype:** `dropdown`
+**Question ID:** 12464 | **Subtype:** `dropdown`
 
-**Beschreibung:**
-Nach Stromausfall Performance-Probleme und VoIP-Störungen. Dashboard zeigt WAN1/WAN2 Metriken, Geräte-Status und Traffic-Tabelle.
+**Description**
 
-**Dashboard-Daten:**
-- WAN1: 100 Mbps, 24 ms Latenz, **9.5 ms Jitter**
-- WAN2: 50 Mbps, 18 ms Latenz, **2.1 ms Jitter**
-- Router A (206.10.1.1): **FEHLER** (offline nach Stromausfall)
+After a power cut, the network shows performance problems and VoIP disruption. The dashboard
+shows WAN1/WAN2 metrics, device status and a traffic table.
+
+**Dashboard data**
+
+- WAN1: 100 Mbps, 24 ms latency, **9.5 ms jitter**
+- WAN2: 50 Mbps, 18 ms latency, **2.1 ms jitter**
+- Router A (206.10.1.1): **FAULT** — offline since the power cut
 - Router B (206.10.1.2): OK
-- Workstation 10.1.90.53: **4.820 kb/s** (höchster Traffic)
+- Workstation 10.1.90.53: **4,820 kb/s**, the highest traffic
 
-**Fragen und Antworten:**
+**Questions and answers**
 
-| Frage | Korrekte Antwort | Erklärung |
-|-------|-----------------|-----------|
-| Welches WAN für VoIP? | **WAN2 (50 Mbps, 18 ms, 2.1 ms Jitter)** | VoIP braucht niedrigen Jitter (<30 ms ITU-T G.114); Bandbreite sekundär |
-| Welcher Router hat Probleme? | **Router A (206.10.1.1)** | Status FEHLER; 206.x = WAN-Router-IPs |
-| Welche Workstation meiste Traffic? | **10.1.90.53 (4.820 kb/s)** | Höchster Wert im 10.1.x.x Bereich; 206.x sind Router, keine Workstations |
-
-**ODT-Quelle:** Key "6" — "WAN2 ist zwar langsamer, hat aber weniger Jitter – damit für VoIP qualifiziert, Router A hat die Verbindungsprobleme, 10.1.90.53 generiert den meisten Traffic unter den Workstations, 206.x sind die Router"
+| Question | Correct answer | Explanation |
+|----------|----------------|-------------|
+| Which WAN link for VoIP? | **WAN2 (50 Mbps, 18 ms, 2.1 ms jitter)** | VoIP needs low jitter (below 30 ms, ITU-T G.114); bandwidth is secondary |
+| Which router has a problem? | **Router A (206.10.1.1)** | Its status is FAULT; 206.x are the WAN router addresses |
+| Which workstation generates the most traffic? | **10.1.90.53 (4,820 kb/s)** | The highest figure in the 10.1.x.x range; the 206.x hosts are routers, not workstations |
 
 ---
 
-## Config-Format Referenz
+## Configuration format reference
 
-### CLI-Format
+### CLI format
 
 ```json
 {
   "scenario_image": "data:image/svg+xml;base64,...",
   "domain": "cisco_ios",
-  "hint": "Verfügbare Befehle: show vlan brief | conf t | ...",
+  "hint": "Available commands: show vlan brief | conf t | ...",
   "terminals": [
     {
       "name": "SW1",
@@ -243,19 +256,21 @@ Nach Stromausfall Performance-Probleme und VoIP-Störungen. Dashboard zeigt WAN1
       "terminal": "SW1",
       "required_pattern": "switchport access vlan 90",
       "points": 3,
-      "explanation": "Port muss VLAN 90 zugewiesen werden"
+      "explanation": "The port must be assigned to VLAN 90"
     }
   ]
 }
 ```
 
-**Wichtig für CLI:**
-- `domain` muss eines von: `cisco_ios`, `linux`, `windows`, `sql`, `generic`
-- `command_outputs` Keys werden case-insensitive gematcht
-- Leerer String `""` als Output = Befehl akzeptiert, kein Output (z.B. `conf t`)
-- Transitions (mode-Wechsel) sind automatisch: `conf t` → config-Mode, `interface x` → config-if-Mode
+**Notes for CLI**
 
-### Placement-Format
+- `domain` must be one of `cisco_ios`, `linux`, `windows`, `sql`, `generic`
+- `command_outputs` keys are matched case-insensitively
+- An empty string `""` as the output means "command accepted, no output" — `conf t`, for example
+- Mode transitions happen automatically: `conf t` enters config mode, `interface x` enters
+  config-if mode
+
+### Placement format
 
 ```json
 {
@@ -263,7 +278,7 @@ Nach Stromausfall Performance-Probleme und VoIP-Störungen. Dashboard zeigt WAN1
   "positions": [
     {
       "id": "pos_fw",
-      "label": "Internet-Gateway",
+      "label": "Internet gateway",
       "x_pct": 50,
       "y_pct": 36,
       "correct": "Firewall"
@@ -274,12 +289,13 @@ Nach Stromausfall Performance-Probleme und VoIP-Störungen. Dashboard zeigt WAN1
 }
 ```
 
-**Felder:**
-- `x_pct` / `y_pct`: Position als Prozent der SVG-Breite/Höhe (für Hotspot-Overlays)
-- `correct`: Muss exakt mit einem Wert in `device_options` übereinstimmen
-- `scoring_mode`: `"strict"` (alles oder nichts) oder `"partial"` (Teilpunkte)
+**Fields**
 
-### Dropdown-Format
+- `x_pct` / `y_pct`: position as a percentage of the SVG width and height, for the hotspot overlay
+- `correct`: must match one of the values in `device_options` exactly
+- `scoring_mode`: `"strict"` (all or nothing) or `"partial"` (points per correct placement)
+
+### Dropdown format
 
 ```json
 {
@@ -287,25 +303,26 @@ Nach Stromausfall Performance-Probleme und VoIP-Störungen. Dashboard zeigt WAN1
   "questions": [
     {
       "id": "q_voip",
-      "label": "Welches WAN-Interface für VoIP?",
-      "options": ["WAN1 (100Mbps, 9.5ms Jitter)", "WAN2 (50Mbps, 2.1ms Jitter)"],
-      "correct": "WAN2 (50Mbps, 2.1ms Jitter)",
-      "explanation": "VoIP braucht niedrigen Jitter. WAN2 hat 2.1ms vs 9.5ms."
+      "label": "Which WAN interface for VoIP?",
+      "options": ["WAN1 (100Mbps, 9.5ms jitter)", "WAN2 (50Mbps, 2.1ms jitter)"],
+      "correct": "WAN2 (50Mbps, 2.1ms jitter)",
+      "explanation": "VoIP needs low jitter. WAN2 has 2.1 ms against 9.5 ms."
     }
   ]
 }
 ```
 
-**Wichtig:** `correct` muss exakt mit einem Wert in `options` übereinstimmen (case-sensitive).
+**Note:** `correct` must match one of the `options` values exactly, case-sensitively.
 
-### Ranking-Format (seit 2026-05-22)
+### Ranking format (since 2026-05-22)
 
-Drag-Sort: User zieht Items in die korrekte Reihenfolge. Eignet sich für Order of Volatility, IR-Phasen, Kill Chain, Vuln-Priorisierung.
+A drag-sort: the learner drags items into the correct order. Suits order of volatility, incident
+response phases, the kill chain, vulnerability prioritisation.
 
 ```json
 {
   "intro_note": "Drag the items into the correct order.",
-  "instructions": ["Optional Top-Level-Hinweise"],
+  "instructions": ["Optional top-level hints"],
   "items": [
     { "id": "i1", "label": "CPU registers and L1/L2 cache",  "correct_position": 1 },
     { "id": "i2", "label": "Active TCP/UDP connections",     "correct_position": 2 },
@@ -314,107 +331,121 @@ Drag-Sort: User zieht Items in die korrekte Reihenfolge. Eignet sich für Order 
 }
 ```
 
-**Wichtig:**
-- `correct_position` ist 1-basiert.
-- Author-supplied Items-Reihenfolge sollte gemischt sein (sonst sieht der User die Lösung als Initialzustand). Empfehlung: vor dem `INSERT` mit `random.shuffle(items)` permutieren.
-- User-Answer kommt als `{itemId: positionInt}` zurück; Scoring matched pro Item.
-- Component bietet Shuffle-Button + zeigt nach Submit ✓/✗ pro Position.
+**Notes**
 
-### Multi-Panel-Format
+- `correct_position` is 1-based.
+- Shuffle the authored item order before inserting, otherwise the learner sees the solution as
+  the initial state. Permute with `random.shuffle(items)` before the `INSERT`.
+- The learner's answer comes back as `{itemId: positionInt}`; scoring matches per item.
+- The component offers a shuffle button and marks each position ✓ or ✗ after submission.
 
-Splitscreen mit `cli` + (`dropdown` ODER `placement`). Config ist verschachtelt:
+### Multi-panel format
+
+A split screen combining `cli` with either `dropdown` or `placement`. The configuration nests:
 
 ```json
 {
-  "instructions": ["Run commands left, answer questions right."],
-  "cli": { /* full cli config inkl. evaluation[] */ },
-  "dropdown": { /* full dropdown config */ },
-  "placement": { /* full placement config — optional, exklusiv zu dropdown */ }
+  "instructions": ["Run commands on the left, answer the questions on the right."],
+  "cli": { /* a full cli config, including evaluation[] */ },
+  "dropdown": { /* a full dropdown config */ },
+  "placement": { /* a full placement config — optional, mutually exclusive with dropdown */ }
 }
 ```
 
-User-Answer: `{cli: {term: [history]}, dropdown: {qid: value}, placement: {posid: device}}`.
+The learner's answer: `{cli: {term: [history]}, dropdown: {qid: value}, placement: {posid: device}}`.
 
 ---
 
-## Neue Simulation hinzufügen
+## Adding a new simulation
 
-### Schritt-für-Schritt
+### Step by step
 
-**1. Subtype wählen:**
-- Konfigurationsaufgabe mit Befehlen → `cli`
-- Geräte in Topologie einordnen → `placement`
-- Identifikations-/Analysefragen → `dropdown`
-- Kabelfehler diagosntizieren → `cable`
+**1. Choose the subtype**
 
-**2. SVG-Diagramm erstellen:**
+- A configuration task driven by commands → `cli`
+- Arranging devices in a topology → `placement`
+- Identification or analysis questions → `dropdown`
+- Diagnosing a cabling fault → `cable`
+
+**2. Create the SVG diagram**
+
 ```python
 import base64
 svg = """<svg xmlns="http://www.w3.org/2000/svg" width="720" height="400">
-  <!-- Topologie-Diagramm -->
+  <!-- topology diagram -->
 </svg>"""
 b64 = "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
 ```
 
-**3. Config-JSON aufbauen** (Format siehe oben je Subtype)
+**3. Build the configuration JSON** — see the format for your subtype above.
 
-**4. SQL-Update schreiben:**
+**4. Write the SQL**
+
 ```sql
 INSERT INTO oc_learning_questions (
   pool_id, question_type, text, explanation, pbq_subtype, pbq_config, lang, points
 ) VALUES (
   81, 'pbq',
-  'Szenario-Beschreibung...',
-  'Lösung: ...',
+  'Scenario description...',
+  'Solution: ...',
   'cli',
   '{"domain":"cisco_ios","terminals":[...]}'::jsonb,
-  'de',
+  'en',
   5
 );
 ```
 
-**5. Ausführen:**
+**5. Apply it** against your Nextcloud database — for a Docker deployment, for example:
+
 ```bash
-ssh learning-dev 'docker exec -i learning-db psql -U oc_admin -d nextcloud' < update.sql
+docker exec -i <db-container> psql -U <db-user> -d <db-name> < update.sql
 ```
 
-**6. Verifizieren:**
-```bash
-ssh learning-dev 'docker exec learning-db psql -U oc_admin -d nextcloud -c \
-  "SELECT id, pbq_subtype, LEFT(text,60) FROM oc_learning_questions WHERE pool_id=81 AND question_type='"'"'pbq'"'"' ORDER BY id;"'
-```
-
----
-
-## DB-Struktur
+**6. Verify**
 
 ```sql
--- Pool 81 PBQ-Fragen nach dem Update:
--- ID     | Subtype    | Szenario
--- 12460  | cli        | S1: Switch VLAN/LACP (SW1+SW2)
--- 12461  | cli        | S3: Router A/B/C Routing-Diagnose
--- 12464  | dropdown   | S6: WAN-Selektion / Traffic-Analyse
--- 12465  | cli        | S2: MAC-Tabelle / Routing-Diagnose
--- 12468  | placement  | S4: Netzwerk-Topologie-Design
--- 12472  | dropdown   | S5: APIPA / DHCP-Ausfall
+SELECT id, pbq_subtype, LEFT(text, 60)
+FROM oc_learning_questions
+WHERE pool_id = 81 AND question_type = 'pbq'
+ORDER BY id;
+```
+
+> Prefer `occ learning:import-pool-json` where you can — it validates the payload and does not
+> require direct database access. Raw SQL is the fallback for PBQ configurations the importer
+> does not cover yet.
+
+---
+
+## Pool 81 contents
+
+```
+-- ID     | Subtype    | Scenario
+-- 12460  | cli        | S1: switch VLAN/LACP (SW1+SW2)
+-- 12461  | cli        | S3: router A/B/C routing diagnosis
+-- 12464  | dropdown   | S6: WAN selection / traffic analysis
+-- 12465  | cli        | S2: MAC table / routing diagnosis
+-- 12468  | placement  | S4: network topology design
+-- 12472  | dropdown   | S5: APIPA / DHCP failure
 ```
 
 ---
 
-## Qualitätshinweise
+## Quality notes
 
-- **CLI-Outputs**: Echtes Cisco IOS Format (Einrückung, Spaltenbreiten, Codes-Zeile)
-- **IP-Adressen**: Aus ODT-Quelle exakt übernommen (Router A/B/C Netze)
-- **Deutsche Texte**: Alle Fragen/Erklärungen auf Deutsch
-- **SVG-Diagramme**: 720px breit, dark theme für CLI, light theme für Placement
-- **Erklärungen**: Zeigen nach dem Abschicken die vollständige Lösung mit Begründung
-- **Prüfungsnähe**: Szenarien 1–6 basieren auf dokumentierten echten N10-009 PBQ-Themen (ODT-Notizen)
+- **CLI output:** real Cisco IOS formatting — indentation, column widths, the codes line
+- **Addresses:** taken verbatim from the source material (the router A/B/C networks)
+- **SVG diagrams:** 720 px wide; a dark theme for CLI scenarios, a light theme for placement
+- **Explanations:** shown after submission, giving the full solution with its reasoning
+- **Exam fidelity:** scenarios 1–6 are based on documented, real N10-009 PBQ topics
 
 ---
 
-## Addendum 2026-03-20
+## Addendum, 2026-03-20
 
-- Diese Datei beschreibt den Stand vor dem PDF-Audit nur noch teilweise korrekt.
-- Der aktuelle kanonische PBQ-Inhalt für die sechs importierten Network+-Simulationen liegt in [pbq-import-n10009.json](/home/andre/Workspace/Code/learning-nc/pbq-import-n10009.json).
-- Der Soll/Ist-Audit gegen das Referenz-PDF ist dokumentiert in [PBQ-PDF-AUDIT-2026-03-20.md](/home/andre/Workspace/Code/learning-nc/app/docs/PBQ-PDF-AUDIT-2026-03-20.md).
-- Für DB-Synchronisierung der sechs bestehenden PBQ-Fragen nutze [generate_network_plus_pbq_sync_sql.py](/home/andre/Workspace/Code/learning-nc/scripts/pbq/generate_network_plus_pbq_sync_sql.py).
+- This file describes the state before the PDF audit and is only partly current.
+- The canonical PBQ content for the six imported Network+ simulations lives in
+  `pbq-import-n10009.json` at the repository root.
+- The audit against the reference PDF is documented in
+  `app/docs/PBQ-PDF-AUDIT-2026-03-20.md`.
+- To synchronise the six existing PBQ questions with the database, use
+  `scripts/pbq/generate_network_plus_pbq_sync_sql.py`.

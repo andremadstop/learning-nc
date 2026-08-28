@@ -428,10 +428,11 @@ and all simulators are unaffected.
 Learning ships six interface languages: **German** (source), **English**, **French**,
 **Russian**, **Arabic** and **Ukrainian**.
 
-> **Ukrainian is a first pass.** It was added in response to a user request and has not
-> yet been reviewed by a native speaker. Corrections are very welcome — see 7.3. If you
-> spot a wrong or awkward string, an issue naming the English text and your correction is
-> enough; you do not need to touch the code.
+> **None of the translations have been reviewed by a native speaker** — English included.
+> All five non-German catalogues were produced with machine assistance from the German
+> source, and Ukrainian is the newest of them, added in response to a user request.
+> Corrections are very welcome — see 7.3. If you spot a wrong or awkward string, an issue
+> naming the English text and your correction is enough; you do not need to touch the code.
 
 Two independent language layers exist — this distinction matters:
 

@@ -1,62 +1,68 @@
-# Simulator Design System — Learning-NC Werkzeuge
+# Simulator design system — the Learning tools
 
-> Verbindliche Design-Spezifikation fuer alle 8 Netzwerk-Simulatoren.
-> Aesthetik: **Terminal Noir** — Dark-First, monospace Akzente, subtile Glow-Effekte.
-> Nicht generisch, nicht bunt, nicht "KI-Slop". Sondern: wie ein professionelles Netzwerk-Tool das Spass macht.
+> The binding design specification for all eight network simulators.
+> Aesthetic: **terminal noir** — dark first, monospace accents, subtle glow effects.
+> Not generic, not colourful, not AI slop. The target is a professional network tool that
+> happens to be fun to use.
 
-## 1. Design-Philosophie
+## 1. Design philosophy
 
-**Leitidee**: Jeder Simulator fuehlt sich an wie ein echtes CLI/Dashboard-Tool das man in einem SOC oder NOC finden wuerde — aber mit der Zugaenglichkeit einer Lern-App.
+**Guiding idea**: every simulator should feel like a real CLI or dashboard tool you would find
+in a SOC or NOC — with the approachability of a learning app.
 
-**Ton**: Dunkel, technisch, praezise. Cyan als Akzent (Netzwerk-Assoziation). Kein Weiss-auf-Weiss, kein Pastell, kein "freundliches" Lernapp-Design. Stattdessen: kontrollierte Informationsdichte mit klarer Hierarchie.
+**Tone**: dark, technical, precise. Cyan as the accent, for the network association. No
+white-on-white, no pastels, no "friendly learning app" styling. Controlled information density
+with a clear hierarchy instead.
 
-**Differenzierung zwischen Simulatoren**: Nicht durch Farbe (alle nutzen dasselbe Palette), sondern durch **Icon + Untertitel + Tool-spezifische Visualisierungen**. Ein DNS-Resolver zeigt eine Lookup-Kette, ein Port-Scanner zeigt einen Scan-Fortschritt — aber beide nutzen dieselben Cards, Buttons und Tabellen.
+**Differentiating the simulators**: not by colour — they all share one palette — but through
+**icon, subtitle and tool-specific visualisations**. A DNS resolver shows a lookup chain, a port
+scanner shows scan progress, but both use the same cards, buttons and tables.
 
-## 2. Gemeinsamer BEM-Prefix
+## 2. The shared BEM prefix
 
-**ALLE Simulatoren nutzen `sim-tool__`** als BEM-Prefix. Kein `dns-tool__`, kein `subnet-tool__`.
+**Every simulator uses `sim-tool__`** as its BEM prefix. Not `dns-tool__`, not `subnet-tool__`.
 
 ```css
-.sim-tool { }              /* Wrapper */
-.sim-tool--embedded { }    /* Embedded in Kampagne */
-.sim-tool__header { }      /* Header mit Eyebrow + Titel */
-.sim-tool__eyebrow { }     /* "CompTIA Network+ N10-009" oder "Werkzeuge" */
+.sim-tool { }              /* wrapper */
+.sim-tool--embedded { }    /* embedded in a campaign */
+.sim-tool__header { }      /* header: eyebrow plus title */
+.sim-tool__eyebrow { }     /* "CompTIA Network+ N10-009" or "Tools" */
 .sim-tool__title { }       /* "DNS-Resolver" */
-.sim-tool__subtitle { }    /* Beschreibung */
-.sim-tool__tabs { }        /* Simulator | Uebung Tabs */
-.sim-tool__tab { }         /* Einzelner Tab */
-.sim-tool__tab--active { } /* Aktiver Tab */
-.sim-tool__panel { }       /* Content-Bereich */
-.sim-tool__section { }     /* Abschnitt innerhalb Panel */
-.sim-tool__card { }        /* Ergebnis-Card */
-.sim-tool__table { }       /* Datentabelle */
-.sim-tool__row { }         /* Tabellenzeile */
-.sim-tool__row--highlight { } /* Hervorgehobene Zeile */
-.sim-tool__row--success { }   /* Gruen */
-.sim-tool__row--danger { }    /* Rot */
-.sim-tool__input { }       /* Eingabefeld */
-.sim-tool__btn { }         /* Primaer-Button */
-.sim-tool__btn--secondary { } /* Sekundaer-Button */
-.sim-tool__badge { }       /* Status-Badge */
-.sim-tool__status { }      /* Status-Indikator */
+.sim-tool__subtitle { }    /* description */
+.sim-tool__tabs { }        /* Simulator | Practice tabs */
+.sim-tool__tab { }         /* a single tab */
+.sim-tool__tab--active { } /* the active tab */
+.sim-tool__panel { }       /* content area */
+.sim-tool__section { }     /* a section inside a panel */
+.sim-tool__card { }        /* result card */
+.sim-tool__table { }       /* data table */
+.sim-tool__row { }         /* table row */
+.sim-tool__row--highlight { } /* highlighted row */
+.sim-tool__row--success { }   /* green */
+.sim-tool__row--danger { }    /* red */
+.sim-tool__input { }       /* input field */
+.sim-tool__btn { }         /* primary button */
+.sim-tool__btn--secondary { } /* secondary button */
+.sim-tool__badge { }       /* status badge */
+.sim-tool__status { }      /* status indicator */
 .sim-tool__status--pass { }
 .sim-tool__status--fail { }
 .sim-tool__status--warn { }
 ```
 
-## 3. Farbpalette (nutzt bestehende --lnc-* Tokens)
+## 3. Colour palette (built on the existing --lnc-* tokens)
 
 ```css
-/* Simulator-spezifische Tokens (ergaenzen, nicht ersetzen) */
+/* Simulator-specific tokens — these extend the base set, they do not replace it */
 :root {
   /* Simulator-Flaechen */
   --sim-bg: var(--lnc-surface-dark);          /* #0D1117 */
   --sim-panel: var(--lnc-surface);            /* #161B22 */
-  --sim-panel-elevated: #1C2333;              /* leicht heller fuer Cards */
+  --sim-panel-elevated: #1C2333;              /* slightly lighter, for cards */
   --sim-border: var(--lnc-border-hard);       /* #30363D */
 
   /* Simulator-Akzente */
-  --sim-accent: var(--lnc-cyan);              /* #58A6FF — Primaer */
+  --sim-accent: var(--lnc-cyan);              /* #58A6FF — primary */
   --sim-accent-dim: rgba(88, 166, 255, 0.15); /* Glow, Hover-BG */
   --sim-success: var(--lnc-green);            /* #00E676 */
   --sim-danger: var(--lnc-danger);            /* #F85149 */
@@ -67,16 +73,18 @@
   --sim-text-muted: var(--lnc-text-muted);    /* #8B949E */
   --sim-text-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
-  /* Status-Glow (fuer Pass/Fail Animationen) */
+  /* status glow, for the pass/fail animations */
   --sim-glow-pass: 0 0 12px rgba(0, 230, 118, 0.3);
   --sim-glow-fail: 0 0 12px rgba(248, 81, 73, 0.3);
   --sim-glow-accent: 0 0 12px rgba(88, 166, 255, 0.2);
 }
 ```
 
-**Light Mode**: Simulatoren bleiben IMMER dunkel. Das ist bewusst — ein Terminal/Dashboard sieht in Dark besser aus. NC Light Mode aendert nur den Rahmen drumherum, nicht die Simulatoren selbst. Falls NC Dark Mode an ist, fuegen sich die Simulatoren nahtlos ein.
+**Light mode**: simulators stay dark ALWAYS. That is deliberate — a terminal or dashboard reads better dark. Nextcloud's light mode
+only changes the frame around them, never the simulators themselves. When Nextcloud is in dark
+mode, the simulators blend straight in.
 
-## 4. Typografie
+## 4. Typography
 
 ```css
 .sim-tool__title {
@@ -103,7 +111,7 @@
   max-width: 600px;
 }
 
-/* Tabellen und Daten: immer Monospace */
+/* tables and data: always monospace */
 .sim-tool__table td,
 .sim-tool__card code,
 .sim-tool__input {
@@ -112,29 +120,31 @@
 }
 ```
 
-## 5. Komponenten-Spezifikation
+## 5. Component specification
 
-## 5.0 SubnetCalculator Ausnahme
+## 5.0 The SubnetCalculator exception
 
-Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Klassen-Prefix, nutzt aber fuer Farben, Text-Hierarchie und Hintergruende dieselben `--sim-*` Tokens wie die uebrigen Simulatoren. So bleibt die bestehende Markup-Struktur stabil, waehrend das visuelle Erscheinungsbild mit dem Terminal-Noir-System konsistent bleibt.
+`SubnetCalculator.vue` keeps its existing `subnet-tool__` class prefix for now, but draws its
+colours, text hierarchy and backgrounds from the same `--sim-*` tokens as the other simulators.
+The existing markup stays stable while the appearance stays consistent with terminal noir.
 
-### 5.1 Header (jeder Simulator)
+### 5.1 Header (every simulator)
 
 ```
 ┌──────────────────────────────────────────────────────┐
 │  COMPTIA NETWORK+ N10-009        ← Eyebrow (cyan)   │
 │  DNS-Resolver                    ← Title (mono)      │
-│  Verfolge die Lookup-Kette...    ← Subtitle (muted)  │
+│  Follow the lookup chain...      ← Subtitle (muted)  │
 │                                                       │
-│  [Simulator]  [Uebung]          ← Tabs               │
+│  [Simulator]  [Practice]        ← Tabs               │
 └──────────────────────────────────────────────────────┘
 ```
 
-- Eyebrow: Immer "CompTIA Network+ N10-009" oder "CompTIA Security+ SY0-701"
-- Kein "Phase 64" Badge — das ist internes GSD, nicht User-relevant
-- Kein Erklaer-Modus Toggle im Header (nur beim Subnetzrechner relevant, dort belassen)
+- Eyebrow: always "CompTIA Network+ N10-009" or "CompTIA Security+ SY0-701"
+- No "Phase 64" badge — that is internal planning, of no interest to the user
+- No explain-mode toggle in the header; it is relevant only to the subnet calculator, where it stays
 
-### 5.2 Tabs (Simulator | Uebung)
+### 5.2 Tabs (Simulator | Practice)
 
 ```css
 .sim-tool__tabs {
@@ -167,7 +177,7 @@ Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Kl
 }
 ```
 
-### 5.3 Cards (Ergebnisse, Informationen)
+### 5.3 Cards (results, information)
 
 ```css
 .sim-tool__card {
@@ -192,7 +202,7 @@ Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Kl
 }
 ```
 
-### 5.4 Tabellen (Firewall, Routing, NAT, Ports)
+### 5.4 Tables (firewall, routing, NAT, ports)
 
 ```css
 .sim-tool__table {
@@ -292,7 +302,7 @@ Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Kl
 }
 ```
 
-### 5.6 Eingabefelder
+### 5.6 Input fields
 
 ```css
 .sim-tool__input {
@@ -330,7 +340,7 @@ Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Kl
 }
 ```
 
-### 5.7 Status-Indikatoren
+### 5.7 Status indicators
 
 ```css
 .sim-tool__status {
@@ -376,7 +386,7 @@ Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Kl
 .sim-tool__dot--filtered { background: var(--sim-warn); }
 ```
 
-### 5.8 Animationen
+### 5.8 Animations
 
 ```css
 /* Scan-Fortschritt (Port-Scanner) */
@@ -425,9 +435,9 @@ Der `SubnetCalculator.vue` behaelt vorerst seinen bestehenden `subnet-tool__` Kl
 }
 ```
 
-## 6. Werkzeuge-Tab Navigation (App.vue)
+## 6. Tools-tab navigation (App.vue)
 
-Die aktuelle `course-sub-nav` mit 8 Text-Buttons ist zu eng. Neues Design:
+The current `course-sub-nav` with eight text buttons is too cramped. The new design:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -436,10 +446,10 @@ Die aktuelle `course-sub-nav` mit 8 Text-Buttons ist zu eng. Neues Design:
 └──────────────────────────────────────────────────────────┘
 ```
 
-- Icons + Kurzlabel
-- 2 Zeilen Grid (4x2) statt 1 Zeile Flex
-- Aktiver Tab: Cyan-Glow + Border-Bottom
-- Inaktive Tabs: Muted Text, kein Background
+- Icons plus a short label
+- A two-row grid (4×2) instead of a single flex row
+- Active tab: cyan glow plus a bottom border
+- Inactive tabs: muted text, no background
 
 ```css
 .sim-nav {
@@ -480,7 +490,7 @@ Die aktuelle `course-sub-nav` mit 8 Text-Buttons ist zu eng. Neues Design:
 @media (max-width: 600px) {
   .sim-nav {
     grid-template-columns: repeat(4, 1fr);
-    /* Bleibt 4x2 auch mobil, nur kleinere Padding */
+    /* stays 4x2 on mobile too, just with tighter padding */
   }
   .sim-nav__item {
     padding: 8px 4px;
@@ -489,41 +499,41 @@ Die aktuelle `course-sub-nav` mit 8 Text-Buttons ist zu eng. Neues Design:
 }
 ```
 
-## 7. Simulator-spezifische Elemente
+## 7. Simulator-specific elements
 
-Diese Elemente sind per Simulator unterschiedlich, nutzen aber das gemeinsame Token-System:
+These differ per simulator but are built from the shared token system:
 
-| Simulator | Spezial-Element | Design |
-|-----------|----------------|--------|
-| DNS | Lookup-Kette (Pfeil-Animation) | Horizontale Boxen mit Pfeilen, Cyan-Glow bei aktivem Schritt |
-| Firewall | Regeltabelle + Paket-Test | Tabelle mit Drag-Handle (≡ Icon links), kein Up/Down Button |
-| Port-Scanner | Scan-Animation | Progress-Bar + zeilenweises Einblenden der Ergebnisse |
-| Routing | Longest Prefix Match | Matching-Routen gruen hervorgehoben, Gewinner-Route mit Glow |
-| NAT | Paket-Transformation | Links/Rechts-Diagramm mit Adress-Aenderung in der Mitte |
-| Wireshark | Paket-Schichten | Verschachtelte aufklappbare Boxen, Farbkodiert pro Layer |
-| 802.1X | Sequenzdiagramm | Vertikale Timeline mit 3 Akteuren, animierte Pfeile |
+| Simulator | Distinctive element | Design |
+|-----------|--------------------|--------|
+| DNS | Lookup chain (arrow animation) | Horizontal boxes joined by arrows, cyan glow on the active step |
+| Firewall | Rule table plus packet test | Table with a drag handle (≡ icon on the left), no up/down buttons |
+| Port scanner | Scan animation | Progress bar, results fading in row by row |
+| Routing | Longest prefix match | Matching routes highlighted green, the winning route glowing |
+| NAT | Packet transformation | A left/right diagram with the address rewrite in the middle |
+| Wireshark | Packet layers | Nested collapsible boxes, colour-coded per layer |
+| 802.1X | Sequence diagram | A vertical timeline with three actors and animated arrows |
 
-## 8. Migration-Checkliste
+## 8. Migration checklist
 
-Fuer jeden Simulator:
+For each simulator:
 
-- [ ] BEM-Prefix auf `sim-tool__` umstellen
-- [ ] Alle Inline-Styles durch CSS-Klassen ersetzen
-- [ ] Alle Hardcoded-Farben durch `--sim-*` Tokens ersetzen
-- [ ] Header: Eyebrow + Titel + Subtitle (einheitlich)
-- [ ] Tabs: `sim-tool__tabs` Pattern
-- [ ] Tabellen: `sim-tool__table` Pattern
-- [ ] Buttons: `sim-tool__btn` Pattern (keine NC NcButton in Simulatoren)
-- [ ] Inputs: `sim-tool__input` Pattern
-- [ ] Status: `sim-tool__status--pass/fail/warn` Pattern
-- [ ] Animationen: `prefers-reduced-motion` respektieren
-- [ ] Dark-Mode: Simulator bleibt immer dunkel
-- [ ] Mobile: Tabelle horizontal scrollbar, Inputs full-width
-- [ ] "Phase XX" Badge entfernen (internes GSD, nicht User-relevant)
+- [ ] Switch the BEM prefix to `sim-tool__`
+- [ ] Replace every inline style with a CSS class
+- [ ] Replace every hard-coded colour with a `--sim-*` token
+- [ ] Header: eyebrow, title and subtitle, consistently
+- [ ] Tabs: the `sim-tool__tabs` pattern
+- [ ] Tables: the `sim-tool__table` pattern
+- [ ] Buttons: the `sim-tool__btn` pattern — no Nextcloud `NcButton` inside a simulator
+- [ ] Inputs: the `sim-tool__input` pattern
+- [ ] Status: the `sim-tool__status--pass/fail/warn` pattern
+- [ ] Animations: respect `prefers-reduced-motion`
+- [ ] Dark mode: the simulator always stays dark
+- [ ] Mobile: tables scroll horizontally, inputs go full width
+- [ ] Remove any "Phase XX" badge — internal planning, of no interest to the user
 
-## 9. Nicht aendern
+## 9. Do not change
 
-- SubnetCalculator Erklaer-Modus Toggle (spezifisch fuer diesen Simulator)
-- SubnetCalculator Toggle-Presets (Alle/Anfaenger/Fortgeschritten)
-- Uebungsmodus-Logik (practiceEngine Pattern bleibt)
-- Embedded-Mode API (:scenario + $emit)
+- The SubnetCalculator explain-mode toggle, which is specific to that simulator
+- The SubnetCalculator toggle presets (all / beginner / advanced)
+- The practice-mode logic — the `practiceEngine` pattern stays
+- The embedded-mode API (`:scenario` plus `$emit`)

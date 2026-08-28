@@ -1,37 +1,45 @@
-# Network+ Buchkapitel RAG-Import
+# RAG import of book chapters — a worked example
 
-Verifizierter DevCloud-Pfad:
+A concrete run of `occ learning:import-vault`, kept as a reference for the command's shape and
+its output. The paths and IDs below are from one specific instance; substitute your own.
+
+The source directory is a folder of Markdown files readable by the web-server user — here a
+Nextcloud group folder:
 
 ```text
 /var/www/html/data/__groupfolders/1/Netzwerk+/Buchkapitel
 ```
 
-Verifizierte Kurs-ID:
+The target course, by ID:
 
 ```text
 20 = CompTIA Network+ (N10-009)
 ```
 
-Dry-Run:
+Dry run — walks the directory and reports what it would import, without writing:
 
 ```bash
-docker exec -u www-data learning-app php occ learning:import-vault \
+occ learning:import-vault \
   /var/www/html/data/__groupfolders/1/Netzwerk+/Buchkapitel \
   --course-id=20 \
   --dry-run
 ```
 
-Live-Import:
+The real import:
 
 ```bash
-docker exec -u www-data learning-app php occ learning:import-vault \
+occ learning:import-vault \
   /var/www/html/data/__groupfolders/1/Netzwerk+/Buchkapitel \
   --course-id=20
 ```
 
-Stand 2026-03-31:
+Result of this run (2026-03-31):
 
-- 23 Markdown-Dateien gefunden
-- 34 RAG-Chunks importiert
-- erneuter Dry-Run meldet `Skipped existing: 23`
-- DB-Verifikation fuer dieses Kapitelset: `34` Chunks mit `source_file LIKE 'Kapitel-%'`
+- 23 Markdown files found
+- 34 RAG chunks imported
+- a second dry run reports `Skipped existing: 23`, so the import is idempotent
+- verified in the database: `34` chunks matching `source_file LIKE 'Kapitel-%'`
+
+> `occ` is invoked differently depending on your installation — `sudo -u www-data php occ …`
+> for a package install, `docker exec -u www-data <container> php occ …` under Docker, or
+> `sudo nextcloud.occ …` for the Snap.

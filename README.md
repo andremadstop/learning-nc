@@ -176,8 +176,11 @@ Evaluating it for an organisation? [Open a Codeberg issue](https://codeberg.org/
 Contributions are welcome! Whether it's bug reports, feature ideas, translations, or code — feel free to open an issue or PR.
 
 The interface ships in six languages — German (source), English, French, Russian, Arabic and
-Ukrainian. The codebase and documentation are in English. Ukrainian is a first pass and has
-not been reviewed by a native speaker; corrections are welcome, see
+Ukrainian. The codebase and documentation are in English.
+
+**None of the translations have been reviewed by a native speaker.** They were produced with
+machine assistance from the German source, and that includes English. Corrections are the most
+useful contribution there is, and they do not require touching any code — see
 [the manual](docs/MANUAL.md#7-languages-and-translations) for how to submit them.
 
 ## License

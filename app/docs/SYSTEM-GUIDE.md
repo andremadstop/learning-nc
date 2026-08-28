@@ -1,240 +1,277 @@
-# Wie ein Nicht-Programmierer mit KI ein professionelles IT-System gebaut hat
+# How a non-programmer built a professional IT system with AI
 
-> Ein technisches Briefing — und eine Einladung zum Nachbauen.
+> A technical briefing — and an invitation to build your own.
 
-## Ausgangslage
+## Starting point
 
-Anfang 2026. Kein Informatik-Studium, keine Programmiererfahrung, kein Unternehmen. Ein Proxmox-Server, Neugier und Claude Code.
+Early 2026. No computer-science degree, no programming experience, no company. A Proxmox
+server, curiosity, and Claude Code.
 
-Heute: 17 VMs/Container, 16+ KI-Agents, eine App im Nextcloud App Store, 4 Telegram-Bots fuer die Familie, ein Self-Improvement-Loop der aus jeder Session lernt, und eine Infrastruktur die ein Senior DevOps als "solide" bezeichnen wuerde.
-
----
-
-## 1. Infrastruktur-Ueberblick
-
-### Was laeuft
-
-- **Proxmox VE** Hypervisor mit 17 VMs/Containern (NixOS, Debian, Alpine)
-- **Workstation** (Arch-basiert, GPU fuer lokale LLMs)
-- **Relay VPS** (oeffentliche Services via WireGuard-Tunnel)
-- 3 Hosts auf **NixOS** mit deklarativen, versionierten Configs — jede Aenderung ist ein Git-Commit, Rollback jederzeit moeglich
-
-### Services (Auswahl)
-
-Nextcloud, Home Assistant, n8n (Workflow-Automation), Paperless-NGX (Dokumenten-OCR), Vaultwarden (Passwort-Manager), AdGuard (DNS-Filter), Jellyfin (Media), Audiobookshelf, plus On-Demand Game-Server.
-
-### Architektur-Prinzip
-
-Alles self-hosted. Kein Cloud-Vendor-Lock-in. Jeder Service laeuft in einem eigenen Container oder einer eigenen VM mit klarer Netzwerk-Segmentierung.
+Today: 17 VMs and containers, 16+ AI agents, an app published in the Nextcloud App Store, four
+Telegram bots for the family, a self-improvement loop that learns from every session, and an
+infrastructure a senior DevOps engineer would call solid.
 
 ---
 
-## 2. KI-Agenten-Architektur
+## 1. Infrastructure overview
 
-### Tier 1: Entwicklung & Architektur
+### What runs
 
-| Agent | Aufgabe |
-|-------|---------|
-| **Claude Code** | Architektur, Code-Review, Security, Koordination |
-| **Codex** | Bulk-Implementierung, Tests, parallele Ausfuehrung |
-| **Gemini** | Analyse, Transkription, Content-Verarbeitung |
+- **Proxmox VE** hypervisor with 17 VMs and containers (NixOS, Debian, Alpine)
+- **Workstation** (Arch-based, GPU for local LLMs)
+- **Relay VPS** (public services over a WireGuard tunnel)
+- Three hosts on **NixOS** with declarative, versioned configuration — every change is a git
+  commit and can be rolled back at any time
 
-Arbeitsteilung: Claude plant und reviewt, Codex implementiert autonom (via formalisierte Handoff-Dokumente), Gemini analysiert Medien.
+### Services (a selection)
 
-### Tier 2: Familien-Bot-Plattform
+Nextcloud, Home Assistant, n8n (workflow automation), Paperless-NGX (document OCR), Vaultwarden
+(password manager), AdGuard (DNS filtering), Jellyfin (media), Audiobookshelf, plus on-demand
+game servers.
 
-Eine Python-Codebasis, 4 Container, 4 personalisierte Telegram-Bots mit eigenen Personas und Tool-Sets. Jeder User bekommt einen individuell zugeschnittenen Assistenten.
+### Architectural principle
 
-**Technischer Stack:**
-- LLM: Gemini 2.5 Flash (Primary) + Ollama (Fallback, lokal)
-- Memory: SQLite (Konversationen, Learnings, Preferences)
-- RAG: ChromaDB + lokale Embeddings
-- Voice: Gemini TTS + edge-tts Fallback
-- Hosting: Podman rootless auf NixOS
-- Content Pipeline: Video-URL → Download → Transkription → Zusammenfassung → Vault
+Everything self-hosted. No cloud vendor lock-in. Every service runs in its own container or VM
+with clear network segmentation.
 
-### Tier 3: Automatisierung
+---
 
-| Agent | Funktion |
+## 2. AI agent architecture
+
+### Tier 1: development and architecture
+
+| Agent | Role |
+|-------|------|
+| **Claude Code** | Architecture, code review, security, coordination |
+| **Codex** | Bulk implementation, tests, parallel execution |
+| **Gemini** | Analysis, transcription, content processing |
+
+The division of labour: Claude plans and reviews, Codex implements autonomously through
+formalised handoff documents, Gemini analyses media.
+
+### Tier 2: the family bot platform
+
+One Python codebase, four containers, four personalised Telegram bots with their own personas
+and tool sets. Every user gets an assistant cut to fit.
+
+**Technical stack**
+
+- LLM: Gemini 2.5 Flash (primary) plus Ollama (local fallback)
+- Memory: SQLite (conversations, learnings, preferences)
+- RAG: ChromaDB with local embeddings
+- Voice: Gemini TTS with an edge-tts fallback
+- Hosting: rootless Podman on NixOS
+- Content pipeline: video URL → download → transcription → summary → vault
+
+### Tier 3: automation
+
+| Agent | Function |
 |-------|----------|
-| Voice Pipeline | Sprachnachrichten-Transkription (n8n + Gemini STT) |
-| ScanInbox | Scanner → OCR Pipeline |
-| KlimaBot | Smart-Home Automationen (Schimmelwarnung, Lueftung) |
-| Healthcheck | SSH-Check aller Services, Telegram-Alert bei Ausfall |
+| Voice pipeline | Voice-message transcription (n8n plus Gemini STT) |
+| ScanInbox | Scanner to OCR pipeline |
+| KlimaBot | Smart-home automation (mould warnings, ventilation) |
+| Healthcheck | SSH check across all services, Telegram alert on failure |
 
-### Tier 4: Lokal (Offline-faehig)
+### Tier 4: local (offline-capable)
 
-- **Ollama** mit 10+ Modellen (GPU-beschleunigt)
-- **Whisper ASR** (lokale Spracherkennung)
-- **Stable Diffusion** (Bildgenerierung)
-
----
-
-## 3. Software-Entwicklung: learning-nc
-
-### Was es ist
-
-Eine **Nextcloud App fuer Karteikarten-Lernen** mit Spaced Repetition (Leitner-System). Im offiziellen Nextcloud App Store veroeffentlicht.
-
-### Tech Stack
-
-- Backend: PHP 8.1, Nextcloud App Framework, PostgreSQL 16
-- Frontend: Vue 2.7, Webpack
-- Hosting: Docker auf eigenem Dev-Server
-
-### Feature-Umfang (v12.0)
-
-**Kern-Features:**
-- **Leitner-System** mit 5 Boxen + Smart Queue
-- **Exam Mode** mit Timer, Attempts, Deadlines
-- **PBQ-Simulator** (Performance-Based Questions): CLI State Machine, SVG Topology, Drag and Drop
-
-**Arena & Multiplayer:**
-- Live-Duell, Gameshow-Modi (Sprint, Elimination), Brettspiel-Modi
-- Liga-System mit Saisons und Leaderboard
-- Coop-Modus (2-4 Spieler, Kampagnen gemeinsam loesen)
-
-**Kampagnen-RPG:**
-- Graph-basiertes Erzaehlsystem mit Entscheidungen und Konsequenzen
-- 3 spielbare Kampagnen (Security+ Szenarien mit NPCs, Items, Reputation)
-- Quest-Map (D3.js), HUD, Timer-Countdown, DauBot (KI-Azubi als Lern-Mechanik)
-
-**8 Netzwerk-Simulatoren:**
-- DNS-Resolver, Firewall-Builder, Port-Scanner, Routing-Tabelle, NAT-Tabelle, Wireshark-Lite, 802.1X Auth-Flow, Subnetzrechner Pro
-
-**KI-Assistent VirtuProf:**
-- Kontext-bewusster Tutor mit Hint-System
-- Telos-Onboarding (Lernprofil erstellen)
-- TTS/STT Voice-Settings (15 Sprachen)
-
-**Zahlen:** 51+ API Endpoints, 13+ DB-Tabellen, 15 Services, 20+ Vue Components, 2000+ Pruefungsfragen (DE+EN)
-
-### Entwicklungsprozess
-
-Alles mit KI gebaut. Keine Zeile PHP oder Vue vorher geschrieben.
-
-**Quality Gates (4-Gate Pyramide):**
-1. **Statisch**: PHPStan Level 5, ESLint 0 Errors, 471 Unit-Tests, Security Scan
-2. **API**: 25+ automatisierte Endpoint-Tests
-3. **Browser**: 67 Playwright E2E Checks
-4. **Release**: PHPUnit + manuelles Testprotokoll (62 Checks)
-
-Pre-Push Hook blockiert Code der Gate 1 nicht besteht. Impact-Analyse via Knowledge Graph vor jeder Aenderung.
+- **Ollama** with 10+ models, GPU accelerated
+- **Whisper ASR** for local speech recognition
+- **Stable Diffusion** for image generation
 
 ---
 
-## 4. Sicherheitskonzepte
+## 3. Software development: learning-nc
 
-### Prinzipien
+### What it is
 
-- **Secrets nur in Passwort-Manager oder .env** — nie in Code, Logs oder Markdown
-- **SSH mit dedizierten Keys** pro Zweck (Arbeit, Mounts, Notfall) — IdentitiesOnly verhindert Key-Leakage
-- **DNS-Filtering** + VPN-Tunnel + Reverse Proxy mit SSL fuer alle Services
-- **Firewall** nur LAN + VPN Zugriff auf Verwaltungs-Interfaces
-- **Backups** dedupliziert + verschluesselt (restic), automatisiert mit Alerting
+A **Nextcloud app for flashcard learning** with spaced repetition (the Leitner system),
+published in the official Nextcloud App Store.
 
-### Application Security
+### Tech stack
 
-- Rate Limiting, CSRF (Framework), Prepared Statements (kein SQL Injection)
-- Access Control: Ownership + Share-Checks in jedem Service
-- Optimistic Locking gegen Race Conditions
-- 3 externe Security Reviews
+- Backend: PHP 8.1+, the Nextcloud app framework, PostgreSQL 16
+- Frontend: Vue 3.5, Vite
+- Hosting: Docker on a dedicated server
+
+### Feature scope
+
+**Core**
+
+- **The Leitner system** with five boxes plus a smart queue
+- **Exam mode** with timers, attempts and deadlines
+- **A PBQ simulator** for performance-based questions: CLI state machine, SVG topology, drag and drop
+
+**Arena and multiplayer**
+
+- Live duels, game-show modes (sprint, elimination), board-game modes
+- A league system with seasons and a leaderboard
+- Co-op mode: two to four players solving campaigns together
+
+**Campaign RPG**
+
+- A graph-based narrative system with decisions and consequences
+- Three playable campaigns (Security+ scenarios with NPCs, items, reputation)
+- Quest map (D3.js), HUD, countdown timer, DauBot (an AI apprentice as a learning mechanic)
+
+**Eight network simulators**
+
+DNS resolver, firewall builder, port scanner, routing table, NAT table, Wireshark-lite, 802.1X
+authentication flow, and an advanced subnet calculator.
+
+**VirtuProf, the AI assistant**
+
+- A context-aware tutor with a hint system
+- Telos onboarding to build a learning profile
+- TTS and STT voice settings across 15 languages
+
+**By the numbers:** 50+ API endpoints, 13+ database tables, 15 services, 100+ Vue components,
+2,000+ exam questions.
+
+### Development process
+
+Built entirely with AI. Not a line of PHP or Vue written beforehand.
+
+**Quality gates (a four-gate pyramid)**
+
+1. **Static:** PHPStan level 5, ESLint with zero errors, 1,200+ unit tests, a security scan
+2. **API:** automated endpoint tests
+3. **Browser:** Playwright end-to-end checks
+4. **Release:** PHPUnit plus a manual test protocol of 62 checks
+
+A pre-push hook blocks any code that fails gate 1. Impact analysis via a knowledge graph runs
+before every change.
+
+---
+
+## 4. Security concepts
+
+### Principles
+
+- **Secrets only in a password manager or `.env`** — never in code, logs or Markdown
+- **SSH with dedicated keys** per purpose (work, mounts, emergency); `IdentitiesOnly` prevents
+  key leakage
+- **DNS filtering** plus a VPN tunnel plus a reverse proxy with TLS for every service
+- **Firewall** allowing only LAN and VPN access to management interfaces
+- **Backups** deduplicated and encrypted (restic), automated with alerting
+
+### Application security
+
+- Rate limiting, CSRF protection from the framework, prepared statements throughout
+- Access control: ownership and share checks in every service
+- Optimistic locking against race conditions
+- Three external security reviews
 
 ### Privacy
 
-- Kinder-Daten mit TTL, redaktierte Logs
-- Verschluesselte persoenliche Daten (AES-256-GCM)
-- Kein Cloud-Upload — alles self-hosted
+- Children's data carries a TTL; logs are redacted
+- Personal data encrypted (AES-256-GCM)
+- No cloud upload — everything self-hosted
 
 ---
 
-## 5. Wissensmanagement
+## 5. Knowledge management
 
-### Obsidian als zentrale Wissensbasis
+### Obsidian as the central knowledge base
 
-- Hunderte Markdown-Dateien in einem Vault
-- Echtzeit-Sync zwischen allen Geraeten (CouchDB + LiveSync)
-- Glossar, Rezepte, Lebensmittel-Lexikon — alles strukturiert mit Frontmatter
-- Familienmitglieder haben eigene Vaults, Bots schreiben automatisch rein
+- Hundreds of Markdown files in one vault
+- Real-time sync across all devices (CouchDB plus LiveSync)
+- Glossary, recipes, a food encyclopedia — all structured with front matter
+- Family members have their own vaults; bots write into them automatically
 
-### Lernpfad
+### Learning path
 
-CompTIA Network+ → Security+ → CySA+ → Linux+ — das eigene Homelab als Praxislabor. Eigene Pruefungsfragen-Pools in der App (2000+ Fragen).
-
----
-
-## 6. Selbst-verbessendes System
-
-### ISC-Workflow (Ideal State Criteria)
-
-Vor jeder nicht-trivialen Aufgabe:
-1. **OBSERVE** — Ziel in binaere, testbare Kriterien uebersetzen
-2. **BUILD** — Umsetzen
-3. **VERIFY** — Jeden Punkt explizit abhaken
-4. **LEARN** — Rating + Signal
-
-### Signals → Steering Rules
-
-Jede Session wird bewertet (Rating 1-10). Bei genuegend Eintraegen werden Muster zu konkreten Regeln synthetisiert die in zukuenftige Sessions einfliessen. Das System wird mit jeder Nutzung klueger.
-
-### Formalisiertes Projekt-Management
-
-Roadmap → Milestones → Phases → Plans → Tasks. Spezialisierte Sub-Agents (Researcher, Planner, Executor, Verifier). Atomic Commits, State Tracking, Deviation Handling.
+CompTIA Network+ → Security+ → CySA+ → LPIC, with the homelab as the practical laboratory, and
+the app's own question pools (2,000+ questions) as the study material.
 
 ---
 
-## 7. Was KI hier wirklich geleistet hat
+## 6. A self-improving system
 
-### Ersetzt
+### The ISC workflow (Ideal State Criteria)
 
-- Backend-Entwickler, Frontend-Entwickler, DevOps-Engineer
-- Security Auditor, Technical Writer, Sys-Admin
+Before every non-trivial task:
 
-### Nicht ersetzt
+1. **OBSERVE** — translate the goal into binary, testable criteria
+2. **BUILD** — implement
+3. **VERIFY** — tick off every criterion explicitly
+4. **LEARN** — rate the session and record a signal
 
-- **Architektur-Entscheidungen** — KI schlaegt vor, Mensch entscheidet
-- **Produkt-Vision** — Was gebaut wird kommt vom User
-- **Qualitaetsurteil** — "Ist das gut genug?" ist menschlich
-- **Risiko-Bewertung** — Destruktive Aktionen brauchen Freigabe
+### Signals into steering rules
 
-### Der echte Hebel
+Every session is rated from 1 to 10. Once enough entries accumulate, the patterns are
+synthesised into concrete rules that feed into future sessions. The system gets smarter with use.
 
-Nicht "KI schreibt Code". Sondern: **KI multipliziert die Lerngeschwindigkeit.**
+### Formalised project management
 
-Jedes geloeste Problem wird zu Wissen. Jedes Pattern wird zu einer Regel. Jede Regel macht die naechste Session besser. Nach 50+ Sessions ist das System klueger als jede einzelne Session es sein koennte.
-
-Das ist kein Vibe Coding. Das ist akkumuliertes, strukturiertes, nachpruefbares Systemwissen.
-
----
-
-## 8. Zum Nachbauen
-
-### Was du brauchst
-
-- Einen Rechner (Linux, Windows mit WSL, oder Mac)
-- Einen Claude Code Account (oder anderes KI-Coding-Tool)
-- Obsidian (kostenlos) fuer Wissensmanagement
-- Neugier und die Bereitschaft, Fehler als Lernchance zu sehen
-
-### Der Kern in 3 Saetzen
-
-1. **Obsidian Vault als Gedaechtnis** — Alles was du lernst, baust, entscheidest wird in Markdown festgehalten. Das ist dein persistentes Wissen das ueber Sessions hinweg waechst.
-2. **KI als Multiplikator** — Du gibst die Richtung vor, KI implementiert. Aber: Du musst die Ergebnisse verstehen und pruefen koennen. "Vertrauen aber verifizieren."
-3. **Feedback-Loop** — Jede Session macht dich besser. Signals, Korrekturen, Patterns werden gespeichert und fliessen in die naechste Session ein. Nach 50 Sessions bist du 10x schneller als am Anfang.
-
-### Erste Schritte
-
-1. **Obsidian installieren** — Einen Vault anlegen, erste Notizen schreiben (was willst du bauen? was kannst du schon?)
-2. **Claude Code einrichten** — CLAUDE.md schreiben (wer bist du, was sind die Regeln, wo liegt der Code)
-3. **Kleines Projekt starten** — Nicht mit "ich baue eine App" anfangen, sondern mit "ich lerne wie ein API-Endpoint funktioniert"
-4. **Jeden Tag 30 Minuten** — Konsistenz schlaegt Intensitaet. Lieber taeglich 30 Minuten als einmal pro Woche 8 Stunden.
-
-### Was dieses System NICHT ist
-
-- Kein Ersatz fuer Grundlagen-Verstaendnis (du musst wissen WAS du baust, auch wenn KI das WIE uebernimmt)
-- Kein Magic Button (es braucht Wochen bis der Feedback-Loop greift)
-- Kein Solo-Projekt (Community, Mentoren und Peers sind unverzichtbar)
+Roadmap → milestones → phases → plans → tasks, with specialised sub-agents (researcher, planner,
+executor, verifier), atomic commits, state tracking and deviation handling.
 
 ---
 
-*Stand: 2026-03-26 | Erstellt mit Claude Code, verifiziert vom Autor.*
+## 7. What the AI actually did
+
+### Replaced
+
+- Backend developer, frontend developer, DevOps engineer
+- Security auditor, technical writer, sysadmin
+
+### Did not replace
+
+- **Architectural decisions** — the AI proposes, a human decides
+- **Product vision** — what gets built comes from the user
+- **Judgement of quality** — "is this good enough?" stays human
+- **Risk assessment** — destructive actions need approval
+
+### The real lever
+
+Not "AI writes code", but: **AI multiplies the speed of learning.**
+
+Every problem solved becomes knowledge. Every pattern becomes a rule. Every rule makes the next
+session better. After 50-odd sessions the system knows more than any single session could.
+
+This is not vibe coding. It is accumulated, structured, verifiable system knowledge.
+
+---
+
+## 8. Building your own
+
+### What you need
+
+- A computer (Linux, Windows with WSL, or a Mac)
+- A Claude Code account, or another AI coding tool
+- Obsidian (free) for knowledge management
+- Curiosity, and a willingness to treat mistakes as material to learn from
+
+### The core in three sentences
+
+1. **The Obsidian vault is the memory.** Everything you learn, build and decide gets written
+   down in Markdown. That is your persistent knowledge, and it grows across sessions.
+2. **The AI is a multiplier.** You set the direction, the AI implements — but you have to
+   understand and check the results. Trust, then verify.
+3. **The feedback loop compounds.** Every session makes you better: signals, corrections and
+   patterns are stored and feed into the next one. After 50 sessions you are an order of
+   magnitude faster than at the start.
+
+### First steps
+
+1. **Install Obsidian.** Create a vault, write the first notes: what do you want to build, and
+   what can you already do?
+2. **Set up Claude Code.** Write a CLAUDE.md — who you are, what the rules are, where the code
+   lives.
+3. **Start something small.** Not "I'm building an app", but "I'm learning how one API endpoint
+   works".
+4. **Thirty minutes a day.** Consistency beats intensity: half an hour daily beats eight hours
+   once a week.
+
+### What this system is not
+
+- Not a substitute for understanding fundamentals — you have to know WHAT you are building, even
+  when the AI handles the HOW
+- Not a magic button — it takes weeks before the feedback loop starts to pay
+- Not a solo project — community, mentors and peers are indispensable
+
+---
+
+*Written 2026-03-26, translated and refreshed 2026-08-28. Created with Claude Code, verified by
+the author. The stack and test figures reflect the state at the time of the refresh; the
+CHANGELOG is authoritative.*
