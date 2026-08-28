@@ -1,0 +1,54 @@
+#!/bin/bash
+# Pre-commit hook: static analysis of the PHP about to be committed.
+set -e
+
+# learning-dev wurde am 2026-04-09 abgeschaltet; die Instanz laeuft auf relais.
+# Dieser Hook zeigte bis 2026-08-22 auf den toten Host — er war nie aktiv
+# (core.hooksPath stand auf .git/hooks), deshalb fiel es nicht auf.
+HOST="relais"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Get staged PHP files (relative to app/)
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep '^app/lib/.*\.php$' || true)
+
+if [ -z "$STAGED_PHP" ]; then
+  exit 0
+fi
+
+echo "=== Pre-commit: PHP Quality Check ==="
+
+# Zwei Loecher, beide am 2026-08-28 beim Codeberg-#4-Fix gefunden, beide aus derselben
+# Klasse wie der Bug, der sie ans Licht brachte — "Fehler sieht aus wie Erfolg":
+#
+#   1. Der Syntaxcheck lief `php -l` gegen $APP_PATH/<datei> — die DEPLOYTE Datei, nicht die
+#      committete. Er hat also brav die vorige Version durchgewinkt und ueber den Commit-
+#      Inhalt nie ein Wort gesagt.
+#   2. `RESULT=$(ssh ... || echo "UNREACHABLE")` konnte Erreichbarkeit und Analyse nicht
+#      unterscheiden: PHPStan-Exit != 0 (also *gefundene Fehler*, oder ein fehlendes
+#      vendor/bin/phpstan nach einem Release-Deploy) landete im selben Zweig wie ein toter
+#      Host — Meldung "relais nicht erreichbar", Commit durch. Seit der CI-Abschaltung am
+#      2026-06-30 sind diese Hooks das gesamte Qualitaetsnetz.
+#
+# Erreichbarkeit wird jetzt separat geprueft, und die Analyse laeuft ueber
+# scripts/deploy-prod.sh --phpstan gegen eine Wegwerf-Kopie der ARBEITSKOPIE im Container
+# (nicht gegen die Produktiv-App). PHPStan meldet Parse-Fehler als Fehler, deckt den
+# weggefallenen `php -l`-Schritt also mit ab.
+#
+# Bewusste Unschaerfe: geprueft wird die Arbeitskopie, nicht der Index. Bei `git commit -p`
+# oder teil-gestageten Dateien kann das auseinanderlaufen — immer noch unendlich viel naeher
+# am Commit als die deployte Fassung, die vorher geprueft wurde.
+
+if ! ssh -o ConnectTimeout=5 "$HOST" true 2>/dev/null; then
+  echo "⊘ PHPStan uebersprungen — $HOST ist tatsaechlich nicht erreichbar (offline commit)"
+  echo "   Nachholen mit: ./scripts/deploy-prod.sh --phpstan"
+  echo "=== Pre-commit passed (ohne PHPStan) ==="
+  exit 0
+fi
+
+echo "  Running PHPStan (staged copy on $HOST)..."
+if ! "$REPO_ROOT/scripts/deploy-prod.sh" --phpstan; then
+  echo "✗ PHPStan errors — commit aborted!"
+  exit 1
+fi
+
+echo "=== Pre-commit passed ==="

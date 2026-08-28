@@ -53,11 +53,32 @@ fi
 cd "$ROOT_DIR"
 
 # 4. PHPStan (remote, non-blocking)
+# Beide PHP-Gates liefen bis 2026-08-28 gegen /var/www/html/custom_apps/learning — die
+# DEPLOYTE App. Zwei Folgen, beide schlecht: (a) man musste erst auf die Produktivinstanz
+# deployen, um pushen zu duerfen, und (b) nach einem Release-Deploy fehlt dort
+# vendor/bin/phpstan, womit beide Gates an einer fehlenden Datei scheiterten statt am Code.
+# Jetzt laeuft beides gegen eine Wegwerf-Kopie der ARBEITSKOPIE im Container — also gegen
+# genau den Stand, der gepusht werden soll.
+GATE_PATH="/tmp/learning-gate"
+echo -n "Stage-Gate... "
+if STAGE_OUT=$("$ROOT_DIR/scripts/deploy-prod.sh" --stage-gate 2>&1); then
+    echo -e "${GREEN}OK${NC}"
+else
+    STAGE_RC=$?
+    if [ $STAGE_RC -eq 255 ]; then
+        echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
+    else
+        echo -e "${RED}FAIL (exit $STAGE_RC)${NC}"
+        echo "$STAGE_OUT" | tail -8
+        FAILED=1
+    fi
+fi
+
 echo -n "PHPStan... "
 # Exitcode SEPARAT erfassen: ein '|| echo UNREACHABLE' verschluckt jeden Nicht-null-Exit und
 # macht aus einem echten Fehlschlag ein SKIP. Nur SSH-255 heisst "Host nicht erreichbar";
 # alles andere kommt aus dem Container und muss blockieren.
-PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpstan analyse --no-progress 2>&1')
+PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais "docker exec -w $GATE_PATH devcloud-app php vendor/bin/phpstan analyse --no-progress 2>&1")
 PHPSTAN_RC=$?
 if [ $PHPSTAN_RC -eq 255 ]; then
     echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
@@ -72,11 +93,11 @@ fi
 
 # 4b. PHPUnit (remote, non-blocking wenn relais weg)
 # Ohne dieses Gate laufen die PHP-Tests in keinem Pflichtlauf — genau deshalb konnte Codeberg #3
-# (AiController, alle AI-Endpoints 500) fuenf Monate lang durchrutschen. Achtung, gleiche
-# Einschraenkung wie bei PHPStan oben: geprueft wird der Stand IM CONTAINER, nicht der Working
-# Tree. Nach PHP-Aenderungen also erst deployen, dann pushen.
+# (AiController, alle AI-Endpoints 500) fuenf Monate lang durchrutschen. Seit 2026-08-28 laeuft
+# es wie PHPStan gegen die Wegwerf-Kopie der Arbeitskopie; die alte Einschraenkung "erst
+# deployen, dann pushen" gilt nicht mehr.
 echo -n "PHPUnit... "
-PHPUNIT_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpunit 2>&1')
+PHPUNIT_OUT=$(ssh -o ConnectTimeout=5 relais "docker exec -w $GATE_PATH devcloud-app php vendor/bin/phpunit 2>&1")
 PHPUNIT_RC=$?
 # Exitcode ZUERST, Text nur zur Anzeige. Die erste Fassung dieses Gates haengte
 # '|| echo UNREACHABLE' an und meldete deshalb bei Exit 1 (= fehlgeschlagene Tests) ein SKIP —

@@ -23,6 +23,10 @@ app/.planning/
 tools/
 .githooks/*
 !.githooks/pre-push
+# pre-commit gehoert zum selben dokumentierten Gate 1 wie pre-push und war nur
+# versehentlich nicht auf der Whitelist — der Fix vom 2026-08-28 haette sonst rein
+# lokal existiert. Enthaelt wie pre-push keine Secrets.
+!.githooks/pre-commit
 CLAUDE.md
 /COLLABORATION.md
 /CODEX_RESULT*.md

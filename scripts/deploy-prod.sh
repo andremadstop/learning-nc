@@ -7,16 +7,56 @@ MODE="${1:---full}"
 HOST="relais"
 CONTAINER="devcloud-app"
 APP_PATH="/var/www/html/custom_apps/learning"
+# Gate 1 (PHPStan + PHPUnit) runs against a throwaway copy inside the container, never against
+# $APP_PATH. Two reasons, both learned the hard way:
+#   1. devcloud is a production instance with real learners on it. Analysing $APP_PATH means
+#      deploying first and gating afterwards — which is what --php-only and --full used to do,
+#      so the "gate" only ever saw code that was already live.
+#   2. A release deploy wipes dev dependencies, so $APP_PATH/vendor/bin/phpstan disappears and
+#      the documented Gate-1 command dies with "Could not open input file". Found on 2026-08-28
+#      while fixing Codeberg #4 — the gate had been unrunnable, and "PHPStan clean" unprovable.
+# The staged copy is built from the LOCAL working tree, so it gates the code you are about to
+# ship rather than the code already shipped.
+GATE_PATH="/tmp/learning-gate"
 
 echo "=== Learning-NC Deploy to $HOST ==="
 
+# Mirrors the local working tree into $GATE_PATH inside the container and makes sure the dev
+# toolchain is present there. Idempotent: composer only runs when phpstan is actually missing.
+stage_gate_copy() {
+  echo "→ Staging analysis copy in $CONTAINER:$GATE_PATH ..."
+  ssh "$HOST" "mkdir -p ~/learning-nc/app/{lib,appinfo,tests}"
+  rsync -az --delete app/lib/ "$HOST:~/learning-nc/app/lib/"
+  rsync -az --delete --include='*/' --include='*.php' --exclude='*' app/tests/ "$HOST:~/learning-nc/app/tests/"
+  rsync -az app/composer.json app/phpstan.neon app/phpstan-baseline.neon app/phpunit.xml \
+    "$HOST:~/learning-nc/app/"
+
+  ssh "$HOST" "docker exec $CONTAINER mkdir -p $GATE_PATH/lib $GATE_PATH/tests && \
+    docker cp ~/learning-nc/app/lib/. $CONTAINER:$GATE_PATH/lib/ && \
+    docker cp ~/learning-nc/app/tests/. $CONTAINER:$GATE_PATH/tests/ && \
+    for f in composer.json phpstan.neon phpstan-baseline.neon phpunit.xml; do \
+      docker cp ~/learning-nc/app/\$f $CONTAINER:$GATE_PATH/\$f; \
+    done"
+
+  # The independent Ed25519 verifier the signing tests insist on (they fail rather than skip).
+  scp -q scripts/verify-credential.py "$HOST:/tmp/verify-credential.py"
+  ssh "$HOST" "docker cp /tmp/verify-credential.py $CONTAINER:/tmp/verify-credential.py"
+
+  ssh "$HOST" "docker exec $CONTAINER test -f $GATE_PATH/vendor/bin/phpstan" 2>/dev/null || {
+    echo "→ Dev toolchain missing in the staged copy — installing (one-off, a few minutes)..."
+    ssh "$HOST" "docker exec -w $GATE_PATH $CONTAINER bash -c '
+      test -f /tmp/composer || {
+        curl -sS -o /tmp/composer-setup.php https://getcomposer.org/installer &&
+        php /tmp/composer-setup.php --install-dir=/tmp --filename=composer --quiet
+      } &&
+      php /tmp/composer install --no-interaction --no-progress'"
+  }
+}
+
 run_phpstan() {
-  echo "→ Running PHPStan analysis..."
-  rsync -az app/phpstan.neon app/phpstan-baseline.neon "$HOST:~/learning-nc/app/" 2>/dev/null
-  ssh "$HOST" "docker cp ~/learning-nc/app/phpstan.neon $CONTAINER:$APP_PATH/phpstan.neon && \
-    docker cp ~/learning-nc/app/phpstan-baseline.neon $CONTAINER:$APP_PATH/phpstan-baseline.neon" 2>/dev/null
-  ssh "$HOST" "docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpstan analyse --no-progress 2>&1"
-  if [ $? -ne 0 ]; then
+  stage_gate_copy
+  echo "→ Running PHPStan analysis (staged copy — production app untouched)..."
+  if ! ssh "$HOST" "docker exec -w $GATE_PATH $CONTAINER php vendor/bin/phpstan analyse --no-progress 2>&1"; then
     echo "✗ PHPStan found errors — deploy aborted!"
     exit 1
   fi
@@ -76,11 +116,9 @@ deploy_js() {
 }
 
 run_phpunit() {
-  echo "→ Running PHPUnit tests..."
-  rsync -az --include='*.php' --exclude='*.js' app/tests/ "$HOST:~/learning-nc/app/tests/"
-  ssh "$HOST" "docker cp ~/learning-nc/app/tests/. $CONTAINER:$APP_PATH/tests/ 2>/dev/null && \
-    docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpunit 2>&1"
-  if [ $? -ne 0 ]; then
+  stage_gate_copy
+  echo "→ Running PHPUnit tests (staged copy)..."
+  if ! ssh "$HOST" "docker exec -w $GATE_PATH $CONTAINER php vendor/bin/phpunit 2>&1"; then
     echo "✗ PHPUnit tests failed!"
     exit 1
   fi
@@ -88,13 +126,15 @@ run_phpunit() {
 }
 
 case "$MODE" in
-  --help|-h)     echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test]"; exit 0 ;;
-  --php-only)    deploy_php; run_phpstan ;;
+  --help|-h)     echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test | --stage-gate]"; exit 0 ;;
+  --php-only)    run_phpstan; deploy_php ;;
   --js-only)     deploy_js ;;
-  --full)        deploy_php; run_phpstan; deploy_js ;;
+  --full)        run_phpstan; deploy_php; deploy_js ;;
   --phpstan)     run_phpstan ;;
   --test)        run_phpstan; run_phpunit ;;
-  *) echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test]"; exit 1 ;;
+  # For the git hooks: refresh the staged copy without running anything against it.
+  --stage-gate)  stage_gate_copy ;;
+  *) echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test | --stage-gate]"; exit 1 ;;
 esac
 
 echo "=== Deploy complete ==="
