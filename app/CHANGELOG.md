@@ -2,6 +2,67 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.1] - 2026-08-28 — The onboarding wizard never saved anything
+
+Reported by the same administrator piloting Learning in Vinnytsia
+([#4](https://codeberg.org/andremadstop/learning-nc/issues/4)): one error and one warning
+in the Nextcloud log. The warning was what it looked like. The error was the visible edge of
+a defect that had been silently discarding onboarding results since **v4.2.0 (4 April 2026)** —
+seventeen releases.
+
+### Fixed
+- **The onboarding wizard could not save a profile, and lost two more things while failing.**
+  `OnboardingRedesign.vue` built its own request body instead of using the shared payload
+  builder, and posted `''` for the list fields where every other caller posts an array.
+  `TelosController::saveTelos()` declared those parameters `?array`, so PHP raised a
+  `TypeError` inside Nextcloud's `Dispatcher` — *before* the controller body ran, which is why
+  the controller's own `try`/`catch` never saw it and the user got a bare 500.
+
+  The damage was three times the reported symptom, because `finalize()` ran three steps inside
+  one `try` with an empty `catch`:
+  1. the learning profile was never stored — `onboarding_completed` stayed `false`, so
+     VirtuProf kept asking for a profile the user had already filled in;
+  2. **the AI consent was never stored**, even for users who explicitly opted in. Since the
+     universal consent gate in v5.2.1, that locks every AI feature behind
+     `consent_required` for them;
+  3. **the selected starter pool was never imported** — the wizard offers a pool, the user
+     picks one, and nothing arrives.
+
+  None of it was logged. Three fixes, at three different levels:
+  - `OnboardingRedesign.vue` now builds its payload with `createTelosForm()` /
+    `buildTelosPayload()` — the same util `PersonalSettings.vue` and `VirtuProf.vue` use, so
+    there is one payload shape in the app instead of two that can drift apart again.
+  - `finalize()` settles each step independently and logs a failure to the console instead of
+    swallowing it, so one failing step can never cancel the other two.
+  - `saveTelos()` / `updateTelos()` accept `array|string|null` for the list fields and split a
+    string on the same separators as the frontend (`,` `;` newline). A malformed `telos`
+    payload now answers **400** instead of raising an uncatchable dispatcher `TypeError`.
+
+  **No migration is needed and no data was corrupted** — nothing was written, rather than
+  something wrong being written. Affected users recover on their own: the profile can be
+  filled in under *Settings → Personal* or through VirtuProf, the consent dialog reappears
+  when an AI feature is used, and a starter pool can be imported from the pool list.
+
+- **`Activity\Provider::parse()` threw the deprecated `\InvalidArgumentException`.** Nextcloud
+  replaced that contract with `\OCP\Activity\Exceptions\UnknownActivityException` in NC 30;
+  until then every activity-stream load logged a deprecation warning, and from NC 39 it will be
+  logged as an error. Both throw sites migrated.
+
+  `Notification\Notifier` had already been moved to `UnknownNotificationException` — the same
+  NC 30 cohort — and this provider was simply missed. Each throw site now has a test, so the
+  pair cannot drift apart again.
+
+### Tests
+- `tests/Unit/Activity/ProviderTest.php` (new), `tests/unit/onboardingTelosPayload.test.js`
+  (new, covering both the payload shape and the step isolation in `finalize()`), and seven
+  cases added to `tests/Unit/Controller/TelosControllerTest.php`.
+- Every one of them was verified to fail against the pre-fix code before being kept — the
+  controller cases reproduce the reporter's exact `TypeError`, and the `finalize()` case
+  fails with `expected [ 'telos' ] to deeply equal [ 'telos', 'consent', 'pool' ]`.
+- `tests/Support/PhpUnitStubs.php` gained `OCP\Activity\IEvent`, `IProvider` and
+  `UnknownActivityException`; the PHPUnit bootstrap deliberately does not load Composer's
+  autoloader, so OCP types live there.
+
 ## [5.4.0] - 2026-08-24 — Ukrainian, and the strings that were never translatable
 
 Prompted by a report from a system administrator piloting Learning at a manufacturing

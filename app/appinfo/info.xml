@@ -73,7 +73,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 **Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Open an issue with a bit of context and we're happy to walk you through it.
     ]]></description>
 
-    <version>5.4.0</version>
+    <version>5.4.1</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://codeberg.org/andremadstop">Andre</author>
     <namespace>Learning</namespace>
