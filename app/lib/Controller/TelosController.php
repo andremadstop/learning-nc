@@ -83,13 +83,17 @@ class TelosController extends Controller {
         if ($bio !== null) {
             $extra['bio'] = trim($bio);
         }
-        $helpOffer = $this->normalizeStringList($help_offer);
-        if ($helpOffer !== []) {
-            $extra['help_offer'] = $helpOffer;
+        // An omitted field (null) means "leave as is"; a supplied but empty one means "clear".
+        // These two used to be collapsed — the normalized list was only forwarded when it was
+        // NON-empty, so emptying the help textarea and saving silently kept the old value.
+        // That is a full save, and the help topics are published to classmates through
+        // ClassbookService, so a user could not withdraw a topic once shared. Same distinction
+        // updateTelos() already made.
+        if ($help_offer !== null) {
+            $extra['help_offer'] = $this->normalizeStringList($help_offer);
         }
-        $helpWanted = $this->normalizeStringList($help_wanted);
-        if ($helpWanted !== []) {
-            $extra['help_wanted'] = $helpWanted;
+        if ($help_wanted !== null) {
+            $extra['help_wanted'] = $this->normalizeStringList($help_wanted);
         }
         if ($visibility !== null) {
             $extra['visibility'] = trim($visibility);
@@ -120,8 +124,15 @@ class TelosController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
+        // Reject a malformed telos BEFORE assembling anything else. Merely skipping it would
+        // let a mixed payload half-save — {"telos": "oops", "bio": "changed"} would store the
+        // bio and answer 200, which is worse than the TypeError it replaced.
+        if ($telos !== null && !is_array($telos)) {
+            return new DataResponse(['error' => 'Telos payload must be an object'], Http::STATUS_BAD_REQUEST);
+        }
+
         $fields = [];
-        if (is_array($telos)) {
+        if ($telos !== null) {
             $fields['telos'] = $telos;
         }
         if ($bio !== null) {

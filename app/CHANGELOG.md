@@ -63,6 +63,59 @@ seventeen releases.
   `UnknownActivityException`; the PHPUnit bootstrap deliberately does not load Composer's
   autoloader, so OCP types live there.
 
+### Also fixed — found by auditing for the same bug class
+
+Codeberg #4 was one instance of a pattern: a frontend that posts a body the controller does
+not read. Nextcloud's dispatcher does not reject unknown keys and fills the missing parameter
+with its default, so the request succeeds and the app quietly does the wrong thing. PHPStan
+cannot see across the HTTP boundary and service tests start after it, so nothing caught these.
+An adversarial audit of every such call site turned up four more.
+
+- **Saving a course schedule deleted it.** `CourseController::setSchedule()` takes `entries`;
+  the curriculum tab sent `schedule`. `$entries` stayed at its `[]` default, and
+  `ScheduleService` reads that as "replace the schedule with nothing" — it deleted every row,
+  inserted none, and answered 200, which the UI reported as saved. An instructor editing a
+  curriculum schedule lost it, with a success message.
+- **Reported questions lost their identity.** `SupportTicketController::create()` reads
+  `questionId`/`poolId`/`courseId` out of `context`; VirtuProf's "report this question" sent
+  them at the top level, so the ticket's structured columns were stored as `NULL` and the
+  question was identifiable only through the subject line. The same component already built the
+  correct shape for its other ticket call.
+- **"Explain the question I just got wrong" did not load that question.** The chat request sent
+  `questionId`; the controller declares `lastWrongQuestionId`. The value was dropped, so the
+  retrieval context never included it. The richer `questionContext` usually masked the defect.
+- **Two icon URLs were relative where Nextcloud requires absolute** —
+  `Activity\Provider::setIcon()` and `Dashboard\LearningWidget::getIconUrl()` (whose interface
+  says so explicitly). Desktop and mobile clients do not share the web root, so those icons did
+  not render there. `Notification\Notifier` had already been doing this correctly.
+
+Each of these is now pinned by a request-boundary test in
+`tests/unit/requestPayloadContracts.test.js`, verified to fail against the pre-fix components.
+
+### Also fixed — in the profile endpoint itself
+
+- **An emptied help-topics list was silently preserved.** `saveTelos()` forwarded the list only
+  when it was non-empty, so `[]` and `''` both meant "omit" rather than "clear". Emptying the
+  textarea and saving kept the old value — and since help topics are published to classmates
+  through the classbook at course or public visibility, a user could not withdraw a topic once
+  shared. An omitted field (`null`) still means "leave as is"; a supplied empty one now clears,
+  matching what `updateTelos()` already did.
+- **A malformed `updateTelos()` payload could half-save.** Skipping a non-array `telos` and
+  carrying on meant `{"telos": "oops", "bio": "changed"}` stored the bio and answered 200 — a
+  worse outcome than the `TypeError` it replaced. It is now rejected before any other field is
+  touched.
+
+### Known limitations
+
+- List values are not round-trip safe: a topic containing a comma, semicolon or newline is split
+  on reload, because the frontend has always joined and split on those characters and there is
+  no escaping scheme. The string path added above follows the same convention rather than
+  introducing a second one.
+- Users whose onboarding failed before this release keep a local "onboarding seen" flag while
+  the server has no profile. They can fill the profile at any time, and the assistant prompts
+  students who have it enabled, but there is no automatic reconciliation for instructors or for
+  users with the assistant switched off.
+
 ## [5.4.0] - 2026-08-24 — Ukrainian, and the strings that were never translatable
 
 Prompted by a report from a system administrator piloting Learning at a manufacturing

@@ -38,7 +38,8 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
     }
 
     public function getIconUrl(): string {
-        return $this->urlGenerator->imagePath('core', 'actions/star.svg');
+        // IIconWidget requires an absolute url ("Get the absolute url for the widget icon").
+        return $this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/star.svg'));
     }
 
     public function getUrl(): ?string {

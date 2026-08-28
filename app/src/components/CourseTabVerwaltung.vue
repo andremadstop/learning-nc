@@ -772,7 +772,10 @@ export default {
 				}))
 				const res = await axios.put(
 					generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`),
-					{ schedule: payload },
+					// CourseController::setSchedule() takes `entries`. Sending `schedule` left it at
+					// its [] default, which ScheduleService reads as "replace with nothing": it
+					// deleted every row and inserted none, then answered 200 so the UI said "saved".
+					{ entries: payload },
 				)
 				const saved = res.data?.schedule || payload
 				this.scheduleItems = saved.map((item) => ({ ...item }))

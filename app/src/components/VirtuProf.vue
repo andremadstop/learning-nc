@@ -1812,9 +1812,14 @@ export default {
           subject: 'Fehlermeldung: Frage #' + ctx.questionId,
           message: 'Ein Nutzer hat diese Frage als fehlerhaft gemeldet.',
           category: 'question_error',
-          questionId: ctx.questionId,
-          poolId: ctx.poolId || null,
-          courseId: ctx.courseId || null,
+          // SupportTicketController::create() reads these out of `context`; at the top level
+          // they were dropped, and the ticket's question/pool/course columns were stored as
+          // NULL — the question stayed identifiable only through the subject string.
+          context: {
+            questionId: ctx.questionId,
+            poolId: ctx.poolId || null,
+            courseId: ctx.courseId || null,
+          },
         })
         this.chatMessages.push({
           role: 'assistant',
@@ -1898,7 +1903,11 @@ export default {
         payload.courseId = this.currentContext.courseId
       }
       if (this.currentContext?.questionId) {
-        payload.questionId = this.currentContext.questionId
+        // The chat controller's parameter is lastWrongQuestionId; a `questionId` key was
+        // silently dropped, so RagContextService never loaded the question. currentContext
+        // .questionId is only ever set from "Explain via VirtuProf", which is offered solely
+        // on a wrong answer — so it IS the last wrong question.
+        payload.lastWrongQuestionId = this.currentContext.questionId
       }
       if (this.currentContext?.questionContext) {
         payload.questionContext = this.currentContext.questionContext

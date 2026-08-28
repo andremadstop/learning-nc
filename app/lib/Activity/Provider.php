@@ -32,7 +32,10 @@ class Provider implements IProvider {
                 $event->setParsedSubject(
                     $l->t('Achievement unlocked: %s %s', [$badgeEmoji, $badgeName])
                 );
-                $event->setIcon($this->urlGenerator->imagePath('learning', 'app.svg'));
+                // IEvent::setIcon() is documented as taking an ABSOLUTE url — desktop and mobile
+                // clients do not share the web root, so a relative path renders no icon there.
+                // Notification\Notifier already wraps imagePath() this way; this one was missed.
+                $event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 $event->setLink($this->urlGenerator->linkToRouteAbsolute('learning.page.index'));
                 break;
 
