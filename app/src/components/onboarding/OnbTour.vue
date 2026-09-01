@@ -46,7 +46,7 @@
 <script>
 import { t } from '@nextcloud/l10n'
 import { useOnboardingStore } from '../../stores/onboardingStore.js'
-import { getSlidesForRole } from '../../utils/onboarding-slides.js'
+import { slidesForWizard } from '../../utils/onboarding-slides.js'
 
 export default {
   name: 'OnbTour',
@@ -67,7 +67,7 @@ export default {
 
   computed: {
     slides() {
-      return getSlidesForRole(this.store.role || 'student')
+      return slidesForWizard(this.store.role || 'student')
     },
     currentSlide() {
       return this.slides[this.store.tourSlideIndex] || this.slides[0]

@@ -648,6 +648,19 @@ export default {
         return
       }
 
+      // Codeberg #5: this used to read `onboarding_declined` off the telos status response, which
+      // never contains that key — TelosController::getStatus returns onboarding_completed only.
+      // The condition was therefore always false and the intro reappeared on every single load,
+      // however often the user had declined it. The value arrives with /api/virtuprof/state and
+      // is already applied by applyVirtuProfState(), which loadState() awaits before we get here.
+      if (this.onboardingDeclined) {
+        // Mark the profile state as settled: isBasicMode() gates on telosProfileLoaded, and a
+        // user who declined must land in the reduced mode rather than in a permanent limbo.
+        // Opting out means clearly fewer features, not silently hidden ones.
+        this.telosProfileLoaded = true
+        return
+      }
+
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/profile/telos/status'))
         this.telosProfileLoaded = true
@@ -656,10 +669,6 @@ export default {
           if (response.data?.telos) {
             this.telosForm = applyTelosToForm(response.data.telos)
           }
-          return
-        }
-        if (response.data?.onboarding_declined) {
-          this.onboardingDeclined = true
           return
         }
         this.showWelcomeStep()

@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.2] - 2026-09-01 — The introduction kept coming back
+
+Reported by the same administrator piloting Learning in Vinnytsia
+([#5](https://codeberg.org/andremadstop/learning-nc/issues/5)): the help wizard reappeared for
+users who had already been through it, and its introductory questions ("How many bits are in one
+byte?") were beside the point for staff in occupational safety or HR.
+
+The reappearance turned out to be three separate defects, not a missing setting.
+
+### Fixed
+- **The assistant's introduction never honoured "no thanks".** It read that setting from a
+  response which does not contain it — `/api/profile/telos/status` returns the completion flag and
+  nothing else — so the check was always false and the introduction started again on every single
+  page load. The setting had been saved correctly the whole time.
+- **Whether the wizard had been seen lived in browser storage alone.** That is scoped to one
+  browser on one machine, so a second computer, a different browser, a private window or cleared
+  site data all brought it back. The server is authoritative now; browser storage remains only as
+  an offline fallback.
+- **Skipping the wizard recorded nothing on the server.** It counts as a decision now, like
+  completing it.
+- **Instructors were shown two introductions in a row** — the wizard, and the slide tour the
+  moment it closed. One introduction, one decision.
+- **Existing users are marked as done during the upgrade**, so the update itself does not send a
+  whole instance back through the introduction.
+
+### Changed
+- Instructors now see the full nine-slide tour inside the wizard. It used to follow the wizard as
+  a second, separate introduction; folding it in keeps the content while removing the duplication.
+  `OnboardingIntro` is unreachable for now and becomes the voluntary tour in 5.5.0.
+- Declining the assistant's introduction now puts the assistant in its reduced mode instead of
+  leaving it in an undetermined state.
+
+The introductory content itself is being reworked for 5.5.0.
+
 ## [5.4.1] - 2026-08-28 — The onboarding wizard never saved anything
 
 Reported by the same administrator piloting Learning in Vinnytsia

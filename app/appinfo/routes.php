@@ -123,6 +123,7 @@ return [
         ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
         ['name' => 'settings#savePersonal', 'url' => '/api/settings/personal', 'verb' => 'PUT'],
+        ['name' => 'settings#acknowledgeOnboarding', 'url' => '/api/settings/personal/onboarding', 'verb' => 'POST'],
 
         // VirtuProf
         ['name' => 'virtuProf#getState', 'url' => '/api/virtuprof/state', 'verb' => 'GET'],

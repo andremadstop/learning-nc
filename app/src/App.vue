@@ -399,6 +399,12 @@ import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
 import OnboardingIntro from './components/OnboardingIntro.vue';
 import OnboardingRedesign from './components/OnboardingRedesign.vue';
+import {
+  currentOnboardingUid,
+  hasSeenOnboarding,
+  onboardingSeenKey,
+  shouldShowInstructorIntro,
+} from './utils/onboardingGate.js';
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
 import TeamLeadDashboard from './components/TeamLeadDashboard.vue';
@@ -494,6 +500,7 @@ export default {
         code: '',
       },
       showOnboarding: false,
+      onboardingAcknowledged: false,
       showInstructorOnboarding: false,
     };
   },
@@ -664,10 +671,14 @@ export default {
         this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
         this.fsrsDetailedStats = (response.data?.fsrs_detailed_stats || 'no') === 'yes';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
+        this.onboardingAcknowledged = response.data?.onboarding_acknowledged === 'yes';
       } catch (err) {
         this.contentLanguage = '';
         this.fsrsDetailedStats = false;
         this.virtuProfEnabled = true;
+        // Codeberg #5: a failed load must SUPPRESS the onboarding, never force it. Showing it
+        // again is the complaint; a server hiccup is no reason to inflict it on someone.
+        this.onboardingAcknowledged = true;
       }
     },
 
@@ -687,34 +698,38 @@ export default {
       }
     },
     checkOnboarding() {
-      try {
-        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
-        if (!window.localStorage.getItem(`learning:onboarding-seen:${uid}`)) {
-          this.showOnboarding = true;
-        }
-      } catch {
-        // Ignore
+      // Codeberg #5: the server decides, localStorage is only the offline fallback. See
+      // utils/onboardingGate.js — created() awaits fetchPersonalSettings() before this runs,
+      // so the value is already in place and the wizard cannot flash up first.
+      if (hasSeenOnboarding(this.onboardingAcknowledged, currentOnboardingUid())) {
+        return;
       }
+      this.showOnboarding = true;
     },
     onOnboardingDone() {
       this.showOnboarding = false;
     },
     checkInstructorOnboarding() {
-      if (this.userRole !== 'instructor') return;
-      try {
-        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
-        if (!window.localStorage.getItem(`learning:onboarding-seen:${uid}`)) {
-          this.showInstructorOnboarding = true;
-        }
-      } catch (e) {
-        // Ignore
-      }
+      // Codeberg #5: this used to fire alongside checkOnboarding() off the same storage key, so
+      // an instructor got the wizard and then the slide tour on top of it. See
+      // utils/onboardingGate.js — one intro, one decision.
+      this.showInstructorOnboarding = shouldShowInstructorIntro({
+        role: this.userRole,
+        acknowledged: this.onboardingAcknowledged,
+        wizardShowing: this.showOnboarding,
+        uid: currentOnboardingUid(),
+      });
     },
-    onInstructorOnboardingDone() {
+    async onInstructorOnboardingDone() {
       this.showInstructorOnboarding = false;
+      this.onboardingAcknowledged = true;
       try {
-        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
-        window.localStorage.setItem(`learning:onboarding-seen:${uid}`, 'yes');
+        await axios.post(generateUrl('/apps/learning/api/settings/personal/onboarding'));
+      } catch (e) {
+        // The local fallback below still records it for this browser.
+      }
+      try {
+        window.localStorage.setItem(onboardingSeenKey(currentOnboardingUid()), 'yes');
       } catch (e) {
         // Ignore
       }

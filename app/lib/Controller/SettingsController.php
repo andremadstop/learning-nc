@@ -173,7 +173,31 @@ class SettingsController extends Controller {
             'notifications_enabled' => $this->config->getUserValue($this->userId, 'learning', 'notifications_enabled', 'yes'),
             'fsrs_detailed_stats' => $this->config->getUserValue($this->userId, 'learning', 'fsrs_detailed_stats', 'no'),
             'animations_enabled' => $this->config->getUserValue($this->userId, 'learning', 'animations_enabled', 'yes'),
+            'onboarding_acknowledged' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_acknowledged', 'no'),
         ]);
+    }
+
+    /**
+     * Records that the user is finished with the onboarding — completed, skipped or dismissed.
+     *
+     * Codeberg #5: whether the intro had been seen lived in window.localStorage alone, which is
+     * scoped to one browser on one machine, so a second device brought the wizard back.
+     *
+     * Deliberately parameterless and idempotent: savePersonal() demands three mandatory
+     * parameters, so a partial PUT for this single flag would be rejected inside NC's dispatcher
+     * before the controller body runs. Deliberately not UserTelos::onboarding_completed, which
+     * every profile save sets and which therefore means "a profile exists", not "intro seen".
+     *
+     * @NoAdminRequired
+     */
+    public function acknowledgeOnboarding(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], 401);
+        }
+
+        $this->config->setUserValue($this->userId, 'learning', 'onboarding_acknowledged', 'yes');
+
+        return new DataResponse(['status' => 'ok']);
     }
 
     /**
