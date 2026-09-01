@@ -654,6 +654,10 @@ export default {
       // however often the user had declined it. The value arrives with /api/virtuprof/state and
       // is already applied by applyVirtuProfState(), which loadState() awaits before we get here.
       if (this.onboardingDeclined) {
+        // Mark the profile state as settled: isBasicMode() gates on telosProfileLoaded, and a
+        // user who declined must land in the reduced mode rather than in a permanent limbo.
+        // Opting out means clearly fewer features, not silently hidden ones.
+        this.telosProfileLoaded = true
         return
       }
 

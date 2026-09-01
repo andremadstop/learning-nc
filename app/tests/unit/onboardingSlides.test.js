@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	STUDENT_SLIDES,
+	INSTRUCTOR_SLIDES_FULL,
+	slidesForWizard,
 	STUDENT_SLIDES_FULL,
 	ADMIN_SLIDES,
 	GOAL_TILES,
@@ -51,5 +53,20 @@ describe('onboarding slides', () => {
 		expect(INTENSITY_TILES).toHaveLength(3)
 		expect(AI_CONSENT_TILES).toHaveLength(2)
 		expect(INTENSITY_TILES[0]).toHaveProperty('hours')
+	})
+})
+
+/**
+ * Codeberg #5: making the wizard the single instructor entry point removed the 9-slide tour that
+ * used to follow it (OnboardingIntro, getSlidesForRoleFull). Without compensation an instructor
+ * would drop from 12 slides to 3 in a patch release — a feature loss smuggled in as a bugfix.
+ */
+describe('instructor tour depth after the single-gate change', () => {
+	it('gives instructors the full slide set inside the wizard', () => {
+		expect(slidesForWizard('instructor')).toBe(INSTRUCTOR_SLIDES_FULL)
+	})
+
+	it('leaves the student tour short on purpose', () => {
+		expect(slidesForWizard('student')).toBe(STUDENT_SLIDES)
 	})
 })

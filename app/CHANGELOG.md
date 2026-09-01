@@ -27,6 +27,13 @@ The reappearance turned out to be three separate defects, not a missing setting.
 - **Existing users are marked as done during the upgrade**, so the update itself does not send a
   whole instance back through the introduction.
 
+### Changed
+- Instructors now see the full nine-slide tour inside the wizard. It used to follow the wizard as
+  a second, separate introduction; folding it in keeps the content while removing the duplication.
+  `OnboardingIntro` is unreachable for now and becomes the voluntary tour in 5.5.0.
+- Declining the assistant's introduction now puts the assistant in its reduced mode instead of
+  leaving it in an undetermined state.
+
 The introductory content itself is being reworked for 5.5.0.
 
 ## [5.4.1] - 2026-08-28 — The onboarding wizard never saved anything

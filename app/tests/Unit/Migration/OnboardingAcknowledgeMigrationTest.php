@@ -72,6 +72,19 @@ class OnboardingAcknowledgeMigrationTest extends TestCase {
         $migration->markUsersAcknowledged([], $this->outputMock);
     }
 
+    /**
+     * Spec 5.2 names three traces of prior use: a telos profile, an answered question, a course
+     * membership. The first draft of this migration only looked at two of them, which would have
+     * sent every self-learner with their own pools — no course, no telos profile — back into the
+     * wizard on upgrade. That is the reported bug, reproduced by its own fix.
+     */
+    public function testEveryTraceOfPriorUseIsConsidered(): void {
+        $this->assertSame(
+            ['learning_user_telos', 'learning_course_members', 'learning_leitner_items'],
+            Version010000Date20260901000000::SOURCE_TABLES
+        );
+    }
+
     public function testBlankUserIdsAreIgnored(): void {
         $this->configMock->method('getUserValue')->willReturn('');
         $this->configMock->expects($this->never())->method('setUserValue');

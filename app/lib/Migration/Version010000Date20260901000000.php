@@ -23,6 +23,19 @@ use OCP\Migration\SimpleMigrationStep;
  * string literals on MariaDB, which has already cost this project a release once.
  */
 class Version010000Date20260901000000 extends SimpleMigrationStep {
+    /**
+     * Every trace of prior use named in the spec: a telos profile, a course membership, an
+     * answered question. The last one is the one that is easy to forget and the one that matters
+     * most for self-learners, who may have neither a course nor a profile but answer cards daily.
+     *
+     * @var array<int, string>
+     */
+    public const SOURCE_TABLES = [
+        'learning_user_telos',
+        'learning_course_members',
+        'learning_leitner_items',
+    ];
+
     public function __construct(
         private readonly IDBConnection $db,
         private readonly IConfig $config,
@@ -30,7 +43,7 @@ class Version010000Date20260901000000 extends SimpleMigrationStep {
     }
 
     public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
-        $this->markUsersAcknowledged($this->collectExistingUsers(), $output);
+        $this->markUsersAcknowledged($this->collectExistingUsers($output), $output);
     }
 
     /**
@@ -59,10 +72,10 @@ class Version010000Date20260901000000 extends SimpleMigrationStep {
     /**
      * @return array<int, string>
      */
-    private function collectExistingUsers(): array {
+    private function collectExistingUsers(IOutput $output): array {
         $users = [];
 
-        foreach (['learning_user_telos', 'learning_course_members'] as $table) {
+        foreach (self::SOURCE_TABLES as $table) {
             try {
                 $qb = $this->db->getQueryBuilder();
                 $qb->selectDistinct('user_id')->from($table);
@@ -72,7 +85,15 @@ class Version010000Date20260901000000 extends SimpleMigrationStep {
                 }
                 $result->closeCursor();
             } catch (\Throwable $e) {
-                // A partial install may not have every table — nothing to migrate from it.
+                // A partial install may genuinely lack a table. Say so out loud: a silently
+                // swallowed query failure here reports a tidy count while leaving a whole group
+                // of users to meet the wizard again on Monday morning.
+                $output->warning(sprintf(
+                    'learning: could not read %s while marking existing users (%s). Users known only '
+                    . 'from this table may see the introduction again.',
+                    $table,
+                    $e->getMessage()
+                ));
             }
         }
 

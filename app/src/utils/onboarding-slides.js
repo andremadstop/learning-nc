@@ -239,3 +239,21 @@ export function getSlidesForRoleFull(role) {
   if (role === 'instructor' || role === 'dozent') return INSTRUCTOR_SLIDES_FULL
   return STUDENT_SLIDES_FULL
 }
+
+/**
+ * Slides the onboarding wizard shows for a role.
+ *
+ * Codeberg #5: the wizard is the single entry point for instructors from 5.4.2 on — the separate
+ * 9-slide tour that used to follow it is gone, because getting both back to back was the bug.
+ * Instructors therefore get the full set here; dropping them to the three-slide short tour would
+ * be a feature loss dressed up as a fix. The student tour stays deliberately short.
+ *
+ * @param {string} role the user's role
+ * @return {Array} the slides to show inside the wizard
+ */
+export function slidesForWizard(role) {
+	if (role === 'instructor' || role === 'dozent') {
+		return INSTRUCTOR_SLIDES_FULL
+	}
+	return getSlidesForRole(role)
+}

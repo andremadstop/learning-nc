@@ -73,6 +73,18 @@ describe('VirtuProf.checkTelosOnboarding', () => {
 		expect(ctx.showOnboardingIntro).toBe(true)
 	})
 
+	it('still counts as loaded so the assistant knows it runs without a profile', async () => {
+		// isBasicMode() is `telosProfileLoaded && !telosSaved && !telosOnboardingActive`. Returning
+		// early without setting the flag would leave a user who declined stuck in a permanent
+		// not-loaded state — and the project's onboarding philosophy is explicit that opting out
+		// must mean clearly reduced features, not silently hidden ones.
+		const ctx = makeContext({ onboardingDeclined: true })
+
+		await VirtuProf.methods.checkTelosOnboarding.call(ctx)
+
+		expect(ctx.telosProfileLoaded).toBe(true)
+	})
+
 	it('does not even ask the server when the user declined', async () => {
 		axios.get.mockClear()
 		const ctx = makeContext({ onboardingDeclined: true })
