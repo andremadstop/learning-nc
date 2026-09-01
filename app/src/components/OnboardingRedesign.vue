@@ -289,7 +289,12 @@ export default {
 /* Global skip button */
 .onb-skip-global {
   position: absolute;
-  inset-block-start: 16px;
+  /* Codeberg #5: 16px put this straight underneath the Nextcloud header, whose avatar button
+     swallowed every click — document.elementFromPoint() on the button's own centre returned
+     SPAN.button-vue__icon. The splash screen has its own skip link, so step 1 looked fine while
+     every later step had no reachable way out at all. 60px clears the 50px header instead of
+     fighting it with z-index, which would only bury the header's own controls. */
+  inset-block-start: 60px;
   inset-inline-end: 16px;
   z-index: 10;
   appearance: none;

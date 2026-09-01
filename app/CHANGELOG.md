@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.3] - 2026-09-01 — You could not leave the wizard
+
+Found by clicking through the 5.4.2 deployment: the wizard's "Skip" button sat at `top: 16px`,
+directly underneath the Nextcloud header, whose avatar button swallowed every click. The splash
+screen carries its own skip link at the bottom, so the first step looked fine — but from step two
+onwards there was no reachable way out of the introduction at all.
+
+This is not new in 5.4.2; it has been there as long as the redesigned wizard. It is the sharper
+half of what [#5](https://codeberg.org/andremadstop/learning-nc/issues/5) describes: users could
+not get rid of the introduction even when they tried.
+
+### Fixed
+- The wizard's skip button clears the Nextcloud header and can actually be clicked from every
+  step. Verified in the browser: a click on the button's own centre used to be delivered to the
+  header's avatar.
+
+### Added
+- Two browser tests that would have caught this: one walks a new account through the introduction
+  and asserts it stays gone after clearing site data, the other asserts the skip button — not the
+  header — receives a click aimed at it.
+
 ## [5.4.2] - 2026-09-01 — The introduction kept coming back
 
 Reported by the same administrator piloting Learning in Vinnytsia
