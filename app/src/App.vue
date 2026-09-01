@@ -399,6 +399,7 @@ import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
 import OnboardingIntro from './components/OnboardingIntro.vue';
 import OnboardingRedesign from './components/OnboardingRedesign.vue';
+import { currentOnboardingUid, hasSeenOnboarding } from './utils/onboardingGate.js';
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
 import TeamLeadDashboard from './components/TeamLeadDashboard.vue';
@@ -494,6 +495,7 @@ export default {
         code: '',
       },
       showOnboarding: false,
+      onboardingAcknowledged: false,
       showInstructorOnboarding: false,
     };
   },
@@ -664,10 +666,14 @@ export default {
         this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
         this.fsrsDetailedStats = (response.data?.fsrs_detailed_stats || 'no') === 'yes';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
+        this.onboardingAcknowledged = response.data?.onboarding_acknowledged === 'yes';
       } catch (err) {
         this.contentLanguage = '';
         this.fsrsDetailedStats = false;
         this.virtuProfEnabled = true;
+        // Codeberg #5: a failed load must SUPPRESS the onboarding, never force it. Showing it
+        // again is the complaint; a server hiccup is no reason to inflict it on someone.
+        this.onboardingAcknowledged = true;
       }
     },
 
@@ -687,14 +693,13 @@ export default {
       }
     },
     checkOnboarding() {
-      try {
-        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
-        if (!window.localStorage.getItem(`learning:onboarding-seen:${uid}`)) {
-          this.showOnboarding = true;
-        }
-      } catch {
-        // Ignore
+      // Codeberg #5: the server decides, localStorage is only the offline fallback. See
+      // utils/onboardingGate.js — created() awaits fetchPersonalSettings() before this runs,
+      // so the value is already in place and the wizard cannot flash up first.
+      if (hasSeenOnboarding(this.onboardingAcknowledged, currentOnboardingUid())) {
+        return;
       }
+      this.showOnboarding = true;
     },
     onOnboardingDone() {
       this.showOnboarding = false;
