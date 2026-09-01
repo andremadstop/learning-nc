@@ -1360,16 +1360,22 @@ namespace OCA\Learning\Service {
 
 namespace OCP\Migration {
     if (!interface_exists(IOutput::class)) {
+        // Signatures copied verbatim from NC 34's lib/public/Migration/IOutput.php. The first
+        // draft here declared stricter types than the real interface, which is exactly how a
+        // stub stops testing reality: an implementation the stub accepts would have been a
+        // fatal error against the actual API, and the suite would still have been green.
         interface IOutput {
-            public function info(string $message): void;
+            public function debug(string $message): void;
 
-            public function warning(string $message): void;
+            public function info($message);
 
-            public function startProgress(int $max = 0): void;
+            public function warning($message);
 
-            public function advance(int $step = 1, string $description = ''): void;
+            public function startProgress($max = 0);
 
-            public function finishProgress(): void;
+            public function advance($step = 1, $description = '');
+
+            public function finishProgress();
         }
     }
 
