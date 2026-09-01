@@ -179,7 +179,12 @@ export default {
         await this.runFinalizeStep('starter pool import', () => this.importStarterPool())
       }
 
-      // Set compat flag so old code doesn't re-trigger
+      // Codeberg #5: localStorage alone is scoped to one browser on one machine, so a second
+      // device brought the whole wizard back. This runs for a skipped wizard too — skipping is a
+      // decision, not an accident, and the profile save above deliberately does not.
+      await this.runFinalizeStep('acknowledge', () => this.acknowledgeOnboarding())
+
+      // Offline fallback only — the server value above is authoritative from 5.4.2 on.
       try {
         window.localStorage.setItem(`learning:onboarding-seen:${uid}`, 'yes')
       } catch {
@@ -209,6 +214,10 @@ export default {
       } catch (e) {
         console.error(`[learning] onboarding finalize step failed: ${label}`, e)
       }
+    },
+
+    async acknowledgeOnboarding() {
+      await axios.post(generateUrl('/apps/learning/api/settings/personal/onboarding'))
     },
 
     async saveTelosProfile() {

@@ -156,6 +156,13 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 				calls.push('pool')
 				return Promise.resolve()
 			}),
+			// Codeberg #5 added a fourth finalize step. Without it here the helper would be
+			// testing a TypeError on a missing method rather than the isolation this suite is
+			// about.
+			acknowledgeOnboarding: vi.fn(() => {
+				calls.push('acknowledge')
+				return Promise.resolve()
+			}),
 			...overrides.ctx,
 		}
 		return { ctx, calls }
@@ -167,7 +174,7 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 
 		await OnboardingRedesign.methods.finalize.call(ctx)
 
-		expect(calls).toEqual(['telos', 'consent', 'pool'])
+		expect(calls).toEqual(['telos', 'consent', 'pool', 'acknowledge'])
 		expect(ctx.saveAiConsent).toHaveBeenCalledTimes(1)
 		expect(ctx.importStarterPool).toHaveBeenCalledTimes(1)
 		errorSpy.mockRestore()
@@ -208,7 +215,8 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 
 		await OnboardingRedesign.methods.finalize.call(ctx)
 
-		expect(calls).toEqual(['pool'])
+		// Skipping is a decision, so the server hears about it even though no profile is saved.
+		expect(calls).toEqual(['pool', 'acknowledge'])
 		expect(ctx.saveTelosProfile).not.toHaveBeenCalled()
 		expect(ctx.saveAiConsent).not.toHaveBeenCalled()
 	})
