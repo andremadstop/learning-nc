@@ -52,3 +52,27 @@ export function currentOnboardingUid() {
 		&& typeof OC.getCurrentUser === 'function'
 		&& OC.getCurrentUser()?.uid) || 'user'
 }
+
+/**
+ * Whether the instructor slide tour still owes this user an appearance.
+ *
+ * Codeberg #5: App.vue ran both gates off the same localStorage key and renders the tour with
+ * `v-if="showInstructorOnboarding && !showOnboarding"`. An instructor therefore sat through the
+ * full wizard and got the slide tour the instant it closed. One intro, one decision — the wizard
+ * already covers the instructor case.
+ *
+ * @param {object} params the decision inputs
+ * @param {string} params.role the user's role
+ * @param {boolean} params.acknowledged what the server says
+ * @param {boolean} params.wizardShowing whether the onboarding wizard is already on screen
+ * @param {string} params.uid the current user id
+ * @param {Storage} [params.storage] injectable for tests
+ * @return {boolean} true when the instructor tour should open
+ */
+export function shouldShowInstructorIntro({ role, acknowledged, wizardShowing, uid, storage }) {
+	if (role !== 'instructor' || wizardShowing) {
+		return false
+	}
+
+	return !hasSeenOnboarding(acknowledged, uid, storage)
+}

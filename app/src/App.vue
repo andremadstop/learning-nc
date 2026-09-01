@@ -399,7 +399,12 @@ import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
 import OnboardingIntro from './components/OnboardingIntro.vue';
 import OnboardingRedesign from './components/OnboardingRedesign.vue';
-import { currentOnboardingUid, hasSeenOnboarding } from './utils/onboardingGate.js';
+import {
+  currentOnboardingUid,
+  hasSeenOnboarding,
+  onboardingSeenKey,
+  shouldShowInstructorIntro,
+} from './utils/onboardingGate.js';
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
 import TeamLeadDashboard from './components/TeamLeadDashboard.vue';
@@ -705,21 +710,26 @@ export default {
       this.showOnboarding = false;
     },
     checkInstructorOnboarding() {
-      if (this.userRole !== 'instructor') return;
-      try {
-        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
-        if (!window.localStorage.getItem(`learning:onboarding-seen:${uid}`)) {
-          this.showInstructorOnboarding = true;
-        }
-      } catch (e) {
-        // Ignore
-      }
+      // Codeberg #5: this used to fire alongside checkOnboarding() off the same storage key, so
+      // an instructor got the wizard and then the slide tour on top of it. See
+      // utils/onboardingGate.js — one intro, one decision.
+      this.showInstructorOnboarding = shouldShowInstructorIntro({
+        role: this.userRole,
+        acknowledged: this.onboardingAcknowledged,
+        wizardShowing: this.showOnboarding,
+        uid: currentOnboardingUid(),
+      });
     },
-    onInstructorOnboardingDone() {
+    async onInstructorOnboardingDone() {
       this.showInstructorOnboarding = false;
+      this.onboardingAcknowledged = true;
       try {
-        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
-        window.localStorage.setItem(`learning:onboarding-seen:${uid}`, 'yes');
+        await axios.post(generateUrl('/apps/learning/api/settings/personal/onboarding'));
+      } catch (e) {
+        // The local fallback below still records it for this browser.
+      }
+      try {
+        window.localStorage.setItem(onboardingSeenKey(currentOnboardingUid()), 'yes');
       } catch (e) {
         // Ignore
       }

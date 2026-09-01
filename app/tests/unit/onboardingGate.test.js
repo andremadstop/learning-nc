@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { hasSeenOnboarding, onboardingSeenKey } from '../../src/utils/onboardingGate.js'
+import {
+	hasSeenOnboarding,
+	onboardingSeenKey,
+	shouldShowInstructorIntro,
+} from '../../src/utils/onboardingGate.js'
 
 /**
  * Codeberg #5 — "for new users, as well as after updates or restarts, the wizard appears again".
@@ -64,5 +68,75 @@ describe('hasSeenOnboarding', () => {
 		// 5.4.1 and earlier wrote this exact key; changing it would re-trigger the wizard for
 		// every user whose acknowledgement has not reached the server yet.
 		expect(onboardingSeenKey('alice')).toBe('learning:onboarding-seen:alice')
+	})
+})
+
+/**
+ * Codeberg #5, second half: checkOnboarding() and checkInstructorOnboarding() both ran and both
+ * hung off the same localStorage key, while App.vue renders the instructor tour with
+ * `v-if="showInstructorOnboarding && !showOnboarding"`. An instructor therefore got the full
+ * wizard and, the moment it closed, the slide tour on top of it. One intro, one decision.
+ *
+ * RED against a rule that ignores a running wizard.
+ */
+describe('shouldShowInstructorIntro', () => {
+	it('does not queue a second intro behind the wizard', () => {
+		const show = shouldShowInstructorIntro({
+			role: 'instructor',
+			acknowledged: false,
+			wizardShowing: true,
+			uid: 'alice',
+			storage: storageWith(),
+		})
+
+		expect(show).toBe(false)
+	})
+
+	it('shows the tour to an instructor the wizard is not handling', () => {
+		const show = shouldShowInstructorIntro({
+			role: 'instructor',
+			acknowledged: false,
+			wizardShowing: false,
+			uid: 'alice',
+			storage: storageWith(),
+		})
+
+		expect(show).toBe(true)
+	})
+
+	it('leaves an acknowledged instructor alone', () => {
+		const show = shouldShowInstructorIntro({
+			role: 'instructor',
+			acknowledged: true,
+			wizardShowing: false,
+			uid: 'alice',
+			storage: storageWith(),
+		})
+
+		expect(show).toBe(false)
+	})
+
+	it('is none of a student business', () => {
+		const show = shouldShowInstructorIntro({
+			role: 'student',
+			acknowledged: false,
+			wizardShowing: false,
+			uid: 'alice',
+			storage: storageWith(),
+		})
+
+		expect(show).toBe(false)
+	})
+
+	it('honours the local fallback for instructors too', () => {
+		const show = shouldShowInstructorIntro({
+			role: 'instructor',
+			acknowledged: false,
+			wizardShowing: false,
+			uid: 'alice',
+			storage: storageWith({ 'learning:onboarding-seen:alice': 'yes' }),
+		})
+
+		expect(show).toBe(false)
 	})
 })
