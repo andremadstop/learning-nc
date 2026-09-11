@@ -47,10 +47,15 @@ export default {
 	props: {
 		title: { type: String, default: '' },
 		metaText: { type: String, default: '' },
+		// Codeberg #6: vt() used to call translateVirtuProf(key, params), but the
+		// signature is (lang, key, params). The key went into the lang slot, so every
+		// lookup resolved to '' — a blank kicker and two icon buttons with an empty
+		// aria-label. The panel needs the language the parent already tracks.
+		language: { type: String, default: '' },
 	},
 	methods: {
-		vt(key, params) {
-			return translateVirtuProf(key, params)
+		vt(key, params = {}) {
+			return translateVirtuProf(this.language, key, params)
 		},
 	},
 }

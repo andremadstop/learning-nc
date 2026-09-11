@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
-use OCP\IConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -26,7 +25,6 @@ class NoteGeneratorService {
     private LernbotFileService $fileService;
     private LernprofilService $lernprofilService;
     private IDBConnection $db;
-    private IConfig $config;
     private LoggerInterface $logger;
 
     /** Max wrong questions to include in prompt context */
@@ -40,14 +38,12 @@ class NoteGeneratorService {
         LernbotFileService $fileService,
         LernprofilService $lernprofilService,
         IDBConnection $db,
-        IConfig $config,
         LoggerInterface $logger
     ) {
         $this->geminiService = $geminiService;
         $this->fileService = $fileService;
         $this->lernprofilService = $lernprofilService;
         $this->db = $db;
-        $this->config = $config;
         $this->logger = $logger;
     }
 
@@ -85,8 +81,13 @@ class NoteGeneratorService {
         $wrongQuestions = $this->loadWrongQuestions($userId, $poolId);
 
         // 4. Determine content language
-        $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'en';
-        $languageName = $this->resolveLanguageName($language);
+        // Codeberg #6: this used to be its own `content_language ?: 'en'` line plus a
+        // private language-name map, and both were missing fr/uk — so the assistant's
+        // "Create summary" button, which reaches this method through
+        // VirtuProfController::handleFileIntent(), wrote an English note for a Ukrainian
+        // user even after the chat path itself was fixed. One shared resolver now.
+        $language = $this->geminiService->resolveResponseLanguage($userId);
+        $languageName = $this->geminiService->languageName($language);
 
         // 5. Build filename (NOTE-04: filename = topic slug)
         $filename = $this->slugify($poolName) . '.md';
@@ -349,16 +350,4 @@ PROMPT;
         return false;
     }
 
-    /**
-     * Map ISO language code to human-readable language name for prompts.
-     */
-    private function resolveLanguageName(string $code): string {
-        $map = [
-            'de' => 'Deutsch',
-            'en' => 'English',
-            'ru' => 'Русский',
-            'ar' => 'Arabic',
-        ];
-        return $map[$code] ?? 'English';
-    }
 }

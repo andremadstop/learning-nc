@@ -22,6 +22,10 @@ build your first working course.
 
 1. [Concepts](#1-concepts)
 2. [Administrator setup](#2-administrator-setup)
+   - 2.1 [Installation](#21-installation)
+   - 2.2 [Global settings](#22-global-settings)
+   - 2.3 [Letting teachers create courses and pools](#23-letting-teachers-create-courses-and-pools)
+   - 2.4 [Creating user accounts](#24-creating-user-accounts)
 3. [The core workflow](#3-the-core-workflow)
    - 3.1 [Create a question pool](#31-create-a-question-pool)
    - 3.2 [Add questions](#32-add-questions)
@@ -61,13 +65,25 @@ is how you reuse a "Workplace safety basics" pool across departments without cop
 Learning distinguishes three roles:
 
 - **Nextcloud administrator** — installs the app, configures global settings (AI, tools),
-  runs `occ` commands. Does not automatically see course content.
+  runs `occ` commands. Always counts as an instructor as well, but does not automatically
+  see course content.
 - **Instructor** — creates courses and pools, enrols students, sees all progress data of
-  *their own* courses. A per-course role, not a global one: you are an instructor *of a
-  course*, granted when you create it or when another instructor promotes you.
+  *their own* courses.
 - **Student** — learns, takes tests, sees only their own results.
 
-Everything in Learning is scoped to the course. An instructor of course A cannot see
+The instructor role has **two halves**, and confusing them is the single most common
+setup question:
+
+| | Where it comes from | What it grants |
+|---|---|---|
+| **Global instructor right** | Membership in one Nextcloud group — `learning-instructors` by default | May *create* courses and question pools at all. Without it, the "+ Create course" and "+ Create pool" buttons are not shown. |
+| **Instructor of a course** | Creating the course, or being promoted by another instructor of it | Manage that course: enrol people, attach pools, see progress. |
+
+So a teacher who should set up their own courses needs the group membership first — see
+[2.3](#23-letting-teachers-create-courses-and-pools). Nothing else grants it, and it does
+**not** require Nextcloud administrator rights.
+
+Everything else in Learning is scoped to the course. An instructor of course A cannot see
 course B. This matters for a works council discussion: instructor visibility is not global.
 
 ---
@@ -99,6 +115,12 @@ These settings apply to all users of Learning:
   Disabled tools disappear for all users and cannot be re-enabled by an instructor.
 - **Default language** — German or English. This is the fallback for new users only; each
   user can still choose their own Nextcloud interface language.
+- **Instructor group** — the Nextcloud group whose members may create courses and pools.
+  Defaults to `learning-instructors`. See
+  [2.3](#23-letting-teachers-create-courses-and-pools).
+- **Allow course-based instructor fallback** — off by default and best left off. When on,
+  anyone who is already an instructor *of some course* also gets the global right to
+  create new ones, which quietly widens the group you curated.
 - **Daily Challenge enabled** / **Gamification enabled** — switch off the game elements
   (XP, levels, badges, streaks) if they do not fit your company culture. Worth considering
   for mandatory compliance training.
@@ -109,7 +131,39 @@ If certificates have not been set up yet, this page shows a warning banner telli
 run `occ learning:cert:init-issuer` once. There is no button for it — it is a server-side
 command. See [3.10](#310-completion-and-certificate).
 
-### 2.3 Creating user accounts
+### 2.3 Letting teachers create courses and pools
+
+A teacher who should build their own content needs the **global instructor right**. It
+comes from exactly one place: membership in the group configured as **Instructor group**
+in the admin settings, `learning-instructors` unless you changed it.
+
+This deliberately does *not* require Nextcloud administrator rights. Giving a teacher
+full admin rights just to let them create a course would hand them every other Nextcloud
+setting as well.
+
+The group is **not created automatically** — Learning never touches your user directory.
+Create it once:
+
+1. **Settings → Administration → Users**, then **+ Add group** in the left sidebar.
+2. Name it `learning-instructors` (or any name you prefer, then enter that name in
+   **Settings → Administration → Learning → Instructor group**).
+3. Add your teachers to the group.
+
+Or from the command line:
+
+```bash
+sudo -u www-data php occ group:add learning-instructors
+sudo -u www-data php occ group:adduser learning-instructors maria
+```
+
+The change takes effect on the teacher's next page load. They will then see **Courses**
+with a create button, and **+ Create pool** in the Pools view.
+
+> Nextcloud administrators always count as instructors, whether or not they are in the
+> group. That is why an admin account sees every creation button from the start — and why
+> testing the setup with an admin account tells you nothing about what a teacher sees.
+
+### 2.4 Creating user accounts
 
 Learning uses Nextcloud's own users — there is no separate user database. Create your
 20–30 employees the usual way, or bulk-import them from CSV:
@@ -144,6 +198,42 @@ That is all a pool needs. It now exists, empty, owned by you.
 **Naming matters more than it looks.** Pool names show up in the course view, in exam
 configuration and in compliance reports. Use names that will still make sense to a
 colleague in a year: "Occupational safety 2026 — machine operation", not "Test 1".
+
+#### The textbook fields — and when to ignore them
+
+Below the description the dialog shows five more fields. **All five are optional and most
+pools should leave them empty.** They exist for one specific case: splitting a book or a
+curriculum into one pool per chapter, so the chapters can be grouped and ordered.
+
+| Field | What goes in | Example |
+|-------|--------------|---------|
+| **Handbook key** | A short identifier *you invent* for the book. Use the **same string in every pool from that book** — that is what ties the chapters together. Lowercase, no spaces. Max 64 characters. | `kammermann-network-plus` |
+| **Handbook title** | The book title as learners should read it, with edition and year. | `Kammermann CompTIA Network+ (9th ed., 2024)` |
+| **Chapter key** | An identifier for this one chapter, unique within that book. Also used to match pools when a course carries progress over from an earlier course. Max 64 characters. | `chapter-03` |
+| **Chapter number** | The chapter's position in the book, 1–9999. Controls the order chapters are listed in — nothing else. | `3` |
+| **Chapter title** | The chapter heading shown next to the pool. | `Switching basics` |
+
+A correctly filled example, for the third chapter of one book:
+
+```
+Pool name        Network+ — Ch. 3: Switching basics
+Description      Questions on VLANs, STP and switch configuration
+Handbook key     kammermann-network-plus
+Handbook title   Kammermann CompTIA Network+ (9th ed., 2024)
+Chapter key      chapter-03
+Chapter number   3
+Chapter title    Switching basics
+```
+
+The next pool from the same book repeats `kammermann-network-plus` and
+`Kammermann CompTIA Network+ (9th ed., 2024)` unchanged, and only changes the three
+chapter fields to `chapter-04` / `4` / the next heading.
+
+> **Two things these fields do not do.** They do not restrict which questions learners
+> see — that is the course curriculum filter, and it reads the chapter fields on the
+> **questions** ([3.2](#32-add-questions)), not on the pool. And they are not a category
+> system: a pool that is not part of a book gains nothing from them. If you are unsure,
+> leave all five empty. You can fill them in later by editing the pool; nothing breaks.
 
 ### 3.2 Add questions
 
@@ -198,6 +288,9 @@ Now you have a valid file to imitate.
 
 Go to **Courses** in the sidebar and create a course. You become its instructor
 automatically.
+
+> No create button? You are not in the instructor group — see
+> [2.3](#23-letting-teachers-create-courses-and-pools).
 
 A course carries a title, a description, and optionally an exam date used for the
 student countdown.
@@ -495,15 +588,27 @@ python3 scripts/l10n_js_sync.py
    - `app/src/utils/virtuprof-i18n.js` → the import, `ALLOWED` and `DICTS`
    - `app/lib/Controller/VirtuProfController.php` → `ALLOWED_INTERFACE_LANGUAGES`
      (an unlisted language is silently coerced to empty, with no error)
-4. Add a dictionary for the language to `app/src/l10n/virtuprof-strings.js`.
+   - `scripts/gen-virtuprof-strings.mjs` → `LANGS`
+   - `app/lib/Service/GeminiService.php` → `SUPPORTED_LANGUAGES` **and** the `$langMap` in
+     `buildSystemPrompt()` (an unlisted language makes the AI prompt say "default to
+     English", so the assistant answers in the wrong language)
+4. Regenerate the VirtuProf catalogue — it is a **generated** file, never edited by hand:
+   ```bash
+   node scripts/gen-virtuprof-strings.mjs
+   ```
 5. Generate and verify as above.
 
-The check runs four gates: every language has exactly the same key set as `de.json`; each
+The check runs five gates: every language has exactly the same key set as `de.json`; each
 `.js` matches its `.json`; every value carries the same placeholders as its German source;
-and every translatable literal in the source code actually exists in the catalogue. The
-last one exists because the first three compare the language files only against each other
-— a string missing from all of them passes all three and then renders in German
-everywhere.
+every translatable literal in the source code actually exists in the catalogue; and the
+VirtuProf catalogue matches what `l10n/*.json` says it should be.
+
+Gate 4 exists because gates 1–3 compare the language files only against each other — a
+string missing from all of them passes all three and then renders in German everywhere.
+Gate 5 exists because gate 4 scans for `t('learning', …)` call sites, and the assistant
+has none: it resolves through `translateVirtuProf(lang, key)` against its own bundled
+dictionary. 161 of its 343 strings had drifted out of that dictionary while all four
+earlier gates stayed green.
 
 **Placeholders must survive translation.** Strings contain markers such as `{n}`, `{date}`
 or `%1$s`. They must appear in the translated value too, with the same names — a dropped
@@ -517,6 +622,17 @@ Corrections are welcome as a pull request or an issue at
 ---
 
 ## 8. Troubleshooting
+
+**A teacher cannot create courses or pools.** The buttons only appear for members of the
+instructor group — see [2.3](#23-letting-teachers-create-courses-and-pools). Nextcloud
+administrator rights are neither required nor a substitute for testing: an admin account
+always sees the buttons, so it cannot tell you whether a teacher will.
+
+**The assistant answers in the wrong language.** It follows the language you write in. If
+you ask it in Ukrainian it answers in Ukrainian. When it has to guess, it uses the content
+language from your personal settings, then your Nextcloud interface language, then the
+instance default. Question and answer *content* is separate — see
+[7.1](#71-current-state).
 
 **A student sees no content in a course.** The course has no pools attached (3.4), or the
 pools are empty. Check the Administration tab.

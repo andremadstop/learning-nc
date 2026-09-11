@@ -63,6 +63,7 @@ class SettingsController extends Controller {
             'default_language' => $this->config->getAppValue('learning', 'default_language', 'de'),
             'max_import_size_mb' => (int)$this->config->getAppValue('learning', 'max_import_size_mb', '2'),
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes'),
+            'instructor_group' => $this->config->getAppValue('learning', 'instructor_group', 'learning-instructors'),
             'allow_course_instructor_fallback' => $this->config->getAppValue('learning', 'allow_course_instructor_fallback', 'no'),
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
@@ -123,6 +124,7 @@ class SettingsController extends Controller {
         string $default_language,
         int $max_import_size_mb,
         string $gamification_enabled,
+        string $instructor_group = 'learning-instructors',
         string $allow_course_instructor_fallback = 'no',
         int $exam_attempt_limit_per_day = 5,
         int $exam_attempt_cooldown_minutes = 10,
@@ -136,6 +138,17 @@ class SettingsController extends Controller {
         $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en'], true) ? $default_language : 'de');
         $this->config->setAppValue('learning', 'max_import_size_mb', (string)max(1, min(10, $max_import_size_mb)));
         $this->config->setAppValue('learning', 'gamification_enabled', $gamification_enabled === 'yes' ? 'yes' : 'no');
+        // Codeberg #6: the group that grants global instructor rights (create courses and
+        // pools) has always existed as an app value, but nothing exposed it — the admin
+        // page referred to "the configured instructor group" without ever naming it, and
+        // the manual did not mention it at all. An empty submission means "keep the
+        // default"; deleting the setting entirely would silently promote nobody.
+        $instructorGroup = trim($instructor_group);
+        $this->config->setAppValue(
+            'learning',
+            'instructor_group',
+            $instructorGroup !== '' ? mb_substr($instructorGroup, 0, 64) : 'learning-instructors'
+        );
         $this->config->setAppValue('learning', 'allow_course_instructor_fallback', $allow_course_instructor_fallback === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'exam_attempt_limit_per_day', (string)max(1, min(50, $exam_attempt_limit_per_day)));
         $this->config->setAppValue('learning', 'exam_attempt_cooldown_minutes', (string)max(0, min(1440, $exam_attempt_cooldown_minutes)));
@@ -218,7 +231,13 @@ class SettingsController extends Controller {
 
         $this->config->setUserValue($this->userId, 'learning', 'daily_challenge', $daily_challenge === 'yes' ? 'yes' : 'no');
         $this->config->setUserValue($this->userId, 'learning', 'ui_language', in_array($ui_language, ['de', 'en', ''], true) ? $ui_language : '');
-        $this->config->setUserValue($this->userId, 'learning', 'content_language', in_array($content_language, ['de', 'en', 'ru', ''], true) ? $content_language : '');
+        // Codeberg #6: 'ar' was missing here while the dropdown has offered Arabic for
+        // months — the PUT answered 200 and stored '' instead. The set must match the
+        // <option> values in PersonalSettings.vue AND TranslationService::ALLOWED_LANGS,
+        // which is also what the CHECK constraint on learning_q_translations permits.
+        // 'uk'/'fr' therefore stay out until that constraint is widened by a migration
+        // tested on PostgreSQL and MariaDB.
+        $this->config->setUserValue($this->userId, 'learning', 'content_language', in_array($content_language, ['de', 'en', 'ru', 'ar', ''], true) ? $content_language : '');
         $this->config->setUserValue($this->userId, 'learning', 'virtuprof_enabled', $virtuprof_enabled === 'no' ? 'no' : 'yes');
         $this->config->setUserValue($this->userId, 'learning', 'notifications_enabled', $notifications_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setUserValue($this->userId, 'learning', 'fsrs_detailed_stats', $fsrs_detailed_stats === 'yes' ? 'yes' : 'no');

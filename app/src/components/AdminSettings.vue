@@ -72,6 +72,20 @@
       </div>
 
       <div class="field-row">
+        <label for="instructor-group">{{ t('learning', 'Instructor group') }}</label>
+        <input
+          id="instructor-group"
+          v-model.trim="form.instructorGroup"
+          class="nc-input"
+          type="text"
+          maxlength="64"
+          placeholder="learning-instructors" />
+        <small class="field-help">
+          {{ t('learning', 'Members of this Nextcloud group may create courses and question pools. Create the group under Settings → Administration → Users and add your teachers to it — they do not need Nextcloud administrator rights. Nextcloud administrators always count as instructors.') }}
+        </small>
+      </div>
+
+      <div class="field-row">
         <label>{{ t('learning', 'Allow course-based instructor fallback') }}</label>
         <NcCheckboxRadioSwitch
           :model-value="form.allowCourseInstructorFallback"
@@ -382,6 +396,7 @@ export default {
         maxImportSizeMb: 2,
         gamificationEnabled: true,
         enabledTools: [...ALL_TOOL_IDS],
+        instructorGroup: 'learning-instructors',
         allowCourseInstructorFallback: false,
         examAttemptLimitPerDay: 5,
         examAttemptCooldownMinutes: 10,
@@ -444,6 +459,7 @@ export default {
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
         this.form.enabledTools = this.normalizeEnabledTools(toolsResponse.data?.enabled_tools)
+        this.form.instructorGroup = data.instructor_group || 'learning-instructors'
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
         this.form.examAttemptCooldownMinutes = Math.max(0, Math.min(1440, Number(data.exam_attempt_cooldown_minutes || 10)))
@@ -479,6 +495,7 @@ export default {
             default_language: this.form.defaultLanguage === 'en' ? 'en' : 'de',
             max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
             gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
+            instructor_group: this.form.instructorGroup || 'learning-instructors',
             allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
             exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
             exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),

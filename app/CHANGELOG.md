@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] — Three questions from the Vinnytsia pilot
+
+Reported in [#6](https://codeberg.org/andremadstop/learning-nc/issues/6) by the administrator
+piloting Learning in Vinnytsia. Two of the three questions turned out to describe real defects
+rather than gaps in understanding.
+
+### Fixed
+- **The assistant rendered German text inside a Ukrainian interface.** VirtuProf does not
+  translate through Nextcloud's `t()`; it resolves against its own bundled catalogue, and 161 of
+  its 343 reachable strings had drifted out of that catalogue — including every FAQ answer body.
+  `translateVirtuProf()` then fell back to the raw source string, which is German for most of
+  them. 63 of the 161 were already translated in `l10n/uk.json` and simply never made it into the
+  catalogue; the remaining 105 are new and now exist in all six languages.
+- **The AI assistant was told to answer Ukrainian and French users in English.** The system
+  prompt's language map only knew German, English, Russian and Arabic, so anything else produced
+  the instruction "If unsure, default to English". It now covers all six languages.
+- **The assistant ignored the Nextcloud interface language.** It derived the response language
+  from the opt-in content-language setting alone, with a hard English fallback. It now falls back
+  to the user's Nextcloud interface language, then the instance default.
+- **Choosing Arabic as content language did nothing.** The dropdown has offered it for months and
+  the request sent it, but the server's whitelist did not include `ar`, so the value was silently
+  replaced with the empty string and the request still answered 200.
+- **"Create summary" wrote an English note for a Ukrainian user.** `NoteGeneratorService`,
+  which the assistant reaches through its file-intent path, carried its own copy of both the
+  language lookup and the language-name map — and its copy was missing French and Ukrainian in
+  exactly the same way. Both now come from one shared resolver.
+- **The assistant panel header rendered three empty strings.** Its translate helper passed the
+  key where the function expects the language, so the panel label was blank and both the minimise
+  and close buttons had an empty accessible name — in every language, German included.
+
+### Added
+- **An instructor group setting in the administration page.** Members of that Nextcloud group may
+  create courses and question pools without Nextcloud administrator rights. The mechanism is not
+  new — it has been `learning-instructors` all along — but nothing named it: the admin page
+  referred to "the configured instructor group" without saying which, and the manual claimed the
+  instructor role was per-course only, which is wrong for creating a course in the first place.
+- **The five textbook fields in the pool dialog now explain themselves.** They are optional and
+  only pay off when a pool mirrors one chapter of a book; the dialog says so, and each field
+  describes what belongs in it.
+- **A fifth i18n gate** (`scripts/gen-virtuprof-strings.mjs --check`). The VirtuProf catalogue is
+  now generated from `l10n/*.json` rather than hand-maintained, and the gate fails when the two
+  disagree or when a reachable assistant string exists in no language file. Verified: removing a
+  VirtuProf key from all six language files leaves gates 1–4 green and turns this one red.
+  The catalogue grew from 252 to 429 keys and lost none — keys reached through
+  `vt(<expression>)`, which no literal scan can resolve, are carried forward until they leave
+  `l10n/de.json`. `--list-indirect` names the 22 call sites this protects.
+
+### Documentation
+- New manual section 2.3 on letting teachers create courses and pools, a corrected role
+  description in section 1, a field-by-field table with a worked example for the pool dialog in
+  3.1, and two new troubleshooting entries.
+
+### Internal
+- `deploy-prod.sh --stage-gate` now copies `appinfo/` into the analysis copy. Without it
+  `ClassResolutionTest` — the regression test written after the `AIController`/`AiController`
+  outage — errored out instead of running.
+
 ## [5.4.3] - 2026-09-01 — You could not leave the wizard
 
 Found by clicking through the 5.4.2 deployment: the wizard's "Skip" button sat at `top: 16px`,

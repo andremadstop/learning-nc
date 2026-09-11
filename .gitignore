@@ -128,6 +128,7 @@ scripts/*
 !scripts/check-sql-columns.py
 !scripts/validate-pool-json.mjs
 !scripts/l10n_js_sync.py
+!scripts/gen-virtuprof-strings.mjs
 !scripts/verify-release.sh
 !scripts/verify-credential.py
 .env

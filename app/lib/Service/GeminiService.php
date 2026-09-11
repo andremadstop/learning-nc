@@ -15,6 +15,12 @@ class GeminiService {
     private LoggerInterface $logger;
     private LlmService $llmService;
 
+    /**
+     * Languages the assistant can be told to answer in. Mirrors the six l10n catalogues;
+     * keep in step with buildSystemPrompt()'s $langMap.
+     */
+    private const SUPPORTED_LANGUAGES = ['de', 'en', 'fr', 'ru', 'ar', 'uk'];
+
     private const MAX_INPUT_CHARS = 500;
     private const RATE_LIMIT_MIN = 10;
     private const RATE_LIMIT_DAY = 100;
@@ -75,7 +81,7 @@ class GeminiService {
         $sanitizedInput = $sanitizeResult['input'];
 
         // Layer 2 — Context isolation (SEC-02)
-        $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'en';
+        $language = $this->resolveResponseLanguage($userId);
         $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries, $questionContext, $hintLevel, $userName, $telosProfile, $detailed);
         $userMessage = $this->buildUserMessage($sanitizedInput);
 
@@ -583,6 +589,69 @@ PROMPT;
      * @param array  $ragContext    Optional context from RagContextService::buildContext()
      * @param array  $memoryEntries Optional chat history entries [{role, message}, ...]
      */
+    /**
+     * Language the assistant should answer in, most specific source first.
+     *
+     * Codeberg #6: this used to be `content_language ?: 'en'` inline in chat(). That
+     * setting is opt-in, empty for most users, and its own whitelist did not even accept
+     * 'uk' — so a Ukrainian instance whose users all run a Ukrainian Nextcloud UI got
+     * "default to English" on every single request. The interface language is the far
+     * better signal when no explicit content language was chosen.
+     *
+     * Order: explicit content language → Nextcloud interface language → app default → en.
+     */
+    public function resolveResponseLanguage(string $userId): string {
+        $content = $this->normalizeLanguage(
+            $this->config->getUserValue($userId, 'learning', 'content_language', '')
+        );
+        if ($content !== '') {
+            return $content;
+        }
+
+        // Nextcloud stores regional locales here ("uk_UA", "fr_CA"); take the base code.
+        $interface = $this->normalizeLanguage(
+            $this->config->getUserValue($userId, 'core', 'lang', '')
+        );
+        if ($interface !== '') {
+            return $interface;
+        }
+
+        $default = $this->normalizeLanguage(
+            $this->config->getAppValue('learning', 'default_language', '')
+        );
+
+        return $default !== '' ? $default : 'en';
+    }
+
+    /** Base language code if it is one we can instruct the model in, '' otherwise. */
+    private function normalizeLanguage(string $raw): string {
+        $code = strtolower(substr(trim($raw), 0, 2));
+
+        return in_array($code, self::SUPPORTED_LANGUAGES, true) ? $code : '';
+    }
+
+    /**
+     * English name of a language code, for use inside an LLM prompt.
+     *
+     * Public and shared on purpose. NoteGeneratorService used to carry its own copy of
+     * this map, and that copy was missing 'fr' and 'uk' in exactly the same way this one
+     * was — so the assistant's "Create summary" produced an English note for a Ukrainian
+     * user even after the chat path was fixed. v5.3.1 settled the pattern for this repo
+     * when QuestionService::hasPoolAccess was made public rather than copied a sixth time.
+     */
+    public function languageName(string $code): string {
+        $names = [
+            'de' => 'German',
+            'en' => 'English',
+            'fr' => 'French',
+            'ru' => 'Russian',
+            'ar' => 'Arabic',
+            'uk' => 'Ukrainian',
+        ];
+
+        return $names[$code] ?? 'English';
+    }
+
     private function buildSystemPrompt(
         string $language,
         array $ragContext = [],
@@ -593,13 +662,11 @@ PROMPT;
         ?array $telosProfile = null,
         bool $detailed = false
     ): string {
-        $langMap = [
-            'de' => 'German',
-            'en' => 'English',
-            'ru' => 'Russian',
-            'ar' => 'Arabic',
-        ];
-        $langName = $langMap[$language] ?? 'English';
+        // Codeberg #6: the map this used to inline was missing 'fr' and 'uk', the two
+        // languages added after it was written, so a Ukrainian user got a prompt that said
+        // "default to English". It now lives in languageName(), shared with every other
+        // caller that has to name a language to the model.
+        $langName = $this->languageName($language);
 
         $base = "You are VirtuProf, a helpful learning assistant for a spaced-repetition study app. "
             . "Always respond in the same language the user writes to you. "

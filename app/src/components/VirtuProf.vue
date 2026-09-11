@@ -40,6 +40,7 @@
         ref="virtuprofPanel"
         :title="panelTitle"
         :meta-text="panelMetaText"
+        :language="language"
         @minimize="isMinimized = true"
         @close="dismiss"
         @touchstart="panelTouchStart"

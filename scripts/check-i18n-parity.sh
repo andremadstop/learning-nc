@@ -64,3 +64,14 @@ python3 "$ROOT_DIR/scripts/check-i18n-placeholders.py"
 # files leaves gates 1-3 green and turns this one red.
 echo ""
 python3 "$ROOT_DIR/scripts/check-i18n-coverage.py"
+
+# Gate 5: the VirtuProf runtime catalogue.
+# VirtuProf does not translate through t('learning', …) — it resolves with
+# translateVirtuProf(lang, key) against its own bundled dictionary, so gate 4 (which
+# scans for t() call sites) is blind to every string the assistant renders. Codeberg #6:
+# 161 of 343 reachable keys were absent from that catalogue and fell back to the raw
+# German source inside a Ukrainian UI, with gates 1-4 green throughout.
+# Verified: dropping a VirtuProf key from all six l10n/*.json leaves gates 1-4 green and
+# turns this one red.
+echo ""
+node --no-warnings "$ROOT_DIR/scripts/gen-virtuprof-strings.mjs" --check

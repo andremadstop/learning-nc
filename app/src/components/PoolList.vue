@@ -230,26 +230,40 @@
           <label for="pool-description">{{ t('learning', 'Description') }}</label>
           <textarea id="pool-description" v-model="form.description" rows="4" :placeholder="t('learning', 'Optional description')" class="nc-input"></textarea>
         </div>
+        <!-- Codeberg #6: the five metadata fields below carried placeholders but no
+             explanation, and the reporter asked what belongs in each one. They are all
+             optional and only pay off when a pool mirrors one chapter of a textbook. -->
+        <div class="chapter-meta-intro">
+          <strong>{{ t('learning', 'Textbook reference (all optional)') }}</strong>
+          <p>
+            {{ t('learning', 'Leave these empty unless this pool mirrors one chapter of a book or curriculum. A pool needs nothing but a name. Fill them in when you split a textbook into one pool per chapter: the keys are short internal identifiers you choose yourself, the titles are what people read, and the number orders the chapters.') }}
+          </p>
+        </div>
         <div class="chapter-form-grid">
           <div class="form-group">
             <label for="pool-handbook-key">{{ t('learning', 'Handbook Key') }}</label>
+            <small class="field-help">{{ t('learning', 'Short identifier for the book, the same in every pool that comes from it. Used to group chapters together.') }}</small>
             <input id="pool-handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'e.g., kammermann-network-plus')" class="nc-input" />
           </div>
           <div class="form-group">
             <label for="pool-handbook-title">{{ t('learning', 'Handbook Title') }}</label>
+            <small class="field-help">{{ t('learning', 'Full book title as it should appear to learners, including edition and year.') }}</small>
             <input id="pool-handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Kammermann Network+')" class="nc-input" />
           </div>
           <div class="form-group">
             <label for="pool-chapter-key">{{ t('learning', 'Chapter Key') }}</label>
+            <small class="field-help">{{ t('learning', 'Identifier for this one chapter, unique within the book. A course uses it to match pools when progress is carried over from an earlier course.') }}</small>
             <input id="pool-chapter-key" v-model.trim="form.chapterKey" type="text" :placeholder="t('learning', 'e.g., chapter-03')" class="nc-input" />
           </div>
           <div class="form-group">
             <label for="pool-chapter-order">{{ t('learning', 'Chapter Number') }}</label>
+            <small class="field-help">{{ t('learning', 'Position of the chapter in the book. Decides the order chapters are listed in, nothing else.') }}</small>
             <input id="pool-chapter-order" v-model.number="form.chapterOrder" type="number" min="1" max="9999" :placeholder="t('learning', 'e.g., 3')" class="nc-input" />
           </div>
         </div>
         <div class="form-group">
           <label for="pool-chapter-title">{{ t('learning', 'Chapter Title') }}</label>
+          <small class="field-help">{{ t('learning', 'Chapter heading shown to learners next to the pool.') }}</small>
           <input id="pool-chapter-title" v-model.trim="form.chapterTitle" type="text" :placeholder="t('learning', 'e.g., Switching Grundlagen')" class="nc-input" />
         </div>
         <div class="dialog-actions">
@@ -739,6 +753,10 @@ export default {
 .loading-center { display: block; margin: 60px auto; }
 .form-group { margin-bottom: 18px; }
 .chapter-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.chapter-meta-intro { margin: 18px 0 10px; padding: 10px 12px; border-radius: var(--border-radius, 8px); background: var(--color-background-hover); }
+.chapter-meta-intro strong { display: block; margin-bottom: 4px; }
+.chapter-meta-intro p { margin: 0; font-size: 0.85em; color: var(--color-text-maxcontrast); line-height: 1.45; }
+.form-group .field-help { display: block; margin: 2px 0 4px; font-size: 0.8em; color: var(--color-text-maxcontrast); line-height: 1.35; }
 .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: var(--color-main-text); }
 .nc-input { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; background: var(--color-main-background); color: var(--color-main-text); transition: border-color 0.2s; box-sizing: border-box; }
 .nc-input:focus { border-color: var(--color-primary-element); outline: none; }
