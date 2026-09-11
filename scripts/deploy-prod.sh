@@ -100,6 +100,13 @@ deploy_php() {
   rsync -az app/templates/ "$HOST:~/learning-nc/app/templates/"
   scp -q app/appinfo/routes.php "$HOST:~/learning-nc/app/appinfo/"
   scp -q app/appinfo/info.xml "$HOST:~/learning-nc/app/appinfo/"
+  # CHANGELOG.md, README.md and LICENSE sit in signature.json like every other shipped file,
+  # but nothing synced them — so editing one and deploying left the container with the old
+  # copy and `occ integrity:check-app learning` reported INVALID_HASH on it. Hit twice, at
+  # the 5.4.1 and 5.4.4 releases, and patched by hand both times. All three, not just
+  # CHANGELOG.md: the failure mode is identical for any signed file outside the four synced
+  # directories.
+  scp -q app/CHANGELOG.md app/README.md app/LICENSE "$HOST:~/learning-nc/app/"
   # Sync all 6 supported language files (en/de/fr/ru/ar/uk) — parity-script enforces same key-set across all
   for lang in de en fr ru ar uk; do
     for ext in json js; do
@@ -110,12 +117,21 @@ deploy_php() {
 
   echo "→ Docker cp via tar..."
   ssh "$HOST" "cd ~/learning-nc/app && \
-    tar cf /tmp/php-bundle.tar lib/ appinfo/ l10n/ templates/ && \
+    tar cf /tmp/php-bundle.tar lib/ appinfo/ l10n/ templates/ CHANGELOG.md README.md LICENSE && \
     docker cp /tmp/php-bundle.tar $CONTAINER:/tmp/ && \
     docker exec $CONTAINER bash -c 'cd $APP_PATH && tar xf /tmp/php-bundle.tar' && \
     docker exec $CONTAINER apache2ctl graceful"
-  echo "→ Verifying deploy..."
-  ssh "$HOST" "docker exec $CONTAINER php -r \"require '$APP_PATH/lib/AppInfo/Application.php';\" 2>&1 || echo 'WARN: PHP syntax issue detected'"
+  # This used to `php -r "require .../AppInfo/Application.php"`, which cannot work: loading an
+  # app class outside Nextcloud's autoloader always dies on `Class "OCP\AppFramework\App" not
+  # found`. So it printed "WARN: PHP syntax issue detected" after every single deploy, told
+  # nobody anything, and trained everyone to read that line as noise — which is the worst
+  # state for a check to be in. `php -l` actually answers the question it was asking (~19s).
+  echo "→ Verifying deploy (syntax check over the deployed PHP)..."
+  if ssh "$HOST" "docker exec $CONTAINER bash -c 'find $APP_PATH/lib -name \"*.php\" -print0 | xargs -0 -n1 php -l' 2>&1 | grep -v 'No syntax errors'" | grep -q .; then
+    echo "✗ Syntax errors in the deployed PHP — see above"
+  else
+    echo "✓ Deployed PHP parses clean"
+  fi
   ssh "$HOST" "docker exec $CONTAINER bash -c 'test -L /var/www/html/apps/learning || ln -sf $APP_PATH /var/www/html/apps/learning'"
   echo "✓ PHP deployed"
 }
