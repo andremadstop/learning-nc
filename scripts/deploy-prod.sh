@@ -28,12 +28,19 @@ stage_gate_copy() {
   ssh "$HOST" "mkdir -p ~/learning-nc/app/{lib,appinfo,tests}"
   rsync -az --delete app/lib/ "$HOST:~/learning-nc/app/lib/"
   rsync -az --delete --include='*/' --include='*.php' --exclude='*' app/tests/ "$HOST:~/learning-nc/app/tests/"
+  # appinfo/ was created but never filled (found 2026-09-11 while fixing Codeberg #6).
+  # ClassResolutionTest reads routes.php and info.xml directly and errored out in the gate
+  # for want of them — the very test written after the AIController/AiController outage to
+  # catch string-derived controller names. A gate that skips its own regression test is the
+  # [[feedback_gate_selbstpruefung]] failure mode all over again.
+  rsync -az --delete app/appinfo/ "$HOST:~/learning-nc/app/appinfo/"
   rsync -az app/composer.json app/phpstan.neon app/phpstan-baseline.neon app/phpunit.xml \
     "$HOST:~/learning-nc/app/"
 
-  ssh "$HOST" "docker exec $CONTAINER mkdir -p $GATE_PATH/lib $GATE_PATH/tests && \
+  ssh "$HOST" "docker exec $CONTAINER mkdir -p $GATE_PATH/lib $GATE_PATH/tests $GATE_PATH/appinfo && \
     docker cp ~/learning-nc/app/lib/. $CONTAINER:$GATE_PATH/lib/ && \
     docker cp ~/learning-nc/app/tests/. $CONTAINER:$GATE_PATH/tests/ && \
+    docker cp ~/learning-nc/app/appinfo/. $CONTAINER:$GATE_PATH/appinfo/ && \
     for f in composer.json phpstan.neon phpstan-baseline.neon phpunit.xml; do \
       docker cp ~/learning-nc/app/\$f $CONTAINER:$GATE_PATH/\$f; \
     done"

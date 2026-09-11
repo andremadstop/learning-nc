@@ -221,7 +221,14 @@ namespace OCP {
             // Phase 160: AssignmentService uses get() (NC 33 API, not getGroup())
             public function get(string $gid): ?IGroup;
             // Phase 161: AuditExportController gates the auditor export via isInGroup($uid, $group).
-            public function isInGroup(string $userId, string $group): bool;
+            // Codeberg #6: signatures relaxed to match the real OCP\IGroupManager, which
+            // declares `isInGroup($userId, $group)` and `isAdmin($userId)` with no types at
+            // all. A stub stricter than the interface it stands in for is its own defect —
+            // same shape as the IOutput stub corrected in 920e2be. Verified against
+            // /var/www/html/lib/public/IGroupManager.php on NC 34.
+            public function isInGroup($userId, $group);
+            // RoleService::isInstructor() treats Nextcloud admins as instructors.
+            public function isAdmin($userId);
         }
     }
 
