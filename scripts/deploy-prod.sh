@@ -28,19 +28,30 @@ stage_gate_copy() {
   ssh "$HOST" "mkdir -p ~/learning-nc/app/{lib,appinfo,tests}"
   rsync -az --delete app/lib/ "$HOST:~/learning-nc/app/lib/"
   rsync -az --delete --include='*/' --include='*.php' --exclude='*' app/tests/ "$HOST:~/learning-nc/app/tests/"
-  # appinfo/ was created but never filled (found 2026-09-11 while fixing Codeberg #6).
-  # ClassResolutionTest reads routes.php and info.xml directly and errored out in the gate
-  # for want of them — the very test written after the AIController/AiController outage to
-  # catch string-derived controller names. A gate that skips its own regression test is the
-  # [[feedback_gate_selbstpruefung]] failure mode all over again.
+  # appinfo/, templates/ and data/ were never staged (found 2026-09-11, Codeberg #6).
+  # Each one silently broke a test that then looked like an unrelated environment quirk:
+  #   appinfo/   — ClassResolutionTest reads routes.php and info.xml directly and errored
+  #                out, and that is the test written after the AIController/AiController
+  #                outage to catch string-derived controller names.
+  #   templates/ — AuditExportController::renderReport() includes
+  #                templates/audit-export-print.php; a missing include makes ob_get_clean()
+  #                return '' and the test reads as "PHP 8.5 broke DataDownloadResponse".
+  #   data/      — lib/ reads runtime data from it by relative path.
+  # Anything lib/ reaches through __DIR__ . '/../../' has to be here. A gate that skips its
+  # own regression tests is [[feedback_gate_selbstpruefung]] all over again.
   rsync -az --delete app/appinfo/ "$HOST:~/learning-nc/app/appinfo/"
+  rsync -az --delete app/templates/ "$HOST:~/learning-nc/app/templates/"
+  rsync -az --delete app/data/ "$HOST:~/learning-nc/app/data/"
   rsync -az app/composer.json app/phpstan.neon app/phpstan-baseline.neon app/phpunit.xml \
     "$HOST:~/learning-nc/app/"
 
-  ssh "$HOST" "docker exec $CONTAINER mkdir -p $GATE_PATH/lib $GATE_PATH/tests $GATE_PATH/appinfo && \
+  ssh "$HOST" "docker exec $CONTAINER mkdir -p $GATE_PATH/lib $GATE_PATH/tests $GATE_PATH/appinfo \
+      $GATE_PATH/templates $GATE_PATH/data && \
     docker cp ~/learning-nc/app/lib/. $CONTAINER:$GATE_PATH/lib/ && \
     docker cp ~/learning-nc/app/tests/. $CONTAINER:$GATE_PATH/tests/ && \
     docker cp ~/learning-nc/app/appinfo/. $CONTAINER:$GATE_PATH/appinfo/ && \
+    docker cp ~/learning-nc/app/templates/. $CONTAINER:$GATE_PATH/templates/ && \
+    docker cp ~/learning-nc/app/data/. $CONTAINER:$GATE_PATH/data/ && \
     for f in composer.json phpstan.neon phpstan-baseline.neon phpunit.xml; do \
       docker cp ~/learning-nc/app/\$f $CONTAINER:$GATE_PATH/\$f; \
     done"
@@ -48,6 +59,17 @@ stage_gate_copy() {
   # The independent Ed25519 verifier the signing tests insist on (they fail rather than skip).
   scp -q scripts/verify-credential.py "$HOST:/tmp/verify-credential.py"
   ssh "$HOST" "docker cp /tmp/verify-credential.py $CONTAINER:/tmp/verify-credential.py"
+
+  # …and the one module it imports. The nextcloud image ships python3 without
+  # python3-cryptography and without pip, so the verifier exited non-zero and the test read
+  # as an unrelated environment failure for months ("python3-cryptography image bake" has sat
+  # in the notes since v5.0.0). Installed idempotently here rather than baked into an image,
+  # so it survives a container recreate without anyone having to remember it.
+  ssh "$HOST" "docker exec $CONTAINER python3 -c 'import cryptography' 2>/dev/null" || {
+    echo "→ python3-cryptography missing in the container — installing (one-off)..."
+    ssh "$HOST" "docker exec $CONTAINER bash -c 'apt-get update -qq && apt-get install -y -qq python3-cryptography' >/dev/null 2>&1"
+    ssh "$HOST" "docker exec $CONTAINER python3 -c 'import cryptography; print(\"cryptography\", cryptography.__version__)'"
+  }
 
   ssh "$HOST" "docker exec $CONTAINER test -f $GATE_PATH/vendor/bin/phpstan" 2>/dev/null || {
     echo "→ Dev toolchain missing in the staged copy — installing (one-off, a few minutes)..."
