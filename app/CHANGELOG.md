@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] — Three questions from the Vinnytsia pilot
+## [5.4.4] - 2026-09-11 — Three questions from the Vinnytsia pilot
 
 Reported in [#6](https://codeberg.org/andremadstop/learning-nc/issues/6) by the administrator
 piloting Learning in Vinnytsia. Two of the three questions turned out to describe real defects
