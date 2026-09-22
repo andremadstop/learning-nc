@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.4.5] - 2026-09-22 — Every button in a form was a submit button
 
 Reported in [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) by an external user on
 macOS, reproducible in both Safari and Chrome. The report was precise and its diagnosis correct —
