@@ -9,7 +9,7 @@
         </p>
       </div>
       <NcButton
-        type="secondary"
+        variant="secondary"
         :disabled="loading"
         @click="openPreview">
         {{ loading ? t('learning', 'Lade...') : t('learning', 'Spickzettel erstellen') }}
@@ -30,13 +30,13 @@
           </p>
         </div>
         <div class="preview-actions">
-          <NcButton type="tertiary" @click="exportMarkdown">
+          <NcButton variant="tertiary" @click="exportMarkdown">
             {{ t('learning', 'Als Markdown') }}
           </NcButton>
-          <NcButton type="secondary" @click="printCheatSheet">
+          <NcButton variant="secondary" @click="printCheatSheet">
             {{ t('learning', 'Drucken') }}
           </NcButton>
-          <NcButton type="tertiary" @click="showPreview = false">
+          <NcButton variant="tertiary" @click="showPreview = false">
             {{ t('learning', 'Schliessen') }}
           </NcButton>
         </div>

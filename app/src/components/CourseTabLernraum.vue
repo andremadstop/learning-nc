@@ -79,14 +79,14 @@
 						</span>
 					</div>
 					<NcButton
-						type="tertiary"
+						variant="tertiary"
 						size="small"
 						class="pool-rules-btn"
 						@click.stop="openPoolRulesModal(pool)">
 						{{ t('learning', 'Rules') }}
 					</NcButton>
 					<NcButton
-						type="tertiary-no-background"
+						variant="tertiary-no-background"
 						class="remove-pool-btn"
 						:aria-label="t('learning', 'Remove pool')"
 						@click.stop="confirmRemovePool(pool)">
@@ -108,7 +108,7 @@
 			<div v-if="!selectedLearningPool" class="smart-queue-hero" @click="$emit('openSmartQueue')">
 				<div class="smart-queue-hero__count">{{ queueCount }}</div>
 				<div class="smart-queue-hero__label">{{ t('learning', 'fällig — alle Kurse') }}</div>
-				<NcButton type="primary" @click.stop="$emit('openSmartQueue')">
+				<NcButton variant="primary" @click.stop="$emit('openSmartQueue')">
 					{{ t('learning', 'Smart Queue starten') }}
 				</NcButton>
 			</div>
@@ -261,7 +261,7 @@
 							{{ t('learning', 'Dokument öffnen') }}
 						</a>
 						<NcButton
-							type="primary"
+							variant="primary"
 							:disabled="isItemComplete(item.id) || documentPending[item.id]"
 							@click="markDocumentRead(item)">
 							{{ isItemComplete(item.id)
@@ -359,7 +359,7 @@
 				</div>
 
 				<div class="curriculum-actions">
-					<NcButton type="primary" :disabled="savingCurriculum" @click="saveCurriculumScope">
+					<NcButton variant="primary" :disabled="savingCurriculum" @click="saveCurriculumScope">
 						{{ savingCurriculum ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
 					<span v-if="curriculumSaved" class="curriculum-saved-hint">✓ {{ t('learning', 'Saved.') }}</span>
@@ -417,7 +417,7 @@
 							<span v-else-if="selectedPoolIds.includes(pool.id)" class="pool-check">✓</span>
 						</div>
 						<div v-if="selectedPoolIds.length > 0" class="pool-add-confirm">
-							<NcButton type="primary" :disabled="savingPool" @click="addSelectedPools">
+							<NcButton variant="primary" :disabled="savingPool" @click="addSelectedPools">
 								{{ savingPool
 									? t('learning', 'Adding...')
 									: t('learning', 'Add {n} pool(s)', { n: selectedPoolIds.length }) }}
@@ -441,10 +441,10 @@
 				<h3>{{ t('learning', 'Remove Pool') }}</h3>
 				<p>{{ t('learning', 'Remove "{name}" from this course? Students will lose access to these questions.', { name: removingPool ? removingPool.pool_name : '' }) }}</p>
 				<div class="modal-actions">
-					<NcButton type="tertiary" :disabled="savingPool" @click="showRemovePoolModal = false">
+					<NcButton variant="tertiary" :disabled="savingPool" @click="showRemovePoolModal = false">
 						{{ t('learning', 'Cancel') }}
 					</NcButton>
-					<NcButton type="error" :disabled="savingPool" @click="removePool">
+					<NcButton variant="error" :disabled="savingPool" @click="removePool">
 						{{ savingPool ? t('learning', 'Removing...') : t('learning', 'Remove') }}
 					</NcButton>
 				</div>
@@ -515,10 +515,10 @@
 				</div>
 
 				<div class="modal-actions">
-					<NcButton type="tertiary" :disabled="savingPoolRules" @click="closePoolRulesModal">
+					<NcButton variant="tertiary" :disabled="savingPoolRules" @click="closePoolRulesModal">
 						{{ t('learning', 'Cancel') }}
 					</NcButton>
-					<NcButton type="primary" :disabled="savingPoolRules" @click="savePoolRules">
+					<NcButton variant="primary" :disabled="savingPoolRules" @click="savePoolRules">
 						{{ savingPoolRules ? t('learning', 'Saving...') : t('learning', 'Save Rules') }}
 					</NcButton>
 				</div>

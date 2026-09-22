@@ -27,7 +27,7 @@
 					:placeholder="t('learning', 'Enter username to add...')"
 					:disabled="addingMember"
 					@keydown.enter="addMember" />
-				<NcButton type="secondary"
+				<NcButton variant="secondary"
 					:disabled="!newMemberUsername.trim() || addingMember"
 					@click="addMember">
 					{{ addingMember ? t('learning', 'Adding...') : t('learning', 'Add') }}
@@ -53,14 +53,14 @@
 						</span>
 					</div>
 					<div class="member-actions">
-						<NcButton type="tertiary"
+						<NcButton variant="tertiary"
 							:disabled="savingMember === member.id"
 							@click="toggleMemberRole(member)">
 							{{ member.role === 'student'
 								? t('learning', 'Make Instructor')
 								: t('learning', 'Make Student') }}
 						</NcButton>
-						<NcButton type="tertiary-no-background"
+						<NcButton variant="tertiary-no-background"
 							:aria-label="t('learning', 'Remove member')"
 							:disabled="savingMember === member.id"
 							@click="confirmRemoveMember(member)">
@@ -82,7 +82,7 @@
 		<div v-if="currentSubTab === 'progress' && isInstructor" class="progress-section">
 			<div class="section-header">
 				<h4>{{ t('learning', 'Student Progress') }}</h4>
-				<NcButton type="tertiary" @click="fetchProgress(); fetchAtRisk()">
+				<NcButton variant="tertiary" @click="fetchProgress(); fetchAtRisk()">
 					{{ t('learning', 'Refresh') }}
 				</NcButton>
 			</div>
@@ -93,7 +93,7 @@
 					<h4 class="at-risk-title">
 						{{ t('learning', 'At-Risk Students ({n})', { n: atRiskStudents.length }) }}
 					</h4>
-					<NcButton type="tertiary" size="small" @click.stop="exportAtRiskCsv">
+					<NcButton variant="tertiary" size="small" @click.stop="exportAtRiskCsv">
 						{{ t('learning', 'Export CSV') }}
 					</NcButton>
 					<button class="at-risk-toggle">{{ atRiskCollapsed ? '\u25BC' : '\u25B2' }}</button>
@@ -218,10 +218,10 @@
 						}) }}
 					</div>
 					<div class="progress-pagination-actions">
-						<NcButton type="tertiary" :disabled="!canPagePrev || progressLoading" @click="pageProgressPrev">
+						<NcButton variant="tertiary" :disabled="!canPagePrev || progressLoading" @click="pageProgressPrev">
 							{{ t('learning', 'Previous') }}
 						</NcButton>
-						<NcButton type="tertiary" :disabled="!canPageNext || progressLoading" @click="pageProgressNext">
+						<NcButton variant="tertiary" :disabled="!canPageNext || progressLoading" @click="pageProgressNext">
 							{{ t('learning', 'Next') }}
 						</NcButton>
 					</div>
@@ -262,7 +262,7 @@
 								<span class="wrong-q-rate">{{ q.wrong_rate }}% falsch</span>
 							</div>
 						</div>
-						<NcButton type="tertiary" @click="toggleExpandChapter(ch.chapter_key)">
+						<NcButton variant="tertiary" @click="toggleExpandChapter(ch.chapter_key)">
 							{{ expandedChapter === ch.chapter_key ? t('learning', 'Hide') : t('learning', 'Show worst questions') }}
 						</NcButton>
 					</div>
@@ -295,7 +295,7 @@
 							{{ q.wrong_rate }}%
 						</td>
 						<td class="q-actions">
-							<NcButton type="tertiary" @click="toggleQuestionPause(q)">
+							<NcButton variant="tertiary" @click="toggleQuestionPause(q)">
 								{{ q.is_paused ? t('learning', 'Resume') : t('learning', 'Pause') }}
 							</NcButton>
 						</td>
@@ -308,7 +308,7 @@
 		<div v-if="currentSubTab === 'class-profile' && isInstructor" class="class-profile-section">
 			<div class="section-header">
 				<h4>{{ t('learning', 'Class Profile') }}</h4>
-				<NcButton type="tertiary" @click="fetchTelosAggregate">
+				<NcButton variant="tertiary" @click="fetchTelosAggregate">
 					{{ t('learning', 'Refresh') }}
 				</NcButton>
 			</div>
@@ -401,7 +401,7 @@
 			<div v-if="showCertReport" class="cert-report-section">
 				<div class="cert-report-header">
 					<h4 class="cert-report-title">{{ t('learning', 'Compliance-Bericht') }}</h4>
-					<NcButton type="tertiary" size="small" @click="exportCertReportCsv">
+					<NcButton variant="tertiary" size="small" @click="exportCertReportCsv">
 						{{ t('learning', 'Export CSV') }}
 					</NcButton>
 				</div>
@@ -422,7 +422,7 @@
 						<input type="number" min="0" step="1" :value="certExpiringDays"
 							@input="certExpiringDays = $event.target.value">
 					</label>
-					<NcButton type="secondary" @click="fetchCertReport">
+					<NcButton variant="secondary" @click="fetchCertReport">
 						{{ t('learning', 'Filter anwenden') }}
 					</NcButton>
 				</div>
@@ -448,7 +448,7 @@
 								<td>{{ row.expires_at ? formatCertDate(row.expires_at) : t('learning', 'unbegrenzt') }}</td>
 								<td class="cert-vid">{{ row.verification_id }}</td>
 								<td>
-									<NcButton type="tertiary"
+									<NcButton variant="tertiary"
 										size="small"
 										:disabled="revokingVid === row.verification_id"
 										@click="revokeCertificate(row)">
@@ -472,12 +472,12 @@
 				<h3>{{ t('learning', 'Mitglied entfernen') }}</h3>
 				<p>{{ t('learning', '"{name}" aus diesem Kurs entfernen?', { name: removingMember ? removingMember.user_id : '' }) }}</p>
 				<div class="modal-actions">
-					<NcButton type="tertiary"
+					<NcButton variant="tertiary"
 						:disabled="savingMember !== null"
 						@click="showRemoveMemberModal = false">
 						{{ t('learning', 'Abbrechen') }}
 					</NcButton>
-					<NcButton type="error"
+					<NcButton variant="error"
 						:disabled="savingMember !== null"
 						@click="removeMember">
 						{{ savingMember !== null ? t('learning', 'Entferne...') : t('learning', 'Entfernen') }}

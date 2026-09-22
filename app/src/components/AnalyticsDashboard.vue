@@ -1,10 +1,10 @@
 <template>
   <div class="analytics-dashboard">
     <div class="header">
-      <NcButton @click="goBack" type="tertiary">
+      <NcButton @click="goBack" variant="tertiary">
         {{ t('learning', 'Back to Mode Selector') }}
       </NcButton>
-      <NcButton @click="fetchStats" type="tertiary" :disabled="loading">
+      <NcButton @click="fetchStats" variant="tertiary" :disabled="loading">
         {{ t('learning', 'Refresh Stats') }}
       </NcButton>
     </div>
@@ -77,7 +77,7 @@
             <div class="mission-progress">{{ m.current }}/{{ m.target }}</div>
             <div class="mission-actions">
               <span class="mission-xp">+{{ m.xp }} XP</span>
-              <NcButton v-if="m.claimable" type="primary" :disabled="claimingMissionKey === m.key" @click="claimMission(m.key)">
+              <NcButton v-if="m.claimable" variant="primary" :disabled="claimingMissionKey === m.key" @click="claimMission(m.key)">
                 {{ claimingMissionKey === m.key ? t('learning', 'Claiming...') : t('learning', 'Claim') }}
               </NcButton>
               <span v-else class="mission-status">

@@ -44,8 +44,8 @@
         </div>
       </div>
       <div class="input-actions">
-        <NcButton type="tertiary" @click="loadExample">{{ t('learning', 'Load Example') }}</NcButton>
-        <NcButton v-if="fileName" type="tertiary" @click="clearFile">{{ t('learning', 'Clear') }}</NcButton>
+        <NcButton variant="tertiary" @click="loadExample">{{ t('learning', 'Load Example') }}</NcButton>
+        <NcButton v-if="fileName" variant="tertiary" @click="clearFile">{{ t('learning', 'Clear') }}</NcButton>
       </div>
       <p class="or-divider">{{ t('learning', '— or paste below —') }}</p>
       <textarea v-model="textData" :placeholder="format === 'csv' ? t('learning', 'Paste CSV data here...') : t('learning', 'Paste JSON data here...')" rows="6" class="nc-input data-input"></textarea>
@@ -79,8 +79,8 @@
     </NcNoteCard>
 
     <template #actions>
-      <NcButton type="tertiary" @click="$emit('close')">{{ result ? t('learning', 'Done') : t('learning', 'Cancel') }}</NcButton>
-      <NcButton v-if="!result" type="primary" @click="doImport" :disabled="importing || !textData">{{ importing ? t('learning', 'Importing...') : t('learning', 'Import') }}</NcButton>
+      <NcButton variant="tertiary" @click="$emit('close')">{{ result ? t('learning', 'Done') : t('learning', 'Cancel') }}</NcButton>
+      <NcButton v-if="!result" variant="primary" @click="doImport" :disabled="importing || !textData">{{ importing ? t('learning', 'Importing...') : t('learning', 'Import') }}</NcButton>
     </template>
   </AccessibleDialog>
 </template>

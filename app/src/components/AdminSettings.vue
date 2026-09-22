@@ -223,7 +223,7 @@
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
       <div class="actions">
-        <NcButton type="primary" :disabled="saving" @click="save">
+        <NcButton variant="primary" :disabled="saving" @click="save">
           {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
         </NcButton>
       </div>
@@ -233,7 +233,7 @@
           <h3 class="audit-summary-title">{{ t('learning', 'Recent Audit Events') }} ({{ auditEvents.length }})</h3>
         </summary>
         <div class="audit-header">
-          <NcButton type="tertiary" @click="loadAudit">{{ t('learning', 'Refresh') }}</NcButton>
+          <NcButton variant="tertiary" @click="loadAudit">{{ t('learning', 'Refresh') }}</NcButton>
         </div>
         <div v-if="auditLoading" class="loading">
           <NcLoadingIcon :size="24" />
@@ -305,7 +305,7 @@
       <div class="ticket-section">
         <div class="audit-header">
           <h3>{{ t('learning', 'Support tickets') }}</h3>
-          <NcButton type="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
+          <NcButton variant="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
         </div>
         <p class="field-help ticket-filter-note">{{ t('learning', 'Zeigt nur technische Anfragen (Admin-Tickets)') }}</p>
         <div v-if="ticketLoading" class="loading">
@@ -343,7 +343,7 @@
             </label>
             <div class="ticket-actions">
               <NcButton
-                type="primary"
+                variant="primary"
                 :disabled="answeringId === ticket.id"
                 @click="submitTicketAnswer(ticket.id)">
                 {{ answeringId === ticket.id ? t('learning', 'Saving...') : t('learning', 'Save answer') }}

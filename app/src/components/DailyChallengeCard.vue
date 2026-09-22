@@ -14,7 +14,7 @@
     <div v-if="!dailyChallenge.completed && dailyChallenge.question.question_type === 'open'" class="dc-answers">
       <textarea v-model="challengeOpenAnswer" :placeholder="t('learning', 'Type your answer...')" rows="2" class="nc-input dc-open-textarea" :disabled="challengeSubmitting"></textarea>
       <div class="dc-submit-area">
-        <NcButton type="primary" :disabled="challengeSubmitting || !challengeOpenAnswer.trim()" @click="submitChallenge">
+        <NcButton variant="primary" :disabled="challengeSubmitting || !challengeOpenAnswer.trim()" @click="submitChallenge">
           {{ challengeSubmitting ? t('learning', 'Submitting...') : t('learning', 'Submit') }}
         </NcButton>
       </div>
@@ -27,7 +27,7 @@
         {{ answer.text }}
       </button>
       <div class="dc-submit-area">
-        <NcButton type="primary" :disabled="challengeSubmitting || challengeSelectedIds.length === 0" @click="submitChallenge">
+        <NcButton variant="primary" :disabled="challengeSubmitting || challengeSelectedIds.length === 0" @click="submitChallenge">
           {{ challengeSubmitting ? t('learning', 'Submitting...') : t('learning', 'Submit') }}
         </NcButton>
       </div>

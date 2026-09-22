@@ -71,9 +71,9 @@
             </div>
           </div>
           <div class="pg-actions">
-            <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
+            <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
             <NcButton
-              type="primary"
+              variant="primary"
               :disabled="inputText.trim().length < 50 || generating || !providerAvailable"
               @click="generateFromText"
             >
@@ -102,9 +102,9 @@
             </div>
           </div>
           <div class="pg-actions">
-            <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
+            <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
             <NcButton
-              type="primary"
+              variant="primary"
               :disabled="!filePath.trim() || generating || !providerAvailable"
               @click="generateFromFile"
             >
@@ -119,7 +119,7 @@
             {{ t('learning', 'To import questions from CSV or JSON, create a pool first, then use the import function inside the pool view.') }}
           </NcNoteCard>
           <div class="pg-actions">
-            <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Close') }}</NcButton>
+            <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Close') }}</NcButton>
           </div>
         </div>
       </template>
@@ -154,9 +154,9 @@
         />
 
         <div class="pg-actions">
-          <NcButton type="tertiary" @click="backToInput">{{ t('learning', 'Back') }}</NcButton>
+          <NcButton variant="tertiary" @click="backToInput">{{ t('learning', 'Back') }}</NcButton>
           <NcButton
-            type="primary"
+            variant="primary"
             :disabled="acceptedCount === 0 || !poolTitle.trim() || creating"
             @click="createPool"
           >

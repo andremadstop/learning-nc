@@ -7,14 +7,14 @@
     <div v-else-if="!started && items.length === 0" class="sq-empty">
       <h3>{{ mode === 'remediation' ? t('learning', 'No trouble spots!') : t('learning', 'All caught up!') }}</h3>
       <p>{{ mode === 'remediation' ? t('learning', 'You have no problem questions right now.') : t('learning', 'No questions due. Open a pool and start the Leitner system to begin spaced repetition.') }}</p>
-      <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pools') }}</NcButton>
+      <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pools') }}</NcButton>
     </div>
 
     <div v-else-if="!started" class="sq-ready">
       <h3>{{ mode === 'remediation' ? t('learning', 'Trouble Spots') : t('learning', 'Smart Queue') }}</h3>
       <p>{{ mode === 'remediation' ? t('learning', '{n} problem questions to practice', { n: items.length }) : t('learning', '{n} questions due — sorted by priority: most urgent first.', { n: items.length }) }}</p>
-      <NcButton type="primary" @click="started = true">{{ t('learning', 'Start Review') }}</NcButton>
-      <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+      <NcButton variant="primary" @click="started = true">{{ t('learning', 'Start Review') }}</NcButton>
+      <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
     </div>
 
     <div v-else-if="!showResults" class="sq-review">
@@ -28,13 +28,13 @@
         <div class="review-box-indicator">{{ t('learning', 'Box {n}', { n: currentItem.box }) }}</div>
         <NcNoteCard v-if="currentIndex === 0 && !hintDismissed('box-movement')" type="info" class="onboarding-hint">
           {{ t('learning', 'Correct → next box (less often). Wrong → back to Box 1.') }}
-          <NcButton type="tertiary" @click="dismissHint('box-movement')">{{ t('learning', 'Got it') }}</NcButton>
+          <NcButton variant="tertiary" @click="dismissHint('box-movement')">{{ t('learning', 'Got it') }}</NcButton>
         </NcNoteCard>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <div v-if="!answered && isOpenQuestion" class="open-answer-area">
           <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
-          <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+          <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
             {{ t('learning', 'Submit Answer') }}
           </NcButton>
         </div>
@@ -49,7 +49,7 @@
               :disabled="submitting"
             >{{ answer.text }}</button>
             <div class="multi-submit-area">
-              <NcButton type="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
+              <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
                 {{ t('learning', 'Submit Answer') }}
               </NcButton>
             </div>
@@ -68,7 +68,7 @@
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="lastCorrect ? 'success' : 'error'">{{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -93,7 +93,7 @@
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question →') : t('learning', 'See Results') }}</NcButton>
+          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question →') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>
     </div>
@@ -115,7 +115,7 @@
       </div>
 
       <div class="result-actions">
-        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Done') }}</NcButton>
+        <NcButton variant="primary" @click="$emit('back')">{{ t('learning', 'Done') }}</NcButton>
       </div>
       <BadgeUnlock :badges="newBadges" />
       <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />

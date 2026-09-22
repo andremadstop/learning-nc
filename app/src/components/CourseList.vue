@@ -3,7 +3,7 @@
 		<div class="course-list-header">
 			<h3>{{ t('learning', 'Courses') }}</h3>
 			<NcButton v-if="userRole === 'instructor'"
-				type="primary"
+				variant="primary"
 				@click="openCreateModal">
 				{{ t('learning', '+ Create Course') }}
 			</NcButton>
@@ -23,7 +23,7 @@
 		<!-- Student welcome hint -->
 		<NcNoteCard v-if="userRole === 'student' && !loading && !hintDismissed('welcome-student')" type="info" class="onboarding-hint">
 			{{ t('learning', 'Welcome! Your instructor enrolls you in courses. Open a course, pick a question pool and start learning. Questions you get wrong will come back more often.') }}
-			<NcButton type="tertiary" @click="dismissHint('welcome-student')">{{ t('learning', 'Got it') }}</NcButton>
+			<NcButton variant="tertiary" @click="dismissHint('welcome-student')">{{ t('learning', 'Got it') }}</NcButton>
 		</NcNoteCard>
 
 		<template v-if="!loading">
@@ -156,12 +156,12 @@
 				</div>
 
 				<div class="modal-actions">
-					<NcButton type="tertiary"
+					<NcButton variant="tertiary"
 						:disabled="saving"
 						@click="closeModal">
 						{{ t('learning', 'Cancel') }}
 					</NcButton>
-					<NcButton type="primary"
+					<NcButton variant="primary"
 						:disabled="saving"
 						@click="saveCourse">
 						<template v-if="saving">
@@ -181,12 +181,12 @@
 				<h3>{{ t('learning', 'Delete Course') }}</h3>
 				<p>{{ t('learning', 'Are you sure you want to delete "{title}"? This action cannot be undone.', { title: deletingCourse ? deletingCourse.title : '' }) }}</p>
 				<div class="modal-actions">
-					<NcButton type="tertiary"
+					<NcButton variant="tertiary"
 						:disabled="saving"
 						@click="showDeleteModal = false">
 						{{ t('learning', 'Cancel') }}
 					</NcButton>
-					<NcButton type="error"
+					<NcButton variant="error"
 						:disabled="saving"
 						@click="deleteCourse">
 						<template v-if="saving">

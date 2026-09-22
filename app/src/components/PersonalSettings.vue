@@ -161,7 +161,7 @@
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
       <div class="actions">
-        <NcButton type="primary" :disabled="saving" @click="save">
+        <NcButton variant="primary" :disabled="saving" @click="save">
           {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
         </NcButton>
       </div>
@@ -355,10 +355,10 @@
         <NcNoteCard v-if="telosSaved" type="success">{{ t('learning', 'Learning profile saved') }}</NcNoteCard>
 
         <div class="actions">
-          <NcButton type="primary" :disabled="telosSaving" @click="saveTelosProfile">
+          <NcButton variant="primary" :disabled="telosSaving" @click="saveTelosProfile">
             {{ telosSaving ? t('learning', 'Saving...') : t('learning', 'Save learning profile') }}
           </NcButton>
-          <NcButton type="tertiary-on-primary" :disabled="telosSaving" @click="confirmResetProfile">
+          <NcButton variant="tertiary-on-primary" :disabled="telosSaving" @click="confirmResetProfile">
             {{ t('learning', 'Reset profile') }}
           </NcButton>
         </div>
@@ -368,7 +368,7 @@
             <strong>{{ t('learning', 'Data export') }}</strong>
             <p class="field-desc">{{ t('learning', 'Download your learning profile, progress, badges, sessions and course memberships as JSON.') }}</p>
           </div>
-          <NcButton type="secondary" @click="downloadMyData">
+          <NcButton variant="secondary" @click="downloadMyData">
             {{ t('learning', 'Export my data') }}
           </NcButton>
         </div>
@@ -393,13 +393,13 @@
             readonly
             :value="icsUrl"
             @click="copyIcsUrl" />
-          <NcButton type="secondary" :disabled="copyingUrl" @click="copyIcsUrl">
+          <NcButton variant="secondary" :disabled="copyingUrl" @click="copyIcsUrl">
             {{ copyingUrl ? t('learning', 'Copied!') : t('learning', 'Copy URL') }}
           </NcButton>
         </div>
         <NcNoteCard v-if="icsUrlCopied" type="success">{{ t('learning', 'URL copied to clipboard') }}</NcNoteCard>
         <div class="regenerate-row">
-          <NcButton type="tertiary" :disabled="regenerating" @click="regenerateToken">
+          <NcButton variant="tertiary" :disabled="regenerating" @click="regenerateToken">
             {{ regenerating ? t('learning', 'Regenerating...') : t('learning', 'Regenerate token') }}
           </NcButton>
           <span class="regenerate-hint">{{ t('learning', 'This will invalidate the current URL.') }}</span>

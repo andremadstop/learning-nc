@@ -1,6 +1,6 @@
 <template>
 	<div class="student-detail">
-		<NcButton type="tertiary" @click="$emit('back')">
+		<NcButton variant="tertiary" @click="$emit('back')">
 			{{ t('learning', '\u2190 Back to Course') }}
 		</NcButton>
 

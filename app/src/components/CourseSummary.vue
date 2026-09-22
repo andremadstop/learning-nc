@@ -8,13 +8,13 @@
 			</div>
 			<div class="summary-actions">
 				<NcButton
-					type="tertiary"
+					variant="tertiary"
 					disabled
 					:title="t('learning', 'Kommt bald')">
 					{{ t('learning', 'Als Markdown exportieren') }}
 				</NcButton>
 				<NcButton
-					type="primary"
+					variant="primary"
 					:disabled="loading || savingSnapshot || !summary"
 					@click="saveSnapshot">
 					{{ savingSnapshot ? t('learning', 'Sichere...') : t('learning', 'Zeugnis sichern') }}
@@ -94,7 +94,7 @@
 					<span v-if="passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
 					<NcButton
 						v-if="certVerificationId"
-						type="primary"
+						variant="primary"
 						class="zeugnis-cert-action"
 						@click="showCertModal = true">
 						{{ t('learning', 'Zertifikat ansehen') }}
@@ -178,7 +178,7 @@
 				</p>
 				<div class="ics-actions">
 					<NcButton
-						type="secondary"
+						variant="secondary"
 						:title="t('learning', 'URL kopieren')"
 						@click="copyIcsUrl">
 						{{ icsCopied ? t('learning', 'Kopiert!') : t('learning', 'URL kopieren') }}

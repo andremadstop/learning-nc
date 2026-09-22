@@ -47,7 +47,7 @@
           maxlength="12"
           @keyup.enter="joinDuel"
         />
-        <NcButton type="secondary" :disabled="loading || !joinCode.trim()" @click="joinDuel">
+        <NcButton variant="secondary" :disabled="loading || !joinCode.trim()" @click="joinDuel">
           {{ loading ? t('learning', 'Beitreten...') : t('learning', 'Beitreten') }}
         </NcButton>
       </div>
@@ -55,13 +55,13 @@
       <div class="join-divider"><span>{{ t('learning', 'oder') }}</span></div>
 
       <div class="start-actions">
-        <NcButton type="primary" :disabled="loading || selectedPoolId === 0" @click="createDuel">
+        <NcButton variant="primary" :disabled="loading || selectedPoolId === 0" @click="createDuel">
           {{ createButtonLabel }}
         </NcButton>
-        <NcButton type="secondary" :disabled="loading || selectedPoolId === 0" @click="startBotDuel">
+        <NcButton variant="secondary" :disabled="loading || selectedPoolId === 0" @click="startBotDuel">
           🤓 {{ t('learning', 'Gegen Klaus spielen') }}
         </NcButton>
-        <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
+        <NcButton variant="tertiary" :disabled="loading" @click="$emit('back')">
           {{ t('learning', 'Zurück') }}
         </NcButton>
       </div>
@@ -81,7 +81,7 @@
       <div class="duel-code-box">
         <span class="duel-code-label">{{ t('learning', 'Duell-Code') }}</span>
         <span class="duel-code">{{ duelCode }}</span>
-        <NcButton type="secondary" @click="copyCode">{{ t('learning', 'Code kopieren') }}</NcButton>
+        <NcButton variant="secondary" @click="copyCode">{{ t('learning', 'Code kopieren') }}</NcButton>
       </div>
 
       <div class="lobby-players">
@@ -105,10 +105,10 @@
       <p class="lobby-status">{{ lobbyStatusText }}</p>
 
       <div class="start-actions">
-        <NcButton type="primary" :disabled="loading || readyClicked || !canSetReady" @click="setReady">
+        <NcButton variant="primary" :disabled="loading || readyClicked || !canSetReady" @click="setReady">
           {{ readyClicked ? t('learning', 'Bereit!') : t('learning', 'Bereit!') }}
         </NcButton>
-        <NcButton type="tertiary" @click="cancelDuel">{{ t('learning', 'Abbrechen') }}</NcButton>
+        <NcButton variant="tertiary" @click="cancelDuel">{{ t('learning', 'Abbrechen') }}</NcButton>
       </div>
     </div>
 
@@ -170,11 +170,11 @@
         <NcNoteCard type="warning">
           {{ t('learning', 'Verbindung zum Gegner unterbrochen. Das Spiel wird beendet...') }}
         </NcNoteCard>
-        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
+        <NcButton variant="primary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
       </div>
 
       <div class="question-abort-area">
-        <NcButton type="tertiary" @click="abortGame">
+        <NcButton variant="tertiary" @click="abortGame">
           {{ t('learning', 'Abbrechen') }}
         </NcButton>
       </div>
@@ -240,10 +240,10 @@
           <span class="bot-speech">{{ botKlausEndPhrase }}</span>
         </div>
         <div class="start-actions">
-          <NcButton type="primary" :disabled="loading" @click="startBotDuel">
+          <NcButton variant="primary" :disabled="loading" @click="startBotDuel">
             {{ t('learning', 'Rematch gegen Klaus') }}
           </NcButton>
-          <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
+          <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
         </div>
       </template>
 
@@ -262,10 +262,10 @@
         </div>
         <p class="winner-announce">{{ winnerText }}</p>
         <div class="start-actions">
-          <NcButton type="primary" :disabled="loading" @click="doRematch">
+          <NcButton variant="primary" :disabled="loading" @click="doRematch">
             {{ loading ? t('learning', 'Starte...') : t('learning', 'Rematch') }}
           </NcButton>
-          <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
+          <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
         </div>
       </template>
     </div>
@@ -275,7 +275,7 @@
       <h3>{{ t('learning', 'Duell abgebrochen') }}</h3>
       <p>{{ t('learning', 'Ein Spieler hat die Verbindung verloren.') }}</p>
       <div class="start-actions">
-        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
+        <NcButton variant="primary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
       </div>
     </div>
 

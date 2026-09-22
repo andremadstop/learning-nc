@@ -25,7 +25,7 @@
 		</NcNoteCard>
 
 		<div class="audit-export__actions">
-			<NcButton type="primary" :disabled="loading" @click="download('events')">
+			<NcButton variant="primary" :disabled="loading" @click="download('events')">
 				{{ t('learning', 'Ereignisse herunterladen (JSONL)') }}
 			</NcButton>
 			<NcButton :disabled="loading" @click="download('sig')">

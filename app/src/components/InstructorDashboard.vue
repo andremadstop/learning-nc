@@ -3,10 +3,10 @@
 		<div class="dashboard-header">
 			<h3>{{ t('learning', 'Dozenten-Dashboard') }}</h3>
 			<div class="header-actions">
-				<NcButton type="secondary" @click="exportAllCsv" :disabled="courses.length === 0">
+				<NcButton variant="secondary" @click="exportAllCsv" :disabled="courses.length === 0">
 					{{ t('learning', 'Sammel-Export') }}
 				</NcButton>
-				<NcButton type="tertiary" @click="loadDashboard">
+				<NcButton variant="tertiary" @click="loadDashboard">
 					{{ t('learning', 'Aktualisieren') }}
 				</NcButton>
 			</div>
@@ -75,7 +75,7 @@
 						</div>
 						<div class="card-footer">
 							<span>{{ t('learning', 'Erstellt {date}', { date: formatDate(course.created_at) }) }}</span>
-							<NcButton type="tertiary" :aria-label="t('learning', 'Statistiken exportieren')" class="export-btn" @click.stop="exportCourseCsv(course)">
+							<NcButton variant="tertiary" :aria-label="t('learning', 'Statistiken exportieren')" class="export-btn" @click.stop="exportCourseCsv(course)">
 								{{ t('learning', 'CSV Export') }}
 							</NcButton>
 						</div>

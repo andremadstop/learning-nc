@@ -10,7 +10,7 @@
     <template v-else>
       <div class="section-header">
         <h4>{{ t('learning', 'Liga') }}</h4>
-        <NcButton type="tertiary" :disabled="loading" @click="fetchOverview">
+        <NcButton variant="tertiary" :disabled="loading" @click="fetchOverview">
           {{ t('learning', 'Refresh') }}
         </NcButton>
       </div>
@@ -69,7 +69,7 @@
           {{ t('learning', 'League duels use 10 questions. Champions League uses 15 questions. Minimum 4 participants.') }}
         </NcNoteCard>
         <div class="league-actions">
-          <NcButton type="primary" :disabled="saving || !selectedPoolId || !selectedClPoolId" @click="createSeason">
+          <NcButton variant="primary" :disabled="saving || !selectedPoolId || !selectedClPoolId" @click="createSeason">
             {{ saving ? t('learning', 'Creating...') : t('learning', 'Create Season') }}
           </NcButton>
         </div>
@@ -98,14 +98,14 @@
           <div v-if="isInstructor" class="league-actions">
             <NcButton
               v-if="season.status === 'open'"
-              type="primary"
+              variant="primary"
               :disabled="saving"
               @click="startSeason">
               {{ saving ? t('learning', 'Starting...') : t('learning', 'Start Season') }}
             </NcButton>
             <NcButton
               v-if="season.status === 'active'"
-              type="secondary"
+              variant="secondary"
               :disabled="saving"
               @click="finishSeason">
               {{ saving ? t('learning', 'Finishing...') : t('learning', 'Finish Season') }}
@@ -149,7 +149,7 @@
             </div>
           </div>
           <div class="league-actions">
-            <NcButton type="primary" :disabled="saving || !selectedPoolId || !selectedClPoolId" @click="createSeason">
+            <NcButton variant="primary" :disabled="saving || !selectedPoolId || !selectedClPoolId" @click="createSeason">
               {{ saving ? t('learning', 'Creating...') : t('learning', 'Create Next Season') }}
             </NcButton>
           </div>
@@ -165,14 +165,14 @@
               <div class="league-actions">
                 <NcButton
                   v-if="challenge.can_accept"
-                  type="primary"
+                  variant="primary"
                   :disabled="saving"
                   @click="acceptChallenge(challenge.id)">
                   {{ t('learning', 'Accept') }}
                 </NcButton>
                 <NcButton
                   v-if="challenge.can_open_duel && challenge.duel_code"
-                  type="secondary"
+                  variant="secondary"
                   @click="openLeagueDuel(challenge.duel_code)">
                   {{ t('learning', 'Open Duel') }}
                 </NcButton>
@@ -189,7 +189,7 @@
               <div class="league-actions">
                 <NcButton
                   v-if="challenge.can_open_duel && challenge.duel_code"
-                  type="secondary"
+                  variant="secondary"
                   @click="openLeagueDuel(challenge.duel_code)">
                   {{ t('learning', 'Open Duel') }}
                 </NcButton>
@@ -225,21 +225,21 @@
                 <td>
                   <NcButton
                     v-if="row.can_challenge"
-                    type="primary"
+                    variant="primary"
                     :disabled="saving"
                     @click="challengeOpponent(row.user_id)">
                     {{ t('learning', 'Challenge') }}
                   </NcButton>
                   <NcButton
                     v-else-if="row.pairing_state === 'open_incoming' && row.pairing_challenge_id"
-                    type="primary"
+                    variant="primary"
                     :disabled="saving"
                     @click="acceptChallenge(row.pairing_challenge_id)">
                     {{ t('learning', 'Accept') }}
                   </NcButton>
                   <NcButton
                     v-else-if="row.pairing_state === 'accepted' && row.duel_code"
-                    type="secondary"
+                    variant="secondary"
                     @click="openLeagueDuel(row.duel_code)">
                     {{ t('learning', 'Open Duel') }}
                   </NcButton>
@@ -274,14 +274,14 @@
                 <div class="league-actions">
                   <NcButton
                     v-if="match.can_accept"
-                    type="primary"
+                    variant="primary"
                     :disabled="saving"
                     @click="acceptChallenge(match.id)">
                     {{ t('learning', 'Accept') }}
                   </NcButton>
                   <NcButton
                     v-if="match.can_open_duel && match.duel_code"
-                    type="secondary"
+                    variant="secondary"
                     @click="openLeagueDuel(match.duel_code)">
                     {{ t('learning', 'Open Duel') }}
                   </NcButton>

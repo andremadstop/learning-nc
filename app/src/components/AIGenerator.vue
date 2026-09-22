@@ -32,8 +32,8 @@
           </div>
         </div>
         <div class="ai-actions">
-          <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
-          <NcButton type="primary" :disabled="inputText.trim().length < 50 || generating"
+          <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
+          <NcButton variant="primary" :disabled="inputText.trim().length < 50 || generating"
             @click="startGeneration">
             {{ generating ? t('learning', 'Generating...') : t('learning', 'Generate Questions') }}
           </NcButton>
@@ -52,7 +52,7 @@
         <div class="preview-header">
           <h4>{{ t('learning', '{n} questions generated', { n: generatedQuestions.length }) }}</h4>
           <div class="preview-actions-top">
-            <NcButton type="tertiary" @click="toggleSelectAll">
+            <NcButton variant="tertiary" @click="toggleSelectAll">
               {{ allSelected ? t('learning', 'Deselect All') : t('learning', 'Select All') }}
             </NcButton>
           </div>
@@ -95,8 +95,8 @@
         </div>
 
         <div class="ai-actions">
-          <NcButton type="tertiary" @click="step = 'input'">{{ t('learning', 'Back') }}</NcButton>
-          <NcButton type="primary" :disabled="selectedCount === 0 || importing"
+          <NcButton variant="tertiary" @click="step = 'input'">{{ t('learning', 'Back') }}</NcButton>
+          <NcButton variant="primary" :disabled="selectedCount === 0 || importing"
             @click="importQuestions">
             {{ importing ? t('learning', 'Importing...') : t('learning', 'Import {n} Questions', { n: selectedCount }) }}
           </NcButton>

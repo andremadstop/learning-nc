@@ -8,7 +8,7 @@
         </span>
       </div>
       <div class="draft-review__bulk-actions">
-        <NcButton type="tertiary" @click="toggleAll">
+        <NcButton variant="tertiary" @click="toggleAll">
           {{ allAccepted ? t('learning', 'Deselect All') : t('learning', 'Select All') }}
         </NcButton>
       </div>

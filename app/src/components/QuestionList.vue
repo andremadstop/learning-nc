@@ -3,13 +3,13 @@
     <div class="question-list-header">
       <h3>{{ poolName }}</h3>
       <div v-if="!readonly" class="header-actions">
-        <NcButton v-if="aiAvailable" @click="showAIGenerator = true" type="secondary">{{ t('learning', 'Mit KI generieren') }}</NcButton>
+        <NcButton v-if="aiAvailable" @click="showAIGenerator = true" variant="secondary">{{ t('learning', 'Mit KI generieren') }}</NcButton>
         <NcActions v-if="questions.length > 0">
           <NcActionButton @click="exportCsv" close-after-click>{{ t('learning', 'Export CSV') }}</NcActionButton>
           <NcActionButton @click="exportJson" close-after-click>{{ t('learning', 'Export JSON') }}</NcActionButton>
         </NcActions>
-        <NcButton @click="showImportDialog = true" type="secondary">{{ t('learning', 'Importieren') }}</NcButton>
-        <NcButton @click="showCreateDialog" type="primary">{{ t('learning', '+ Frage hinzufügen') }}</NcButton>
+        <NcButton @click="showImportDialog = true" variant="secondary">{{ t('learning', 'Importieren') }}</NcButton>
+        <NcButton @click="showCreateDialog" variant="primary">{{ t('learning', '+ Frage hinzufügen') }}</NcButton>
       </div>
     </div>
 
@@ -48,7 +48,7 @@
       :name="t('learning', 'Noch keine Fragen')"
       :description="!readonly ? t('learning', 'Erstelle deine erste Frage oder importiere aus CSV/JSON') : t('learning', 'Dieser Pool hat noch keine Fragen')">
       <template v-if="!readonly" #action>
-        <NcButton type="primary" @click="showImportDialog = true">{{ t('learning', 'Fragen importieren') }}</NcButton>
+        <NcButton variant="primary" @click="showImportDialog = true">{{ t('learning', 'Fragen importieren') }}</NcButton>
       </template>
     </NcEmptyContent>
 
@@ -94,16 +94,16 @@
     </div>
 
     <div v-if="totalQuestions > pageSize" class="pagination-bar">
-      <NcButton type="tertiary" :disabled="currentPage === 0" @click="prevPage">{{ t('learning', '\u2190 Zurück') }}</NcButton>
+      <NcButton variant="tertiary" :disabled="currentPage === 0" @click="prevPage">{{ t('learning', '\u2190 Zurück') }}</NcButton>
       <span class="pagination-info">{{ currentPage * pageSize + 1 }}\u2013{{ Math.min((currentPage + 1) * pageSize, totalQuestions) }} / {{ totalQuestions }}</span>
-      <NcButton type="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Weiter \u2192') }}</NcButton>
+      <NcButton variant="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Weiter \u2192') }}</NcButton>
     </div>
 
     <AccessibleDialog v-if="showDeleteConfirm" :name="t('learning', 'Frage löschen')" @closing="showDeleteConfirm = false; questionToDelete = null">
       <p>{{ t('learning', 'Möchtest du diese Frage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.') }}</p>
       <template #actions>
-        <NcButton type="tertiary" @click="showDeleteConfirm = false; questionToDelete = null">{{ t('learning', 'Abbrechen') }}</NcButton>
-        <NcButton type="error" @click="confirmDeleteQuestion">{{ t('learning', 'Löschen') }}</NcButton>
+        <NcButton variant="tertiary" @click="showDeleteConfirm = false; questionToDelete = null">{{ t('learning', 'Abbrechen') }}</NcButton>
+        <NcButton variant="error" @click="confirmDeleteQuestion">{{ t('learning', 'Löschen') }}</NcButton>
       </template>
     </AccessibleDialog>
 

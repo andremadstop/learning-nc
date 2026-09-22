@@ -411,14 +411,14 @@
 
         <div class="bubble-actions stacked">
           <NcButton
-            type="primary"
+            variant="primary"
             size="small"
             :disabled="telosSaving"
             @click="$emit('action', { type: 'submit-telos-form' })">
             {{ telosSaving ? vt('Saving...') : vt('Save learning profile') }}
           </NcButton>
           <NcButton
-            type="secondary"
+            variant="secondary"
             size="small"
             :disabled="telosSaving"
             @click="$emit('action', { type: 'postpone-telos-onboarding' })">
@@ -438,8 +438,8 @@
             <a href="#/settings/privacy">{{ t('learning', 'Mehr zum Datenschutz') }}</a>
           </p>
           <div class="ai-consent-actions">
-            <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Akzeptieren') }}</NcButton>
-            <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Ablehnen') }}</NcButton>
+            <NcButton variant="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Akzeptieren') }}</NcButton>
+            <NcButton variant="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Ablehnen') }}</NcButton>
           </div>
         </div>
 
@@ -575,7 +575,7 @@
           <NcButton
             v-for="action in step.actions"
             :key="action.label"
-            type="secondary"
+            variant="secondary"
             size="small"
             @click="$emit('action', action)">
             {{ action.label }}
@@ -713,7 +713,7 @@
                     <NcButton
                       v-for="action in invite.itemActions"
                       :key="invite.id + '-' + action.type"
-                      type="secondary"
+                      variant="secondary"
                       size="small"
                       @click="$emit('action', action)">
                       {{ action.label }}
@@ -730,7 +730,7 @@
                 <NcButton
                   v-for="action in step.actions"
                   :key="action.label"
-                  type="secondary"
+                  variant="secondary"
                   size="small"
                   :disabled="ticketSending && action.type === 'submit-ticket'"
                   @click="$emit('action', action)">
@@ -740,14 +740,14 @@
               <template v-else>
                 <NcButton
                   v-if="stepIndex < totalSteps - 1"
-                  type="primary"
+                  variant="primary"
                   size="small"
                   @click="$emit('next')">
                   {{ vt('Next') }}
                 </NcButton>
                 <NcButton
                   v-else
-                  type="secondary"
+                  variant="secondary"
                   size="small"
                   @click="$emit('dismiss')">
                   {{ vt('Ok, got it') }}
@@ -844,7 +844,7 @@
                 <NcButton
                   v-for="action in invite.itemActions"
                   :key="invite.id + '-' + action.type"
-                  type="secondary"
+                  variant="secondary"
                   size="small"
                   @click="$emit('action', action)">
                   {{ action.label }}
@@ -869,7 +869,7 @@
             <NcButton
               v-for="action in step.actions"
               :key="action.label"
-              type="secondary"
+              variant="secondary"
               size="small"
               :disabled="ticketSending && action.type === 'submit-ticket'"
               @click="$emit('action', action)">
@@ -879,14 +879,14 @@
           <template v-else>
             <NcButton
               v-if="stepIndex < totalSteps - 1"
-              type="primary"
+              variant="primary"
               size="small"
               @click="$emit('next')">
               {{ vt('Next') }}
             </NcButton>
             <NcButton
               v-else
-              type="secondary"
+              variant="secondary"
               size="small"
               @click="$emit('dismiss')">
               {{ vt('Ok, got it') }}

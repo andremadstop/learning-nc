@@ -99,7 +99,7 @@
 
             <div v-else-if="currentView === 'questions'" class="pool-view">
               <div class="pool-view-header">
-                <NcButton type="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', 'Zurück zu Pools')">
+                <NcButton variant="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', 'Zurück zu Pools')">
                   {{ poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', '← Zurück zu Pools') }}
                 </NcButton>
                 <h3 class="pool-title">{{ selectedPool.name }}</h3>

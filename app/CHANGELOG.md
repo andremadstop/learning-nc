@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+Reported in [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) by an external user on
+macOS, reproducible in both Safari and Chrome. The report was precise and its diagnosis correct —
+it just described one button out of 244.
+
+### Fixed
+- **"Upload image" saved the question before a file was picked.** The Vue 3 migration
+  (`380dd9a`, 2026-04-03) moved the app from `@nextcloud/vue` 8 to 9, which swapped the meaning
+  of two NcButton props: styling moved from `type` to `variant`, and `type` became the native
+  `<button type>` attribute. `native-type` was dropped entirely. The v8 spelling was never
+  migrated, so every button passed a styling value such as `"secondary"` to the native attribute —
+  and HTML's invalid-value-default turns an unknown button type into `submit`. Inside a `<form>`,
+  every one of those buttons submitted.
+- **"Cancel" in the question editor saved the question instead of discarding it.** Same cause
+  (`type="tertiary"`), not in the report, arguably worse than the reported symptom.
+- **The three save buttons only worked by accident.** They carried `type="primary"` plus a
+  `native-type="submit"` that v9 ignores; they submitted because the styling value was invalid,
+  not because they asked to. They now say `type="submit"` explicitly.
+- **All 244 NcButton instances were migrated to `variant`** (the 222 outside forms were a
+  visual-only defect: with `variant` never set, every button in the app had been rendering in
+  the default `secondary` style for 5.5 months).
+
+### Added
+- `tests/unit/NcButtonTypeProp.test.js` — pins the v9 prop contract against a real NcButton
+  render, and scans every `.vue` file so the v8 spelling cannot return. The four existing gates
+  could not see this class of defect: it is valid Vue, valid JS and valid HTML.
+- `tests/unit/QuestionFormSubmit.test.js` — mounts the real form with real buttons and clicks
+  them, asserting which ones reach a `submit`. Reverting the fix turns it red, on the submit
+  count rather than on an attribute. Note the precondition the report already implied with
+  "open an existing question for editing": while the required fields are empty, constraint
+  validation suppresses submission on its own and hides the defect entirely.
+
 ## [5.4.4] - 2026-09-11 — Three questions from the Vinnytsia pilot
 
 Reported in [#6](https://codeberg.org/andremadstop/learning-nc/issues/6) by the administrator

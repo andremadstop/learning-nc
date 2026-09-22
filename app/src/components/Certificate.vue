@@ -66,18 +66,18 @@
 			</div>
 
 			<div class="certificate-actions no-print">
-				<NcButton type="primary" @click="print">
+				<NcButton variant="primary" @click="print">
 					{{ t('learning', 'Drucken') }}
 				</NcButton>
 				<a
 					:href="downloadHref"
 					class="certificate-download-link"
 					download>
-					<NcButton type="primary" @click.prevent="download">
+					<NcButton variant="primary" @click.prevent="download">
 						{{ t('learning', 'Herunterladen') }}
 					</NcButton>
 				</a>
-				<NcButton type="secondary" @click="openLinkedIn">
+				<NcButton variant="secondary" @click="openLinkedIn">
 					{{ t('learning', 'Zu LinkedIn hinzufügen (öffnet LinkedIn)') }}
 				</NcButton>
 			</div>

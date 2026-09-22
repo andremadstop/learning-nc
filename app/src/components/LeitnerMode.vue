@@ -5,26 +5,26 @@
       <p>{{ t('learning', 'Initialize this pool for adaptive spaced repetition learning') }}</p>
       <NcNoteCard v-if="!hintDismissed('leitner-init')" type="info" class="onboarding-hint">
         {{ t('learning', 'Cards adapt to your pace. After each reveal, rate whether a card felt hard or easy. Difficult cards return sooner, easy cards later.') }}
-        <NcButton type="tertiary" @click="dismissHint('leitner-init')">{{ t('learning', 'Got it') }}</NcButton>
+        <NcButton variant="tertiary" @click="dismissHint('leitner-init')">{{ t('learning', 'Got it') }}</NcButton>
       </NcNoteCard>
       <div class="init-actions">
-        <NcButton type="primary" @click="initialize" :disabled="initializing">{{ initializing ? t('learning', 'Initializing...') : t('learning', 'Initialize Leitner System') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton variant="primary" @click="initialize" :disabled="initializing">{{ initializing ? t('learning', 'Initializing...') : t('learning', 'Initialize Leitner System') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
 
     <div v-else-if="initError" class="leitner-init">
       <NcNoteCard type="error">{{ initError }}</NcNoteCard>
       <div class="init-actions">
-        <NcButton type="primary" @click="checkInitialized">{{ t('learning', 'Retry') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton variant="primary" @click="checkInitialized">{{ t('learning', 'Retry') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
 
     <div v-else-if="!started" class="leitner-dashboard">
       <NcNoteCard v-if="stats.due_count > 0" type="info" class="due-banner">
         <strong>{{ t('learning', '{n} questions due for review', { n: stats.due_count }) }}</strong>
-        <NcButton type="primary" @click="startReview" class="due-start-btn">
+        <NcButton variant="primary" @click="startReview" class="due-start-btn">
           {{ t('learning', 'Start Review') }}
         </NcButton>
       </NcNoteCard>
@@ -58,7 +58,7 @@
       </div>
 
       <div class="action-buttons">
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pool') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pool') }}</NcButton>
       </div>
     </div>
 
@@ -126,14 +126,14 @@
               </button>
             </div>
           </div>
-          <NcButton v-else type="primary" wide @click="nextQuestion" class="next-btn">
+          <NcButton v-else variant="primary" wide @click="nextQuestion" class="next-btn">
             {{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
           </NcButton>
         </div>
 
         <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
           <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
-          <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+          <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
             {{ t('learning', 'Submit Answer') }}
           </NcButton>
         </div>
@@ -148,7 +148,7 @@
               :disabled="submitting"
             >{{ answer.text }}</button>
             <div class="multi-submit-area">
-              <NcButton type="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
+              <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
                 {{ t('learning', 'Submit Answer') }}
               </NcButton>
             </div>
@@ -188,12 +188,12 @@
             </div>
           </div>
           <div v-else-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
-          <NcButton v-if="!awaitingFsrsRating" type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -240,12 +240,12 @@
             </div>
           </div>
           <div v-else-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
-          <NcButton v-if="!awaitingFsrsRating" type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>
     </div>
@@ -259,8 +259,8 @@
         <div class="session-stat accuracy"><div class="session-stat-value" ref="leitnerAccuracy">{{ sessionAccuracy }}%</div><div class="session-stat-label">{{ t('learning', 'Accuracy') }}</div></div>
       </div>
       <div class="review-complete-actions">
-        <NcButton type="primary" @click="continueLearning">{{ t('learning', 'Keep Learning') }}</NcButton>
-        <NcButton type="secondary" @click="finishReview">{{ t('learning', 'Back to Dashboard') }}</NcButton>
+        <NcButton variant="primary" @click="continueLearning">{{ t('learning', 'Keep Learning') }}</NcButton>
+        <NcButton variant="secondary" @click="finishReview">{{ t('learning', 'Back to Dashboard') }}</NcButton>
       </div>
       <BadgeUnlock :badges="newBadges" />
       <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />

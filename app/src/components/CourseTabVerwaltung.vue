@@ -23,7 +23,7 @@
 					</label>
 				</div>
 			</div>
-			<NcButton type="primary" :disabled="savingModeConfig" @click="saveModeConfig">
+			<NcButton variant="primary" :disabled="savingModeConfig" @click="saveModeConfig">
 				{{ savingModeConfig ? t('learning', 'Saving...') : t('learning', 'Save') }}
 			</NcButton>
 			<NcNoteCard v-if="modeConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
@@ -45,7 +45,7 @@
 						<small v-if="!isAdminToolEnabled(tool.key)" class="mode-config-note">{{ t('learning', 'Global deaktiviert') }}</small>
 					</div>
 				</div>
-				<NcButton type="primary" :disabled="savingToolConfig || loadingToolConfig" @click="saveToolConfig">
+				<NcButton variant="primary" :disabled="savingToolConfig || loadingToolConfig" @click="saveToolConfig">
 					{{ savingToolConfig ? t('learning', 'Saving...') : t('learning', 'Save tools') }}
 				</NcButton>
 				<NcNoteCard v-if="toolConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
@@ -65,7 +65,7 @@
 				<p class="mode-config-hint">{{ t('learning', 'Token des NC Talk-Raums eintragen (z.B. abc123xyz aus der Talk-URL).') }}</p>
 				<div class="talk-token-row">
 					<input type="text" v-model="talkRoomToken" :placeholder="t('learning', 'Talk-Token')" maxlength="255" class="talk-token-input" />
-					<NcButton type="primary" @click="saveTalkRoomToken" :disabled="savingTalkToken">
+					<NcButton variant="primary" @click="saveTalkRoomToken" :disabled="savingTalkToken">
 						{{ savingTalkToken ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
 				</div>
@@ -77,7 +77,7 @@
 				<p class="mode-config-hint">{{ t('learning', 'Prüfungsdatum und -uhrzeit für den Dashboard-Countdown setzen.') }}</p>
 				<div class="exam-date-row">
 					<input v-model="examDateLocal" type="datetime-local" class="exam-date-input" />
-					<NcButton type="primary" :disabled="savingExamDate" @click="saveExamDate">
+					<NcButton variant="primary" :disabled="savingExamDate" @click="saveExamDate">
 						{{ savingExamDate ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
 					<NcButton v-if="examDateLocal" :disabled="savingExamDate" @click="clearExamDate">
@@ -103,9 +103,9 @@
 				<div v-if="loadingCampaignList" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
 				<template v-else>
 					<div class="campaign-quick-actions">
-						<NcButton type="tertiary" @click="selectAllCampaigns">{{ t('learning', 'Alle auswählen') }}</NcButton>
-						<NcButton type="tertiary" @click="selectTop5Campaigns">{{ t('learning', 'Top 5 empfohlen') }}</NcButton>
-						<NcButton type="tertiary" @click="clearCampaignSelection">{{ t('learning', 'Keine (alle verfügbar)') }}</NcButton>
+						<NcButton variant="tertiary" @click="selectAllCampaigns">{{ t('learning', 'Alle auswählen') }}</NcButton>
+						<NcButton variant="tertiary" @click="selectTop5Campaigns">{{ t('learning', 'Top 5 empfohlen') }}</NcButton>
+						<NcButton variant="tertiary" @click="clearCampaignSelection">{{ t('learning', 'Keine (alle verfügbar)') }}</NcButton>
 					</div>
 					<div class="mode-toggles">
 						<div v-for="c in availableCampaigns" :key="c.campaign_id" class="mode-toggle-row">
@@ -116,7 +116,7 @@
 							<small class="mode-config-note">{{ c.difficulty }}</small>
 						</div>
 					</div>
-					<NcButton type="primary" :disabled="savingCampaigns" @click="saveCampaignSelection">
+					<NcButton variant="primary" :disabled="savingCampaigns" @click="saveCampaignSelection">
 						{{ savingCampaigns ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
 					<NcNoteCard v-if="campaignsSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
@@ -168,7 +168,7 @@
 					</div>
 				</template>
 
-				<NcButton type="primary" :disabled="certSaving" @click="saveCertConfig">
+				<NcButton variant="primary" :disabled="certSaving" @click="saveCertConfig">
 					{{ certSaving ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
 				</NcButton>
 				<NcNoteCard v-if="certSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
@@ -223,13 +223,13 @@
 				</table>
 
 				<div class="schedule-actions">
-					<NcButton type="secondary" @click="addScheduleRow">
+					<NcButton variant="secondary" @click="addScheduleRow">
 						{{ t('learning', '+ Kapitel hinzufuegen') }}
 					</NcButton>
-					<NcButton type="primary" :disabled="savingSchedule || !scheduleItems.length" @click="saveSchedule">
+					<NcButton variant="primary" :disabled="savingSchedule || !scheduleItems.length" @click="saveSchedule">
 						{{ savingSchedule ? t('learning', 'Saving...') : t('learning', 'Zeitplan speichern') }}
 					</NcButton>
-					<NcButton v-if="scheduleItems.length" type="error" :disabled="deletingSchedule" @click="deleteSchedule">
+					<NcButton v-if="scheduleItems.length" variant="error" :disabled="deletingSchedule" @click="deleteSchedule">
 						{{ deletingSchedule ? t('learning', 'Deleting...') : t('learning', 'Zeitplan loeschen') }}
 					</NcButton>
 				</div>
@@ -243,7 +243,7 @@
 				<NcNoteCard type="warning">
 					{{ t('learning', 'Exam is running!') }} {{ t('learning', 'Ends at:') }} {{ formatTimestamp(activeExamSlot.ends_at) }}
 				</NcNoteCard>
-				<NcButton type="error" @click="closeExamSlot">{{ t('learning', 'Close exam') }}</NcButton>
+				<NcButton variant="error" @click="closeExamSlot">{{ t('learning', 'Close exam') }}</NcButton>
 			</div>
 			<div v-else class="start-slot-form">
 				<h3>{{ t('learning', 'Start exam slot') }}</h3>
@@ -258,7 +258,7 @@
 						<option value="curriculum">{{ t('learning', 'Active curriculum only') }}</option>
 					</select>
 				</div>
-				<NcButton type="primary" :disabled="startingExamSlot" @click="startExamSlot">
+				<NcButton variant="primary" :disabled="startingExamSlot" @click="startExamSlot">
 					{{ t('learning', 'Start exam') }}
 				</NcButton>
 			</div>

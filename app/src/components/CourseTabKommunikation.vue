@@ -17,7 +17,7 @@
 				<h3>{{ t('learning', 'New announcement') }}</h3>
 				<input v-model="newAnnouncementTitle" type="text" :placeholder="t('learning', 'Title')" class="nc-input announcement-input" />
 				<textarea v-model="newAnnouncementBody" :placeholder="t('learning', 'Message...')" class="nc-textarea" rows="3" />
-				<NcButton type="primary" :disabled="savingAnnouncement || !newAnnouncementTitle.trim()" @click="createAnnouncement">
+				<NcButton variant="primary" :disabled="savingAnnouncement || !newAnnouncementTitle.trim()" @click="createAnnouncement">
 					{{ t('learning', 'Publish') }}
 				</NcButton>
 			</div>
@@ -26,7 +26,7 @@
 				<div v-for="a in announcements" :key="a.id" class="announcement-item">
 					<div class="announcement-header">
 						<strong>{{ a.title }}</strong>
-						<NcButton type="tertiary" @click="deleteAnnouncement(a.id)">{{ t('learning', 'Delete') }}</NcButton>
+						<NcButton variant="tertiary" @click="deleteAnnouncement(a.id)">{{ t('learning', 'Delete') }}</NcButton>
 					</div>
 					<p class="announcement-body">{{ a.body }}</p>
 					<small class="announcement-date">{{ formatDate(a.created_at) }}</small>
@@ -54,7 +54,7 @@
 					<p class="ticket-message-cd">{{ ticket.message }}</p>
 					<div v-if="ticket.status === 'open'" class="ticket-reply-cd">
 						<textarea v-model="ticketReplies[ticket.id]" :placeholder="t('learning', 'Your answer...')" class="nc-textarea" rows="3" />
-						<NcButton type="primary" @click="answerTicket(ticket.id)">{{ t('learning', 'Send answer') }}</NcButton>
+						<NcButton variant="primary" @click="answerTicket(ticket.id)">{{ t('learning', 'Send answer') }}</NcButton>
 					</div>
 					<div v-if="ticket.answer_text" class="ticket-answer-cd">
 						<strong>{{ t('learning', 'Answer:') }}</strong> {{ ticket.answer_text }}

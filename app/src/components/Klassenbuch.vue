@@ -11,12 +11,12 @@
 				<span class="kudos-remaining">
 					{{ t('learning', '{n} Kudos übrig heute', { n: kudosRemaining }) }}
 				</span>
-				<NcButton type="secondary" @click="exportVcard">
+				<NcButton variant="secondary" @click="exportVcard">
 					{{ t('learning', 'vCard') }}
 				</NcButton>
 				<NcButton
 					v-if="canToggleVisibility"
-					type="tertiary"
+					variant="tertiary"
 					:disabled="togglingVisibility"
 					@click="toggleVisibility">
 					{{ myVisibility === 'private'
@@ -86,7 +86,7 @@
 						{{ t('learning', '{n} Kudos', { n: profile.kudos_received_count || 0 }) }}
 					</span>
 					<NcButton
-						type="primary"
+						variant="primary"
 						:disabled="!canGiveKudos(profile)"
 						@click="sendKudos(profile)">
 						{{ sendingKudosFor === profile.user_id

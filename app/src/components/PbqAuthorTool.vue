@@ -345,7 +345,7 @@
       <pre class="author-json-output">{{ generatedJson }}</pre>
       <div class="author-button-row">
         <NcButton @click="copyJson">{{ copySuccess ? 'Kopiert!' : 'Config kopieren' }}</NcButton>
-        <NcButton type="primary" @click="applyConfig">Ins Formular übernehmen</NcButton>
+        <NcButton variant="primary" @click="applyConfig">Ins Formular übernehmen</NcButton>
       </div>
       <textarea v-if="showJsonFallback" :value="generatedJson" readonly class="author-json-fallback" rows="10" />
     </div>

@@ -64,8 +64,8 @@
     </div>
 
     <template #actions>
-      <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
-      <NcButton type="primary" :disabled="saving" @click="save">
+      <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
+      <NcButton variant="primary" :disabled="saving" @click="save">
         {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
       </NcButton>
     </template>

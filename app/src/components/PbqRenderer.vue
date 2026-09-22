@@ -84,10 +84,10 @@
 
     <div class="pbq-footer">
       <span class="pbq-progress">{{ answeredCount }} / {{ totalCount }} beantwortet</span>
-      <NcButton type="primary" :disabled="disabled || totalCount === 0" @click="$emit('submit', localAnswer)">
+      <NcButton variant="primary" :disabled="disabled || totalCount === 0" @click="$emit('submit', localAnswer)">
         PBQ abschicken
       </NcButton>
-      <NcButton type="secondary" @click="$emit('skip')">Überspringen</NcButton>
+      <NcButton variant="secondary" @click="$emit('skip')">Überspringen</NcButton>
     </div>
   </div>
 </template>

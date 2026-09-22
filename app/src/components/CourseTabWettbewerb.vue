@@ -23,7 +23,7 @@
 							@change="toggleLeaderboardActiveOnly($event.target.checked)">
 						<span>{{ t('learning', 'Nur aktive ({n}T)', { n: leaderboardActiveDays }) }}</span>
 					</label>
-					<NcButton type="tertiary" @click="fetchLeaderboard">
+					<NcButton variant="tertiary" @click="fetchLeaderboard">
 						{{ t('learning', 'Aktualisieren') }}
 					</NcButton>
 				</div>
@@ -116,10 +116,10 @@
 						}) }}
 					</div>
 					<div class="progress-pagination-actions">
-						<NcButton type="tertiary" :disabled="!canLeaderboardPagePrev || leaderboardLoading" @click="pageLeaderboardPrev">
+						<NcButton variant="tertiary" :disabled="!canLeaderboardPagePrev || leaderboardLoading" @click="pageLeaderboardPrev">
 							{{ t('learning', 'Zurück') }}
 						</NcButton>
-						<NcButton type="tertiary" :disabled="!canLeaderboardPageNext || leaderboardLoading" @click="pageLeaderboardNext">
+						<NcButton variant="tertiary" :disabled="!canLeaderboardPageNext || leaderboardLoading" @click="pageLeaderboardNext">
 							{{ t('learning', 'Weiter') }}
 						</NcButton>
 					</div>

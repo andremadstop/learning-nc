@@ -14,20 +14,20 @@
           </button>
         </div>
         <div class="start-actions">
-          <NcButton type="primary" @click="startTraining" :disabled="starting">{{ starting ? t('learning', 'Starting...') : (activeQuestionType === 'pbq' ? t('learning', 'Start simulator training') : t('learning', 'Start Training')) }}</NcButton>
-          <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+          <NcButton variant="primary" @click="startTraining" :disabled="starting">{{ starting ? t('learning', 'Starting...') : (activeQuestionType === 'pbq' ? t('learning', 'Start simulator training') : t('learning', 'Start Training')) }}</NcButton>
+          <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
         </div>
       </div>
       <div v-else class="start-actions">
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
 
     <div v-else-if="loadError" class="training-start">
       <NcNoteCard type="error">{{ loadError }}</NcNoteCard>
       <div class="start-actions">
-        <NcButton type="primary" @click="startTraining">{{ t('learning', 'Retry') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton variant="primary" @click="startTraining">{{ t('learning', 'Retry') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
 
@@ -88,14 +88,14 @@
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">
+          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">
             {{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
           </NcButton>
         </div>
 
         <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
           <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
-          <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+          <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
             {{ t('learning', 'Submit Answer') }}
           </NcButton>
         </div>
@@ -112,7 +112,7 @@
                 :disabled="submitting"
               >{{ answer.text }}</button>
               <div class="multi-submit-area">
-                <NcButton type="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
+                <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
                   {{ t('learning', 'Submit Answer') }}
                 </NcButton>
               </div>
@@ -123,7 +123,7 @@
           </template>
           <div v-else class="no-answers">
             <p>{{ t('learning', 'This question has no answers yet.') }}</p>
-            <NcButton type="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
+            <NcButton variant="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
           </div>
         </div>
         <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
@@ -137,17 +137,17 @@
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
           <div v-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
           <div v-if="!isCorrect" class="ai-explain-row">
-            <NcButton type="tertiary" size="small" @click="explainViaVirtuProf">
+            <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
               {{ t('learning', 'Explain via VirtuProf') }}
             </NcButton>
           </div>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -171,17 +171,17 @@
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
           <div v-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
           <div v-if="!isCorrect" class="ai-explain-row">
-            <NcButton type="tertiary" size="small" @click="explainViaVirtuProf">
+            <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
               {{ t('learning', 'Explain via VirtuProf') }}
             </NcButton>
           </div>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>
     </div>
@@ -199,14 +199,14 @@
       </div>
       <div v-if="results.xp_earned" class="xp-earned">+{{ results.xp_earned }} XP</div>
       <div class="result-actions">
-        <NcButton type="primary" @click="restartTraining">{{ t('learning', 'Train Again') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Questions') }}</NcButton>
+        <NcButton variant="primary" @click="restartTraining">{{ t('learning', 'Train Again') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Questions') }}</NcButton>
       </div>
       <!-- TRIG-04: Manual "Zusammenfassung erstellen" button -->
       <div class="summary-actions">
         <NcButton
           v-if="!summaryPath"
-          type="secondary"
+          variant="secondary"
           :disabled="summaryGenerating"
           @click="generateSummaryNote"
         >

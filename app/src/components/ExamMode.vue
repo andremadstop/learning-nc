@@ -18,7 +18,7 @@
             <h4 class="preset-title">{{ preset.title }}</h4>
             <p class="preset-meta">{{ preset.meta }}</p>
             <NcButton
-              type="primary"
+              variant="primary"
               wide
               :disabled="isLoading"
               @click="startExam(preset)"
@@ -30,7 +30,7 @@
       </div>
 
       <div class="start-actions">
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
 
@@ -94,7 +94,7 @@
             rows="3"
             class="nc-input open-textarea"
           ></textarea>
-          <NcButton type="primary" @click="submitOpenExamAnswer" :disabled="lockDenied || !openAnswerTexts[currentQuestion.id] || !openAnswerTexts[currentQuestion.id].trim()">
+          <NcButton variant="primary" @click="submitOpenExamAnswer" :disabled="lockDenied || !openAnswerTexts[currentQuestion.id] || !openAnswerTexts[currentQuestion.id].trim()">
             {{ t('learning', 'Submit Answer') }}
           </NcButton>
         </div>
@@ -112,10 +112,10 @@
         </div>
 
         <NcButton v-if="isCurrentMulti && multiSelections[currentQuestion.id] && multiSelections[currentQuestion.id].length > 0"
-          type="primary" wide @click="confirmMultiAnswer" class="confirm-btn" :disabled="lockDenied">
+          variant="primary" wide @click="confirmMultiAnswer" class="confirm-btn" :disabled="lockDenied">
           {{ t('learning', 'Confirm Selection') }}
         </NcButton>
-        <NcButton v-if="currentQuestion && currentQuestion.question_type !== 'pbq'" type="secondary" wide @click="skipQuestion" class="skip-btn" :disabled="lockDenied">{{ t('learning', 'Skip') }}</NcButton>
+        <NcButton v-if="currentQuestion && currentQuestion.question_type !== 'pbq'" variant="secondary" wide @click="skipQuestion" class="skip-btn" :disabled="lockDenied">{{ t('learning', 'Skip') }}</NcButton>
       </div>
 
       <!-- Question navigation bar -->
@@ -138,10 +138,10 @@
             {{ index + 1 }}
           </div>
         </div>
-        <NcButton type="error" class="end-exam-btn" @click="confirmEndExam">
+        <NcButton variant="error" class="end-exam-btn" @click="confirmEndExam">
           {{ t('learning', 'End Exam') }}
         </NcButton>
-        <NcButton type="tertiary" class="abort-exam-btn" @click="confirmAbortExam">
+        <NcButton variant="tertiary" class="abort-exam-btn" @click="confirmAbortExam">
           {{ t('learning', 'Abort') }}
         </NcButton>
       </div>
@@ -234,8 +234,8 @@
       <div v-if="resultsData && resultsData.xp_earned" class="xp-earned">+{{ resultsData.xp_earned }} XP</div>
 
       <div class="start-actions">
-        <NcButton type="primary" wide @click="retakeExam">{{ t('learning', 'Retake Exam') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton variant="primary" wide @click="retakeExam">{{ t('learning', 'Retake Exam') }}</NcButton>
+        <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
       <BadgeUnlock :badges="newBadges" />
     </div>

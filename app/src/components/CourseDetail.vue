@@ -2,7 +2,7 @@
 	<div class="course-detail">
 		<!-- Header -->
 		<div class="course-detail-header">
-			<NcButton type="tertiary" @click="$emit('back')">
+			<NcButton variant="tertiary" @click="$emit('back')">
 				{{ t('learning', '\u2190 Zurück zu Kursen') }}
 			</NcButton>
 			<div class="header-title">
