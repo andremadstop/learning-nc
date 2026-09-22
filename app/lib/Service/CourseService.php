@@ -2169,18 +2169,48 @@ class CourseService {
     /**
      * Get IDs of questions paused for a specific course.
      */
+    /**
+     * Run a read query, degrading to an empty result when the table is absent.
+     *
+     * Codeberg #7: the three learning_course_* tables are produced by a rename migration
+     * that aborts rather than creating an empty table over existing data, so an install can
+     * legitimately be missing them. A missing table should cost the feature that needs it,
+     * not the whole course view.
+     *
+     * Read paths only. Writes deliberately keep throwing: reporting success for a save that
+     * stored nothing is the worse failure, and the caller must be able to tell the user.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function fetchRowsTolerant(\OCP\DB\QueryBuilder\IQueryBuilder $qb, string $table): array {
+        try {
+            $result = $qb->executeQuery();
+            $rows = $result->fetchAll();
+            $result->closeCursor();
+            return $rows;
+        } catch (\Throwable $e) {
+            if (!\OCA\Learning\Db\DbErrors::isMissingTable($e)) {
+                throw $e;
+            }
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
+                'learning: table ' . $table . ' is missing — the feature backed by it is disabled for this request. '
+                . 'This usually means migration Version009900 did not complete; running "occ upgrade" should repair it.',
+                ['exception' => $e, 'app' => 'learning']
+            );
+            return [];
+        }
+    }
+
     private function getPausedQuestionIds(int $courseId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('question_id')
             ->from('learning_course_question_overrides')
             ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('paused', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
-        $result = $qb->executeQuery();
         $ids = [];
-        while ($row = $result->fetch()) {
+        foreach ($this->fetchRowsTolerant($qb, 'learning_course_question_overrides') as $row) {
             $ids[] = (int)$row['question_id'];
         }
-        $result->closeCursor();
         return $ids;
     }
 
@@ -2448,11 +2478,9 @@ class CourseService {
             ->from('learning_course_question_overrides')
             ->where($qbO->expr()->eq('course_id', $qbO->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qbO->expr()->in('question_id', $qbO->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
-        $resultO = $qbO->executeQuery();
-        while ($row = $resultO->fetch()) {
+        foreach ($this->fetchRowsTolerant($qbO, 'learning_course_question_overrides') as $row) {
             $overrides[(int)$row['question_id']] = (bool)$row['paused'];
         }
-        $resultO->closeCursor();
 
         $output = [];
         foreach ($rows as $row) {
@@ -2645,9 +2673,7 @@ class CourseService {
                 $qb->expr()->gt('expires_at', $qb->createNamedParameter(time()))
             ))
             ->orderBy('created_at', 'DESC');
-        $result = $qb->executeQuery();
-        $rows = $result->fetchAll();
-        $result->closeCursor();
+        $rows = $this->fetchRowsTolerant($qb, 'learning_course_announcements');
 
         return array_map(fn($r) => [
             'id' => (int)$r['id'],

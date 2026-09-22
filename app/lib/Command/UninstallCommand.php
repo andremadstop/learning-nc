@@ -642,10 +642,10 @@ class UninstallCommand extends Command {
      * command skip work.
      */
     private function isMissingTable(\Throwable $e): bool {
-        if ($e instanceof \OCP\DB\Exception && $e->getReason() === \OCP\DB\Exception::REASON_DATABASE_OBJECT_NOT_FOUND) {
-            return true;
-        }
-        return in_array((string)$e->getCode(), ['42P01', '42S02'], true);
+        // Moved to Db\DbErrors for Codeberg #7, which needed the same predicate in
+        // CurriculumScopeMapper. Kept as a thin wrapper so the call sites below read
+        // unchanged; the rule itself now lives in exactly one place.
+        return \OCA\Learning\Db\DbErrors::isMissingTable($e);
     }
 
     /**
