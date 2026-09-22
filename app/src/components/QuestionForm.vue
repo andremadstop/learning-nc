@@ -11,11 +11,11 @@
         <label>{{ t('learning', 'Bild (optional)') }}</label>
         <div v-if="imagePreview || existingImagePath" class="image-preview-area">
           <img :src="imagePreview || existingImageUrl" alt="Question image" class="image-preview" />
-          <NcButton type="error" @click="removeImage" class="remove-image-btn">{{ t('learning', 'Bild entfernen') }}</NcButton>
+          <NcButton type="button" variant="error" @click="removeImage" class="remove-image-btn">{{ t('learning', 'Bild entfernen') }}</NcButton>
         </div>
         <div v-else class="image-upload-area">
           <input type="file" ref="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" @change="onImageSelected" class="image-input" />
-          <NcButton type="secondary" @click="$refs.imageInput.click()">{{ t('learning', 'Bild hochladen') }}</NcButton>
+          <NcButton type="button" variant="secondary" @click="$refs.imageInput.click()">{{ t('learning', 'Bild hochladen') }}</NcButton>
           <span class="upload-hint">{{ t('learning', 'JPEG, PNG, GIF, WebP (max 5MB)') }}</span>
         </div>
         <NcNoteCard v-if="imageError" type="error" class="image-error">{{ imageError }}</NcNoteCard>
@@ -101,7 +101,7 @@
           </div>
         </div>
         <div class="answer-actions">
-          <NcButton type="secondary" @click="addAnswer" :disabled="form.answers.length >= 8">
+          <NcButton type="button" variant="secondary" @click="addAnswer" :disabled="form.answers.length >= 8">
             {{ t('learning', '+ Antwort hinzufügen') }}
           </NcButton>
         </div>
@@ -132,7 +132,7 @@
       <div v-if="form.pbqSubtype" class="form-group">
         <label for="pbq-config">{{ t('learning', 'PBQ Config (JSON)') }}</label>
         <div class="pbq-config-actions">
-          <NcButton type="secondary" @click="showAuthorTool = true">
+          <NcButton type="button" variant="secondary" @click="showAuthorTool = true">
             {{ t('learning', 'PBQ Config Builder') }}
           </NcButton>
         </div>
@@ -182,8 +182,8 @@
       </div>
 
       <div class="dialog-actions">
-        <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Abbrechen') }}</NcButton>
-        <NcButton type="primary" native-type="submit" :disabled="saving">{{ saving ? t('learning', 'Speichern...') : t('learning', 'Speichern') }}</NcButton>
+        <NcButton type="button" variant="tertiary" @click="$emit('close')">{{ t('learning', 'Abbrechen') }}</NcButton>
+        <NcButton type="submit" variant="primary" :disabled="saving">{{ saving ? t('learning', 'Speichern...') : t('learning', 'Speichern') }}</NcButton>
       </div>
     </form>
   </AccessibleDialog>

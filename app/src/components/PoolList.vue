@@ -3,13 +3,13 @@
     <div class="pool-list-header">
       <h3>{{ t('learning', 'Fragenpools') }}</h3>
       <div v-if="userRole === 'instructor'" class="pool-list-header__actions">
-        <NcButton type="secondary" @click="openStarterDialog">
+        <NcButton type="button" variant="secondary" @click="openStarterDialog">
           {{ t('learning', 'Starter-Pool hinzufügen') }}
         </NcButton>
-        <NcButton type="secondary" @click="showPoolGenerator = true">
+        <NcButton type="button" variant="secondary" @click="showPoolGenerator = true">
           {{ t('learning', 'Fragen generieren') }}
         </NcButton>
-        <NcButton type="primary" @click="showCreateDialog">
+        <NcButton type="button" variant="primary" @click="showCreateDialog">
           {{ t('learning', '+ Pool erstellen') }}
         </NcButton>
       </div>
@@ -18,7 +18,7 @@
     <!-- Instructor welcome hint -->
     <NcNoteCard v-if="userRole === 'instructor' && !hintDismissed('welcome-instructor')" type="info" class="onboarding-hint">
       {{ t('learning', 'Pools are your question collections. Create a pool, add questions (or import CSV/JSON), and assign it to a course.') }}
-      <NcButton type="tertiary" @click="dismissHint('welcome-instructor')">{{ t('learning', 'Got it') }}</NcButton>
+      <NcButton type="button" variant="tertiary" @click="dismissHint('welcome-instructor')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
     <!-- XP Multiplier Badge -->
@@ -46,7 +46,7 @@
     <!-- Smart Queue hint (only for students) -->
     <NcNoteCard v-if="userRole !== 'instructor' && queueCount > 0 && !hintDismissed('smart-queue')" type="info" class="onboarding-hint">
       {{ t('learning', 'The Smart Queue picks the most important cards from all your pools — difficult and overdue ones first.') }}
-      <NcButton type="tertiary" @click="dismissHint('smart-queue')">{{ t('learning', 'Got it') }}</NcButton>
+      <NcButton type="button" variant="tertiary" @click="dismissHint('smart-queue')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
     <!-- Daily Challenge (only for students) -->
@@ -55,7 +55,7 @@
     <!-- Daily Goal hint (only for students) -->
     <NcNoteCard v-if="userRole !== 'instructor' && dailyProgress && !hintDismissed('daily-goal')" type="info" class="onboarding-hint">
       {{ t('learning', 'Set a daily goal. When you reach it, you get +10 bonus XP!') }}
-      <NcButton type="tertiary" @click="dismissHint('daily-goal')">{{ t('learning', 'Got it') }}</NcButton>
+      <NcButton type="button" variant="tertiary" @click="dismissHint('daily-goal')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
     <!-- Daily Goal (only for students) -->
@@ -75,7 +75,7 @@
         </div>
         <div v-if="showGoalEdit" class="daily-goal-editor">
           <input type="number" v-model.number="editGoalValue" min="5" max="200" class="nc-input goal-input" />
-          <NcButton type="primary" :disabled="savingGoal" @click="saveGoal">{{ t('learning', 'Save') }}</NcButton>
+          <NcButton type="button" variant="primary" :disabled="savingGoal" @click="saveGoal">{{ t('learning', 'Save') }}</NcButton>
         </div>
       </div>
     </div>
@@ -267,8 +267,8 @@
           <input id="pool-chapter-title" v-model.trim="form.chapterTitle" type="text" :placeholder="t('learning', 'e.g., Switching Grundlagen')" class="nc-input" />
         </div>
         <div class="dialog-actions">
-          <NcButton type="tertiary" @click="closeDialog">{{ t('learning', 'Cancel') }}</NcButton>
-          <NcButton type="primary" native-type="submit" :disabled="saving">
+          <NcButton type="button" variant="tertiary" @click="closeDialog">{{ t('learning', 'Cancel') }}</NcButton>
+          <NcButton type="submit" variant="primary" :disabled="saving">
             {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
           </NcButton>
         </div>
@@ -278,8 +278,8 @@
     <AccessibleDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Pool')" @closing="showDeleteConfirm = false; poolToDelete = null">
       <p>{{ t('learning', 'Are you sure you want to delete "{name}"? This action cannot be undone.', { name: poolToDelete ? poolToDelete.name : '' }) }}</p>
       <template #actions>
-        <NcButton type="tertiary" @click="showDeleteConfirm = false; poolToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
-        <NcButton type="error" @click="confirmDeletePool">{{ t('learning', 'Delete') }}</NcButton>
+        <NcButton type="button" variant="tertiary" @click="showDeleteConfirm = false; poolToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
+        <NcButton type="button" variant="error" @click="confirmDeletePool">{{ t('learning', 'Delete') }}</NcButton>
       </template>
     </AccessibleDialog>
 
@@ -312,7 +312,7 @@
               </div>
             </div>
             <NcButton
-              type="primary"
+              type="button" variant="primary"
               :disabled="starterImportingId === starter.id"
               @click="importStarterPool(starter)">
               {{ starterImportingId === starter.id ? t('learning', 'Importing...') : t('learning', 'Import') }}
@@ -322,7 +322,7 @@
       </div>
 
       <template #actions>
-        <NcButton type="tertiary" @click="closeStarterDialog">
+        <NcButton type="button" variant="tertiary" @click="closeStarterDialog">
           {{ t('learning', 'Close') }}
         </NcButton>
       </template>

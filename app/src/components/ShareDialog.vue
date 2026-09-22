@@ -9,7 +9,7 @@
           <option value="read">{{ t('learning', 'Can view') }}</option>
           <option value="edit">{{ t('learning', 'Can edit') }}</option>
         </select>
-        <NcButton type="primary" native-type="submit" :disabled="sharing">{{ sharing ? '...' : t('learning', 'Share') }}</NcButton>
+        <NcButton type="submit" variant="primary" :disabled="sharing">{{ sharing ? '...' : t('learning', 'Share') }}</NcButton>
       </div>
     </form>
 
@@ -24,7 +24,7 @@
           <option value="read">{{ t('learning', 'Can view') }}</option>
           <option value="edit">{{ t('learning', 'Can edit') }}</option>
         </select>
-        <NcButton type="error" @click="removeShare(share)" :aria-label="t('learning', 'Remove')">&#10005;</NcButton>
+        <NcButton type="button" variant="error" @click="removeShare(share)" :aria-label="t('learning', 'Remove')">&#10005;</NcButton>
       </div>
     </div>
     <div v-else class="no-shares">
@@ -33,7 +33,7 @@
     </div>
 
     <template #actions>
-      <NcButton type="primary" @click="$emit('close')">{{ t('learning', 'Done') }}</NcButton>
+      <NcButton type="button" variant="primary" @click="$emit('close')">{{ t('learning', 'Done') }}</NcButton>
     </template>
   </AccessibleDialog>
 </template>
