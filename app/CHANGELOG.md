@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- **A missing database table no longer takes down an entire course view.** Reported on
+  [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) from an install on managed
+  hosting, where `oc_learning_course_curriculum_scopes` did not exist. That table comes from
+  a rename migration (`Version009900`) which deliberately aborts rather than creating an empty
+  table over existing data — so an install can legitimately end up without it, and the app
+  treated that as fatal. Curriculum scoping, paused-question overrides and announcements now
+  fall back to "nothing configured" and log a warning naming the migration and the `occ`
+  command that repairs it.
+
+  Writes are deliberately left throwing: reporting success for a save that stored nothing is
+  the worse failure, and the caller has to be able to tell the user it failed.
+
+  The "is this table missing" check moved into `Db\DbErrors` rather than being copied —
+  `UninstallCommand` has needed the same predicate since v5.3.0. It stays narrow on purpose:
+  anything not positively identified as a missing table is rethrown, so a genuine database
+  outage cannot turn into silently empty results.
+
+  This limits the damage; it does not explain why the table is absent on that install. That
+  question is still open and depends on the reporter's logs.
+
 ## [5.4.5] - 2026-09-22 — Every button in a form was a submit button
 
 Reported in [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) by an external user on
