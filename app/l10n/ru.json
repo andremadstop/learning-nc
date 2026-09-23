@@ -3060,6 +3060,21 @@
         "Signing key generated. Certificates are now active.": "Ключ подписи создан. Сертификаты теперь активны.",
         "Checkpoint überfällig! Ein Audit-Ereignis wartet seit mehr als 8 Tagen auf einen Checkpoint.": "Контрольная точка просрочена! Событие аудита ждёт контрольной точки больше 8 дней.",
         "Ursache: Checkpoints werden mit dem Signaturschlüssel signiert, und der fehlt noch. Erzeuge ihn oben im Zertifikate-Hinweis.": "Причина: контрольные точки подписываются ключом подписи, который ещё не создан. Создайте его в уведомлении о сертификатах выше.",
-        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "Контрольные точки создаёт еженедельное фоновое задание. Проверьте, работают ли фоновые задания Nextcloud (cron)."
+        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "Контрольные точки создаёт еженедельное фоновое задание. Проверьте, работают ли фоновые задания Nextcloud (cron).",
+        "Anzahl Fragen": "Количество вопросов",
+        "Bestehensgrenze (%)": "Проходной балл (%)",
+        "Course practice exam": "Пробный экзамен курса",
+        "Lernende starten die Probeprüfung selbst. Die Fragen werden bei jedem Versuch neu zufällig aus allen Pools des Kurses gezogen. Probeprüfungen zählen nicht für das Zertifikat.": "Учащиеся сами запускают пробный экзамен. Вопросы выбираются случайным образом из всех пулов курса, при каждой попытке заново. Пробные экзамены не учитываются для сертификата.",
+        "No time limit": "Без ограничения времени",
+        "Pass mark: {percent}%": "Проходной балл: {percent} %",
+        "Probeprüfung": "Пробный экзамен",
+        "Probeprüfung anbieten": "Предлагать пробный экзамен",
+        "Probeprüfung konnte nicht gespeichert werden.": "Не удалось сохранить пробный экзамен.",
+        "Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.": "Вопросы выбираются случайным образом из всех пулов этого курса, при каждой попытке заново. Обратная связь только в конце, затем разбор с объяснениями. Пробные экзамены не учитываются для сертификата.",
+        "Start practice exam": "Начать пробный экзамен",
+        "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.": "Разбор скрыт, пока у вас в этом курсе идёт экзамен, потому что он показал бы ответы. Он снова станет доступен, когда этот экзамен закончится.",
+        "Zeitlimit (Minuten, 0 = ohne Zeitlimit)": "Ограничение времени (минуты, 0 = без ограничения)",
+        "{questions} questions · no time limit · pass mark {percent}%": "{questions} вопросов · без ограничения времени · проходной балл {percent} %",
+        "{questions} questions · {minutes} minutes · pass mark {percent}%": "{questions} вопросов · {minutes} минут · проходной балл {percent} %"
     }
 }

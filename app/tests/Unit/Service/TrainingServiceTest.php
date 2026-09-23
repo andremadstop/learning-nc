@@ -463,6 +463,230 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame(['user_state_alice'], $cacheFactory->cache->removedKeys);
     }
 
+    // ── Codeberg #9: per-course practice exams ────────────────────────────────────────────────
+
+    private function practiceCourse(bool $enabled = true, int $questions = 3, int $minutes = 0, int $pass = 75): \OCA\Learning\Db\Course {
+        $course = new \OCA\Learning\Db\Course();
+        $course->setId(7);
+        $course->setPracticeEnabled($enabled);
+        $course->setPracticeQuestions($questions);
+        $course->setPracticeMinutes($minutes);
+        $course->setPracticePassPercent($pass);
+        return $course;
+    }
+
+    /** @param int[] $questionIds @param int[] $poolIds */
+    private function practiceCourseService(\OCA\Learning\Db\Course $course, array $questionIds, array $poolIds): CourseService {
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->method('resolveCoursePracticeContext')->willReturn([
+            'course' => $course,
+            'is_instructor' => false,
+            'question_ids' => $questionIds,
+            'pool_ids' => $poolIds,
+        ]);
+        return $courseService;
+    }
+
+    /**
+     * The draw spans every pool of the course, takes exactly the configured count, and the
+     * session is marked practice with the threshold stored at start. 0 minutes = no time limit.
+     * The payload must carry questions from BOTH pools: loading by the session's pool_id alone
+     * silently dropped every question from the other pools.
+     */
+    public function testPracticeExamDrawsAcrossPoolsAndMarksSession(): void {
+        $pool42 = [$this->makeQuestion(10, 42, 'A1'), $this->makeQuestion(11, 42, 'A2')];
+        $pool43 = [$this->makeQuestion(20, 43, 'B1'), $this->makeQuestion(21, 43, 'B2')];
+        $all = array_merge($pool42, $pool43);
+
+        $resume = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $active42 = new FakeQueryBuilder(FakeResult::fromFetchAll([]));
+        $active43 = new FakeQueryBuilder(FakeResult::fromFetchAll([]));
+        $limit24h = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $attemptNo = new FakeQueryBuilder(FakeResult::fromFetchOne(2));
+        $insert = new FakeQueryBuilder(new FakeResult(), 0, 501);
+        $db = new FakeDbConnection([$resume, $active42, $active43, $limit24h, $attemptNo, $insert]);
+
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByIds')->willReturnCallback(
+            static fn(array $ids): array => array_values(array_filter($all, static fn($q) => in_array($q->getId(), $ids, true)))
+        );
+        $questionMapper->method('findByPoolId')->willReturnCallback(
+            static fn(int $poolId): array => $poolId === 42 ? $pool42 : $pool43
+        );
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestion')
+            ->willReturnCallback(fn(int $qid): array => [$this->makeAnswer($qid * 10, $qid, 'Answer')]);
+
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            courseService: $this->practiceCourseService($this->practiceCourse(questions: 4, minutes: 0, pass: 70), [10, 11, 20, 21], [42, 43]),
+        );
+
+        $payload = $service->startPracticeExam(7, 'alice');
+
+        $this->assertSame('practice', $insert->insertValues['exam_kind']['value']);
+        $this->assertSame('exam', $insert->insertValues['mode']['value']);
+        $this->assertSame(70, $insert->insertValues['pass_percent']['value']);
+        $this->assertNull($insert->insertValues['time_limit_seconds']['value'], '0 minutes = untimed');
+        $this->assertSame(42, $insert->insertValues['pool_id']['value'], 'anchor = smallest involved pool');
+        $this->assertSame(3, $insert->insertValues['attempt_no']['value']);
+        $this->assertSame(4, $insert->insertValues['total_questions']['value']);
+        $this->assertEqualsCanonicalizing([10, 11, 20, 21], array_column($payload['questions'], 'id'));
+        $this->assertSame('practice', $payload['exam_kind']);
+        $this->assertNull($payload['exam_deadline_at']);
+    }
+
+    /** The configured count is exact — also when PBQs are in the pool (the exam blueprint forces them all in). */
+    public function testPracticeExamTakesExactlyTheConfiguredCount(): void {
+        $all = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $q = $this->makeQuestion($i, 42, 'Q' . $i);
+            if ($i <= 4) {
+                $q->setQuestionType('pbq');
+            }
+            $all[] = $q;
+        }
+        $insert = new FakeQueryBuilder(new FakeResult(), 0, 502);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),
+            $insert,
+        ]);
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByIds')->willReturnCallback(
+            static fn(array $ids): array => array_values(array_filter($all, static fn($q) => in_array($q->getId(), $ids, true)))
+        );
+        $questionMapper->method('findByPoolId')->willReturn($all);
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            courseService: $this->practiceCourseService($this->practiceCourse(questions: 3, minutes: 45), range(1, 10), [42]),
+        );
+
+        $payload = $service->startPracticeExam(7, 'alice');
+
+        $this->assertSame(3, $insert->insertValues['total_questions']['value']);
+        $this->assertCount(3, json_decode($insert->insertValues['question_order_json']['value'], true));
+        $this->assertSame(45 * 60, $insert->insertValues['time_limit_seconds']['value']);
+        $this->assertCount(3, $payload['questions']);
+    }
+
+    public function testPracticeExamRefusedWhenDisabled(): void {
+        $service = $this->createService(
+            db: new FakeDbConnection([]),
+            courseService: $this->practiceCourseService($this->practiceCourse(enabled: false), [10], [42]),
+        );
+        $this->expectExceptionMessage('Practice exams are not enabled for this course');
+        $service->startPracticeExam(7, 'alice');
+    }
+
+    /**
+     * A practice review reveals answers; while a certificate-relevant exam runs on one of the
+     * course's pools, starting a practice exam would turn it into an answer oracle.
+     */
+    public function testPracticeExamRefusedWhileStandardExamRunsOnACoursePool(): void {
+        $running = ['id' => 9, 'mode' => 'exam', 'pool_id' => 43, 'user_id' => 'alice', 'started_at' => time() - 60,
+            'time_limit_seconds' => 3600, 'completed_at' => null];
+        $insert = new FakeQueryBuilder(new FakeResult(), 0, 503);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$running])),
+            $insert,
+        ]);
+        $service = $this->createService(
+            db: $db,
+            courseService: $this->practiceCourseService($this->practiceCourse(), [10, 20], [42, 43]),
+        );
+        try {
+            $service->startPracticeExam(7, 'alice');
+            $this->fail('must refuse');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('exam is active', $e->getMessage());
+        }
+        $this->assertSame([], $insert->insertValues);
+    }
+
+    private function completedPracticeSession(int $correct, int $total, int $pass): array {
+        return ['id' => 600, 'pool_id' => 42, 'course_id' => 7, 'user_id' => 'alice', 'mode' => 'exam',
+            'exam_kind' => 'practice', 'pass_percent' => $pass, 'started_at' => time() - 600,
+            'completed_at' => time() - 10, 'time_limit_seconds' => null, 'total_questions' => $total,
+            'correct_answers' => $correct, 'attempt_no' => 1, 'question_order_json' => json_encode([10, 20])];
+    }
+
+    private function practiceQuestionMapper(): QuestionMapper {
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByIds')->willReturn([$this->makeQuestion(10, 42, 'A'), $this->makeQuestion(20, 43, 'B')]);
+        return $questionMapper;
+    }
+
+    /**
+     * Pass verdict is integer math against the threshold stored at start: 74.6 % rounds to 75
+     * but must not pass 75 %. The review carries the explanation (practice only).
+     */
+    public function testPracticeCompletionVerdictAndExplanations(): void {
+        $session = $this->completedPracticeSession(97, 130, 75); // 74.6 %
+        $uaRow = ['id' => 1, 'question_id' => 10, 'is_correct' => '1', 'answer_id' => 100, 'answer_ids' => null,
+            'question_text' => 'A', 'question_type' => 'single', 'question_explanation' => 'Because of ICAO Annex 10.'];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($session)),          // verifySessionOwnership
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),             // active exam on pool 42
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),             // active exam on pool 43
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$uaRow])),       // review: user answers
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 100, 'text' => 'Yes']])), // correct answers
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 100, 'text' => 'Yes', 'is_correct' => '1']])), // all answers
+        ]);
+        $service = $this->createService(db: $db, questionMapper: $this->practiceQuestionMapper());
+
+        $result = $service->completeSession(600, 'alice');
+
+        $this->assertSame('practice', $result['exam_kind']);
+        $this->assertSame(75, $result['pass_percent']);
+        $this->assertFalse($result['passed'], '74.6 % must not pass 75 %');
+        $this->assertFalse($result['review_withheld']);
+        $this->assertSame('Because of ICAO Annex 10.', $result['review'][0]['explanation']);
+    }
+
+    public function testPracticeCompletionPassesAtThreshold(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($this->completedPracticeSession(3, 4, 75))),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+        ]);
+        $service = $this->createService(db: $db, questionMapper: $this->practiceQuestionMapper());
+
+        $this->assertTrue($service->completeSession(600, 'alice')['passed']);
+    }
+
+    /**
+     * complete() on an OLD practice session while a certificate-relevant exam runs on one of its
+     * pools must not hand out the review — that path is the one an attacker would use.
+     */
+    public function testPracticeReviewWithheldWhileStandardExamRuns(): void {
+        $running = ['id' => 9, 'mode' => 'exam', 'pool_id' => 43, 'user_id' => 'alice', 'started_at' => time() - 60,
+            'time_limit_seconds' => 3600, 'completed_at' => null];
+        $reviewQuery = new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 1]]));
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($this->completedPracticeSession(1, 2, 50))),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$running])),
+            $reviewQuery,
+        ]);
+        $service = $this->createService(db: $db, questionMapper: $this->practiceQuestionMapper());
+
+        $result = $service->completeSession(600, 'alice');
+
+        $this->assertTrue($result['review_withheld']);
+        $this->assertSame([], $result['review']);
+        $this->assertSame([], $reviewQuery->selects, 'the review query must never run');
+    }
+
     private function createService(
         FakeDbConnection $db,
         ?QuestionMapper $questionMapper = null,
@@ -497,6 +721,8 @@ class TrainingServiceTest extends TestCase {
             ->willReturnCallback(static fn(?string $lang): ?string => $lang === '' ? null : $lang);
         $translationService->method('translateQuestions')
             ->willReturnCallback(static fn(array $questions): array => $questions);
+        $translationService->method('translateReviewEntries')
+            ->willReturnCallback(static fn(array $entries): array => $entries);
         $config->method('getUserValue')->willReturn('');
         // logger->info() is void — no willReturn needed, mock accepts any call by default
 

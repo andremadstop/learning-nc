@@ -23,6 +23,22 @@ export async function updateCertConfig(courseId, config) {
 }
 
 /**
+ * Update a course's practice exam (Codeberg #9). Instructor-only; any subset of
+ * { practiceEnabled, practiceQuestions, practiceMinutes, practicePassPercent }.
+ * practiceMinutes 0 = no time limit. Response keys are snake_case.
+ * @param {number} courseId — the course to configure
+ * @param {object} config — fields to change
+ * @return {Promise<{practice_enabled: boolean, practice_questions: number, practice_minutes: number, practice_pass_percent: number}>}
+ */
+export async function updatePracticeConfig(courseId, config) {
+	const response = await axios.patch(
+		generateUrl(`/apps/learning/api/courses/${courseId}/practice-exam-config`),
+		config,
+	)
+	return response.data
+}
+
+/**
  * Get the pass status for the current user in a course.
  * Returns 403 if the user is not enrolled (IDOR guard enforced server-side).
  * @param {number} courseId — the course to evaluate

@@ -252,6 +252,7 @@ export default {
 			const tabs = ['training']
 			if (enabled('leitner')) tabs.push('leitner')
 			if (enabled('exam')) tabs.push('exam')
+			if (this.course?.practice_enabled) tabs.push('practice')
 			if (this.hasCourseTools) tabs.push('tools')
 			if (this.course?.material_folder) tabs.push('materials')
 			return tabs

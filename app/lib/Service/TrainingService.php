@@ -39,6 +39,7 @@ class TrainingService {
     private TelosService $telosService;
 
     /** TRIG-01: Exam score threshold below which a weakness note is auto-generated. */
+    public const EXAM_KIND_PRACTICE = 'practice';
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
 
     public function __construct(
@@ -108,7 +109,8 @@ class TrainingService {
             ->from('learning_sessions')
             ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')));
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('exam_kind'));
         $result = $qb->executeQuery();
         $count = (int)$result->fetchOne();
         $result->closeCursor();
@@ -199,6 +201,7 @@ class TrainingService {
             ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('exam_kind'))
             ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($sinceDay)));
         $result = $qb->executeQuery();
         $attemptsLast24h = (int)$result->fetchOne();
@@ -214,6 +217,7 @@ class TrainingService {
                 ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
                 ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
                 ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+                ->andWhere($qb->expr()->isNull('exam_kind'))
                 ->orderBy('started_at', 'DESC')
                 ->setMaxResults(1);
             $result = $qb->executeQuery();
@@ -237,6 +241,31 @@ class TrainingService {
             }
         }
         return [];
+    }
+
+    /** Codeberg #9 — a course practice exam: mode 'exam', never counted towards a certificate. */
+    private function isPracticeSession(array $session): bool {
+        return ($session['mode'] ?? 'training') === 'exam' && ($session['exam_kind'] ?? null) === self::EXAM_KIND_PRACTICE;
+    }
+
+    /**
+     * Whether a question may be answered in this session. Ordinary sessions: it must belong to the
+     * session's pool. A practice exam spans several pools, so its own server-drawn question list is
+     * the authority — and an empty list is refused rather than read as "anything goes".
+     */
+    private function questionBelongsToSession(array $session, int $questionId, array $sessionQuestionIds): bool {
+        if ($this->isPracticeSession($session)) {
+            return $sessionQuestionIds !== [] && in_array($questionId, $sessionQuestionIds, true);
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_questions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
+           ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter((int)$session['pool_id'])));
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row !== false;
     }
 
     private function resolveContentLanguage(?string $lang, string $userId): ?string {
@@ -298,17 +327,33 @@ class TrainingService {
             || ($userId !== '' && $this->hasActiveExamOnPool($poolId, $userId));
         $questionIds = $this->getSessionQuestionIds($session);
         $byId = [];
-        foreach ($this->questionMapper->findByPoolId($poolId) as $q) {
-            $byId[(int)$q->getId()] = $q;
+        $poolPositions = []; // id => 0-based index within its own pool
+        if ($this->isPracticeSession($session)) {
+            // A practice exam spans every pool of its course; pool_id only names one of them.
+            // Loading by pool_id would silently drop every question from the other pools.
+            $involvedPools = [];
+            foreach ($this->questionMapper->findByIds($questionIds) as $q) {
+                $involvedPools[(int)$q->getPoolId()] = true;
+            }
+            foreach (array_keys($involvedPools) as $involvedPoolId) {
+                $index = 0;
+                foreach ($this->questionMapper->findByPoolId($involvedPoolId) as $q) {
+                    $byId[(int)$q->getId()] = $q;
+                    $poolPositions[(int)$q->getId()] = $index++;
+                }
+            }
+        } else {
+            foreach ($this->questionMapper->findByPoolId($poolId) as $q) {
+                $byId[(int)$q->getId()] = $q;
+            }
+            // Compute 1-based pool position (preserves pool order: chapter_order, created_at, id)
+            $poolPositions = array_flip(array_keys($byId));
         }
 
         if (empty($questionIds)) {
             $questionIds = array_keys($byId);
             sort($questionIds);
         }
-
-        // Compute 1-based pool position (preserves pool order: chapter_order, created_at, id)
-        $poolPositions = array_flip(array_keys($byId)); // id => 0-based index
 
         $questionsWithAnswers = [];
         foreach ($questionIds as $qid) {
@@ -473,6 +518,9 @@ class TrainingService {
             'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
             'resumed' => $resumed,
             'answered' => $answeredMap,
+            'exam_kind' => $session['exam_kind'] ?? null,
+            'pass_percent' => isset($session['pass_percent']) ? (int)$session['pass_percent'] : null,
+            'course_id' => isset($session['course_id']) ? (int)$session['course_id'] : null,
         ];
     }
 
@@ -516,6 +564,9 @@ class TrainingService {
     /**
      * Check if user has an active (uncompleted) exam session on a given pool.
      * Used to suppress correct answers even from training sessions during active exam.
+     *
+     * Practice exams (exam_kind='practice') are left out: they never count, so there is nothing
+     * to protect, and an untimed one left open would otherwise lock the pool indefinitely.
      */
     private function hasActiveExamOnPool(int $poolId, string $userId): bool {
         $qb = $this->db->getQueryBuilder();
@@ -524,6 +575,7 @@ class TrainingService {
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('exam_kind'))
            ->andWhere($qb->expr()->isNull('completed_at'));
         $result = $qb->executeQuery();
         $rows = $result->fetchAll();
@@ -595,6 +647,7 @@ class TrainingService {
             ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('exam_kind'))
             ->andWhere($qb->expr()->isNull('completed_at'));
         $qb->orderBy('started_at', 'DESC')
             ->setMaxResults(1);
@@ -716,6 +769,214 @@ class TrainingService {
         return $payload;
     }
 
+    /**
+     * Start (or resume) the practice exam an instructor configured for a course (Codeberg #9).
+     *
+     * Draws the configured number of questions at random from every pool of the course, with a
+     * fresh draw on each attempt. Runs through the ordinary exam machinery — no feedback until
+     * the end, batch submit, resume — but is marked exam_kind='practice', so it never counts
+     * towards a certificate and never locks a pool for the anti-oracle guards.
+     *
+     * @throws DoesNotExistException if the course does not exist or the user has no access
+     * @throws ForbiddenException    if the video/material gate of a course is not satisfied
+     * @throws \Exception            if practice exams are off, a certificate-relevant exam is running
+     *                               on one of the pools, the attempt policy blocks, or no questions exist
+     */
+    public function startPracticeExam(int $courseId, string $userId, ?string $lang = null): array {
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
+        $context = $this->courseService->resolveCoursePracticeContext($courseId, $userId);
+        /** @var \OCA\Learning\Db\Course $course */
+        $course = $context['course'];
+        if (!($course->getPracticeEnabled() ?? false)) {
+            throw new \Exception('Practice exams are not enabled for this course');
+        }
+
+        foreach ($context['pool_ids'] as $poolId) {
+            foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
+                $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
+            }
+        }
+
+        // Resume an open practice exam of this course.
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->eq('exam_kind', $qb->createNamedParameter(self::EXAM_KIND_PRACTICE)))
+            ->andWhere($qb->expr()->isNull('completed_at'))
+            ->orderBy('started_at', 'DESC')
+            ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $active = $result->fetch();
+        $result->closeCursor();
+        if ($active) {
+            $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($active, $userId, 'start_practice_guard');
+            if (!$timeoutInfo['timed_out']) {
+                return $this->buildSessionStartPayload($timeoutInfo['session'], true, $contentLanguage);
+            }
+        }
+
+        // A practice review reveals correct answers and explanations. While a certificate-relevant
+        // exam runs on any of these pools, that would be an answer oracle for it.
+        foreach ($context['pool_ids'] as $poolId) {
+            if ($this->hasActiveExamOnPool($poolId, $userId)) {
+                throw new \Exception('Cannot start a practice exam while an exam is active in this course');
+            }
+        }
+
+        $this->enforcePracticeStartPolicy($courseId, $userId);
+
+        $questions = $context['question_ids'] === [] ? [] : $this->questionMapper->findByIds($context['question_ids']);
+        if ($questions === []) {
+            throw new \Exception('No questions in this course');
+        }
+        $count = max(1, min(500, (int)($course->getPracticeQuestions() ?? 20)));
+        $questions = $this->pickByDifficultyBlend($questions, $count);
+
+        $minutes = max(0, min(600, (int)($course->getPracticeMinutes() ?? 0)));
+        $timeLimit = $minutes > 0 ? $minutes * 60 : null;
+        $passPercent = max(1, min(100, (int)($course->getPracticePassPercent() ?? 75)));
+
+        $questionOrder = array_map(static fn($q) => (int)$q->getId(), $questions);
+        // pool_id is NOT NULL with a cascading FK; it names one of the involved pools. The
+        // question list in question_order_json is what actually defines the attempt.
+        $anchorPoolId = min(array_map(static fn($q) => (int)$q->getPoolId(), $questions));
+        $attemptNo = $this->getPracticeAttemptNo($courseId, $userId);
+        $startedAt = time();
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->insert('learning_sessions')
+           ->values([
+               'pool_id' => $qb->createNamedParameter($anchorPoolId, IQueryBuilder::PARAM_INT),
+               'course_id' => $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
+               'user_id' => $qb->createNamedParameter($userId),
+               'started_at' => $qb->createNamedParameter($startedAt),
+               'total_questions' => $qb->createNamedParameter(count($questions)),
+               'correct_answers' => $qb->createNamedParameter(0),
+               'mode' => $qb->createNamedParameter('exam'),
+               'exam_kind' => $qb->createNamedParameter(self::EXAM_KIND_PRACTICE),
+               'pass_percent' => $qb->createNamedParameter($passPercent, IQueryBuilder::PARAM_INT),
+               'time_limit_seconds' => $qb->createNamedParameter($timeLimit, $timeLimit === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
+               'attempt_no' => $qb->createNamedParameter($attemptNo, IQueryBuilder::PARAM_INT),
+               'question_order_json' => $qb->createNamedParameter(json_encode($questionOrder)),
+           ]);
+        $qb->executeStatement();
+        $sessionId = (int)$qb->getLastInsertId();
+
+        $session = [
+            'id' => $sessionId,
+            'pool_id' => $anchorPoolId,
+            'course_id' => $courseId,
+            'user_id' => $userId,
+            'started_at' => $startedAt,
+            'time_limit_seconds' => $timeLimit,
+            'attempt_no' => $attemptNo,
+            'mode' => 'exam',
+            'exam_kind' => self::EXAM_KIND_PRACTICE,
+            'pass_percent' => $passPercent,
+            'question_order_json' => json_encode($questionOrder),
+        ];
+
+        $this->logAuditEvent('session_started', [
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'pool_id' => $anchorPoolId,
+            'course_id' => $courseId,
+            'mode' => 'exam',
+            'exam_kind' => self::EXAM_KIND_PRACTICE,
+            'question_count' => count($questionOrder),
+            'time_limit_seconds' => $timeLimit,
+            'attempt_no' => $attemptNo,
+        ]);
+
+        return $this->buildSessionStartPayload($session, false, $contentLanguage);
+    }
+
+    private function getPracticeAttemptNo(int $courseId, string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('exam_kind', $qb->createNamedParameter(self::EXAM_KIND_PRACTICE)));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count + 1;
+    }
+
+    /** The admin's exam attempt limit and cooldown, counted over a course's practice exams. */
+    private function enforcePracticeStartPolicy(int $courseId, string $userId): void {
+        $now = time();
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('exam_kind', $qb->createNamedParameter(self::EXAM_KIND_PRACTICE)))
+            ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($now - 86400)));
+        $result = $qb->executeQuery();
+        $attemptsLast24h = (int)$result->fetchOne();
+        $result->closeCursor();
+        if ($attemptsLast24h >= $this->getExamAttemptLimitPerDay()) {
+            throw new \Exception('Exam attempt limit reached for the last 24 hours');
+        }
+
+        $cooldownMinutes = $this->getExamAttemptCooldownMinutes();
+        if ($cooldownMinutes > 0) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('started_at')
+                ->from('learning_sessions')
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+                ->andWhere($qb->expr()->eq('exam_kind', $qb->createNamedParameter(self::EXAM_KIND_PRACTICE)))
+                ->orderBy('started_at', 'DESC')
+                ->setMaxResults(1);
+            $result = $qb->executeQuery();
+            $lastStartedAt = (int)($result->fetchOne() ?: 0);
+            $result->closeCursor();
+            if ($lastStartedAt > 0 && $now < $lastStartedAt + ($cooldownMinutes * 60)) {
+                throw new \Exception('Exam cooldown active');
+            }
+        }
+    }
+
+    /**
+     * Random draw of exactly $count questions (all of them if fewer exist), aiming for the same
+     * 30/40/30 easy/medium/hard mix as the exam blueprint. Unlike pickExamQuestionsByBlueprint,
+     * PBQs get no guaranteed slots: the instructor's question count is a promise to the learner.
+     */
+    private function pickByDifficultyBlend(array $questions, int $count): array {
+        shuffle($questions);
+        if ($count >= count($questions)) {
+            return $questions;
+        }
+        $buckets = ['easy' => [], 'medium' => [], 'hard' => []];
+        foreach ($questions as $q) {
+            $buckets[$this->difficultyBucket($q->getDifficulty())][] = $q;
+        }
+        $targets = [
+            'easy'   => (int)floor($count * 0.3),
+            'medium' => (int)floor($count * 0.4),
+            'hard'   => (int)floor($count * 0.3),
+        ];
+        $selected = [];
+        foreach ($targets as $bucket => $target) {
+            $take = min($target, count($buckets[$bucket]));
+            $selected = array_merge($selected, array_slice($buckets[$bucket], 0, $take));
+            $buckets[$bucket] = array_slice($buckets[$bucket], $take);
+        }
+        if (count($selected) < $count) {
+            $remaining = array_merge($buckets['easy'], $buckets['medium'], $buckets['hard']);
+            shuffle($remaining);
+            $selected = array_merge($selected, array_slice($remaining, 0, $count - count($selected)));
+        }
+        shuffle($selected);
+        return $selected;
+    }
+
     private function getAllCorrectAnswers(int $questionId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('id', 'text')
@@ -777,15 +1038,7 @@ class TrainingService {
             ]);
         }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
-           ->from('learning_questions')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
-           ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter((int)$session['pool_id'])));
-        $checkResult = $qb->executeQuery();
-        $questionRow = $checkResult->fetch();
-        $checkResult->closeCursor();
-        if (!$questionRow) {
+        if (!$this->questionBelongsToSession($session, (int)$questionId, $sessionQuestionIds)) {
             throw new \Exception('Question not in this session pool');
         }
 
@@ -1134,16 +1387,8 @@ class TrainingService {
                 continue;
             }
 
-            // Validate question belongs to this session's pool
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id')
-               ->from('learning_questions')
-               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
-               ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
-            $checkResult = $qb->executeQuery();
-            $questionRow = $checkResult->fetch();
-            $checkResult->closeCursor();
-            if (!$questionRow) {
+            // Validate question belongs to this session (its pool, or a practice exam's drawn list)
+            if (!$this->questionBelongsToSession($session, $questionId, $sessionQuestionIds)) {
                 $results[] = ['questionId' => $questionId, 'error' => 'Question not in session pool'];
                 continue;
             }
@@ -1633,9 +1878,7 @@ class TrainingService {
                 'correct_answers' => (int)$session['correct_answers'],
                 'completed_at' => (int)$session['completed_at'],
             ];
-            if (($session['mode'] ?? 'training') === 'exam') {
-                $response['review'] = $this->getSessionReview($sessionId, $contentLanguage);
-            }
+            $response = $this->withExamReview($response, $session, $userId, $contentLanguage);
             $totalQ = (int)$session['total_questions'];
             $response['score_percentage'] = $totalQ > 0
                 ? round((int)$session['correct_answers'] / $totalQ * 100)
@@ -1682,9 +1925,7 @@ class TrainingService {
         $response['attempt_no'] = isset($session['attempt_no']) ? (int)$session['attempt_no'] : null;
 
         // For exam sessions, include full review data (only available after completion)
-        if (($session['mode'] ?? 'training') === 'exam') {
-            $response['review'] = $this->getSessionReview($sessionId, $contentLanguage);
-        }
+        $response = $this->withExamReview($response, $session, $userId, $contentLanguage);
 
         // Read level before XP increment for level-up detection
         $levelBefore = $this->xpService->calculateXp($userId)['level'];
@@ -1810,10 +2051,51 @@ class TrainingService {
             'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
         ];
 
-        if (($session['mode'] ?? 'training') === 'exam') {
-            $response['review'] = $this->getSessionReview($sessionId, $contentLanguage);
+        return $this->withExamReview($response, $session, $userId, $contentLanguage);
+    }
+
+    /**
+     * Adds the post-exam review to a completion response — the one place all three completion
+     * paths (fresh, already completed, lost race) go through, so none of them can hand out more
+     * than the others.
+     *
+     * Practice exams (Codeberg #9) additionally get a server-side pass verdict against the
+     * threshold stored at start, and explanations in the review. Their review is withheld while
+     * a certificate-relevant exam runs on any pool the attempt drew from: it would reveal answers
+     * to exactly those questions. Calling complete on an old practice session is enough to ask
+     * for it, so this check must not sit on one path only.
+     */
+    private function withExamReview(array $response, array $session, string $userId, ?string $lang): array {
+        if (($session['mode'] ?? 'training') !== 'exam') {
+            return $response;
+        }
+        $sessionId = (int)$session['id'];
+        if (!$this->isPracticeSession($session)) {
+            $response['review'] = $this->getSessionReview($sessionId, $lang);
+            return $response;
         }
 
+        $total = (int)$session['total_questions'];
+        $correct = (int)$session['correct_answers'];
+        $passPercent = isset($session['pass_percent']) ? (int)$session['pass_percent'] : 75;
+        $response['exam_kind'] = self::EXAM_KIND_PRACTICE;
+        $response['pass_percent'] = $passPercent;
+        // Integer comparison: the rounded score_percentage would pass 74.6 % against 75 %.
+        $response['passed'] = $total > 0 && $correct * 100 >= $passPercent * $total;
+
+        $involvedPools = [];
+        foreach ($this->questionMapper->findByIds($this->getSessionQuestionIds($session)) as $q) {
+            $involvedPools[(int)$q->getPoolId()] = true;
+        }
+        foreach (array_keys($involvedPools) as $poolId) {
+            if ($this->hasActiveExamOnPool($poolId, $userId)) {
+                $response['review'] = [];
+                $response['review_withheld'] = true;
+                return $response;
+            }
+        }
+        $response['review'] = $this->getSessionReview($sessionId, $lang, true);
+        $response['review_withheld'] = false;
         return $response;
     }
 
@@ -1869,10 +2151,10 @@ class TrainingService {
         return round((float)($row['avg_pct'] ?? 0));
     }
 
-    private function getSessionReview(int $sessionId, ?string $lang = null): array {
+    private function getSessionReview(int $sessionId, ?string $lang = null, bool $withExplanations = false): array {
         // Fetch all user answers for this session
         $qb = $this->db->getQueryBuilder();
-        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type')
+        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type', 'q.explanation AS question_explanation')
            ->from('learning_user_answers', 'ua')
            ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
            ->where($qb->expr()->eq('ua.session_id', $qb->createNamedParameter($sessionId)))
@@ -1926,6 +2208,11 @@ class TrainingService {
                     ];
                 }, $allAnswers),
             ];
+
+            if ($withExplanations) {
+                $explanation = trim((string)($ua['question_explanation'] ?? ''));
+                $entry['explanation'] = $explanation !== '' ? $explanation : null;
+            }
 
             if (($ua['question_type'] ?? '') === 'pbq') {
                 $pbqData = json_decode($ua['answer_ids'] ?? '{}', true) ?: [];

@@ -101,6 +101,8 @@ class LeitnerService {
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           // Practice exams never count and must not lock a pool (an untimed one could stay open).
+           ->andWhere($qb->expr()->isNull('exam_kind'))
            ->andWhere($qb->expr()->isNull('completed_at'))
            ->setMaxResults(1);
         $result = $qb->executeQuery();

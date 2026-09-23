@@ -118,6 +118,31 @@ describe('CourseTabLernraum', () => {
 		expect(instance.defaultSubTab()).toBe('training')
 	})
 
+	// Codeberg #9: the practice exam tab follows practice_enabled alone — a course may switch the
+	// CompTIA preset exam off (mode_config.exam) and still offer its own practice exam.
+	it('shows the practice exam tab when the course offers one, even with the preset exam off', () => {
+		const instance = createInstance({
+			course: {
+				is_instructor: false,
+				material_folder: null,
+				mode_config: { training: true, leitner: true, exam: false },
+				practice_enabled: true,
+				practice_questions: 25,
+				practice_minutes: 0,
+				practice_pass_percent: 70,
+			},
+		})
+		const ids = instance.visibleSubTabs.map((tab) => tab.id)
+		expect(ids).toContain('practice')
+		expect(ids).not.toContain('exam')
+		expect(CourseTabLernraum.computed.practiceConfig.call(instance)).toEqual({ questions: 25, minutes: 0, passPercent: 70 })
+	})
+
+	it('hides the practice exam tab when the course does not offer one', () => {
+		const instance = createInstance()
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('practice')
+	})
+
 	it('switches to the instructor Lernraum subnav when the role changes', () => {
 		const instance = createInstance({
 			course: {

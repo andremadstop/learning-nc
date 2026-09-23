@@ -173,6 +173,56 @@
 				</NcButton>
 				<NcNoteCard v-if="certSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
+
+			<!-- Probeprüfung (Codeberg #9) -->
+			<div class="practice-config tool-config-section">
+				<h3>{{ t('learning', 'Probeprüfung') }}</h3>
+				<p class="mode-config-hint">{{ t('learning', 'Lernende starten die Probeprüfung selbst. Die Fragen werden bei jedem Versuch neu zufällig aus allen Pools des Kurses gezogen. Probeprüfungen zählen nicht für das Zertifikat.') }}</p>
+				<NcCheckboxRadioSwitch :model-value="practiceEnabled" @update:model-value="practiceEnabled = !!$event">
+					{{ t('learning', 'Probeprüfung anbieten') }}
+				</NcCheckboxRadioSwitch>
+
+				<template v-if="practiceEnabled">
+					<div class="cert-config-field">
+						<label for="practice-questions">{{ t('learning', 'Anzahl Fragen') }}</label>
+						<input
+							id="practice-questions"
+							type="number"
+							:value="practiceQuestions"
+							min="1"
+							max="500"
+							class="cert-config-input"
+							@change="practiceQuestions = Math.max(1, Math.min(500, parseInt($event.target.value) || 20))" />
+					</div>
+					<div class="cert-config-field">
+						<label for="practice-minutes">{{ t('learning', 'Zeitlimit (Minuten, 0 = ohne Zeitlimit)') }}</label>
+						<input
+							id="practice-minutes"
+							type="number"
+							:value="practiceMinutes"
+							min="0"
+							max="600"
+							class="cert-config-input"
+							@change="practiceMinutes = Math.max(0, Math.min(600, parseInt($event.target.value) || 0))" />
+					</div>
+					<div class="cert-config-field">
+						<label for="practice-pass">{{ t('learning', 'Bestehensgrenze (%)') }}</label>
+						<input
+							id="practice-pass"
+							type="number"
+							:value="practicePassPercent"
+							min="1"
+							max="100"
+							class="cert-config-input"
+							@change="practicePassPercent = Math.max(1, Math.min(100, parseInt($event.target.value) || 75))" />
+					</div>
+				</template>
+
+				<NcButton variant="primary" :disabled="practiceSaving" @click="savePracticeConfig">
+					{{ practiceSaving ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
+				</NcButton>
+				<NcNoteCard v-if="practiceSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+			</div>
 		</div>
 
 		<!-- Schedule -->
@@ -274,7 +324,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
-import { updateCertConfig } from '../services/CourseService.js'
+import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
 
 export default {
 	name: 'CourseTabVerwaltung',
@@ -348,6 +398,12 @@ export default {
 			certValidityDays: 0,
 			certSaving: false,
 			certSaved: false,
+			practiceEnabled: false,
+			practiceQuestions: 20,
+			practiceMinutes: 0,
+			practicePassPercent: 75,
+			practiceSaving: false,
+			practiceSaved: false,
 		}
 	},
 
@@ -404,6 +460,10 @@ export default {
 						? c.cert_required_pool_ids.map((id) => Number(id))
 						: []
 					this.certValidityDays = c.cert_validity_days ?? 0
+					this.practiceEnabled = !!c.practice_enabled
+					this.practiceQuestions = c.practice_questions ?? 20
+					this.practiceMinutes = c.practice_minutes ?? 0
+					this.practicePassPercent = c.practice_pass_percent ?? 75
 				}
 			},
 		},
@@ -838,6 +898,30 @@ export default {
 				this.$emit('error', t('learning', 'Failed to save cert config'))
 			} finally {
 				this.certSaving = false
+			}
+		},
+		async savePracticeConfig() {
+			this.practiceSaving = true
+			this.practiceSaved = false
+			try {
+				const result = await updatePracticeConfig(this.courseId, {
+					practiceEnabled: this.practiceEnabled,
+					practiceQuestions: this.practiceQuestions,
+					practiceMinutes: this.practiceMinutes,
+					practicePassPercent: this.practicePassPercent,
+				})
+				this.practiceEnabled = !!result.practice_enabled
+				this.practiceQuestions = result.practice_questions ?? 20
+				this.practiceMinutes = result.practice_minutes ?? 0
+				this.practicePassPercent = result.practice_pass_percent ?? 75
+				this.practiceSaved = true
+				setTimeout(() => { this.practiceSaved = false }, 3000)
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				console.error('savePracticeConfig failed', e)
+				this.$emit('error', t('learning', 'Probeprüfung konnte nicht gespeichert werden.'))
+			} finally {
+				this.practiceSaving = false
 			}
 		},
 	},

@@ -255,6 +255,8 @@ return [
 
         // Certification config + pass status (Phase 154)
         ['name' => 'course#updateCertConfig', 'url' => '/api/courses/{courseId}/cert-config', 'verb' => 'PATCH'],
+        ['name' => 'course#updatePracticeConfig', 'url' => '/api/courses/{courseId}/practice-exam-config', 'verb' => 'PATCH'],
+        ['name' => 'training#startPractice', 'url' => '/api/courses/{courseId}/practice-exam/start', 'verb' => 'POST'],
         ['name' => 'course#getPassStatus',    'url' => '/api/courses/{courseId}/pass-status',  'verb' => 'GET'],
 
         // Course Schedule (Timeline)

@@ -274,6 +274,16 @@ describe('CourseDetail navigation logic', () => {
 		expect(instance.isTabActive('leaderboard')).toBe(false)
 	})
 
+	// Codeberg #9: without 'practice' in this whitelist the navigation drops the tab silently.
+	it('routes the practice exam tab into Lernraum when the course offers one', () => {
+		const instance = createInstance({ currentTab: 'practice' })
+		instance.course = { ...instance.course, practice_enabled: true }
+
+		expect(instance.lernraumLeafTabs).toContain('practice')
+		expect(instance.isLernraumTab('practice')).toBe(true)
+		expect(instance.megaTabForLeaf('practice')).toBe('lernraum')
+	})
+
 	it('falls back to the default Lernraum leaf when the mega-tab is selected directly', () => {
 		const studentInstance = createInstance({
 			currentTab: 'leaderboard',

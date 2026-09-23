@@ -54,6 +54,14 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCertValidityMonths(?int $certValidityMonths)
  * @method bool|null getVideoGateEnabled()
  * @method void setVideoGateEnabled(bool $videoGateEnabled)
+ * @method bool|null getPracticeEnabled()
+ * @method void setPracticeEnabled(bool $practiceEnabled)
+ * @method int|null getPracticeQuestions()
+ * @method void setPracticeQuestions(int $practiceQuestions)
+ * @method int|null getPracticeMinutes()
+ * @method void setPracticeMinutes(int $practiceMinutes)
+ * @method int|null getPracticePassPercent()
+ * @method void setPracticePassPercent(int $practicePassPercent)
  */
 class Course extends Entity {
     protected $title;
@@ -80,6 +88,10 @@ class Course extends Entity {
     protected $certValidityDays;
     protected $certValidityMonths;
     protected $videoGateEnabled;
+    protected $practiceEnabled;
+    protected $practiceQuestions;
+    protected $practiceMinutes;
+    protected $practicePassPercent;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -96,6 +108,10 @@ class Course extends Entity {
         $this->addType('certValidityDays', 'integer');
         $this->addType('certValidityMonths', 'integer');
         $this->addType('videoGateEnabled', 'boolean');
+        $this->addType('practiceEnabled', 'boolean');
+        $this->addType('practiceQuestions', 'integer');
+        $this->addType('practiceMinutes', 'integer');
+        $this->addType('practicePassPercent', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -128,6 +144,11 @@ class Course extends Entity {
             // NULL = unset → legacy days fallback governs expiry; 0 = explicit no-expiry; >0 = months
             'cert_validity_months' => $this->getCertValidityMonths(),
             'video_gate_enabled' => $this->getVideoGateEnabled() ?? false,
+            // Codeberg #9 — practice exam; 0 minutes = untimed. Visible to learners: they need it to start one.
+            'practice_enabled' => $this->getPracticeEnabled() ?? false,
+            'practice_questions' => $this->getPracticeQuestions() ?? 20,
+            'practice_minutes' => $this->getPracticeMinutes() ?? 0,
+            'practice_pass_percent' => $this->getPracticePassPercent() ?? 75,
         ];
     }
 }

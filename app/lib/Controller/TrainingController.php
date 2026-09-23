@@ -37,6 +37,24 @@ class TrainingController extends Controller {
     }
 
     /**
+     * Start or resume the practice exam an instructor configured for a course (Codeberg #9).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function startPractice(int $courseId, ?string $lang = null): DataResponse {
+        try {
+            return new DataResponse($this->service->startPracticeExam($courseId, $this->userId, $lang), 201);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start practice exam'], 400);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 120, period: 60)]

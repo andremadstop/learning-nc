@@ -104,6 +104,16 @@
 			</NcEmptyContent>
 		</div>
 
+		<div v-else-if="currentSubTab === 'practice' && !isInstructor" class="student-learning-section practice-exam-section">
+			<ExamMode
+				practice
+				:courseId="courseId"
+				:practiceConfig="practiceConfig"
+				:totalQuestions="practiceConfig.questions"
+				:contentLanguage="contentLanguage"
+				@back="selectSubTab(defaultSubTab())" />
+		</div>
+
 		<div v-else-if="isStudentLearningTab" class="student-learning-section">
 			<div v-if="!selectedLearningPool" class="smart-queue-hero" @click="$emit('openSmartQueue')">
 				<div class="smart-queue-hero__count">{{ queueCount }}</div>
@@ -697,6 +707,11 @@ export default {
 			if (this.modeEnabled('exam')) {
 				tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			}
+			// Codeberg #9: independent of mode_config.exam, which governs the CompTIA presets —
+			// a course can offer its own practice exam with the preset exam switched off.
+			if (this.course?.practice_enabled) {
+				tabs.push({ id: 'practice', label: t('learning', 'Course practice exam') })
+			}
 			if (this.courseToolTabs.length > 0) {
 				tabs.push({ id: 'tools', label: t('learning', 'Werkzeuge') })
 			}
@@ -749,6 +764,14 @@ export default {
 					...tool,
 					shortLabel: t('learning', tool.shortLabelKey),
 				}))
+		},
+		practiceConfig() {
+			const c = this.course || {}
+			return {
+				questions: Number(c.practice_questions ?? 20),
+				minutes: Number(c.practice_minutes ?? 0),
+				passPercent: Number(c.practice_pass_percent ?? 75),
+			}
 		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)

@@ -3060,6 +3060,21 @@
         "Signing key generated. Certificates are now active.": "Ключ підпису створено. Сертифікати тепер активні.",
         "Checkpoint überfällig! Ein Audit-Ereignis wartet seit mehr als 8 Tagen auf einen Checkpoint.": "Контрольна точка прострочена! Подія аудиту чекає на контрольну точку понад 8 днів.",
         "Ursache: Checkpoints werden mit dem Signaturschlüssel signiert, und der fehlt noch. Erzeuge ihn oben im Zertifikate-Hinweis.": "Причина: контрольні точки підписуються ключем підпису, який ще не створено. Створіть його в повідомленні про сертифікати вище.",
-        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "Контрольні точки створює щотижневе фонове завдання. Перевірте, чи працюють фонові завдання Nextcloud (cron)."
+        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "Контрольні точки створює щотижневе фонове завдання. Перевірте, чи працюють фонові завдання Nextcloud (cron).",
+        "Anzahl Fragen": "Кількість запитань",
+        "Bestehensgrenze (%)": "Прохідний бал (%)",
+        "Course practice exam": "Пробний іспит курсу",
+        "Lernende starten die Probeprüfung selbst. Die Fragen werden bei jedem Versuch neu zufällig aus allen Pools des Kurses gezogen. Probeprüfungen zählen nicht für das Zertifikat.": "Учні самі запускають пробний іспит. Запитання вибираються випадково з усіх пулів курсу, щоразу заново. Пробні іспити не враховуються для сертифіката.",
+        "No time limit": "Без обмеження часу",
+        "Pass mark: {percent}%": "Прохідний бал: {percent} %",
+        "Probeprüfung": "Пробний іспит",
+        "Probeprüfung anbieten": "Пропонувати пробний іспит",
+        "Probeprüfung konnte nicht gespeichert werden.": "Не вдалося зберегти пробний іспит.",
+        "Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.": "Запитання вибираються випадково з усіх пулів цього курсу, щоразу заново. Зворотний зв’язок лише наприкінці, потім розбір із поясненнями. Пробні іспити не враховуються для сертифіката.",
+        "Start practice exam": "Почати пробний іспит",
+        "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.": "Розбір приховано, поки у вас у цьому курсі триває іспит, бо він показав би відповіді. Він знову стане доступним, щойно цей іспит завершиться.",
+        "Zeitlimit (Minuten, 0 = ohne Zeitlimit)": "Обмеження часу (хвилини, 0 = без обмеження)",
+        "{questions} questions · no time limit · pass mark {percent}%": "{questions} запитань · без обмеження часу · прохідний бал {percent} %",
+        "{questions} questions · {minutes} minutes · pass mark {percent}%": "{questions} запитань · {minutes} хвилин · прохідний бал {percent} %"
     }
 }

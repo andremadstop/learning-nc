@@ -775,6 +775,67 @@ class CourseController extends Controller {
     }
 
     /**
+     * Configure the course's practice exam (Codeberg #9, instructor-only). Each field is
+     * optional; only provided fields change. Practice exams never count towards a certificate.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updatePracticeConfig(
+        int $courseId,
+        ?bool $practiceEnabled = null,
+        ?int $practiceQuestions = null,
+        ?int $practiceMinutes = null,
+        ?int $practicePassPercent = null,
+    ): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            $course = $this->courseMapper->findById($courseId);
+            if (!$this->canManageCourse($course, $this->userId)) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            if ($practiceQuestions !== null && ($practiceQuestions < 1 || $practiceQuestions > 500)) {
+                return new DataResponse(['error' => 'practice_questions must be 1–500'], Http::STATUS_BAD_REQUEST);
+            }
+            if ($practiceMinutes !== null && ($practiceMinutes < 0 || $practiceMinutes > 600)) {
+                return new DataResponse(['error' => 'practice_minutes must be 0–600 (0 = untimed)'], Http::STATUS_BAD_REQUEST);
+            }
+            if ($practicePassPercent !== null && ($practicePassPercent < 1 || $practicePassPercent > 100)) {
+                return new DataResponse(['error' => 'practice_pass_percent must be 1–100'], Http::STATUS_BAD_REQUEST);
+            }
+
+            if ($practiceEnabled !== null) {
+                $course->setPracticeEnabled($practiceEnabled);
+            }
+            if ($practiceQuestions !== null) {
+                $course->setPracticeQuestions($practiceQuestions);
+            }
+            if ($practiceMinutes !== null) {
+                $course->setPracticeMinutes($practiceMinutes);
+            }
+            if ($practicePassPercent !== null) {
+                $course->setPracticePassPercent($practicePassPercent);
+            }
+            $course->setUpdatedAt(time());
+            $this->courseMapper->update($course);
+
+            return new DataResponse([
+                'practice_enabled' => $course->getPracticeEnabled() ?? false,
+                'practice_questions' => $course->getPracticeQuestions() ?? 20,
+                'practice_minutes' => $course->getPracticeMinutes() ?? 0,
+                'practice_pass_percent' => $course->getPracticePassPercent() ?? 75,
+            ]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('updatePracticeConfig error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Returns the pass status of the current user for the given course.
      *
      * IDOR guard: verifies the requesting user is enrolled in or owns the course

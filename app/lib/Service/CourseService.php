@@ -452,6 +452,63 @@ class CourseService {
         ];
     }
 
+    /**
+     * Question set for a course's practice exam (Codeberg #9): every pool assigned to the course,
+     * each with the same filters, curriculum scope and paused questions as resolveCoursePoolContext().
+     *
+     * Required pools follow the per-pool rule: while a learner still has outstanding required
+     * pools, only those are open to them, so the practice exam draws from those alone. The
+     * blockers are computed once up front rather than by catching resolveCoursePoolContext()'s
+     * generic exception per pool — catching would also swallow a database error and quietly
+     * produce a practice exam over a fraction of the course.
+     *
+     * @return array{course: Course, is_instructor: bool, question_ids: int[], pool_ids: int[]}
+     * @throws DoesNotExistException if the course does not exist or the user has no access
+     */
+    public function resolveCoursePracticeContext(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new DoesNotExistException('Course not found');
+        }
+        $isInstructor = $this->isInstructorOfCourse($course, $userId);
+
+        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        if (!$isInstructor && $coursePools !== []) {
+            [, $outstanding] = $this->getOutstandingRequiredPools($coursePools, $userId);
+            if ($outstanding !== []) {
+                $coursePools = array_values(array_filter(
+                    $coursePools,
+                    static fn(CoursePool $cp): bool => isset($outstanding[$cp->getPoolId()])
+                ));
+            }
+        }
+
+        $questionIds = [];
+        $poolIds = [];
+        foreach ($coursePools as $coursePool) {
+            $poolIds[] = (int)$coursePool->getPoolId();
+            foreach ($this->getFilteredQuestionIdsForCoursePoolEntity($coursePool) as $id) {
+                $questionIds[(int)$id] = (int)$id;
+            }
+        }
+        $questionIds = array_values($questionIds);
+
+        $questionIds = $this->applyCurriculumScope($courseId, $questionIds);
+        if ($questionIds !== []) {
+            $paused = $this->getPausedQuestionIds($courseId);
+            if ($paused !== []) {
+                $questionIds = array_values(array_diff($questionIds, $paused));
+            }
+        }
+
+        return [
+            'course' => $course,
+            'is_instructor' => $isInstructor,
+            'question_ids' => array_values(array_map('intval', $questionIds)),
+            'pool_ids' => array_values(array_unique($poolIds)),
+        ];
+    }
+
     public function updatePoolRules(
         int $courseId,
         int $poolId,

@@ -4,12 +4,13 @@
 
     <!-- Setup Screen -->
     <div v-if="screen === 'setup'" class="setup-screen">
-      <h3 class="exam-title">{{ t('learning', 'Exam Mode') }}</h3>
-      <p class="exam-description">{{ t('learning', 'Simulate the real CompTIA exam. No feedback until the end.') }}</p>
+      <h3 class="exam-title">{{ practice ? t('learning', 'Course practice exam') : t('learning', 'Exam Mode') }}</h3>
+      <p v-if="practice" class="exam-description">{{ t('learning', 'Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
+      <p v-else class="exam-description">{{ t('learning', 'Simulate the real CompTIA exam. No feedback until the end.') }}</p>
 
       <div class="preset-grid">
         <div
-          v-for="preset in examPresets"
+          v-for="preset in visiblePresets"
           :key="preset.id"
           class="preset-card"
         >
@@ -36,9 +37,10 @@
 
     <!-- Exam Active Screen -->
     <div v-else-if="screen === 'exam'" class="exam-screen">
-      <div :class="['timer-display', timerColorClass]">
+      <div v-if="isTimed" :class="['timer-display', timerColorClass]">
         {{ formattedTimeLeft }}
       </div>
+      <div v-else class="timer-display timer-untimed">{{ t('learning', 'No time limit') }}</div>
       <div class="exam-meta-line">
         <span v-if="attemptNo">{{ t('learning', 'Attempt #{n}', { n: attemptNo }) }}</span>
       </div>
@@ -55,7 +57,7 @@
       <div v-if="currentQuestion" ref="questionCard" class="question-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
         <!-- Snake timer border -->
-        <svg v-if="snakeReady"
+        <svg v-if="snakeReady && isTimed"
              :class="['snake-svg', snakeColorClass]"
              :width="snakeWidth" :height="snakeHeight">
           <rect
@@ -157,10 +159,16 @@
       <div v-if="resultsData" class="results-summary">
         <div class="result-banner" :class="resultBannerClass">
           <div class="result-banner__status">{{ passedExam ? t('learning', 'Passed') : t('learning', 'Not passed') }}</div>
-          <div class="result-banner__scaled-score">
+          <div v-if="isPracticeResult" class="result-banner__scaled-score">
+            <span ref="examScoreNumber">{{ resultsData.score_percentage }}</span>%
+          </div>
+          <div v-else class="result-banner__scaled-score">
             <span ref="examScoreNumber">{{ scaledExamScore }}</span>/<span>{{ examMaxScore }}</span>
           </div>
-          <div class="result-banner__threshold">
+          <div v-if="isPracticeResult" class="result-banner__threshold">
+            {{ t('learning', 'Pass mark: {percent}%', { percent: resultsData.pass_percent }) }}
+          </div>
+          <div v-else class="result-banner__threshold">
             {{ t('learning', 'Passing score: {score}/{max}', { score: examPassScore, max: examMaxScore }) }}
           </div>
         </div>
@@ -186,7 +194,10 @@
       </div>
 
       <h4 class="review-title">{{ t('learning', 'Detailed Review') }}</h4>
-      <div class="review-list" v-if="sortedDetailedResults.length > 0">
+      <NcNoteCard v-if="reviewWithheld" type="warning">
+        {{ t('learning', 'The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.') }}
+      </NcNoteCard>
+      <div class="review-list" v-else-if="sortedDetailedResults.length > 0">
         <div
           v-for="(res, index) in sortedDetailedResults"
           :key="index"
@@ -225,6 +236,9 @@
               <span class="text-success">{{ res.correctAnswerText }}</span>
             </div>
           </template>
+          <div v-if="res.explanation" class="review-explanation">
+            <strong>{{ t('learning', 'Explanation:') }}</strong> {{ res.explanation }}
+          </div>
           <NcNoteCard v-if="res.noteVisible && res.instructorNote" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ res.instructorNote }}
           </NcNoteCard>
@@ -261,8 +275,13 @@ export default {
   name: 'ExamMode',
   components: { NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
   props: {
-    poolId: { type: Number, required: true },
+    // Not needed for a course practice exam, which draws across all of the course's pools.
+    poolId: { type: Number, default: null },
     courseId: { type: Number, default: null },
+    // Codeberg #9: run the course's practice exam instead of the preset exams.
+    practice: { type: Boolean, default: false },
+    // { questions, minutes, passPercent } as configured by the instructor.
+    practiceConfig: { type: Object, default: null },
     totalQuestions: { type: Number, required: true },
     contentLanguage: { type: String, default: '' }
   },
@@ -374,6 +393,31 @@ export default {
       if (mins <= 0) return this.answeredCount;
       return Math.round(this.answeredCount / mins * 10) / 10;
     },
+    visiblePresets() {
+      if (!this.practice) {
+        return this.examPresets
+      }
+      const cfg = this.practiceConfig || {}
+      const minutes = Number(cfg.minutes || 0)
+      return [{
+        id: 'practice',
+        icon: '📝',
+        title: t('learning', 'Course practice exam'),
+        meta: minutes > 0
+          ? t('learning', '{questions} questions · {minutes} minutes · pass mark {percent}%', { questions: cfg.questions, minutes, percent: cfg.passPercent })
+          : t('learning', '{questions} questions · no time limit · pass mark {percent}%', { questions: cfg.questions, percent: cfg.passPercent }),
+        buttonLabel: t('learning', 'Start practice exam'),
+      }]
+    },
+    isTimed() {
+      return this.examDurationSeconds !== null && this.examDurationSeconds > 0
+    },
+    isPracticeResult() {
+      return !!this.resultsData && this.resultsData.exam_kind === 'practice'
+    },
+    reviewWithheld() {
+      return !!this.resultsData && this.resultsData.review_withheld === true
+    },
     scaledExamScore() {
       if (!this.resultsData || !this.resultsData.total_questions) {
         return 0;
@@ -381,6 +425,10 @@ export default {
       return Math.round((this.resultsData.correct_answers / this.resultsData.total_questions) * this.examMaxScore);
     },
     passedExam() {
+      // Practice exams: the server decides, against the threshold stored when the attempt started.
+      if (this.isPracticeResult) {
+        return this.resultsData.passed === true
+      }
       return this.scaledExamScore >= this.examPassScore;
     },
     resultBannerClass() {
@@ -546,13 +594,22 @@ export default {
     async startExam(preset = null) {
       this.isLoading = true;
       try {
-        const resolvedPreset = preset || this.examPresets[0];
-        const params = { poolId: this.poolId, mode: 'exam' };
-        if (resolvedPreset.questionCount > 0) {
-          params.limit = resolvedPreset.questionCount;
+        const resolvedPreset = preset || this.visiblePresets[0];
+        let r
+        if (this.practice) {
+          const lang = this.effectiveContentLanguage
+          r = await axios.post(
+            generateUrl('/apps/learning/api/courses/{courseId}/practice-exam/start', { courseId: this.courseId }),
+            lang ? { lang } : {}
+          )
+        } else {
+          const params = { poolId: this.poolId, mode: 'exam' };
+          if (resolvedPreset.questionCount > 0) {
+            params.limit = resolvedPreset.questionCount;
+          }
+          params.timeLimitSeconds = resolvedPreset.timeLimitSeconds;
+          r = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(params));
         }
-        params.timeLimitSeconds = resolvedPreset.timeLimitSeconds;
-        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(params));
         this.session = r.data.session_id;
         const questions = r.data.questions;
 
@@ -574,12 +631,18 @@ export default {
         this.detailedResults = [];
         this.resultsData = null;
         this.resumedFromServer = !!r.data.resumed;
-        this.examDurationSeconds = Number(r.data.time_limit_seconds || resolvedPreset.timeLimitSeconds);
+        // null/0 from the server = untimed (practice exams only); presets always carry a limit.
+        this.examDurationSeconds = r.data.time_limit_seconds
+          ? Number(r.data.time_limit_seconds)
+          : (this.practice ? null : Number(resolvedPreset.timeLimitSeconds));
         this.examDeadlineAt = Number(r.data.exam_deadline_at || 0) || null;
         const serverNow = Number(r.data.server_time || Math.floor(Date.now() / 1000));
         this.timeLeftSeconds = this.examDeadlineAt
           ? Math.max(0, this.examDeadlineAt - serverNow)
           : this.examDurationSeconds;
+        if (this.examDurationSeconds === null) {
+          this.timeLeftSeconds = null;
+        }
         this.examStartTime = Number(r.data.started_at || serverNow);
         this.examEndTime = null;
         this.attemptNo = Number(r.data.attempt_no || 0) || null;
@@ -589,7 +652,10 @@ export default {
         this.currentQuestionIndex = this.findFirstUnansweredIndex();
         this.startExamLock();
 
-        this.startTimer();
+        // Untimed: no countdown at all — the timer would read 0 left and auto-submit after 1 s.
+        if (this.isTimed) {
+          this.startTimer();
+        }
         this.startStatusPolling();
         this.screen = 'exam';
         useOptionalVirtuProfStore()?.setExamMode(true);
@@ -956,6 +1022,7 @@ export default {
             isMulti: rv ? rv.questionType === 'multi' : q.question_type === 'multi',
             isOpen: isOpen,
             answerDetails: answerDetails,
+            explanation: rv && rv.explanation ? rv.explanation : null,
             instructorNote: q.instructor_note || null,
             noteVisible: q.note_visible || false,
           });
@@ -974,7 +1041,7 @@ export default {
         // countUp animation
         this.$nextTick(() => {
           if (this.$refs.examScoreNumber && this.resultsData) {
-            countUp(this.$refs.examScoreNumber, this.scaledExamScore, 1200);
+            countUp(this.$refs.examScoreNumber, this.isPracticeResult ? this.resultsData.score_percentage : this.scaledExamScore, 1200);
           }
         });
         // Show badge unlocks
@@ -990,6 +1057,7 @@ export default {
           score_percentage: Math.round(this.detailedResults.filter(r => r.isCorrect).length / this.questions.length * 100),
           timed_out: !!forceTimedOut,
           attempt_no: this.attemptNo,
+          ...(this.practice ? { exam_kind: 'practice', pass_percent: this.practiceConfig?.passPercent, passed: false } : {}),
         };
       } finally {
         this.isLoading = false;
@@ -1024,6 +1092,7 @@ export default {
       this.resultsData = null;
       this.detailedResults = [];
       this.examDeadlineAt = null;
+      this.examDurationSeconds = null;
       this.attemptNo = null;
       this.resumedFromServer = false;
       this.lockDenied = false;
@@ -1053,6 +1122,8 @@ export default {
 
 <style scoped>
 .exam-mode { max-width: 900px; margin: 0 auto; }
+.timer-display.timer-untimed { font-size: 18px; font-weight: 600; color: var(--color-text-maxcontrast); }
+.review-explanation { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
 
 .exam-title { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 8px; color: var(--color-main-text); }
 .exam-description { text-align: center; color: var(--color-text-maxcontrast); margin-bottom: 32px; font-size: 15px; }

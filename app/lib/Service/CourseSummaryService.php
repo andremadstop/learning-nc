@@ -69,6 +69,7 @@ class CourseSummaryService {
      * Returns null when no completed exam sessions exist.
      *
      * Only counts sessions WHERE mode='exam' AND completed_at IS NOT NULL.
+     * Practice exams (exam_kind='practice', Codeberg #9) never count towards a certificate.
      * Training sessions and incomplete exams are excluded. This is also the structural
      * guess exclusion (PASS-05): guessed answers only exist in the Leitner/FSRS flow,
      * never in exam-mode sessions, so a guess can never inflate the exam score.
@@ -80,6 +81,7 @@ class CourseSummaryService {
             ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('exam_kind'))
             ->andWhere($qb->expr()->isNotNull('completed_at'));
 
         $result = $qb->executeQuery();

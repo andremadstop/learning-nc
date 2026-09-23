@@ -52,6 +52,19 @@ class CourseSummaryServiceTest extends TestCase {
         $this->assertNull($service->getExamScore(self::USER, self::COURSE_ID));
     }
 
+    /**
+     * Codeberg #9 — practice exams never count towards a certificate. The certificate's pass
+     * evaluation reads the best exam score through this method, so it must filter them out.
+     */
+    public function testGetExamScoreExcludesPracticeExams(): void {
+        $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: []));
+        $service = $this->makeService(new FakeDbConnection([$builder]));
+
+        $service->getExamScore(self::USER, self::COURSE_ID);
+
+        $this->assertContains(['type' => 'isNull', 'field' => 'exam_kind'], $builder->andWhereCalls);
+    }
+
     // Returns best score across multiple exam sessions (PHP round, not SQL integer division)
     public function testGetExamScoreReturnsBestScore(): void {
         $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: [

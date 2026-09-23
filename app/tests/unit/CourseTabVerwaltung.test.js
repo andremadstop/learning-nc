@@ -198,3 +198,50 @@ describe('CourseTabVerwaltung', () => {
 		})
 	})
 })
+
+/**
+ * Codeberg #9 — the practice exam config. The request body is the contract: a key the
+ * controller does not read answers 200 and silently saves nothing
+ * ([[feedback_request_payload_contracts]]).
+ */
+describe('CourseTabVerwaltung practice exam config', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('PATCHes exactly the four keys CourseController::updatePracticeConfig reads', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.patch.mockResolvedValue({ data: { practice_enabled: true, practice_questions: 30, practice_minutes: 0, practice_pass_percent: 70 } })
+		const instance = createInstance()
+		instance.practiceEnabled = true
+		instance.practiceQuestions = 30
+		instance.practiceMinutes = 0
+		instance.practicePassPercent = 70
+
+		await instance.savePracticeConfig()
+
+		expect(axios.patch).toHaveBeenCalledWith('/apps/learning/api/courses/5/practice-exam-config', {
+			practiceEnabled: true,
+			practiceQuestions: 30,
+			practiceMinutes: 0,
+			practicePassPercent: 70,
+		})
+		expect(instance.practiceSaved).toBe(true)
+		expect(instance.$emit).toHaveBeenCalledWith('refresh-course-detail')
+	})
+
+	it('loads the practice config from the course prop', () => {
+		const instance = createInstance()
+		CourseTabVerwaltung.watch.course.handler.call(instance, {
+			...instance.course,
+			practice_enabled: true,
+			practice_questions: 12,
+			practice_minutes: 45,
+			practice_pass_percent: 90,
+		})
+		expect(instance.practiceEnabled).toBe(true)
+		expect(instance.practiceQuestions).toBe(12)
+		expect(instance.practiceMinutes).toBe(45)
+		expect(instance.practicePassPercent).toBe(90)
+	})
+})

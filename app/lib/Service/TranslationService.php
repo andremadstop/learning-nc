@@ -306,6 +306,10 @@ class TranslationService {
                 if (($translation['text'] ?? '') !== '') {
                     $entry['questionText'] = $translation['text'];
                 }
+                // Only entries that carry an explanation at all (practice-exam reviews) get one.
+                if (array_key_exists('explanation', $entry) && trim((string)($translation['explanation'] ?? '')) !== '') {
+                    $entry['explanation'] = $translation['explanation'];
+                }
             }
 
             if (!empty($entry['answers']) && is_array($entry['answers'])) {
