@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.5.0] - 2026-09-23 — Practice exams for any subject
+
+Requested on [#9](https://codeberg.org/andremadstop/learning-nc/issues/9) by a team preparing
+aviation radio courses: until now the exam mode assumed an IT certification.
 
 ### Added
 - **Practice exams per course.** Requested on
