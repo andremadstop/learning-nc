@@ -114,6 +114,25 @@ describe('NcButton usage across src/', () => {
 		expect(offenders).toEqual([])
 	})
 
+	it('never passes a styling value through a DYNAMIC :type binding either', () => {
+		// The static check below missed `:type="cond ? 'primary' : 'secondary'"` entirely
+		// (found by an independent review after 5.4.5 shipped). A dynamic binding lands on
+		// the native attribute exactly like a static one, so it needs the same rule.
+		const offenders = []
+		for (const file of FILES) {
+			const src = readFileSync(file, 'utf8')
+			for (const tag of ncButtonTags(src)) {
+				const dynamic = /(?::|v-bind:)type="([^"]*)"/.exec(tag)
+				if (!dynamic) continue
+				const leaked = STYLING_VALUES.filter((v) => new RegExp(`['\`"]${v}['\`"]`).test(dynamic[1]))
+				if (leaked.length) {
+					offenders.push(`${file.replace(SRC, 'src')}: :type="${dynamic[1]}" → use :variant`)
+				}
+			}
+		}
+		expect(offenders).toEqual([])
+	})
+
 	it('no longer uses the v8-only `native-type` prop, which v9 silently ignores', () => {
 		const offenders = FILES
 			.filter((file) => ncButtonTags(readFileSync(file, 'utf8')).some((t) => t.includes('native-type')))

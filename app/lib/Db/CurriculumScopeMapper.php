@@ -48,7 +48,7 @@ class CurriculumScopeMapper extends QBMapper {
             // not complete, but a learner should still be able to open the course.
             $this->logger?->warning(
                 'learning: table ' . $this->getTableName() . ' is missing — curriculum scoping disabled for this request. '
-                . 'This usually means migration Version009900 did not complete; running "occ upgrade" should repair it.',
+                . 'Version009900 never ran on this install (a fresh install records it as executed without running its post-schema step). Version010100 recreates the table: update the app and run "occ upgrade".',
                 ['exception' => $e, 'app' => 'learning']
             );
             return null;

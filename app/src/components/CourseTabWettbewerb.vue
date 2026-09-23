@@ -19,7 +19,7 @@
 					<label class="leaderboard-active-toggle">
 						<input
 							type="checkbox"
-							:model-value="leaderboardActiveOnly"
+							:checked="leaderboardActiveOnly"
 							@change="toggleLeaderboardActiveOnly($event.target.checked)">
 						<span>{{ t('learning', 'Nur aktive ({n}T)', { n: leaderboardActiveDays }) }}</span>
 					</label>

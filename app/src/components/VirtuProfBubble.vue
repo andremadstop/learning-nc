@@ -10,7 +10,7 @@
           <NcButton
             v-for="action in step.actions"
             :key="action.label"
-            :type="action.type === 'start-journey' ? 'primary' : 'secondary'"
+            :variant="action.type === 'start-journey' ? 'primary' : 'secondary'"
             size="small"
             @click="$emit('action', action)">
             {{ action.label }}
@@ -228,7 +228,7 @@
           <NcButton
             v-for="action in step.actions"
             :key="action.label"
-            :type="action.type === 'journey-back' ? 'tertiary' : 'primary'"
+            :variant="action.type === 'journey-back' ? 'tertiary' : 'primary'"
             size="small"
             :disabled="telosSaving"
             @click="$emit('action', action)">

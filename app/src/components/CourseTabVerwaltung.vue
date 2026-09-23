@@ -37,7 +37,7 @@
 						<label class="mode-toggle-label">
 							<input
 								type="checkbox"
-								:model-value="toolConfigLocal[tool.key] !== false"
+								:checked="toolConfigLocal[tool.key] !== false"
 								:disabled="!isAdminToolEnabled(tool.key)"
 								@change="toggleCourseTool(tool.key, $event.target.checked)" />
 							{{ tool.label }}
@@ -126,7 +126,7 @@
 			<!-- Zertifizierung (Phase 154) -->
 			<div class="cert-config tool-config-section">
 				<h3>{{ t('learning', 'Zertifizierung') }}</h3>
-				<NcCheckboxRadioSwitch :checked="certEnabled" @update:checked="certEnabled = $event">
+				<NcCheckboxRadioSwitch :model-value="certEnabled" @update:model-value="certEnabled = !!$event">
 					{{ t('learning', 'Zertifizierung aktivieren') }}
 				</NcCheckboxRadioSwitch>
 
@@ -625,7 +625,7 @@ export default {
 			if (!this.course) return
 			try {
 				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/active`))
-				this.activeExamSlot = res.data.slot || null
+				this.activeExamSlot = res.data.exam_slot || null
 			} catch (e) {
 				this.activeExamSlot = null
 			}

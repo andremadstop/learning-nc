@@ -64,7 +64,7 @@
           <label v-for="tool in toolOptions" :key="tool.id" class="tool-toggle-row">
             <input
               type="checkbox"
-              :model-value="form.enabledTools.includes(tool.id)"
+              :checked="form.enabledTools.includes(tool.id)"
               @change="toggleTool(tool.id, $event.target.checked)">
             <span>{{ tool.label }}</span>
           </label>

@@ -21,6 +21,12 @@ final class DbErrors {
      * error, because the callers react by skipping work or returning a default: a
      * false positive here turns an outage into a silently wrong answer.
      *
+     * Not as narrow as "missing table", though: Nextcloud maps Doctrine's whole
+     * DatabaseObjectNotFoundException hierarchy onto this reason, so a missing schema or
+     * database matches too. Those are equally unrecoverable at the call sites, but the
+     * name promises more precision than the check delivers. Connection loss, syntax and
+     * column errors carry their own reasons and still propagate.
+     *
      * The SQLSTATE fallback covers drivers that do not populate a reason code:
      * 42P01 is PostgreSQL's undefined_table, 42S02 MySQL/MariaDB's base table not found.
      */

@@ -2194,7 +2194,7 @@ class CourseService {
             }
             \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
                 'learning: table ' . $table . ' is missing — the feature backed by it is disabled for this request. '
-                . 'This usually means migration Version009900 did not complete; running "occ upgrade" should repair it.',
+                . 'Version009900 never ran on this install (a fresh install records it as executed without running its post-schema step). Version010100 recreates the table: update the app and run "occ upgrade".',
                 ['exception' => $e, 'app' => 'learning']
             );
             return [];
