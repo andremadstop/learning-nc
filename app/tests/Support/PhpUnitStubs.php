@@ -565,7 +565,9 @@ namespace OCP\AppFramework {
             public const STATUS_UNAUTHORIZED = 401;
             public const STATUS_FORBIDDEN = 403;
             public const STATUS_NOT_FOUND = 404;
+            public const STATUS_CONFLICT = 409;
             public const STATUS_TOO_MANY_REQUESTS = 429;
+            public const STATUS_INTERNAL_SERVER_ERROR = 500;
             public const STATUS_SERVICE_UNAVAILABLE = 503;
         }
     }
@@ -1396,6 +1398,28 @@ namespace OCP\Migration {
             }
 
             public function postSchemaChange(IOutput $output, \Closure $schemaClosure, array $options): void {
+            }
+        }
+    }
+}
+
+namespace OCP\Lock {
+    // KeyService::init() serialises concurrent issuer-key creation (web button double-click).
+    if (!interface_exists(ILockingProvider::class)) {
+        interface ILockingProvider {
+            public const LOCK_SHARED = 1;
+            public const LOCK_EXCLUSIVE = 2;
+
+            public function acquireLock(string $path, int $type, ?string $readablePath = null): void;
+
+            public function releaseLock(string $path, int $type): void;
+        }
+    }
+
+    if (!class_exists(LockedException::class)) {
+        class LockedException extends \Exception {
+            public function __construct(string $path, ?\Exception $previous = null, ?string $existingLock = null, ?string $readablePath = null) {
+                parent::__construct('"' . $path . '" is locked', 0, $previous);
             }
         }
     }

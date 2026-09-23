@@ -164,6 +164,10 @@ class FakeQueryBuilder {
         return $this;
     }
 
+    public function selectAlias(mixed $select, string $alias): self {
+        return $this->select($select . ' AS ' . $alias);
+    }
+
     public function selectDistinct(mixed ...$fields): self {
         return $this->select(...$fields);
     }

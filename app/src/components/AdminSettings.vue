@@ -13,11 +13,25 @@
 
     <div v-else class="settings-form">
       <NcNoteCard v-if="!certIssuerReady" type="warning" class="cert-setup-note">
-        {{ t('learning', 'Certificates are not active yet. To issue signed completion certificates, an administrator must generate the issuer signing key once by running this command on the server:') }}
-        <br />
-        <code>occ learning:cert:init-issuer</code>
-        <br />
+        {{ t('learning', 'Certificates are not active yet. To issue signed completion certificates, the issuer signing key has to be generated once.') }}
         {{ t('learning', 'Until then, courses can be configured for certification but no certificate will be minted when a learner passes.') }}
+        <div class="cert-setup-note__actions">
+          <NcButton
+            variant="primary"
+            :disabled="certIssuerInitializing"
+            @click="initCertIssuer">
+            {{ certIssuerInitializing ? t('learning', 'Generating signing key…') : t('learning', 'Generate signing key') }}
+          </NcButton>
+        </div>
+        <p v-if="certIssuerError" class="cert-setup-note__error" role="alert">
+          {{ t('learning', 'The signing key could not be generated: {error}', { error: certIssuerError }) }}
+        </p>
+        <p class="field-help">
+          {{ t('learning', 'Alternatively, on the server command line:') }} <code>occ learning:cert:init-issuer</code>
+        </p>
+      </NcNoteCard>
+      <NcNoteCard v-if="certIssuerJustCreated" type="success" class="cert-setup-note">
+        {{ t('learning', 'Signing key generated. Certificates are now active.') }}
       </NcNoteCard>
 
       <div class="field-row">
@@ -268,8 +282,13 @@
         <h3>{{ t('learning', 'Audit-Trail — Liveness') }}</h3>
 
         <div v-if="auditIsOverdue" class="audit-overdue-warning" role="alert">
-          ⚠ {{ t('learning', 'Checkpoint überfällig! Der letzte Checkpoint ist mehr als 8 Tage her.') }}
-          {{ t('learning', 'Ausführen: occ learning:audit:verify') }}
+          ⚠ {{ t('learning', 'Checkpoint überfällig! Ein Audit-Ereignis wartet seit mehr als 8 Tagen auf einen Checkpoint.') }}
+          <template v-if="!certIssuerReady">
+            {{ t('learning', 'Ursache: Checkpoints werden mit dem Signaturschlüssel signiert, und der fehlt noch. Erzeuge ihn oben im Zertifikate-Hinweis.') }}
+          </template>
+          <template v-else>
+            {{ t('learning', 'Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.') }}
+          </template>
         </div>
 
         <table class="audit-liveness__table">
@@ -376,6 +395,9 @@ export default {
       error: '',
       saved: false,
       certIssuerReady: true,
+      certIssuerInitializing: false,
+      certIssuerError: '',
+      certIssuerJustCreated: false,
       // AUDIT-08: audit-trail liveness (defaults neutral so the widget renders before load() resolves).
       auditLastCheckpointAt: 0,
       auditEventsSinceCheckpoint: 0,
@@ -482,6 +504,27 @@ export default {
         this.error = t('learning', 'Failed to load settings')
       } finally {
         this.loading = false
+      }
+    },
+    async initCertIssuer() {
+      if (this.certIssuerInitializing) {
+        return
+      }
+      this.certIssuerInitializing = true
+      this.certIssuerError = ''
+      try {
+        await axios.post(generateUrl('/apps/learning/api/settings/admin/cert-issuer'))
+        this.certIssuerReady = true
+        this.certIssuerJustCreated = true
+      } catch (e) {
+        // 409 = a key already exists (another tab or admin got there first): that is the goal state.
+        if (e?.response?.data?.cert_issuer_ready === true) {
+          this.certIssuerReady = true
+        } else {
+          this.certIssuerError = e?.response?.data?.error || e?.message || String(e)
+        }
+      } finally {
+        this.certIssuerInitializing = false
       }
     },
     async save() {
@@ -734,6 +777,15 @@ details[open] > .audit-summary::before {
   margin: 0 0 12px;
   font-size: 1em;
   font-weight: 700;
+}
+
+.cert-setup-note__actions {
+  margin: 10px 0 6px;
+}
+
+.cert-setup-note__error {
+  color: var(--color-error-text, var(--color-error));
+  font-weight: 600;
 }
 
 .audit-overdue-warning {

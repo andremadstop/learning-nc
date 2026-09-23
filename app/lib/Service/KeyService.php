@@ -7,6 +7,8 @@ use OCA\Learning\Db\CertKey;
 use OCA\Learning\Db\CertKeyMapper;
 use OCP\IDBConnection;
 use OCP\IURLGenerator;
+use OCP\Lock\ILockingProvider;
+use OCP\Lock\LockedException;
 
 /**
  * KeyService — issuer cryptographic identity (Phase 155, CERT-01/03/04).
@@ -22,27 +24,52 @@ class KeyService {
     private EncryptionService $encryptionService;
     private IURLGenerator $urlGenerator;
     private IDBConnection $db;
+    private ?ILockingProvider $lockingProvider;
+
+    private const INIT_LOCK = 'learning/cert-issuer-init';
 
     public function __construct(
         CertKeyMapper $certKeyMapper,
         EncryptionService $encryptionService,
         IURLGenerator $urlGenerator,
-        IDBConnection $db
+        IDBConnection $db,
+        ?ILockingProvider $lockingProvider = null
     ) {
         $this->certKeyMapper = $certKeyMapper;
         $this->encryptionService = $encryptionService;
         $this->urlGenerator = $urlGenerator;
         $this->db = $db;
+        $this->lockingProvider = $lockingProvider;
     }
 
     /**
      * Generate a fresh Ed25519 keypair and persist it as the active signing key.
      * The 64-byte secret is encrypted at rest (ICrypto) and zeroed from memory.
      *
-     * @throws \RuntimeException if ext-sodium is missing, an active key already exists,
-     *                           or the secret failed to encrypt.
+     * Check-then-insert runs under an exclusive lock: since init() is reachable from the admin page
+     * as well as occ, a double-click would otherwise mint two active keys — the invariant rotate()
+     * relies on. Without a locking provider (unit tests) it degrades to the unlocked check.
+     *
+     * @throws \RuntimeException if ext-sodium is missing, an active key already exists, another
+     *                           initialisation is in progress, or the secret failed to encrypt.
      */
     public function init(): CertKey {
+        if ($this->lockingProvider === null) {
+            return $this->initUnlocked();
+        }
+        try {
+            $this->lockingProvider->acquireLock(self::INIT_LOCK, ILockingProvider::LOCK_EXCLUSIVE);
+        } catch (LockedException $e) {
+            throw new \RuntimeException('Issuer key initialisation is already in progress', 0, $e);
+        }
+        try {
+            return $this->initUnlocked();
+        } finally {
+            $this->lockingProvider->releaseLock(self::INIT_LOCK, ILockingProvider::LOCK_EXCLUSIVE);
+        }
+    }
+
+    private function initUnlocked(): CertKey {
         if ($this->certKeyMapper->findActive() !== null) {
             throw new \RuntimeException('An active signing key already exists — use --rotate to rotate it');
         }

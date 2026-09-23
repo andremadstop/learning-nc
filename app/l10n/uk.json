@@ -2348,7 +2348,6 @@
         "Audit-Trail — Liveness": "Журнал аудиту — активність",
         "Aufklappen": "Розгорнути",
         "Aufwand": "Зусилля",
-        "Ausführen: occ learning:audit:verify": "Виконати: occ learning:audit:verify",
         "Authoritativ": "Авторитетний",
         "Avg. hours / week": "Сер. годин / тиждень",
         "Badges": "Значки",
@@ -2380,7 +2379,6 @@
         "CSV/JSON Import": "Імпорт CSV/JSON",
         "Calendar Sync": "Синхронізація календаря",
         "Capture": "Захоплення",
-        "Certificates are not active yet. To issue signed completion certificates, an administrator must generate the issuer signing key once by running this command on the server:": "Сертифікати ще не активні. Щоб видавати підписані сертифікати про завершення, адміністратор має один раз створити ключ підпису видавця, виконавши цю команду на сервері:",
         "Challenge": "Виклик",
         "Champions League": "Ліга чемпіонів",
         "Chapter": "Розділ",
@@ -2388,7 +2386,6 @@
         "Chapter Number": "Номер розділу",
         "Chapter Title": "Назва розділу",
         "Chat": "Чат",
-        "Checkpoint überfällig! Der letzte Checkpoint ist mehr als 8 Tage her.": "Контрольна точка прострочена! Останній запис старший за 8 днів.",
         "Choose whether VirtuProf uses Google Gemini, a local Ollama endpoint, or stays disabled for all users.": "Оберіть, чи використовує VirtuProf Google Gemini, локальний Ollama, чи лишається вимкненим для всіх.",
         "Claim": "Отримати",
         "Claimed": "Отримано",
@@ -3054,6 +3051,15 @@
         "Position of the chapter in the book. Decides the order chapters are listed in, nothing else.": "Розташування розділу в книзі. Визначає лише порядок переліку розділів, і нічого більше.",
         "Short identifier for the book, the same in every pool that comes from it. Used to group chapters together.": "Короткий ідентифікатор книги, однаковий у всіх пулах із неї. Слугує для групування розділів.",
         "Textbook reference (all optional)": "Прив'язка до підручника (усе необов'язкове)",
-        "Help, hints and learning profile": "Довідка, підказки та навчальний профіль"
+        "Help, hints and learning profile": "Довідка, підказки та навчальний профіль",
+        "Certificates are not active yet. To issue signed completion certificates, the issuer signing key has to be generated once.": "Сертифікати ще не активні. Щоб видавати підписані сертифікати про завершення, потрібно один раз створити ключ підпису видавця.",
+        "Generating signing key…": "Створення ключа підпису…",
+        "Generate signing key": "Створити ключ підпису",
+        "The signing key could not be generated: {error}": "Не вдалося створити ключ підпису: {error}",
+        "Alternatively, on the server command line:": "Або в командному рядку сервера:",
+        "Signing key generated. Certificates are now active.": "Ключ підпису створено. Сертифікати тепер активні.",
+        "Checkpoint überfällig! Ein Audit-Ereignis wartet seit mehr als 8 Tagen auf einen Checkpoint.": "Контрольна точка прострочена! Подія аудиту чекає на контрольну точку понад 8 днів.",
+        "Ursache: Checkpoints werden mit dem Signaturschlüssel signiert, und der fehlt noch. Erzeuge ihn oben im Zertifikate-Hinweis.": "Причина: контрольні точки підписуються ключем підпису, який ще не створено. Створіть його в повідомленні про сертифікати вище.",
+        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "Контрольні точки створює щотижневе фонове завдання. Перевірте, чи працюють фонові завдання Nextcloud (cron)."
     }
 }

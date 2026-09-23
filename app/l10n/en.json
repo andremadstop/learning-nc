@@ -2348,7 +2348,6 @@
         "Audit-Trail — Liveness": "Audit trail — liveness",
         "Aufklappen": "Expand",
         "Aufwand": "Effort",
-        "Ausführen: occ learning:audit:verify": "Run: occ learning:audit:verify",
         "Authoritativ": "Authoritative",
         "Avg. hours / week": "Avg. hours / week",
         "Badges": "Badges",
@@ -2380,7 +2379,6 @@
         "CSV/JSON Import": "CSV/JSON import",
         "Calendar Sync": "Calendar sync",
         "Capture": "Capture",
-        "Certificates are not active yet. To issue signed completion certificates, an administrator must generate the issuer signing key once by running this command on the server:": "Certificates are not active yet. To issue signed completion certificates, an administrator must generate the issuer signing key once by running this command on the server:",
         "Challenge": "Challenge",
         "Champions League": "Champions League",
         "Chapter": "Chapter",
@@ -2388,7 +2386,6 @@
         "Chapter Number": "Chapter number",
         "Chapter Title": "Chapter title",
         "Chat": "Chat",
-        "Checkpoint überfällig! Der letzte Checkpoint ist mehr als 8 Tage her.": "Checkpoint overdue! The last checkpoint is more than 8 days old.",
         "Choose whether VirtuProf uses Google Gemini, a local Ollama endpoint, or stays disabled for all users.": "Choose whether VirtuProf uses Google Gemini, a local Ollama endpoint, or stays disabled for all users.",
         "Claim": "Claim",
         "Claimed": "Claimed",
@@ -3054,6 +3051,15 @@
         "Position of the chapter in the book. Decides the order chapters are listed in, nothing else.": "Position of the chapter in the book. Decides the order chapters are listed in, nothing else.",
         "Short identifier for the book, the same in every pool that comes from it. Used to group chapters together.": "Short identifier for the book, the same in every pool that comes from it. Used to group chapters together.",
         "Textbook reference (all optional)": "Textbook reference (all optional)",
-        "Help, hints and learning profile": "Help, hints and learning profile"
+        "Help, hints and learning profile": "Help, hints and learning profile",
+        "Certificates are not active yet. To issue signed completion certificates, the issuer signing key has to be generated once.": "Certificates are not active yet. To issue signed completion certificates, the issuer signing key has to be generated once.",
+        "Generating signing key…": "Generating signing key…",
+        "Generate signing key": "Generate signing key",
+        "The signing key could not be generated: {error}": "The signing key could not be generated: {error}",
+        "Alternatively, on the server command line:": "Alternatively, on the server command line:",
+        "Signing key generated. Certificates are now active.": "Signing key generated. Certificates are now active.",
+        "Checkpoint überfällig! Ein Audit-Ereignis wartet seit mehr als 8 Tagen auf einen Checkpoint.": "Checkpoint overdue! An audit event has been waiting more than 8 days for a checkpoint.",
+        "Ursache: Checkpoints werden mit dem Signaturschlüssel signiert, und der fehlt noch. Erzeuge ihn oben im Zertifikate-Hinweis.": "Cause: checkpoints are signed with the signing key, which has not been generated yet. Generate it in the certificates notice above.",
+        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "Checkpoints are created by a weekly background job. Check that Nextcloud background jobs (cron) are running."
     }
 }

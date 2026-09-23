@@ -118,6 +118,7 @@ return [
         // Settings
         ['name' => 'settings#getAdmin', 'url' => '/api/settings/admin', 'verb' => 'GET'],
         ['name' => 'settings#getAdminAudit', 'url' => '/api/settings/admin/audit', 'verb' => 'GET'],
+        ['name' => 'settings#initCertIssuer', 'url' => '/api/settings/admin/cert-issuer', 'verb' => 'POST'],
         ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
         ['name' => 'settings#getTools', 'url' => '/api/settings/tools', 'verb' => 'GET'],
         ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],

@@ -267,6 +267,13 @@ class AuditCheckpointService {
      * Liveness view for the admin banner / audit dashboard: how fresh is the checkpoint chain and
      * how many compliance events are still unanchored.
      *
+     * Overdue means "a compliance event has waited longer than OVERDUE_SECONDS for a checkpoint" —
+     * NOT "the last checkpoint is old". createCheckpoint() deliberately skips when there is nothing
+     * new, so an age-of-last-checkpoint rule fired on every fresh install (no checkpoint → age
+     * measured from epoch 0) and after every quiet week, with zero events pending (Codeberg #8).
+     * Keying on the oldest pending event still catches the real failure: a job that is not running
+     * or keeps throwing (e.g. no signing key) leaves events waiting.
+     *
      * @return array{last_checkpoint_at: int, events_since_checkpoint: int, anchor_enabled: bool, last_anchor_status: string, is_overdue: bool}
      */
     public function getLivenessStatus(): array {
@@ -274,18 +281,26 @@ class AuditCheckpointService {
         $lastToEventId = (int)$this->config->getAppValue('learning', 'last_checkpoint_to_event_id', '0');
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*)'))
+        $qb->selectAlias($qb->createFunction('COUNT(*)'), 'pending_count')
+            ->selectAlias($qb->createFunction('MIN(created_at)'), 'oldest_pending_at')
             ->from('learning_audit_events')
             ->where($qb->expr()->isNotNull('seq_num'))
             ->andWhere($qb->expr()->gt('seq_num', $qb->createNamedParameter($lastToEventId, IQueryBuilder::PARAM_INT)));
-        $eventsSince = (int)($qb->executeQuery()->fetchOne() ?: 0);
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        $eventsSince = is_array($row) ? (int)($row['pending_count'] ?? 0) : 0;
+        $oldestPendingAt = is_array($row) && $row['oldest_pending_at'] !== null ? (int)$row['oldest_pending_at'] : null;
 
         return [
             'last_checkpoint_at'      => $lastAt,
             'events_since_checkpoint' => $eventsSince,
             'anchor_enabled'          => $this->config->getAppValue('learning', 'forgejo_anchor_enabled', 'false') === 'true',
             'last_anchor_status'      => $this->config->getAppValue('learning', 'last_anchor_status', 'none'),
-            'is_overdue'              => (time() - $lastAt) > self::OVERDUE_SECONDS,
+            'is_overdue'              => $eventsSince > 0
+                && $oldestPendingAt !== null
+                && (time() - $oldestPendingAt) > self::OVERDUE_SECONDS,
         ];
     }
 }

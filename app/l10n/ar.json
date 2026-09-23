@@ -2348,7 +2348,6 @@
         "Audit-Trail — Liveness": "سجل التدقيق — الحيوية",
         "Aufklappen": "توسيع",
         "Aufwand": "الجهد",
-        "Ausführen: occ learning:audit:verify": "نفّذ: occ learning:audit:verify",
         "Authoritativ": "مرجعي",
         "Avg. hours / week": "متوسط الساعات / الأسبوع",
         "Badges": "الشارات",
@@ -2380,7 +2379,6 @@
         "CSV/JSON Import": "استيراد CSV/JSON",
         "Calendar Sync": "مزامنة التقويم",
         "Capture": "التقاط",
-        "Certificates are not active yet. To issue signed completion certificates, an administrator must generate the issuer signing key once by running this command on the server:": "الشهادات غير مفعّلة بعد. لإصدار شهادات إتمام موقّعة، يجب على المدير إنشاء مفتاح توقيع الجهة المُصدِرة مرة واحدة بتنفيذ هذا الأمر على الخادم:",
         "Challenge": "تحدٍ",
         "Champions League": "دوري الأبطال",
         "Chapter": "الفصل",
@@ -2388,7 +2386,6 @@
         "Chapter Number": "رقم الفصل",
         "Chapter Title": "عنوان الفصل",
         "Chat": "دردشة",
-        "Checkpoint überfällig! Der letzte Checkpoint ist mehr als 8 Tage her.": "نقطة التحقق متأخرة! آخر نقطة تحقق مضى عليها أكثر من 8 أيام.",
         "Choose whether VirtuProf uses Google Gemini, a local Ollama endpoint, or stays disabled for all users.": "اختر ما إذا كان VirtuProf يستخدم Google Gemini أو نقطة Ollama محلية أو يبقى معطلًا لجميع المستخدمين.",
         "Claim": "المطالبة",
         "Claimed": "تمت المطالبة",
@@ -3054,6 +3051,15 @@
         "Position of the chapter in the book. Decides the order chapters are listed in, nothing else.": "موضع الفصل داخل الكتاب. يحدّد ترتيب سرد الفصول فقط، لا أكثر.",
         "Short identifier for the book, the same in every pool that comes from it. Used to group chapters together.": "معرّف قصير للكتاب، يكون نفسه في كل مجموعة مأخوذة منه. يُستخدم لتجميع الفصول معًا.",
         "Textbook reference (all optional)": "مرجع الكتاب الدراسي (كل الحقول اختيارية)",
-        "Help, hints and learning profile": "المساعدة والتلميحات وملف التعلّم"
+        "Help, hints and learning profile": "المساعدة والتلميحات وملف التعلّم",
+        "Certificates are not active yet. To issue signed completion certificates, the issuer signing key has to be generated once.": "الشهادات غير مفعّلة بعد. لإصدار شهادات إتمام موقّعة، يجب إنشاء مفتاح توقيع الجهة المُصدِرة مرة واحدة.",
+        "Generating signing key…": "جارٍ إنشاء مفتاح التوقيع…",
+        "Generate signing key": "إنشاء مفتاح التوقيع",
+        "The signing key could not be generated: {error}": "تعذّر إنشاء مفتاح التوقيع: {error}",
+        "Alternatively, on the server command line:": "أو بدلاً من ذلك، عبر سطر أوامر الخادم:",
+        "Signing key generated. Certificates are now active.": "تم إنشاء مفتاح التوقيع. الشهادات مفعّلة الآن.",
+        "Checkpoint überfällig! Ein Audit-Ereignis wartet seit mehr als 8 Tagen auf einen Checkpoint.": "نقطة التحقق متأخرة! حدث تدقيق ينتظر نقطة تحقق منذ أكثر من 8 أيام.",
+        "Ursache: Checkpoints werden mit dem Signaturschlüssel signiert, und der fehlt noch. Erzeuge ihn oben im Zertifikate-Hinweis.": "السبب: تُوقَّع نقاط التحقق بمفتاح التوقيع، ولم يُنشأ بعد. أنشئه من إشعار الشهادات أعلاه.",
+        "Checkpoints erstellt ein wöchentlicher Hintergrundjob. Prüfe, ob die Nextcloud-Hintergrundjobs (Cron) laufen.": "تُنشئ نقاطَ التحقق مهمةُ خلفية أسبوعية. تحقّق من أن مهام الخلفية في Nextcloud (cron) تعمل."
     }
 }

@@ -6,6 +6,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\AuditCheckpointService;
 use OCA\Learning\Service\KeyService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -81,6 +82,48 @@ class SettingsController extends Controller {
             'audit_anchor_enabled'          => (bool)$liveness['anchor_enabled'],
             'audit_anchor_status'           => (string)$liveness['last_anchor_status'],
             'audit_is_overdue'              => (bool)$liveness['is_overdue'],
+        ]);
+    }
+
+    /**
+     * Generate the issuer signing key from the admin page — the web twin of
+     * `occ learning:cert:init-issuer` for hosts without occ access (managed hosting, Codeberg #8).
+     *
+     * Init only: refuses when a key exists, so it can never replace a key that signed certificates.
+     * Rotation stays occ-only. No password confirmation: the call is admin-only and CSRF-protected,
+     * destroys nothing and returns no secret — the worst an abused admin session achieves is the key
+     * the admin was about to create anyway.
+     *
+     * @AdminRequired
+     */
+    public function initCertIssuer(): DataResponse {
+        if ($this->keyService->hasActiveKey()) {
+            return new DataResponse(['error' => 'already_initialized', 'cert_issuer_ready' => true], Http::STATUS_CONFLICT);
+        }
+        try {
+            $key = $this->keyService->init();
+        } catch (\RuntimeException $e) {
+            // KeyService's own messages (active key exists, init in progress, ext-sodium missing,
+            // encryption failed) — static strings, safe to show the admin.
+            $status = str_contains($e->getMessage(), 'already') ? Http::STATUS_CONFLICT : Http::STATUS_INTERNAL_SERVER_ERROR;
+            return new DataResponse(['error' => $e->getMessage(), 'cert_issuer_ready' => $this->keyService->hasActiveKey()], $status);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Issuer key initialisation failed', 'cert_issuer_ready' => false], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        // Audit checkpoints are signed with this key, so events that piled up without it are still
+        // waiting. Checkpoint them now rather than up to a week later, or the overdue warning would
+        // switch to "check your cron" on an install whose cron is fine. Best effort: the key exists,
+        // and the weekly job retries anyway. A no-op when there are no pending events.
+        try {
+            $this->auditCheckpointService->createCheckpoint();
+        } catch (\Throwable $e) {
+        }
+
+        return new DataResponse([
+            'cert_issuer_ready' => true,
+            'key_id' => $key->getKeyId(),
+            'did' => $this->keyService->hostDid(),
         ]);
     }
 

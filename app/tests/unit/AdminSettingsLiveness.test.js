@@ -133,3 +133,52 @@ describe('AdminSettings audit-liveness overdue banner', () => {
 		expect(instance.auditAnchorEnabled).toBe(false)
 	})
 })
+
+/**
+ * Codeberg #8 — managed hosting has no occ, so the issuer key is generated from the admin page.
+ * The banner (v-if="!certIssuerReady") must disappear on success AND on a 409, whose
+ * cert_issuer_ready=true means another tab/admin already reached the goal state.
+ */
+describe('AdminSettings certificate issuer initialisation', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('POSTs to the init endpoint and hides the banner on success', async () => {
+		axios.post.mockResolvedValue({ data: { cert_issuer_ready: true, key_id: 'kid' } })
+		const instance = createInstance()
+		instance.certIssuerReady = false
+		await instance.initCertIssuer()
+		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/settings/admin/cert-issuer')
+		expect(instance.certIssuerReady).toBe(true)
+		expect(instance.certIssuerJustCreated).toBe(true)
+		expect(instance.certIssuerError).toBe('')
+		expect(instance.certIssuerInitializing).toBe(false)
+	})
+
+	it('treats a 409 with an existing key as done, not as an error', async () => {
+		axios.post.mockRejectedValue({ response: { status: 409, data: { error: 'already_initialized', cert_issuer_ready: true } } })
+		const instance = createInstance()
+		instance.certIssuerReady = false
+		await instance.initCertIssuer()
+		expect(instance.certIssuerReady).toBe(true)
+		expect(instance.certIssuerError).toBe('')
+	})
+
+	it('keeps the banner and shows the server reason on failure', async () => {
+		axios.post.mockRejectedValue({ response: { status: 500, data: { error: 'ext-sodium is required to generate issuer signing keys', cert_issuer_ready: false } } })
+		const instance = createInstance()
+		instance.certIssuerReady = false
+		await instance.initCertIssuer()
+		expect(instance.certIssuerReady).toBe(false)
+		expect(instance.certIssuerError).toBe('ext-sodium is required to generate issuer signing keys')
+		expect(instance.certIssuerInitializing).toBe(false)
+	})
+
+	it('ignores a second click while a request is in flight', async () => {
+		const instance = createInstance()
+		instance.certIssuerInitializing = true
+		await instance.initCertIssuer()
+		expect(axios.post).not.toHaveBeenCalled()
+	})
+})

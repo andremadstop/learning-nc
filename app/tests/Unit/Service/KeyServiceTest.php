@@ -9,6 +9,8 @@ use OCA\Learning\Service\EncryptionService;
 use OCA\Learning\Service\KeyService;
 use OCP\IDBConnection;
 use OCP\IURLGenerator;
+use OCP\Lock\ILockingProvider;
+use OCP\Lock\LockedException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -366,6 +368,76 @@ class KeyServiceTest extends TestCase {
 
         $this->expectException(\RuntimeException::class);
         $service->init();
+    }
+
+    /**
+     * Codeberg #8 — init() is now reachable from the admin page, so it runs under an exclusive
+     * lock that is released afterwards, on success and on failure alike.
+     */
+    public function testInitHoldsAndReleasesExclusiveLock(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $lock = $this->makeLock();
+        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $this->createMock(IURLGenerator::class), $this->createMock(IDBConnection::class), $lock);
+
+        $service->init();
+        $this->assertSame(['acquire', 'release'], $lock->calls);
+
+        try {
+            $service->init();
+            $this->fail('second init() must refuse');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('already exists', $e->getMessage());
+        }
+        $this->assertSame(['acquire', 'release', 'acquire', 'release'], $lock->calls, 'lock released on the failure path too');
+    }
+
+    /** A request that loses the lock race gets a clear refusal and creates no key. */
+    public function testInitRefusesWhileAnotherInitHoldsTheLock(): void {
+        $mapper = $this->makeMapper();
+        $lock = $this->makeLock(true);
+        $service = new KeyService($mapper, $this->makeEncryption(), $this->createMock(IURLGenerator::class), $this->createMock(IDBConnection::class), $lock);
+
+        try {
+            $service->init();
+            $this->fail('init() must refuse while locked');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('already in progress', $e->getMessage());
+        }
+        $this->assertSame([], $mapper->store);
+        $this->assertSame(['acquire'], $lock->calls, 'a lock we never got is not released');
+    }
+
+    private function makeLock(bool $held = false): ILockingProvider {
+        return new class($held) implements ILockingProvider {
+            /** @var string[] */
+            public array $calls = [];
+
+            public function __construct(private bool $held) {
+            }
+
+            public function acquireLock(string $path, int $type, ?string $readablePath = null): void {
+                $this->calls[] = 'acquire';
+                if ($this->held) {
+                    throw new LockedException($path);
+                }
+            }
+
+            public function releaseLock(string $path, int $type): void {
+                $this->calls[] = 'release';
+            }
+
+            public function isLocked(string $path, int $type): bool {
+                return $this->held;
+            }
+
+            public function changeLock(string $path, int $targetType): void {
+            }
+
+            public function releaseAll(): void {
+            }
+        };
     }
 
     public function testGetActiveSigningMaterialHardErrorsOnBadDecrypt(): void {

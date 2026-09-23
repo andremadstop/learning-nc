@@ -232,7 +232,7 @@ class AuditCheckpointServiceTest extends TestCase {
 
     /**
      * getLivenessStatus() reports the appconfig pointers, counts unanchored events, and flags
-     * overdue when the last checkpoint is older than 8 days.
+     * overdue when a pending event has waited longer than 8 days for a checkpoint.
      */
     public function testGetLivenessStatusOverdue(): void {
         $oldTs = time() - (9 * 86400); // 9 days ago → overdue
@@ -250,7 +250,7 @@ class AuditCheckpointServiceTest extends TestCase {
             }
         );
 
-        $countQb = new FakeQueryBuilder(FakeResult::fromFetchOne(3));
+        $countQb = new FakeQueryBuilder(FakeResult::fromFetch(['pending_count' => 3, 'oldest_pending_at' => $oldTs]));
         $db = new FakeDbConnection([$countQb]);
 
         $service = new AuditCheckpointService(
@@ -284,7 +284,7 @@ class AuditCheckpointServiceTest extends TestCase {
             }
         );
 
-        $countQb = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $countQb = new FakeQueryBuilder(FakeResult::fromFetch(['pending_count' => 0, 'oldest_pending_at' => null]));
         $db = new FakeDbConnection([$countQb]);
 
         $service = new AuditCheckpointService(
@@ -300,6 +300,52 @@ class AuditCheckpointServiceTest extends TestCase {
         $this->assertFalse($status['anchor_enabled']);
         $this->assertSame('none', $status['last_anchor_status']);
         $this->assertFalse($status['is_overdue']);
+    }
+
+    /**
+     * Codeberg #8 — overdue must mean "an event is waiting too long", not "the last checkpoint is
+     * old". createCheckpoint() skips when nothing is new, so with zero pending events there is
+     * nothing to be overdue about, whether no checkpoint exists yet (last_checkpoint_at = 0) or
+     * the last one is weeks old after a quiet period.
+     *
+     * @dataProvider livenessOverdueCases
+     */
+    public function testGetLivenessStatusOverdueIsKeyedOnPendingEvents(int $lastCheckpointAt, int $pending, ?int $oldestPendingAt, bool $expectedOverdue): void {
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(
+            function (string $app, string $key, string $default = '') use ($lastCheckpointAt) {
+                return match ($key) {
+                    'last_checkpoint_at' => (string)$lastCheckpointAt,
+                    default              => $default,
+                };
+            }
+        );
+
+        $countQb = new FakeQueryBuilder(FakeResult::fromFetch(['pending_count' => $pending, 'oldest_pending_at' => $oldestPendingAt]));
+        $service = new AuditCheckpointService(
+            $this->createMock(KeyService::class),
+            new FakeDbConnection([$countQb]),
+            $config,
+            $this->createMock(LoggerInterface::class)
+        );
+
+        $status = $service->getLivenessStatus();
+
+        $this->assertSame($pending, $status['events_since_checkpoint']);
+        $this->assertSame($expectedOverdue, $status['is_overdue']);
+    }
+
+    /** @return array<string, array{int, int, ?int, bool}> */
+    public static function livenessOverdueCases(): array {
+        $day = 86400;
+        return [
+            'fresh install, no checkpoint, no events'      => [0, 0, null, false],
+            'old checkpoint, quiet since'                  => [time() - 30 * $day, 0, null, false],
+            'no checkpoint, event waiting 9 days'          => [0, 2, time() - 9 * $day, true],
+            'no checkpoint, event just written'            => [0, 1, time() - 60, false],
+            'old checkpoint, event waiting only 2 days'    => [time() - 30 * $day, 1, time() - 2 * $day, false],
+            'recent checkpoint, event waiting 9 days'      => [time() - $day, 4, time() - 9 * $day, true],
+        ];
     }
 
     // ── AUDIT-05: Forgejo external anchor (Plan 161-02) ──────────────────────────────────────────
