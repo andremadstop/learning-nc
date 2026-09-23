@@ -3074,7 +3074,7 @@ OC.L10N.register(
     "Start practice exam" : "Commencer l'examen blanc",
     "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished." : "La correction est masquée tant qu'un examen est en cours pour vous dans ce cours, car elle révélerait les réponses. Elle sera de nouveau disponible une fois cet examen terminé.",
     "Zeitlimit (Minuten, 0 = ohne Zeitlimit)" : "Limite de temps (minutes, 0 = sans limite)",
-    "{questions} questions · no time limit · pass mark {percent}%" : "{questions} questions · sans limite de temps · seuil {percent} %",
-    "{questions} questions · {minutes} minutes · pass mark {percent}%" : "{questions} questions · {minutes} minutes · seuil {percent} %",
+    "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%" : "Questions : {questions} · limite de temps : {minutes} min · seuil : {percent} %",
+    "Questions: {questions} · no time limit · pass mark: {percent}%" : "Questions : {questions} · sans limite de temps · seuil : {percent} %",
 },
 "nplurals=2; plural=(n > 1);");

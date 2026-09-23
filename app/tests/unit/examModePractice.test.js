@@ -82,7 +82,7 @@ describe('ExamMode — course practice exam', () => {
 	it('offers exactly one card built from the course configuration', () => {
 		const vm = createInstance({ practice: true, practiceConfig: { questions: 30, minutes: 0, passPercent: 70 } })
 		expect(vm.visiblePresets).toHaveLength(1)
-		expect(vm.visiblePresets[0].meta).toBe('30 questions · no time limit · pass mark 70%')
+		expect(vm.visiblePresets[0].meta).toBe('Questions: 30 · no time limit · pass mark: 70%')
 	})
 
 	it('leaves the CompTIA presets untouched outside practice mode', () => {

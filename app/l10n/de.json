@@ -3074,7 +3074,7 @@
         "Start practice exam": "Probeprüfung starten",
         "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.": "Die Auswertung ist ausgeblendet, solange in diesem Kurs eine Prüfung bei dir läuft, weil sie die Lösungen zeigen würde. Sobald diese Prüfung beendet ist, ist sie wieder verfügbar.",
         "Zeitlimit (Minuten, 0 = ohne Zeitlimit)": "Zeitlimit (Minuten, 0 = ohne Zeitlimit)",
-        "{questions} questions · no time limit · pass mark {percent}%": "{questions} Fragen · ohne Zeitlimit · Bestehensgrenze {percent} %",
-        "{questions} questions · {minutes} minutes · pass mark {percent}%": "{questions} Fragen · {minutes} Minuten · Bestehensgrenze {percent} %"
+        "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%": "Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {percent} %",
+        "Questions: {questions} · no time limit · pass mark: {percent}%": "Fragen: {questions} · ohne Zeitlimit · Bestehensgrenze: {percent} %"
     }
 }

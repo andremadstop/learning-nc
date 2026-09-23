@@ -3074,7 +3074,7 @@ OC.L10N.register(
     "Start practice exam" : "ابدأ الاختبار التجريبي",
     "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished." : "المراجعة مخفية ما دام لديك اختبار جارٍ في هذه الدورة، لأنها ستكشف الإجابات. ستتوفر مجددًا بعد انتهاء ذلك الاختبار.",
     "Zeitlimit (Minuten, 0 = ohne Zeitlimit)" : "الحد الزمني (بالدقائق، 0 = بدون حد زمني)",
-    "{questions} questions · no time limit · pass mark {percent}%" : "{questions} سؤالًا · بدون حد زمني · درجة النجاح {percent}%",
-    "{questions} questions · {minutes} minutes · pass mark {percent}%" : "{questions} سؤالًا · {minutes} دقيقة · درجة النجاح {percent}%",
+    "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%" : "الأسئلة: {questions} · الحد الزمني: {minutes} د · درجة النجاح: {percent}%",
+    "Questions: {questions} · no time limit · pass mark: {percent}%" : "الأسئلة: {questions} · بدون حد زمني · درجة النجاح: {percent}%",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

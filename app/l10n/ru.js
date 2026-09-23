@@ -3074,7 +3074,7 @@ OC.L10N.register(
     "Start practice exam" : "Начать пробный экзамен",
     "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished." : "Разбор скрыт, пока у вас в этом курсе идёт экзамен, потому что он показал бы ответы. Он снова станет доступен, когда этот экзамен закончится.",
     "Zeitlimit (Minuten, 0 = ohne Zeitlimit)" : "Ограничение времени (минуты, 0 = без ограничения)",
-    "{questions} questions · no time limit · pass mark {percent}%" : "{questions} вопросов · без ограничения времени · проходной балл {percent} %",
-    "{questions} questions · {minutes} minutes · pass mark {percent}%" : "{questions} вопросов · {minutes} минут · проходной балл {percent} %",
+    "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%" : "Вопросы: {questions} · лимит времени: {minutes} мин · проходной балл: {percent} %",
+    "Questions: {questions} · no time limit · pass mark: {percent}%" : "Вопросы: {questions} · без ограничения времени · проходной балл: {percent} %",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

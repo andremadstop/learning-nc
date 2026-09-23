@@ -404,8 +404,8 @@ export default {
         icon: '📝',
         title: t('learning', 'Course practice exam'),
         meta: minutes > 0
-          ? t('learning', '{questions} questions · {minutes} minutes · pass mark {percent}%', { questions: cfg.questions, minutes, percent: cfg.passPercent })
-          : t('learning', '{questions} questions · no time limit · pass mark {percent}%', { questions: cfg.questions, percent: cfg.passPercent }),
+          ? t('learning', 'Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: cfg.questions, minutes, percent: cfg.passPercent })
+          : t('learning', 'Questions: {questions} · no time limit · pass mark: {percent}%', { questions: cfg.questions, percent: cfg.passPercent }),
         buttonLabel: t('learning', 'Start practice exam'),
       }]
     },

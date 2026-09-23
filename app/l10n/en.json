@@ -3074,7 +3074,7 @@
         "Start practice exam": "Start practice exam",
         "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.": "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.",
         "Zeitlimit (Minuten, 0 = ohne Zeitlimit)": "Time limit (minutes, 0 = no time limit)",
-        "{questions} questions · no time limit · pass mark {percent}%": "{questions} questions · no time limit · pass mark {percent}%",
-        "{questions} questions · {minutes} minutes · pass mark {percent}%": "{questions} questions · {minutes} minutes · pass mark {percent}%"
+        "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%": "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%",
+        "Questions: {questions} · no time limit · pass mark: {percent}%": "Questions: {questions} · no time limit · pass mark: {percent}%"
     }
 }
