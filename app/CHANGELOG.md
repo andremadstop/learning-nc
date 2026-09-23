@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- **Tool selections appeared not to save.** The selectors bound `:model-value` on native
+  `<input type="checkbox">` elements, which have no such prop — Vue rendered it as an inert
+  attribute, so the boxes never showed the stored state. Every tool looked unchecked,
+  clicking an already-enabled one changed nothing, and saving wrote all eight back. Reported
+  on [#7](https://codeberg.org/andremadstop/learning-nc/issues/7); four occurrences fixed.
+- **Fresh installs never received three course tables.** `Version009900` does its work in
+  `postSchemaChange()`, but a fresh install executes only `changeSchema()` and then records
+  every migration as done — so it never ran and could never be revisited. `Version010100`
+  creates the tables in `changeSchema()` and copies any legacy rows afterwards. This is the
+  likely reason a course view failed on the reporter's install, and why reinstalling the app
+  reproduced the problem instead of fixing it.
+- **The certification toggle always saved the previous value.** It listened for
+  `@update:checked`, which `@nextcloud/vue` 9 components no longer emit.
+- **The active exam slot never displayed.** The view read `res.data.slot`; the controller
+  returns `exam_slot`.
+- **Two buttons missed by 5.4.5.** Both passed a styling value through a *dynamic* `:type`
+  binding, which the new guard did not yet check. It now covers dynamic bindings too.
+
 - **A missing database table no longer takes down an entire course view.** Reported on
   [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) from an install on managed
   hosting, where `oc_learning_course_curriculum_scopes` did not exist. That table comes from
