@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Practice exams per course.** Requested on
+  [#9](https://codeberg.org/andremadstop/learning-nc/issues/9) for training outside IT
+  certification: the exam mode only knew the fixed CompTIA presets (90 questions/90 minutes and
+  45/45, pass at 720/900). Instructors can now offer a practice exam in a course's
+  *Administration* tab and set the number of questions, a time limit or none, and the pass mark
+  in percent. Learners start it themselves from its own tab — no pool to pick first — and every
+  attempt draws a fresh random set from all of the course's pools. Afterwards they get a review
+  with the explanations. The CompTIA presets stay as they were; the practice exam tab shows even
+  where the preset exam is switched off.
+
+  Practice exams never count towards a certificate: they are marked separately, and the pass
+  evaluation reads only the other exams. For the same reason they are left out of the locks that
+  keep an exam from being used as an answer key — an untimed one left open would otherwise block
+  training and explanations on its pools indefinitely. The reverse direction is guarded: while a
+  certificate-relevant exam runs in the course, a practice exam cannot start, and an old one
+  withholds its review.
+
+  The pass verdict is decided on the server against the threshold stored when the attempt
+  began, in integer arithmetic (74.6 % does not pass 75 %), so a later change by the instructor
+  does not rewrite past attempts. Tested on fresh installs and on upgrades from 5.4.6, on
+  MariaDB 10.11 and PostgreSQL 16.
+
 ## [5.4.6] - 2026-09-23 — Managed hosting without occ
 
 Both reports came from the same install on Hetzner Storage Share: no shell, no `occ`, and
