@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.4.6] - 2026-09-23 — Managed hosting without occ
+
+Both reports came from the same install on Hetzner Storage Share: no shell, no `occ`, and
+MariaDB. [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) found a course view that
+failed and tool selectors that never showed their state;
+[#8](https://codeberg.org/andremadstop/learning-nc/issues/8) found a false audit alarm and a
+certificate setup that required a command the host does not offer.
 
 ### Added
 - **Certificates can be activated from the admin page.** Signed certificates need an issuer
@@ -46,7 +52,6 @@ All notable changes to this project will be documented in this file.
   returns `exam_slot`.
 - **Two buttons missed by 5.4.5.** Both passed a styling value through a *dynamic* `:type`
   binding, which the new guard did not yet check. It now covers dynamic bindings too.
-
 - **A missing database table no longer takes down an entire course view.** Reported on
   [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) from an install on managed
   hosting, where `oc_learning_course_curriculum_scopes` did not exist. That table comes from
@@ -64,8 +69,7 @@ All notable changes to this project will be documented in this file.
   anything not positively identified as a missing table is rethrown, so a genuine database
   outage cannot turn into silently empty results.
 
-  This limits the damage; it does not explain why the table is absent on that install. That
-  question is still open and depends on the reporter's logs.
+  This limits the damage. Why the table was absent is the "three course tables" entry above.
 
 ## [5.4.5] - 2026-09-22 — Every button in a form was a submit button
 
