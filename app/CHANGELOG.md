@@ -4,7 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Certificates can be activated from the admin page.** Signed certificates need an issuer
+  signing key, and until now the only way to create it was `occ learning:cert:init-issuer` —
+  unreachable on managed hosting without shell access, where certificates could therefore
+  never be enabled. Reported on [#8](https://codeberg.org/andremadstop/learning-nc/issues/8)
+  from Hetzner Storage Share. The certificates notice now has a *Generate signing key* button.
+
+  It only ever creates the first key: if one exists it refuses with 409, because an existing
+  key may already have signed certificates. Rotation stays `occ`-only. Creation runs under an
+  exclusive lock, so a double-click cannot leave two active keys — a guard the `occ` path now
+  shares.
+
 ### Fixed
+- **"Checkpoint overdue" on installs with nothing to checkpoint.** Reported on
+  [#8](https://codeberg.org/andremadstop/learning-nc/issues/8): the warning appeared next to
+  "No checkpoint yet" and "Events since last checkpoint: 0". Overdue was measured from the
+  last checkpoint, and a missing one counts as timestamp 0, so every fresh install was
+  overdue from the start. The same false alarm followed every quiet week, because the
+  weekly job deliberately skips when no new audit events exist. Overdue now means an audit
+  event has waited more than 8 days for a checkpoint — which still catches a job that is not
+  running.
+
+  The warning also pointed to `occ learning:audit:verify`, which checks the chain but creates
+  no checkpoint. It now names the actual cause: a missing signing key (checkpoints are signed
+  with it), or background jobs that are not running.
 - **Tool selections appeared not to save.** The selectors bound `:model-value` on native
   `<input type="checkbox">` elements, which have no such prop — Vue rendered it as an inert
   attribute, so the boxes never showed the stored state. Every tool looked unchecked,
