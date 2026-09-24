@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- **Tool selections were saved but never applied.** Reported again on
+  [#7](https://codeberg.org/andremadstop/learning-nc/issues/7) after 5.4.6: "regardless of the
+  selection, all tools remain visible". 5.4.6 fixed the settings form, but nothing read the
+  setting where tools actually appear. The course's learning space ignored the admin's global
+  selection entirely, and an empty course selection ("every tool off") was read as "no
+  selection" and showed all eight. Both levels now apply: the admin's selection, narrowed by the
+  course's. With nothing left, the *Tools* tab disappears, and the dashboard drops its tools link
+  when the admin has switched every tool off. After saving in the course administration the
+  learning space updates without a reload. The unit tests for the learning space had carried
+  their own copy of the old logic instead of calling the component, which is why they stayed
+  green; they now test the component, and a rendering test counts the tools a learner sees.
+  Verified in a browser on Nextcloud 33.0.9 with MariaDB 10.11, before and after.
+
+### Added
+- **Practice exams from required pools only.** Follow-up on
+  [#9](https://codeberg.org/andremadstop/learning-nc/issues/9): a course may hold supplementary
+  pools for self-study that should stay out of the exam simulation. The practice exam settings
+  have a new option, *Use required pools only*, which draws questions only from pools marked
+  *Required* in the pool rules. If the option is on but no pool is marked, instructors see a
+  warning in the settings and learners get a clear message instead of "no questions". Tested on a
+  fresh install and on upgrades from 5.5.0, on MariaDB 10.11 and PostgreSQL 16.
+
 ## [5.5.0] - 2026-09-23 — Practice exams for any subject
 
 Requested on [#9](https://codeberg.org/andremadstop/learning-nc/issues/9) by a team preparing
