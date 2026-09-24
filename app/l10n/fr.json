@@ -3075,6 +3075,11 @@
         "The review is hidden while you have an exam running in this course, because it would show the answers. It is available again once that exam is finished.": "La correction est masquée tant qu'un examen est en cours pour vous dans ce cours, car elle révélerait les réponses. Elle sera de nouveau disponible une fois cet examen terminé.",
         "Zeitlimit (Minuten, 0 = ohne Zeitlimit)": "Limite de temps (minutes, 0 = sans limite)",
         "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%": "Questions : {questions} · limite de temps : {minutes} min · seuil : {percent} %",
-        "Questions: {questions} · no time limit · pass mark: {percent}%": "Questions : {questions} · sans limite de temps · seuil : {percent} %"
+        "Questions: {questions} · no time limit · pass mark: {percent}%": "Questions : {questions} · sans limite de temps · seuil : {percent} %",
+        "Nur Pflicht-Pools verwenden": "Utiliser uniquement les pools obligatoires",
+        "Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung.": "Tire les questions uniquement des pools marqués comme obligatoires. Les pools complémentaires restent disponibles pour l’entraînement libre, mais n’entrent pas dans l’examen blanc.",
+        "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht.": "Aucun pool de ce cours n’est marqué comme obligatoire : personne ne peut donc lancer l’examen blanc. Marquez les pools pertinents pour l’examen comme obligatoires dans les règles des pools de l’espace d’apprentissage.",
+        "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.": "Les questions sont tirées au hasard parmi les pools obligatoires de ce cours, avec une nouvelle sélection à chaque tentative. Aucun retour avant la fin, puis une correction avec explications. Les examens blancs ne comptent pas pour un certificat.",
+        "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.": "Cet examen blanc utilise uniquement les pools obligatoires, mais aucun n’est encore marqué comme obligatoire. Veuillez contacter votre formateur."
     }
 }

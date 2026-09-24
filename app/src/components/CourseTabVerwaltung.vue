@@ -216,6 +216,14 @@
 							class="cert-config-input"
 							@change="practicePassPercent = Math.max(1, Math.min(100, parseInt($event.target.value) || 75))" />
 					</div>
+					<!-- Codeberg #9 follow-up: keep supplementary pools out of the exam simulation -->
+					<NcCheckboxRadioSwitch :model-value="practiceRequiredOnly" @update:model-value="practiceRequiredOnly = !!$event">
+						{{ t('learning', 'Nur Pflicht-Pools verwenden') }}
+					</NcCheckboxRadioSwitch>
+					<p class="mode-config-hint">{{ t('learning', 'Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung.') }}</p>
+					<NcNoteCard v-if="practiceRequiredOnly && !hasRequiredPools" type="warning">
+						{{ t('learning', 'Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht.') }}
+					</NcNoteCard>
 				</template>
 
 				<NcButton variant="primary" :disabled="practiceSaving" @click="savePracticeConfig">
@@ -402,6 +410,7 @@ export default {
 			practiceQuestions: 20,
 			practiceMinutes: 0,
 			practicePassPercent: 75,
+			practiceRequiredOnly: false,
 			practiceSaving: false,
 			practiceSaved: false,
 		}
@@ -429,6 +438,10 @@ export default {
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
 				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab') },
 			]
+		},
+		// CoursePool serialises `required` as an integer (0/1), hence the Number().
+		hasRequiredPools() {
+			return (this.coursePools || []).some((pool) => Number(pool.required) === 1 || pool.required === true)
 		},
 		toolConfigKeys() {
 			return TOOL_CATALOG.map((tool) => ({
@@ -464,6 +477,7 @@ export default {
 					this.practiceQuestions = c.practice_questions ?? 20
 					this.practiceMinutes = c.practice_minutes ?? 0
 					this.practicePassPercent = c.practice_pass_percent ?? 75
+					this.practiceRequiredOnly = !!c.practice_required_only
 				}
 			},
 		},
@@ -604,6 +618,9 @@ export default {
 				const savedTools = res.data?.enabled_tools ?? payloadEnabledTools
 				this.toolConfigLocal = this.normalizeToolSelection(savedTools, this.adminEnabledTools)
 				this.toolConfigSaved = true
+				// The learning space renders from the course detail; without a refresh it kept
+				// showing the previous selection until the page was reloaded.
+				this.$emit('refresh-course-detail')
 				setTimeout(() => { this.toolConfigSaved = false }, 3000)
 			} catch (e) {
 				console.error('Failed to save tool config', e)
@@ -909,11 +926,13 @@ export default {
 					practiceQuestions: this.practiceQuestions,
 					practiceMinutes: this.practiceMinutes,
 					practicePassPercent: this.practicePassPercent,
+					practiceRequiredOnly: this.practiceRequiredOnly,
 				})
 				this.practiceEnabled = !!result.practice_enabled
 				this.practiceQuestions = result.practice_questions ?? 20
 				this.practiceMinutes = result.practice_minutes ?? 0
 				this.practicePassPercent = result.practice_pass_percent ?? 75
+				this.practiceRequiredOnly = !!result.practice_required_only
 				this.practiceSaved = true
 				setTimeout(() => { this.practiceSaved = false }, 3000)
 				this.$emit('refresh-course-detail')

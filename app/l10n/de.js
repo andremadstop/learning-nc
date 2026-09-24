@@ -3076,5 +3076,10 @@ OC.L10N.register(
     "Zeitlimit (Minuten, 0 = ohne Zeitlimit)" : "Zeitlimit (Minuten, 0 = ohne Zeitlimit)",
     "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%" : "Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {percent} %",
     "Questions: {questions} · no time limit · pass mark: {percent}%" : "Fragen: {questions} · ohne Zeitlimit · Bestehensgrenze: {percent} %",
+    "Nur Pflicht-Pools verwenden" : "Nur Pflicht-Pools verwenden",
+    "Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung." : "Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung.",
+    "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht." : "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht.",
+    "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Die Fragen werden zufällig aus den Pflicht-Pools dieses Kurses gezogen, bei jedem Versuch neu. Rückmeldung gibt es erst am Ende, dann eine Auswertung mit Erklärungen. Probeprüfungen zählen nicht für das Zertifikat.",
+    "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Diese Probeprüfung verwendet nur Pflicht-Pools, aber noch ist keiner als Pflicht markiert. Bitte wende dich an deine Lehrkraft.",
 },
 "nplurals=2; plural=(n != 1);");

@@ -3076,5 +3076,10 @@ OC.L10N.register(
     "Zeitlimit (Minuten, 0 = ohne Zeitlimit)" : "Ограничение времени (минуты, 0 = без ограничения)",
     "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%" : "Вопросы: {questions} · лимит времени: {minutes} мин · проходной балл: {percent} %",
     "Questions: {questions} · no time limit · pass mark: {percent}%" : "Вопросы: {questions} · без ограничения времени · проходной балл: {percent} %",
+    "Nur Pflicht-Pools verwenden" : "Использовать только обязательные пулы",
+    "Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung." : "Вопросы выбираются только из пулов, отмеченных как обязательные. Дополнительные пулы остаются доступными для самостоятельной практики, но не входят в пробный экзамен.",
+    "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht." : "Ни один пул этого курса не отмечен как обязательный, поэтому никто не сможет начать пробный экзамен. Отметьте пулы, относящиеся к экзамену, как обязательные в правилах пулов учебного пространства.",
+    "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Вопросы выбираются случайным образом из обязательных пулов этого курса, при каждой попытке заново. Обратная связь только в конце, затем разбор с пояснениями. Пробные экзамены не учитываются для сертификата.",
+    "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Этот пробный экзамен использует только обязательные пулы, но ни один из них ещё не отмечен как обязательный. Обратитесь к преподавателю.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

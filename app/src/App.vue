@@ -66,6 +66,7 @@
           <!-- ==================== DASHBOARD VIEW (Student) ==================== -->
           <template v-if="route && route.name === 'dashboard'">
             <StudentDashboard
+              :tools-available="enabledTools.length > 0"
               @openSmartQueue="openSmartQueue"
               @openRemediation="openRemediation"
               @switchView="switchMainView"
@@ -408,7 +409,7 @@ import {
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
 import TeamLeadDashboard from './components/TeamLeadDashboard.vue';
-import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
+import { ALL_TOOL_IDS, TOOL_CATALOG, effectiveCourseTools } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { useOptionalCourseStore } from './stores/courseStore.js';
@@ -528,14 +529,8 @@ export default {
       return this.appInitialized && this.virtuProfEnabled;
     },
     toolsTabs() {
-      let enabled = this.normalizeEnabledTools(this.enabledTools);
-      // Course-level tool restriction for students
-      if (this.effectiveUserRole === 'student' && this.selectedCourse?.enabled_tools) {
-        const courseTools = this.selectedCourse.enabled_tools;
-        if (Array.isArray(courseTools)) {
-          enabled = enabled.filter(toolId => courseTools.includes(toolId));
-        }
-      }
+      // Same rule as the course view (Codeberg #7): an empty course selection means no tools.
+      const enabled = effectiveCourseTools(this.selectedCourse?.enabled_tools, this.enabledTools);
       return TOOL_CATALOG
         .map((tool) => ({
           id: tool.id,

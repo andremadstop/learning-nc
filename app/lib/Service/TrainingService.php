@@ -40,6 +40,8 @@ class TrainingService {
 
     /** TRIG-01: Exam score threshold below which a weakness note is auto-generated. */
     public const EXAM_KIND_PRACTICE = 'practice';
+    /** Error for a practice exam limited to required pools in a course that marks none. */
+    public const PRACTICE_NO_REQUIRED_POOLS = 'No required pools in this course';
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
 
     public function __construct(
@@ -789,6 +791,11 @@ class TrainingService {
         $course = $context['course'];
         if (!($course->getPracticeEnabled() ?? false)) {
             throw new \Exception('Practice exams are not enabled for this course');
+        }
+        // Distinct from "no questions": the instructor limited the draw to required pools but
+        // marked none, which only they can fix.
+        if (($context['required_only'] ?? false) && $context['pool_ids'] === []) {
+            throw new \Exception(self::PRACTICE_NO_REQUIRED_POOLS);
         }
 
         foreach ($context['pool_ids'] as $poolId) {

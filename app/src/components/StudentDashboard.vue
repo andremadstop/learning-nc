@@ -96,7 +96,7 @@
               <button class="link-btn" @click="goToView('pools')">
                 {{ t('learning', 'Meine Pools') }}
               </button>
-              <button class="link-btn" @click="goToView('werkzeuge')">
+              <button v-if="toolsAvailable" class="link-btn" @click="goToView('werkzeuge')">
                 {{ t('learning', 'Werkzeuge') }}
               </button>
             </div>
@@ -158,6 +158,10 @@ export default {
     CheatSheetExport,
   },
 
+  props: {
+    // Codeberg #7: an admin who switched every tool off should not be offered a tools link.
+    toolsAvailable: { type: Boolean, default: true },
+  },
   data() {
     return {
       loading: false,

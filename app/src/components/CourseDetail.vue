@@ -62,6 +62,7 @@
 					:active-tab="currentTab"
 					:content-language="contentLanguage"
 					:fsrs-detailed-stats="fsrsDetailedStats"
+					:admin-enabled-tools="adminEnabledTools"
 					@all-pools-loaded="allPools = $event"
 					@error="error = $event"
 					@knowledge-pending-count="knowledgePendingCount = $event"
@@ -141,6 +142,7 @@ import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
 import ExamReadiness from './ExamReadiness.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
+import { effectiveCourseTools } from '../utils/toolCatalog.js'
 
 export default {
 	name: 'CourseDetail',
@@ -196,6 +198,8 @@ export default {
 			selectedLearningPool: null,
 			activeLearningMode: null,
 			allPools: [],
+			// The admin's global tool selection; null until loaded or when unreadable (= all).
+			adminEnabledTools: null,
 
 			// Student progress (for student own progress bars — kept for fetchStudentProgress)
 			studentProgress: [],
@@ -229,7 +233,7 @@ export default {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)
 		},
 		hasCourseTools() {
-			return Array.isArray(this.course?.enabled_tools) ? this.course.enabled_tools.length > 0 : true
+			return effectiveCourseTools(this.course?.enabled_tools, this.adminEnabledTools).length > 0
 		},
 		kommunikationLeafTabs() {
 			if (this.isInstructor) {
@@ -630,12 +634,23 @@ export default {
 			}, modeConfig || {})
 		},
 
+		// Codeberg #7: the course view is where tools appear, so it has to honour the admin's
+		// global selection too. A failed read must not cost the course view — it falls back to
+		// "no global restriction", which is what the setting's absence means.
+		async fetchAdminEnabledTools() {
+			try {
+				const response = await axios.get(generateUrl('/apps/learning/api/settings/tools'))
+				this.adminEnabledTools = Array.isArray(response.data?.enabled_tools) ? response.data.enabled_tools : null
+			} catch (e) {
+				this.adminEnabledTools = null
+			}
+		},
 		async fetchCourseDetail() {
 			this.loading = true
 			this.error = ''
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}', { courseId: this.courseId })
-				const response = await axios.get(url)
+				const [response] = await Promise.all([axios.get(url), this.fetchAdminEnabledTools()])
 				this.course = {
 					...response.data,
 					mode_config: this.normalizeModeConfig(response.data?.mode_config || {}),

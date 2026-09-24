@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.5.1] - 2026-09-24 — Tool selections that apply, practice exams from required pools
 
 ### Fixed
 - **Tool selections were saved but never applied.** Reported again on
@@ -17,6 +17,10 @@ All notable changes to this project will be documented in this file.
   their own copy of the old logic instead of calling the component, which is why they stayed
   green; they now test the component, and a rendering test counts the tools a learner sees.
   Verified in a browser on Nextcloud 33.0.9 with MariaDB 10.11, before and after.
+- **The pool rules dialog showed every pool as required.** The server sends the flag as 0/1,
+  and the dialog read 0 as "required", so the checkbox was ticked for supplementary pools too —
+  and saving any other rule in that dialog marked the pool required again. Found while adding the
+  option below, which depends on that flag being right.
 
 ### Added
 - **Practice exams from required pools only.** Follow-up on

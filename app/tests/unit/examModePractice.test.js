@@ -90,6 +90,16 @@ describe('ExamMode — course practice exam', () => {
 		expect(vm.visiblePresets.map((p) => p.id)).toEqual(['full', 'light'])
 	})
 
+	// Codeberg #9 follow-up: the server's raw English error would leave the learner guessing.
+	it('explains a practice exam limited to required pools when none is marked', async () => {
+		const { showError } = await import('@nextcloud/dialogs')
+		axios.post.mockRejectedValue({ response: { status: 400, data: { error: 'No required pools in this course' } } })
+		const vm = createInstance({ practice: true, practiceConfig: { questions: 20, minutes: 0, passPercent: 75, requiredOnly: true } })
+		await vm.startExam(vm.visiblePresets[0])
+		expect(showError).toHaveBeenCalledWith('This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.')
+		expect(vm.screen).not.toBe('exam')
+	})
+
 	it('starts through the course endpoint, not the pool endpoint', async () => {
 		axios.post.mockResolvedValue(startResponse())
 		const vm = createInstance({ practice: true, practiceConfig: { questions: 1, minutes: 0, passPercent: 75 } })

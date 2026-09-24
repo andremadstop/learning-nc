@@ -274,6 +274,21 @@ describe('CourseDetail navigation logic', () => {
 		expect(instance.isTabActive('leaderboard')).toBe(false)
 	})
 
+	// Codeberg #7: the tools tab has to follow the effective selection, admin level included.
+	it('drops the tools tab when the course or the admin switched every tool off', () => {
+		const courseOff = createInstance()
+		courseOff.course = { ...courseOff.course, enabled_tools: [] }
+		expect(courseOff.lernraumLeafTabs).not.toContain('tools')
+
+		const adminOff = createInstance({ adminEnabledTools: [] })
+		adminOff.course = { ...adminOff.course, enabled_tools: null }
+		expect(adminOff.lernraumLeafTabs).not.toContain('tools')
+
+		const adminSome = createInstance({ adminEnabledTools: ['dns'] })
+		adminSome.course = { ...adminSome.course, enabled_tools: null }
+		expect(adminSome.lernraumLeafTabs).toContain('tools')
+	})
+
 	// Codeberg #9: without 'practice' in this whitelist the navigation drops the tab silently.
 	it('routes the practice exam tab into Lernraum when the course offers one', () => {
 		const instance = createInstance({ currentTab: 'practice' })

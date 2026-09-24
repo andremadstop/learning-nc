@@ -40,7 +40,7 @@ vi.mock('../../src/components/TrainingMode.vue', () => stub('TrainingMode'))
 vi.mock('../../src/components/WiresharkLite.vue', () => stub('WiresharkLite'))
 
 import CourseTabLernraum from '../../src/components/CourseTabLernraum.vue'
-import { ALL_TOOL_IDS, TOOL_CATALOG } from '../../src/utils/toolCatalog.js'
+import { ALL_TOOL_IDS } from '../../src/utils/toolCatalog.js'
 
 globalThis.t = (app, text, vars = {}) => {
 	return Object.entries(vars).reduce((acc, [key, value]) => acc.replace(`{${key}}`, String(value)), text)
@@ -74,20 +74,9 @@ function createInstance(overrides = {}) {
 
 	Object.defineProperties(instance, {
 		isInstructor: { get: () => CourseTabLernraum.computed.isInstructor.call(instance) },
-		courseToolTabs: {
-			get: () => {
-				const enabled = Array.isArray(instance.course?.enabled_tools) && instance.course.enabled_tools.length
-					? instance.course.enabled_tools
-					: ALL_TOOL_IDS
-				const enabledSet = new Set(enabled)
-				return TOOL_CATALOG
-					.filter((tool) => enabledSet.has(tool.id))
-					.map((tool) => ({
-						...tool,
-						shortLabel: t('learning', tool.shortLabelKey),
-					}))
-			},
-		},
+		// Calls the real computed. This harness used to carry its own copy of the logic, so the
+		// tests checked the copy and never the component — how Codeberg #7 stayed green.
+		courseToolTabs: { get: () => CourseTabLernraum.computed.courseToolTabs.call(instance) },
 		visibleSubTabs: { get: () => CourseTabLernraum.computed.visibleSubTabs.call(instance) },
 		selectedLearningPoolQuestionCount: { get: () => CourseTabLernraum.computed.selectedLearningPoolQuestionCount.call(instance) },
 		currentRequiredBlockers: { get: () => CourseTabLernraum.computed.currentRequiredBlockers.call(instance) },
@@ -135,7 +124,65 @@ describe('CourseTabLernraum', () => {
 		const ids = instance.visibleSubTabs.map((tab) => tab.id)
 		expect(ids).toContain('practice')
 		expect(ids).not.toContain('exam')
-		expect(CourseTabLernraum.computed.practiceConfig.call(instance)).toEqual({ questions: 25, minutes: 0, passPercent: 70 })
+		expect(CourseTabLernraum.computed.practiceConfig.call(instance)).toEqual({ questions: 25, minutes: 0, passPercent: 70, requiredOnly: false })
+	})
+
+	// Codeberg #7: tool selections were stored correctly but never applied to what learners see.
+	describe('tool selection reaches the learning space', () => {
+		const ids = (instance) => instance.courseToolTabs.map((tool) => tool.id)
+
+		it('shows no tools and no tools tab when the course switched every tool off', () => {
+			const instance = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: [] },
+			})
+			expect(ids(instance)).toEqual([])
+			expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('tools')
+		})
+
+		it('honours the admin selection when the course inherits it', () => {
+			const instance = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: null },
+				adminEnabledTools: ['dns'],
+			})
+			expect(ids(instance)).toEqual(['dns'])
+		})
+
+		it('shows nothing when the admin switched every tool off, whatever the course says', () => {
+			const instance = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: ['subnet', 'dns'] },
+				adminEnabledTools: [],
+			})
+			expect(ids(instance)).toEqual([])
+			expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('tools')
+		})
+
+		it('narrows the admin selection by the course selection', () => {
+			const instance = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: ['subnet', 'nat'] },
+				adminEnabledTools: ['subnet', 'dns'],
+			})
+			expect(ids(instance)).toEqual(['subnet'])
+		})
+
+		it('offers every tool when neither level restricts', () => {
+			const instance = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: null },
+				adminEnabledTools: null,
+			})
+			expect(ids(instance)).toEqual([...ALL_TOOL_IDS])
+		})
+	})
+
+	// Codeberg #9 follow-up: the server sends `required` as 0/1. Reading 0 as "required" pre-ticked
+	// the box for supplementary pools, so saving any other rule silently re-marked them required.
+	it('opens the pool rules with the stored required flag, 0/1 included', () => {
+		const instance = createInstance()
+		instance.openPoolRulesModal({ pool_id: 2, pool_name: 'Praxis', required: 0, required_enforced: false })
+		expect(instance.poolRulesForm.required).toBe(false)
+		instance.openPoolRulesModal({ pool_id: 1, pool_name: 'Theorie', required: 1, required_enforced: false })
+		expect(instance.poolRulesForm.required).toBe(true)
+		instance.openPoolRulesModal({ pool_id: 3, pool_name: 'Legacy' })
+		expect(instance.poolRulesForm.required).toBe(true)
 	})
 
 	it('hides the practice exam tab when the course does not offer one', () => {

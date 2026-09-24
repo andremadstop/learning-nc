@@ -476,7 +476,7 @@ class TrainingServiceTest extends TestCase {
     }
 
     /** @param int[] $questionIds @param int[] $poolIds */
-    private function practiceCourseService(\OCA\Learning\Db\Course $course, array $questionIds, array $poolIds): CourseService {
+    private function practiceCourseService(\OCA\Learning\Db\Course $course, array $questionIds, array $poolIds, bool $requiredOnly = false): CourseService {
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
         $courseService->method('resolveCoursePracticeContext')->willReturn([
@@ -484,6 +484,7 @@ class TrainingServiceTest extends TestCase {
             'is_instructor' => false,
             'question_ids' => $questionIds,
             'pool_ids' => $poolIds,
+            'required_only' => $requiredOnly,
         ]);
         return $courseService;
     }
@@ -574,6 +575,25 @@ class TrainingServiceTest extends TestCase {
         $this->assertCount(3, json_decode($insert->insertValues['question_order_json']['value'], true));
         $this->assertSame(45 * 60, $insert->insertValues['time_limit_seconds']['value']);
         $this->assertCount(3, $payload['questions']);
+    }
+
+    /**
+     * Codeberg #9 follow-up: limited to required pools with none marked is the instructor's to
+     * fix, so it must not read as the generic "no questions" — and must not create a session.
+     */
+    public function testPracticeExamLimitedToRequiredPoolsRefusesWhenNoneIsMarked(): void {
+        $insert = new FakeQueryBuilder(new FakeResult(), 0, 503);
+        $service = $this->createService(
+            db: new FakeDbConnection([$insert]),
+            courseService: $this->practiceCourseService($this->practiceCourse(), [], [], requiredOnly: true),
+        );
+        try {
+            $service->startPracticeExam(7, 'alice');
+            $this->fail('must refuse');
+        } catch (\Exception $e) {
+            $this->assertSame(TrainingService::PRACTICE_NO_REQUIRED_POOLS, $e->getMessage());
+        }
+        $this->assertSame([], $insert->insertValues);
     }
 
     public function testPracticeExamRefusedWhenDisabled(): void {

@@ -24,11 +24,11 @@ export async function updateCertConfig(courseId, config) {
 
 /**
  * Update a course's practice exam (Codeberg #9). Instructor-only; any subset of
- * { practiceEnabled, practiceQuestions, practiceMinutes, practicePassPercent }.
+ * { practiceEnabled, practiceQuestions, practiceMinutes, practicePassPercent, practiceRequiredOnly }.
  * practiceMinutes 0 = no time limit. Response keys are snake_case.
  * @param {number} courseId — the course to configure
  * @param {object} config — fields to change
- * @return {Promise<{practice_enabled: boolean, practice_questions: number, practice_minutes: number, practice_pass_percent: number}>}
+ * @return {Promise<{practice_enabled: boolean, practice_questions: number, practice_minutes: number, practice_pass_percent: number, practice_required_only: boolean}>}
  */
 export async function updatePracticeConfig(courseId, config) {
 	const response = await axios.patch(

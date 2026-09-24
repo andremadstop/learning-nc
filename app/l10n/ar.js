@@ -3076,5 +3076,10 @@ OC.L10N.register(
     "Zeitlimit (Minuten, 0 = ohne Zeitlimit)" : "الحد الزمني (بالدقائق، 0 = بدون حد زمني)",
     "Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%" : "الأسئلة: {questions} · الحد الزمني: {minutes} د · درجة النجاح: {percent}%",
     "Questions: {questions} · no time limit · pass mark: {percent}%" : "الأسئلة: {questions} · بدون حد زمني · درجة النجاح: {percent}%",
+    "Nur Pflicht-Pools verwenden" : "استخدام المجموعات الإلزامية فقط",
+    "Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung." : "تُسحب الأسئلة فقط من المجموعات المحددة كإلزامية. تبقى المجموعات الإضافية متاحة للتدرّب الذاتي، لكنها لا تدخل في الاختبار التجريبي.",
+    "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht." : "لا توجد مجموعة في هذه الدورة محددة كإلزامية، لذلك لا يمكن لأحد بدء الاختبار التجريبي. حدّد المجموعات المتعلقة بالاختبار كإلزامية في قواعد المجموعات ضمن مساحة التعلّم.",
+    "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "تُسحب الأسئلة عشوائيًا من المجموعات الإلزامية لهذه الدورة، باختيار جديد في كل محاولة. لا توجد ملاحظات حتى النهاية، ثم مراجعة مع الشروحات. لا تُحتسب الاختبارات التجريبية ضمن الشهادة.",
+    "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "يستخدم هذا الاختبار التجريبي المجموعات الإلزامية فقط، لكن لم تُحدَّد أي مجموعة كإلزامية بعد. يُرجى التواصل مع المدرّب.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

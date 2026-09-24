@@ -462,7 +462,10 @@ class CourseService {
      * generic exception per pool — catching would also swallow a database error and quietly
      * produce a practice exam over a fraction of the course.
      *
-     * @return array{course: Course, is_instructor: bool, question_ids: int[], pool_ids: int[]}
+     * With practice_required_only, pools not marked "Required" are left out before anything else,
+     * for instructors too — the preview should match what learners get.
+     *
+     * @return array{course: Course, is_instructor: bool, question_ids: int[], pool_ids: int[], required_only: bool}
      * @throws DoesNotExistException if the course does not exist or the user has no access
      */
     public function resolveCoursePracticeContext(int $courseId, string $userId): array {
@@ -473,6 +476,15 @@ class CourseService {
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
 
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        // Codeberg #9 follow-up: supplementary pools stay out of the exam simulation. Filtered
+        // on the entities, not in SQL — boolean binds differ between MariaDB and PostgreSQL.
+        $requiredOnly = (bool)($course->getPracticeRequiredOnly() ?? false);
+        if ($requiredOnly) {
+            $coursePools = array_values(array_filter(
+                $coursePools,
+                static fn(CoursePool $cp): bool => (bool)$cp->getRequired()
+            ));
+        }
         if (!$isInstructor && $coursePools !== []) {
             [, $outstanding] = $this->getOutstandingRequiredPools($coursePools, $userId);
             if ($outstanding !== []) {
@@ -506,6 +518,7 @@ class CourseService {
             'is_instructor' => $isInstructor,
             'question_ids' => array_values(array_map('intval', $questionIds)),
             'pool_ids' => array_values(array_unique($poolIds)),
+            'required_only' => $requiredOnly,
         ];
     }
 

@@ -209,14 +209,15 @@ describe('CourseTabVerwaltung practice exam config', () => {
 		vi.clearAllMocks()
 	})
 
-	it('PATCHes exactly the four keys CourseController::updatePracticeConfig reads', async () => {
+	it('PATCHes exactly the five keys CourseController::updatePracticeConfig reads', async () => {
 		const axios = (await import('@nextcloud/axios')).default
-		axios.patch.mockResolvedValue({ data: { practice_enabled: true, practice_questions: 30, practice_minutes: 0, practice_pass_percent: 70 } })
+		axios.patch.mockResolvedValue({ data: { practice_enabled: true, practice_questions: 30, practice_minutes: 0, practice_pass_percent: 70, practice_required_only: true } })
 		const instance = createInstance()
 		instance.practiceEnabled = true
 		instance.practiceQuestions = 30
 		instance.practiceMinutes = 0
 		instance.practicePassPercent = 70
+		instance.practiceRequiredOnly = true
 
 		await instance.savePracticeConfig()
 
@@ -225,9 +226,32 @@ describe('CourseTabVerwaltung practice exam config', () => {
 			practiceQuestions: 30,
 			practiceMinutes: 0,
 			practicePassPercent: 70,
+			practiceRequiredOnly: true,
 		})
+		expect(instance.practiceRequiredOnly).toBe(true)
 		expect(instance.practiceSaved).toBe(true)
 		expect(instance.$emit).toHaveBeenCalledWith('refresh-course-detail')
+	})
+
+	// Codeberg #7: the learning space renders from the course detail, so a saved tool selection
+	// has to trigger a refresh — otherwise it showed the old tools until a page reload.
+	it('refreshes the course detail after saving the course tool selection', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.put.mockResolvedValue({ data: { enabled_tools: ['dns'] } })
+		const instance = createInstance()
+		instance.adminEnabledTools = ['subnet', 'dns']
+		instance.toolConfigLocal = { subnet: false, dns: true }
+		await instance.saveToolConfig()
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/5/tools', { enabledTools: ['dns'] })
+		expect(instance.$emit).toHaveBeenCalledWith('refresh-course-detail')
+	})
+
+	// The instructor must see that "required pools only" with no required pool locks learners out.
+	it('knows whether any course pool is marked required (serialised as 0/1)', () => {
+		const none = createInstance({ coursePools: [{ pool_id: 1, required: 0 }, { pool_id: 2, required: 0 }] })
+		expect(CourseTabVerwaltung.computed.hasRequiredPools.call(none)).toBe(false)
+		const some = createInstance({ coursePools: [{ pool_id: 1, required: 0 }, { pool_id: 2, required: 1 }] })
+		expect(CourseTabVerwaltung.computed.hasRequiredPools.call(some)).toBe(true)
 	})
 
 	it('loads the practice config from the course prop', () => {
@@ -238,8 +262,10 @@ describe('CourseTabVerwaltung practice exam config', () => {
 			practice_questions: 12,
 			practice_minutes: 45,
 			practice_pass_percent: 90,
+			practice_required_only: true,
 		})
 		expect(instance.practiceEnabled).toBe(true)
+		expect(instance.practiceRequiredOnly).toBe(true)
 		expect(instance.practiceQuestions).toBe(12)
 		expect(instance.practiceMinutes).toBe(45)
 		expect(instance.practicePassPercent).toBe(90)

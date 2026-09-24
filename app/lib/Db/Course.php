@@ -62,6 +62,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setPracticeMinutes(int $practiceMinutes)
  * @method int|null getPracticePassPercent()
  * @method void setPracticePassPercent(int $practicePassPercent)
+ * @method bool|null getPracticeRequiredOnly()
+ * @method void setPracticeRequiredOnly(bool $practiceRequiredOnly)
  */
 class Course extends Entity {
     protected $title;
@@ -92,6 +94,7 @@ class Course extends Entity {
     protected $practiceQuestions;
     protected $practiceMinutes;
     protected $practicePassPercent;
+    protected $practiceRequiredOnly;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -112,6 +115,7 @@ class Course extends Entity {
         $this->addType('practiceQuestions', 'integer');
         $this->addType('practiceMinutes', 'integer');
         $this->addType('practicePassPercent', 'integer');
+        $this->addType('practiceRequiredOnly', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -149,6 +153,7 @@ class Course extends Entity {
             'practice_questions' => $this->getPracticeQuestions() ?? 20,
             'practice_minutes' => $this->getPracticeMinutes() ?? 0,
             'practice_pass_percent' => $this->getPracticePassPercent() ?? 75,
+            'practice_required_only' => $this->getPracticeRequiredOnly() ?? false,
         ];
     }
 }

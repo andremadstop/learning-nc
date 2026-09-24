@@ -787,6 +787,7 @@ class CourseController extends Controller {
         ?int $practiceQuestions = null,
         ?int $practiceMinutes = null,
         ?int $practicePassPercent = null,
+        ?bool $practiceRequiredOnly = null,
     ): DataResponse {
         try {
             if ($this->userId === null) {
@@ -818,6 +819,9 @@ class CourseController extends Controller {
             if ($practicePassPercent !== null) {
                 $course->setPracticePassPercent($practicePassPercent);
             }
+            if ($practiceRequiredOnly !== null) {
+                $course->setPracticeRequiredOnly($practiceRequiredOnly);
+            }
             $course->setUpdatedAt(time());
             $this->courseMapper->update($course);
 
@@ -826,6 +830,7 @@ class CourseController extends Controller {
                 'practice_questions' => $course->getPracticeQuestions() ?? 20,
                 'practice_minutes' => $course->getPracticeMinutes() ?? 0,
                 'practice_pass_percent' => $course->getPracticePassPercent() ?? 75,
+                'practice_required_only' => $course->getPracticeRequiredOnly() ?? false,
             ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

@@ -57,7 +57,16 @@ class PracticeConfigTest extends TestCase {
         $response = $this->makeController('teacher')->updatePracticeConfig(7, true, 30, 0, 70);
 
         $this->assertSame(200, $response->getStatus());
-        $this->assertSame(['practice_enabled' => true, 'practice_questions' => 30, 'practice_minutes' => 0, 'practice_pass_percent' => 70], $response->getData());
+        $this->assertSame(['practice_enabled' => true, 'practice_questions' => 30, 'practice_minutes' => 0, 'practice_pass_percent' => 70, 'practice_required_only' => false], $response->getData());
+        $this->assertCount(1, $this->updated);
+    }
+
+    /** Codeberg #9 follow-up: the flag is saved on its own and read back in the response. */
+    public function testInstructorLimitsDrawToRequiredPools(): void {
+        $response = $this->makeController('teacher')->updatePracticeConfig(7, null, null, null, null, true);
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertTrue($response->getData()['practice_required_only']);
         $this->assertCount(1, $this->updated);
     }
 

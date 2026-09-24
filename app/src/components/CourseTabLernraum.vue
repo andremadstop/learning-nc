@@ -563,7 +563,7 @@ import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
 import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
 import WiresharkLite from './WiresharkLite.vue'
-import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
+import { TOOL_CATALOG, effectiveCourseTools } from '../utils/toolCatalog.js'
 
 export default {
 	name: 'CourseTabLernraum',
@@ -629,6 +629,11 @@ export default {
 		fsrsDetailedStats: {
 			type: Boolean,
 			default: false,
+		},
+		// The admin's global tool selection; null = no global restriction.
+		adminEnabledTools: {
+			type: Array,
+			default: null,
 		},
 	},
 
@@ -754,10 +759,7 @@ export default {
 			return labels[this.currentSubTab] || t('learning', 'Choose a learning mode')
 		},
 		courseToolTabs() {
-			const enabled = Array.isArray(this.course?.enabled_tools) && this.course.enabled_tools.length
-				? this.course.enabled_tools
-				: ALL_TOOL_IDS
-			const enabledSet = new Set(enabled)
+			const enabledSet = new Set(effectiveCourseTools(this.course?.enabled_tools, this.adminEnabledTools))
 			return TOOL_CATALOG
 				.filter((tool) => enabledSet.has(tool.id))
 				.map((tool) => ({
@@ -771,6 +773,7 @@ export default {
 				questions: Number(c.practice_questions ?? 20),
 				minutes: Number(c.practice_minutes ?? 0),
 				passPercent: Number(c.practice_pass_percent ?? 75),
+				requiredOnly: c.practice_required_only === true,
 			}
 		},
 		isStudentLearningTab() {
@@ -1040,7 +1043,11 @@ export default {
 			this.poolRulesError = ''
 			this.poolRulesForm = {
 				examRelevant: pool.exam_relevant === true,
-				required: pool.required !== false,
+				// CoursePool serialises `required` as 0/1: `0 !== false` pre-ticked every
+				// supplementary pool, and saving any other rule marked it required again.
+				required: pool.required === undefined || pool.required === null
+					? true
+					: pool.required === true || Number(pool.required) === 1,
 				requiredEnforced: pool.required_enforced === true,
 				filterExamKey: pool.filter_exam_key || '',
 				filterChapterKey: pool.filter_chapter_key || '',

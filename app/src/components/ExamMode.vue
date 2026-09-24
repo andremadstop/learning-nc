@@ -5,7 +5,8 @@
     <!-- Setup Screen -->
     <div v-if="screen === 'setup'" class="setup-screen">
       <h3 class="exam-title">{{ practice ? t('learning', 'Course practice exam') : t('learning', 'Exam Mode') }}</h3>
-      <p v-if="practice" class="exam-description">{{ t('learning', 'Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
+      <p v-if="practice && practiceConfig?.requiredOnly" class="exam-description">{{ t('learning', 'Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
+      <p v-else-if="practice" class="exam-description">{{ t('learning', 'Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
       <p v-else class="exam-description">{{ t('learning', 'Simulate the real CompTIA exam. No feedback until the end.') }}</p>
 
       <div class="preset-grid">
@@ -669,7 +670,13 @@ export default {
           }
         });
       } catch (e) {
-        showError(e.response?.data?.error || t('learning', 'Failed to start exam'));
+        const serverError = e.response?.data?.error
+        // Codeberg #9 follow-up: the one start error learners cannot fix themselves — say so.
+        if (this.practice && serverError === 'No required pools in this course') {
+          showError(t('learning', 'This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.'));
+        } else {
+          showError(serverError || t('learning', 'Failed to start exam'));
+        }
       } finally {
         this.isLoading = false;
       }
