@@ -488,7 +488,7 @@ class IssuanceService {
     private function absoluteLogoUrl(): string {
         $logo = $this->themingDefaults->getLogo();
         if ($logo === '') {
-            $logo = $this->urlGenerator->imagePath('learning', 'app.svg');
+            $logo = $this->urlGenerator->imagePath('learning', 'app-color.svg');
         }
         if (str_starts_with($logo, 'http://') || str_starts_with($logo, 'https://')) {
             return $logo;

@@ -52,7 +52,7 @@ class PoolSearchProvider implements IProvider {
 
             foreach ($this->findPools($term, $user->getUID(), $limit, $offset) as $row) {
                 $entry = new SearchResultEntry(
-                    $this->urlGenerator->imagePath(Application::APP_ID, 'app.svg'),
+                    $this->urlGenerator->imagePath(Application::APP_ID, 'app-dark.svg'),
                     (string)$row['name'],
                     $this->buildSubline($row),
                     $this->buildPoolUrl((int)$row['id'])

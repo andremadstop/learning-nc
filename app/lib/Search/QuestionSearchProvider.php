@@ -51,7 +51,7 @@ class QuestionSearchProvider implements IProvider {
 
             foreach ($this->findQuestions($term, $user->getUID(), $limit, $offset) as $row) {
                 $entry = new SearchResultEntry(
-                    $this->urlGenerator->imagePath(Application::APP_ID, 'app.svg'),
+                    $this->urlGenerator->imagePath(Application::APP_ID, 'app-dark.svg'),
                     $this->buildTitle($row),
                     $this->buildSubline($row),
                     $this->buildPoolUrl((int)$row['pool_id'])

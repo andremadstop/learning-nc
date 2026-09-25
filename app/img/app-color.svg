@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0082c9;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#00639a;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Book/card base -->
+  <rect x="4" y="5" width="24" height="22" rx="2" fill="url(#grad)"/>
+  <!-- Card lines -->
+  <rect x="8" y="10" width="16" height="2" rx="1" fill="white" opacity="0.9"/>
+  <rect x="8" y="14" width="12" height="2" rx="1" fill="white" opacity="0.7"/>
+  <rect x="8" y="18" width="14" height="2" rx="1" fill="white" opacity="0.5"/>
+  <!-- Checkmark circle -->
+  <circle cx="24" cy="24" r="6" fill="#46ba61"/>
+  <path d="M21 24l2 2 3.5-3.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

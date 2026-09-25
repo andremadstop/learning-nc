@@ -42,7 +42,7 @@ class Notifier implements INotifier {
                     $l->t('Achievement unlocked: %s %s', [$badgeEmoji, $badgeName])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             case 'streak_warning':
@@ -52,7 +52,7 @@ class Notifier implements INotifier {
                     $l->t('Your %s-day streak expires today!', [(string)$days])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             case 'due_cards':
@@ -63,7 +63,7 @@ class Notifier implements INotifier {
                     $l->t('You have %s due cards. Time to study!', [(string)$dueCount])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             case 'exam_reminder':
@@ -74,7 +74,7 @@ class Notifier implements INotifier {
                     $l->n('Exam in %n day: %s', 'Exam in %n days: %s', $days, [$courseTitle])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             case 'certificate_issued':
@@ -84,7 +84,7 @@ class Notifier implements INotifier {
                     $l->t('Certificate issued: %s', [$courseTitle])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             case 'compliance_reminder':
@@ -94,7 +94,7 @@ class Notifier implements INotifier {
                     $l->t('Compliance reminder: %s', [$courseTitle])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             case 'recert_reminder':
@@ -114,7 +114,7 @@ class Notifier implements INotifier {
                     $l->t('recert_reminder_body', [$courseTitle, $expiresDate])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
             default:
