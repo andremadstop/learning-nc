@@ -1,0 +1,58 @@
+{
+  "_about": "Request and response of the 5.5 OllamaProvider (lib/Service/OllamaProvider.php), pinned by LegacyProviderPayloadTest against the live class. The 5.6 adapter (lib/Service/Llm/Provider/OllamaProvider.php) must send the same URL, headers and body. input.temperature/maxOutputTokens null = not passed. A temperature of 0 goes over the wire as the integer 0 (json_encode without JSON_PRESERVE_ZERO_FRACTION). baseUrl has a trailing slash on purpose (5.5 strips it).",
+  "baseUrl": "http://ollama:11434/",
+  "model": "llama3.1:8b",
+  "cases": [
+    {
+      "name": "explicit",
+      "input": {"systemPrompt": "  Du bist ein Tutor.  ", "userPrompt": "  Erkläre die Größe „Ω“.\n", "temperature": 0.4, "maxOutputTokens": 600},
+      "request": {
+        "url": "http://ollama:11434/api/generate",
+        "timeoutSec": 90,
+        "headers": {"Content-Type": "application/json"},
+        "body": {"model": "llama3.1:8b", "prompt": "  Erkläre die Größe „Ω“.\n", "system": "Du bist ein Tutor.", "stream": false,
+          "options": {"temperature": 0.4, "num_predict": 600}}
+      }
+    },
+    {
+      "name": "defaults",
+      "input": {"systemPrompt": "", "userPrompt": "Hallo", "temperature": null, "maxOutputTokens": null},
+      "request": {
+        "url": "http://ollama:11434/api/generate",
+        "timeoutSec": 90,
+        "headers": {"Content-Type": "application/json"},
+        "body": {"model": "llama3.1:8b", "prompt": "Hallo", "system": "", "stream": false,
+          "options": {"temperature": 0.7, "num_predict": 1200}}
+      }
+    },
+    {
+      "name": "clamped-high",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": 3.0, "maxOutputTokens": 99999},
+      "request": {
+        "url": "http://ollama:11434/api/generate",
+        "timeoutSec": 90,
+        "headers": {"Content-Type": "application/json"},
+        "body": {"model": "llama3.1:8b", "prompt": "U", "system": "S", "stream": false,
+          "options": {"temperature": 1.5, "num_predict": 4096}}
+      }
+    },
+    {
+      "name": "clamped-low",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": -1.0, "maxOutputTokens": 50},
+      "request": {
+        "url": "http://ollama:11434/api/generate",
+        "timeoutSec": 90,
+        "headers": {"Content-Type": "application/json"},
+        "body": {"model": "llama3.1:8b", "prompt": "U", "system": "S", "stream": false,
+          "options": {"temperature": 0, "num_predict": 128}}
+      }
+    }
+  ],
+  "response": {
+    "body": {"model": "llama3.1:8b", "created_at": "2026-09-25T10:00:00Z", "response": "  Antwort: Größe Ω.\n", "done": true,
+      "prompt_eval_count": 20, "eval_count": 9},
+    "text": "Antwort: Größe Ω.",
+    "tokensIn": 20,
+    "tokensOut": 9
+  }
+}

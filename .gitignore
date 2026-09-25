@@ -163,6 +163,9 @@ app/tests/*
 !app/tests/Support/
 !app/tests/Support/*.php
 !app/tests/bootstrap.php
+!app/tests/Fixtures/
+!app/tests/Fixtures/llm/
+!app/tests/Fixtures/llm/*.json
 !app/tests/Integration/
 !app/tests/Integration/*.php
 !app/tests/Integration/phpunit.xml

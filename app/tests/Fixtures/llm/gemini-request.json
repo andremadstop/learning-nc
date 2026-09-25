@@ -1,0 +1,72 @@
+{
+  "_about": "Request and response of the 5.5 GeminiProvider (lib/Service/GeminiProvider.php), pinned by LegacyProviderPayloadTest against the live class. The 5.6 adapter (lib/Service/Llm/Provider/GeminiProvider.php) must send the same URL, headers and body. input.temperature/maxOutputTokens null = not passed. A temperature of 0 goes over the wire as the integer 0 (json_encode without JSON_PRESERVE_ZERO_FRACTION). The API key is a placeholder.",
+  "apiKey": "test-key",
+  "cases": [
+    {
+      "name": "explicit",
+      "input": {"systemPrompt": "  Du bist ein Tutor.  ", "userPrompt": "  Erkläre die Größe „Ω“.\n", "temperature": 0.4, "maxOutputTokens": 600},
+      "request": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "timeoutSec": 45,
+        "headers": {"Content-Type": "application/json", "x-goog-api-key": "test-key"},
+        "body": {
+          "system_instruction": {"parts": [{"text": "Du bist ein Tutor."}]},
+          "contents": [{"role": "user", "parts": [{"text": "  Erkläre die Größe „Ω“.\n"}]}],
+          "generationConfig": {"temperature": 0.4, "maxOutputTokens": 600, "candidateCount": 1}
+        }
+      }
+    },
+    {
+      "name": "defaults",
+      "input": {"systemPrompt": "", "userPrompt": "Hallo", "temperature": null, "maxOutputTokens": null},
+      "request": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "timeoutSec": 45,
+        "headers": {"Content-Type": "application/json", "x-goog-api-key": "test-key"},
+        "body": {
+          "system_instruction": {"parts": [{"text": ""}]},
+          "contents": [{"role": "user", "parts": [{"text": "Hallo"}]}],
+          "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1200, "candidateCount": 1}
+        }
+      }
+    },
+    {
+      "name": "clamped-high",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": 3.0, "maxOutputTokens": 99999},
+      "request": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "timeoutSec": 45,
+        "headers": {"Content-Type": "application/json", "x-goog-api-key": "test-key"},
+        "body": {
+          "system_instruction": {"parts": [{"text": "S"}]},
+          "contents": [{"role": "user", "parts": [{"text": "U"}]}],
+          "generationConfig": {"temperature": 1.5, "maxOutputTokens": 4096, "candidateCount": 1}
+        }
+      }
+    },
+    {
+      "name": "clamped-low",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": -1.0, "maxOutputTokens": 50},
+      "request": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "timeoutSec": 45,
+        "headers": {"Content-Type": "application/json", "x-goog-api-key": "test-key"},
+        "body": {
+          "system_instruction": {"parts": [{"text": "S"}]},
+          "contents": [{"role": "user", "parts": [{"text": "U"}]}],
+          "generationConfig": {"temperature": 0, "maxOutputTokens": 128, "candidateCount": 1}
+        }
+      }
+    }
+  ],
+  "response": {
+    "body": {
+      "candidates": [{"content": {"role": "model", "parts": [{"text": "  Antwort: Pr\\u00fcfung bestanden, Größe Ω.\n"}, {"text": "zweiter Teil"}]}, "finishReason": "STOP"}],
+      "usageMetadata": {"promptTokenCount": 12, "candidatesTokenCount": 7, "totalTokenCount": 19},
+      "modelVersion": "gemini-2.5-flash"
+    },
+    "text": "Antwort: Prüfung bestanden, Größe Ω.",
+    "tokensIn": 12,
+    "tokensOut": 7
+  }
+}
