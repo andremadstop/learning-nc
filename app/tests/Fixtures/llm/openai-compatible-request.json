@@ -1,0 +1,81 @@
+{
+  "_about": "Requests of the 5.6 OpenAI-compatible adapter (lib/Service/Llm/Provider/OpenAiCompatibleProvider.php). There is no 5.5 class to pin against: every field is pinned against the vendor documentation (2026-09-25), cited in OpenAiCompatibleProviderTest. POST {baseUrl}/chat/completions, Bearer key (none for custom without key), system message only when the trimmed system prompt is not empty, token parameter and temperature from ModelCapabilities (same defaults and clamping as the Gemini/Ollama adapters: temperature 0-1.5, default 0.7; tokens 128-4096, default 1200), OpenRouter with provider.order + allow_fallbacks:false. input.temperature/maxOutputTokens null = not passed. A temperature of 0 goes over the wire as the integer 0 (json_encode without JSON_PRESERVE_ZERO_FRACTION). headers = what the adapter sets plus the Content-Type LlmHttpClient always sends.",
+  "cases": [
+    {
+      "name": "openai-reasoning-model",
+      "connection": {"rev": 1, "enabled": true, "provider": "openai_compatible", "preset": "openai", "baseUrl": "https://api.openai.com/v1", "model": "gpt-5"},
+      "apiKey": "sk-test-openai",
+      "input": {"systemPrompt": "  Du bist ein Tutor.  ", "userPrompt": "  Erkläre die Größe „Ω“.\n", "temperature": 0.4, "maxOutputTokens": 600},
+      "request": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "timeoutSec": 45,
+        "headers": {"Authorization": "Bearer sk-test-openai", "Content-Type": "application/json"},
+        "body": {"model": "gpt-5", "messages": [{"role": "system", "content": "Du bist ein Tutor."}, {"role": "user", "content": "  Erkläre die Größe „Ω“.\n"}],
+          "max_completion_tokens": 600}
+      }
+    },
+    {
+      "name": "openai-standard-model-defaults",
+      "connection": {"rev": 1, "enabled": true, "provider": "openai_compatible", "preset": "openai", "baseUrl": "https://api.openai.com/v1", "model": "gpt-4.1"},
+      "apiKey": "sk-test-openai",
+      "input": {"systemPrompt": "S", "userPrompt": "Hallo", "temperature": null, "maxOutputTokens": null},
+      "request": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "timeoutSec": 45,
+        "headers": {"Authorization": "Bearer sk-test-openai", "Content-Type": "application/json"},
+        "body": {"model": "gpt-4.1", "messages": [{"role": "system", "content": "S"}, {"role": "user", "content": "Hallo"}],
+          "max_tokens": 1200, "temperature": 0.7}
+      }
+    },
+    {
+      "name": "mistral-without-system-clamped-high",
+      "connection": {"rev": 1, "enabled": true, "provider": "openai_compatible", "preset": "mistral", "baseUrl": "https://api.mistral.ai/v1/", "model": "mistral-large-latest"},
+      "apiKey": "  mistral-key  ",
+      "input": {"systemPrompt": "   ", "userPrompt": "U", "temperature": 3.0, "maxOutputTokens": 99999},
+      "request": {
+        "url": "https://api.mistral.ai/v1/chat/completions",
+        "timeoutSec": 45,
+        "headers": {"Authorization": "Bearer mistral-key", "Content-Type": "application/json"},
+        "body": {"model": "mistral-large-latest", "messages": [{"role": "user", "content": "U"}],
+          "max_tokens": 4096, "temperature": 1.5}
+      }
+    },
+    {
+      "name": "openrouter-fixed-provider-clamped-low",
+      "connection": {"rev": 1, "enabled": true, "provider": "openai_compatible", "preset": "openrouter", "baseUrl": "https://openrouter.ai/api/v1",
+        "model": "meta-llama/llama-3.3-70b-instruct", "openRouterRouting": {"order": ["deepinfra/turbo"], "allowFallbacks": false}},
+      "apiKey": "sk-or-test",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": -1.0, "maxOutputTokens": 50},
+      "request": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "timeoutSec": 45,
+        "headers": {"Authorization": "Bearer sk-or-test", "Content-Type": "application/json"},
+        "body": {"model": "meta-llama/llama-3.3-70b-instruct", "messages": [{"role": "system", "content": "S"}, {"role": "user", "content": "U"}],
+          "max_tokens": 128, "temperature": 0, "provider": {"order": ["deepinfra/turbo"], "allow_fallbacks": false}}
+      }
+    },
+    {
+      "name": "custom-local-without-key",
+      "connection": {"rev": 1, "enabled": true, "provider": "openai_compatible", "preset": "custom", "baseUrl": "http://llm.example.com:8080/v1",
+        "model": "deepseek-r1:14b", "processingLocal": true, "allowInternalNetwork": true},
+      "apiKey": null,
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": 0.2, "maxOutputTokens": 800},
+      "request": {
+        "url": "http://llm.example.com:8080/v1/chat/completions",
+        "timeoutSec": 90,
+        "headers": {"Content-Type": "application/json"},
+        "body": {"model": "deepseek-r1:14b", "messages": [{"role": "system", "content": "S"}, {"role": "user", "content": "U"}],
+          "max_tokens": 800, "temperature": 0.2}
+      }
+    }
+  ],
+  "response": {
+    "body": {"id": "chatcmpl-1", "object": "chat.completion", "model": "gpt-4.1-2025-04-14",
+      "choices": [{"index": 0, "finish_reason": "stop",
+        "message": {"role": "assistant", "content": "  Antwort: Größe Ω.\n", "reasoning_content": "REASONING-MARKER interne Gedanken", "refusal": null}}],
+      "usage": {"prompt_tokens": 21, "completion_tokens": 8, "total_tokens": 29}},
+    "text": "Antwort: Größe Ω.",
+    "tokensIn": 21,
+    "tokensOut": 8
+  }
+}
