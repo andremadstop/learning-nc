@@ -542,6 +542,13 @@ namespace OCP\Http\Client {
             public function newClient(): IClient;
         }
     }
+
+    // 5.6.0 Task A3: thrown by NC's Client/DnsPinMiddleware when a target violates local access
+    // rules (verbatim from lib/public/Http/Client/LocalServerException.php, NC 33).
+    if (!class_exists(LocalServerException::class)) {
+        class LocalServerException extends \RuntimeException {
+        }
+    }
 }
 
 namespace OCP\Activity {
