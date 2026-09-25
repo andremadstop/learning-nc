@@ -31,7 +31,7 @@ FAILED=0
 gate_eslint "$SNAP/tree" || FAILED=1
 gate_vitest "$SNAP/tree" || FAILED=1
 gate_i18n   "$SNAP/tree" || FAILED=1
-gate_php --index         || FAILED=1
+gate_php "$SNAP/tree" --index || FAILED=1
 
 if [ "$FAILED" -ne 0 ]; then
 	echo -e "${GATE_RED}✗ Gate 1 failed — commit aborted${GATE_NC}"

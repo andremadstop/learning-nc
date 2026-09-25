@@ -12,13 +12,17 @@
 #            head and only the legacy translation tables), then upgrade like `upgrade`
 # Each scenario ends with scripts/lifecycle-fixtures/check-working-state.php: audit chain head,
 # a real compliance event, the expected chain position, and a translation round-trip.
-# The working state is the git index, or the tree of PROBE_REF (e.g. to prove the checks go red
-# on a release without the fix).
-# Every check prints `LIFECYCLE <engine> <check>=ok|fail`; the last line is
-# `LIFECYCLE <engine> result=ok|fail`. Exit 0 only if every check passed and cleanup succeeded.
-# PROBE_FAIL_AFTER=key_write is handed to the first repair only: the repair step (Task C1) then
-# aborts the key migration after writing the new key. That run may fail; the second must pass.
-# Only the skeleton checks live here; Tasks C2/C3/E3 add the migration assertions.
+# The app under test is app/ from the git index, or from PROBE_REF (e.g. to prove the checks go
+# red on a release without the fix). The fixtures always come from the git index — never the
+# working copy, so an unstaged fixture edit cannot validate a probe nobody reviewed.
+# Every check prints `LIFECYCLE <engine> <check>=ok|fail`; the last line, printed only after
+# cleanup, is `LIFECYCLE <engine> result=ok|fail`. Exit 0 only if every check passed and cleanup
+# succeeded.
+# PROBE_FAIL_AFTER=key_write is handed to the first `occ upgrade` of the upgrade scenario (the
+# post-migration repair step of Task C1 runs inside it). That run must abort AND print
+# `PROBE-INJECTED key_write`; without the marker the injection point was never reached and the
+# check fails. A second `occ upgrade` must then recover. Until Task C1 adds the injection point,
+# PROBE_FAIL_AFTER therefore fails the probe by design.
 # Containers are named learning-gate-life-*-$$ and always removed (exit 3 if that fails).
 set -euo pipefail
 
@@ -31,14 +35,14 @@ OLD_URL="https://codeberg.org/andremadstop/learning-nc/releases/download/v5.5.1/
 OLD_SHA256="b4a7ff9100d761375d74031bbce6000ea0da89ff851a2873f109cb0ef02d01ef"
 OLD_VERSION="5.5.1"
 RELEASE_SET=(appinfo css img js l10n lib templates data CHANGELOG.md LICENSE README.md)
-SEEDER="$REPO_ROOT/scripts/lifecycle-fixtures/seed-5.5.1.sql.php"
-CHECKER="$REPO_ROOT/scripts/lifecycle-fixtures/check-working-state.php"
 
 PROBE_FAIL_AFTER="${PROBE_FAIL_AFTER:-}"
 case "$ENGINE" in pgsql|mysql) ;; *) echo "ENGINE must be pgsql or mysql" >&2; exit 2 ;; esac
 case "$PROBE_FAIL_AFTER" in ''|key_write) ;; *) echo "PROBE_FAIL_AFTER must be empty or key_write" >&2; exit 2 ;; esac
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/learning-life.XXXXXX")"
+SEEDER="$WORK/repo/scripts/lifecycle-fixtures/seed-5.5.1.sql.php"
+CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-working-state.php"
 PASS="throwaway-$$-$RANDOM"   # dies with the containers; never leaves this machine
 CREATED=()                     # "container:<name>" / "network:<name>", in creation order
 FAILED=0
@@ -47,14 +51,19 @@ cleanup() {
 	local rc=$? ok=1 i kind name
 	for (( i=${#CREATED[@]}-1; i>=0; i-- )); do
 		kind="${CREATED[i]%%:*}"; name="${CREATED[i]#*:}"
-		if [ "$kind" = container ]; then docker rm -f -v "$name" >/dev/null || true
-		else docker network rm "$name" >/dev/null || true; fi
-		if docker "$kind" inspect "$name" >/dev/null 2>&1; then
-			echo "lifecycle-probe: CLEANUP FAILED: $kind $name" >&2; ok=0
+		if [ "$kind" = container ]; then docker rm -f -v "$name" >/dev/null
+		else docker network rm "$name" >/dev/null; fi || { echo "lifecycle-probe: CLEANUP FAILED: removing $kind $name" >&2; ok=0; }
+		# A failed inspect means "absent" only while the daemon answers; otherwise it proves nothing.
+		if ! docker info >/dev/null 2>&1; then
+			echo "lifecycle-probe: CLEANUP UNVERIFIED: docker daemon not reachable ($kind $name)" >&2; ok=0
+		elif docker "$kind" inspect "$name" >/dev/null 2>&1; then
+			echo "lifecycle-probe: CLEANUP FAILED: $kind $name still exists" >&2; ok=0
 		fi
 	done
 	rm -r -- "$WORK" || { echo "lifecycle-probe: CLEANUP FAILED: $WORK" >&2; ok=0; }
-	if [ "$ok" = 0 ] && [ "$rc" -eq 0 ]; then rc=3; fi
+	if [ "$ok" = 0 ]; then FAILED=1; [ "$rc" -ne 0 ] || rc=3; fi
+	if [ "$FAILED" = 0 ] && [ "$rc" -eq 0 ]; then echo "LIFECYCLE $ENGINE result=ok"
+	else echo "LIFECYCLE $ENGINE result=fail"; [ "$rc" -ne 0 ] || rc=1; fi
 	exit "$rc"
 }
 trap cleanup EXIT
@@ -67,14 +76,16 @@ check() {
 }
 
 # --- sources ----------------------------------------------------------------------------------
+echo "==> fixtures from git index"
+git -C "$REPO_ROOT" checkout-index -a --prefix="$WORK/repo/"
 if [ -n "${PROBE_REF:-}" ]; then
-	echo "==> working state from $PROBE_REF"
-	mkdir -p "$WORK/repo"
+	echo "==> app under test from $PROBE_REF"
+	rm -r -- "$WORK/repo/app"
 	git -C "$REPO_ROOT" archive "$PROBE_REF" app | tar -x -C "$WORK/repo"
 else
-	echo "==> working state from git index"
-	git -C "$REPO_ROOT" checkout-index -a --prefix="$WORK/repo/"
+	echo "==> app under test from git index"
 fi
+for f in "$SEEDER" "$CHECKER"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
 mkdir -p "$WORK/new/learning"
 for f in "${RELEASE_SET[@]}"; do
 	[ -e "$WORK/repo/app/$f" ] || { echo "working state lacks app/$f" >&2; exit 2; }
@@ -174,12 +185,15 @@ working_state() {
 	[ "$rc" -eq 0 ] && grep -q '^CHECK result=ok$' <<<"$out"
 }
 
-# The injected run is expected to abort; only its exit code is reported, the second repair decides.
-repair_injected() {
-	local rc=0
-	docker exec -u www-data -w /var/www/html -e PROBE_FAIL_AFTER="$PROBE_FAIL_AFTER" "$NC" \
-		php occ maintenance:repair || rc=$?
-	echo "injected repair (PROBE_FAIL_AFTER=$PROBE_FAIL_AFTER) exit code: $rc"
+# The injected upgrade must abort at the injection point: non-zero exit AND the marker the app
+# prints when it gets there. Either one missing means the interruption was never exercised.
+upgrade_injected() {
+	local out rc=0
+	out="$(docker exec -u www-data -w /var/www/html -e PROBE_FAIL_AFTER="$PROBE_FAIL_AFTER" "$NC" \
+		php occ upgrade 2>&1)" || rc=$?
+	echo "$out" | tail -n 5
+	echo "injected upgrade (PROBE_FAIL_AFTER=$PROBE_FAIL_AFTER) exit code: $rc"
+	[ "$rc" -ne 0 ] && grep -q "PROBE-INJECTED $PROBE_FAIL_AFTER" <<<"$out"
 }
 
 # Replace, not overlay: files removed between versions must not survive the upgrade.
@@ -207,13 +221,12 @@ check upgrade_enable_old occ app:enable learning
 check upgrade_old_version version_is "$OLD_VERSION"
 check seed seed
 check upgrade_swap swap_to_working_state
+if [ -n "$PROBE_FAIL_AFTER" ]; then
+	check upgrade_occ_upgrade_injected upgrade_injected
+fi
 check upgrade_occ_upgrade occ upgrade
 check upgrade_new_version version_is "$NEW_VERSION"
-if [ -n "$PROBE_FAIL_AFTER" ]; then
-	check upgrade_repair_1_injected repair_injected
-else
-	check upgrade_repair_1 occ maintenance:repair
-fi
+check upgrade_repair_1 occ maintenance:repair
 check upgrade_repair_2 occ maintenance:repair
 check upgrade_enabled app_enabled
 # 3 chained rows seeded + 1 from the check: the existing head was kept, not re-seeded
@@ -230,4 +243,4 @@ check bare_new_version version_is "$NEW_VERSION"
 check bare_repair occ maintenance:repair
 check bare_working_state working_state 1
 
-if [ "$FAILED" = 0 ]; then echo "LIFECYCLE $ENGINE result=ok"; else echo "LIFECYCLE $ENGINE result=fail"; exit 1; fi
+[ "$FAILED" = 0 ] || exit 1   # the verdict line comes from cleanup(), after removal

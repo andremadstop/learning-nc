@@ -16,6 +16,10 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Git operations use GATE_GIT_ROOT when set: the hooks run this script from a snapshot of the
+# commit under test (so an uncommitted edit to the gate cannot vouch for the commit), and the
+# snapshot itself is not the repository.
+GIT_ROOT="${GATE_GIT_ROOT:-$REPO_ROOT}"
 NC_IMAGE="${INTEG_NC_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 PG_IMAGE="${INTEG_PG_IMAGE:-postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea}"
 PHPUNIT_VERSION="10.5.65"
@@ -60,8 +64,8 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 case "$SRC" in
-	--index) git -C "$REPO_ROOT" checkout-index -a --prefix="$WORK/repo/" ;;
-	--ref)   mkdir -p "$WORK/repo"; git -C "$REPO_ROOT" archive "${2:?--ref needs a git ref}" | tar -x -C "$WORK/repo" ;;  # pipefail is set
+	--index) git -C "$GIT_ROOT" checkout-index -a --prefix="$WORK/repo/" ;;
+	--ref)   mkdir -p "$WORK/repo"; git -C "$GIT_ROOT" archive "${2:?--ref needs a git ref}" | tar -x -C "$WORK/repo" ;;  # pipefail is set
 	*)       echo "usage: $0 [--index | --ref <git-ref>]" >&2; exit 2 ;;
 esac
 [ -f "$WORK/repo/app/tests/Integration/phpunit.xml" ] || { echo "snapshot has no app/tests/Integration/phpunit.xml" >&2; exit 2; }
@@ -113,5 +117,8 @@ docker exec "$NC" grep -q readiness-probe /tmp/llm-requests.log || { echo "mock 
 docker exec -u www-data "$NC" sh -euc ': > /tmp/llm-requests.log'   # tests start with an empty log
 
 echo "==> PHPUnit (tests/Integration)"
+# Exit 0 alone is not proof (Nextcloud's error handler and any exit(0) end PHPUnit early with a
+# clean exit code): the JUnit report written at the very end must exist and count >0 tests.
 docker exec -u www-data -w /var/www/html/apps/learning "$NC" \
-	php /usr/local/bin/phpunit -c tests/Integration/phpunit.xml
+	php /usr/local/bin/phpunit -c tests/Integration/phpunit.xml --log-junit /tmp/integration-junit.xml
+docker exec "$NC" php -r '$f=$argv[1]; if(!is_file($f)){fwrite(STDERR,"no JUnit report: PHPUnit did not finish\n");exit(1);} $x=@simplexml_load_string((string)file_get_contents($f)); $s=$x?$x->testsuite:null; if(!$s){fwrite(STDERR,"JUnit report unreadable\n");exit(1);} $t=(int)$s["tests"];$e=(int)$s["errors"];$fl=(int)$s["failures"];$sk=(int)$s["skipped"]; echo "junit tests=$t errors=$e failures=$fl skipped=$sk\n"; exit($t>0&&$e===0&&$fl===0&&$sk===0?0:1);' /tmp/integration-junit.xml

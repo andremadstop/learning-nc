@@ -60,6 +60,13 @@ import os
 import sys
 import collections
 
+# A fresh install has ~80 learning tables; far fewer means the dump is not a whole install.
+MIN_TABLES = 40
+
+# Code that names tables which a fresh install deliberately does not have: migrations touch
+# legacy names, the uninstall command drops every name the app ever used.
+LEGACY_TABLE_FILES = ('Migration/', 'Command/UninstallCommand.php')
+
 SQL_KEYWORDS = {
     'count', 'sum', 'max', 'min', 'avg', 'case', 'when', 'then', 'else', 'end', 'as', 'and', 'or',
     'not', 'null', 'true', 'false', 'distinct', 'coalesce', 'cast', 'int', 'integer', 'desc',
@@ -80,17 +87,32 @@ def load_schema():
         print(f'ERROR: cannot read SCHEMA_FILE {dump} ({err.__class__.__name__})', file=sys.stderr)
         sys.exit(2)
 
+    # Every line must be `oc_learning_<table>|<column>`, and the dump must look like a whole
+    # install: an unrelated or truncated file would otherwise make every lookup "unknown table"
+    # and every query pass unchecked.
     schema = collections.defaultdict(set)
-    for line in raw.splitlines():
+    for number, line in enumerate(raw.splitlines(), 1):
         line = line.strip()
-        if '|' not in line:
+        if not line:
             continue
+        if not re.fullmatch(r'oc_learning_[a-z0-9_]+\|[a-z0-9_]+', line):
+            print(f'ERROR: SCHEMA_FILE {dump} line {number} is not an oc_learning_* table|column record', file=sys.stderr)
+            sys.exit(2)
         table, column = line.split('|', 1)
         schema[table.replace('oc_', '', 1)].add(column)
-    if not schema:
-        print(f'ERROR: SCHEMA_FILE {dump} contains no learning tables', file=sys.stderr)
+    if len(schema) < MIN_TABLES:
+        print(f'ERROR: SCHEMA_FILE {dump} has {len(schema)} learning tables, expected at least {MIN_TABLES} '
+              '(partial dump?)', file=sys.stderr)
         sys.exit(2)
     return schema
+
+
+def table_known(schema, table):
+    """False only for a learning_* table the fresh install does not have — that is a finding.
+
+    Tables of Nextcloud itself (users, preferences, ...) are not in the dump and are not checked.
+    """
+    return table in schema or not table.startswith('learning_')
 
 
 def unaliased_select_columns(source):
@@ -158,8 +180,13 @@ def main():
             checked_files += 1
             seen = set()
 
+            legacy_ok = os.path.relpath(path, root).startswith(LEGACY_TABLE_FILES)
             for table, column, pos in unaliased:
-                if table not in schema or column in schema[table]:
+                if table not in schema:
+                    if table_known(schema, table) or legacy_ok:
+                        continue
+                    column = '*'
+                elif column in schema[table]:
                     continue
                 line_no = source[:pos].count('\n') + 1
                 line = source.splitlines()[line_no - 1].strip()
@@ -172,7 +199,11 @@ def main():
                 if alias not in aliases or column in SQL_KEYWORDS:
                     continue
                 table = aliases[alias]
-                if table not in schema or column in schema[table]:
+                if table not in schema:
+                    if table_known(schema, table) or legacy_ok:
+                        continue
+                    column = '*'
+                elif column in schema[table]:
                     continue
                 line_no = source[:match.start()].count('\n') + 1
                 line = source.splitlines()[line_no - 1].strip()
@@ -202,6 +233,10 @@ def main():
 
     print(f'\n{len(findings)} reference(s) not found in the schema:\n')
     for path, line_no, ref, table, line in findings:
+        if table not in schema:
+            print(f'  {path}:{line_no}  {table}  — table does not exist on a fresh install')
+            print(f'      {line[:120]}')
+            continue
         print(f'  {path}:{line_no}  {ref}  — {table} has no such column')
         print(f'      {line[:120]}')
         print(f'      columns: {", ".join(sorted(schema[table])[:12])}')

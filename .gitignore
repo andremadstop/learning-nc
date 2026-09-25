@@ -132,6 +132,7 @@ scripts/*
 !scripts/check-forbidden-names.sh
 !scripts/check-forbidden-names.test.sh
 !scripts/check-i18n-parity.sh
+!scripts/check-node-modules.py
 !scripts/check-i18n-placeholders.py
 !scripts/check-i18n-coverage.py
 !scripts/check-sql-columns.py

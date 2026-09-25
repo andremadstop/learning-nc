@@ -33,7 +33,10 @@ make_snapshot() {
 		*) echo "snapshot: unknown source $src" >&2; return 1 ;;
 	esac
 	local must
-	for must in app/appinfo/info.xml app/lib app/src app/package.json app/package-lock.json scripts/check-i18n-parity.sh; do
+	# The gate scripts come from the snapshot too (see gate_php): a commit without them cannot be
+	# checked by these hooks.
+	for must in app/appinfo/info.xml app/lib app/src app/package.json app/package-lock.json scripts/check-i18n-parity.sh \
+		scripts/gate-container.sh scripts/check-node-modules.py; do
 		[ -e "$dir/$must" ] || { echo "snapshot: $must missing" >&2; return 1; }
 	done
 	# JS dependencies come from the working copy — only valid if the lockfiles match.
@@ -44,6 +47,11 @@ make_snapshot() {
 			|| { echo "snapshot: $lock differs from the working copy — run npm ci on that state first" >&2; return 1; }
 	done
 	[ -d "$root/app/node_modules" ] || { echo "snapshot: app/node_modules missing — run npm ci in app/" >&2; return 1; }
+	# Same lockfile is not enough: node_modules may still hold an earlier checkout's packages.
+	python3 "$dir/scripts/check-node-modules.py" "$dir/app/package-lock.json" "$root/app/node_modules" || return 1
+	if [ -f "$dir/package-lock.json" ] && [ -d "$root/node_modules" ]; then
+		python3 "$dir/scripts/check-node-modules.py" "$dir/package-lock.json" "$root/node_modules" || return 1
+	fi
 	ln -s -- "$root/app/node_modules" "$dir/app/node_modules" || return 1
 	if [ -d "$root/node_modules" ]; then ln -s -- "$root/node_modules" "$dir/node_modules" || return 1; fi
 	# check-forbidden-names.sh finds its root with `git rev-parse --show-toplevel`.
@@ -52,17 +60,22 @@ make_snapshot() {
 }
 
 gate_security() {
-	local dir="$1" hits
+	local dir="$1" raw rc=0 hits
 	echo -n "Security scan... "
 	[ -d "$dir/app/lib" ] && [ -d "$dir/app/src" ] || { gate_fail "app/lib or app/src missing"; return 1; }
-	# grep exits 1 for "no match", which is the passing case; anything above 1 is an error
-	# (unreadable file, bad pattern) and must fail the gate instead of reading as "clean".
-	local raw rc=0 filter_rc=0
-	raw=$(grep -rn 'api_key.*=.*["'"'"']sk-\|password\s*=\s*["'"'"'][A-Za-z0-9]' --include="*.php" --include="*.js" --include="*.vue" "$dir/app/lib/" "$dir/app/src/") || rc=$?
+	# Run from the snapshot root so paths are relative: the allow-list below must only ever see
+	# the matched source line, never a path (a TMPDIR containing "test" would hide everything).
+	# grep exits 1 for "no match" (the passing case); above 1 is an error and fails the gate.
+	raw=$(cd "$dir" && grep -rn 'api_key.*=.*["'"'"']sk-\|password\s*=\s*["'"'"'][A-Za-z0-9]' \
+		--include="*.php" --include="*.js" --include="*.vue" app/lib/ app/src/) || rc=$?
 	if [ "$rc" -gt 1 ]; then gate_fail "grep failed (exit $rc)"; return 1; fi
-	hits=$(grep -v 'getenv\|config\|Config\|IConfig\|test\|example\|\.env\|password_hash\|passwordField\|password_confirm\|password_reset\|PASSWORD' <<<"$raw") || filter_rc=$?
-	if [ "$filter_rc" -gt 1 ]; then gate_fail "grep filter failed (exit $filter_rc)"; return 1; fi
-	if [ -n "$hits" ]; then gate_fail "possibly hardcoded secrets:"; echo "${hits//$dir\//}"; return 1; fi
+	# path:line:content -> keep "path:line" where the CONTENT is not an allowed pattern.
+	hits=$(printf '%s\n' "$raw" | awk -F: 'NF >= 3 {
+		content = $0; sub(/^[^:]*:[^:]*:/, "", content)
+		if (content !~ /getenv|config|Config|IConfig|test|example|\.env|password_hash|passwordField|password_confirm|password_reset|PASSWORD/) print $1 ":" $2
+	}') || { gate_fail "filter failed"; return 1; }
+	# Only file:line — printing the line would copy a real credential into terminal and hook logs.
+	if [ -n "$hits" ]; then gate_fail "possibly hardcoded secrets (content not shown):"; echo "$hits"; return 1; fi
 	gate_ok
 }
 
@@ -78,8 +91,15 @@ gate_vitest() {
 	echo -n "Vitest... "
 	# Exit code decides, not the text: 'Tests 1 failed | 1220 passed' contains "passed".
 	out=$(cd "$dir/app" && npm run --silent test 2>&1) || rc=$?
-	if [ "$rc" -eq 0 ]; then gate_ok "$(echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -oE 'Tests +[0-9]+ passed' | tail -1)"; return 0; fi
-	gate_fail "exit $rc"; echo "$out" | tail -12; return 1
+	# Exit 0 alone is not proof: a runner that finds no tests, or a script that does nothing,
+	# also exits 0. Require vitest's own summary with a positive count and nothing failed.
+	local plain summary
+	plain=$(printf '%s\n' "$out" | sed 's/\x1b\[[0-9;]*m//g')
+	summary=$(printf '%s\n' "$plain" | grep -E '^ *Tests +' | tail -1)
+	if [ "$rc" -eq 0 ] && grep -qE 'Tests +[1-9][0-9]* passed' <<<"$summary" && ! grep -q 'failed' <<<"$summary"; then
+		gate_ok "$(grep -oE 'Tests +[0-9]+ passed' <<<"$summary")"; return 0
+	fi
+	gate_fail "exit $rc, summary: ${summary:-none}"; echo "$out" | tail -12; return 1
 }
 
 gate_i18n() {
@@ -96,12 +116,14 @@ gate_forbidden_names() {
 	gate_fail; echo "$out" | head -20; return 1
 }
 
-# gate_php <--index | --ref <sha>> — PHPStan + PHPUnit in a throwaway container.
+# gate_php <snapshot-dir> <--index | --ref <sha>> — PHPStan + PHPUnit in a throwaway container.
+# The gate script runs from the snapshot, not the working copy: an unstaged edit that makes it
+# exit 0 must not let the commit through.
 gate_php() {
-	local root out rc=0
+	local snap="$1" root out rc=0; shift
 	root="$(git rev-parse --show-toplevel)" || return 1
 	echo -n "PHPStan + PHPUnit (container)... "
-	out=$("$root/scripts/gate-container.sh" all "$@" 2>&1) || rc=$?
+	out=$(GATE_GIT_ROOT="$root" "$snap/scripts/gate-container.sh" all "$@" 2>&1) || rc=$?
 	if [ "$rc" -eq 0 ]; then gate_ok "$(echo "$out" | tail -1)"; return 0; fi
 	gate_fail "exit $rc"
 	echo "$out" | grep -E "^ *[0-9]+ +|^ *Line|\[ERROR\]|^[0-9]+\)|^(FAILURES|ERRORS)!|^Tests:|GATE-RESULT|CLEANUP|gate-container:" | head -20
