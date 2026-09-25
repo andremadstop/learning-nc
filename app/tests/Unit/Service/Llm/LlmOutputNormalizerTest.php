@@ -28,7 +28,8 @@ class LlmOutputNormalizerTest extends TestCase {
     }
 
     public function testDecodesLiteralUnicodeEscapes(): void {
-        $this->assertSame('Prüfung ä', $this->normalizer->normalize('Prüfung ä'));
+        // Literal backslash-u sequences as some models return them (single quotes: no PHP decoding).
+        $this->assertSame('Prüfung ä', $this->normalizer->normalize('Pr\u00fcfung \u00e4'));
     }
 
     public function testKeepsCorrectUtf8Untouched(): void {
@@ -77,6 +78,61 @@ class LlmOutputNormalizerTest extends TestCase {
         $this->assertSame('Antwort', $this->normalizer->normalize("Überlegung…\n</think>\nAntwort"));
     }
 
+    public function testUnclosedThinkAfterAnswerDropsTheTruncatedReasoning(): void {
+        $this->assertSame('Antwort', $this->normalizer->normalize("Antwort <think>private Überlegung, abgeschnitten"));
+    }
+
+    public function testTruncatedNestedThinkLeaksNothing(): void {
+        $this->assertSame('', $this->normalizer->normalize('<think>außen<think>innen</think>privater Rest'));
+        $this->assertSame('A B', $this->normalizer->normalize('A <think>x<think>y</think>z</think>B'));
+    }
+
+    public function testUnclosedThinkAfterWhitespaceAndBomMeansNoAnswer(): void {
+        $this->assertSame('', $this->normalizer->normalize(" \n\xEF\xBB\xBF<think>abgeschnitten"));
+    }
+
+    public function testEscapedThinkTagsAreRemovedToo(): void {
+        // The \uXXXX decoding must not turn escaped delimiters into visible reasoning afterwards.
+        $escaped = '\u003cthink\u003egeheim\u003c/think\u003eAntwort';
+        $this->assertSame('Antwort', $this->normalizer->normalize($escaped));
+        $mixed = '<think>geheim\u003c/think>Antwort';
+        $this->assertSame('Antwort', $this->normalizer->normalize($mixed));
+    }
+
+    public function testTagsThatOnlyStartWithThinkAreNotReasoning(): void {
+        $in = '<think-aloud>Nützliche Erklärung</think-aloud>';
+        $this->assertSame($in, $this->normalizer->normalize($in));
+    }
+
+    public function testMentionOfClosingTagAfterRealBlockIsKept(): void {
+        $in = '<think>r</think>Nutze `</think>` zum Schließen.';
+        $this->assertSame('Nutze `</think>` zum Schließen.', $this->normalizer->normalize($in));
+    }
+
+    public function testOrphanClosingTagWithoutOpeningIsTreatedAsEndOfReasoning(): void {
+        // Indistinguishable from a chat template that opened <think> in the prompt; leaking
+        // reasoning is worse than cutting a literal mention, so the text before it goes.
+        $this->assertSame('` hier.', $this->normalizer->normalize('Das Schließ-Tag `</think>` hier.'));
+        $this->assertSame('Antwort mit `</think>`.', $this->normalizer->normalize("Überlegung</think>Antwort mit `</think>`."));
+    }
+
+    public function testLiteralOpeningTagInAnswerIsTreatedAsTruncatedReasoning(): void {
+        // Same trade-off as the orphan closing tag: an unclosed <think> cannot be told apart
+        // from output cut off inside reasoning, so the answer ends there rather than leak.
+        $this->assertSame('Das Tag `', $this->normalizer->normalize('<think>r</think>Das Tag `<think>` öffnet einen Block.'));
+    }
+
+    public function testSelfClosingThinkIsAnEmptyBlock(): void {
+        $this->assertSame('Antwort', $this->normalizer->normalize('<think/>Antwort'));
+        $this->assertSame('Antwort', $this->normalizer->normalize('<think />Antwort'));
+    }
+
+    public function testLargeReasoningBlockBelowResponseLimitKeepsTheAnswer(): void {
+        // Spec: responses up to 2 MB. A lazy whole-block regex hits pcre.backtrack_limit here.
+        $in = '<think>' . str_repeat('a', 1100000) . '</think>Antwort';
+        $this->assertSame('Antwort', $this->normalizer->normalize($in));
+    }
+
     public function testOtherTagsStartingWithThinkAreNotReasoning(): void {
         $in = '<think>x</think>Erklärung: das Tag </thinking> schließt.';
         $this->assertSame('Erklärung: das Tag </thinking> schließt.', $this->normalizer->normalize($in));
@@ -96,12 +152,13 @@ class LlmOutputNormalizerTest extends TestCase {
         return [
             'bom' => ["\xEF\xBB\xBFHallo"],
             'whitespace' => ["  Text mit Rand \n"],
-            'unicode escape' => ['Prüfung ä €'],
+            'unicode escape' => ['Pr\u00fcfung \u00e4 \u20ac'],
+            'surrogate pair stays escaped (legacy)' => ['\uD83D\uDE00 Smiley'],
             'invalid escape kept' => ['\u12 bleibt'],
             'real umlaut' => ['Größe ä'],
             'mojibake' => ['GrÃ¶ÃŸe Ã¤uÃŸern'],
             'mojibake lookalike' => ['Ãx Test'],
-            'mixed escape and mojibake' => ['Ã¤ ü'],
+            'mixed escape and mojibake' => ['Ã¤ \u00fc'],
             'empty' => [''],
             'whitespace only' => ["  \n "],
             'bom only' => ["\xEF\xBB\xBF"],
