@@ -1,5 +1,5 @@
 {
-  "_about": "Requests of the 5.6 Anthropic adapter (lib/Service/Llm/Provider/AnthropicProvider.php). There is no 5.5 class to pin against: every field is pinned against the Claude API reference (claude-api skill, checked 2026-09-25), cited in AnthropicProviderTest. POST https://api.anthropic.com/v1/messages, key in x-api-key, anthropic-version 2023-06-01, max_tokens = request.maxOutputTokens clamped to 4096-16000 (default 1200 -> 4096), system only when the trimmed system prompt is not empty, one user message with the prompt as given, temperature only for models ModelCapabilities allows it for, clamped to the API range 0-1 (default 0.7), no thinking/output_config/beta headers. input.temperature/maxOutputTokens null = not passed. A whole-number temperature goes over the wire as an integer (json_encode without JSON_PRESERVE_ZERO_FRACTION). headers = what the adapter sets plus the Content-Type LlmHttpClient always sends.",
+  "_about": "Requests of the 5.6 Anthropic adapter (lib/Service/Llm/Provider/AnthropicProvider.php). There is no 5.5 class to pin against: every field is pinned against the Claude API reference (claude-api skill, checked 2026-09-25), cited in AnthropicProviderTest. POST https://api.anthropic.com/v1/messages, key in x-api-key, anthropic-version 2023-06-01, max_tokens = max(4096, request.maxOutputTokens) as the plan (A5d) says, no ceiling (default 1200 -> 4096), system only when the trimmed system prompt is not empty, one user message with the prompt as given, temperature only for models ModelCapabilities allows it for, clamped to the API range 0-1 (default 0.7), no thinking/output_config/beta headers. input.temperature/maxOutputTokens null = not passed. A whole-number temperature goes over the wire as an integer (json_encode without JSON_PRESERVE_ZERO_FRACTION). headers = what the adapter sets plus the Content-Type LlmHttpClient always sends.",
   "cases": [
     {
       "name": "default-model-no-temperature",
@@ -36,7 +36,7 @@
         "url": "https://api.anthropic.com/v1/messages",
         "timeoutSec": 45,
         "headers": {"x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-        "body": {"model": "claude-haiku-4-5", "max_tokens": 16000,
+        "body": {"model": "claude-haiku-4-5", "max_tokens": 99999,
           "messages": [{"role": "user", "content": "U"}], "temperature": 1}
       }
     },

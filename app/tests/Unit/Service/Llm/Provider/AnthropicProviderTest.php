@@ -29,8 +29,8 @@ use Psr\Log\LoggerInterface;
  *   Where it is allowed its range is 0.0–1.0 ("Invalid `temperature` value (must be 0.0-1.0)").
  * - claude-opus-5 thinks by default and claude-opus-5-5 cannot turn thinking off; thinking tokens
  *   count against `max_tokens`, hence the 4096 floor. The response then carries `thinking` blocks
- *   — only `type: text` blocks are the answer. Non-streaming requests keep `max_tokens` around
- *   16000 or below (larger values need streaming), hence the 16000 ceiling.
+ *   — only `type: text` blocks are the answer. No ceiling: the plan's contract is
+ *   max(4096, maxOutputTokens), and a model's own output limit is not the adapter's to guess.
  * - `stop_reason`: `end_turn`, `max_tokens`, `stop_sequence`, `tool_use`, `pause_turn`,
  *   `refusal`, `model_context_window_exceeded`. A refusal is an HTTP 200 whose content may hold
  *   partial text; "check stop_reason before reading content", `stop_details` is informational and

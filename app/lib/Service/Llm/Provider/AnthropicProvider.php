@@ -20,9 +20,9 @@ use OCA\Learning\Service\Llm\ModelCapabilities;
  * - POST https://api.anthropic.com/v1/messages, headers `x-api-key` and
  *   `anthropic-version: 2023-06-01`. The connection's baseUrl must be exactly that endpoint: key and
  *   consent are bound to baseUrl, so any other value is a config error and nothing is sent.
- * - Body: `model` (default claude-opus-5), `max_tokens` = requested tokens clamped to 4096–16000
- *   (current models think by default and thinking counts against max_tokens; larger values would
- *   need streaming), top-level `system` only when not empty, one `user` message. `temperature` only
+ * - Body: `model` (default claude-opus-5), `max_tokens` = max(4096, requested tokens) as plan A5d
+ *   says (current models think by default and thinking counts against max_tokens), top-level
+ *   `system` only when not empty, one `user` message. `temperature` only
  *   where ModelCapabilities allows it, clamped to the API range 0–1 (default 0.7).
  * - Never sent: `thinking`, `output_config`, server-side `fallbacks` or any beta header — a
  *   fallback would re-run the prompt on a model the admin did not choose.
@@ -38,7 +38,6 @@ final class AnthropicProvider implements LlmProviderInterface {
     private const DEFAULT_MODEL = 'claude-opus-5';
     private const DEFAULT_TEMPERATURE = 0.7;
     private const MIN_MAX_TOKENS = 4096;
-    private const MAX_MAX_TOKENS = 16000;
 
     public function __construct(
         private LlmHttpClient $http,
@@ -63,7 +62,7 @@ final class AnthropicProvider implements LlmProviderInterface {
         $model = $connection->model !== '' ? $connection->model : self::DEFAULT_MODEL;
         $body = [
             'model' => $model,
-            'max_tokens' => max(self::MIN_MAX_TOKENS, min(self::MAX_MAX_TOKENS, $request->maxOutputTokens)),
+            'max_tokens' => max(self::MIN_MAX_TOKENS, $request->maxOutputTokens),
         ];
         $system = trim($request->systemPrompt);
         if ($system !== '') {
