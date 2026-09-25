@@ -26,14 +26,18 @@ class AiChatMemoryService {
     private GeminiService $geminiService;
     private LoggerInterface $logger;
 
+    private TelosService $telosService;
+
     public function __construct(
         AiChatMemoryMapper $mapper,
         GeminiService $geminiService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        TelosService $telosService
     ) {
         $this->mapper = $mapper;
         $this->geminiService = $geminiService;
         $this->logger = $logger;
+        $this->telosService = $telosService;
     }
 
     /**
@@ -140,6 +144,12 @@ class AiChatMemoryService {
         }
 
         $conversationText = implode("\n", $lines);
+
+        // 5.5.2: compression is a second request after the chat answer — check consent again right
+        // before sending instead of relying on the controller's check for the first request.
+        if (!$this->telosService->hasAiConsent($userId)) {
+            return 'Summary of earlier conversation covering various learning topics.';
+        }
 
         $systemPrompt = 'You are a conversation summarizer. Summarize the following chat excerpt '
             . 'into 2-3 sentences preserving the key learning topics discussed. '

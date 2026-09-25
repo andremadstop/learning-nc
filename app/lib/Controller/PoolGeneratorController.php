@@ -71,6 +71,9 @@ class PoolGeneratorController extends Controller {
             $drafts = $this->service->generateFromText($text, $this->userId, $questionCount);
             return new JSONResponse(['questions' => $drafts]);
         } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'consent_required') {
+                return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+            }
             return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Throwable $e) {
             $this->logger->error('PoolGenerator fromText error: ' . $e->getMessage(), ['app' => 'learning']);
@@ -96,6 +99,9 @@ class PoolGeneratorController extends Controller {
             $drafts = $this->service->generateFromFile($filePath, $this->userId, $questionCount);
             return new JSONResponse(['questions' => $drafts]);
         } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'consent_required') {
+                return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+            }
             return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Throwable $e) {
             $this->logger->error('PoolGenerator fromFile error: ' . $e->getMessage(), ['app' => 'learning']);
@@ -118,6 +124,9 @@ class PoolGeneratorController extends Controller {
             $result = $this->service->createPool($title, $questions, $this->userId);
             return new JSONResponse($result);
         } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'consent_required') {
+                return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+            }
             return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Throwable $e) {
             $this->logger->error('PoolGenerator createPool error: ' . $e->getMessage(), ['app' => 'learning']);

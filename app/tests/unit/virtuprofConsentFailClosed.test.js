@@ -71,6 +71,35 @@ describe('VirtuProf consent is fail-closed', () => {
 		expect(ctx.handleChatSend).toHaveBeenCalledWith('Was ist ein VLAN?')
 	})
 
+	it('reopens the consent dialog when the server answers consent_required', async () => {
+		axios.post.mockRejectedValueOnce({ response: { status: 403, data: { consent_required: true } } })
+		const ctx = {
+			...makeContext(),
+			aiConsentVersion: '2.0', // client believes it has consent, server disagrees
+			pendingChatMessage: null,
+			showAiConsentDialog: false,
+			visible: true,
+			isMinimized: false,
+			chatMessages: [],
+			chatLoading: false,
+			currentContext: null,
+			hintLevel: 0,
+			applyReaction: vi.fn(),
+			isHintRequest: () => false,
+		}
+		ctx.handleChatSend = VirtuProf.methods.handleChatSend
+
+		await ctx.handleChatSend('Was ist ein VLAN?')
+
+		expect(ctx.showAiConsentDialog).toBe(true)
+		expect(ctx.aiConsentVersion).toBeNull()
+		expect(ctx.pendingChatMessage).toBe('Was ist ein VLAN?')
+		// the unsent message is not left in the history (it is re-sent after consent)
+		expect(ctx.chatMessages.filter((m) => m.role === 'user')).toHaveLength(0)
+		expect(ctx.chatMessages.filter((m) => m.role === 'assistant')).toHaveLength(0)
+		expect(ctx.chatLoading).toBe(false)
+	})
+
 	it('declining clears a previous save error', () => {
 		const ctx = { ...makeContext(), consentSaveError: 'x' }
 

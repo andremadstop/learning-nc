@@ -15,13 +15,17 @@ class PoolGeneratorService {
 
     private const MAX_CHUNK_WORDS = 3000;
 
+    private TelosService $telosService;
+
     public function __construct(
         LlmService $llmService,
         PoolService $poolService,
         QuestionService $questionService,
         LoggerInterface $logger,
-        \OCP\Files\IRootFolder $rootFolder
+        \OCP\Files\IRootFolder $rootFolder,
+        TelosService $telosService
     ) {
+        $this->telosService = $telosService;
         $this->llmService = $llmService;
         $this->poolService = $poolService;
         $this->questionService = $questionService;
@@ -65,6 +69,15 @@ class PoolGeneratorService {
         foreach ($chunks as $index => $chunk) {
             $remaining = $questionCount - count($allDrafts);
             if ($remaining <= 0) {
+                break;
+            }
+
+            // 5.5.2: one request per chunk — check consent before every request, not only once in
+            // the controller. Without consent before the first chunk: refuse; later: stop sending.
+            if (!$this->telosService->hasAiConsent($userId)) {
+                if ($index === 0) {
+                    throw new \RuntimeException('consent_required');
+                }
                 break;
             }
 

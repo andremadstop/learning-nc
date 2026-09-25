@@ -1952,6 +1952,18 @@ export default {
         this.chatMessages.push(msg)
       } catch (e) {
         const status = e?.response?.status
+        // 5.5.2: the server has no valid consent (e.g. the consent text changed). Ask again instead
+        // of showing a generic error; the message is kept and sent once consent is saved.
+        if (status === 403 && e?.response?.data?.consent_required) {
+          const last = this.chatMessages[this.chatMessages.length - 1]
+          if (last && last.role === 'user' && last.text === message) {
+            this.chatMessages.pop()
+          }
+          this.aiConsentVersion = null
+          this.pendingChatMessage = message
+          this.showAiConsentDialog = true
+          return
+        }
         let errorText
         if (status === 400) {
           errorText = this.vt('Your message could not be processed. Please try a shorter question.')

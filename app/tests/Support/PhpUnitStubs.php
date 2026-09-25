@@ -1424,3 +1424,12 @@ namespace OCP\Lock {
         }
     }
 }
+
+namespace OCP\Files {
+    // PoolGeneratorService takes the root folder for file-based generation (unused in text tests).
+    if (!interface_exists(IRootFolder::class)) {
+        interface IRootFolder {
+            public function getUserFolder($userId);
+        }
+    }
+}
