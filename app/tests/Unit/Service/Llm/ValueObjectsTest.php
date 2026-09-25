@@ -45,8 +45,9 @@ class ValueObjectsTest extends TestCase {
     }
 
     public function testProcessingLocalChangesRecipientFingerprint(): void {
-        $a = LlmConnection::fromArray($this->mistral());
-        $b = LlmConnection::fromArray(array_merge($this->mistral(), ['processingLocal' => true]));
+        $custom = array_merge($this->mistral(), ['preset' => 'custom', 'baseUrl' => 'https://llm.example.org/v1']);
+        $a = LlmConnection::fromArray($custom);
+        $b = LlmConnection::fromArray(array_merge($custom, ['processingLocal' => true]));
         $this->assertNotSame($a->recipientFingerprint(), $b->recipientFingerprint());
         // The flag describes the recipient, not the endpoint: toggling it must not orphan the API key.
         $this->assertSame($a->connectionFingerprint(), $b->connectionFingerprint());
@@ -231,5 +232,108 @@ class ValueObjectsTest extends TestCase {
         $this->assertInstanceOf(LlmProviderException::class, $c);
         $this->assertSame('consent', $c->category);
         $this->assertSame('consent_required', $c->getMessage());
+    }
+
+    /**
+     * Review A1/A2 (Codex P1): "processed locally" is only a claim an admin can make about a server
+     * they run. For a cloud provider it would unlock local-only disclosures while the data leaves.
+     */
+    public function testProcessingLocalIsOnlyAcceptedForSelfHostedBackends(): void {
+        $cloud = [
+            $this->mistral(),
+            array_merge($this->mistral(), ['preset' => 'openai', 'baseUrl' => 'https://api.openai.com/v1']),
+            ['enabled' => true, 'provider' => 'gemini', 'baseUrl' => 'https://generativelanguage.googleapis.com/v1beta', 'model' => 'g'],
+            ['enabled' => true, 'provider' => 'anthropic', 'baseUrl' => 'https://api.anthropic.com/v1', 'model' => 'c'],
+        ];
+        foreach ($cloud as $a) {
+            try {
+                LlmConnection::fromArray(array_merge($a, ['processingLocal' => true]));
+                $this->fail('processingLocal accepted for ' . $a['provider'] . '/' . ($a['preset'] ?? ''));
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+        $ollama = LlmConnection::fromArray(['enabled' => true, 'provider' => 'ollama', 'baseUrl' => 'http://localhost:11434',
+            'model' => 'llama3', 'allowInternalNetwork' => true, 'processingLocal' => true]);
+        $this->assertTrue($ollama->processingLocal);
+        $custom = LlmConnection::fromArray(array_merge($this->mistral(), ['preset' => 'custom', 'processingLocal' => true]));
+        $this->assertTrue($custom->processingLocal);
+    }
+
+    /**
+     * Review A1/A2: the fingerprint host must be the host the HTTP client connects to. parse_url
+     * accepts hosts that curl reads differently (backslash, spaces), so those URLs are rejected.
+     */
+    public function testUrlsThatParsersReadDifferentlyAreRejected(): void {
+        $bad = [
+            'https://evil.example\\.api.mistral.ai/v1',
+            'https://a b/v1',
+            'https://bücher.example/v1',
+            'https://api.mistral.ai:0/v1',
+            "https://api.mistral.ai/v\xff",
+            "https://api.mistral.ai/v\n1",
+            'https://api.mistral.ai/v1?',
+        ];
+        foreach ($bad as $url) {
+            try {
+                LlmConnection::fromArray(array_merge($this->mistral(), ['preset' => 'custom', 'baseUrl' => $url]));
+                $this->fail('accepted ' . json_encode($url, JSON_INVALID_UTF8_SUBSTITUTE));
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    /** Every URL 5.5 OllamaProvider accepted must still load, or an upgrade silently turns AI off. */
+    public function testTypicalLegacyOllamaUrlsStayValid(): void {
+        foreach (['http://localhost:11434', 'http://127.0.0.1:11434', 'http://ollama:11434/', 'http://host.docker.internal:11434',
+            'http://10.0.0.5:11434', 'http://[::1]:11434', 'http://ollama.lan:11434'] as $url) {
+            $c = LlmConnection::fromArray(['enabled' => true, 'provider' => 'ollama', 'baseUrl' => $url, 'model' => 'llama3',
+                'allowInternalNetwork' => true]);
+            $this->assertSame('ollama', $c->provider, $url);
+        }
+    }
+
+    /** Review A1/A2 (Codex P2): equivalent spellings of one host must not orphan keys or consents. */
+    public function testIpv6AndTrailingDotSpellingsShareFingerprints(): void {
+        $custom = array_merge($this->mistral(), ['preset' => 'custom']);
+        $pairs = [
+            ['https://[2001:db8::1]/v1', 'https://[2001:0DB8:0:0:0:0:0:1]/v1'],
+            ['https://api.mistral.ai/v1', 'https://api.mistral.ai./v1'],
+        ];
+        foreach ($pairs as [$x, $y]) {
+            $a = LlmConnection::fromArray(array_merge($custom, ['baseUrl' => $x]));
+            $b = LlmConnection::fromArray(array_merge($custom, ['baseUrl' => $y]));
+            $this->assertSame($a->connectionFingerprint(), $b->connectionFingerprint(), $y);
+            $this->assertSame($a->recipientFingerprint(), $b->recipientFingerprint(), $y);
+        }
+    }
+
+    /**
+     * Review A1/A2 (Codex P2): json_encode fails on invalid UTF-8; cast to '' every such
+     * configuration would share one fingerprint and therefore one API key.
+     */
+    public function testInvalidUtf8IsRejectedAndNeverHashedToACommonValue(): void {
+        foreach ([['model' => "m\xff"], ['preset' => 'openrouter', 'baseUrl' => 'https://openrouter.ai/api/v1',
+            'openRouterRouting' => ['order' => ["anth\xffropic"], 'allowFallbacks' => false]]] as $patch) {
+            try {
+                LlmConnection::fromArray(array_merge($this->mistral(), $patch));
+                $this->fail('accepted invalid UTF-8');
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+        // The public constructor skips validation; the hash must still refuse instead of hashing ''.
+        $raw = new LlmConnection(1, true, 'openai_compatible', 'openrouter', 'https://openrouter.ai/api/v1', "m\xff",
+            false, false, ['order' => ['anthropic'], 'allowFallbacks' => false], null);
+        $this->expectException(\JsonException::class);
+        $raw->recipientFingerprint();
+    }
+
+    /** OpenRouter's model decides the recipient even if a snapshot was built without fromArray(). */
+    public function testOpenRouterFingerprintAlwaysIncludesTheModel(): void {
+        $mk = fn (string $model) => new LlmConnection(1, true, 'openai_compatible', 'openrouter', 'https://openrouter.ai/api/v1',
+            $model, false, false, null, null);
+        $this->assertNotSame($mk('a/one')->recipientFingerprint(), $mk('b/two')->recipientFingerprint());
     }
 }

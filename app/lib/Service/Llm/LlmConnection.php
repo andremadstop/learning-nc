@@ -70,6 +70,14 @@ final class LlmConnection {
         if ($model === '') {
             throw new \InvalidArgumentException('Model must not be empty');
         }
+        if (preg_match('//u', $model) !== 1) {
+            throw new \InvalidArgumentException('Model must be valid UTF-8');
+        }
+        // "Processed locally" is a statement about a server the admin runs. For a cloud provider it
+        // would unlock local-only disclosures while the data leaves the instance.
+        if ($processingLocal && $provider !== 'ollama' && $preset !== 'custom') {
+            throw new \InvalidArgumentException('processingLocal is only possible for Ollama or a custom endpoint');
+        }
 
         $routing = null;
         if ($preset === 'openrouter') {
@@ -103,9 +111,11 @@ final class LlmConnection {
     public function recipientFingerprint(): string {
         $parts = $this->endpointParts();
         $parts['processingLocal'] = $this->processingLocal;
-        if ($this->preset === 'openrouter' && $this->openRouterRouting !== null) {
+        if ($this->preset === 'openrouter') {
+            // The model decides the actual recipient behind OpenRouter, even for a snapshot that was
+            // built without fromArray() and therefore without validated routing.
             $parts['model'] = $this->model;
-            $parts['providerOrder'] = $this->openRouterRouting['order'];
+            $parts['providerOrder'] = $this->openRouterRouting['order'] ?? [];
             $parts['allowFallbacks'] = false;
         }
         return self::hashCanonical($parts);
@@ -121,15 +131,36 @@ final class LlmConnection {
             'provider' => $this->provider,
             'preset' => $this->preset,
             'scheme' => $scheme,
-            'host' => strtolower((string)($u['host'] ?? '')),
+            'host' => self::canonicalHost((string)($u['host'] ?? '')),
             'port' => $port,
             'pathPrefix' => rtrim((string)($u['path'] ?? ''), '/'),
         ];
     }
 
-    /** @param array<string, mixed> $data */
+    /**
+     * One spelling per host: lowercase, no trailing dot, IPv6 literals in RFC 5952 form. Unicode
+     * hosts never get here (validateBaseUrl rejects them), so IDNs are only accepted as punycode.
+     */
+    private static function canonicalHost(string $host): string {
+        $host = rtrim(strtolower($host), '.');
+        if (str_starts_with($host, '[') && str_ends_with($host, ']')) {
+            $packed = @inet_pton(substr($host, 1, -1));
+            if ($packed !== false) {
+                $text = inet_ntop($packed);
+                if ($text !== false) {
+                    return '[' . $text . ']';
+                }
+            }
+        }
+        return $host;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws \JsonException instead of hashing '' for data that cannot be encoded (invalid UTF-8)
+     */
     private static function hashCanonical(array $data): string {
-        return hash('sha256', (string)json_encode(self::ksortRecursive($data), JSON_UNESCAPED_SLASHES));
+        return hash('sha256', json_encode(self::ksortRecursive($data), JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -149,9 +180,15 @@ final class LlmConnection {
     }
 
     private static function validateBaseUrl(string $url, bool $allowInternal): void {
-        $u = parse_url($url);
+        // FILTER_VALIDATE_URL is what 5.5 OllamaProvider accepted; it also rejects what parse_url and
+        // curl read differently (backslashes, spaces, non-ASCII hosts, control characters), so the
+        // host in the fingerprint is the host the request goes to.
+        $u = filter_var($url, FILTER_VALIDATE_URL) !== false && preg_match('//u', $url) === 1 ? parse_url($url) : false;
         if (!is_array($u) || !isset($u['scheme'], $u['host']) || $u['host'] === '') {
             throw new \InvalidArgumentException('Base URL must be an absolute URL');
+        }
+        if (isset($u['port']) && ($u['port'] < 1 || $u['port'] > 65535)) {
+            throw new \InvalidArgumentException('Base URL has an invalid port');
         }
         $scheme = strtolower($u['scheme']);
         if ($scheme !== 'https' && !($scheme === 'http' && $allowInternal)) {
@@ -171,7 +208,7 @@ final class LlmConnection {
     private static function validateOpenRouterRouting(mixed $routing): array {
         if (!is_array($routing) || !is_array($routing['order'] ?? null) || !array_is_list($routing['order'])
             || count($routing['order']) !== 1 || !is_string($routing['order'][0])
-            || trim($routing['order'][0]) === '' || ($routing['allowFallbacks'] ?? null) !== false) {
+            || trim($routing['order'][0]) === '' || preg_match('//u', $routing['order'][0]) !== 1 || ($routing['allowFallbacks'] ?? null) !== false) {
             throw new \InvalidArgumentException('OpenRouter requires exactly one target provider and allowFallbacks=false');
         }
         return ['order' => [trim($routing['order'][0])], 'allowFallbacks' => false];
