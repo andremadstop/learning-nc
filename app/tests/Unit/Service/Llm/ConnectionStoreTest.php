@@ -120,6 +120,28 @@ class ConnectionStoreTest extends TestCase {
         $this->assertSame(2, $this->values->clearCacheCalls);
     }
 
+    // Review A1/A2 (Codex P2): only a missing snapshot may fall back to the 5.5 keys.
+    public function testExistingEmptyAiConnectionFailsClosed(): void {
+        $this->values->set('learning', 'ai_provider', 'gemini');
+        $this->values->set('learning', 'ai_enabled', 'yes');
+        $this->values->set('learning', 'ai_connection', '');
+        $store = $this->store();
+        $this->assertSame('disabled', $store->load()->provider);
+        $this->assertFalse($store->isEnabledNow());
+    }
+
+    public function testIsEnabledNowSeesAnotherProcessSwitchingOff(): void {
+        $this->values->set('learning', 'ai_connection', (string)json_encode($this->mistral()));
+        $store = $this->store();
+        $this->assertTrue($store->load()->enabled);
+        $this->values->setFromOtherProcess('learning', 'ai_connection',
+            (string)json_encode(array_merge($this->mistral(), ['enabled' => false])));
+        // The snapshot read keeps the process cache (a request sees one consistent state) ...
+        $this->assertTrue($store->load()->enabled);
+        // ... the kill-switch check before sending does not.
+        $this->assertFalse($store->isEnabledNow());
+    }
+
     public function testIsEnabledNowIsFalseForDisabledProvider(): void {
         $this->values->set('learning', 'ai_connection', (string)json_encode(['provider' => 'disabled', 'enabled' => true]));
         $this->assertFalse($this->store()->isEnabledNow());

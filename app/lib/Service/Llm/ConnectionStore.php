@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Reads and writes the connection snapshot `ai_connection` (spec 2.3).
  *
- * - load(): one read of `ai_connection`; if it is missing, the snapshot is derived from the 5.5
+ * - load(): one read of `ai_connection`; only if it is missing, the snapshot is derived from the 5.5
  *   keys (ai_provider, ai_enabled, ai_ollama_url, ai_ollama_model), so neither a fresh install
  *   nor an upgrade needs a repair step to keep working. An empty ai_provider meant the removed
  *   TaskProcessing path and becomes `disabled`. Anything unreadable fails closed to `disabled`.
@@ -51,9 +51,15 @@ class ConnectionStore {
     }
 
     public function load(): LlmConnection {
+        // Only a missing snapshot falls back to the 5.5 keys. An existing but empty (or lazily
+        // stored, hence unreadable here) value is broken and fails closed like invalid JSON.
+        if (!$this->appConfig->hasKey(self::APP, self::KEY, null)) {
+            return $this->deriveFromLegacy();
+        }
         $raw = $this->appConfig->getValueString(self::APP, self::KEY, '');
         if ($raw === '') {
-            return $this->deriveFromLegacy();
+            $this->logger->warning('ai_connection is empty; AI is treated as disabled', ['app' => self::APP]);
+            return self::disabled();
         }
         $data = json_decode($raw, true);
         if (!is_array($data)) {
