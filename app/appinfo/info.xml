@@ -73,7 +73,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 **Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Open an issue with a bit of context and we're happy to walk you through it.
     ]]></description>
 
-    <version>5.5.2</version>
+    <version>5.5.3</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://codeberg.org/andremadstop">Andre</author>
     <namespace>Learning</namespace>
@@ -111,9 +111,22 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
     <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/11-en-pools.png</screenshot>
 
     <dependencies>
-        <nextcloud min-version="33" max-version="35"/>
         <php min-version="8.1"/>
+        <nextcloud min-version="33" max-version="35"/>
     </dependencies>
+
+    <background-jobs>
+        <job>OCA\Learning\BackgroundJob\SendRemindersJob</job>
+    </background-jobs>
+
+    <repair-steps>
+        <post-migration>
+            <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
+        </post-migration>
+        <install>
+            <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
+        </install>
+    </repair-steps>
 
     <commands>
         <command>OCA\Learning\Command\ImportVaultCommand</command>
@@ -128,10 +141,6 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         <command>OCA\Learning\Command\UninstallCommand</command>
     </commands>
 
-    <background-jobs>
-        <job>OCA\Learning\BackgroundJob\SendRemindersJob</job>
-    </background-jobs>
-
     <settings>
         <admin>OCA\Learning\Settings\AdminSettings</admin>
         <admin-section>OCA\Learning\Settings\AdminSection</admin-section>
@@ -140,12 +149,12 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
     </settings>
 
     <activity>
-        <providers>
-            <provider>OCA\Learning\Activity\Provider</provider>
-        </providers>
         <settings>
             <setting>OCA\Learning\Activity\Setting</setting>
         </settings>
+        <providers>
+            <provider>OCA\Learning\Activity\Provider</provider>
+        </providers>
     </activity>
 
     <navigations>

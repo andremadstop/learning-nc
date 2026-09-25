@@ -20,6 +20,20 @@ namespace OCP\DB\QueryBuilder {
         }
     }
 
+    // Signatures from NC 33's lib/public/DB/QueryBuilder/IFunctionBuilder.php / IQueryFunction.php
+    // (count() only — add further functions when a test needs them).
+    if (!interface_exists(IQueryFunction::class)) {
+        interface IQueryFunction {
+            public function __toString(): string;
+        }
+    }
+
+    if (!interface_exists(IFunctionBuilder::class)) {
+        interface IFunctionBuilder {
+            public function count($count = '', $alias = ''): IQueryFunction;
+        }
+    }
+
     if (!interface_exists(IQueryBuilder::class)) {
         interface IQueryBuilder {
             public const PARAM_INT = 1;
@@ -33,6 +47,7 @@ namespace OCP\DB\QueryBuilder {
 
             // Phase 160: full DML/query surface so PHPUnit can mock/configure each method
             public function expr(): IExpressionBuilder;
+            public function func(): IFunctionBuilder;
             public function insert(string $table): self;
             public function update(string $table): self;
             public function delete(string $table): self;
@@ -60,6 +75,17 @@ namespace OCP\DB\QueryBuilder {
 }
 
 namespace OCP\DB {
+    // Signatures from NC 33's lib/public/DB/IResult.php (the read surface tests mock).
+    if (!interface_exists(IResult::class)) {
+        interface IResult {
+            public function closeCursor(): bool;
+
+            public function fetch(int $fetchMode = \PDO::FETCH_ASSOC);
+
+            public function fetchOne();
+        }
+    }
+
     if (!class_exists(Exception::class)) {
         // Minimal stub of OCP\DB\Exception so unit tests can simulate a UNIQUE-constraint violation
         // (the real class wraps a Doctrine exception; tests only need getReason()).
@@ -1385,6 +1411,15 @@ namespace OCP\Migration {
             public function advance($step = 1, $description = '');
 
             public function finishProgress();
+        }
+    }
+
+    if (!interface_exists(IRepairStep::class)) {
+        // Signatures copied verbatim from NC 33's lib/public/Migration/IRepairStep.php.
+        interface IRepairStep {
+            public function getName();
+
+            public function run(IOutput $output);
         }
     }
 
