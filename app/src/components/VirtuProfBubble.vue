@@ -437,6 +437,7 @@
           <p class="ai-consent-privacy-link">
             <a href="#/settings/privacy">{{ t('learning', 'Mehr zum Datenschutz') }}</a>
           </p>
+          <p v-if="consentError" class="ai-consent-error" role="alert">{{ consentError }}</p>
           <div class="ai-consent-actions">
             <NcButton variant="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Akzeptieren') }}</NcButton>
             <NcButton variant="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Ablehnen') }}</NcButton>
@@ -967,6 +968,10 @@ export default {
     consentData: {
       type: Object,
       default: () => ({}),
+    },
+    consentError: {
+      type: String,
+      default: null,
     },
     examBlocked: {
       type: Boolean,
@@ -1727,6 +1732,12 @@ export default {
 .ai-consent-privacy-link a {
   color: var(--color-primary-element);
   text-decoration: underline;
+}
+
+.ai-consent-error {
+  margin: 0 0 8px;
+  color: var(--color-error-text, var(--color-error));
+  font-weight: 600;
 }
 
 .ai-consent-actions {

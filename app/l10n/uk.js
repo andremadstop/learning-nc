@@ -3081,5 +3081,6 @@ OC.L10N.register(
     "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht." : "Жоден пул цього курсу не позначено як обов’язковий, тож ніхто не зможе розпочати пробний іспит. Позначте пули, що стосуються іспиту, як обов’язкові в правилах пулів навчального простору.",
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Питання вибираються випадково з обов’язкових пулів цього курсу, щоразу заново. Зворотний зв’язок лише наприкінці, потім розбір із поясненнями. Пробні іспити не зараховуються до сертифіката.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Цей пробний іспит використовує лише обов’язкові пули, але жоден ще не позначено як обов’язковий. Зверніться до викладача.",
+    "Your consent could not be saved. Please try again." : "Не вдалося зберегти твою згоду. Будь ласка, спробуй ще раз.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

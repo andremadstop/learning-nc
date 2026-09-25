@@ -12,6 +12,7 @@
       <p class="ai-consent-privacy-link">
         <a href="#/settings/privacy">{{ t('learning', 'Mehr zum Datenschutz') }}</a>
       </p>
+      <p v-if="consentError" class="ai-consent-error" role="alert">{{ consentError }}</p>
       <div class="ai-consent-actions">
         <button type="button" class="header-action header-action--primary" @click="$emit('consent-accept')">
           {{ consentData.accept_label || t('learning', 'Akzeptieren') }}
@@ -232,6 +233,10 @@ export default {
     consentData: {
       type: Object,
       default: () => ({}),
+    },
+    consentError: {
+      type: String,
+      default: null,
     },
     examBlocked: {
       type: Boolean,
@@ -873,6 +878,12 @@ export default {
 
 .ai-consent-privacy-link a {
   color: var(--virtuprof-overlay-link);
+}
+
+.ai-consent-error {
+  margin: 0 0 8px;
+  color: var(--color-error-text, var(--color-error));
+  font-weight: 600;
 }
 
 .ai-consent-actions {

@@ -12,6 +12,7 @@
       :ai-enabled="aiEnabled"
       :show-consent-dialog="showAiConsentDialog"
       :consent-data="consentData"
+      :consent-error="consentSaveError"
       :exam-blocked="isExamMode"
       :has-question-context="hasActiveQuestionContext"
       :current-context="currentContext"
@@ -61,6 +62,7 @@
           :ai-enabled="aiEnabled"
           :show-consent-dialog="showAiConsentDialog"
           :consent-data="consentData"
+          :consent-error="consentSaveError"
           :exam-blocked="isExamMode"
           :has-question-context="hasActiveQuestionContext"
           :telos-form="telosForm"
@@ -285,6 +287,7 @@ export default {
       aiConsentVersion: null,
       consentData,
       showAiConsentDialog: false,
+      consentSaveError: null,
       pendingChatMessage: null,
       // AI global enabled flag (PRIV-02)
       aiEnabled: false,
@@ -1975,15 +1978,18 @@ export default {
         await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
           version: this.consentData.version,
         })
-        this.aiConsentVersion = this.consentData.version
-        // Clean up legacy localStorage consent
-        try {
-          window.localStorage.removeItem('learning:ai_chat_consent')
-        } catch (e) { /* ignore */ }
       } catch (e) {
-        // Consent save failed — still allow this session
-        this.aiConsentVersion = this.consentData.version
+        // 5.5.2 fail-closed: the server has no consent on record, so nothing may be sent to the AI
+        // provider. Keep the dialog open with an error and keep the waiting message for a retry.
+        this.consentSaveError = this.vt('Your consent could not be saved. Please try again.')
+        return
       }
+      this.consentSaveError = null
+      this.aiConsentVersion = this.consentData.version
+      // Clean up legacy localStorage consent
+      try {
+        window.localStorage.removeItem('learning:ai_chat_consent')
+      } catch (e) { /* ignore */ }
       this.showAiConsentDialog = false
       const pending = this.pendingChatMessage
       this.pendingChatMessage = null
@@ -1994,6 +2000,7 @@ export default {
 
     // Phase 102: User declined the AI consent dialog
     handleConsentDecline() {
+      this.consentSaveError = null
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
     },

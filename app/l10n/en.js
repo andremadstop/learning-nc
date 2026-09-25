@@ -3081,5 +3081,6 @@ OC.L10N.register(
     "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht." : "No pool in this course is marked as required, so nobody can start the practice exam. Mark the exam-relevant pools as required in the pool rules of the learning space.",
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.",
+    "Your consent could not be saved. Please try again." : "Your consent could not be saved. Please try again.",
 },
 "nplurals=2; plural=(n != 1);");

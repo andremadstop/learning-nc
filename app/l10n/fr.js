@@ -3081,5 +3081,6 @@ OC.L10N.register(
     "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht." : "Aucun pool de ce cours n’est marqué comme obligatoire : personne ne peut donc lancer l’examen blanc. Marquez les pools pertinents pour l’examen comme obligatoires dans les règles des pools de l’espace d’apprentissage.",
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Les questions sont tirées au hasard parmi les pools obligatoires de ce cours, avec une nouvelle sélection à chaque tentative. Aucun retour avant la fin, puis une correction avec explications. Les examens blancs ne comptent pas pour un certificat.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Cet examen blanc utilise uniquement les pools obligatoires, mais aucun n’est encore marqué comme obligatoire. Veuillez contacter votre formateur.",
+    "Your consent could not be saved. Please try again." : "Ton consentement n'a pas pu être enregistré. Réessaie, s'il te plaît.",
 },
 "nplurals=2; plural=(n > 1);");
