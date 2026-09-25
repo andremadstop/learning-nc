@@ -299,6 +299,17 @@ class OpenAiCompatibleProviderTest extends TestCase {
         $this->assertCount(1, $this->calls);
     }
 
+    public function testCutOffAnswerWithTextIsStillTheAnswer(): void {
+        // finish_reason=length only means `empty` when no text came back; a partial answer is kept
+        $provider = $this->provider([$this->httpResponse(200, '{"choices":[{"finish_reason":"length","message":{"role":"assistant",'
+            . '"content":"  Teilantwort bis zum Limit"}}],"usage":{"prompt_tokens":10,"completion_tokens":1200}}')]);
+        $result = $provider->complete($this->connection('openai', 'gpt-4.1'), new LlmRequest('S', 'U'));
+        $this->assertSame('Teilantwort bis zum Limit', $result->text);
+        $this->assertSame(10, $result->tokensIn);
+        $this->assertSame(1200, $result->tokensOut);
+        $this->assertCount(1, $this->calls);
+    }
+
     public function testMissingUsageCountsAsZero(): void {
         $provider = $this->provider([$this->ok('Hi')]);
         $result = $provider->complete($this->connection('openai', 'gpt-4.1'), new LlmRequest('S', 'U'));
@@ -362,6 +373,40 @@ class OpenAiCompatibleProviderTest extends TestCase {
             fn() => $provider->complete($conn, $request),
         ], $markers);
         $this->assertCount(3, $this->calls);
+    }
+
+    /**
+     * assertAdapterWritesNoContent() swallows the exceptions, so their text is checked here: the
+     * message carries no prompt, answer, provider body or key, and the admin detail (redacted provider
+     * error text, spec 2.2) never the key.
+     */
+    public function testExceptionsCarryNoPromptAnswerOrKey(): void {
+        $content = ['PROMPT-MARKER-7f3a', 'SYSTEM-MARKER-2b8e', 'ANSWER-MARKER-5d1c', 'ERRBODY-MARKER-4a6f', 'KEY-MARKER-9c1d'];
+        $request = new LlmRequest('SYSTEM-MARKER-2b8e', 'PROMPT-MARKER-7f3a');
+        $provider = $this->provider([
+            $this->httpResponse(401, '{"error":{"message":"ERRBODY-MARKER-4a6f KEY-MARKER-9c1d PROMPT-MARKER-7f3a"}}'),
+            $this->httpResponse(200, '{"choices":[{"finish_reason":"length","message":{"content":"","reasoning_content":"ANSWER-MARKER-5d1c"}}]}'),
+        ], 'KEY-MARKER-9c1d');
+        $conn = $this->connection('openai', 'gpt-4.1');
+
+        foreach (['auth', 'empty'] as $category) {
+            $e = $this->assertProviderCategory($category, fn() => $provider->complete($conn, $request));
+            foreach ($content as $marker) {
+                $this->assertStringNotContainsString($marker, $e->getMessage(), "$category message contains $marker");
+            }
+            $this->assertStringNotContainsString('KEY-MARKER-9c1d', $e->adminDetail, "$category admin detail contains the key");
+            $this->assertStringNotContainsString('ANSWER-MARKER-5d1c', $e->adminDetail, "$category admin detail contains the answer");
+        }
+        $this->assertCount(2, $this->calls);
+    }
+
+    public function testMissingKeyAndRoutingErrorsCarryNoKey(): void {
+        $routing = new LlmConnection(1, true, 'openai_compatible', 'openrouter', 'https://openrouter.ai/api/v1',
+            'meta-llama/llama-3.3-70b-instruct', false, false, null, null);
+        $e = $this->assertProviderCategory('config',
+            fn() => $this->provider([], 'KEY-MARKER-9c1d')->complete($routing, new LlmRequest('S', 'PROMPT-MARKER-7f3a')));
+        $this->assertStringNotContainsString('KEY-MARKER', $e->getMessage() . $e->adminDetail);
+        $this->assertStringNotContainsString('PROMPT-MARKER', $e->getMessage() . $e->adminDetail);
     }
 
     // ─── helpers ───────────────────────────────────────────────────────────
