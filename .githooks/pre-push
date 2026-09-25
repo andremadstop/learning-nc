@@ -46,17 +46,21 @@ for SHA in $(echo "$PUSH_SHAS" | tr ' ' '\n' | sort -u); do
     gate_security "$SNAP"        || FAILED=1
     gate_eslint "$SNAP"          || FAILED=1
     gate_vitest "$SNAP"          || FAILED=1
-    gate_php --ref "$SHA"        || FAILED=1
+    gate_php "$SNAP" --ref "$SHA" || FAILED=1
 
     # SQL-Spalten gegen das Schema einer frischen Installation dieses Commits.
     # Fand am 22.08.2026 vier stille Totalausfaelle auf einmal (c.name auf learning_courses,
     # ua.user_id auf learning_user_answers) — fuer PHPStan unsichtbar, der Defekt steckt im String.
     echo -n "SQL-Spalten... "
-    if ! DUMP_OUT=$("$ROOT_DIR/scripts/schema-dump.sh" "$TMP/schema-$SHA.txt" --ref "$SHA" 2>&1); then
+    # Beide Skripte aus dem Snapshot (nicht der Arbeitskopie), wie gate_php.
+    if [ ! -x "$SNAP/scripts/schema-dump.sh" ] || [ ! -f "$SNAP/scripts/check-sql-columns.py" ]; then
+        gate_fail "Commit enthaelt schema-dump.sh/check-sql-columns.py nicht"
+        FAILED=1
+    elif ! DUMP_OUT=$(GATE_GIT_ROOT="$ROOT_DIR" "$SNAP/scripts/schema-dump.sh" "$TMP/schema-$SHA.txt" --ref "$SHA" 2>&1); then
         gate_fail "Schema-Dump fehlgeschlagen"
         echo "$DUMP_OUT" | tail -8
         FAILED=1
-    elif SQLCOL_OUT=$(SCHEMA_FILE="$TMP/schema-$SHA.txt" APP_LIB="$SNAP/app/lib" python3 "$ROOT_DIR/scripts/check-sql-columns.py" 2>&1); then
+    elif SQLCOL_OUT=$(SCHEMA_FILE="$TMP/schema-$SHA.txt" APP_LIB="$SNAP/app/lib" python3 "$SNAP/scripts/check-sql-columns.py" 2>&1); then
         gate_ok "$(echo "$SQLCOL_OUT" | tail -1)"
     else
         gate_fail

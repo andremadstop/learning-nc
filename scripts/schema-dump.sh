@@ -12,6 +12,10 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Git operations use GATE_GIT_ROOT when set: the hooks run this script from a snapshot of the
+# commit under test (so an uncommitted edit to the gate cannot vouch for the commit), and the
+# snapshot itself is not the repository.
+GIT_ROOT="${GATE_GIT_ROOT:-$REPO_ROOT}"
 NC_IMAGE="${SCHEMA_NC_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 PG_IMAGE="${SCHEMA_PG_IMAGE:-postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea}"
 
@@ -50,8 +54,8 @@ cleanup() {
 trap cleanup EXIT
 
 case "$SRC" in
-	--index) git -C "$REPO_ROOT" checkout-index -a --prefix="$WORK/repo/" ;;
-	--ref)   mkdir -p "$WORK/repo"; git -C "$REPO_ROOT" archive "${3:?--ref needs a git ref}" | tar -x -C "$WORK/repo" ;;  # pipefail is set
+	--index) git -C "$GIT_ROOT" checkout-index -a --prefix="$WORK/repo/" ;;
+	--ref)   mkdir -p "$WORK/repo"; git -C "$GIT_ROOT" archive "${3:?--ref needs a git ref}" | tar -x -C "$WORK/repo" ;;  # pipefail is set
 	*)       echo "unknown source: $SRC" >&2; exit 2 ;;
 esac
 [ -f "$WORK/repo/app/appinfo/info.xml" ] || { echo "snapshot has no app/appinfo/info.xml" >&2; exit 2; }
