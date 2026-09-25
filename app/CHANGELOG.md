@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.3] - 2026-09-25 — Fresh installs work again
+
+### Fixed
+- **Passing a course and issuing certificates failed on fresh installs.** Every compliance
+  event is chained to the one before it, and the chain starts from a first entry that the
+  database update was supposed to create. Nextcloud skips that part of an update when an app is
+  installed for the first time, so on every fresh install since 5.2 the chain had no start:
+  "course passed", issuing or revoking a certificate and completing a mandatory training ended
+  with a server error. The first entry is now created on install and on update. Where the chain
+  already holds entries but its start record is missing, nothing is created automatically,
+  because a new start would hide the gap; the admin log says so instead.
+- **Question translations did not work on fresh installs.** The translation tables were renamed
+  in 3.5, but the rename also ran only on updates, so fresh installs kept the old names and every
+  translated question failed to load. The tables are now created where they are missing.
+
+Instances that were updated from an older version, rather than installed fresh, were not
+affected.
+
 ## [5.5.2] - 2026-09-25 — AI features only with current consent
 
 ### Security
