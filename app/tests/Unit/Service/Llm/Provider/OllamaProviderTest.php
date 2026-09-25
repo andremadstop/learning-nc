@@ -177,6 +177,25 @@ class OllamaProviderTest extends TestCase {
         }
     }
 
+    public function testNothingIsLoggedOrPrinted(): void {
+        // the constructor check above cannot see error_log()/echo or a logger fetched from the server
+        $markers = ['PROMPT-MARKER-7f3a', 'SYSTEM-MARKER-2b8e', 'ANSWER-MARKER-5d1c', 'ERRBODY-MARKER-4a6f'];
+        $request = new LlmRequest('SYSTEM-MARKER-2b8e', 'PROMPT-MARKER-7f3a');
+        $provider = $this->provider([
+            $this->ok('ANSWER-MARKER-5d1c'),
+            $this->httpResponse(404, '{"error":"ERRBODY-MARKER-4a6f model not found"}'),
+            $this->httpResponse(200, '{"response":"<think>ANSWER-MARKER-5d1c</think>","done":true}'),
+        ]);
+        $conn = $this->connection('http://ollama:11434', 'llama3');
+
+        $this->assertAdapterWritesNoContent(OllamaProvider::class, [
+            fn() => $provider->complete($conn, $request),
+            fn() => $provider->complete($conn, $request),
+            fn() => $provider->complete($conn, $request),
+        ], $markers);
+        $this->assertCount(3, $this->calls);
+    }
+
     // ─── helpers ───────────────────────────────────────────────────────────
 
     /** @param list<\OCP\Http\Client\IResponse|\Throwable> $outcomes */

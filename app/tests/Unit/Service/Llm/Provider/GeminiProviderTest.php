@@ -178,6 +178,24 @@ class GeminiProviderTest extends TestCase {
         }
     }
 
+    public function testNothingIsLoggedOrPrinted(): void {
+        // the constructor check above cannot see error_log()/echo or a logger fetched from the server
+        $markers = ['PROMPT-MARKER-7f3a', 'SYSTEM-MARKER-2b8e', 'ANSWER-MARKER-5d1c', 'KEY-MARKER-9c1d', 'ERRBODY-MARKER-4a6f'];
+        $request = new LlmRequest('SYSTEM-MARKER-2b8e', 'PROMPT-MARKER-7f3a');
+        $provider = $this->provider([
+            $this->ok('ANSWER-MARKER-5d1c'),
+            $this->httpResponse(401, '{"error":{"message":"ERRBODY-MARKER-4a6f KEY-MARKER-9c1d"}}'),
+            $this->httpResponse(200, '{"candidates":[{"content":{"parts":[{"text":"<think>ANSWER-MARKER-5d1c</think>"}]}}]}'),
+        ], 'KEY-MARKER-9c1d');
+
+        $this->assertAdapterWritesNoContent(GeminiProvider::class, [
+            fn() => $provider->complete($this->connection(), $request),
+            fn() => $provider->complete($this->connection(), $request),
+            fn() => $provider->complete($this->connection(), $request),
+        ], $markers);
+        $this->assertCount(3, $this->calls);
+    }
+
     // ─── helpers ───────────────────────────────────────────────────────────
 
     /** @param list<\OCP\Http\Client\IResponse|\Throwable> $outcomes */
