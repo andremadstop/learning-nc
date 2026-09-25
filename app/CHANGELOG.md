@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.2] - 2026-09-25 — AI features only with current consent
+
+### Security
+- **The weekly study note was sent to the AI provider without consent.** A background job runs
+  once a week for everyone who studied in the last 60 days. It sent their weakest topic and the
+  questions they got wrong to the configured AI provider to write a summary note, and it never
+  checked whether the learner had agreed to AI processing. It now skips anyone without valid
+  consent before reading their learning data, and the note generator refuses on its own so no
+  other path can bypass it. This only affected instances with AI enabled.
+- **Outdated consent counted as consent.** The server accepted any stored consent version; only
+  the VirtuProf chat window compared it with the current consent text. The server now requires
+  the current version on every AI path, and the VirtuProf chat and the course summary narrative
+  no longer use their own weaker check. The course summary narrative is also rate limited now.
+- **A failed consent save was treated as consent.** If saving the consent failed, VirtuProf
+  closed the dialog and sent the waiting message anyway, although the server had no consent on
+  record. The dialog now stays open with an error message and nothing is sent until the save
+  succeeds.
+- **Follow-up requests are checked too.** Chat-memory compression and the pool generator send
+  further requests after the first one; each now checks consent right before sending. If the
+  server reports missing consent, VirtuProf asks again instead of showing a generic error.
+
+A larger rework of AI consent follows in 5.6.0: consent will name the actual AI provider,
+the consent text will describe exactly what is sent, and everyone will be asked once to confirm
+the corrected text.
+
+### Fixed
+- **The app icon stood out in the app menu.** Learning used a coloured icon where Nextcloud
+  expects the same monochrome glyph as every other app. The coloured logo is still used on
+  certificates when the instance has no logo of its own.
+
 ## [5.5.1] - 2026-09-24 — Tool selections that apply, practice exams from required pools
 
 ### Fixed
