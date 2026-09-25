@@ -27,6 +27,8 @@ tools/
 # versehentlich nicht auf der Whitelist — der Fix vom 2026-08-28 haette sonst rein
 # lokal existiert. Enthaelt wie pre-push keine Secrets.
 !.githooks/pre-commit
+# Von beiden Hooks gesourct (Snapshot + gemeinsame Gates) — ohne sie laufen die Hooks nicht.
+!.githooks/lib-snapshot.sh
 CLAUDE.md
 /COLLABORATION.md
 /CODEX_RESULT*.md
@@ -112,6 +114,13 @@ Thumbs.db
 /.tmpq_upgrade2/
 scripts/*
 !scripts/deploy-prod.sh
+!scripts/gate-container.sh
+!scripts/gate-container.env.example
+!scripts/schema-dump.sh
+!scripts/nc-integration.sh
+!scripts/lifecycle-probe.sh
+!scripts/lifecycle-fixtures/
+!scripts/lifecycle-fixtures/*.sql.php
 !scripts/devcloud-sanitize.py
 !scripts/devcloud-staleness.sh
 !scripts/fill_pool_explanations.php
@@ -153,6 +162,11 @@ app/tests/*
 !app/tests/Support/
 !app/tests/Support/*.php
 !app/tests/bootstrap.php
+!app/tests/Integration/
+!app/tests/Integration/*.php
+!app/tests/Integration/phpunit.xml
+!app/tests/Integration/Support/
+!app/tests/Integration/Support/*.php
 !app/tests/e2e/
 !app/tests/e2e/*.spec.js
 !app/tests/e2e/*.setup.js

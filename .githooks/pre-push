@@ -1,207 +1,109 @@
 #!/bin/bash
-# Pre-push Quality Gate: ESLint + Vitest + PHPStan + Security
-# Alle Gates muessen bestehen bevor gepusht wird.
+# Pre-push Quality Gate: Security + ESLint + Vitest + PHPStan + PHPUnit + SQL-Spalten + i18n
+# + Umlaute + Forbidden Names + Repo-Hygiene.
+#
+# Geprueft wird, was gepusht wird: fuer jeden lokalen Commit aus stdin
+# (<local-ref> <local-sha> <remote-ref> <remote-sha>) ein sauberer Snapshot dieses Commits.
+# Jedes Gate laeuft gegen den Snapshot, keins gegen die Arbeitskopie — ein uncommitteter Fix
+# darf einen kaputten Commit nicht gruen aussehen lassen. Ohne stdin (direkt aufgerufen) gilt
+# HEAD. Loeschungen (sha 000…) haben keinen Inhalt und werden uebersprungen.
+# PHP-Gates laufen lokal in Wegwerf-Containern (scripts/gate-container.sh, scripts/schema-dump.sh).
+# Bis 2026-09-25 liefen sie per ssh auf relais/devcloud und meldeten SKIP, wenn der Host weg
+# war. devcloud existiert nicht mehr; ein Gate, das nicht laufen kann, blockiert jetzt.
+set -uo pipefail   # kein -e: FAILED sammelt alle Gates, damit ein Lauf alle Fehler zeigt
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-NC='\033[0m'
+ROOT_DIR="$(git rev-parse --show-toplevel)" || exit 1
+# shellcheck source=lib-snapshot.sh
+. "$ROOT_DIR/.githooks/lib-snapshot.sh"
 
 FAILED=0
-SKIPPED=0
-ROOT_DIR="$(git rev-parse --show-toplevel)"
-APP_DIR="$ROOT_DIR/app"
-
-echo -e "${YELLOW}=== Pre-Push Quality Gate ===${NC}"
-
-# 1. Security: Keine hardcoded API-Keys oder Passwoerter
-echo -n "Security scan... "
-SECRETS=$(grep -rn 'api_key.*=.*["'"'"']sk-\|password\s*=\s*["'"'"'][A-Za-z0-9]' --include="*.php" --include="*.js" --include="*.vue" "$APP_DIR/lib/" "$APP_DIR/src/" 2>/dev/null | grep -v 'getenv\|config\|Config\|IConfig\|test\|example\|\.env\|password_hash\|passwordField\|password_confirm\|password_reset\|PASSWORD' || true)
-if [ -n "$SECRETS" ]; then
-    echo -e "${RED}FAIL — Moeglicherweise hardcoded Secrets:${NC}"
-    echo "$SECRETS"
-    FAILED=1
-else
-    echo -e "${GREEN}OK${NC}"
+PUSH_SHAS=""
+if [ ! -t 0 ]; then
+    while read -r _local_ref local_sha _remote_ref _remote_sha; do
+        [ -n "${local_sha:-}" ] || continue
+        [[ "$local_sha" =~ ^0+$ ]] && continue
+        PUSH_SHAS="$PUSH_SHAS $local_sha"
+    done
+fi
+if [ -z "$PUSH_SHAS" ]; then
+    PUSH_SHAS="$(git rev-parse HEAD)" || exit 1
 fi
 
-# 2. ESLint (0 errors Pflicht)
-echo -n "ESLint... "
-cd "$APP_DIR"
-if npx eslint --ext .js,.vue src/ --quiet 2>/dev/null; then
-    echo -e "${GREEN}OK (0 errors)${NC}"
-else
-    echo -e "${RED}FAIL${NC}"
-    npx eslint --ext .js,.vue src/ --quiet 2>/dev/null | head -10
-    FAILED=1
-fi
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/learning-prepush.XXXXXX")" || exit 1
+trap 'rm -r -- "$TMP"' EXIT
 
-# 3. Vitest (alle JS Unit-Tests)
-echo -n "Vitest... "
-# Exitcode entscheidet, nicht der Text: 'Tests 1 failed | 1220 passed' enthaelt "passed" und
-# wurde dadurch als OK gewertet — derselbe Fehler, der das PHPUnit-Gate wertlos machte.
-VITEST_OUT=$(npm run test 2>&1)
-VITEST_RC=$?
-if [ $VITEST_RC -eq 0 ]; then
-    PASSED=$(echo "$VITEST_OUT" | grep "Tests" | grep -o "[0-9]* passed")
-    echo -e "${GREEN}OK ($PASSED)${NC}"
-else
-    echo -e "${RED}FAIL (exit $VITEST_RC)${NC}"
-    echo "$VITEST_OUT" | tail -8
-    FAILED=1
-fi
-cd "$ROOT_DIR"
+echo -e "${GATE_YELLOW}=== Pre-Push Quality Gate ===${GATE_NC}"
 
-# 4. PHPStan (remote, non-blocking)
-# Beide PHP-Gates liefen bis 2026-08-28 gegen /var/www/html/custom_apps/learning — die
-# DEPLOYTE App. Zwei Folgen, beide schlecht: (a) man musste erst auf die Produktivinstanz
-# deployen, um pushen zu duerfen, und (b) nach einem Release-Deploy fehlt dort
-# vendor/bin/phpstan, womit beide Gates an einer fehlenden Datei scheiterten statt am Code.
-# Jetzt laeuft beides gegen eine Wegwerf-Kopie der ARBEITSKOPIE im Container — also gegen
-# genau den Stand, der gepusht werden soll.
-GATE_PATH="/tmp/learning-gate"
-echo -n "Stage-Gate... "
-if STAGE_OUT=$("$ROOT_DIR/scripts/deploy-prod.sh" --stage-gate 2>&1); then
-    echo -e "${GREEN}OK${NC}"
-else
-    STAGE_RC=$?
-    if [ $STAGE_RC -eq 255 ]; then
-        echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
+for SHA in $(echo "$PUSH_SHAS" | tr ' ' '\n' | sort -u); do
+    SNAP="$TMP/$SHA"
+    echo -e "${GATE_YELLOW}--- Commit ${SHA:0:10} ---${GATE_NC}"
+    if ! make_snapshot "$SNAP" --ref "$SHA"; then
+        gate_fail "Snapshot von $SHA nicht erstellbar — Gates nicht gelaufen"
+        FAILED=1
+        continue
+    fi
+
+    gate_security "$SNAP"        || FAILED=1
+    gate_eslint "$SNAP"          || FAILED=1
+    gate_vitest "$SNAP"          || FAILED=1
+    gate_php --ref "$SHA"        || FAILED=1
+
+    # SQL-Spalten gegen das Schema einer frischen Installation dieses Commits.
+    # Fand am 22.08.2026 vier stille Totalausfaelle auf einmal (c.name auf learning_courses,
+    # ua.user_id auf learning_user_answers) — fuer PHPStan unsichtbar, der Defekt steckt im String.
+    echo -n "SQL-Spalten... "
+    if ! DUMP_OUT=$("$ROOT_DIR/scripts/schema-dump.sh" "$TMP/schema-$SHA.txt" --ref "$SHA" 2>&1); then
+        gate_fail "Schema-Dump fehlgeschlagen"
+        echo "$DUMP_OUT" | tail -8
+        FAILED=1
+    elif SQLCOL_OUT=$(SCHEMA_FILE="$TMP/schema-$SHA.txt" APP_LIB="$SNAP/app/lib" python3 "$ROOT_DIR/scripts/check-sql-columns.py" 2>&1); then
+        gate_ok "$(echo "$SQLCOL_OUT" | tail -1)"
     else
-        echo -e "${RED}FAIL (exit $STAGE_RC)${NC}"
-        echo "$STAGE_OUT" | tail -8
+        gate_fail
+        echo "$SQLCOL_OUT" | head -12
         FAILED=1
     fi
-fi
 
-echo -n "PHPStan... "
-# Exitcode SEPARAT erfassen: ein '|| echo UNREACHABLE' verschluckt jeden Nicht-null-Exit und
-# macht aus einem echten Fehlschlag ein SKIP. Nur SSH-255 heisst "Host nicht erreichbar";
-# alles andere kommt aus dem Container und muss blockieren.
-PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais "docker exec -w $GATE_PATH devcloud-app php vendor/bin/phpstan analyse --no-progress 2>&1")
-PHPSTAN_RC=$?
-if [ $PHPSTAN_RC -eq 255 ]; then
-    echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
-    SKIPPED=$((SKIPPED + 1))
-elif [ $PHPSTAN_RC -eq 0 ] && echo "$PHPSTAN_OUT" | grep -q "No errors"; then
-    echo -e "${GREEN}OK (Level 5)${NC}"
-else
-    echo -e "${RED}FAIL (exit $PHPSTAN_RC)${NC}"
-    echo "$PHPSTAN_OUT" | head -10
-    FAILED=1
-fi
+    # Umlaut-Check: ae/ue/oe in deutschen UI-Texten erkennen (Warnung, kein Blocker)
+    echo -n "Umlaut-Check... "
+    UMLAUT_HITS=$(grep -rn --include="*.vue" --include="*.js" -P "(?<![a-zA-Z])(fuer|ueber|Uebung|Aenderung|Erklaer|Guelt|hinzufueg|Loeschen|Pruef|zurueck|verfueg|Groess|hoech|moeg|oeffen|Rueck|Ausfuehr|Einfueg|Aehnl|Uebersetz|aerger|aendern|Aerger|aergern|Aenderungen|Einfuehrung|Eroeffnung|ueberpruef|Ueberpruef|Schaetzen|schaetzen|waehlen|Waehlen|erhoeh|Erhoeh|gewaehlt|Gewaehlt|Zugaeng|zugaeng|vollstaendig|Vollstaendig|saemtlich|Saemtlich|unterstuetz|Unterstuetz|aeusser|Aeusser|spaeter|Spaeter|naechst|Naechst|haeufig|Haeufig)(?![a-zA-Z])" "$SNAP/app/src/" 2>/dev/null | grep -v '\.test\.' || true)
+    if [ -n "$UMLAUT_HITS" ]; then
+        echo -e "${GATE_YELLOW}WARN — $(echo "$UMLAUT_HITS" | wc -l) Stellen mit ae/ue/oe statt Umlauten:${GATE_NC}"
+        echo "${UMLAUT_HITS//$SNAP\//}" | head -5
+    else
+        gate_ok
+    fi
 
-# 4b. PHPUnit (remote, non-blocking wenn relais weg)
-# Ohne dieses Gate laufen die PHP-Tests in keinem Pflichtlauf — genau deshalb konnte Codeberg #3
-# (AiController, alle AI-Endpoints 500) fuenf Monate lang durchrutschen. Seit 2026-08-28 laeuft
-# es wie PHPStan gegen die Wegwerf-Kopie der Arbeitskopie; die alte Einschraenkung "erst
-# deployen, dann pushen" gilt nicht mehr.
-echo -n "PHPUnit... "
-PHPUNIT_OUT=$(ssh -o ConnectTimeout=5 relais "docker exec -w $GATE_PATH devcloud-app php vendor/bin/phpunit 2>&1")
-PHPUNIT_RC=$?
-# Exitcode ZUERST, Text nur zur Anzeige. Die erste Fassung dieses Gates haengte
-# '|| echo UNREACHABLE' an und meldete deshalb bei Exit 1 (= fehlgeschlagene Tests) ein SKIP —
-# es schuetzte genau vor dem Fall nicht, fuer den es gebaut wurde.
-# Ausserdem: Erfolg NICHT an "OK (" erkennen, bei Deprecations/Skips schreibt PHPUnit
-# "OK, but there were issues!" und liefert trotzdem Exit 0.
-if [ $PHPUNIT_RC -eq 255 ]; then
-    echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
-    SKIPPED=$((SKIPPED + 1))
-elif [ $PHPUNIT_RC -ne 0 ]; then
-    echo -e "${RED}FAIL (exit $PHPUNIT_RC)${NC}"
-    echo "$PHPUNIT_OUT" | grep -E "^[0-9]+\)|^(FAILURES|ERRORS)!|^Tests:" | head -10
-    FAILED=1
-elif echo "$PHPUNIT_OUT" | grep -qE "^Tests: [0-9]+"; then
-    echo -e "${GREEN}OK ($(echo "$PHPUNIT_OUT" | grep -oE "^Tests: [0-9]+" | grep -oE "[0-9]+") Tests)${NC}"
-else
-    echo -e "${RED}FAIL (Exit 0, aber keine Tests gelaufen)${NC}"
-    echo "$PHPUNIT_OUT" | tail -5
-    FAILED=1
-fi
+    # Forbidden Names (LEGAL-02) — Einstein/Hawking/Tyson/Neil deGrasse/StarTalk/Cosmos.
+    gate_forbidden_names "$SNAP" || FAILED=1
 
-# 4c. SQL-Spalten gegen das echte Schema (remote, SKIP wenn DB nicht erreichbar)
-# Fand am 22.08.2026 vier stille Totalausfaelle auf einmal: c.name auf learning_courses (zweimal)
-# und ua.user_id auf learning_user_answers (zweimal). Alle vier sind fuer PHPStan unsichtbar, weil
-# der Defekt im String steckt, und alle vier sassen hinter einem catch(Throwable).
-echo -n "SQL-Spalten... "
-SQLCOL_OUT=$(python3 "$ROOT_DIR/scripts/check-sql-columns.py" 2>&1)
-SQLCOL_RC=$?
-if [ $SQLCOL_RC -eq 2 ]; then
-    echo -e "${YELLOW}SKIP (DB-Schema nicht erreichbar)${NC}"
-    SKIPPED=$((SKIPPED + 1))
-elif [ $SQLCOL_RC -ne 0 ]; then
-    echo -e "${RED}FAIL${NC}"
-    echo "$SQLCOL_OUT" | head -12
-    FAILED=1
-else
-    echo -e "${GREEN}OK${NC}"
-fi
+    # i18n: Key-Parity, .js==.json, Platzhalter, Quelle->Katalog, VirtuProf-Katalog.
+    gate_i18n "$SNAP"            || FAILED=1
 
-# 5. Umlaut-Check: ae/ue/oe in deutschen UI-Texten erkennen
-echo -n "Umlaut-Check... "
-UMLAUT_HITS=$(grep -rn --include="*.vue" --include="*.js" -P "(?<![a-zA-Z])(fuer|ueber|Uebung|Aenderung|Erklaer|Guelt|hinzufueg|Loeschen|Pruef|zurueck|verfueg|Groess|hoech|moeg|oeffen|Rueck|Ausfuehr|Einfueg|Aehnl|Uebersetz|aerger|aendern|Aerger|aergern|Aenderungen|Einfuehrung|Eroeffnung|ueberpruef|Ueberpruef|Schaetzen|schaetzen|waehlen|Waehlen|erhoeh|Erhoeh|gewaehlt|Gewaehlt|Zugaeng|zugaeng|vollstaendig|Vollstaendig|saemtlich|Saemtlich|unterstuetz|Unterstuetz|aeusser|Aeusser|spaeter|Spaeter|naechst|Naechst|haeufig|Haeufig)(?![a-zA-Z])" "$APP_DIR/src/" 2>/dev/null | grep -v '\.test\.' | grep -v 'node_modules' || true)
-if [ -n "$UMLAUT_HITS" ]; then
-    COUNT=$(echo "$UMLAUT_HITS" | wc -l)
-    echo -e "${YELLOW}WARN — $COUNT Stellen mit ae/ue/oe statt Umlauten:${NC}"
-    echo "$UMLAUT_HITS" | head -5
-    # Warnung, kein Blocker (noch)
-else
-    echo -e "${GREEN}OK${NC}"
-fi
+    # Repo-Hygiene — interne Arbeitsdocs duerfen nicht im gepushten Commit sein (nur die
+    # Whitelist LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review). Geprueft wird
+    # der Baum des Commits, nicht der Index.
+    echo -n "Repo-Hygiene... "
+    if ! TREE_FILES=$(git ls-tree -r --name-only "$SHA"); then
+        gate_fail "git ls-tree $SHA fehlgeschlagen"
+        FAILED=1
+    else
+        BAD_TRACKED=$(echo "$TREE_FILES" | grep -E '^HANDOFF\.md$|^\.planning/' \
+            | grep -vE '^\.planning/(LEGAL|STATE|ROADMAP|REQUIREMENTS|PROJECT)\.md$|^\.planning/sensitivity-review/' || true)
+        if [ -n "$BAD_TRACKED" ]; then
+            gate_fail "interne Arbeitsdocs getrackt (gehoeren nicht ins Public-Repo):"
+            echo "$BAD_TRACKED" | head -10
+            echo -e "${GATE_YELLOW}  → 'git rm --cached <datei>' (bleibt lokal). Whitelist: LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review/${GATE_NC}"
+            FAILED=1
+        else
+            gate_ok
+        fi
+    fi
+done
 
-# 6. Forbidden Names (LEGAL-02) — blocks Einstein/Hawking/Tyson/Neil deGrasse/
-#    StarTalk + Cosmos-as-show-title in app/src, app/l10n, CHANGELOG, info.xml.
-echo -n "Forbidden names... "
-if "$ROOT_DIR/scripts/check-forbidden-names.sh" >/dev/null 2>&1; then
-    echo -e "${GREEN}OK${NC}"
-else
-    echo -e "${RED}FAIL${NC}"
-    "$ROOT_DIR/scripts/check-forbidden-names.sh" | head -20
-    FAILED=1
-fi
-
-# 7. i18n Key-Parity (I18N-02) — DE/EN/FR/RU/AR must share key-set.
-echo -n "i18n key-parity... "
-if PARITY_OUT=$(bash "$ROOT_DIR/scripts/check-i18n-parity.sh" 2>&1); then
-    echo -e "${GREEN}OK${NC}"
-else
-    echo -e "${RED}FAIL — i18n key-parity check failed (fix l10n drift before pushing):${NC}"
-    echo "$PARITY_OUT" | head -20
-    FAILED=1
-fi
-
-# 8. Repo-Hygiene — interne Arbeitsdocs dürfen nicht getrackt sein (nur die Whitelist
-#    LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review). Verhindert, dass
-#    HANDOFF.md oder .planning/-Phasenplans (mit lokalen Pfaden/Notizen) ins Public-Repo geraten.
-echo -n "Repo-Hygiene... "
-BAD_TRACKED=$(git ls-files 'HANDOFF.md' '.planning/*' 2>/dev/null \
-    | grep -vE '^\.planning/(LEGAL|STATE|ROADMAP|REQUIREMENTS|PROJECT)\.md$|^\.planning/sensitivity-review/')
-if [ -n "$BAD_TRACKED" ]; then
-    echo -e "${RED}FAIL — interne Arbeitsdocs getrackt (gehören nicht ins Public-Repo):${NC}"
-    echo "$BAD_TRACKED" | head -10
-    echo -e "${YELLOW}  → 'git rm --cached <datei>' (bleibt lokal). Whitelist: LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review/${NC}"
-    FAILED=1
-else
-    echo -e "${GREEN}OK${NC}"
-fi
-
-# Ergebnis
 echo ""
 if [ $FAILED -ne 0 ]; then
-    echo -e "${RED}=== PUSH BLOCKIERT — Fehler oben beheben ===${NC}"
+    echo -e "${GATE_RED}=== PUSH BLOCKIERT — Fehler oben beheben ===${GATE_NC}"
     exit 1
-elif [ $SKIPPED -ne 0 ]; then
-    # FAIL-CLOSED: Ein uebersprungenes Gate ist kein bestandenes Gate. Vorher endete der Hook
-    # hier mit Exit 0 — bei offline-relais liefen PHPStan, PHPUnit und der SQL-Check alle in SKIP
-    # und der Push ging trotzdem durch, ohne dass PHP je geprueft wurde.
-    echo -e "${RED}=== PUSH BLOCKIERT — $SKIPPED Gate(s) konnten nicht laufen ===${NC}"
-    echo -e "${YELLOW}  Diese Gates pruefen ueber relais. Ist der Host absichtlich nicht erreichbar${NC}"
-    echo -e "${YELLOW}  und du willst trotzdem pushen: ALLOW_SKIPPED_GATES=1 git push${NC}"
-    if [ "${ALLOW_SKIPPED_GATES:-0}" = "1" ]; then
-        echo -e "${YELLOW}  ALLOW_SKIPPED_GATES=1 gesetzt — ungeprueft durchgelassen.${NC}"
-    else
-        exit 1
-    fi
-else
-    echo -e "${GREEN}=== Alle Gates bestanden ===${NC}"
 fi
+echo -e "${GATE_GREEN}=== Alle Gates bestanden ===${GATE_NC}"
