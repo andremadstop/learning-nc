@@ -233,6 +233,23 @@ namespace OCP {
         }
     }
 
+    // 5.6.0 (Task A2): ConnectionStore/ApiKeyStore use the typed app config API. Only the methods
+    // they call; signatures copied verbatim from lib/public/IAppConfig.php in the nextcloud:33
+    // gate image (sha256:df735d59…).
+    if (!interface_exists(IAppConfig::class)) {
+        interface IAppConfig {
+            public function hasKey(string $app, string $key, ?bool $lazy = false): bool;
+
+            public function getValueString(string $app, string $key, string $default = '', bool $lazy = false): string;
+
+            public function setValueString(string $app, string $key, string $value, bool $lazy = false, bool $sensitive = false): bool;
+
+            public function deleteKey(string $app, string $key): void;
+
+            public function clearCache(bool $reload = false): void;
+        }
+    }
+
     // Phase 160: IGroup — AssignmentService::expandGroup() calls groupManager->get()->getUsers()
     if (!interface_exists(IGroup::class)) {
         interface IGroup {

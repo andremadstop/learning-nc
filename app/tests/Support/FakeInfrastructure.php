@@ -368,3 +368,82 @@ final class FakeCacheFactory implements ICacheFactory {
         return $this->cache;
     }
 }
+
+/**
+ * In-memory backing store for a mocked OCP\IAppConfig (5.6.0 Task A2).
+ *
+ * Deliberately not a class implementing IAppConfig: the stub interface is a subset, and a
+ * class implementing it would break wherever the full interface is loaded. Tests create the
+ * mock with createMock(IAppConfig::class) and hand it to wire().
+ *
+ * Mirrors two real AppConfig rules that a plain array would hide: keys longer than 64 characters
+ * are rejected (lib/private/AppConfig.php KEY_MAX_LENGTH), and the sensitive flag is recorded.
+ */
+final class FakeAppConfigValues {
+    public const KEY_MAX_LENGTH = 64;
+
+    /** @var array<string, string> "app\0key" => value */
+    public array $values = [];
+    /** @var array<string, bool> */
+    public array $sensitive = [];
+    public int $clearCacheCalls = 0;
+    public int $setCalls = 0;
+    /** @var null|callable(string, string): ?string  returns an override for getValueString */
+    public $readOverride = null;
+
+    public function wire(\PHPUnit\Framework\MockObject\MockObject $mock): void {
+        $mock->method('hasKey')->willReturnCallback(
+            fn (string $app, string $key, ?bool $lazy = false): bool => $this->has($app, $key));
+        $mock->method('getValueString')->willReturnCallback(
+            function (string $app, string $key, string $default = '', bool $lazy = false): string {
+                if ($this->readOverride !== null) {
+                    $o = ($this->readOverride)($app, $key);
+                    if ($o !== null) {
+                        return $o;
+                    }
+                }
+                return $this->values[$app . "\0" . $key] ?? $default;
+            });
+        $mock->method('setValueString')->willReturnCallback(
+            function (string $app, string $key, string $value, bool $lazy = false, bool $sensitive = false): bool {
+                if (strlen($key) > self::KEY_MAX_LENGTH) {
+                    throw new \InvalidArgumentException('Value (' . $key . ') for key is too long (' . self::KEY_MAX_LENGTH . ')');
+                }
+                $this->setCalls++;
+                $changed = ($this->values[$app . "\0" . $key] ?? null) !== $value;
+                $this->values[$app . "\0" . $key] = $value;
+                $this->sensitive[$app . "\0" . $key] = $sensitive;
+                return $changed;
+            });
+        $mock->method('deleteKey')->willReturnCallback(function (string $app, string $key): void {
+            unset($this->values[$app . "\0" . $key], $this->sensitive[$app . "\0" . $key]);
+        });
+        $mock->method('clearCache')->willReturnCallback(function (bool $reload = false): void {
+            $this->clearCacheCalls++;
+        });
+    }
+
+    public function has(string $app, string $key): bool {
+        return array_key_exists($app . "\0" . $key, $this->values);
+    }
+
+    public function get(string $app, string $key): ?string {
+        return $this->values[$app . "\0" . $key] ?? null;
+    }
+
+    public function set(string $app, string $key, string $value): void {
+        $this->values[$app . "\0" . $key] = $value;
+    }
+
+    /** @return list<string> keys of $app */
+    public function keys(string $app): array {
+        $out = [];
+        foreach (array_keys($this->values) as $k) {
+            [$a, $key] = explode("\0", $k, 2);
+            if ($a === $app) {
+                $out[] = $key;
+            }
+        }
+        return $out;
+    }
+}
