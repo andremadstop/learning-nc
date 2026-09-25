@@ -1,0 +1,83 @@
+{
+  "_about": "Requests of the 5.6 Anthropic adapter (lib/Service/Llm/Provider/AnthropicProvider.php). There is no 5.5 class to pin against: every field is pinned against the Claude API reference (claude-api skill, checked 2026-09-25), cited in AnthropicProviderTest. POST https://api.anthropic.com/v1/messages, key in x-api-key, anthropic-version 2023-06-01, max_tokens = request.maxOutputTokens clamped to 4096-16000 (default 1200 -> 4096), system only when the trimmed system prompt is not empty, one user message with the prompt as given, temperature only for models ModelCapabilities allows it for, clamped to the API range 0-1 (default 0.7), no thinking/output_config/beta headers. input.temperature/maxOutputTokens null = not passed. A whole-number temperature goes over the wire as an integer (json_encode without JSON_PRESERVE_ZERO_FRACTION). headers = what the adapter sets plus the Content-Type LlmHttpClient always sends.",
+  "cases": [
+    {
+      "name": "default-model-no-temperature",
+      "connection": {"rev": 1, "enabled": true, "provider": "anthropic", "baseUrl": "https://api.anthropic.com/v1", "model": "claude-opus-5"},
+      "apiKey": "sk-ant-test",
+      "input": {"systemPrompt": "  Du bist ein Tutor.  ", "userPrompt": "  Erkläre die Größe „Ω“.\n", "temperature": 0.4, "maxOutputTokens": 600},
+      "request": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "timeoutSec": 45,
+        "headers": {"x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+        "body": {"model": "claude-opus-5", "max_tokens": 4096, "system": "Du bist ein Tutor.",
+          "messages": [{"role": "user", "content": "  Erkläre die Größe „Ω“.\n"}]}
+      }
+    },
+    {
+      "name": "opus-5-5-defaults-trailing-slash",
+      "connection": {"rev": 1, "enabled": true, "provider": "anthropic", "baseUrl": "https://api.anthropic.com/v1/", "model": "claude-opus-5-5"},
+      "apiKey": "  sk-ant-test  ",
+      "input": {"systemPrompt": "S", "userPrompt": "Hallo", "temperature": null, "maxOutputTokens": null},
+      "request": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "timeoutSec": 45,
+        "headers": {"x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+        "body": {"model": "claude-opus-5-5", "max_tokens": 4096, "system": "S",
+          "messages": [{"role": "user", "content": "Hallo"}]}
+      }
+    },
+    {
+      "name": "haiku-temperature-clamped-high-without-system",
+      "connection": {"rev": 1, "enabled": true, "provider": "anthropic", "baseUrl": "https://api.anthropic.com/v1", "model": "claude-haiku-4-5"},
+      "apiKey": "sk-ant-test",
+      "input": {"systemPrompt": "   ", "userPrompt": "U", "temperature": 3.0, "maxOutputTokens": 99999},
+      "request": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "timeoutSec": 45,
+        "headers": {"x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+        "body": {"model": "claude-haiku-4-5", "max_tokens": 16000,
+          "messages": [{"role": "user", "content": "U"}], "temperature": 1}
+      }
+    },
+    {
+      "name": "sonnet-4-6-temperature-clamped-low",
+      "connection": {"rev": 1, "enabled": true, "provider": "anthropic", "baseUrl": "https://api.anthropic.com/v1", "model": "claude-sonnet-4-6"},
+      "apiKey": "sk-ant-test",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": -1.0, "maxOutputTokens": 8000},
+      "request": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "timeoutSec": 45,
+        "headers": {"x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+        "body": {"model": "claude-sonnet-4-6", "max_tokens": 8000, "system": "S",
+          "messages": [{"role": "user", "content": "U"}], "temperature": 0}
+      }
+    },
+    {
+      "name": "opus-4-6-default-temperature",
+      "connection": {"rev": 1, "enabled": true, "provider": "anthropic", "baseUrl": "https://api.anthropic.com/v1", "model": "claude-opus-4-6"},
+      "apiKey": "sk-ant-test",
+      "input": {"systemPrompt": "S", "userPrompt": "U", "temperature": null, "maxOutputTokens": 5000},
+      "request": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "timeoutSec": 45,
+        "headers": {"x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+        "body": {"model": "claude-opus-4-6", "max_tokens": 5000, "system": "S",
+          "messages": [{"role": "user", "content": "U"}], "temperature": 0.7}
+      }
+    }
+  ],
+  "response": {
+    "body": {"id": "msg_01", "type": "message", "role": "assistant", "model": "claude-opus-5",
+      "content": [
+        {"type": "thinking", "thinking": "THINKING-MARKER interne Gedanken", "signature": "sig"},
+        {"type": "text", "text": "  Antwort: "},
+        {"type": "text", "text": "Größe Ω.\n"}
+      ],
+      "stop_reason": "end_turn", "stop_sequence": null, "stop_details": null,
+      "usage": {"input_tokens": 21, "output_tokens": 8, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0}},
+    "text": "Antwort: Größe Ω.",
+    "tokensIn": 21,
+    "tokensOut": 8
+  }
+}
