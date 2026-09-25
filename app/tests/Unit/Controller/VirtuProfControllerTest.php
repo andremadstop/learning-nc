@@ -232,7 +232,25 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatWithoutConsentIsBlocked(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->with('user-A')->willReturn(null);
+        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+
+        $this->geminiMock->expects($this->never())->method('chat');
+        $this->ragMock->expects($this->never())->method('buildContext');
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5, 5, 5);
+
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
+    }
+
+    /**
+     * 5.5.2: a stored but outdated consent version (non-empty) must block the chat. Before, the
+     * controller checked only "not empty" and bypassed TelosService::hasAiConsent().
+     */
+    public function testChatWithOutdatedConsentVersionIsBlocked(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('0.9-stale');
+        $this->telosMock->method('hasAiConsent')->willReturn(false);
 
         $this->geminiMock->expects($this->never())->method('chat');
         $this->ragMock->expects($this->never())->method('buildContext');
@@ -251,7 +269,7 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatDropsInaccessibleLearningContext(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
 
         // No access to ANY of the supplied context ids.
         $this->courseMock->method('findById')->willThrowException(new \RuntimeException('no access'));
@@ -280,7 +298,7 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatKeepsAccessibleLearningContext(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
 
         // Access granted for all ids (methods return without throwing).
         $this->courseMock->method('findById')->willReturn(['id' => 7]);
@@ -311,7 +329,7 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatSuppressesAnswerContextDuringActiveExam(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
         $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
         $this->questionMock->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
 
@@ -333,7 +351,7 @@ class VirtuProfControllerTest extends TestCase {
     /** HIGH-03: interviewTurn (free text to Gemini) is consent-gated too. */
     public function testInterviewTurnWithoutConsentIsBlocked(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->willReturn('');
+        $this->telosMock->method('hasAiConsent')->willReturn(false);
 
         $this->geminiMock->expects($this->never())->method('generateInterviewTurn');
 
@@ -401,7 +419,7 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatStripsAnswerBearingContextWhenExamActiveOnQuestion(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
         $this->questionMock->method('isExamActiveForQuestion')->with(3, 'user-A')->willReturn(true);
         $this->ragMock->expects($this->never())->method('buildContext'); // no poolId/courseId/lastWrong → no RAG context
 
@@ -425,7 +443,7 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatStripsAnswerBearingContextWhenExamActiveOnPoolWithoutQuestionId(): void {
         $this->enableAi();
-        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
         $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
         $this->questionMock->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
         $this->ragMock->method('buildContext')->willReturn(['chunks' => []]);

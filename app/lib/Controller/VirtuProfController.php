@@ -133,8 +133,9 @@ class VirtuProfController extends Controller {
      * absent, in which case the caller returns a `consent_required` response.
      */
     private function aiConsentMissing(): bool {
+        // 5.5.2: delegate to hasAiConsent() (exact current version) — "not empty" accepted outdated consent.
         return $this->userId === null
-            || empty($this->telosService->getAiConsentVersion($this->userId));
+            || !$this->telosService->hasAiConsent($this->userId);
     }
 
     /**

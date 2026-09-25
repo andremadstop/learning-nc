@@ -2,19 +2,20 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
-use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class SummaryController extends Controller {
     private CourseSummaryService $summaryService;
     private CourseService $courseService;
-    private UserTelosMapper $telosMapper;
+    private TelosService $telosService;
     private ?string $userId;
 
     public function __construct(
@@ -22,13 +23,13 @@ class SummaryController extends Controller {
         IRequest $request,
         CourseSummaryService $summaryService,
         CourseService $courseService,
-        UserTelosMapper $telosMapper,
+        TelosService $telosService,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->summaryService = $summaryService;
         $this->courseService = $courseService;
-        $this->telosMapper = $telosMapper;
+        $this->telosService = $telosService;
         $this->userId = $userId;
     }
 
@@ -96,15 +97,16 @@ class SummaryController extends Controller {
      *
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 10, period: 3600)]
     public function generateNarrative(int $courseId): DataResponse {
         try {
             $course = $this->courseService->findById($courseId, $this->userId);
             if (!empty($course['is_instructor'])) {
                 return new DataResponse(['error' => 'Students only'], Http::STATUS_FORBIDDEN);
             }
-            // DSGVO: Require AI consent before sending data to Gemini
-            $telos = $this->telosMapper->findByUserIdOrNull($this->userId);
-            if (!$telos || empty($telos->getAiConsentVersion())) {
+            // DSGVO: Require AI consent before sending data to the AI provider. 5.5.2: through
+            // hasAiConsent() (exact current version) — "not empty" accepted outdated consent.
+            if ($this->userId === null || !$this->telosService->hasAiConsent($this->userId)) {
                 return new DataResponse(['narrative' => null, 'cached' => false, 'consent_required' => true]);
             }
             $narrative = $this->summaryService->generateAndCacheNarrative($courseId, $this->userId);
