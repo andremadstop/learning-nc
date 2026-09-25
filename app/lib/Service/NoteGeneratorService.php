@@ -26,6 +26,7 @@ class NoteGeneratorService {
     private LernprofilService $lernprofilService;
     private IDBConnection $db;
     private LoggerInterface $logger;
+    private TelosService $telosService;
 
     /** Max wrong questions to include in prompt context */
     private const MAX_WRONG_QUESTIONS = 5;
@@ -38,13 +39,15 @@ class NoteGeneratorService {
         LernbotFileService $fileService,
         LernprofilService $lernprofilService,
         IDBConnection $db,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        TelosService $telosService
     ) {
         $this->geminiService = $geminiService;
         $this->fileService = $fileService;
         $this->lernprofilService = $lernprofilService;
         $this->db = $db;
         $this->logger = $logger;
+        $this->telosService = $telosService;
     }
 
     // -------------------------------------------------------------------------
@@ -65,6 +68,13 @@ class NoteGeneratorService {
      * @throws \RuntimeException  If Gemini is unavailable or file write fails
      */
     public function generateSummary(string $userId, int $poolId, ?int $courseId = null): array {
+        // 5.5.2: this sends the user's weak topic and wrong answers to the AI provider and is also
+        // reached from the weekly background job, which had no consent gate. Refuse before any
+        // learning data is loaded.
+        if (!$this->telosService->hasAiConsent($userId)) {
+            throw new \RuntimeException('consent_required');
+        }
+
         // 1. Load pool info
         $poolInfo = $this->loadPoolInfo($poolId);
         if ($poolInfo === null) {

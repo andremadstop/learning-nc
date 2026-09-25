@@ -89,6 +89,10 @@ class NoteGeneratorController extends Controller {
                 'content' => $result['content'],
             ]);
         } catch (\RuntimeException $e) {
+            // 5.5.2: the service refuses without valid consent — same contract as the gate above.
+            if ($e->getMessage() === 'consent_required') {
+                return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+            }
             // Check if it's a Gemini availability problem
             if (str_contains($e->getMessage(), 'API key not configured')) {
                 return new DataResponse(

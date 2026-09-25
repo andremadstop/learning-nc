@@ -4,6 +4,7 @@ namespace OCA\Learning\BackgroundJob;
 
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\LernprofilService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\IDBConnection;
@@ -30,6 +31,7 @@ class WeeklyLernplanJob extends TimedJob {
     private NoteGeneratorService $noteGeneratorService;
     private LernprofilService $lernprofilService;
     private LoggerInterface $logger;
+    private TelosService $telosService;
 
     /** Maximum users to process per job run — prevents long-running jobs. */
     private const BATCH_SIZE = 200;
@@ -42,7 +44,8 @@ class WeeklyLernplanJob extends TimedJob {
         IDBConnection $db,
         NoteGeneratorService $noteGeneratorService,
         LernprofilService $lernprofilService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        TelosService $telosService
     ) {
         parent::__construct($time);
         // Run once per week (7 days)
@@ -51,19 +54,23 @@ class WeeklyLernplanJob extends TimedJob {
         $this->noteGeneratorService = $noteGeneratorService;
         $this->lernprofilService = $lernprofilService;
         $this->logger = $logger;
+        $this->telosService = $telosService;
     }
 
     protected function run($argument): void {
         $users = $this->getActiveUsers();
         $processed = 0;
         $skipped = 0;
+        $skippedConsent = 0;
         $errors = 0;
 
         foreach ($users as $userId) {
             try {
-                $generated = $this->processUser($userId);
-                if ($generated) {
+                $outcome = $this->processUser($userId);
+                if ($outcome === 'generated') {
                     $processed++;
+                } elseif ($outcome === 'skipped_consent') {
+                    $skippedConsent++;
                 } else {
                     $skipped++;
                 }
@@ -78,28 +85,35 @@ class WeeklyLernplanJob extends TimedJob {
         }
 
         $this->logger->info(
-            'WeeklyLernplanJob: processed={processed} skipped={skipped} errors={errors}',
-            ['processed' => $processed, 'skipped' => $skipped, 'errors' => $errors, 'app' => 'learning']
+            'WeeklyLernplanJob: processed={processed} skipped={skipped} skipped_consent={skippedConsent} errors={errors}',
+            ['processed' => $processed, 'skipped' => $skipped, 'skippedConsent' => $skippedConsent, 'errors' => $errors, 'app' => 'learning']
         );
     }
 
     /**
      * Generate a summary note for the user's weakest pool, if any.
      *
-     * @return bool True if a note was generated, false if skipped (no weak pools / no data).
+     * 5.5.2: users without valid AI consent are skipped before any learning data is read — the
+     * note sends the weakest topic and wrongly answered questions to the AI provider.
+     *
+     * @return string 'generated' | 'skipped' (no weak pool / no data) | 'skipped_consent'
      */
-    private function processUser(string $userId): bool {
+    private function processUser(string $userId): string {
+        if (!$this->telosService->hasAiConsent($userId)) {
+            return 'skipped_consent';
+        }
+
         $weakTopics = $this->lernprofilService->getWeakestTopics($userId, null, 1);
 
         if (empty($weakTopics)) {
-            return false;
+            return 'skipped';
         }
 
         $weakest = $weakTopics[0];
 
         // Skip if error rate is too low — no meaningful weak point to summarise
         if ((float)$weakest['error_rate'] < self::MIN_ERROR_RATE) {
-            return false;
+            return 'skipped';
         }
 
         $poolId = (int)$weakest['pool_id'];
@@ -114,7 +128,7 @@ class WeeklyLernplanJob extends TimedJob {
             'app' => 'learning',
         ]);
 
-        return true;
+        return 'generated';
     }
 
     /**
