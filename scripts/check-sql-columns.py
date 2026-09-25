@@ -25,10 +25,14 @@ createFunction()/having()/orderBy() — against information_schema of the runnin
 
 Usage
 -----
-    python3 scripts/check-sql-columns.py                 # uses ssh relais + devcloud-db
-    SCHEMA_FILE=schema.txt python3 scripts/check-sql-columns.py   # offline, pre-dumped schema
+    scripts/schema-dump.sh /tmp/schema.txt               # fresh NC + app in throwaway containers
+    SCHEMA_FILE=/tmp/schema.txt python3 scripts/check-sql-columns.py
+    SCHEMA_FILE=... APP_LIB=/snapshot/app/lib python3 scripts/check-sql-columns.py   # other tree
 
-Dump format for SCHEMA_FILE (one per line, no oc_ prefix needed — it is stripped):
+SCHEMA_FILE is required. There is no remote default any more (the devcloud instance is gone), and a
+missing or unreadable file exits 2 — callers treat that as a failure, not as a skip.
+
+Dump format for SCHEMA_FILE (one per line, the oc_ prefix is stripped):
     oc_learning_courses|title
 
 Two shapes are checked
@@ -48,11 +52,11 @@ Limitations (deliberate, not oversights)
     q.question"). A reference inside a trailing comment on a code line is still reported — every
     hit is a lead, not a verdict.
 
-Exit codes: 0 = no findings, 1 = findings, 2 = schema unavailable.
+Exit codes: 0 = no findings, 1 = findings, 2 = schema file missing, unreadable or empty, or the
+source tree (APP_LIB) missing, unreadable or without a single checked file.
 """
 import re
 import os
-import subprocess
 import sys
 import collections
 
@@ -62,27 +66,19 @@ SQL_KEYWORDS = {
     'asc', 'on', 'is', 'in', 'like',
 }
 
-SCHEMA_QUERY = (
-    "select table_name, column_name from information_schema.columns "
-    "where table_name like 'oc_learning%' order by table_name, column_name"
-)
-
 
 def load_schema():
     """table (without oc_ prefix) -> set(columns)."""
     dump = os.environ.get('SCHEMA_FILE')
-    if dump:
-        raw = open(dump, encoding='utf-8').read()
-    else:
-        try:
-            raw = subprocess.run(
-                ['ssh', '-o', 'ConnectTimeout=5', 'relais',
-                 f'docker exec devcloud-db psql -U oc_admin -d nextcloud -tAF"|" -c "{SCHEMA_QUERY}"'],
-                capture_output=True, text=True, timeout=60, check=True,
-            ).stdout
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as err:
-            print(f'SKIP: database schema unavailable ({err.__class__.__name__})', file=sys.stderr)
-            sys.exit(2)
+    if not dump:
+        print('ERROR: SCHEMA_FILE not set — create one with scripts/schema-dump.sh', file=sys.stderr)
+        sys.exit(2)
+    try:
+        with open(dump, encoding='utf-8') as handle:
+            raw = handle.read()
+    except OSError as err:
+        print(f'ERROR: cannot read SCHEMA_FILE {dump} ({err.__class__.__name__})', file=sys.stderr)
+        sys.exit(2)
 
     schema = collections.defaultdict(set)
     for line in raw.splitlines():
@@ -92,7 +88,7 @@ def load_schema():
         table, column = line.split('|', 1)
         schema[table.replace('oc_', '', 1)].add(column)
     if not schema:
-        print('SKIP: schema query returned nothing', file=sys.stderr)
+        print(f'ERROR: SCHEMA_FILE {dump} contains no learning tables', file=sys.stderr)
         sys.exit(2)
     return schema
 
@@ -128,16 +124,30 @@ def alias_map(source):
 
 def main():
     schema = load_schema()
-    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'app', 'lib')
+    # APP_LIB lets a hook check a commit snapshot instead of the working copy.
+    root = os.environ.get('APP_LIB') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'app', 'lib')
+    # A missing or unreadable tree must not pass as "0 findings": it checks nothing.
+    if not os.path.isdir(root) or not os.access(root, os.R_OK | os.X_OK):
+        print(f'ERROR: source directory {root} missing or unreadable', file=sys.stderr)
+        sys.exit(2)
     findings = []
     checked_files = 0
 
-    for dirpath, _, filenames in os.walk(root):
+    def walk_error(err):
+        print(f'ERROR: cannot read {err.filename} ({err.__class__.__name__})', file=sys.stderr)
+        sys.exit(2)
+
+    for dirpath, _, filenames in os.walk(root, onerror=walk_error):
         for filename in filenames:
             if not filename.endswith('.php'):
                 continue
             path = os.path.join(dirpath, filename)
-            source = open(path, encoding='utf-8').read()
+            try:
+                with open(path, encoding='utf-8') as handle:
+                    source = handle.read()
+            except (OSError, UnicodeDecodeError) as err:
+                print(f'ERROR: cannot read {path} ({err.__class__.__name__})', file=sys.stderr)
+                sys.exit(2)
             aliases = alias_map(source)
             unaliased = list(unaliased_select_columns(source))
             # NOT `if not aliases: continue` — that skipped every file whose queries are all
@@ -183,6 +193,9 @@ def main():
                 findings.append((os.path.relpath(path), line_no, f'{alias}.{column}', table, line))
 
     print(f'Checked {checked_files} files with query builders against {len(schema)} learning tables.')
+    if checked_files == 0:
+        print(f'ERROR: no query-builder files found under {root} — nothing was checked', file=sys.stderr)
+        sys.exit(2)
     if not findings:
         print('No column references outside the schema.')
         return 0

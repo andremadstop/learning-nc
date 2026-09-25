@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Integration suite against a real Nextcloud. Run via scripts/nc-integration.sh.
+     A skipped or incomplete test is a check that never ran, so it fails the run. -->
+<phpunit bootstrap="bootstrap.php"
+         cacheDirectory="/tmp/learning-integration-phpunit-cache"
+         colors="true"
+         failOnSkipped="true"
+         failOnIncomplete="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         displayDetailsOnSkippedTests="true"
+         displayDetailsOnIncompleteTests="true">
+  <testsuites>
+    <testsuite name="integration">
+      <directory>.</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>
