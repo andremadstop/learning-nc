@@ -1,32 +1,31 @@
 <?php
 declare(strict_types=1);
-namespace OCA\Learning\Tests\Unit\Migration;
+namespace OCA\Learning\Tests\Integration\Migration;
 
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
 
 class AssignmentMigrationTest extends TestCase {
-    private ?IDBConnection $db = null;
+    private IDBConnection $db;
+    private string $prefix;
 
     protected function setUp(): void {
-        try {
-            $this->db = Server::get(IDBConnection::class);
-        } catch (\Throwable) {
-            $this->markTestSkipped('No NC container — run in devcloud');
-        }
+        $this->db = Server::get(IDBConnection::class);
+        // IDBConnection has no public prefix getter (getTablePrefix() never existed); the
+        // Doctrine schema below lists tables by their full, prefixed name.
+        $this->prefix = Server::get(IConfig::class)->getSystemValueString('dbtableprefix', 'oc_');
     }
 
     public function testAssignmentTableExists(): void {
         $schema = $this->db->createSchema();
-        $prefix = $this->db->getTablePrefix();
-        $this->assertTrue($schema->hasTable($prefix . 'learning_assignments'));
+        $this->assertTrue($schema->hasTable($this->prefix . 'learning_assignments'));
     }
 
     public function testCompositeIndexIsPlain(): void {
         $schema = $this->db->createSchema();
-        $prefix = $this->db->getTablePrefix();
-        $table = $schema->getTable($prefix . 'learning_assignments');
+        $table = $schema->getTable($this->prefix . 'learning_assignments');
         $indexes = $table->getIndexes();
         $idx = $indexes['learn_asn_crs_subj_idx'] ?? null;
         $this->assertNotNull($idx, 'learn_asn_crs_subj_idx must exist');
@@ -35,8 +34,7 @@ class AssignmentMigrationTest extends TestCase {
 
     public function testPeriodKeyIsUnique(): void {
         $schema = $this->db->createSchema();
-        $prefix = $this->db->getTablePrefix();
-        $table = $schema->getTable($prefix . 'learning_assignments');
+        $table = $schema->getTable($this->prefix . 'learning_assignments');
         $idx = $table->getIndexes()['learn_asn_period_uq'] ?? null;
         $this->assertNotNull($idx, 'learn_asn_period_uq must exist');
         $this->assertTrue($idx->isUnique());
@@ -80,8 +78,7 @@ class AssignmentMigrationTest extends TestCase {
 
     public function testOversightScopeGroupIdLength(): void {
         $schema = $this->db->createSchema();
-        $prefix = $this->db->getTablePrefix();
-        $table = $schema->getTable($prefix . 'learning_oversight');
+        $table = $schema->getTable($this->prefix . 'learning_oversight');
         $col = $table->getColumn('scope_group_id');
         $this->assertSame(64, $col->getLength(), 'scope_group_id must be VARCHAR(64) to match NC oc_groups.gid');
     }

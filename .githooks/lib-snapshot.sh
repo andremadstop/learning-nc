@@ -55,7 +55,13 @@ gate_security() {
 	local dir="$1" hits
 	echo -n "Security scan... "
 	[ -d "$dir/app/lib" ] && [ -d "$dir/app/src" ] || { gate_fail "app/lib or app/src missing"; return 1; }
-	hits=$(grep -rn 'api_key.*=.*["'"'"']sk-\|password\s*=\s*["'"'"'][A-Za-z0-9]' --include="*.php" --include="*.js" --include="*.vue" "$dir/app/lib/" "$dir/app/src/" 2>/dev/null | grep -v 'getenv\|config\|Config\|IConfig\|test\|example\|\.env\|password_hash\|passwordField\|password_confirm\|password_reset\|PASSWORD' || true)
+	# grep exits 1 for "no match", which is the passing case; anything above 1 is an error
+	# (unreadable file, bad pattern) and must fail the gate instead of reading as "clean".
+	local raw rc=0 filter_rc=0
+	raw=$(grep -rn 'api_key.*=.*["'"'"']sk-\|password\s*=\s*["'"'"'][A-Za-z0-9]' --include="*.php" --include="*.js" --include="*.vue" "$dir/app/lib/" "$dir/app/src/") || rc=$?
+	if [ "$rc" -gt 1 ]; then gate_fail "grep failed (exit $rc)"; return 1; fi
+	hits=$(grep -v 'getenv\|config\|Config\|IConfig\|test\|example\|\.env\|password_hash\|passwordField\|password_confirm\|password_reset\|PASSWORD' <<<"$raw") || filter_rc=$?
+	if [ "$filter_rc" -gt 1 ]; then gate_fail "grep filter failed (exit $filter_rc)"; return 1; fi
 	if [ -n "$hits" ]; then gate_fail "possibly hardcoded secrets:"; echo "${hits//$dir\//}"; return 1; fi
 	gate_ok
 }

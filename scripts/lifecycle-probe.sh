@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 # lifecycle-probe.sh — fresh install and 5.5.1 -> working-state upgrade in throwaway containers.
 #
-# Usage: ENGINE=pgsql|mysql [PROBE_FAIL_AFTER=key_write] scripts/lifecycle-probe.sh
+# Usage: ENGINE=pgsql|mysql [PROBE_REF=<git-ref>] [PROBE_FAIL_AFTER=key_write] scripts/lifecycle-probe.sh
 #
-# Per engine, two scenarios, each on its own Nextcloud 33 + database pair:
+# Per engine, three scenarios, each on its own Nextcloud 33 + database pair:
 #   fresh    install the working state (git index, release file set) and enable it
 #   upgrade  install the 5.5.1 release tarball, seed legacy AI fixtures
 #            (scripts/lifecycle-fixtures/seed-5.5.1.sql.php), replace the app with the working
 #            state, run `occ upgrade`, then `occ maintenance:repair` twice
+#   bare     install the 5.5.1 release tarball WITHOUT seeding (a fresh 5.5.1 has no audit chain
+#            head and only the legacy translation tables), then upgrade like `upgrade`
+# Each scenario ends with scripts/lifecycle-fixtures/check-working-state.php: audit chain head,
+# a real compliance event, the expected chain position, and a translation round-trip.
+# The working state is the git index, or the tree of PROBE_REF (e.g. to prove the checks go red
+# on a release without the fix).
 # Every check prints `LIFECYCLE <engine> <check>=ok|fail`; the last line is
 # `LIFECYCLE <engine> result=ok|fail`. Exit 0 only if every check passed and cleanup succeeded.
 # PROBE_FAIL_AFTER=key_write is handed to the first repair only: the repair step (Task C1) then
@@ -26,6 +32,7 @@ OLD_SHA256="b4a7ff9100d761375d74031bbce6000ea0da89ff851a2873f109cb0ef02d01ef"
 OLD_VERSION="5.5.1"
 RELEASE_SET=(appinfo css img js l10n lib templates data CHANGELOG.md LICENSE README.md)
 SEEDER="$REPO_ROOT/scripts/lifecycle-fixtures/seed-5.5.1.sql.php"
+CHECKER="$REPO_ROOT/scripts/lifecycle-fixtures/check-working-state.php"
 
 PROBE_FAIL_AFTER="${PROBE_FAIL_AFTER:-}"
 case "$ENGINE" in pgsql|mysql) ;; *) echo "ENGINE must be pgsql or mysql" >&2; exit 2 ;; esac
@@ -60,8 +67,14 @@ check() {
 }
 
 # --- sources ----------------------------------------------------------------------------------
-echo "==> working state from git index"
-git -C "$REPO_ROOT" checkout-index -a --prefix="$WORK/repo/"
+if [ -n "${PROBE_REF:-}" ]; then
+	echo "==> working state from $PROBE_REF"
+	mkdir -p "$WORK/repo"
+	git -C "$REPO_ROOT" archive "$PROBE_REF" app | tar -x -C "$WORK/repo"
+else
+	echo "==> working state from git index"
+	git -C "$REPO_ROOT" checkout-index -a --prefix="$WORK/repo/"
+fi
 mkdir -p "$WORK/new/learning"
 for f in "${RELEASE_SET[@]}"; do
 	[ -e "$WORK/repo/app/$f" ] || { echo "working state lacks app/$f" >&2; exit 2; }
@@ -152,6 +165,15 @@ seed() {
 	[ "$rc" -eq 0 ] && grep -q '^SEED chained_rows=3 ' <<<"$out"
 }
 
+# working_state <expected_last_seq> — the fresh-install regressions of 5.5.2 are gone
+working_state() {
+	docker cp "$CHECKER" "$NC:/tmp/check.php" || return 1
+	local out rc=0
+	out="$(docker exec -u www-data "$NC" php /tmp/check.php "$1" 2>&1)" || rc=$?
+	echo "$out"
+	[ "$rc" -eq 0 ] && grep -q '^CHECK result=ok$' <<<"$out"
+}
+
 # The injected run is expected to abort; only its exit code is reported, the second repair decides.
 repair_injected() {
 	local rc=0
@@ -175,6 +197,7 @@ check fresh_enable occ app:enable learning
 check fresh_schema learning_tables
 check fresh_enabled app_enabled
 check fresh_version version_is "$NEW_VERSION"
+check fresh_working_state working_state 1
 
 # --- scenario: upgrade 5.5.1 -> working state -------------------------------------------------
 echo "==> [$ENGINE] install $OLD_VERSION, seed, upgrade to $NEW_VERSION"
@@ -193,5 +216,18 @@ else
 fi
 check upgrade_repair_2 occ maintenance:repair
 check upgrade_enabled app_enabled
+# 3 chained rows seeded + 1 from the check: the existing head was kept, not re-seeded
+check upgrade_working_state working_state 4
+
+# --- scenario: bare 5.5.1 install (no seed) -> working state ----------------------------------
+echo "==> [$ENGINE] install $OLD_VERSION without seeding, upgrade to $NEW_VERSION"
+check bare_setup new_instance bare
+check bare_install_old install_nc "$WORK/old/learning"
+check bare_enable_old occ app:enable learning
+check bare_swap swap_to_working_state
+check bare_occ_upgrade occ upgrade
+check bare_new_version version_is "$NEW_VERSION"
+check bare_repair occ maintenance:repair
+check bare_working_state working_state 1
 
 if [ "$FAILED" = 0 ]; then echo "LIFECYCLE $ENGINE result=ok"; else echo "LIFECYCLE $ENGINE result=fail"; exit 1; fi

@@ -13,8 +13,9 @@
 # A gate that was not requested reports ok (it cannot block); any setup or cleanup
 # failure reports fail for every requested gate.
 #
-# PHPUnit runs with --fail-on-skipped --fail-on-incomplete: a skipped test is a check
-# that never ran, so it fails the gate. The only exception is SKIP_KNOWN below.
+# PHPUnit runs the versioned app/phpunit.xml with --fail-on-skipped --fail-on-incomplete:
+# a skipped test is a check that never ran, so it fails the gate. Tests that need a real
+# Nextcloud database live in app/tests/Integration and run via scripts/nc-integration.sh.
 #
 # --self-test proves failures are actually caught: a PHPStan probe with a deliberate error
 # must fail and the clean snapshot must pass; a PHPUnit probe that skips must fail the gate.
@@ -26,14 +27,6 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${GATE_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 COMPOSER_VERSION="${GATE_COMPOSER_VERSION:-2.10.3}"
 COMPOSER_SHA256="${GATE_COMPOSER_SHA256:-7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6}"
-
-# Tests that need a real Nextcloud database and always skip in the unit bootstrap.
-# They are excluded from the gate run (and listed in the output) until Task 0.3
-# (scripts/nc-integration.sh) runs them against a real instance. Every other skip fails.
-SKIP_KNOWN=(
-	tests/Unit/Migration/AuditMigrationTest.php
-	tests/Unit/Migration/AssignmentMigrationTest.php
-)
 
 WORK=""
 NAME=""
@@ -78,18 +71,8 @@ snapshot() {
 		*)       die "unknown source mode: $1" ;;
 	esac
 	[ -f "$WORK/repo/app/composer.json" ] || die "snapshot has no app/composer.json"
-	gate_phpunit_config > "$WORK/repo/app/phpunit.gate.xml"
-}
-
-# phpunit.xml minus SKIP_KNOWN; lives in /work so the relative bootstrap path resolves.
-gate_phpunit_config() {
-	echo '<?xml version="1.0" encoding="UTF-8"?>'
-	echo '<phpunit bootstrap="tests/bootstrap.php" cacheDirectory=".phpunit.cache" colors="true">'
-	echo '  <testsuites><testsuite name="unit"><directory>tests/Unit</directory>'
-	local f
-	for f in "${SKIP_KNOWN[@]}"; do echo "    <exclude>$f</exclude>"; done
-	echo '  </testsuite></testsuites>'
-	echo '</phpunit>'
+	[ -f "$WORK/repo/app/composer.lock" ] || die "snapshot has no app/composer.lock (gates must be reproducible)"
+	[ -f "$WORK/repo/app/phpunit.xml" ] || die "snapshot has no app/phpunit.xml"
 }
 
 # start_container <purpose> — container with app at /work, vendor installed
@@ -118,9 +101,9 @@ run_phpstan() {
 
 # run_phpunit [test-file] — the gate's PHPUnit invocation (optionally limited to one file)
 run_phpunit() {
-	echo "==> PHPUnit (not run, need a real NC database -> Task 0.3: ${SKIP_KNOWN[*]})"
+	echo "==> PHPUnit (app/phpunit.xml)"
 	docker exec -w /work -e VERIFY_SCRIPT=/tmp/verify-credential.py "$NAME" \
-		php vendor/bin/phpunit -c phpunit.gate.xml \
+		php vendor/bin/phpunit -c phpunit.xml \
 		--fail-on-skipped --fail-on-incomplete --display-skipped --display-incomplete "$@"
 }
 
