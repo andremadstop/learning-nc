@@ -37,10 +37,9 @@ class LlmOutputNormalizer {
         if (preg_match('#^(?:\xEF\xBB\xBF)?\s*<think\b#i', $stripped) === 1) {
             return '';
         }
-        $close = strripos($stripped, '</think');
-        if ($close !== false) {
-            $end = strpos($stripped, '>', $close);
-            $stripped = $end === false ? '' : substr($stripped, $end + 1);
+        if (preg_match_all('#</think\s*>#i', $stripped, $closings, PREG_OFFSET_CAPTURE) > 0) {
+            [$tag, $offset] = end($closings[0]);
+            $stripped = substr($stripped, $offset + strlen($tag));
         }
         return $stripped;
     }

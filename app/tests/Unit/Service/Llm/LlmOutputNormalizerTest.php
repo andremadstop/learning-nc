@@ -77,6 +77,11 @@ class LlmOutputNormalizerTest extends TestCase {
         $this->assertSame('Antwort', $this->normalizer->normalize("Überlegung…\n</think>\nAntwort"));
     }
 
+    public function testOtherTagsStartingWithThinkAreNotReasoning(): void {
+        $in = '<think>x</think>Erklärung: das Tag </thinking> schließt.';
+        $this->assertSame('Erklärung: das Tag </thinking> schließt.', $this->normalizer->normalize($in));
+    }
+
     public function testTextMentioningThinkWordIsUntouched(): void {
         $this->assertSame('I think so.', $this->normalizer->normalize('I think so.'));
     }
