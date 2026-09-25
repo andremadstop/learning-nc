@@ -20,12 +20,17 @@ use OCP\Http\Client\LocalServerException;
  * - http_errors=false is required: NC leaves Guzzle's default (true), under which a 401/429/503
  *   throws a Guzzle exception instead of returning a response, and every provider error would
  *   collapse into "network".
- * - Pinning: we always send CURLOPT_RESOLVE host:port:ip with the IP TargetGuard checked. If NC's
- *   DnsPinMiddleware is active (allow_local_address false, dns_pinning on) it appends its own,
- *   likewise checked, entries which libcurl lets win; otherwise ours is the only pin — exactly
- *   the case of Review Focus 4 (allow_local_remote_servers on, our connection not internal).
+ * - Pinning: CURLOPT_CONNECT_TO host:port:ip:port with the IP TargetGuard checked is authoritative
+ *   (verified with libcurl 8.14 in the NC image: it wins over later CURLOPT_RESOLVE entries, which
+ *   NC's DnsPinMiddleware appends, and an HTTP proxy receives CONNECT <ip>:<port>). TLS still
+ *   verifies the certificate against the host name. CURLOPT_RESOLVE host:port:ip is sent as well.
+ * - Response size: curl aborts on a larger Content-Length (MAXFILESIZE) and, for any curl version,
+ *   the progress callback aborts once more than 2 MB arrived. Transparent decompression is off
+ *   (Accept-Encoding identity, decode_content false; a compressed answer is refused), since a
+ *   small gzip body could otherwise expand far beyond the limit after these checks.
  * - No Guzzle classes are referenced (not in PHPStan's scan paths, not a public NC API): transport
- *   errors are classified by LocalServerException (OCP) and the cURL error number in the message.
+ *   errors are classified by LocalServerException (OCP) and the cURL error number in the message;
+ *   the message itself is never passed on (it can contain the URL and resolved addresses).
  */
 final class LlmHttpClient {
     public const CONNECT_TIMEOUT_SEC = 5;
@@ -63,19 +68,30 @@ final class LlmHttpClient {
             \CURLOPT_HTTP_VERSION => \CURL_HTTP_VERSION_2TLS,
             // curl aborts on a larger Content-Length, and (curl ≥ 8.4) during the transfer
             \CURLOPT_MAXFILESIZE => self::MAX_RESPONSE_BYTES,
+            // independent of the curl version: abort (cURL error 42) once more than the limit arrived
+            \CURLOPT_NOPROGRESS => false,
+            \CURLOPT_XFERINFOFUNCTION => static fn($handle, $dlTotal, $dlNow, $ulTotal, $ulNow): int
+                => $dlNow > self::MAX_RESPONSE_BYTES ? 1 : 0,
         ];
         if (!TargetGuard::isIpLiteral($target['host'])) {
             $ip = str_contains($target['ip'], ':') ? '[' . $target['ip'] . ']' : $target['ip'];
-            $curl[\CURLOPT_RESOLVE] = [$target['host'] . ':' . $target['port'] . ':' . $ip];
+            $hostPort = $target['host'] . ':' . $target['port'];
+            $curl[\CURLOPT_RESOLVE] = [$hostPort . ':' . $ip];
+            $curl[\CURLOPT_CONNECT_TO] = [$hostPort . ':' . $ip . ':' . $target['port']];
         }
 
         $options = [
-            'headers' => array_merge(['Content-Type' => 'application/json', 'Accept' => 'application/json'], $headers),
+            'headers' => array_merge(
+                ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
+                $headers,
+                ['Accept-Encoding' => 'identity'],
+            ),
             'body' => $encoded,
             'timeout' => $timeoutSec,
             'connect_timeout' => self::CONNECT_TIMEOUT_SEC,
             'allow_redirects' => false,
             'http_errors' => false,
+            'decode_content' => false,
             'curl' => $curl,
             'nextcloud' => ['allow_local_address' => $c->allowInternalNetwork],
         ];
@@ -86,15 +102,21 @@ final class LlmHttpClient {
             throw new LlmProviderException('config', '', 'Nextcloud refused the target as a local address');
         } catch (\Throwable $e) {
             $msg = $e->getMessage();
-            $category = match (true) {
-                preg_match('/cURL error 28\b|timed out/i', $msg) === 1 => 'timeout',
-                preg_match('/cURL error 63\b/', $msg) === 1 => 'bad_request',
-                default => 'network',
+            $curlError = preg_match('/cURL error (\d+)\b/', $msg, $m) === 1 ? (int)$m[1] : null;
+            [$category, $detail] = match (true) {
+                $curlError === 28 || ($curlError === null && preg_match('/timed out/i', $msg) === 1)
+                    => ['timeout', 'Request timed out'],
+                $curlError === 42, $curlError === 63 => ['bad_request', 'Response exceeds 2 MB'],
+                default => ['network', 'Transport error'],
             };
-            throw new LlmProviderException($category, '', self::redact($msg));
+            throw new LlmProviderException($category, '', $detail . ($curlError !== null ? " (cURL error $curlError)" : ''));
         }
 
         $status = $response->getStatusCode();
+        $encoding = strtolower(trim($response->getHeader('Content-Encoding')));
+        if ($encoding !== '' && $encoding !== 'identity') {
+            throw new LlmProviderException('bad_request', '', 'Provider sent a compressed response despite Accept-Encoding: identity');
+        }
         $raw = self::readLimited($response->getBody());
         if ($raw === null) {
             throw new LlmProviderException('bad_request', '', 'Response exceeds 2 MB');
@@ -112,7 +134,35 @@ final class LlmHttpClient {
             $status === 400, $status === 404, $status === 422 => 'bad_request',
             default => 'network',
         };
-        throw new LlmProviderException($category, '', self::adminDetail($raw));
+        throw new LlmProviderException($category, '', self::adminDetail($raw, self::secretsOf($url, $headers)));
+    }
+
+    /**
+     * The credentials this request carries (auth/key/token headers, key-like query parameters), so an
+     * echo of them is redacted even when it is short or contains punctuation the generic pattern misses.
+     *
+     * @param array<string, string> $headers
+     * @return list<string>
+     */
+    private static function secretsOf(string $url, array $headers): array {
+        $sensitive = '/auth|key|token|secret|sig|cookie|password/i';
+        $secrets = [];
+        foreach ($headers as $name => $value) {
+            if (preg_match($sensitive, (string)$name) === 1) {
+                $secrets[] = $value;
+                $secrets[] = (string)preg_replace('/^\S+\s+/', '', $value); // without "Bearer " etc.
+            }
+        }
+        parse_str((string)parse_url($url, PHP_URL_QUERY), $query);
+        foreach ($query as $name => $value) {
+            if (is_string($value) && preg_match($sensitive, (string)$name) === 1) {
+                $secrets[] = $value;
+                $secrets[] = rawurlencode($value);
+            }
+        }
+        $secrets = array_values(array_unique(array_filter($secrets, fn(string $s) => strlen(trim($s)) >= 4)));
+        usort($secrets, fn(string $a, string $b) => strlen($b) <=> strlen($a)); // longest first
+        return $secrets;
     }
 
     /**
@@ -131,7 +181,8 @@ final class LlmHttpClient {
     }
 
     /** Short redacted provider error text for the admin connection test — never the full body. */
-    private static function adminDetail(string $raw): string {
+    /** @param list<string> $secrets */
+    private static function adminDetail(string $raw, array $secrets): string {
         $text = $raw;
         $json = json_decode($raw, true);
         if (is_array($json)) {
@@ -144,11 +195,17 @@ final class LlmHttpClient {
                 }
             }
         }
-        return self::redact($text);
+        return self::redact($text, $secrets);
     }
 
-    /** Redact key-like sequences FIRST, then cut: cutting first could leave a short, unmatched key fragment. */
-    private static function redact(string $text): string {
+    /**
+     * Redact the request's own credentials and key-like sequences FIRST, then cut: cutting first
+     * could leave a short, unmatched key fragment.
+     *
+     * @param list<string> $secrets
+     */
+    private static function redact(string $text, array $secrets): string {
+        $text = $secrets === [] ? $text : str_replace($secrets, '[redacted]', $text);
         $text = mb_scrub($text, 'UTF-8');
         $text = (string)preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $text);
         $text = (string)preg_replace('/[A-Za-z0-9_\-]{24,}/u', '[redacted]', $text);

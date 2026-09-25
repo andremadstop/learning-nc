@@ -148,6 +148,16 @@ class TargetGuardTest extends TestCase {
         $this->assertSame('2001:db8::1', $v6only->resolve('https://llm.example.com/v1', false)['ip']);
     }
 
+    public function testNonCanonicalNumericHostsRejectedWithoutResolving(): void {
+        // curl reads these as IPv4 literals (no lookup, so no pin applies) while the system resolver
+        // may read them differently or not at all; only the dotted-quad form is accepted.
+        $guard = new TargetGuard(fn(string $h) => $this->fail('numeric host must not be resolved: ' . $h));
+        foreach (['https://2130706433/v1', 'https://0x7f.1/v1', 'https://127.1/v1', 'https://0177.0.0.1/v1',
+            'https://0x7f000001/v1', 'https://1.2.3.08/v1', 'https://llm.example.123/v1'] as $url) {
+            $this->assertConfigError(fn() => $guard->resolve($url, true), $url);
+        }
+    }
+
     public function testErrorMessageHasNoResolvedAddress(): void {
         $guard = new TargetGuard(fn(string $h) => ['192.168.1.20']);
         try {

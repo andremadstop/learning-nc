@@ -181,6 +181,69 @@ class LlmHttpClientTest extends TestCase {
         $this->assertStringContainsString('PROMPT-MARKER quota', $e->adminDetail);
     }
 
+    public function testConnectToMakesTheCheckedAddressAuthoritative(): void {
+        // Nextcloud's DnsPinMiddleware appends its own CURLOPT_RESOLVE entries (later ones win) and an
+        // HTTP proxy resolves the name itself; CURLOPT_CONNECT_TO with the checked IP literal beats both
+        // (verified with libcurl 8.14: direct and proxy CONNECT go to the connect-to address).
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7'], 'v6.example.com' => ['2001:db8::7']],
+            [$this->response(200, '{}'), $this->response(200, '{}')]);
+        $client->postJson($this->cloud(), self::MISTRAL, [], [], 45);
+        $client->postJson($this->cloud(), 'https://v6.example.com:8443/v1', [], [], 45);
+        $this->assertSame(['api.mistral.ai:443:203.0.113.7:443'], $this->calls[0][1]['curl'][CURLOPT_CONNECT_TO]);
+        $this->assertSame(['v6.example.com:8443:[2001:db8::7]:8443'], $this->calls[1][1]['curl'][CURLOPT_CONNECT_TO]);
+    }
+
+    public function testResponseLimitIsEnforcedDuringTheTransfer(): void {
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [$this->response(200, '{}')]);
+        $client->postJson($this->cloud(), self::MISTRAL, [], [], 45);
+        $curl = $this->calls[0][1]['curl'];
+        $this->assertSame(LlmHttpClient::MAX_RESPONSE_BYTES, $curl[CURLOPT_MAXFILESIZE]);
+        $this->assertFalse($curl[CURLOPT_NOPROGRESS]);
+        $progress = $curl[CURLOPT_XFERINFOFUNCTION];
+        $this->assertSame(0, $progress(null, 0, LlmHttpClient::MAX_RESPONSE_BYTES, 0, 0), 'at the limit: continue');
+        $this->assertNotSame(0, $progress(null, 0, LlmHttpClient::MAX_RESPONSE_BYTES + 1, 0, 0), 'over the limit: abort');
+    }
+
+    public function testNoTransparentDecompression(): void {
+        // a small gzip body could expand far beyond 2 MB after the byte limits were checked
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [$this->response(200, '{}')]);
+        $client->postJson($this->cloud(), self::MISTRAL, [], [], 45);
+        $this->assertFalse($this->calls[0][1]['decode_content']);
+        $this->assertSame('identity', $this->calls[0][1]['headers']['Accept-Encoding']);
+    }
+
+    public function testCompressedResponseRejected(): void {
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [$this->response(200, "\x1f\x8b\x08", ['Content-Encoding' => 'gzip'])]);
+        $this->assertCategory('bad_request', fn() => $client->postJson($this->cloud(), self::MISTRAL, [], [], 45));
+    }
+
+    public function testAbortedTransferIsBadRequest(): void {
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [new \RuntimeException('cURL error 42: Callback aborted')]);
+        $this->assertCategory('bad_request', fn() => $client->postJson($this->cloud(), self::MISTRAL, [], [], 45));
+    }
+
+    public function testTransportDetailHasNoUrlOrAddress(): void {
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [new \RuntimeException(
+            'cURL error 7: Failed to connect to 192.168.1.20 port 443 (fd00::1): refused for https://api.mistral.ai/v1?key=abc123')]);
+        $e = $this->assertCategory('network', fn() => $client->postJson($this->cloud(), self::MISTRAL, [], [], 45));
+        $this->assertStringContainsString('cURL error 7', $e->adminDetail);
+        foreach (['192.168.1.20', 'fd00::1', 'abc123', 'mistral'] as $leak) {
+            $this->assertStringNotContainsString($leak, $e->adminDetail);
+        }
+    }
+
+    public function testAdminDetailRedactsTheSuppliedCredentials(): void {
+        // shorter than 24 characters and with punctuation: the generic pattern alone would miss them
+        $body = '{"error":{"message":"bad key abcd/efgh+ijkl= and x9Kq-short for q7Tok"}}';
+        $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [$this->response(401, $body)]);
+        $e = $this->assertCategory('auth', fn() => $client->postJson($this->cloud(), self::MISTRAL . '?api_key=q7Tok',
+            ['Authorization' => 'Bearer abcd/efgh+ijkl=', 'x-api-key' => 'x9Kq-short'], [], 45));
+        foreach (['abcd/efgh+ijkl=', 'x9Kq-short', 'q7Tok'] as $secret) {
+            $this->assertStringNotContainsString($secret, $e->adminDetail);
+        }
+        $this->assertStringContainsString('bad key [redacted]', $e->adminDetail);
+    }
+
     // ─── helpers ───────────────────────────────────────────────────────────
 
     private function cloud(): LlmConnection {
@@ -212,13 +275,23 @@ class LlmHttpClientTest extends TestCase {
         return new LlmHttpClient($service, new TargetGuard(fn(string $h) => $dns[$h] ?? []));
     }
 
-    /** @param string|resource $body */
-    private function response(int $status, $body): IResponse {
+    /**
+     * @param string|resource $body
+     * @param array<string, string> $headers
+     */
+    private function response(int $status, $body, array $headers = []): IResponse {
         $r = $this->createMock(IResponse::class);
         $r->method('getStatusCode')->willReturn($status);
         $r->method('getBody')->willReturn($body);
-        $r->method('getHeaders')->willReturn([]);
-        $r->method('getHeader')->willReturn('');
+        $r->method('getHeaders')->willReturn(array_map(fn(string $v) => [$v], $headers));
+        $r->method('getHeader')->willReturnCallback(function (string $key) use ($headers): string {
+            foreach ($headers as $name => $value) {
+                if (strcasecmp($name, $key) === 0) {
+                    return $value;
+                }
+            }
+            return '';
+        });
         return $r;
     }
 

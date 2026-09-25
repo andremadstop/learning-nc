@@ -18,17 +18,20 @@ namespace OCA\Learning\Service\Llm;
  *   door) allow_local_remote_servers is on — so without this guard, a cloud connection whose host
  *   starts resolving to a LAN address would be followed. This guard is independent of both flags.
  * - When NC's pinning IS active (allow_local_address false), it resolves again on its own and
- *   appends its CURLOPT_RESOLVE entries after ours; libcurl lets a later entry for the same
- *   host:port override the earlier one (CURLOPT_RESOLVE(3)), so NC's addresses are used. That is
- *   still safe: NC throws LocalServerException for any local address in its own answer set.
+ *   appends its CURLOPT_RESOLVE entries after ours, and libcurl lets the later entry win. That is
+ *   why LlmHttpClient also sets CURLOPT_CONNECT_TO to the checked IP literal: connect-to is applied
+ *   before any name resolution, so neither NC's entries nor an HTTP proxy's own lookup (the proxy
+ *   receives CONNECT <ip>:<port>) can move the connection away from the checked address.
  * - NC's IpAddressClassifier is @internal, so its rules are re-implemented here (see isInternal())
  *   rather than depended on: FILTER_FLAG_NO_PRIV_RANGE|NO_RES_RANGE, 100.64.0.0/10, 192.0.0.0/24,
  *   IPv4 embedded in IPv6 (mapped, compatible, NAT64, Teredo) checked as IPv4, 64:ff9b:1::/48 local.
  *   Stricter than NC: multicast, 198.18.0.0/15, 6to4-embedded IPv4, site-local fec0::/10.
  *   Every resolved address is checked; one internal address rejects the whole target.
  *
- * Known limit (same for NC's own pinning): with an HTTP proxy configured (system config `proxy`)
- * the proxy resolves the name, so CURLOPT_RESOLVE has no effect on the target connection.
+ * Known limits: plain http (only allowed with allowInternalNetwork, where every address is allowed
+ * anyway) through an HTTP proxy is sent as an absolute URL and resolved by the proxy. PHP has no
+ * getaddrinfo(): IPv6 comes from DNS AAAA records only, so a host defined solely by an IPv6 line in
+ * /etc/hosts is "not resolved" — this fails closed (use the IPv6 literal in the base URL instead).
  *
  * Hosts must be ASCII (IDNs as punycode) and without trailing dot: CURLOPT_RESOLVE only applies
  * when curl looks up exactly the pinned name; any other spelling would fall back to an unpinned lookup.
@@ -75,6 +78,12 @@ final class TargetGuard {
         } else {
             if (preg_match('/^[a-z0-9.-]+$/', $host) !== 1) {
                 throw self::fail('Target host must be ASCII');
+            }
+            // A numeric last label makes curl (like browsers) parse the host as an IPv4 literal in
+            // shorthand/octal/hex form (127.1, 0x7f.1, 2130706433): no lookup, so no pin applies, and
+            // the system resolver may read it differently. Only the dotted-quad form is accepted.
+            if (preg_match('/(^|\.)(0x[0-9a-f]*|[0-9]+)$/', $host) === 1) {
+                throw self::fail('Target host must be a hostname or a dotted-quad IPv4 address');
             }
             $ips = ($this->resolver)($host);
         }
