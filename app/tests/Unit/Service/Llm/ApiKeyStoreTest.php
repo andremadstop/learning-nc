@@ -33,10 +33,19 @@ class ApiKeyStoreTest extends TestCase {
         $this->appConfig = $appConfig;
     }
 
-    /** ICrypto fake: encrypt = 'enc:'.$v, decrypt reverses it and throws on anything else (e.g. 'bad:'). */
+    /**
+     * ICrypto fake: encrypt = 'enc:'.$v, decrypt reverses it and throws on anything else (e.g. 'bad:').
+     * Failure injection: encrypting a value containing THROW throws, one containing CORRUPT yields
+     * an undecryptable ciphertext.
+     */
     private function crypto(): ICrypto {
         $crypto = $this->createMock(ICrypto::class);
-        $crypto->method('encrypt')->willReturnCallback(fn (string $v, string $p = ''): string => 'enc:' . $v);
+        $crypto->method('encrypt')->willReturnCallback(function (string $v, string $p = ''): string {
+            if (str_contains($v, 'THROW')) {
+                throw new \Exception('encryption failed');
+            }
+            return (str_contains($v, 'CORRUPT') ? 'bad:' : 'enc:') . $v;
+        });
         $crypto->method('decrypt')->willReturnCallback(function (string $v, string $p = ''): string {
             if (!str_starts_with($v, 'enc:')) {
                 throw new \Exception('HMAC does not match.');
@@ -234,6 +243,64 @@ class ApiKeyStoreTest extends TestCase {
         $this->assertSame('migrated', $keys->migrateLegacyGeminiKey());
         $this->assertSame(self::LEGACY, $keys->get(ConnectionStore::legacyGemini(false)));
         $this->assertNull($keys->get($this->connections()->load()));
+    }
+
+    // Review A1/A2 (Codex P2): a failed replace must never cost the admin the working key.
+    public function testReplaceWhoseEncryptionThrowsKeepsTheExistingKey(): void {
+        $keys = $this->keys();
+        $keys->apply($this->conn(), ['action' => 'replace', 'value' => 'sk-old']);
+        try {
+            $keys->apply($this->conn(), ['action' => 'replace', 'value' => 'sk-THROW']);
+            $this->fail('failed encryption did not throw');
+        } catch (\RuntimeException) {
+            $this->assertSame('sk-old', $keys->get($this->conn()));
+        }
+    }
+
+    public function testReplaceWhoseReadbackFailsRestoresTheExistingKey(): void {
+        $keys = $this->keys();
+        $keys->apply($this->conn(), ['action' => 'replace', 'value' => 'sk-old']);
+        try {
+            $keys->apply($this->conn(), ['action' => 'replace', 'value' => 'sk-CORRUPT']);
+            $this->fail('failed readback did not throw');
+        } catch (\RuntimeException) {
+            $this->assertSame('sk-old', $keys->get($this->conn()));
+            $this->assertTrue($this->values->sensitive["learning\0" . ApiKeyStore::keyName($this->conn())]);
+        }
+    }
+
+    // Review A1/A2 (Codex P2): the readback must come from storage, not from the write's own cache entry.
+    public function testReplaceThatWasNotPersistedFails(): void {
+        $c = $this->conn();
+        $this->values->lostWrites = [ApiKeyStore::keyName($c)];
+        $this->expectException(\RuntimeException::class);
+        $this->keys()->apply($c, ['action' => 'replace', 'value' => 'sk-1']);
+    }
+
+    public function testMigrationThatWasNotPersistedKeepsPlaintext(): void {
+        $this->values->set('learning', 'gemini_api_key', self::LEGACY);
+        $this->values->lostWrites = [$this->targetKey()];
+        $this->assertSame('kept_plaintext', $this->keys()->migrateLegacyGeminiKey());
+        $this->assertSame(self::LEGACY, $this->values->get('learning', 'gemini_api_key'));
+        $this->assertFalse($this->values->has('learning', $this->targetKey()));
+    }
+
+    // Review A1/A2 (Codex P2): Nextcloud decrypts sensitive values inside getValueString() and throws there.
+    public function testOuterDecryptionFailureFallsBackToPlaintextAndKeepsIt(): void {
+        $this->values->set('learning', 'gemini_api_key', self::LEGACY);
+        $this->values->set('learning', $this->targetKey(), 'enc:AIza-unreadable');
+        $target = $this->targetKey();
+        $this->values->readOverride = function (string $app, string $key) use ($target): ?string {
+            if ($key === $target) {
+                throw new \Exception('HMAC does not match.');
+            }
+            return null;
+        };
+        $keys = $this->keys();
+        $this->assertSame(self::LEGACY, $keys->get(ConnectionStore::legacyGemini(true)));
+        $this->assertSame('kept_plaintext', $keys->migrateLegacyGeminiKey());
+        $this->assertSame(self::LEGACY, $this->values->get('learning', 'gemini_api_key'));
+        $this->assertNoKeyMaterialLogged();
     }
 
     private function assertNoKeyMaterialLogged(): void {

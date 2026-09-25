@@ -94,6 +94,8 @@ class ApiKeyStore {
      * @return string 'migrated'|'already'|'none'|'kept_plaintext'
      */
     public function migrateLegacyGeminiKey(): string {
+        // Decide on what is stored, not on what this process happens to have cached.
+        $this->appConfig->clearCache();
         $name = self::keyName(ConnectionStore::legacyGemini(false));
         $plain = trim($this->appConfig->getValueString(self::APP, self::LEGACY_GEMINI_KEY, ''));
 
@@ -123,19 +125,42 @@ class ApiKeyStore {
     }
 
     /**
-     * Writes the encrypted value, reads it back and decrypts it. On any mismatch or error the
-     * written entry is removed again and false is returned.
+     * Writes the encrypted value, drops the process cache and reads it back from storage. On any
+     * mismatch or error the previous entry is restored (or the new one removed if there was none)
+     * and false is returned: a failed replace never costs the admin a working key.
      */
     private function writeVerified(string $name, string $value): bool {
         try {
-            $this->appConfig->setValueString(self::APP, $name, $this->crypto->encrypt($value), false, true);
+            $cipher = $this->crypto->encrypt($value);
+        } catch (\Throwable) {
+            return false; // nothing written yet
+        }
+        $previous = null;
+        try {
+            if ($this->appConfig->hasKey(self::APP, $name)) {
+                $previous = $this->appConfig->getValueString(self::APP, $name, '');
+            }
+        } catch (\Throwable) {
+            $previous = null; // unreadable already, nothing worth restoring
+        }
+        try {
+            $this->appConfig->setValueString(self::APP, $name, $cipher, false, true);
+            $this->appConfig->clearCache();
             if ($this->readEncrypted($name) === $value) {
                 return true;
             }
         } catch (\Throwable) {
             // fall through: never leave a half-written key behind
         }
-        $this->appConfig->deleteKey(self::APP, $name);
+        try {
+            if ($previous !== null && $previous !== '') {
+                $this->appConfig->setValueString(self::APP, $name, $previous, false, true);
+            } else {
+                $this->appConfig->deleteKey(self::APP, $name);
+            }
+        } catch (\Throwable) {
+            $this->logger->warning('A failed AI API key write could not be rolled back', ['app' => self::APP]);
+        }
         return false;
     }
 
@@ -143,11 +168,12 @@ class ApiKeyStore {
         if (!$this->appConfig->hasKey(self::APP, $name)) {
             return null;
         }
-        $stored = $this->appConfig->getValueString(self::APP, $name, '');
-        if ($stored === '') {
-            return null;
-        }
         try {
+            // Nextcloud decrypts sensitive values inside getValueString(); that layer throws too.
+            $stored = $this->appConfig->getValueString(self::APP, $name, '');
+            if ($stored === '') {
+                return null;
+            }
             $key = trim($this->crypto->decrypt($stored));
         } catch (\Throwable) {
             $this->logger->warning('A stored AI API key could not be decrypted', ['app' => self::APP]);

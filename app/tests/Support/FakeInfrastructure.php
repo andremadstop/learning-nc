@@ -376,24 +376,31 @@ final class FakeCacheFactory implements ICacheFactory {
  * class implementing it would break wherever the full interface is loaded. Tests create the
  * mock with createMock(IAppConfig::class) and hand it to wire().
  *
- * Mirrors two real AppConfig rules that a plain array would hide: keys longer than 64 characters
- * are rejected (lib/private/AppConfig.php KEY_MAX_LENGTH), and the sensitive flag is recorded.
+ * Mirrors real AppConfig rules that a plain array would hide: keys longer than 64 characters
+ * are rejected (lib/private/AppConfig.php KEY_MAX_LENGTH), the sensitive flag is recorded, and
+ * there are two layers like in Nextcloud: $values is what is persisted, the process cache is
+ * loaded from it on first access and only reloaded after clearCache(). A write updates the
+ * cache and, unless its key is in $lostWrites, the persisted value.
  */
 final class FakeAppConfigValues {
     public const KEY_MAX_LENGTH = 64;
 
-    /** @var array<string, string> "app\0key" => value */
+    /** @var array<string, string> persisted, "app\0key" => value */
     public array $values = [];
     /** @var array<string, bool> */
     public array $sensitive = [];
     public int $clearCacheCalls = 0;
     public int $setCalls = 0;
-    /** @var null|callable(string, string): ?string  returns an override for getValueString */
+    /** @var null|callable(string, string): ?string  override for getValueString; may throw */
     public $readOverride = null;
+    /** @var list<string> keys whose writes reach the process cache but are never persisted */
+    public array $lostWrites = [];
+    /** @var array<string, string>|null process cache, null = not loaded */
+    private ?array $cache = null;
 
     public function wire(\PHPUnit\Framework\MockObject\MockObject $mock): void {
         $mock->method('hasKey')->willReturnCallback(
-            fn (string $app, string $key, ?bool $lazy = false): bool => $this->has($app, $key));
+            fn (string $app, string $key, ?bool $lazy = false): bool => array_key_exists($app . "\0" . $key, $this->cache()));
         $mock->method('getValueString')->willReturnCallback(
             function (string $app, string $key, string $default = '', bool $lazy = false): string {
                 if ($this->readOverride !== null) {
@@ -402,7 +409,7 @@ final class FakeAppConfigValues {
                         return $o;
                     }
                 }
-                return $this->values[$app . "\0" . $key] ?? $default;
+                return $this->cache()[$app . "\0" . $key] ?? $default;
             });
         $mock->method('setValueString')->willReturnCallback(
             function (string $app, string $key, string $value, bool $lazy = false, bool $sensitive = false): bool {
@@ -410,17 +417,32 @@ final class FakeAppConfigValues {
                     throw new \InvalidArgumentException('Value (' . $key . ') for key is too long (' . self::KEY_MAX_LENGTH . ')');
                 }
                 $this->setCalls++;
-                $changed = ($this->values[$app . "\0" . $key] ?? null) !== $value;
-                $this->values[$app . "\0" . $key] = $value;
-                $this->sensitive[$app . "\0" . $key] = $sensitive;
+                $k = $app . "\0" . $key;
+                $this->cache();
+                $changed = ($this->cache[$k] ?? null) !== $value;
+                $this->cache[$k] = $value;
+                if (!in_array($key, $this->lostWrites, true)) {
+                    $this->values[$k] = $value;
+                    $this->sensitive[$k] = $sensitive;
+                }
                 return $changed;
             });
         $mock->method('deleteKey')->willReturnCallback(function (string $app, string $key): void {
-            unset($this->values[$app . "\0" . $key], $this->sensitive[$app . "\0" . $key]);
+            $this->cache();
+            unset($this->cache[$app . "\0" . $key], $this->values[$app . "\0" . $key], $this->sensitive[$app . "\0" . $key]);
         });
         $mock->method('clearCache')->willReturnCallback(function (bool $reload = false): void {
             $this->clearCacheCalls++;
+            $this->cache = null;
         });
+    }
+
+    /** @return array<string, string> */
+    private function cache(): array {
+        if ($this->cache === null) {
+            $this->cache = $this->values;
+        }
+        return $this->cache;
     }
 
     public function has(string $app, string $key): bool {
@@ -431,7 +453,17 @@ final class FakeAppConfigValues {
         return $this->values[$app . "\0" . $key] ?? null;
     }
 
+    /** Test setup: persists the value and updates an already loaded cache. */
     public function set(string $app, string $key, string $value): void {
+        $this->values[$app . "\0" . $key] = $value;
+        if ($this->cache !== null) {
+            $this->cache[$app . "\0" . $key] = $value;
+        }
+    }
+
+    /** Another process writes: only the persisted value changes, this process keeps its cache. */
+    public function setFromOtherProcess(string $app, string $key, string $value): void {
+        $this->cache();
         $this->values[$app . "\0" . $key] = $value;
     }
 
