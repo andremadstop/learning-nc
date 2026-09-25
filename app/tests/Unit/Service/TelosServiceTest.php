@@ -152,4 +152,33 @@ class TelosServiceTest extends TestCase {
         $this->assertContains('encrypted_bio', $decryptCalls, 'decrypt() must be called with encrypted bio');
         $this->assertContains('encrypted_telos', $decryptCalls, 'decrypt() must be called with encrypted telos_json');
     }
+
+    public function testHasAiConsentRejectsStaleVersion(): void {
+        $entity = new UserTelos();
+        $entity->setAiConsentVersion('0.9-stale');
+        $this->mapper->method('findByUserIdOrNull')->willReturn($entity);
+
+        $this->assertFalse($this->service->hasAiConsent('alice'), 'a non-current consent version must not count as consent');
+    }
+
+    public function testHasAiConsentAcceptsCurrentVersion(): void {
+        $entity = new UserTelos();
+        $entity->setAiConsentVersion($this->service->currentAiConsentVersion());
+        $this->mapper->method('findByUserIdOrNull')->willReturn($entity);
+
+        $this->assertTrue($this->service->hasAiConsent('alice'));
+    }
+
+    public function testHasAiConsentRejectsMissingRow(): void {
+        $this->mapper->method('findByUserIdOrNull')->willReturn(null);
+
+        $this->assertFalse($this->service->hasAiConsent('alice'));
+    }
+
+    public function testCurrentAiConsentVersionReadsDataFile(): void {
+        $data = json_decode((string)file_get_contents(__DIR__ . '/../../../data/ai-consent.json'), true);
+
+        $this->assertNotSame('', $this->service->currentAiConsentVersion());
+        $this->assertSame((string)$data['version'], $this->service->currentAiConsentVersion());
+    }
 }

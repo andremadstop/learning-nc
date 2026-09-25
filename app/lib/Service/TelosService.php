@@ -22,6 +22,7 @@ class TelosService {
     private IDBConnection $db;
     private IUserManager $userManager;
     private EncryptionService $encryptionService;
+    private ?string $currentConsentVersionCache = null;
 
     /** Valid visibility values */
     private const VALID_VISIBILITY = ['private', 'course', 'public'];
@@ -179,13 +180,31 @@ class TelosService {
     }
 
     /**
-     * AUDIT v5.2.1 (HIGH-03 consistency): true when the user has granted AI consent at all.
-     * Every user-triggered LLM path (VirtuProf chat, course summary, AI question generation, note
-     * generation, AI explanations) must confirm this before any data reaches the LLM — the admin
-     * `ai_enabled` toggle alone is not sufficient under GDPR.
+     * The consent version the current consent text carries (`data/ai-consent.json`). One source for
+     * client and server: a consent given for an older text no longer counts.
+     */
+    public function currentAiConsentVersion(): string {
+        if ($this->currentConsentVersionCache === null) {
+            $raw = @file_get_contents(__DIR__ . '/../../data/ai-consent.json');
+            $data = is_string($raw) ? json_decode($raw, true) : null;
+            $this->currentConsentVersionCache = is_array($data) ? trim((string)($data['version'] ?? '')) : '';
+        }
+        return $this->currentConsentVersionCache;
+    }
+
+    /**
+     * AUDIT v5.2.1 (HIGH-03 consistency): true when the user has granted AI consent for the CURRENT
+     * consent text. Every LLM path (VirtuProf chat, course summary, AI question generation, note
+     * generation incl. the weekly job, AI explanations) must confirm this before any data reaches
+     * the LLM — the admin `ai_enabled` toggle alone is not sufficient under GDPR.
+     *
+     * 5.5.2: the version must match exactly. Before, any stored version counted, so the version
+     * check lived only in the client and every server-side path accepted outdated consent.
      */
     public function hasAiConsent(string $userId): bool {
-        return !empty($this->getAiConsentVersion($userId));
+        $stored = $this->getAiConsentVersion($userId);
+        $current = $this->currentAiConsentVersion();
+        return $stored !== null && $stored !== '' && $current !== '' && hash_equals($current, $stored);
     }
 
     /**
