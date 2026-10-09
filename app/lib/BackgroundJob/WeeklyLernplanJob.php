@@ -5,8 +5,8 @@ namespace OCA\Learning\BackgroundJob;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\Llm\LlmPurpose;
-use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\IDBConnection;
@@ -33,7 +33,7 @@ class WeeklyLernplanJob extends TimedJob {
     private NoteGeneratorService $noteGeneratorService;
     private LernprofilService $lernprofilService;
     private LoggerInterface $logger;
-    private TelosService $telosService;
+    private LlmGateway $gateway;
 
     /** Maximum users to process per job run — prevents long-running jobs. */
     private const BATCH_SIZE = 200;
@@ -47,7 +47,7 @@ class WeeklyLernplanJob extends TimedJob {
         NoteGeneratorService $noteGeneratorService,
         LernprofilService $lernprofilService,
         LoggerInterface $logger,
-        TelosService $telosService
+        LlmGateway $gateway
     ) {
         parent::__construct($time);
         // Run once per week (7 days)
@@ -56,7 +56,7 @@ class WeeklyLernplanJob extends TimedJob {
         $this->noteGeneratorService = $noteGeneratorService;
         $this->lernprofilService = $lernprofilService;
         $this->logger = $logger;
-        $this->telosService = $telosService;
+        $this->gateway = $gateway;
     }
 
     protected function run($argument): void {
@@ -97,11 +97,15 @@ class WeeklyLernplanJob extends TimedJob {
      *
      * 5.5.2: users without valid AI consent are skipped before any learning data is read — the
      * note sends the weakest topic and wrongly answered questions to the AI provider.
+     * 5.7.0: the weekly_note session is begun here, before that data is read, and the note is
+     * sent with it — snapshot and consent epoch are those of the moment the assembly started.
      *
      * @return string 'generated' | 'skipped' (no weak pool / no data) | 'skipped_consent'
      */
     private function processUser(string $userId): string {
-        if (!$this->telosService->hasAiConsent($userId)) {
+        try {
+            $session = $this->gateway->begin($userId, LlmPurpose::WeeklyNote);
+        } catch (LlmConsentException $e) {
             return 'skipped_consent';
         }
 
@@ -125,7 +129,7 @@ class WeeklyLernplanJob extends TimedJob {
         // 5.7.0 (spec 2.4): sent as weekly_note. Consent revoked (or the recipient changed) after the
         // check above: the gateway sent nothing — a consent skip, not an error.
         try {
-            $this->noteGeneratorService->generateSummary($userId, $poolId, null, LlmPurpose::WeeklyNote);
+            $this->noteGeneratorService->generateSummary($userId, $poolId, null, LlmPurpose::WeeklyNote, $session);
         } catch (LlmConsentException $e) {
             return 'skipped_consent';
         }

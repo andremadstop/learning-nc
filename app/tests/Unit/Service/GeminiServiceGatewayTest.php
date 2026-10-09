@@ -147,6 +147,18 @@ class GeminiServiceGatewayTest extends TestCase {
         $this->assertSame('summary', $this->service()->generateNote('sys', 'user', 'alice', LlmPurpose::MemoryCompress, $session));
     }
 
+    /**
+     * 5.7.0 review finding (MED): services that assemble learning data first (note, weekly note,
+     * Lernplan, course narrative) begin their session through the facade before they read
+     * anything, and pass it back for the send.
+     */
+    public function testBeginHandsOutTheGatewaySessionForSubjectAndPurpose(): void {
+        $session = self::session('alice', LlmPurpose::WeeklyNote);
+        $this->gateway->expects($this->once())->method('begin')->with('alice', LlmPurpose::WeeklyNote)->willReturn($session);
+
+        $this->assertSame($session, $this->service()->begin('alice', LlmPurpose::WeeklyNote));
+    }
+
     public function testTheGatewayBudgetAnswersAsRateLimit(): void {
         $this->gateway->method('begin')->willReturn(self::session('alice', LlmPurpose::Chat));
         $this->gateway->method('send')->willThrowException(new LlmProviderException('rate_limit'));

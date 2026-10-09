@@ -29,7 +29,6 @@ class NoteGeneratorService {
     private LernprofilService $lernprofilService;
     private IDBConnection $db;
     private LoggerInterface $logger;
-    private TelosService $telosService;
 
     /** Max wrong questions to include in prompt context */
     private const MAX_WRONG_QUESTIONS = 5;
@@ -42,15 +41,13 @@ class NoteGeneratorService {
         LernbotFileService $fileService,
         LernprofilService $lernprofilService,
         IDBConnection $db,
-        LoggerInterface $logger,
-        TelosService $telosService
+        LoggerInterface $logger
     ) {
         $this->geminiService = $geminiService;
         $this->fileService = $fileService;
         $this->lernprofilService = $lernprofilService;
         $this->db = $db;
         $this->logger = $logger;
-        $this->telosService = $telosService;
     }
 
     // -------------------------------------------------------------------------
@@ -84,10 +81,10 @@ class NoteGeneratorService {
         // 5.5.2: this sends the user's weak topic and wrong answers to the AI provider and is also
         // reached from the weekly background job, which had no consent gate. Refuse before any
         // learning data is loaded. 5.7.0: as LlmConsentException, so the job counts a skip and
-        // controllers answer consent_required (same message as before).
-        if (!$this->telosService->hasAiConsent($userId)) {
-            throw new LlmConsentException();
-        }
+        // controllers answer consent_required (same message as before). The session is begun
+        // here, before the data is read, and the note is sent with it: an admin switch or a
+        // revocation during the assembly stops the send instead of moving it to the new state.
+        $session ??= $this->geminiService->begin($userId, $purpose);
 
         // 1. Load pool info
         $poolInfo = $this->loadPoolInfo($poolId);

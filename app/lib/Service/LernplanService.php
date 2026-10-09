@@ -62,9 +62,13 @@ class LernplanService {
      *
      * @return array{path: string, updated: bool, content: string}
      *
+     * @throws \OCA\Learning\Service\Llm\LlmConsentException no valid consent; nothing was read or sent
      * @throws \RuntimeException  If Gemini is unavailable or file write fails
      */
     public function generateWeeklyPlan(string $userId, ?int $courseId = null): array {
+        // 5.7.0: begin before the learning data is read; the plan is sent with this session
+        $session = $this->geminiService->begin($userId, LlmPurpose::Lernplan);
+
         // 1. Load weakest topics for context
         $weakTopics = $this->lernprofilService->getWeakestTopics($userId, $courseId, 5);
 
@@ -76,7 +80,7 @@ class LernplanService {
         $systemPrompt = $this->buildPlanSystemPrompt($weakTopics, $languageName);
         $userPrompt   = $this->buildPlanUserPrompt($weakTopics);
 
-        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Lernplan);
+        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Lernplan, $session);
 
         // 4. Strip any Gemini-generated frontmatter
         $bodyMarkdown = $this->stripGeminiFrontmatter($generatedContent);

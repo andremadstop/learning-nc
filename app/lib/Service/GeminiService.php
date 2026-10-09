@@ -57,6 +57,19 @@ class GeminiService {
     }
 
     /**
+     * Begins a session for $userId and $purpose (LlmGateway::begin). Services that read learning
+     * data for a prompt (note, weekly note, Lernplan, course narrative) call this before they read
+     * anything and pass the session back: snapshot and consent epoch are then those of the moment
+     * the assembly started, not of the moment the prompt was ready.
+     *
+     * @throws LlmConsentException no valid consent for the current recipient
+     * @throws LlmProviderException category disabled when AI is switched off
+     */
+    public function begin(string $userId, LlmPurpose $purpose): LlmSession {
+        return $this->gateway->begin($userId, $purpose);
+    }
+
+    /**
      * Main entry point: 5-layer secure chat.
      *
      * @param string $rawInput     Raw user message (will be sanitized)

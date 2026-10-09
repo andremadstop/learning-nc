@@ -7,6 +7,7 @@ use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Controller\TelosController;
 use OCA\Learning\Controller\VirtuProfController;
 use OCA\Learning\Service\AiChatMemoryService;
+use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\Llm\LlmConnection;
@@ -416,6 +417,87 @@ final class ConsentRaceTest extends TestCase {
         $this->assertSame(1, $counts['processed'] ?? null, (string)json_encode($counts));
         $this->assertSame(0, $counts['errors'] ?? null, 'a revocation is no error');
         $this->assertGreaterThanOrEqual(1, $counts['skippedConsent'] ?? 0, 'the second learner is a consent skip');
+    }
+
+    /**
+     * The real NoteGeneratorService for user $uid with a hook that runs while the note is being
+     * assembled: after the learning data was read, before the prompt is sent.
+     *
+     * @param \Closure(): void $whileAssembling
+     */
+    private function noteServiceAssembling(\Closure $whileAssembling): NoteGeneratorService {
+        $gemini = new class(...self::constructorArgs($this->container, GeminiService::class, null)) extends GeminiService {
+            /** @var (\Closure(): void)|null */
+            public ?\Closure $whileAssembling = null;
+
+            public function resolveResponseLanguage(string $userId): string {
+                $hook = $this->whileAssembling;
+                $this->whileAssembling = null;
+                if ($hook !== null) {
+                    $hook();
+                }
+                return parent::resolveResponseLanguage($userId);
+            }
+        };
+        $gemini->whileAssembling = $whileAssembling;
+        return new NoteGeneratorService(...self::constructorArgs($this->container, NoteGeneratorService::class, null,
+            [GeminiService::class => $gemini]));
+    }
+
+    /**
+     * Review finding (MED): the weekly note fixes its snapshot before the learning data is read.
+     * While it is assembled under A, the admin switches to B and the learner consents to B. The
+     * note built under A goes neither to B (it was never begun for B) nor to A (the consent for A
+     * is gone): nothing is sent, and the job counts a consent skip.
+     */
+    public function testARecipientSwitchWhileTheRealWeeklyNoteIsAssembledSendsNothing(): void {
+        $suffix = bin2hex(random_bytes(4));
+        $uid = 'b6-race-note-' . $suffix;
+        $this->activeLearner($uid, 'Pool-Note-' . $suffix);
+        $poolId = $this->ids('learning_pools', 'user_id', $uid)[0];
+        $a = $this->connectMock();
+        $this->grant($uid, $a);
+        $b = LlmConnection::fromArray([
+            'enabled' => true, 'provider' => 'ollama', 'baseUrl' => MockLlmServer::ollamaBaseUrl() . '/switched',
+            'model' => 'switched-model', 'allowInternalNetwork' => true, 'processingLocal' => false,
+        ]);
+
+        $notes = $this->noteServiceAssembling(function () use ($uid, $b): void {
+            $this->store->save($b, 'admin');
+            $this->grant($uid, $this->store->load());
+        });
+
+        try {
+            $notes->generateSummary($uid, $poolId, null, LlmPurpose::WeeklyNote);
+            $this->fail('a note assembled under A must not be sent after the switch');
+        } catch (LlmConsentException) {
+        }
+        $this->assertSame(0, self::sentCount(), 'nothing went to B, nothing to A');
+    }
+
+    /**
+     * Review finding (MED): revoked and granted again while the real weekly note is assembled.
+     * The new consent is valid, but the epoch moved since the session was begun: nothing is sent.
+     */
+    public function testARevokeAndRegrantWhileTheRealWeeklyNoteIsAssembledSendsNothing(): void {
+        $suffix = bin2hex(random_bytes(4));
+        $uid = 'b6-race-note-' . $suffix;
+        $this->activeLearner($uid, 'Pool-Note-' . $suffix);
+        $poolId = $this->ids('learning_pools', 'user_id', $uid)[0];
+        $c = $this->connectMock();
+        $this->grant($uid, $c);
+
+        $notes = $this->noteServiceAssembling(function () use ($uid, $c): void {
+            $this->consent->revoke($uid);
+            $this->grant($uid, $c);
+        });
+
+        try {
+            $notes->generateSummary($uid, $poolId, null, LlmPurpose::WeeklyNote);
+            $this->fail('the session begun before the revocation must not send');
+        } catch (LlmConsentException) {
+        }
+        $this->assertSame(0, self::sentCount());
     }
 
     /**

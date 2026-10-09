@@ -188,6 +188,16 @@ class CourseSummaryService {
             return $snapshot['snapshot_data']['narrative'];
         }
 
+        // 5.7.0: begin before the course data is assembled; the narrative is sent with this
+        // session. Consent reaches the caller, anything else (AI off) means no narrative.
+        try {
+            $session = $this->geminiService->begin($userId, LlmPurpose::CourseNarrative);
+        } catch (LlmConsentException $e) {
+            throw $e;
+        } catch (\RuntimeException $e) {
+            return null;
+        }
+
         // 2. Assemble summary data
         $summary = $this->getStudentSummary($courseId, $userId);
 
@@ -247,7 +257,7 @@ class CourseSummaryService {
 
         // 5. Call Gemini (may throw RuntimeException)
         try {
-            $narrative = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::CourseNarrative);
+            $narrative = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::CourseNarrative, $session);
         } catch (LlmConsentException $e) {
             // a RuntimeException too, but the caller must answer consent_required, not "no narrative"
             throw $e;
