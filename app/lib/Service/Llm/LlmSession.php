@@ -7,12 +7,17 @@ namespace OCA\Learning\Service\Llm;
  * One consent-checked unit of work: the connection snapshot taken at begin(), the user whose
  * data is sent, and why. Immutable, so an admin changing the connection mid-request cannot
  * produce a mixed state (spec 2.1).
+ *
+ * consentEpoch is the subject's consent_epoch read by LlmGateway::begin(). The gateway refuses to
+ * send for a subject when it differs from a fresh read (a revocation in between) or is null (a
+ * session that did not come from begin()).
  */
 final class LlmSession {
     public function __construct(
         public readonly LlmConnection $connection,
         public readonly ?string $subjectUserId,
         public readonly LlmPurpose $purpose,
+        public readonly ?int $consentEpoch = null,
     ) {
         if (($subjectUserId === null || $subjectUserId === '') && $purpose !== LlmPurpose::AdminTest) {
             throw new \InvalidArgumentException('Only admin_test may run without a subject user');

@@ -7,6 +7,7 @@ use OCA\Learning\Controller\SettingsController;
 use OCA\Learning\Controller\TelosController;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\LlmService;
 use OCP\AppFramework\App;
 use OCP\IAppConfig;
@@ -40,6 +41,8 @@ final class LlmTransportWiringTest extends TestCase {
         $container = (new App('learning'))->getContainer();
         $this->assertInstanceOf(SettingsController::class, $container->get(SettingsController::class));
         $this->assertInstanceOf(TelosController::class, $container->get(TelosController::class));
+        // B3: the gateway and everything it needs (budget store, HTTP client, key store) autowire
+        $this->assertInstanceOf(LlmGateway::class, $container->get(LlmGateway::class));
     }
 
     public function testTheProviderComesFromTheSnapshot(): void {
