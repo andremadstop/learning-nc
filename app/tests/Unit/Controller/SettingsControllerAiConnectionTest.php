@@ -143,4 +143,46 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $this->assertSame(200, $this->saveAi('disabled'));
         $this->assertFalse($this->store()->load()->enabled);
     }
+
+    private function adminView(): array {
+        $checkpoints = $this->createMock(AuditCheckpointService::class);
+        $checkpoints->method('getLivenessStatus')->willThrowException(new \RuntimeException('not migrated'));
+        $controller = new SettingsController('learning', $this->createMock(IRequest::class), $this->config,
+            $this->createMock(IDBConnection::class), $this->createMock(KeyService::class), $checkpoints, $this->store(), 'admin');
+        return $controller->getAdmin()->getData();
+    }
+
+    /**
+     * Review follow-up (round trip of the finding above): a 5.5 install with ai_provider '' (the
+     * removed TaskProcessing path) and ai_enabled yes has AI off. The admin page showed it as Gemini
+     * and on, so saving any unrelated setting posted gemini + yes back and switched on an external
+     * recipient. The page shows the connection that is actually in force.
+     */
+    public function testTheAdminPageShowsALegacyEmptyProviderAsOffAndSavingItBackKeepsAiOff(): void {
+        $this->values->set('learning', 'ai_provider', '');
+        $this->values->set('learning', 'ai_enabled', 'yes');
+
+        $view = $this->adminView();
+
+        $this->assertSame('disabled', $view['ai_provider']);
+        $this->assertSame('no', $view['ai_enabled']);
+        $this->assertSame(200, $this->saveAi($view['ai_provider'], $view['ai_ollama_url'], $view['ai_ollama_model'], $view['ai_enabled']));
+        $this->assertFalse($this->store()->load()->enabled);
+    }
+
+    /** With a snapshot, the page shows the snapshot, not stale legacy keys. */
+    public function testTheAdminPageShowsTheSnapshotOverStaleLegacyKeys(): void {
+        $this->values->set('learning', 'ai_provider', 'gemini');
+        $this->values->set('learning', 'ai_enabled', 'yes');
+        $local = ['rev' => 3, 'enabled' => true, 'provider' => 'ollama', 'baseUrl' => 'http://ollama.lan:11434',
+            'model' => 'm', 'allowInternalNetwork' => true, 'processingLocal' => true];
+        $this->values->set('learning', ConnectionStore::KEY, json_encode($local, JSON_THROW_ON_ERROR));
+
+        $view = $this->adminView();
+
+        $this->assertSame('ollama', $view['ai_provider']);
+        $this->assertSame('yes', $view['ai_enabled']);
+        $this->assertSame('http://ollama.lan:11434', $view['ai_ollama_url']);
+        $this->assertSame('m', $view['ai_ollama_model']);
+    }
 }

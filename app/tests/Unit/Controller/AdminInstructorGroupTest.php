@@ -30,6 +30,13 @@ class AdminInstructorGroupTest extends TestCase {
     /** @var array<string, string> */
     private array $appValues = [];
 
+    /** getAdmin() reports the connection in force; this test is about the instructor group. */
+    private function connectionStore(): \OCA\Learning\Service\Llm\ConnectionStore {
+        $store = $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class);
+        $store->method('load')->willReturn(\OCA\Learning\Service\Llm\ConnectionStore::legacyGemini(false));
+        return $store;
+    }
+
     private function makeController(): SettingsController {
         $config = $this->createMock(IConfig::class);
         $config->method('setAppValue')->willReturnCallback(
@@ -48,7 +55,7 @@ class AdminInstructorGroupTest extends TestCase {
             $this->createMock(IDBConnection::class),
             $this->createMock(KeyService::class),
             $this->createMock(AuditCheckpointService::class),
-            $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class),
+            $this->connectionStore(),
             'admin'
         );
     }

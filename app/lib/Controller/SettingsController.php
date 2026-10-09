@@ -62,6 +62,8 @@ class SettingsController extends Controller {
             ];
         }
 
+        $connection = $this->connectionStore->load();
+
         return new DataResponse([
             'daily_challenge_enabled' => $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes'),
             'default_language' => $this->config->getAppValue('learning', 'default_language', 'de'),
@@ -72,10 +74,17 @@ class SettingsController extends Controller {
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
             'gemini_api_key_set' => $this->config->getAppValue('learning', 'gemini_api_key', '') !== '',
-            'ai_provider' => $this->normalizeAiProvider($this->config->getAppValue('learning', 'ai_provider', 'gemini')),
-            'ai_ollama_url' => $this->config->getAppValue('learning', 'ai_ollama_url', 'http://localhost:11434'),
-            'ai_ollama_model' => $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
-            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no'),
+            // The connection in force (snapshot, or derived from the 5.5 keys), never the raw legacy
+            // keys: a legacy ai_provider '' (AI off) used to show as Gemini and on, and saving any
+            // unrelated setting then switched on an external recipient.
+            'ai_provider' => $connection->provider,
+            'ai_ollama_url' => $connection->provider === 'ollama'
+                ? $connection->baseUrl
+                : $this->config->getAppValue('learning', 'ai_ollama_url', 'http://localhost:11434'),
+            'ai_ollama_model' => $connection->provider === 'ollama'
+                ? $connection->model
+                : $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
+            'ai_enabled' => $connection->enabled && $connection->provider !== 'disabled' ? 'yes' : 'no',
             // Certificates (v5.0.0): false on a fresh install until the admin runs
             // `occ learning:cert:init-issuer`. Drives the admin-settings setup banner.
             'cert_issuer_ready' => $this->keyService->hasActiveKey(),
@@ -360,10 +369,5 @@ class SettingsController extends Controller {
         }
 
         return array_values($normalized);
-    }
-
-    private function normalizeAiProvider(string $provider): string {
-        $provider = strtolower(trim($provider));
-        return in_array($provider, self::AVAILABLE_AI_PROVIDERS, true) ? $provider : 'gemini';
     }
 }
