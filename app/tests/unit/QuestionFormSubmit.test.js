@@ -138,3 +138,24 @@ describe('QuestionForm: only the save button submits', () => {
 		expect(submits).toHaveLength(1)
 	})
 })
+
+describe('QuestionForm: an existing two-answer question can be saved', () => {
+	// Editing pads the answers to four slots. All four used to be `required`, so the browser
+	// refused to submit until the two empty slots were filled or removed -- although save()
+	// drops empty answers anyway and the server accepts 2-8. Only the first two are required now.
+	it('submits with the two padded slots left empty', async () => {
+		mountForm({
+			question: {
+				id: 5, text: 'Frage?', question_type: 'single',
+				answers: [{ id: 1, text: 'A', is_correct: true }, { id: 2, text: 'B', is_correct: false }],
+			},
+		})
+		await new Promise((resolve) => setTimeout(resolve, 0))
+		const inputs = [...host.querySelectorAll('.answer-row input[type="text"]')]
+		expect(inputs).toHaveLength(4)
+		expect(inputs.map((el) => el.required)).toEqual([true, true, false, false])
+
+		buttonByText('Speichern').click()
+		expect(submits).toHaveLength(1)
+	})
+})
