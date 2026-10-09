@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Integration;
 
+use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
+use OCA\Learning\Controller\TelosController;
+use OCA\Learning\Controller\VirtuProfController;
+use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\Llm\LlmConnection;
@@ -11,14 +15,21 @@ use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Service\Llm\LlmRequest;
+use OCA\Learning\Service\Llm\LlmSession;
+use OCA\Learning\Service\NoteGeneratorService;
+use OCA\Learning\Service\PoolService;
+use OCA\Learning\Tests\Integration\Support\ContainerObjects;
 use OCA\Learning\Tests\Integration\Support\MockLlmServer;
 use OCP\AppFramework\App;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
+use OCP\IUser;
+use OCP\IUserManager;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Plan Task B6, Review Focus 1 and 3, against real persistence on both engines (the unit tests in
@@ -27,6 +38,8 @@ use Psr\Container\ContainerInterface;
  * adapter, and MockLlmServer counting what actually left.
  */
 final class ConsentRaceTest extends TestCase {
+    use ContainerObjects;
+
     private const ALICE = 'b6-race-alice';
     private const BOB = 'b6-race-bob';
 
@@ -36,6 +49,8 @@ final class ConsentRaceTest extends TestCase {
     private ConnectionStore $store;
     private ConsentService $consent;
     private LlmGateway $gateway;
+    /** @var list<IUser> real users of the tests that go through the controller or the job */
+    private array $users = [];
 
     protected function setUp(): void {
         $this->container = (new App('learning'))->getContainer();
@@ -49,10 +64,71 @@ final class ConsentRaceTest extends TestCase {
     }
 
     protected function tearDown(): void {
+        foreach ($this->users as $user) {
+            $uid = $user->getUID();
+            $poolIds = $this->ids('learning_pools', 'user_id', $uid);
+            if ($poolIds !== []) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->delete('learning_sessions')
+                    ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)))
+                    ->executeStatement();
+                $qb = $this->db->getQueryBuilder();
+                $qb->delete('learning_pools')
+                    ->where($qb->expr()->in('id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)))
+                    ->executeStatement();
+            }
+            foreach (['learning_ai_chat_memory', 'learning_user_telos'] as $table) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->delete($table)->where($qb->expr()->eq('user_id', $qb->createNamedParameter($uid)))->executeStatement();
+            }
+            $user->delete();
+        }
+        $this->users = [];
         $this->clean();
     }
 
+    /** @return list<int> */
+    private function ids(string $table, string $column, string $value): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')->from($table)->where($qb->expr()->eq($column, $qb->createNamedParameter($value)));
+        $r = $qb->executeQuery();
+        $ids = array_map('intval', array_column($r->fetchAll(), 'id'));
+        $r->closeCursor();
+        return $ids;
+    }
+
+    private function realUser(string $uid): string {
+        $user = Server::get(IUserManager::class)->createUser($uid, bin2hex(random_bytes(16)) . 'Aa1!');
+        $this->assertInstanceOf(IUser::class, $user, 'test user created');
+        $this->users[] = $user;
+        return $uid;
+    }
+
+    /**
+     * A learner the weekly job picks up: a pool without answers (error rate 50 %, weak enough)
+     * and a session completed today.
+     */
+    private function activeLearner(string $uid, string $poolName): void {
+        $this->realUser($uid);
+        $poolId = $this->container->get(PoolService::class)->create($poolName, 'B6 race pool', $uid)->getId();
+        $now = time();
+        $qb = $this->db->getQueryBuilder();
+        $qb->insert('learning_sessions')->values([
+            'pool_id' => $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT),
+            'user_id' => $qb->createNamedParameter($uid),
+            'started_at' => $qb->createNamedParameter($now - 600, IQueryBuilder::PARAM_INT),
+            'completed_at' => $qb->createNamedParameter($now - 60, IQueryBuilder::PARAM_INT),
+            'total_questions' => $qb->createNamedParameter(1, IQueryBuilder::PARAM_INT),
+            'correct_answers' => $qb->createNamedParameter(0, IQueryBuilder::PARAM_INT),
+        ])->executeStatement();
+    }
+
     private function clean(): void {
+        foreach ($this->appConfig->getKeys('learning') as $key) {
+            if ($key === ConsentService::RECIPIENTS_KEY) {
+                $this->appConfig->deleteKey('learning', $key);
+            }
+        }
         $qb = $this->db->getQueryBuilder();
         $qb->delete('learning_user_telos')
             ->where($qb->expr()->in('user_id', $qb->createNamedParameter([self::ALICE, self::BOB], IQueryBuilder::PARAM_STR_ARRAY)))
@@ -198,6 +274,115 @@ final class ConsentRaceTest extends TestCase {
             $this->assertSame('disabled', $e->category);
         }
         $this->assertSame(0, self::sentCount());
+    }
+
+    /**
+     * Review Focus 1 through the real chat endpoint: VirtuProfController::chat() begins the
+     * session, builds the context (chat memory is loaded here), then sends. The admin switches the
+     * recipient while the context is built. The running answer goes once to the snapshot; the next
+     * chat asks for consent again, sends nothing, and the status names the old recipient.
+     */
+    public function testAnAdminSwitchDuringARealChatKeepsTheSnapshotAndTheNextChatNeedsNewConsent(): void {
+        $uid = $this->realUser('b6-race-chat-' . bin2hex(random_bytes(4)));
+        $c = $this->connectMock();
+        $this->grant($uid, $c);
+        $switched = LlmConnection::fromArray([
+            'enabled' => true, 'provider' => 'ollama', 'baseUrl' => MockLlmServer::ollamaBaseUrl() . '/switched',
+            'model' => 'switched-model', 'allowInternalNetwork' => true, 'processingLocal' => false,
+        ]);
+        $this->assertNotSame($c->recipientFingerprint(), $switched->recipientFingerprint(), 'another recipient');
+
+        $memory = new class(...self::constructorArgs($this->container, AiChatMemoryService::class, $uid)) extends AiChatMemoryService {
+            /** @var (\Closure(): void)|null */
+            public ?\Closure $whileBuilding = null;
+
+            public function loadMemory(string $userId): array {
+                $hook = $this->whileBuilding;
+                $this->whileBuilding = null;
+                if ($hook !== null) {
+                    $hook();
+                }
+                return parent::loadMemory($userId);
+            }
+        };
+        $memory->whileBuilding = fn () => $this->store->save($switched, 'admin');
+        $chat = fn (): \OCP\AppFramework\Http\DataResponse => $this->controllerFor($this->container, VirtuProfController::class, $uid,
+            [AiChatMemoryService::class => $memory])->chat('Was ist Subnetting?');
+
+        $resp = $chat();
+        $this->assertSame(200, $resp->getStatus(), (string)json_encode($resp->getData()));
+        $requests = MockLlmServer::requests();
+        $this->assertCount(1, $requests, 'exactly one request, to the snapshot recipient');
+        $this->assertSame('/api/generate', $requests[0]['path'], 'not the switched endpoint');
+        $this->assertSame('snapshot-model', json_decode($requests[0]['body'], true)['model'] ?? null);
+        $this->assertSame('switched-model', $this->store->load()->model, 'the switch was saved during the chat');
+
+        $resp = $chat();
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
+        $this->assertSame(1, self::sentCount(), 'the next chat sent nothing');
+
+        $status = $this->controllerFor($this->container, TelosController::class, $uid)->getConsentStatus()->getData();
+        $this->assertSame('recipient_changed', $status['reason']);
+        $this->assertSame('Ollama (127.0.0.1)', $status['previous_recipient_name']);
+        $this->assertSame($switched->recipientFingerprint(), $status['recipient']['fingerprint']);
+    }
+
+    /**
+     * Review Focus 3 through the real WeeklyLernplanJob::run(): two active learners with consent;
+     * right after the first learner's note, the second revokes. One request, for the first only;
+     * the second counts as skipped_consent, not as an error.
+     */
+    public function testARevocationDuringARealWeeklyJobRunStopsTheSecondNote(): void {
+        $suffix = bin2hex(random_bytes(4));
+        $first = 'b6-race-job-a-' . $suffix;    // the job walks users in user_id order
+        $second = 'b6-race-job-b-' . $suffix;
+        $this->activeLearner($first, 'Pool-First-' . $suffix);
+        $this->activeLearner($second, 'Pool-Second-' . $suffix);
+        $c = $this->connectMock();
+        $this->grant($first, $c);
+        $this->grant($second, $c);
+
+        $notes = new class(...self::constructorArgs($this->container, NoteGeneratorService::class, null)) extends NoteGeneratorService {
+            /** @var (\Closure(string): void)|null */
+            public ?\Closure $afterUser = null;
+
+            public function generateSummary(string $userId, int $poolId, ?int $courseId = null,
+                \OCA\Learning\Service\Llm\LlmPurpose $purpose = \OCA\Learning\Service\Llm\LlmPurpose::Note,
+                ?LlmSession $session = null): array {
+                try {
+                    return parent::generateSummary($userId, $poolId, $courseId, $purpose, $session);
+                } finally {
+                    if ($this->afterUser !== null) {
+                        ($this->afterUser)($userId);
+                    }
+                }
+            }
+        };
+        $notes->afterUser = function (string $uid) use ($first, $second): void {
+            if ($uid === $first) {
+                $this->consent->revoke($second);
+            }
+        };
+        $counts = [];
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->method('info')->willReturnCallback(function (string|\Stringable $message, array $context = []) use (&$counts): void {
+            if (str_starts_with((string)$message, 'WeeklyLernplanJob:')) {
+                $counts = $context;
+            }
+        });
+        $job = new WeeklyLernplanJob(...self::constructorArgs($this->container, WeeklyLernplanJob::class, null,
+            [NoteGeneratorService::class => $notes, LoggerInterface::class => $logger]));
+
+        (new \ReflectionMethod(WeeklyLernplanJob::class, 'run'))->invoke($job, null);
+
+        $requests = MockLlmServer::requests();
+        $this->assertCount(1, $requests, 'one note, for the first learner only');
+        $this->assertStringContainsString('Pool-First-' . $suffix, $requests[0]['body']);
+        $this->assertStringNotContainsString('Pool-Second-' . $suffix, $requests[0]['body']);
+        $this->assertSame(1, $counts['processed'] ?? null, (string)json_encode($counts));
+        $this->assertSame(0, $counts['errors'] ?? null, 'a revocation is no error');
+        $this->assertGreaterThanOrEqual(1, $counts['skippedConsent'] ?? 0, 'the second learner is a consent skip');
     }
 
     /**

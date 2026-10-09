@@ -9,6 +9,7 @@ use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
@@ -56,7 +57,7 @@ final class ConsentRevokeTest extends TestCase {
     protected function setUp(): void {
         $this->db = Server::get(IDBConnection::class);
         $this->mapper = new RacingUserTelosMapper($this->db);
-        $this->consent = new ConsentService($this->mapper, $this->createMock(AuditService::class));
+        $this->consent = new ConsentService($this->mapper, $this->createMock(AuditService::class), Server::get(IAppConfig::class));
         $this->deleteProbeRow();
     }
 

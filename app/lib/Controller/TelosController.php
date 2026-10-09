@@ -212,6 +212,10 @@ class TelosController extends Controller {
             'current_version' => $this->consentService->currentVersion(),
             'ai_enabled' => self::isActive($connection),
             'recipient' => self::recipientData($connection),
+            // "changed from {old} to {new}": only for recipient_changed, null when the old name is unknown
+            'previous_recipient_name' => $state['reason'] === 'recipient_changed'
+                ? $this->consentService->previousRecipientName($this->userId, $connection)
+                : null,
         ]);
     }
 
@@ -241,7 +245,7 @@ class TelosController extends Controller {
             $this->consentService->grant($this->userId, $connection, $fingerprint, $version, $source);
         } catch (ConsentRecipientChangedException $e) {
             return new DataResponse([
-                'error' => 'The AI recipient has changed',
+                'error' => 'recipient_changed',
                 'reason' => 'recipient_changed',
                 'recipient' => self::recipientData($connection),
             ], Http::STATUS_CONFLICT);
@@ -276,7 +280,11 @@ class TelosController extends Controller {
         return $c->enabled && $c->provider !== 'disabled';
     }
 
-    /** @return array{name: string, region: string, processing_local: bool, fingerprint: string}|null */
+    /**
+     * The recipient as the consent dialog explains it (spec 3.4).
+     *
+     * @return array{name: string, region: string, processing_local: bool, intermediary: bool, dpa_url: ?string, warning_key: ?string, fingerprint: string}|null
+     */
     private static function recipientData(LlmConnection $c): ?array {
         if (!self::isActive($c)) {
             return null;
@@ -286,6 +294,9 @@ class TelosController extends Controller {
             'name' => $recipient->name,
             'region' => $recipient->region,
             'processing_local' => $recipient->isLocal,
+            'intermediary' => $recipient->intermediary,
+            'dpa_url' => $recipient->dpaUrl,
+            'warning_key' => $recipient->warningKey,
             'fingerprint' => $c->recipientFingerprint(),
         ];
     }

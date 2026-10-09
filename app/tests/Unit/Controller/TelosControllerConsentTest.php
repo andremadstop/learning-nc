@@ -51,6 +51,32 @@ class TelosControllerConsentTest extends TestCase {
         $this->assertTrue($data['ai_enabled']);
         $this->assertSame('Google Gemini', $data['recipient']['name']);
         $this->assertSame($this->gemini->recipientFingerprint(), $data['recipient']['fingerprint']);
+        $this->assertNull($data['previous_recipient_name']);
+    }
+
+    /** Spec 3.4: what the dialog needs to explain the recipient (third-country notice, intermediary). */
+    public function testStatusDescribesTheRecipientAsSpec34Names(): void {
+        $this->consent->method('state')->willReturn(['valid' => false, 'reason' => 'never', 'source' => null]);
+
+        $recipient = $this->controller()->getConsentStatus()->getData()['recipient'];
+
+        $this->assertSame('us', $recipient['region']);
+        $this->assertFalse($recipient['processing_local']);
+        $this->assertFalse($recipient['intermediary']);
+        $this->assertSame('third_country', $recipient['warning_key']);
+        $this->assertArrayHasKey('dpa_url', $recipient);
+    }
+
+    /** B6: "the AI provider was changed from {old} to {new}" needs the old name. */
+    public function testStatusAfterARecipientChangeNamesThePreviousRecipient(): void {
+        $this->consent->method('state')->willReturn(['valid' => false, 'reason' => 'recipient_changed', 'source' => 'dialog']);
+        $this->consent->method('previousRecipientName')->with('alice', $this->gemini)->willReturn('Ollama (ollama.lan)');
+
+        $data = $this->controller()->getConsentStatus()->getData();
+
+        $this->assertSame('recipient_changed', $data['reason']);
+        $this->assertSame('Ollama (ollama.lan)', $data['previous_recipient_name']);
+        $this->assertSame('Google Gemini', $data['recipient']['name']);
     }
 
     public function testStatusWithAiSwitchedOffHasNoRecipient(): void {
@@ -86,6 +112,7 @@ class TelosControllerConsentTest extends TestCase {
         $resp = $this->controller()->saveConsent('3.0', str_repeat('0', 64));
 
         $this->assertSame(409, $resp->getStatus());
+        $this->assertSame('recipient_changed', $resp->getData()['error'], 'spec 3.4: {error: recipient_changed, recipient}');
         $this->assertSame('recipient_changed', $resp->getData()['reason']);
         $this->assertSame($this->gemini->recipientFingerprint(), $resp->getData()['recipient']['fingerprint']);
     }

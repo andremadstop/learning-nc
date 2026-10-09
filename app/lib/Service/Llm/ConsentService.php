@@ -6,6 +6,7 @@ namespace OCA\Learning\Service\Llm;
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\AuditService;
+use OCP\IAppConfig;
 
 /**
  * Per-user AI consent, bound to the consent text version AND the recipient (spec 3.1–3.3).
@@ -18,15 +19,23 @@ use OCA\Learning\Service\AuditService;
  * Revocation clears the consent and raises consent_epoch in one statement (at least as strong as
  * spec 2.4's "clear, then raise"); the gateway compares the epoch from begin() with a fresh read
  * right before sending.
+ *
+ * The readable name of a recipient is not part of a consent (spec 3.2). To say "changed from
+ * {old} to {new}" (spec 3.4 previous_recipient_name), grant() remembers fingerprint => name of the
+ * recipients consented to in app config: no user ids, the newest MAX_REMEMBERED_RECIPIENTS only.
  */
 class ConsentService {
     public const SOURCES = ['dialog', 'onboarding'];
+    private const APP = 'learning';
+    public const RECIPIENTS_KEY = 'ai_consent_recipients';
+    public const MAX_REMEMBERED_RECIPIENTS = 20;
 
     private ?string $currentVersionCache = null;
 
     public function __construct(
         private UserTelosMapper $mapper,
         private AuditService $auditService,
+        private IAppConfig $appConfig,
     ) {
     }
 
@@ -106,6 +115,9 @@ class ConsentService {
             throw new ConsentRecipientChangedException($recipient);
         }
 
+        // Before the consent is stored: if remembering the name fails, no consent was stored either.
+        $this->rememberRecipient($recipient, (new LlmSession($c, null, LlmPurpose::AdminTest))->recipient()->name);
+
         $now = time();
         $row = $this->mapper->findByUserIdOrNull($uid);
         $isNew = $row === null;
@@ -140,6 +152,49 @@ class ConsentService {
     public function revoke(string $uid): void {
         $this->mapper->revokeAiConsent($uid, time());
         $this->auditService->logEvent('ai_consent_revoked', $uid, []);
+    }
+
+    /**
+     * Name of the recipient the user consented to, while the consent is for another recipient
+     * than $c (reason recipient_changed). Null otherwise, or when the name is no longer known.
+     */
+    public function previousRecipientName(string $uid, LlmConnection $c): ?string {
+        if ($this->state($uid, $c)['reason'] !== 'recipient_changed') {
+            return null;
+        }
+        $fingerprint = $this->mapper->findByUserIdOrNull($uid)?->getAiConsentFingerprint();
+        if ($fingerprint === null || $fingerprint === '') {
+            return null;
+        }
+        $name = $this->rememberedRecipients()[$fingerprint] ?? null;
+        return is_string($name) && $name !== '' ? $name : null;
+    }
+
+    private function rememberRecipient(string $fingerprint, string $name): void {
+        $map = $this->rememberedRecipients();
+        if (($map[$fingerprint] ?? null) === $name) {
+            return;
+        }
+        unset($map[$fingerprint]);
+        $map[$fingerprint] = $name;
+        $map = array_slice($map, -self::MAX_REMEMBERED_RECIPIENTS, null, true);
+        $this->appConfig->setValueString(self::APP, self::RECIPIENTS_KEY,
+            json_encode($map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+    }
+
+    /** @return array<string, string> fingerprint => readable name, oldest first */
+    private function rememberedRecipients(): array {
+        $data = json_decode($this->appConfig->getValueString(self::APP, self::RECIPIENTS_KEY, ''), true);
+        if (!is_array($data)) {
+            return [];
+        }
+        $map = [];
+        foreach ($data as $fingerprint => $name) {
+            if (is_string($fingerprint) && is_string($name)) {
+                $map[$fingerprint] = $name;
+            }
+        }
+        return $map;
     }
 
     /** Read from the database on every call; the gateway relies on seeing a revocation at once. */

@@ -10,6 +10,8 @@ use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentRecipientChangedException;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\Llm\LlmConnection;
+use OCA\Learning\Tests\Support\FakeAppConfigValues;
+use OCP\IAppConfig;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -22,15 +24,19 @@ class ConsentServiceTest extends TestCase {
     private UserTelosMapper&MockObject $mapper;
     private AuditService&MockObject $audit;
     private ?UserTelos $row = null;
+    private FakeAppConfigValues $values;
 
     protected function setUp(): void {
+        $this->values = new FakeAppConfigValues();
         $this->mapper = $this->createMock(UserTelosMapper::class);
         $this->audit = $this->createMock(AuditService::class);
         $this->mapper->method('findByUserIdOrNull')->willReturnCallback(fn () => $this->row);
     }
 
     private function service(): ConsentService {
-        return new ConsentService($this->mapper, $this->audit);
+        $appConfig = $this->createMock(IAppConfig::class);
+        $this->values->wire($appConfig);
+        return new ConsentService($this->mapper, $this->audit, $appConfig);
     }
 
     private function gemini(): LlmConnection {
@@ -279,5 +285,84 @@ class ConsentServiceTest extends TestCase {
         $this->assertSame(4, $service->epoch('alice'));
         $this->row->setConsentEpoch(5);
         $this->assertSame(5, $service->epoch('alice'));
+    }
+
+    // ---- previous recipient (spec 3.4: previous_recipient_name) ------------------------------
+
+    /** A grant as a real request makes it: the mapper keeps the row the service hands it. */
+    private function grantAs(string $uid, LlmConnection $c): void {
+        $keep = function (UserTelos $e): UserTelos {
+            $this->row = $e;
+            return $e;
+        };
+        $this->mapper->method('insert')->willReturnCallback($keep);
+        $this->mapper->method('update')->willReturnCallback($keep);
+        $this->service()->grant($uid, $c, $c->recipientFingerprint(), $this->current(), 'dialog');
+    }
+
+    /**
+     * B6: after the admin changed the recipient, the dialog says "from {old} to {new}". The old
+     * name is the recipient the user consented to, remembered when the consent was given.
+     */
+    public function testAfterAnAdminSwitchThePreviousRecipientIsTheOneTheUserConsentedTo(): void {
+        $this->row = null;
+        $this->grantAs('alice', $this->gemini());
+
+        $ollama = $this->ollama('http://ollama.lan:11434');
+        $this->assertSame('recipient_changed', $this->service()->state('alice', $ollama)['reason']);
+        $this->assertSame('Google Gemini', $this->service()->previousRecipientName('alice', $ollama));
+    }
+
+    public function testThereIsNoPreviousRecipientUnlessTheRecipientChanged(): void {
+        $this->row = null;
+        $c = $this->gemini();
+        $this->grantAs('alice', $c);
+
+        $this->assertNull($this->service()->previousRecipientName('alice', $c), 'valid: nothing changed');
+
+        $this->storedConsent('2.0', $c->recipientFingerprint());
+        $this->assertNull($this->service()->previousRecipientName('alice', $this->ollama('http://ollama.lan:11434')),
+            'an older consent text is "revised", not "recipient changed"');
+
+        $this->row = null;
+        $this->assertNull($this->service()->previousRecipientName('alice', $c), 'never consented');
+    }
+
+    public function testAnUnknownPreviousRecipientHasNoName(): void {
+        $this->storedConsent($this->current(), str_repeat('a', 64));
+
+        $ollama = $this->ollama('http://ollama.lan:11434');
+        $this->assertSame('recipient_changed', $this->service()->state('alice', $ollama)['reason']);
+        $this->assertNull($this->service()->previousRecipientName('alice', $ollama));
+    }
+
+    /** The name list belongs to the recipients, not to the users: no user ids, and bounded. */
+    public function testTheRememberedRecipientsHoldNoUserIdsAndStayBounded(): void {
+        $this->row = null;
+        $n = ConsentService::MAX_REMEMBERED_RECIPIENTS;
+        for ($i = 0; $i < $n + 5; $i++) {
+            $this->grantAs('alice', $this->ollama('http://ollama' . $i . '.lan:11434'));
+        }
+
+        $raw = $this->values->get('learning', ConsentService::RECIPIENTS_KEY);
+        $this->assertIsString($raw);
+        $this->assertStringNotContainsString('alice', $raw);
+        $map = json_decode($raw, true);
+        $this->assertIsArray($map);
+        $this->assertCount($n, $map);
+        $first = $this->ollama('http://ollama0.lan:11434');
+        $last = $this->ollama('http://ollama' . ($n + 4) . '.lan:11434');
+        $this->assertArrayNotHasKey($first->recipientFingerprint(), $map, 'the oldest entries go first');
+        $this->assertSame('Ollama (ollama' . ($n + 4) . '.lan)', $map[$last->recipientFingerprint()] ?? null);
+    }
+
+    public function testARecipientAlreadyRememberedIsNotWrittenAgain(): void {
+        $this->row = null;
+        $this->grantAs('alice', $this->gemini());
+        $writes = $this->values->setCalls;
+
+        $this->grantAs('bob', $this->gemini());
+
+        $this->assertSame($writes, $this->values->setCalls);
     }
 }

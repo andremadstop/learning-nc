@@ -65,7 +65,7 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $this->values->set('learning', ConnectionStore::KEY, json_encode($gemini->toArray(), JSON_THROW_ON_ERROR));
 
         $mapper = $this->createMock(UserTelosMapper::class);
-        $consent = new ConsentService($mapper, $this->createMock(AuditService::class));
+        $consent = new ConsentService($mapper, $this->createMock(AuditService::class), $this->createMock(IAppConfig::class));
         $row = new UserTelos();
         $row->setUserId('alice');
         $row->setAiConsentVersion($consent->currentVersion());
