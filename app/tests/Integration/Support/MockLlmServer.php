@@ -10,7 +10,7 @@
  * {"method","path","body"}. POST .../chat/completions gets a minimal chat.completion
  * answer, POST .../api/generate a minimal Ollama answer (5.7.0 routes only Gemini and
  * Ollama, so integration tests reach this mock as an Ollama endpoint: ollamaBaseUrl());
- * everything else gets 404.
+ * everything else gets 404 with the request's text fields quoted in the error message.
  *
  * The log is the measurement consent tests rely on ("0 requests"), so it never fails
  * silently: LOG must be created explicitly (reset() or the run script) before the server
@@ -113,8 +113,24 @@ final class MockLlmServer {
 		}
 
 		if ($method !== 'POST' || !str_ends_with($path, '/chat/completions')) {
+			// Quotes the request's text fields, last first (the user's part comes last in every
+			// request format, so it survives the short excerpt an admin sees), as some providers
+			// quote the input in their errors: a test can then check that a provider's error text
+			// never reaches a log (NoContentInLogsTest).
+			$texts = [];
+			$decoded = json_decode($body, true);
+			if (is_array($decoded)) {
+				array_walk_recursive($decoded, static function (mixed $v) use (&$texts): void {
+					if (is_string($v)) {
+						$texts[] = $v;
+					}
+				});
+			}
 			http_response_code(404);
-			echo json_encode(['error' => ['message' => 'mock: not found', 'type' => 'invalid_request_error']]);
+			echo json_encode(['error' => [
+				'message' => 'mock: not found: ' . implode(' | ', array_reverse($texts)),
+				'type' => 'invalid_request_error',
+			]]);
 			return;
 		}
 

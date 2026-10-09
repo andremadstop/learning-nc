@@ -157,15 +157,17 @@ class LernbotFileService {
             /** @var \OCP\Files\File $file */
             $file = $targetFolder->get($filename);
             $file->putContent($fullContent);
-            $this->logger->debug('LernbotFileService: updated note {path}', [
-                'path' => '/Learning/' . ($subfolder !== '' ? $subfolder . '/' : '') . $filename,
+            // the folder, never the file name: it is derived from the pool name the note was generated for
+            $this->logger->debug('LernbotFileService: updated note in {folder}', [
+                'folder' => '/Learning/' . $subfolder,
                 'app' => 'learning',
             ]);
         } else {
             $file = $targetFolder->newFile($filename);
             $file->putContent($fullContent);
-            $this->logger->debug('LernbotFileService: created note {path}', [
-                'path' => '/Learning/' . ($subfolder !== '' ? $subfolder . '/' : '') . $filename,
+            // the folder, never the file name: it is derived from the pool name the note was generated for
+            $this->logger->debug('LernbotFileService: created note in {folder}', [
+                'folder' => '/Learning/' . $subfolder,
                 'app' => 'learning',
             ]);
         }
