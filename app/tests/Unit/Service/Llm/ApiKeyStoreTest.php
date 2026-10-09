@@ -208,6 +208,55 @@ class ApiKeyStoreTest extends TestCase {
         $this->assertSame('enc:' . self::LEGACY, $this->values->get('learning', $this->targetKey()));
     }
 
+    /**
+     * 5.7.0 Task C1 / lifecycle probe: the hook runs exactly between "encrypted copy written and
+     * read back" and "plaintext deleted". If it aborts there, both copies exist, and the next run
+     * heals the state by deleting the plaintext.
+     */
+    public function testMigrateCallsTheAfterWriteHookBetweenWriteAndPlaintextDelete(): void {
+        $this->values->set('learning', 'gemini_api_key', self::LEGACY);
+        $seen = null;
+        $keys = $this->keys();
+        $this->assertSame('migrated', $keys->migrateLegacyGeminiKey(function () use (&$seen): void {
+            $seen = [
+                'target' => $this->values->get('learning', $this->targetKey()),
+                'plain' => $this->values->get('learning', 'gemini_api_key'),
+            ];
+        }));
+        $this->assertSame(['target' => 'enc:' . self::LEGACY, 'plain' => self::LEGACY], $seen);
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
+    }
+
+    public function testMigrateAbortedInTheHookKeepsBothCopiesAndTheNextRunHeals(): void {
+        $this->values->set('learning', 'gemini_api_key', self::LEGACY);
+        $keys = $this->keys();
+        try {
+            $keys->migrateLegacyGeminiKey(function (): void {
+                throw new \Error('injected');
+            });
+            $this->fail('the hook error must reach the caller');
+        } catch (\Error $e) {
+            $this->assertSame('injected', $e->getMessage());
+        }
+        $this->assertSame(self::LEGACY, $this->values->get('learning', 'gemini_api_key'));
+        $this->assertSame('enc:' . self::LEGACY, $this->values->get('learning', $this->targetKey()));
+
+        $this->assertSame('already', $keys->migrateLegacyGeminiKey(function (): void {
+            $this->fail('nothing is written on the healing run, so the hook must not run');
+        }));
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
+    }
+
+    public function testMigrateDoesNotCallTheHookWhenNothingIsWritten(): void {
+        $never = function (): void {
+            $this->fail('hook called although no key was written');
+        };
+        $this->assertSame('none', $this->keys()->migrateLegacyGeminiKey($never));
+        $this->values->set('learning', 'gemini_api_key', self::LEGACY);
+        $this->values->set('learning', $this->targetKey(), 'bad:broken');
+        $this->assertSame('kept_plaintext', $this->keys()->migrateLegacyGeminiKey($never));
+    }
+
     public function testMigrateWithoutPlaintextReportsNone(): void {
         $this->assertSame('none', $this->keys()->migrateLegacyGeminiKey());
         $this->values->set('learning', 'gemini_api_key', '   ');

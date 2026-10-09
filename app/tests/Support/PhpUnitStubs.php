@@ -281,6 +281,9 @@ namespace OCP {
             // Phase 160: ImportUsersCommand/Job call createUser()
             public function createUser(string $uid, string $password): IUser|false;
             public function userExists(string $uid): bool;
+            // 5.7.0 C1: MigrateLlmConfiguration walks all users for legacy TaskProcessing tasks.
+            // Signature copied from NC 33's lib/public/IUserManager.php (no types there).
+            public function callForAllUsers(\Closure $callback, $search = '');
         }
     }
 
@@ -1490,6 +1493,76 @@ namespace OCP\Files {
     if (!interface_exists(IRootFolder::class)) {
         interface IRootFolder {
             public function getUserFolder($userId);
+        }
+    }
+}
+
+namespace OCP\TaskProcessing\Exception {
+    // 5.7.0 C1: TaskProcessing manager errors (NC 33 lib/public/TaskProcessing/Exception/Exception.php).
+    if (!class_exists(Exception::class)) {
+        class Exception extends \Exception {
+        }
+    }
+}
+
+namespace OCP\TaskProcessing {
+    // 5.7.0 C1: MigrateLlmConfiguration cancels and deletes tasks of the removed legacy path.
+    // Signatures copied from NC 33's lib/public/TaskProcessing/{Task,IManager}.php (subset).
+    if (!class_exists(Task::class)) {
+        class Task {
+            public const STATUS_CANCELLED = 5;
+            public const STATUS_FAILED = 4;
+            public const STATUS_SUCCESSFUL = 3;
+            public const STATUS_RUNNING = 2;
+            public const STATUS_SCHEDULED = 1;
+            public const STATUS_UNKNOWN = 0;
+
+            protected ?int $id = null;
+            protected int $status = self::STATUS_UNKNOWN;
+
+            final public function __construct(
+                protected readonly string $taskTypeId,
+                protected array $input,
+                protected readonly string $appId,
+                protected readonly ?string $userId,
+                protected readonly ?string $customId = '',
+            ) {
+            }
+
+            final public function getId(): ?int {
+                return $this->id;
+            }
+
+            final public function setId(?int $id): void {
+                $this->id = $id;
+            }
+
+            final public function getStatus(): int {
+                return $this->status;
+            }
+
+            final public function setStatus(int $status): void {
+                $this->status = $status;
+            }
+
+            final public function getAppId(): string {
+                return $this->appId;
+            }
+
+            final public function getUserId(): ?string {
+                return $this->userId;
+            }
+        }
+    }
+
+    if (!interface_exists(IManager::class)) {
+        interface IManager {
+            /** @return list<Task> */
+            public function getUserTasksByApp(?string $userId, string $appId, ?string $customId = null): array;
+
+            public function cancelTask(int $id): void;
+
+            public function deleteTask(Task $task): void;
         }
     }
 }

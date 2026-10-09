@@ -21,8 +21,9 @@
 # PROBE_FAIL_AFTER=key_write is handed to the first `occ upgrade` of the upgrade scenario (the
 # post-migration repair step of Task C1 runs inside it). That run must abort AND print
 # `PROBE-INJECTED key_write`; without the marker the injection point was never reached and the
-# check fails. A second `occ upgrade` must then recover. Until Task C1 adds the injection point,
-# PROBE_FAIL_AFTER therefore fails the probe by design.
+# check fails. The repair step aborts with an \Error (Nextcloud's Repair::run swallows every
+# \Exception and would let the upgrade succeed), which leaves maintenance mode on; the probe
+# switches it off as an admin would, and a second `occ upgrade` must then recover.
 # Containers are named learning-gate-life-*-$$ and always removed (exit 3 if that fails).
 set -euo pipefail
 
@@ -223,6 +224,9 @@ check seed seed
 check upgrade_swap swap_to_working_state
 if [ -n "$PROBE_FAIL_AFTER" ]; then
 	check upgrade_occ_upgrade_injected upgrade_injected
+	# An aborted `occ upgrade` leaves maintenance mode on, and the recovery run keeps it on because
+	# it was already on. Nextcloud's documented recovery: switch it off, run the upgrade again.
+	check upgrade_maintenance_off occ maintenance:mode --off
 fi
 check upgrade_occ_upgrade occ upgrade
 check upgrade_new_version version_is "$NEW_VERSION"

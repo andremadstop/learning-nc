@@ -122,9 +122,11 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
     <repair-steps>
         <post-migration>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
+            <step>OCA\Learning\Repair\MigrateLlmConfiguration</step>
         </post-migration>
         <install>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
+            <step>OCA\Learning\Repair\MarkLlmConfigurationMigrated</step>
         </install>
     </repair-steps>
 

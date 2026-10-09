@@ -91,9 +91,14 @@ class ApiKeyStore {
     /**
      * Moves the 5.5 plaintext Gemini key to its encrypted, fingerprint-bound slot. Idempotent.
      *
+     * $afterKeyWrite runs only when this call wrote the encrypted copy, after it was read back and
+     * before the plaintext is deleted (the lifecycle probe's PROBE_FAIL_AFTER=key_write point).
+     * Whatever it throws reaches the caller; the next run finds both copies and answers 'already'.
+     *
+     * @param (\Closure(): void)|null $afterKeyWrite
      * @return string 'migrated'|'already'|'none'|'kept_plaintext'
      */
-    public function migrateLegacyGeminiKey(): string {
+    public function migrateLegacyGeminiKey(?\Closure $afterKeyWrite = null): string {
         // Decide on what is stored, not on what this process happens to have cached.
         $this->appConfig->clearCache();
         $name = self::keyName(ConnectionStore::legacyGemini(false));
@@ -119,6 +124,9 @@ class ApiKeyStore {
         if (!$this->writeVerified($name, $plain)) {
             $this->logger->warning('Gemini key migration failed: encrypted copy could not be verified; plaintext key kept', ['app' => self::APP]);
             return 'kept_plaintext';
+        }
+        if ($afterKeyWrite !== null) {
+            $afterKeyWrite();
         }
         $this->appConfig->deleteKey(self::APP, self::LEGACY_GEMINI_KEY);
         return 'migrated';

@@ -245,7 +245,7 @@ class LlmGateway {
                 throw new \LogicException('A connection test never stores a key');
             }
 
-            public function migrateLegacyGeminiKey(): string {
+            public function migrateLegacyGeminiKey(?\Closure $afterKeyWrite = null): string {
                 throw new \LogicException('A connection test never migrates a key');
             }
         };

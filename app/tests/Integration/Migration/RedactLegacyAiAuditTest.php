@@ -29,10 +29,15 @@ final class RedactLegacyAiAuditTest extends TestCase {
     private IAppConfig $appConfig;
     /** @var list<int> rows this test inserted */
     private array $ids = [];
+    /** marker as the instance had it (a fresh install sets it), restored afterwards */
+    private ?string $markerBefore = null;
 
     protected function setUp(): void {
         $this->db = Server::get(IDBConnection::class);
         $this->appConfig = Server::get(IAppConfig::class);
+        $this->appConfig->clearCache();
+        $this->markerBefore = $this->appConfig->hasKey('learning', self::MARKER)
+            ? $this->appConfig->getValueString('learning', self::MARKER, '') : null;
         $this->appConfig->deleteKey('learning', self::MARKER);
         // Rows of other suites must not decide this test's outcome: a chained allowlist row left
         // behind elsewhere would abort every run here.
@@ -48,6 +53,9 @@ final class RedactLegacyAiAuditTest extends TestCase {
         }
         $this->ids = [];
         $this->appConfig->deleteKey('learning', self::MARKER);
+        if ($this->markerBefore !== null) {
+            $this->appConfig->setValueString('learning', self::MARKER, $this->markerBefore);
+        }
     }
 
     private function step(): RedactLegacyAiAudit {
