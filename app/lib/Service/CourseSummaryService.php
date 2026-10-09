@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\RagChunkMapper;
@@ -249,6 +250,9 @@ class CourseSummaryService {
         // 5. Call Gemini (may throw RuntimeException)
         try {
             $narrative = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::CourseNarrative);
+        } catch (LlmConsentException $e) {
+            // a RuntimeException too, but the caller must answer consent_required, not "no narrative"
+            throw $e;
         } catch (\RuntimeException $e) {
             return null;  // Gemini not configured — return null, not 500
         }

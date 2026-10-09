@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\AiChatMemory;
 use OCA\Learning\Db\AiChatMemoryMapper;
@@ -14,8 +15,9 @@ use Psr\Log\LoggerInterface;
  * Design constraints (MEM-03):
  *   - Max 50 entries per user in DB.
  *   - When the cap is reached after a new saveExchange(), the oldest 10 entries
- *     are compressed into a single 'summary' row via Gemini. If Gemini fails,
- *     a static placeholder summary is stored instead.
+ *     are compressed into a single 'summary' row via Gemini. If that cannot run
+ *     (no consent, consent revoked meanwhile, budget, provider error, empty answer),
+ *     compression is skipped and the entries stay; the next exchange tries again.
  *   - The compression GeminiService call bypasses user rate-limits (internal call).
  */
 class AiChatMemoryService {
@@ -114,6 +116,10 @@ class AiChatMemoryService {
         }
 
         $summary = $this->compressEntries($oldest, $userId);
+        if ($summary === null) {
+            // 5.7.0 (Task B5): skip without data loss — never replace the originals by a placeholder
+            return;
+        }
         $oldIds = array_map(static fn(AiChatMemory $e) => $e->getId(), $oldest);
 
         // Delete the originals, then insert the summary
@@ -130,11 +136,11 @@ class AiChatMemoryService {
 
     /**
      * Compress a list of entries into a short summary string.
-     * Tries Gemini; falls back to a static placeholder on failure.
      *
      * @param AiChatMemory[] $entries
+     * @return string|null null when compression could not run; the caller then keeps the entries
      */
-    private function compressEntries(array $entries, string $userId): string {
+    private function compressEntries(array $entries, string $userId): ?string {
         $lines = [];
         foreach ($entries as $entry) {
             $prefix = $entry->getRole() === 'user' ? '[User]' : '[VirtuProf]';
@@ -149,7 +155,7 @@ class AiChatMemoryService {
         // 5.5.2: compression is a second request after the chat answer — check consent again right
         // before sending instead of relying on the controller's check for the first request.
         if (!$this->telosService->hasAiConsent($userId)) {
-            return 'Summary of earlier conversation covering various learning topics.';
+            return null;
         }
 
         $systemPrompt = 'You are a conversation summarizer. Summarize the following chat excerpt '
@@ -159,14 +165,15 @@ class AiChatMemoryService {
 
         try {
             // MED-09: memory compression counts against the shared AI rate limit.
-            $summary = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::MemoryCompress);
-            return mb_substr(trim($summary), 0, 1000);
+            $summary = mb_substr(trim($this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::MemoryCompress)), 0, 1000);
+            return $summary !== '' ? $summary : null;
         } catch (\Throwable $e) {
+            // consent, budget, provider: the entries stay and the next exchange tries again
             $this->logger->info(
-                'AiChatMemoryService: Gemini compression failed, using static summary',
-                ['app' => 'learning', 'error' => $e->getMessage()]
+                'AiChatMemoryService: compression skipped ({error})',
+                ['app' => 'learning', 'error' => $e instanceof LlmProviderException ? $e->category : get_class($e)]
             );
-            return 'Summary of earlier conversation covering various learning topics.';
+            return null;
         }
     }
 }

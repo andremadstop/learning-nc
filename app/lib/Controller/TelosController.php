@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentRecipientChangedException;
 use OCA\Learning\Service\Llm\ConsentService;
@@ -331,7 +332,12 @@ class TelosController extends Controller {
             return new DataResponse(['error' => 'Conversation too long (max 10000 chars)'], Http::STATUS_BAD_REQUEST);
         }
 
-        $result = $this->telosService->processInterview($this->userId, $conversation);
+        try {
+            $result = $this->telosService->processInterview($this->userId, $conversation);
+        } catch (LlmConsentException $e) {
+            // consent revoked or recipient changed after the check above; nothing was sent
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        }
 
         if (!$result['saved']) {
             return new DataResponse([

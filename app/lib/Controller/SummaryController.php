@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\TelosService;
@@ -111,6 +112,9 @@ class SummaryController extends Controller {
             }
             $narrative = $this->summaryService->generateAndCacheNarrative($courseId, $this->userId);
             return new DataResponse(['narrative' => $narrative, 'cached' => $narrative !== null]);
+        } catch (LlmConsentException $e) {
+            // consent revoked or recipient changed after the check above: same answer as the check
+            return new DataResponse(['narrative' => null, 'cached' => false, 'consent_required' => true]);
         } catch (\Exception $e) {
             return new DataResponse(['narrative' => null, 'cached' => false]);
         }

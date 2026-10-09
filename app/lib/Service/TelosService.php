@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
@@ -254,6 +255,9 @@ class TelosService {
             $this->saveTelos($userId, $telos);
 
             return ['telos' => $telos, 'saved' => true];
+        } catch (LlmConsentException $e) {
+            // the controller answers consent_required (spec 2.4); never a generic error
+            throw $e;
         } catch (\Throwable $e) {
             $this->logger->warning('Telos interview processing failed: ' . $e->getMessage());
             return ['telos' => [], 'saved' => false, 'error' => $e->getMessage()];

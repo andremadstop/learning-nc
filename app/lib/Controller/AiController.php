@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\TelosService;
@@ -48,9 +49,17 @@ class AiController extends Controller {
      */
     private function aiConsentResponse(): ?JSONResponse {
         if ($this->userId === null || !$this->telosService->hasAiConsent($this->userId)) {
-            return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+            return self::consentRequired();
         }
         return null;
+    }
+
+    /**
+     * Also the answer when the gateway refuses later (consent revoked or recipient changed after
+     * the check above): the client re-opens the consent dialog on consent_required.
+     */
+    private static function consentRequired(): JSONResponse {
+        return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
     }
 
     /**
@@ -85,6 +94,8 @@ class AiController extends Controller {
 
             $taskId = $this->aiService->generateQuestions($text, $count, $lang, $this->userId);
             return new JSONResponse(['taskId' => $taskId]);
+        } catch (LlmConsentException $e) {
+            return self::consentRequired();
         } catch (\Exception $e) {
             $this->logger->error('AI generate error: ' . $e->getMessage(), ['app' => 'learning']);
             return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
@@ -175,6 +186,8 @@ class AiController extends Controller {
         try {
             $taskId = $this->aiService->schedulePrompt($prompt, $this->userId);
             return new JSONResponse(['taskId' => $taskId]);
+        } catch (LlmConsentException $e) {
+            return self::consentRequired();
         } catch (\Exception $e) {
             $this->logger->error('AI explain error: ' . $e->getMessage(), ['app' => 'learning']);
             return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);

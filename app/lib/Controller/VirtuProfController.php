@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
@@ -128,6 +129,10 @@ class VirtuProfController extends Controller {
      * sufficient (mirrors SummaryController's consent gate). Returns true when consent is
      * absent, in which case the caller returns a `consent_required` response.
      */
+    private static function consentRequired(): DataResponse {
+        return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+    }
+
     private function aiConsentMissing(): bool {
         // 5.5.2: delegate to hasAiConsent() (exact current version) — "not empty" accepted outdated consent.
         return $this->userId === null
@@ -517,12 +522,16 @@ class VirtuProfController extends Controller {
             ) ?: 'de';
         }
 
-        $result = $this->geminiService->generateInterviewTurn(
-            $sanitizedHistory,
-            $nextQuestionNumber,
-            $this->userId,
-            $language
-        );
+        try {
+            $result = $this->geminiService->generateInterviewTurn(
+                $sanitizedHistory,
+                $nextQuestionNumber,
+                $this->userId,
+                $language
+            );
+        } catch (LlmConsentException $e) {
+            return self::consentRequired();
+        }
 
         if (($result['reason'] ?? '') === 'rate_limit') {
             return new DataResponse(['error' => 'Rate limit exceeded'], Http::STATUS_TOO_MANY_REQUESTS);
@@ -714,16 +723,21 @@ class VirtuProfController extends Controller {
 
         // Task B4 (data minimisation): the first name is no longer part of the prompt
         $telos = $this->telosService->getTelos($this->userId);
-        $result = $this->geminiService->chat(
-            $message,
-            $this->userId,
-            $ragContext,
-            $memoryEntries,
-            $questionContext,
-            $hintLevel,
-            is_array($telos['telos'] ?? null) ? $telos['telos'] : null,
-            $this->isDetailedRequest($lowerMessage)
-        );
+        try {
+            $result = $this->geminiService->chat(
+                $message,
+                $this->userId,
+                $ragContext,
+                $memoryEntries,
+                $questionContext,
+                $hintLevel,
+                is_array($telos['telos'] ?? null) ? $telos['telos'] : null,
+                $this->isDetailedRequest($lowerMessage)
+            );
+        } catch (LlmConsentException $e) {
+            // consent revoked or recipient changed after the early check; nothing was sent
+            return self::consentRequired();
+        }
 
         // SEC-01: invalid_input is a client error
         if (($result['reason'] ?? '') === 'invalid_input') {

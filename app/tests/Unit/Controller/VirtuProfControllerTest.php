@@ -8,6 +8,7 @@ use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\LernplanService;
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\QuestionService;
@@ -451,5 +452,33 @@ class VirtuProfControllerTest extends TestCase {
         );
 
         $this->assertSame(200, $resp->getStatus());
+    }
+
+    // ---- 5.7.0 review finding: consent that disappears after the early check ----------------
+
+    /** Revoked between the early check and the send: nothing left, the client must re-ask. */
+    public function testChatAnswersConsentRequiredWhenTheGatewayRefusesLater(): void {
+        $this->enableAi();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->geminiMock->method('chat')->willThrowException(new LlmConsentException());
+        $this->chatMemoryMock->expects($this->never())->method('saveExchange');
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan');
+
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
+    }
+
+    public function testInterviewTurnAnswersConsentRequiredWhenTheGatewayRefusesLater(): void {
+        $this->enableAi();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->geminiMock->method('generateInterviewTurn')->willThrowException(new LlmConsentException());
+
+        $resp = $this->makeController('user-A')->interviewTurn([['question' => 'q', 'answer' => 'a']], 2);
+
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
     }
 }
