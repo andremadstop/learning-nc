@@ -18,8 +18,13 @@
 #   upgrade  the upgrade and both repair runs report no AI migration failure; the connection is
 #            derived from the 5.5 keys (Gemini, gateway admin test begins), the Gemini key is
 #            encrypted and readable and the plaintext is gone, the 2.0 consents get reason=version,
-#            scheduled legacy tasks are gone and the running one is listed, chat memory is empty;
-#            the stored state (digests) is identical after the upgrade and after each repair run
+#            the seeded scheduled legacy task is gone in every status (cancelled is not enough) and
+#            the running one is listed with the cleanup job registered, chat memory is empty, the
+#            seeded allowlisted AI audit rows are redacted and the foreign one is not; the stored
+#            state (digests) is identical after the upgrade and after each repair run; once the
+#            running task has finished, the cleanup sweep deletes it.
+#            `occ learning:audit:verify` passes over the 3 seeded chained events on 5.5.1 before the
+#            upgrade and again after it, so the redaction cannot have touched the hash chain.
 # These run before check-working-state.php, which writes audit rows and a pool of its own.
 # The app under test is app/ from the git index, or from PROBE_REF (e.g. to prove the checks go
 # red on a release without the fix). The fixtures always come from the git index — never the
@@ -221,6 +226,16 @@ same_state() {
 	diff "$WORK/state-$1" "$WORK/state-$2"
 }
 
+# audit_verify <events> — `occ learning:audit:verify` passes and walked exactly <events> chained
+# events, so an empty walk cannot pass
+audit_verify() {
+	local out rc=0
+	out="$(occ learning:audit:verify --json 2>/dev/null)" || rc=$?
+	echo "$out" | grep -E '"(ok|events_verified)"|failures' || true
+	echo "audit:verify exit code: $rc (want 0, events_verified $1)"
+	[ "$rc" -eq 0 ] && grep -q '"ok": true' <<<"$out" && grep -Eq "\"events_verified\": $1," <<<"$out"
+}
+
 # occ_clean <args...> — run occ; it must succeed AND no AI migration part may report a failure.
 # MigrateLlmConfiguration turns a failing part into a warning, which leaves the exit code at 0.
 occ_clean() {
@@ -273,6 +288,7 @@ check upgrade_install_old install_nc "$WORK/old/learning"
 check upgrade_enable_old occ app:enable learning
 check upgrade_old_version version_is "$OLD_VERSION"
 check seed seed
+check upgrade_audit_verify_old audit_verify 3
 check upgrade_swap swap_to_working_state
 if [ -n "$PROBE_FAIL_AFTER" ]; then
 	check upgrade_occ_upgrade_injected upgrade_injected
@@ -291,6 +307,9 @@ check upgrade_repair_2 occ_clean maintenance:repair
 check upgrade_state_2 llm_snapshot 2
 check upgrade_repair_2_no_change same_state 1 2
 check upgrade_llm_after_repair llm_contract upgraded
+check upgrade_audit_verify_new audit_verify 3
+# changes state, so after the no-change comparisons: the running task finishes, the sweep deletes it
+check upgrade_legacy_sweep llm_contract sweep
 check upgrade_enabled app_enabled
 # 3 chained rows seeded + 1 from the check: the existing head was kept, not re-seeded
 check upgrade_working_state working_state 4

@@ -161,6 +161,71 @@ final class RedactLegacyAiAuditTest extends TestCase {
         $r->closeCursor();
     }
 
+    /**
+     * Review finding (MED): an upgrade interrupted between two batches. The rows of the finished
+     * batch are redacted, the rest still carry content, no marker is set; the next run redacts the
+     * rest and finishes.
+     */
+    public function testARunInterruptedBetweenBatchesIsFinishedByTheNextRun(): void {
+        // rows of other suites that sort before this test's rows take places in the first batch
+        $others = $this->countUnchainedAllowlistRows();
+        $n = RedactLegacyAiAudit::BATCH_SIZE + 3;
+        $this->db->beginTransaction();
+        for ($i = 0; $i < $n; $i++) {
+            $this->insert('ai_chat', ['input' => "interrupted $i", 'output' => 'x', 'model' => 'gemini']);
+        }
+        $this->db->commit();
+
+        $interrupted = new class(Server::get(IDBConnection::class), Server::get(IAppConfig::class)) extends RedactLegacyAiAudit {
+            protected function afterBatch(): void {
+                throw new \RuntimeException('process died after the first batch');
+            }
+        };
+        $thrown = null;
+        try {
+            $interrupted->run(new RecordingOutput());
+        } catch (\RuntimeException $e) {
+            $thrown = $e;
+        }
+        $this->assertNotNull($thrown, 'the interrupted run must not complete');
+        $this->assertSame('process died after the first batch', $thrown->getMessage());
+
+        $this->assertSame('', $this->marker(), 'an interrupted run sets no marker');
+        $this->assertSame(RedactLegacyAiAudit::BATCH_SIZE - $others, $this->redactedOfMine(), 'exactly the first batch is redacted');
+        foreach (array_slice($this->ids, -3) as $id) {
+            $this->assertStringNotContainsString('[redacted]', (string)$this->context($id), 'the rows after the batch still wait');
+        }
+
+        $this->assertSame(RedactLegacyAiAudit::RESULT_DONE, $this->step()->run(new RecordingOutput()));
+        $this->assertSame($n, $this->redactedOfMine());
+        $this->assertSame('yes', $this->marker());
+    }
+
+    private function redactedOfMine(): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->func()->count('*', 'n'))
+            ->from('learning_audit_events')
+            ->where($qb->expr()->in('id', $qb->createNamedParameter($this->ids, IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->eq('context_json', $qb->createNamedParameter('{"input":"[redacted]","output":"[redacted]","model":"gemini"}')));
+        $r = $qb->executeQuery();
+        $n = (int)$r->fetchOne();
+        $r->closeCursor();
+        return $n;
+    }
+
+    private function countUnchainedAllowlistRows(): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->func()->count('*', 'n'))
+            ->from('learning_audit_events')
+            ->where($qb->expr()->in('event_key', $qb->createNamedParameter(RedactLegacyAiAudit::EVENT_KEYS, IQueryBuilder::PARAM_STR_ARRAY)))
+            ->andWhere($qb->expr()->isNull('chain_hash'))
+            ->andWhere($qb->expr()->isNull('prev_hash'));
+        $r = $qb->executeQuery();
+        $n = (int)$r->fetchOne();
+        $r->closeCursor();
+        return $n;
+    }
+
     public function testMarkDoneSkipsALaterRun(): void {
         $id = $this->insert('ai_chat', ['input' => 'fresh install, never redacted', 'output' => 'x', 'model' => 'gemini']);
         $before = $this->context($id);

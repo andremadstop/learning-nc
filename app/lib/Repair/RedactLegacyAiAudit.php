@@ -75,11 +75,21 @@ class RedactLegacyAiAudit {
                     $redacted += $this->update($lastId, $redactedContext);
                 }
             }
+            if (count($rows) === self::BATCH_SIZE) {
+                $this->afterBatch();
+            }
         } while (count($rows) === self::BATCH_SIZE);
 
         $this->appConfig->setValueString(self::APP, self::MARKER, 'yes');
         $output->info("Legacy AI audit redaction: removed prompt and answer excerpts from $redacted row(s)");
         return self::RESULT_DONE;
+    }
+
+    /**
+     * Runs between two batches; does nothing. The integration test overrides it to interrupt a run
+     * there and prove that the next run finishes the redaction.
+     */
+    protected function afterBatch(): void {
     }
 
     /** A fresh install has no legacy rows; the marker keeps a later upgrade from touching rows it wrote. */

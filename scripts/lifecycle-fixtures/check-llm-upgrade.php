@@ -13,12 +13,20 @@
  *   key_encrypted        the fingerprint-bound key slot exists, its stored value is not the
  *                        plaintext, and ApiKeyStore returns the seeded key for the connection
  *   consent_version      lc-user1..3 (consent '2.0') get reason=version for the connection in force
- *   legacy_tasks         no scheduled task of the app remains, the running one is listed in
- *                        ai_legacy_tasks_pending, the one-time marker is set
+ *   legacy_tasks         the seeded scheduled task (lc-user1) is gone in every status — a cancelled
+ *                        row still holds the prompt — the running one (lc-user2) still exists and is
+ *                        listed in ai_legacy_tasks_pending, the one-time marker is set
+ *   cleanup_job          LegacyAiTaskCleanupJob is registered for the running task
  *   chat_memory          learning_ai_chat_memory is empty
+ *   audit_redacted       the 4 seeded allowlisted rows outside the chain hold exactly
+ *                        {"input":"[redacted]","output":"[redacted]","model":"gemini"}, the seeded
+ *                        ai_explain row (not allowlisted) still holds its content, marker set
  * fresh — on a fresh install of the working state:
  *   connection_disabled  no ai_connection is stored and the connection in force is `disabled`
  *   gateway_disabled     LlmGateway::begin(null, admin_test) refuses with category `disabled`
+ * sweep — state-changing, run it after the snapshot comparisons: the running legacy task finishes
+ *   (status SUCCESSFUL, as the worker would set it) and LegacyAiTaskCleanup::sweepPending() runs:
+ *   legacy_sweep         no task of the app is left, ai_legacy_tasks_pending is gone
  * Each check prints `CHECK <name>=ok|fail`; the last line is `CHECK result=ok|fail`, exit 0 only
  * if every check passed.
  *
@@ -31,12 +39,16 @@ declare(strict_types=1);
 
 require_once '/var/www/html/lib/base.php';
 
+use OCA\Learning\BackgroundJob\LegacyAiTaskCleanupJob;
+use OCA\Learning\Repair\LegacyAiTaskCleanup;
+use OCA\Learning\Repair\RedactLegacyAiAudit;
 use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
+use OCP\BackgroundJob\IJobList;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\Server;
@@ -90,8 +102,8 @@ if ($mode === 'snapshot') {
 	}
 }
 
-if ($mode !== 'upgraded' && $mode !== 'fresh') {
-	echo "usage: check-llm-upgrade.php upgraded|fresh|snapshot\n";
+if (!in_array($mode, ['upgraded', 'fresh', 'sweep'], true)) {
+	echo "usage: check-llm-upgrade.php upgraded|fresh|sweep|snapshot\n";
 	exit(2);
 }
 
@@ -116,7 +128,32 @@ $appConfig->clearCache();
 $connections = Server::get(ConnectionStore::class);
 $gateway = Server::get(LlmGateway::class);
 
-if ($mode === 'fresh') {
+/** @return list<Task> every task of the app for $uid, in any status */
+$appTasks = static fn (string $uid): array => Server::get(TaskManager::class)->getUserTasksByApp($uid, APP);
+
+if ($mode === 'sweep') {
+	$check('legacy_sweep', function () use ($appTasks, $appConfig, $db) {
+		$running = array_values(array_filter($appTasks('lc-user2'), static fn (Task $t): bool => $t->getStatus() === Task::STATUS_RUNNING));
+		if (count($running) !== 1) {
+			echo 'CHECK legacy_sweep detail: expected the one running seeded task, found ' . count($running) . "\n";
+			return false;
+		}
+		$mapper = Server::get(\OC\TaskProcessing\Db\TaskMapper::class);
+		$entity = $mapper->find((int)$running[0]->getId());
+		$entity->setStatus(Task::STATUS_SUCCESSFUL);
+		$mapper->update($entity);
+		$left = Server::get(LegacyAiTaskCleanup::class)->sweepPending();
+		$appConfig->clearCache();
+		$qb = $db->getQueryBuilder();
+		$r = $qb->select($qb->func()->count('*', 'n'))->from('taskprocessing_tasks')
+			->where($qb->expr()->eq('app_id', $qb->createNamedParameter(APP)))->executeQuery();
+		$rows = (int)$r->fetchOne();
+		$r->closeCursor();
+		$listed = $appConfig->hasKey(APP, LegacyAiTaskCleanup::PENDING_TASKS);
+		echo "CHECK legacy_sweep detail: still_running=$left task_rows=$rows pending_key=" . var_export($listed, true) . "\n";
+		return $left === 0 && $rows === 0 && !$listed;
+	});
+} elseif ($mode === 'fresh') {
 	$check('connection_disabled', function () use ($connections) {
 		$c = $connections->load();
 		echo 'CHECK connection_disabled detail: snapshot=' . var_export($connections->hasSnapshot(), true)
@@ -188,28 +225,58 @@ if ($mode === 'fresh') {
 		return $ok;
 	});
 
-	$check('legacy_tasks', function () use ($appConfig) {
-		$tasks = Server::get(TaskManager::class);
-		$scheduled = 0;
-		$running = [];
-		foreach (USERS as $uid) {
-			foreach ($tasks->getUserTasksByApp($uid, APP) as $task) {
-				if ($task->getStatus() === Task::STATUS_SCHEDULED) {
-					$scheduled++;
-				} elseif ($task->getStatus() === Task::STATUS_RUNNING) {
-					$running[] = (int)$task->getId();
-				}
-			}
-		}
+	$check('legacy_tasks', function () use ($appConfig, $appTasks) {
+		// lc-user1 had only the scheduled task, lc-user3 none: nothing of the app may be left for
+		// them in any status — a CANCELLED row still carries the prompt.
+		$scheduledUser = count($appTasks('lc-user1')) + count($appTasks('lc-user3'));
+		$running = array_map(static fn (Task $t): int => (int)$t->getId(), array_values(array_filter(
+			$appTasks('lc-user2'), static fn (Task $t): bool => $t->getStatus() === Task::STATUS_RUNNING)));
+		$otherOfUser2 = count($appTasks('lc-user2')) - count($running);
 		$pending = json_decode($appConfig->getValueString(APP, 'ai_legacy_tasks_pending', '[]'), true);
 		$pending = is_array($pending) ? $pending : [];
 		$marker = $appConfig->getValueString(APP, 'llm_migration_tasks_done', '');
 		$listed = $running !== [] && array_diff($running, $pending) === [];
-		echo "CHECK legacy_tasks detail: scheduled=$scheduled running=" . count($running)
-			. ' listed=' . var_export($listed, true) . " marker=$marker\n";
+		echo "CHECK legacy_tasks detail: left_of_scheduled_user=$scheduledUser running=" . count($running)
+			. " other_of_running_user=$otherOfUser2 listed=" . var_export($listed, true) . " marker=$marker\n";
 		// The seed has exactly one running task; it must still exist (a running task is not
 		// cancelled) and be listed for the cleanup job.
-		return $scheduled === 0 && count($running) === 1 && $listed && $marker === 'yes';
+		return $scheduledUser === 0 && count($running) === 1 && $otherOfUser2 === 0 && $listed && $marker === 'yes';
+	});
+
+	$check('cleanup_job', function () {
+		$registered = Server::get(IJobList::class)->has(LegacyAiTaskCleanupJob::class, null);
+		echo 'CHECK cleanup_job detail: registered=' . var_export($registered, true) . "\n";
+		return $registered;
+	});
+
+	$check('audit_redacted', function () use ($db, $appConfig) {
+		$qb = $db->getQueryBuilder();
+		$r = $qb->select('event_key', 'context_json')->from('learning_audit_events')
+			->where($qb->expr()->isNull('chain_hash'))
+			->andWhere($qb->expr()->isNull('prev_hash'))
+			->orderBy('id')
+			->executeQuery();
+		$allowlisted = 0;
+		$redacted = 0;
+		$foreignKept = false;
+		$want = ['input' => '[redacted]', 'output' => '[redacted]', 'model' => 'gemini'];
+		while (($row = $r->fetch()) !== false) {
+			$row = array_change_key_case($row, CASE_LOWER);
+			$context = json_decode((string)$row['context_json'], true);
+			if (in_array($row['event_key'], RedactLegacyAiAudit::EVENT_KEYS, true)) {
+				$allowlisted++;
+				if ($context === $want) {
+					$redacted++;
+				}
+			} elseif ($row['event_key'] === 'ai_explain') {
+				$foreignKept = is_array($context) && ($context['input'] ?? null) === 'lifecycle input 4';
+			}
+		}
+		$r->closeCursor();
+		$marker = $appConfig->getValueString(APP, RedactLegacyAiAudit::MARKER, '');
+		echo "CHECK audit_redacted detail: allowlisted=$allowlisted redacted=$redacted foreign_kept="
+			. var_export($foreignKept, true) . " marker=$marker\n";
+		return $allowlisted === 4 && $redacted === 4 && $foreignKept && $marker === 'yes';
 	});
 
 	$check('chat_memory', function () use ($db) {
