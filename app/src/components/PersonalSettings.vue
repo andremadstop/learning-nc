@@ -635,7 +635,9 @@ export default {
       try {
         const status = await fetchConsentStatus()
         this.consentValid = !!status?.valid
-        this.consentStored = !!status?.ai_consent_version
+        // only a consent for the current text can count again (AI back on, same recipient); one for
+        // an older text (upgraded users keep '2.0') never does and needs a new consent anyway
+        this.consentStored = !!status?.ai_consent_version && status.ai_consent_version === status.current_version
         this.consentStatusFailed = false
         this.consentProvider = status?.recipient?.name || ''
         this.consentRecipient = status?.recipient || null

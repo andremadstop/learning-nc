@@ -279,6 +279,20 @@ describe('OnbProfileTiles consent tile', () => {
 		expect(store.profileChoices.aiConsent).toBe('no')
 	})
 
+	it('a late status GET does not overwrite a choice the user already made', async () => {
+		let resolve
+		axios.get.mockReturnValue(new Promise((r) => { resolve = r }))
+		mountTiles()
+		await flush()
+		consentTiles()[1].click()
+		await flush()
+		expect(axios.delete).toHaveBeenCalledWith(URL)
+		expect(store.profileChoices.aiConsent).toBe('no')
+		resolve({ data: status({ valid: true, ai_consent_version: '3.0' }) })
+		await flush()
+		expect(store.profileChoices.aiConsent).toBe('no')
+	})
+
 	it('a consent that is already valid on the server shows as chosen', async () => {
 		axios.get.mockResolvedValue({ data: status({ valid: true }) })
 		mountTiles()

@@ -100,7 +100,7 @@ describe('PersonalSettings: a stored consent that is not valid right now', () =>
 	})
 
 	it('AI switched off with a consent on record: state "stored", revocation offered', async () => {
-		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'none', ai_enabled: false, ai_consent_version: '3.0', recipient: null } })
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'none', ai_enabled: false, ai_consent_version: '3.0', current_version: '3.0', recipient: null } })
 		const c = ctx()
 		await PersonalSettings.methods.loadConsent.call(c)
 		expect(c.consentValid).toBe(false)
@@ -110,7 +110,7 @@ describe('PersonalSettings: a stored consent that is not valid right now', () =>
 	})
 
 	it('recipient changed with a consent on record: state "stored", revocation offered', async () => {
-		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'recipient_changed', ai_enabled: true, ai_consent_version: '3.0', recipient: { name: 'Ollama' } } })
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'recipient_changed', ai_enabled: true, ai_consent_version: '3.0', current_version: '3.0', recipient: { name: 'Ollama' } } })
 		const c = ctx()
 		await PersonalSettings.methods.loadConsent.call(c)
 		expect(state(c)).toBe('stored')
@@ -118,7 +118,7 @@ describe('PersonalSettings: a stored consent that is not valid right now', () =>
 	})
 
 	it('nothing on record: state "none", no revocation button', async () => {
-		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'never', ai_enabled: true, ai_consent_version: null, recipient: { name: 'Google Gemini' } } })
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'never', ai_enabled: true, ai_consent_version: null, current_version: '3.0', recipient: { name: 'Google Gemini' } } })
 		const c = ctx()
 		await PersonalSettings.methods.loadConsent.call(c)
 		expect(state(c)).toBe('none')
@@ -126,11 +126,29 @@ describe('PersonalSettings: a stored consent that is not valid right now', () =>
 	})
 
 	it('a valid consent: state "valid", revocation offered', async () => {
-		axios.get.mockResolvedValueOnce({ data: { valid: true, ai_consent_version: '3.0', recipient: { name: 'Google Gemini' } } })
+		axios.get.mockResolvedValueOnce({ data: { valid: true, ai_consent_version: '3.0', current_version: '3.0', recipient: { name: 'Google Gemini' } } })
 		const c = ctx()
 		await PersonalSettings.methods.loadConsent.call(c)
 		expect(state(c)).toBe('valid')
 		expect(canRevoke(c)).toBe(true)
+	})
+
+	// An upgraded 5.6 user keeps ai_consent_version '2.0'. That consent can never count again
+	// (current_version is 3.0), so "it can apply again" would be false: it reads as "none".
+	it('a consent for an older text (upgrade, reason version) is not "stored": it can never count again', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'version', ai_enabled: true, ai_consent_version: '2.0', current_version: '3.0', recipient: { name: 'Google Gemini' } } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(c.consentStored).toBe(false)
+		expect(state(c)).toBe('none')
+		expect(canRevoke(c)).toBe(false)
+	})
+
+	it('AI switched off with an outdated consent on record: "none" as well', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'none', ai_enabled: false, ai_consent_version: '2.0', current_version: '3.0', recipient: null } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(state(c)).toBe('none')
 	})
 
 	it('status read failed: state "unknown" (not "you did not consent"), revocation offered', async () => {

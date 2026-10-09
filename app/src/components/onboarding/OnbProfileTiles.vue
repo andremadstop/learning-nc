@@ -118,6 +118,10 @@ export default {
       this.consentValid = !!status?.valid
       this.consentStored = !!status?.ai_consent_version
       this.statusLoaded = true
+      if (this.store.profileChoices.aiConsent !== null) {
+        // the user already chose while the status was loading: a late answer must not overwrite it
+        return
+      }
       if (!status?.recipient) {
         // nothing to consent to on this server
         this.store.setProfileChoice('aiConsent', 'no')
