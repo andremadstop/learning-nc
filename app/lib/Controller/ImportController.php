@@ -8,6 +8,7 @@ use OCA\Learning\Db\Answer;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
+use OCA\Learning\Service\QuestionService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -156,7 +157,31 @@ class ImportController extends Controller {
             'chapter_key' => $item['chapter_key'] ?? $item['chapterKey'] ?? $item['kapitel_key'] ?? null,
             'chapter_title' => $item['chapter_title'] ?? $item['chapterTitle'] ?? $item['kapitel_titel'] ?? null,
             'chapter_order' => $chapterOrder,
+            'scenario' => self::scenarioFrom($item),
         ];
+    }
+
+    /**
+     * Scenario / info text shown before the question (Codeberg #10).
+     * Accepts scenario > szenario > context > info; keeps line breaks.
+     * Never truncated: callers reject an item whose scenario is too long (scenarioTooLong()),
+     * because a cut-off case can drop exactly the fact the question depends on.
+     */
+    private static function scenarioFrom(array $item): ?string {
+        $raw = $item['scenario'] ?? $item['szenario'] ?? $item['context'] ?? $item['info'] ?? null;
+        if (!is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+        return trim($raw);
+    }
+
+    private static function scenarioTooLong(array $item, int $num, array &$errors): bool {
+        $scenario = self::scenarioFrom($item);
+        if ($scenario === null || mb_strlen($scenario) <= QuestionService::SCENARIO_MAX_LENGTH) {
+            return false;
+        }
+        $errors[] = "Item $num: Scenario longer than " . QuestionService::SCENARIO_MAX_LENGTH . ' characters — question skipped';
+        return true;
     }
 
     private function applyQuestionMetadata(Question $question, array $item): void {
@@ -166,6 +191,7 @@ class ImportController extends Controller {
         $question->setChapterKey(isset($item['chapter_key']) && trim((string)$item['chapter_key']) !== '' ? mb_substr(trim((string)$item['chapter_key']), 0, 64) : null);
         $question->setChapterTitle(isset($item['chapter_title']) && trim((string)$item['chapter_title']) !== '' ? mb_substr(trim((string)$item['chapter_title']), 0, 255) : null);
         $question->setChapterOrder(isset($item['chapter_order']) && is_numeric($item['chapter_order']) ? (int)$item['chapter_order'] : null);
+        $question->setScenario(self::scenarioFrom($item));
     }
 
     /**
@@ -446,6 +472,9 @@ class ImportController extends Controller {
                     $errors[] = "Item $num: Missing question text";
                     continue;
                 }
+                if (self::scenarioTooLong($item, $num, $errors)) {
+                    continue;
+                }
 
                 if (mb_strlen($item['text']) > 5000) {
                     $item['text'] = mb_substr($item['text'], 0, 5000);
@@ -578,6 +607,9 @@ class ImportController extends Controller {
             $errors[] = "PBQ #$num: missing question_text";
             return 0;
         }
+        if (self::scenarioTooLong($item, $num, $errors)) {
+            return 0;
+        }
 
         $subtype = $item['subtype'] ?? null;
         if (!in_array($subtype, ['dropdown', 'placement', 'cli', 'cable', 'multi_panel', 'switch_config', 'routing_config', 'diagnostic'], true)) {
@@ -608,6 +640,7 @@ class ImportController extends Controller {
             'chapter_key' => $item['chapter_key'] ?? $item['chapterKey'] ?? null,
             'chapter_title' => $item['chapter_title'] ?? $item['chapterTitle'] ?? null,
             'chapter_order' => $item['chapter_order'] ?? $item['chapterOrder'] ?? null,
+            'scenario' => self::scenarioFrom($item),
         ]);
 
         $this->questionMapper->createOrUpdate($question);

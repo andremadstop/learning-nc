@@ -170,6 +170,7 @@ class StarterPoolService {
         $question->setChapterOrder(isset($questionData['chapter_order']) && is_numeric($questionData['chapter_order'])
             ? (int)$questionData['chapter_order']
             : (isset($defaults['chapter_order']) && is_numeric($defaults['chapter_order']) ? (int)$defaults['chapter_order'] : null));
+        $question->setScenario($this->truncate((string)($questionData['scenario'] ?? ''), QuestionService::SCENARIO_MAX_LENGTH) ?: null);
         $question->setReviewStatus('published');
 
         $question = $this->questionMapper->createOrUpdate($question);

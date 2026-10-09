@@ -2,6 +2,18 @@
   <AccessibleDialog :name="question ? t('learning', 'Frage bearbeiten') : t('learning', 'Frage erstellen')" @closing="$emit('close')" size="normal">
     <form @submit.prevent="save">
       <div class="form-group">
+        <label for="question-scenario">{{ t('learning', 'Szenario / Info (optional)') }}</label>
+        <textarea id="question-scenario"
+                  v-model="form.scenario"
+                  rows="4"
+                  :maxlength="scenarioMaxLength"
+                  aria-describedby="question-scenario-hint"
+                  :placeholder="t('learning', 'z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo')"
+                  class="nc-input"></textarea>
+        <p id="question-scenario-hint" class="field-hint">{{ t('learning', 'Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage.') }}</p>
+      </div>
+
+      <div class="form-group">
         <label for="question-text">{{ t('learning', 'Frage') }} <span aria-hidden="true">*</span></label>
         <textarea id="question-text" v-model="form.text" aria-required="true" required rows="3" :placeholder="t('learning', 'Frage eingeben...')" class="nc-input"></textarea>
       </div>
@@ -96,7 +108,7 @@
               @update:model-value="toggleCorrectIndex(index)"
               type="checkbox"
             />
-            <input type="text" v-model="answer.text" :placeholder="t('learning', 'Antwort {n}', { n: index + 1 })" aria-required="true" required class="nc-input" />
+            <input type="text" v-model="answer.text" :placeholder="t('learning', 'Antwort {n}', { n: index + 1 })" :aria-required="index < 2 ? 'true' : 'false'" :required="index < 2" class="nc-input" />
             <button v-if="form.answers.length > 2" type="button" class="remove-answer-btn" @click="removeAnswer(index)" :aria-label="t('learning', 'Antwort entfernen')">&#215;</button>
           </div>
         </div>
@@ -196,6 +208,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import { generateUrl } from '@nextcloud/router';
 import PbqAuthorTool from './PbqAuthorTool.vue';
 import AccessibleDialog from './AccessibleDialog.vue';
+import { SCENARIO_MAX_LENGTH } from '../utils/questionScenario.js';
 
 export default {
   name: 'QuestionForm',
@@ -214,8 +227,9 @@ export default {
       modelAnswer: '',
       pbqConfigManualError: null,
       showAuthorTool: false,
+      scenarioMaxLength: SCENARIO_MAX_LENGTH,
       form: {
-        text: '', explanation: '', difficulty: '',
+        text: '', explanation: '', difficulty: '', scenario: '',
         questionType: 'single',
         answers: [
           { text: '', is_correct: false }, { text: '', is_correct: false },
@@ -276,6 +290,7 @@ export default {
     if (this.question) {
       this.form.text = this.question.text;
       this.form.explanation = this.question.explanation || '';
+      this.form.scenario = this.question.scenario || '';
       this.form.difficulty = this.question.difficulty || '';
       this.form.questionType = this.question.question_type || 'single';
       this.existingImagePath = this.question.image_path || null;
@@ -484,6 +499,8 @@ export default {
       this.$emit('save', {
         text: this.form.text,
         explanation: this.form.explanation || null,
+        // Always sent: '' clears a stored scenario, an omitted key would keep it.
+        scenario: this.form.scenario || '',
         difficulty: this.form.difficulty || null,
         questionType: this.form.questionType,
         answers: filteredAnswers,
@@ -513,6 +530,7 @@ export default {
 
 <style scoped>
 .form-group { margin-bottom: 18px; }
+.field-hint { margin: 4px 0 0; font-size: 13px; color: var(--color-text-maxcontrast); }
 .metadata-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: var(--color-main-text); }
 .nc-input { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; background: var(--color-main-background); color: var(--color-main-text); transition: border-color 0.2s; box-sizing: border-box; }

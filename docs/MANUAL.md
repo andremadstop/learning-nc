@@ -243,6 +243,7 @@ Click add-question and fill in the form. The fields are:
 
 | Field | Options | Notes |
 |-------|---------|-------|
+| Scenario / info | free text | optional; shown above the question in every mode — a case, a situation, background the learner reads first. Plain text, line breaks kept, up to 10 000 characters |
 | Question text | free text | supports Markdown |
 | Answer type | **Single choice**, **Multiple choice**, **Free text** | picks how the answer is evaluated |
 | Answers | 2–8 options | mark the correct one(s) |
@@ -254,6 +255,12 @@ Click add-question and fill in the form. The fields are:
 **Write the explanation field.** It is optional and it is the single highest-value field
 in the app. Without it, a wrong answer teaches nothing; with it, every wrong answer is a
 micro-lesson.
+
+**Use the scenario field for case-based training.** Questions are shuffled in every mode,
+so information that a question depends on belongs into that question's scenario, not into a
+separate question before it. If several questions share one case, give each of them the same
+scenario. The scenario is part of the question: it is shown in exams too, and it is
+translated together with the question text.
 
 **Use the chapter field consistently.** It is free text, so "Ch. 1", "Chapter 1" and
 "1. Safety" become three different chapters. Decide on a scheme before you enter 200

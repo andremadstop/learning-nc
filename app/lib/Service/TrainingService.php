@@ -2161,7 +2161,7 @@ class TrainingService {
     private function getSessionReview(int $sessionId, ?string $lang = null, bool $withExplanations = false): array {
         // Fetch all user answers for this session
         $qb = $this->db->getQueryBuilder();
-        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type', 'q.explanation AS question_explanation')
+        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type', 'q.explanation AS question_explanation', 'q.scenario AS question_scenario')
            ->from('learning_user_answers', 'ua')
            ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
            ->where($qb->expr()->eq('ua.session_id', $qb->createNamedParameter($sessionId)))
@@ -2201,6 +2201,7 @@ class TrainingService {
             $entry = [
                 'questionId' => $questionId,
                 'questionText' => $ua['question_text'],
+                'scenario' => $ua['question_scenario'] ?? null,
                 'questionType' => $ua['question_type'] ?? 'single',
                 'is_correct' => $isCorrect,
                 'correct_answer_ids' => $correctIds,

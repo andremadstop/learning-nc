@@ -59,12 +59,12 @@ class TranslationController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null): DataResponse {
+    public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null, ?string $scenario = null): DataResponse {
         try {
             // SEC-MED-2: Require edit access, not just read access
             $question = $this->questionService->findEntity($questionId, $this->userId);
             $this->questionService->verifyEditAccess($question->getPoolId(), $this->userId);
-            $trans = $this->service->setQuestionTranslation($questionId, $lang, $text, $explanation);
+            $trans = $this->service->setQuestionTranslation($questionId, $lang, $text, $explanation, $scenario);
             return new DataResponse($trans, Http::STATUS_OK);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);

@@ -288,6 +288,7 @@ namespace OCP {
         interface IRequest {
             public function getParam(string $key, $default = null);
             public function getMethod();
+            public function getParams(): array;
         }
     }
 }

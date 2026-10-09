@@ -13,6 +13,8 @@
  *                  head was neither re-seeded over existing events nor forked
  *   translations   a question and an answer translation round-trip through their mappers
  *                  (learning_qst_translations / learning_ans_translations exist)
+ *   scenario       a question and a question translation keep their scenario text through the
+ *                  mappers (Codeberg #10: both scenario columns exist on this instance)
  * The last line is `CHECK result=ok|fail`; exit 0 only if every check passed.
  */
 declare(strict_types=1);
@@ -21,6 +23,10 @@ require_once '/var/www/html/lib/base.php';
 
 use OCA\Learning\Db\AnswerTranslation;
 use OCA\Learning\Db\AnswerTranslationMapper;
+use OCA\Learning\Db\Pool;
+use OCA\Learning\Db\PoolMapper;
+use OCA\Learning\Db\Question;
+use OCA\Learning\Db\QuestionMapper;
 use OCA\Learning\Db\QuestionTranslation;
 use OCA\Learning\Db\QuestionTranslationMapper;
 use OCA\Learning\Service\AuditService;
@@ -94,6 +100,47 @@ $check('translations', function () {
 		&& count($am->findByAnswersAndLang([$aid], 'en')) === 1;
 	$qm->deleteByQuestion($qid);
 	$am->deleteByAnswer($aid);
+	return $ok;
+});
+
+$check('scenario', function () {
+	$pools = Server::get(PoolMapper::class);
+	$questions = Server::get(QuestionMapper::class);
+	$translations = Server::get(QuestionTranslationMapper::class);
+	$text = "Lifecycle scenario\nsecond line";
+
+	// learning_questions.pool_id is a foreign key: the question needs a real pool.
+	$pool = new Pool();
+	$pool->setUserId('lifecycle-check');
+	$pool->setName('lifecycle scenario pool');
+	$pool->setCreatedAt(time());
+	$pool->setUpdatedAt(time());
+	$pool = $pools->insert($pool);
+
+	$q = new Question();
+	$q->setPoolId($pool->getId());
+	$q->setUserId('lifecycle-check');
+	$q->setText('lifecycle scenario question');
+	$q->setQuestionType('single');
+	$q->setScenario($text);
+	$q->setCreatedAt(time());
+	$q->setUpdatedAt(time());
+	$q = $questions->insert($q);
+
+	$t = new QuestionTranslation();
+	$t->setQuestionId($q->getId());
+	$t->setLang('en');
+	$t->setText('lifecycle scenario translation');
+	$t->setScenario($text);
+	$t->setCreatedAt(time());
+	$translations->insert($t);
+
+	$stored = $questions->findById($q->getId())->getScenario();
+	$found = $translations->findByQuestionsAndLang([$q->getId()], 'en');
+	$ok = $stored === $text && count($found) === 1 && $found[0]->getScenario() === $text;
+	$translations->deleteByQuestion($q->getId());
+	$questions->delete($q);
+	$pools->delete($pool);
 	return $ok;
 });
 

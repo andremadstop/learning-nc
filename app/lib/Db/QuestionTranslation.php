@@ -10,6 +10,7 @@ class QuestionTranslation extends Entity implements JsonSerializable {
     protected $lang;
     protected $text;
     protected $explanation;
+    protected $scenario;
     protected $createdAt;
 
     public function __construct() {
@@ -18,6 +19,7 @@ class QuestionTranslation extends Entity implements JsonSerializable {
         $this->addType('lang', 'string');
         $this->addType('text', 'string');
         $this->addType('explanation', 'string');
+        $this->addType('scenario', 'string');
         $this->addType('createdAt', 'integer');
     }
 
@@ -28,6 +30,7 @@ class QuestionTranslation extends Entity implements JsonSerializable {
             'lang' => $this->getLang(),
             'text' => $this->getText(),
             'explanation' => $this->getExplanation(),
+            'scenario' => $this->getScenario(),
             'created_at' => $this->getCreatedAt(),
         ];
     }

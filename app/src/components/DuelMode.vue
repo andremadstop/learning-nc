@@ -140,6 +140,7 @@
 
       <div class="duel-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
+        <QuestionScenario :question="currentQuestion" />
         <img
           v-if="currentQuestion && currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"
@@ -290,13 +291,14 @@ import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 import { createSseClient } from '../utils/sse-client.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'DuelMode',
-  components: { NcButton, NcLoadingIcon, NcNoteCard, NcProgressBar, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcLoadingIcon, NcNoteCard, NcProgressBar, QuestionLanguageSwitcher },
 
   props: {
     courseId: {

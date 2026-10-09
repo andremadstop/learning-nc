@@ -179,6 +179,7 @@
 
       <div class="gs-card" :class="{ 'sudden-death-frame': isEliminationMode && isSuddenDeath }">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
+        <QuestionScenario :question="currentQuestion" />
         <img
           v-if="currentQuestion && currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"
@@ -492,13 +493,14 @@ import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 import { createSseClient } from '../utils/sse-client.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'GameshowMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, QuestionLanguageSwitcher },
 
   props: {
     courseId: {

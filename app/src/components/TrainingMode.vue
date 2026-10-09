@@ -63,6 +63,7 @@
       </div>
       <div v-if="currentQuestion" class="question-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
+        <QuestionScenario :question="currentQuestion" />
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 
@@ -234,6 +235,7 @@ import { showError } from '@nextcloud/dialogs';
 import { celebratePerfectSession, celebrateStreak, isStreakMilestone } from '../confetti.js';
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -241,7 +243,7 @@ import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'TrainingMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },

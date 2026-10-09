@@ -10,6 +10,9 @@
 
       <div class="original-block">
         <h4>{{ t('learning', 'Original Content') }}</h4>
+        <div v-if="hasScenario" class="original-scenario">
+          <strong>{{ t('learning', 'Szenario') }}:</strong> {{ question.scenario }}
+        </div>
         <div class="original-question">{{ question.text }}</div>
         <div v-if="question.explanation" class="original-explanation">
           <strong>{{ t('learning', 'Explanation:') }}</strong> {{ question.explanation }}
@@ -23,6 +26,18 @@
 
       <div v-for="language in languages" :key="language.key" class="translation-section">
         <h4>{{ language.label }}</h4>
+
+        <div v-if="hasScenario" class="form-group">
+          <label :for="'question-scenario-' + language.key">{{ t('learning', 'Szenario / Info (optional)') }}</label>
+          <textarea
+            :id="'question-scenario-' + language.key"
+            v-model="questionTranslations[language.key].scenario"
+            rows="3"
+            :maxlength="scenarioMaxLength"
+            class="nc-input"
+            :placeholder="t('learning', 'Leer lassen, um das Original-Szenario zu verwenden')"
+          />
+        </div>
 
         <div class="form-group">
           <label :for="'question-text-' + language.key">{{ t('learning', 'Question') }}</label>
@@ -80,6 +95,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import AccessibleDialog from './AccessibleDialog.vue'
+import { SCENARIO_MAX_LENGTH, questionScenario } from '../utils/questionScenario.js'
 
 export default {
   name: 'TranslationDialog',
@@ -101,14 +117,20 @@ export default {
         { key: 'ru', label: t('learning', 'Russian') },
       ],
       questionTranslations: {
-        de: { text: '', explanation: '' },
-        en: { text: '', explanation: '' },
-        ru: { text: '', explanation: '' },
+        de: { text: '', explanation: '', scenario: '' },
+        en: { text: '', explanation: '', scenario: '' },
+        ru: { text: '', explanation: '', scenario: '' },
       },
       answerTranslations: {},
       existingQuestionTranslations: {},
       existingAnswerTranslations: {},
+      scenarioMaxLength: SCENARIO_MAX_LENGTH,
     }
+  },
+  computed: {
+    hasScenario() {
+      return questionScenario(this.question) !== ''
+    },
   },
   mounted() {
     this.initializeAnswerState()
@@ -134,6 +156,7 @@ export default {
           this.questionTranslations[translation.lang] = {
             text: translation.text || '',
             explanation: translation.explanation || '',
+            scenario: translation.scenario || '',
           }
           this.existingQuestionTranslations[translation.lang] = true
         }
@@ -167,8 +190,9 @@ export default {
           const questionTranslation = this.questionTranslations[lang]
           const questionText = (questionTranslation.text || '').trim()
           const explanation = (questionTranslation.explanation || '').trim()
+          const scenario = (questionTranslation.scenario || '').trim()
 
-          if (explanation && !questionText) {
+          if ((explanation || scenario) && !questionText) {
             throw new Error(t('learning', 'Question translation text is required when explanation is set'))
           }
 
@@ -176,7 +200,8 @@ export default {
             requests.push(
               axios.put(
                 generateUrl('/apps/learning/api/questions/' + this.question.id + '/translations/' + lang),
-                { text: questionText, explanation: explanation || null }
+                // scenario is always sent: '' clears a stored scenario translation.
+                { text: questionText, explanation: explanation || null, scenario }
               )
             )
           } else if (this.existingQuestionTranslations[lang]) {
@@ -257,6 +282,11 @@ export default {
   color: var(--color-main-text);
 }
 
+.original-scenario {
+  white-space: pre-wrap;
+}
+
+.original-scenario,
 .original-explanation {
   font-size: 14px;
   line-height: 1.5;

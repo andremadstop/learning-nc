@@ -29,6 +29,7 @@ class Question extends Entity implements JsonSerializable {
     protected $chapterKey;
     protected $chapterTitle;
     protected $chapterOrder;
+    protected $scenario;
 
     public function __construct() {
         $this->addType('poolId', 'integer');
@@ -54,6 +55,7 @@ class Question extends Entity implements JsonSerializable {
         $this->addType('chapterKey', 'string');
         $this->addType('chapterTitle', 'string');
         $this->addType('chapterOrder', 'integer');
+        $this->addType('scenario', 'string');
     }
 
     public function jsonSerialize(): array {
@@ -82,6 +84,7 @@ class Question extends Entity implements JsonSerializable {
             'chapter_key' => $this->chapterKey,
             'chapter_title' => $this->chapterTitle,
             'chapter_order' => $this->chapterOrder,
+            'scenario' => $this->scenario,
         ];
     }
 

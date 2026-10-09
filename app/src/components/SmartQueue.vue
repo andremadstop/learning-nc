@@ -30,6 +30,7 @@
           {{ t('learning', 'Correct → next box (less often). Wrong → back to Box 1.') }}
           <NcButton variant="tertiary" @click="dismissHint('box-movement')">{{ t('learning', 'Got it') }}</NcButton>
         </NcNoteCard>
+        <QuestionScenario :question="currentItem" />
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <div v-if="!answered && isOpenQuestion" class="open-answer-area">
@@ -133,13 +134,14 @@ import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
 import { celebrateMastery } from '../confetti.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'SmartQueue',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation'].includes(v) },

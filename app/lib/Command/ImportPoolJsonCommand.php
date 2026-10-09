@@ -186,7 +186,8 @@ class ImportPoolJsonCommand extends Command {
                         $examKey,
                         $chapterKey,
                         $chapterTitle,
-                        $chapterOrder
+                        $chapterOrder,
+                        isset($q['scenario']) && is_string($q['scenario']) ? $q['scenario'] : null
                     );
                     $totalQuestions++;
                 } catch (\Throwable $e) {

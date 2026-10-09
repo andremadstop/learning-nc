@@ -17,6 +17,8 @@ use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 class QuestionService {
+    public const SCENARIO_MAX_LENGTH = 10000;
+
     private $questionMapper;
     private $answerMapper;
     private $shareMapper;
@@ -211,6 +213,21 @@ class QuestionService {
             throw new \InvalidArgumentException('Question metadata field exceeds maximum length');
         }
         return $value;
+    }
+
+    /**
+     * Scenario / info text shown before the question (Codeberg #10). Line breaks are kept;
+     * only surrounding whitespace is trimmed, and an empty text is stored as null.
+     */
+    private function normalizeScenario(?string $scenario): ?string {
+        $scenario = trim((string)$scenario);
+        if ($scenario === '') {
+            return null;
+        }
+        if (mb_strlen($scenario) > self::SCENARIO_MAX_LENGTH) {
+            throw new \InvalidArgumentException('Scenario must be max ' . self::SCENARIO_MAX_LENGTH . ' characters');
+        }
+        return $scenario;
     }
 
     private function normalizeChapterOrder(?int $chapterOrder): ?int {
@@ -433,7 +450,8 @@ class QuestionService {
                            ?string $instructorNote = null, bool $noteVisible = false,
                            ?string $handbookKey = null, ?string $handbookTitle = null,
                            ?string $examKey = null, ?string $chapterKey = null,
-                           ?string $chapterTitle = null, ?int $chapterOrder = null): array {
+                           ?string $chapterTitle = null, ?int $chapterOrder = null,
+                           ?string $scenario = null): array {
         if (!$this->canEditPool($poolId, $userId)) {
             throw new Exception('No edit access to this pool');
         }
@@ -441,6 +459,7 @@ class QuestionService {
         $questionType = $questionType ?? 'single';
 
         $this->validateQuestionInput($text, $answers, $questionType);
+        $scenario = $this->normalizeScenario($scenario);
 
         $this->db->beginTransaction();
         try {
@@ -456,6 +475,7 @@ class QuestionService {
             $question->setInstructorNote($instructorNote);
             $question->setNoteVisible($noteVisible);
             $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
+            $question->setScenario($scenario);
             if (!$question->getReviewStatus()) {
                 $question->setReviewStatus('published');
             }
@@ -490,7 +510,8 @@ class QuestionService {
                           ?string $instructorNote = null, bool $noteVisible = false,
                           ?string $handbookKey = null, ?string $handbookTitle = null,
                           ?string $examKey = null, ?string $chapterKey = null,
-                          ?string $chapterTitle = null, ?int $chapterOrder = null): array {
+                          ?string $chapterTitle = null, ?int $chapterOrder = null,
+                          ?string $scenario = null): array {
         try {
             $question = $this->questionMapper->findById($id);
             if (!$this->canEditPool($question->getPoolId(), $userId)) {
@@ -500,6 +521,8 @@ class QuestionService {
             $questionType = $questionType ?? ($question->getQuestionType() ?? 'single');
 
             $this->validateQuestionInput($text, $answers, $questionType);
+            $keepScenario = $scenario === null;
+            $scenario = $this->normalizeScenario($scenario);
 
             $this->db->beginTransaction();
             try {
@@ -512,6 +535,10 @@ class QuestionService {
                 $question->setInstructorNote($instructorNote);
                 $question->setNoteVisible($noteVisible);
                 $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
+                // null = caller did not send the field: keep what is stored.
+                if (!$keepScenario) {
+                    $question->setScenario($scenario);
+                }
 
                 $question = $this->questionMapper->createOrUpdate($question);
 
@@ -590,7 +617,7 @@ class QuestionService {
     public function loadQuestionForGame(int $questionId, ?string $lang = null): ?array {
         try {
             $qb = $this->db->getQueryBuilder();
-            $qb->select('id', 'text', 'image_path')
+            $qb->select('id', 'text', 'image_path', 'scenario')
                ->from('learning_questions')
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
             $result = $qb->executeQuery();
@@ -617,6 +644,7 @@ class QuestionService {
                 'id' => (int)$row['id'],
                 'text' => $row['text'],
                 'image_path' => $row['image_path'] ?? null,
+                'scenario' => $row['scenario'] ?? null,
                 'answers' => $answers,
             ];
 

@@ -74,6 +74,7 @@
             {{ formatChapterLabel(question) }}
           </span>
         </div>
+        <QuestionScenario :question="question" compact />
         <!-- Image display -->
         <img v-if="question.image_path" :src="questionImageUrl(question.id)" :alt="question.text" class="question-image" />
         <div class="question-text">{{ question.text }}</div>
@@ -125,6 +126,7 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
 import QuestionForm from './QuestionForm.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import TranslationDialog from './TranslationDialog.vue';
 import ImportDialog from './ImportDialog.vue';
 import AIGenerator from './AIGenerator.vue';
@@ -132,7 +134,7 @@ import AccessibleDialog from './AccessibleDialog.vue';
 
 export default {
   name: 'QuestionList',
-  components: { AccessibleDialog, NcButton, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, TranslationDialog, ImportDialog, AIGenerator },
+  components: { QuestionScenario, AccessibleDialog, NcButton, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, TranslationDialog, ImportDialog, AIGenerator },
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true },

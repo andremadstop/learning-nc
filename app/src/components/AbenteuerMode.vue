@@ -343,6 +343,7 @@
       </div>
 
       <div v-if="currentSkillQuestion" class="ab-skill-question">
+        <QuestionScenario :question="currentSkillQuestion" />
         <p class="ab-question-text">{{ currentSkillQuestion.text }}</p>
         <div class="ab-answers">
           <button
@@ -546,6 +547,7 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import PbqRenderer from './PbqRenderer.vue'
+import QuestionScenario from './QuestionScenario.vue'
 import CampaignIntro from './CampaignIntro.vue'
 import DialogueStage from './DialogueStage.vue'
 import CharacterAvatar from './CharacterAvatar.vue'
@@ -697,6 +699,7 @@ export default {
 
 	components: {
 		PbqRenderer,
+		QuestionScenario,
 		CampaignIntro,
 		DialogueStage,
 		CharacterAvatar,

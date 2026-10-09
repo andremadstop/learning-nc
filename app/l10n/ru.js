@@ -3082,5 +3082,9 @@ OC.L10N.register(
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Вопросы выбираются случайным образом из обязательных пулов этого курса, при каждой попытке заново. Обратная связь только в конце, затем разбор с пояснениями. Пробные экзамены не учитываются для сертификата.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Этот пробный экзамен использует только обязательные пулы, но ни один из них ещё не отмечен как обязательный. Обратитесь к преподавателю.",
     "Your consent could not be saved. Please try again." : "Не удалось сохранить твоё согласие. Пожалуйста, попробуй ещё раз.",
+    "Szenario / Info (optional)" : "Сценарий / информация (необязательно)",
+    "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo" : "например, описание случая, исходная ситуация или справочная информация",
+    "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage." : "Показывается перед вопросом. Учащиеся сначала читают этот текст, а затем отвечают на вопрос.",
+    "Leer lassen, um das Original-Szenario zu verwenden" : "Оставьте пустым, чтобы использовать исходный сценарий",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
