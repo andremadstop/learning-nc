@@ -57,6 +57,7 @@ REQUIRED_PATHS = [
     "reason_headers.recipient_changed_unknown",
     "accept_label",
     "decline_label",
+    "notice_off",
 ]
 
 # Placeholders a field must carry (in every locale, via the parity check below).

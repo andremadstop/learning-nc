@@ -1,4 +1,5 @@
 import privacyData from '../../data/privacy-info.json'
+import consentText from '../../data/ai-consent.json'
 
 const CATEGORY_GROUPS = [
 	{
@@ -72,35 +73,67 @@ function matchesGroup(category, group) {
 	return group.matches.some((pattern) => pattern.test(category.id) || pattern.test(category.name))
 }
 
+const RTL = ['ar', 'he', 'fa', 'ur']
+
+/** "uk_UA" / "pt-BR" -> a language the consent catalog has, English otherwise (as the dialog does). */
+function consentLanguage(locale) {
+	const short = String(locale || '').toLowerCase().split(/[-_]/)[0]
+	return consentText.locales[short] ? short : 'en'
+}
+
+function stripTags(html) {
+	return typeof html === 'string' ? html.replace(/<[^>]+>/g, '').trim() : ''
+}
+
+function listItems(html) {
+	return typeof html === 'string'
+		? [...html.matchAll(/<li>(.*?)<\/li>/g)].map((m) => stripTags(m[1]))
+		: []
+}
+
 /**
- * The AI notice as the page shows it, for the recipient in force.
+ * The AI notice as the page shows it, for the recipient in force, in the reader's language. The
+ * text is the consent text (ai-consent.json, six languages, guarded by check-consent-locales.py):
+ * the privacy page says what the dialog says, and nobody reads the disclosure in a language they
+ * did not choose.
  *
- * @param {object} data privacy-info.json
+ * @param {object} _data privacy-info.json (unused since the text comes from the consent catalog)
  * @param {{active: boolean, provider?: string, region?: string}|null} notice null while unknown:
  *   nothing is shown rather than a guess
+ * @param {string} locale the reader's language (getLanguage())
  * @returns {object|null}
  */
-export function buildAiNotice(data = privacyData, notice = null) {
-	const n = data?.ai_notice
-	if (!n || !notice || typeof notice !== 'object') {
+export function buildAiNotice(_data = privacyData, notice = null, locale = 'de') {
+	if (!notice || typeof notice !== 'object') {
 		return null
 	}
+	const lang = consentLanguage(locale)
+	const l = consentText.locales[lang]
+	const dir = RTL.includes(lang) ? 'rtl' : 'ltr'
 	if (!notice.active) {
-		return { active: false, off: n.off }
+		return { active: false, off: l.notice_off, lang, dir }
 	}
-	const provider = providerLabel(data, notice.provider)
+	const provider = typeof notice.provider === 'string' ? notice.provider.trim() : ''
+	if (provider === '') {
+		// an active recipient without a name: show nothing rather than a guess
+		return null
+	}
 	const fill = (text) => fillProvider(text, provider)
+	const regions = l.region_paragraphs || {}
 	return {
 		active: true,
+		lang,
+		dir,
 		provider,
-		intro: fill(n.intro),
-		dataHeading: n.data_list_heading,
-		dataList: Array.isArray(n.data_list) ? n.data_list : [],
-		identity: n.identity_note,
-		region: fill(n.region?.[notice.region] || n.region?.unknown),
-		automation: fill(n.automation),
-		retention: n.retention,
-		optOut: n.opt_out,
+		intro: stripTags(l.intro_html),
+		providerSentence: fill(l.provider_sentence),
+		dataHeading: l.data_list_heading,
+		dataList: listItems(l.data_list_html),
+		identity: l.identity_note,
+		region: fill(regions[notice.region] || regions.unknown),
+		automation: fill(l.automation_paragraph),
+		retention: l.retention_note,
+		optOut: l.revocation_note,
 	}
 }
 

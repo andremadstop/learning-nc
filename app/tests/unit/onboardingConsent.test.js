@@ -246,6 +246,39 @@ describe('OnbProfileTiles consent tile', () => {
 		expect(store.profileChoices.aiConsent).toBe('no')
 	})
 
+	// Review finding (Codex): the revocation the user asked for must not depend on a status read
+	// that failed — unknown status means "maybe on record", so DELETE is sent (fail closed).
+	it('status GET failed, then "without AI": the consent is revoked anyway', async () => {
+		axios.get.mockRejectedValue(new Error('network'))
+		mountTiles()
+		await flush()
+		consentTiles()[1].click()
+		await flush()
+		expect(axios.delete).toHaveBeenCalledWith(URL)
+		expect(store.profileChoices.aiConsent).toBe('no')
+	})
+
+	it('status GET failed and the revocation fails too: the choice stays open with an error', async () => {
+		axios.get.mockRejectedValue(new Error('network'))
+		axios.delete.mockRejectedValue(new Error('network'))
+		mountTiles()
+		await flush()
+		consentTiles()[1].click()
+		await flush()
+		expect(store.profileChoices.aiConsent).toBeNull()
+		expect(host.querySelector('[role="alert"]')).not.toBeNull()
+	})
+
+	it('a stored consent that is not valid right now (recipient changed) is revoked by "without AI"', async () => {
+		axios.get.mockResolvedValue({ data: status({ reason: 'recipient_changed', ai_consent_version: '3.0', previous_recipient_name: 'Ollama' }) })
+		mountTiles()
+		await flush()
+		consentTiles()[1].click()
+		await flush()
+		expect(axios.delete).toHaveBeenCalledWith(URL)
+		expect(store.profileChoices.aiConsent).toBe('no')
+	})
+
 	it('a consent that is already valid on the server shows as chosen', async () => {
 		axios.get.mockResolvedValue({ data: status({ valid: true }) })
 		mountTiles()

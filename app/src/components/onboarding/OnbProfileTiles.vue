@@ -106,6 +106,8 @@ export default {
       statusLoaded: false,
       providerName: '',
       consentValid: false,
+      // a consent is on record (ai_consent_version), even if it does not count right now
+      consentStored: false,
     }
   },
 
@@ -114,6 +116,7 @@ export default {
       const status = await fetchConsentStatus()
       this.providerName = status?.recipient?.name || ''
       this.consentValid = !!status?.valid
+      this.consentStored = !!status?.ai_consent_version
       this.statusLoaded = true
       if (!status?.recipient) {
         // nothing to consent to on this server
@@ -152,10 +155,12 @@ export default {
       }
       return this.chooseNoAi()
     },
-    // "Without AI" after a consent was given (in this wizard or before) takes the consent back
+    // "Without AI" takes back any consent that may be on record: one given in this wizard or
+    // before, one that does not count right now (AI off, recipient changed), and — fail closed —
+    // whenever the status could not be read.
     async chooseNoAi() {
       this.error = ''
-      if (this.consentValid || this.store.profileChoices.aiConsent === 'yes') {
+      if (this.mayHoldConsent()) {
         this.busy = true
         try {
           await revokeConsent()
@@ -166,13 +171,21 @@ export default {
         }
         this.busy = false
         this.consentValid = false
+        this.consentStored = false
         notifyConsentChanged(false)
       }
       this.store.setProfileChoice('aiConsent', 'no')
     },
+    mayHoldConsent() {
+      return !this.statusLoaded
+        || this.consentValid
+        || this.consentStored
+        || this.store.profileChoices.aiConsent === 'yes'
+    },
     onGranted() {
       this.showConsent = false
       this.consentValid = true
+      this.consentStored = true
       this.store.setProfileChoice('aiConsent', 'yes')
     },
     onUnavailable() {

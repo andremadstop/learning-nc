@@ -30,6 +30,8 @@ function ctx(over = {}) {
 		consentRevoking: false,
 		consentRevoked: false,
 		consentError: '',
+		consentStored: false,
+		consentStatusFailed: false,
 		...over,
 	}
 }
@@ -81,6 +83,86 @@ describe('PersonalSettings: AI consent revocation', () => {
 		expect(c.consentRevoked).toBe(false)
 		expect(c.consentError).not.toBe('')
 		expect(c.consentRevoking).toBe(false)
+	})
+})
+
+// Review finding (Codex): valid=false does not mean "nothing stored". With AI switched off or a
+// changed recipient the server reports valid=false while the consent is still on record
+// (ai_consent_version) and comes back to life when the admin switches back. Settings must say so
+// and offer the revocation; a failed status read must not read as "you did not consent".
+describe('PersonalSettings: a stored consent that is not valid right now', () => {
+	const state = (c) => PersonalSettings.computed.consentState.call(c)
+	const canRevoke = (c) => PersonalSettings.computed.consentCanRevoke.call({ ...c, consentState: state(c) })
+
+	beforeEach(() => {
+		axios.get.mockReset()
+		axios.delete.mockReset()
+	})
+
+	it('AI switched off with a consent on record: state "stored", revocation offered', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'none', ai_enabled: false, ai_consent_version: '3.0', recipient: null } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(c.consentValid).toBe(false)
+		expect(c.consentStored).toBe(true)
+		expect(state(c)).toBe('stored')
+		expect(canRevoke(c)).toBe(true)
+	})
+
+	it('recipient changed with a consent on record: state "stored", revocation offered', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'recipient_changed', ai_enabled: true, ai_consent_version: '3.0', recipient: { name: 'Ollama' } } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(state(c)).toBe('stored')
+		expect(canRevoke(c)).toBe(true)
+	})
+
+	it('nothing on record: state "none", no revocation button', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'never', ai_enabled: true, ai_consent_version: null, recipient: { name: 'Google Gemini' } } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(state(c)).toBe('none')
+		expect(canRevoke(c)).toBe(false)
+	})
+
+	it('a valid consent: state "valid", revocation offered', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: true, ai_consent_version: '3.0', recipient: { name: 'Google Gemini' } } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(state(c)).toBe('valid')
+		expect(canRevoke(c)).toBe(true)
+	})
+
+	it('status read failed: state "unknown" (not "you did not consent"), revocation offered', async () => {
+		axios.get.mockRejectedValueOnce(new Error('500'))
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(c.consentLoading).toBe(false)
+		expect(state(c)).toBe('unknown')
+		expect(canRevoke(c)).toBe(true)
+	})
+
+	it('revoking a stored consent clears it: state "none" afterwards', async () => {
+		axios.delete.mockResolvedValueOnce({ data: { status: 'ok', valid: false } })
+		const c = ctx({ consentStored: true })
+		await PersonalSettings.methods.revokeAiConsent.call(c)
+		expect(axios.delete).toHaveBeenCalledTimes(1)
+		expect(state(c)).toBe('none')
+		expect(c.consentRevoked).toBe(true)
+	})
+
+	it('revoking after a failed status read settles the state to "none"', async () => {
+		axios.delete.mockResolvedValueOnce({ data: { status: 'ok', valid: false } })
+		const c = ctx({ consentStatusFailed: true })
+		await PersonalSettings.methods.revokeAiConsent.call(c)
+		expect(state(c)).toBe('none')
+	})
+
+	it('the template shows the revocation button by consentCanRevoke, not by consentValid', async () => {
+		const fs = await import('node:fs')
+		const src = fs.readFileSync(new globalThis.URL('../../src/components/PersonalSettings.vue', import.meta.url), 'utf8')
+		expect(src).toMatch(/v-if="consentCanRevoke"[^>]*class="actions"|class="actions"[^>]*v-if="consentCanRevoke"/)
+		expect(src).not.toMatch(/v-if="consentValid" class="actions"/)
 	})
 })
 

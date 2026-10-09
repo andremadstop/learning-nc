@@ -136,7 +136,7 @@ The full list the learner sees (in six languages) is `app/data/ai-consent.json`;
 - Per-user consent, bound to the consent text version **and** the recipient: a changed recipient or a revised text asks again; withdrawal applies to every request that starts afterwards
 - Rate limiting: 10 requests/min and 100/day per user, plus a daily limit for the whole instance (default 5000, `ai_global_daily_limit`)
 - Audit log of AI requests: time, purpose, recipient, model and token counts — never the content
-- Personal data export includes the stored consent and the server-side chat summaries; deleting an account removes them
+- Personal data export includes the stored consent and the server-side chat memory (recent messages and replies, summaries of older chats); deleting an account removes them
 
 When AI is enabled, data is processed by the recipient the admin configured. For Google Gemini (USA) review Google's [Data Processing Addendum](https://cloud.google.com/terms/data-processing-addendum); a local Ollama server keeps the data on your own infrastructure.
 

@@ -206,7 +206,7 @@
               </tr>
               <tr>
                 <td>{{ t('learning', 'Chat messages with VirtuProf') }}</td>
-                <td>{{ t('learning', 'Browser (localStorage) und eine Zusammenfassung auf diesem Server') }}</td>
+                <td>{{ t('learning', 'Browser (localStorage) und auf diesem Server: deine letzten Nachrichten mit den Antworten, ältere als Zusammenfassung') }}</td>
                 <td>{{ t('learning', 'Only you') }}</td>
                 <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
@@ -383,13 +383,22 @@
       </div>
       <template v-else>
         <p class="section-desc">
-          {{ consentValid
-            ? t('learning', 'Du hast zugestimmt, dass deine Eingaben an {provider} gesendet werden. Du kannst das jederzeit widerrufen.', { provider: consentProvider })
-            : t('learning', 'Du hast der KI-Nutzung nicht zugestimmt. KI-Funktionen bleiben aus, bis du im Dialog zustimmst.') }}
+          <template v-if="consentState === 'valid'">
+            {{ t('learning', 'Du hast zugestimmt, dass deine Eingaben an {provider} gesendet werden. Du kannst das jederzeit widerrufen.', { provider: consentProvider }) }}
+          </template>
+          <template v-else-if="consentState === 'stored'">
+            {{ t('learning', 'Eine Einwilligung von dir ist noch gespeichert, gilt aber gerade nicht, zum Beispiel weil die KI ausgeschaltet ist oder der KI-Dienst gewechselt hat. Sie kann wieder gelten, wenn der Betreiber denselben Dienst wieder einschaltet. Widerrufe sie, wenn du das nicht möchtest.') }}
+          </template>
+          <template v-else-if="consentState === 'unknown'">
+            {{ t('learning', 'Der Stand deiner KI-Einwilligung konnte nicht geladen werden. Du kannst sie trotzdem widerrufen.') }}
+          </template>
+          <template v-else>
+            {{ t('learning', 'Du hast der KI-Nutzung nicht zugestimmt. KI-Funktionen bleiben aus, bis du im Dialog zustimmst.') }}
+          </template>
         </p>
         <NcNoteCard v-if="consentRevoked" type="success">{{ t('learning', 'Einwilligung widerrufen. Das gilt für alle KI-Anfragen, die ab jetzt beginnen.') }}</NcNoteCard>
         <NcNoteCard v-if="consentError" type="error">{{ consentError }}</NcNoteCard>
-        <div v-if="consentValid" class="actions">
+        <div v-if="consentCanRevoke" class="actions">
           <NcButton variant="secondary" :disabled="consentRevoking" @click="revokeAiConsent">
             {{ t('learning', 'KI-Einwilligung widerrufen') }}
           </NcButton>
@@ -512,6 +521,11 @@ export default {
       // AI consent (5.7.0): status from the server; revoking is DELETE, granting stays in the dialog
       consentLoading: true,
       consentValid: false,
+      // a consent is on record (ai_consent_version) even when it does not count right now:
+      // AI switched off or another recipient — it would count again if the admin switches back
+      consentStored: false,
+      // the status could not be read: nothing is claimed, the revocation stays available
+      consentStatusFailed: false,
       consentProvider: '',
       consentRecipient: null,
       consentLoaded: false,
@@ -543,6 +557,16 @@ export default {
     }
   },
   computed: {
+    // 'valid' | 'stored' (on record, not counting right now) | 'unknown' (status read failed) | 'none'
+    consentState() {
+      if (this.consentStatusFailed) return 'unknown'
+      if (this.consentValid) return 'valid'
+      if (this.consentStored) return 'stored'
+      return 'none'
+    },
+    consentCanRevoke() {
+      return this.consentState !== 'none'
+    },
     // Who receives AI data right now, for the privacy section. Null until the status is read (no
     // guess), {active: false} when AI is switched off.
     privacyAiNotice() {
@@ -596,7 +620,8 @@ export default {
     this.loadConsent()
     this._offConsentChanged = onConsentChanged((valid) => {
       this.consentValid = valid
-      if (valid) this.loadConsent()
+      if (!valid) this.consentStored = false
+      this.loadConsent()
     })
   },
   beforeUnmount() {
@@ -610,11 +635,14 @@ export default {
       try {
         const status = await fetchConsentStatus()
         this.consentValid = !!status?.valid
+        this.consentStored = !!status?.ai_consent_version
+        this.consentStatusFailed = false
         this.consentProvider = status?.recipient?.name || ''
         this.consentRecipient = status?.recipient || null
         this.consentLoaded = true
       } catch (e) {
         this.consentValid = false
+        this.consentStatusFailed = true
       } finally {
         this.consentLoading = false
       }
@@ -631,6 +659,8 @@ export default {
         return
       }
       this.consentValid = false
+      this.consentStored = false
+      this.consentStatusFailed = false
       this.consentRevoked = true
       this.consentRevoking = false
       notifyConsentChanged(false)

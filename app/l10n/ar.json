@@ -897,7 +897,7 @@
         "Jetzt lernen": "Learn now",
         "Jetzt ueben": "Practice now",
         "KI-Erklaerungen aktivieren": "Enable AI explanations",
-        "KI-Hinweis": "AI notice",
+        "KI-Hinweis": "تنبيه بشأن الذكاء الاصطناعي",
         "KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen.": "تأمل الذكاء الاصطناعي يتطلب موافقتك. مكّن ميزة الذكاء الاصطناعي في الإعدادات.",
         "KI-Reflexion nicht verfügbar. Stelle sicher, dass VirtuProf aktiviert ist.": "تأمل الذكاء الاصطناعي غير متاح. تأكد من تفعيل VirtuProf.",
         "Kann dir helfen bei...": "Can help you with...",
@@ -3099,9 +3099,11 @@
         "KI-Funktionen sind aus, bis du der Datenweitergabe an den KI-Anbieter zustimmst.": "تبقى ميزات الذكاء الاصطناعي متوقفة حتى توافق على إرسال بياناتك إلى مزوّد الذكاء الاصطناعي.",
         "KI-Funktionen sind freiwillig: Erst wenn du im nächsten Schritt ausdrücklich zustimmst, werden deine Eingaben an den KI-Anbieter gesendet, den deine Administration eingerichtet hat.": "ميزات الذكاء الاصطناعي اختيارية: لا تُرسل مدخلاتك إلى مزوّد الذكاء الاصطناعي الذي أعدّته الإدارة إلا بعد موافقتك الصريحة في الخطوة التالية.",
         "KI-Dienst (nur mit deiner Einwilligung)": "خدمة الذكاء الاصطناعي (بموافقتك فقط)",
-        "Browser (localStorage) und eine Zusammenfassung auf diesem Server": "المتصفح (localStorage) وملخص على هذا الخادم",
+        "Browser (localStorage) und auf diesem Server: deine letzten Nachrichten mit den Antworten, ältere als Zusammenfassung": "المتصفح (localStorage) وعلى هذا الخادم: رسائلك الأخيرة مع الردود، والأقدم على شكل ملخص",
         "Du kannst dein Lernprofil oben zurücksetzen und den Chatverlauf im VirtuProf-Fenster löschen. Deine Daten bleiben auf diesem Server – außer du stimmst der KI-Nutzung zu: Dann gehen die in der Einwilligung genannten Daten an den KI-Dienst. Kein Tracking, keine Werbung, kein Datenverkauf.": "يمكنك إعادة تعيين ملفك التعليمي أعلاه وحذف سجل الدردشة من نافذة VirtuProf. تبقى بياناتك على هذا الخادم – إلا إذا وافقت على استخدام الذكاء الاصطناعي: عندها تُرسَل البيانات المذكورة في الموافقة إلى خدمة الذكاء الاصطناعي. بلا تتبّع، وبلا إعلانات، وبلا بيع للبيانات.",
         "Wenn du der KI-Nutzung zustimmst, gehen deine Nachrichten im VirtuProf-Chat und Teile deines Lernprofils an den KI-Dienst deines Betreibers. Ohne deine Einwilligung wird nichts gesendet; du kannst sie jederzeit in den Einstellungen widerrufen.": "إذا وافقت على استخدام الذكاء الاصطناعي، تُرسَل رسائلك في دردشة VirtuProf وأجزاء من ملفك التعليمي إلى خدمة الذكاء الاصطناعي لدى المشغّل. لا يُرسَل شيء من دون موافقتك، ويمكنك سحبها في أي وقت من الإعدادات.",
-        "VirtuProf nutzt deine Stärken und Schwächen, um passend zu erklären. Andere Teilnehmende und Dozenten sehen sie nicht. Wenn du der KI-Nutzung zustimmst, gehen sie an den KI-Dienst deines Betreibers.": "يستخدم VirtuProf نقاط قوتك وضعفك ليشرح لك بما يناسبك. لا يراها المشاركون الآخرون ولا المدرّسون. وإذا وافقت على استخدام الذكاء الاصطناعي، تُرسَل إلى خدمة الذكاء الاصطناعي لدى المشغّل."
+        "VirtuProf nutzt deine Stärken und Schwächen, um passend zu erklären. Andere Teilnehmende und Dozenten sehen sie nicht. Wenn du der KI-Nutzung zustimmst, gehen sie an den KI-Dienst deines Betreibers.": "يستخدم VirtuProf نقاط قوتك وضعفك ليشرح لك بما يناسبك. لا يراها المشاركون الآخرون ولا المدرّسون. وإذا وافقت على استخدام الذكاء الاصطناعي، تُرسَل إلى خدمة الذكاء الاصطناعي لدى المشغّل.",
+        "Eine Einwilligung von dir ist noch gespeichert, gilt aber gerade nicht, zum Beispiel weil die KI ausgeschaltet ist oder der KI-Dienst gewechselt hat. Sie kann wieder gelten, wenn der Betreiber denselben Dienst wieder einschaltet. Widerrufe sie, wenn du das nicht möchtest.": "لا تزال موافقتك محفوظة، لكنها لا تسري حاليًا، مثلًا لأن الذكاء الاصطناعي متوقف أو لأن خدمة الذكاء الاصطناعي تغيّرت. قد تسري من جديد إذا أعاد المشغّل تشغيل الخدمة نفسها. اسحبها إذا كنت لا تريد ذلك.",
+        "Der Stand deiner KI-Einwilligung konnte nicht geladen werden. Du kannst sie trotzdem widerrufen.": "تعذّر تحميل حالة موافقتك على الذكاء الاصطناعي. لا يزال بإمكانك سحبها."
     }
 }

@@ -518,14 +518,15 @@ When AI is switched on, two gates still apply:
 
 What is sent when a user has consented: their messages, the current question with
 answer options and explanation, excerpts from course material, information from their
-learning profile (goals, motivation, strengths and weaknesses), their learning state, a
-summary of their earlier chats (stored on the server) and — once a week, automatically —
+learning profile (goals, motivation, strengths and weaknesses), their learning state, their
+recent VirtuProf messages with the replies (stored on the server and sent again with later
+requests; older chats as a summary) and — once a week, automatically —
 their weakest topic with the questions they got wrong. Name, email address and account
 data are not sent automatically. Contributions of other learners are not sent to an
 external recipient. The text the learner sees is `app/data/ai-consent.json`; the public
 privacy page (`/privacy`) shows the same list with the recipient in force. The audit log
 records each AI request without its content; a personal data export contains the stored
-consent and the chat summaries, and deleting the account removes them.
+consent and the stored chat messages and summaries, and deleting the account removes them.
 
 This is a deliberate GDPR design: opting out leaves you with a reduced but fully working
 app, never a broken one.

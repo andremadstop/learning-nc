@@ -26,19 +26,22 @@
 
 		<NcNoteCard v-if="aiView" type="info" class="privacy-info__notice">
 			<p><strong>{{ t('learning', 'KI-Hinweis') }}</strong></p>
-			<p v-if="!aiView.active">{{ aiView.off }}</p>
-			<template v-else>
-				<p>{{ aiView.intro }}</p>
-				<p>{{ aiView.dataHeading }}</p>
-				<ul class="privacy-info__notice-list">
-					<li v-for="item in aiView.dataList" :key="item">{{ item }}</li>
-				</ul>
-				<p>{{ aiView.identity }}</p>
-				<p>{{ aiView.region }}</p>
-				<p>{{ aiView.automation }}</p>
-				<p>{{ aiView.retention }}</p>
-				<p>{{ aiView.optOut }}</p>
-			</template>
+			<div :dir="aiView.dir" :lang="aiView.lang">
+				<p v-if="!aiView.active">{{ aiView.off }}</p>
+				<template v-else>
+					<p>{{ aiView.intro }}</p>
+					<p><strong>{{ aiView.providerSentence }}</strong></p>
+					<p>{{ aiView.dataHeading }}</p>
+					<ul class="privacy-info__notice-list">
+						<li v-for="item in aiView.dataList" :key="item">{{ item }}</li>
+					</ul>
+					<p>{{ aiView.identity }}</p>
+					<p>{{ aiView.region }}</p>
+					<p>{{ aiView.automation }}</p>
+					<p>{{ aiView.retention }}</p>
+					<p>{{ aiView.optOut }}</p>
+				</template>
+			</div>
 		</NcNoteCard>
 
 		<div v-if="highlightSections.length > 0" class="privacy-info__section-grid">
@@ -122,6 +125,7 @@
 
 <script>
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import { getLanguage } from '@nextcloud/l10n'
 import { buildAiNotice, buildPrivacyCategoryGroups, getPrivacyInfoData } from '../utils/privacyInfo.js'
 
 export default {
@@ -136,6 +140,11 @@ export default {
 		aiNotice: {
 			type: Object,
 			default: null,
+		},
+		/** The reader's language; the AI notice is shown in it (consent catalog, six languages). */
+		locale: {
+			type: String,
+			default: () => getLanguage(),
 		},
 		showHeading: {
 			type: Boolean,
@@ -166,7 +175,7 @@ export default {
 			return this.privacyData?.version || ''
 		},
 		aiView() {
-			return buildAiNotice(this.privacyData, this.aiNotice)
+			return buildAiNotice(this.privacyData, this.aiNotice, this.locale)
 		},
 		highlightSections() {
 			return Array.isArray(this.privacyData?.sections) ? this.privacyData.sections : []

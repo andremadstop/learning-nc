@@ -32,10 +32,10 @@
     },
     {
       "name": "KI-Interaktion (KI-Dienst des Betreibers)",
-      "items": "Deine Nachrichten an VirtuProf und andere Texte, die du in KI-Funktionen eingibst; Lernkontext (Frage, Antwortmöglichkeiten, Erklärung); Ausschnitte aus Kursmaterial; Informationen aus deinem Lernprofil; dein Lernstand; die auf dem Server gespeicherte Zusammenfassung deiner früheren Chats; einmal pro Woche dein schwächstes Thema mit falsch beantworteten Fragen",
+      "items": "Deine Nachrichten an VirtuProf und andere Texte, die du in KI-Funktionen eingibst; Lernkontext (Frage, Antwortmöglichkeiten, Erklärung); Ausschnitte aus Kursmaterial; Informationen aus deinem Lernprofil; dein Lernstand; deine letzten Nachrichten an VirtuProf mit den Antworten darauf, die auf dem Server gespeichert sind und bei späteren Anfragen wieder mitgeschickt werden (ältere Chats als Zusammenfassung); einmal pro Woche dein schwächstes Thema mit falsch beantworteten Fragen",
       "purpose": "KI-gestützte Erklärungen, Lernnotizen, Lernpläne und Fragen-Erzeugung",
       "who_sees": "{provider} verarbeitet die Anfrage. Name, E-Mail und Kontodaten werden nicht automatisch mitgeschickt; was du selbst in eine Nachricht schreibst, geht an den KI-Dienst.",
-      "retention": "Die Zusammenfassung deiner früheren Chats liegt auf diesem Server, solange dein Account existiert; du kannst sie im VirtuProf-Fenster löschen. Wie lange der KI-Dienst Daten speichert, legt der Betreiber mit dem Dienst fest.",
+      "retention": "Deine letzten Nachrichten an VirtuProf mit den Antworten und die Zusammenfassung älterer Chats liegen auf diesem Server, solange dein Account existiert; du kannst sie im VirtuProf-Fenster löschen. Wie lange der KI-Dienst Daten speichert, legt der Betreiber mit dem Dienst fest.",
       "legal_basis": "Einwilligung (Art. 6(1)a) — Dialog „KI-Funktionen einschalten“, widerrufbar in den Einstellungen. Liegt der Empfänger außerhalb der EU, willigst du ausdrücklich auch in diese Übermittlung ein."
     },
     {
@@ -72,29 +72,8 @@
     }
   ],
   "ai_notice": {
-    "provider_fallback": "der eingerichtete KI-Dienst",
-    "off": "Bei dieser Installation sind die KI-Funktionen ausgeschaltet. Es werden keine Daten an einen KI-Dienst gesendet.",
-    "intro": "Die KI-Funktionen (VirtuProf, Lernnotizen, Lernpläne, Fragen-Erzeugung) schicken Daten an {provider}, damit der Dienst die Antworten erzeugen kann. Das passiert nur, wenn du ausdrücklich zustimmst.",
-    "data_list_heading": "Diese Daten werden gesendet:",
-    "data_list": [
-      "deine Nachrichten an VirtuProf und andere Texte, die du in KI-Funktionen eingibst, zum Beispiel deine Antworten auf die Fragen zu deinem Lernprofil oder eine Support-Anfrage",
-      "der aktuelle Lernkontext: die Frage, die Antwortmöglichkeiten und die Erklärung",
-      "Ausschnitte aus dem Kursmaterial",
-      "Informationen aus deinem Lernprofil: deine Ziele, deine Motivation und Stärken und Schwächen, die die App bei dir erkannt hat. Beispiel: „tut sich mit Subnetting schwer, will im März die Prüfung schaffen“",
-      "dein Lernstand, zum Beispiel welche Themen du gut kannst und welche Fragen du falsch beantwortet hast",
-      "eine Zusammenfassung deiner früheren Chats mit VirtuProf, die auf dem Server gespeichert ist",
-      "Texte und Dateien, aus denen du mit KI Fragen erzeugen lässt"
-    ],
-    "identity_note": "Name, E-Mail und Kontodaten werden nicht automatisch mitgeschickt. Was du selbst in eine Nachricht schreibst, geht aber an den KI-Dienst. Schreib dort also nichts hinein, was du nicht teilen möchtest.",
-    "region": {
-      "us": "{provider} verarbeitet die Daten in den USA, also außerhalb der EU. Dort gilt nicht dasselbe Datenschutzrecht wie in der EU: US-Behörden können unter Umständen auf die Daten zugreifen, und deine Rechte kannst du dort vielleicht schwerer durchsetzen. Wenn du zustimmst, willigst du ausdrücklich in diese Übermittlung in die USA ein.",
-      "eu": "{provider} verarbeitet die Daten nach Angabe des Anbieters in der EU. Dort gilt das EU-Datenschutzrecht (DSGVO).",
-      "unknown": "{provider} ist ein Dienst, den der Betreiber dieser Lernplattform selbst eingetragen hat. Die App kann nicht erkennen, wer diesen Dienst betreibt und in welchem Land er die Daten verarbeitet. Frag im Zweifel den Betreiber, bevor du zustimmst.",
-      "local": "{provider} läuft nach Angabe des Betreibers auf einem eigenen Server dieser Lernplattform. Die Daten gehen dann nicht an ein fremdes Unternehmen."
-    },
-    "automation": "Einmal pro Woche schickt die App automatisch dein schwächstes Thema und Fragen, die du dort falsch beantwortet hast, an {provider}. Daraus entsteht eine Wochen-Notiz in deinen Dateien. Das passiert auch, wenn du die App gerade nicht benutzt.",
-    "retention": "Wie lange der KI-Dienst die Daten speichert und ob er sie für andere Zwecke nutzt, legt der Betreiber dieser Lernplattform mit dem Dienst fest. Frag den Betreiber, wenn du das wissen möchtest.",
-    "opt_out": "Die Einwilligung ist freiwillig. Ohne sie kannst du die App normal nutzen, nur die KI-Funktionen sind dann aus. Du kannst die Einwilligung jederzeit in den Einstellungen widerrufen. Der Widerruf gilt für alle Anfragen, die danach beginnen. Was schon gesendet wurde, kann die App nicht zurückholen."
+    "_comment": "The AI notice itself comes from ai-consent.json (locales.<lang>, six languages). Only the fallback for the German category texts lives here.",
+    "provider_fallback": "der eingerichtete KI-Dienst"
   },
   "rights": [
     {
