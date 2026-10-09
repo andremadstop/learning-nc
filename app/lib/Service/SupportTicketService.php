@@ -79,7 +79,7 @@ class SupportTicketService {
         // still filed and handled by a human.
         if ($this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes'
             && $this->telosService->hasAiConsent($userId)) {
-            $this->applyAiTriage($ticket, $subject, $message);
+            $this->applyAiTriage($ticket, $subject, $message, $userId);
         }
 
         return $ticket;
@@ -88,10 +88,11 @@ class SupportTicketService {
     /**
      * Run AI triage classification and persist results.
      * Called after initial ticket insert — updates the ticket record with AI fields.
+     * Sent with the ticket author's consent (spec 2.4); without it triage is skipped.
      */
-    private function applyAiTriage(SupportTicket $ticket, string $subject, string $message): void {
+    private function applyAiTriage(SupportTicket $ticket, string $subject, string $message, string $authorId): void {
         try {
-            $result = $this->geminiService->classifyTicket($subject, $message);
+            $result = $this->geminiService->classifyTicket($subject, $message, $authorId);
 
             $ticket->setAiLabel($result['label']);
             $ticket->setAiConfidence($result['confidence']);

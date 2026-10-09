@@ -13,7 +13,8 @@ use PHPUnit\Framework\TestCase;
  * - the gateway does not know the adapters that are not selectable in 5.7.0.
  *
  * The 5.5 interface OCA\Learning\Service\LlmProviderInterface (generateText) is a different type
- * and is resolved as such; it goes away when the facades move to the gateway (Task B4).
+ * and is resolved as such. Task B4 removed it together with the 5.5 transport: no file under lib/
+ * may define or use it, the old GeminiProvider/OllamaProvider, or call generateText().
  */
 class ArchitectureTest extends TestCase {
     private const PROVIDER_INTERFACE = 'OCA\\Learning\\Service\\Llm\\Provider\\LlmProviderInterface';
@@ -146,5 +147,17 @@ class ArchitectureTest extends TestCase {
     public function testTheGatewayDoesNotKnowTheAdaptersOf580(): void {
         $gateway = self::libSources()[self::GATEWAY];
         $this->assertDoesNotMatchRegularExpression('/OpenAiCompatibleProvider|AnthropicProvider/', $gateway);
+    }
+
+    public function testThe55TransportIsGone(): void {
+        $root = dirname(__DIR__, 4) . '/lib/Service/';
+        foreach (['GeminiProvider.php', 'OllamaProvider.php', 'LlmProviderInterface.php'] as $file) {
+            $this->assertFileDoesNotExist($root . $file);
+        }
+        foreach (self::libSources() as $rel => $code) {
+            $this->assertDoesNotMatchRegularExpression('/->\s*generateText\s*\(|function\s+generateText\s*\(/i', $code, "$rel uses the 5.5 transport");
+            $this->assertDoesNotMatchRegularExpression(
+                '/OCA\\\\Learning\\\\Service\\\\(GeminiProvider|OllamaProvider|LlmProviderInterface)\b/', $code, "$rel names a 5.5 provider");
+        }
     }
 }

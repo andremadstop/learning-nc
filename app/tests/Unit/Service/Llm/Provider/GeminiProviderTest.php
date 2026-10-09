@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  * 5.6.0 Task A5a: the Gemini adapter sends what the 5.5 GeminiProvider sent — same URL form
  * (…/models/{model}:generateContent), same x-goog-api-key header, same body incl. defaults and
  * clamping — checked against tests/Fixtures/llm/gemini-request.json, which LegacyProviderPayloadTest
- * pins against the old class.
+ * pinned against the old class until both were removed in Task B4.
  *
  * Intended differences to 5.5, each pinned below:
  * - transport is LlmHttpClient: target check + DNS pinning, no redirects, never a retry, and the

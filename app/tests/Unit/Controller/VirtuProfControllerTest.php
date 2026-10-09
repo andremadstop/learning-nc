@@ -16,7 +16,6 @@ use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TelosService;
 use OCP\IConfig;
 use OCP\IRequest;
-use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -60,8 +59,6 @@ class VirtuProfControllerTest extends TestCase {
     private $ticketMock;
     /** @var TelosService&\PHPUnit\Framework\MockObject\MockObject */
     private $telosMock;
-    /** @var IUserManager&\PHPUnit\Framework\MockObject\MockObject */
-    private $userManagerMock;
     /** @var CourseService&\PHPUnit\Framework\MockObject\MockObject */
     private $courseMock;
     /** @var PoolService&\PHPUnit\Framework\MockObject\MockObject */
@@ -79,7 +76,6 @@ class VirtuProfControllerTest extends TestCase {
         $this->lernplanMock = $this->createMock(LernplanService::class);
         $this->ticketMock = $this->createMock(SupportTicketService::class);
         $this->telosMock = $this->createMock(TelosService::class);
-        $this->userManagerMock = $this->createMock(IUserManager::class);
         $this->courseMock = $this->createMock(CourseService::class);
         $this->poolMock = $this->createMock(PoolService::class);
         $this->questionMock = $this->createMock(QuestionService::class);
@@ -102,7 +98,6 @@ class VirtuProfControllerTest extends TestCase {
             $this->lernplanMock,
             $this->ticketMock,
             $this->telosMock,
-            $this->userManagerMock,
             $this->courseMock,
             $this->poolMock,
             $this->questionMock
@@ -283,7 +278,6 @@ class VirtuProfControllerTest extends TestCase {
         // The chat still answers generically.
         $this->chatMemoryMock->method('loadMemory')->willReturn([]);
         $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
-        $this->userManagerMock->method('get')->willReturn(null);
         $this->geminiMock->expects($this->once())->method('chat')
             ->willReturn(['answer' => 'generic', 'fallback' => false, 'reason' => '']);
 
@@ -313,7 +307,6 @@ class VirtuProfControllerTest extends TestCase {
 
         $this->chatMemoryMock->method('loadMemory')->willReturn([]);
         $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
-        $this->userManagerMock->method('get')->willReturn(null);
         $this->geminiMock->method('chat')
             ->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
 
@@ -339,7 +332,6 @@ class VirtuProfControllerTest extends TestCase {
 
         $this->chatMemoryMock->method('loadMemory')->willReturn([]);
         $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
-        $this->userManagerMock->method('get')->willReturn(null);
         $this->geminiMock->method('chat')
             ->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
 
@@ -409,7 +401,6 @@ class VirtuProfControllerTest extends TestCase {
 
         $this->chatMemoryMock->method('loadMemory')->willReturn([]);
         $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
-        $this->userManagerMock->method('get')->willReturn(null);
     }
 
     /**

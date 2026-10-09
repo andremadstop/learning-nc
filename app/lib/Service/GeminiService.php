@@ -3,17 +3,22 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmGateway;
+use OCA\Learning\Service\Llm\LlmProviderException;
+use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmRequest;
+use OCA\Learning\Service\Llm\LlmSession;
 use OCP\IConfig;
-use OCP\ICacheFactory;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 class GeminiService {
     private IConfig $config;
-    private ICacheFactory $cacheFactory;
     private IDBConnection $db;
     private LoggerInterface $logger;
     private LlmService $llmService;
+    private LlmGateway $gateway;
 
     /**
      * Languages the assistant can be told to answer in. Mirrors the six l10n catalogues;
@@ -22,22 +27,29 @@ class GeminiService {
     private const SUPPORTED_LANGUAGES = ['de', 'en', 'fr', 'ru', 'ar', 'uk'];
 
     private const MAX_INPUT_CHARS = 500;
-    private const RATE_LIMIT_MIN = 10;
-    private const RATE_LIMIT_DAY = 100;
-    private const GLOBAL_RATE_LIMIT_MIN = 8;
 
+    /**
+     * Task B4: every model call goes through LlmGateway — begin() fixes the connection snapshot and
+     * checks consent, send() re-checks it, reserves the budget (which replaces this class's former
+     * cache-based rate limiter) and records metadata-only metric and audit events. This class keeps
+     * prompt building, injection protection and output validation (layers 1–3, 5).
+     *
+     * Error contract of every public method: LlmConsentException always reaches the caller (it is
+     * caught before any generic catch and rethrown); the array-returning methods answer other
+     * provider errors with a fallback (reason rate_limit for the budget, api_error otherwise).
+     */
     public function __construct(
         IConfig $config,
-        ICacheFactory $cacheFactory,
         IDBConnection $db,
         LoggerInterface $logger,
-        LlmService $llmService
+        LlmService $llmService,
+        LlmGateway $gateway
     ) {
         $this->config = $config;
-        $this->cacheFactory = $cacheFactory;
         $this->db = $db;
         $this->logger = $logger;
         $this->llmService = $llmService;
+        $this->gateway = $gateway;
     }
 
     public function isAvailable(): bool {
@@ -45,16 +57,19 @@ class GeminiService {
     }
 
     /**
-     * Main entry point: 5-layer secure Gemini chat.
+     * Main entry point: 5-layer secure chat.
      *
      * @param string $rawInput     Raw user message (will be sanitized)
-     * @param string $userId       NC user ID (for rate-limit and audit log)
+     * @param string $userId       NC user ID (consent subject; never part of the prompt)
      * @param array  $ragContext   Optional RAG context from RagContextService::buildContext()
      * @param array  $memoryEntries Optional persistent chat memory entries (MEM-01/02).
      *                             Each entry: ['role' => 'user'|'assistant'|'summary', 'message' => string]
      *                             Max 10 entries passed; older entries already compressed in DB.
+     * @param ?LlmSession $session the caller's session (begun before it built the context);
+     *                             null begins one for $userId with purpose chat
      *
      * @return array{answer: string|null, fallback: bool, reason?: string, error?: string}
+     * @throws LlmConsentException the user has no valid consent for the current recipient
      */
     public function chat(
         string $rawInput,
@@ -63,16 +78,10 @@ class GeminiService {
         array $memoryEntries = [],
         ?array $questionContext = null,
         ?int $hintLevel = null,
-        string $userName = '',
         ?array $telosProfile = null,
-        bool $detailed = false
+        bool $detailed = false,
+        ?LlmSession $session = null
     ): array {
-        // Layer 4 — Rate limit (cheapest check first)
-        $rateLimitResult = $this->checkRateLimit($userId);
-        if ($rateLimitResult !== null) {
-            return $rateLimitResult;
-        }
-
         // Layer 1 — Input sanitizer (SEC-01)
         $sanitizeResult = $this->sanitizeInput($rawInput);
         if (isset($sanitizeResult['fallback'])) {
@@ -80,52 +89,49 @@ class GeminiService {
         }
         $sanitizedInput = $sanitizeResult['input'];
 
-        // Layer 2 — Context isolation (SEC-02)
-        $language = $this->resolveResponseLanguage($userId);
-        $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries, $questionContext, $hintLevel, $userName, $telosProfile, $detailed);
-        $userMessage = $this->buildUserMessage($sanitizedInput);
-
-        // API call with Layer 3 (output validation) and Layer 5 (audit log)
         try {
-            $rawOutput = $this->callModelApi($systemPrompt, $userMessage, $detailed ? 3200 : 2400);
+            $session ??= $this->gateway->begin($userId, LlmPurpose::Chat);
 
-            // Layer 3 — Output validation (SEC-03)
-            $validationResult = $this->validateOutput($rawOutput, $userId, $sanitizedInput);
-            if ($validationResult !== null) {
-                return $validationResult;
-            }
+            // Layer 2 — Context isolation (SEC-02)
+            $language = $this->resolveResponseLanguage($userId);
+            $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries, $questionContext, $hintLevel, $telosProfile, $detailed);
+            $userMessage = $this->buildUserMessage($sanitizedInput);
 
-            // Layer 5 — Audit log
-            $this->writeAuditLog($userId, $sanitizedInput, $rawOutput);
-
-            return ['answer' => $rawOutput, 'fallback' => false];
+            // Layer 4 (budget) and Layer 5 (metadata audit) happen in the gateway
+            $rawOutput = $this->send($session, $systemPrompt, $userMessage, $detailed ? 3200 : 2400, 0.7);
+        } catch (LlmConsentException $e) {
+            throw $e;
         } catch (\RuntimeException $e) {
-            $this->logger->warning('GeminiService provider error: ' . $e->getMessage(), ['app' => 'learning']);
-            $this->writeAuditLog($userId, $sanitizedInput, '[api_error: ' . $e->getMessage() . ']');
-            return ['answer' => null, 'fallback' => true, 'reason' => 'api_error'];
+            $this->logger->warning('GeminiService provider error: ' . self::errorCategory($e), ['app' => 'learning']);
+            return self::providerFallback($e);
         }
+
+        // Layer 3 — Output validation (SEC-03)
+        $validationResult = $this->validateOutput($rawOutput, $userId);
+        if ($validationResult !== null) {
+            return $validationResult;
+        }
+
+        return ['answer' => $rawOutput, 'fallback' => false];
     }
 
     /**
      * Internal trusted prompt execution for structured extraction tasks.
      *
-     * This bypasses the normal tutor prompt and the 500-char end-user limit,
-     * but still applies user rate limiting and audit logging.
+     * This bypasses the normal tutor prompt and the 500-char end-user limit; the gateway still
+     * checks consent and the budget.
      *
      * @return array{answer: string|null, fallback: bool, reason?: string, error?: string}
+     * @throws LlmConsentException the user has no valid consent for the current recipient
      */
     public function generateStructured(
         string $systemPrompt,
         string $userPrompt,
         string $userId,
+        LlmPurpose $purpose,
         int $maxOutputTokens = 800,
-        string $eventKey = 'ai_structured'
+        ?LlmSession $session = null
     ): array {
-        $rateLimitResult = $this->checkRateLimit($userId);
-        if ($rateLimitResult !== null) {
-            return $rateLimitResult;
-        }
-
         $normalizedPrompt = trim(strip_tags($userPrompt));
         if ($normalizedPrompt === '') {
             return [
@@ -137,15 +143,16 @@ class GeminiService {
         }
 
         try {
-            $rawOutput = $this->callModelApi($systemPrompt, $this->buildUserMessage($normalizedPrompt), $maxOutputTokens);
-            $this->writeAuditLogWithKey($eventKey, $userId, $normalizedPrompt, $rawOutput);
+            $session ??= $this->gateway->begin($userId, $purpose);
+            $rawOutput = $this->send($session, $systemPrompt, $this->buildUserMessage($normalizedPrompt), $maxOutputTokens, 0.7);
 
             return ['answer' => $rawOutput, 'fallback' => false];
+        } catch (LlmConsentException $e) {
+            throw $e;
         } catch (\RuntimeException $e) {
-            $this->logger->warning('GeminiService structured provider error: ' . $e->getMessage(), ['app' => 'learning']);
-            $this->writeAuditLogWithKey($eventKey, $userId, $normalizedPrompt, '[api_error: ' . $e->getMessage() . ']');
+            $this->logger->warning('GeminiService structured provider error: ' . self::errorCategory($e), ['app' => 'learning']);
 
-            return ['answer' => null, 'fallback' => true, 'reason' => 'api_error'];
+            return self::providerFallback($e);
         }
     }
 
@@ -155,12 +162,12 @@ class GeminiService {
      * @param array<int, array{question: string, answer: string}> $history
      *
      * @return array{answer: string|null, fallback: bool, reason?: string, error?: string}
+     * @throws LlmConsentException the user has no valid consent for the current recipient
      */
     public function generateInterviewTurn(
         array $history,
         int $nextQuestionNumber,
         string $userId,
-        string $userName = '',
         string $language = 'de'
     ): array {
         $safeQuestionNumber = max(2, min(10, $nextQuestionNumber));
@@ -206,17 +213,11 @@ class GeminiService {
         }
 
         $historyBlock = implode("\n", $historyLines);
-        $safeName = str_replace('"', '', $userName);
 
-        if ($language === 'de') {
-            $nameLine = $userName !== ''
-                ? 'Der Vorname des Users ist "' . $safeName . '". Verwende ihn ab und zu natuerlich.'
-                : 'Der Vorname ist unbekannt — nicht raten.';
-        } else {
-            $nameLine = $userName !== ''
-                ? 'The user first name is "' . $safeName . '". Use it naturally from time to time.'
-                : 'The user first name is unknown, so do not guess it.';
-        }
+        // Task B4 (data minimisation): the first name is no longer sent to the provider.
+        $nameLine = $language === 'de'
+            ? 'Der Vorname ist unbekannt — nicht raten.'
+            : 'The user first name is unknown, so do not guess it.';
 
         $questionList = [];
         foreach ($questionOrder as $number => $questionText) {
@@ -275,56 +276,46 @@ class GeminiService {
             $systemPrompt,
             $userPrompt,
             $userId,
-            1024,
-            'telos_interview_turn'
+            LlmPurpose::Interview,
+            1024
         );
     }
 
     /**
-     * Generate a note (Obsidian-compatible Markdown summary) via Gemini.
+     * Generate a note (Obsidian-compatible Markdown summary).
      *
-     * This is an internal/trusted caller method — no user rate limit, no 500-char
-     * input validation. Used by NoteGeneratorService only.
+     * Internal/trusted caller method — no 500-char input validation. Consent and the shared
+     * per-user budget are checked by the gateway for $userId, whatever the purpose.
      *
-     * @param string $systemPrompt  Full system prompt (contains topic + context, no PII)
-     * @param string $userPrompt    Topic request (no PII)
+     * @param string $systemPrompt  Full system prompt (contains topic + context)
+     * @param string $userPrompt    Topic request
+     * @param ?LlmSession $session  the caller's session; null begins one for $userId and $purpose
      *
-     * @throws \RuntimeException  On API error or empty response
+     * @throws LlmConsentException  the user has no valid consent for the current recipient
+     * @throws LlmProviderException on any other provider error (category rate_limit for the budget)
      */
-    /**
-     * @param ?string $userId AUDIT MED-09: when provided, this note generation counts against the
-     *   shared per-user/-minute/-day AI rate limit (same counters as chat). The file-intent path
-     *   and chat-memory compression pass it so they can no longer bypass the documented limits;
-     *   endpoints with their own UserRateLimit (Lernplan, course summary, story) may omit it.
-     * @throws \RuntimeException 'rate_limit' when the shared AI budget is exhausted.
-     */
-    public function generateNote(string $systemPrompt, string $userPrompt, ?string $userId = null): string {
-        if ($userId !== null && $this->checkRateLimit($userId) !== null) {
-            throw new \RuntimeException('rate_limit');
-        }
-        try {
-            $text = $this->llmService->generateText($userPrompt, [
-                'system_prompt' => $systemPrompt,
-                'temperature' => 0.5,
-                'max_output_tokens' => 2048,
-            ]);
-        } catch (\RuntimeException $e) {
-            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[provider error: ' . $e->getMessage() . ']');
-            throw $e;
-        }
+    public function generateNote(
+        string $systemPrompt,
+        string $userPrompt,
+        string $userId,
+        LlmPurpose $purpose,
+        ?LlmSession $session = null
+    ): string {
+        $session ??= $this->gateway->begin($userId, $purpose);
 
-        $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), mb_substr($text, 0, 1000));
-
-        return $text;
+        return $this->send($session, $systemPrompt, $userPrompt, 2048, 0.5);
     }
 
     /**
      * Classify a support ticket into FAQ/Bug/Feature/Unclear using Gemini.
      *
-     * This method is used for admin-side ticket triage and does NOT apply user rate limits.
+     * Sent on behalf of the ticket author (spec 2.4): the ticket text is theirs, so their consent
+     * decides. A missing consent is thrown (the caller skips triage, the ticket stays); every other
+     * failure answers with the Unclear fallback.
      *
      * @param string $subject Ticket subject
      * @param string $message Ticket message body
+     * @param string $ticketAuthorId user whose ticket text is sent
      *
      * @return array{
      *     label: string,
@@ -332,18 +323,15 @@ class GeminiService {
      *     suggested_answer: string|null,
      *     followup_question: string|null
      * }
+     * @throws LlmConsentException the author has no valid consent for the current recipient
      */
-    public function classifyTicket(string $subject, string $message): array {
+    public function classifyTicket(string $subject, string $message, string $ticketAuthorId): array {
         $fallback = [
             'label' => 'Unclear',
             'confidence' => 0.0,
             'suggested_answer' => null,
             'followup_question' => null,
         ];
-
-        if (!$this->llmService->isAvailable()) {
-            return $fallback;
-        }
 
         // Combine and truncate to avoid token overflow
         $combined = trim($subject) . "\n\n" . trim($message);
@@ -372,7 +360,8 @@ PROMPT;
         $userMessage = "<ticket>\n{$combined}\n</ticket>";
 
         try {
-            $rawOutput = $this->callModelApi($systemPrompt, $userMessage);
+            $session = $this->gateway->begin($ticketAuthorId, LlmPurpose::TicketTriage);
+            $rawOutput = $this->send($session, $systemPrompt, $userMessage, 1200, 0.7);
 
             // Strip markdown code fences if model wraps response
             $cleaned = preg_replace('/^```(?:json)?\s*/i', '', trim($rawOutput));
@@ -396,57 +385,18 @@ PROMPT;
                 ? mb_substr((string)$data['followup_question'], 0, 1000)
                 : null;
 
-            // Audit log for triage (no user ID — use 'system')
-            $this->writeAuditLogWithKey('ticket_triage', 'system', mb_substr($combined, 0, 500), json_encode([
-                'label' => $label,
-                'confidence' => $confidence,
-            ]));
-
             return [
                 'label' => $label,
                 'confidence' => $confidence,
                 'suggested_answer' => $suggestedAnswer,
                 'followup_question' => $followupQuestion,
             ];
+        } catch (LlmConsentException $e) {
+            throw $e;
         } catch (\RuntimeException $e) {
-            $this->logger->warning('GeminiService::classifyTicket provider error: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->warning('GeminiService::classifyTicket provider error: ' . self::errorCategory($e), ['app' => 'learning']);
             return $fallback;
         }
-    }
-
-    /**
-     * Layer 4 — Rate limiting via NC ICache.
-     *
-     * @return array|null Returns error array if rate limited, null if OK
-     */
-    private function checkRateLimit(string $userId): ?array {
-        $cache = $this->cacheFactory->createDistributed('learning');
-
-        $minKey = 'ai_rl_min_' . $userId . '_' . (int)floor(time() / 60);
-        $dayKey = 'ai_rl_day_' . $userId . '_' . date('Y-m-d');
-        $globalMinKey = 'ai_rl_global_min_' . (int)floor(time() / 60);
-
-        $userMin = (int)($cache->get($minKey) ?? 0);
-        if ($userMin >= self::RATE_LIMIT_MIN) {
-            return ['answer' => null, 'fallback' => true, 'reason' => 'rate_limit'];
-        }
-
-        $userDay = (int)($cache->get($dayKey) ?? 0);
-        if ($userDay >= self::RATE_LIMIT_DAY) {
-            return ['answer' => null, 'fallback' => true, 'reason' => 'rate_limit'];
-        }
-
-        $globalMin = (int)($cache->get($globalMinKey) ?? 0);
-        if ($globalMin >= self::GLOBAL_RATE_LIMIT_MIN) {
-            return ['answer' => null, 'fallback' => true, 'reason' => 'rate_limit'];
-        }
-
-        // Increment counters
-        $cache->set($minKey, $userMin + 1, 60);
-        $cache->set($dayKey, $userDay + 1, 86400);
-        $cache->set($globalMinKey, $globalMin + 1, 60);
-
-        return null;
     }
 
     /**
@@ -581,9 +531,9 @@ PROMPT;
      *   INCLUDED: role instruction, response language name (e.g. "German"), RAG context addendum
      *             (pool_name, pool_questions texts, leitner_stats numeric, course_name, last_wrong texts),
      *             chat memory entries (previous user messages and VirtuProf responses, truncated).
-     *   EXCLUDED: userId, username, email, display name, passwords, system paths, API key, or any
-     *             personal identifiers. The userId is only used in writeAuditLog() for the internal
-     *             DB audit table and is never forwarded to the Gemini API.
+     *   EXCLUDED: userId, username, first name, email, display name, passwords, system paths, API key,
+     *             or any personal identifiers. The userId is only the consent subject of the gateway
+     *             session and the internal audit row; it is never forwarded to the provider.
      *
      * @param string $language      ISO language code (de/en/ru/ar)
      * @param array  $ragContext    Optional context from RagContextService::buildContext()
@@ -658,7 +608,6 @@ PROMPT;
         array $memoryEntries = [],
         ?array $questionContext = null,
         ?int $hintLevel = null,
-        string $userName = '',
         ?array $telosProfile = null,
         bool $detailed = false
     ): string {
@@ -671,7 +620,6 @@ PROMPT;
         $base = "You are VirtuProf, a helpful learning assistant for a spaced-repetition study app. "
             . "Always respond in the same language the user writes to you. "
             . "If unsure, default to {$langName}. "
-            . ($userName !== '' ? "The user's first name is {$userName}. Use it sparingly — only at session start, milestones, or after long absence. Do not repeat it in every message. " : '')
             . "You can help users with: studying, explaining topics, creating summaries, and reporting bugs or problems. "
             . "When a user wants to report a bug, give feedback, or describe a problem with the app, "
             . "acknowledge their report warmly — the system will automatically create a support ticket. "
@@ -1168,16 +1116,28 @@ PROMPT;
     }
 
     /**
-     * Execute the configured LLM provider call.
+     * The one model call of this facade: through the gateway, on the given session.
      *
-     * @throws \RuntimeException on provider error
+     * @throws LlmProviderException incl. LlmConsentException
      */
-    private function callModelApi(string $systemPrompt, string $userMessage, int $maxOutputTokens = 1200): string {
-        return $this->llmService->generateText($userMessage, [
-            'system_prompt' => $systemPrompt,
-            'temperature' => 0.7,
-            'max_output_tokens' => $maxOutputTokens,
-        ]);
+    private function send(LlmSession $session, string $systemPrompt, string $userMessage, int $maxOutputTokens, float $temperature): string {
+        return $this->gateway->send($session, new LlmRequest($systemPrompt, $userMessage, $temperature, $maxOutputTokens))->text;
+    }
+
+    /**
+     * Fallback answer for a failed call: the gateway budget as rate_limit (the controllers answer
+     * 429), everything else as api_error.
+     *
+     * @return array{answer: null, fallback: true, reason: string}
+     */
+    private static function providerFallback(\RuntimeException $e): array {
+        $reason = $e instanceof LlmProviderException && $e->category === 'rate_limit' ? 'rate_limit' : 'api_error';
+        return ['answer' => null, 'fallback' => true, 'reason' => $reason];
+    }
+
+    /** Loggable error description: the category, never a message that could carry content. */
+    private static function errorCategory(\RuntimeException $e): string {
+        return $e instanceof LlmProviderException ? $e->category : get_class($e);
     }
 
     /**
@@ -1185,7 +1145,7 @@ PROMPT;
      *
      * @return array|null Returns error array if blocked, null if output is safe
      */
-    private function validateOutput(string $output, string $userId, string $input): ?array {
+    private function validateOutput(string $output, string $userId): ?array {
         // Canary leak detection — if the daily canary token appears in output, the prompt was exfiltrated
         $canary = 'VP-' . substr(hash('sha256', date('Y-m-d') . 'learning-nc'), 0, 8);
         if (str_contains($output, $canary)) {
@@ -1193,7 +1153,7 @@ PROMPT;
                 'app' => 'learning',
                 'user_id' => $userId,
             ]);
-            $this->writeAuditLog($userId, $input, '[blocked: canary leak]');
+            $this->writeBlockedAudit($userId, 'canary_leak');
             return ['answer' => null, 'fallback' => true, 'reason' => 'canary_leak'];
         }
 
@@ -1212,7 +1172,7 @@ PROMPT;
                     'pattern' => $pattern,
                     'output_preview' => mb_substr($output, 0, 200),
                 ]);
-                $this->writeAuditLog($userId, $input, '[blocked by output validator]');
+                $this->writeBlockedAudit($userId, 'output_blocked');
                 return ['answer' => null, 'fallback' => true, 'reason' => 'output_blocked'];
             }
         }
@@ -1221,35 +1181,29 @@ PROMPT;
     }
 
     /**
-     * Layer 5 — Write audit log entry (SEC-05).
+     * Layer 5 — audit row for an answer this facade withheld (SEC-05). The call itself is audited by
+     * the gateway (ai_call); this row only adds why the answer was not shown. Metadata only: no
+     * prompt, no answer (Task B4).
      */
-    private function writeAuditLog(string $userId, string $input, string $output): void {
-        $this->writeAuditLogWithKey('ai_chat', $userId, $input, $output);
-    }
-
-    /**
-     * Write audit log entry with a custom event key.
-     * Used by classifyTicket() (event_key = 'ticket_triage').
-     */
-    private function writeAuditLogWithKey(string $eventKey, string $userId, string $input, string $output): void {
+    private function writeBlockedAudit(string $userId, string $reason): void {
         try {
             $qb = $this->db->getQueryBuilder();
             $qb->insert('learning_audit_events')
                 ->values([
-                    'event_key' => $qb->createNamedParameter($eventKey),
+                    'event_key' => $qb->createNamedParameter('ai_chat'),
                     'user_id' => $qb->createNamedParameter($userId),
                     'session_id' => $qb->createNamedParameter(null),
                     'pool_id' => $qb->createNamedParameter(null),
                     'context_json' => $qb->createNamedParameter(json_encode([
-                        'input' => mb_substr($input, 0, 500),
-                        'output' => mb_substr($output, 0, 1000),
-                        'model' => $this->llmService->getProviderId(),
+                        'purpose' => LlmPurpose::Chat->value,
+                        'outcome' => $reason,
+                        'provider' => $this->llmService->getProviderId(),
                     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
                     'created_at' => $qb->createNamedParameter(time()),
                 ]);
             $qb->executeStatement();
         } catch (\Throwable $e) {
-            $this->logger->warning('GeminiService: audit log write failed: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->warning('GeminiService: audit log write failed', ['app' => 'learning']);
         }
     }
 }

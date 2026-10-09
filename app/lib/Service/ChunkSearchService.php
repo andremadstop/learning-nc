@@ -58,9 +58,10 @@ class ChunkSearchService {
             $results
         );
 
-        $this->logger->debug('ChunkSearch: found {count} chunks for query \'{query}\' in course {courseId}', [
+        // Task B4: the query is the learner's chat question — log counts only
+        $this->logger->debug('ChunkSearch: found {count} chunks for {keywords} keywords in course {courseId}', [
             'count' => count($chunks),
-            'query' => $trimmed,
+            'keywords' => count($keywords),
             'courseId' => $courseId,
         ]);
 

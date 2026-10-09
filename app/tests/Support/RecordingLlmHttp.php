@@ -51,7 +51,7 @@ trait RecordingLlmHttp {
     }
 
     /**
-     * A request fixture from tests/Fixtures/llm/ (pinned against the 5.5 providers by LegacyProviderPayloadTest).
+     * A request fixture from tests/Fixtures/llm/ (pinned against the 5.5 providers by LegacyProviderPayloadTest until Task B4 removed them).
      *
      * @return array<string, mixed>
      */

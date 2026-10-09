@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\AiChatMemory;
 use OCA\Learning\Db\AiChatMemoryMapper;
 use Psr\Log\LoggerInterface;
@@ -158,7 +159,7 @@ class AiChatMemoryService {
 
         try {
             // MED-09: memory compression counts against the shared AI rate limit.
-            $summary = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId);
+            $summary = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::MemoryCompress);
             return mb_substr(trim($summary), 0, 1000);
         } catch (\Throwable $e) {
             $this->logger->info(

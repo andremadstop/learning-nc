@@ -88,7 +88,7 @@ class SupportTicketServiceTest extends TestCase {
         // Mock result matches the field structure applyAiTriage() reads: label, confidence,
         // suggested_answer, followup_question.
         $this->geminiServiceMock->expects($this->once())->method('classifyTicket')
-            ->with('Login broken', 'I cannot log in anymore.')
+            ->with('Login broken', 'I cannot log in anymore.', 'user-A') // B4: sent with the author's consent
             ->willReturn([
                 'label' => 'FAQ',
                 'confidence' => 0.9,

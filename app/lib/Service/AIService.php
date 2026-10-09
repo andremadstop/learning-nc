@@ -2,108 +2,55 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
-use OCA\Learning\Service\Llm\ConnectionStore;
-use OCP\IConfig;
+use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmGateway;
+use OCA\Learning\Service\Llm\LlmProviderException;
+use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmRequest;
 use OCP\ICacheFactory;
-use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
+/**
+ * KI explanation (purpose explain) and question generation (purpose question_generate).
+ *
+ * Task B4: both send through LlmGateway. The 5.5 Nextcloud TaskProcessing/TextProcessing path is
+ * gone — the connection snapshot, and so the consent, never names it. A "task" is a cache entry
+ * the frontend polls; the call itself runs synchronously in scheduleLocalTask().
+ */
 class AIService {
     private const LOCAL_TASK_CACHE_NAMESPACE = 'learning_ai_tasks';
     private const LOCAL_TASK_TTL = 3600;
 
-    private IDBConnection $db;
-    private IConfig $config;
-    private ICacheFactory $cacheFactory;
-    private LoggerInterface $logger;
-    private LlmService $llmService;
-    private ConnectionStore $connectionStore;
-
-    /** @var \OCP\TaskProcessing\IManager|null */
-    private $taskProcessingManager = null;
-    /** @var \OCP\TextProcessing\IManager|null */
-    private $textProcessingManager = null;
-
     public function __construct(
-        IDBConnection $db,
-        IConfig $config,
-        ICacheFactory $cacheFactory,
-        LoggerInterface $logger,
-        LlmService $llmService,
-        ConnectionStore $connectionStore
+        private ICacheFactory $cacheFactory,
+        private LoggerInterface $logger,
+        private LlmService $llmService,
+        private LlmGateway $gateway,
     ) {
-        $this->connectionStore = $connectionStore;
-        $this->db = $db;
-        $this->config = $config;
-        $this->cacheFactory = $cacheFactory;
-        $this->logger = $logger;
-        $this->llmService = $llmService;
-
-        // Runtime detection: NC 30+ TaskProcessing vs NC 29 TextProcessing
-        if (class_exists(\OCP\TaskProcessing\IManager::class)) {
-            try {
-                $this->taskProcessingManager = \OC::$server->get(\OCP\TaskProcessing\IManager::class);
-            } catch (\Throwable $e) {
-                // Not available
-            }
-        }
-        if ($this->taskProcessingManager === null && class_exists(\OCP\TextProcessing\IManager::class)) {
-            try {
-                $this->textProcessingManager = \OC::$server->get(\OCP\TextProcessing\IManager::class);
-            } catch (\Throwable $e) {
-                // Not available
-            }
-        }
     }
 
     public function isAvailable(): bool {
-        if (!$this->useLegacyTaskBackend()) {
-            return $this->llmService->isAvailable();
-        }
-
-        if ($this->taskProcessingManager !== null) {
-            try {
-                $types = $this->taskProcessingManager->getAvailableTaskTypes();
-                return isset($types['core:text2text']) || isset($types['core:text2text:chat']);
-            } catch (\Throwable $e) {
-                return false;
-            }
-        }
-        if ($this->textProcessingManager !== null) {
-            try {
-                $types = $this->textProcessingManager->getAvailableTaskTypes();
-                foreach ($types as $type) {
-                    if ($type instanceof \OCP\TextProcessing\FreePromptTaskType
-                        || (is_string($type) && str_contains($type, 'FreePrompt'))) {
-                        return true;
-                    }
-                }
-                return !empty($types);
-            } catch (\Throwable $e) {
-                return false;
-            }
-        }
-        return false;
+        return $this->llmService->isAvailable();
     }
 
+    /**
+     * @throws LlmConsentException the user has no valid consent for the current recipient
+     */
     public function schedulePrompt(string $prompt, string $userId): int {
-        if (!$this->useLegacyTaskBackend()) {
-            return $this->scheduleLocalTask($prompt, $userId, [
-                'system_prompt' => 'You are a concise learning assistant. Explain the question clearly and accurately.',
-                'temperature' => 0.3,
-                'max_output_tokens' => 800,
-            ]);
-        }
-
-        if ($this->taskProcessingManager !== null) {
-            return $this->scheduleTaskProcessing($prompt, $userId);
-        }
-        if ($this->textProcessingManager !== null) {
-            return $this->scheduleTextProcessing($prompt, $userId);
-        }
-        throw new \Exception('No AI provider configured');
+        return $this->scheduleLocalTask($userId, LlmPurpose::Explain,
+            new LlmRequest(
+                'You are a concise learning assistant. Explain the question clearly and accurately.',
+                $prompt,
+                0.3,
+                800,
+            ),
+            false,
+        );
     }
 
+    /**
+     * @throws LlmConsentException the user has no valid consent for the current recipient
+     */
     public function generateQuestions(string $text, int $count, string $lang, string $userId): int {
         $count = max(1, min(30, $count));
 
@@ -115,22 +62,10 @@ class AIService {
 
         $prompt = $this->buildPrompt($text, $count, $lang);
 
-        if (!$this->useLegacyTaskBackend()) {
-            return $this->scheduleLocalTask($prompt, $userId, [
-                'system_prompt' => 'You generate valid JSON question sets for a learning app.',
-                'temperature' => 0.4,
-                'max_output_tokens' => 2400,
-                'parse_questions' => true,
-            ]);
-        }
-
-        if ($this->taskProcessingManager !== null) {
-            return $this->scheduleTaskProcessing($prompt, $userId);
-        }
-        if ($this->textProcessingManager !== null) {
-            return $this->scheduleTextProcessing($prompt, $userId);
-        }
-        throw new \Exception('No AI provider configured');
+        return $this->scheduleLocalTask($userId, LlmPurpose::QuestionGenerate,
+            new LlmRequest('You generate valid JSON question sets for a learning app.', $prompt, 0.4, 2400),
+            true,
+        );
     }
 
     private function buildPrompt(string $text, int $count, string $lang): string {
@@ -163,110 +98,23 @@ TEXT:
 {$text}";
     }
 
-    private function scheduleTaskProcessing(string $prompt, string $userId): int {
-        $taskClass = \OCP\TaskProcessing\Task::class;
-        $task = new $taskClass('core:text2text', ['input' => $prompt], 'learning', $userId);
-        $this->taskProcessingManager->scheduleTask($task);
-        $taskId = $task->getId();
-
-        // Store mapping in our DB for retrieval
-        $this->storeTaskMapping($taskId, 'taskprocessing', $userId);
-        return $taskId;
-    }
-
-    private function scheduleTextProcessing(string $prompt, string $userId): int {
-        $taskTypeClass = \OCP\TextProcessing\FreePromptTaskType::class;
-        $taskClass = \OCP\TextProcessing\Task::class;
-        $task = new $taskClass(new $taskTypeClass(), $prompt, 'learning', $userId);
-        $this->textProcessingManager->scheduleTask($task);
-        $taskId = $task->getId();
-
-        $this->storeTaskMapping($taskId, 'textprocessing', $userId);
-        return $taskId;
-    }
-
-    private function storeTaskMapping(int $taskId, string $backend, string $userId): void {
-        // Use a lightweight approach: store in learning_ai_tasks
-        // For simplicity, we'll store in-memory and use NC's task API for retrieval
-        // The task ID itself is the reference — no extra table needed
-    }
-
     public function getTaskStatus(int $taskId, string $userId): array {
-        if (!$this->useLegacyTaskBackend()) {
-            return $this->getLocalTaskStatus($taskId, $userId);
-        }
-
-        if ($this->taskProcessingManager !== null) {
-            try {
-                $task = $this->taskProcessingManager->getTask($taskId);
-                if ($task->getUserId() !== $userId) {
-                    throw new \Exception('Not your task');
-                }
-                $status = $task->getStatus();
-                $statusMap = [
-                    0 => 'pending',     // STATUS_UNKNOWN
-                    1 => 'pending',     // STATUS_SCHEDULED
-                    2 => 'running',     // STATUS_RUNNING
-                    3 => 'completed',   // STATUS_SUCCESSFUL
-                    4 => 'failed',      // STATUS_FAILED
-                    5 => 'cancelled',   // STATUS_CANCELLED
-                ];
-                $statusStr = $statusMap[$status] ?? 'pending';
-
-                $result = ['status' => $statusStr, 'questions' => []];
-                if ($statusStr === 'completed') {
-                    $output = $task->getOutput();
-                    $text = $output['output'] ?? '';
-                    $result['output'] = $text;
-                    $result['questions'] = $this->parseGeneratedQuestions($text);
-                }
-                if ($statusStr === 'failed') {
-                    $result['error'] = $task->getErrorMessage() ?? 'Task failed';
-                }
-                return $result;
-            } catch (\OCP\TaskProcessing\Exception\NotFoundException $e) {
-                // Fall through to TextProcessing
-            }
-        }
-
-        if ($this->textProcessingManager !== null) {
-            try {
-                $task = $this->textProcessingManager->getTask($taskId);
-                if ($task->getUserId() !== $userId) {
-                    throw new \Exception('Not your task');
-                }
-                $status = $task->getStatus();
-                $statusMap = [
-                    0 => 'pending',
-                    1 => 'running',
-                    2 => 'completed',
-                    3 => 'failed',
-                    4 => 'cancelled',
-                ];
-                $statusStr = $statusMap[$status] ?? 'pending';
-
-                $result = ['status' => $statusStr, 'questions' => []];
-                if ($statusStr === 'completed') {
-                    $text = $task->getOutput() ?? '';
-                    $result['output'] = $text;
-                    $result['questions'] = $this->parseGeneratedQuestions($text);
-                }
-                return $result;
-            } catch (\Throwable $e) {
-                throw new \Exception('Task not found');
-            }
-        }
-
-        throw new \Exception('No AI provider available');
+        return $this->getLocalTaskStatus($taskId, $userId);
     }
 
     /**
-     * @param array<string, mixed> $context
+     * Begins the gateway session before a task exists (no consent: nothing is cached or sent),
+     * then sends once. A consent lost between begin() and send() marks the task failed with
+     * consent_required and reaches the caller; any other error only fails the task.
+     *
+     * @throws LlmConsentException
+     * @throws \Exception 'No AI provider configured' when AI is off or has no usable backend
      */
-    private function scheduleLocalTask(string $prompt, string $userId, array $context): int {
+    private function scheduleLocalTask(string $userId, LlmPurpose $purpose, LlmRequest $request, bool $parseQuestions): int {
         if (!$this->llmService->isAvailable()) {
             throw new \Exception('No AI provider configured');
         }
+        $session = $this->gateway->begin($userId, $purpose);
 
         $taskId = random_int(10000000, 2147483647);
         $cache = $this->cacheFactory->createDistributed(self::LOCAL_TASK_CACHE_NAMESPACE);
@@ -279,24 +127,33 @@ TEXT:
         ], self::LOCAL_TASK_TTL);
 
         try {
-            $output = $this->llmService->generateText($prompt, $context);
+            $output = $this->gateway->send($session, $request)->text;
             $cache->set($cacheKey, [
                 'user_id' => $userId,
                 'status' => 'completed',
                 'output' => $output,
-                'questions' => !empty($context['parse_questions']) ? $this->parseGeneratedQuestions($output) : [],
+                'questions' => $parseQuestions ? $this->parseGeneratedQuestions($output) : [],
             ], self::LOCAL_TASK_TTL);
+        } catch (LlmConsentException $e) {
+            $this->failTask($cache, $cacheKey, $userId, 'consent_required');
+            throw $e;
         } catch (\Throwable $e) {
-            $this->logger->warning('AIService local task failed: ' . $e->getMessage(), ['app' => 'learning']);
-            $cache->set($cacheKey, [
-                'user_id' => $userId,
-                'status' => 'failed',
-                'error' => $e->getMessage(),
-                'questions' => [],
-            ], self::LOCAL_TASK_TTL);
+            $category = $e instanceof LlmProviderException ? $e->category : 'internal';
+            $this->logger->warning('AIService local task failed: ' . $category, ['app' => 'learning']);
+            $this->failTask($cache, $cacheKey, $userId, $category);
         }
 
         return $taskId;
+    }
+
+    /** @param \OCP\ICache $cache */
+    private function failTask($cache, string $cacheKey, string $userId, string $error): void {
+        $cache->set($cacheKey, [
+            'user_id' => $userId,
+            'status' => 'failed',
+            'error' => $error,
+            'questions' => [],
+        ], self::LOCAL_TASK_TTL);
     }
 
     /**
@@ -326,16 +183,6 @@ TEXT:
         return 'task_' . $taskId;
     }
 
-    /**
-     * The Nextcloud TaskProcessing path of 5.5 (empty ai_provider). Never once a connection snapshot
-     * exists: the snapshot (and so the consent) never names TaskProcessing. Without a snapshot an
-     * empty ai_provider derives a disabled connection, for which no consent is valid either.
-     */
-    private function useLegacyTaskBackend(): bool {
-        return !$this->connectionStore->hasSnapshot()
-            && trim($this->config->getAppValue('learning', 'ai_provider', '')) === '';
-    }
-
     public function parseGeneratedQuestions(string $output): array {
         // Strip markdown code fences if present
         $output = trim($output);
@@ -345,7 +192,8 @@ TEXT:
 
         $data = json_decode($output, true);
         if (!is_array($data)) {
-            $this->logger->warning('AI output is not valid JSON', ['app' => 'learning', 'output' => substr($output, 0, 500)]);
+            // Task B4: the model output is content and stays out of the log
+            $this->logger->warning('AI output is not valid JSON', ['app' => 'learning', 'output_chars' => strlen($output)]);
             return [];
         }
 

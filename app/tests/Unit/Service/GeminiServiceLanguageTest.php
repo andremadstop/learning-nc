@@ -3,8 +3,8 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Service\GeminiService;
+use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\LlmService;
-use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
@@ -34,10 +34,10 @@ class GeminiServiceLanguageTest extends TestCase {
         $this->config = $this->createMock(IConfig::class);
         $this->service = new GeminiService(
             $this->config,
-            $this->createMock(ICacheFactory::class),
             $this->createMock(IDBConnection::class),
             $this->createMock(LoggerInterface::class),
-            $this->createMock(LlmService::class)
+            $this->createMock(LlmService::class),
+            $this->createMock(LlmGateway::class)
         );
     }
 

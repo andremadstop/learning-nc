@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
  * 5.6.0 Task A5b: the Ollama adapter sends what the 5.5 OllamaProvider sent — POST
  * {baseUrl}/api/generate with model, prompt, system, stream:false, options.temperature and
  * options.num_predict — checked against tests/Fixtures/llm/ollama-request.json, which
- * LegacyProviderPayloadTest pins against the old class.
+ * LegacyProviderPayloadTest pinned against the old class until both were removed in Task B4.
  *
  * Intended differences to 5.5, each pinned below:
  * - transport is LlmHttpClient: target check + DNS pinning (a LAN address only with

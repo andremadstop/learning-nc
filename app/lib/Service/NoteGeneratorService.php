@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -109,7 +110,7 @@ class NoteGeneratorService {
         $userPrompt = $this->buildUserPrompt($poolName, $errorRate, $wrongQuestions, $language);
 
         // MED-09: file-intent note generation counts against the shared AI rate limit.
-        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId);
+        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Note);
 
         // 7. Ensure content has valid Obsidian frontmatter; add/fix if missing
         $bodyMarkdown = $this->stripGeminiFrontmatter($generatedContent);

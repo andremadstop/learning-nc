@@ -19,7 +19,6 @@ use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
 use OCP\IRequest;
-use OCP\IUserManager;
 
 class VirtuProfController extends Controller {
     // Must stay in sync with ALLOWED in src/utils/virtuprof-i18n.js and the exported
@@ -88,7 +87,6 @@ class VirtuProfController extends Controller {
     private LernplanService $lernplanService;
     private SupportTicketService $ticketService;
     private TelosService $telosService;
-    private IUserManager $userManager;
     private CourseService $courseService;
     private PoolService $poolService;
     private QuestionService $questionService;
@@ -105,7 +103,6 @@ class VirtuProfController extends Controller {
         LernplanService $lernplanService,
         SupportTicketService $ticketService,
         TelosService $telosService,
-        IUserManager $userManager,
         CourseService $courseService,
         PoolService $poolService,
         QuestionService $questionService
@@ -120,7 +117,6 @@ class VirtuProfController extends Controller {
         $this->lernplanService = $lernplanService;
         $this->ticketService = $ticketService;
         $this->telosService = $telosService;
-        $this->userManager = $userManager;
         $this->courseService = $courseService;
         $this->poolService = $poolService;
         $this->questionService = $questionService;
@@ -175,22 +171,6 @@ class VirtuProfController extends Controller {
         }
 
         return [$poolId, $courseId, $lastWrongQuestionId];
-    }
-
-    /**
-     * Get the user's first name (display name up to first space).
-     */
-    private function getUserFirstName(): string {
-        if ($this->userId === null) {
-            return '';
-        }
-        $user = $this->userManager->get($this->userId);
-        if ($user === null) {
-            return '';
-        }
-        $displayName = $user->getDisplayName();
-        $parts = explode(' ', trim($displayName), 2);
-        return $parts[0] ?? '';
     }
 
     /**
@@ -541,7 +521,6 @@ class VirtuProfController extends Controller {
             $sanitizedHistory,
             $nextQuestionNumber,
             $this->userId,
-            $this->getUserFirstName(),
             $language
         );
 
@@ -733,7 +712,7 @@ class VirtuProfController extends Controller {
         // MEM-01: Load persistent chat memory (last 10 entries, oldest-first)
         $memoryEntries = $this->chatMemoryService->loadMemory($this->userId);
 
-        $firstName = $this->getUserFirstName();
+        // Task B4 (data minimisation): the first name is no longer part of the prompt
         $telos = $this->telosService->getTelos($this->userId);
         $result = $this->geminiService->chat(
             $message,
@@ -742,7 +721,6 @@ class VirtuProfController extends Controller {
             $memoryEntries,
             $questionContext,
             $hintLevel,
-            $firstName,
             is_array($telos['telos'] ?? null) ? $telos['telos'] : null,
             $this->isDetailedRequest($lowerMessage)
         );

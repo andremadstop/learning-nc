@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\EncryptionService;
@@ -232,8 +233,8 @@ class TelosService {
                 $this->buildExtractionPrompt(),
                 $conversationText,
                 $userId,
-                512,
-                'ai_telos_extract'
+                LlmPurpose::TelosStructured,
+                512
             );
 
             $result = $chatResult['answer'] ?? '';

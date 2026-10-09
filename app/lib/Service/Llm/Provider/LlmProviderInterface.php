@@ -10,7 +10,7 @@ use OCA\Learning\Service\Llm\LlmResult;
 
 /**
  * One backend (spec 2.1/2.2). Replaces the 5.5 OCA\Learning\Service\LlmProviderInterface
- * (generateText), which stays in service until the gateway takes over in Task B3.
+ * (generateText), which Task B4 removed together with the 5.5 transport.
  *
  * Contract for every implementation:
  * - exactly one HTTP request per call, through LlmHttpClient — never a retry;

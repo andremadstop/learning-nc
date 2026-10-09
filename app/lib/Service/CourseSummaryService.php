@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Db\UserTelosMapper;
@@ -247,7 +248,7 @@ class CourseSummaryService {
 
         // 5. Call Gemini (may throw RuntimeException)
         try {
-            $narrative = $this->geminiService->generateNote($systemPrompt, $userPrompt);
+            $narrative = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::CourseNarrative);
         } catch (\RuntimeException $e) {
             return null;  // Gemini not configured — return null, not 500
         }

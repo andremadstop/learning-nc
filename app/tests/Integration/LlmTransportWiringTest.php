@@ -6,9 +6,11 @@ namespace OCA\Learning\Tests\Integration;
 use OCA\Learning\Controller\SettingsController;
 use OCA\Learning\Controller\TelosController;
 use OCA\Learning\Service\AIService;
+use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\LlmService;
+use OCA\Learning\Service\PoolGeneratorService;
 use OCP\AppFramework\App;
 use OCP\IAppConfig;
 use OCP\Server;
@@ -43,6 +45,11 @@ final class LlmTransportWiringTest extends TestCase {
         $this->assertInstanceOf(TelosController::class, $container->get(TelosController::class));
         // B3: the gateway and everything it needs (budget store, HTTP client, key store) autowire
         $this->assertInstanceOf(LlmGateway::class, $container->get(LlmGateway::class));
+        // B4: the facades now take the gateway
+        $this->assertInstanceOf(GeminiService::class, $container->get(GeminiService::class));
+        $this->assertInstanceOf(AIService::class, $container->get(AIService::class));
+        $this->assertInstanceOf(PoolGeneratorService::class, $container->get(PoolGeneratorService::class));
+        $this->assertInstanceOf(LlmService::class, $container->get(LlmService::class));
     }
 
     public function testTheProviderComesFromTheSnapshot(): void {

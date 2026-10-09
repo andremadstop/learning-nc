@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 
@@ -75,7 +76,7 @@ class LernplanService {
         $systemPrompt = $this->buildPlanSystemPrompt($weakTopics, $languageName);
         $userPrompt   = $this->buildPlanUserPrompt($weakTopics);
 
-        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt);
+        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Lernplan);
 
         // 4. Strip any Gemini-generated frontmatter
         $bodyMarkdown = $this->stripGeminiFrontmatter($generatedContent);

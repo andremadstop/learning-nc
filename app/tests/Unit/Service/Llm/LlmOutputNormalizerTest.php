@@ -3,11 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Service\Llm;
 
-use OCA\Learning\Service\GeminiProvider;
 use OCA\Learning\Service\Llm\LlmOutputNormalizer;
-use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 
 /**
  * 5.6.0 Task A4: every provider adapter cleans model output through one normalizer. The
@@ -143,34 +140,33 @@ class LlmOutputNormalizerTest extends TestCase {
     }
 
     /**
-     * Without <think> the output must be byte-identical to the live GeminiProvider, so moving
-     * Gemini onto the shared normalizer (A5a) cannot change what learners see today.
+     * Without <think> the output must be byte-identical to the 5.5 GeminiProvider, so moving
+     * Gemini onto the shared normalizer (A5a) cannot change what learners see today. Task B4
+     * removed that class; its outputs for these inputs are pinned as hex — the values the parity
+     * test confirmed under PHPUnit in the gate container at 663454c, the last commit with the class.
      *
-     * @return array<string, array{string}>
+     * @return array<string, array{string, string}> input, hex of the 5.5 output
      */
     public static function geminiParityInputs(): array {
         return [
-            'bom' => ["\xEF\xBB\xBFHallo"],
-            'whitespace' => ["  Text mit Rand \n"],
-            'unicode escape' => ['Pr\u00fcfung \u00e4 \u20ac'],
-            'surrogate pair stays escaped (legacy)' => ['\uD83D\uDE00 Smiley'],
-            'invalid escape kept' => ['\u12 bleibt'],
-            'real umlaut' => ['Größe ä'],
-            'mojibake' => ['GrÃ¶ÃŸe Ã¤uÃŸern'],
-            'mojibake lookalike' => ['Ãx Test'],
-            'mixed escape and mojibake' => ['Ã¤ \u00fc'],
-            'empty' => [''],
-            'whitespace only' => ["  \n "],
-            'bom only' => ["\xEF\xBB\xBF"],
-            'markdown json' => ["```json\n{\"a\": \"Ã¼\"}\n```"],
+            'bom' => ["\xEF\xBB\xBFHallo", '48616c6c6f'],
+            'whitespace' => ["  Text mit Rand \n", '54657874206d69742052616e64'],
+            'unicode escape' => ['Pr\u00fcfung \u00e4 \u20ac', '5072c3bc66756e6720c3a420e282ac'],
+            'surrogate pair stays escaped (legacy)' => ['\uD83D\uDE00 Smiley', '5c75443833445c754445303020536d696c6579'],
+            'invalid escape kept' => ['\u12 bleibt', '5c75313220626c65696274'],
+            'real umlaut' => ['Größe ä', '4772c3b6c39f6520c3a4'],
+            'mojibake' => ['GrÃ¶ÃŸe Ã¤uÃŸern', '4772c3b6c39f6520c3a475c39f65726e'],
+            'mojibake lookalike' => ['Ãx Test', 'c383782054657374'],
+            'mixed escape and mojibake' => ['Ã¤ \u00fc', 'c383c2a420c3bc'],
+            'empty' => ['', ''],
+            'whitespace only' => ["  \n ", ''],
+            'bom only' => ["\xEF\xBB\xBF", ''],
+            'markdown json' => ["```json\n{\"a\": \"Ã¼\"}\n```", '6060606a736f6e0a7b2261223a2022c3bc227d0a606060'],
         ];
     }
 
     /** @dataProvider geminiParityInputs */
-    public function testMatchesGeminiProviderWithoutThinkTags(string $input): void {
-        $gemini = new GeminiProvider($this->createMock(IConfig::class), $this->createMock(LoggerInterface::class));
-        $legacy = new \ReflectionMethod(GeminiProvider::class, 'normalizeModelTextOutput');
-        $legacy->setAccessible(true);
-        $this->assertSame($legacy->invoke($gemini, $input), $this->normalizer->normalize($input));
+    public function testMatchesGeminiProviderWithoutThinkTags(string $input, string $legacyHex): void {
+        $this->assertSame(hex2bin($legacyHex), $this->normalizer->normalize($input));
     }
 }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\StoryProgress;
 use OCA\Learning\Db\StoryProgressMapper;
 use OCA\Learning\Service\CampaignGraphService;
@@ -2104,7 +2105,7 @@ class StoryEngineService {
         // We build a combined system+user prompt because generateNote() takes both.
         // For story calls, input sanitization is done upstream (no user-controlled free text
         // reaches this point without strip_tags + truncation).
-        return $this->geminiService->generateNote($systemPrompt, $userPrompt);
+        return $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Story);
     }
 
     // ─── Role-Based Prompts (NARR-04, NARR-05) ────────────────────────────────

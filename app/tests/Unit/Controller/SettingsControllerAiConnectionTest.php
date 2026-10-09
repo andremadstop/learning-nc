@@ -8,12 +8,9 @@ use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\AuditCheckpointService;
 use OCA\Learning\Service\AuditService;
-use OCA\Learning\Service\GeminiProvider;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
-use OCA\Learning\Service\LlmService;
-use OCA\Learning\Service\OllamaProvider;
 use OCA\Learning\Tests\Support\FakeAppConfigValues;
 use OCP\IAppConfig;
 use OCP\IConfig;
@@ -84,11 +81,7 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $this->assertSame('http://ollama-b.lan:11434', $now->baseUrl);
         $this->assertSame('model-b', $now->model);
         $this->assertSame('recipient_changed', $consent->state('alice', $now)['reason']);
-
-        // and the transport sends where the snapshot (and so the consent check) points
-        $ollama = $this->createMock(OllamaProvider::class);
-        $ollama->expects($this->once())->method('generateAt')->with('http://ollama-b.lan:11434', 'model-b')->willReturn('x');
-        (new LlmService($this->createMock(GeminiProvider::class), $ollama, $this->store()))->generateText('p');
+        // that the gateway sends only to the snapshot recipient is LlmGatewayTest's job (Task B3)
     }
 
     public function testUnchangedAiSettingsLeaveTheSnapshotAlone(): void {

@@ -4,29 +4,34 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\Pool;
+use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmGateway;
+use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmRequest;
 use Psr\Log\LoggerInterface;
 
 class PoolGeneratorService {
     private LlmService $llmService;
+    private LlmGateway $gateway;
     private PoolService $poolService;
     private QuestionService $questionService;
     private LoggerInterface $logger;
     private \OCP\Files\IRootFolder $rootFolder;
 
     private const MAX_CHUNK_WORDS = 3000;
-
-    private TelosService $telosService;
+    /** Task B4: at most this many requests per generation, however long the material is. */
+    private const MAX_CHUNKS = 10;
 
     public function __construct(
         LlmService $llmService,
+        LlmGateway $gateway,
         PoolService $poolService,
         QuestionService $questionService,
         LoggerInterface $logger,
-        \OCP\Files\IRootFolder $rootFolder,
-        TelosService $telosService
+        \OCP\Files\IRootFolder $rootFolder
     ) {
-        $this->telosService = $telosService;
         $this->llmService = $llmService;
+        $this->gateway = $gateway;
         $this->poolService = $poolService;
         $this->questionService = $questionService;
         $this->logger = $logger;
@@ -48,7 +53,13 @@ class PoolGeneratorService {
     /**
      * Generate draft questions from plain text.
      *
+     * One gateway session for the lecturer (purpose pool_generate), one request per chunk of at
+     * most MAX_CHUNK_WORDS words, at most MAX_CHUNKS chunks. send() re-checks consent before every
+     * chunk: without consent before the first request nothing is sent and the consent error
+     * reaches the caller; a consent lost later stops sending and returns what was generated.
+     *
      * @return array<int, array<string, mixed>> Draft questions
+     * @throws LlmConsentException
      */
     public function generateFromText(string $text, string $userId, int $questionCount = 20): array {
         if (!$this->llmService->isAvailable()) {
@@ -62,7 +73,8 @@ class PoolGeneratorService {
             throw new \RuntimeException('Text too short (minimum 50 characters)');
         }
 
-        $chunks = $this->chunkText($text);
+        $chunks = array_slice($this->chunkText($text), 0, self::MAX_CHUNKS);
+        $session = $this->gateway->begin($userId, LlmPurpose::PoolGenerate);
         $questionsPerChunk = (int)ceil($questionCount / count($chunks));
         $allDrafts = [];
 
@@ -72,24 +84,16 @@ class PoolGeneratorService {
                 break;
             }
 
-            // 5.5.2: one request per chunk — check consent before every request, not only once in
-            // the controller. Without consent before the first chunk: refuse; later: stop sending.
-            if (!$this->telosService->hasAiConsent($userId)) {
-                if ($index === 0) {
-                    throw new \RuntimeException('consent_required');
-                }
-                break;
-            }
-
             $count = min($questionsPerChunk, $remaining);
             $prompt = $this->buildPrompt($chunk, $count);
 
             try {
-                $output = $this->llmService->generateText($prompt, [
-                    'system_prompt' => 'You are an expert exam question writer. Output ONLY valid JSON arrays. No markdown, no explanation, no backticks.',
-                    'temperature' => 0.5,
-                    'max_output_tokens' => 3200,
-                ]);
+                $output = $this->gateway->send($session, new LlmRequest(
+                    'You are an expert exam question writer. Output ONLY valid JSON arrays. No markdown, no explanation, no backticks.',
+                    $prompt,
+                    0.5,
+                    3200,
+                ))->text;
 
                 $parsed = $this->parseOutput($output);
                 // Attach source chunk reference
@@ -98,6 +102,12 @@ class PoolGeneratorService {
                 }
                 unset($q);
                 $allDrafts = array_merge($allDrafts, $parsed);
+            } catch (LlmConsentException $e) {
+                // consent gone (revoked or recipient changed): nothing more is sent
+                if ($index === 0) {
+                    throw $e;
+                }
+                break;
             } catch (\Throwable $e) {
                 $this->logger->warning('PoolGeneratorService: chunk {idx} failed: {msg}', [
                     'idx' => $index,
