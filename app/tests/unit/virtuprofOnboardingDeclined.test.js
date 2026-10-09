@@ -20,6 +20,7 @@ vi.mock('@nextcloud/l10n', () => ({
 	translatePlural: (app, singular, plural, count) => (count === 1 ? singular : plural),
 	getLanguage: () => 'de',
 	getCanonicalLocale: () => 'de-DE',
+	isRTL: () => false,
 }))
 
 import axios from '@nextcloud/axios'

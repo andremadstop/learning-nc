@@ -37,23 +37,36 @@
         </div>
       </div>
 
-      <!-- AI Consent -->
+      <!-- AI consent: the tile only opens the consent dialog; the choice becomes "yes" once the
+           server has stored the consent (AiConsentPrompt is the only write path) -->
       <div class="onb-tile-group">
         <h3 class="onb-tile-group__label">{{ t('learning', 'NOVA KI-Erklaerungen?') }}</h3>
         <div class="onb-tile-group__grid onb-tile-group__grid--two">
-          <button
-            v-for="tile in aiConsentTiles"
-            :key="tile.id"
-            type="button"
-            :class="['onb-tile', { 'onb-tile--selected': store.profileChoices.aiConsent === tile.id }]"
-            :aria-pressed="store.profileChoices.aiConsent === tile.id ? 'true' : 'false'"
-            @click="store.setProfileChoice('aiConsent', tile.id)"
-          >
-            <span class="onb-tile__icon">{{ tile.icon }}</span>
-            <span class="onb-tile__label">{{ t('learning', tile.labelKey) }}</span>
-          </button>
+          <template v-for="tile in aiConsentTiles" :key="tile.id">
+            <button
+              v-if="tile.id === 'no' || aiAvailable"
+              type="button"
+              :class="['onb-tile', { 'onb-tile--selected': store.profileChoices.aiConsent === tile.id }]"
+              :aria-pressed="store.profileChoices.aiConsent === tile.id ? 'true' : 'false'"
+              :disabled="busy"
+              @click="chooseAi(tile.id)"
+            >
+              <span class="onb-tile__icon">{{ tile.icon }}</span>
+              <span class="onb-tile__label">{{ t('learning', tile.labelKey) }}</span>
+              <span v-if="tile.id === 'yes' && providerName" class="onb-tile__provider">{{ providerName }}</span>
+            </button>
+          </template>
         </div>
+        <p v-if="!aiAvailable" class="onb-tile-group__note">{{ t('learning', 'Auf diesem Server ist keine KI eingerichtet.') }}</p>
+        <p v-if="error" class="onb-tile-group__error" role="alert">{{ error }}</p>
       </div>
+
+      <AiConsentPrompt
+        v-if="showConsent"
+        source="onboarding"
+        @granted="onGranted"
+        @declined="showConsent = false"
+        @unavailable="onUnavailable" />
 
       <button
         type="button"
@@ -71,9 +84,12 @@
 import { t } from '@nextcloud/l10n'
 import { useOnboardingStore } from '../../stores/onboardingStore.js'
 import { GOAL_TILES, INTENSITY_TILES, AI_CONSENT_TILES } from '../../utils/onboarding-slides.js'
+import AiConsentPrompt from '../AiConsentPrompt.vue'
+import { fetchConsentStatus, revokeConsent, notifyConsentChanged } from '../../utils/aiConsent.js'
 
 export default {
   name: 'OnbProfileTiles',
+  components: { AiConsentPrompt },
   emits: ['next'],
 
   setup() {
@@ -81,7 +97,38 @@ export default {
     return { store }
   },
 
+  data() {
+    return {
+      showConsent: false,
+      busy: false,
+      error: '',
+      // GET .../telos/consent: loaded flag, the recipient to name on the tile, whether a consent is on record
+      statusLoaded: false,
+      providerName: '',
+      consentValid: false,
+    }
+  },
+
+  async mounted() {
+    try {
+      const status = await fetchConsentStatus()
+      this.providerName = status?.recipient?.name || ''
+      this.consentValid = !!status?.valid
+      this.statusLoaded = true
+      if (!status?.recipient) {
+        // nothing to consent to on this server
+        this.store.setProfileChoice('aiConsent', 'no')
+      } else if (status.valid) {
+        this.store.setProfileChoice('aiConsent', 'yes')
+      }
+    } catch (e) {
+      // status unknown: the user can still decide, the dialog loads it again
+      this.statusLoaded = false
+    }
+  },
+
   computed: {
+    aiAvailable() { return !this.statusLoaded || !!this.providerName },
     isStudent() { return this.store.role === 'student' },
     goalTiles() { return GOAL_TILES },
     intensityTiles() { return INTENSITY_TILES },
@@ -95,7 +142,46 @@ export default {
     },
   },
 
-  methods: { t },
+  methods: {
+    t,
+    chooseAi(id) {
+      if (id === 'yes') {
+        this.error = ''
+        this.showConsent = true
+        return
+      }
+      return this.chooseNoAi()
+    },
+    // "Without AI" after a consent was given (in this wizard or before) takes the consent back
+    async chooseNoAi() {
+      this.error = ''
+      if (this.consentValid || this.store.profileChoices.aiConsent === 'yes') {
+        this.busy = true
+        try {
+          await revokeConsent()
+        } catch (e) {
+          this.error = t('learning', 'Deine Einwilligung konnte nicht widerrufen werden. Bitte versuche es erneut.')
+          this.busy = false
+          return
+        }
+        this.busy = false
+        this.consentValid = false
+        notifyConsentChanged(false)
+      }
+      this.store.setProfileChoice('aiConsent', 'no')
+    },
+    onGranted() {
+      this.showConsent = false
+      this.consentValid = true
+      this.store.setProfileChoice('aiConsent', 'yes')
+    },
+    onUnavailable() {
+      this.showConsent = false
+      this.statusLoaded = true
+      this.providerName = ''
+      this.store.setProfileChoice('aiConsent', 'no')
+    },
+  },
 }
 </script>
 
@@ -180,6 +266,26 @@ export default {
 
 .onb-tile__icon {
   font-size: 2rem;
+}
+
+.onb-tile__provider {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.onb-tile-group__note {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--lnc-text-secondary, #8b95a8);
+}
+
+.onb-tile-group__error {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-error-text, #ff6b6b);
 }
 
 .onb-tile__label {

@@ -429,21 +429,6 @@
 
       <!-- ── AI-first layout (aiEnabled=true) ──────────────────── -->
       <template v-else-if="aiEnabled">
-        <!-- AI consent dialog: versioned, JSON-driven (Phase 102) -->
-        <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="consentData.title || t('learning', 'AI consent required')">
-          <h4 v-if="consentData.title" class="ai-consent-title">{{ consentData.title }}</h4>
-          <!-- eslint-disable-next-line vue/no-v-html — static JSON bundled with app, not user input -->
-          <div v-if="consentData.body_html" v-html="consentData.body_html" class="ai-consent-body"></div>
-          <p class="ai-consent-privacy-link">
-            <a href="#/settings/privacy">{{ t('learning', 'Mehr zum Datenschutz') }}</a>
-          </p>
-          <p v-if="consentError" class="ai-consent-error" role="alert">{{ consentError }}</p>
-          <div class="ai-consent-actions">
-            <NcButton variant="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Akzeptieren') }}</NcButton>
-            <NcButton variant="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Ablehnen') }}</NcButton>
-          </div>
-        </div>
-
         <div v-if="step.showIntroInline && (step.title || step.text)" class="chat-step-intro">
           <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
           <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
@@ -960,18 +945,6 @@ export default {
     aiEnabled: {
       type: Boolean,
       default: false,
-    },
-    showConsentDialog: {
-      type: Boolean,
-      default: false,
-    },
-    consentData: {
-      type: Object,
-      default: () => ({}),
-    },
-    consentError: {
-      type: String,
-      default: null,
     },
     examBlocked: {
       type: Boolean,
@@ -1682,68 +1655,6 @@ export default {
   width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
-}
-
-/* ── AI consent overlay (Phase 102) ──────────────── */
-.ai-consent-overlay {
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 10px;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.ai-consent-title {
-  margin: 0 0 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-main-text);
-}
-
-.ai-consent-body {
-  margin: 0 0 10px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-main-text);
-}
-
-.ai-consent-body :deep(p) {
-  margin: 0 0 8px;
-}
-
-.ai-consent-body :deep(ul) {
-  margin: 4px 0 8px 16px;
-  padding: 0;
-}
-
-.ai-consent-body :deep(li) {
-  margin-bottom: 4px;
-}
-
-.ai-consent-body :deep(strong) {
-  color: var(--color-main-text);
-}
-
-.ai-consent-privacy-link {
-  margin: 0 0 10px;
-  font-size: 13px;
-}
-
-.ai-consent-privacy-link a {
-  color: var(--color-primary-element);
-  text-decoration: underline;
-}
-
-.ai-consent-error {
-  margin: 0 0 8px;
-  color: var(--color-error-text, var(--color-error));
-  font-weight: 600;
-}
-
-.ai-consent-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
 }
 
 /* ── Chat section ─────────────────────────────────── */

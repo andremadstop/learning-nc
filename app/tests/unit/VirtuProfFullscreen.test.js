@@ -26,8 +26,6 @@ function createInstance(overrides = {}) {
 		chatMessages: [],
 		chatLoading: false,
 		aiEnabled: true,
-		showConsentDialog: false,
-		consentData: {},
 		examBlocked: false,
 		hasQuestionContext: false,
 		currentContext: {},

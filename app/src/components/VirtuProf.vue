@@ -1,6 +1,12 @@
 <template>
   <div>
     <OnboardingIntro v-if="showOnboardingIntro" :role="userRole" @done="onIntroFinished" />
+    <AiConsentPrompt
+      v-if="showAiConsentDialog"
+      source="dialog"
+      @granted="handleConsentGranted"
+      @declined="handleConsentDeclined"
+      @unavailable="handleConsentUnavailable" />
     <VirtuProfFullscreen
       v-if="enabled && fullscreenActive"
       :title="panelTitle"
@@ -10,17 +16,12 @@
       :chat-messages="chatMessages"
       :chat-loading="chatLoading"
       :ai-enabled="aiEnabled"
-      :show-consent-dialog="showAiConsentDialog"
-      :consent-data="consentData"
-      :consent-error="consentSaveError"
       :exam-blocked="isExamMode"
       :has-question-context="hasActiveQuestionContext"
       :current-context="currentContext"
       @close="handleFullscreenClose"
       @send="handleChatSend"
-      @report-error="handleReportError"
-      @consent-accept="handleConsentAccept"
-      @consent-decline="handleConsentDecline" />
+      @report-error="handleReportError" />
     <transition name="virtuprof-enter">
     <section
       v-if="enabled && !fullscreenActive"
@@ -60,9 +61,6 @@
           :chat-messages="chatMessages"
           :chat-loading="chatLoading"
           :ai-enabled="aiEnabled"
-          :show-consent-dialog="showAiConsentDialog"
-          :consent-data="consentData"
-          :consent-error="consentSaveError"
           :exam-blocked="isExamMode"
           :has-question-context="hasActiveQuestionContext"
           :telos-form="telosForm"
@@ -79,9 +77,7 @@
           @update:ticketSubject="ticketSubject = $event"
           @update:ticketDraft="ticketDraft = $event"
           @chat-send="handleChatSend"
-          @report-error="handleReportError"
-          @consent-accept="handleConsentAccept"
-          @consent-decline="handleConsentDecline" />
+          @report-error="handleReportError" />
       </NovaPanel>
     </section>
   </transition>
@@ -103,7 +99,8 @@ import {
   detectVirtuProfLanguage,
   translateVirtuProf,
 } from '../utils/virtuprof-i18n.js'
-import consentData from '../../data/ai-consent.json'
+import AiConsentPrompt from './AiConsentPrompt.vue'
+import { isConsentRefusal, onConsentChanged } from '../utils/aiConsent.js'
 import {
   applyTelosToForm,
   buildTelosPayload,
@@ -220,7 +217,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { SkinRenderer, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro },
+  components: { SkinRenderer, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro, AiConsentPrompt },
   props: {
     enabled: {
       type: Boolean,
@@ -283,14 +280,13 @@ export default {
       chatMessages: [],
       chatLoading: false,
       chatAnimationTimer: null,
-      // AI consent — versioned (Phase 102)
-      aiConsentVersion: null,
-      // 5.7.0: the recipient the user is asked to consent to (from GET .../telos/consent)
-      consentRecipientFingerprint: null,
-      consentData,
+      // AI consent (5.7.0): only the server status counts (GET .../telos/consent -> valid); the
+      // dialog and the write live in AiConsentPrompt.
+      consentValid: false,
       showAiConsentDialog: false,
-      consentSaveError: null,
       pendingChatMessage: null,
+      // the message the server refused for lack of consent: refused twice = error text, no loop
+      lastRefusedMessage: null,
       // AI global enabled flag (PRIV-02)
       aiEnabled: false,
       telosOnboardingActive: false,
@@ -451,8 +447,9 @@ export default {
       const consentRes = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
       this.applyConsentStatus(consentRes.data)
     } catch (e) {
-      this.aiConsentVersion = null
+      this.consentValid = false
     }
+    this._offConsentChanged = onConsentChanged((valid) => this.handleConsentChanged(valid))
     // GREET-01: Extract first name from Nextcloud display name
     try {
       const user = getCurrentUser()
@@ -546,6 +543,10 @@ export default {
     this.$emit('ready')
   },
   beforeUnmount() {
+    if (typeof this._offConsentChanged === 'function') {
+      this._offConsentChanged()
+      this._offConsentChanged = null
+    }
     if (Array.isArray(this._storeUnwatchers)) {
       this._storeUnwatchers.forEach((unwatch) => {
         if (typeof unwatch === 'function') {
@@ -1115,7 +1116,11 @@ export default {
           course_id: this.currentScriptContext?.courseId || null,
         })
       } catch (e) {
-        // Best-effort — user can use manual button if this fails
+        // Best-effort — user can use manual button if this fails. A consent refusal only means the
+        // next chat message asks again.
+        if (isConsentRefusal(e)) {
+          this.consentValid = false
+        }
       }
     },
     handleVoiceSettingsChanged(payload = {}) {
@@ -1873,8 +1878,8 @@ export default {
         return
       }
 
-      // Phase 102: show consent dialog if version mismatch or never consented
-      if (this.aiConsentVersion !== this.consentData.version) {
+      // 5.7.0: no valid consent for the current text and recipient -> ask first
+      if (!this.consentValid) {
         this.pendingChatMessage = message
         this.showAiConsentDialog = true
         // Ensure bubble is open so the dialog is visible
@@ -1936,6 +1941,7 @@ export default {
 
       try {
         const response = await axios.post(generateUrl('/apps/learning/api/virtu-prof/chat'), payload)
+        this.lastRefusedMessage = null
         const answer = response.data?.answer
         const action = response.data?.action
         const filePath = response.data?.path || null
@@ -1954,14 +1960,16 @@ export default {
         this.chatMessages.push(msg)
       } catch (e) {
         const status = e?.response?.status
-        // 5.5.2: the server has no valid consent (e.g. the consent text changed). Ask again instead
-        // of showing a generic error; the message is kept and sent once consent is saved.
-        if (status === 403 && e?.response?.data?.consent_required) {
+        // The server refused for lack of a valid consent (consent_required, or the admin changed
+        // the recipient: 409). Ask again instead of showing a generic error; the message is kept
+        // and sent once consent is saved. The same message refused twice is an error, not a loop.
+        if (isConsentRefusal(e) && this.lastRefusedMessage !== message) {
           const last = this.chatMessages[this.chatMessages.length - 1]
           if (last && last.role === 'user' && last.text === message) {
             this.chatMessages.pop()
           }
-          this.aiConsentVersion = null
+          this.consentValid = false
+          this.lastRefusedMessage = message
           this.pendingChatMessage = message
           this.showAiConsentDialog = true
           return
@@ -1986,56 +1994,46 @@ export default {
         this.applyReaction('chat-message')
       }
     },
-    // Phase 102: User accepted the versioned AI consent dialog
-    // 5.7.0: a stored consent counts only while the server reports it valid (current text AND the
-    // same recipient); remember the recipient the user is asked about.
+    // 5.7.0: a consent counts only while the server reports it valid (current text AND the same
+    // recipient).
     applyConsentStatus(data) {
-      this.aiConsentVersion = data?.valid ? (data.ai_consent_version || null) : null
-      this.consentRecipientFingerprint = data?.recipient?.fingerprint || null
+      this.consentValid = !!data?.valid
     },
-    async handleConsentAccept() {
-      try {
-        let fingerprint = this.consentRecipientFingerprint
-        if (!fingerprint) {
-          const res = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
-          fingerprint = res?.data?.recipient?.fingerprint || null
-        }
-        // The recipient goes back as the user was shown it; the server answers 409 if the admin
-        // changed it meanwhile.
-        await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
-          version: this.consentData.version,
-          recipient_fingerprint: fingerprint,
-          source: 'dialog',
-        })
-      } catch (e) {
-        if (e?.response?.status === 409) {
-          // ask the server again on the next attempt instead of reusing the outdated recipient
-          this.consentRecipientFingerprint = null
-        }
-        // 5.5.2 fail-closed: the server has no consent on record, so nothing may be sent to the AI
-        // provider. Keep the dialog open with an error and keep the waiting message for a retry.
-        this.consentSaveError = this.vt('Your consent could not be saved. Please try again.')
-        return
-      }
-      this.consentSaveError = null
-      this.aiConsentVersion = this.consentData.version
+    // AiConsentPrompt stored the consent (or it was valid already)
+    handleConsentGranted() {
+      this.consentValid = true
+      this.showAiConsentDialog = false
       // Clean up legacy localStorage consent
       try {
         window.localStorage.removeItem('learning:ai_chat_consent')
       } catch (e) { /* ignore */ }
-      this.showAiConsentDialog = false
       const pending = this.pendingChatMessage
       this.pendingChatMessage = null
       if (pending) {
         this.handleChatSend(pending)
       }
     },
-
-    // Phase 102: User declined the AI consent dialog
-    handleConsentDecline() {
-      this.consentSaveError = null
+    handleConsentDeclined() {
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
+      this.lastRefusedMessage = null
+    },
+    // nothing to consent to: AI was switched off meanwhile, or the status was not loadable
+    handleConsentUnavailable(payload = {}) {
+      this.showAiConsentDialog = false
+      this.pendingChatMessage = null
+      this.lastRefusedMessage = null
+      this.chatMessages.push({
+        role: 'assistant',
+        text: payload.reason === 'no_recipient'
+          ? this.vt('AI is currently disabled. Please contact your admin.')
+          : this.vt('Something went wrong. Please try again later.'),
+        speakable: true,
+      })
+    },
+    // granted or revoked elsewhere on the page (settings)
+    handleConsentChanged(valid) {
+      this.consentValid = !!valid
     },
 
     handleExplainQuestion(payload = {}) {

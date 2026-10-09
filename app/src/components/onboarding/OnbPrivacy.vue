@@ -6,6 +6,9 @@
       <p class="onb-privacy__text">
         {{ t('learning', 'Dein Lernfortschritt bleibt auf diesem Server. Nur du und deine Dozenten sehen deine Ergebnisse.') }}
       </p>
+      <p class="onb-privacy__text">
+        {{ t('learning', 'KI-Funktionen sind freiwillig: Erst wenn du im nächsten Schritt ausdrücklich zustimmst, werden deine Eingaben an den KI-Anbieter gesendet, den deine Administration eingerichtet hat.') }}
+      </p>
       <a
         class="onb-privacy__link"
         href="/settings/user/privacy"

@@ -376,6 +376,28 @@
 
       <hr class="section-divider" />
 
+      <h3>{{ t('learning', 'KI-Einwilligung') }}</h3>
+      <div v-if="consentLoading" class="loading">
+        <NcLoadingIcon :size="20" />
+        <span>{{ t('learning', 'Loading...') }}</span>
+      </div>
+      <template v-else>
+        <p class="section-desc">
+          {{ consentValid
+            ? t('learning', 'Du hast zugestimmt, dass deine Eingaben an {provider} gesendet werden. Du kannst das jederzeit widerrufen.', { provider: consentProvider })
+            : t('learning', 'Du hast der KI-Nutzung nicht zugestimmt. KI-Funktionen bleiben aus, bis du im Dialog zustimmst.') }}
+        </p>
+        <NcNoteCard v-if="consentRevoked" type="success">{{ t('learning', 'Einwilligung widerrufen. Das gilt für alle KI-Anfragen, die ab jetzt beginnen.') }}</NcNoteCard>
+        <NcNoteCard v-if="consentError" type="error">{{ consentError }}</NcNoteCard>
+        <div v-if="consentValid" class="actions">
+          <NcButton variant="secondary" :disabled="consentRevoking" @click="revokeAiConsent">
+            {{ t('learning', 'KI-Einwilligung widerrufen') }}
+          </NcButton>
+        </div>
+      </template>
+
+      <hr class="section-divider" />
+
       <h3>{{ t('learning', 'Calendar Sync') }}</h3>
       <p class="section-desc">{{ t('learning', 'Subscribe to your due cards in any calendar app (Google Calendar, Thunderbird, iOS, etc.).') }}</p>
 
@@ -432,6 +454,7 @@ import {
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { useA11yStore } from '../stores/a11yStore.js'
 import { useSkinStore } from '../stores/skinStore.js'
+import { fetchConsentStatus, revokeConsent, notifyConsentChanged, onConsentChanged } from '../utils/aiConsent.js'
 
 const VOICE_LANGUAGE_OPTIONS = [
   { value: 'de-DE', label: 'Deutsch' },
@@ -486,6 +509,13 @@ export default {
         animationsEnabled: true,
         skinId: 'nova',
       },
+      // AI consent (5.7.0): status from the server; revoking is DELETE, granting stays in the dialog
+      consentLoading: true,
+      consentValid: false,
+      consentProvider: '',
+      consentRevoking: false,
+      consentRevoked: false,
+      consentError: '',
       // Calendar token
       calTokenLoading: true,
       icsUrl: '',
@@ -554,8 +584,46 @@ export default {
     this.load()
     this.loadCalendarToken()
     this.loadLearningProfile()
+    this.loadConsent()
+    this._offConsentChanged = onConsentChanged((valid) => {
+      this.consentValid = valid
+      if (valid) this.loadConsent()
+    })
+  },
+  beforeUnmount() {
+    if (typeof this._offConsentChanged === 'function') {
+      this._offConsentChanged()
+      this._offConsentChanged = null
+    }
   },
   methods: {
+    async loadConsent() {
+      try {
+        const status = await fetchConsentStatus()
+        this.consentValid = !!status?.valid
+        this.consentProvider = status?.recipient?.name || ''
+      } catch (e) {
+        this.consentValid = false
+      } finally {
+        this.consentLoading = false
+      }
+    },
+    async revokeAiConsent() {
+      this.consentRevoking = true
+      this.consentError = ''
+      this.consentRevoked = false
+      try {
+        await revokeConsent()
+      } catch (e) {
+        this.consentError = t('learning', 'Deine Einwilligung konnte nicht widerrufen werden. Bitte versuche es erneut.')
+        this.consentRevoking = false
+        return
+      }
+      this.consentValid = false
+      this.consentRevoked = true
+      this.consentRevoking = false
+      notifyConsentChanged(false)
+    },
     async loadCalendarToken() {
       this.calTokenLoading = true
       try {

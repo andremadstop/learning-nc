@@ -3085,6 +3085,18 @@
         "Szenario / Info (optional)": "Scénario / info (facultatif)",
         "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo": "p. ex. une description de cas, une situation initiale ou des informations de contexte",
         "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage.": "Affiché avant la question. Les apprenants lisent d’abord ce texte, puis répondent à la question.",
-        "Leer lassen, um das Original-Szenario zu verwenden": "Laisser vide pour utiliser le scénario d’origine"
+        "Leer lassen, um das Original-Szenario zu verwenden": "Laisser vide pour utiliser le scénario d’origine",
+        "Der KI-Anbieter hat sich geändert. Bitte lies die Angaben noch einmal, bevor du zustimmst.": "Le fournisseur d'IA a changé. Relis les informations avant de donner ton accord.",
+        "Details ansehen & zustimmen": "Voir les détails et accepter",
+        "Auf diesem Server ist keine KI eingerichtet.": "Aucune IA n'est configurée sur ce serveur.",
+        "Deine Einwilligung konnte nicht widerrufen werden. Bitte versuche es erneut.": "Ton consentement n'a pas pu être retiré. Réessaie.",
+        "KI-Einwilligung": "Consentement à l'IA",
+        "Du hast zugestimmt, dass deine Eingaben an {provider} gesendet werden. Du kannst das jederzeit widerrufen.": "Tu as accepté que tes saisies soient envoyées à {provider}. Tu peux le retirer à tout moment.",
+        "Du hast der KI-Nutzung nicht zugestimmt. KI-Funktionen bleiben aus, bis du im Dialog zustimmst.": "Tu n'as pas accepté l'utilisation de l'IA. Les fonctions d'IA restent désactivées tant que tu n'acceptes pas dans la boîte de dialogue.",
+        "Einwilligung widerrufen. Das gilt für alle KI-Anfragen, die ab jetzt beginnen.": "Consentement retiré. Cela vaut pour toutes les requêtes d'IA qui commencent à partir de maintenant.",
+        "KI-Einwilligung widerrufen": "Retirer le consentement à l'IA",
+        "Einwilligung ansehen": "Voir le consentement",
+        "KI-Funktionen sind aus, bis du der Datenweitergabe an den KI-Anbieter zustimmst.": "Les fonctions d'IA restent désactivées tant que tu n'acceptes pas la transmission de tes données au fournisseur d'IA.",
+        "KI-Funktionen sind freiwillig: Erst wenn du im nächsten Schritt ausdrücklich zustimmst, werden deine Eingaben an den KI-Anbieter gesendet, den deine Administration eingerichtet hat.": "Les fonctions d'IA sont facultatives : tes saisies ne sont envoyées au fournisseur d'IA configuré par ton administration qu'après ton accord explicite à l'étape suivante."
     }
 }

@@ -201,9 +201,7 @@
 				<template v-else-if="narrative">
 					<p class="narrative-text">{{ narrative }}</p>
 				</template>
-				<p v-else-if="narrativeConsentRequired" class="narrative-unavailable">
-					{{ t('learning', 'KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen.') }}
-				</p>
+				<AiConsentHint v-else-if="narrativeConsentRequired" @granted="loadNarrative" />
 				<p v-else class="narrative-unavailable">
 					{{ t('learning', 'KI-Reflexion nicht verfügbar. Stelle sicher, dass VirtuProf aktiviert ist.') }}
 				</p>
@@ -223,6 +221,8 @@
 
 <script>
 import axios from '@nextcloud/axios'
+import AiConsentHint from './AiConsentHint.vue'
+import { isConsentRefusal } from '../utils/aiConsent.js'
 import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
@@ -238,6 +238,7 @@ export default {
 	name: 'CourseSummary',
 
 	components: {
+		AiConsentHint,
 		Certificate,
 		NcButton,
 		NcLoadingIcon,
@@ -390,9 +391,10 @@ export default {
 					courseId: this.courseId,
 				}))
 				this.narrative = res.data.narrative
-				this.narrativeConsentRequired = res.data.consent_required || false
+				this.narrativeConsentRequired = isConsentRefusal(res)
 			} catch (e) {
 				this.narrative = null
+				this.narrativeConsentRequired = isConsentRefusal(e)
 			} finally {
 				this.narrativeLoading = false
 			}

@@ -212,7 +212,7 @@ export const INTENSITY_TILES = [
 ]
 
 export const AI_CONSENT_TILES = [
-  { id: 'yes', icon: '\uD83E\uDD16', labelKey: 'KI-Erklaerungen aktivieren' },
+  { id: 'yes', icon: '\uD83E\uDD16', labelKey: 'Details ansehen & zustimmen' },
   { id: 'no', icon: '\uD83D\uDD12', labelKey: 'Ohne KI lernen' },
 ]
 

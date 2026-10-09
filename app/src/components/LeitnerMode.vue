@@ -193,6 +193,7 @@
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
           <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
@@ -245,6 +246,7 @@
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
           <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
@@ -284,12 +286,14 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
+import AiConsentHint from './AiConsentHint.vue';
+import { isConsentRefusal } from '../utils/aiConsent.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsScheduler';
 
 export default {
   name: 'LeitnerMode',
-  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     poolId: { type: Number, required: true },
@@ -326,6 +330,7 @@ export default {
       explainLoading: false,
       explainTaskId: null,
       explainText: '',
+      aiConsentRequired: false,
       explainPollTimer: null,
       questionLanguage: this.contentLanguage || '',
     };
@@ -782,6 +787,7 @@ export default {
       if (!this.currentItem) return;
       this.explainLoading = true;
       this.explainText = '';
+      this.aiConsentRequired = false;
       this.explainTaskId = null;
       clearInterval(this.explainPollTimer);
       try {
@@ -793,8 +799,8 @@ export default {
         this.explainTaskId = r.data.taskId;
         this.pollExplain();
       } catch (e) {
-        if (e.response?.data?.consent_required) {
-          this.explainText = t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.');
+        if (isConsentRefusal(e)) {
+          this.aiConsentRequired = true;
         }
         this.explainLoading = false;
       }

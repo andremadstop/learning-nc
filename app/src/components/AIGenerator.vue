@@ -105,6 +105,7 @@
 
       <!-- Error state -->
       <NcNoteCard v-if="error" type="error" class="ai-error">{{ error }}</NcNoteCard>
+      <AiConsentHint v-if="aiConsentRequired" class="ai-error" @granted="aiConsentRequired = false" />
     </div>
   </div>
 </template>
@@ -114,12 +115,14 @@ import NcButton from '@nextcloud/vue/components/NcButton';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import axios from '@nextcloud/axios';
+import AiConsentHint from './AiConsentHint.vue';
+import { isConsentRefusal } from '../utils/aiConsent.js';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess } from '@nextcloud/dialogs';
 
 export default {
   name: 'AIGenerator',
-  components: { NcButton, NcNoteCard, NcLoadingIcon },
+  components: { AiConsentHint, NcButton, NcNoteCard, NcLoadingIcon },
   props: {
     poolId: { type: Number, required: true },
   },
@@ -134,6 +137,7 @@ export default {
       editingIndex: null,
       importing: false,
       error: '',
+      aiConsentRequired: false,
       taskId: null,
       pollTimer: null,
     };
@@ -153,6 +157,7 @@ export default {
     async startGeneration() {
       this.generating = true;
       this.error = '';
+      this.aiConsentRequired = false;
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/ai/generate'), {
           poolId: this.poolId,
@@ -164,9 +169,11 @@ export default {
         this.step = 'generating';
         this.pollStatus();
       } catch (e) {
-        this.error = e.response?.data?.consent_required
-          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
-          : (e.response?.data?.error || t('learning', 'Failed to start generation'));
+        if (isConsentRefusal(e)) {
+          this.aiConsentRequired = true;
+        } else {
+          this.error = e.response?.data?.error || t('learning', 'Failed to start generation');
+        }
         this.generating = false;
       }
     },

@@ -143,7 +143,7 @@ describe('request payload contracts', () => {
 	it('VirtuProf chat posts lastWrongQuestionId, the parameter the controller declares', async () => {
 		const ctx = {
 			chatLoading: false,
-			aiConsentVersion: 'v1',
+			consentValid: true,
 			consentData: { version: 'v1' },
 			visible: true,
 			isMinimized: false,

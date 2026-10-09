@@ -12,7 +12,9 @@ vi.mock('@nextcloud/router', () => ({
 }))
 vi.mock('@nextcloud/l10n', () => ({
 	translate: (_app, str) => str,
+	t: (_app, str) => str,
 	getLanguage: () => 'de',
+	isRTL: () => false,
 }))
 
 import axios from '@nextcloud/axios'

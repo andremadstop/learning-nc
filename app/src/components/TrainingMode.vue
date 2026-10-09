@@ -142,6 +142,7 @@
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
           <div v-if="!isCorrect" class="ai-explain-row">
             <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
@@ -176,6 +177,7 @@
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
           <div v-if="!isCorrect" class="ai-explain-row">
             <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
@@ -217,6 +219,7 @@
           {{ t('learning', 'Summary saved to {path}', { path: summaryPath }) }}
         </div>
         <div v-if="summaryError" class="summary-error">{{ summaryError }}</div>
+        <AiConsentHint v-if="summaryConsentRequired" @granted="summaryConsentRequired = false; generateSummaryNote()" />
       </div>
       <BadgeUnlock :badges="newBadges" />
       <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />
@@ -240,10 +243,12 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
+import AiConsentHint from './AiConsentHint.vue';
+import { isConsentRefusal } from '../utils/aiConsent.js';
 
 export default {
   name: 'TrainingMode',
-  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -272,6 +277,8 @@ export default {
       explainLoading: false,
       explainTaskId: null,
       explainText: '',
+      aiConsentRequired: false,
+      summaryConsentRequired: false,
       explainPollTimer: null,
       questionLanguage: this.contentLanguage || '',
       activeQuestionType: this.initialQuestionType || null,
@@ -554,6 +561,7 @@ export default {
       if (!this.currentQuestion) return;
       this.explainLoading = true;
       this.explainText = '';
+      this.aiConsentRequired = false;
       this.explainTaskId = null;
       clearInterval(this.explainPollTimer);
       try {
@@ -565,8 +573,8 @@ export default {
         this.explainTaskId = r.data.taskId;
         this.pollExplain();
       } catch (e) {
-        if (e.response?.data?.consent_required) {
-          this.explainText = t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.');
+        if (isConsentRefusal(e)) {
+          this.aiConsentRequired = true;
         }
         this.explainLoading = false;
       }
@@ -672,6 +680,7 @@ export default {
     async generateSummaryNote() {
       this.summaryGenerating = true;
       this.summaryError = null;
+      this.summaryConsentRequired = false;
       this.summaryPath = null;
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/notes/generate'), {
@@ -680,10 +689,11 @@ export default {
         });
         this.summaryPath = r.data.path || null;
       } catch (e) {
-        const msg = e.response?.data?.consent_required
-          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
-          : (e.response?.data?.error || t('learning', 'Summary generation failed'));
-        this.summaryError = msg;
+        if (isConsentRefusal(e)) {
+          this.summaryConsentRequired = true;
+        } else {
+          this.summaryError = e.response?.data?.error || t('learning', 'Summary generation failed');
+        }
       } finally {
         this.summaryGenerating = false;
       }

@@ -79,7 +79,10 @@ export const useOnboardingStore = defineStore('onboarding', {
         if (data.role) this.role = data.role
         if (typeof data.tourSlideIndex === 'number') this.tourSlideIndex = data.tourSlideIndex
         if (data.profileChoices && typeof data.profileChoices === 'object') {
-          this.profileChoices = { ...this.profileChoices, ...data.profileChoices }
+          // 5.7.0: the AI consent choice is never taken from the browser - a stored "yes" was no
+          // consent for the current text and recipient. The server status decides (OnbProfileTiles).
+          const { aiConsent: _discarded, ...stored } = data.profileChoices
+          this.profileChoices = { ...this.profileChoices, ...stored }
         }
         if (data.selectedStarterPoolId != null) this.selectedStarterPoolId = data.selectedStarterPoolId
         if (data.skipped === true) this.skipped = true
@@ -94,7 +97,7 @@ export const useOnboardingStore = defineStore('onboarding', {
           step: this.step,
           role: this.role,
           tourSlideIndex: this.tourSlideIndex,
-          profileChoices: this.profileChoices,
+          profileChoices: { ...this.profileChoices, aiConsent: null },
           selectedStarterPoolId: this.selectedStarterPoolId,
           skipped: this.skipped,
         }))

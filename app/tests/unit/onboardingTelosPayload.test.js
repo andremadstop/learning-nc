@@ -13,6 +13,8 @@ vi.mock('@nextcloud/router', () => ({
 
 vi.mock('@nextcloud/l10n', () => ({
 	t: (app, text) => text,
+	getLanguage: () => 'de',
+	isRTL: () => false,
 }))
 
 import axios from '@nextcloud/axios'
@@ -148,10 +150,6 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 				calls.push('telos')
 				return Promise.reject(new Error('boom: 500 from the dispatcher'))
 			}),
-			saveAiConsent: vi.fn(() => {
-				calls.push('consent')
-				return Promise.resolve()
-			}),
 			importStarterPool: vi.fn(() => {
 				calls.push('pool')
 				return Promise.resolve()
@@ -168,14 +166,14 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 		return { ctx, calls }
 	}
 
-	it('still saves AI consent and imports the starter pool when the profile save throws', async () => {
+	it('still imports the starter pool when the profile save throws', async () => {
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 		const { ctx, calls } = finalizeContext()
 
 		await OnboardingRedesign.methods.finalize.call(ctx)
 
-		expect(calls).toEqual(['telos', 'consent', 'pool', 'acknowledge'])
-		expect(ctx.saveAiConsent).toHaveBeenCalledTimes(1)
+		// 5.7.0: onboarding never writes the consent - only AiConsentPrompt does
+		expect(calls).toEqual(['telos', 'pool', 'acknowledge'])
 		expect(ctx.importStarterPool).toHaveBeenCalledTimes(1)
 		errorSpy.mockRestore()
 	})
@@ -195,7 +193,6 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 		const { ctx } = finalizeContext({
 			ctx: {
-				saveAiConsent: vi.fn(() => Promise.reject(new Error('nope'))),
 				importStarterPool: vi.fn(() => Promise.reject(new Error('nope'))),
 			},
 		})
@@ -210,7 +207,7 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 		errorSpy.mockRestore()
 	})
 
-	it('skips profile and consent when the user skipped, but still imports the pool', async () => {
+	it('skips the profile when the user skipped, but still imports the pool', async () => {
 		const { ctx, calls } = finalizeContext({ store: { skipped: true, selectedStarterPoolId: 42 } })
 
 		await OnboardingRedesign.methods.finalize.call(ctx)
@@ -218,6 +215,5 @@ describe('OnboardingRedesign.finalize — one failing step must not eat the othe
 		// Skipping is a decision, so the server hears about it even though no profile is saved.
 		expect(calls).toEqual(['pool', 'acknowledge'])
 		expect(ctx.saveTelosProfile).not.toHaveBeenCalled()
-		expect(ctx.saveAiConsent).not.toHaveBeenCalled()
 	})
 })

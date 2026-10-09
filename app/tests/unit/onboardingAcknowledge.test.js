@@ -4,7 +4,7 @@ vi.mock('@nextcloud/axios', () => ({
 	default: { get: vi.fn(), post: vi.fn(() => Promise.resolve({ data: {} })) },
 }))
 vi.mock('@nextcloud/router', () => ({ generateUrl: vi.fn((url) => url) }))
-vi.mock('@nextcloud/l10n', () => ({ t: (app, text) => text }))
+vi.mock('@nextcloud/l10n', () => ({ t: (app, text) => text, getLanguage: () => 'de', isRTL: () => false }))
 
 import axios from '@nextcloud/axios'
 import OnboardingRedesign from '../../src/components/OnboardingRedesign.vue'
@@ -33,7 +33,6 @@ function makeContext(storeOverrides = {}) {
 		visible: true,
 		getUid: () => 'alice',
 		saveTelosProfile: vi.fn(() => Promise.resolve()),
-		saveAiConsent: vi.fn(() => Promise.resolve()),
 		importStarterPool: vi.fn(() => Promise.resolve()),
 		acknowledgeOnboarding: OnboardingRedesign.methods.acknowledgeOnboarding,
 		runFinalizeStep: OnboardingRedesign.methods.runFinalizeStep,

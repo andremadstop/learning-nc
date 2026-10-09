@@ -170,6 +170,7 @@
 
       <!-- Error -->
       <NcNoteCard v-if="error" type="error" class="pg-error">{{ error }}</NcNoteCard>
+      <AiConsentHint v-if="aiConsentRequired" class="pg-error" @granted="aiConsentRequired = false" />
     </div>
   </div>
 </template>
@@ -180,12 +181,14 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import PoolDraftReview from './PoolDraftReview.vue';
 import axios from '@nextcloud/axios';
+import AiConsentHint from './AiConsentHint.vue';
+import { isConsentRefusal } from '../utils/aiConsent.js';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess } from '@nextcloud/dialogs';
 
 export default {
   name: 'PoolGenerator',
-  components: { NcButton, NcNoteCard, NcLoadingIcon, PoolDraftReview },
+  components: { AiConsentHint, NcButton, NcNoteCard, NcLoadingIcon, PoolDraftReview },
   emits: ['close', 'created'],
   data() {
     return {
@@ -205,6 +208,7 @@ export default {
       creating: false,
       // UI
       error: '',
+      aiConsentRequired: false,
     };
   },
   computed: {
@@ -240,6 +244,7 @@ export default {
     async generateFromText() {
       this.generating = true;
       this.error = '';
+      this.aiConsentRequired = false;
       this.step = 'generating';
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/pool-generator/from-text'), {
@@ -248,9 +253,11 @@ export default {
         });
         this.handleGenerationResult(r.data);
       } catch (e) {
-        this.error = e.response?.data?.consent_required
-          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
-          : (e.response?.data?.error || t('learning', 'Generation failed'));
+        if (isConsentRefusal(e)) {
+          this.aiConsentRequired = true;
+        } else {
+          this.error = e.response?.data?.error || t('learning', 'Generation failed');
+        }
         this.step = 'input';
       } finally {
         this.generating = false;
@@ -260,6 +267,7 @@ export default {
     async generateFromFile() {
       this.generating = true;
       this.error = '';
+      this.aiConsentRequired = false;
       this.step = 'generating';
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/pool-generator/from-file'), {
@@ -268,9 +276,11 @@ export default {
         });
         this.handleGenerationResult(r.data);
       } catch (e) {
-        this.error = e.response?.data?.consent_required
-          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
-          : (e.response?.data?.error || t('learning', 'Generation failed'));
+        if (isConsentRefusal(e)) {
+          this.aiConsentRequired = true;
+        } else {
+          this.error = e.response?.data?.error || t('learning', 'Generation failed');
+        }
         this.step = 'input';
       } finally {
         this.generating = false;

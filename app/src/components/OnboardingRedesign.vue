@@ -60,7 +60,6 @@ import OnbRoleSelect from './onboarding/OnbRoleSelect.vue'
 import OnbTour from './onboarding/OnbTour.vue'
 import OnbPrivacy from './onboarding/OnbPrivacy.vue'
 import OnbProfileTiles from './onboarding/OnbProfileTiles.vue'
-import consentData from '../../data/ai-consent.json'
 import OnbJumpstart from './onboarding/OnbJumpstart.vue'
 import OnbHook from './onboarding/OnbHook.vue'
 
@@ -166,13 +165,12 @@ export default {
       const uid = this.getUid()
 
       // Codeberg #4: these three steps used to share ONE try/catch, so the 500 from
-      // saveTelosProfile() also silently cancelled the AI consent and the starter-pool import —
-      // three losses from one bug, none of them visible to the user, and the empty catch made
+      // saveTelosProfile() also silently cancelled the starter-pool import (and, back then, the AI
+      // consent, which since 5.7.0 is written only by the consent dialog) — several losses from one bug, none of them visible to the user, and the empty catch made
       // sure nothing was ever logged. Settle each step on its own so a failure in one can never
       // swallow the others again.
       if (!this.store.skipped) {
         await this.runFinalizeStep('telos profile', () => this.saveTelosProfile())
-        await this.runFinalizeStep('AI consent', () => this.saveAiConsent())
       }
 
       if (this.store.selectedStarterPoolId) {
@@ -245,30 +243,6 @@ export default {
       const payload = buildTelosPayload(form)
 
       await axios.post(generateUrl('/apps/learning/api/profile/telos'), payload)
-    },
-
-    async saveAiConsent() {
-      const aiEnabled = this.store.profileChoices.aiConsent === 'yes'
-      // AUDIT v5.2.1 (pre-live review R2, finding #2): the backend consent endpoint stores a
-      // version string (same as VirtuProf's consent dialog) — it ignores `ai_explanations` and
-      // rejects a missing version with 400. The old payload was a silent no-op; with the new
-      // universal AI-consent gate that no-op locked opted-in onboarding users out of AI features.
-      // Only persist consent when the user actually opted in; "no" simply leaves consent unset.
-      if (!aiEnabled) {
-        return
-      }
-      // 5.7.0: the consent is bound to the current recipient; send back the one the server names.
-      // Without a recipient (AI switched off) there is nothing to consent to yet.
-      const status = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
-      const fingerprint = status?.data?.recipient?.fingerprint
-      if (!fingerprint) {
-        return
-      }
-      await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
-        version: consentData.version,
-        recipient_fingerprint: fingerprint,
-        source: 'onboarding',
-      })
     },
 
     async importStarterPool() {

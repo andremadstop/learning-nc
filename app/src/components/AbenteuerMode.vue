@@ -316,6 +316,7 @@
                 </button>
               </div>
               <p v-if="freetextError" class="ab-freetext-error">{{ freetextError }}</p>
+              <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false" />
             </div>
 
             <CoopVoteOverlay
@@ -545,6 +546,8 @@
 
 <script>
 import axios from '@nextcloud/axios'
+import AiConsentHint from './AiConsentHint.vue'
+import { isConsentRefusal } from '../utils/aiConsent.js'
 import { generateUrl } from '@nextcloud/router'
 import PbqRenderer from './PbqRenderer.vue'
 import QuestionScenario from './QuestionScenario.vue'
@@ -698,6 +701,7 @@ export default {
 	name: 'AbenteuerMode',
 
 	components: {
+		AiConsentHint,
 		PbqRenderer,
 		QuestionScenario,
 		CampaignIntro,
@@ -842,6 +846,7 @@ export default {
 			freetextInput: '',
 			freetextLoading: false,
 			freetextError: '',
+			aiConsentRequired: false,
 
 			// Accessibility
 			reducedMotion: false,
@@ -2330,6 +2335,7 @@ export default {
 			if (!this.freetextInput.trim() || this.freetextLoading) return
 			this.freetextLoading = true
 			this.freetextError = ''
+			this.aiConsentRequired = false
 			try {
 				const { data } = await axios.post(
 					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/freetext`),
@@ -2342,9 +2348,11 @@ export default {
 					this.freetextError = data.narrative || t('learning', 'Aktion nicht möglich')
 				}
 			} catch (err) {
-				this.freetextError = err.response?.data?.consent_required
-					? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
-					: (err.response?.data?.error || t('learning', 'Fehler bei der Verarbeitung'))
+				if (isConsentRefusal(err)) {
+					this.aiConsentRequired = true
+				} else {
+					this.freetextError = err.response?.data?.error || t('learning', 'Fehler bei der Verarbeitung')
+				}
 			} finally {
 				this.freetextLoading = false
 			}
