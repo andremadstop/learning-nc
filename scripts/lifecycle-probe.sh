@@ -12,6 +12,15 @@
 #            head and only the legacy translation tables), then upgrade like `upgrade`
 # Each scenario ends with scripts/lifecycle-fixtures/check-working-state.php: audit chain head,
 # a real compliance event, the expected chain position, and a translation round-trip.
+# The LLM upgrade contract (plan Task C2) is checked by scripts/lifecycle-fixtures/check-llm-upgrade.php:
+#   fresh    a repair run reports no AI migration failure; no ai_connection, AI `disabled`, and the
+#            gateway refuses an admin test with category `disabled`
+#   upgrade  the upgrade and both repair runs report no AI migration failure; the connection is
+#            derived from the 5.5 keys (Gemini, gateway admin test begins), the Gemini key is
+#            encrypted and readable and the plaintext is gone, the 2.0 consents get reason=version,
+#            scheduled legacy tasks are gone and the running one is listed, chat memory is empty;
+#            the stored state (digests) is identical after the upgrade and after each repair run
+# These run before check-working-state.php, which writes audit rows and a pool of its own.
 # The app under test is app/ from the git index, or from PROBE_REF (e.g. to prove the checks go
 # red on a release without the fix). The fixtures always come from the git index — never the
 # working copy, so an unstaged fixture edit cannot validate a probe nobody reviewed.
@@ -44,6 +53,7 @@ case "$PROBE_FAIL_AFTER" in ''|key_write) ;; *) echo "PROBE_FAIL_AFTER must be e
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/learning-life.XXXXXX")"
 SEEDER="$WORK/repo/scripts/lifecycle-fixtures/seed-5.5.1.sql.php"
 CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-working-state.php"
+LLM_CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-llm-upgrade.php"
 PASS="throwaway-$$-$RANDOM"   # dies with the containers; never leaves this machine
 CREATED=()                     # "container:<name>" / "network:<name>", in creation order
 FAILED=0
@@ -86,7 +96,7 @@ if [ -n "${PROBE_REF:-}" ]; then
 else
 	echo "==> app under test from git index"
 fi
-for f in "$SEEDER" "$CHECKER"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
+for f in "$SEEDER" "$CHECKER" "$LLM_CHECKER"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
 mkdir -p "$WORK/new/learning"
 for f in "${RELEASE_SET[@]}"; do
 	[ -e "$WORK/repo/app/$f" ] || { echo "working state lacks app/$f" >&2; exit 2; }
@@ -186,6 +196,46 @@ working_state() {
 	[ "$rc" -eq 0 ] && grep -q '^CHECK result=ok$' <<<"$out"
 }
 
+# llm_contract <upgraded|fresh> — the LLM upgrade contract of check-llm-upgrade.php
+llm_contract() {
+	docker cp "$LLM_CHECKER" "$NC:/tmp/check-llm-upgrade.php" || return 1
+	local out rc=0
+	out="$(docker exec -u www-data "$NC" php /tmp/check-llm-upgrade.php "$1" 2>&1)" || rc=$?
+	echo "$out"
+	[ "$rc" -eq 0 ] && grep -q '^CHECK result=ok$' <<<"$out"
+}
+
+# llm_snapshot <name> — store the digests of everything the AI migration may touch in $WORK
+llm_snapshot() {
+	docker cp "$LLM_CHECKER" "$NC:/tmp/check-llm-upgrade.php" || return 1
+	local out rc=0
+	out="$(docker exec -u www-data "$NC" php /tmp/check-llm-upgrade.php snapshot 2>&1)" || rc=$?
+	echo "$out"
+	[ "$rc" -eq 0 ] && grep -q '^STATE consent=' <<<"$out" && ! grep -q '^STATE error' <<<"$out" &&
+		printf '%s\n' "$out" >"$WORK/state-$1"
+}
+
+# same_state <before> <after> — a repeated migration run changed nothing
+same_state() {
+	[ -s "$WORK/state-$1" ] && [ -s "$WORK/state-$2" ] || { echo "snapshot $1 or $2 missing"; return 1; }
+	diff "$WORK/state-$1" "$WORK/state-$2"
+}
+
+# occ_clean <args...> — run occ; it must succeed AND no AI migration part may report a failure.
+# MigrateLlmConfiguration turns a failing part into a warning, which leaves the exit code at 0.
+occ_clean() {
+	local out rc=0
+	out="$(occ "$@" 2>&1)" || rc=$?
+	echo "$out" | tail -n 5
+	echo "occ $* exit code: $rc"
+	# every warning MigrateLlmConfiguration and RedactLegacyAiAudit can give
+	if grep -E 'AI configuration migration: .* failed|stays in plaintext|were not kept|AI audit redaction stopped' <<<"$out"; then
+		echo "occ $*: the AI migration reported a failure"
+		return 1
+	fi
+	[ "$rc" -eq 0 ]
+}
+
 # The injected upgrade must abort at the injection point: non-zero exit AND the marker the app
 # prints when it gets there. Either one missing means the interruption was never exercised.
 upgrade_injected() {
@@ -212,6 +262,8 @@ check fresh_enable occ app:enable learning
 check fresh_schema learning_tables
 check fresh_enabled app_enabled
 check fresh_version version_is "$NEW_VERSION"
+check fresh_repair occ_clean maintenance:repair
+check fresh_llm llm_contract fresh
 check fresh_working_state working_state 1
 
 # --- scenario: upgrade 5.5.1 -> working state -------------------------------------------------
@@ -228,10 +280,17 @@ if [ -n "$PROBE_FAIL_AFTER" ]; then
 	# it was already on. Nextcloud's documented recovery: switch it off, run the upgrade again.
 	check upgrade_maintenance_off occ maintenance:mode --off
 fi
-check upgrade_occ_upgrade occ upgrade
+check upgrade_occ_upgrade occ_clean upgrade
 check upgrade_new_version version_is "$NEW_VERSION"
-check upgrade_repair_1 occ maintenance:repair
-check upgrade_repair_2 occ maintenance:repair
+check upgrade_llm llm_contract upgraded
+check upgrade_state_0 llm_snapshot 0
+check upgrade_repair_1 occ_clean maintenance:repair
+check upgrade_state_1 llm_snapshot 1
+check upgrade_repair_1_no_change same_state 0 1
+check upgrade_repair_2 occ_clean maintenance:repair
+check upgrade_state_2 llm_snapshot 2
+check upgrade_repair_2_no_change same_state 1 2
+check upgrade_llm_after_repair llm_contract upgraded
 check upgrade_enabled app_enabled
 # 3 chained rows seeded + 1 from the check: the existing head was kept, not re-seeded
 check upgrade_working_state working_state 4
@@ -242,9 +301,9 @@ check bare_setup new_instance bare
 check bare_install_old install_nc "$WORK/old/learning"
 check bare_enable_old occ app:enable learning
 check bare_swap swap_to_working_state
-check bare_occ_upgrade occ upgrade
+check bare_occ_upgrade occ_clean upgrade
 check bare_new_version version_is "$NEW_VERSION"
-check bare_repair occ maintenance:repair
+check bare_repair occ_clean maintenance:repair
 check bare_working_state working_state 1
 
 [ "$FAILED" = 0 ] || exit 1   # the verdict line comes from cleanup(), after removal
