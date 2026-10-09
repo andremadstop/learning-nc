@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # nc-integration.sh — run app/tests/Integration against a real Nextcloud (no OCP stubs).
 #
-# Usage: scripts/nc-integration.sh [--index | --ref <git-ref>]
+# Usage: [ENGINE=pgsql|mysql] scripts/nc-integration.sh [--index | --ref <git-ref>]
 #
-# Installs Nextcloud 33 on PostgreSQL 16 in throwaway containers, copies the app from a
+# Installs Nextcloud 33 on PostgreSQL 16 (ENGINE=pgsql, default) or MariaDB 10.11
+# (ENGINE=mysql) in throwaway containers, copies the app from a
 # clean snapshot (default: the git index, i.e. what would be committed) to apps/learning,
 # runs `occ app:enable learning`, starts the mock LLM server (tests/Integration/Support/
 # MockLlmServer.php on 127.0.0.1:18080 inside the Nextcloud container) and runs PHPUnit
@@ -22,6 +23,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GIT_ROOT="${GATE_GIT_ROOT:-$REPO_ROOT}"
 NC_IMAGE="${INTEG_NC_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 PG_IMAGE="${INTEG_PG_IMAGE:-postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea}"
+MY_IMAGE="${INTEG_MY_IMAGE:-mariadb:10.11@sha256:7f22313fc130a377a44999965bcb0a08dd5b21e8502824c1b864f792f9bc66ab}"
+ENGINE="${ENGINE:-pgsql}"
+case "$ENGINE" in pgsql|mysql) ;; *) echo "ENGINE must be pgsql or mysql" >&2; exit 2 ;; esac
 PHPUNIT_VERSION="10.5.65"
 PHPUNIT_SHA256="ce85745a2ec7d8e536621ebed69dfa36a8d504daf73be6750e93bb8c5b088835"
 MOCK_URL="http://127.0.0.1:18080/v1/chat/completions"
@@ -70,20 +74,33 @@ case "$SRC" in
 esac
 [ -f "$WORK/repo/app/tests/Integration/phpunit.xml" ] || { echo "snapshot has no app/tests/Integration/phpunit.xml" >&2; exit 2; }
 
-echo "==> network $NET, containers $DB + $NC"
+echo "==> [$ENGINE] network $NET, containers $DB + $NC"
 docker network create --label "$LABEL" "$NET" >/dev/null
-docker create --name "$DB" --label "$LABEL" --network "$NET" \
-	-e POSTGRES_USER=nc -e POSTGRES_PASSWORD="$DB_PASS" -e POSTGRES_DB=nextcloud "$PG_IMAGE" >/dev/null
+if [ "$ENGINE" = pgsql ]; then
+	docker create --name "$DB" --label "$LABEL" --network "$NET" \
+		-e POSTGRES_USER=nc -e POSTGRES_PASSWORD="$DB_PASS" -e POSTGRES_DB=nextcloud "$PG_IMAGE" >/dev/null
+else
+	docker create --name "$DB" --label "$LABEL" --network "$NET" -e MARIADB_ROOT_PASSWORD="$DB_PASS" \
+		-e MARIADB_DATABASE=nextcloud -e MARIADB_USER=nc -e MARIADB_PASSWORD="$DB_PASS" "$MY_IMAGE" >/dev/null
+fi
 docker create --name "$NC" --label "$LABEL" --network "$NET" --entrypoint sleep "$NC_IMAGE" infinity >/dev/null
 docker start "$DB" "$NC" >/dev/null
 
-# Over TCP: during initdb the image runs a socket-only temporary server.
+# PostgreSQL over TCP: during initdb the image runs a socket-only temporary server.
+# MariaDB with a real authenticated query: `mariadb-admin ping` races the passwordless init server.
+db_ready() {
+	if [ "$ENGINE" = pgsql ]; then
+		docker exec "$DB" pg_isready -h 127.0.0.1 -U nc -d nextcloud -q 2>/dev/null
+	else
+		docker exec "$DB" mariadb -unc -p"$DB_PASS" -h 127.0.0.1 -e 'SELECT 1' nextcloud >/dev/null 2>&1
+	fi
+}
 ready=0
-for _ in $(seq 60); do
-	if docker exec "$DB" pg_isready -h 127.0.0.1 -U nc -d nextcloud -q 2>/dev/null; then ready=1; break; fi
+for _ in $(seq 90); do
+	if db_ready; then ready=1; break; fi
 	sleep 1
 done
-[ "$ready" = 1 ] || { echo "PostgreSQL did not come up" >&2; exit 1; }
+[ "$ready" = 1 ] || { echo "database ($ENGINE) did not come up" >&2; exit 1; }
 
 echo "==> PHPUnit $PHPUNIT_VERSION (PHAR, verified)"
 docker exec -e V="$PHPUNIT_VERSION" -e SUM="$PHPUNIT_SHA256" "$NC" sh -euc '
@@ -97,7 +114,7 @@ docker exec "$NC" sh -euc 'cp -a /usr/src/nextcloud/. /var/www/html/ && mkdir -p
 docker cp "$WORK/repo/app/." "$NC:/var/www/html/apps/learning"
 docker exec "$NC" chown -R www-data:www-data /var/www/html
 docker exec -u www-data -w /var/www/html "$NC" php occ maintenance:install -n \
-	--database=pgsql --database-host="$DB" --database-name=nextcloud \
+	--database="$ENGINE" --database-host="$DB" --database-name=nextcloud \
 	--database-user=nc --database-pass="$DB_PASS" \
 	--admin-user=admin --admin-pass="$DB_PASS" >/dev/null
 docker exec -u www-data -w /var/www/html "$NC" php occ app:enable learning
