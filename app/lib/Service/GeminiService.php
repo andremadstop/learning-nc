@@ -369,7 +369,8 @@ PROMPT;
 
             $data = json_decode($cleaned, true);
             if (!is_array($data)) {
-                $this->logger->warning('GeminiService::classifyTicket: JSON parse failed', ['app' => 'learning', 'raw' => mb_substr($rawOutput, 0, 200)]);
+                // the answer may quote the ticket: log that it failed, never what came back
+                $this->logger->warning('GeminiService::classifyTicket: JSON parse failed', ['app' => 'learning', 'length' => mb_strlen($rawOutput)]);
                 return $fallback;
             }
 
@@ -428,9 +429,10 @@ PROMPT;
 
         // SEC-06: Injection pattern detection
         if (self::containsInjectionPattern($input)) {
+            // the learner's message stays out of the server log (Task B4)
             $this->logger->warning('GeminiService input flagged by injection classifier', [
                 'app' => 'learning',
-                'input_preview' => mb_substr($input, 0, 100),
+                'length' => mb_strlen($input),
             ]);
             // Don't block — strip suspicious patterns and continue
             $input = self::stripInjectionPatterns($input);
@@ -1167,10 +1169,12 @@ PROMPT;
 
         foreach ($blocklist as $pattern) {
             if (preg_match($pattern, $output) === 1) {
+                // Why, never what: a blocked answer can carry a key, a password or an echo of
+                // the system prompt with the learner's profile and memory.
                 $this->logger->warning('GeminiService output blocked by validator', [
                     'app' => 'learning',
                     'pattern' => $pattern,
-                    'output_preview' => mb_substr($output, 0, 200),
+                    'length' => mb_strlen($output),
                 ]);
                 $this->writeBlockedAudit($userId, 'output_blocked');
                 return ['answer' => null, 'fallback' => true, 'reason' => 'output_blocked'];

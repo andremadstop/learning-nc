@@ -108,4 +108,39 @@ class SettingsControllerAiConnectionTest extends TestCase {
 
         $this->assertSame(400, $this->saveAi('ollama', 'not a url'));
     }
+
+    /** @return array<string, array{string}> */
+    public static function notSelectableProviders(): array {
+        return [
+            'anthropic' => ['anthropic'],
+            'openai_compatible' => ['openai_compatible'],
+            'unknown' => ['deepseek'],
+            'empty' => [''],
+        ];
+    }
+
+    /**
+     * 5.7.0 scope cut (review finding): only Gemini and Ollama can be switched on. A provider the
+     * release does not offer is an error — it must not silently become Gemini (an external
+     * recipient), answer 200 and turn every user's consent into recipient_changed.
+     *
+     * @dataProvider notSelectableProviders
+     */
+    public function testAProviderThisReleaseDoesNotOfferIsRejectedBeforeAnythingIsWritten(string $provider): void {
+        $local = ['rev' => 3, 'enabled' => true, 'provider' => 'ollama', 'baseUrl' => 'http://ollama.lan:11434',
+            'model' => 'm', 'allowInternalNetwork' => true, 'processingLocal' => true];
+        $this->values->set('learning', ConnectionStore::KEY, json_encode($local, JSON_THROW_ON_ERROR));
+        $before = $this->values->get('learning', ConnectionStore::KEY);
+        $this->config->expects($this->never())->method('setAppValue');
+        $this->audit->expects($this->never())->method('logEvent');
+
+        $this->assertSame(400, $this->saveAi($provider));
+
+        $this->assertSame($before, $this->values->get('learning', ConnectionStore::KEY));
+    }
+
+    public function testDisabledIsStillAccepted(): void {
+        $this->assertSame(200, $this->saveAi('disabled'));
+        $this->assertFalse($this->store()->load()->enabled);
+    }
 }

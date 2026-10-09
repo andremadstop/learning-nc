@@ -182,7 +182,12 @@ class SettingsController extends Controller {
     ): DataResponse {
         // Validate the AI connection before anything is written: an invalid one must not leave a
         // half-saved form behind.
-        $provider = $this->normalizeAiProvider($ai_provider);
+        // 5.7.0 offers only the backends 5.5 had. Anything else is an error, not Gemini: a silent
+        // fallback would switch to an external recipient and invalidate every user's consent.
+        $provider = strtolower(trim($ai_provider));
+        if (!in_array($provider, self::AVAILABLE_AI_PROVIDERS, true)) {
+            return new DataResponse(['error' => 'AI provider is not available in this release'], Http::STATUS_BAD_REQUEST);
+        }
         $ollamaUrl = trim($ai_ollama_url) !== '' ? trim($ai_ollama_url) : 'http://localhost:11434';
         $ollamaModel = trim($ai_ollama_model) !== '' ? trim($ai_ollama_model) : 'llama3';
         $aiEnabled = $ai_enabled === 'yes' && $provider !== 'disabled';
