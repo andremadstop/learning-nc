@@ -26,6 +26,7 @@ class InitCertIssuerTest extends TestCase {
             $this->createMock(IDBConnection::class),
             $keyService,
             $checkpoints ?? $this->createMock(AuditCheckpointService::class),
+            $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class),
             'admin'
         );
     }

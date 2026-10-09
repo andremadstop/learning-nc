@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\AuditCheckpointService;
 use OCA\Learning\Service\KeyService;
+use OCA\Learning\Service\Llm\ConnectionStore;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -30,9 +31,11 @@ class SettingsController extends Controller {
     private ?string $userId;
     private KeyService $keyService;
     private AuditCheckpointService $auditCheckpointService;
+    private ConnectionStore $connectionStore;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ConnectionStore $connectionStore, ?string $userId) {
         parent::__construct($appName, $request);
+        $this->connectionStore = $connectionStore;
         $this->config = $config;
         $this->db = $db;
         $this->keyService = $keyService;
@@ -177,6 +180,18 @@ class SettingsController extends Controller {
         string $ai_ollama_model = 'llama3',
         string $ai_enabled = 'no'
     ): DataResponse {
+        // Validate the AI connection before anything is written: an invalid one must not leave a
+        // half-saved form behind.
+        $provider = $this->normalizeAiProvider($ai_provider);
+        $ollamaUrl = trim($ai_ollama_url) !== '' ? trim($ai_ollama_url) : 'http://localhost:11434';
+        $ollamaModel = trim($ai_ollama_model) !== '' ? trim($ai_ollama_model) : 'llama3';
+        $aiEnabled = $ai_enabled === 'yes' && $provider !== 'disabled';
+        try {
+            $connection = ConnectionStore::fromLegacyValues($provider, $aiEnabled, $ollamaUrl, $ollamaModel);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => 'Invalid AI connection: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        }
+
         $this->config->setAppValue('learning', 'daily_challenge_enabled', $daily_challenge_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en'], true) ? $default_language : 'de');
         $this->config->setAppValue('learning', 'max_import_size_mb', (string)max(1, min(10, $max_import_size_mb)));
@@ -204,11 +219,14 @@ class SettingsController extends Controller {
                 $this->config->setAppValue('learning', 'gemini_api_key', trim($gemini_api_key));
             }
         }
-        $provider = $this->normalizeAiProvider($ai_provider);
         $this->config->setAppValue('learning', 'ai_provider', $provider);
-        $this->config->setAppValue('learning', 'ai_ollama_url', trim($ai_ollama_url) !== '' ? trim($ai_ollama_url) : 'http://localhost:11434');
-        $this->config->setAppValue('learning', 'ai_ollama_model', trim($ai_ollama_model) !== '' ? trim($ai_ollama_model) : 'llama3');
-        $this->config->setAppValue('learning', 'ai_enabled', ($ai_enabled === 'yes' && $provider !== 'disabled') ? 'yes' : 'no');
+        $this->config->setAppValue('learning', 'ai_ollama_url', $ollamaUrl);
+        $this->config->setAppValue('learning', 'ai_ollama_model', $ollamaModel);
+        $this->config->setAppValue('learning', 'ai_enabled', $aiEnabled ? 'yes' : 'no');
+        // Once a connection snapshot exists it is what consent and transport use: the form's AI
+        // change must reach it, or the admin would see one recipient and users would send to
+        // another. A changed recipient asks every user for consent again.
+        $this->connectionStore->adoptLegacySettings($connection, $this->userId ?? '');
 
         return new DataResponse(['status' => 'ok']);
     }

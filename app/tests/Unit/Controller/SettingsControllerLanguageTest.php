@@ -46,6 +46,7 @@ class SettingsControllerLanguageTest extends TestCase {
             $this->createMock(IDBConnection::class),
             $this->createMock(KeyService::class),
             $this->createMock(AuditCheckpointService::class),
+            $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class),
             'alice'
         );
     }

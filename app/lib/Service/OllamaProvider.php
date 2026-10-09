@@ -23,14 +23,24 @@ class OllamaProvider implements LlmProviderInterface {
      * @param array<string, mixed> $context
      */
     public function generateText(string $prompt, array $context = []): string {
-        $baseUrl = $this->getBaseUrl();
-        if ($baseUrl === '') {
+        $model = trim($this->config->getAppValue('learning', 'ai_ollama_model', self::DEFAULT_MODEL));
+        return $this->generateAt($this->getBaseUrl(), $model !== '' ? $model : self::DEFAULT_MODEL, $prompt, $context);
+    }
+
+    /**
+     * Sends to the given host and model. LlmService passes them from the connection snapshot, so
+     * the request goes to the recipient the consent was checked against, not to ai_ollama_url.
+     *
+     * @param array<string, mixed> $context
+     */
+    public function generateAt(string $baseUrl, string $model, string $prompt, array $context = []): string {
+        $baseUrl = rtrim(trim($baseUrl), '/');
+        if ($baseUrl === '' || !filter_var($baseUrl, FILTER_VALIDATE_URL)) {
             throw new \RuntimeException('Ollama URL not configured');
         }
-
-        $model = trim($this->config->getAppValue('learning', 'ai_ollama_model', self::DEFAULT_MODEL));
+        $model = trim($model);
         if ($model === '') {
-            $model = self::DEFAULT_MODEL;
+            throw new \RuntimeException('Ollama model not configured');
         }
 
         $systemPrompt = trim((string)($context['system_prompt'] ?? ''));

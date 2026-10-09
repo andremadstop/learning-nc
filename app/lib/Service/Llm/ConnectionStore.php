@@ -55,6 +55,65 @@ class ConnectionStore {
         ]);
     }
 
+    /**
+     * The connection the 5.5 keys describe (ai_provider, ai_enabled, ai_ollama_url,
+     * ai_ollama_model). Single mapping for the legacy derivation and the 5.5 admin form, so both
+     * compute the same fingerprint. Anything but gemini/ollama is disabled.
+     *
+     * @throws \InvalidArgumentException for an Ollama URL or model that is not a valid connection
+     */
+    public static function fromLegacyValues(string $provider, bool $enabled, string $ollamaUrl, string $ollamaModel): LlmConnection {
+        $provider = strtolower(trim($provider));
+        if ($provider === 'gemini') {
+            return self::legacyGemini($enabled);
+        }
+        if ($provider === 'ollama') {
+            $url = trim($ollamaUrl);
+            $model = trim($ollamaModel);
+            return LlmConnection::fromArray([
+                'enabled' => $enabled,
+                'provider' => 'ollama',
+                'baseUrl' => $url !== '' ? $url : self::LEGACY_OLLAMA_URL,
+                'model' => $model !== '' ? $model : self::LEGACY_OLLAMA_MODEL,
+                // 5.5 connected to the configured host without an internal-network gate.
+                'allowInternalNetwork' => true,
+                // A URL does not prove local processing; the admin confirms it explicitly.
+                'processingLocal' => false,
+            ]);
+        }
+        return self::disabled();
+    }
+
+    /** True once ai_connection exists; until then load() derives the snapshot from the 5.5 keys. */
+    public function hasSnapshot(): bool {
+        return $this->appConfig->hasKey(self::APP, self::KEY, null);
+    }
+
+    /**
+     * The 5.5 admin form changed the legacy keys. Without a snapshot they stay the source and
+     * nothing is written. With one, the snapshot follows whenever what the form can express
+     * (on/off, provider, endpoint, model) differs; otherwise it is kept as it is, including
+     * settings the old form cannot show (processingLocal, rev).
+     */
+    public function adoptLegacySettings(LlmConnection $fromForm, string $adminUid): void {
+        if (!$this->hasSnapshot()) {
+            return;
+        }
+        $current = $this->load();
+        if (self::formView($current) === self::formView($fromForm)) {
+            return;
+        }
+        $this->save($fromForm, $adminUid);
+    }
+
+    /** @return array{0: bool, 1: string, 2: string, 3: string} */
+    private static function formView(LlmConnection $c): array {
+        if ($c->provider === 'disabled') {
+            return [false, 'disabled', '', ''];
+        }
+        return [$c->enabled, $c->provider, rtrim($c->baseUrl, '/'), $c->model];
+    }
+
     public function load(): LlmConnection {
         // Only a missing snapshot falls back to the 5.5 keys. An existing but empty (or lazily
         // stored, hence unreadable here) value is broken and fails closed like invalid JSON.
@@ -119,32 +178,17 @@ class ConnectionStore {
     }
 
     private function deriveFromLegacy(): LlmConnection {
-        $provider = strtolower(trim($this->appConfig->getValueString(self::APP, 'ai_provider', '')));
-        $enabled = $this->appConfig->getValueString(self::APP, 'ai_enabled', 'no') === 'yes';
-
-        if ($provider === 'gemini') {
-            return self::legacyGemini($enabled);
+        try {
+            return self::fromLegacyValues(
+                $this->appConfig->getValueString(self::APP, 'ai_provider', ''),
+                $this->appConfig->getValueString(self::APP, 'ai_enabled', 'no') === 'yes',
+                $this->appConfig->getValueString(self::APP, 'ai_ollama_url', ''),
+                $this->appConfig->getValueString(self::APP, 'ai_ollama_model', ''),
+            );
+        } catch (\InvalidArgumentException $e) {
+            $this->logger->warning('Legacy Ollama configuration is invalid; AI is treated as disabled: ' . $e->getMessage(), ['app' => self::APP]);
+            return self::disabled();
         }
-        if ($provider === 'ollama') {
-            $url = trim($this->appConfig->getValueString(self::APP, 'ai_ollama_url', ''));
-            $model = trim($this->appConfig->getValueString(self::APP, 'ai_ollama_model', ''));
-            try {
-                return LlmConnection::fromArray([
-                    'enabled' => $enabled,
-                    'provider' => 'ollama',
-                    'baseUrl' => $url !== '' ? $url : self::LEGACY_OLLAMA_URL,
-                    'model' => $model !== '' ? $model : self::LEGACY_OLLAMA_MODEL,
-                    // 5.5 connected to the configured host without an internal-network gate.
-                    'allowInternalNetwork' => true,
-                    // A URL does not prove local processing; the admin confirms it explicitly.
-                    'processingLocal' => false,
-                ]);
-            } catch (\InvalidArgumentException $e) {
-                $this->logger->warning('Legacy Ollama configuration is invalid; AI is treated as disabled: ' . $e->getMessage(), ['app' => self::APP]);
-                return self::disabled();
-            }
-        }
-        return self::disabled();
     }
 
     private static function disabled(): LlmConnection {

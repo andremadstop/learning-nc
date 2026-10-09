@@ -3,70 +3,76 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
-use OCP\IConfig;
+use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\LlmConnection;
 
+/**
+ * The 5.5 transport, until B3 routes every call through LlmGateway.
+ *
+ * Provider, host and model come from the connection snapshot (ConnectionStore::load()), the same
+ * object the consent check uses, and never from the legacy keys ai_provider / ai_ollama_*: data
+ * may only reach the recipient the user consented to. Each call loads the snapshot once.
+ */
 class LlmService {
-    private IConfig $config;
-    private GeminiProvider $geminiProvider;
-    private OllamaProvider $ollamaProvider;
-
     public function __construct(
-        IConfig $config,
-        GeminiProvider $geminiProvider,
-        OllamaProvider $ollamaProvider
+        private GeminiProvider $geminiProvider,
+        private OllamaProvider $ollamaProvider,
+        private ConnectionStore $connectionStore,
     ) {
-        $this->config = $config;
-        $this->geminiProvider = $geminiProvider;
-        $this->ollamaProvider = $ollamaProvider;
     }
 
+    /** gemini, ollama or disabled — as the snapshot says. */
     public function getProviderId(): string {
-        $provider = strtolower(trim($this->config->getAppValue('learning', 'ai_provider', 'gemini')));
-        return in_array($provider, ['gemini', 'ollama', 'disabled'], true) ? $provider : 'gemini';
+        return $this->connectionStore->load()->provider;
     }
 
     public function isEnabled(): bool {
-        return $this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes'
-            && $this->getProviderId() !== 'disabled';
+        return self::isActive($this->connectionStore->load());
     }
 
     public function isAvailable(): bool {
-        if (!$this->isEnabled()) {
+        $c = $this->connectionStore->load();
+        if (!self::isActive($c)) {
             return false;
         }
-
-        $provider = $this->resolveProvider();
-        return $provider !== null && $provider->isAvailable();
+        return match ($c->provider) {
+            'gemini' => self::isLegacyGeminiEndpoint($c) && $this->geminiProvider->isAvailable(),
+            'ollama' => true,
+            default => false,
+        };
     }
 
     /**
      * @param array<string, mixed> $context
      */
     public function generateText(string $prompt, array $context = []): string {
-        if (!$this->isEnabled()) {
+        $c = $this->connectionStore->load();
+        if (!self::isActive($c)) {
             throw new \RuntimeException('AI provider is disabled');
         }
 
-        $provider = $this->resolveProvider();
-        if ($provider === null) {
-            throw new \RuntimeException('No AI provider configured');
-        }
-
-        if (!$provider->isAvailable()) {
-            if ($this->getProviderId() === 'gemini') {
+        if ($c->provider === 'gemini') {
+            // GeminiProvider only reaches its fixed endpoint; a snapshot naming another one would
+            // send to a recipient the consent does not cover.
+            if (!self::isLegacyGeminiEndpoint($c)) {
+                throw new \RuntimeException('The configured Gemini endpoint is not supported by this transport');
+            }
+            if (!$this->geminiProvider->isAvailable()) {
                 throw new \RuntimeException('Gemini API key not configured');
             }
-            throw new \RuntimeException('Ollama provider not configured');
+            return $this->geminiProvider->generateText($prompt, $context);
         }
-
-        return $provider->generateText($prompt, $context);
+        if ($c->provider === 'ollama') {
+            return $this->ollamaProvider->generateAt($c->baseUrl, $c->model, $prompt, $context);
+        }
+        throw new \RuntimeException('No AI provider configured');
     }
 
-    private function resolveProvider(): ?LlmProviderInterface {
-        return match ($this->getProviderId()) {
-            'gemini' => $this->geminiProvider,
-            'ollama' => $this->ollamaProvider,
-            default => null,
-        };
+    private static function isActive(LlmConnection $c): bool {
+        return $c->enabled && $c->provider !== 'disabled';
+    }
+
+    private static function isLegacyGeminiEndpoint(LlmConnection $c): bool {
+        return hash_equals(ConnectionStore::legacyGemini(true)->connectionFingerprint(), $c->connectionFingerprint());
     }
 }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\ConnectionStore;
 use OCP\IConfig;
 use OCP\ICacheFactory;
 use OCP\IDBConnection;
@@ -16,6 +17,7 @@ class AIService {
     private ICacheFactory $cacheFactory;
     private LoggerInterface $logger;
     private LlmService $llmService;
+    private ConnectionStore $connectionStore;
 
     /** @var \OCP\TaskProcessing\IManager|null */
     private $taskProcessingManager = null;
@@ -27,8 +29,10 @@ class AIService {
         IConfig $config,
         ICacheFactory $cacheFactory,
         LoggerInterface $logger,
-        LlmService $llmService
+        LlmService $llmService,
+        ConnectionStore $connectionStore
     ) {
+        $this->connectionStore = $connectionStore;
         $this->db = $db;
         $this->config = $config;
         $this->cacheFactory = $cacheFactory;
@@ -322,8 +326,14 @@ TEXT:
         return 'task_' . $taskId;
     }
 
+    /**
+     * The Nextcloud TaskProcessing path of 5.5 (empty ai_provider). Never once a connection snapshot
+     * exists: the snapshot (and so the consent) never names TaskProcessing. Without a snapshot an
+     * empty ai_provider derives a disabled connection, for which no consent is valid either.
+     */
     private function useLegacyTaskBackend(): bool {
-        return trim($this->config->getAppValue('learning', 'ai_provider', '')) === '';
+        return !$this->connectionStore->hasSnapshot()
+            && trim($this->config->getAppValue('learning', 'ai_provider', '')) === '';
     }
 
     public function parseGeneratedQuestions(string $output): array {
