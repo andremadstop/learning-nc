@@ -23,6 +23,7 @@ import QuestionForm from '../../src/components/QuestionForm.vue'
 import QuestionList from '../../src/components/QuestionList.vue'
 import QuestionScenario from '../../src/components/QuestionScenario.vue'
 import TranslationDialog from '../../src/components/TranslationDialog.vue'
+import DailyChallengeCard from '../../src/components/DailyChallengeCard.vue'
 import { SCENARIO_MAX_LENGTH, questionScenario } from '../../src/utils/questionScenario.js'
 
 globalThis.t = (_app, str) => str
@@ -190,5 +191,18 @@ describe('TranslationDialog sends the scenario translation', () => {
 		await TranslationDialog.methods.save.call(dialogThis('  '))
 		const body = axios.put.mock.calls[0][1]
 		expect(body.scenario).toBe('')
+	})
+})
+
+describe('DailyChallengeCard shows the scenario (Codex review)', () => {
+	it('renders it above the challenge question', async () => {
+		axios.get.mockResolvedValue({ data: {
+			available: true, completed: false, xp_reward: 15, pool_name: 'Erste Hilfe',
+			question: { id: 1, text: 'Was tust du?', scenario: 'Kollege am Boden.', question_type: 'single', answers: [] },
+		} })
+		mount(DailyChallengeCard)
+		await new Promise((resolve) => setTimeout(resolve, 0))
+		await nextTick()
+		expect(host.querySelector('.question-scenario__text')?.textContent).toBe('Kollege am Boden.')
 	})
 })

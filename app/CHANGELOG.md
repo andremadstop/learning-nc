@@ -8,13 +8,15 @@ All notable changes to this project will be documented in this file.
 - **Scenario / info text before a question** (Codeberg #10). Every question has a new optional
   field "Scenario / info" for the case, situation or background a learner should read before
   answering. It is shown above the question in training, exam and exam review, Leitner, the
-  smart queue, duel and gameshow, and in the question list of the pool. It is plain text with
+  smart queue, the daily challenge, duel, gameshow and adventure skill checks, and in the
+  question list of the pool. It is plain text with
   line breaks kept, up to 10 000 characters, and it can be translated together with the
   question. Because questions are shuffled in every mode, the scenario belongs to the question
   it introduces: for a case with several questions, give each of them the same scenario.
 - JSON import reads the scenario from `scenario` (also `szenario`, `context` or `info`), JSON
-  export writes it, and `occ learning:import-pool-json` accepts `scenario` per question. CSV
-  import and export keep their fixed columns.
+  export writes it, and `occ learning:import-pool-json` accepts `scenario` per question. A
+  scenario longer than 10 000 characters is never cut off: the import skips that question and
+  names it in the error list. CSV import and export keep their fixed columns.
 
 ### Fixed
 - **An existing question with two answers could not be saved.** The edit form adds empty

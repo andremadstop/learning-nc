@@ -8,6 +8,7 @@ use OCA\Learning\Db\Answer;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
+use OCA\Learning\Service\QuestionService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -163,13 +164,24 @@ class ImportController extends Controller {
     /**
      * Scenario / info text shown before the question (Codeberg #10).
      * Accepts scenario > szenario > context > info; keeps line breaks.
+     * Never truncated: callers reject an item whose scenario is too long (scenarioTooLong()),
+     * because a cut-off case can drop exactly the fact the question depends on.
      */
     private static function scenarioFrom(array $item): ?string {
         $raw = $item['scenario'] ?? $item['szenario'] ?? $item['context'] ?? $item['info'] ?? null;
         if (!is_string($raw) || trim($raw) === '') {
             return null;
         }
-        return mb_substr(trim($raw), 0, \OCA\Learning\Service\QuestionService::SCENARIO_MAX_LENGTH);
+        return trim($raw);
+    }
+
+    private static function scenarioTooLong(array $item, int $num, array &$errors): bool {
+        $scenario = self::scenarioFrom($item);
+        if ($scenario === null || mb_strlen($scenario) <= QuestionService::SCENARIO_MAX_LENGTH) {
+            return false;
+        }
+        $errors[] = "Item $num: Scenario longer than " . QuestionService::SCENARIO_MAX_LENGTH . ' characters — question skipped';
+        return true;
     }
 
     private function applyQuestionMetadata(Question $question, array $item): void {
@@ -460,6 +472,9 @@ class ImportController extends Controller {
                     $errors[] = "Item $num: Missing question text";
                     continue;
                 }
+                if (self::scenarioTooLong($item, $num, $errors)) {
+                    continue;
+                }
 
                 if (mb_strlen($item['text']) > 5000) {
                     $item['text'] = mb_substr($item['text'], 0, 5000);
@@ -590,6 +605,9 @@ class ImportController extends Controller {
         $text = trim($item['question_text'] ?? $item['text'] ?? '');
         if ($text === '') {
             $errors[] = "PBQ #$num: missing question_text";
+            return 0;
+        }
+        if (self::scenarioTooLong($item, $num, $errors)) {
             return 0;
         }
 

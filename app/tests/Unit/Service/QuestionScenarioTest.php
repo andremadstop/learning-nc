@@ -226,6 +226,25 @@ class QuestionScenarioTest extends TestCase {
         $this->assertNull($out['scenario']);
     }
 
+    /** Codex review: an import must not silently cut a case off — the item is rejected instead. */
+    public function testImportRejectsOverlongScenarioInsteadOfTruncating(): void {
+        $tooLong = new \ReflectionMethod(\OCA\Learning\Controller\ImportController::class, 'scenarioTooLong');
+        $from = new \ReflectionMethod(\OCA\Learning\Controller\ImportController::class, 'scenarioFrom');
+
+        $errors = [];
+        $long = ['context' => str_repeat('x', QuestionService::SCENARIO_MAX_LENGTH + 1)];
+        $this->assertTrue($tooLong->invokeArgs(null, [$long, 3, &$errors]));
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString('Item 3', $errors[0]);
+
+        $errors = [];
+        $ok = ['szenario' => '  ' . str_repeat('ü', QuestionService::SCENARIO_MAX_LENGTH) . "\n"];
+        $this->assertFalse($tooLong->invokeArgs(null, [$ok, 4, &$errors]));
+        $this->assertSame([], $errors);
+        $this->assertSame(QuestionService::SCENARIO_MAX_LENGTH, mb_strlen((string)$from->invoke(null, $ok)));
+        $this->assertNull($from->invoke(null, ['info' => '   ']));
+    }
+
     public function testExamReviewScenarioIsTranslated(): void {
         $service = $this->translationService($this->translation('Translated scenario'));
         $out = $service->translateReviewEntries([

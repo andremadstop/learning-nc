@@ -155,7 +155,7 @@ class UserStateController extends Controller {
 
         // Load question + answers + pool name
         $qb = $this->db->getQueryBuilder();
-        $qb->select('q.id', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type', 'p.name AS pool_name')
+        $qb->select('q.id', 'q.text', 'q.scenario', 'q.explanation', 'q.difficulty', 'q.question_type', 'p.name AS pool_name')
            ->from('learning_questions', 'q')
            ->innerJoin('q', 'learning_pools', 'p', 'q.pool_id = p.id')
            ->where($qb->expr()->eq('q.id', $qb->createNamedParameter($questionId)));
@@ -196,6 +196,7 @@ class UserStateController extends Controller {
             'question' => [
                 'id' => (int)$question['id'],
                 'text' => $question['text'],
+                'scenario' => $question['scenario'] ?? null,
                 'explanation' => $completed ? $question['explanation'] : null,
                 'difficulty' => $question['difficulty'],
                 'question_type' => $question['question_type'],

@@ -10,6 +10,7 @@
       {{ t('learning', 'Next challenge in {time}', { time: formatCountdown(challengeCountdownSec) }) }}
     </div>
     <div class="dc-pool-tag">{{ dailyChallenge.pool_name }}</div>
+    <QuestionScenario :question="dailyChallenge.question" compact />
     <div class="dc-question">{{ dailyChallenge.question.text }}</div>
     <div v-if="!dailyChallenge.completed && dailyChallenge.question.question_type === 'open'" class="dc-answers">
       <textarea v-model="challengeOpenAnswer" :placeholder="t('learning', 'Type your answer...')" rows="2" class="nc-input dc-open-textarea" :disabled="challengeSubmitting"></textarea>
@@ -49,6 +50,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/components/NcButton'
+import QuestionScenario from './QuestionScenario.vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showSuccess, showError } from '@nextcloud/dialogs'
@@ -58,6 +60,7 @@ export default {
 
   components: {
     NcButton,
+    QuestionScenario,
   },
 
   data() {

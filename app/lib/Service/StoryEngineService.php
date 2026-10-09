@@ -1214,7 +1214,7 @@ class StoryEngineService {
         $difficultyModifier = max(-2, min(2, $difficultyModifier));
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('q.id', 'q.text', 'q.image_path')
+        $qb->select('q.id', 'q.text', 'q.image_path', 'q.scenario')
            ->from('learning_questions', 'q');
 
         // Apply pool_filter: join on pool and filter by keyword in pool name
@@ -1269,6 +1269,7 @@ class StoryEngineService {
                 'id'         => $qId,
                 'text'       => $row['text'],
                 'image_path' => $row['image_path'] ?? null,
+                'scenario'   => $row['scenario'] ?? null,
                 'answers'    => $answers,
             ];
         }
