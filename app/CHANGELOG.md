@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.6.0] - 2026-10-09 — Scenario / info text before a question
+
+### Added
+- **Scenario / info text before a question** (Codeberg #10). Every question has a new optional
+  field "Scenario / info" for the case, situation or background a learner should read before
+  answering. It is shown above the question in training, exam and exam review, Leitner, the
+  smart queue, duel and gameshow, and in the question list of the pool. It is plain text with
+  line breaks kept, up to 10 000 characters, and it can be translated together with the
+  question. Because questions are shuffled in every mode, the scenario belongs to the question
+  it introduces: for a case with several questions, give each of them the same scenario.
+- JSON import reads the scenario from `scenario` (also `szenario`, `context` or `info`), JSON
+  export writes it, and `occ learning:import-pool-json` accepts `scenario` per question. CSV
+  import and export keep their fixed columns.
+
+### Fixed
+- **An existing question with two answers could not be saved.** The edit form adds empty
+  answer slots up to four, and all of them were mandatory, so the browser refused to save
+  until they were filled or removed. Only the first two answers are mandatory now; empty slots
+  are dropped on save as before.
+
 ## [5.5.3] - 2026-09-25 — Fresh installs work again
 
 ### Fixed

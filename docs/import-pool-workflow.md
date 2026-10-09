@@ -67,6 +67,7 @@ One file may contain any number of pools. Minimal example:
 | `pools[].questions[].answers[].is_correct` | ✅ | bool | More than one `true` makes it multiple choice |
 | `pools[].questions[].question_type` | no | string | `single` (default) or `multi`. Falls back to `multi` when several answers are `is_correct: true` |
 | `pools[].questions[].explanation` | no | string | Shown after the question is answered |
+| `pools[].questions[].scenario` | no | string | Scenario / info text shown **before** the question (case, situation, background). Plain text, line breaks kept, max 10 000 characters. The pool import in the UI also accepts `szenario`, `context` or `info` |
 | `pools[].questions[].difficulty` | no | string | `easy` \| `medium` \| `hard` |
 | `pools[].questions[].original_number` | no | int/string | Original number from the PDF — for traceability |
 
