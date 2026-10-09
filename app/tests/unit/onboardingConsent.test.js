@@ -180,6 +180,48 @@ describe('OnbProfileTiles consent tile', () => {
 		expect(store.profileChoices.aiConsent).toBe('no')
 	})
 
+	it('409 on accept (admin switched the recipient): nothing is chosen, the new recipient is shown, a second accept stores it', async () => {
+		const OLLAMA = { name: 'Ollama', region: 'local', processing_local: true, intermediary: false, fingerprint: 'fp-ollama' }
+		axios.get.mockResolvedValue({ data: status() })
+		mountTiles()
+		await flush()
+		consentTiles()[0].click()
+		await flush()
+
+		axios.post.mockRejectedValueOnce({ response: { status: 409, data: { error: 'recipient_changed', recipient: OLLAMA } } })
+		axios.get.mockResolvedValue({ data: status({ reason: 'recipient_changed', recipient: OLLAMA, previous_recipient_name: 'Google Gemini' }) })
+		acceptButton().click()
+		await flush()
+
+		expect(store.profileChoices.aiConsent).toBeNull()
+		expect(host.textContent).toContain('Die Daten gehen an: Ollama')
+		expect(host.querySelector('[role="alert"]')).not.toBeNull()
+
+		acceptButton().click()
+		await flush()
+		expect(axios.post.mock.calls[1][1]).toEqual({ version: consent.version, recipient_fingerprint: 'fp-ollama', source: 'onboarding' })
+		expect(store.profileChoices.aiConsent).toBe('yes')
+	})
+
+	it('reload: after a reload the choice starts empty and the server status decides', async () => {
+		window.localStorage.setItem('learning:onboarding-progress:user', JSON.stringify({ step: 'profile', role: 'student', profileChoices: { goal: 'career', intensity: 'regular', aiConsent: 'yes' } }))
+		axios.get.mockResolvedValue({ data: status() })
+		pinia = createPinia()
+		setActivePinia(pinia)
+		store = useOnboardingStore()
+		store.hydrate()
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({ render: () => h(OnbProfileTiles) })
+		app.use(pinia)
+		app.config.globalProperties.t = (_a, s) => s
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await flush()
+		expect(store.profileChoices.aiConsent).toBeNull()
+		expect(store.profileChoices.goal).toBe('career')
+	})
+
 	it('a failed revocation keeps the choice at yes (the consent is still on record)', async () => {
 		axios.get.mockResolvedValue({ data: status({ valid: true }) })
 		axios.delete.mockRejectedValueOnce(new Error('500'))

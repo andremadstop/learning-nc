@@ -311,6 +311,7 @@ export default {
     async createPool() {
       this.creating = true;
       this.error = '';
+      this.aiConsentRequired = false;
       try {
         const accepted = this.draftQuestions
           .filter(q => q._status === 'accepted')
@@ -325,7 +326,11 @@ export default {
         this.$emit('created');
         this.$emit('close');
       } catch (e) {
-        this.error = e.response?.data?.error || t('learning', 'Failed to create pool');
+        if (isConsentRefusal(e)) {
+          this.aiConsentRequired = true;
+        } else {
+          this.error = e.response?.data?.error || t('learning', 'Failed to create pool');
+        }
       } finally {
         this.creating = false;
       }

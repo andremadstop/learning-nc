@@ -1,5 +1,6 @@
 <template>
   <AccessibleDialog
+    class="ai-consent-modal"
     :name="text.title"
     :aria-describedby="bodyId"
     size="normal"
@@ -112,6 +113,12 @@ export default {
   },
 }
 </script>
+
+<style>
+/* NcModal's mask is at 9998, the onboarding wizard (fixed overlay) at 10000/10001: without this
+   the dialog opened from the wizard renders behind it and cannot be answered. */
+body .modal-mask.ai-consent-modal { z-index: 10002; }
+</style>
 
 <style scoped>
 .ai-consent { line-height: 1.5; }

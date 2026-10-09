@@ -84,6 +84,14 @@ describe.each(REFUSALS)('entry points on %s', (_label, error) => {
 		expect(ctx.step).toBe('input')
 	})
 
+	it('PoolGenerator.createPool', async () => {
+		const ctx = { creating: false, error: '', aiConsentRequired: false, draftQuestions: [{ _status: 'accepted', text: 'q' }], poolTitle: 'T', $emit: vi.fn() }
+		await PoolGenerator.methods.createPool.call(ctx)
+		expect(ctx.aiConsentRequired).toBe(true)
+		expect(ctx.error).toBe('')
+		expect(ctx.creating).toBe(false)
+	})
+
 	it('AIGenerator.startGeneration', async () => {
 		const ctx = { generating: false, error: '', aiConsentRequired: false, poolId: 1, questionCount: 5, language: 'de' }
 		await AIGenerator.methods.startGeneration.call(ctx)
