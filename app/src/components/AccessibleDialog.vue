@@ -27,7 +27,17 @@ export default {
   },
   methods: {
     handleKeydown(event) {
-      trapTabKey(event, this.$refs.dialog?.$el || this.$el, this.$refs.content)
+      trapTabKey(event, this.trapRoot(event), this.$refs.content)
+    },
+    // The dialog element in the DOM. NcDialog's root is NcModal, whose root is a Teleport, so
+    // `$refs.dialog.$el` is only the teleport anchor. The capture listener sits on the modal mask
+    // (NcModal passes $attrs to it), so the event's currentTarget is the whole dialog.
+    trapRoot(event) {
+      const target = event?.currentTarget
+      if (target && typeof target.querySelectorAll === 'function' && target.contains?.(this.$refs.content)) {
+        return target
+      }
+      return this.$refs.content?.closest?.('[role="dialog"]') || this.$refs.content
     },
   },
 }
