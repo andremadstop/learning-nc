@@ -7,18 +7,15 @@ use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
-use OCP\IUser;
-use OCP\IUserManager;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
-use OCP\TaskProcessing\IManager as TaskManager;
-use OCP\TaskProcessing\Task;
 use Psr\Log\LoggerInterface;
 
 /**
  * Upgrade from 5.5/5.6 to the single LLM gateway (spec 2.3, 3.6, 4.3, 5.2; plan Task C1).
  * Registered under <post-migration>, so it also runs on every `occ maintenance:repair`: each part
- * is idempotent and can be repeated on its own, and a failing part warns without stopping the rest.
+ * is idempotent and can be repeated on its own, and a failing part warns without stopping the rest
+ * — except part 3, whose failure ends the upgrade (LegacyTaskCleanupFailed).
  *
  * 1. Gemini key: plaintext `gemini_api_key` → encrypted, fingerprint-bound slot
  *    (ApiKeyStore::migrateLegacyGeminiKey). Lifecycle probe contract: with PROBE_FAIL_AFTER=key_write
@@ -27,18 +24,20 @@ use Psr\Log\LoggerInterface;
  * 2. Inactive legacy Ollama settings (ai_ollama_url/model while another provider is active) →
  *    `ai_connection_saved_ollama_`, so switching back keeps them. Never writes `ai_connection`:
  *    the active connection stays derived from the 5.5 keys until an admin saves one.
- * 3. Open TaskProcessing tasks of this app from the removed legacy path: scheduled ones are
- *    cancelled and deleted, running ones are listed in `ai_legacy_tasks_pending` for cleanup.
- *    Once (marker `llm_migration_tasks_done`), since it walks all users.
+ * 3. Open tasks of this app in Nextcloud's AI queues from the removed legacy path
+ *    (LegacyAiTaskCleanup::scan). Once (marker `llm_migration_tasks_done`), since it walks all
+ *    users. A failure throws LegacyTaskCleanupFailed (\Error): left queued, the tasks would be
+ *    sent outside the gateway and the 5.7 consent, so the upgrade must not complete without it.
  * 4. Chat memory summaries are deleted once (marker `llm_migration_memory_cleared`): they may
- *    replay other learners' contributions and were made under the old consent.
+ *    replay other learners' contributions and were made under the old consent. DELETE and marker
+ *    commit in one transaction, so a failed marker write cannot cost a later run 5.7's memory.
  * 5. Audit redaction of 5.5 prompt/answer excerpts (RedactLegacyAiAudit, own marker).
  */
 class MigrateLlmConfiguration implements IRepairStep {
     public const APP = 'learning';
     public const MARKER_TASKS = 'llm_migration_tasks_done';
     public const MARKER_MEMORY = 'llm_migration_memory_cleared';
-    public const PENDING_TASKS = 'ai_legacy_tasks_pending';
+    public const PENDING_TASKS = LegacyAiTaskCleanup::PENDING_TASKS;
     public const PROBE_ENV = 'PROBE_FAIL_AFTER';
     public const PROBE_KEY_WRITE = 'key_write';
 
@@ -46,8 +45,7 @@ class MigrateLlmConfiguration implements IRepairStep {
         private ApiKeyStore $keys,
         private ConnectionStore $connections,
         private IAppConfig $appConfig,
-        private TaskManager $tasks,
-        private IUserManager $users,
+        private LegacyAiTaskCleanup $legacyTasks,
         private IDBConnection $db,
         private RedactLegacyAiAudit $redaction,
         private LoggerInterface $logger,
@@ -62,7 +60,8 @@ class MigrateLlmConfiguration implements IRepairStep {
         // Decide on what is stored, not on what this process happens to have cached.
         $this->appConfig->clearCache();
 
-        // \Exception only: the probe's ProbeInjectedFailure is an \Error and must end the upgrade.
+        // \Exception only: ProbeInjectedFailure and LegacyTaskCleanupFailed are \Errors and must end
+        // the upgrade.
         $parts = [
             'migrateKey' => fn () => $this->migrateKey($output),
             'keepInactiveOllama' => fn () => $this->keepInactiveOllama($output),
@@ -136,45 +135,36 @@ class MigrateLlmConfiguration implements IRepairStep {
         if ($this->appConfig->getValueString(self::APP, self::MARKER_TASKS, '') === 'yes') {
             return;
         }
-        /** @var list<Task> $scheduled */
-        $scheduled = [];
-        /** @var list<int> $running */
-        $running = [];
-        $this->users->callForAllUsers(function (IUser $user) use (&$scheduled, &$running): void {
-            foreach ($this->tasks->getUserTasksByApp($user->getUID(), self::APP) as $task) {
-                if ($task->getStatus() === Task::STATUS_SCHEDULED) {
-                    $scheduled[] = $task;
-                } elseif ($task->getStatus() === Task::STATUS_RUNNING && $task->getId() !== null) {
-                    $running[] = (int)$task->getId();
-                }
-            }
-        });
-
-        foreach ($scheduled as $task) {
-            $id = $task->getId();
-            if ($id === null) {
-                continue;
-            }
-            $this->tasks->cancelTask($id);
-            $this->tasks->deleteTask($task);
-        }
-
-        if ($running !== []) {
-            $pending = json_decode($this->appConfig->getValueString(self::APP, self::PENDING_TASKS, '[]'), true);
-            $pending = is_array($pending) ? array_values(array_filter($pending, 'is_int')) : [];
-            $pending = array_values(array_unique(array_merge($pending, $running)));
-            $this->appConfig->setValueString(self::APP, self::PENDING_TASKS, json_encode($pending, JSON_THROW_ON_ERROR));
+        try {
+            $r = $this->legacyTasks->scan();
+        } catch (\Throwable $e) {
+            $this->logger->error('AI configuration migration: the legacy AI task cleanup failed; the upgrade is stopped', ['app' => self::APP, 'exception' => $e]);
+            $output->warning('AI configuration migration: cleaning up the legacy AI tasks failed (' . get_class($e) . '). '
+                . 'The upgrade is stopped so that the queued tasks are not sent; run `occ upgrade` again.');
+            throw new LegacyTaskCleanupFailed('The legacy AI tasks could not be cleaned up: ' . $e->getMessage(), 0, $e);
         }
         $this->appConfig->setValueString(self::APP, self::MARKER_TASKS, 'yes');
-        $output->info(sprintf('Legacy AI tasks: %d scheduled cancelled and deleted, %d running listed for cleanup', count($scheduled), count($running)));
+        $output->info(sprintf(
+            'Legacy AI tasks: %d scheduled cancelled, %d deleted, %d running listed for cleanup, %d queued TextProcessing deleted',
+            $r['cancelled'], $r['deleted'], $r['running'], $r['text_deleted'],
+        ));
     }
 
     private function clearChatMemory(IOutput $output): void {
         if ($this->appConfig->getValueString(self::APP, self::MARKER_MEMORY, '') === 'yes') {
             return;
         }
-        $deleted = $this->db->getQueryBuilder()->delete('learning_ai_chat_memory')->executeStatement();
-        $this->appConfig->setValueString(self::APP, self::MARKER_MEMORY, 'yes');
+        // AppConfig writes through the same connection, so the marker commits with the DELETE.
+        $this->db->beginTransaction();
+        try {
+            $deleted = $this->db->getQueryBuilder()->delete('learning_ai_chat_memory')->executeStatement();
+            $this->appConfig->setValueString(self::APP, self::MARKER_MEMORY, 'yes');
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            $this->appConfig->clearCache(); // the process cache may still hold the rolled-back marker
+            throw $e;
+        }
         $output->info("Deleted $deleted AI chat memory entries made under the previous consent");
     }
 }

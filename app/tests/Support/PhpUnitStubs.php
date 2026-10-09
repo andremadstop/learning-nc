@@ -1510,6 +1510,10 @@ namespace OCP\TaskProcessing\Exception {
         class Exception extends \Exception {
         }
     }
+    if (!class_exists(NotFoundException::class)) {
+        class NotFoundException extends Exception {
+        }
+    }
 }
 
 namespace OCP\TaskProcessing {
@@ -1568,6 +1572,63 @@ namespace OCP\TaskProcessing {
             public function getUserTasksByApp(?string $userId, string $appId, ?string $customId = null): array;
 
             public function cancelTask(int $id): void;
+
+            public function deleteTask(Task $task): void;
+
+            public function getTask(int $id): Task;
+        }
+    }
+}
+
+namespace OCP\TextProcessing {
+    // 5.7.0 C1: the TextProcessing queue of NC <= 29 (deprecated since 30, still in NC 33-35).
+    // Signatures copied from NC 33's lib/public/TextProcessing/{Task,IManager}.php (subset).
+    if (!class_exists(Task::class)) {
+        class Task {
+            public const STATUS_FAILED = 4;
+            public const STATUS_SUCCESSFUL = 3;
+            public const STATUS_RUNNING = 2;
+            public const STATUS_SCHEDULED = 1;
+            public const STATUS_UNKNOWN = 0;
+
+            protected ?int $id = null;
+            protected int $status = self::STATUS_UNKNOWN;
+
+            final public function __construct(
+                protected string $type,
+                protected string $input,
+                protected string $appId,
+                protected ?string $userId,
+                protected string $identifier = '',
+            ) {
+            }
+
+            final public function getId(): ?int {
+                return $this->id;
+            }
+
+            final public function setId(?int $id): void {
+                $this->id = $id;
+            }
+
+            final public function getStatus(): int {
+                return $this->status;
+            }
+
+            final public function setStatus(int $status): void {
+                $this->status = $status;
+            }
+
+            final public function getUserId(): ?string {
+                return $this->userId;
+            }
+        }
+    }
+
+    if (!interface_exists(IManager::class)) {
+        interface IManager {
+            /** @return list<Task> */
+            public function getUserTasksByApp(string $userId, string $appId, ?string $identifier = null): array;
 
             public function deleteTask(Task $task): void;
         }

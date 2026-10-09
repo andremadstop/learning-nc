@@ -13,6 +13,8 @@ use OCP\IUserManager;
 use OCP\Server;
 use OCP\TaskProcessing\IManager as TaskManager;
 use OCP\TaskProcessing\Task;
+use OCP\TextProcessing\IManager as TextManager;
+use OCP\TextProcessing\Task as TextTask;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -56,6 +58,10 @@ final class MigrateLlmConfigurationTest extends TestCase {
         foreach ($tasks->getUserTasksByApp(self::UID, 'learning') as $task) {
             $tasks->deleteTask($task);
         }
+        $textTasks = Server::get(TextManager::class);
+        foreach ($textTasks->getUserTasksByApp(self::UID, 'learning') as $task) {
+            $textTasks->deleteTask($task);
+        }
         Server::get(IUserManager::class)->get(self::UID)?->delete();
     }
 
@@ -79,6 +85,9 @@ final class MigrateLlmConfigurationTest extends TestCase {
         Server::get(IUserManager::class)->createUser(self::UID, bin2hex(random_bytes(16)) . 'Aa1!');
         $scheduled = $this->insertTask(Task::STATUS_SCHEDULED);
         $running = $this->insertTask(Task::STATUS_RUNNING);
+        // what an earlier run left when it died between cancelTask() and deleteTask()
+        $cancelled = $this->insertTask(Task::STATUS_CANCELLED);
+        $textScheduled = $this->insertTextTask(TextTask::STATUS_SCHEDULED);
         $this->appConfig->deleteKey('learning', MigrateLlmConfiguration::MARKER_TASKS);
         $this->appConfig->deleteKey('learning', MigrateLlmConfiguration::PENDING_TASKS);
 
@@ -87,11 +96,22 @@ final class MigrateLlmConfigurationTest extends TestCase {
 
         $left = array_map(static fn (Task $t): ?int => $t->getId(), Server::get(TaskManager::class)->getUserTasksByApp(self::UID, 'learning'));
         $this->assertNotContains($scheduled, $left, 'a scheduled legacy task is cancelled and deleted');
+        $this->assertNotContains($cancelled, $left, 'a cancelled leftover is deleted');
+        $textLeft = array_map(static fn (TextTask $t): ?int => $t->getId(), Server::get(TextManager::class)->getUserTasksByApp(self::UID, 'learning'));
+        $this->assertNotContains($textScheduled, $textLeft, 'a queued TextProcessing task is deleted');
         $this->assertContains($running, $left, 'a running legacy task is left to finish');
         $this->appConfig->clearCache();
         $this->assertContains($running, json_decode($this->appConfig->getValueString('learning', MigrateLlmConfiguration::PENDING_TASKS, '[]'), true));
         $this->assertSame('yes', $this->appConfig->getValueString('learning', MigrateLlmConfiguration::MARKER_TASKS, ''));
         $this->assertSame([], $output->warnings);
+    }
+
+    /** Same row TextProcessing's scheduleTask() writes; scheduleTask() itself refuses without provider. */
+    private function insertTextTask(int $status): int {
+        $task = new TextTask('OCP\\TextProcessing\\FreePromptTaskType', 'c1 legacy text prompt', 'learning', self::UID);
+        $task->setStatus($status);
+        $entity = Server::get(\OC\TextProcessing\Db\TaskMapper::class)->insert(\OC\TextProcessing\Db\Task::fromPublicTask($task));
+        return (int)$entity->getId();
     }
 
     /** Same rows IManager::scheduleTask() writes; scheduleTask() itself refuses a type without provider. */

@@ -395,6 +395,8 @@ final class FakeAppConfigValues {
     public $readOverride = null;
     /** @var list<string> keys whose writes reach the process cache but are never persisted */
     public array $lostWrites = [];
+    /** @var list<string> keys whose writes throw before anything is stored (a failing DB write) */
+    public array $failingWrites = [];
     /** @var array<string, string>|null process cache, null = not loaded */
     private ?array $cache = null;
 
@@ -415,6 +417,9 @@ final class FakeAppConfigValues {
             function (string $app, string $key, string $value, bool $lazy = false, bool $sensitive = false): bool {
                 if (strlen($key) > self::KEY_MAX_LENGTH) {
                     throw new \InvalidArgumentException('Value (' . $key . ') for key is too long (' . self::KEY_MAX_LENGTH . ')');
+                }
+                if (in_array($key, $this->failingWrites, true)) {
+                    throw new \RuntimeException('injected write failure for ' . $key);
                 }
                 $this->setCalls++;
                 $k = $app . "\0" . $key;
