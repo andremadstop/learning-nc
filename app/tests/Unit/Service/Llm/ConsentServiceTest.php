@@ -336,6 +336,19 @@ class ConsentServiceTest extends TestCase {
         $this->assertNull($this->service()->previousRecipientName('alice', $ollama));
     }
 
+    /** Data export (Art. 15/20): the readable name of the recipient a stored consent was given for. */
+    public function testRecipientNameForReturnsTheRememberedNameOfAFingerprint(): void {
+        $this->row = null;
+        $c = $this->gemini();
+        $this->grantAs('alice', $c);
+
+        $service = $this->service();
+        $this->assertSame('Google Gemini', $service->recipientNameFor($c->recipientFingerprint()));
+        $this->assertNull($service->recipientNameFor(str_repeat('b', 64)), 'a recipient that is no longer remembered has no name');
+        $this->assertNull($service->recipientNameFor(null));
+        $this->assertNull($service->recipientNameFor(''));
+    }
+
     /** The name list belongs to the recipients, not to the users: no user ids, and bounded. */
     public function testTheRememberedRecipientsHoldNoUserIdsAndStayBounded(): void {
         $this->row = null;

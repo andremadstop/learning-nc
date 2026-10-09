@@ -3,11 +3,15 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Service;
 
+use OCA\Learning\Db\AiChatMemory;
+use OCA\Learning\Db\AiChatMemoryMapper;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\DataExportService;
+use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
@@ -53,8 +57,9 @@ class DataExportServiceTest extends TestCase {
      * Build DataExportService with injectable dependencies.
      *
      * @param Certificate[] $certs  what CertificateMapper::findByUserId returns
+     * @param AiChatMemory[] $memory what AiChatMemoryMapper::findAllByUser returns
      */
-    private function makeService(array $certs): DataExportService {
+    private function makeService(array $certs, ?UserTelos $telos = null, array $memory = [], ?string $recipientName = null): DataExportService {
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByUserId')->willReturn($certs);
 
@@ -64,13 +69,19 @@ class DataExportServiceTest extends TestCase {
         $badgeService->method('getUserBadges')->willReturn([]);
 
         $userTelosMapper = $this->createMock(UserTelosMapper::class);
-        $userTelosMapper->method('findByUserIdOrNull')->willReturn(null);
+        $userTelosMapper->method('findByUserIdOrNull')->willReturn($telos);
 
         $xpService = $this->createMock(XpService::class);
         $xpService->method('calculateXp')->willReturn(['total_xp' => 0, 'level' => 1]);
 
         $streakService = $this->createMock(StreakService::class);
         $streakService->method('getStreak')->willReturn(['current_streak' => 0]);
+
+        $consent = $this->createMock(ConsentService::class);
+        $consent->method('recipientNameFor')->willReturn($recipientName);
+
+        $chatMemory = $this->createMock(AiChatMemoryMapper::class);
+        $chatMemory->method('findAllByUser')->willReturn($memory);
 
         return new DataExportService(
             // FakeDbConnection absorbs all QB calls from leitner_items/sessions/answers/pools/
@@ -81,7 +92,31 @@ class DataExportServiceTest extends TestCase {
             $streakService,
             $badgeService,
             $certMapper,
+            $consent,
+            $chatMemory,
         );
+    }
+
+    private function telosWithConsent(): UserTelos {
+        $telos = new UserTelos();
+        $telos->setUserId(self::USER);
+        $telos->setVisibility('private');
+        $telos->setAiConsentVersion('3.0');
+        $telos->setAiConsentFingerprint(str_repeat('a', 64));
+        $telos->setAiConsentSource('onboarding');
+        $telos->setAiConsentAt(1700000500);
+        $telos->setConsentEpoch(2);
+        return $telos;
+    }
+
+    private function memory(string $role, string $message, int $at, ?int $swarm): AiChatMemory {
+        $m = new AiChatMemory();
+        $m->setUserId(self::USER);
+        $m->setRole($role);
+        $m->setMessage($message);
+        $m->setCreatedAt($at);
+        $m->setSwarmSourced($swarm);
+        return $m;
     }
 
     /**
@@ -136,5 +171,63 @@ class DataExportServiceTest extends TestCase {
             'course_id must be preserved in the export');
         $this->assertSame(self::ISSUED_AT, $entry['issued_at'],
             'issued_at timestamp must be preserved');
+    }
+
+    /** 5.7.0 (spec 5.6): the export names the stored AI consent: version, source, time, recipient. */
+    public function testExportIncludesTheStoredAiConsent(): void {
+        $result = $this->makeService([], $this->telosWithConsent(), [], 'Google Gemini')->exportForUser(self::USER);
+
+        $this->assertArrayHasKey('ai_consent', $result);
+        $this->assertSame([
+            'given' => true,
+            'version' => '3.0',
+            'source' => 'onboarding',
+            'given_at' => 1700000500,
+            'recipient' => 'Google Gemini',
+            'revocations' => 2,
+        ], $result['ai_consent']);
+    }
+
+    public function testExportSaysSoWhenThereIsNoAiConsent(): void {
+        $none = $this->makeService([])->exportForUser(self::USER);
+        $this->assertSame(['given' => false, 'revocations' => 0], $none['ai_consent'], 'no profile row at all');
+
+        $revoked = $this->telosWithConsent();
+        $revoked->setAiConsentVersion(null);
+        $revoked->setAiConsentFingerprint(null);
+        $revoked->setAiConsentSource(null);
+        $revoked->setAiConsentAt(null);
+        $revoked->setConsentEpoch(3);
+        $result = $this->makeService([], $revoked)->exportForUser(self::USER);
+        $this->assertSame(['given' => false, 'revocations' => 3], $result['ai_consent'], 'revoked: nothing stored, the count stays');
+    }
+
+    public function testExportKeepsTheConsentWhenTheRecipientNameIsNoLongerKnown(): void {
+        $result = $this->makeService([], $this->telosWithConsent(), [], null)->exportForUser(self::USER);
+
+        $this->assertTrue($result['ai_consent']['given']);
+        $this->assertNull($result['ai_consent']['recipient']);
+    }
+
+    /** The server-side chat summaries are personal data too (Art. 15/20) — all of them, not a page. */
+    public function testExportIncludesTheStoredChatSummaries(): void {
+        $memory = [
+            $this->memory('user', 'Was ist ein Subnetz?', 1700000100, 0),
+            $this->memory('assistant', 'Ein Subnetz ist ...', 1700000101, 1),
+            $this->memory('summary', 'Frühere Chats: Subnetting', 1700000102, null),
+        ];
+        $result = $this->makeService([], null, $memory)->exportForUser(self::USER);
+
+        $this->assertArrayHasKey('ai_chat_memory', $result);
+        $this->assertSame([
+            ['role' => 'user', 'message' => 'Was ist ein Subnetz?', 'created_at' => 1700000100, 'swarm_sourced' => false],
+            ['role' => 'assistant', 'message' => 'Ein Subnetz ist ...', 'created_at' => 1700000101, 'swarm_sourced' => true],
+            ['role' => 'summary', 'message' => 'Frühere Chats: Subnetting', 'created_at' => 1700000102, 'swarm_sourced' => null],
+        ], $result['ai_chat_memory']);
+    }
+
+    public function testExportHasAnEmptyChatMemoryListWithoutEntries(): void {
+        $result = $this->makeService([])->exportForUser(self::USER);
+        $this->assertSame([], $result['ai_chat_memory']);
     }
 }

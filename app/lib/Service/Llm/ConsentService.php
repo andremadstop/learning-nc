@@ -170,6 +170,18 @@ class ConsentService {
         return is_string($name) && $name !== '' ? $name : null;
     }
 
+    /**
+     * Readable name of the recipient a stored consent was given for (the data export names it).
+     * Null when the fingerprint is empty or its name is no longer remembered.
+     */
+    public function recipientNameFor(?string $fingerprint): ?string {
+        if ($fingerprint === null || $fingerprint === '') {
+            return null;
+        }
+        $name = $this->rememberedRecipients()[$fingerprint] ?? null;
+        return is_string($name) && $name !== '' ? $name : null;
+    }
+
     private function rememberRecipient(string $fingerprint, string $name): void {
         $map = $this->rememberedRecipients();
         if (($map[$fingerprint] ?? null) === $name) {

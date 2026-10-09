@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Listener;
 
+use OCA\Learning\Service\Llm\LlmBudget;
+use OCA\Learning\Service\Llm\LlmBudgetStore;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
@@ -81,6 +83,10 @@ class UserDeletedListener implements IEventListener {
         $this->deleteByUserColumns('learning_coop_players', ['user_id'], $userId);
         $this->deleteByUserColumns('learning_coop_sessions', ['host_user_id'], $userId);
 
+        // 5.7.0: the AI budget keeps one row per user and window; its bucket name carries the uid.
+        // Exact names, never LIKE: '_' is a wildcard and legal in a uid, and a long uid is hashed.
+        $this->deleteBudgetRows($userId);
+
         // Keep shared knowledge but remove the personal reference.
         $this->setColumnToNull('learning_support_tickets', 'answered_by', $userId);
         $this->setColumnToNull('learning_rag_chunks', 'user_id', $userId);
@@ -115,6 +121,17 @@ class UserDeletedListener implements IEventListener {
                 $qbAuditDel->expr()->isNull('seq_num')
             ));
         $qbAuditDel->executeStatement();
+    }
+
+    private function deleteBudgetRows(string $userId): void {
+        $buckets = array_map(
+            static fn(string $suffix): string => LlmBudget::userBucket($userId, $suffix),
+            LlmBudget::USER_BUCKET_SUFFIXES
+        );
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete(LlmBudgetStore::TABLE)
+            ->where($qb->expr()->in('bucket', $qb->createNamedParameter($buckets, IQueryBuilder::PARAM_STR_ARRAY)));
+        $qb->executeStatement();
     }
 
     /**

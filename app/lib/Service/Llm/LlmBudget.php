@@ -30,6 +30,12 @@ class LlmBudget {
     public const GLOBAL_LIMIT_KEY = 'ai_global_daily_limit';
     public const GLOBAL_BUCKET = 'g:d';
 
+    /**
+     * Suffixes of the per-user buckets reserve() uses (minute, day, concurrency slots). Account
+     * deletion removes exactly these rows; UserDeletedListenerTest fails if reserve() adds another.
+     */
+    public const USER_BUCKET_SUFFIXES = ['d', 'm', 'inflight'];
+
     /** Longest uid that is stored readable: 'u:' + uid + ':inflight' must fit STRING(64). */
     private const MAX_PLAIN_UID = 53;
 

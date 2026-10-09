@@ -32,6 +32,22 @@ class AiChatMemoryMapper extends QBMapper {
     }
 
     /**
+     * Every stored entry of a user, oldest first, without a cap (data export, Art. 15/20).
+     *
+     * @return AiChatMemory[]
+     */
+    public function findAllByUser(string $userId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->orderBy('created_at', 'ASC')
+           ->addOrderBy('id', 'ASC');
+
+        return $this->findEntities($qb);
+    }
+
+    /**
      * Count how many entries this user has.
      */
     public function countByUser(string $userId): int {

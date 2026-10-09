@@ -3,9 +3,13 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\AiChatMemory;
+use OCA\Learning\Db\AiChatMemoryMapper;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
+use OCA\Learning\Service\Llm\ConsentService;
 use OCP\IDBConnection;
 
 class DataExportService {
@@ -15,6 +19,8 @@ class DataExportService {
     private StreakService $streakService;
     private BadgeService $badgeService;
     private CertificateMapper $certificateMapper;
+    private ConsentService $consentService;
+    private AiChatMemoryMapper $chatMemoryMapper;
 
     public function __construct(
         IDBConnection $db,
@@ -22,7 +28,9 @@ class DataExportService {
         XpService $xpService,
         StreakService $streakService,
         BadgeService $badgeService,
-        CertificateMapper $certificateMapper
+        CertificateMapper $certificateMapper,
+        ConsentService $consentService,
+        AiChatMemoryMapper $chatMemoryMapper
     ) {
         $this->db = $db;
         $this->userTelosMapper = $userTelosMapper;
@@ -30,6 +38,8 @@ class DataExportService {
         $this->streakService = $streakService;
         $this->badgeService = $badgeService;
         $this->certificateMapper = $certificateMapper;
+        $this->consentService = $consentService;
+        $this->chatMemoryMapper = $chatMemoryMapper;
     }
 
     /**
@@ -53,6 +63,18 @@ class DataExportService {
                 'visibility' => $telos ? $telos->getVisibility() : 'private',
                 'telos' => $telos ? $telos->getTelosData() : [],
             ],
+            'ai_consent' => $this->exportAiConsent($telos),
+            // Server-side chat memory: the learner's own messages, the answers and the summaries that
+            // are sent to the AI recipient as context (5.7.0, spec 5.6). All rows, not a page.
+            'ai_chat_memory' => array_map(
+                static fn(AiChatMemory $m): array => [
+                    'role' => (string)$m->getRole(),
+                    'message' => (string)$m->getMessage(),
+                    'created_at' => (int)$m->getCreatedAt(),
+                    'swarm_sourced' => $m->getSwarmSourced() === null ? null : (int)$m->getSwarmSourced() === 1,
+                ],
+                $this->chatMemoryMapper->findAllByUser($userId)
+            ),
             'badges' => array_values(array_filter(
                 $this->badgeService->getUserBadges($userId),
                 static fn(array $badge): bool => ($badge['earned'] ?? false) === true
@@ -82,6 +104,30 @@ class DataExportService {
                 $this->certificateMapper->findByUserId($userId)
             ),
             'exported_at' => time(),
+        ];
+    }
+
+    /**
+     * The consent as it is stored for the user (not whether it is valid for today's recipient):
+     * text version, source, time and the readable name of the recipient it was given for.
+     * `revocations` counts the withdrawals so far (a revocation clears the rest).
+     *
+     * @return array<string, mixed>
+     */
+    private function exportAiConsent(?UserTelos $telos): array {
+        $revocations = $telos !== null ? (int)$telos->getConsentEpoch() : 0;
+        $version = $telos?->getAiConsentVersion();
+        if ($telos === null || $version === null || $version === '') {
+            return ['given' => false, 'revocations' => $revocations];
+        }
+
+        return [
+            'given' => true,
+            'version' => $version,
+            'source' => $telos->getAiConsentSource(),
+            'given_at' => $telos->getAiConsentAt() !== null ? (int)$telos->getAiConsentAt() : null,
+            'recipient' => $this->consentService->recipientNameFor($telos->getAiConsentFingerprint()),
+            'revocations' => $revocations,
         ];
     }
 

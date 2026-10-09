@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\PublicAiNotice;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -13,6 +15,7 @@ class PageController extends Controller {
         string $appName,
         IRequest $request,
         private IURLGenerator $urlGenerator,
+        private ConnectionStore $connectionStore,
     ) {
         parent::__construct($appName, $request);
     }
@@ -33,6 +36,8 @@ class PageController extends Controller {
         return new PublicTemplateResponse('learning', 'privacy', [
             'appUrl' => $this->urlGenerator->linkToRoute('learning.page.index'),
             'imprintUrl' => $this->urlGenerator->linkToRoute('learning.page.impressum'),
+            // who receives AI data right now, without any server address (public page)
+            'aiNotice' => PublicAiNotice::describe($this->connectionStore->load()),
         ]);
     }
 
