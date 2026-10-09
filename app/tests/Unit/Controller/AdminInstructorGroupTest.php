@@ -56,6 +56,7 @@ class AdminInstructorGroupTest extends TestCase {
             $this->createMock(KeyService::class),
             $this->createMock(AuditCheckpointService::class),
             $this->connectionStore(),
+            $this->createMock(\OCA\Learning\Service\Llm\ApiKeyStore::class),
             'admin'
         );
     }

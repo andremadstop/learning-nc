@@ -719,6 +719,13 @@ namespace OCP\AppFramework\Http {
     // [...], 'user'). Tests read getParams()/getTemplateName()/getStatus(); no NC template engine needed.
     if (!class_exists(TemplateResponse::class)) {
         class TemplateResponse extends Response {
+            public const RENDER_AS_GUEST = 'guest';
+            public const RENDER_AS_BLANK = '';
+            public const RENDER_AS_BASE = 'base';
+            public const RENDER_AS_USER = 'user';
+            public const RENDER_AS_ERROR = 'error';
+            public const RENDER_AS_PUBLIC = 'public';
+
             private string $appName;
             private string $templateName;
             /** @var array<string, mixed> */
@@ -1563,6 +1570,22 @@ namespace OCP\TaskProcessing {
             public function cancelTask(int $id): void;
 
             public function deleteTask(Task $task): void;
+        }
+    }
+}
+
+namespace OCP\Settings {
+    // AdminSettings (NC 33 lib/public/Settings/ISettings.php).
+    if (!interface_exists(ISettings::class)) {
+        interface ISettings {
+            /** @return \OCP\AppFramework\Http\TemplateResponse */
+            public function getForm();
+
+            /** @return string|null */
+            public function getSection();
+
+            /** @return int */
+            public function getPriority();
         }
     }
 }

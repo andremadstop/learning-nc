@@ -9,6 +9,7 @@ use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\AuditCheckpointService;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\KeyService;
+use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Tests\Support\FakeAppConfigValues;
@@ -16,6 +17,7 @@ use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
+use OCP\Security\ICrypto;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -49,15 +51,108 @@ class SettingsControllerAiConnectionTest extends TestCase {
         return new ConnectionStore($appConfig, $this->audit, $this->createMock(LoggerInterface::class));
     }
 
+    /** ICrypto fake: 'enc:'.$v; encrypting a value containing THROW fails. */
+    private function keys(): ApiKeyStore {
+        $appConfig = $this->createMock(IAppConfig::class);
+        $this->values->wire($appConfig);
+        $crypto = $this->createMock(ICrypto::class);
+        $crypto->method('encrypt')->willReturnCallback(function (string $v): string {
+            if (str_contains($v, 'THROW')) {
+                throw new \Exception('encryption failed');
+            }
+            return 'enc:' . $v;
+        });
+        $crypto->method('decrypt')->willReturnCallback(function (string $v): string {
+            if (!str_starts_with($v, 'enc:')) {
+                throw new \Exception('HMAC does not match.');
+            }
+            return substr($v, 4);
+        });
+        return new ApiKeyStore($appConfig, $crypto, $this->createMock(LoggerInterface::class));
+    }
+
     private function controller(): SettingsController {
         return new SettingsController('learning', $this->createMock(IRequest::class), $this->config,
             $this->createMock(IDBConnection::class), $this->createMock(KeyService::class),
-            $this->createMock(AuditCheckpointService::class), $this->store(), 'admin');
+            $this->createMock(AuditCheckpointService::class), $this->store(), $this->keys(), 'admin');
     }
 
-    private function saveAi(string $provider, string $url = 'http://localhost:11434', string $model = 'llama3', string $enabled = 'yes'): int {
-        return $this->controller()->saveAdmin('yes', 'de', 2, 'yes', 'learning-instructors', 'no', 5, 10, null,
+    private function saveAi(string $provider, string $url = 'http://localhost:11434', string $model = 'llama3', string $enabled = 'yes', ?string $key = null): int {
+        return $this->controller()->saveAdmin('yes', 'de', 2, 'yes', 'learning-instructors', 'no', 5, 10, $key,
             $provider, $url, $model, $enabled)->getStatus();
+    }
+
+    private function geminiSlot(): string {
+        return ApiKeyStore::keyName(ConnectionStore::legacyGemini(false));
+    }
+
+    /**
+     * Review finding (HIGH): after the upgrade moved the key into the encrypted slot, the 5.7 admin
+     * form still wrote the plaintext `gemini_api_key`, which get() never prefers — a rotated key was
+     * silently ignored and the next repair deleted it. The form now stores the key encrypted.
+     */
+    public function testAKeyEnteredInTheAdminFormReplacesTheMigratedKey(): void {
+        $this->values->set('learning', $this->geminiSlot(), 'enc:AIza-old-leaked');
+
+        $this->assertSame(200, $this->saveAi('gemini', key: 'AIza-rotated'));
+
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'), 'never stored in plaintext');
+        $this->assertSame('enc:AIza-rotated', $this->values->get('learning', $this->geminiSlot()));
+        $this->assertSame('AIza-rotated', $this->keys()->get($this->store()->load()));
+        $this->assertSame('already', $this->keys()->migrateLegacyGeminiKey(), 'a later repair keeps it');
+        $this->assertSame('AIza-rotated', $this->keys()->get($this->store()->load()));
+    }
+
+    public function testAKeyEnteredWhileOllamaIsActiveIsStoredForGemini(): void {
+        $this->assertSame(200, $this->saveAi('ollama', key: 'AIza-for-later'));
+        $this->assertSame('AIza-for-later', $this->keys()->get(ConnectionStore::legacyGemini(true)));
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
+    }
+
+    public function testAnEmptyKeyDeletesBothCopiesAndTheMaskKeepsTheKey(): void {
+        $this->values->set('learning', $this->geminiSlot(), 'enc:AIza-a');
+        $this->assertSame(200, $this->saveAi('gemini', key: '***'));
+        $this->assertSame('AIza-a', $this->keys()->get(ConnectionStore::legacyGemini(true)));
+
+        $this->values->set('learning', 'gemini_api_key', 'AIza-plain');
+        $this->assertSame(200, $this->saveAi('gemini', key: ''));
+        $this->assertNull($this->keys()->get(ConnectionStore::legacyGemini(true)));
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
+        $this->assertFalse($this->values->has('learning', $this->geminiSlot()));
+    }
+
+    public function testAKeyThatCannotBeStoredIsAnErrorAndNothingIsSaved(): void {
+        $this->values->set('learning', $this->geminiSlot(), 'enc:AIza-a');
+        $this->config->expects($this->never())->method('setAppValue');
+
+        $this->assertSame(500, $this->saveAi('gemini', key: 'AIza-THROW'));
+
+        $this->assertSame('enc:AIza-a', $this->values->get('learning', $this->geminiSlot()));
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
+    }
+
+    /** @return array<string, array{array<string, string>, bool}> */
+    public static function keyStates(): array {
+        return [
+            'migrated (encrypted only)' => [['slot' => 'enc:AIza-a'], true],
+            'not yet migrated (plaintext only)' => [['plain' => 'AIza-a'], true],
+            'none' => [[], false],
+            'undecryptable slot only' => [['slot' => 'bad:x'], false],
+        ];
+    }
+
+    /**
+     * @dataProvider keyStates
+     * @param array<string, string> $state
+     */
+    public function testTheAdminPageReportsTheKeyThatIsActuallyUsed(array $state, bool $expected): void {
+        if (isset($state['slot'])) {
+            $this->values->set('learning', $this->geminiSlot(), $state['slot']);
+        }
+        if (isset($state['plain'])) {
+            $this->values->set('learning', 'gemini_api_key', $state['plain']);
+        }
+        $this->assertSame($expected, $this->adminView()['gemini_api_key_set']);
     }
 
     public function testAnAdminSwitchToOllamaReachesTheSnapshotAndAsksForConsentAgain(): void {
@@ -148,7 +243,7 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $checkpoints = $this->createMock(AuditCheckpointService::class);
         $checkpoints->method('getLivenessStatus')->willThrowException(new \RuntimeException('not migrated'));
         $controller = new SettingsController('learning', $this->createMock(IRequest::class), $this->config,
-            $this->createMock(IDBConnection::class), $this->createMock(KeyService::class), $checkpoints, $this->store(), 'admin');
+            $this->createMock(IDBConnection::class), $this->createMock(KeyService::class), $checkpoints, $this->store(), $this->keys(), 'admin');
         return $controller->getAdmin()->getData();
     }
 

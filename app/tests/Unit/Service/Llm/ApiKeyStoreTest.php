@@ -179,12 +179,51 @@ class ApiKeyStoreTest extends TestCase {
     }
 
     // (b)
-    public function testMigrateWithExistingDecryptableTargetDeletesPlaintext(): void {
+    public function testMigrateWithTheSameKeyAlreadyEncryptedDeletesPlaintext(): void {
         $this->values->set('learning', 'gemini_api_key', self::LEGACY);
-        $this->values->set('learning', $this->targetKey(), 'enc:AIza-already');
+        $this->values->set('learning', $this->targetKey(), 'enc:' . self::LEGACY);
         $this->assertSame('already', $this->keys()->migrateLegacyGeminiKey());
         $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
-        $this->assertSame('enc:AIza-already', $this->values->get('learning', $this->targetKey()));
+        $this->assertSame('enc:' . self::LEGACY, $this->values->get('learning', $this->targetKey()));
+    }
+
+    /**
+     * Review finding (HIGH): once the key was migrated, only something that predates the
+     * encrypted store writes the plaintext slot (a 5.5/5.6 admin form, a manual occ config:app:set).
+     * A plaintext that differs from the encrypted key is therefore the newer one, e.g. a rotated
+     * key after a leak. Deleting it would silently keep the old key in force.
+     */
+    public function testMigrateAdoptsANewerPlaintextKeyOverTheEncryptedOne(): void {
+        $this->values->set('learning', $this->targetKey(), 'enc:AIza-old-leaked');
+        $this->values->set('learning', 'gemini_api_key', 'AIza-rotated');
+        $keys = $this->keys();
+        $this->assertSame('migrated', $keys->migrateLegacyGeminiKey());
+        $this->assertFalse($this->values->has('learning', 'gemini_api_key'));
+        $this->assertSame('enc:AIza-rotated', $this->values->get('learning', $this->targetKey()));
+        $this->assertSame('AIza-rotated', $keys->get(ConnectionStore::legacyGemini(true)));
+        $this->assertNoKeyMaterialLogged();
+    }
+
+    public function testMigrateKeepsANewerPlaintextKeyItCannotStoreAndLeavesTheOldOneIntact(): void {
+        $this->values->set('learning', $this->targetKey(), 'enc:AIza-old');
+        $this->values->set('learning', 'gemini_api_key', 'AIza-THROW');
+        $this->assertSame('kept_plaintext', $this->keys()->migrateLegacyGeminiKey());
+        $this->assertSame('AIza-THROW', $this->values->get('learning', 'gemini_api_key'));
+        $this->assertSame('enc:AIza-old', $this->values->get('learning', $this->targetKey()));
+        $this->assertNoKeyMaterialLogged();
+    }
+
+    public function testTheLegacyFormValuesForGeminiUseTheSameKeySlot(): void {
+        // SettingsController stores the admin's key for this connection; the active connection
+        // must read the same slot, or a saved key would never be used.
+        $this->assertSame(
+            ApiKeyStore::keyName(ConnectionStore::legacyGemini(false)),
+            ApiKeyStore::keyName(ConnectionStore::fromLegacyValues('gemini', true, 'http://localhost:11434', 'llama3')),
+        );
+        $this->assertSame(
+            ApiKeyStore::keyName(ConnectionStore::legacyGemini(false)),
+            ApiKeyStore::keyName(ConnectionStore::legacyGemini(true)),
+        );
     }
 
     // (c)

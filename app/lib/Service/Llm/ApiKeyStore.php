@@ -91,6 +91,10 @@ class ApiKeyStore {
     /**
      * Moves the 5.5 plaintext Gemini key to its encrypted, fingerprint-bound slot. Idempotent.
      *
+     * A plaintext key next to a readable encrypted one is deleted when both are equal (an
+     * interrupted earlier run) and adopted when they differ (a key entered by a writer that
+     * predates the encrypted store, which is the newer one).
+     *
      * $afterKeyWrite runs only when this call wrote the encrypted copy, after it was read back and
      * before the plaintext is deleted (the lifecycle probe's PROBE_FAIL_AFTER=key_write point).
      * Whatever it throws reaches the caller; the next run finds both copies and answers 'already'.
@@ -105,7 +109,14 @@ class ApiKeyStore {
         $plain = trim($this->appConfig->getValueString(self::APP, self::LEGACY_GEMINI_KEY, ''));
 
         if ($this->appConfig->hasKey(self::APP, $name)) {
-            if ($this->readEncrypted($name) !== null) {
+            $encrypted = $this->readEncrypted($name);
+            if ($encrypted !== null) {
+                if ($plain !== '' && $plain !== $encrypted) {
+                    // Only writers that predate the encrypted store (a 5.5/5.6 admin form, a manual
+                    // occ config:app:set) fill the plaintext slot after a migration, so a differing
+                    // plaintext is the newer key, e.g. one rotated after a leak. Adopt it.
+                    return $this->moveToEncrypted($name, $plain, $afterKeyWrite);
+                }
                 if ($this->appConfig->hasKey(self::APP, self::LEGACY_GEMINI_KEY)) {
                     $this->appConfig->deleteKey(self::APP, self::LEGACY_GEMINI_KEY);
                 }
@@ -121,6 +132,14 @@ class ApiKeyStore {
         if ($plain === '') {
             return 'none';
         }
+        return $this->moveToEncrypted($name, $plain, $afterKeyWrite);
+    }
+
+    /**
+     * @param (\Closure(): void)|null $afterKeyWrite
+     * @return string 'migrated'|'kept_plaintext'
+     */
+    private function moveToEncrypted(string $name, string $plain, ?\Closure $afterKeyWrite): string {
         if (!$this->writeVerified($name, $plain)) {
             $this->logger->warning('Gemini key migration failed: encrypted copy could not be verified; plaintext key kept', ['app' => self::APP]);
             return 'kept_plaintext';

@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\AuditCheckpointService;
 use OCA\Learning\Service\KeyService;
+use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -32,10 +33,12 @@ class SettingsController extends Controller {
     private KeyService $keyService;
     private AuditCheckpointService $auditCheckpointService;
     private ConnectionStore $connectionStore;
+    private ApiKeyStore $apiKeyStore;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ConnectionStore $connectionStore, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ConnectionStore $connectionStore, ApiKeyStore $apiKeyStore, ?string $userId) {
         parent::__construct($appName, $request);
         $this->connectionStore = $connectionStore;
+        $this->apiKeyStore = $apiKeyStore;
         $this->config = $config;
         $this->db = $db;
         $this->keyService = $keyService;
@@ -73,7 +76,9 @@ class SettingsController extends Controller {
             'allow_course_instructor_fallback' => $this->config->getAppValue('learning', 'allow_course_instructor_fallback', 'no'),
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
-            'gemini_api_key_set' => $this->config->getAppValue('learning', 'gemini_api_key', '') !== '',
+            // The key the Gemini connection actually uses: after the upgrade it is in the encrypted
+            // slot, and the plaintext `gemini_api_key` is gone.
+            'gemini_api_key_set' => $this->apiKeyStore->get(ConnectionStore::legacyGemini(false)) !== null,
             // The connection in force (snapshot, or derived from the 5.5 keys), never the raw legacy
             // keys: a legacy ai_provider '' (AI off) used to show as Gemini and on, and saving any
             // unrelated setting then switched on an external recipient.
@@ -206,6 +211,21 @@ class SettingsController extends Controller {
             return new DataResponse(['error' => 'Invalid AI connection: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
 
+        // API key: only update when a new non-masked value is provided. It is stored encrypted in
+        // the Gemini connection's slot (whichever provider is active, so a key entered for later
+        // is kept), never as plaintext `gemini_api_key`: ApiKeyStore::get() prefers the encrypted
+        // slot, so a plaintext write after the upgrade would be ignored and a later repair would
+        // delete it. Written first: a key that cannot be stored saves nothing else either.
+        if ($gemini_api_key !== null && $gemini_api_key !== '***') {
+            try {
+                $this->apiKeyStore->apply(ConnectionStore::legacyGemini(false), trim($gemini_api_key) === ''
+                    ? ['action' => 'delete']
+                    : ['action' => 'replace', 'value' => $gemini_api_key]);
+            } catch (\RuntimeException $e) {
+                return new DataResponse(['error' => 'The API key could not be stored'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            }
+        }
+
         $this->config->setAppValue('learning', 'daily_challenge_enabled', $daily_challenge_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en'], true) ? $default_language : 'de');
         $this->config->setAppValue('learning', 'max_import_size_mb', (string)max(1, min(10, $max_import_size_mb)));
@@ -225,14 +245,6 @@ class SettingsController extends Controller {
         $this->config->setAppValue('learning', 'exam_attempt_limit_per_day', (string)max(1, min(50, $exam_attempt_limit_per_day)));
         $this->config->setAppValue('learning', 'exam_attempt_cooldown_minutes', (string)max(0, min(1440, $exam_attempt_cooldown_minutes)));
 
-        // API key: only update when a new non-masked value is provided
-        if ($gemini_api_key !== null && $gemini_api_key !== '***') {
-            if ($gemini_api_key === '') {
-                $this->config->deleteAppValue('learning', 'gemini_api_key');
-            } else {
-                $this->config->setAppValue('learning', 'gemini_api_key', trim($gemini_api_key));
-            }
-        }
         $this->config->setAppValue('learning', 'ai_provider', $provider);
         $this->config->setAppValue('learning', 'ai_ollama_url', $ollamaUrl);
         $this->config->setAppValue('learning', 'ai_ollama_model', $ollamaModel);

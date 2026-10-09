@@ -47,6 +47,7 @@ class SettingsControllerLanguageTest extends TestCase {
             $this->createMock(KeyService::class),
             $this->createMock(AuditCheckpointService::class),
             $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class),
+            $this->createMock(\OCA\Learning\Service\Llm\ApiKeyStore::class),
             'alice'
         );
     }
