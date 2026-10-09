@@ -136,7 +136,7 @@ class MigrateLlmConfigurationTest extends TestCase {
 
     private function step(string $probe = ''): MigrateLlmConfiguration {
         $connections = new ConnectionStore($this->appConfig, $this->createMock(AuditService::class), $this->createMock(LoggerInterface::class));
-        $legacyTasks = new LegacyAiTaskCleanup($this->tasks, $this->textTasks, $this->users(), $this->appConfig);
+        $legacyTasks = new LegacyAiTaskCleanup($this->tasks, $this->textTasks, $this->users(), $this->appConfig, $this->createMock(\OCP\BackgroundJob\IJobList::class));
         $args = [$this->keys(), $connections, $this->appConfig, $legacyTasks, $this->db, $this->redaction, $this->createMock(LoggerInterface::class)];
         return new class($probe, ...$args) extends MigrateLlmConfiguration {
             public function __construct(private string $probe, mixed ...$args) {

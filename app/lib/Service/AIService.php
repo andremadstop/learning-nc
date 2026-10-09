@@ -164,7 +164,10 @@ TEXT:
         $payload = $cache->get($this->localTaskCacheKey($taskId));
 
         if (!is_array($payload)) {
-            throw new \Exception('Task not found');
+            // Expired from the cache, or the ID of a task the 5.5 path queued in Nextcloud's own
+            // AI queue (spec 4.3): those are gone with the upgrade. Answered as a failed task, so
+            // the frontend stops polling; nothing about the task is revealed.
+            return ['status' => 'failed', 'questions' => [], 'error' => 'expired'];
         }
 
         if (($payload['user_id'] ?? null) !== $userId) {

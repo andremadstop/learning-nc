@@ -161,6 +161,7 @@ class UninstallCommand extends Command {
         'OCA\Learning\BackgroundJob\ChunkingJob',
         'OCA\Learning\BackgroundJob\ConsistencyCheckJob',
         'OCA\Learning\BackgroundJob\ImportUsersJob',
+        'OCA\Learning\BackgroundJob\LegacyAiTaskCleanupJob',
         'OCA\Learning\BackgroundJob\NotificationJob',
         'OCA\Learning\BackgroundJob\RecertPeriodCloseJob',
         'OCA\Learning\BackgroundJob\RetentionJob',

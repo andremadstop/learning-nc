@@ -83,6 +83,29 @@ class AIServiceGatewayTest extends TestCase {
         $this->assertSame('explanation', $status['output']);
     }
 
+    /**
+     * Spec 4.3 / review finding (MED): IDs of tasks the 5.5 path queued in Nextcloud are no longer
+     * known here. Polling one reports a failed task with error `expired` (the frontend then stops
+     * polling and shows the error), as does a task whose cache entry ran out.
+     */
+    public function testAnUnknownTaskIdReportsAnExpiredFailedTask(): void {
+        $this->gateway->expects($this->never())->method('begin');
+        $status = $this->service()->getTaskStatus(4711, 'alice');
+        $this->assertSame('failed', $status['status']);
+        $this->assertSame('expired', $status['error']);
+        $this->assertSame([], $status['questions']);
+    }
+
+    public function testAnotherUsersTaskIsStillRefused(): void {
+        $this->gateway->method('begin')->willReturn(self::session('alice', LlmPurpose::Explain));
+        $this->gateway->method('send')->willReturn(new LlmResult('explanation', 1, 1, 'm'));
+        $service = $this->service();
+        $taskId = $service->schedulePrompt('prompt', 'alice');
+
+        $this->expectExceptionMessage('Not your task');
+        $service->getTaskStatus($taskId, 'mallory');
+    }
+
     public function testQuestionGenerationUsesItsOwnPurpose(): void {
         $this->gateway->expects($this->once())->method('begin')->with('alice', LlmPurpose::QuestionGenerate)
             ->willReturn(self::session('alice', LlmPurpose::QuestionGenerate));

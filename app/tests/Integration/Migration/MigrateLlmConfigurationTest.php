@@ -3,11 +3,14 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Integration\Migration;
 
+use OCA\Learning\BackgroundJob\LegacyAiTaskCleanupJob;
+use OCA\Learning\Repair\LegacyAiTaskCleanup;
 use OCA\Learning\Repair\MigrateLlmConfiguration;
 use OCA\Learning\Repair\RedactLegacyAiAudit;
 use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Tests\Integration\Support\RecordingOutput;
+use OCP\BackgroundJob\IJobList;
 use OCP\IAppConfig;
 use OCP\IUserManager;
 use OCP\Server;
@@ -63,6 +66,7 @@ final class MigrateLlmConfigurationTest extends TestCase {
             $textTasks->deleteTask($task);
         }
         Server::get(IUserManager::class)->get(self::UID)?->delete();
+        Server::get(IJobList::class)->remove(LegacyAiTaskCleanupJob::class);
     }
 
     public function testAFreshInstallMarkedTheOneTimePartsDone(): void {
@@ -104,6 +108,34 @@ final class MigrateLlmConfigurationTest extends TestCase {
         $this->assertContains($running, json_decode($this->appConfig->getValueString('learning', MigrateLlmConfiguration::PENDING_TASKS, '[]'), true));
         $this->assertSame('yes', $this->appConfig->getValueString('learning', MigrateLlmConfiguration::MARKER_TASKS, ''));
         $this->assertSame([], $output->warnings);
+    }
+
+    /** Spec 4.3: the running task is deleted by the cleanup job once it has finished. */
+    public function testARunningLegacyTaskIsDeletedByTheCleanupJobOnceFinished(): void {
+        Server::get(IUserManager::class)->createUser(self::UID, bin2hex(random_bytes(16)) . 'Aa1!');
+        $running = $this->insertTask(Task::STATUS_RUNNING);
+        $this->appConfig->deleteKey('learning', MigrateLlmConfiguration::MARKER_TASKS);
+        $this->appConfig->deleteKey('learning', MigrateLlmConfiguration::PENDING_TASKS);
+        $jobs = Server::get(IJobList::class);
+        $jobs->remove(LegacyAiTaskCleanupJob::class);
+
+        Server::get(MigrateLlmConfiguration::class)->run(new RecordingOutput());
+        $this->assertTrue($jobs->has(LegacyAiTaskCleanupJob::class, null), 'the upgrade registers the cleanup job');
+
+        $cleanup = Server::get(LegacyAiTaskCleanup::class);
+        $this->assertSame(1, $cleanup->sweepPending(), 'still running: kept');
+
+        $mapper = Server::get(\OC\TaskProcessing\Db\TaskMapper::class);
+        $entity = $mapper->find($running);
+        $entity->setStatus(Task::STATUS_SUCCESSFUL);
+        $mapper->update($entity);
+
+        $this->assertSame(0, $cleanup->sweepPending());
+        $left = array_map(static fn (Task $t): ?int => $t->getId(), Server::get(TaskManager::class)->getUserTasksByApp(self::UID, 'learning'));
+        $this->assertNotContains($running, $left, 'the finished task and its prompt are gone');
+        $this->appConfig->clearCache();
+        $this->assertFalse($this->appConfig->hasKey('learning', MigrateLlmConfiguration::PENDING_TASKS));
+        $jobs->remove(LegacyAiTaskCleanupJob::class);
     }
 
     /** Same row TextProcessing's scheduleTask() writes; scheduleTask() itself refuses without provider. */
