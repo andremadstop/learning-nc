@@ -3082,5 +3082,9 @@ OC.L10N.register(
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Питання вибираються випадково з обов’язкових пулів цього курсу, щоразу заново. Зворотний зв’язок лише наприкінці, потім розбір із поясненнями. Пробні іспити не зараховуються до сертифіката.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Цей пробний іспит використовує лише обов’язкові пули, але жоден ще не позначено як обов’язковий. Зверніться до викладача.",
     "Your consent could not be saved. Please try again." : "Не вдалося зберегти твою згоду. Будь ласка, спробуй ще раз.",
+    "Szenario / Info (optional)" : "Сценарій / інформація (необов’язково)",
+    "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo" : "наприклад, опис випадку, вихідна ситуація або довідкова інформація",
+    "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage." : "Показується перед запитанням. Учні спершу читають цей текст, а потім відповідають на запитання.",
+    "Leer lassen, um das Original-Szenario zu verwenden" : "Залиште порожнім, щоб використати оригінальний сценарій",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

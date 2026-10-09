@@ -3082,5 +3082,9 @@ OC.L10N.register(
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.",
     "Your consent could not be saved. Please try again." : "Your consent could not be saved. Please try again.",
+    "Szenario / Info (optional)" : "Scenario / info (optional)",
+    "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo" : "e.g. a case description, starting situation or background information",
+    "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage." : "Shown before the question. Learners read this text first and then answer the question.",
+    "Leer lassen, um das Original-Szenario zu verwenden" : "Leave empty to use the original scenario",
 },
 "nplurals=2; plural=(n != 1);");

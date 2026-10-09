@@ -63,7 +63,8 @@ class QuestionController extends Controller {
         ?string $examKey = null,
         ?string $chapterKey = null,
         ?string $chapterTitle = null,
-        ?int $chapterOrder = null
+        ?int $chapterOrder = null,
+        ?string $scenario = null
     ): DataResponse {
         try {
             $question = $this->service->create(
@@ -83,7 +84,8 @@ class QuestionController extends Controller {
                 examKey: $examKey,
                 chapterKey: $chapterKey,
                 chapterTitle: $chapterTitle,
-                chapterOrder: $chapterOrder
+                chapterOrder: $chapterOrder,
+                scenario: $scenario
             );
             return new DataResponse($question, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
@@ -113,7 +115,8 @@ class QuestionController extends Controller {
         ?string $examKey = null,
         ?string $chapterKey = null,
         ?string $chapterTitle = null,
-        ?int $chapterOrder = null
+        ?int $chapterOrder = null,
+        ?string $scenario = null
     ): DataResponse {
         try {
             return new DataResponse($this->service->update(
@@ -133,7 +136,9 @@ class QuestionController extends Controller {
                 examKey: $examKey,
                 chapterKey: $chapterKey,
                 chapterTitle: $chapterTitle,
-                chapterOrder: $chapterOrder
+                chapterOrder: $chapterOrder,
+                // Absent key keeps the stored scenario; an explicit null or '' clears it.
+                scenario: array_key_exists('scenario', $this->request->getParams()) ? ($scenario ?? '') : null
             ));
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);

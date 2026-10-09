@@ -3082,5 +3082,9 @@ OC.L10N.register(
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "Die Fragen werden zufällig aus den Pflicht-Pools dieses Kurses gezogen, bei jedem Versuch neu. Rückmeldung gibt es erst am Ende, dann eine Auswertung mit Erklärungen. Probeprüfungen zählen nicht für das Zertifikat.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "Diese Probeprüfung verwendet nur Pflicht-Pools, aber noch ist keiner als Pflicht markiert. Bitte wende dich an deine Lehrkraft.",
     "Your consent could not be saved. Please try again." : "Deine Einwilligung konnte nicht gespeichert werden. Bitte versuche es noch einmal.",
+    "Szenario / Info (optional)" : "Szenario / Info (optional)",
+    "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo" : "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo",
+    "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage." : "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage.",
+    "Leer lassen, um das Original-Szenario zu verwenden" : "Leer lassen, um das Original-Szenario zu verwenden",
 },
 "nplurals=2; plural=(n != 1);");

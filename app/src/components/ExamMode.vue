@@ -75,6 +75,7 @@
           />
         </svg>
         <div class="question-number">{{ t('learning', 'Question {n} of {total}', { n: currentQuestionIndex + 1, total: questions.length }) }}</div>
+        <QuestionScenario :question="currentQuestion" />
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 
@@ -204,6 +205,7 @@
           :key="index"
           :class="['review-item', res.isCorrect ? 'review-correct' : 'review-wrong']"
         >
+          <QuestionScenario :question="{ scenario: res.scenario }" compact />
           <div class="review-question">{{ index + 1 }}. {{ res.questionText }}</div>
           <template v-if="res.isOpen">
             <div class="open-answer-review">
@@ -268,13 +270,14 @@ import { celebratePerfectSession } from '../confetti.js';
 import { countUp } from '../countUp.js';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import BadgeUnlock from './BadgeUnlock.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     // Not needed for a course practice exam, which draws across all of the course's pools.
     poolId: { type: Number, default: null },
@@ -1023,6 +1026,7 @@ export default {
           }
           results.push({
             questionText: rv ? rv.questionText : q.text,
+            scenario: rv && rv.scenario ? rv.scenario : (q.scenario || null),
             userAnswerText: userAnswerText,
             correctAnswerText: correctText,
             isCorrect: rv ? rv.is_correct : false,

@@ -156,7 +156,20 @@ class ImportController extends Controller {
             'chapter_key' => $item['chapter_key'] ?? $item['chapterKey'] ?? $item['kapitel_key'] ?? null,
             'chapter_title' => $item['chapter_title'] ?? $item['chapterTitle'] ?? $item['kapitel_titel'] ?? null,
             'chapter_order' => $chapterOrder,
+            'scenario' => self::scenarioFrom($item),
         ];
+    }
+
+    /**
+     * Scenario / info text shown before the question (Codeberg #10).
+     * Accepts scenario > szenario > context > info; keeps line breaks.
+     */
+    private static function scenarioFrom(array $item): ?string {
+        $raw = $item['scenario'] ?? $item['szenario'] ?? $item['context'] ?? $item['info'] ?? null;
+        if (!is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+        return mb_substr(trim($raw), 0, \OCA\Learning\Service\QuestionService::SCENARIO_MAX_LENGTH);
     }
 
     private function applyQuestionMetadata(Question $question, array $item): void {
@@ -166,6 +179,7 @@ class ImportController extends Controller {
         $question->setChapterKey(isset($item['chapter_key']) && trim((string)$item['chapter_key']) !== '' ? mb_substr(trim((string)$item['chapter_key']), 0, 64) : null);
         $question->setChapterTitle(isset($item['chapter_title']) && trim((string)$item['chapter_title']) !== '' ? mb_substr(trim((string)$item['chapter_title']), 0, 255) : null);
         $question->setChapterOrder(isset($item['chapter_order']) && is_numeric($item['chapter_order']) ? (int)$item['chapter_order'] : null);
+        $question->setScenario(self::scenarioFrom($item));
     }
 
     /**
@@ -608,6 +622,7 @@ class ImportController extends Controller {
             'chapter_key' => $item['chapter_key'] ?? $item['chapterKey'] ?? null,
             'chapter_title' => $item['chapter_title'] ?? $item['chapterTitle'] ?? null,
             'chapter_order' => $item['chapter_order'] ?? $item['chapterOrder'] ?? null,
+            'scenario' => self::scenarioFrom($item),
         ]);
 
         $this->questionMapper->createOrUpdate($question);

@@ -70,6 +70,7 @@
       <div v-if="currentItem" class="review-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentItem" />
         <div class="review-box-indicator">{{ reviewBoxIndicator }}</div>
+        <QuestionScenario :question="currentItem" />
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="leitnerMetaHint" class="leitner-meta-hint">{{ leitnerMetaHint }}</div>
         <div v-if="fsrsIntervalNoticeVisible && fsrsIntervalNotice" class="fsrs-interval-notice">
@@ -278,6 +279,7 @@ import { showSuccess, showError } from '@nextcloud/dialogs';
 import { celebrateMastery, celebrateStreak, isStreakMilestone } from '../confetti.js';
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import QuestionScenario from './QuestionScenario.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -287,7 +289,7 @@ import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsSchedule
 
 export default {
   name: 'LeitnerMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     poolId: { type: Number, required: true },

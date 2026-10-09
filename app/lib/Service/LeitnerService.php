@@ -287,7 +287,7 @@ class LeitnerService {
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty', 'q.question_type',
                      'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
@@ -336,7 +336,7 @@ class LeitnerService {
         $now = time();
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty', 'q.question_type',
                      'q.pbq_subtype', 'q.pbq_config')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
@@ -718,7 +718,7 @@ class LeitnerService {
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty', 'q.question_type',
                      'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')

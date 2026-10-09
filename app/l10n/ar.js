@@ -3082,5 +3082,9 @@ OC.L10N.register(
     "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate." : "تُسحب الأسئلة عشوائيًا من المجموعات الإلزامية لهذه الدورة، باختيار جديد في كل محاولة. لا توجد ملاحظات حتى النهاية، ثم مراجعة مع الشروحات. لا تُحتسب الاختبارات التجريبية ضمن الشهادة.",
     "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor." : "يستخدم هذا الاختبار التجريبي المجموعات الإلزامية فقط، لكن لم تُحدَّد أي مجموعة كإلزامية بعد. يُرجى التواصل مع المدرّب.",
     "Your consent could not be saved. Please try again." : "تعذّر حفظ موافقتك. يُرجى المحاولة مرة أخرى.",
+    "Szenario / Info (optional)" : "السيناريو / معلومات (اختياري)",
+    "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo" : "مثلاً وصف حالة أو وضع أولي أو معلومات خلفية",
+    "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage." : "يُعرض قبل السؤال. يقرأ المتعلمون هذا النص أولاً ثم يجيبون عن السؤال.",
+    "Leer lassen, um das Original-Szenario zu verwenden" : "اتركه فارغاً لاستخدام السيناريو الأصلي",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

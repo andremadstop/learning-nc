@@ -85,6 +85,30 @@ class LeitnerServiceTest extends TestCase {
         );
     }
 
+    /** Codeberg #10: Leitner selects explicit columns, so a new one is invisible unless listed. */
+    public function testGetDueQuestionsDeliversScenario(): void {
+        $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 77,
+                'question_id' => 10,
+                'text' => 'What do you do first?',
+                'scenario' => "A patient arrives.\nShe is confused.",
+                'question_type' => 'single',
+                'pbq_subtype' => null,
+                'pbq_config' => null,
+            ],
+        ]));
+        $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([]));
+        $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $items = $this->createService($db, $poolMapper)->getDueQuestions(42, 'alice', 999);
+
+        $this->assertContains('q.scenario', $itemsBuilder->selects);
+        $this->assertSame("A patient arrives.\nShe is confused.", $items[0]['scenario']);
+    }
+
     public function testGetDueQuestionsSortsByRetrievabilityAscending(): void {
         $now = time();
         $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([

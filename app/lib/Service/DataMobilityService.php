@@ -66,6 +66,9 @@ class DataMobilityService {
                 'text' => $question->getText(),
                 'type' => $question->getQuestionType() ?? 'single',
             ];
+            if ($question->getScenario() !== null && $question->getScenario() !== '') {
+                $item['scenario'] = $question->getScenario();
+            }
             if ($question->getExplanation() !== null && $question->getExplanation() !== '') {
                 $item['explanation'] = $question->getExplanation();
             }

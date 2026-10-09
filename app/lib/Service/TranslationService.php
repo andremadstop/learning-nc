@@ -143,13 +143,24 @@ class TranslationService {
         }, $rows);
     }
 
-    public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null): QuestionTranslation {
+    /**
+     * @param string|null $scenario null keeps a stored scenario translation (callers that predate
+     *   the field), '' clears it.
+     */
+    public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null, ?string $scenario = null): QuestionTranslation {
         $this->validateLang($lang);
+        if ($scenario !== null && mb_strlen($scenario) > QuestionService::SCENARIO_MAX_LENGTH) {
+            throw new \InvalidArgumentException('Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters');
+        }
+        $scenario = $scenario === null ? null : (trim($scenario) === '' ? '' : $scenario);
 
         $existing = $this->questionTransMapper->findByQuestionAndLang($questionId, $lang);
         if ($existing !== null) {
             $existing->setText($text);
             $existing->setExplanation($explanation);
+            if ($scenario !== null) {
+                $existing->setScenario($scenario === '' ? null : $scenario);
+            }
             return $this->questionTransMapper->update($existing);
         }
 
@@ -158,6 +169,7 @@ class TranslationService {
         $trans->setLang($lang);
         $trans->setText($text);
         $trans->setExplanation($explanation);
+        $trans->setScenario($scenario === '' ? null : $scenario);
         $trans->setCreatedAt(time());
         return $this->questionTransMapper->insert($trans);
     }
@@ -310,6 +322,9 @@ class TranslationService {
                 if (array_key_exists('explanation', $entry) && trim((string)($translation['explanation'] ?? '')) !== '') {
                     $entry['explanation'] = $translation['explanation'];
                 }
+                if (trim((string)($entry['scenario'] ?? '')) !== '' && trim((string)($translation['scenario'] ?? '')) !== '') {
+                    $entry['scenario'] = $translation['scenario'];
+                }
             }
 
             if (!empty($entry['answers']) && is_array($entry['answers'])) {
@@ -367,6 +382,7 @@ class TranslationService {
             $map[(int)$translation->getQuestionId()] = [
                 'text' => (string)$translation->getText(),
                 'explanation' => $translation->getExplanation(),
+                'scenario' => $translation->getScenario(),
             ];
         }
         return $map;
@@ -394,6 +410,10 @@ class TranslationService {
             }
             if (($translation['explanation'] ?? null) !== null && $translation['explanation'] !== '') {
                 $questionData['explanation'] = $translation['explanation'];
+            }
+            // An untranslated scenario keeps the original rather than vanishing.
+            if (trim((string)($translation['scenario'] ?? '')) !== '' && trim((string)($questionData['scenario'] ?? '')) !== '') {
+                $questionData['scenario'] = $translation['scenario'];
             }
         }
 

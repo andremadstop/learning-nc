@@ -3081,6 +3081,10 @@
         "Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht.": "Ни один пул этого курса не отмечен как обязательный, поэтому никто не сможет начать пробный экзамен. Отметьте пулы, относящиеся к экзамену, как обязательные в правилах пулов учебного пространства.",
         "Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.": "Вопросы выбираются случайным образом из обязательных пулов этого курса, при каждой попытке заново. Обратная связь только в конце, затем разбор с пояснениями. Пробные экзамены не учитываются для сертификата.",
         "This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.": "Этот пробный экзамен использует только обязательные пулы, но ни один из них ещё не отмечен как обязательный. Обратитесь к преподавателю.",
-        "Your consent could not be saved. Please try again.": "Не удалось сохранить твоё согласие. Пожалуйста, попробуй ещё раз."
+        "Your consent could not be saved. Please try again.": "Не удалось сохранить твоё согласие. Пожалуйста, попробуй ещё раз.",
+        "Szenario / Info (optional)": "Сценарий / информация (необязательно)",
+        "z. B. eine Fallbeschreibung, Ausgangslage oder Hintergrundinfo": "например, описание случая, исходная ситуация или справочная информация",
+        "Wird vor der Frage angezeigt. Lernende lesen zuerst diesen Text und beantworten dann die Frage.": "Показывается перед вопросом. Учащиеся сначала читают этот текст, а затем отвечают на вопрос.",
+        "Leer lassen, um das Original-Szenario zu verwenden": "Оставьте пустым, чтобы использовать исходный сценарий"
     }
 }
