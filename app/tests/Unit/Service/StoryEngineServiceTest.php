@@ -20,9 +20,9 @@ use Psr\Log\LoggerInterface;
  * through the public generateNarrative() caller, which falls back to the scene's static narrative
  * whenever the Gemini call comes back empty.
  *
- * The consent gate sits AFTER the narratorEnabled + gemini_api_key checks inside
- * callGeminiForStory()'s caller chain, so both must be satisfied (narrator_mode truthy, non-empty
- * gemini_api_key) for the flow to reach the consent check at all — otherwise the test would only
+ * The consent gate sits AFTER the narratorEnabled + AI-availability checks inside
+ * callGeminiForStory()'s caller chain, so both must be satisfied (narrator_mode truthy, an available
+ * AI connection) for the flow to reach the consent check at all — otherwise the test would only
  * be exercising the earlier (unrelated) fallbacks.
  *
  * @group audit-consent-fix-b
@@ -70,14 +70,16 @@ class StoryEngineServiceTest extends TestCase {
     }
 
     /**
-     * Stub the two config reads generateNarrative() makes before reaching the consent gate:
-     * `gemini_api_key` (must be non-empty to pass the apiKey check) and `content_language`
-     * (getUserValue, any value is fine — falls back to 'de' via `?:`).
+     * Stub what generateNarrative() checks before reaching the consent gate: an available AI
+     * connection (5.7.0: GeminiService::isAvailable(), i.e. the connection snapshot — the legacy
+     * plaintext `gemini_api_key` is empty here on purpose, it is migrated away) and
+     * `content_language` (getUserValue, any value is fine — falls back to 'de' via `?:`).
      */
-    private function stubNarratorConfigGates(): void {
+    private function stubNarratorConfigGates(bool $aiAvailable = true): void {
+        $this->geminiServiceMock->method('isAvailable')->willReturn($aiAvailable);
         $this->configMock->method('getAppValue')->willReturnCallback(
             static function (string $app, string $key, string $default = ''): string {
-                return $key === 'gemini_api_key' ? 'fake-gemini-key' : $default;
+                return $key === 'gemini_api_key' ? '' : $default;
             }
         );
         $this->configMock->method('getUserValue')->willReturn('de');
@@ -135,5 +137,32 @@ class StoryEngineServiceTest extends TestCase {
         );
 
         $this->assertSame('Dynamisch generierter Erzaehltext.', $narrative);
+    }
+
+    /** 5.7.0 Task B5: with AI switched off (no usable connection) nothing is sent. */
+    public function testGenerateNarrativeStaysStaticWhenAiIsNotAvailable(): void {
+        $this->stubNarratorConfigGates(false);
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->geminiServiceMock->expects($this->never())->method('generateNote');
+
+        $narrative = $this->makeService()->generateNarrative(
+            $this->narratorScene(), $this->narratorCampaign(), 'security', [], 'user-A');
+
+        $this->assertSame('Statischer Erzaehltext fuer diese Szene.', $narrative);
+    }
+
+    /**
+     * 5.7.0 Task B5 (spec 2.4): a consent the gateway refuses after the early check makes
+     * callGeminiForStory() answer '' explicitly — the static fallback — not an exception the four
+     * callers happen to swallow.
+     */
+    public function testALateConsentRefusalMakesTheStoryCallAnswerEmpty(): void {
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->geminiServiceMock->method('generateNote')
+            ->willThrowException(new \OCA\Learning\Service\Llm\LlmConsentException());
+
+        $method = new \ReflectionMethod(StoryEngineService::class, 'callGeminiForStory');
+
+        $this->assertSame('', $method->invoke($this->makeService(), 'system', 'user', 'user-A', 250));
     }
 }

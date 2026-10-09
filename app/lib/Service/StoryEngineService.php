@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\StoryProgress;
 use OCA\Learning\Db\StoryProgressMapper;
@@ -1648,8 +1649,8 @@ class StoryEngineService {
             return $static;
         }
 
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
+        // 5.7.0: AI on and usable per the connection snapshot (not the migrated 5.5 plaintext key)
+        if (!$this->geminiService->isAvailable()) {
             return $static;
         }
 
@@ -1720,8 +1721,8 @@ class StoryEngineService {
             return $staticChoices;
         }
 
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
+        // 5.7.0: AI on and usable per the connection snapshot (not the migrated 5.5 plaintext key)
+        if (!$this->geminiService->isAvailable()) {
             return $staticChoices;
         }
 
@@ -1872,8 +1873,8 @@ class StoryEngineService {
             return $staticText;
         }
 
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
+        // 5.7.0: AI on and usable per the connection snapshot (not the migrated 5.5 plaintext key)
+        if (!$this->geminiService->isAvailable()) {
             return $staticText;
         }
 
@@ -1953,8 +1954,8 @@ class StoryEngineService {
         $cache->set($minKey, $userMin + 1, 60);
         $cache->set($dayKey, $userDay + 1, 86400);
 
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
+        // 5.7.0: AI on and usable per the connection snapshot (not the migrated 5.5 plaintext key)
+        if (!$this->geminiService->isAvailable()) {
             return [
                 'valid'      => false,
                 'narrative'  => 'KI-Narrator nicht verfügbar. Bitte wähle eine der vorgegebenen Optionen.',
@@ -2105,7 +2106,13 @@ class StoryEngineService {
         // We build a combined system+user prompt because generateNote() takes both.
         // For story calls, input sanitization is done upstream (no user-controlled free text
         // reaches this point without strip_tags + truncation).
-        return $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Story);
+        try {
+            return $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Story);
+        } catch (LlmConsentException $e) {
+            // 5.7.0 (spec 2.4): consent lost after the check above — the gateway sent nothing.
+            // '' is this method's "no AI text" answer; every caller falls back to static content.
+            return '';
+        }
     }
 
     // ─── Role-Based Prompts (NARR-04, NARR-05) ────────────────────────────────

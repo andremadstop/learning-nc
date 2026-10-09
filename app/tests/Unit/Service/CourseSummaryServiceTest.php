@@ -5,7 +5,6 @@ namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\RagChunkMapper;
-use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\GeminiService;
@@ -40,7 +39,6 @@ class CourseSummaryServiceTest extends TestCase {
             $this->createMock(StreakService::class),
             $this->createMock(RagChunkMapper::class),
             $this->createMock(GeminiService::class),
-            $this->createMock(UserTelosMapper::class),
         );
     }
 

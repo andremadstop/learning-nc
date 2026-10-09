@@ -39,4 +39,27 @@ class NoteGeneratorConsentTest extends TestCase {
         $this->expectExceptionMessage('consent_required');
         $service->generateSummary('alice', 5);
     }
+
+    /**
+     * 5.7.0 Task B5: the refusal is an LlmConsentException (message still consent_required), so
+     * the weekly job counts it as skipped_consent and controllers answer consent_required.
+     */
+    public function testGenerateSummaryWithoutConsentThrowsTheConsentException(): void {
+        $gemini = $this->createMock(GeminiService::class);
+        $gemini->expects($this->never())->method('generateNote');
+        $telos = $this->createMock(TelosService::class);
+        $telos->method('hasAiConsent')->willReturn(false);
+
+        $service = new NoteGeneratorService(
+            $gemini,
+            $this->createMock(LernbotFileService::class),
+            $this->createMock(LernprofilService::class),
+            new FakeDbConnection(),
+            $this->createMock(LoggerInterface::class),
+            $telos
+        );
+
+        $this->expectException(\OCA\Learning\Service\Llm\LlmConsentException::class);
+        $service->generateSummary('alice', 5, null, \OCA\Learning\Service\Llm\LlmPurpose::WeeklyNote);
+    }
 }

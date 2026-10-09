@@ -9,14 +9,15 @@ use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TelosService;
-use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 
 /**
  * AUDIT v5.2.1 (consent-fix A): SupportTicketService::create() must ALWAYS persist the ticket via
  * SupportTicketMapper::insert() — a missing AI consent must never block ticket creation, only the
  * optional AI triage step (applyAiTriage() -> GeminiService::classifyTicket()) that runs afterwards.
- * The triage step itself is gated on BOTH `ai_enabled` app config AND TelosService::hasAiConsent().
+ * The triage step itself is gated on BOTH an available AI connection (GeminiService::isAvailable(),
+ * i.e. the connection snapshot — 5.7.0, no longer the legacy `ai_enabled` key) AND
+ * TelosService::hasAiConsent().
  *
  * @group audit-consent-fix-a
  */
@@ -27,8 +28,6 @@ class SupportTicketServiceTest extends TestCase {
     private $courseServiceMock;
     /** @var GeminiService&\PHPUnit\Framework\MockObject\MockObject */
     private $geminiServiceMock;
-    /** @var IConfig&\PHPUnit\Framework\MockObject\MockObject */
-    private $configMock;
     /** @var TelosService&\PHPUnit\Framework\MockObject\MockObject */
     private $telosMock;
 
@@ -36,7 +35,6 @@ class SupportTicketServiceTest extends TestCase {
         $this->ticketMapperMock = $this->createMock(SupportTicketMapper::class);
         $this->courseServiceMock = $this->createMock(CourseService::class);
         $this->geminiServiceMock = $this->createMock(GeminiService::class);
-        $this->configMock = $this->createMock(IConfig::class);
         $this->telosMock = $this->createMock(TelosService::class);
     }
 
@@ -45,22 +43,21 @@ class SupportTicketServiceTest extends TestCase {
             $this->ticketMapperMock,
             $this->courseServiceMock,
             $this->geminiServiceMock,
-            $this->configMock,
             $this->telosMock
         );
     }
 
-    /** Config mock helper: only `ai_enabled` is stubbed to $value, every other key echoes its default. */
-    private function stubAiEnabled(string $value): void {
-        $this->configMock->method('getAppValue')->willReturnCallback(
-            static function (string $app, string $key, string $default = '') use ($value): string {
-                return $key === 'ai_enabled' ? $value : $default;
-            }
-        );
+    /**
+     * AI available as the connection snapshot says (GeminiService::isAvailable()). The service no
+     * longer reads the 5.5 key ai_enabled at all: 5.7.0 enables AI through ai_connection, which
+     * leaves that key alone.
+     */
+    private function stubAiAvailable(bool $available): void {
+        $this->geminiServiceMock->method('isAvailable')->willReturn($available);
     }
 
     public function testCreatePersistsTicketButSkipsAiTriageWithoutConsent(): void {
-        $this->stubAiEnabled('yes');
+        $this->stubAiAvailable(true);
         $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         // Ticket creation must NOT depend on consent at all.
@@ -79,7 +76,7 @@ class SupportTicketServiceTest extends TestCase {
     }
 
     public function testCreateRunsAiTriageWhenAiEnabledAndConsentGranted(): void {
-        $this->stubAiEnabled('yes');
+        $this->stubAiAvailable(true);
         $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         $this->ticketMapperMock->expects($this->once())->method('insert')->willReturnArgument(0);
@@ -105,8 +102,8 @@ class SupportTicketServiceTest extends TestCase {
     }
 
     public function testCreateSkipsAiTriageWhenAiDisabledRegardlessOfConsent(): void {
-        $this->stubAiEnabled('no');
-        // Consent is granted, but ai_enabled=no must still block triage.
+        $this->stubAiAvailable(false);
+        // Consent is granted, but AI switched off (no usable connection) must still block triage.
         $this->telosMock->method('hasAiConsent')->willReturn(true);
 
         $this->ticketMapperMock->expects($this->once())->method('insert')->willReturnArgument(0);
@@ -116,6 +113,21 @@ class SupportTicketServiceTest extends TestCase {
         $ticket = $this->makeService()->create('user-A', 'Login broken', 'I cannot log in anymore.');
 
         $this->assertInstanceOf(SupportTicket::class, $ticket);
+        $this->assertNull($ticket->getAiLabel());
+    }
+
+    /** A consent lost between the check and the send (gateway refuses): the ticket stays, untriaged. */
+    public function testALateConsentRefusalKeepsTheTicketWithoutTriage(): void {
+        $this->stubAiAvailable(true);
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->ticketMapperMock->expects($this->once())->method('insert')->willReturnArgument(0);
+        $this->ticketMapperMock->expects($this->never())->method('update');
+        $this->geminiServiceMock->method('classifyTicket')
+            ->willThrowException(new \OCA\Learning\Service\Llm\LlmConsentException());
+
+        $ticket = $this->makeService()->create('user-A', 'Login broken', 'I cannot log in anymore.');
+
+        $this->assertSame('user-A', $ticket->getUserId());
         $this->assertNull($ticket->getAiLabel());
     }
 }

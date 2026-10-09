@@ -559,4 +559,52 @@ class VirtuProfControllerTest extends TestCase {
 
         $this->assertSame(503, $resp->getStatus());
     }
+
+    // ---- 5.7.0 Task B5: availability comes from the connection snapshot, not ai_enabled ------
+
+    /**
+     * 5.7.0 switches AI on through ai_connection; the 5.5 key ai_enabled stays 'no'. The
+     * controller must follow the snapshot (GeminiService::isAvailable()), not the legacy key.
+     */
+    private function enableAiThroughSnapshotOnly(): void {
+        $this->configMock->method('getAppValue')
+            ->willReturnCallback(fn(string $app, string $key, string $default = ''): string
+                => $key === 'ai_enabled' ? 'no' : $default);
+        $this->geminiMock->method('isAvailable')->willReturn(true);
+        $this->configMock->method('getUserValue')
+            ->willReturnCallback(fn(string $u, string $a, string $k, string $d = ''): string => $d);
+    }
+
+    public function testInterviewTurnFollowsTheSnapshotNotTheLegacyFlag(): void {
+        $this->enableAiThroughSnapshotOnly();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->geminiMock->expects($this->once())->method('generateInterviewTurn')
+            ->willReturn(['answer' => 'Was motiviert dich?', 'fallback' => false]);
+
+        $resp = $this->makeController('user-A')->interviewTurn([['question' => 'q', 'answer' => 'a']], 2);
+
+        $this->assertSame(200, $resp->getStatus());
+    }
+
+    public function testStateReportsAiFromTheSnapshotNotTheLegacyFlag(): void {
+        $this->enableAiThroughSnapshotOnly();
+
+        $payload = $this->makeController('user-A')->getState()->getData();
+
+        $this->assertTrue($payload['ai_enabled']);
+    }
+
+    public function testSwitchedOffSnapshotStillDisablesEvenWithLegacyFlagOn(): void {
+        $this->configMock->method('getAppValue')
+            ->willReturnCallback(fn(string $app, string $key, string $default = ''): string
+                => $key === 'ai_enabled' ? 'yes' : $default);
+        $this->configMock->method('getUserValue')
+            ->willReturnCallback(fn(string $u, string $a, string $k, string $d = ''): string => $d);
+        $this->geminiMock->method('isAvailable')->willReturn(false);
+        $this->geminiMock->expects($this->never())->method('generateInterviewTurn');
+
+        $resp = $this->makeController('user-A')->interviewTurn([['question' => 'q', 'answer' => 'a']], 2);
+
+        $this->assertSame(503, $resp->getStatus());
+    }
 }

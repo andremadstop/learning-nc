@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmSession;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -63,17 +65,28 @@ class NoteGeneratorService {
      * @param string   $userId    NC user ID
      * @param int      $poolId    Pool to summarize
      * @param int|null $courseId  Optional course context for profile lookup
+     * @param LlmPurpose $purpose  note (button, chat intent, exam auto-note) or weekly_note (job)
+     * @param ?LlmSession $session the caller's session; null begins one for $userId and $purpose
      *
      * @return array{path: string, updated: bool, content: string}
      *
+     * @throws LlmConsentException no valid consent (message consent_required), also when the
+     *                             gateway refuses after this check
      * @throws \RuntimeException  If Gemini is unavailable or file write fails
      */
-    public function generateSummary(string $userId, int $poolId, ?int $courseId = null): array {
+    public function generateSummary(
+        string $userId,
+        int $poolId,
+        ?int $courseId = null,
+        LlmPurpose $purpose = LlmPurpose::Note,
+        ?LlmSession $session = null
+    ): array {
         // 5.5.2: this sends the user's weak topic and wrong answers to the AI provider and is also
         // reached from the weekly background job, which had no consent gate. Refuse before any
-        // learning data is loaded.
+        // learning data is loaded. 5.7.0: as LlmConsentException, so the job counts a skip and
+        // controllers answer consent_required (same message as before).
         if (!$this->telosService->hasAiConsent($userId)) {
-            throw new \RuntimeException('consent_required');
+            throw new LlmConsentException();
         }
 
         // 1. Load pool info
@@ -110,7 +123,7 @@ class NoteGeneratorService {
         $userPrompt = $this->buildUserPrompt($poolName, $errorRate, $wrongQuestions, $language);
 
         // MED-09: file-intent note generation counts against the shared AI rate limit.
-        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, LlmPurpose::Note);
+        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId, $purpose, $session);
 
         // 7. Ensure content has valid Obsidian frontmatter; add/fix if missing
         $bodyMarkdown = $this->stripGeminiFrontmatter($generatedContent);

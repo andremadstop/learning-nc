@@ -7,26 +7,22 @@ use OCA\Learning\Db\SupportTicket;
 use OCA\Learning\Db\SupportTicketMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
-use OCP\IConfig;
 
 class SupportTicketService {
     private SupportTicketMapper $ticketMapper;
     private CourseService $courseService;
     private GeminiService $geminiService;
-    private IConfig $config;
     private TelosService $telosService;
 
     public function __construct(
         SupportTicketMapper $ticketMapper,
         CourseService $courseService,
         GeminiService $geminiService,
-        IConfig $config,
         TelosService $telosService
     ) {
         $this->ticketMapper = $ticketMapper;
         $this->courseService = $courseService;
         $this->geminiService = $geminiService;
-        $this->config = $config;
         $this->telosService = $telosService;
     }
 
@@ -77,7 +73,10 @@ class SupportTicketService {
         // Gemini for triage. Unlike the other LLM paths this must NOT block ticket creation (the
         // user needs help) — we simply skip the AI triage when consent is absent; the ticket is
         // still filed and handled by a human.
-        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes'
+        // 5.7.0: "AI on" is the connection snapshot (GeminiService::isAvailable()), not the 5.5 key
+        // ai_enabled, which an admin enabling AI through ai_connection never sets. A consent the
+        // gateway refuses later (LlmConsentException) is swallowed by applyAiTriage(): no triage.
+        if ($this->geminiService->isAvailable()
             && $this->telosService->hasAiConsent($userId)) {
             $this->applyAiTriage($ticket, $subject, $message, $userId);
         }

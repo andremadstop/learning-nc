@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Controller;
 
 use OCA\Learning\Controller\AiController;
+use OCA\Learning\Controller\LernplanController;
 use OCA\Learning\Controller\SummaryController;
 use OCA\Learning\Controller\TelosController;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CourseSummaryService;
+use OCA\Learning\Service\LernplanService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\Llm\LlmConsentException;
@@ -89,5 +91,17 @@ class ConsentLateFailureTest extends TestCase {
         $resp = $this->aiController($ai, $questions)->explain(3);
 
         self::assertConsentRequired($resp->getStatus(), $resp->getData());
+    }
+
+    /** Late consent failure in the weekly plan: 403 consent_required, not "Generation failed" 500. */
+    public function testLernplan(): void {
+        $plans = $this->createMock(LernplanService::class);
+        $plans->method('generateWeeklyPlan')->willThrowException(new LlmConsentException());
+        $controller = new LernplanController('learning', $this->createMock(IRequest::class), 'alice', $plans, $this->telos);
+
+        $resp = $controller->generatePlan();
+
+        self::assertConsentRequired($resp->getStatus(), $resp->getData());
+        self::assertStringNotContainsString('Generation failed', (string)json_encode($resp->getData()));
     }
 }

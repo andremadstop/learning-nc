@@ -4,6 +4,8 @@ namespace OCA\Learning\BackgroundJob;
 
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\LernprofilService;
+use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
@@ -120,7 +122,13 @@ class WeeklyLernplanJob extends TimedJob {
 
         // NoteGeneratorService.generateSummary() writes to /Learning/Zusammenfassungen/
         // and is idempotent (filename = topic slug → overwrites existing file).
-        $this->noteGeneratorService->generateSummary($userId, $poolId, null);
+        // 5.7.0 (spec 2.4): sent as weekly_note. Consent revoked (or the recipient changed) after the
+        // check above: the gateway sent nothing — a consent skip, not an error.
+        try {
+            $this->noteGeneratorService->generateSummary($userId, $poolId, null, LlmPurpose::WeeklyNote);
+        } catch (LlmConsentException $e) {
+            return 'skipped_consent';
+        }
 
         $this->logger->debug('WeeklyLernplanJob: generated note for user {user} pool {pool}', [
             'user' => $userId,

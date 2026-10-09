@@ -6,7 +6,6 @@ use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\RagChunkMapper;
-use OCA\Learning\Db\UserTelosMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
@@ -24,7 +23,6 @@ class CourseSummaryService {
     private StreakService $streakService;
     private RagChunkMapper $ragChunkMapper;
     private GeminiService $geminiService;
-    private UserTelosMapper $telosMapper;
 
     public function __construct(
         IDBConnection $db,
@@ -32,8 +30,7 @@ class CourseSummaryService {
         BadgeService $badgeService,
         StreakService $streakService,
         RagChunkMapper $ragChunkMapper,
-        GeminiService $geminiService,
-        UserTelosMapper $telosMapper
+        GeminiService $geminiService
     ) {
         $this->db = $db;
         $this->courseMemberMapper = $courseMemberMapper;
@@ -41,7 +38,6 @@ class CourseSummaryService {
         $this->streakService = $streakService;
         $this->ragChunkMapper = $ragChunkMapper;
         $this->geminiService = $geminiService;
-        $this->telosMapper = $telosMapper;
     }
 
     /**
@@ -195,11 +191,13 @@ class CourseSummaryService {
         // 2. Assemble summary data
         $summary = $this->getStudentSummary($courseId, $userId);
 
-        // 3. Check telos_consent
-        $telos = $this->telosMapper->findByUserIdOrNull($userId);
-        $telosConsent = $telos !== null ? (bool)$telos->getTelosConsent() : false;
-        $telosGoals = $telosConsent ? ((string)$telos->getTelosJson()) : '(consent not given)';
-        $telosHelpWanted = $telosConsent ? ((string)$telos->getHelpWanted()) : '(consent not given)';
+        // 3. Personal goals stay out (data minimisation). There is no separate Telos sharing
+        // consent: the former getTelosConsent() read an attribute UserTelos never had and threw
+        // for every user with a Telos row — i.e. every user with AI consent, since consent lives
+        // there — so the narrative only ever worked without goals. 5.7.0 keeps that behaviour
+        // explicit instead of failing (found by the spec 2.4 consent matrix).
+        $telosGoals = '(consent not given)';
+        $telosHelpWanted = '(consent not given)';
 
         // 4. Build prompt
         $systemPrompt = 'Du bist VirtuProf, ein erfahrener, empathischer und fachlich versierter '
@@ -241,7 +239,7 @@ class CourseSummaryService {
                 '{{xp_total}}' => (string)($summary['xp']['total_xp'] ?? 0),
                 '{{trouble_spots}}' => $troubleSpots ?: 'Keine',
                 '{{badges_earned}}' => $badges ?: 'Keine',
-                '{{telos_consent}}' => $telosConsent ? 'true' : 'false',
+                '{{telos_consent}}' => 'false',
                 '{{telos_goals}}' => $telosGoals,
                 '{{telos_help_wanted}}' => $telosHelpWanted,
             ]

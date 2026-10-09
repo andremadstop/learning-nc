@@ -302,11 +302,12 @@ class VirtuProfController extends Controller {
         return in_array($skin, self::ALLOWED_SKINS, true) ? $skin : 'nova';
     }
 
+    /**
+     * 5.7.0: switched on and usable as the connection snapshot says (GeminiService::isAvailable()
+     * checks enabled, provider and key). The 5.5 key ai_enabled is no longer read: enabling AI
+     * through ai_connection leaves it at 'no'.
+     */
     private function isAiFeatureAvailable(): bool {
-        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') !== 'yes') {
-            return false;
-        }
-
         return $this->geminiService->isAvailable();
     }
 
@@ -605,7 +606,7 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
-        // Admin guard: ai_enabled must be 'yes'
+        // Admin guard: AI switched on and usable (connection snapshot)
         if (!$this->isAiFeatureAvailable()) {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
