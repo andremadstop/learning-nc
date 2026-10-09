@@ -38,6 +38,17 @@ class UserTelosMapper extends QBMapper {
     }
 
     /**
+     * Raise the consent epoch in one statement, so concurrent revocations never lose an increment.
+     */
+    public function incrementConsentEpoch(string $userId): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update($this->getTableName())
+           ->set('consent_epoch', $qb->createFunction($qb->getColumnName('consent_epoch') . ' + 1'))
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->executeStatement();
+    }
+
+    /**
      * Find by ICS token or return null.
      */
     public function findByIcsTokenOrNull(string $token): ?UserTelos {

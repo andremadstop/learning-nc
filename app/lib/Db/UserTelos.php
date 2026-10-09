@@ -26,6 +26,14 @@ use OCP\AppFramework\Db\Entity;
  * @method void setUpdatedAt(int $ts)
  * @method string|null getAiConsentVersion()
  * @method void setAiConsentVersion(?string $version)
+ * @method string|null getAiConsentFingerprint()
+ * @method void setAiConsentFingerprint(?string $fingerprint)
+ * @method string|null getAiConsentSource()
+ * @method void setAiConsentSource(?string $source)
+ * @method int|null getAiConsentAt()
+ * @method void setAiConsentAt(?int $ts)
+ * @method int getConsentEpoch()
+ * @method void setConsentEpoch(int $epoch)
  * @method string|null getIcsToken()
  * @method void setIcsToken(?string $token)
  */
@@ -39,6 +47,13 @@ class UserTelos extends Entity {
     protected int $onboardingCompleted = 0;
     protected int $createdAt = 0;
     protected ?string $aiConsentVersion = null;
+    /** Recipient fingerprint the consent was given for (5.7.0, spec 3.2). */
+    protected ?string $aiConsentFingerprint = null;
+    /** Where the consent was given: dialog|onboarding. */
+    protected ?string $aiConsentSource = null;
+    protected ?int $aiConsentAt = null;
+    /** Raised on every revocation; the gateway refuses a send whose epoch moved since begin(). */
+    protected int $consentEpoch = 0;
     protected ?string $icsToken = null;
     protected int $updatedAt = 0;
 
@@ -54,6 +69,10 @@ class UserTelos extends Entity {
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
         $this->addType('aiConsentVersion', 'string');
+        $this->addType('aiConsentFingerprint', 'string');
+        $this->addType('aiConsentSource', 'string');
+        $this->addType('aiConsentAt', 'integer');
+        $this->addType('consentEpoch', 'integer');
         $this->addType('icsToken', 'string');
     }
 

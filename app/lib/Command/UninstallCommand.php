@@ -99,6 +99,7 @@ class UninstallCommand extends Command {
         'learning_league_results',
         'learning_league_seasons',
         'learning_leitner_items',
+        'learning_llm_budget',
         'learning_mission_claims',
         'learning_oversight',
         'learning_pool_shares',

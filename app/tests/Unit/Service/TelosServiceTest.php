@@ -7,6 +7,9 @@ use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\EncryptionService;
 use OCA\Learning\Service\GeminiService;
+use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\ConsentService;
+use OCA\Learning\Service\Llm\LlmConnection;
 use OCA\Learning\Service\TelosService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +21,10 @@ class TelosServiceTest extends TestCase {
     private $mapper;
     /** @var EncryptionService&\PHPUnit\Framework\MockObject\MockObject */
     private $encryption;
+    /** @var ConsentService&\PHPUnit\Framework\MockObject\MockObject */
+    private $consent;
+    /** @var ConnectionStore&\PHPUnit\Framework\MockObject\MockObject */
+    private $connectionStore;
 
     protected function setUp(): void {
         $this->mapper = $this->createMock(UserTelosMapper::class);
@@ -26,6 +33,8 @@ class TelosServiceTest extends TestCase {
         $db = new FakeDbConnection();
         $userManager = $this->createMock(\OCP\IUserManager::class);
         $this->encryption = $this->createMock(EncryptionService::class);
+        $this->consent = $this->createMock(ConsentService::class);
+        $this->connectionStore = $this->createMock(ConnectionStore::class);
 
         $this->service = new TelosService(
             $this->mapper,
@@ -33,7 +42,9 @@ class TelosServiceTest extends TestCase {
             $logger,
             $db,
             $userManager,
-            $this->encryption
+            $this->encryption,
+            $this->consent,
+            $this->connectionStore
         );
     }
 
@@ -153,32 +164,34 @@ class TelosServiceTest extends TestCase {
         $this->assertContains('encrypted_telos', $decryptCalls, 'decrypt() must be called with encrypted telos_json');
     }
 
-    public function testHasAiConsentRejectsStaleVersion(): void {
-        $entity = new UserTelos();
-        $entity->setAiConsentVersion('0.9-stale');
-        $this->mapper->method('findByUserIdOrNull')->willReturn($entity);
-
-        $this->assertFalse($this->service->hasAiConsent('alice'), 'a non-current consent version must not count as consent');
-    }
-
-    public function testHasAiConsentAcceptsCurrentVersion(): void {
-        $entity = new UserTelos();
-        $entity->setAiConsentVersion($this->service->currentAiConsentVersion());
-        $this->mapper->method('findByUserIdOrNull')->willReturn($entity);
+    /**
+     * 5.7.0 Task B1: hasAiConsent() is the consent check every 5.5/5.6 caller still uses. It now
+     * asks ConsentService for the recipient of the current connection snapshot (spec 3.3); a
+     * stored version alone no longer counts.
+     */
+    public function testHasAiConsentDelegatesToConsentServiceWithTheCurrentConnection(): void {
+        $connection = ConnectionStore::legacyGemini(true);
+        $this->connectionStore->expects($this->once())->method('load')->willReturn($connection);
+        $this->consent->expects($this->once())->method('isValidFor')
+            ->with('alice', $this->identicalTo($connection))->willReturn(true);
 
         $this->assertTrue($this->service->hasAiConsent('alice'));
     }
 
-    public function testHasAiConsentRejectsMissingRow(): void {
-        $this->mapper->method('findByUserIdOrNull')->willReturn(null);
+    public function testHasAiConsentIsFalseWhenConsentServiceSaysSo(): void {
+        $this->connectionStore->method('load')->willReturn(LlmConnection::fromArray(['provider' => 'disabled']));
+        $this->consent->method('isValidFor')->willReturn(false);
+        // The stored version alone must not count any more.
+        $entity = new UserTelos();
+        $entity->setAiConsentVersion('3.0');
+        $this->mapper->method('findByUserIdOrNull')->willReturn($entity);
 
         $this->assertFalse($this->service->hasAiConsent('alice'));
     }
 
-    public function testCurrentAiConsentVersionReadsDataFile(): void {
-        $data = json_decode((string)file_get_contents(__DIR__ . '/../../../data/ai-consent.json'), true);
+    public function testCurrentAiConsentVersionComesFromConsentService(): void {
+        $this->consent->method('currentVersion')->willReturn('3.0');
 
-        $this->assertNotSame('', $this->service->currentAiConsentVersion());
-        $this->assertSame((string)$data['version'], $this->service->currentAiConsentVersion());
+        $this->assertSame('3.0', $this->service->currentAiConsentVersion());
     }
 }

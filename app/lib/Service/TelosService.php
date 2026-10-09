@@ -6,6 +6,8 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\EncryptionService;
+use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\ConsentService;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -22,7 +24,8 @@ class TelosService {
     private IDBConnection $db;
     private IUserManager $userManager;
     private EncryptionService $encryptionService;
-    private ?string $currentConsentVersionCache = null;
+    private ConsentService $consentService;
+    private ConnectionStore $connectionStore;
 
     /** Valid visibility values */
     private const VALID_VISIBILITY = ['private', 'course', 'public'];
@@ -47,7 +50,9 @@ class TelosService {
         LoggerInterface $logger,
         IDBConnection $db,
         IUserManager $userManager,
-        EncryptionService $encryptionService
+        EncryptionService $encryptionService,
+        ConsentService $consentService,
+        ConnectionStore $connectionStore
     ) {
         $this->mapper = $mapper;
         $this->geminiService = $geminiService;
@@ -55,6 +60,8 @@ class TelosService {
         $this->db = $db;
         $this->userManager = $userManager;
         $this->encryptionService = $encryptionService;
+        $this->consentService = $consentService;
+        $this->connectionStore = $connectionStore;
     }
 
     // =========================================================================
@@ -184,27 +191,19 @@ class TelosService {
      * client and server: a consent given for an older text no longer counts.
      */
     public function currentAiConsentVersion(): string {
-        if ($this->currentConsentVersionCache === null) {
-            $raw = @file_get_contents(__DIR__ . '/../../data/ai-consent.json');
-            $data = is_string($raw) ? json_decode($raw, true) : null;
-            $this->currentConsentVersionCache = is_array($data) ? trim((string)($data['version'] ?? '')) : '';
-        }
-        return $this->currentConsentVersionCache;
+        return $this->consentService->currentVersion();
     }
 
     /**
-     * AUDIT v5.2.1 (HIGH-03 consistency): true when the user has granted AI consent for the CURRENT
-     * consent text. Every LLM path (VirtuProf chat, course summary, AI question generation, note
-     * generation incl. the weekly job, AI explanations) must confirm this before any data reaches
-     * the LLM — the admin `ai_enabled` toggle alone is not sufficient under GDPR.
+     * True when the user has a valid AI consent for the recipient of the current connection
+     * snapshot. Every LLM path must confirm this before any data reaches the model — the admin
+     * switch alone is not sufficient under GDPR (AUDIT v5.2.1 HIGH-03).
      *
-     * 5.5.2: the version must match exactly. Before, any stored version counted, so the version
-     * check lived only in the client and every server-side path accepted outdated consent.
+     * 5.7.0: delegates to ConsentService (spec 3.3) — current consent text AND the same recipient
+     * fingerprint. A stored version alone (5.5/5.6) no longer counts.
      */
     public function hasAiConsent(string $userId): bool {
-        $stored = $this->getAiConsentVersion($userId);
-        $current = $this->currentAiConsentVersion();
-        return $stored !== null && $stored !== '' && $current !== '' && hash_equals($current, $stored);
+        return $this->consentService->isValidFor($userId, $this->connectionStore->load());
     }
 
     /**
