@@ -121,6 +121,8 @@ return [
         ['name' => 'settings#getAdminAudit', 'url' => '/api/settings/admin/audit', 'verb' => 'GET'],
         ['name' => 'settings#initCertIssuer', 'url' => '/api/settings/admin/cert-issuer', 'verb' => 'POST'],
         ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
+        // 5.7.0: admin connection test — fixed test message, Gemini/Ollama only (AdminAiController)
+        ['name' => 'adminAi#test', 'url' => '/api/admin/ai/test', 'verb' => 'POST'],
         ['name' => 'settings#getTools', 'url' => '/api/settings/tools', 'verb' => 'GET'],
         ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
