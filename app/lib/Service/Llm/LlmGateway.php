@@ -17,7 +17,8 @@ use Psr\Log\LoggerInterface;
  *                            subject's consent epoch. Throws before any context is built.
  *   send(session, request)   1. AI still on (fresh read; switching off beats an older snapshot)
  *                            2. subject: consent epoch unchanged since begin() and consent still
- *                               valid for the snapshot recipient (fresh reads)
+ *                               valid for the snapshot recipient (fresh reads); without a
+ *                               subject (admin_test) only the fixed test message is accepted
  *                            3. adapter for the snapshot provider (5.7.0: gemini, ollama)
  *                            4. budget reserved — nothing that can fail on our side comes after it
  *                            5. exactly one adapter call, never a retry
@@ -85,6 +86,10 @@ class LlmGateway {
         }
 
         $subject = $session->subjectUserId;
+        if ($subject === null && !self::isFixedTestMessage($request)) {
+            // spec 2.1: without a subject only the fixed test message, never user content
+            throw new \InvalidArgumentException('Without a subject user only the fixed connection test message may be sent');
+        }
         if ($subject !== null) {
             if ($session->consentEpoch === null || $this->consent->epoch($subject) !== $session->consentEpoch) {
                 throw new LlmConsentException();
@@ -240,6 +245,10 @@ class LlmGateway {
                 throw new \LogicException('A connection test never migrates a key');
             }
         };
+    }
+
+    private static function isFixedTestMessage(LlmRequest $r): bool {
+        return $r->systemPrompt === self::TEST_SYSTEM_PROMPT && $r->userPrompt === self::TEST_USER_PROMPT;
     }
 
     private static function isActive(LlmConnection $c): bool {

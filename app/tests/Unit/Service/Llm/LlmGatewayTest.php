@@ -224,10 +224,37 @@ class LlmGatewayTest extends TestCase {
             ->willReturn($this->ticket(null, LlmPurpose::AdminTest));
 
         $gw = $this->gateway([$this->geminiOk('OK')]);
-        $result = $gw->send($gw->begin(null, LlmPurpose::AdminTest), self::request());
+        $result = $gw->send($gw->begin(null, LlmPurpose::AdminTest),
+            new LlmRequest(LlmGateway::TEST_SYSTEM_PROMPT, LlmGateway::TEST_USER_PROMPT));
 
         $this->assertSame('OK', $result->text);
         $this->assertCount(1, $this->calls);
+    }
+
+    /**
+     * Spec 2.1: without a subject only the fixed test message may go out — otherwise a wrong
+     * purpose at a call site would be a path past the consent check.
+     */
+    public function testWithoutSubjectOnlyTheFixedTestMessageIsSent(): void {
+        $this->store->method('load')->willReturn(self::gemini());
+        $this->store->method('isEnabledNow')->willReturn(true);
+        $this->budget->expects($this->never())->method('reserve');
+
+        $gw = $this->gateway([$this->geminiOk(), $this->geminiOk()]);
+        $session = $gw->begin(null, LlmPurpose::AdminTest);
+        foreach ([
+            new LlmRequest('sys', 'Bitte erkläre ' . self::PROMPT_MARKER),
+            new LlmRequest(LlmGateway::TEST_SYSTEM_PROMPT, self::PROMPT_MARKER),
+            new LlmRequest(self::PROMPT_MARKER, LlmGateway::TEST_USER_PROMPT),
+        ] as $request) {
+            try {
+                $gw->send($session, $request);
+                $this->fail('expected InvalidArgumentException');
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+        $this->assertNothingSent();
     }
 
     // ---------------------------------------------------------------- send()
