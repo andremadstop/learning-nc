@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Integration;
 
 use OCA\Learning\Controller\SettingsController;
+use OCA\Learning\Controller\TelosController;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\LlmService;
@@ -38,6 +39,7 @@ final class LlmTransportWiringTest extends TestCase {
         $this->assertInstanceOf(AIService::class, Server::get(AIService::class));
         $container = (new App('learning'))->getContainer();
         $this->assertInstanceOf(SettingsController::class, $container->get(SettingsController::class));
+        $this->assertInstanceOf(TelosController::class, $container->get(TelosController::class));
     }
 
     public function testTheProviderComesFromTheSnapshot(): void {

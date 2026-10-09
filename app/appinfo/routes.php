@@ -102,6 +102,7 @@ return [
         ['name' => 'telos#getStatus',               'url' => '/api/profile/telos/status',       'verb' => 'GET'],
         ['name' => 'telos#getConsentStatus',         'url' => '/api/profile/telos/consent',      'verb' => 'GET'],
         ['name' => 'telos#saveConsent',              'url' => '/api/profile/telos/consent',      'verb' => 'POST'],
+        ['name' => 'telos#revokeConsent',            'url' => '/api/profile/telos/consent',      'verb' => 'DELETE'],
         ['name' => 'telos#getQuestions',             'url' => '/api/profile/telos/questions',    'verb' => 'GET'],
         ['name' => 'telos#processInterview',         'url' => '/api/profile/telos/interview',    'verb' => 'POST'],
         ['name' => 'telos#getCourseTelosAggregate', 'url' => '/api/courses/{courseId}/telos',   'verb' => 'GET'],

@@ -257,8 +257,17 @@ export default {
       if (!aiEnabled) {
         return
       }
+      // 5.7.0: the consent is bound to the current recipient; send back the one the server names.
+      // Without a recipient (AI switched off) there is nothing to consent to yet.
+      const status = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
+      const fingerprint = status?.data?.recipient?.fingerprint
+      if (!fingerprint) {
+        return
+      }
       await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
         version: consentData.version,
+        recipient_fingerprint: fingerprint,
+        source: 'onboarding',
       })
     },
 

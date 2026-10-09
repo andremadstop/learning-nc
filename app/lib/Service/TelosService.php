@@ -206,29 +206,6 @@ class TelosService {
         return $this->consentService->isValidFor($userId, $this->connectionStore->load());
     }
 
-    /**
-     * Save AI consent version for a user. Creates UserTelos row if needed.
-     */
-    public function saveAiConsent(string $userId, string $version): void {
-        $now = time();
-        $entity = $this->mapper->findByUserIdOrNull($userId);
-
-        if ($entity === null) {
-            $entity = new UserTelos();
-            $entity->setUserId($userId);
-            $entity->setCreatedAt($now);
-        }
-
-        $entity->setAiConsentVersion($version);
-        $entity->setUpdatedAt($now);
-
-        if ($entity->getId() === null) {
-            $this->mapper->insert($entity);
-        } else {
-            $this->mapper->update($entity);
-        }
-    }
-
     // =========================================================================
     // Interview
     // =========================================================================

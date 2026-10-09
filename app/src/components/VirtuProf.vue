@@ -285,6 +285,8 @@ export default {
       chatAnimationTimer: null,
       // AI consent — versioned (Phase 102)
       aiConsentVersion: null,
+      // 5.7.0: the recipient the user is asked to consent to (from GET .../telos/consent)
+      consentRecipientFingerprint: null,
       consentData,
       showAiConsentDialog: false,
       consentSaveError: null,
@@ -447,7 +449,7 @@ export default {
     // Phase 102: Load AI consent version from backend
     try {
       const consentRes = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
-      this.aiConsentVersion = consentRes.data.ai_consent_version || null
+      this.applyConsentStatus(consentRes.data)
     } catch (e) {
       this.aiConsentVersion = null
     }
@@ -1985,12 +1987,31 @@ export default {
       }
     },
     // Phase 102: User accepted the versioned AI consent dialog
+    // 5.7.0: a stored consent counts only while the server reports it valid (current text AND the
+    // same recipient); remember the recipient the user is asked about.
+    applyConsentStatus(data) {
+      this.aiConsentVersion = data?.valid ? (data.ai_consent_version || null) : null
+      this.consentRecipientFingerprint = data?.recipient?.fingerprint || null
+    },
     async handleConsentAccept() {
       try {
+        let fingerprint = this.consentRecipientFingerprint
+        if (!fingerprint) {
+          const res = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
+          fingerprint = res?.data?.recipient?.fingerprint || null
+        }
+        // The recipient goes back as the user was shown it; the server answers 409 if the admin
+        // changed it meanwhile.
         await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
           version: this.consentData.version,
+          recipient_fingerprint: fingerprint,
+          source: 'dialog',
         })
       } catch (e) {
+        if (e?.response?.status === 409) {
+          // ask the server again on the next attempt instead of reusing the outdated recipient
+          this.consentRecipientFingerprint = null
+        }
         // 5.5.2 fail-closed: the server has no consent on record, so nothing may be sent to the AI
         // provider. Keep the dialog open with an error and keep the waiting message for a retry.
         this.consentSaveError = this.vt('Your consent could not be saved. Please try again.')

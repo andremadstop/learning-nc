@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\ConsentRecipientChangedException;
+use OCA\Learning\Service\Llm\ConsentService;
+use OCA\Learning\Service\Llm\LlmConnection;
+use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmSession;
 use OCA\Learning\Service\TelosService;
 use OCA\Learning\Service\CourseService;
 use OCP\AppFramework\Controller;
@@ -26,15 +32,21 @@ class TelosController extends Controller {
     private ?string $userId;
     private TelosService $telosService;
     private CourseService $courseService;
+    private ConsentService $consentService;
+    private ConnectionStore $connectionStore;
 
     public function __construct(
         string $appName,
         IRequest $request,
         ?string $userId,
         TelosService $telosService,
-        CourseService $courseService
+        CourseService $courseService,
+        ConsentService $consentService,
+        ConnectionStore $connectionStore
     ) {
         parent::__construct($appName, $request);
+        $this->consentService = $consentService;
+        $this->connectionStore = $connectionStore;
         $this->userId = $userId;
         $this->telosService = $telosService;
         $this->courseService = $courseService;
@@ -177,7 +189,9 @@ class TelosController extends Controller {
     }
 
     /**
-     * Get current AI consent version for the user.
+     * AI consent state for the current connection (spec 3.3): whether it is valid, why not, and
+     * the recipient the user would consent to. The client sends that recipient's fingerprint
+     * back with the consent; the server never fills it in itself.
      *
      * @NoAdminRequired
      */
@@ -187,36 +201,92 @@ class TelosController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
+        $connection = $this->connectionStore->load();
+        $state = $this->consentService->state($this->userId, $connection);
         return new DataResponse([
+            'valid' => $state['valid'],
+            'reason' => $state['reason'],
+            'source' => $state['source'],
             'ai_consent_version' => $this->telosService->getAiConsentVersion($this->userId),
+            'current_version' => $this->consentService->currentVersion(),
+            'ai_enabled' => self::isActive($connection),
+            'recipient' => self::recipientData($connection),
         ]);
     }
 
     /**
-     * Save AI consent version (user accepted the consent dialog).
+     * Store the AI consent the user gave for the recipient they were shown.
+     * 409 when the admin changed the recipient meanwhile (with the new one), 400 for an outdated
+     * version, an unknown source or AI switched off.
      *
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
-    public function saveConsent(?string $version = null): DataResponse {
+    public function saveConsent(?string $version = null, ?string $recipient_fingerprint = null, string $source = 'dialog'): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
-        if ($version === null || trim($version) === '') {
+        $version = trim((string)$version);
+        $fingerprint = trim((string)$recipient_fingerprint);
+        if ($version === '' || strlen($version) > 20) {
             return new DataResponse(['error' => 'Version is required'], Http::STATUS_BAD_REQUEST);
         }
-
-        $version = trim($version);
-        if (strlen($version) > 20) {
-            return new DataResponse(['error' => 'Version too long'], Http::STATUS_BAD_REQUEST);
+        if ($fingerprint === '' || strlen($fingerprint) > 64) {
+            return new DataResponse(['error' => 'Recipient fingerprint is required'], Http::STATUS_BAD_REQUEST);
         }
 
+        $connection = $this->connectionStore->load();
         try {
-            $this->telosService->saveAiConsent($this->userId, $version);
-            return new DataResponse(['status' => 'ok']);
+            $this->consentService->grant($this->userId, $connection, $fingerprint, $version, $source);
+        } catch (ConsentRecipientChangedException $e) {
+            return new DataResponse([
+                'error' => 'The AI recipient has changed',
+                'reason' => 'recipient_changed',
+                'recipient' => self::recipientData($connection),
+            ], Http::STATUS_CONFLICT);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Throwable $e) {
             return new DataResponse(['error' => 'Could not save consent'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+        return new DataResponse(['status' => 'ok', 'valid' => true]);
+    }
+
+    /**
+     * Revoke the AI consent. Takes effect for calls already under way: the gateway re-reads the
+     * consent epoch right before sending.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function revokeConsent(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $this->consentService->revoke($this->userId);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Could not revoke consent'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+        return new DataResponse(['status' => 'ok', 'valid' => false]);
+    }
+
+    private static function isActive(LlmConnection $c): bool {
+        return $c->enabled && $c->provider !== 'disabled';
+    }
+
+    /** @return array{name: string, region: string, processing_local: bool, fingerprint: string}|null */
+    private static function recipientData(LlmConnection $c): ?array {
+        if (!self::isActive($c)) {
+            return null;
+        }
+        $recipient = (new LlmSession($c, null, LlmPurpose::AdminTest))->recipient();
+        return [
+            'name' => $recipient->name,
+            'region' => $recipient->region,
+            'processing_local' => $recipient->isLocal,
+            'fingerprint' => $c->recipientFingerprint(),
+        ];
     }
 
     /**

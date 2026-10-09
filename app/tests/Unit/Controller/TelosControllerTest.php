@@ -48,7 +48,9 @@ class TelosControllerTest extends TestCase {
             $this->requestMock,
             $userId,
             $this->telosMock,
-            $this->courseServiceMock
+            $this->courseServiceMock,
+            $this->createMock(\OCA\Learning\Service\Llm\ConsentService::class),
+            $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class)
         );
     }
 
