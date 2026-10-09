@@ -277,6 +277,39 @@ final class ConsentRaceTest extends TestCase {
     }
 
     /**
+     * Review finding (HIGH): a long-running process (the weekly job) has recipient A in its app
+     * config cache. In another process the admin replaces A by B. A session begun after that must
+     * be checked against B: the learner consented to A only, so nothing is sent — neither to A
+     * (removed by the admin) nor to B (no consent).
+     */
+    public function testASessionBegunAfterARecipientSwitchByAnotherProcessNeedsConsentForTheNewRecipient(): void {
+        $a = $this->connectMock();
+        $this->grant(self::ALICE, $a);
+        $this->assertSame($a->recipientFingerprint(), $this->store->load()->recipientFingerprint(), 'A is in this process\'s cache');
+        $this->assertTrue($this->store->isEnabledNow(), 'the kill-switch check of the job has just refreshed the cache with A');
+
+        $b = LlmConnection::fromArray(array_merge($a->toArray(), [
+            'baseUrl' => MockLlmServer::ollamaBaseUrl() . '/switched', 'model' => 'switched-model', 'rev' => $a->rev + 1,
+        ]));
+        $this->assertNotSame($a->recipientFingerprint(), $b->recipientFingerprint(), 'another recipient');
+        $qb = $this->db->getQueryBuilder();
+        $changed = $qb->update('appconfig')
+            ->set('configvalue', $qb->createNamedParameter(json_encode($b->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES)))
+            ->where($qb->expr()->eq('appid', $qb->createNamedParameter('learning')))
+            ->andWhere($qb->expr()->eq('configkey', $qb->createNamedParameter(ConnectionStore::KEY)))
+            ->executeStatement();
+        $this->assertSame(1, $changed, 'the other process switched the recipient');
+
+        try {
+            $session = $this->gateway->begin(self::ALICE, LlmPurpose::WeeklyNote);
+            $this->gateway->send($session, self::request(self::ALICE));
+            $this->fail('a session begun after the switch must need consent for the new recipient');
+        } catch (LlmConsentException) {
+        }
+        $this->assertSame(0, self::sentCount(), 'nothing went to the removed recipient');
+    }
+
+    /**
      * Review Focus 1 through the real chat endpoint: VirtuProfController::chat() begins the
      * session, builds the context (chat memory is loaded here), then sends. The admin switches the
      * recipient while the context is built. The running answer goes once to the snapshot; the next

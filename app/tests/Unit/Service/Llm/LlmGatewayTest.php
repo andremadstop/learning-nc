@@ -191,6 +191,28 @@ class LlmGatewayTest extends TestCase {
         $this->assertSame(self::gemini()->recipientFingerprint(), $session->connection->recipientFingerprint());
     }
 
+    /**
+     * Review finding (HIGH): begin() takes its snapshot from a fresh read. In a long-running
+     * process the app config cache can still hold a recipient the admin replaced in another
+     * process; a session begun after the switch must be checked against the new recipient.
+     */
+    public function testBeginDropsTheProcessCacheBeforeTakingTheSnapshot(): void {
+        $order = [];
+        $this->store->method('refresh')->willReturnCallback(function () use (&$order): void {
+            $order[] = 'refresh';
+        });
+        $this->store->method('load')->willReturnCallback(function () use (&$order): LlmConnection {
+            $order[] = 'load';
+            return self::gemini();
+        });
+        $this->consent->method('epoch')->willReturn(0);
+        $this->consent->method('isValidFor')->willReturn(true);
+
+        $this->gateway()->begin('alice', LlmPurpose::WeeklyNote);
+
+        $this->assertSame(['refresh', 'load'], $order);
+    }
+
     /** @return array<string, array{LlmPurpose}> */
     public static function purposesNeedingASubject(): array {
         $out = [];

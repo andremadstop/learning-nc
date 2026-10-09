@@ -155,6 +155,25 @@ class ConnectionStoreTest extends TestCase {
         $this->assertFalse($store->isEnabledNow());
     }
 
+    /**
+     * Review finding (HIGH): a long-running process (the weekly job) must take each new snapshot
+     * from the persisted value, not from a cache filled before the admin switched the recipient in
+     * another process. refresh() drops the process cache; the next load() reads what is stored.
+     */
+    public function testRefreshSeesAnotherProcessSwitchingTheRecipient(): void {
+        $this->values->set('learning', 'ai_connection', (string)json_encode($this->ollama()));
+        $store = $this->store();
+        $this->assertSame('http://ollama.lan:11434', $store->load()->baseUrl);
+        $this->values->setFromOtherProcess('learning', 'ai_connection',
+            (string)json_encode(array_merge($this->ollama(), ['baseUrl' => 'http://other.lan:11434', 'rev' => 2])));
+        $this->assertSame('http://ollama.lan:11434', $store->load()->baseUrl, 'load() alone keeps the cache');
+
+        $store->refresh();
+
+        $this->assertSame('http://other.lan:11434', $store->load()->baseUrl);
+        $this->assertSame(1, $this->values->clearCacheCalls);
+    }
+
     public function testIsEnabledNowIsFalseForDisabledProvider(): void {
         $this->values->set('learning', 'ai_connection', (string)json_encode(['provider' => 'disabled', 'enabled' => true]));
         $this->assertFalse($this->store()->isEnabledNow());

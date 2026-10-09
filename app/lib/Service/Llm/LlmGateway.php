@@ -12,7 +12,8 @@ use Psr\Log\LoggerInterface;
 /**
  * The one send path for model calls (spec 2.1, Task B3).
  *
- *   begin(subject, purpose)  loads the connection snapshot once, checks that AI is on and that the
+ *   begin(subject, purpose)  loads the connection snapshot once (fresh, not from this process's app
+ *                            config cache), checks that AI is on and that the
  *                            subject consented to exactly this recipient, and remembers the
  *                            subject's consent epoch. Throws before any context is built.
  *   send(session, request)   1. AI still on (fresh read; switching off beats an older snapshot)
@@ -60,6 +61,9 @@ class LlmGateway {
             throw new \InvalidArgumentException('Only admin_test may run without a subject user');
         }
 
+        // fresh read: a long-running process may still cache a recipient the admin replaced in
+        // another process; a session begun after that switch must be checked against the new one
+        $this->connectionStore->refresh();
         $connection = $this->connectionStore->load();
         if (!self::isActive($connection)) {
             throw new LlmProviderException('disabled');

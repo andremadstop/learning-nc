@@ -16,6 +16,9 @@ use Psr\Log\LoggerInterface;
  *   TaskProcessing path and becomes `disabled`. Anything unreadable fails closed to `disabled`.
  * - isEnabledNow(): drops the per-process app config cache first, because the gateway uses it
  *   right before sending and a long-running job must see an admin switching AI off.
+ * - refresh(): drops that cache, so the next load() reads what is stored. The gateway calls it
+ *   before it takes a session snapshot: in a long-running process (the weekly job) the cache can
+ *   still hold a recipient the admin has replaced in another process.
  * - save(): one write of the whole snapshot, plus a copy per provider+preset so switching back
  *   restores the old settings; values are never inherited by another backend.
  * - 5.7.0 scope: only the backends 5.5 already had (Gemini, Ollama) can be selected. The
@@ -143,8 +146,12 @@ class ConnectionStore {
         return $c;
     }
 
-    public function isEnabledNow(): bool {
+    public function refresh(): void {
         $this->appConfig->clearCache();
+    }
+
+    public function isEnabledNow(): bool {
+        $this->refresh();
         $c = $this->load();
         return $c->enabled && $c->provider !== 'disabled';
     }
