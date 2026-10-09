@@ -238,35 +238,33 @@ class ConsentServiceTest extends TestCase {
 
     // ---- revoke / epoch ----------------------------------------------------------------------
 
-    public function testRevokeClearsTheConsentAndThenRaisesTheEpoch(): void {
+    /**
+     * Review B1: revoke must not be read-modify-write. NC entities write only dirty fields, so a
+     * revoke that read a row without consent would not clear a grant committed in between.
+     * One unconditional statement clears the consent and raises the epoch together.
+     */
+    public function testRevokeIsOneUnconditionalStatement(): void {
         $c = $this->gemini();
         $this->storedConsent($this->current(), $c->recipientFingerprint());
-        $order = [];
-        $this->mapper->expects($this->once())->method('update')->willReturnCallback(function (UserTelos $e) use (&$order) {
-            $order[] = 'update';
-            $this->assertNull($e->getAiConsentVersion());
-            $this->assertNull($e->getAiConsentFingerprint());
-            $this->assertNull($e->getAiConsentSource());
-            $this->assertNull($e->getAiConsentAt());
-            return $e;
-        });
-        $this->mapper->expects($this->once())->method('incrementConsentEpoch')->with('alice')
-            ->willReturnCallback(function () use (&$order) {
-                $order[] = 'epoch';
+        $this->mapper->expects($this->never())->method('update');
+        $this->mapper->expects($this->never())->method('incrementConsentEpoch');
+        $this->mapper->expects($this->once())->method('revokeAiConsent')->with('alice', $this->isType('int'))
+            ->willReturnCallback(function () {
+                $this->storedConsent(null, null, null);
+                return 1;
             });
         $this->audit->expects($this->once())->method('logEvent')->with('ai_consent_revoked', 'alice', $this->anything());
 
         $this->service()->revoke('alice');
 
-        $this->assertSame(['update', 'epoch'], $order, 'consent must be cleared before the epoch moves');
         $this->assertFalse($this->service()->isValidFor('alice', $c));
     }
 
-    public function testRevokeWithoutRowStoresNothing(): void {
+    public function testRevokeWithoutRowStoresNothingButIsAudited(): void {
         $this->row = null;
         $this->mapper->expects($this->never())->method('update');
         $this->mapper->expects($this->never())->method('insert');
-        $this->mapper->expects($this->never())->method('incrementConsentEpoch');
+        $this->mapper->expects($this->once())->method('revokeAiConsent')->with('alice', $this->isType('int'))->willReturn(0);
         $this->audit->expects($this->once())->method('logEvent')->with('ai_consent_revoked', 'alice', $this->anything());
 
         $this->service()->revoke('alice');

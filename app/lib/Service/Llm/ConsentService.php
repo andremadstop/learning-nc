@@ -15,8 +15,9 @@ use OCA\Learning\Service\AuditService;
  * There is no exception for local processing: processingLocal is part of the recipient
  * fingerprint, it never makes a consent for another recipient valid.
  *
- * Revocation clears the consent first and raises consent_epoch afterwards; the gateway compares
- * the epoch from begin() with a fresh read right before sending (spec 2.4).
+ * Revocation clears the consent and raises consent_epoch in one statement (at least as strong as
+ * spec 2.4's "clear, then raise"); the gateway compares the epoch from begin() with a fresh read
+ * right before sending.
  */
 class ConsentService {
     public const SOURCES = ['dialog', 'onboarding'];
@@ -133,19 +134,11 @@ class ConsentService {
     }
 
     /**
-     * Revokes the consent: clears it first, raises the epoch afterwards (spec 2.4 ordering).
+     * Revokes the consent with one unconditional UPDATE (no read first): a grant of the same user
+     * that commits meanwhile cannot survive a revocation that reports success.
      */
     public function revoke(string $uid): void {
-        $row = $this->mapper->findByUserIdOrNull($uid);
-        if ($row !== null) {
-            $row->setAiConsentVersion(null);
-            $row->setAiConsentFingerprint(null);
-            $row->setAiConsentSource(null);
-            $row->setAiConsentAt(null);
-            $row->setUpdatedAt(time());
-            $this->mapper->update($row);
-            $this->mapper->incrementConsentEpoch($uid);
-        }
+        $this->mapper->revokeAiConsent($uid, time());
         $this->auditService->logEvent('ai_consent_revoked', $uid, []);
     }
 

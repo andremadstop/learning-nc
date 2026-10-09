@@ -5,6 +5,7 @@ namespace OCA\Learning\Db;
 
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\QBMapper;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
 /**
@@ -35,6 +36,25 @@ class UserTelosMapper extends QBMapper {
         } catch (DoesNotExistException) {
             return null;
         }
+    }
+
+    /**
+     * Revoke the AI consent in one unconditional statement: clear every consent field and raise
+     * the epoch together. Not read-modify-write through the entity, whose setters mark only
+     * changed fields dirty: a revocation that read a row without consent would otherwise leave a
+     * grant committed in between untouched. Returns the number of rows (0: user has no row).
+     */
+    public function revokeAiConsent(string $userId, int $now): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update($this->getTableName())
+           ->set('ai_consent_version', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+           ->set('ai_consent_fingerprint', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+           ->set('ai_consent_source', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+           ->set('ai_consent_at', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+           ->set('updated_at', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT))
+           ->set('consent_epoch', $qb->createFunction($qb->getColumnName('consent_epoch') . ' + 1'))
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        return $qb->executeStatement();
     }
 
     /**
