@@ -8,7 +8,9 @@
  *
  * Every request — any path, any method — is appended to LOG as one JSON line
  * {"method","path","body"}. POST .../chat/completions gets a minimal chat.completion
- * answer; everything else gets 404.
+ * answer, POST .../api/generate a minimal Ollama answer (5.7.0 routes only Gemini and
+ * Ollama, so integration tests reach this mock as an Ollama endpoint: ollamaBaseUrl());
+ * everything else gets 404.
  *
  * The log is the measurement consent tests rely on ("0 requests"), so it never fails
  * silently: LOG must be created explicitly (reset() or the run script) before the server
@@ -28,6 +30,11 @@ final class MockLlmServer {
 	/** Base URL to configure as an OpenAI-compatible provider. */
 	public static function baseUrl(): string {
 		return 'http://' . self::HOST . ':' . self::PORT . '/v1';
+	}
+
+	/** Base URL to configure as an Ollama connection (allowInternalNetwork required). */
+	public static function ollamaBaseUrl(): string {
+		return 'http://' . self::HOST . ':' . self::PORT;
 	}
 
 	/** @return list<array{method: string, path: string, body: string}> */
@@ -71,6 +78,18 @@ final class MockLlmServer {
 			return;
 		}
 		http_response_code(200);
+
+		if ($method === 'POST' && str_ends_with($path, '/api/generate')) {
+			$request = json_decode($body, true);
+			echo json_encode([
+				'model' => is_array($request) && is_string($request['model'] ?? null) ? $request['model'] : 'mock-model',
+				'response' => self::REPLY,
+				'done' => true,
+				'prompt_eval_count' => 0,
+				'eval_count' => 0,
+			], JSON_UNESCAPED_SLASHES);
+			return;
+		}
 
 		if ($method !== 'POST' || !str_ends_with($path, '/chat/completions')) {
 			http_response_code(404);

@@ -8,7 +8,12 @@ use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\LernplanService;
+use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmGateway;
+use OCA\Learning\Service\Llm\LlmProviderException;
+use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmSession;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\QuestionService;
@@ -66,6 +71,12 @@ class VirtuProfControllerTest extends TestCase {
     private $poolMock;
     /** @var QuestionService&\PHPUnit\Framework\MockObject\MockObject */
     private $questionMock;
+    /** @var LlmGateway&\PHPUnit\Framework\MockObject\MockObject */
+    private $gatewayMock;
+    /** what LlmGateway::begin() throws; null = it returns a session */
+    private ?\Throwable $beginError = null;
+    /** @var list<LlmSession> sessions begin() handed out */
+    private array $begun = [];
 
     protected function setUp(): void {
         $this->configMock = $this->createMock(IConfig::class);
@@ -80,6 +91,15 @@ class VirtuProfControllerTest extends TestCase {
         $this->courseMock = $this->createMock(CourseService::class);
         $this->poolMock = $this->createMock(PoolService::class);
         $this->questionMock = $this->createMock(QuestionService::class);
+        $this->gatewayMock = $this->createMock(LlmGateway::class);
+        $this->gatewayMock->method('begin')->willReturnCallback(function (?string $uid, LlmPurpose $purpose): LlmSession {
+            if ($this->beginError !== null) {
+                throw $this->beginError;
+            }
+            $session = new LlmSession(ConnectionStore::legacyGemini(true), $uid, $purpose, 0);
+            $this->begun[] = $session;
+            return $session;
+        });
     }
 
     /**
@@ -101,7 +121,8 @@ class VirtuProfControllerTest extends TestCase {
             $this->telosMock,
             $this->courseMock,
             $this->poolMock,
-            $this->questionMock
+            $this->questionMock,
+            $this->gatewayMock
         );
     }
 
@@ -480,5 +501,62 @@ class VirtuProfControllerTest extends TestCase {
 
         $this->assertSame(403, $resp->getStatus());
         $this->assertTrue($resp->getData()['consent_required'] ?? false);
+    }
+
+    // ---- 5.7.0 Task B5 (review finding): the session is begun before the context is built ----
+
+    /** RAG filters by the recipient, so it needs the session chat() will send with. */
+    public function testChatBeginsBeforeTheContextAndUsesThatSessionForRagAndSend(): void {
+        $this->enableAi();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->courseMock->method('findById')->willReturn(['id' => 7]);
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $ragSession = null;
+        $this->ragMock->expects($this->once())->method('buildContext')
+            ->willReturnCallback(function (...$args) use (&$ragSession): array {
+                $this->assertCount(1, $this->begun, 'begin() ran before the context was built');
+                $ragSession = $args[6] ?? null;
+                return ['chunks' => []];
+            });
+        $this->geminiMock->expects($this->once())->method('chat')
+            ->willReturnCallback(function (...$args) use (&$ragSession): array {
+                $this->assertSame($ragSession, $args[8] ?? null, 'chat() sends with the session RAG filtered for');
+                return ['answer' => 'ok', 'fallback' => false];
+            });
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', null, 7);
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertCount(1, $this->begun);
+        $this->assertSame('user-A', $this->begun[0]->subjectUserId);
+        $this->assertSame(LlmPurpose::Chat, $this->begun[0]->purpose);
+        $this->assertSame($this->begun[0], $ragSession);
+    }
+
+    public function testChatWhoseConsentFailsAtBeginBuildsNoContext(): void {
+        $this->enableAi();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->courseMock->method('findById')->willReturn(['id' => 7]);
+        $this->beginError = new LlmConsentException();
+        $this->ragMock->expects($this->never())->method('buildContext');
+        $this->geminiMock->expects($this->never())->method('chat');
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', null, 7);
+
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
+    }
+
+    public function testChatSwitchedOffAtBeginAnswersDisabled(): void {
+        $this->enableAi();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->beginError = new LlmProviderException('disabled');
+        $this->ragMock->expects($this->never())->method('buildContext');
+        $this->geminiMock->expects($this->never())->method('chat');
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', null, 7);
+
+        $this->assertSame(503, $resp->getStatus());
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmGateway;
+use OCA\Learning\Service\Llm\LlmProviderException;
+use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
@@ -91,6 +94,7 @@ class VirtuProfController extends Controller {
     private CourseService $courseService;
     private PoolService $poolService;
     private QuestionService $questionService;
+    private LlmGateway $gateway;
 
     public function __construct(
         string $appName,
@@ -106,8 +110,10 @@ class VirtuProfController extends Controller {
         TelosService $telosService,
         CourseService $courseService,
         PoolService $poolService,
-        QuestionService $questionService
+        QuestionService $questionService,
+        LlmGateway $gateway
     ) {
+        $this->gateway = $gateway;
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->userId = $userId;
@@ -701,6 +707,18 @@ class VirtuProfController extends Controller {
             }
         }
 
+        // Task B5: begin before any context is built. The snapshot decides what the context may
+        // contain (other learners' contributions only for a local recipient), and chat() sends
+        // with exactly this session.
+        try {
+            $session = $this->gateway->begin($this->userId, LlmPurpose::Chat);
+        } catch (LlmConsentException $e) {
+            return self::consentRequired();
+        } catch (LlmProviderException $e) {
+            // begin() throws only consent and disabled: AI was switched off after the check above
+            return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
+        }
+
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
@@ -714,7 +732,8 @@ class VirtuProfController extends Controller {
                 $courseId,
                 $lastWrongQuestionId,
                 $message,
-                $suppressAnswers
+                $suppressAnswers,
+                $session
             );
         }
 
@@ -732,7 +751,8 @@ class VirtuProfController extends Controller {
                 $questionContext,
                 $hintLevel,
                 is_array($telos['telos'] ?? null) ? $telos['telos'] : null,
-                $this->isDetailedRequest($lowerMessage)
+                $this->isDetailedRequest($lowerMessage),
+                $session
             );
         } catch (LlmConsentException $e) {
             // consent revoked or recipient changed after the early check; nothing was sent

@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\RagChunk;
+use OCA\Learning\Service\Llm\LlmSession;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -27,6 +29,11 @@ use Psr\Log\LoggerInterface;
  *             user_weaknesses (question text + error rate -- derived from existing DB data).
  *   EXCLUDED: userId (used only for DB queries, never returned), username, email,
  *             display name, passwords, system paths, or any personal identifiers.
+ *
+ * Swarm memory (spec 3.6, Task B5): contributions of other learners (source_type student, another
+ * author) reach only a recipient that processes locally (session recipient isLocal). For an
+ * external recipient — and without a session — they are left out; the learner's own contributions
+ * and the course material stay. Author metadata is never part of the context.
  *
  * Token budget: context is trimmed to MAX_TOKENS (7500 tokens ~ 30000 chars).
  */
@@ -77,6 +84,8 @@ class RagContextService {
      *   withhold answer-bearing context (pool questions' answers + the last-wrong correct answer)
      *   so VirtuProf cannot be used as an exam oracle. The caller passes
      *   QuestionService::isExamActiveOnPool().
+     * @param LlmSession|null $session the session the context will be sent with; decides whether
+     *   other learners' contributions may be included (only for a local recipient)
      */
     public function buildContext(
         string $userId,
@@ -84,8 +93,10 @@ class RagContextService {
         ?int $courseId,
         ?int $lastWrongQuestionId,
         ?string $userMessage = null,
-        bool $suppressAnswers = false
+        bool $suppressAnswers = false,
+        ?LlmSession $session = null
     ): array {
+        $includeOthersContributions = $session !== null && $session->recipient()->isLocal;
         $context = [
             'pool_name'        => null,
             'pool_questions'   => [],
@@ -114,6 +125,9 @@ class RagContextService {
             if ($courseId !== null && $userMessage !== null && $userMessage !== '') {
                 $chunks = $this->chunkSearchService->search($courseId, $userMessage, 8);
                 foreach ($chunks as $chunk) {
+                    if (!$includeOthersContributions && self::isOthersContribution($chunk, $userId)) {
+                        continue;
+                    }
                     $context['chunks'][] = [
                         'text'        => $chunk->getText(),
                         'source_file' => $chunk->getSourceFile(),
@@ -145,6 +159,12 @@ class RagContextService {
         $context = $this->enforceTokenBudget($context);
 
         return $context;
+    }
+
+    /** A swarm contribution (student import) by someone other than the learner. */
+    private static function isOthersContribution(RagChunk $chunk, string $userId): bool {
+        return $chunk->getSourceType() === RagImportService::SOURCE_TYPE_STUDENT
+            && $chunk->getUserId() !== $userId;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Integration;
 
 use OCA\Learning\Controller\SettingsController;
 use OCA\Learning\Controller\TelosController;
+use OCA\Learning\Controller\VirtuProfController;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\Llm\ConnectionStore;
@@ -50,6 +51,8 @@ final class LlmTransportWiringTest extends TestCase {
         $this->assertInstanceOf(AIService::class, $container->get(AIService::class));
         $this->assertInstanceOf(PoolGeneratorService::class, $container->get(PoolGeneratorService::class));
         $this->assertInstanceOf(LlmService::class, $container->get(LlmService::class));
+        // B5: VirtuProf begins the session itself (before RAG)
+        $this->assertInstanceOf(VirtuProfController::class, $container->get(VirtuProfController::class));
     }
 
     public function testTheProviderComesFromTheSnapshot(): void {
