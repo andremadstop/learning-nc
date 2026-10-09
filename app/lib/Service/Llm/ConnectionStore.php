@@ -18,11 +18,16 @@ use Psr\Log\LoggerInterface;
  *   right before sending and a long-running job must see an admin switching AI off.
  * - save(): one write of the whole snapshot, plus a copy per provider+preset so switching back
  *   restores the old settings; values are never inherited by another backend.
+ * - 5.7.0 scope: only the backends 5.5 already had (Gemini, Ollama) can be selected. The
+ *   openai_compatible and anthropic adapters stay in the code for 5.8.0, but save() refuses them
+ *   and load() reads a stored one as disabled, so none of them can be switched on.
  */
 class ConnectionStore {
     public const APP = 'learning';
     public const KEY = 'ai_connection';
     public const SAVED_PREFIX = 'ai_connection_saved_';
+    /** Providers an admin can switch on in this release (5.7.0); the rest arrive with 5.8.0. */
+    public const SELECTABLE_PROVIDERS = ['gemini', 'ollama', 'disabled'];
 
     /** The 5.5 GeminiProvider endpoint and model; the migrated key is bound to exactly this. */
     public const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
@@ -67,11 +72,16 @@ class ConnectionStore {
             return self::disabled();
         }
         try {
-            return LlmConnection::fromArray($data);
+            $c = LlmConnection::fromArray($data);
         } catch (\InvalidArgumentException $e) {
             $this->logger->warning('ai_connection is invalid; AI is treated as disabled: ' . $e->getMessage(), ['app' => self::APP]);
             return self::disabled();
         }
+        if (!in_array($c->provider, self::SELECTABLE_PROVIDERS, true)) {
+            $this->logger->warning('ai_connection names a provider that is not available in this release; AI is treated as disabled', ['app' => self::APP]);
+            return self::disabled();
+        }
+        return $c;
     }
 
     public function isEnabledNow(): bool {
@@ -80,7 +90,13 @@ class ConnectionStore {
         return $c->enabled && $c->provider !== 'disabled';
     }
 
+    /**
+     * @throws \InvalidArgumentException for a provider that is not selectable in this release
+     */
     public function save(LlmConnection $c, string $adminUid): void {
+        if (!in_array($c->provider, self::SELECTABLE_PROVIDERS, true)) {
+            throw new \InvalidArgumentException('Provider ' . $c->provider . ' is not available in this release');
+        }
         $rev = max($this->load()->rev, $c->rev) + 1;
         $stored = LlmConnection::fromArray(array_merge($c->toArray(), ['rev' => $rev]));
         $json = json_encode($stored->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);

@@ -32,7 +32,20 @@ class ConnectionStoreTest extends TestCase {
         return new ConnectionStore($appConfig, $this->audit, $this->createMock(LoggerInterface::class));
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * A connection 5.7.0 can select: self-hosted Ollama.
+     * @return array<string, mixed>
+     */
+    private function ollama(): array {
+        return ['rev' => 1, 'enabled' => true, 'provider' => 'ollama', 'preset' => '',
+            'baseUrl' => 'http://ollama.lan:11434', 'model' => 'mistral-nemo', 'processingLocal' => true,
+            'allowInternalNetwork' => true];
+    }
+
+    /**
+     * Valid for the adapters, but not selectable before 5.8.0.
+     * @return array<string, mixed>
+     */
     private function mistral(): array {
         return ['rev' => 1, 'enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'mistral',
             'baseUrl' => 'https://api.mistral.ai/v1', 'model' => 'm1', 'processingLocal' => false,
@@ -92,11 +105,11 @@ class ConnectionStoreTest extends TestCase {
     }
 
     public function testAiConnectionTakesPrecedenceOverLegacyKeys(): void {
-        $this->values->set('learning', 'ai_provider', 'ollama');
-        $this->values->set('learning', 'ai_connection', (string)json_encode($this->mistral()));
+        $this->values->set('learning', 'ai_provider', 'gemini');
+        $this->values->set('learning', 'ai_connection', (string)json_encode($this->ollama()));
         $c = $this->store()->load();
-        $this->assertSame('openai_compatible', $c->provider);
-        $this->assertSame('mistral', $c->preset);
+        $this->assertSame('ollama', $c->provider);
+        $this->assertSame('http://ollama.lan:11434', $c->baseUrl);
     }
 
     public function testCorruptAiConnectionFailsClosed(): void {
@@ -112,9 +125,9 @@ class ConnectionStoreTest extends TestCase {
 
     public function testIsEnabledNowReadsFreshOnEveryCall(): void {
         $store = $this->store();
-        $this->values->set('learning', 'ai_connection', (string)json_encode($this->mistral()));
+        $this->values->set('learning', 'ai_connection', (string)json_encode($this->ollama()));
         $this->assertTrue($store->isEnabledNow());
-        $this->values->set('learning', 'ai_connection', (string)json_encode(array_merge($this->mistral(), ['enabled' => false])));
+        $this->values->set('learning', 'ai_connection', (string)json_encode(array_merge($this->ollama(), ['enabled' => false])));
         $this->assertFalse($store->isEnabledNow());
         // A long-running job must see the admin switching AI off: the per-process cache is dropped.
         $this->assertSame(2, $this->values->clearCacheCalls);
@@ -131,11 +144,11 @@ class ConnectionStoreTest extends TestCase {
     }
 
     public function testIsEnabledNowSeesAnotherProcessSwitchingOff(): void {
-        $this->values->set('learning', 'ai_connection', (string)json_encode($this->mistral()));
+        $this->values->set('learning', 'ai_connection', (string)json_encode($this->ollama()));
         $store = $this->store();
         $this->assertTrue($store->load()->enabled);
         $this->values->setFromOtherProcess('learning', 'ai_connection',
-            (string)json_encode(array_merge($this->mistral(), ['enabled' => false])));
+            (string)json_encode(array_merge($this->ollama(), ['enabled' => false])));
         // The snapshot read keeps the process cache (a request sees one consistent state) ...
         $this->assertTrue($store->load()->enabled);
         // ... the kill-switch check before sending does not.
@@ -154,22 +167,21 @@ class ConnectionStoreTest extends TestCase {
 
     public function testSaveWritesSnapshotAndPerBackendCopy(): void {
         $store = $this->store();
-        $store->save(LlmConnection::fromArray($this->mistral()), 'admin');
+        $store->save(LlmConnection::fromArray($this->ollama()), 'admin');
 
         $this->assertSame(2, $this->values->setCalls);
         $saved = json_decode((string)$this->values->get('learning', 'ai_connection'), true);
-        $this->assertSame('openai_compatible', $saved['provider']);
-        $this->assertSame('mistral', $saved['preset']);
-        $this->assertSame('https://api.mistral.ai/v1', $saved['baseUrl']);
+        $this->assertSame('ollama', $saved['provider']);
+        $this->assertSame('http://ollama.lan:11434', $saved['baseUrl']);
         $this->assertSame($this->values->get('learning', 'ai_connection'),
-            $this->values->get('learning', 'ai_connection_saved_openai_compatible_mistral'));
+            $this->values->get('learning', 'ai_connection_saved_ollama_'));
         $this->assertSame($saved, $store->load()->toArray());
     }
 
     public function testSaveIncrementsRevisionPastTheStoredOne(): void {
-        $this->values->set('learning', 'ai_connection', (string)json_encode(array_merge($this->mistral(), ['rev' => 7])));
+        $this->values->set('learning', 'ai_connection', (string)json_encode(array_merge($this->ollama(), ['rev' => 7])));
         $store = $this->store();
-        $store->save(LlmConnection::fromArray($this->mistral()), 'admin');
+        $store->save(LlmConnection::fromArray($this->ollama()), 'admin');
         $this->assertSame(8, $store->load()->rev);
         $store->save($store->load(), 'admin');
         $this->assertSame(9, $store->load()->rev);
@@ -181,7 +193,7 @@ class ConnectionStoreTest extends TestCase {
     }
 
     public function testSaveAuditsNameAndFingerprintPrefixOnly(): void {
-        $c = LlmConnection::fromArray($this->mistral());
+        $c = LlmConnection::fromArray($this->ollama());
         $captured = null;
         $this->audit->expects($this->once())->method('logEvent')
             ->with('ai_connection_changed', 'admin', $this->anything())
@@ -192,11 +204,58 @@ class ConnectionStoreTest extends TestCase {
         $this->store()->save($c, 'admin');
 
         $this->assertIsArray($captured);
-        $this->assertSame('Mistral AI', $captured['recipient']);
+        $this->assertSame('Ollama (ollama.lan)', $captured['recipient']);
         $this->assertSame(substr($c->connectionFingerprint(), 0, 12), $captured['connection_fp']);
         $this->assertSame(substr($c->recipientFingerprint(), 0, 12), $captured['recipient_fp']);
         $encoded = (string)json_encode($captured);
         $this->assertStringNotContainsString($c->connectionFingerprint(), $encoded);
         $this->assertStringNotContainsString($c->recipientFingerprint(), $encoded);
+    }
+
+    // ---- 5.7.0 scope: only the backends 5.5 already had are selectable -----------------------
+
+    /** @return list<array<string, mixed>> */
+    private function notYetSelectable(): array {
+        return [
+            $this->mistral(),
+            ['enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'openai',
+                'baseUrl' => 'https://api.openai.com/v1', 'model' => 'gpt-x'],
+            ['enabled' => true, 'provider' => 'anthropic',
+                'baseUrl' => 'https://api.anthropic.com/v1', 'model' => 'claude-x'],
+        ];
+    }
+
+    public function testSaveRejectsProvidersThatAreNotSelectableYet(): void {
+        foreach ($this->notYetSelectable() as $a) {
+            $store = $this->store();
+            try {
+                $store->save(LlmConnection::fromArray($a), 'admin');
+                $this->fail('saving ' . $a['provider'] . ' must be refused in 5.7.0');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('not available', $e->getMessage());
+            }
+        }
+        $this->assertSame(0, $this->values->setCalls, 'nothing may be written');
+    }
+
+    public function testStoredProviderThatIsNotSelectableYetLoadsAsDisabled(): void {
+        foreach ($this->notYetSelectable() as $a) {
+            $this->values->set('learning', 'ai_connection', (string)json_encode($a));
+            $store = $this->store();
+            $this->assertSame('disabled', $store->load()->provider, $a['provider']);
+            $this->assertFalse($store->load()->enabled, $a['provider']);
+            $this->assertFalse($store->isEnabledNow(), $a['provider']);
+        }
+    }
+
+    public function testGeminiOllamaAndDisabledStaySelectable(): void {
+        $this->assertSame(['gemini', 'ollama', 'disabled'], ConnectionStore::SELECTABLE_PROVIDERS);
+        $store = $this->store();
+        $store->save(ConnectionStore::legacyGemini(true), 'admin');
+        $this->assertSame('gemini', $store->load()->provider);
+        $store->save(LlmConnection::fromArray($this->ollama()), 'admin');
+        $this->assertSame('ollama', $store->load()->provider);
+        $store->save(LlmConnection::fromArray(['provider' => 'disabled']), 'admin');
+        $this->assertSame('disabled', $store->load()->provider);
     }
 }
