@@ -104,7 +104,7 @@ gate_vitest() {
 
 gate_i18n() {
 	local dir="$1" out
-	echo -n "i18n (parity, js sync, placeholders, coverage, VirtuProf)... "
+	echo -n "i18n (parity, js sync, placeholders, coverage, VirtuProf, consent text)... "
 	if out=$(bash "$dir/scripts/check-i18n-parity.sh" 2>&1); then gate_ok; return 0; fi
 	gate_fail; echo "$out" | tail -20; return 1
 }

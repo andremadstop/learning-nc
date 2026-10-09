@@ -75,3 +75,12 @@ python3 "$ROOT_DIR/scripts/check-i18n-coverage.py"
 # turns this one red.
 echo ""
 node --no-warnings "$ROOT_DIR/scripts/gen-virtuprof-strings.mjs" --check
+
+# Gate 6: the AI consent text (app/data/ai-consent.json).
+# The consent dialog renders its own six-language template, not t('learning', …), so
+# gates 1-5 never read it. A locale that loses a paragraph or the {provider} placeholder
+# would show the user a consent text that does not name the recipient.
+# Verified: dropping {provider} from one uk paragraph, or a key from ar, turns this red
+# while gates 1-5 stay green.
+echo ""
+python3 "$ROOT_DIR/scripts/check-consent-locales.py"
