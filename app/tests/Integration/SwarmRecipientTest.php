@@ -3,8 +3,13 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Integration;
 
+use OCA\Learning\Controller\VirtuProfController;
+use OCA\Learning\Db\AiChatMemory;
+use OCA\Learning\Db\AiChatMemoryMapper;
 use OCA\Learning\Db\RagChunk;
 use OCA\Learning\Db\RagChunkMapper;
+use OCA\Learning\Service\AiChatMemoryService;
+use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\ConsentService;
@@ -12,11 +17,14 @@ use OCA\Learning\Service\Llm\LlmConnection;
 use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Service\RagContextService;
+use OCA\Learning\Tests\Integration\Support\ContainerObjects;
 use OCA\Learning\Tests\Integration\Support\MockLlmServer;
 use OCP\AppFramework\App;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
+use OCP\IUser;
+use OCP\IUserManager;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -28,12 +36,15 @@ use Psr\Container\ContainerInterface;
  * the mock's request body is what was sent.
  */
 final class SwarmRecipientTest extends TestCase {
+    use ContainerObjects;
+
     private const ALICE = 'b5-swarm-alice';
     private const BOB = 'b5-swarm-bob';
     private const COURSE = 990501;
     private const BOB_MARKER = 'BOB-SWARM-MARKER-41c2';
     private const ALICE_MARKER = 'ALICE-OWN-MARKER-77d0';
     private const MATERIAL_MARKER = 'COURSE-MATERIAL-MARKER-0b9e';
+    private const LEGACY_MARKER = 'LEGACY-ANSWER-MARKER-5e13';
 
     private ContainerInterface $container;
     private IDBConnection $db;
@@ -73,6 +84,12 @@ final class SwarmRecipientTest extends TestCase {
     }
 
     private function clean(): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete('learning_ai_chat_memory')->where($qb->expr()->eq('user_id', $qb->createNamedParameter(self::ALICE)))->executeStatement();
+        $alice = Server::get(IUserManager::class)->get(self::ALICE);
+        if ($alice !== null) {
+            $alice->delete();
+        }
         $qb = $this->db->getQueryBuilder();
         $qb->delete('learning_rag_chunks')->where($qb->expr()->eq('course_id', $qb->createNamedParameter(self::COURSE)))->executeStatement();
         $qb = $this->db->getQueryBuilder();
@@ -129,5 +146,79 @@ final class SwarmRecipientTest extends TestCase {
 
         $this->assertStringContainsString(self::BOB_MARKER, $body);
         $this->assertStringNotContainsString(self::BOB, $body, 'no author metadata');
+    }
+
+    /** Alice's chat through the real VirtuProfController (course access granted). */
+    private function chatThroughTheController(): string {
+        if (Server::get(IUserManager::class)->get(self::ALICE) === null) {
+            $user = Server::get(IUserManager::class)->createUser(self::ALICE, bin2hex(random_bytes(16)) . 'Aa1!');
+            $this->assertInstanceOf(IUser::class, $user);
+        }
+        $before = count(MockLlmServer::requests());
+        $resp = $this->controllerFor($this->container, VirtuProfController::class, self::ALICE,
+            [CourseService::class => $this->createMock(CourseService::class)])->chat('Was ist Subnetting?', null, self::COURSE);
+        $this->assertSame(200, $resp->getStatus(), (string)json_encode($resp->getData()));
+        $requests = MockLlmServer::requests();
+        $this->assertCount($before + 1, $requests, 'one chat request');
+        return $requests[$before]['body'];
+    }
+
+    /**
+     * Review finding (HIGH): with a local recipient VirtuProf answers from Bob's contribution, and
+     * the answer is stored in Alice's chat memory. The admin then switches to an external
+     * recipient and Alice consents to it. Her next chat must not carry Bob's contribution to the
+     * external recipient through chat memory.
+     */
+    public function testAnAnswerFromAnotherLearnersContributionDoesNotReachAnExternalRecipientThroughChatMemory(): void {
+        $this->connectAndConsent(true);
+        MockLlmServer::setReply('Ein Mitlernender schreibt: ' . self::BOB_MARKER);
+        $this->assertStringContainsString(self::BOB_MARKER, $this->chatThroughTheController(), 'local: the swarm goes');
+        $stored = array_map(static fn (AiChatMemory $e): string => $e->getMessage(),
+            $this->container->get(AiChatMemoryMapper::class)->findRecentByUser(self::ALICE, 10));
+        $this->assertStringContainsString(self::BOB_MARKER, implode("\n", $stored), 'the answer quoting Bob is in her memory');
+
+        $this->connectAndConsent(false);
+        MockLlmServer::reset();
+
+        $body = $this->chatThroughTheController();
+
+        $this->assertStringNotContainsString(self::BOB_MARKER, $body);
+        $this->assertStringContainsString('Was ist Subnetting?', $body, 'her own earlier message may go');
+    }
+
+    /**
+     * Review finding (HIGH), compression: once the 50-entry cap is passed, the oldest entries are
+     * summarised. A swarm-sourced answer and an answer of unknown origin (stored before 5.7.0)
+     * are not part of what is sent for the summary.
+     */
+    public function testMemoryCompressionNeverSendsASwarmSourcedOrUnknownAnswer(): void {
+        $this->connectAndConsent(false);
+        $mapper = $this->container->get(AiChatMemoryMapper::class);
+        $t = time() - 10000;
+        for ($i = 0; $i < 49; $i++) {
+            $e = new AiChatMemory();
+            $e->setUserId(self::ALICE);
+            $e->setRole($i % 2 === 0 ? 'user' : 'assistant');
+            $e->setMessage(match ($i) {
+                1 => 'Antwort mit ' . self::BOB_MARKER,
+                3 => 'Antwort von früher ' . self::LEGACY_MARKER,
+                default => 'Eintrag ' . $i,
+            });
+            $e->setSwarmSourced(match (true) {
+                $i === 1 => 1,
+                $i === 3 => null,
+                default => 0,
+            });
+            $e->setCreatedAt($t + $i);
+            $mapper->insert($e);
+        }
+
+        $this->container->get(AiChatMemoryService::class)->saveExchange(self::ALICE, 'Frage 50', 'Antwort 50', false);
+
+        $requests = MockLlmServer::requests();
+        $this->assertCount(1, $requests, 'the compression request');
+        $this->assertStringContainsString('Eintrag 0', $requests[0]['body'], 'own messages are summarised');
+        $this->assertStringNotContainsString(self::BOB_MARKER, $requests[0]['body']);
+        $this->assertStringNotContainsString(self::LEGACY_MARKER, $requests[0]['body']);
     }
 }

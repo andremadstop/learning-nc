@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
+use OCA\Learning\Service\Llm\LlmSession;
 use OCA\Learning\Db\AiChatMemory;
 use OCA\Learning\Db\AiChatMemoryMapper;
 use Psr\Log\LoggerInterface;
@@ -19,6 +20,14 @@ use Psr\Log\LoggerInterface;
  *     (no consent, consent revoked meanwhile, budget, provider error, empty answer),
  *     compression is skipped and the entries stay; the next exchange tries again.
  *   - The compression GeminiService call bypasses user rate-limits (internal call).
+ *
+ * Swarm memory (spec 3.6, 5.7.0): every answer and summary records whether its prompt carried
+ * another learner's contribution (swarm_sourced 1), did not (0), or is unknown (NULL: stored
+ * before 5.7.0, when no filter existed). The learner's own messages are always clean.
+ *   - loadMemory() gives an external recipient — and a caller without a session — only clean
+ *     answers and summaries; a local recipient gets everything, unknown marked as swarm-sourced.
+ *   - Compression summarises only the learner's own messages and clean answers and summaries,
+ *     whatever the recipient; the summary it stores is clean.
  */
 class AiChatMemoryService {
     private const MAX_ENTRIES = 50;
@@ -44,20 +53,39 @@ class AiChatMemoryService {
     }
 
     /**
-     * Return up to CONTEXT_LIMIT most recent entries, oldest-first.
+     * Return up to CONTEXT_LIMIT most recent entries, oldest-first, as far as the session's
+     * recipient may receive them. `swarm` is true when the entry may carry another learner's
+     * contribution (swarm-sourced or unknown); an answer built on it inherits that mark.
      *
-     * @return array<int, array{role: string, message: string}>
+     * @param LlmSession|null $session the session the memory will be sent with; without one the
+     *   memory is loaded as for an external recipient (fail closed)
+     * @return list<array{role: string, message: string, swarm: bool}>
      */
-    public function loadMemory(string $userId): array {
+    public function loadMemory(string $userId, ?LlmSession $session = null): array {
         $entries = $this->mapper->findRecentByUser($userId, self::CONTEXT_LIMIT);
+        $local = $session !== null && $session->recipient()->isLocal;
 
-        return array_map(
-            static fn(AiChatMemory $e) => [
+        $out = [];
+        foreach ($entries as $e) {
+            $swarm = self::maySpreadSwarm($e);
+            if ($swarm && !$local) {
+                continue;
+            }
+            $out[] = [
                 'role' => $e->getRole(),
                 'message' => $e->getMessage(),
-            ],
-            $entries
-        );
+                'swarm' => $swarm,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * True when the entry may carry another learner's contribution: an answer or summary that is
+     * swarm-sourced or of unknown origin. The learner's own messages never do.
+     */
+    private static function maySpreadSwarm(AiChatMemory $e): bool {
+        return $e->getRole() !== 'user' && $e->getSwarmSourced() !== 0;
     }
 
     /**
@@ -71,8 +99,11 @@ class AiChatMemoryService {
 
     /**
      * Save a user message and the bot's reply. Then enforce the 50-entry cap.
+     *
+     * @param bool $swarmSourced the reply's prompt carried another learner's contribution (RAG
+     *   chunk or a remembered swarm-sourced answer); deliberately without a default
      */
-    public function saveExchange(string $userId, string $userMessage, string $assistantMessage): void {
+    public function saveExchange(string $userId, string $userMessage, string $assistantMessage, bool $swarmSourced): void {
         $now = time();
 
         $userEntry = new AiChatMemory();
@@ -80,6 +111,7 @@ class AiChatMemoryService {
         $userEntry->setRole('user');
         $userEntry->setMessage(mb_substr($userMessage, 0, 1000));
         $userEntry->setCreatedAt($now);
+        $userEntry->setSwarmSourced(0);
         $this->mapper->insert($userEntry);
 
         $assistantEntry = new AiChatMemory();
@@ -87,6 +119,7 @@ class AiChatMemoryService {
         $assistantEntry->setRole('assistant');
         $assistantEntry->setMessage(mb_substr($assistantMessage, 0, 2000));
         $assistantEntry->setCreatedAt($now + 1);
+        $assistantEntry->setSwarmSourced($swarmSourced ? 1 : 0);
         $this->mapper->insert($assistantEntry);
 
         // Enforce cap: if now over MAX_ENTRIES, compress oldest COMPRESS_COUNT
@@ -115,12 +148,20 @@ class AiChatMemoryService {
             return;
         }
 
-        $summary = $this->compressEntries($oldest, $userId);
+        $oldIds = array_map(static fn(AiChatMemory $e) => $e->getId(), $oldest);
+        // spec 3.6: a summary is built only from the learner's own messages and clean answers
+        $clean = array_values(array_filter($oldest, static fn(AiChatMemory $e): bool => !self::maySpreadSwarm($e)));
+        if ($clean === []) {
+            // nothing that may be summarised: the swarm-sourced entries go without a summary
+            $this->mapper->deleteByIds($oldIds);
+            return;
+        }
+
+        $summary = $this->compressEntries($clean, $userId);
         if ($summary === null) {
             // 5.7.0 (Task B5): skip without data loss — never replace the originals by a placeholder
             return;
         }
-        $oldIds = array_map(static fn(AiChatMemory $e) => $e->getId(), $oldest);
 
         // Delete the originals, then insert the summary
         $this->mapper->deleteByIds($oldIds);
@@ -131,6 +172,7 @@ class AiChatMemoryService {
         $summaryEntry->setMessage($summary);
         // Use the timestamp of the oldest entry so the summary sorts before remaining entries
         $summaryEntry->setCreatedAt($oldest[0]->getCreatedAt());
+        $summaryEntry->setSwarmSourced(0);
         $this->mapper->insert($summaryEntry);
     }
 

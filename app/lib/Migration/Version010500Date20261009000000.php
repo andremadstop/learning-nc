@@ -21,6 +21,11 @@ use OCP\Migration\SimpleMigrationStep;
  *
  * learning_llm_budget — one row per budget bucket and window; atomic reservations (Task B2).
  *
+ * learning_ai_chat_memory
+ *   swarm_sourced  1 = answer/summary built with another learner's contribution, 0 = without;
+ *                  NULL on upgrade (no backfill): rows from before 5.7.0 are of unknown origin and
+ *                  are not sent to an external recipient (spec 3.6).
+ *
  * In changeSchema(): a fresh install runs only that (see Version010100).
  */
 class Version010500Date20261009000000 extends SimpleMigrationStep {
@@ -45,6 +50,14 @@ class Version010500Date20261009000000 extends SimpleMigrationStep {
             }
             if (!$table->hasColumn('consent_epoch')) {
                 $table->addColumn('consent_epoch', Types::INTEGER, ['notnull' => true, 'default' => 0]);
+                $changed = true;
+            }
+        }
+
+        if ($schema->hasTable('learning_ai_chat_memory')) {
+            $table = $schema->getTable('learning_ai_chat_memory');
+            if (!$table->hasColumn('swarm_sourced')) {
+                $table->addColumn('swarm_sourced', Types::SMALLINT, ['notnull' => false]);
                 $changed = true;
             }
         }

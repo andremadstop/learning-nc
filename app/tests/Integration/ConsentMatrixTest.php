@@ -299,12 +299,12 @@ final class ConsentMatrixTest extends TestCase {
         $memory = $this->container->get(AiChatMemoryService::class);
         $mapper = $this->container->get(AiChatMemoryMapper::class);
 
-        $memory->saveExchange($this->uid, 'Frage 50', 'Antwort 50');   // 51 > 50: compression is due
+        $memory->saveExchange($this->uid, 'Frage 50', 'Antwort 50', false);   // 51 > 50: compression is due
         $this->assertSame(0, self::sent());
         $this->assertSame(51, $mapper->countByUser($this->uid), 'skipped silently, nothing lost');
 
         $this->grantConsent();
-        $memory->saveExchange($this->uid, 'Frage 51', 'Antwort 51');   // 53: compress the oldest 10
+        $memory->saveExchange($this->uid, 'Frage 51', 'Antwort 51', false);   // 53: compress the oldest 10
         $this->assertSame(1, self::sent());
         $this->assertSame(53 - 10 + 1, $mapper->countByUser($this->uid));
         $this->assertSame('memory_compress', $this->lastAiCallPurpose());

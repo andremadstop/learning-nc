@@ -77,6 +77,7 @@ class RagContextService {
      *   chunks: list<array{text: string, source_file: string, chapter: string|null}>,
      *   user_weaknesses: list<array{topic: string, error_rate: float}>,
      *   token_estimate: int,
+     *   others_contributions: bool,
      * }
      */
     /**
@@ -106,7 +107,10 @@ class RagContextService {
             'chunks'           => [],
             'user_weaknesses'  => [],
             'token_estimate'   => 0,
+            'others_contributions' => false,
         ];
+        /** @var list<bool> per chunk in $context['chunks']: another learner's contribution */
+        $othersFlags = [];
 
         try {
             // Course name (small, always included)
@@ -125,9 +129,11 @@ class RagContextService {
             if ($courseId !== null && $userMessage !== null && $userMessage !== '') {
                 $chunks = $this->chunkSearchService->search($courseId, $userMessage, 8);
                 foreach ($chunks as $chunk) {
-                    if (!$includeOthersContributions && self::isOthersContribution($chunk, $userId)) {
+                    $isOthers = self::isOthersContribution($chunk, $userId);
+                    if (!$includeOthersContributions && $isOthers) {
                         continue;
                     }
+                    $othersFlags[] = $isOthers;
                     $context['chunks'][] = [
                         'text'        => $chunk->getText(),
                         'source_file' => $chunk->getSourceFile(),
@@ -157,6 +163,12 @@ class RagContextService {
 
         // RAG-04: Enforce token budget with priority-based trimming
         $context = $this->enforceTokenBudget($context);
+
+        // spec 3.6: does what is sent carry another learner's contribution? The budget trims
+        // chunks from the end, so the chunks that stayed are the first count() of them. The
+        // caller marks the answer built from this context, so chat memory can keep it from an
+        // external recipient later.
+        $context['others_contributions'] = in_array(true, array_slice($othersFlags, 0, count($context['chunks'])), true);
 
         return $context;
     }

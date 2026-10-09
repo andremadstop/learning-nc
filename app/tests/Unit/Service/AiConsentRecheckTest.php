@@ -60,7 +60,7 @@ class AiConsentRecheckTest extends TestCase {
 
     private function assertOriginalsKept(): void {
         $this->mapper->expects($this->never())->method('deleteByIds');
-        $this->service()->saveExchange('alice', 'Frage', 'Antwort');
+        $this->service()->saveExchange('alice', 'Frage', 'Antwort', false);
         $this->assertSame(['user', 'assistant'], $this->inserted, 'only the new exchange is stored, no placeholder summary');
     }
 
@@ -100,7 +100,7 @@ class AiConsentRecheckTest extends TestCase {
         $this->gemini->method('generateNote')->willReturn('Kurz: VLANs und Subnetze.');
         $this->mapper->expects($this->once())->method('deleteByIds')->with(range(1, 10));
 
-        $this->service()->saveExchange('alice', 'Frage', 'Antwort');
+        $this->service()->saveExchange('alice', 'Frage', 'Antwort', false);
 
         $this->assertSame(['user', 'assistant', 'summary'], $this->inserted);
     }

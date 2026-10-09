@@ -330,13 +330,13 @@ final class ConsentRaceTest extends TestCase {
             /** @var (\Closure(): void)|null */
             public ?\Closure $whileBuilding = null;
 
-            public function loadMemory(string $userId): array {
+            public function loadMemory(string $userId, ?LlmSession $session = null): array {
                 $hook = $this->whileBuilding;
                 $this->whileBuilding = null;
                 if ($hook !== null) {
                     $hook();
                 }
-                return parent::loadMemory($userId);
+                return parent::loadMemory($userId, $session);
             }
         };
         $memory->whileBuilding = fn () => $this->store->save($switched, 'admin');

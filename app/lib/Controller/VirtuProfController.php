@@ -738,8 +738,12 @@ class VirtuProfController extends Controller {
             );
         }
 
-        // MEM-01: Load persistent chat memory (last 10 entries, oldest-first)
-        $memoryEntries = $this->chatMemoryService->loadMemory($this->userId);
+        // MEM-01: Load persistent chat memory (last 10 entries, oldest-first). Spec 3.6: only what
+        // the session's recipient may receive — no swarm-sourced answers for an external one.
+        $memoryEntries = $this->chatMemoryService->loadMemory($this->userId, $session);
+        // the answer is swarm-sourced when its prompt carried another learner's contribution
+        $swarmSourced = !empty($ragContext['others_contributions'])
+            || in_array(true, array_column($memoryEntries, 'swarm'), true);
 
         // Task B4 (data minimisation): the first name is no longer part of the prompt
         $telos = $this->telosService->getTelos($this->userId);
@@ -767,7 +771,7 @@ class VirtuProfController extends Controller {
 
         // MEM-01/02: Persist the exchange when we got a real answer
         if (!($result['fallback'] ?? true) && $result['answer'] !== null) {
-            $this->chatMemoryService->saveExchange($this->userId, $message, $result['answer']);
+            $this->chatMemoryService->saveExchange($this->userId, $message, $result['answer'], $swarmSourced);
         }
 
         // RAG-TRANS: Extract deduplicated sources from RAG chunks

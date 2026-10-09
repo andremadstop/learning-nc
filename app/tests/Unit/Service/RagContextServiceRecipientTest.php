@@ -38,6 +38,40 @@ class RagContextServiceRecipientTest extends TestCase {
         return $c;
     }
 
+    /** @return array<string, mixed> */
+    private function context(?LlmSession $session, bool $withBob = true): array {
+        $chunks = [
+            self::chunk('Material vom Dozenten', 'web', null),
+            self::chunk('Material aus dem Vault', 'vault', null),
+            self::chunk('Material aus einem Dokument', 'document', null),
+            self::chunk('Eigener Beitrag von Alice', 'student', 'alice'),
+        ];
+        if ($withBob) {
+            $chunks[] = self::chunk('Beitrag von Bob', 'student', 'bob');
+        }
+        $search = $this->createMock(ChunkSearchService::class);
+        $search->method('search')->willReturn($chunks);
+        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchOne('Netzwerke'))]);
+        $service = new RagContextService($db, $this->createMock(LoggerInterface::class), $search);
+        return $service->buildContext('alice', null, self::COURSE, null, 'subnetting', false, $session);
+    }
+
+    /**
+     * Review finding (HIGH): the context says whether it carries another learner's contribution,
+     * so the answer built from it can be kept away from external recipients in chat memory.
+     */
+    public function testTheContextReportsAnotherLearnersContributionForALocalRecipient(): void {
+        $this->assertTrue($this->context(self::session(self::ollama(true)))['others_contributions']);
+    }
+
+    public function testTheContextReportsNoContributionOfAnotherLearnerForAnExternalRecipient(): void {
+        $this->assertFalse($this->context(self::session(ConnectionStore::legacyGemini(true)))['others_contributions']);
+    }
+
+    public function testTheLearnersOwnContributionIsNoSwarmSource(): void {
+        $this->assertFalse($this->context(self::session(self::ollama(true)), false)['others_contributions']);
+    }
+
     /** @return list<string> chunk texts in the context */
     private function contextTexts(?LlmSession $session): array {
         $search = $this->createMock(ChunkSearchService::class);

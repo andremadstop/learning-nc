@@ -338,6 +338,58 @@ class VirtuProfControllerTest extends TestCase {
     }
 
     /**
+     * 5.7.0 review finding (HIGH, spec 3.6): an answer built from another learner's contribution
+     * must not travel to an external recipient later through chat memory. The controller loads
+     * the memory for the session's recipient and marks the stored answer as swarm-sourced when
+     * the prompt carried another learner's contribution — from the RAG chunks or from a
+     * remembered answer that was itself swarm-sourced.
+     *
+     * @param array<string, mixed> $ragContext
+     * @param list<array{role: string, message: string, swarm: bool}> $memory
+     */
+    private function chatAndCaptureSwarmFlag(array $ragContext, array $memory): bool {
+        $this->enableAi();
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
+        $this->questionMock->method('isExamActiveOnPool')->willReturn(false);
+        $this->ragMock->method('buildContext')->willReturn($ragContext);
+        $this->chatMemoryMock->expects($this->once())->method('loadMemory')
+            ->with('user-A', $this->callback(fn (?LlmSession $s): bool => $s !== null && $s === ($this->begun[0] ?? null)))
+            ->willReturn($memory);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->geminiMock->method('chat')->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
+        $flag = null;
+        $this->chatMemoryMock->expects($this->once())->method('saveExchange')
+            ->willReturnCallback(function (string $uid, string $q, string $a, bool $swarm) use (&$flag): void {
+                $flag = $swarm;
+            });
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5);
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertIsBool($flag);
+        return $flag;
+    }
+
+    public function testAnAnswerFromAnotherLearnersChunkIsStoredAsSwarmSourced(): void {
+        $this->assertTrue($this->chatAndCaptureSwarmFlag(['chunks' => [], 'others_contributions' => true], []));
+    }
+
+    public function testAnAnswerFromASwarmSourcedMemoryEntryIsStoredAsSwarmSourced(): void {
+        $this->assertTrue($this->chatAndCaptureSwarmFlag(['chunks' => [], 'others_contributions' => false], [
+            ['role' => 'user', 'message' => 'Frage', 'swarm' => false],
+            ['role' => 'assistant', 'message' => 'Laut Bob …', 'swarm' => true],
+        ]));
+    }
+
+    public function testAnAnswerWithoutSwarmSourcesIsStoredAsClean(): void {
+        $this->assertFalse($this->chatAndCaptureSwarmFlag(['chunks' => [], 'others_contributions' => false], [
+            ['role' => 'user', 'message' => 'Frage', 'swarm' => false],
+            ['role' => 'assistant', 'message' => 'Antwort', 'swarm' => false],
+        ]));
+    }
+
+    /**
      * MED-10: during an active exam on the pool, buildContext is called with
      * suppressAnswers=true so pool answer keys and the last-wrong correct answer are withheld
      * (VirtuProf cannot be used as an exam oracle).

@@ -17,12 +17,19 @@ use OCP\AppFramework\Db\Entity;
  * @method void   setMessage(string $message)
  * @method int    getCreatedAt()
  * @method void   setCreatedAt(int $createdAt)
+ * @method int|null getSwarmSourced()
+ * @method void   setSwarmSourced(?int $swarmSourced)
+ *
+ * swarmSourced (5.7.0, spec 3.6): 1 = the answer or summary was built with another learner's
+ * contribution in the prompt, 0 = it was not, NULL = unknown (written before 5.7.0). The learner's
+ * own messages are always 0.
  */
 class AiChatMemory extends Entity {
     protected $userId;
     protected $role;
     protected $message;
     protected $createdAt;
+    protected $swarmSourced;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -30,5 +37,6 @@ class AiChatMemory extends Entity {
         $this->addType('role', 'string');
         $this->addType('message', 'string');
         $this->addType('createdAt', 'integer');
+        $this->addType('swarmSourced', 'integer');
     }
 }

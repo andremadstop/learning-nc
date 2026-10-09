@@ -26,6 +26,8 @@ final class MockLlmServer {
 	public const PORT = 18080;
 	public const LOG = '/tmp/llm-requests.log';
 	public const REPLY = 'mock reply';
+	/** Optional reply override for the next answers, written by setReply(), removed by reset(). */
+	public const REPLY_FILE = '/tmp/llm-reply.txt';
 
 	/** Base URL to configure as an OpenAI-compatible provider. */
 	public static function baseUrl(): string {
@@ -53,11 +55,30 @@ final class MockLlmServer {
 		return $out;
 	}
 
-	/** Creates or empties the log. */
+	/** Creates or empties the log and restores the default reply. */
 	public static function reset(): void {
 		if (file_put_contents(self::LOG, '') !== 0 || !is_file(self::LOG)) {
 			throw new \RuntimeException('MockLlmServer: could not reset request log ' . self::LOG);
 		}
+		if (is_file(self::REPLY_FILE) && !unlink(self::REPLY_FILE)) {
+			throw new \RuntimeException('MockLlmServer: could not remove reply override ' . self::REPLY_FILE);
+		}
+	}
+
+	/** Every following answer carries $text instead of REPLY, until reset(). */
+	public static function setReply(string $text): void {
+		if (file_put_contents(self::REPLY_FILE, $text) !== strlen($text)) {
+			throw new \RuntimeException('MockLlmServer: could not write reply override ' . self::REPLY_FILE);
+		}
+	}
+
+	/** The text the server answers with now. */
+	public static function reply(): string {
+		if (!is_file(self::REPLY_FILE)) {
+			return self::REPLY;
+		}
+		$text = file_get_contents(self::REPLY_FILE);
+		return $text === false ? self::REPLY : $text;
 	}
 
 	/** Router entry point (built-in server only). */
@@ -83,7 +104,7 @@ final class MockLlmServer {
 			$request = json_decode($body, true);
 			echo json_encode([
 				'model' => is_array($request) && is_string($request['model'] ?? null) ? $request['model'] : 'mock-model',
-				'response' => self::REPLY,
+				'response' => self::reply(),
 				'done' => true,
 				'prompt_eval_count' => 0,
 				'eval_count' => 0,
@@ -106,7 +127,7 @@ final class MockLlmServer {
 			'model' => $model,
 			'choices' => [[
 				'index' => 0,
-				'message' => ['role' => 'assistant', 'content' => self::REPLY],
+				'message' => ['role' => 'assistant', 'content' => self::reply()],
 				'finish_reason' => 'stop',
 			]],
 			'usage' => ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
