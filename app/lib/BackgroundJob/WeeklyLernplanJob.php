@@ -6,6 +6,7 @@ use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\Llm\LlmGateway;
+use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
@@ -100,13 +101,19 @@ class WeeklyLernplanJob extends TimedJob {
      * 5.7.0: the weekly_note session is begun here, before that data is read, and the note is
      * sent with it — snapshot and consent epoch are those of the moment the assembly started.
      *
-     * @return string 'generated' | 'skipped' (no weak pool / no data) | 'skipped_consent'
+     * @return string 'generated' | 'skipped' (no weak pool / no data / AI off) | 'skipped_consent'
      */
     private function processUser(string $userId): string {
         try {
             $session = $this->gateway->begin($userId, LlmPurpose::WeeklyNote);
         } catch (LlmConsentException $e) {
             return 'skipped_consent';
+        } catch (LlmProviderException $e) {
+            if ($e->category === 'disabled') {
+                // AI switched off by the admin: nothing to send, no error of this job
+                return 'skipped';
+            }
+            throw $e;
         }
 
         $weakTopics = $this->lernprofilService->getWeakestTopics($userId, null, 1);

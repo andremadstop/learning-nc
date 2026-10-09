@@ -137,4 +137,20 @@ class WeeklyLernplanJobConsentTest extends TestCase {
         $this->assertSame('generated', $method->invoke($this->makeJob($notes, $profile, $gw), 'frank'));
         $this->assertSame(['begin', 'weak_topics'], $order);
     }
+
+    /**
+     * AI switched off by the admin: begin() refuses with `disabled`. That is no error of the job
+     * (before 5.7.0 the consent pre-check skipped such users too) and no data is read.
+     */
+    public function testAiSwitchedOffAtBeginIsASkipNotAnError(): void {
+        $gateway = $this->createMock(LlmGateway::class);
+        $gateway->method('begin')->willThrowException(new LlmProviderException('disabled'));
+        $profile = $this->createMock(LernprofilService::class);
+        $profile->expects($this->never())->method('getWeakestTopics');
+        $notes = $this->createMock(NoteGeneratorService::class);
+        $notes->expects($this->never())->method('generateSummary');
+
+        $method = new \ReflectionMethod(WeeklyLernplanJob::class, 'processUser');
+        $this->assertSame('skipped', $method->invoke($this->makeJob($notes, $profile, $gateway), 'gina'));
+    }
 }
