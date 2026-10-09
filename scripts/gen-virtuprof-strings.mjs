@@ -80,6 +80,13 @@ const IGNORED_KEYS = new Set(['{commentary}', '{message}'])
 const VT_CALL = /(?:\bthis\.)?\bvt\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g
 /** Literal translateVirtuProf(lang, '…') — used where no vt() wrapper exists. */
 const TVP_CALL = /\btranslateVirtuProf\(\s*[^,()]+,\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g
+/**
+ * Telos journey step hints: `privacyHint: '…'` reaches vt() as vt(step.privacyHint), which
+ * VT_CALL cannot see. Without this a NEW hint would not be generated into the catalogue (the
+ * carried safety net only keeps keys that are already there) and would render German in all six
+ * languages — Codeberg #6 again.
+ */
+const STEP_HINT = /\bprivacyHint:\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g
 /** vt(<expression>) — reported by --list-indirect; these are what CARRIED protects. */
 const VT_INDIRECT = /(?:\bthis\.)?\bvt\(\s*(?!['"`]|key\b)([A-Za-z_$][^)]*)\)/g
 
@@ -127,7 +134,7 @@ async function collectKeys() {
 
   for (const file of walkSources(SRC)) {
     const text = fs.readFileSync(file, 'utf8')
-    for (const re of [VT_CALL, TVP_CALL]) {
+    for (const re of [VT_CALL, TVP_CALL, STEP_HINT]) {
       re.lastIndex = 0
       let m
       while ((m = re.exec(text)) !== null) add(unescapeLiteral(m[2]), file)

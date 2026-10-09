@@ -14,7 +14,7 @@
 		</header>
 
 		<main class="legal-page__content">
-			<PrivacyInfo :show-heading="false" :show-page-links="false" />
+			<PrivacyInfo :show-heading="false" :show-page-links="false" :ai-notice="aiNotice" />
 		</main>
 	</div>
 </template>
@@ -28,6 +28,10 @@ export default {
 		PrivacyInfo,
 	},
 	props: {
+		aiNotice: {
+			type: Object,
+			default: null,
+		},
 		appUrl: {
 			type: String,
 			default: '',

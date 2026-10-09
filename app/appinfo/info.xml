@@ -46,7 +46,7 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 
 ## AI Features (optional)
 
-Requires a Google Gemini API key. Without it, the app is fully functional — AI features are simply hidden. Each user must explicitly opt in before any data is sent to the API.
+Optional: the admin connects Google Gemini (API key) or a local Ollama server. Without a connection, the app is fully functional — AI features are simply off. Each user must explicitly consent to the configured recipient before any data is sent; the consent is asked again if the recipient or the consent text changes, and can be withdrawn at any time.
 
 - **VirtuProf** — AI learning assistant with RAG-powered answers and source citations
 - **Question Generator** — create flashcards from pasted text
@@ -94,7 +94,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         <duplication>false</duplication>
         <thirdPartyLibraries>
             <library>
-                <name>Google Gemini API (optional)</name>
+                <name>Google Gemini API (optional, alternative: local Ollama server)</name>
                 <version>2.5 Flash</version>
                 <licenseOrTerms>https://cloud.google.com/terms/service-terms</licenseOrTerms>
             </library>

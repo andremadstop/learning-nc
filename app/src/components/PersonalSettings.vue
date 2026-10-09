@@ -190,7 +190,7 @@
                 <td>{{ t('learning', 'Learning profile (role, goals, strengths)') }}</td>
                 <td>{{ t('learning', 'This DevCloud only') }}</td>
                 <td>{{ t('learning', 'You + VirtuProf') }}</td>
-                <td>{{ t('learning', 'Gemini (during chat only)') }}</td>
+                <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
               <tr>
                 <td>{{ t('learning', 'Help offer / help wanted') }}</td>
@@ -202,24 +202,24 @@
                 <td>{{ t('learning', 'Learning progress (XP, streaks, boxes)') }}</td>
                 <td>{{ t('learning', 'This DevCloud only') }}</td>
                 <td>{{ t('learning', 'You + instructor (aggregated)') }}</td>
-                <td>—</td>
+                <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
               <tr>
                 <td>{{ t('learning', 'Chat messages with VirtuProf') }}</td>
-                <td>{{ t('learning', 'Browser (localStorage)') }}</td>
+                <td>{{ t('learning', 'Browser (localStorage) und eine Zusammenfassung auf diesem Server') }}</td>
                 <td>{{ t('learning', 'Only you') }}</td>
-                <td>{{ t('learning', 'Gemini (per message, not stored)') }}</td>
+                <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
               <tr>
                 <td>{{ t('learning', 'Answers in training / exam') }}</td>
                 <td>{{ t('learning', 'This DevCloud only') }}</td>
                 <td>{{ t('learning', 'You + instructor (aggregated)') }}</td>
-                <td>—</td>
+                <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
             </tbody>
           </table>
           <p class="data-transparency__note">
-            {{ t('learning', 'You can reset your learning profile above. Chat history can be cleared in the VirtuProf panel. All data stays on this server — no tracking, no ads, no data sales.') }}
+            {{ t('learning', 'Du kannst dein Lernprofil oben zurücksetzen und den Chatverlauf im VirtuProf-Fenster löschen. Deine Daten bleiben auf diesem Server – außer du stimmst der KI-Nutzung zu: Dann gehen die in der Einwilligung genannten Daten an den KI-Dienst. Kein Tracking, keine Werbung, kein Datenverkauf.') }}
           </p>
         </div>
       </details>
@@ -429,7 +429,7 @@
       </template>
 
       <hr class="section-divider" />
-      <PrivacyInfo />
+      <PrivacyInfo :ai-notice="privacyAiNotice" />
     </div>
   </div>
 </template>
@@ -513,6 +513,8 @@ export default {
       consentLoading: true,
       consentValid: false,
       consentProvider: '',
+      consentRecipient: null,
+      consentLoaded: false,
       consentRevoking: false,
       consentRevoked: false,
       consentError: '',
@@ -541,6 +543,13 @@ export default {
     }
   },
   computed: {
+    // Who receives AI data right now, for the privacy section. Null until the status is read (no
+    // guess), {active: false} when AI is switched off.
+    privacyAiNotice() {
+      if (!this.consentLoaded) return null
+      const r = this.consentRecipient
+      return r ? { active: true, provider: r.name || '', region: r.region || 'unknown' } : { active: false }
+    },
     showSkinPickerHint() {
       const HINT_ID = 'skin-picker-v440'
       if (this.hintDismissed(HINT_ID)) return false
@@ -602,6 +611,8 @@ export default {
         const status = await fetchConsentStatus()
         this.consentValid = !!status?.valid
         this.consentProvider = status?.recipient?.name || ''
+        this.consentRecipient = status?.recipient || null
+        this.consentLoaded = true
       } catch (e) {
         this.consentValid = false
       } finally {

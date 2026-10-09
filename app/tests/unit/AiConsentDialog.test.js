@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { createApp, h } from 'vue'
+import { createApp, h, nextTick, reactive } from 'vue'
 
 // Task D2 (5.7.0): one accessible consent dialog, driven by the real consent API fields
 // (GET /api/profile/telos/consent: recipient{name,region,processing_local,intermediary,fingerprint},
@@ -184,5 +184,36 @@ describe('AiConsentDialog', () => {
 		const el = mountDialog({ recipient: null })
 		const [, acceptBtn] = el.querySelectorAll('.actions button')
 		expect(acceptBtn.disabled).toBe(true)
+	})
+
+	// D5 (WCAG 2.1 AA, 3.3.1): the error sits below a long text; role="alert" only reaches screen
+	// readers, a sighted keyboard user must also see it without hunting for it.
+	it('brings a failed save into view when it appears', async () => {
+		const scrollIntoView = vi.fn()
+		const original = Element.prototype.scrollIntoView
+		Element.prototype.scrollIntoView = scrollIntoView
+		try {
+			const state = reactive({ error: '' })
+			events = []
+			host = document.createElement('div')
+			document.body.appendChild(host)
+			app = createApp({
+				render: () => h(AiConsentDialog, { recipient: GEMINI, reason: 'never', locale: 'de', error: state.error }),
+			})
+			app.config.globalProperties.t = (_a, s) => s
+			app.config.warnHandler = () => {}
+			app.mount(host)
+			expect(scrollIntoView).not.toHaveBeenCalled()
+
+			state.error = 'Speichern fehlgeschlagen'
+			await nextTick()
+			await nextTick()
+
+			expect(host.querySelector('[role="alert"]').textContent).toContain('Speichern fehlgeschlagen')
+			expect(scrollIntoView).toHaveBeenCalledTimes(1)
+			expect(scrollIntoView.mock.contexts[0]).toBe(host.querySelector('[role="alert"]'))
+		} finally {
+			Element.prototype.scrollIntoView = original
+		}
 	})
 })

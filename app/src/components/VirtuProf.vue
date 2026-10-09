@@ -170,14 +170,14 @@ const JOURNEY_STEPS = [
     id: 'strengths',
     title: 'Wo stehst du?',
     explanation: 'So weiß ich wo ich mehr erklären muss und wo ich direkt zum Punkt kommen kann.',
-    privacyHint: 'Strengths and weaknesses are only used locally by VirtuProf. They are not shared with other users or instructors.',
+    privacyHint: 'VirtuProf nutzt deine Stärken und Schwächen, um passend zu erklären. Andere Teilnehmende und Dozenten sehen sie nicht. Wenn du der KI-Nutzung zustimmst, gehen sie an den KI-Dienst deines Betreibers.',
     fields: ['telos.strengths', 'telos.weaknesses'],
   },
   {
     id: 'style',
     title: 'Wie lernst du am liebsten?',
     explanation: 'Das beeinflusst wie ich dir Inhalte vorschlage — allein durcharbeiten, mit anderen üben, oder gemischt.',
-    privacyHint: 'When you chat with VirtuProf, your profile context is sent to Google Gemini — only during the chat, not stored permanently.',
+    privacyHint: 'Wenn du der KI-Nutzung zustimmst, gehen deine Nachrichten im VirtuProf-Chat und Teile deines Lernprofils an den KI-Dienst deines Betreibers. Ohne deine Einwilligung wird nichts gesendet; du kannst sie jederzeit in den Einstellungen widerrufen.',
     fields: ['telos.learning_style', 'telos.hours_per_week'],
   },
   {

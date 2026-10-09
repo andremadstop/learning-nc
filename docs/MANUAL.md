@@ -501,15 +501,31 @@ Every command supports `--help`. Test destructive ones on a staging instance fir
 
 ## 6. Data protection and the AI features
 
-Learning works completely without AI. The AI features require a Google Gemini API key,
-and are **off by default**.
+Learning works completely without AI. The AI features need a connection that the
+administrator sets up — Google Gemini (API key) or a local Ollama server — and are
+**off by default**.
 
 When AI is switched on, two gates still apply:
 
 1. The administrator must enable it globally
-2. **Each user must individually opt in.** Every user-triggered path that would send data
-   to the model checks that consent first. Without consent, the feature returns a
-   "consent required" state and no data is transmitted
+2. **Each user must individually opt in.** Every path that would send data to the model
+   checks that consent first, including the weekly background note. Without consent, the
+   feature returns a "consent required" state and no data is transmitted. The consent
+   belongs to one consent text version **and** one recipient: if the administrator
+   switches to another recipient, or the text is revised, every user is asked again
+   before anything is sent. A user can withdraw at any time under *Personal settings →
+   AI consent*; the withdrawal applies to every request that starts afterwards.
+
+What is sent when a user has consented: their messages, the current question with
+answer options and explanation, excerpts from course material, information from their
+learning profile (goals, motivation, strengths and weaknesses), their learning state, a
+summary of their earlier chats (stored on the server) and — once a week, automatically —
+their weakest topic with the questions they got wrong. Name, email address and account
+data are not sent automatically. Contributions of other learners are not sent to an
+external recipient. The text the learner sees is `app/data/ai-consent.json`; the public
+privacy page (`/privacy`) shows the same list with the recipient in force. The audit log
+records each AI request without its content; a personal data export contains the stored
+consent and the chat summaries, and deleting the account removes them.
 
 This is a deliberate GDPR design: opting out leaves you with a reduced but fully working
 app, never a broken one.

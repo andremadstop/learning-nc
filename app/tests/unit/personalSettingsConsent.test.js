@@ -83,3 +83,28 @@ describe('PersonalSettings: AI consent revocation', () => {
 		expect(c.consentRevoking).toBe(false)
 	})
 })
+
+describe('PersonalSettings: data table and privacy notice follow the recipient', () => {
+	it('hands the privacy notice the recipient the consent API reports', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, recipient: { name: 'Google Gemini', region: 'us' } } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(c.consentRecipient).toEqual({ name: 'Google Gemini', region: 'us' })
+		expect(PersonalSettings.computed.privacyAiNotice.call(c)).toEqual({ active: true, provider: 'Google Gemini', region: 'us' })
+	})
+
+	it('AI switched off (no recipient) is a notice of its own, not a missing one', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, recipient: null } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(PersonalSettings.computed.privacyAiNotice.call(c)).toEqual({ active: false })
+	})
+
+	it('shows no notice while the status is loading or could not be read', async () => {
+		expect(PersonalSettings.computed.privacyAiNotice.call(ctx())).toBeNull()
+		axios.get.mockRejectedValueOnce(new Error('500'))
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(PersonalSettings.computed.privacyAiNotice.call(c)).toBeNull()
+	})
+})

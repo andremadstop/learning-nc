@@ -52,7 +52,7 @@ XP sammeln, Levels aufsteigen, 14 Achievements freischalten. Level-Up-Feier mit 
 Konfigurierbares Tagesziel (Standard: 20 Karten) mit visuellem Fortschrittsring. +10 XP Bonus beim Erreichen des Tagesziels.
 
 **KI-Erklaerungen**
-Nach jeder Antwort im Training- oder Leitner-Modus erklaert ein 💡-Button warum die richtige Antwort korrekt ist — und warum eine falsche Wahl danebenlag. Nutzt den konfigurierten Nextcloud AI Provider. Waehrend aktiver Pruefungen deaktiviert.
+Nach jeder Antwort im Training- oder Leitner-Modus erklaert ein 💡-Button warum die richtige Antwort korrekt ist — und warum eine falsche Wahl danebenlag. Nutzt den KI-Empfaenger, den deine Administration eingerichtet hat (Google Gemini oder ein lokaler Ollama-Server), und erst nachdem du zugestimmt hast. Waehrend aktiver Pruefungen deaktiviert.
 
 **ICS-Kalender-Abonnement**
 Exportiere deine faelligen Karteikarten als Kalender-Feed. In den Einstellungen eine persoenliche URL generieren und in jedem Kalender-Programm (Thunderbird, iOS, Android) abonnieren. Faellige Karten erscheinen automatisch als ganztaegige Ereignisse.

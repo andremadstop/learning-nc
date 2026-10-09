@@ -65,7 +65,7 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **Trouble-spot cheat sheet** — export your weakest topics for targeted exam prep
 
 ### AI Features (optional)
-Requires a Google Gemini API key. Without it, the app is fully functional — AI features are simply hidden. Each user must explicitly opt in (GDPR-compliant consent flow).
+The admin connects either Google Gemini (API key) or a local Ollama server. Without a connection, the app is fully functional — AI features are simply off. Each user must explicitly consent to the recipient the admin configured before any data is sent; the consent is asked again when the consent text or the recipient changes, and can be withdrawn at any time in the personal settings.
 
 - **VirtuProf** — AI learning assistant with RAG-powered answers and source citations
 - **Question Generator** — create flashcards from pasted text
@@ -116,22 +116,29 @@ The admin settings page shows a reminder until the key exists. Rotate later with
 
 ### When AI is enabled (optional)
 
-| Data sent to Gemini API | Details |
+| Data sent to the AI recipient | Details |
 |---|---|
-| Question text | Up to 500 characters, stripped of HTML |
-| Pool sample questions | Up to 15 questions (text only, truncated) |
-| Course name | Name only — no enrollment data |
-| Leitner box counts | Numeric distribution only |
+| Your messages to VirtuProf and other text you enter into AI features | As typed, including what you write yourself |
+| Current learning context | The question, the answer options and the explanation |
+| Course material excerpts | From the instructors' material; other learners' contributions are **not** sent to an external recipient |
+| Information from your learning profile | Goals, motivation, strengths and weaknesses the app recognised |
+| Your learning state | For example topics you know well and questions you answered wrongly |
+| Summary of your earlier VirtuProf chats | Stored on this server |
+| Text and files you turn into questions with AI | Only when you use the question generator |
+| Weekly note (automatic) | Once a week your weakest topic and the questions you got wrong there |
 
-**Never sent:** usernames, emails, passwords, server paths, personal data.
+**Not sent automatically:** name, email address, account data and passwords. What a learner types into a message is sent as written.
+
+The full list the learner sees (in six languages) is `app/data/ai-consent.json`; the privacy page (`/privacy`) shows the same list with the recipient in force.
 
 ### Admin controls
-- Global AI toggle in admin settings
-- Per-user consent required before first interaction
-- Rate limiting: 10 req/min, 100 req/day per user
-- Full audit log of all AI requests
+- Global AI switch and recipient (Google Gemini or a local Ollama server) in the admin settings
+- Per-user consent, bound to the consent text version **and** the recipient: a changed recipient or a revised text asks again; withdrawal applies to every request that starts afterwards
+- Rate limiting: 10 requests/min and 100/day per user, plus a daily limit for the whole instance (default 5000, `ai_global_daily_limit`)
+- Audit log of AI requests: time, purpose, recipient, model and token counts — never the content
+- Personal data export includes the stored consent and the server-side chat summaries; deleting an account removes them
 
-When AI is enabled, data is processed by Google Gemini API. For GDPR compliance, review Google's [Data Processing Addendum](https://cloud.google.com/terms/data-processing-addendum).
+When AI is enabled, data is processed by the recipient the admin configured. For Google Gemini (USA) review Google's [Data Processing Addendum](https://cloud.google.com/terms/data-processing-addendum); a local Ollama server keeps the data on your own infrastructure.
 
 ### Cert lifecycle & compliance (v5.2.0)
 

@@ -29,7 +29,7 @@
       <p>{{ text.retention_note }}</p>
       <p>{{ text.revocation_note }}</p>
 
-      <p v-if="error" class="ai-consent__error" role="alert">{{ error }}</p>
+      <p v-if="error" ref="error" class="ai-consent__error" role="alert">{{ error }}</p>
     </div>
     <template #actions>
       <NcButton type="button" variant="tertiary" @click="decline">{{ text.decline_label }}</NcButton>
@@ -76,6 +76,17 @@ export default {
   data() {
     idCounter += 1
     return { bodyId: 'ai-consent-body-' + idCounter }
+  },
+  watch: {
+    // The message sits below a long text: besides the announcement (role="alert") a sighted
+    // keyboard user must see it without hunting for it (WCAG 2.1 AA, 3.3.1).
+    error(message) {
+      if (!message) return
+      this.$nextTick(() => {
+        const el = this.$refs.error
+        if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' })
+      })
+    },
   },
   computed: {
     lang() { return normalizeLang(this.locale) },

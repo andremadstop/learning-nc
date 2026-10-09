@@ -45,16 +45,26 @@ function stringifyList(value) {
 	return typeof value === 'string' ? value : ''
 }
 
-function normalizeCategory(category) {
+/** Puts the AI recipient into a text; the texts name nobody themselves (spec 3.6). */
+function fillProvider(text, provider) {
+	return typeof text === 'string' ? text.split('{provider}').join(provider) : ''
+}
+
+function providerLabel(data, provider) {
+	return provider || data?.ai_notice?.provider_fallback || ''
+}
+
+function normalizeCategory(category, provider) {
+	const fill = (text) => fillProvider(text, provider)
 	return {
 		id: category.id || '',
 		name: category.name || category.title || '',
-		description: category.description || '',
-		items: stringifyList(category.items || category.data_types),
-		purpose: category.purpose || stringifyList(category.content),
-		who_sees: category.who_sees || category.whoSees || '',
-		retention: category.retention || '',
-		legal_basis: category.legal_basis || category.legalBasis || '',
+		description: fill(category.description || ''),
+		items: fill(stringifyList(category.items || category.data_types)),
+		purpose: fill(category.purpose || stringifyList(category.content)),
+		who_sees: fill(category.who_sees || category.whoSees || ''),
+		retention: fill(category.retention || ''),
+		legal_basis: fill(category.legal_basis || category.legalBasis || ''),
 	}
 }
 
@@ -62,9 +72,42 @@ function matchesGroup(category, group) {
 	return group.matches.some((pattern) => pattern.test(category.id) || pattern.test(category.name))
 }
 
-export function buildPrivacyCategoryGroups(data = privacyData) {
+/**
+ * The AI notice as the page shows it, for the recipient in force.
+ *
+ * @param {object} data privacy-info.json
+ * @param {{active: boolean, provider?: string, region?: string}|null} notice null while unknown:
+ *   nothing is shown rather than a guess
+ * @returns {object|null}
+ */
+export function buildAiNotice(data = privacyData, notice = null) {
+	const n = data?.ai_notice
+	if (!n || !notice || typeof notice !== 'object') {
+		return null
+	}
+	if (!notice.active) {
+		return { active: false, off: n.off }
+	}
+	const provider = providerLabel(data, notice.provider)
+	const fill = (text) => fillProvider(text, provider)
+	return {
+		active: true,
+		provider,
+		intro: fill(n.intro),
+		dataHeading: n.data_list_heading,
+		dataList: Array.isArray(n.data_list) ? n.data_list : [],
+		identity: n.identity_note,
+		region: fill(n.region?.[notice.region] || n.region?.unknown),
+		automation: fill(n.automation),
+		retention: n.retention,
+		optOut: n.opt_out,
+	}
+}
+
+export function buildPrivacyCategoryGroups(data = privacyData, provider = '') {
+	const label = providerLabel(data, provider)
 	const normalizedCategories = Array.isArray(data?.categories)
-		? data.categories.map(normalizeCategory)
+		? data.categories.map((category) => normalizeCategory(category, label))
 		: []
 
 	return CATEGORY_GROUPS.map((group) => ({

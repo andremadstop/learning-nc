@@ -52,7 +52,7 @@ Earn XP, level up, unlock 14 achievements. Level-up celebrations with animations
 Set a configurable daily review target (default: 20 cards) with a visual progress ring. +10 XP bonus when you hit your daily goal.
 
 **AI Explanations**
-After every answer in Training or Leitner mode, a 💡 button explains why the correct answer is right — and why a wrong choice missed the mark. Uses the configured Nextcloud AI provider. Disabled during active exams to prevent cheating.
+After every answer in Training or Leitner mode, a 💡 button explains why the correct answer is right — and why a wrong choice missed the mark. Uses the AI recipient your administrator configured (Google Gemini or a local Ollama server) and only after you have consented to it. Disabled during active exams to prevent cheating.
 
 **ICS Calendar Subscription**
 Export your due flashcards as a calendar feed. Generate a personal URL in settings and subscribe from any calendar app (Thunderbird, iOS, Android). Due cards appear automatically as all-day events.

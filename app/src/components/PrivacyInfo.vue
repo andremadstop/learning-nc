@@ -24,13 +24,21 @@
 			</a>
 		</div>
 
-		<NcNoteCard v-if="aiNotice.provider" type="info" class="privacy-info__notice">
+		<NcNoteCard v-if="aiView" type="info" class="privacy-info__notice">
 			<p><strong>{{ t('learning', 'KI-Hinweis') }}</strong></p>
-			<p>{{ t('learning', 'Diese App nutzt {provider} für KI-gestützte Erklärungen.', { provider: aiNotice.provider }) }}</p>
-			<p v-if="aiNotice.what_is_sent">{{ aiNotice.what_is_sent }}</p>
-			<p v-if="aiNotice.data_location">{{ aiNotice.data_location }}</p>
-			<p v-if="aiNotice.what_is_not_sent">{{ aiNotice.what_is_not_sent }}</p>
-			<p v-if="aiNotice.opt_out">{{ aiNotice.opt_out }}</p>
+			<p v-if="!aiView.active">{{ aiView.off }}</p>
+			<template v-else>
+				<p>{{ aiView.intro }}</p>
+				<p>{{ aiView.dataHeading }}</p>
+				<ul class="privacy-info__notice-list">
+					<li v-for="item in aiView.dataList" :key="item">{{ item }}</li>
+				</ul>
+				<p>{{ aiView.identity }}</p>
+				<p>{{ aiView.region }}</p>
+				<p>{{ aiView.automation }}</p>
+				<p>{{ aiView.retention }}</p>
+				<p>{{ aiView.optOut }}</p>
+			</template>
 		</NcNoteCard>
 
 		<div v-if="highlightSections.length > 0" class="privacy-info__section-grid">
@@ -114,12 +122,21 @@
 
 <script>
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
-import { buildPrivacyCategoryGroups, getPrivacyInfoData } from '../utils/privacyInfo.js'
+import { buildAiNotice, buildPrivacyCategoryGroups, getPrivacyInfoData } from '../utils/privacyInfo.js'
 
 export default {
 	name: 'PrivacyInfo',
 	components: { NcNoteCard },
 	props: {
+		/**
+		 * Who receives AI data right now: {active, provider, region}. Null while unknown, then no
+		 * notice is shown. The privacy page (public) gets it from the server without any address;
+		 * the personal settings page from the consent API.
+		 */
+		aiNotice: {
+			type: Object,
+			default: null,
+		},
 		showHeading: {
 			type: Boolean,
 			default: true,
@@ -148,14 +165,14 @@ export default {
 		privacyVersion() {
 			return this.privacyData?.version || ''
 		},
-		aiNotice() {
-			return this.privacyData?.ai_notice || {}
+		aiView() {
+			return buildAiNotice(this.privacyData, this.aiNotice)
 		},
 		highlightSections() {
 			return Array.isArray(this.privacyData?.sections) ? this.privacyData.sections : []
 		},
 		namedCategories() {
-			return buildPrivacyCategoryGroups(this.privacyData)
+			return buildPrivacyCategoryGroups(this.privacyData, this.aiNotice?.active ? this.aiNotice.provider : '')
 		},
 		rights() {
 			return Array.isArray(this.privacyData?.rights) ? this.privacyData.rights : []
@@ -230,6 +247,12 @@ export default {
 
 .privacy-info__notice {
 	margin-bottom: 18px;
+}
+
+.privacy-info__notice-list {
+	margin: 0 0 8px;
+	padding-inline-start: 22px;
+	list-style: disc;
 }
 
 .privacy-info__section-grid,

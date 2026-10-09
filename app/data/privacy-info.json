@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "responsible": {
     "name": "Stiebitz Souverain Systems UG (haftungsbeschränkt)",
     "email": "kontakt@souverain-systems.de",
@@ -18,7 +18,7 @@
       "name": "Persönlichkeitsprofil (Telos)",
       "items": "Lernziele, Stärken, Schwächen, Erfahrungslevel, Hilfe-Angebote/-Gesuche",
       "purpose": "Personalisierte KI-Erklärungen, Buddy Matching",
-      "who_sees": "Du + VirtuProf. Bei Sichtbarkeit 'Kurs': Kursteilnehmer sehen Hilfe-Themen + Bio.",
+      "who_sees": "Du + VirtuProf. Bei Sichtbarkeit 'Kurs': Kursteilnehmer sehen Hilfe-Themen + Bio. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst.",
       "retention": "Solange dein Account existiert, Opt-in via Onboarding",
       "legal_basis": "Einwilligung (Art. 6(1)a) — Telos ist opt-in"
     },
@@ -31,16 +31,16 @@
       "legal_basis": "Einwilligung (Art. 6(1)a)"
     },
     {
-      "name": "KI-Interaktion (Drittland-Transfer)",
-      "items": "Chat-Nachrichten an VirtuProf, RAG-Kontext (max. 4000 Token)",
-      "purpose": "KI-gestützte Erklärungen und Lernhilfen",
-      "who_sees": "Google Gemini API verarbeitet die Anfrage. Kein Nutzername wird übermittelt.",
-      "retention": "Wird von Google gemäss deren Richtlinien verarbeitet. Chat-Verlauf lokal im Browser.",
-      "legal_basis": "Einwilligung (Art. 6(1)a) — AI Consent Dialog"
+      "name": "KI-Interaktion (KI-Dienst des Betreibers)",
+      "items": "Deine Nachrichten an VirtuProf und andere Texte, die du in KI-Funktionen eingibst; Lernkontext (Frage, Antwortmöglichkeiten, Erklärung); Ausschnitte aus Kursmaterial; Informationen aus deinem Lernprofil; dein Lernstand; die auf dem Server gespeicherte Zusammenfassung deiner früheren Chats; einmal pro Woche dein schwächstes Thema mit falsch beantworteten Fragen",
+      "purpose": "KI-gestützte Erklärungen, Lernnotizen, Lernpläne und Fragen-Erzeugung",
+      "who_sees": "{provider} verarbeitet die Anfrage. Name, E-Mail und Kontodaten werden nicht automatisch mitgeschickt; was du selbst in eine Nachricht schreibst, geht an den KI-Dienst.",
+      "retention": "Die Zusammenfassung deiner früheren Chats liegt auf diesem Server, solange dein Account existiert; du kannst sie im VirtuProf-Fenster löschen. Wie lange der KI-Dienst Daten speichert, legt der Betreiber mit dem Dienst fest.",
+      "legal_basis": "Einwilligung (Art. 6(1)a) — Dialog „KI-Funktionen einschalten“, widerrufbar in den Einstellungen. Liegt der Empfänger außerhalb der EU, willigst du ausdrücklich auch in diese Übermittlung ein."
     },
     {
       "name": "Audit-Protokolle",
-      "items": "Login-Zeitpunkte, Moderations-Entscheidungen, Löschvorgänge, Consent-Versionen",
+      "items": "Login-Zeitpunkte, Moderations-Entscheidungen, Löschvorgänge, Consent-Versionen, KI-Anfragen (nur Zeitpunkt, Zweck, Empfänger, Modell und Token-Zahl — kein Inhalt)",
       "purpose": "Nachvollziehbarkeit, DSGVO-Rechenschaftspflicht",
       "who_sees": "Nur Admins",
       "retention": "Solange dein Account existiert",
@@ -72,11 +72,29 @@
     }
   ],
   "ai_notice": {
-    "provider": "Google Gemini",
-    "what_is_sent": "Deine Frage an VirtuProf sowie relevante Kursinhalte (RAG-Kontext, max. 4000 Token) werden an die Google Gemini API übermittelt.",
-    "data_location": "Google verarbeitet diese Daten in den USA.",
-    "what_is_not_sent": "Dein Nutzername, deine E-Mail und dein Lernprofil werden NICHT an Google gesendet.",
-    "opt_out": "Du kannst die KI-Nutzung jederzeit in den Einstellungen deaktivieren (Schalter 'Virtueller Assistent')."
+    "provider_fallback": "der eingerichtete KI-Dienst",
+    "off": "Bei dieser Installation sind die KI-Funktionen ausgeschaltet. Es werden keine Daten an einen KI-Dienst gesendet.",
+    "intro": "Die KI-Funktionen (VirtuProf, Lernnotizen, Lernpläne, Fragen-Erzeugung) schicken Daten an {provider}, damit der Dienst die Antworten erzeugen kann. Das passiert nur, wenn du ausdrücklich zustimmst.",
+    "data_list_heading": "Diese Daten werden gesendet:",
+    "data_list": [
+      "deine Nachrichten an VirtuProf und andere Texte, die du in KI-Funktionen eingibst, zum Beispiel deine Antworten auf die Fragen zu deinem Lernprofil oder eine Support-Anfrage",
+      "der aktuelle Lernkontext: die Frage, die Antwortmöglichkeiten und die Erklärung",
+      "Ausschnitte aus dem Kursmaterial",
+      "Informationen aus deinem Lernprofil: deine Ziele, deine Motivation und Stärken und Schwächen, die die App bei dir erkannt hat. Beispiel: „tut sich mit Subnetting schwer, will im März die Prüfung schaffen“",
+      "dein Lernstand, zum Beispiel welche Themen du gut kannst und welche Fragen du falsch beantwortet hast",
+      "eine Zusammenfassung deiner früheren Chats mit VirtuProf, die auf dem Server gespeichert ist",
+      "Texte und Dateien, aus denen du mit KI Fragen erzeugen lässt"
+    ],
+    "identity_note": "Name, E-Mail und Kontodaten werden nicht automatisch mitgeschickt. Was du selbst in eine Nachricht schreibst, geht aber an den KI-Dienst. Schreib dort also nichts hinein, was du nicht teilen möchtest.",
+    "region": {
+      "us": "{provider} verarbeitet die Daten in den USA, also außerhalb der EU. Dort gilt nicht dasselbe Datenschutzrecht wie in der EU: US-Behörden können unter Umständen auf die Daten zugreifen, und deine Rechte kannst du dort vielleicht schwerer durchsetzen. Wenn du zustimmst, willigst du ausdrücklich in diese Übermittlung in die USA ein.",
+      "eu": "{provider} verarbeitet die Daten nach Angabe des Anbieters in der EU. Dort gilt das EU-Datenschutzrecht (DSGVO).",
+      "unknown": "{provider} ist ein Dienst, den der Betreiber dieser Lernplattform selbst eingetragen hat. Die App kann nicht erkennen, wer diesen Dienst betreibt und in welchem Land er die Daten verarbeitet. Frag im Zweifel den Betreiber, bevor du zustimmst.",
+      "local": "{provider} läuft nach Angabe des Betreibers auf einem eigenen Server dieser Lernplattform. Die Daten gehen dann nicht an ein fremdes Unternehmen."
+    },
+    "automation": "Einmal pro Woche schickt die App automatisch dein schwächstes Thema und Fragen, die du dort falsch beantwortet hast, an {provider}. Daraus entsteht eine Wochen-Notiz in deinen Dateien. Das passiert auch, wenn du die App gerade nicht benutzt.",
+    "retention": "Wie lange der KI-Dienst die Daten speichert und ob er sie für andere Zwecke nutzt, legt der Betreiber dieser Lernplattform mit dem Dienst fest. Frag den Betreiber, wenn du das wissen möchtest.",
+    "opt_out": "Die Einwilligung ist freiwillig. Ohne sie kannst du die App normal nutzen, nur die KI-Funktionen sind dann aus. Du kannst die Einwilligung jederzeit in den Einstellungen widerrufen. Der Widerruf gilt für alle Anfragen, die danach beginnen. Was schon gesendet wurde, kann die App nicht zurückholen."
   },
   "rights": [
     {
