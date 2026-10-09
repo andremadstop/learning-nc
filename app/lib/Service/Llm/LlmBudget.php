@@ -13,7 +13,8 @@ use OCP\IAppConfig;
  *   g:d             instance per UTC day, appconfig ai_global_daily_limit (default 5000)
  *   u:<uid>:d       per user and UTC day, 100
  *   u:<uid>:m       per user and minute, 10
- *   u:<uid>:inflight  at most 3 concurrent calls per user; orphaned slots expire after 120 s
+ *   u:<uid>:inflight  at most 3 concurrent calls per user, one row per slot; an orphaned slot
+ *                     expires 120 s after its own acquisition
  * admin_test counts only on g:d. A reservation that fails part-way gives back what it took, so a
  * rejected call costs nothing. release() frees the concurrency slot; the counts stay used.
  *
@@ -62,27 +63,31 @@ class LlmBudget {
         $day = intdiv($now, 86400) * 86400;
         $minute = intdiv($now, 60) * 60;
 
-        /** @var list<array{0:string,1:int,2:int}> $counts bucket, window, limit */
-        $counts = [[self::GLOBAL_BUCKET, $day, $this->globalLimit()]];
+        /** @var list<array{0:string,1:int,2:int,3:int}> $counts bucket, window, window length, limit */
+        $counts = [[self::GLOBAL_BUCKET, $day, 86400, $this->globalLimit()]];
         $slot = null;
         if (!$isAdminTest) {
             /** @var string $uid */
-            $counts[] = [self::userBucket($uid, 'd'), $day, self::USER_PER_DAY];
-            $counts[] = [self::userBucket($uid, 'm'), $minute, self::USER_PER_MINUTE];
+            $counts[] = [self::userBucket($uid, 'd'), $day, 86400, self::USER_PER_DAY];
+            $counts[] = [self::userBucket($uid, 'm'), $minute, 60, self::USER_PER_MINUTE];
             $slot = self::userBucket($uid, 'inflight');
         }
 
         /** @var list<array{0:string,1:int}> $taken */
         $taken = [];
+        $held = null;
         try {
-            foreach ($counts as [$bucket, $window, $limit]) {
-                if (!$this->store->tryIncrementCount($bucket, $window, $limit, $now)) {
+            foreach ($counts as [$bucket, $window, $length, $limit]) {
+                if (!$this->store->tryIncrementCount($bucket, $window, $length, $limit, $now)) {
                     throw new LlmProviderException('rate_limit');
                 }
                 $taken[] = [$bucket, $window];
             }
-            if ($slot !== null && !$this->store->tryAcquireSlot($slot, self::USER_INFLIGHT, $now, self::INFLIGHT_TTL)) {
-                throw new LlmProviderException('rate_limit');
+            if ($slot !== null) {
+                $held = $this->store->tryAcquireSlot($slot, self::USER_INFLIGHT, $now, self::INFLIGHT_TTL);
+                if ($held === null) {
+                    throw new LlmProviderException('rate_limit');
+                }
             }
         } catch (\Throwable $e) {
             foreach (array_reverse($taken) as [$bucket, $window]) {
@@ -91,15 +96,21 @@ class LlmBudget {
             throw $e;
         }
 
-        return new LlmBudgetTicket($isAdminTest ? null : $uid, $purpose, $slot);
+        return new LlmBudgetTicket($isAdminTest ? null : $uid, $purpose, $slot, $held['index'] ?? null, $held['token'] ?? null);
     }
 
-    /** Frees the concurrency slot. Idempotent per ticket. */
+    /**
+     * Frees the concurrency slot. Idempotent per ticket; the ticket counts as released only once
+     * the store has given the slot back, so a release that failed can be retried.
+     */
     public function release(LlmBudgetTicket $ticket): void {
-        if (!$ticket->markReleased() || $ticket->slotBucket === null) {
+        if ($ticket->isReleased()) {
             return;
         }
-        $this->store->releaseSlot($ticket->slotBucket);
+        if ($ticket->slotBucket !== null && $ticket->slotIndex !== null && $ticket->slotToken !== null) {
+            $this->store->releaseSlot($ticket->slotBucket, $ticket->slotIndex, $ticket->slotToken);
+        }
+        $ticket->markReleased();
     }
 
     private function globalLimit(): int {

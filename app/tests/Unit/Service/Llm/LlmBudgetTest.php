@@ -17,15 +17,16 @@ use PHPUnit\Framework\TestCase;
  * which limits, compensation, release); the atomic SQL itself runs against a real database in
  * tests/Integration/LlmBudgetConcurrencyTest.php.
  */
-final class InMemoryBudgetStore extends LlmBudgetStore {
+class InMemoryBudgetStore extends LlmBudgetStore {
     /** @var array<string, int> "bucket|window" => count */
     public array $counts = [];
-    /** @var array<string, array{inflight:int, updated:int}> */
+    /** @var array<string, array<int, array{token:int, updated:int}>> bucket => slot index => holder */
     public array $slots = [];
     /** @var list<string> */
     public array $calls = [];
+    private int $nextToken = 1;
 
-    public function tryIncrementCount(string $bucket, int $windowStart, int $limit, int $now): bool {
+    public function tryIncrementCount(string $bucket, int $windowStart, int $windowLength, int $limit, int $now): bool {
         $this->calls[] = "inc {$bucket}";
         $k = $bucket . '|' . $windowStart;
         $current = $this->counts[$k] ?? 0;
@@ -44,22 +45,28 @@ final class InMemoryBudgetStore extends LlmBudgetStore {
         }
     }
 
-    public function tryAcquireSlot(string $bucket, int $max, int $now, int $ttl): bool {
+    public function tryAcquireSlot(string $bucket, int $max, int $now, int $ttl): ?array {
         $this->calls[] = "acquire {$bucket}";
-        $row = $this->slots[$bucket] ?? ['inflight' => 0, 'updated' => $now];
-        $expired = $row['updated'] < $now - $ttl;
-        if (!$expired && $row['inflight'] >= $max) {
-            return false;
+        for ($i = 1; $i <= $max; $i++) {
+            $row = $this->slots[$bucket][$i] ?? ['token' => 0, 'updated' => $now];
+            if ($row['token'] === 0 || $row['updated'] < $now - $ttl) {
+                $token = $this->nextToken++;
+                $this->slots[$bucket][$i] = ['token' => $token, 'updated' => $now];
+                return ['index' => $i, 'token' => $token];
+            }
         }
-        $this->slots[$bucket] = ['inflight' => $expired ? 1 : $row['inflight'] + 1, 'updated' => $now];
-        return true;
+        return null;
     }
 
-    public function releaseSlot(string $bucket): void {
+    public function releaseSlot(string $bucket, int $index, int $token): void {
         $this->calls[] = "release {$bucket}";
-        if (($this->slots[$bucket]['inflight'] ?? 0) > 0) {
-            $this->slots[$bucket]['inflight']--;
+        if (($this->slots[$bucket][$index]['token'] ?? 0) === $token) {
+            $this->slots[$bucket][$index]['token'] = 0;
         }
+    }
+
+    public function held(string $bucket): int {
+        return count(array_filter($this->slots[$bucket] ?? [], fn (array $r) => $r['token'] !== 0));
     }
 
     public function count(string $bucket, int $windowStart): int {
@@ -184,7 +191,55 @@ class LlmBudgetTest extends TestCase {
         $budget->reserve('alice', LlmPurpose::Chat);
         $budget->release($t);
         $budget->release($t);
-        $this->assertSame(1, $this->store->slots[LlmBudget::userBucket('alice', 'inflight')]['inflight']);
+        $this->assertSame(1, $this->store->held(LlmBudget::userBucket('alice', 'inflight')));
+    }
+
+    /**
+     * Review B2: a release whose database update fails must stay retryable; marking the ticket
+     * first would leak the slot.
+     */
+    public function testAFailedReleaseCanBeRetried(): void {
+        $store = new class($this->createMock(IDBConnection::class)) extends InMemoryBudgetStore {
+            public int $failures = 1;
+
+            public function releaseSlot(string $bucket, int $index, int $token): void {
+                if ($this->failures-- > 0) {
+                    throw new \RuntimeException('transient database error');
+                }
+                parent::releaseSlot($bucket, $index, $token);
+            }
+        };
+        $this->store = $store;
+        $budget = $this->budget();
+        $t = $budget->reserve('alice', LlmPurpose::Chat);
+        try {
+            $budget->release($t);
+            $this->fail('expected the transient error');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('transient database error', $e->getMessage());
+        }
+        $this->assertSame(1, $store->held(LlmBudget::userBucket('alice', 'inflight')));
+
+        $budget->release($t);
+        $this->assertSame(0, $store->held(LlmBudget::userBucket('alice', 'inflight')));
+        $budget->release($t);
+        $this->assertSame(['inc g:d', 'inc u:alice:d', 'inc u:alice:m', 'acquire u:alice:inflight', 'release u:alice:inflight'],
+            $store->calls, 'the second successful release does not reach the store again');
+    }
+
+    public function testTheBudgetPassesTheWindowLengths(): void {
+        $store = new class($this->createMock(IDBConnection::class)) extends InMemoryBudgetStore {
+            /** @var array<string, int> */
+            public array $lengths = [];
+
+            public function tryIncrementCount(string $bucket, int $windowStart, int $windowLength, int $limit, int $now): bool {
+                $this->lengths[$bucket] = $windowLength;
+                return parent::tryIncrementCount($bucket, $windowStart, $windowLength, $limit, $now);
+            }
+        };
+        $this->store = $store;
+        $this->budget()->reserve('alice', LlmPurpose::Chat);
+        $this->assertSame(['g:d' => 86400, 'u:alice:d' => 86400, 'u:alice:m' => 60], $store->lengths);
     }
 
     public function testARejectedReservationGivesBackWhatItTook(): void {

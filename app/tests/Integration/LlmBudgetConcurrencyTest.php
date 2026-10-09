@@ -80,16 +80,29 @@ final class LlmBudgetConcurrencyTest extends TestCase {
         }
     }
 
+    /** Slots of a bucket that are held right now (one row per slot, inflight = owner token). */
+    private function heldSlots(string $bucket): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->func()->count('*', 'n'))->from(LlmBudgetStore::TABLE)
+            ->where($qb->expr()->eq('bucket', $qb->createNamedParameter($bucket)))
+            ->andWhere($qb->expr()->neq('inflight', $qb->createNamedParameter(0, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->gte('updated_at', $qb->createNamedParameter($this->now - LlmBudget::INFLIGHT_TTL, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        $result = $qb->executeQuery();
+        $n = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $n;
+    }
+
     public function testCountLimitHitsExactlyAtNPlusOne(): void {
         for ($i = 0; $i < 3; $i++) {
-            $this->assertTrue($this->store->tryIncrementCount('probe:n', 600, 3, self::T0), "call {$i}");
+            $this->assertTrue($this->store->tryIncrementCount('probe:n', 600, 600, 3, self::T0), "call {$i}");
         }
-        $this->assertFalse($this->store->tryIncrementCount('probe:n', 600, 3, self::T0));
+        $this->assertFalse($this->store->tryIncrementCount('probe:n', 600, 600, 3, self::T0));
         $this->assertSame(3, (int)$this->row('probe:n', 600)['count']);
 
         $this->store->decrementCount('probe:n', 600);
-        $this->assertTrue($this->store->tryIncrementCount('probe:n', 600, 3, self::T0));
-        $this->assertFalse($this->store->tryIncrementCount('probe:n', 600, 0, self::T0), 'limit 0 never reserves');
+        $this->assertTrue($this->store->tryIncrementCount('probe:n', 600, 600, 3, self::T0));
+        $this->assertFalse($this->store->tryIncrementCount('probe:n', 600, 600, 0, self::T0), 'limit 0 never reserves');
     }
 
     public function testUserMinuteLimitThroughTheBudget(): void {
@@ -105,7 +118,8 @@ final class LlmBudgetConcurrencyTest extends TestCase {
             'the rejected eleventh call gave its global count back');
     }
 
-    public function testANewWindowRemovesTheOlderOnes(): void {
+    /** A new window keeps the previous one (late requests still count against it) and drops older ones. */
+    public function testANewWindowKeepsOnlyThePreviousOne(): void {
         $budget = $this->budgetAt();
         $bucket = LlmBudget::userBucket('b2-alice', 'm');
         $budget->release($budget->reserve('b2-alice', LlmPurpose::Chat));
@@ -114,8 +128,27 @@ final class LlmBudgetConcurrencyTest extends TestCase {
         $this->now += 60;
         $budget->release($budget->reserve('b2-alice', LlmPurpose::Chat));
 
-        $this->assertSame(1, $this->rowCount($bucket));
+        $this->assertSame(2, $this->rowCount($bucket));
         $this->assertSame(1, (int)$this->row($bucket, intdiv($this->now, 60) * 60)['count']);
+        $this->assertSame(1, (int)$this->row($bucket, intdiv($this->now, 60) * 60 - 60)['count']);
+    }
+
+    /**
+     * Review B2 (window rollover): a request that computed its window before the rollover, or a
+     * node whose clock runs behind, must not recreate an exhausted window with count 0.
+     */
+    public function testARequestFromAnOlderWindowCannotReopenIt(): void {
+        $day = 86400 * 20_000;
+        for ($i = 0; $i < 3; $i++) {
+            $this->assertTrue($this->store->tryIncrementCount('probe:w', $day - 86400, 86400, 3, $day - 10));
+        }
+        $this->assertTrue($this->store->tryIncrementCount('probe:w', $day, 86400, 3, $day + 5), 'the new day starts');
+
+        $this->assertFalse($this->store->tryIncrementCount('probe:w', $day - 86400, 86400, 3, $day + 6),
+            'the previous, exhausted day stays exhausted');
+        $this->assertFalse($this->store->tryIncrementCount('probe:w', $day - 2 * 86400, 86400, 3, $day + 7),
+            'a window two days old is not created again');
+        $this->assertNull($this->row('probe:w', $day - 2 * 86400));
     }
 
     public function testSlotsAreFreedByReleaseAndAfterTheTtl(): void {
@@ -125,20 +158,60 @@ final class LlmBudgetConcurrencyTest extends TestCase {
         $budget->reserve('b2-alice', LlmPurpose::Chat);
         $budget->reserve('b2-alice', LlmPurpose::Chat);
         $this->assertRateLimited(fn () => $budget->reserve('b2-alice', LlmPurpose::Chat));
-        $this->assertSame(3, (int)$this->row($slot, 0)['inflight']);
+        $this->assertSame(3, $this->heldSlots($slot));
 
         $budget->release($first);
         $budget->release($first);
-        $this->assertSame(2, (int)$this->row($slot, 0)['inflight'], 'a second release is a no-op');
+        $this->assertSame(2, $this->heldSlots($slot), 'a second release is a no-op');
         $budget->reserve('b2-alice', LlmPurpose::Chat);
-        $this->assertSame(3, (int)$this->row($slot, 0)['inflight']);
+        $this->assertSame(3, $this->heldSlots($slot));
 
         // three orphaned slots: still blocked at exactly the TTL, free one second later
         $this->now += LlmBudget::INFLIGHT_TTL;
         $this->assertRateLimited(fn () => $budget->reserve('b2-alice', LlmPurpose::Chat));
         $this->now += 1;
         $budget->reserve('b2-alice', LlmPurpose::Chat);
-        $this->assertSame(1, (int)$this->row($slot, 0)['inflight']);
+        $this->assertSame(1, $this->heldSlots($slot));
+    }
+
+    /**
+     * Review B2 (slot generation): a ticket from before a stale-slot takeover must not free the
+     * slot of the call that took it over.
+     */
+    public function testAReleaseFromBeforeATakeoverDoesNotFreeTheNewHolder(): void {
+        $budget = $this->budgetAt();
+        $a = $budget->reserve('b2-alice', LlmPurpose::Chat);
+        $budget->reserve('b2-alice', LlmPurpose::Chat);
+        $budget->reserve('b2-alice', LlmPurpose::Chat);
+
+        $this->now += LlmBudget::INFLIGHT_TTL + 1;
+        for ($i = 0; $i < 3; $i++) {
+            $budget->reserve('b2-alice', LlmPurpose::Chat); // take over the three stale slots
+        }
+        $budget->release($a);
+
+        $this->assertSame(3, $this->heldSlots(LlmBudget::userBucket('b2-alice', 'inflight')));
+        $this->assertRateLimited(fn () => $budget->reserve('b2-alice', LlmPurpose::Chat));
+    }
+
+    /**
+     * Review B2 (per-slot TTL): orphaned slots expire even while the user keeps calling on the
+     * free slot; another acquisition does not keep them alive.
+     */
+    public function testOrphanedSlotsExpireWhileTheUserKeepsCalling(): void {
+        $budget = $this->budgetAt();
+        $budget->reserve('b2-alice', LlmPurpose::Chat); // crashed, never released
+        $budget->reserve('b2-alice', LlmPurpose::Chat); // crashed, never released
+        for ($i = 0; $i < 2; $i++) {
+            $this->now += 60;
+            $budget->release($budget->reserve('b2-alice', LlmPurpose::Chat));
+        }
+        $this->now += 1; // t0 + 121
+
+        $budget->reserve('b2-alice', LlmPurpose::Chat);
+        $budget->reserve('b2-alice', LlmPurpose::Chat);
+        $budget->reserve('b2-alice', LlmPurpose::Chat);
+        $this->assertSame(3, $this->heldSlots(LlmBudget::userBucket('b2-alice', 'inflight')));
     }
 
     public function testLongUserIdsFitTheBucketColumn(): void {
@@ -161,7 +234,8 @@ final class LlmBudgetConcurrencyTest extends TestCase {
         $outcomes = $this->runWorkers('b2-parallel', LlmPurpose::Chat);
 
         $this->assertSame(['OK' => 3, 'RATE_LIMIT' => 17], $outcomes);
-        $this->assertSame(3, (int)$this->row(LlmBudget::userBucket('b2-parallel', 'inflight'), 0)['inflight']);
+        $this->now = time();
+        $this->assertSame(3, $this->heldSlots(LlmBudget::userBucket('b2-parallel', 'inflight')));
         // every rejected call gave its counts back: only the three successful ones remain
         $day = intdiv(time(), 86400) * 86400;
         $this->assertSame(3, (int)$this->row(LlmBudget::userBucket('b2-parallel', 'd'), $day)['count']);
