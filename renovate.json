@@ -10,6 +10,7 @@
   "prHourlyLimit": 4,
   "prConcurrentLimit": 6,
   "labels": ["renovate", "dependencies"],
+  "pinDigests": true,
   "docker": {
     "enabled": true
   },
