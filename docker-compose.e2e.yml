@@ -15,7 +15,7 @@ services:
       - learning-net
 
   app:
-    image: nextcloud:33
+    image: nextcloud:35
     container_name: learning-app
     restart: unless-stopped
     ports:
