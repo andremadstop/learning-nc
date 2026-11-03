@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use Learning in research, teaching or a report, please cite it like this."
+type: software
+title: "Learning: a self-hosted learning platform for Nextcloud (spaced repetition, exam simulator, signed certificates)"
+abstract: >-
+  Nextcloud app for flashcards with spaced repetition (Leitner system or FSRS-5),
+  timed exam simulation with presets, nine interactive IT simulators, story campaigns
+  from real incidents, instructor analytics, mandatory-training and recertification
+  workflows, and Ed25519-signed completion certificates with a public verification
+  portal. Optional AI tutor with per-user consent. All data stays on the operator's server.
+authors:
+  - given-names: André
+    family-names: Stiebitz
+    affiliation: "Stiebitz Souverain Systems UG (haftungsbeschränkt)"
+    website: "https://souverain-systems.de"
+version: 5.6.0
+date-released: 2026-10-09
+repository-code: "https://github.com/andremadstop/learning-nc"
+url: "https://apps.nextcloud.com/apps/learning"
+license: AGPL-3.0
+keywords:
+  - Nextcloud
+  - spaced repetition
+  - Leitner
+  - FSRS
+  - e-learning
+  - certificates
+  - self-hosted

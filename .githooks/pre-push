@@ -85,19 +85,20 @@ for SHA in $(echo "$PUSH_SHAS" | tr ' ' '\n' | sort -u); do
     gate_i18n "$SNAP"            || FAILED=1
 
     # Repo-Hygiene — interne Arbeitsdocs duerfen nicht im gepushten Commit sein (nur die
-    # Whitelist LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review). Geprueft wird
+    # Whitelist LEGAL + sensitivity-review, auf die ART_STYLE_GUIDE und ACKNOWLEDGEMENTS
+    # verweisen). Geprueft wird
     # der Baum des Commits, nicht der Index.
     echo -n "Repo-Hygiene... "
     if ! TREE_FILES=$(git ls-tree -r --name-only "$SHA"); then
         gate_fail "git ls-tree $SHA fehlgeschlagen"
         FAILED=1
     else
-        BAD_TRACKED=$(echo "$TREE_FILES" | grep -E '^HANDOFF\.md$|^\.planning/' \
-            | grep -vE '^\.planning/(LEGAL|STATE|ROADMAP|REQUIREMENTS|PROJECT)\.md$|^\.planning/sensitivity-review/' || true)
+        BAD_TRACKED=$(echo "$TREE_FILES" | grep -E '^HANDOFF\.md$|^\.planning/|^docs/superpowers/' \
+            | grep -vE '^\.planning/LEGAL\.md$|^\.planning/sensitivity-review/' || true)
         if [ -n "$BAD_TRACKED" ]; then
             gate_fail "interne Arbeitsdocs getrackt (gehoeren nicht ins Public-Repo):"
             echo "$BAD_TRACKED" | head -10
-            echo -e "${GATE_YELLOW}  → 'git rm --cached <datei>' (bleibt lokal). Whitelist: LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review/${GATE_NC}"
+            echo -e "${GATE_YELLOW}  → 'git rm --cached <datei>' (bleibt lokal). Whitelist: .planning/LEGAL.md + .planning/sensitivity-review/${GATE_NC}"
             FAILED=1
         else
             gate_ok

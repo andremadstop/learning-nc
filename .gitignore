@@ -10,13 +10,10 @@ app/js/*.LICENSE.txt
 # Internal planning, tooling & dev files
 /.planning/*
 !/.planning/LEGAL.md
-!/.planning/STATE.md
-!/.planning/ROADMAP.md
-!/.planning/REQUIREMENTS.md
-!/.planning/PROJECT.md
 !/.planning/sensitivity-review/
 !/.planning/sensitivity-review/**
 app/.planning/
+/docs/superpowers/
 .claude/
 .paul/
 .ralphrc
@@ -121,13 +118,8 @@ scripts/*
 !scripts/lifecycle-probe.sh
 !scripts/lifecycle-fixtures/
 !scripts/lifecycle-fixtures/*.sql.php
-!scripts/devcloud-sanitize.py
-!scripts/devcloud-staleness.sh
 !scripts/fill_pool_explanations.php
-!scripts/apply_pool144_high_confidence.py
 !scripts/apply_pool_manual_fixes.py
-!scripts/cleanup_pool138_report.json
-!scripts/cleanup_pool139_report.json
 !scripts/test-api.sh
 !scripts/check-forbidden-names.sh
 !scripts/check-forbidden-names.test.sh
