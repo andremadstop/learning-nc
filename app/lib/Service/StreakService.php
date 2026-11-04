@@ -85,6 +85,9 @@ class StreakService {
         $platform = $this->db->getDatabasePlatform()->getName();
         if ($platform === 'postgresql') {
             $dateFn = "TO_CHAR(TO_TIMESTAMP(completed_at), 'YYYY-MM-DD')";
+        } elseif ($platform === 'sqlite') {
+            // SQLite has no FROM_UNIXTIME: /api/v1/user/state answered 500 on every SQLite install
+            $dateFn = "strftime('%Y-%m-%d', completed_at, 'unixepoch')";
         } else {
             $dateFn = "FROM_UNIXTIME(completed_at, '%Y-%m-%d')";
         }
