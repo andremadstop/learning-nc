@@ -735,7 +735,7 @@ class CourseController extends Controller {
 
                 // Store as JSON text; empty array → null (no required pools)
                 $course->setCertRequiredPoolIds(
-                    empty($certRequiredPoolIds) ? null : json_encode(array_values($certRequiredPoolIds))
+                    empty($certRequiredPoolIds) ? null : json_encode($certRequiredPoolIds)
                 );
             }
             if ($certValidityDays !== null) {

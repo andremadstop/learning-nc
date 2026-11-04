@@ -237,7 +237,7 @@ class LlmGateway {
             public function __construct(private string $candidateKey) {
             }
 
-            public function get(LlmConnection $c): ?string {
+            public function get(LlmConnection $c): string {
                 return $this->candidateKey;
             }
 

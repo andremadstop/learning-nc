@@ -404,7 +404,7 @@ class StoryController extends Controller {
      * POST body:
      *   text  string  Free-text action description (max 500 chars)
      *
-     * @return DataResponse{valid: bool, narrative: string, next_scene: string|null, fallback: bool}
+     * @return DataResponse Success body: {valid: bool, narrative: string, next_scene: string|null, fallback: bool}
      *
      * @NoAdminRequired
      */

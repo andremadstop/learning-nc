@@ -1181,7 +1181,7 @@ class TrainingService {
         }
 
         // Multi-select path
-        if ($answerIds !== null && is_array($answerIds) && count($answerIds) > 0) {
+        if ($answerIds !== null && count($answerIds) > 0) {
             // Validate all answer IDs belong to this question
             foreach ($answerIds as $aid) {
                 $qb = $this->db->getQueryBuilder();

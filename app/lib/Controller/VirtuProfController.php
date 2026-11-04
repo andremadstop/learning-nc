@@ -632,7 +632,7 @@ class VirtuProfController extends Controller {
         }
 
         // Sanitize questionContext if provided
-        if ($questionContext !== null && is_array($questionContext)) {
+        if ($questionContext !== null) {
             $questionContext['questionText'] = mb_substr(
                 strip_tags((string)($questionContext['questionText'] ?? '')), 0, 500
             );
@@ -652,7 +652,7 @@ class VirtuProfController extends Controller {
             if (isset($questionContext['questionId'])) {
                 $questionContext['questionId'] = (int)$questionContext['questionId'];
             }
-            if (isset($questionContext['correctAnswerIndex']) && $questionContext['correctAnswerIndex'] !== null) {
+            if (isset($questionContext['correctAnswerIndex'])) {
                 $questionContext['correctAnswerIndex'] = (int)$questionContext['correctAnswerIndex'];
             }
             // PBQ/Simulator fields
