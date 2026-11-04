@@ -188,19 +188,19 @@
             <tbody>
               <tr>
                 <td>{{ t('learning', 'Learning profile (role, goals, strengths)') }}</td>
-                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'This server only') }}</td>
                 <td>{{ t('learning', 'You + VirtuProf') }}</td>
                 <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
               <tr>
                 <td>{{ t('learning', 'Help offer / help wanted') }}</td>
-                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'This server only') }}</td>
                 <td>{{ t('learning', 'Depends on visibility setting') }}</td>
                 <td>—</td>
               </tr>
               <tr>
                 <td>{{ t('learning', 'Learning progress (XP, streaks, boxes)') }}</td>
-                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'This server only') }}</td>
                 <td>{{ t('learning', 'You + instructor (aggregated)') }}</td>
                 <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
@@ -212,7 +212,7 @@
               </tr>
               <tr>
                 <td>{{ t('learning', 'Answers in training / exam') }}</td>
-                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'This server only') }}</td>
                 <td>{{ t('learning', 'You + instructor (aggregated)') }}</td>
                 <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
@@ -608,7 +608,7 @@ export default {
       const hints = {
         private: t('learning', 'Only VirtuProf uses your profile. Nobody else can see it.'),
         course: t('learning', 'Course participants can see your help topics and bio.'),
-        public: t('learning', 'All DevCloud users can see your help topics and bio.'),
+        public: t('learning', 'All users of this server can see your help topics and bio.'),
       }
       return hints[this.telosForm.visibility] || hints.private
     },

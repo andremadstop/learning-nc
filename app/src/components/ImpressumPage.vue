@@ -1,10 +1,10 @@
 <template>
 	<div class="legal-page legal-page--imprint">
 		<header class="legal-page__hero">
-			<p class="legal-page__eyebrow">DevCloud Lernplattform</p>
+			<p class="legal-page__eyebrow">Lernplattform</p>
 			<h1>Impressum</h1>
 			<p class="legal-page__lead">
-				Betreiberangaben für die Learning-App innerhalb der DevCloud-Instanz.
+				Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz.
 			</p>
 			<div class="legal-page__actions">
 				<a v-if="appUrl" class="legal-page__action" :href="appUrl">Zur Learning-App</a>

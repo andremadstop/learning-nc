@@ -710,7 +710,7 @@ PROMPT;
             }
         }
 
-        $lines = ["DEVCLOUD LEARNING MATERIALS — You have access to curated learning content on the DevCloud. "
+        $lines = ["LEARNING MATERIALS — You have access to curated learning content on this server. "
             . "When a user asks about a topic covered by these materials, suggest the appropriate guide. "
             . "Use the {$level}-level material based on the user's experience. "
             . "Format links as: 📚 Dozenten-Material > {Kurs} > {Pfad} "

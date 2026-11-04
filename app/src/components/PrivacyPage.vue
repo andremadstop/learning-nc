@@ -1,7 +1,7 @@
 <template>
 	<div class="legal-page legal-page--privacy">
 		<header class="legal-page__hero">
-			<p class="legal-page__eyebrow">DevCloud Lernplattform</p>
+			<p class="legal-page__eyebrow">Lernplattform</p>
 			<h1>Datenschutzerklärung</h1>
 			<p class="legal-page__lead">
 				Diese Seite bündelt die Datenschutzinformationen der Learning-App direkt in Nextcloud.

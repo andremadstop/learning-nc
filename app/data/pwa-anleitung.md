@@ -1,12 +1,12 @@
-# DevCloud auf deinem Homescreen installieren
+# Die Lernplattform auf deinem Homescreen installieren
 
-> Die DevCloud ist keine "echte" App aus dem App Store, sondern eine **Progressive Web App (PWA)** — eine Webseite, die sich wie eine App anfuehlt. Kein Download nötig, kein Speicherplatz verschwendet.
+> Die Lernplattform ist keine "echte" App aus dem App Store, sondern eine **Progressive Web App (PWA)** — eine Webseite, die sich wie eine App anfuehlt. Kein Download nötig, kein Speicherplatz verschwendet.
 
 ---
 
 ## Android (Chrome)
 
-1. Oeffne **Chrome** und navigiere zu: `https://devcloud.2clic.eu/apps/learning`
+1. Oeffne **Chrome** und navigiere zu: `https://<adresse-deines-servers>/apps/learning`
 2. Tippe oben rechts auf das **Drei-Punkte-Menü** (drei Punkte übereinander)
 3. Waehle **"Zum Startbildschirm hinzufuegen"** (manchmal auch "App installieren")
 4. Passe den Namen an — z.B. **"Learning"** — und tippe auf **Hinzufuegen**
@@ -22,7 +22,7 @@
 
 ## Android (Firefox)
 
-1. Oeffne **Firefox** und navigiere zur DevCloud-URL
+1. Oeffne **Firefox** und navigiere zur Adresse deines Servers
 2. Tippe auf das **Drei-Punkte-Menü** (oben oder unten rechts, je nach Einstellung)
 3. Tippe auf das **Haus-Icon mit dem Plus-Zeichen** ("Zum Startbildschirm hinzufuegen")
 4. Fertig!
@@ -34,7 +34,7 @@
 **Wichtig: Das funktioniert NUR in Safari!** Chrome auf iOS kann keine Homescreen-Icons erstellen — Apple-Einschraenkung.
 
 1. Oeffne **Safari** (der Standard-Browser mit dem blauen Kompass-Icon)
-2. Navigiere zu: `https://devcloud.2clic.eu/apps/learning`
+2. Navigiere zu: `https://<adresse-deines-servers>/apps/learning`
 3. Tippe unten in der Mitte auf den **Teilen-Button** (das Quadrat mit dem Pfeil nach oben)
 4. Scrolle in der Liste nach unten und tippe auf **"Zum Home-Bildschirm"**
 5. Passe den Namen an — z.B. **"Learning"** — und tippe oben rechts auf **Hinzufuegen**
@@ -59,7 +59,7 @@
 - **Eingeschraenkter Modus?** Falls dein iPhone von einer Organisation verwaltet wird (MDM), kann die Option gesperrt sein → Dozenten fragen.
 
 ### Die App sieht komisch aus / laedt nicht
-- **Cache leeren:** In den Handy-Einstellungen unter Safari/Chrome → Websitedaten loeschen fuer die DevCloud-URL
+- **Cache leeren:** In den Handy-Einstellungen unter Safari/Chrome → Websitedaten loeschen fuer die Adresse deines Servers
 - **Nochmal hinzufuegen:** Altes Icon loeschen und die Schritte wiederholen
 
 ### Kann ich Benachrichtigungen bekommen?

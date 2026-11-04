@@ -156,7 +156,7 @@ const JOURNEY_STEPS = [
     id: 'background',
     title: 'Was ist dein Hintergrund?',
     explanation: 'Damit passe ich Erklärungen an dein Level an. Ein Quereinsteiger braucht andere Worte als ein Admin.',
-    privacyHint: 'Your data is stored only on this DevCloud. Instructors see aggregated class statistics, not your individual profile.',
+    privacyHint: 'Your data is stored only on this server. Instructors see aggregated class statistics, not your individual profile.',
     fields: ['telos.role', 'telos.experience_level'],
   },
   {
@@ -1401,7 +1401,7 @@ export default {
     },
     buildWelcomeStepContent() {
       return {
-        title: this.vt('Welcome to DevCloud!'),
+        title: this.vt('Welcome!'),
         text: this.vt('I am VirtuProf — your personal learning assistant. I can explain topics, give tips when you get stuck, and help you find the right exercises.\n\nThe more I know about you, the better I can help. Want to set up your learning profile? It takes about 2 minutes.'),
         kind: 'welcome',
         hideMoreOptions: true,

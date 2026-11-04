@@ -18,7 +18,7 @@ class LegalNoticeHelpSettings implements ISettings {
     public function getForm(): TemplateResponse {
         return new TemplateResponse('learning', 'settings/legal-link', [
             'title' => $this->l->t('Impressum'),
-            'description' => $this->l->t('Die Betreiberangaben der DevCloud Lernplattform sind über eine eigene Seite erreichbar.'),
+            'description' => $this->l->t('Die Betreiberangaben der Lernplattform sind über eine eigene Seite erreichbar.'),
             'url' => $this->urlGenerator->linkToRoute('learning.page.impressum'),
             'linkLabel' => $this->l->t('Impressum öffnen'),
         ], TemplateResponse::RENDER_AS_BLANK);

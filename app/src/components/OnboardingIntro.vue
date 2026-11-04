@@ -21,7 +21,7 @@
 							<path d="M26 28q4 3 8 0" stroke="var(--lnc-cyan, #06b6d4)" stroke-width="1.5" fill="none" stroke-linecap="round" />
 						</svg>
 					</div>
-					<h1 class="onb-splash-title">{{ vt('Welcome to DevCloud!') }}</h1>
+					<h1 class="onb-splash-title">{{ vt('Welcome!') }}</h1>
 					<p class="onb-splash-subtitle">{{ vt('Your personal learning space') }}</p>
 				</div>
 

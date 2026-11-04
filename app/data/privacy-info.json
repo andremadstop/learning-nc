@@ -3,7 +3,7 @@
   "responsible": {
     "name": "Stiebitz Souverain Systems UG (haftungsbeschränkt)",
     "email": "kontakt@souverain-systems.de",
-    "note": "Betreiber der DevCloud Lernplattform · Geschwister-Scholl-Straße 32, 14471 Potsdam · Amtsgericht Potsdam, HRB 42359 P · Geschäftsführer: André Stiebitz"
+    "note": "Betreiber der Lernplattform · Geschwister-Scholl-Straße 32, 14471 Potsdam · Amtsgericht Potsdam, HRB 42359 P · Geschäftsführer: André Stiebitz"
   },
   "categories": [
     {
@@ -64,7 +64,7 @@
     },
     {
       "name": "Externe Dienste",
-      "items": "DevCloud-Nextcloud-Account, Talk-Chat-Nachrichten, Deck-Aufgaben, geteilte Dateien",
+      "items": "Nextcloud-Account, Talk-Chat-Nachrichten, Deck-Aufgaben, geteilte Dateien",
       "purpose": "Kollaborative Lernumgebung, Kommunikation, Aufgabenverwaltung",
       "who_sees": "Kursteilnehmer + Dozent (je nach Freigabe). Admin sieht alles.",
       "retention": "Solange dein Account existiert",
