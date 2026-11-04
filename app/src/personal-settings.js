@@ -1,7 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { translate as t, translatePlural as n } from '@nextcloud/l10n';
-import '@nextcloud/dialogs/style.css';
 import PersonalSettings from './components/PersonalSettings.vue';
 
 // Pinia is required for the skin picker (Phase 153 Plan 04 wired useSkinStore

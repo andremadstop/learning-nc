@@ -7,7 +7,6 @@ import { setAnimationsEnabledGetter } from './utils/character-animations.js';
 import { useA11yStore } from './stores/a11yStore.js';
 
 // Nextcloud Vue styles
-import '@nextcloud/dialogs/style.css';
 // Ghostline Quest visual takeover effects
 import './css/ghostline.css';
 // Skill-Map force-directed graph styles
