@@ -1,6 +1,6 @@
 # Learning — User & Administrator Manual
 
-For **Learning 5.3.1** on Nextcloud 33–35.
+For **Learning 5.6.0** on Nextcloud 33–35.
 
 This manual walks through the complete workflow, in the order you will actually use it:
 
@@ -641,7 +641,7 @@ placeholder produces a broken string at runtime. Gate 3
 catches a value accidentally written in the wrong script.
 
 Corrections are welcome as a pull request or an issue at
-<https://codeberg.org/andremadstop/learning-nc/issues>.
+<https://github.com/andremadstop/learning-nc/issues>.
 
 ---
 
@@ -683,7 +683,7 @@ manual file changes.
 
 ## Getting help
 
-- Issues and feature requests: <https://codeberg.org/andremadstop/learning-nc/issues>
+- Issues and feature requests: <https://github.com/andremadstop/learning-nc/issues>
 - Question import workflow: [`docs/import-pool-workflow.md`](import-pool-workflow.md)
 
 The project is actively looking for pilot partners. Reports from a real deployment —

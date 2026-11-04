@@ -1,16 +1,30 @@
-# Learning — Nextcloud App
+# Learning for Nextcloud
 
-A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition, interactive IT simulators, AI tutor, and instructor analytics. Your data never leaves your server.
+```
+    +-------+   +-------+   +-------+   +-------+   +-------+
+    |   1   |   |   2   |   |   3   |   |   4   |   |   5   |
+    | ||||| |   |  |||  |   |   ||  |   |   |   |   |       |
+    +-------+   +-------+   +-------+   +-------+   +-------+
+     new and     getting     settling   nearly     mastered
+     missed      there                  there
+
+    A card you know moves one box up. A card you miss goes back to
+    box 1. The app does the counting. The server is yours.
+```
+
+A learning platform that runs inside your own Nextcloud: flashcards with spaced repetition (Leitner boxes or FSRS-5), timed exam simulation, nine interactive IT simulators, story campaigns built from real incidents, and completion certificates signed with Ed25519 that anyone can verify from a URL. Questions, progress and student data stay on your server. AI help is optional and stays off until an admin connects a recipient and each learner has consented.
+
+Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souverain Systems UG, a small IT company in Potsdam for teams that want to own their data, and teaches IT security. The app began as his own exam preparation for IT certifications and grew with the course groups that used it on his Nextcloud; the simulators, exam presets and certificates are what those courses needed and what hosted platforms only offer in exchange for the data. Written with AI, used in real courses, checked by 1,830 automated tests and pre-push gates (PHPStan, ESLint, Vitest, PHPUnit). What it stands on: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md).
 
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
-![Tests](https://img.shields.io/badge/Tests-1220%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-5.4.0-orange)
+![Tests](https://img.shields.io/badge/Tests-1830%20passed-brightgreen)
+![Version](https://img.shields.io/badge/Version-5.6.1-blue)
 
-Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate** — turning any course into a real credential.
+Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject, from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate**, turning any course into a real credential.
 
-> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. [Open an issue](https://codeberg.org/andremadstop/learning-nc/issues) or email me.
+> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. [Open an issue](https://github.com/andremadstop/learning-nc/issues) or email me.
 
 ![Student dashboard](screenshots/08-en-dashboard.png)
 
@@ -91,7 +105,7 @@ The admin connects either Google Gemini (API key) or a local Ollama server. With
 
 ```bash
 # The Nextcloud app lives in the repo's app/ subdirectory — clone outside, then copy app/ in.
-git clone https://codeberg.org/andremadstop/learning-nc.git /tmp/learning-nc
+git clone https://github.com/andremadstop/learning-nc.git /tmp/learning-nc
 cd /tmp/learning-nc/app && npm install && npm run build
 cp -r /tmp/learning-nc/app /path/to/nextcloud/custom_apps/learning
 php /path/to/nextcloud/occ app:enable learning
@@ -162,7 +176,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 - **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9
 - **Backend:** PHP 8.1+, Nextcloud App Framework, QBMapper
-- **Tests:** 1220 unit tests (Vitest), PHPStan Level 5, ESLint — enforced via pre-push quality gates
+- **Tests:** 1,830 automated tests (1,329 Vitest, 501 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
 - **Real-time:** Server-Sent Events for multiplayer modes
 - **Caching:** Redis support for leaderboard and session data
 
@@ -176,7 +190,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 Install it from the [Nextcloud App Store](https://apps.nextcloud.com/apps/learning) on your own instance — Apps → search "Learning". That's also the most informative way to evaluate it: courses, groups, roles and mandatory-training assignments only really show their shape with your own users.
 
-Evaluating it for an organisation? [Open a Codeberg issue](https://codeberg.org/andremadstop/learning-nc/issues) with a bit of context — organisation, rough number of learners, timeline — and I'm happy to give you a guided screenshare walkthrough of the instructor and certification views.
+Evaluating it for an organisation? [Open a GitHub issue](https://github.com/andremadstop/learning-nc/issues) with a bit of context — organisation, rough number of learners, timeline — and I'm happy to give you a guided screenshare walkthrough of the instructor and certification views.
 
 ## Contributing
 

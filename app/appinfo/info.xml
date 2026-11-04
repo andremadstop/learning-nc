@@ -60,7 +60,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
 ## Technical
 
 - Vue 3, Vite, Pinia — modern frontend stack
-- 1220 unit tests, PHPStan Level 5, pre-push quality gates
+- 1830 automated tests, PHPStan Level 5, pre-push quality gates
 - Native Nextcloud integration: Dashboard widgets, Notifications, Talk, Files
 - AGPL-3.0 — fully open source
 
@@ -73,22 +73,22 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
 **Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Open an issue with a bit of context and we're happy to walk you through it.
     ]]></description>
 
-    <version>5.6.0</version>
+    <version>5.6.1</version>
     <licence>agpl</licence>
-    <author mail="dev@quizdojo.com" homepage="https://codeberg.org/andremadstop">Andre</author>
+    <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
 
     <documentation>
-        <user>https://codeberg.org/andremadstop/learning-nc/src/branch/main/docs/MANUAL.md</user>
-        <admin>https://codeberg.org/andremadstop/learning-nc/src/branch/main/docs/MANUAL.md</admin>
+        <user>https://github.com/andremadstop/learning-nc/blob/main/docs/MANUAL.md</user>
+        <admin>https://github.com/andremadstop/learning-nc/blob/main/docs/MANUAL.md</admin>
     </documentation>
 
     <category>organization</category>
     <category>tools</category>
 
-    <website>https://codeberg.org/andremadstop/learning-nc</website>
-    <bugs>https://codeberg.org/andremadstop/learning-nc/issues</bugs>
-    <repository type="git">https://codeberg.org/andremadstop/learning-nc.git</repository>
+    <website>https://github.com/andremadstop/learning-nc</website>
+    <bugs>https://github.com/andremadstop/learning-nc/issues</bugs>
+    <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
 
     <privacy>
         <duplication>false</duplication>
@@ -105,10 +105,10 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/08-en-dashboard.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/09-en-certificate.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/10-en-simulators.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/11-en-pools.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-en-dashboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/09-en-certificate.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/10-en-simulators.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/11-en-pools.png</screenshot>
 
     <dependencies>
         <php min-version="8.1"/>

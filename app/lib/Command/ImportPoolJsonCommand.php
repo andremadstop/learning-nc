@@ -140,7 +140,6 @@ class ImportPoolJsonCommand extends Command {
                 $text = (string)$q['text'];
                 $explanation = isset($q['explanation']) ? (string)$q['explanation'] : null;
                 $difficulty = isset($q['difficulty']) && is_string($q['difficulty']) ? $q['difficulty'] : $defaultDifficulty;
-                $questionType = isset($q['question_type']) && is_string($q['question_type']) ? $q['question_type'] : $defaultType;
                 $originalNumber = $q['original_number'] ?? ($qIndex + 1);
                 $examKey = $q['exam_key'] ?? ($examKeyPrefix ? sprintf('%s-q%s', $examKeyPrefix, $originalNumber) : null);
 
@@ -154,6 +153,8 @@ class ImportPoolJsonCommand extends Command {
                         'is_correct' => !empty($a['is_correct']),
                     ];
                 }
+
+                $questionType = self::resolveQuestionType($q, $defaultType, $answers);
 
                 // 'open' (fill-in / free-text) questions carry exactly ONE model answer;
                 // MCQ (single/multi) need at least two options. QuestionService::create enforces
@@ -213,5 +214,33 @@ class ImportPoolJsonCommand extends Command {
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Question type of one imported question.
+     *
+     * Reads `question_type` (this command's own format) and also `type` / `typ`, the keys
+     * that `occ learning:export-pool` and the pool import in the interface use — otherwise
+     * an exported pool loses its multi and open questions on the way back in. Without any
+     * of these keys, several correct answers mean `multi`, as the import documentation says.
+     *
+     * @param array<mixed> $question
+     * @param array<array{text: string, is_correct: bool}> $answers
+     */
+    public static function resolveQuestionType(array $question, string $defaultType, array $answers): string {
+        foreach (['question_type', 'type', 'typ'] as $key) {
+            if (isset($question[$key]) && is_string($question[$key]) && trim($question[$key]) !== '') {
+                $type = trim($question[$key]);
+                // true_false was removed in v3.7.0; the interface import maps it the same way.
+                return $type === 'true_false' ? 'single' : $type;
+            }
+        }
+
+        $correct = count(array_filter($answers, static fn (array $a): bool => $a['is_correct']));
+        if ($correct > 1) {
+            return 'multi';
+        }
+
+        return $defaultType;
     }
 }

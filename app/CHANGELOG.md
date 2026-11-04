@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.6.1] - 2026-11-04 — Pool export round trip, search wildcards
+
+### Fixed
+- **An exported pool lost its multiple-choice and open questions when imported again.**
+  `occ learning:export-pool` writes the question type as `type`, but
+  `occ learning:import-pool-json` only read `question_type`. Every question without that key was
+  treated as single choice, so multiple-choice questions (more than one correct answer) and
+  open questions (one model answer) were rejected and skipped with a warning. The command now
+  reads `question_type`, `type` and `typ`, like the pool import in the interface. Without any
+  type, several correct answers make the question multiple choice, as the import documentation
+  always said.
+- **`%` and `_` in a search word for course material matched too much.** The keyword search
+  behind the AI assistant's course material passed them to the database as wildcards, so a
+  search for `50%` also found `500`. They are now matched as plain characters, like in every
+  other search of the app.
+
 ## [5.6.0] - 2026-10-09 — Scenario / info text before a question
 
 ### Added
