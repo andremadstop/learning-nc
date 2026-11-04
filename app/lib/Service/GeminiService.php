@@ -969,7 +969,7 @@ PROMPT;
         }
 
         // Only include correct answer if provided (NOT in exam mode)
-        if (isset($questionContext['correctAnswerIndex']) && $questionContext['correctAnswerIndex'] !== null) {
+        if (isset($questionContext['correctAnswerIndex'])) {
             $idx = (int)$questionContext['correctAnswerIndex'];
             $labels = range('A', 'Z');
             $correctLabel = $labels[$idx] ?? (string)($idx + 1);

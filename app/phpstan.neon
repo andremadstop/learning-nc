@@ -16,7 +16,8 @@ parameters:
         # NC QBMapper provides magic getters/setters via __call()
         - '#Call to an undefined method OCA\\Learning\\Db\\.*::(get|set)#'
         # NC QBMapper::findEntities() returns Entity[] not specific subtype
-        - '#should return array<OCA\\Learning\\Db\\.*> but returns array<int, OCP\\AppFramework\\Db\\Entity>#'
+        # (PHPStan 2 reports the inferred type as list<Entity>, PHPStan 1 as array<int, Entity>)
+        - '#should return array<OCA\\Learning\\Db\\.*> but returns (array<int, |list<)OCP\\AppFramework\\Db\\Entity>#'
         # IQueryBuilder fluent interface not fully typed in stubs
         - '#Call to an undefined method OCP\\DB\\QueryBuilder\\IQueryBuilder#'
         # Rate limit + public-page attributes require NC 29+ stubs (absent from the ocp dev package;
@@ -27,5 +28,14 @@ parameters:
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\PublicPage#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\BruteForceProtection#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\AnonRateLimit#'
+        # method_exists() guards for OCP API differences between Nextcloud 33 and 35: the dev stubs
+        # (one version) always have the method, other supported versions may not. Keep the runtime check.
+        -
+            identifier: function.alreadyNarrowedType
+            message: '#Call to function method_exists\(\) with .* will always evaluate to true#'
+            paths:
+                - lib/Search/PoolSearchProvider.php
+                - lib/Search/QuestionSearchProvider.php
+                - lib/Service/ClassbookService.php
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false

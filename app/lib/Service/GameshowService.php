@@ -1078,6 +1078,7 @@ class GameshowService {
             return;
         }
 
+        /** @var list<int> $slots */
         $slots = array_map(fn(GameshowPlayer $p) => $p->getSlot(), $activePlayers);
         sort($slots);
 

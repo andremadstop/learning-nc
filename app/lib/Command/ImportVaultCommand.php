@@ -105,7 +105,7 @@ class ImportVaultCommand extends Command {
 
             $fullPath = $file->getPathname();
             $relativePath = substr($fullPath, strlen($vaultRoot) + 1);
-            if (!is_string($relativePath) || $relativePath === '') {
+            if ($relativePath === '') {
                 continue;
             }
 

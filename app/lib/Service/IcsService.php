@@ -215,7 +215,7 @@ class IcsService {
             return $left['box'] <=> $right['box'];
         });
 
-        return array_values($groups);
+        return $groups;
     }
 
     private function calculateDueTimestamp(int $box, ?int $lastReviewed, int $nextReview): int {

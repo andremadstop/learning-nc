@@ -120,7 +120,7 @@ class MergeCourseCommand extends Command {
         if (isset($report['question_mappings_count'])) {
             $output->writeln($prefix . 'Question mappings: ' . $report['question_mappings_count']);
         }
-        if (isset($report['snapshot_id']) && $report['snapshot_id'] !== null) {
+        if (isset($report['snapshot_id'])) {
             $output->writeln($prefix . 'Snapshot ID:     ' . $report['snapshot_id']);
         }
     }

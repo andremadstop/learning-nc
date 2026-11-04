@@ -630,7 +630,8 @@ class DuelService {
             // Creator correct + steal bonus, opponent gets nothing
             $creatorPoints = 4;
             $opponentPoints = 0;
-        } elseif (!$creatorCorrect && $opponentCorrect) {
+        } elseif ($opponentCorrect) {
+            // (creator is necessarily not correct here: both-correct and creator-only are handled above)
             // Opponent correct + steal bonus, creator gets nothing
             $creatorPoints = 0;
             $opponentPoints = 4;

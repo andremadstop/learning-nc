@@ -44,6 +44,7 @@ class AnswerMapper extends QBMapper {
         $answers = $this->findEntities($qb);
 
         $grouped = [];
+        /** @var Answer $answer */
         foreach ($answers as $answer) {
             $grouped[$answer->getQuestionId()][] = $answer;
         }
