@@ -82,7 +82,7 @@ gate_security() {
 gate_eslint() {
 	local dir="$1" out
 	echo -n "ESLint... "
-	if out=$(cd "$dir/app" && npx eslint --ext .js,.vue src/ --quiet 2>&1); then gate_ok "0 errors"; return 0; fi
+	if out=$(cd "$dir/app" && npx eslint src/ --quiet 2>&1); then gate_ok "0 errors"; return 0; fi
 	gate_fail; echo "$out" | head -15; return 1
 }
 

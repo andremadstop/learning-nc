@@ -33,7 +33,7 @@ export default {
 	},
 	computed: {
 		dockLabel() {
-			let id = 'nova'
+			let id
 			try {
 				id = useSkinStore().skinId || 'nova'
 			} catch (e) {
