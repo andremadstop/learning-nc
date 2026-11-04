@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.7.1] - 2026-11-06 — Neutral texts, SQLite, tooling
+
+### Fixed
+- **"DevCloud" no longer appears in the interface.** The name of the author's own server was hard-coded
+  in the onboarding ("Welcome to DevCloud!"), the imprint and privacy pages, the personal settings and
+  the VirtuProf privacy hint, in all six languages. The texts are neutral now ("this server", "the
+  learning platform"); the PWA guide no longer names a fixed server address.
+- **The streak and user state failed on SQLite** (`/api/v1/user/state` answered 500): the query used
+  MySQL's `FROM_UNIXTIME`. SQLite now uses its own date function. PostgreSQL and MariaDB were not
+  affected.
+- **Audit checkpoint anchoring had a default host.** Without a configured Forgejo URL it fell back to
+  the author's server. It now skips the anchor instead. Anchoring stays off by default.
+
+### Changed
+- Notifications (toasts) come from @nextcloud/dialogs 8: accessible, and shown at the bottom start of
+  the page.
+- Development tooling: PHPStan 2, PHPUnit 13 (tests only; the app still runs on PHP 8.1+).
+
 ## [5.7.0] - 2026-11-04 — AI consent that names its recipient
 
 The AI features (VirtuProf, weekly study note, learning plan, course narrative, story narrator,
