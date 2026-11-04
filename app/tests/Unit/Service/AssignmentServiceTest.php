@@ -12,7 +12,9 @@ use OCP\IGroup;
 use OCP\IGroupManager;
 use OCP\IUser;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AssignmentServiceTest extends TestCase {
     public function testGroupExpansion(): void {
         $user = $this->createMock(IUser::class);
@@ -22,7 +24,7 @@ class AssignmentServiceTest extends TestCase {
         $group->method('getUsers')->willReturn([$user]);
 
         $gm = $this->createMock(IGroupManager::class);
-        $gm->method('get')->with('testgroup')->willReturn($group); // NC 33: get() not getGroup()
+        $gm->expects($this->atLeastOnce())->method('get')->with('testgroup')->willReturn($group); // NC 33: get() not getGroup()
 
         $audit = $this->createMock(AuditService::class);
         $db = $this->createMock(\OCP\IDBConnection::class);

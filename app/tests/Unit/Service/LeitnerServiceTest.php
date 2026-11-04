@@ -17,7 +17,9 @@ use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class LeitnerServiceTest extends TestCase {
     public function testGetStatsCalculatesMasteryAndAccuracy(): void {
         $db = new FakeDbConnection([
@@ -33,7 +35,7 @@ class LeitnerServiceTest extends TestCase {
         ]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -69,7 +71,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -101,7 +103,7 @@ class LeitnerServiceTest extends TestCase {
         $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([]));
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $items = $this->createService($db, $poolMapper)->getDueQuestions(42, 'alice', 999);
 
@@ -156,7 +158,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -184,7 +186,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -214,7 +216,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -242,7 +244,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -282,7 +284,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder, $examBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 

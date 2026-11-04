@@ -8,18 +8,21 @@ use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Settings\AdminSettings;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Review finding (HIGH): after the upgrade the Gemini key lives in the encrypted slot, so the
  * plaintext `gemini_api_key` no longer says whether a key is set.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AdminSettingsTest extends TestCase {
     /** @return array<string, array{?string, bool}> */
     public static function keys(): array {
         return ['a key is in force' => ['AIza-a', true], 'no key' => [null, false]];
     }
 
-    /** @dataProvider keys */
+    #[DataProvider('keys')]
     public function testTheFormReportsTheKeyTheGeminiConnectionUses(?string $key, bool $expected): void {
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(

@@ -16,6 +16,7 @@ use OCP\ICacheFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Task B4: the KI explanation and question generation send through LlmGateway. The 5.5 Nextcloud
@@ -23,6 +24,7 @@ use Psr\Log\LoggerInterface;
  * names it). A consent missing at begin() refuses before a task exists; a consent lost before
  * send() marks the task failed with consent_required and reaches the caller.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AIServiceGatewayTest extends TestCase {
     private const OUTPUT_MARKER = 'OUTPUT-MARKER-4b2e';
 

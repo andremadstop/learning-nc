@@ -13,6 +13,7 @@ use OCA\Learning\Service\TelosService;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Review B1: the consent endpoints still wrote a bare version through TelosService::saveAiConsent()
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
  * and nothing could revoke. They now go through ConsentService: the client sends back the
  * recipient fingerprint it was shown; the server never fills it in itself.
  */
+#[AllowMockObjectsWithoutExpectations]
 class TelosControllerConsentTest extends TestCase {
     private ConsentService&MockObject $consent;
     private ConnectionStore&MockObject $store;
@@ -40,7 +42,7 @@ class TelosControllerConsentTest extends TestCase {
     }
 
     public function testStatusNamesTheReasonAndTheRecipientToConsentTo(): void {
-        $this->consent->method('state')->with('alice', $this->gemini)
+        $this->consent->expects($this->atLeastOnce())->method('state')->with('alice', $this->gemini)
             ->willReturn(['valid' => false, 'reason' => 'version', 'source' => 'dialog']);
 
         $data = $this->controller()->getConsentStatus()->getData();
@@ -70,7 +72,7 @@ class TelosControllerConsentTest extends TestCase {
     /** B6: "the AI provider was changed from {old} to {new}" needs the old name. */
     public function testStatusAfterARecipientChangeNamesThePreviousRecipient(): void {
         $this->consent->method('state')->willReturn(['valid' => false, 'reason' => 'recipient_changed', 'source' => 'dialog']);
-        $this->consent->method('previousRecipientName')->with('alice', $this->gemini)->willReturn('Ollama (ollama.lan)');
+        $this->consent->expects($this->atLeastOnce())->method('previousRecipientName')->with('alice', $this->gemini)->willReturn('Ollama (ollama.lan)');
 
         $data = $this->controller()->getConsentStatus()->getData();
 

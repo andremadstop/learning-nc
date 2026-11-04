@@ -14,12 +14,14 @@ use OCA\Learning\Tests\Support\FakeAppConfigValues;
 use OCP\IAppConfig;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 Task B1 (spec 3.3): a consent counts only for the current consent text AND the recipient
  * it was given for. There is no exception for local processing: a different recipient fingerprint
  * is a different recipient, whatever processingLocal says.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ConsentServiceTest extends TestCase {
     private UserTelosMapper&MockObject $mapper;
     private AuditService&MockObject $audit;
@@ -254,7 +256,7 @@ class ConsentServiceTest extends TestCase {
         $this->storedConsent($this->current(), $c->recipientFingerprint());
         $this->mapper->expects($this->never())->method('update');
         $this->mapper->expects($this->never())->method('incrementConsentEpoch');
-        $this->mapper->expects($this->once())->method('revokeAiConsent')->with('alice', $this->isType('int'))
+        $this->mapper->expects($this->once())->method('revokeAiConsent')->with('alice', $this->isInt())
             ->willReturnCallback(function () {
                 $this->storedConsent(null, null, null);
                 return 1;
@@ -270,7 +272,7 @@ class ConsentServiceTest extends TestCase {
         $this->row = null;
         $this->mapper->expects($this->never())->method('update');
         $this->mapper->expects($this->never())->method('insert');
-        $this->mapper->expects($this->once())->method('revokeAiConsent')->with('alice', $this->isType('int'))->willReturn(0);
+        $this->mapper->expects($this->once())->method('revokeAiConsent')->with('alice', $this->isInt())->willReturn(0);
         $this->audit->expects($this->once())->method('logEvent')->with('ai_consent_revoked', 'alice', $this->anything());
 
         $this->service()->revoke('alice');

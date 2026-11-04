@@ -31,6 +31,8 @@ use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 157 Plan 03 — CertificateController::revoke() (VERIFY-05 write side).
@@ -43,8 +45,9 @@ use PHPUnit\Framework\TestCase;
  *   - the owner gate runs BEFORE any write (mapper->update never() on a non-owner);
  *   - malformed UUID → 404 with no DB lookup; userId null → 401.
  *
- * @group cert-revoke
  */
+#[Group('cert-revoke')]
+#[AllowMockObjectsWithoutExpectations]
 class CertificateRevokeTest extends TestCase {
 
     private const COURSE_ID = 7;
@@ -145,7 +148,7 @@ class CertificateRevokeTest extends TestCase {
      */
     public function testRevokeSetsTombstoneFields(): void {
         $cert = $this->makeCert();
-        $this->mapperMock->method('findByVerificationId')->with(self::VID)->willReturn($cert);
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationId')->with(self::VID)->willReturn($cert);
 
         $updated = null;
         $this->mapperMock->expects($this->once())
@@ -188,7 +191,7 @@ class CertificateRevokeTest extends TestCase {
     public function testRevokeIdempotentKeepsFirstDate(): void {
         $firstRevokedAt = 1_650_000_000;
         $cert = $this->makeCert($firstRevokedAt);
-        $this->mapperMock->method('findByVerificationId')->with(self::VID)->willReturn($cert);
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationId')->with(self::VID)->willReturn($cert);
 
         $updated = null;
         $this->mapperMock->expects($this->once())
@@ -220,7 +223,7 @@ class CertificateRevokeTest extends TestCase {
      */
     public function testOwnerGateRunsBeforeWrite(): void {
         $cert = $this->makeCert();
-        $this->mapperMock->method('findByVerificationId')->with(self::VID)->willReturn($cert);
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationId')->with(self::VID)->willReturn($cert);
         $this->mapperMock->expects($this->never())->method('update');
 
         $resp = $this->makeController(
@@ -293,7 +296,7 @@ class CertificateRevokeTest extends TestCase {
      */
     public function testRevokeAuditFailureRollsBack(): void {
         $cert = $this->makeCert();
-        $this->mapperMock->method('findByVerificationId')->with(self::VID)->willReturn($cert);
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationId')->with(self::VID)->willReturn($cert);
         // update() is attempted inside the transaction, then the audit append fails and rolls it back.
         $this->mapperMock->expects($this->once())->method('update')->willReturnArgument(0);
 

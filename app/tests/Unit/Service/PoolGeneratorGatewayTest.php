@@ -17,12 +17,14 @@ use OCA\Learning\Service\QuestionService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Task B4: the pool generator begins one gateway session for the lecturer (purpose pool_generate)
  * and sends one request per text chunk through it; send() re-checks consent before each chunk.
  * At most 10 chunks are sent, however long the material is.
  */
+#[AllowMockObjectsWithoutExpectations]
 class PoolGeneratorGatewayTest extends TestCase {
     private LlmGateway&MockObject $gateway;
 

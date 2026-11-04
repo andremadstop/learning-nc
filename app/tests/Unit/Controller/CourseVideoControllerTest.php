@@ -17,6 +17,8 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 162 Plan 02 — CourseVideoController registry-CRUD duration gate (VIDEO-09).
@@ -28,8 +30,9 @@ use Psr\Log\LoggerInterface;
  * pure, DB-free method) over mocked deps so the real validation runs, and assert the mapper is never
  * touched on the reject path (authz + insert are downstream of the guard).
  *
- * @group video-09
  */
+#[Group('video-09')]
+#[AllowMockObjectsWithoutExpectations]
 class CourseVideoControllerTest extends TestCase {
     /** @var CourseVideoMapper&\PHPUnit\Framework\MockObject\MockObject */
     private $videoMapper;

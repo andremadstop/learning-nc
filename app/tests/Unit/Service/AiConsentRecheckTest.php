@@ -13,6 +13,8 @@ use OCA\Learning\Service\TelosService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.5.2 (Codex review): paths that send a SECOND request after the controller's consent check
@@ -23,6 +25,7 @@ use Psr\Log\LoggerInterface;
  * meanwhile, budget exhausted, provider error, empty answer — it is skipped without data loss.
  * The ten oldest entries stay; they used to be deleted and replaced by a fixed placeholder.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AiConsentRecheckTest extends TestCase {
     private AiChatMemoryMapper&MockObject $mapper;
     private GeminiService&MockObject $gemini;
@@ -65,7 +68,7 @@ class AiConsentRecheckTest extends TestCase {
     }
 
     public function testMemoryCompressionWithoutConsentSendsNothingAndKeepsTheOriginals(): void {
-        $this->telos->method('hasAiConsent')->with('alice')->willReturn(false);
+        $this->telos->expects($this->atLeastOnce())->method('hasAiConsent')->with('alice')->willReturn(false);
         $this->gemini->expects($this->never())->method('generateNote');
 
         $this->assertOriginalsKept();
@@ -82,7 +85,7 @@ class AiConsentRecheckTest extends TestCase {
         ];
     }
 
-    /** @dataProvider compressionFailures */
+    #[DataProvider('compressionFailures')]
     public function testAFailedCompressionKeepsTheOriginals(\Throwable|string $outcome): void {
         $this->telos->method('hasAiConsent')->willReturn(true);
         $call = $this->gemini->expects($this->once())->method('generateNote');

@@ -11,12 +11,14 @@ use OCP\IAppConfig;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A2: ai_connection is the single source of the connection snapshot. Without it the
  * snapshot is derived from the 5.5 keys, so upgraded instances keep working before any repair
  * step ran; an empty legacy provider means the removed TaskProcessing path and becomes disabled.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ConnectionStoreTest extends TestCase {
     private FakeAppConfigValues $values;
     private AuditService&MockObject $audit;

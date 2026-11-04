@@ -14,7 +14,9 @@ use OCA\Learning\Service\TelosService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class TelosServiceTest extends TestCase {
     private TelosService $service;
     /** @var UserTelosMapper&\PHPUnit\Framework\MockObject\MockObject */
@@ -138,7 +140,7 @@ class TelosServiceTest extends TestCase {
         $entity->setCreatedAt(1000);
         $entity->setUpdatedAt(2000);
 
-        $this->mapper->method('findByUserIdOrNull')->with('user1')->willReturn($entity);
+        $this->mapper->expects($this->atLeastOnce())->method('findByUserIdOrNull')->with('user1')->willReturn($entity);
 
         $decryptCalls = [];
         $this->encryption->method('decrypt')

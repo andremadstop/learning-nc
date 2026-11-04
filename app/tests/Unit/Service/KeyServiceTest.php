@@ -12,6 +12,8 @@ use OCP\IURLGenerator;
 use OCP\Lock\ILockingProvider;
 use OCP\Lock\LockedException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * KeyService — sodium keygen + encrypt-at-rest + rotation (155-02).
@@ -23,6 +25,7 @@ use PHPUnit\Framework\TestCase;
  *  4. hard-error-on-decrypt— getActiveSigningMaterial() throws if decrypt yields non-64-byte material
  *                            (defeats EncryptionService's silent plaintext fallback).
  */
+#[AllowMockObjectsWithoutExpectations]
 class KeyServiceTest extends TestCase {
 
     private function makeMapper(): CertKeyMapper {
@@ -205,8 +208,8 @@ class KeyServiceTest extends TestCase {
      * to no port and MUST be dropped — the did:web stays byte-identical to the plain-host form so the
      * kid never drifts. Non-default ports remain %3A-encoded (covered above).
      *
-     * @dataProvider defaultPortUrls
      */
+    #[DataProvider('defaultPortUrls')]
     public function testHostDidStripsDefaultPort(string $baseUrl): void {
         $url = $this->createMock(IURLGenerator::class);
         $url->method('getBaseUrl')->willReturn($baseUrl);

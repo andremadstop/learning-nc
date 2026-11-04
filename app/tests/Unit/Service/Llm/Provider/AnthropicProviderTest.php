@@ -15,6 +15,8 @@ use OCA\Learning\Service\Llm\Provider\LlmProviderInterface;
 use OCA\Learning\Tests\Support\RecordingLlmHttp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A5d: the Anthropic adapter (spec 4.2). There is no 5.5 class, so
@@ -40,6 +42,7 @@ use Psr\Log\LoggerInterface;
  * Deliberately not sent: `thinking`, `output_config`, the server-side `fallbacks` beta — a fallback
  * re-runs the prompt on a model the admin did not choose (plan: no automatic retries).
  */
+#[AllowMockObjectsWithoutExpectations]
 class AnthropicProviderTest extends TestCase {
     use RecordingLlmHttp;
 
@@ -54,7 +57,7 @@ class AnthropicProviderTest extends TestCase {
         return self::llmFixtureCaseNames(self::FIXTURE);
     }
 
-    /** @dataProvider fixtureCases */
+    #[DataProvider('fixtureCases')]
     public function testRequestMatchesFixture(string $name): void {
         $fixture = self::llmFixture(self::FIXTURE);
         $case = self::llmFixtureCase($fixture, $name);
@@ -125,7 +128,7 @@ class AnthropicProviderTest extends TestCase {
             'fable-5-1' => ['claude-fable-5-1'], 'opus-4-8' => ['claude-opus-4-8'], 'unknown' => ['claude-future-9']];
     }
 
-    /** @dataProvider modelsWithoutTemperature */
+    #[DataProvider('modelsWithoutTemperature')]
     public function testModelsThatRejectTemperatureGetNone(string $model): void {
         $provider = $this->provider([$this->ok('Antwort')]);
         $provider->complete($this->connection($model), new LlmRequest('S', 'U', 0.2));
@@ -149,8 +152,8 @@ class AnthropicProviderTest extends TestCase {
      * Key and consent are bound to the connection's baseUrl; posting to the fixed endpoint for any
      * other baseUrl would send data to a recipient the fingerprints do not describe.
      *
-     * @dataProvider foreignBaseUrls
      */
+    #[DataProvider('foreignBaseUrls')]
     public function testBaseUrlOtherThanTheAnthropicEndpointIsConfigAndSendsNothing(string $baseUrl): void {
         $provider = $this->provider([$this->ok('Antwort')]);
         $conn = new LlmConnection(1, true, 'anthropic', '', $baseUrl, 'claude-opus-5', false, false, null, null);
@@ -169,7 +172,7 @@ class AnthropicProviderTest extends TestCase {
         return ['null' => [null], 'empty' => [''], 'blank' => ['   ']];
     }
 
-    /** @dataProvider missingKeys */
+    #[DataProvider('missingKeys')]
     public function testMissingKeyIsConfigAndSendsNothing(?string $key): void {
         $provider = $this->provider([$this->ok('Antwort')], $key);
         $this->assertProviderCategory('config', fn() => $provider->complete($this->connection('claude-opus-5'), new LlmRequest('S', 'U')));
@@ -230,7 +233,7 @@ class AnthropicProviderTest extends TestCase {
         ];
     }
 
-    /** @dataProvider refusalDetails */
+    #[DataProvider('refusalDetails')]
     public function testRefusalWithoutUsableDetailsIsStillRefusal(mixed $details): void {
         $provider = $this->provider([$this->httpResponse(200, (string)json_encode([
             'content' => [], 'stop_reason' => 'refusal', 'stop_details' => $details,
@@ -257,7 +260,7 @@ class AnthropicProviderTest extends TestCase {
         ];
     }
 
-    /** @dataProvider emptyBodies */
+    #[DataProvider('emptyBodies')]
     public function testNoAnswerTextIsEmpty(string $body): void {
         $provider = $this->provider([$this->httpResponse(200, $body)]);
         $this->assertProviderCategory('empty', fn() => $provider->complete($this->connection('claude-opus-5'), new LlmRequest('S', 'U')));
@@ -277,7 +280,7 @@ class AnthropicProviderTest extends TestCase {
         return ['max_tokens' => ['max_tokens'], 'context window' => ['model_context_window_exceeded']];
     }
 
-    /** @dataProvider cutOffStopReasons */
+    #[DataProvider('cutOffStopReasons')]
     public function testCutOffAnswerWithTextIsStillTheAnswer(string $stopReason): void {
         $provider = $this->provider([$this->httpResponse(200, (string)json_encode([
             'content' => [['type' => 'thinking', 'thinking' => '', 'signature' => 's'], ['type' => 'text', 'text' => '  Teilantwort bis zum Limit']],
@@ -319,7 +322,7 @@ class AnthropicProviderTest extends TestCase {
             '404' => [404, 'bad_request'], '500' => [500, 'network']];
     }
 
-    /** @dataProvider errorStatuses */
+    #[DataProvider('errorStatuses')]
     public function testErrorStatusMapsToCategoryWithoutRetry(int $status, string $category): void {
         $provider = $this->provider([
             $this->httpResponse($status, '{"type":"error","error":{"type":"invalid_request_error","message":"PROMPT-MARKER nope"}}'),

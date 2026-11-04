@@ -10,6 +10,7 @@ use OCP\L10N\IFactory;
 use OCP\Notification\INotification;
 use OCP\Notification\UnknownNotificationException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * RBAC-04: Notifier::prepare() compliance_reminder contract.
@@ -17,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  * testComplianceReminderCasePrepares — RED at Wave 0 (skeleton throws UnknownNotificationException).
  * testUnknownSubjectStillThrows   — GREEN at Wave 0 (regression guard; default case unaffected).
  */
+#[AllowMockObjectsWithoutExpectations]
 class NotifierTest extends TestCase {
 
     private function makeNotifier(): Notifier {

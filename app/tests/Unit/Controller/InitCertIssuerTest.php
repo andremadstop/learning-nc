@@ -10,12 +10,14 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #8: on managed hosting (Hetzner Storage Share) there is no occ, so the issuer key
  * could not be created and certificates could never be enabled. initCertIssuer() is the web
  * twin of `occ learning:cert:init-issuer` — init only, never a replacement of an existing key.
  */
+#[AllowMockObjectsWithoutExpectations]
 class InitCertIssuerTest extends TestCase {
 
     private function makeController(KeyService $keyService, ?AuditCheckpointService $checkpoints = null): SettingsController {

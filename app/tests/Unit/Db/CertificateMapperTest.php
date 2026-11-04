@@ -7,6 +7,7 @@ use OCP\DB\QueryBuilder\IExpressionBuilder;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Wave-0 RED tests for CertificateMapper::findByCourseIdForUsers (RBAC-02 DB-level IN).
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
  * 2. Non-empty member list → only certs whose user_id ∈ $userIds are returned.
  *    RED now (skeleton returns []) — flips GREEN in 163-05 when real IN query is wired.
  */
+#[AllowMockObjectsWithoutExpectations]
 class CertificateMapperTest extends TestCase {
 
     // ── empty members ───────────────────────────────────────────────────────

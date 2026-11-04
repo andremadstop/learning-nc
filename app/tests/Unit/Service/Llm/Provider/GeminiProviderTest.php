@@ -15,6 +15,8 @@ use OCA\Learning\Service\Llm\Provider\LlmProviderInterface;
 use OCA\Learning\Tests\Support\RecordingLlmHttp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A5a: the Gemini adapter sends what the 5.5 GeminiProvider sent — same URL form
@@ -30,6 +32,7 @@ use Psr\Log\LoggerInterface;
  * - failures are LlmProviderException with a category (missing key → config, without a request);
  * - no logging in the adapter (5.5 logged metrics; the gateway records metadata in B3).
  */
+#[AllowMockObjectsWithoutExpectations]
 class GeminiProviderTest extends TestCase {
     use RecordingLlmHttp;
 
@@ -40,7 +43,7 @@ class GeminiProviderTest extends TestCase {
         return self::llmFixtureCaseNames('gemini-request.json');
     }
 
-    /** @dataProvider fixtureCases */
+    #[DataProvider('fixtureCases')]
     public function testRequestMatchesLegacyFixture(string $name): void {
         $fixture = self::llmFixture('gemini-request.json');
         $case = self::llmFixtureCase($fixture, $name);
@@ -125,7 +128,7 @@ class GeminiProviderTest extends TestCase {
         ];
     }
 
-    /** @dataProvider emptyBodies */
+    #[DataProvider('emptyBodies')]
     public function testNoAnswerTextIsEmpty(string $body): void {
         $provider = $this->provider([$this->httpResponse(200, $body)]);
         $this->assertProviderCategory('empty', fn() => $provider->complete($this->connection(), new LlmRequest('', 'Hallo')));
@@ -151,7 +154,7 @@ class GeminiProviderTest extends TestCase {
             '503' => [503, 'overloaded'], '529' => [529, 'overloaded'], '400' => [400, 'bad_request'], '500' => [500, 'network']];
     }
 
-    /** @dataProvider errorStatuses */
+    #[DataProvider('errorStatuses')]
     public function testErrorStatusMapsToCategoryWithoutRetry(int $status, string $category): void {
         $provider = $this->provider([
             $this->httpResponse($status, '{"error":{"message":"PROMPT-MARKER nope"}}'),

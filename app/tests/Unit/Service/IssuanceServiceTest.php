@@ -25,6 +25,8 @@ use OCP\IUser;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * IssuanceService — turns a "passed" PassResult into a signed, stored, self-contained
@@ -42,6 +44,7 @@ use PHPUnit\Framework\TestCase;
  *                      present when cert_validity_days>0 and ABSENT when 0.
  *  5. branding       — issuer.name == themed name; issuer.image.id == themed logo URL.
  */
+#[AllowMockObjectsWithoutExpectations]
 class IssuanceServiceTest extends TestCase {
 
     private const HOST_DID = 'did:web:example.com:apps:learning';
@@ -429,8 +432,8 @@ class IssuanceServiceTest extends TestCase {
      * CONTAINS an email-shaped token — leading/trailing whitespace OR a "Name <email>" wrapper —
      * still falls back to the neutral pseudonym. No plaintext email reaches the credential.
      *
-     * @dataProvider emailSmugglingNames
      */
+    #[DataProvider('emailSmugglingNames')]
     public function testDisplayNameContainingEmailFallsBackToNeutralName(string $displayName): void {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: $displayName);

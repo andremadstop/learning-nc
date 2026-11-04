@@ -18,7 +18,9 @@ use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CoopServiceTest extends TestCase {
     public function testCreateSessionCreatesLobbyWithSyntheticGraphUser(): void {
         $sessionMapper = $this->createMock(CoopSessionMapper::class);
@@ -62,7 +64,7 @@ class CoopServiceTest extends TestCase {
             )
             ->willReturn($this->makeGraphState('scene-start'));
 
-        $userManager->method('get')
+        $userManager->expects($this->atLeastOnce())->method('get')
             ->with('alice')
             ->willReturn(new class implements \OCP\IUser {
                 public function getUID(): string {

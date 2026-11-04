@@ -21,6 +21,7 @@ use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 review finding: the controller's early consent check passes, then the user revokes (or the
@@ -29,6 +30,7 @@ use Psr\Log\LoggerInterface;
  * consent_required answer the client re-opens the dialog on, not a generic error, a silent null
  * or a 500 carrying the exception message.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ConsentLateFailureTest extends TestCase {
     private TelosService&MockObject $telos;
 

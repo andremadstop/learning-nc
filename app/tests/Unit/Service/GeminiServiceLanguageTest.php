@@ -9,6 +9,8 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #6, part 3: "some of the answers/text are not translated into Ukrainian".
@@ -25,6 +27,7 @@ use Psr\Log\LoggerInterface;
  * These tests reach the private helpers through reflection on purpose: the public entry
  * point performs a network call, and the defect lives entirely in language resolution.
  */
+#[AllowMockObjectsWithoutExpectations]
 class GeminiServiceLanguageTest extends TestCase {
 
     private IConfig $config;
@@ -131,9 +134,7 @@ class GeminiServiceLanguageTest extends TestCase {
         $this->assertTrue((new \ReflectionMethod(GeminiService::class, 'languageName'))->isPublic());
     }
 
-    /**
-     * @dataProvider languageNames
-     */
+    #[DataProvider('languageNames')]
     public function testLanguageNameCoversEverySupportedLanguage(string $code, string $name): void {
         $this->assertSame($name, $this->service->languageName($code));
     }

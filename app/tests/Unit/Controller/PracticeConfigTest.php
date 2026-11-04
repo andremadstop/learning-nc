@@ -14,11 +14,14 @@ use OCA\Learning\Service\ScheduleService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #9: instructors configure a course's practice exam. Only the course's instructor may,
  * and out-of-range values are refused instead of being clamped silently.
  */
+#[AllowMockObjectsWithoutExpectations]
 class PracticeConfigTest extends TestCase {
 
     private Course $course;
@@ -77,7 +80,7 @@ class PracticeConfigTest extends TestCase {
         $this->assertSame([], $this->updated);
     }
 
-    /** @dataProvider invalidValues */
+    #[DataProvider('invalidValues')]
     public function testOutOfRangeIsRefused(?int $questions, ?int $minutes, ?int $pass): void {
         $response = $this->makeController('teacher')->updatePracticeConfig(7, null, $questions, $minutes, $pass);
 

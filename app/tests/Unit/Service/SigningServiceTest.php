@@ -7,6 +7,7 @@ use OCA\Learning\Db\CertKey;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\SigningService;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * SigningService — VC-JWT (VC-JOSE-COSE) EdDSA signer (155-03, CERT-06).
@@ -22,6 +23,7 @@ use PHPUnit\Framework\TestCase;
  *                        code) accepts a valid JWT (exit 0) and rejects a tampered one (non-zero).
  *                        This automates ADR-001 follow-up #2.
  */
+#[AllowMockObjectsWithoutExpectations]
 class SigningServiceTest extends TestCase {
 
     private const HOST_DID = 'did:web:example.com:apps:learning';

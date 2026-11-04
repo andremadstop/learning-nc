@@ -10,6 +10,8 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #5: the onboarding wizard only ever recorded "seen" in window.localStorage, so a new
@@ -21,8 +23,9 @@ use PHPUnit\Framework\TestCase;
  * profile save, including a later edit in the settings, so it means "a profile exists" rather
  * than "the intro was seen".
  *
- * @group onboarding-acknowledge
  */
+#[Group('onboarding-acknowledge')]
+#[AllowMockObjectsWithoutExpectations]
 class OnboardingAcknowledgeTest extends TestCase {
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
     private $requestMock;

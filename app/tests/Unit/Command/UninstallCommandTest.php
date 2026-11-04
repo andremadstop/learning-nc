@@ -11,6 +11,7 @@ use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\StubConsoleInput;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * A connection where nominated tables do not exist.
@@ -19,6 +20,7 @@ use Symfony\Component\Console\Tester\StubConsoleInput;
  * blocks are exactly where a query failure gets mapped to a benign-looking default ("0 rows",
  * "absent"). Every instance without the activity app takes that path.
  */
+#[AllowMockObjectsWithoutExpectations]
 final class PartialDbConnection implements \OCP\IDBConnection {
     public array $executedStatements = [];
     public array $executedQueries = [];

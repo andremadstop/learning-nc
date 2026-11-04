@@ -19,6 +19,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Real-logic contract for CertificateVerifyService::verifyByVerificationId() — the cryptographic
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
  * here with a throwaway keypair; only the two mappers, KeyService::hostDid(), and the clock are mocked.
  * The signer and the service share ONE KeyService mock so the kid binds by construction.
  */
+#[AllowMockObjectsWithoutExpectations]
 class CertificateVerifyServiceTest extends TestCase {
 
     private const HOST_DID = 'did:web:example.com:apps:learning';

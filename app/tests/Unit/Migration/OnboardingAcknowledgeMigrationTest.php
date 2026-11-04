@@ -8,6 +8,8 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #5: 5.4.2 moves the "intro was seen" state from localStorage to the server. A fresh
@@ -15,8 +17,9 @@ use PHPUnit\Framework\TestCase;
  * reproducing the reported complaint for an entire instance at once, and for Andrii that means
  * 20-30 people on the same morning. Anyone with a trace of prior use counts as done.
  *
- * @group onboarding-acknowledge
  */
+#[Group('onboarding-acknowledge')]
+#[AllowMockObjectsWithoutExpectations]
 class OnboardingAcknowledgeMigrationTest extends TestCase {
     /** @var IDBConnection&\PHPUnit\Framework\MockObject\MockObject */
     private $dbMock;

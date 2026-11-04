@@ -11,12 +11,14 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 164 (DSGVO-03) — RetentionService crypto-erasure correctness.
  *
  * Expected-RED: all tests in this file FAIL/ERROR against the no-op skeleton (impl in 164-07).
  */
+#[AllowMockObjectsWithoutExpectations]
 class RetentionServiceTest extends TestCase {
 
     /**

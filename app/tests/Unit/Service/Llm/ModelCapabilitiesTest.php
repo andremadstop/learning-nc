@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Unit\Service\Llm;
 
 use OCA\Learning\Service\Llm\ModelCapabilities;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * 5.6.0 Task A4: a small, verified list (no family heuristic) of which request parameters a
@@ -51,7 +52,7 @@ class ModelCapabilitiesTest extends TestCase {
         ];
     }
 
-    /** @dataProvider anthropicWithoutTemperature */
+    #[DataProvider('anthropicWithoutTemperature')]
     public function testAnthropicModelsRejectingSamplingGetNoTemperature(string $model): void {
         $this->assertSame(['temperature' => false, 'tokenParam' => 'max_tokens'],
             $this->caps->forModel('anthropic', $model));
@@ -66,7 +67,7 @@ class ModelCapabilitiesTest extends TestCase {
         ];
     }
 
-    /** @dataProvider anthropicWithTemperature */
+    #[DataProvider('anthropicWithTemperature')]
     public function testAnthropicModelsAllowingSamplingKeepTemperature(string $model): void {
         $this->assertSame(['temperature' => true, 'tokenParam' => 'max_tokens'],
             $this->caps->forModel('anthropic', $model));
@@ -90,7 +91,7 @@ class ModelCapabilitiesTest extends TestCase {
         return $out;
     }
 
-    /** @dataProvider openAiReasoningModels */
+    #[DataProvider('openAiReasoningModels')]
     public function testOpenAiReasoningModelsUseMaxCompletionTokensWithoutTemperature(string $model): void {
         $this->assertSame(['temperature' => false, 'tokenParam' => 'max_completion_tokens'],
             $this->caps->forModel('openai_compatible', $model));
@@ -111,7 +112,7 @@ class ModelCapabilitiesTest extends TestCase {
         ];
     }
 
-    /** @dataProvider openAiCompatibleStandardModels */
+    #[DataProvider('openAiCompatibleStandardModels')]
     public function testOtherOpenAiCompatibleModelsUseStandardParameters(string $model): void {
         $this->assertSame(['temperature' => true, 'tokenParam' => 'max_tokens'],
             $this->caps->forModel('openai_compatible', $model));

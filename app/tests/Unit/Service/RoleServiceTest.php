@@ -9,6 +9,7 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Wave-0 RED tests for RoleService::isTeamLeadForGroup / getTeamLeadGroups (RBAC-03).
@@ -21,6 +22,7 @@ use PHPUnit\Framework\TestCase;
  * The two false/empty cases (falseForForeignGroup, emptyWhenNoRows) are GREEN now and
  * must stay GREEN after 163-03 (skeleton returns same value as real impl for those inputs).
  */
+#[AllowMockObjectsWithoutExpectations]
 class RoleServiceTest extends TestCase {
 
     private const COURSE_ID = 5;
@@ -44,7 +46,7 @@ class RoleServiceTest extends TestCase {
      */
     public function testIsTeamLeadForGroupTrueWhenRowExists(): void {
         $oversight = $this->createMock(OversightMapper::class);
-        $oversight->method('existsForLeadGroupCourse')
+        $oversight->expects($this->atLeastOnce())->method('existsForLeadGroupCourse')
             ->with(self::COURSE_ID, 'lead1', 'dept-x')
             ->willReturn(true);
 
@@ -84,7 +86,7 @@ class RoleServiceTest extends TestCase {
         // the mapper's false for the queried (wrong-course) triple. A single stub is correct —
         // stacking two ->with() matchers on one mocked method is a PHPUnit anti-pattern.
         $oversight = $this->createMock(OversightMapper::class);
-        $oversight->method('existsForLeadGroupCourse')
+        $oversight->expects($this->atLeastOnce())->method('existsForLeadGroupCourse')
             ->with(self::COURSE_ID, 'lead1', 'dept-x')
             ->willReturn(false); // mapper finds no row for this exact triple (wrong course_id)
 
@@ -112,7 +114,7 @@ class RoleServiceTest extends TestCase {
         $row2->setScopeGroupId('dept-b');
 
         $oversight = $this->createMock(OversightMapper::class);
-        $oversight->method('findByLead')
+        $oversight->expects($this->atLeastOnce())->method('findByLead')
             ->with('lead1')
             ->willReturn([$row1, $row2]);
 

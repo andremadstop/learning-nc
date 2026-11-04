@@ -6,7 +6,9 @@ namespace OCA\Learning\Tests\Unit\Service;
 use OCA\Learning\Service\EncryptionService;
 use OCP\Security\ICrypto;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class EncryptionServiceTest extends TestCase {
     private EncryptionService $service;
     private ICrypto $crypto;
@@ -62,10 +64,10 @@ class EncryptionServiceTest extends TestCase {
     }
 
     public function testRoundTrip(): void {
-        $this->crypto->method('encrypt')
+        $this->crypto->expects($this->atLeastOnce())->method('encrypt')
             ->with('hello')
             ->willReturn('enc_hello');
-        $this->crypto->method('decrypt')
+        $this->crypto->expects($this->atLeastOnce())->method('decrypt')
             ->with('enc_hello')
             ->willReturn('hello');
 

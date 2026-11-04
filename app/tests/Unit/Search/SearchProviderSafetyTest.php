@@ -14,7 +14,9 @@ use OCP\IUser;
 use OCP\Search\ISearchQuery;
 use OCP\Search\SearchResult;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class SearchProviderSafetyTest extends TestCase {
     public function testPoolSearchNormalizesControlCharactersAndCapsLength(): void {
         $builder = new FakeQueryBuilder(FakeResult::fromFetchAll([]));

@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Unit\AppInfo;
 use OCA\Learning\AppInfo\ConfigDefaults;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 164-07 post-impl review locks (HIGH 4 + MED 5): the SHARED config parsers.
@@ -17,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  * MED 5 — reminder send decision and lifecycle 'expiring' window must share ONE
  * threshold source; garbage/empty config falls back to the shipped [30, 7].
  */
+#[AllowMockObjectsWithoutExpectations]
 class ConfigDefaultsTest extends TestCase {
 
     private function configReturning(string $value): IConfig {

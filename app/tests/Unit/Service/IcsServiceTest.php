@@ -149,7 +149,9 @@ use OCA\Learning\Tests\Support\FakeResult;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IcsServiceTest extends TestCase {
     public function testEnsureCalendarTokenGeneratesTokenAndUrlWhenMissing(): void {
         $entity = new UserTelos();

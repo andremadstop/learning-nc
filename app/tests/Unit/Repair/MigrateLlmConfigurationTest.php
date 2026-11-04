@@ -25,6 +25,7 @@ use OCP\TextProcessing\Task as TextTask;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 Task C1: the upgrade repair step. Every part is idempotent and can be repeated on its own:
@@ -34,6 +35,7 @@ use Psr\Log\LoggerInterface;
  * (4) chat memory cleared once; (5) audit redaction (Task C3). A fresh install only sets the
  * markers, so that a later upgrade does not wipe what 5.7 itself wrote.
  */
+#[AllowMockObjectsWithoutExpectations]
 class MigrateLlmConfigurationTest extends TestCase {
     private const LEGACY = 'AIza-C1-LEGACY-MARKER';
 

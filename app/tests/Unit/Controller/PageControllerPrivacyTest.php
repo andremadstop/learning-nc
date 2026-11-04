@@ -8,8 +8,10 @@ use OCA\Learning\Service\Llm\ConnectionStore;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /** 5.7.0 D6: the public privacy page names the AI recipient that is in force right now. */
+#[AllowMockObjectsWithoutExpectations]
 class PageControllerPrivacyTest extends TestCase {
     private function controller(ConnectionStore $store): PageController {
         $urls = $this->createMock(IURLGenerator::class);

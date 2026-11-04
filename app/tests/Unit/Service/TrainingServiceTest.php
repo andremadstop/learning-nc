@@ -27,7 +27,9 @@ use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class TrainingServiceTest extends TestCase {
     public function testStartSessionUsesRequestedPoolAndPersistsQuestionOrder(): void {
         $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
@@ -49,7 +51,7 @@ class TrainingServiceTest extends TestCase {
             ->willReturn($questions);
         $answerMapper->method('findByQuestion')
             ->willReturnCallback(fn(int $questionId): array => [$this->makeAnswer($questionId * 10, $questionId, 'Answer')]);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService(
             db: $db,
@@ -98,12 +100,12 @@ class TrainingServiceTest extends TestCase {
             ->willReturn([$question]);
 
         $answerMapper = $this->createMock(AnswerMapper::class);
-        $answerMapper->method('findByQuestion')
+        $answerMapper->expects($this->atLeastOnce())->method('findByQuestion')
             ->with(10)
             ->willReturn([$this->makeAnswer(100, 10, 'Answer')]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService(
             db: $db,
@@ -149,12 +151,12 @@ class TrainingServiceTest extends TestCase {
             ->willReturn([$this->makeQuestion(10, 42, 'Existing')]);
 
         $answerMapper = $this->createMock(AnswerMapper::class);
-        $answerMapper->method('findByQuestion')
+        $answerMapper->expects($this->atLeastOnce())->method('findByQuestion')
             ->with(10)
             ->willReturn([$this->makeAnswer(100, 10, 'Answer')]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService(
             db: $db,
@@ -235,11 +237,11 @@ class TrainingServiceTest extends TestCase {
         $db = new FakeDbConnection([$activeExamBuilder]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
         // Unified gate: derived from the pool→enrolled-gated-course lookup (course 7 gates pool 42).
-        $courseService->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
+        $courseService->expects($this->atLeastOnce())->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
         // The gate is BEFORE any session work — resolveCoursePoolContext must never be reached.
         $courseService->expects($this->never())->method('resolveCoursePoolContext');
 
@@ -270,13 +272,13 @@ class TrainingServiceTest extends TestCase {
         $db = new FakeDbConnection([$activeExamBuilder]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
         // courseId is null, so isVideoGateEnabled is never consulted; the pool→gated-course reverse
         // lookup is what closes the bypass.
         $courseService->expects($this->never())->method('isVideoGateEnabled');
-        $courseService->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
+        $courseService->expects($this->atLeastOnce())->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
 
         $videoProgressService = $this->createMock(VideoProgressService::class);
         $videoProgressService->expects($this->once())
@@ -344,21 +346,21 @@ class TrainingServiceTest extends TestCase {
         ];
 
         $questionMapper = $this->createMock(QuestionMapper::class);
-        $questionMapper->method('findByIds')->with([10, 11])->willReturn($questions);
-        $questionMapper->method('findByPoolId')->with(42)->willReturn($questions);
+        $questionMapper->expects($this->atLeastOnce())->method('findByIds')->with([10, 11])->willReturn($questions);
+        $questionMapper->expects($this->atLeastOnce())->method('findByPoolId')->with(42)->willReturn($questions);
 
         $answerMapper = $this->createMock(AnswerMapper::class);
         $answerMapper->method('findByQuestion')
             ->willReturnCallback(fn(int $questionId): array => [$this->makeAnswer($questionId * 10, $questionId, 'Answer')]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
         // The gate is derived purely from the pool→enrolled-gated-course lookup (unified after Codex
         // re-review): a gated pool returns [7], an ungated one returns [].
-        $courseService->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn($gateEnabled ? [7] : []);
-        $courseService->method('resolveCoursePoolContext')
+        $courseService->expects($this->atLeastOnce())->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn($gateEnabled ? [7] : []);
+        $courseService->expects($this->atLeastOnce())->method('resolveCoursePoolContext')
             ->with(7, 42, 'alice')
             ->willReturn(['question_ids' => [10, 11]]);
 

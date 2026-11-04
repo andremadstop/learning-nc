@@ -9,6 +9,8 @@ use OCA\Learning\Service\TelosService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (finding A — consent gate): PoolGeneratorController::fromText() and ::fromFile()
@@ -16,8 +18,9 @@ use Psr\Log\LoggerInterface;
  * When consent is missing, both must return 403 with `consent_required=true` and never touch
  * PoolGeneratorService.
  *
- * @group audit-a-consent
  */
+#[Group('audit-a-consent')]
+#[AllowMockObjectsWithoutExpectations]
 class PoolGeneratorControllerTest extends TestCase {
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
     private $requestMock;
@@ -49,7 +52,7 @@ class PoolGeneratorControllerTest extends TestCase {
     // ---- fromText() ------------------------------------------------------------
 
     public function testFromTextBlockedWithoutConsent(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->serviceMock->expects($this->never())->method('generateFromText');
 
@@ -60,7 +63,7 @@ class PoolGeneratorControllerTest extends TestCase {
     }
 
     public function testFromTextAllowsWhenConsentGranted(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         // Consent gate passed — the generator itself is reached (and fails for an unrelated reason).
         $this->serviceMock->expects($this->once())->method('generateFromText')
@@ -84,7 +87,7 @@ class PoolGeneratorControllerTest extends TestCase {
     // ---- fromFile() ------------------------------------------------------------
 
     public function testFromFileBlockedWithoutConsent(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->serviceMock->expects($this->never())->method('generateFromFile');
 
@@ -95,7 +98,7 @@ class PoolGeneratorControllerTest extends TestCase {
     }
 
     public function testFromFileAllowsWhenConsentGranted(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         $this->serviceMock->expects($this->once())->method('generateFromFile')
             ->with('/Learning/notes.pdf', 'user-A', 20)

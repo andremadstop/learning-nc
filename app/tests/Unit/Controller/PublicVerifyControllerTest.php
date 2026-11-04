@@ -16,6 +16,8 @@ use OCP\IL10N;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 157 Plan 04 — PublicVerifyController (the public, unauthenticated verify page).
@@ -31,8 +33,9 @@ use PHPUnit\Framework\TestCase;
  * so these tests assert the BRANCH logic (the response carries the throttle marker / the
  * generic params) — the live throttle is verified manually per VALIDATION.
  *
- * @group verify-06
  */
+#[Group('verify-06')]
+#[AllowMockObjectsWithoutExpectations]
 class PublicVerifyControllerTest extends TestCase {
     private const VID_VALID = '11111111-1111-4111-8111-111111111111';
     private const VID_MISSING = '00000000-0000-4000-8000-000000000000';
@@ -131,7 +134,7 @@ class PublicVerifyControllerTest extends TestCase {
             'verification_id' => self::VID_VALID,
         ];
         $service = $this->createMock(CertificateVerifyService::class);
-        $service->method('verifyByVerificationId')->with(self::VID_VALID)->willReturn($dto);
+        $service->expects($this->atLeastOnce())->method('verifyByVerificationId')->with(self::VID_VALID)->willReturn($dto);
 
         $resp = $this->makeController($service)->verify(self::VID_VALID);
 

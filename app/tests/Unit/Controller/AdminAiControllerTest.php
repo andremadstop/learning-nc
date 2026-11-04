@@ -11,11 +11,14 @@ use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 Task B5: the admin's connection test (POST /api/admin/ai/test). Admin-only, rate-limited,
  * only the backends 5.7.0 routes (Gemini, Ollama), and the key never comes back.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AdminAiControllerTest extends TestCase {
     private const KEY = 'AIzaCANDIDATE-KEY-0f3c9e';
 
@@ -75,7 +78,7 @@ class AdminAiControllerTest extends TestCase {
         ];
     }
 
-    /** @dataProvider unavailableProviders */
+    #[DataProvider('unavailableProviders')]
     public function testProvidersNotOfferedIn570AreRejectedWithoutARequest(string $provider): void {
         $this->gateway->expects($this->never())->method('testConnection');
 

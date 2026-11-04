@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Unit\Service\Llm;
 use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\TargetGuard;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * 5.6.0 Task A3 (Review Focus 4, DNS rebinding): before every model request the target host is
@@ -119,7 +120,7 @@ class TargetGuardTest extends TestCase {
         ];
     }
 
-    /** @dataProvider localAddresses */
+    #[DataProvider('localAddresses')]
     public function testLocalAddressesRejectedWithoutInternalFlag(string $ip): void {
         $guard = new TargetGuard(fn(string $h) => [$ip]);
         $this->assertConfigError(fn() => $guard->resolve('https://llm.example.com/v1', false), $ip);

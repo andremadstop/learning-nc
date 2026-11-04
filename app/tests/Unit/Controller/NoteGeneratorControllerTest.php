@@ -9,14 +9,17 @@ use OCA\Learning\Service\TelosService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (finding A — consent gate): NoteGeneratorController::generate() must gate on
  * TelosService::hasAiConsent() BEFORE any NoteGeneratorService call reaches the LLM. When consent
  * is missing, it must return 403 with `consent_required=true` and never touch NoteGeneratorService.
  *
- * @group audit-a-consent
  */
+#[Group('audit-a-consent')]
+#[AllowMockObjectsWithoutExpectations]
 class NoteGeneratorControllerTest extends TestCase {
     /** @var NoteGeneratorService&\PHPUnit\Framework\MockObject\MockObject */
     private $noteGenMock;
@@ -43,7 +46,7 @@ class NoteGeneratorControllerTest extends TestCase {
     }
 
     public function testGenerateBlockedWithoutConsent(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         // The consent gate runs before pool_id is even read from the request, so no getParam
         // stubbing is required — but the mock must not be touched by generateSummary either way.
@@ -57,7 +60,7 @@ class NoteGeneratorControllerTest extends TestCase {
     }
 
     public function testGenerateAllowsWhenConsentGranted(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(

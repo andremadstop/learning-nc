@@ -11,12 +11,14 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * In-memory stand-in for the DB store. Only the budget policy is tested here (which buckets,
  * which limits, compensation, release); the atomic SQL itself runs against a real database in
  * tests/Integration/LlmBudgetConcurrencyTest.php.
  */
+#[AllowMockObjectsWithoutExpectations]
 class InMemoryBudgetStore extends LlmBudgetStore {
     /** @var array<string, int> "bucket|window" => count */
     public array $counts = [];

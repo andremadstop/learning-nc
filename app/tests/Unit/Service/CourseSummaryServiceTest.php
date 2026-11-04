@@ -13,6 +13,7 @@ use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Tests for CourseSummaryService::getExamScore().
@@ -26,6 +27,7 @@ use PHPUnit\Framework\TestCase;
  * The mode='exam' + completed_at filters are the structural guess exclusion (PASS-05):
  * guessed answers only exist in the Leitner/FSRS flow, never in exam-mode sessions.
  */
+#[AllowMockObjectsWithoutExpectations]
 class CourseSummaryServiceTest extends TestCase {
 
     private const COURSE_ID = 7;

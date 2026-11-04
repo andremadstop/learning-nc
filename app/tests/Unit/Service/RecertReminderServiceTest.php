@@ -15,6 +15,7 @@ use OCP\Notification\IManager;
 use OCP\Notification\INotification;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 164 (RECERT-06) — RecertReminderService reminder idempotency (outbox pattern).
@@ -23,6 +24,7 @@ use Psr\Log\LoggerInterface;
  * PROOF (delivered_at). A claim without proof is retried once stale — the row's mere
  * existence is never treated as "sent".
  */
+#[AllowMockObjectsWithoutExpectations]
 class RecertReminderServiceTest extends TestCase {
 
     private const NOW = 1750000000;

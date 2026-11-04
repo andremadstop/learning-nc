@@ -18,12 +18,14 @@ use OCP\TextProcessing\IManager as TextManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Spec 4.3 / review finding (MED): a legacy task that was RUNNING at upgrade time is deleted once
  * it has finished. The upgrade lists it in `ai_legacy_tasks_pending` and registers
  * LegacyAiTaskCleanupJob, which sweeps the list and unregisters itself when nothing is left.
  */
+#[AllowMockObjectsWithoutExpectations]
 class LegacyAiTaskCleanupTest extends TestCase {
     private FakeAppConfigValues $values;
     private IAppConfig $appConfig;
