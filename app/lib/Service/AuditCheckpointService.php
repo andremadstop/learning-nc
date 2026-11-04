@@ -174,7 +174,18 @@ class AuditCheckpointService {
         try {
             $owner   = (string)$this->config->getAppValue('learning', 'forgejo_owner', '');
             $repo    = (string)$this->config->getAppValue('learning', 'forgejo_repo', '');
-            $baseUrl = rtrim((string)$this->config->getAppValue('learning', 'forgejo_base_url', 'https://git.andrestiebitz.de'), '/');
+            // No default host: the default used to be the author's own Forgejo, so an installation
+            // that enabled anchoring without a URL sent its checkpoints and token there.
+            $baseUrl = rtrim((string)$this->config->getAppValue('learning', 'forgejo_base_url', ''), '/');
+            if ($baseUrl === '') {
+                $this->logger->warning(
+                    "AuditCheckpointService: forgejo_base_url is not set — skipping anchor for checkpoint {$checkpointId}",
+                    ['app' => 'learning']
+                );
+                $this->config->setAppValue('learning', 'last_anchor_status', 'failed');
+                $this->config->setAppValue('learning', 'last_anchor_attempted_at', (string)time());
+                return null;
+            }
             $path    = "audit-checkpoints/checkpoint-{$toEventId}.json";
             $apiUrl  = "{$baseUrl}/api/v1/repos/{$owner}/{$repo}/contents/{$path}";
 

@@ -424,6 +424,30 @@ class AuditCheckpointServiceTest extends TestCase {
     }
 
     /**
+     * Enabled with a token but without forgejo_base_url: no request at all. The default used to be the
+     * author's own server, so a forgotten URL sent another installation's checkpoints and token there.
+     */
+    public function testForgejoAnchorNoOpWithoutBaseUrl(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig([
+            'forgejo_anchor_enabled' => 'true',
+            'forgejo_token'          => 'secret-token',
+            'forgejo_owner'          => 'someone',
+            'forgejo_repo'           => 'audit-anchors',
+        ], $captured);
+        $db = new FakeDbConnection($this->mintQueue());
+
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->createCheckpoint();
+
+        $this->assertSame(0, $service->forgejoCalls, 'no base URL must make NO HTTP call');
+        $this->assertSame('failed', $captured['last_anchor_status'] ?? null);
+    }
+
+    /**
      * HTTP 201 success: the returned .content.download_url (the RAW file-bytes endpoint, F4) is written
      * to anchor_url on the checkpoint row (by id) and last_anchor_status='ok' is recorded.
      */
@@ -480,6 +504,7 @@ class AuditCheckpointServiceTest extends TestCase {
         $config = $this->anchorConfig([
             'forgejo_anchor_enabled' => 'true',
             'forgejo_token'          => 'secret-token',
+            'forgejo_base_url'       => 'https://forgejo.example.org',
         ], $captured);
         $db = new FakeDbConnection($this->mintQueue(7));
 
@@ -509,6 +534,7 @@ class AuditCheckpointServiceTest extends TestCase {
         $config = $this->anchorConfig([
             'forgejo_anchor_enabled' => 'true',
             'forgejo_token'          => 'secret-token',
+            'forgejo_base_url'       => 'https://forgejo.example.org',
         ], $captured);
         $db = new FakeDbConnection($this->mintQueue());
 
