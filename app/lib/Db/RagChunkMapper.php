@@ -77,7 +77,7 @@ class RagChunkMapper extends QBMapper {
 
         foreach ($keywords as $keyword) {
             $paramName = 'kw_' . $paramIndex;
-            $pattern = '%' . mb_strtolower($keyword) . '%';
+            $pattern = '%' . $this->db->escapeLikeParameter(mb_strtolower($keyword)) . '%';
             $qb->setParameter($paramName, $pattern);
 
             // Text match = 1 point

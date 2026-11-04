@@ -20,7 +20,7 @@ Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souve
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 ![Tests](https://img.shields.io/badge/Tests-1830%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-5.6.0-blue)
+![Version](https://img.shields.io/badge/Version-5.6.1-blue)
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject, from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate**, turning any course into a real credential.
 
