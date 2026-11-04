@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.7.0] - 2026-11-04 — AI consent that names its recipient
+
+The AI features (VirtuProf, weekly study note, learning plan, course narrative, story narrator,
+pool generator) work as before, with Gemini or a local Ollama server. What changed is how
+consent works and how a request leaves the server. No new AI providers yet; they follow later.
+
+### Changed
+- **Consent names the recipient.** A learner's consent now covers the current consent text and
+  the AI recipient the admin has configured (Gemini or a named Ollama server). If the admin
+  switches the recipient or the consent text changes, each learner is asked once more before
+  anything is sent; the dialog says what changed. After the upgrade every learner who used AI
+  sees the dialog once, headed "revised".
+- **One way out.** Every AI request goes through a single gateway. Right before sending it
+  checks again that AI is switched on, that the learner's consent still holds for this exact
+  recipient and that the limits allow it. Consent revoked or recipient changed in the meantime:
+  nothing is sent, also not by the weekly job that may already be running.
+- **Real revocation.** Learners can withdraw consent in their settings. It takes effect at once.
+- **Limits per learner** (10 requests a minute, 100 a day, 3 at the same time) and a daily total
+  for the server, counted in the database so parallel requests cannot slip past them.
+
+### Added
+- **Accessible consent dialog** in all six languages, with keyboard focus kept inside the
+  dialog and right-to-left layout for Arabic. It is the only place where consent is written.
+- **Connection test for admins**: sends one fixed test message to Gemini or Ollama, nothing
+  from any learner.
+- **Data export** lists the AI consent and the stored chat summaries. The public privacy page
+  names the configured recipient.
+
+### Security and privacy
+- The Gemini key is stored encrypted; the upgrade moves an existing plain-text key over.
+- Requests go only to the configured address: no redirects, no automatic retries, the address
+  is resolved once and pinned.
+- Prompts, answers, keys and provider error texts no longer reach `nextcloud.log` or the audit
+  table. The upgrade removes such content from older audit rows.
+- Contributions of other learners are only put into a prompt when the recipient is a local
+  server.
+- Account deletion also removes the learner's AI limit counters.
+
+### Upgrade
+- AI tasks left over from 5.5 are cleaned up; old task IDs report as expired. The upgrade stops
+  with an error instead of continuing half done, and resumes after a crash.
+
 ## [5.6.1] - 2026-11-04 — Pool export round trip, search wildcards
 
 ### Fixed
@@ -79,7 +121,7 @@ affected.
   further requests after the first one; each now checks consent right before sending. If the
   server reports missing consent, VirtuProf asks again instead of showing a generic error.
 
-A larger rework of AI consent follows in 5.6.0: consent will name the actual AI provider,
+A larger rework of AI consent follows in 5.7.0 (planned for 5.6.0 at the time): consent will name the actual AI provider,
 the consent text will describe exactly what is sent, and everyone will be asked once to confirm
 the corrected text.
 
