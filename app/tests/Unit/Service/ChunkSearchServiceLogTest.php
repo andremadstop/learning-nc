@@ -7,11 +7,13 @@ use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\ChunkSearchService;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Task B4: the RAG search logged the learner's question verbatim (debug level). The question is
  * chat content; only the counts may be logged.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ChunkSearchServiceLogTest extends TestCase {
     public function testTheQueryIsNotLogged(): void {
         $mapper = $this->createMock(RagChunkMapper::class);

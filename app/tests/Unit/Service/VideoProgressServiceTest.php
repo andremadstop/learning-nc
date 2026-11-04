@@ -13,6 +13,7 @@ use OCP\DB\QueryBuilder\IExpressionBuilder;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Security contract for VideoProgressService (Phase 162, VIDEO-02/06/07).
@@ -29,6 +30,7 @@ use PHPUnit\Framework\TestCase;
  * markComplete/markDocumentRead are tested with a fluent QueryBuilder stub whose executeStatement()
  * return value drives the exactly-once guard.
  */
+#[AllowMockObjectsWithoutExpectations]
 class VideoProgressServiceTest extends TestCase {
 
     private const USER = 'alice';

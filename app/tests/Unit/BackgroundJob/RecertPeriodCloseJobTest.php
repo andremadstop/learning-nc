@@ -13,6 +13,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 164 (RECERT-04) — RecertPeriodCloseJob period-close idempotency.
@@ -23,6 +24,7 @@ use Psr\Log\LoggerInterface;
  * queries certs owning their idem slot with expires_at < now - grace and calls
  * closePeriod('user', user_id, course_id, cert_id) per row.
  */
+#[AllowMockObjectsWithoutExpectations]
 class RecertPeriodCloseJobTest extends TestCase {
 
     private function invokeRun(RecertPeriodCloseJob $job): void {

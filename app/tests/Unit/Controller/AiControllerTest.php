@@ -11,14 +11,17 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (finding A — consent gate): AiController::generate() and ::explain() must gate on
  * TelosService::hasAiConsent() BEFORE any AIService/QuestionService call reaches the LLM. When
  * consent is missing, both must return 403 with `consent_required=true` and never touch AIService.
  *
- * @group audit-a-consent
  */
+#[Group('audit-a-consent')]
+#[AllowMockObjectsWithoutExpectations]
 class AiControllerTest extends TestCase {
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
     private $requestMock;
@@ -58,7 +61,7 @@ class AiControllerTest extends TestCase {
     // ---- generate() ---------------------------------------------------------
 
     public function testGenerateBlockedWithoutConsent(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->aiServiceMock->expects($this->never())->method('generateQuestions');
         $this->questionServiceMock->expects($this->never())->method('verifyEditAccess');
@@ -70,7 +73,7 @@ class AiControllerTest extends TestCase {
     }
 
     public function testGenerateAllowsWhenConsentGranted(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         // Consent gate passed — the next failure (no edit access) proves the gate let the request
         // through, but it is a DIFFERENT error than consent_required.
@@ -88,7 +91,7 @@ class AiControllerTest extends TestCase {
     // ---- explain() -----------------------------------------------------------
 
     public function testExplainBlockedWithoutConsent(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->aiServiceMock->expects($this->never())->method('schedulePrompt');
         $this->questionServiceMock->expects($this->never())->method('find');
@@ -100,7 +103,7 @@ class AiControllerTest extends TestCase {
     }
 
     public function testExplainAllowsWhenConsentGranted(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         // Consent gate passed — question lookup is reached (and fails for an unrelated reason).
         $this->questionServiceMock->expects($this->once())->method('find')

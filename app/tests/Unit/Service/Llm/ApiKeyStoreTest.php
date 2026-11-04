@@ -12,12 +12,14 @@ use OCP\IAppConfig;
 use OCP\Security\ICrypto;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A2: API keys are stored encrypted and bound to the connection fingerprint, so a key
  * never follows the admin to a different endpoint. The 5.5 plaintext Gemini key is moved over
  * without ever being lost: it is deleted only after the encrypted copy was read back.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ApiKeyStoreTest extends TestCase {
     private const LEGACY = 'AIza-LEGACY-MARKER';
 

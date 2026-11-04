@@ -23,12 +23,14 @@ use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 review finding: services between a facade and a controller must not swallow
  * LlmConsentException in their generic catch (Throwable / RuntimeException — it is a
  * RuntimeException). Other provider errors keep their previous outcome.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ConsentRethrowTest extends TestCase {
     private GeminiService&MockObject $gemini;
 

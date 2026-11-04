@@ -11,6 +11,7 @@ use OCP\Notification\IManager as INotificationManager;
 use OCP\Notification\INotification;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * RBAC-04 + Locked Decision 2: sendComplianceReminder contract.
@@ -23,6 +24,7 @@ use Psr\Log\LoggerInterface;
  * Key locked decision: sendComplianceReminder MUST NOT gate on notificationsEnabled().
  * Mandatory notices bypass the user's voluntary notification opt-out.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ReminderServiceTest extends TestCase {
 
     private function makeFluentNotification(): INotification {

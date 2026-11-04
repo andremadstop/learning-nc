@@ -8,6 +8,8 @@ use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\TelosService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (pre-live review R2, finding #1 — Telos interview consent gate):
@@ -26,8 +28,9 @@ use PHPUnit\Framework\TestCase;
  * request through to the normal conversation validation (e.g. too-short conversation → 400,
  * with no `consent_required` key) — proving the gate ran and passed.
  *
- * @group audit-r2-finding-1
  */
+#[Group('audit-r2-finding-1')]
+#[AllowMockObjectsWithoutExpectations]
 class TelosControllerTest extends TestCase {
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
     private $requestMock;
@@ -59,7 +62,7 @@ class TelosControllerTest extends TestCase {
      * never be invoked — no conversation text may reach Gemini.
      */
     public function testProcessInterviewBlockedWithoutConsent(): void {
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->telosMock->expects($this->never())->method('processInterview');
 

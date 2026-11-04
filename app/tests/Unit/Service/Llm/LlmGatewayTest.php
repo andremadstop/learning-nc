@@ -23,11 +23,14 @@ use OCA\Learning\Tests\Support\RecordingLlmHttp;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Task B3: the one send path. The adapters are the real Gemini/Ollama adapters over a recording
  * HTTP client, so "the adapter is never called" means: not a single request left the instance.
  */
+#[AllowMockObjectsWithoutExpectations]
 class LlmGatewayTest extends TestCase {
     use RecordingLlmHttp;
 
@@ -224,7 +227,7 @@ class LlmGatewayTest extends TestCase {
         return $out;
     }
 
-    /** @dataProvider purposesNeedingASubject */
+    #[DataProvider('purposesNeedingASubject')]
     public function testOnlyAdminTestMayRunWithoutSubject(LlmPurpose $purpose): void {
         $this->happy(self::gemini());
         foreach ([null, ''] as $subject) {
@@ -412,8 +415,8 @@ class LlmGatewayTest extends TestCase {
      * directly, since ConnectionStore::load() already reads it as disabled) fails as config —
      * before any budget is used and without a request.
      *
-     * @dataProvider notSelectableIn570
      */
+    #[DataProvider('notSelectableIn570')]
     public function testOnlyGeminiAndOllamaAreRouted(LlmConnection $c): void {
         $this->store->method('isEnabledNow')->willReturn(true);
         $this->consent->method('epoch')->willReturn(0);
@@ -565,7 +568,7 @@ class LlmGatewayTest extends TestCase {
         $this->assertStringNotContainsString(self::KEY_MARKER, $this->dump());
     }
 
-    /** @dataProvider notSelectableIn570 */
+    #[DataProvider('notSelectableIn570')]
     public function testConnectionRefusesBackendsThatAreNotSelectable(LlmConnection $c): void {
         $this->budget->expects($this->never())->method('reserve');
 

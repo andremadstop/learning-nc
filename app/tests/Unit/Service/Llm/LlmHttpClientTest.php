@@ -12,12 +12,15 @@ use OCP\Http\Client\IClientService;
 use OCP\Http\Client\IResponse;
 use OCP\Http\Client\LocalServerException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A3: every provider request goes through one guarded client — target checked and the
  * checked IP pinned for exactly this request, no redirects, no retries, bounded request and
  * response size, and failures reported as a category without the provider's body in the message.
  */
+#[AllowMockObjectsWithoutExpectations]
 class LlmHttpClientTest extends TestCase {
     private const MISTRAL = 'https://api.mistral.ai/v1/chat/completions';
 
@@ -82,7 +85,7 @@ class LlmHttpClientTest extends TestCase {
         ];
     }
 
-    /** @dataProvider statusCategories */
+    #[DataProvider('statusCategories')]
     public function testStatusMapsToCategory(int $status, string $category): void {
         $client = $this->client(['api.mistral.ai' => ['203.0.113.7']], [$this->response($status, 'nope')]);
         $this->assertCategory($category, fn() => $client->postJson($this->cloud(), self::MISTRAL, [], [], 45));

@@ -7,7 +7,9 @@ use OCA\Learning\Service\AuditService;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ImportUsersJobTest extends TestCase {
     public function testCreatesUserPerRow(): void {
         $um = $this->createMock(IUserManager::class);

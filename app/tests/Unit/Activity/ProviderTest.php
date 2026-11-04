@@ -10,6 +10,7 @@ use OCP\IL10N;
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #4 (second item): Provider::parse() threw the bare \InvalidArgumentException for
@@ -24,6 +25,7 @@ use PHPUnit\Framework\TestCase;
  * Both tests go RED against the pre-fix code: UnknownActivityException does not extend
  * InvalidArgumentException, so expectException() fails on the old throw.
  */
+#[AllowMockObjectsWithoutExpectations]
 class ProviderTest extends TestCase {
 
     private function makeProvider(): Provider {

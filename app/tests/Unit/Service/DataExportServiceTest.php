@@ -16,6 +16,7 @@ use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * DSGVO-02: DataExportService::exportForUser() Art.20 certificates block contract.
@@ -33,6 +34,7 @@ use PHPUnit\Framework\TestCase;
  * - CertificateMapper is autoloaded from the real class; mock intercepts findByUserId
  *   without executing the DB query (constructor disabled by createMock).
  */
+#[AllowMockObjectsWithoutExpectations]
 class DataExportServiceTest extends TestCase {
 
     private const USER = 'alice';

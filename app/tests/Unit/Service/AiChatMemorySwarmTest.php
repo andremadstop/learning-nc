@@ -15,6 +15,7 @@ use OCA\Learning\Service\TelosService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 review finding (HIGH, spec 3.6): the swarm filter covered only RAG chunks retrieved
@@ -30,6 +31,7 @@ use Psr\Log\LoggerInterface;
  *   - Compression builds new summaries only from the learner's own messages and clean answers
  *     (spec 3.6), whatever the recipient, so a summary is always clean.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AiChatMemorySwarmTest extends TestCase {
     private AiChatMemoryMapper&MockObject $mapper;
     private GeminiService&MockObject $gemini;

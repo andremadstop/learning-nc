@@ -12,6 +12,7 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #6, part 1: a manager could not create courses or pools.
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  * controller never reads answers 200 and silently does nothing — the same failure shape
  * as the Arabic content language in SettingsControllerLanguageTest.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AdminInstructorGroupTest extends TestCase {
 
     /** @var array<string, string> */

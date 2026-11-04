@@ -20,7 +20,9 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CourseServiceTest extends TestCase {
     private CourseMapper $courseMapper;
     private CourseMemberMapper $courseMemberMapper;
@@ -77,7 +79,7 @@ class CourseServiceTest extends TestCase {
         $member->setUserId('alice');
         $member->setRole('instructor');
 
-        $this->courseMapper->method('findById')->with(12)->willReturn($course);
+        $this->courseMapper->expects($this->atLeastOnce())->method('findById')->with(12)->willReturn($course);
         $this->courseMemberMapper->expects($this->once())
             ->method('findByCourseAndUser')
             ->with(12, 'alice')
@@ -93,7 +95,7 @@ class CourseServiceTest extends TestCase {
         $member->setUserId('alice');
         $member->setRole('student');
 
-        $this->courseMapper->method('findById')->with(12)->willReturn($course);
+        $this->courseMapper->expects($this->atLeastOnce())->method('findById')->with(12)->willReturn($course);
         $this->courseMemberMapper->expects($this->once())
             ->method('findByCourseAndUser')
             ->with(12, 'alice')

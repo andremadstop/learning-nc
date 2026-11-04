@@ -14,6 +14,8 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 155 Plan 05 — CertificateController ownership + OB3 JSON-LD download contract.
@@ -27,8 +29,9 @@ use PHPUnit\Framework\TestCase;
  *
  * The PUBLIC verify route is Phase 157 — NOT exercised here. All routes are owner-scoped.
  *
- * @group cert-05
  */
+#[Group('cert-05')]
+#[AllowMockObjectsWithoutExpectations]
 class CertificateControllerTest extends TestCase {
     // Verification ids must be valid UUIDv4 — the controller 404s malformed ids before any DB lookup.
     private const VID_OWN = '11111111-1111-4111-8111-111111111111';
@@ -102,7 +105,7 @@ class CertificateControllerTest extends TestCase {
      * from a non-existent one (no existence oracle). The body must NOT contain the cert.
      */
     public function testShowForeignCertReturns404WithoutBody(): void {
-        $this->mapperMock->method('findByVerificationIdAndUserId')
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationIdAndUserId')
             ->with(self::VID_FOREIGN, 'alice')
             ->willThrowException(new DoesNotExistException('not owned'));
 
@@ -119,7 +122,7 @@ class CertificateControllerTest extends TestCase {
      * credential file, never a 403 that would leak existence).
      */
     public function testDownloadForeignCertReturns404(): void {
-        $this->mapperMock->method('findByVerificationIdAndUserId')
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationIdAndUserId')
             ->with(self::VID_FOREIGN, 'alice')
             ->willThrowException(new DoesNotExistException('not owned'));
 
@@ -150,7 +153,7 @@ class CertificateControllerTest extends TestCase {
     public function testDownloadDefaultReturnsEnvelopedJsonLd(): void {
         $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
         $cert = $this->makeCert(self::VID_OWN, 'alice', $jwt);
-        $this->mapperMock->method('findByVerificationIdAndUserId')->with(self::VID_OWN, 'alice')->willReturn($cert);
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationIdAndUserId')->with(self::VID_OWN, 'alice')->willReturn($cert);
 
         $resp = $this->makeController('alice')->download(self::VID_OWN);
 
@@ -173,7 +176,7 @@ class CertificateControllerTest extends TestCase {
     public function testDownloadJwtFormatReturnsRawCompactJwt(): void {
         $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
         $cert = $this->makeCert(self::VID_OWN, 'alice', $jwt);
-        $this->mapperMock->method('findByVerificationIdAndUserId')->with(self::VID_OWN, 'alice')->willReturn($cert);
+        $this->mapperMock->expects($this->atLeastOnce())->method('findByVerificationIdAndUserId')->with(self::VID_OWN, 'alice')->willReturn($cert);
 
         $resp = $this->makeController('alice')->download(self::VID_OWN, 'jwt');
 

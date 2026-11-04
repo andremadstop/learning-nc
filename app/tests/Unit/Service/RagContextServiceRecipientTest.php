@@ -15,6 +15,7 @@ use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.7.0 Task B5 / spec 3.6 (review finding, HIGH): contributions of other learners (swarm memory,
@@ -23,6 +24,7 @@ use Psr\Log\LoggerInterface;
  * stay, and author metadata never enters the context. Without a session the context is built as
  * for an external recipient (fail closed).
  */
+#[AllowMockObjectsWithoutExpectations]
 class RagContextServiceRecipientTest extends TestCase {
     private const COURSE = 42;
 

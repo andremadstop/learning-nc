@@ -17,6 +17,7 @@ use OCP\IConfig;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.5.2: generateSummary() sends the user's weak topic and wrongly answered questions to the
@@ -27,6 +28,7 @@ use Psr\Log\LoggerInterface;
  * snapshot and the consent epoch are fixed for the whole assembly and the prompt is sent with
  * exactly that session (plan: begin before building the context). Same for the Lernplan.
  */
+#[AllowMockObjectsWithoutExpectations]
 class NoteGeneratorConsentTest extends TestCase {
     private GeminiService&MockObject $gemini;
     private LernprofilService&MockObject $profile;
@@ -51,7 +53,7 @@ class NoteGeneratorConsentTest extends TestCase {
     }
 
     public function testGenerateSummaryWithoutConsentNeverCallsTheModel(): void {
-        $this->gemini->method('begin')->with('alice', LlmPurpose::Note)->willThrowException(new LlmConsentException());
+        $this->gemini->expects($this->atLeastOnce())->method('begin')->with('alice', LlmPurpose::Note)->willThrowException(new LlmConsentException());
         $this->gemini->expects($this->never())->method('generateNote');
         $this->gemini->expects($this->never())->method('resolveResponseLanguage');
         $this->profile->expects($this->never())->method($this->anything());
@@ -66,7 +68,7 @@ class NoteGeneratorConsentTest extends TestCase {
      * the weekly job counts it as skipped_consent and controllers answer consent_required.
      */
     public function testGenerateSummaryWithoutConsentThrowsTheConsentException(): void {
-        $this->gemini->method('begin')->with('alice', LlmPurpose::WeeklyNote)->willThrowException(new LlmConsentException());
+        $this->gemini->expects($this->atLeastOnce())->method('begin')->with('alice', LlmPurpose::WeeklyNote)->willThrowException(new LlmConsentException());
         $this->gemini->expects($this->never())->method('generateNote');
 
         $this->expectException(LlmConsentException::class);

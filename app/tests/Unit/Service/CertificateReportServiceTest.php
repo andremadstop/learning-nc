@@ -27,6 +27,7 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Real-logic contract for CertificateReportService::getCourseReport() — the load-bearing
@@ -37,6 +38,7 @@ use PHPUnit\Framework\TestCase;
  * and clock are mocked so we can drive a fake "now" and a hand-built VC-JWT payload through the
  * genuine decode + projection logic.
  */
+#[AllowMockObjectsWithoutExpectations]
 class CertificateReportServiceTest extends TestCase {
 
     private const COURSE_ID = 7;
@@ -457,7 +459,7 @@ class CertificateReportServiceTest extends TestCase {
             ]);
 
         $assignmentService = $this->createMock(AssignmentService::class);
-        $assignmentService->method('expandGroup')->with('team-x')->willReturn(['bob', 'carol', 'dave']);
+        $assignmentService->expects($this->atLeastOnce())->method('expandGroup')->with('team-x')->willReturn(['bob', 'carol', 'dave']);
         $assignmentService->method('getStatesForCourseAndUsers')
             ->willReturn([
                 'carol' => ['status' => 'assigned', 'due_date' => $now - 86400], // overdue
@@ -480,7 +482,7 @@ class CertificateReportServiceTest extends TestCase {
         $groupMock->method('getUsers')->willReturn([$carolUser, $daveUser]);
 
         $groupManager = $this->createMock(IGroupManager::class);
-        $groupManager->method('get')->with('team-x')->willReturn($groupMock);
+        $groupManager->expects($this->atLeastOnce())->method('get')->with('team-x')->willReturn($groupMock);
 
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),

@@ -9,12 +9,14 @@ use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\TelosService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.5.2: the course narrative sends learning data to the LLM. It must go through
  * TelosService::hasAiConsent() (exact current consent version) instead of reading the
  * entity and accepting any non-empty version.
  */
+#[AllowMockObjectsWithoutExpectations]
 class SummaryControllerConsentTest extends TestCase {
     private function makeController(TelosService $telos, CourseSummaryService $summary): SummaryController {
         $courses = $this->createMock(CourseService::class);
@@ -26,7 +28,7 @@ class SummaryControllerConsentTest extends TestCase {
     public function testNarrativeWithoutValidConsentNeverReachesTheModel(): void {
         $telos = $this->createMock(TelosService::class);
         $telos->method('getAiConsentVersion')->willReturn('0.9-stale');
-        $telos->method('hasAiConsent')->with('alice')->willReturn(false);
+        $telos->expects($this->atLeastOnce())->method('hasAiConsent')->with('alice')->willReturn(false);
         $summary = $this->createMock(CourseSummaryService::class);
         $summary->expects($this->never())->method('generateAndCacheNarrative');
 
@@ -38,7 +40,7 @@ class SummaryControllerConsentTest extends TestCase {
 
     public function testNarrativeWithValidConsentIsGenerated(): void {
         $telos = $this->createMock(TelosService::class);
-        $telos->method('hasAiConsent')->with('alice')->willReturn(true);
+        $telos->expects($this->atLeastOnce())->method('hasAiConsent')->with('alice')->willReturn(true);
         $summary = $this->createMock(CourseSummaryService::class);
         $summary->expects($this->once())->method('generateAndCacheNarrative')->with(7, 'alice')->willReturn('Text');
 

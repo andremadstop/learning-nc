@@ -21,6 +21,8 @@ use OCP\Security\ICrypto;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Review B1 (BLOCKER): the 5.5 admin form writes ai_provider / ai_ollama_*. Once a connection
@@ -28,6 +30,7 @@ use Psr\Log\LoggerInterface;
  * one recipient while the admin believes another is configured. A changed recipient then asks
  * every user for consent again (recipient_changed).
  */
+#[AllowMockObjectsWithoutExpectations]
 class SettingsControllerAiConnectionTest extends TestCase {
     private FakeAppConfigValues $values;
     private AuditService&MockObject $audit;
@@ -142,9 +145,9 @@ class SettingsControllerAiConnectionTest extends TestCase {
     }
 
     /**
-     * @dataProvider keyStates
      * @param array<string, string> $state
      */
+    #[DataProvider('keyStates')]
     public function testTheAdminPageReportsTheKeyThatIsActuallyUsed(array $state, bool $expected): void {
         if (isset($state['slot'])) {
             $this->values->set('learning', $this->geminiSlot(), $state['slot']);
@@ -219,8 +222,8 @@ class SettingsControllerAiConnectionTest extends TestCase {
      * release does not offer is an error — it must not silently become Gemini (an external
      * recipient), answer 200 and turn every user's consent into recipient_changed.
      *
-     * @dataProvider notSelectableProviders
      */
+    #[DataProvider('notSelectableProviders')]
     public function testAProviderThisReleaseDoesNotOfferIsRejectedBeforeAnythingIsWritten(string $provider): void {
         $local = ['rev' => 3, 'enabled' => true, 'provider' => 'ollama', 'baseUrl' => 'http://ollama.lan:11434',
             'model' => 'm', 'allowInternalNetwork' => true, 'processingLocal' => true];

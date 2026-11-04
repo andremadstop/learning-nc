@@ -13,6 +13,8 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (consent-fix B): StoryEngineService::callGeminiForStory() (private) must return ''
@@ -25,8 +27,9 @@ use Psr\Log\LoggerInterface;
  * AI connection) for the flow to reach the consent check at all — otherwise the test would only
  * be exercising the earlier (unrelated) fallbacks.
  *
- * @group audit-consent-fix-b
  */
+#[Group('audit-consent-fix-b')]
+#[AllowMockObjectsWithoutExpectations]
 class StoryEngineServiceTest extends TestCase {
     /** @var StoryProgressMapper&\PHPUnit\Framework\MockObject\MockObject */
     private $progressMapperMock;
@@ -104,7 +107,7 @@ class StoryEngineServiceTest extends TestCase {
 
     public function testGenerateNarrativeFallsBackToStaticWithoutConsent(): void {
         $this->stubNarratorConfigGates();
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         // The consent gate lives inside the private callGeminiForStory(); it must prevent
         // generateNote() from ever being reached.
@@ -123,7 +126,7 @@ class StoryEngineServiceTest extends TestCase {
 
     public function testGenerateNarrativeCallsGeminiWhenConsentGranted(): void {
         $this->stubNarratorConfigGates();
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         $this->geminiServiceMock->expects($this->once())->method('generateNote')
             ->willReturn('Dynamisch generierter Erzaehltext.');

@@ -13,6 +13,7 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * The genesis row of the audit chain was never seeded on fresh installs (Version009300 seeds
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  * against mutable state, so a wrong column, a dropped WHERE or a lost id binding changes the
  * answer instead of passing unnoticed.
  */
+#[AllowMockObjectsWithoutExpectations]
 class EnsureAuditChainGenesisTest extends TestCase {
     /** @var array<int, true> ids present in learning_audit_chain_state */
     private array $stateIds = [];

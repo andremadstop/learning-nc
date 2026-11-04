@@ -15,11 +15,13 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\StubConsoleInput;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Captures writeln/write output so failure/warning lines can be asserted
  * (the shared StubConsoleOutput discards output).
  */
+#[AllowMockObjectsWithoutExpectations]
 final class CapturingOutput implements OutputInterface {
     public string $buffer = '';
 

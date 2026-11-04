@@ -15,6 +15,8 @@ use OCA\Learning\Tests\Support\FakeResult;
 use OCP\AppFramework\Db\DoesNotExistException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (pre-live review, finding H): QuestionService::verifyExportAccess() must allow the
@@ -23,8 +25,9 @@ use Psr\Log\LoggerInterface;
  * private isCourseInstructorForPool() helper deliberately checks ONLY course.instructor_id (not
  * learning_course_members), so a student row never satisfies it regardless of enrollment.
  *
- * @group audit-h-export-access
  */
+#[Group('audit-h-export-access')]
+#[AllowMockObjectsWithoutExpectations]
 class QuestionServiceTest extends TestCase {
     /** @var PoolMapper&\PHPUnit\Framework\MockObject\MockObject */
     private $poolMapperMock;
@@ -63,10 +66,10 @@ class QuestionServiceTest extends TestCase {
      * carrying this pool → verifyExportAccess() must NOT throw.
      */
     public function testVerifyExportAccessAllowsCourseInstructor(): void {
-        $this->poolMapperMock->method('find')
+        $this->poolMapperMock->expects($this->atLeastOnce())->method('find')
             ->with(10, 'instructor-1')
             ->willThrowException(new DoesNotExistException('not found'));
-        $this->shareMapperMock->method('findByPoolAndUser')
+        $this->shareMapperMock->expects($this->atLeastOnce())->method('findByPoolAndUser')
             ->with(10, 'instructor-1')
             ->willReturn(null);
 
@@ -84,10 +87,10 @@ class QuestionServiceTest extends TestCase {
      * verifyExportAccess() must throw.
      */
     public function testVerifyExportAccessRejectsEnrolledStudent(): void {
-        $this->poolMapperMock->method('find')
+        $this->poolMapperMock->expects($this->atLeastOnce())->method('find')
             ->with(10, 'student-1')
             ->willThrowException(new DoesNotExistException('not found'));
-        $this->shareMapperMock->method('findByPoolAndUser')
+        $this->shareMapperMock->expects($this->atLeastOnce())->method('findByPoolAndUser')
             ->with(10, 'student-1')
             ->willReturn(null);
 

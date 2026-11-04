@@ -16,6 +16,7 @@ use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Utility\ITimeFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.5.2: the weekly job sent every active learner's weakest topic and wrong answers to the
@@ -26,6 +27,7 @@ use Psr\Log\LoggerInterface;
  * data and hands it to the note generator, so the snapshot and the consent epoch are those of the
  * moment the note's assembly started.
  */
+#[AllowMockObjectsWithoutExpectations]
 class WeeklyLernplanJobConsentTest extends TestCase {
     private static function session(string $uid): LlmSession {
         return new LlmSession(ConnectionStore::legacyGemini(true), $uid, LlmPurpose::WeeklyNote, 0);
@@ -59,7 +61,7 @@ class WeeklyLernplanJobConsentTest extends TestCase {
         $profile = $this->createMock(LernprofilService::class);
         $profile->expects($this->never())->method('getWeakestTopics');
         $gateway = $this->createMock(LlmGateway::class);
-        $gateway->method('begin')->with('alice', LlmPurpose::WeeklyNote)->willThrowException(new LlmConsentException());
+        $gateway->expects($this->atLeastOnce())->method('begin')->with('alice', LlmPurpose::WeeklyNote)->willThrowException(new LlmConsentException());
 
         $method = new \ReflectionMethod(WeeklyLernplanJob::class, 'processUser');
         $this->assertSame('skipped_consent', $method->invoke($this->makeJob($notes, $profile, $gateway), 'alice'));

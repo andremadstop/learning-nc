@@ -20,6 +20,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Task B4: GeminiService keeps prompt building, injection protection and output checks, but every
@@ -28,6 +30,7 @@ use Psr\Log\LoggerInterface;
  * is no longer part of any prompt, the facade's own rate limiter is gone (the gateway budget
  * replaces it), and its audit rows carry no prompt or answer text.
  */
+#[AllowMockObjectsWithoutExpectations]
 class GeminiServiceGatewayTest extends TestCase {
     private const PROMPT_MARKER = 'PROMPT-MARKER-7f3a';
 
@@ -105,14 +108,14 @@ class GeminiServiceGatewayTest extends TestCase {
         ];
     }
 
-    /** @dataProvider facadeCalls */
+    #[DataProvider('facadeCalls')]
     public function testMissingConsentReachesTheCaller(\Closure $call): void {
         $this->consentMissingAtBegin();
         $this->expectException(LlmConsentException::class);
         $call($this->service());
     }
 
-    /** @dataProvider facadeCalls */
+    #[DataProvider('facadeCalls')]
     public function testConsentRevokedBeforeSendIsNotSwallowed(\Closure $call): void {
         $this->gateway->method('begin')->willReturnCallback(static fn (string $uid, LlmPurpose $p) => self::session($uid, $p));
         $this->gateway->expects($this->once())->method('send')->willThrowException(new LlmConsentException());
@@ -131,7 +134,7 @@ class GeminiServiceGatewayTest extends TestCase {
         ];
     }
 
-    /** @dataProvider purposes */
+    #[DataProvider('purposes')]
     public function testEachFacadeBeginsForItsSubjectAndPurpose(string $uid, LlmPurpose $purpose, \Closure $call): void {
         $this->gateway->expects($this->once())->method('begin')->with($uid, $purpose)->willReturn(self::session($uid, $purpose));
         $this->gateway->expects($this->once())->method('send')

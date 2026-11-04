@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Unit\Service\Llm;
 
 use OCA\Learning\Service\Llm\LlmOutputNormalizer;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * 5.6.0 Task A4: every provider adapter cleans model output through one normalizer. The
@@ -165,7 +166,7 @@ class LlmOutputNormalizerTest extends TestCase {
         ];
     }
 
-    /** @dataProvider geminiParityInputs */
+    #[DataProvider('geminiParityInputs')]
     public function testMatchesGeminiProviderWithoutThinkTags(string $input, string $legacyHex): void {
         $this->assertSame(hex2bin($legacyHex), $this->normalizer->normalize($input));
     }

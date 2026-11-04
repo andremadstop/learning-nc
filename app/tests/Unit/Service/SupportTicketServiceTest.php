@@ -10,6 +10,8 @@ use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TelosService;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * AUDIT v5.2.1 (consent-fix A): SupportTicketService::create() must ALWAYS persist the ticket via
@@ -19,8 +21,9 @@ use PHPUnit\Framework\TestCase;
  * i.e. the connection snapshot — 5.7.0, no longer the legacy `ai_enabled` key) AND
  * TelosService::hasAiConsent().
  *
- * @group audit-consent-fix-a
  */
+#[Group('audit-consent-fix-a')]
+#[AllowMockObjectsWithoutExpectations]
 class SupportTicketServiceTest extends TestCase {
     /** @var SupportTicketMapper&\PHPUnit\Framework\MockObject\MockObject */
     private $ticketMapperMock;
@@ -58,7 +61,7 @@ class SupportTicketServiceTest extends TestCase {
 
     public function testCreatePersistsTicketButSkipsAiTriageWithoutConsent(): void {
         $this->stubAiAvailable(true);
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         // Ticket creation must NOT depend on consent at all.
         $this->ticketMapperMock->expects($this->once())->method('insert')->willReturnArgument(0);
@@ -77,7 +80,7 @@ class SupportTicketServiceTest extends TestCase {
 
     public function testCreateRunsAiTriageWhenAiEnabledAndConsentGranted(): void {
         $this->stubAiAvailable(true);
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(true);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         $this->ticketMapperMock->expects($this->once())->method('insert')->willReturnArgument(0);
         $this->ticketMapperMock->expects($this->once())->method('update')->willReturnArgument(0);

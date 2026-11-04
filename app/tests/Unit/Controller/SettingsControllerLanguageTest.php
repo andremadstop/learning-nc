@@ -9,6 +9,8 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #6: the personal settings content-language dropdown offers Arabic
@@ -25,6 +27,7 @@ use PHPUnit\Framework\TestCase;
  * it needs a migration tested on PostgreSQL AND MariaDB. Offering a language whose
  * translations can never be stored would trade a silent drop for a silent no-op.
  */
+#[AllowMockObjectsWithoutExpectations]
 class SettingsControllerLanguageTest extends TestCase {
 
     private IConfig $config;
@@ -62,9 +65,7 @@ class SettingsControllerLanguageTest extends TestCase {
         return $this->written['content_language'] ?? '__unset__';
     }
 
-    /**
-     * @dataProvider offeredLanguages
-     */
+    #[DataProvider('offeredLanguages')]
     public function testEveryLanguageTheDropdownOffersIsActuallyStored(string $code): void {
         $this->assertSame($code, $this->save($code));
     }

@@ -21,11 +21,13 @@ use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #10: a question can carry a scenario / info text that learners read before the
  * question. These tests pin how it is stored, kept, cleared, translated and delivered.
  */
+#[AllowMockObjectsWithoutExpectations]
 class QuestionScenarioTest extends TestCase {
     private const ANSWERS = [
         ['text' => 'Yes', 'is_correct' => true],

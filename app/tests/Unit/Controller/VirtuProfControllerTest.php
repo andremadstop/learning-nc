@@ -23,6 +23,8 @@ use OCA\Learning\Service\TelosService;
 use OCP\IConfig;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 153 Plan 03 — MIGR-01 / MIGR-02 first-touch-coercion contract.
@@ -44,8 +46,9 @@ use PHPUnit\Framework\TestCase;
  *      'einstein_v0_dropped') → normalizeSkin() falls back to 'nova'
  *      (allowlist sanitization on read).
  *
- * @group migr-01-02
  */
+#[Group('migr-01-02')]
+#[AllowMockObjectsWithoutExpectations]
 class VirtuProfControllerTest extends TestCase {
     /** @var IConfig&\PHPUnit\Framework\MockObject\MockObject */
     private $configMock;
@@ -158,7 +161,7 @@ class VirtuProfControllerTest extends TestCase {
     public function testGetSkin_existingUser_resolvesNova(): void {
         $this->configureStatePayloadReads('');  // sentinel: no virtuprof_skin row
 
-        $this->configMock->method('getUserKeys')
+        $this->configMock->expects($this->atLeastOnce())->method('getUserKeys')
             ->with('user-A', 'learning')
             ->willReturn(['consent_ai', 'interface_language']);
 
@@ -180,7 +183,7 @@ class VirtuProfControllerTest extends TestCase {
     public function testGetSkin_newUser_resolvesProfLernClassic(): void {
         $this->configureStatePayloadReads('');  // sentinel: no virtuprof_skin row
 
-        $this->configMock->method('getUserKeys')
+        $this->configMock->expects($this->atLeastOnce())->method('getUserKeys')
             ->with('user-B', 'learning')
             ->willReturn([]);
 
@@ -249,7 +252,7 @@ class VirtuProfControllerTest extends TestCase {
      */
     public function testChatWithoutConsentIsBlocked(): void {
         $this->enableAi();
-        $this->telosMock->method('hasAiConsent')->with('user-A')->willReturn(false);
+        $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->geminiMock->expects($this->never())->method('chat');
         $this->ragMock->expects($this->never())->method('buildContext');
@@ -398,7 +401,7 @@ class VirtuProfControllerTest extends TestCase {
         $this->enableAi();
         $this->telosMock->method('hasAiConsent')->willReturn(true);
         $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
-        $this->questionMock->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
+        $this->questionMock->expects($this->atLeastOnce())->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
 
         $this->ragMock->expects($this->once())->method('buildContext')
             ->with('user-A', 5, null, null, 'was ist ein vlan', true) // suppressAnswers=true
@@ -485,7 +488,7 @@ class VirtuProfControllerTest extends TestCase {
     public function testChatStripsAnswerBearingContextWhenExamActiveOnQuestion(): void {
         $this->enableAi();
         $this->telosMock->method('hasAiConsent')->willReturn(true);
-        $this->questionMock->method('isExamActiveForQuestion')->with(3, 'user-A')->willReturn(true);
+        $this->questionMock->expects($this->atLeastOnce())->method('isExamActiveForQuestion')->with(3, 'user-A')->willReturn(true);
         $this->ragMock->expects($this->never())->method('buildContext'); // no poolId/courseId/lastWrong → no RAG context
 
         $this->expectSanitizedContextReachesGemini();
@@ -510,7 +513,7 @@ class VirtuProfControllerTest extends TestCase {
         $this->enableAi();
         $this->telosMock->method('hasAiConsent')->willReturn(true);
         $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
-        $this->questionMock->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
+        $this->questionMock->expects($this->atLeastOnce())->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
         $this->ragMock->method('buildContext')->willReturn(['chunks' => []]);
 
         $this->expectSanitizedContextReachesGemini();

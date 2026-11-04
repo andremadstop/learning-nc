@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Unit\AppInfo;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Regression lock for Codeberg issue #3 ("Could not resolve OCA\Learning\Controller\AiController").
@@ -29,8 +30,8 @@ use ReflectionClass;
  * source text — an earlier regex version of this test silently skipped the one route written with
  * double quotes, which is exactly the kind of gap that makes a guard worse than useless.
  *
- * @group regression-class-resolution
  */
+#[Group('regression-class-resolution')]
 class ClassResolutionTest extends TestCase {
 
     private const APP_ROOT = __DIR__ . '/../../..';

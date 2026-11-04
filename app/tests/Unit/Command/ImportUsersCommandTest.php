@@ -9,7 +9,9 @@ use OCP\IGroupManager;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ImportUsersCommandTest extends TestCase {
     public function testLargeCsvDispatchesJob(): void {
         $um = $this->createMock(IUserManager::class);

@@ -15,6 +15,8 @@ use OCA\Learning\Service\Llm\Provider\OpenAiCompatibleProvider;
 use OCA\Learning\Tests\Support\RecordingLlmHttp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A5c: the OpenAI-compatible adapter (presets openai, mistral, ionos, openrouter, custom;
@@ -42,6 +44,7 @@ use Psr\Log\LoggerInterface;
  * Shared adapter rules (plan A5): LlmHttpClient transport (target check, pinning, no redirects,
  * never a retry), shared normalizer, `reasoning_content` ignored, no text → `empty`, no logging.
  */
+#[AllowMockObjectsWithoutExpectations]
 class OpenAiCompatibleProviderTest extends TestCase {
     use RecordingLlmHttp;
 
@@ -58,7 +61,7 @@ class OpenAiCompatibleProviderTest extends TestCase {
         return self::llmFixtureCaseNames(self::FIXTURE);
     }
 
-    /** @dataProvider fixtureCases */
+    #[DataProvider('fixtureCases')]
     public function testRequestMatchesFixture(string $name): void {
         $fixture = self::llmFixture(self::FIXTURE);
         $case = self::llmFixtureCase($fixture, $name);
@@ -145,9 +148,9 @@ class OpenAiCompatibleProviderTest extends TestCase {
      * fromArray() already refuses these; the adapter must not rely on it, because a snapshot can be
      * built with the constructor.
      *
-     * @dataProvider badOpenRouterRouting
      * @param array<string, mixed>|null $routing
      */
+    #[DataProvider('badOpenRouterRouting')]
     public function testOpenRouterWithoutFixedRoutingIsConfigAndSendsNothing(?array $routing): void {
         $provider = $this->provider([$this->ok('Antwort')]);
         $conn = new LlmConnection(1, true, 'openai_compatible', 'openrouter', 'https://openrouter.ai/api/v1',
@@ -179,7 +182,7 @@ class OpenAiCompatibleProviderTest extends TestCase {
         return $cases;
     }
 
-    /** @dataProvider missingKeys */
+    #[DataProvider('missingKeys')]
     public function testMissingKeyIsConfigAndSendsNothing(string $preset, ?string $key): void {
         $provider = $this->provider([$this->ok('Antwort')], $key);
         $this->assertProviderCategory('config', fn() => $provider->complete($this->connection($preset, 'some-model'), new LlmRequest('S', 'U')));
@@ -191,7 +194,7 @@ class OpenAiCompatibleProviderTest extends TestCase {
         return ['null' => [null], 'blank' => ['  ']];
     }
 
-    /** @dataProvider customWithoutKey */
+    #[DataProvider('customWithoutKey')]
     public function testCustomWithoutKeySendsNoAuthorizationHeader(?string $key): void {
         $provider = $this->provider([$this->ok('Antwort')], $key);
         $provider->complete($this->customConnection(), new LlmRequest('S', 'U'));
@@ -292,7 +295,7 @@ class OpenAiCompatibleProviderTest extends TestCase {
         ];
     }
 
-    /** @dataProvider emptyBodies */
+    #[DataProvider('emptyBodies')]
     public function testNoAnswerTextIsEmpty(string $body): void {
         $provider = $this->provider([$this->httpResponse(200, $body)]);
         $this->assertProviderCategory('empty', fn() => $provider->complete($this->connection('openai', 'gpt-4.1'), new LlmRequest('S', 'U')));
@@ -326,7 +329,7 @@ class OpenAiCompatibleProviderTest extends TestCase {
             '404' => [404, 'bad_request'], '500' => [500, 'network']];
     }
 
-    /** @dataProvider errorStatuses */
+    #[DataProvider('errorStatuses')]
     public function testErrorStatusMapsToCategoryWithoutRetry(int $status, string $category): void {
         $provider = $this->provider([
             $this->httpResponse($status, '{"error":{"message":"PROMPT-MARKER nope","type":"invalid_request_error"}}'),

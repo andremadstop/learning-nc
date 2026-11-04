@@ -13,6 +13,8 @@ use OCA\Learning\Service\Llm\Provider\OllamaProvider;
 use OCA\Learning\Tests\Support\RecordingLlmHttp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * 5.6.0 Task A5b: the Ollama adapter sends what the 5.5 OllamaProvider sent — POST
@@ -29,6 +31,7 @@ use Psr\Log\LoggerInterface;
  * - token counts are reported (prompt_eval_count / eval_count);
  * - failures are LlmProviderException with a category; no logging in the adapter.
  */
+#[AllowMockObjectsWithoutExpectations]
 class OllamaProviderTest extends TestCase {
     use RecordingLlmHttp;
 
@@ -39,7 +42,7 @@ class OllamaProviderTest extends TestCase {
         return self::llmFixtureCaseNames('ollama-request.json');
     }
 
-    /** @dataProvider fixtureCases */
+    #[DataProvider('fixtureCases')]
     public function testRequestMatchesLegacyFixture(string $name): void {
         $fixture = self::llmFixture('ollama-request.json');
         $case = self::llmFixtureCase($fixture, $name);
@@ -121,7 +124,7 @@ class OllamaProviderTest extends TestCase {
         ];
     }
 
-    /** @dataProvider emptyBodies */
+    #[DataProvider('emptyBodies')]
     public function testNoAnswerTextIsEmpty(string $body): void {
         $provider = $this->provider([$this->httpResponse(200, $body)]);
         $this->assertProviderCategory('empty', fn() => $provider->complete($this->connection('http://ollama:11434', 'llama3'), new LlmRequest('', 'Hallo')));
@@ -147,7 +150,7 @@ class OllamaProviderTest extends TestCase {
             '503' => [503, 'overloaded'], '529' => [529, 'overloaded'], '404' => [404, 'bad_request'], '500' => [500, 'network']];
     }
 
-    /** @dataProvider errorStatuses */
+    #[DataProvider('errorStatuses')]
     public function testErrorStatusMapsToCategoryWithoutRetry(int $status, string $category): void {
         $provider = $this->provider([
             $this->httpResponse($status, '{"error":"PROMPT-MARKER model not found"}'),

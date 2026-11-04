@@ -9,7 +9,9 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class BadgeServiceTest extends TestCase {
     private IDBConnection $db;
     private INotificationManager $notificationManager;

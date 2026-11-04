@@ -12,6 +12,8 @@ use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 160 Plan 05 — ClassbookController USER-01 null-email safety.
@@ -21,8 +23,9 @@ use PHPUnit\Framework\TestCase;
  *
  * REQUIREMENTS: USER-01 — email-null safety in ClassbookController (line 112 fix).
  *
- * @group user-01
  */
+#[Group('user-01')]
+#[AllowMockObjectsWithoutExpectations]
 class ClassbookControllerTest extends TestCase {
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
     private $requestMock;
@@ -71,7 +74,7 @@ class ClassbookControllerTest extends TestCase {
         $userMock->method('getDisplayName')->willReturn('Alice Wonderland');
         $userMock->method('getEMailAddress')->willReturn(null);
 
-        $this->userManagerMock->method('get')->with('alice')->willReturn($userMock);
+        $this->userManagerMock->expects($this->atLeastOnce())->method('get')->with('alice')->willReturn($userMock);
 
         // courseService->findById must not throw (simulates access granted).
         // Return [] — PHPUnit 10 rejects null for the declared array return type.
@@ -115,7 +118,7 @@ class ClassbookControllerTest extends TestCase {
         $userMock->method('getDisplayName')->willReturn('Bob Builder');
         $userMock->method('getEMailAddress')->willReturn('bob@example.com');
 
-        $this->userManagerMock->method('get')->with('bob')->willReturn($userMock);
+        $this->userManagerMock->expects($this->atLeastOnce())->method('get')->with('bob')->willReturn($userMock);
         $this->courseServiceMock->method('findById')->willReturn([]); // PHPUnit 10: null invalid for array
         $this->telosMapperMock->method('findByUserIdOrNull')->willReturn(null);
 

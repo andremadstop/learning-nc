@@ -17,6 +17,8 @@ use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 161 Plan 04 — AuditExportController (auditor-gated compliance export, AUDIT-07).
@@ -30,8 +32,9 @@ use PHPUnit\Framework\TestCase;
  * the controller directly bypasses NC middleware, so these tests exercise the in-method group gate
  * (isInGroup → 403) and the export payloads.
  *
- * @group audit-07
  */
+#[Group('audit-07')]
+#[AllowMockObjectsWithoutExpectations]
 class AuditExportControllerTest extends TestCase {
     /** Two raw DB rows — deliberately carrying a `user_id` column to PROVE it never reaches the output. */
     private const RAW_ROWS = [

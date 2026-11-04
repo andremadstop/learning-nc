@@ -8,6 +8,7 @@ use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #7 (second report): a course view died outright because
@@ -22,6 +23,7 @@ use Psr\Log\LoggerInterface;
  *   2. ANY other database error still propagates. Swallowing those would turn real
  *      outages into silent wrong answers.
  */
+#[AllowMockObjectsWithoutExpectations]
 class CurriculumScopeMapperTest extends TestCase {
 
     /** Build a fluent IQueryBuilder mock whose execution throws $toThrow. */

@@ -21,11 +21,13 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Codeberg #9 follow-up: a practice exam can be limited to the pools marked "Required", so
  * supplementary pools stay available for self-study without entering the exam simulation.
  */
+#[AllowMockObjectsWithoutExpectations]
 class PracticeRequiredOnlyTest extends TestCase {
     /** @var list<FakeQueryBuilder> */
     private array $builders = [];

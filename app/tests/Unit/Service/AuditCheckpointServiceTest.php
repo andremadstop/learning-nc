@@ -12,6 +12,8 @@ use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 161 (AUDIT-04) — AuditCheckpointService.
@@ -21,6 +23,7 @@ use Psr\Log\LoggerInterface;
  * public key (must_haves truth #2). We use a REAL Ed25519 keypair generated in-test, so the crypto
  * is exercised end-to-end, not mocked away.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AuditCheckpointServiceTest extends TestCase {
 
     /** @return array{pub: string, sec: string} */
@@ -308,8 +311,8 @@ class AuditCheckpointServiceTest extends TestCase {
      * nothing to be overdue about, whether no checkpoint exists yet (last_checkpoint_at = 0) or
      * the last one is weeks old after a quiet period.
      *
-     * @dataProvider livenessOverdueCases
      */
+    #[DataProvider('livenessOverdueCases')]
     public function testGetLivenessStatusOverdueIsKeyedOnPendingEvents(int $lastCheckpointAt, int $pending, ?int $oldestPendingAt, bool $expectedOverdue): void {
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(

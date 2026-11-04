@@ -21,6 +21,7 @@ use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Behavioral contract for PassCriteriaService::evaluate() — the two-gate evaluator.
@@ -35,6 +36,7 @@ use PHPUnit\Framework\TestCase;
  * LOGIC; the guess exclusion itself is a structural property of the data source, asserted
  * in CourseSummaryServiceTest (mode='exam' + completed_at filters) and documented in SUMMARY.
  */
+#[AllowMockObjectsWithoutExpectations]
 class PassCriteriaServiceTest extends TestCase {
 
     private const COURSE_ID = 7;

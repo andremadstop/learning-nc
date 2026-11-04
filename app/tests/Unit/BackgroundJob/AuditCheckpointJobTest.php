@@ -8,6 +8,7 @@ use OCA\Learning\Service\AuditCheckpointService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
  * Phase 161 (AUDIT-04) — AuditCheckpointJob.
@@ -17,6 +18,7 @@ use Psr\Log\LoggerInterface;
  *
  * run() is protected, so it is invoked via reflection.
  */
+#[AllowMockObjectsWithoutExpectations]
 class AuditCheckpointJobTest extends TestCase {
 
     private function invokeRun(AuditCheckpointJob $job): void {
