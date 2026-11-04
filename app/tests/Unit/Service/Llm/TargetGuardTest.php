@@ -123,6 +123,11 @@ class TargetGuardTest extends TestCase {
     public function testLocalAddressesRejectedWithoutInternalFlag(string $ip): void {
         $guard = new TargetGuard(fn(string $h) => [$ip]);
         $this->assertConfigError(fn() => $guard->resolve('https://llm.example.com/v1', false), $ip);
+        if (TargetGuard::isLinkLocal($ip)) {
+            // link-local / metadata stays refused even with the internal network allowed (5.7.0)
+            $this->assertConfigError(fn() => $guard->resolve('https://llm.example.com/v1', true), $ip . ' with flag');
+            return;
+        }
         // the same address is fine once the admin explicitly allowed the internal network
         $this->assertSame(inet_ntop(inet_pton($ip)), $guard->resolve('https://llm.example.com/v1', true)['ip']);
     }
@@ -167,6 +172,23 @@ class TargetGuardTest extends TestCase {
             $this->assertSame('config', $e->category);
             $this->assertStringNotContainsString('192.168.1.20', $e->getMessage());
         }
+    }
+
+    /**
+     * Link-local addresses (cloud metadata 169.254.169.254, fe80::/10, AWS fd00:ec2::254) are never a
+     * model server: refused even when the connection allows the internal network (Ollama in the LAN).
+     */
+    public function testLinkLocalAndMetadataRefusedEvenWithInternalFlag(): void {
+        foreach (['169.254.169.254', '169.254.1.1', 'fe80::1', 'fd00:ec2::254', '::ffff:169.254.169.254', '64:ff9b::a9fe:a9fe'] as $ip) {
+            $guard = new TargetGuard(fn(string $h) => [$ip]);
+            $this->assertConfigError(fn() => $guard->resolve('http://metadata.example.com:11434', true), "resolved $ip");
+        }
+        $literal = new TargetGuard(fn(string $h) => $this->fail('IP literal must not be resolved'));
+        $this->assertConfigError(fn() => $literal->resolve('http://169.254.169.254/latest', true), 'literal');
+        $this->assertConfigError(fn() => $literal->resolve('http://[fe80::1]:11434', true), 'v6 literal');
+        // the LAN itself stays allowed
+        $lan = new TargetGuard(fn(string $h) => ['10.0.0.5']);
+        $this->assertSame('10.0.0.5', $lan->resolve('http://ollama.lan:11434', true)['ip']);
     }
 
     private function assertConfigError(callable $fn, string $label = ''): void {

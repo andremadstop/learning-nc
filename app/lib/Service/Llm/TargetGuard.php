@@ -94,6 +94,12 @@ final class TargetGuard {
             if ($canonical === null) {
                 continue;
             }
+            // Never a model server, also not with the internal network allowed (Ollama in the LAN):
+            // link-local, i.e. the cloud metadata endpoints. The admin connection test would
+            // otherwise read up to 200 characters of their answer.
+            if (self::isLinkLocal($canonical)) {
+                throw self::fail('Target resolves to a link-local or metadata address');
+            }
             if (!$allowInternalNetwork && self::isInternal($canonical)) {
                 throw self::fail('Target resolves to an internal address; enable the internal network for this connection');
             }
@@ -131,6 +137,22 @@ final class TargetGuard {
             }
         }
         return array_values(array_unique($ips));
+    }
+
+    /** Link-local (169.254.0.0/16, fe80::/10, also embedded in IPv6) or the AWS IPv6 metadata address. */
+    public static function isLinkLocal(string $ip): bool {
+        $packed = @inet_pton($ip);
+        if ($packed === false) {
+            return true;
+        }
+        if (strlen($packed) === 16) {
+            if (self::inCidr($packed, 'fe80::/10') || $packed === inet_pton('fd00:ec2::254')) {
+                return true;
+            }
+            $embedded = self::embeddedIpv4($packed);
+            return $embedded !== null && $embedded !== 'local' && self::inCidr($embedded, '169.254.0.0/16');
+        }
+        return self::inCidr($packed, '169.254.0.0/16');
     }
 
     /** Is this (canonical) address loopback, private, link-local, ULA, reserved, multicast or unspecified? */

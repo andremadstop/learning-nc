@@ -33,7 +33,10 @@ consent works and how a request leaves the server. No new AI providers yet; they
 ### Security and privacy
 - The Gemini key is stored encrypted; the upgrade moves an existing plain-text key over.
 - Requests go only to the configured address: no redirects, no automatic retries, the address
-  is resolved once and pinned.
+  is resolved once and pinned. Link-local addresses (such as the cloud metadata address
+  169.254.169.254) are refused for every provider, also for an Ollama server in the local network.
+- Frontend dependencies updated for known vulnerabilities (Vue, axios, DOMPurify via
+  @nextcloud/vue, PostCSS, nanoid, form-data, among others).
 - Prompts, answers, keys and provider error texts no longer reach `nextcloud.log` or the audit
   table. The upgrade removes such content from older audit rows.
 - Contributions of other learners are only put into a prompt when the recipient is a local
