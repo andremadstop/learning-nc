@@ -14,7 +14,9 @@ use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Service\Llm\LlmRequest;
+use OCA\Learning\Service\PoolGeneratorService;
 use OCA\Learning\Service\PoolService;
+use OCA\Learning\Service\StoryEngineService;
 use OCA\Learning\Tests\Integration\Support\ContainerObjects;
 use OCA\Learning\Tests\Integration\Support\MockLlmServer;
 use OCP\AppFramework\App;
@@ -340,6 +342,28 @@ final class NoContentInLogsTest extends TestCase {
         $this->assertStringNotContainsString($this->keyMarker, (string)$result['detail']);
         $this->assertCount(3, MockLlmServer::requests());
 
+        $this->assertNoMarkerLeaked();
+    }
+
+    public function testAnAnswerThatIsNotJsonLeavesNoContentInLog(): void {
+        $this->connectAndConsent(self::ollamaOnMock());
+        MockLlmServer::setReply('Sorry, here is prose instead of JSON ' . $this->replyMarker);
+
+        // pool generator: the lecturer's text in, a non-JSON answer back
+        $questions = $this->container->get(PoolGeneratorService::class)
+            ->generateFromText('Subnetting erklärt ' . $this->promptMarker . ' ' . str_repeat('Netzmaske Präfix Host. ', 20), $this->uid, 5);
+        $this->assertSame([], $questions, 'a non-JSON answer yields no questions');
+
+        // story: dynamic choices fall back to the static ones
+        $static = [['id' => 'a', 'text' => 'Weiter']];
+        $choices = $this->container->get(StoryEngineService::class)->generateDynamicChoices(
+            ['id' => 's1', 'text' => 'Szene ' . $this->promptMarker, 'choices' => $static, 'dynamic_choices' => true],
+            ['id' => 'e1-campaign', 'title' => 'E1', 'dynamic_choices' => true],
+            'analyst', [], $this->uid
+        );
+        $this->assertSame($static, $choices, 'a non-JSON answer keeps the static choices');
+
+        $this->assertGreaterThanOrEqual(2, count(MockLlmServer::requests()), 'both paths reached the model');
         $this->assertNoMarkerLeaked();
     }
 

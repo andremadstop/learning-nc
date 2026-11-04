@@ -1787,7 +1787,8 @@ class StoryEngineService {
             if (!is_array($decoded) || empty($decoded['choices']) || !is_array($decoded['choices'])) {
                 $this->logger->warning('StoryEngineService: dynamic choices JSON parse failed', [
                     'app' => 'learning',
-                    'raw' => mb_substr($raw, 0, 200),
+                    // 5.7.0: the model output is content and stays out of the log
+                    'raw_chars' => mb_strlen($raw),
                 ]);
                 return $staticChoices;
             }
@@ -2023,7 +2024,8 @@ class StoryEngineService {
             if (!is_array($data)) {
                 $this->logger->warning('StoryEngineService: freetext JSON parse failed', [
                     'app' => 'learning',
-                    'raw' => mb_substr($raw, 0, 300),
+                    // 5.7.0: the model output (it can echo the learner's text) stays out of the log
+                    'raw_chars' => mb_strlen($raw),
                 ]);
                 return [
                     'valid'      => false,

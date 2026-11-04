@@ -288,7 +288,8 @@ Material:
         if (!is_array($data)) {
             $this->logger->warning('PoolGeneratorService: output is not valid JSON', [
                 'app' => 'learning',
-                'output' => substr($output, 0, 500),
+                // 5.7.0: the model output is content and stays out of the log
+                'output_chars' => strlen($output),
             ]);
             return [];
         }
