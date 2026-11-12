@@ -795,6 +795,38 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame([], $insert->insertValues);
     }
 
+    /**
+     * 2026-11 audit H4: a timed practice exam inside the grace period after its deadline is
+     * neither resumed (questions handed out again) nor closed under the in-flight final batch.
+     */
+    public function testPracticeStartInsideGracePeriodNeitherResumesNorCloses(): void {
+        $expired = ['id' => 601, 'pool_id' => 42, 'course_id' => 7, 'user_id' => 'alice', 'mode' => 'exam',
+            'exam_kind' => 'practice', 'pass_percent' => 75, 'started_at' => time() - 605,
+            'completed_at' => null, 'time_limit_seconds' => 600, 'total_questions' => 2,
+            'correct_answers' => 0, 'attempt_no' => 1, 'question_order_json' => json_encode([10, 20])];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($expired)),
+        ]);
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $this->practiceQuestionMapper(),
+            courseService: $this->practiceCourseService($this->practiceCourse(true, 2, 10), [10, 20], [42, 43]),
+        );
+
+        try {
+            $service->startPracticeExam(7, 'alice');
+            $this->fail('a practice start inside the grace period must be refused');
+        } catch (\Exception $e) {
+            $this->assertSame('Exam timed out', $e->getMessage());
+        }
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertFalse(
+                $builder->table === 'learning_sessions' && in_array($builder->operation, ['insert', 'update'], true),
+                'no new session and no close inside the grace period'
+            );
+        }
+    }
+
     private function completedPracticeSession(int $correct, int $total, int $pass): array {
         return ['id' => 600, 'pool_id' => 42, 'course_id' => 7, 'user_id' => 'alice', 'mode' => 'exam',
             'exam_kind' => 'practice', 'pass_percent' => $pass, 'started_at' => time() - 600,
