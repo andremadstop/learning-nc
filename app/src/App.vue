@@ -6,6 +6,27 @@
           <h2>{{ effectiveUserRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
         </div>
 
+        <!-- GitHub #34: the student view hides Manage, pool creation and import. It is
+             persisted in localStorage, so it must stay visible and switchable from every page. -->
+        <NcNoteCard v-if="studentViewActive" type="warning" class="student-view-banner">
+          <div class="app-banner__body">
+            <span>{{ t('learning', 'Schüler-Ansicht aktiv: Du siehst die App so wie Lernende. Verwalten, Pool-Erstellung und Import sind ausgeblendet.') }}</span>
+            <NcButton variant="primary" class="student-view-banner__exit" @click="setStudentViewOverride(false)">
+              {{ t('learning', 'Schüler-Ansicht beenden') }}
+            </NcButton>
+          </div>
+        </NcNoteCard>
+
+        <!-- GitHub #34: a failed role request used to fall back to the student view silently. -->
+        <NcNoteCard v-if="roleLoadFailed" type="error" class="role-load-failed">
+          <div class="app-banner__body">
+            <span>{{ t('learning', 'Deine Rolle konnte nicht geladen werden. Die App zeigt deshalb die Ansicht für Lernende, ohne Pool-Erstellung und Kursverwaltung. Eigene Pools und Pools, die mit Schreibrecht mit dir geteilt wurden, kannst du weiter verwalten.') }}</span>
+            <NcButton variant="secondary" @click="fetchRole">
+              {{ t('learning', 'Erneut versuchen') }}
+            </NcButton>
+          </div>
+        </NcNoteCard>
+
         <!-- Top-level navigation -->
         <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
           <button
@@ -92,7 +113,10 @@
 
             <PoolList
               v-else-if="currentView === 'pools'"
-              :userRole="userRole"
+              :userRole="effectiveUserRole"
+              :instructor-group="roleGroup"
+              :student-view-active="studentViewActive"
+              :role-load-failed="roleLoadFailed"
               @selectPool="selectPool"
               @openSmartQueue="openSmartQueue"
               @openRemediation="openRemediation"
@@ -138,7 +162,9 @@
                 :poolId="selectedPool.id"
                 :totalQuestions="questionCount"
                 :contentLanguage="contentLanguage"
+                :can-manage="canManagePool"
                 @back="backToPools"
+                @manage="setMode('manage')"
               />
 
               <LeitnerMode
@@ -238,11 +264,16 @@
                 @student-view-override-changed="setStudentViewOverride" />
             </template>
             <!-- Student: only PersonalSettings, no sub-tabs -->
+            <!-- GitHub #34: this branch also renders for an instructor in the student view; without
+                 the role and the override the switch to leave that view was not shown at all. -->
             <PersonalSettings
               v-else
+              :user-role="userRole"
+              :student-view-override="studentViewOverride"
               @content-language-changed="updateContentLanguage"
               @virtuprof-enabled-changed="updateVirtuProfEnabled"
-              @fsrs-detailed-stats-changed="updateFsrsDetailedStats" />
+              @fsrs-detailed-stats-changed="updateFsrsDetailedStats"
+              @student-view-override-changed="setStudentViewOverride" />
           </template>
 
           <!-- ==================== COURSES VIEW ==================== -->
@@ -461,6 +492,9 @@ export default {
       // Top-level navigation
       mainView: 'courses',
       userRole: 'student',
+      // Instructor group name from /api/role, named in the "ask your admin" note (GitHub #34).
+      roleGroup: '',
+      roleLoadFailed: false,
       // Issue #10: NC-admins are auto-classified as instructors. This client-side
       // override lets a self-hosting admin/instructor flip into the student view
       // without juggling accounts. Persisted in localStorage.
@@ -509,6 +543,16 @@ export default {
     effectiveUserRole() {
       return this.studentViewOverride && this.userRole === 'instructor' ? 'student' : this.userRole;
     },
+    // An instructor who switched to the student view (a real student never is in it).
+    studentViewActive() {
+      return this.studentViewOverride && this.userRole === 'instructor';
+    },
+    // May add questions to the open pool: its owner or an edit share, whatever the role — the
+    // same rule as the backend (canEditPool), which has no instructor gate (GitHub #34). The
+    // student view hides it anyway: it shows the app as learners see it.
+    canManagePool() {
+      return !this.studentViewActive && (this.poolPermission === 'owner' || this.poolPermission === 'edit');
+    },
     modes() {
       return [
         { id: 'train', label: t('learning', 'Training') },
@@ -521,7 +565,14 @@ export default {
     },
     filteredModes() {
       if (this.effectiveUserRole === 'student') {
-        return this.modes.filter(m => ['train', 'leitner', 'exam', 'gameshow'].includes(m.id));
+        // Manage only where the student may edit: the read-only "view questions" variant would
+        // show a read share's answer keys. Statistics is the instructor's own learning stats;
+        // students have their dashboard.
+        const allowed = ['train', 'leitner', 'exam', 'gameshow'];
+        if (this.canManagePool) {
+          allowed.push('manage');
+        }
+        return this.modes.filter(m => allowed.includes(m.id));
       }
       return this.modes;
     },
@@ -633,6 +684,13 @@ export default {
     },
     toolsTabs() {
       this.ensureActiveToolVisible();
+    },
+    // Switching to the student view while Manage or Statistics is open would keep rendering
+    // a mode the student view does not offer.
+    filteredModes(modes) {
+      if (this.selectedPool && !modes.some((m) => m.id === this.mode)) {
+        this.setMode('train');
+      }
     },
   },
   methods: {
@@ -1195,8 +1253,14 @@ export default {
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/role'));
         this.userRole = response.data.role || 'student';
+        this.roleGroup = typeof response.data.group === 'string' ? response.data.group : '';
+        this.roleLoadFailed = false;
       } catch (err) {
+        // Still fall back to the student view (the server enforces roles anyway), but say so:
+        // a silent fallback hid Manage and import without any explanation (GitHub #34).
+        console.error('[learning] Could not load the user role', err);
         this.userRole = 'student';
+        this.roleLoadFailed = true;
       }
     },
 
@@ -1430,14 +1494,35 @@ export default {
       this.currentView = 'questions';
       this.error = null;
       this.poolPermission = pool.is_shared ? (pool.permission || 'read') : 'owner';
+      const count = await this.refreshQuestionCount(pool, true);
+      // GitHub #34: an empty pool opened in Training ("No questions available") with no hint
+      // where questions are added. Whoever can add them lands in Manage directly.
+      if (count === 0 && this.isSelectedPool(pool) && this.canManagePool) {
+        this.setMode('manage');
+      }
+    },
+    // this.selectedPool is a reactive proxy, never === the raw object passed in; compare ids.
+    isSelectedPool(pool) {
+      return !!pool && !!this.selectedPool && this.selectedPool.id === pool.id;
+    },
+    async refreshQuestionCount(pool = this.selectedPool, reportErrors = false) {
+      if (!pool) {
+        return null;
+      }
       try {
         const response = await axios.get(
           generateUrl('/apps/learning/api/pools/' + pool.id + '/questions')
         );
-        this.questionCount = response.data.length;
+        if (this.isSelectedPool(pool)) {
+          this.questionCount = response.data.length;
+        }
+        return response.data.length;
       } catch (err) {
-        this.error = t('learning', 'Fragenanzahl konnte nicht geladen werden');
-        this.questionCount = 0;
+        if (reportErrors && this.isSelectedPool(pool)) {
+          this.error = t('learning', 'Fragenanzahl konnte nicht geladen werden');
+          this.questionCount = 0;
+        }
+        return null;
       }
     },
     async openPoolFromRoute(poolId) {
@@ -1500,6 +1585,11 @@ export default {
       if (newMode === 'swipe') {
         newMode = 'train';
       }
+      // Questions added or deleted in Manage change the count the other modes start from;
+      // without this, a pool filled in Manage still said "No questions" in Training.
+      if (this.mode === 'manage' && newMode !== 'manage') {
+        this.refreshQuestionCount();
+      }
       this.mode = newMode;
       if (newMode !== 'gameshow') {
         this.arenaSubMode = null;
@@ -1558,7 +1648,8 @@ export default {
         const pool = response.data;
         this.selectPool({ id: pool.id, name: pool.name, is_shared: !!pool.is_shared, permission: pool.permission });
       } catch {
-        this.selectPool({ id: poolId, name: '', is_shared: false, permission: 'owner' });
+        // Unknown permission: assume read. 'owner' offered Manage, which the server then refuses.
+        this.selectPool({ id: poolId, name: '', is_shared: true, permission: 'read' });
       }
     },
   }
@@ -1566,6 +1657,17 @@ export default {
 </script>
 
 <style scoped>
+.app-banner__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.student-view-banner,
+.role-load-failed {
+  margin-bottom: 12px;
+}
 #app-learning {
   padding: 24px 40px;
   max-width: 1720px;

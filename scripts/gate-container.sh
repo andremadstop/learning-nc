@@ -87,6 +87,13 @@ start_container() {
 	docker run -d --name "$NAME" --entrypoint sleep "$IMAGE" infinity >/dev/null
 	docker cp "$WORK/repo/app/." "$NAME:/work"
 	docker cp "$WORK/repo/scripts/verify-credential.py" "$NAME:/tmp/verify-credential.py"
+	# ImportControllerJsonTest imports the documented JSON example itself (never a copy), so the doc
+	# sits where the test looks: four levels above tests/Unit/Controller, i.e. /docs next to /work.
+	# Older refs may predate the doc; the test then fails loudly on its own (assertFileExists).
+	if [ -f "$WORK/repo/docs/import-pool-workflow.md" ]; then
+		docker exec "$NAME" mkdir -p /docs
+		docker cp "$WORK/repo/docs/import-pool-workflow.md" "$NAME:/docs/import-pool-workflow.md"
+	fi
 	docker exec -e COMPOSER_VERSION="$COMPOSER_VERSION" -e COMPOSER_SHA256="$COMPOSER_SHA256" "$NAME" sh -euc '
 		ln -sf /usr/src/nextcloud/3rdparty /var/www/html/3rdparty
 		export DEBIAN_FRONTEND=noninteractive

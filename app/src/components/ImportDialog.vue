@@ -1,8 +1,8 @@
 <template>
   <AccessibleDialog :name="t('learning', 'Import Questions')" @closing="$emit('close')" size="normal">
     <div class="format-tabs" role="tablist">
-      <button @click="format = 'csv'" :class="['tab-btn', { active: format === 'csv' }]" role="tab" :aria-selected="format === 'csv' ? 'true' : 'false'">{{ t('learning', 'CSV') }}</button>
-      <button @click="format = 'json'" :class="['tab-btn', { active: format === 'json' }]" role="tab" :aria-selected="format === 'json' ? 'true' : 'false'">{{ t('learning', 'JSON') }}</button>
+      <button @click="chooseFormat('csv')" :class="['tab-btn', { active: format === 'csv' }]" role="tab" :aria-selected="format === 'csv' ? 'true' : 'false'">{{ t('learning', 'CSV') }}</button>
+      <button @click="chooseFormat('json')" :class="['tab-btn', { active: format === 'json' }]" role="tab" :aria-selected="format === 'json' ? 'true' : 'false'">{{ t('learning', 'JSON') }}</button>
     </div>
 
     <NcNoteCard type="info" class="format-help">
@@ -21,7 +21,12 @@
       <template v-else>
         <strong>{{ t('learning', 'JSON Format: Array of question objects') }}</strong><br/>
         <code class="example-code">[{"text":"What is 2+2?","answers":[{"text":"3","is_correct":false},{"text":"4","is_correct":true}],"explanation":"Basic math"}]</code><br/>
-        <small>{{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers, "open" for free text with one model answer), exam_key, handbook_key, handbook_title, chapter_key, chapter_title, chapter_order.') }}</small>
+        <code class="example-code">[{"question":"Capital of France?","options":["Berlin","Paris","Rome"],"answer":1}]</code><br/>
+        <small>
+          {{ t('learning', 'Also accepted: {"questions": […]}, a single question object, or the pool file format {"_meta": …, "pools": [ … ]} with exactly one pool (its name and description are not applied here; for several pools use "occ learning:import-pool-json").') }}<br/>
+          {{ t('learning', 'Answers: "answers", "options" or "choices" — objects with "is_correct", or plain strings. Without "is_correct", name the correct answer on the question: "answer", "correct" or "correct_index" count from 0 (0 = first answer), "correct_number" counts from 1; a letter (A = first) or the exact answer text also work, a list names several correct answers.') }}<br/>
+          {{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers, "open" for free text with one model answer), exam_key, handbook_key, handbook_title, chapter_key, chapter_title, chapter_order.') }}
+        </small>
       </template>
     </NcNoteCard>
 
@@ -51,10 +56,31 @@
       <textarea v-model="textData" :placeholder="format === 'csv' ? t('learning', 'Paste CSV data here...') : t('learning', 'Paste JSON data here...')" rows="6" class="nc-input data-input"></textarea>
     </div>
 
+    <NcNoteCard v-if="jsonHint" type="warning" class="json-hint">
+      {{ jsonHint }}
+    </NcNoteCard>
+
+    <NcNoteCard v-if="previewError" type="error" class="preview-error">
+      {{ previewError }}
+    </NcNoteCard>
+
     <div v-if="preview.length > 0" class="preview-section">
       <h4>{{ t('learning', 'Preview (first {n} items)', { n: preview.length }) }}</h4>
-      <div v-for="(item, i) in preview" :key="i" class="preview-item">
-        <strong>Q{{ i + 1 }}:</strong> {{ item.text }} <span class="preview-answers">({{ item.answerCount }} answers)</span>
+      <div v-for="(item, i) in preview" :key="i" :class="['preview-item', { 'preview-item--error': item.error }]">
+        <strong>Q{{ item.num || i + 1 }}:</strong> {{ item.text }}
+        <span v-if="item.error" class="preview-item-error">— {{ item.error }}</span>
+        <span v-else class="preview-answers">({{ previewDetail(item) }})</span>
+      </div>
+      <div v-if="previewSummary" class="preview-summary">
+        <strong>{{ t('learning', '{importable} of {total} items can be imported', { importable: previewSummary.importable, total: previewSummary.total }) }}</strong>
+        <div v-if="previewSummary.errors.length > 0" class="error-list">
+          <div v-for="(err, i) in previewSummary.errors.slice(0, 5)" :key="'pe'+i">{{ err }}</div>
+          <div v-if="previewSummary.errors.length > 5">{{ t('learning', '...and {n} more', { n: previewSummary.errors.length - 5 }) }}</div>
+        </div>
+        <div v-if="previewSummary.warnings.length > 0" class="warning-list">
+          <div v-for="(w, i) in previewSummary.warnings.slice(0, 5)" :key="'pw'+i" class="warning-item">{{ w }}</div>
+          <div v-if="previewSummary.warnings.length > 5">{{ t('learning', '...and {n} more warnings', { n: previewSummary.warnings.length - 5 }) }}</div>
+        </div>
       </div>
     </div>
 
@@ -92,6 +118,7 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess } from '@nextcloud/dialogs';
 import AccessibleDialog from './AccessibleDialog.vue';
+import { analyzeCsvImport, analyzeJsonImport } from '../utils/importPreview.js';
 
 const CSV_EXAMPLE = `What is the capital of France?,Berlin,Paris,London,Madrid,2,Paris has been the capital since the 10th century
 What color is the sky?,Green,Blue,Red,Yellow,2
@@ -103,18 +130,81 @@ const JSON_EXAMPLE = JSON.stringify([
   {"text":"How many days in a week?","answers":[{"text":"Five","is_correct":false},{"text":"Six","is_correct":false},{"text":"Seven","is_correct":true}]}
 ], null, 2);
 
+/**
+ * True only for text that really is JSON (an object or a list). A CSV whose first field starts
+ * with "[" or "{" (e.g. "[Network] Which port…") must stay CSV.
+ */
+function looksLikeJson(text) {
+  const trimmed = String(text || '').replace(/^\uFEFF/, '').trim();
+  if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) return false;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return parsed !== null && typeof parsed === 'object';
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * The parse error of text that starts like JSON ("[" or "{") but is not valid JSON, else null.
+ * Such text stays on the CSV tab (it may be a CSV like "[Network] Which port…"); when the CSV
+ * reading finds nothing to import, the dialog says it looks like broken JSON.
+ */
+function jsonParseError(text) {
+  const trimmed = String(text || '').replace(/^\uFEFF/, '').trim();
+  if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) return null;
+  try {
+    JSON.parse(trimmed);
+    return null;
+  } catch (e) {
+    return e && e.message ? e.message : String(e);
+  }
+}
+
+/** The server translates its messages itself (IL10N); only make `imported` a number. */
+function normalizeResult(data) {
+  const out = { ...(data || {}) };
+  if (typeof out.imported !== 'number') out.imported = Number(out.imported) || 0;
+  return out;
+}
+
 export default {
   name: 'ImportDialog',
   components: { AccessibleDialog, NcButton, NcNoteCard },
   props: { poolId: { type: Number, required: true } },
   data() {
-    return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], dragging: false };
+    return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], previewError: '', previewSummary: null, dragging: false, formatChosen: false };
+  },
+  computed: {
+    /** Broken JSON pasted on the CSV tab: name the parse error and the JSON tab (GitHub #34). */
+    jsonHint() {
+      if (this.format !== 'csv') return '';
+      const message = jsonParseError(this.textData);
+      if (message === null) return '';
+      if (this.previewSummary && this.previewSummary.importable > 0) return '';
+      return t('learning', 'This looks like JSON, but it is not valid JSON: {message}. If it is meant to be JSON, choose the JSON tab.', { message }, undefined, { escape: false });
+    }
   },
   watch: {
-    textData() { this.updatePreview(); this.result = null; },
+    textData(text) {
+      // GitHub #34: pasted JSON went to the CSV parser, because format detection ran only for
+      // files. Text that parses as a JSON object or list switches the tab (only from CSV, never
+      // back, and never once the user picked the format by hand).
+      if (this.format === 'csv' && !this.formatChosen && looksLikeJson(text)) {
+        this.format = 'json';
+        return; // the format watcher updates the preview
+      }
+      this.updatePreview(); this.result = null;
+    },
     format() { this.updatePreview(); this.result = null; }
   },
   methods: {
+    chooseFormat(format) {
+      // Clicking the tab that is already active is no choice: automatic detection stays on.
+      if (format === this.format) return;
+      this.formatChosen = true;
+      this.format = format;
+    },
     loadExample() {
       this.textData = this.format === 'csv' ? CSV_EXAMPLE : JSON_EXAMPLE;
       this.fileName = '';
@@ -142,9 +232,8 @@ export default {
       const reader = new FileReader();
       reader.onload = (ev) => {
         let text = ev.target.result;
-        // Auto-detect JSON content even for .txt/.csv files
-        const trimmed = text.trimStart();
-        if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        // Auto-detect JSON content even for .txt/.csv files (only if it really parses as JSON)
+        if (looksLikeJson(text)) {
           this.format = 'json';
         }
         this.textData = text;
@@ -156,30 +245,34 @@ export default {
       this.textData = '';
       this.preview = [];
       this.result = null;
+      this.formatChosen = false;
       if (this.$refs.fileInput) this.$refs.fileInput.value = '';
     },
+    previewDetail(item) {
+      if (item.kind === 'pbq') return t('learning', 'simulation (PBQ)');
+      if (item.kind === 'open') return t('learning', 'open question');
+      return item.answerCount === 1 ? t('learning', '1 answer') : t('learning', '{n} answers', { n: item.answerCount });
+    },
     updatePreview() {
+      this.previewError = '';
+      this.previewSummary = null;
       if (!this.textData.trim()) { this.preview = []; return; }
       try {
-        if (this.format === 'json') {
-          let data = JSON.parse(this.textData);
-          if (data.questions) data = data.questions;
-          else if (data.fragen) data = data.fragen;
-          else if (data.items) data = data.items;
-          this.preview = data.slice(0, 3).map(item => ({
-            text: (item.text || item.frage || item.question || '').substring(0, 80),
-            answerCount: (item.answers || item.antworten || []).length,
-          }));
-        } else {
-          const lines = this.textData.trim().split('\n').filter(l => l.trim());
-          let start = 0;
-          if (lines[0] && lines[0].toLowerCase().includes('question')) start = 1;
-          this.preview = lines.slice(start, start + 3).map(line => {
-            const fields = line.split(',');
-            return { text: (fields[0] || '').substring(0, 80), answerCount: Math.max(0, fields.length - 2) };
-          });
+        // Same rules as the server's readers (GitHub #34): never "(4 answers)" for an item the
+        // server will refuse, a parse error is shown instead of an empty preview, and a quoted
+        // CSV field may hold commas, semicolons and line breaks.
+        const analysis = this.format === 'json' ? analyzeJsonImport(this.textData) : analyzeCsvImport(this.textData);
+        if (analysis.error) {
+          this.preview = [];
+          this.previewError = analysis.error;
+          return;
         }
-      } catch (e) { this.preview = []; }
+        this.preview = analysis.items.slice(0, 3).map(item => ({ ...item, text: item.text.substring(0, 80) }));
+        this.previewSummary = analysis;
+      } catch (e) {
+        this.preview = [];
+        this.previewError = t('learning', 'The preview failed: {message}', { message: e && e.message ? e.message : String(e) }, undefined, { escape: false });
+      }
     },
     async doImport() {
       this.importing = true; this.result = null;
@@ -187,12 +280,16 @@ export default {
         const endpoint = this.format === 'csv' ? 'csv' : 'json';
         const payload = this.format === 'csv' ? { csvData: this.textData } : { jsonData: this.textData };
         const response = await axios.post(generateUrl('/apps/learning/api/pools/' + this.poolId + '/import/' + endpoint), payload);
-        this.result = response.data;
+        this.result = normalizeResult(response.data);
         if (this.result.imported > 0) { showSuccess(t('learning', '{n} questions imported', { n: this.result.imported })); this.$emit('imported', this.result.imported); }
       } catch (error) {
+        const status = error.response?.status;
         const data = error.response?.data;
-        if (data && data.errors) {
-          this.result = data;
+        if (status === 429) {
+          // UserRateLimit on the import routes: not a format problem, so do not say it is one.
+          this.result = { imported: 0, errors: [t('learning', 'Too many imports in a short time. Please wait a minute and try again.')] };
+        } else if (data && Array.isArray(data.errors) && data.errors.length > 0) {
+          this.result = normalizeResult(data);
         } else {
           this.result = {
             imported: 0,
@@ -230,5 +327,9 @@ export default {
 .preview-section h4 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--color-main-text); }
 .preview-item { padding: 6px 10px; background: var(--color-background-hover); border-radius: 4px; font-size: 13px; margin-bottom: 4px; color: var(--color-main-text); }
 .preview-answers { color: var(--color-text-maxcontrast); font-size: 12px; }
+.preview-item--error { border-left: 3px solid var(--color-error); }
+.preview-item-error { color: var(--color-error-text); font-size: 12px; }
+.preview-summary { font-size: 13px; margin-top: 8px; }
+.preview-error { margin-bottom: 16px; }
 .error-list { margin-top: 8px; font-size: 12px; }
 </style>

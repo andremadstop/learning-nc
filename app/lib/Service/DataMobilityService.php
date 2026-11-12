@@ -62,15 +62,37 @@ class DataMobilityService {
 
         $export = [];
         foreach ($questions as $question) {
+            $type = $question->getQuestionType() ?? 'single';
             $item = [
                 'text' => $question->getText(),
-                'type' => $question->getQuestionType() ?? 'single',
+                'type' => $type,
             ];
-            if ($question->getScenario() !== null && $question->getScenario() !== '') {
-                $item['scenario'] = $question->getScenario();
+            // A PBQ is its subtype plus its configuration; without them the importers refuse it
+            // (interface) or drop it (occ). Field names as both importers read them.
+            if ($type === 'pbq') {
+                $item['subtype'] = $question->getPbqSubtype();
+                $config = json_decode((string)$question->getPbqConfig(), true);
+                $item['pbq_config'] = is_array($config) ? $config : [];
             }
-            if ($question->getExplanation() !== null && $question->getExplanation() !== '') {
-                $item['explanation'] = $question->getExplanation();
+            // Optional fields, left out when empty, in the field names of the import format
+            // (docs/import-pool-workflow.md), so the export comes back without losses.
+            $optional = [
+                'scenario' => $question->getScenario(),
+                'explanation' => $question->getExplanation(),
+                'difficulty' => $question->getDifficulty(),
+                'handbook_key' => $question->getHandbookKey(),
+                'handbook_title' => $question->getHandbookTitle(),
+                'exam_key' => $question->getExamKey(),
+                'chapter_key' => $question->getChapterKey(),
+                'chapter_title' => $question->getChapterTitle(),
+            ];
+            foreach ($optional as $key => $value) {
+                if ($value !== null && $value !== '') {
+                    $item[$key] = $value;
+                }
+            }
+            if ($question->getChapterOrder() !== null) {
+                $item['chapter_order'] = (int)$question->getChapterOrder();
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $item['answers'] = array_map(function ($a) {
@@ -393,7 +415,9 @@ class DataMobilityService {
         if ($handle === false) {
             return '';
         }
-        fputcsv($handle, $fields);
+        // RFC 4180, no backslash escape: what ImportController::csvRecords() reads back. With the
+        // default escape "\\", a field containing \" was written so that it came back torn apart.
+        fputcsv($handle, $fields, ',', '"', '');
         rewind($handle);
         $line = rtrim((string)stream_get_contents($handle), "\n");
         fclose($handle);

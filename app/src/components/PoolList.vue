@@ -21,6 +21,18 @@
       <NcButton type="button" variant="tertiary" @click="dismissHint('welcome-instructor')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
+    <!-- GitHub #34: learners saw no create button, no Manage tab and no reason why. Not shown in
+         the student view or after a failed role request: App.vue explains those itself. -->
+    <NcNoteCard v-if="showInstructorOnlyNote && !hintDismissed('instructor-only-pools')" type="info" class="onboarding-hint instructor-only-note">
+      <template v-if="instructorGroup">
+        {{ t('learning', 'Only instructors can create pools. Questions can also be added and imported by anyone a pool is shared with for editing: open the pool and use the Manage tab. To create pools yourself, ask your Nextcloud administrator to add you to the group "{group}".', { group: instructorGroup }, undefined, { escape: false }) }}
+      </template>
+      <template v-else>
+        {{ t('learning', 'Only instructors can create pools. Questions can also be added and imported by anyone a pool is shared with for editing: open the pool and use the Manage tab. To create pools yourself, ask your Nextcloud administrator to add you to the instructor group.') }}
+      </template>
+      <NcButton type="button" variant="tertiary" @click="dismissHint('instructor-only-pools')">{{ t('learning', 'Got it') }}</NcButton>
+    </NcNoteCard>
+
     <!-- XP Multiplier Badge -->
     <div v-if="xpMultiplier > 1" class="xp-multiplier-badge">
       <span class="xp-mult-value">{{ xpMultiplier }}x</span>
@@ -166,7 +178,7 @@
 
     <!-- My Pools -->
     <div v-else-if="activeTab === 'own'">
-      <NcEmptyContent v-if="filteredPools.length === 0 && !searchTerm" :name="t('learning', 'No pools yet')" :description="t('learning', 'Create a pool, add questions (or import CSV/JSON) and assign it to a course.')" />
+      <NcEmptyContent v-if="filteredPools.length === 0 && !searchTerm" :name="t('learning', 'No pools yet')" :description="userRole === 'instructor' ? t('learning', 'Create a pool, add questions (or import CSV/JSON) and assign it to a course.') : t('learning', 'The question pools of your courses open from the Courses tab. Only instructors can create pools; pools shared with you for editing are listed under Shared with me.')" />
       <NcEmptyContent v-else-if="filteredPools.length === 0 && searchTerm" :name="t('learning', 'No pools matching \'{searchTerm}\'', { searchTerm: searchTerm })" :description="t('learning', 'Try a different search term')" />
       <div v-else class="pool-grid">
         <div v-for="pool in filteredPools" :key="pool.id" class="pool-card" @click="selectPool(pool)"
@@ -285,7 +297,7 @@
 
     <ShareDialog v-if="sharingPool" :poolId="sharingPool.id" :poolName="sharingPool.name" @close="sharingPool = null" />
 
-    <PoolGenerator v-if="showPoolGenerator" @close="showPoolGenerator = false" @created="showPoolGenerator = false; loadPools()" />
+    <PoolGenerator v-if="showPoolGenerator" @close="showPoolGenerator = false" @created="showPoolGenerator = false; loadPools()" @import-into="openPoolForImport" />
 
     <AccessibleDialog v-if="showStarterDialog" :name="t('learning', 'Starter Pools')" @closing="closeStarterDialog">
       <div class="starter-pools-dialog">
@@ -362,6 +374,12 @@ export default {
   mixins: [hintMixin],
   props: {
     userRole: { type: String, default: 'student' },
+    // Name of the instructor group from /api/role (GitHub #34); '' when unknown.
+    instructorGroup: { type: String, default: '' },
+    // An instructor previewing the student view, or a failed role request: App.vue shows its
+    // own banner then, and the "ask your admin" note would be wrong or redundant.
+    studentViewActive: { type: Boolean, default: false },
+    roleLoadFailed: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -409,6 +427,13 @@ export default {
     };
   },
   computed: {
+    // hintDismissed() reads localStorage and is not reactive, so it stays in the template,
+    // which dismissHint() re-renders with $forceUpdate().
+    showInstructorOnlyNote() {
+      return this.userRole !== 'instructor'
+        && !this.studentViewActive
+        && !this.roleLoadFailed;
+    },
     availableLanguages() {
       const langs = new Set();
       const re = /\(([A-Z]{2})\)\s*$/;
@@ -513,6 +538,15 @@ export default {
         showError(t('learning', 'Failed to load pools'));
       } finally {
         this.loading = false;
+      }
+    },
+    // GitHub #34: a pool created in the generator's import tab opens right away; App opens an
+    // empty pool its owner can edit in Manage, where the import is.
+    openPoolForImport(pool) {
+      this.showPoolGenerator = false;
+      this.loadPools();
+      if (pool && pool.id) {
+        this.selectPool(pool);
       }
     },
     selectPool(pool) {

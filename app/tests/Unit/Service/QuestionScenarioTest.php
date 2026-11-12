@@ -233,15 +233,21 @@ class QuestionScenarioTest extends TestCase {
         $tooLong = new \ReflectionMethod(\OCA\Learning\Controller\ImportController::class, 'scenarioTooLong');
         $from = new \ReflectionMethod(\OCA\Learning\Controller\ImportController::class, 'scenarioFrom');
 
+        // scenarioTooLong() translates its message, so it needs a controller with IL10N.
+        $controller = (new \ReflectionClass(\OCA\Learning\Controller\ImportController::class))->newInstanceWithoutConstructor();
+        $l10n = $this->createMock(\OCP\IL10N::class);
+        $l10n->method('t')->willReturnCallback(static fn (string $text, $p = []): string => vsprintf($text, (array)$p));
+        (new \ReflectionProperty(\OCA\Learning\Controller\ImportController::class, 'l10n'))->setValue($controller, $l10n);
+
         $errors = [];
         $long = ['context' => str_repeat('x', QuestionService::SCENARIO_MAX_LENGTH + 1)];
-        $this->assertTrue($tooLong->invokeArgs(null, [$long, 3, &$errors]));
+        $this->assertTrue($tooLong->invokeArgs($controller, [$long, 3, &$errors]));
         $this->assertCount(1, $errors);
         $this->assertStringContainsString('Item 3', $errors[0]);
 
         $errors = [];
         $ok = ['szenario' => '  ' . str_repeat('ü', QuestionService::SCENARIO_MAX_LENGTH) . "\n"];
-        $this->assertFalse($tooLong->invokeArgs(null, [$ok, 4, &$errors]));
+        $this->assertFalse($tooLong->invokeArgs($controller, [$ok, 4, &$errors]));
         $this->assertSame([], $errors);
         $this->assertSame(QuestionService::SCENARIO_MAX_LENGTH, mb_strlen((string)$from->invoke(null, $ok)));
         $this->assertNull($from->invoke(null, ['info' => '   ']));

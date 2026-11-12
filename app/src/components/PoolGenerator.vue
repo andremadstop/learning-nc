@@ -113,13 +113,33 @@
           </div>
         </div>
 
-        <!-- Tab: CSV/JSON Import -->
+        <!-- Tab: CSV/JSON Import. GitHub #34: this was a note and a Close button, a dead end and,
+             without an AI provider, the only tab that did anything. It creates the pool now;
+             PoolList opens it, and an empty pool opens in Manage, next to the Import button. -->
         <div v-if="activeTab === 'import'" class="pg-tab-content">
-          <NcNoteCard type="info">
-            {{ t('learning', 'To import questions from CSV or JSON, create a pool first, then use the import function inside the pool view.') }}
-          </NcNoteCard>
+          <p class="pg-file-hint">{{ t('learning', 'Questions from a CSV or JSON file are imported into a pool. Name the new pool: it opens in the Manage tab, where "Import questions" reads the file and shows a preview first.') }}</p>
+          <div class="form-group">
+            <label for="pg-import-pool-name">{{ t('learning', 'Pool Name *') }}</label>
+            <input
+              id="pg-import-pool-name"
+              v-model="importPoolName"
+              type="text"
+              maxlength="200"
+              class="nc-input"
+              :placeholder="t('learning', 'e.g., CompTIA A+ Core 1')"
+              @keydown.enter.prevent="createPoolForImport"
+            />
+          </div>
           <div class="pg-actions">
-            <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Close') }}</NcButton>
+            <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
+            <NcButton
+              variant="primary"
+              class="pg-create-for-import"
+              :disabled="!importPoolName.trim() || creating"
+              @click="createPoolForImport"
+            >
+              {{ creating ? t('learning', 'Creating...') : t('learning', 'Create pool and import questions') }}
+            </NcButton>
           </div>
         </div>
       </template>
@@ -189,7 +209,7 @@ import { showSuccess } from '@nextcloud/dialogs';
 export default {
   name: 'PoolGenerator',
   components: { AiConsentHint, NcButton, NcNoteCard, NcLoadingIcon, PoolDraftReview },
-  emits: ['close', 'created'],
+  emits: ['close', 'created', 'import-into'],
   data() {
     return {
       activeTab: 'text',
@@ -205,6 +225,7 @@ export default {
       draftQuestions: [],
       // Pool creation
       poolTitle: '',
+      importPoolName: '',
       creating: false,
       // UI
       error: '',
@@ -238,6 +259,27 @@ export default {
         this.providerInfo = r.data;
       } catch (e) {
         this.providerInfo = { provider: 'unknown', available: false };
+      }
+      // Without an AI provider both generate tabs stay disabled; open on the one that works.
+      if (!this.providerAvailable && this.activeTab === 'text' && this.step === 'input') {
+        this.activeTab = 'import';
+      }
+    },
+
+    async createPoolForImport() {
+      const name = this.importPoolName.trim();
+      if (!name || this.creating) return;
+      this.creating = true;
+      this.error = '';
+      try {
+        const r = await axios.post(generateUrl('/apps/learning/api/pools'), { name });
+        showSuccess(t('learning', 'Pool created'));
+        this.$emit('import-into', r.data);
+        this.$emit('close');
+      } catch (e) {
+        this.error = e.response?.data?.error || t('learning', 'Failed to create pool');
+      } finally {
+        this.creating = false;
       }
     },
 

@@ -19,6 +19,9 @@
         </div>
       </div>
       <div v-else class="start-actions">
+        <!-- GitHub #34: an empty pool left instructors at a dead end; the way to add questions
+             (the Manage tab) was not named anywhere on this screen. -->
+        <NcButton v-if="canManage" variant="primary" class="training-add-questions" @click="$emit('manage')">{{ t('learning', 'Add questions') }}</NcButton>
         <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
@@ -255,6 +258,8 @@ export default {
     totalQuestions: { type: Number, required: true },
     contentLanguage: { type: String, default: '' },
     initialQuestionType: { type: String, default: null },
+    // True when the viewer may add questions to this pool (instructor view, not read-only).
+    canManage: { type: Boolean, default: false },
   },
   data() {
     return {

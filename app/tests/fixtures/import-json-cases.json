@@ -1,0 +1,380 @@
+{
+  "_doc": [
+    "Shared cases for the JSON import in the interface (GitHub #34).",
+    "PHP: app/tests/Unit/Controller/ImportJsonFixturesTest.php runs every case through ImportController::importJson().",
+    "JS: the import preview (app/src/utils/importPreview.js) runs the same file, so server and preview cannot drift apart.",
+    "Counting rules, identical in both runners:",
+    "- importable = number of questions the import writes (the server's 'imported').",
+    "- errors = number of entries in 'errors'; a top-level shape error (400 with 'error' only, nothing written) counts as importable 0, errors 1.",
+    "- warnings (e.g. 'No correct answer marked - defaulted to first answer', truncation) are NOT errors and are not counted.",
+    "- error texts are never compared: they are translated.",
+    "- expect.questions lists the imported questions in file order. text, type and answers are always compared;",
+    "  answers is the full list in order, correct = whether that answer is marked correct. PBQ questions have answers [].",
+    "  difficulty, chapter_key, chapter_title, chapter_order, exam_key, subtype are compared only when present in the case.",
+    "- input is the decoded JSON document the user would upload (encode it as-is)."
+  ],
+  "cases": [
+    {
+      "name": "bare list with answer objects",
+      "input": [
+        {"text": "Which port does HTTPS use?", "answers": [{"text": "80", "is_correct": false}, {"text": "443", "is_correct": true}, {"text": "22"}]}
+      ],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Which port does HTTPS use?", "type": "single", "answers": [{"text": "80", "correct": false}, {"text": "443", "correct": true}, {"text": "22", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "questions wrapper with two items",
+      "input": {"questions": [
+        {"text": "Q1", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Q2", "answers": [{"text": "c"}, {"text": "d", "correct": true}]}
+      ]},
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Q1", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Q2", "type": "single", "answers": [{"text": "c", "correct": false}, {"text": "d", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "fragen wrapper with German keys",
+      "input": {"fragen": [
+        {"frage": "Hauptstadt von Frankreich?", "erklaerung": "Paris.", "antworten": [{"text": "Paris", "korrekt": true}, {"text": "Lyon", "richtig": false}]}
+      ]},
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Hauptstadt von Frankreich?", "type": "single", "answers": [{"text": "Paris", "correct": true}, {"text": "Lyon", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "documented pool format with exactly one pool",
+      "input": {"_meta": {"source": "test"}, "pools": [{"name": "Pool", "questions": [
+        {"text": "Q", "question_type": "single", "difficulty": "easy", "answers": [{"text": "x", "is_correct": false}, {"text": "y", "is_correct": true}]}
+      ]}]},
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Q", "type": "single", "difficulty": "easy", "answers": [{"text": "x", "correct": false}, {"text": "y", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "several pools are refused, nothing is written",
+      "input": {"pools": [
+        {"name": "One", "questions": [{"text": "Q", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}]},
+        {"name": "Two", "questions": [{"text": "Q", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}]}
+      ]},
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "empty pools list is refused",
+      "input": {"pools": []},
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "single question object",
+      "input": {"question": "Only one?", "answers": [{"text": "yes", "is_correct": true}, {"text": "no"}]},
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Only one?", "type": "single", "answers": [{"text": "yes", "correct": true}, {"text": "no", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "options with 0-based answer index",
+      "input": [{"question": "Capital of France?", "options": ["Berlin", "Paris", "Rome"], "answer": 1}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Capital of France?", "type": "single", "answers": [{"text": "Berlin", "correct": false}, {"text": "Paris", "correct": true}, {"text": "Rome", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "choices with correct_index 0 is the first answer",
+      "input": [{"text": "First?", "choices": ["Yes", "No"], "correct_index": 0}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "First?", "type": "single", "answers": [{"text": "Yes", "correct": true}, {"text": "No", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "string answers with 1-based correct_number",
+      "input": [{"text": "Second?", "answers": ["a", "b", "c"], "correct_number": 2}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Second?", "type": "single", "answers": [{"text": "a", "correct": false}, {"text": "b", "correct": true}, {"text": "c", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "letter markers, plain and in parentheses",
+      "input": [
+        {"text": "Which is a prime?", "answers": ["4", "6", "7", "9"], "correct": "C"},
+        {"text": "Second letter", "options": ["p", "q", "r"], "correct_answer": "(B)"}
+      ],
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Which is a prime?", "type": "single", "answers": [{"text": "4", "correct": false}, {"text": "6", "correct": false}, {"text": "7", "correct": true}, {"text": "9", "correct": false}]},
+        {"text": "Second letter", "type": "single", "answers": [{"text": "p", "correct": false}, {"text": "q", "correct": true}, {"text": "r", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "marker as answer text, case-insensitive, wins over letter and number",
+      "input": [
+        {"text": "Largest planet?", "options": ["Mars", "Jupiter", "Venus"], "correct_answer": "jupiter "},
+        {"text": "Pick the letter", "options": ["B", "A", "C"], "answer": "A"},
+        {"text": "1 + 1 = ?", "options": ["1", "3", "2"], "answer": "2"}
+      ],
+      "expect": {"importable": 3, "errors": 0, "questions": [
+        {"text": "Largest planet?", "type": "single", "answers": [{"text": "Mars", "correct": false}, {"text": "Jupiter", "correct": true}, {"text": "Venus", "correct": false}]},
+        {"text": "Pick the letter", "type": "single", "answers": [{"text": "B", "correct": false}, {"text": "A", "correct": true}, {"text": "C", "correct": false}]},
+        {"text": "1 + 1 = ?", "type": "single", "answers": [{"text": "1", "correct": false}, {"text": "3", "correct": false}, {"text": "2", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "array marker makes a multiple-choice question",
+      "input": [{"text": "Even numbers?", "options": ["1", "two", "3", "four"], "correct": ["B", 3]}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Even numbers?", "type": "multi", "answers": [{"text": "1", "correct": false}, {"text": "two", "correct": true}, {"text": "3", "correct": false}, {"text": "four", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "keyed options resolve by their letter key",
+      "input": [{"text": "OSI layer 3?", "options": {"A": "Transport", "B": "Network"}, "answer": "B"}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "OSI layer 3?", "type": "single", "answers": [{"text": "Transport", "correct": false}, {"text": "Network", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "numeric keyed options resolve by key, not by position",
+      "input": [
+        {"text": "Numbered options", "options": {"1": "a", "2": "b", "3": "c"}, "answer": 1},
+        {"text": "Numbered, as string", "options": {"1": "a", "2": "b"}, "correct": "2"}
+      ],
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Numbered options", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}, {"text": "c", "correct": false}]},
+        {"text": "Numbered, as string", "type": "single", "answers": [{"text": "a", "correct": false}, {"text": "b", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "numeric fields are read as text",
+      "input": [
+        {"text": 1984, "explanation": 42, "difficulty": 3, "answers": [{"text": 1, "is_correct": true}, {"text": 2.5}]},
+        {"text": "Numbers as answers", "answers": [1, 2], "answer": 0}
+      ],
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "1984", "type": "single", "difficulty": "3", "answers": [{"text": "1", "correct": true}, {"text": "2.5", "correct": false}]},
+        {"text": "Numbers as answers", "type": "single", "answers": [{"text": "1", "correct": true}, {"text": "2", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "question_type open takes its model answer from answer",
+      "input": [
+        {"text": "What is H2O?", "question_type": "open", "answer": "Water"},
+        {"text": "Open, upper case", "question_type": "OPEN", "answers": ["Model"]}
+      ],
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "What is H2O?", "type": "open", "answers": [{"text": "Water", "correct": true}]},
+        {"text": "Open, upper case", "type": "open", "answers": [{"text": "Model", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "missing question text is an error for that item only",
+      "input": {"questions": [
+        {"text": "ok", "answers": ["a", "b"], "answer": 0},
+        {"answers": ["a", "b"]}
+      ]},
+      "expect": {"importable": 1, "errors": 1, "questions": [
+        {"text": "ok", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "unresolvable markers skip the item instead of marking the first answer",
+      "input": [
+        {"text": "Out of range (0-based)", "options": ["a", "b", "c"], "answer": 3},
+        {"text": "Unknown letter", "options": ["a", "b"], "correct": "F"},
+        {"text": "No such text", "options": ["a", "b"], "correct_answer": "zzz"},
+        {"text": "Fine", "options": ["a", "b"], "answer": 0}
+      ],
+      "expect": {"importable": 1, "errors": 3, "questions": [
+        {"text": "Fine", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "no correct answer marked defaults to the first (warning, not error)",
+      "input": [{"text": "Unmarked", "answers": ["x", "y"]}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Unmarked", "type": "single", "answers": [{"text": "x", "correct": true}, {"text": "y", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "non-scalar values and too few answers are errors per item",
+      "input": [
+        {"text": ["not", "text"], "answers": ["a", "b"]},
+        {"text": "Bad answers", "answers": "a,b"},
+        {"text": "Only one answer", "answers": [{"text": "a", "is_correct": true}]},
+        "just a string",
+        {"text": "Good", "answers": ["a", "b"], "answer": 1}
+      ],
+      "expect": {"importable": 1, "errors": 4, "questions": [
+        {"text": "Good", "type": "single", "answers": [{"text": "a", "correct": false}, {"text": "b", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "empty list is refused",
+      "input": [],
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "object that is no question list is refused",
+      "input": {"name": "My pool", "stuff": [1, 2]},
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "PBQ item with a known subtype",
+      "input": [{"question_type": "pbq", "question_text": "Match the ports", "subtype": "dropdown", "pbq_config": {"items": []}}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Match the ports", "type": "pbq", "subtype": "dropdown", "difficulty": "medium", "answers": []}
+      ]}
+    },
+    {
+      "name": "PBQ with an unknown subtype is an error",
+      "input": [{"type": "pbq", "text": "PBQ", "subtype": "teleport", "pbq_config": {}}],
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "pool metadata fills questions that have none of their own",
+      "input": {
+        "_meta": {"default_difficulty": "hard", "handbook_key": "ccna"},
+        "pools": [{
+          "name": "Pool name is not used", "chapter_key": "1.1", "chapter_title": "Basics", "chapter_order": 3, "exam_key_prefix": "ccna-1.1",
+          "questions": [
+            {"original_number": 7, "text": "Inherits", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+            {"text": "Own values win", "difficulty": "easy", "chapter_key": "2.4", "chapterTitle": "Own title", "chapter_order": 9, "exam_key": "own-key", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}
+          ]
+        }]
+      },
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Inherits", "type": "single", "difficulty": "hard", "chapter_key": "1.1", "chapter_title": "Basics", "chapter_order": 3, "exam_key": "ccna-1.1-q7", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Own values win", "type": "single", "difficulty": "easy", "chapter_key": "2.4", "chapter_title": "Own title", "chapter_order": 9, "exam_key": "own-key", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "default_question_type open applies unless several answers are correct",
+      "input": {
+        "_meta": {"default_question_type": "open"},
+        "questions": [
+          {"text": "Define latency.", "answer": "Delay"},
+          {"text": "Two correct", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": true}, {"text": "c"}]},
+          {"text": "Explicit type wins", "type": "single", "options": ["x", "y"], "answer": 1}
+        ]
+      },
+      "expect": {"importable": 3, "errors": 0, "questions": [
+        {"text": "Define latency.", "type": "open", "answers": [{"text": "Delay", "correct": true}]},
+        {"text": "Two correct", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": true}, {"text": "c", "correct": false}]},
+        {"text": "Explicit type wins", "type": "single", "answers": [{"text": "x", "correct": false}, {"text": "y", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "a correct answer past the 8th is an error, not a defaulted first answer",
+      "input": [
+        {"text": "Index 9 of ten", "options": ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"], "correct_index": 9},
+        {"text": "Markers 1 and 9 of ten", "options": ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"], "correct": [1, 9]},
+        {"text": "Flag on the ninth", "answers": ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", {"text": "o9", "is_correct": true}]}
+      ],
+      "expect": {"importable": 0, "errors": 3, "questions": []}
+    },
+    {
+      "name": "ten options with a correct answer among the first eight are cut to eight",
+      "input": [{"text": "Index 2 of ten", "options": ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"], "correct_index": 2}],
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Index 2 of ten", "type": "single", "answers": [{"text": "o1", "correct": false}, {"text": "o2", "correct": false}, {"text": "o3", "correct": true}, {"text": "o4", "correct": false}, {"text": "o5", "correct": false}, {"text": "o6", "correct": false}, {"text": "o7", "correct": false}, {"text": "o8", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "a marker list that names one answer twice is an error (0/1 mask, letter and index)",
+      "input": [
+        {"text": "0/1 mask", "options": ["a", "b", "c", "d"], "correct": [1, 0, 1, 0]},
+        {"text": "Letter and index of the same answer", "options": ["a", "b", "c"], "correct": ["B", 1]}
+      ],
+      "expect": {"importable": 0, "errors": 2, "questions": []}
+    },
+    {
+      "name": "a marker list longer than the answer list is an error",
+      "input": [{"text": "Five markers, four answers", "options": ["a", "b", "c", "d"], "correct": [0, 1, 2, 3, 0]}],
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "more than 50 answers in the file is an error",
+      "input": [{"text": "Fifty-one options", "answer": 0, "options": [
+        "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "x16", "x17",
+        "x18", "x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31", "x32", "x33", "x34",
+        "x35", "x36", "x37", "x38", "x39", "x40", "x41", "x42", "x43", "x44", "x45", "x46", "x47", "x48", "x49", "x50", "x51"
+      ]}],
+      "expect": {"importable": 0, "errors": 1, "questions": []}
+    },
+    {
+      "name": "difficulty is cut to 20 characters, a negative chapter_order is dropped",
+      "input": [
+        {"text": "Long difficulty", "difficulty": "abcdefghijklmnopqrstuvwxyz", "chapter_order": -3, "options": ["a", "b"], "answer": 0},
+        {"text": "PBQ long difficulty", "type": "pbq", "subtype": "ranking", "pbq_config": {"items": ["a", "b"]}, "schwierigkeit": "abcdefghijklmnopqrstuvwxyz", "chapter_order": -1}
+      ],
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Long difficulty", "type": "single", "difficulty": "abcdefghijklmnopqrst", "chapter_order": null, "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "PBQ long difficulty", "type": "pbq", "difficulty": "abcdefghijklmnopqrst", "chapter_order": null, "answers": []}
+      ]}
+    },
+    {
+      "name": "chapter_order outside 1 to 9999 is dropped, 1 and 9999 are kept",
+      "input": [
+        {"text": "Zero", "chapter_order": 0, "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Ten thousand", "chapter_order": 10000, "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Three billion", "chapter_order": 3000000000, "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "One", "chapter_order": 1, "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Max as text", "kapitel_nummer": "9999", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}
+      ],
+      "expect": {"importable": 5, "errors": 0, "questions": [
+        {"text": "Zero", "type": "single", "chapter_order": null, "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Ten thousand", "type": "single", "chapter_order": null, "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Three billion", "type": "single", "chapter_order": null, "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "One", "type": "single", "chapter_order": 1, "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Max as text", "type": "single", "chapter_order": 9999, "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "a pool chapter_order of 0 is dropped and not inherited",
+      "input": {"_meta": {}, "pools": [{"name": "P", "chapter_key": "1.1", "chapter_order": 0, "questions": [
+        {"text": "Inherits the key only", "options": ["a", "b"], "answer": 1}
+      ]}]},
+      "expect": {"importable": 1, "errors": 0, "questions": [
+        {"text": "Inherits the key only", "type": "single", "chapter_key": "1.1", "chapter_order": null, "answers": [{"text": "a", "correct": false}, {"text": "b", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "an explicit type multi with one correct answer stays multi",
+      "input": [
+        {"text": "Exported multi", "type": "multi", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": false}, {"text": "c", "is_correct": false}]},
+        {"text": "Explicit single, two correct", "type": "single", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": true}]}
+      ],
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Exported multi", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}, {"text": "c", "correct": false}]},
+        {"text": "Explicit single, two correct", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "default_question_type pbq does not apply when several answers are correct",
+      "input": {
+        "_meta": {"default_question_type": "pbq"},
+        "questions": [
+          {"text": "Two flagged", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": true}, {"text": "c"}]},
+          {"text": "Two markers", "options": ["a", "b", "c"], "correct": [0, 2]},
+          {"question_text": "Order them", "subtype": "ranking", "pbq_config": {"items": ["a", "b"]}}
+        ]
+      },
+      "expect": {"importable": 3, "errors": 0, "questions": [
+        {"text": "Two flagged", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": true}, {"text": "c", "correct": false}]},
+        {"text": "Two markers", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}, {"text": "c", "correct": true}]},
+        {"text": "Order them", "type": "pbq", "subtype": "ranking", "answers": []}
+      ]}
+    },
+    {
+      "name": "PBQ and multiple choice read the same question text keys",
+      "input": [
+        {"type": "pbq", "question": "PBQ under question", "subtype": "ranking", "pbq_config": {"items": ["a", "b"]}},
+        {"type": "pbq", "frage": "PBQ unter frage", "subtype": "ranking", "pbq_config": {"items": ["a", "b"]}},
+        {"question_text": "MC under question_text", "options": ["a", "b"], "answer": 1}
+      ],
+      "expect": {"importable": 3, "errors": 0, "questions": [
+        {"text": "PBQ under question", "type": "pbq", "subtype": "ranking", "answers": []},
+        {"text": "PBQ unter frage", "type": "pbq", "subtype": "ranking", "answers": []},
+        {"text": "MC under question_text", "type": "single", "answers": [{"text": "a", "correct": false}, {"text": "b", "correct": true}]}
+      ]}
+    }
+  ]
+}

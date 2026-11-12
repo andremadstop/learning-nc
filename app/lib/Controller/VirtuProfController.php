@@ -661,8 +661,7 @@ class VirtuProfController extends Controller {
                     ? $questionContext['questionType'] : null;
             }
             if (isset($questionContext['pbqSubtype'])) {
-                $allowed = ['cli', 'dropdown', 'placement', 'cable', 'routing_config', 'switch_config', 'diagnostic', 'multi_panel'];
-                $questionContext['pbqSubtype'] = in_array($questionContext['pbqSubtype'], $allowed, true)
+                $questionContext['pbqSubtype'] = in_array($questionContext['pbqSubtype'], \OCA\Learning\Service\PoolJsonFormat::PBQ_SUBTYPES, true)
                     ? $questionContext['pbqSubtype'] : null;
             }
             if (isset($questionContext['pbqConfig']) && is_array($questionContext['pbqConfig'])) {
