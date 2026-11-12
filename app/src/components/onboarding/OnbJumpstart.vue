@@ -42,7 +42,7 @@
         <button
           type="button"
           class="onb-btn onb-btn--ghost"
-          @click="$emit('next')"
+          @click="skip"
         >
           {{ t('learning', 'Ueberspringen') }}
         </button>
@@ -98,6 +98,11 @@ export default {
     t,
     selectPool(pool) {
       this.store.setStarterPool(pool.id)
+    },
+    // Skip is the only way to decline a pool tapped before; finalize() imports whatever is selected.
+    skip() {
+      this.store.setStarterPool(null)
+      this.$emit('next')
     },
   },
 }
