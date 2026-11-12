@@ -198,6 +198,24 @@ class ChunkingService {
     }
 
     /**
+     * A sub-heading directly under a heading ('# A\n## B\ntext') names the text below it, so the
+     * innermost ATX heading wins and its line is not left in the body (2026-11 audit, recheck D4).
+     *
+     * @param array{heading: string, body: string} $found
+     * @return array{heading: string, body: string}
+     */
+    private function innermostHeading(array $found): array {
+        while ($found['body'] !== '') {
+            $lines = explode("\n", $found['body']);
+            if (!preg_match('/^#{1,6}\s+(.+)$/', trim($lines[0]), $m)) {
+                break;
+            }
+            $found = ['heading' => trim($m[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
+        }
+        return $found;
+    }
+
+    /**
      * Detect if a paragraph is a heading/chapter title.
      *
      * Detects:
@@ -216,12 +234,12 @@ class ChunkingService {
 
         // Markdown ATX: # Heading (first line only; a '# comment' further down is body text)
         if (preg_match('/^#{1,6}\s+(.+)$/', $first, $matches)) {
-            return ['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
+            return $this->innermostHeading(['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))]);
         }
 
         // Markdown setext: Heading\n===== or Heading\n-----
         if ($first !== '' && isset($lines[1]) && preg_match('/^[=\-]{3,}$/', trim($lines[1]))) {
-            return ['heading' => $first, 'body' => trim(implode("\n", array_slice($lines, 2)))];
+            return $this->innermostHeading(['heading' => $first, 'body' => trim(implode("\n", array_slice($lines, 2)))]);
         }
 
         // PDF-style: ALL CAPS, short line (< 80 chars), no sentence-ending punctuation

@@ -404,6 +404,24 @@ class ImportVaultCommand extends Command {
     }
 
     /**
+     * A sub-heading directly under a heading ('# A\n## B\ntext') names the text below it, so the
+     * innermost ATX heading wins and its line is not left in the body (2026-11 audit, recheck D4).
+     *
+     * @param array{heading: string, body: string} $found
+     * @return array{heading: string, body: string}
+     */
+    private function innermostHeading(array $found): array {
+        while ($found['body'] !== '') {
+            $lines = explode("\n", $found['body']);
+            if (!preg_match('/^#{1,6}\s+(.+)$/', trim($lines[0]), $m)) {
+                break;
+            }
+            $found = ['heading' => trim($m[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
+        }
+        return $found;
+    }
+
+    /**
      * Only the first line of a paragraph can be a heading; the lines after it are returned as the
      * paragraph body, so text written directly under '## Title' is not lost (2026-11 audit).
      *
@@ -412,7 +430,7 @@ class ImportVaultCommand extends Command {
     private function detectHeading(string $paragraph): ?array {
         $lines = explode("\n", $paragraph);
         if (preg_match('/^#{1,6}\s+(.+)$/', trim($lines[0]), $matches)) {
-            return ['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
+            return $this->innermostHeading(['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))]);
         }
 
         return null;

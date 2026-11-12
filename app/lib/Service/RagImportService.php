@@ -318,6 +318,24 @@ class RagImportService {
     }
 
     /**
+     * A sub-heading directly under a heading ('# A\n## B\ntext') names the text below it, so the
+     * innermost ATX heading wins and its line is not left in the body (2026-11 audit, recheck D4).
+     *
+     * @param array{heading: string, body: string} $found
+     * @return array{heading: string, body: string}
+     */
+    private function innermostHeading(array $found): array {
+        while ($found['body'] !== '') {
+            $lines = explode("\n", $found['body']);
+            if (!preg_match('/^#{1,6}\s+(.+)$/', trim($lines[0]), $m)) {
+                break;
+            }
+            $found = ['heading' => trim($m[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
+        }
+        return $found;
+    }
+
+    /**
      * Detect a heading in the first line(s) of a paragraph.
      *
      * Only the first line counts (ATX '# Title', or setext 'Title' over '===' / '---'): a
@@ -332,12 +350,12 @@ class RagImportService {
 
         // Markdown ATX: # Heading
         if (preg_match('/^#{1,6}\s+(.+)$/', $first, $matches)) {
-            return ['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
+            return $this->innermostHeading(['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))]);
         }
 
         // Markdown setext: Heading\n===== or Heading\n-----
         if ($first !== '' && isset($lines[1]) && preg_match('/^[=\-]{3,}$/', trim($lines[1]))) {
-            return ['heading' => $first, 'body' => trim(implode("\n", array_slice($lines, 2)))];
+            return $this->innermostHeading(['heading' => $first, 'body' => trim(implode("\n", array_slice($lines, 2)))]);
         }
 
         return null;

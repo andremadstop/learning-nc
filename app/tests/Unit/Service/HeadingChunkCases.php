@@ -31,6 +31,12 @@ final class HeadingChunkCases {
                 "# Firewall\n\nListe die Regeln so auf:\n# iptables -L\nDanach prüfst du die Ketten einzeln.",
                 [["Liste die Regeln so auf:\n# iptables -L\nDanach prüfst du die Ketten einzeln.", 'Firewall']],
             ],
+            // Recheck D4: a sub-heading directly under a heading (no blank line) is the chapter
+            // of the text below it, not a line of body text.
+            'sub-heading directly under a heading' => [
+                "# Netze\n## VLAN\nEin VLAN trennt Broadcast-Domänen auf Layer 2 voneinander.",
+                [['Ein VLAN trennt Broadcast-Domänen auf Layer 2 voneinander.', 'VLAN']],
+            ],
             'heading as its own paragraph still tags the next one' => [
                 "# Routing\n\nRouter verbinden unterschiedliche Netze miteinander über Layer 3.",
                 [['Router verbinden unterschiedliche Netze miteinander über Layer 3.', 'Routing']],
