@@ -28,7 +28,11 @@ class MaintenanceServiceTest extends TestCase {
         $course->setId(7);
         $course->setInstructorId('owner');
         $mapper = $this->createMock(CourseMapper::class);
-        $mapper->method('findById')->willReturn($course);
+        // Argument checked in the callback: with() on a plain stub is deprecated in PHPUnit 13.
+        $mapper->method('findById')->willReturnCallback(function (int $id) use ($course): Course {
+            $this->assertSame(7, $id, 'the service must look up the requested course');
+            return $course;
+        });
 
         return new MaintenanceService(
             new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetch($memberRow))]),

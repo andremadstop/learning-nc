@@ -150,7 +150,11 @@ class TrainingServiceTest extends TestCase {
         ]));
 
         $questionMapper = $this->createMock(QuestionMapper::class);
-        $questionMapper->method('findByPoolId')->willReturn([$question]);
+        // Argument checked in the callback: with() on a plain stub is deprecated in PHPUnit 13.
+        $questionMapper->method('findByPoolId')->willReturnCallback(function (int $poolId) use ($question): array {
+            $this->assertSame(42, $poolId, 'the service must read the requested pool');
+            return [$question];
+        });
         $answerMapper = $this->createMock(AnswerMapper::class);
         $answerMapper->method('findByQuestion')->willReturn([]);
         $poolMapper = $this->createMock(PoolMapper::class);
