@@ -128,7 +128,8 @@ class AiController extends Controller {
         }
 
         try {
-            $question = $this->questionService->find($questionId, $this->userId);
+            // The prompt needs the correct answers; find() withholds them from learners (2026-11 audit).
+            $question = $this->questionService->findWithSolution($questionId, $this->userId);
         } catch (\Exception $e) {
             return new JSONResponse(['error' => 'Question not found or no access'], Http::STATUS_NOT_FOUND);
         }

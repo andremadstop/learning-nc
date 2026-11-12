@@ -94,7 +94,7 @@ class AiControllerTest extends TestCase {
         $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(false);
 
         $this->aiServiceMock->expects($this->never())->method('schedulePrompt');
-        $this->questionServiceMock->expects($this->never())->method('find');
+        $this->questionServiceMock->expects($this->never())->method('findWithSolution');
 
         $resp = $this->makeController('user-A')->explain(123);
 
@@ -106,7 +106,7 @@ class AiControllerTest extends TestCase {
         $this->telosMock->expects($this->atLeastOnce())->method('hasAiConsent')->with('user-A')->willReturn(true);
 
         // Consent gate passed — question lookup is reached (and fails for an unrelated reason).
-        $this->questionServiceMock->expects($this->once())->method('find')
+        $this->questionServiceMock->expects($this->once())->method('findWithSolution')
             ->with(123, 'user-A')
             ->willThrowException(new \Exception('not found'));
         $this->aiServiceMock->expects($this->never())->method('schedulePrompt');

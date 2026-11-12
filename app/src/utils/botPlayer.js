@@ -89,6 +89,20 @@ export function botChooseAnswer(answers, difficulty = 'medium') {
 }
 
 /**
+ * Würfelt, ob Klaus diese Frage richtig beantwortet — ohne die Lösung zu kennen.
+ *
+ * Lernende erhalten seit dem Audit 2026-11 kein answers[].is_correct mehr; Klaus braucht es nicht,
+ * denn seine gewählte Antwort wird nirgends angezeigt, nur ob sie stimmt.
+ *
+ * @param {string} difficulty  'easy' | 'medium' | 'hard'
+ * @returns {boolean}
+ */
+export function botAnswersCorrectly(difficulty = 'medium') {
+  const rate = BOT_PROFILES.klaus.correctRate[difficulty] ?? 0.55;
+  return Math.random() < rate;
+}
+
+/**
  * Berechnet realistische Wartezeit vor der Antwort.
  *
  * @param {string} difficulty  'easy' | 'medium' | 'hard'

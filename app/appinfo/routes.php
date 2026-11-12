@@ -31,6 +31,8 @@ return [
         ["name" => "question#search", "url" => "/api/questions/search", "verb" => "GET"],
         ['name' => 'question#index', 'url' => '/api/pools/{poolId}/questions', 'verb' => 'GET'],
         ['name' => 'question#show', 'url' => '/api/questions/{id}', 'verb' => 'GET'],
+        // Server-side grading for the Duel/Gameshow bot modes (learners get no is_correct)
+        ['name' => 'question#check', 'url' => '/api/questions/{id}/check', 'verb' => 'POST'],
         ['name' => 'question#create', 'url' => '/api/questions', 'verb' => 'POST'],
         ['name' => 'question#update', 'url' => '/api/questions/{id}', 'verb' => 'PUT'],
         ['name' => 'question#review', 'url' => '/api/questions/{id}/review', 'verb' => 'PUT'],
