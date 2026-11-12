@@ -43,6 +43,12 @@ class TrainingService {
     /** Error for a practice exam limited to required pools in a course that marks none. */
     public const PRACTICE_NO_REQUIRED_POOLS = 'No required pools in this course';
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
+    /**
+     * Seconds after an exam deadline during which the final answer batch is still accepted.
+     * The client submits automatically shortly before the deadline; jitter, latency and clock
+     * skew can still land that request after it (2026-11 audit H4). New starts stay refused.
+     */
+    public const EXAM_SUBMIT_GRACE_SECONDS = 30;
 
     public function __construct(
         IDBConnection $db,
@@ -133,21 +139,26 @@ class TrainingService {
 
     /**
      * Auto-close expired exam sessions server-side.
-     * Returns updated session plus timeout flag.
+     *
+     * Returns the updated session plus two flags:
+     * - timed_out: the session is closed because its time ran out (an open session is closed
+     *   only once the grace period after the deadline is over, so the final batch can arrive);
+     * - past_deadline: the deadline has passed (also inside the grace period).
      */
     private function closeExpiredExamSessionIfNeeded(array $session, string $userId, string $trigger): array {
         $deadlineAt = $this->getExamDeadlineAt($session);
         if ($deadlineAt === null) {
-            return ['session' => $session, 'timed_out' => false];
+            return ['session' => $session, 'timed_out' => false, 'past_deadline' => false];
         }
 
         if (!empty($session['completed_at'])) {
-            return ['session' => $session, 'timed_out' => ((int)$session['completed_at'] > $deadlineAt)];
+            $completedLate = (int)$session['completed_at'] > $deadlineAt;
+            return ['session' => $session, 'timed_out' => $completedLate, 'past_deadline' => $completedLate];
         }
 
         $now = time();
-        if ($now <= $deadlineAt) {
-            return ['session' => $session, 'timed_out' => false];
+        if ($now <= $deadlineAt + self::EXAM_SUBMIT_GRACE_SECONDS) {
+            return ['session' => $session, 'timed_out' => false, 'past_deadline' => $now > $deadlineAt];
         }
 
         $qb = $this->db->getQueryBuilder();
@@ -168,7 +179,7 @@ class TrainingService {
             'now' => $now,
         ]);
 
-        return ['session' => $session, 'timed_out' => true];
+        return ['session' => $session, 'timed_out' => true, 'past_deadline' => true];
     }
 
     /**
@@ -635,6 +646,11 @@ class TrainingService {
 
         if ($activeExam) {
             $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($activeExam, $userId, 'start_session_guard');
+            if (!$timeoutInfo['timed_out'] && $timeoutInfo['past_deadline']) {
+                // Grace period: only the final batch may still arrive. Neither resume the expired
+                // exam (its questions would be handed out again) nor close it under that batch.
+                throw new \Exception('Exam timed out');
+            }
             if (!$timeoutInfo['timed_out']) {
                 if ($mode === 'exam') {
                     $payload = $this->buildSessionStartPayload($timeoutInfo['session'], true, $contentLanguage);
@@ -796,6 +812,9 @@ class TrainingService {
         $result->closeCursor();
         if ($active) {
             $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($active, $userId, 'start_practice_guard');
+            if (!$timeoutInfo['timed_out'] && $timeoutInfo['past_deadline']) {
+                throw new \Exception('Exam timed out');
+            }
             if (!$timeoutInfo['timed_out']) {
                 return $this->buildSessionStartPayload($timeoutInfo['session'], true, $contentLanguage);
             }
@@ -1849,7 +1868,9 @@ class TrainingService {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'complete');
         $session = $timeoutInfo['session'];
-        $timedOut = $timeoutInfo['timed_out'];
+        // A completion inside the grace period ran out of time too; later reads of the completed
+        // session report it the same way (completed_at > deadline).
+        $timedOut = $timeoutInfo['timed_out'] || $timeoutInfo['past_deadline'];
         $deadlineAt = $this->getExamDeadlineAt($session);
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 

@@ -275,6 +275,10 @@ import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
+// Seconds before the deadline at which the countdown submits the exam. The server accepts the
+// final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
+const EXAM_AUTO_SUBMIT_LEAD_SECONDS = 5;
+
 export default {
   name: 'ExamMode',
   components: { QuestionScenario, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
@@ -754,7 +758,9 @@ export default {
           this.timeLeftSeconds -= 1;
         }
 
-        if (this.timeLeftSeconds <= 0) {
+        // Submit a few seconds early: the batch must reach the server before its grace period
+        // after the deadline runs out (2026-11 audit H4).
+        if (this.timeLeftSeconds <= EXAM_AUTO_SUBMIT_LEAD_SECONDS) {
           this.finishExam({ forceTimedOut: true });
         } else {
           this.timeLeftSeconds = Math.max(0, this.timeLeftSeconds);
