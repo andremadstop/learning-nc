@@ -285,7 +285,11 @@ class LeagueService {
         );
     }
 
-    public function recordExpiredDuel(DuelSession $session): void {
+    /**
+     * A league duel ended because one player stopped polling. $winnerUid is the player who
+     * stayed; without it the challenger-wins fallback for unplayed challenges would apply.
+     */
+    public function recordExpiredDuel(DuelSession $session, ?string $winnerUid = null): void {
         if ($session->getLeagueChallengeId() === null) {
             return;
         }
@@ -296,7 +300,7 @@ class LeagueService {
         }
 
         $season = $this->seasonMapper->findById((int)$session->getLeagueSeasonId());
-        $this->recordResult($season, $challenge, (int)$session->getId(), 0, 0, time(), true);
+        $this->recordResult($season, $challenge, (int)$session->getId(), 0, 0, time(), true, $winnerUid);
     }
 
     private function getLatestSeason(int $courseId): ?LeagueSeason {
@@ -904,11 +908,17 @@ class LeagueService {
         int $scoreA,
         int $scoreB,
         int $playedAt,
-        bool $isForfeit
+        bool $isForfeit,
+        ?string $forfeitWinnerUid = null
     ): void {
         if ($this->hasResultForChallenge($challenge->getId())) {
             return;
         }
+
+        // A forfeit in a duel that was being played goes to the player who stayed. Only a
+        // challenge that was never played (deadline, season end) falls back to the challenger.
+        $opponentWonForfeit = $isForfeit && $forfeitWinnerUid !== null
+            && $forfeitWinnerUid === $challenge->getOpponentUid();
 
         $result = new LeagueResult();
         $result->setSeasonId($season->getId());
@@ -923,7 +933,11 @@ class LeagueService {
         $result->setPlayedAt($playedAt);
 
         if ($challenge->getStage() === 'league') {
-            if ($isForfeit || $scoreA > $scoreB) {
+            if ($opponentWonForfeit) {
+                $result->setLeaguePointsA(0);
+                $result->setLeaguePointsB(3);
+                $result->setWinnerUid($challenge->getOpponentUid());
+            } elseif ($isForfeit || $scoreA > $scoreB) {
                 $result->setLeaguePointsA(3);
                 $result->setLeaguePointsB(0);
                 $result->setWinnerUid($challenge->getChallengerUid());
@@ -940,7 +954,7 @@ class LeagueService {
             $result->setLeaguePointsA(0);
             $result->setLeaguePointsB(0);
             $result->setWinnerUid(
-                $scoreA >= $scoreB || $isForfeit
+                !$opponentWonForfeit && ($scoreA >= $scoreB || $isForfeit)
                     ? $challenge->getChallengerUid()
                     : $challenge->getOpponentUid()
             );

@@ -82,7 +82,9 @@ class PoolSearchProvider implements IProvider {
         $like = '%' . $this->db->escapeLikeParameter($term) . '%';
 
         $qb->selectDistinct('p.id')
-            ->addSelect('p.name', 'p.description', 'p.handbook_title', 'p.chapter_title')
+            // updated_at must be selected: PostgreSQL and MySQL 8 reject ORDER BY on a column
+            // missing from a SELECT DISTINCT list. It depends on p.id, so the rows stay distinct.
+            ->addSelect('p.name', 'p.description', 'p.handbook_title', 'p.chapter_title', 'p.updated_at')
             ->from('learning_pools', 'p')
             ->leftJoin('p', 'learning_pool_shares', 's', $expr->andX(
                 $expr->eq('s.pool_id', 'p.id'),

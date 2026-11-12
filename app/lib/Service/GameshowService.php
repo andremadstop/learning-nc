@@ -315,6 +315,10 @@ class GameshowService {
 
     /**
      * Submit an answer for the current question.
+     *
+     * $answeredAt (the client's Date.now()) is not used for scoring: questionStartedAt is server
+     * time, and a client clock that runs behind (or a forged value) turned the sprint time bonus
+     * and the fastest-first order into whatever the client sent. The server receipt time is stored.
      */
     public function submitAnswer(string $code, string $userId, int $answerId, int $answeredAt, ?string $lang = null): array {
         $session = $this->sessionMapper->findByCode($code);
@@ -363,11 +367,12 @@ class GameshowService {
             }
         }
 
-        // Validate answer server-side
+        // Validate answer server-side — it must belong to the question being played
         $qb = $this->db->getQueryBuilder();
         $qb->select('is_correct')
            ->from('learning_answers')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)));
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
         $res = $qb->executeQuery();
         $row = $res->fetch();
         $res->closeCursor();
@@ -383,7 +388,7 @@ class GameshowService {
         $answer->setPlayerUid($userId);
         $answer->setAnswerId($answerId);
         $answer->setIsCorrect($isCorrect);
-        $answer->setAnsweredAt($answeredAt);
+        $answer->setAnsweredAt(intval(microtime(true) * 1000));
         $answer->setPointsEarned(0); // Scoring handled by mode-specific logic in Phase 9/10
         $this->answerMapper->insert($answer);
 
@@ -651,7 +656,7 @@ class GameshowService {
             $bonus = 0;
             if ($rank === 0 && $questionStartedAt !== null) {
                 $elapsed = ($answer->getAnsweredAt() ?? 0) - $questionStartedAt;
-                $bonus = (int)max(0, (15000 - $elapsed) / 15000 * 500);
+                $bonus = (int)min(500, max(0, (15000 - $elapsed) / 15000 * 500));
             }
 
             $points = $base + $bonus;
