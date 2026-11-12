@@ -366,8 +366,13 @@ class LernprofilService {
     public function getCheatSheet(string $userId, int $limit = 50): array {
         $limit = max(1, min($limit, 100));
 
-        // 1. Get all accessible pool IDs
-        $poolIds = $this->resolvePoolIds($userId, null);
+        // 1. Get all accessible pool IDs. A pool the user is taking a graded exam on is left out:
+        // its correct answers and explanations must not be readable while the exam runs (as in
+        // QuestionService::find/findByPool, the Leitner queue and the translation paths).
+        $poolIds = array_values(array_diff(
+            array_map('intval', $this->resolvePoolIds($userId, null)),
+            $this->getOpenGradedExamPoolIds($userId)
+        ));
         if (empty($poolIds)) {
             return ['spots' => [], 'course_count' => 0, 'total_found' => 0];
         }
@@ -575,6 +580,26 @@ class LernprofilService {
         $coursePoolIds = $this->getCoursePoolIds($userId);
 
         return array_unique(array_merge($ownedIds, $sharedIds, $coursePoolIds));
+    }
+
+    /**
+     * Pools on which the user has an open graded exam. Same condition as
+     * QuestionService::hasActiveExamOnPool: practice exams (exam_kind set) never count.
+     *
+     * @return int[]
+     */
+    private function getOpenGradedExamPoolIds(string $userId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectDistinct('pool_id')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('exam_kind'))
+           ->andWhere($qb->expr()->isNull('completed_at'));
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        return array_map('intval', array_column($rows, 'pool_id'));
     }
 
     private function getOwnedPoolIds(string $userId): array {
