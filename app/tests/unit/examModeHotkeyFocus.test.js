@@ -137,4 +137,42 @@ describe('ExamMode Enter hotkey and focused controls', () => {
 		host.querySelector('button').dispatchEvent(new KeyboardEvent('keydown', { key: '2', bubbles: true, cancelable: true }))
 		expect(instance.answerQuestion).toHaveBeenCalledWith(101)
 	})
+
+	// Recheck D2: a button clicked with the mouse keeps focus. Enter afterwards must keep its
+	// hotkey meaning ("Enter confirms/next"), not click the button a second time.
+	it('Enter after a mouse click on Skip confirms the multi selection instead of skipping again', () => {
+		const instance = examInstance()
+		instance.questions[0] = { id: 10, question_type: 'multi', text: 'Q1', answers: [{ id: 100, text: 'A' }, { id: 101, text: 'B' }] }
+		instance.multiSelections = { 10: [100, 101] }
+		instance.confirmMultiAnswer = vi.fn()
+		const host = mountEl('<button class="skip-btn">Skip</button>')
+		instance.markPointerFocus()
+		const event = pressEnterOn(host.querySelector('.skip-btn'), instance)
+		expect(instance.confirmMultiAnswer).toHaveBeenCalledTimes(1)
+		expect(instance.skipQuestion).not.toHaveBeenCalled()
+		expect(event.defaultPrevented).toBe(true)
+	})
+
+	it('Tab after a mouse click hands Enter back to the focused button', () => {
+		const instance = examInstance()
+		const host = mountEl('<button class="answer-btn">A</button>')
+		instance.markPointerFocus()
+		instance.handleExamHotkeys(new KeyboardEvent('keydown', { key: 'Tab' }))
+		const event = pressEnterOn(host.querySelector('.answer-btn'), instance)
+		expect(instance.skipQuestion).not.toHaveBeenCalled()
+		expect(event.defaultPrevented).toBe(false)
+	})
+
+	it('registers and removes the pointer listener with the component', () => {
+		const add = vi.spyOn(window, 'addEventListener')
+		const remove = vi.spyOn(window, 'removeEventListener')
+		const instance = createInstance()
+		instance.emitVirtuProf = vi.fn()
+		ExamMode.mounted.call(instance)
+		expect(add).toHaveBeenCalledWith('pointerdown', instance.markPointerFocus, true)
+		instance.stopStatusPolling = vi.fn(); instance.releaseExamLock = vi.fn(); instance.cleanupSnake = vi.fn()
+		ExamMode.beforeUnmount.call(instance)
+		expect(remove).toHaveBeenCalledWith('pointerdown', instance.markPointerFocus, true)
+		add.mockRestore(); remove.mockRestore()
+	})
 })

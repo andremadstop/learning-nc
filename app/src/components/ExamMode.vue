@@ -291,6 +291,9 @@ export default {
   },
   data() {
     return {
+      // True after a pointer press, false again after Tab: a button clicked with the mouse keeps
+      // focus, and Enter must then still mean "confirm / next", not a second click on it.
+      focusFromPointer: false,
       screen: 'setup',
       isLoading: false,
       examPresets: [
@@ -541,13 +544,20 @@ export default {
     },
     // Enter on a focused button, link, select or role=button control (answer button, nav dot,
     // "End Exam") belongs to that control. The window hotkey must not preventDefault() its
-    // native click and then skip the question (audit 2026-11).
+    // native click and then skip the question (audit 2026-11). Only for keyboard focus: after a
+    // mouse click on "Skip" or an answer the button keeps focus, and Enter there must still
+    // confirm / advance instead of skipping again or unselecting the answer.
     isActivatableTarget(event) {
+      if (this.focusFromPointer) return false;
       const target = event && event.target ? event.target : null;
       if (!target || typeof target.closest !== 'function') return false;
       return target.closest('button, a[href], select, summary, [role="button"]') !== null;
     },
+    markPointerFocus() {
+      this.focusFromPointer = true;
+    },
     handleExamHotkeys(event) {
+      if (event && event.key === 'Tab') this.focusFromPointer = false;
       if (this.screen !== 'exam' || !this.currentQuestion || this.isLoading) return;
       if (this.isEditableTarget(event)) return;
 
@@ -1125,6 +1135,7 @@ export default {
   },
   mounted() {
     window.addEventListener('keydown', this.handleExamHotkeys);
+    window.addEventListener('pointerdown', this.markPointerFocus, true);
     this.emitVirtuProf('exam-first-start');
   },
 
@@ -1132,6 +1143,7 @@ export default {
     useOptionalVirtuProfStore()?.setExamMode(false);
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
     window.removeEventListener('keydown', this.handleExamHotkeys);
+    window.removeEventListener('pointerdown', this.markPointerFocus, true);
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.stopStatusPolling();
     this.releaseExamLock();
