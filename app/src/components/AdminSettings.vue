@@ -467,6 +467,16 @@ export default {
         this.form.aiEnabled = false
       }
     },
+    /**
+     * 0 is a valid cooldown ("none"); only an empty or non-numeric value falls back to 10.
+     * `x || 10` turned a stored or entered 0 into 10 (audit 2026-11).
+     */
+    normalizeCooldownMinutes(value) {
+      if (value === '' || value === null || value === undefined) return 10
+      const minutes = Number(value)
+      if (!Number.isFinite(minutes)) return 10
+      return Math.max(0, Math.min(1440, Math.round(minutes)))
+    },
     async load() {
       this.loading = true
       this.error = ''
@@ -484,7 +494,7 @@ export default {
         this.form.instructorGroup = data.instructor_group || 'learning-instructors'
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
-        this.form.examAttemptCooldownMinutes = Math.max(0, Math.min(1440, Number(data.exam_attempt_cooldown_minutes || 10)))
+        this.form.examAttemptCooldownMinutes = this.normalizeCooldownMinutes(data.exam_attempt_cooldown_minutes)
         // PRIV-02 / PRIV-05: AI settings
         this.form.aiProvider = this.normalizeAiProvider(data.ai_provider)
         this.form.aiOllamaUrl = (data.ai_ollama_url || 'http://localhost:11434').trim() || 'http://localhost:11434'
@@ -541,7 +551,7 @@ export default {
             instructor_group: this.form.instructorGroup || 'learning-instructors',
             allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
             exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
-            exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),
+            exam_attempt_cooldown_minutes: this.normalizeCooldownMinutes(this.form.examAttemptCooldownMinutes),
             // PRIV-02 / PRIV-05: AI settings
             ai_provider: this.normalizeAiProvider(this.form.aiProvider),
             ai_ollama_url: (this.form.aiOllamaUrl || 'http://localhost:11434').trim() || 'http://localhost:11434',
