@@ -1240,8 +1240,10 @@ class StoryEngineService {
 
         // Difficulty modifier: positive = harder (pick from higher-index questions),
         // negative = easier (pick from lower-index questions).
-        // Implemented as a simple ORDER BY RANDOM() with an offset shift.
-        $qb->orderBy($qb->createFunction('RANDOM()'))
+        // Implemented as a random order with an offset shift. MySQL/MariaDB call the function
+        // RAND(); RANDOM() there is an SQL error and failed every campaign with a skill check.
+        $randomFn = $this->db->getDatabaseProvider() === IDBConnection::PLATFORM_MYSQL ? 'RAND()' : 'RANDOM()';
+        $qb->orderBy($qb->createFunction($randomFn))
            ->setMaxResults($count + abs($difficultyModifier) * 2);
 
         $result = $qb->executeQuery();

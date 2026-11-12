@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
-use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
@@ -219,12 +218,21 @@ class ReminderService {
         }
 
         $qb = $this->db->getQueryBuilder();
+        // exam_date is 'YYYY-MM-DDTHH:MM' since the course tab uses <input type=datetime-local>,
+        // legacy rows hold 'YYYY-MM-DD': match the date prefix, not the whole value.
+        $dateMatches = array_map(
+            fn (string $date) => $qb->expr()->like(
+                'c.exam_date',
+                $qb->createNamedParameter($this->db->escapeLikeParameter($date) . '%')
+            ),
+            $examDates
+        );
         $qb->selectDistinct(['cm.user_id', 'c.id AS course_id', 'c.title AS course_title', 'c.exam_date'])
             ->from('learning_courses', 'c')
             ->innerJoin('c', 'learning_course_members', 'cm', $qb->expr()->eq('c.id', 'cm.course_id'))
             ->where($qb->expr()->eq('c.status', $qb->createNamedParameter('active')))
             ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
-            ->andWhere($qb->expr()->in('c.exam_date', $qb->createNamedParameter($examDates, IQueryBuilder::PARAM_STR_ARRAY)))
+            ->andWhere($qb->expr()->orX(...$dateMatches))
             ->orderBy('c.exam_date', 'ASC')
             ->addOrderBy('cm.user_id', 'ASC');
 
@@ -234,7 +242,8 @@ class ReminderService {
 
         $targets = [];
         foreach ($rows as $row) {
-            $examDate = (string)($row['exam_date'] ?? '');
+            // The date part only: the marker and the notification object id keep their date format.
+            $examDate = substr((string)($row['exam_date'] ?? ''), 0, 10);
             $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
             $errors = \DateTimeImmutable::getLastErrors();
             $hasWarnings = is_array($errors) && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0);

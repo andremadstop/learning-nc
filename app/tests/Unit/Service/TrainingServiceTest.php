@@ -127,6 +127,49 @@ class TrainingServiceTest extends TestCase {
         $this->assertArrayNotHasKey('correct', $questionPayload['pbq_config']['positions'][0]);
     }
 
+    /**
+     * 2026-11 audit S04: cli and multi_panel PBQs are graded against
+     * evaluation[].required_pattern. The exam start payload sent it, so the student could type
+     * the expected command. evaluation is grading data only — no client component reads it.
+     */
+    public function testExamStartPayloadStripsCliEvaluation(): void {
+        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $closeTrainingBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $attemptLimitBuilder = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $insertBuilder = new FakeQueryBuilder(new FakeResult(), 0, 99);
+        $db = new FakeDbConnection([$activeExamBuilder, $closeTrainingBuilder, $attemptLimitBuilder, $insertBuilder]);
+
+        $question = $this->makeQuestion(10, 42, 'PBQ');
+        $question->setQuestionType('pbq');
+        $question->setPbqSubtype('cli');
+        $question->setPbqConfig(json_encode([
+            'terminals' => [['name' => 'Access Switch 1']],
+            'evaluation' => [
+                ['terminal' => 'Access Switch 1', 'required_pattern' => 'switchport access vlan 90', 'points' => 1, 'explanation' => 'Assign VLAN 90'],
+            ],
+        ]));
+
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([$question]);
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestion')->willReturn([]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            poolMapper: $poolMapper
+        );
+
+        $config = $service->startSession(42, 'alice', null, 'exam')['questions'][0]['pbq_config'];
+
+        $this->assertArrayNotHasKey('evaluation', $config);
+        $this->assertStringNotContainsString('switchport access vlan 90', (string)json_encode($config));
+        $this->assertSame('Access Switch 1', $config['terminals'][0]['name'], 'render config must survive');
+    }
+
     public function testExamStartResumesActiveExamAcrossCourseContextMismatch(): void {
         $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch([
             'id' => 77,

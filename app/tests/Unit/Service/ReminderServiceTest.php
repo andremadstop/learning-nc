@@ -112,4 +112,53 @@ class ReminderServiceTest extends TestCase {
             'ReminderService MUST NOT inject IUserManager — email access must be structurally impossible'
         );
     }
+
+    /**
+     * 2026-11 audit S03: the course tab saves the exam date from <input type=datetime-local>,
+     * so exam_date reads 'YYYY-MM-DDTHH:MM'. The reminder job compared and parsed it as a plain
+     * date and never reminded anyone. The SQL side is covered by
+     * tests/Integration/ExamReminderTargetsTest; this covers the parsing, the marker and the
+     * notification object id, which keep their date-only format.
+     */
+    public function testExamDateWithTimeGetsReminderThreeDaysAhead(): void {
+        $examDay = (new \DateTimeImmutable('today'))->modify('+3 days');
+        $rows = [[
+            'user_id' => 'alice',
+            'course_id' => 5,
+            'course_title' => 'Network+',
+            'exam_date' => $examDay->format('Y-m-d') . 'T09:00',
+        ]];
+        $db = new \OCA\Learning\Tests\Support\FakeDbConnection([
+            new \OCA\Learning\Tests\Support\FakeQueryBuilder(\OCA\Learning\Tests\Support\FakeResult::fromFetchAll($rows)),
+        ]);
+
+        $notification = $this->makeFluentNotification();
+        $notification->expects($this->once())->method('setObject')
+            ->with('exam', '5-' . $examDay->format('Ymd') . '-3')
+            ->willReturnSelf();
+        $notification->expects($this->once())->method('setSubject')
+            ->with('exam_reminder', ['days' => 3, 'course_title' => 'Network+'])
+            ->willReturnSelf();
+        $manager = $this->createMock(INotificationManager::class);
+        $manager->method('createNotification')->willReturn($notification);
+        $manager->method('getCount')->willReturn(0);
+        $manager->expects($this->once())->method('notify');
+
+        $config = $this->createMock(IConfig::class);
+        $config->method('getUserValue')->willReturnCallback(
+            static fn (string $user, string $app, string $key, mixed $default = ''): mixed => $default
+        );
+        $config->expects($this->once())->method('setUserValue')
+            ->with('alice', 'learning', 'last_exam_reminder_5', $examDay->format('Y-m-d') . ':3');
+
+        $service = new ReminderService(
+            $db,
+            $manager,
+            $config,
+            $this->createMock(StreakService::class),
+            $this->createMock(LoggerInterface::class),
+        );
+
+        $this->assertSame(1, $service->sendExamReminders());
+    }
 }

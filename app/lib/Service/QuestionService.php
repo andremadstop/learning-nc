@@ -113,7 +113,8 @@ class QuestionService {
 
     /**
      * Check if user has an active (uncompleted) exam session on a given pool.
-     * Used to suppress is_correct in question read APIs to prevent exam oracle attacks.
+     * Used to suppress is_correct, explanation and the PBQ solution in question read APIs to
+     * prevent exam oracle attacks.
      */
     private function hasActiveExamOnPool(int $poolId, string $userId): bool {
         $qb = $this->db->getQueryBuilder();
@@ -314,6 +315,7 @@ class QuestionService {
             $questionData = $question->jsonSerialize();
             if ($stripCorrect) {
                 unset($questionData['explanation']);
+                $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
@@ -348,6 +350,7 @@ class QuestionService {
             $questionData = $question->jsonSerialize();
             if ($stripCorrect) {
                 unset($questionData['explanation']);
+                $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
@@ -377,6 +380,7 @@ class QuestionService {
             $questionData = $question->jsonSerialize();
             if ($stripCorrect) {
                 unset($questionData['explanation']);
+                $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
             }
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
                 $row = $a->jsonSerialize();
