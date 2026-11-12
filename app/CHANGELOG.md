@@ -2,64 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.8.0] - 2026-11-12 — Question import and pool import for self-hosters
 
 Reported on GitHub #34 by a self-hosting administrator who could not find where questions are
 added and whose JSON file did not import.
 
 ### Fixed
-- **Pasted JSON was read as CSV.** Format detection ran only for uploaded files. Pasted text that
-  is valid JSON (a list or an object) now switches the import dialog to JSON by itself — not once
-  the other tab was clicked by hand (removing a loaded file with **Clear** turns it back on), and
-  not for a CSV whose first field starts with `[` or `{`. Broken JSON stays on the CSV tab with a
-  note that quotes the JSON error and points to the JSON tab. The file upload endpoint
-  (`POST /api/pools/{poolId}/import/file`) reads the extension first (`.json`/`.csv`); a file
-  with neither is read as JSON only if its content is valid JSON, so a `.csv` starting with
-  `[Network] …` is no longer sent to the JSON reader.
-- **Many common JSON shapes were refused or crashed the import.** The import in the interface now
-  also reads answers as plain strings (`options`, `choices`) with the correct one named on the
-  question (`answer`, `correct`, `correct_index` counting from 0, `correct_number` counting from
-  1, a letter or the answer text), the documented pool file with one pool, and numbers where text
-  was expected. A marker that names no answer skips the question with the reason in the import report.
+- **Pasted JSON was read as CSV.** Pasted text that is valid JSON now switches the import dialog
+  to JSON by itself; broken JSON stays on the CSV tab with a note that quotes the JSON error.
+  Uploaded files are read by their extension (`.json`/`.csv`) first, so a `.csv` starting with
+  `[Network] …` no longer goes to the JSON reader.
+- **Many common JSON shapes were refused or crashed the import.** The import now also reads
+  answers as plain strings (`options`, `choices`) with the correct one named on the question
+  (`answer`, `correct`, `correct_index` counting from 0, `correct_number` counting from 1, a letter
+  or the answer text), the documented pool file with one pool, and numbers where text was
+  expected. A marker that names no answer skips the question with the reason in the import report.
 - **The pool format lost its metadata in the interface.** The pool's chapter fields,
-  `exam_key_prefix` and the `_meta` defaults are now applied to the questions, in the order
+  `exam_key_prefix` and the `_meta` defaults now apply to the questions in the order
   question > pool > `_meta`, the same rule as `occ learning:import-pool-json`.
-- **CSV with line breaks inside quoted fields** (as spreadsheet programs write it) was torn apart
-  into broken lines. Quoted fields may now contain line breaks, the separator and `""`.
+- **CSV with line breaks inside quoted fields** (as spreadsheet programs write it) was torn apart.
+  Quoted fields may now contain line breaks, the separator and `""`.
 - **An export did not come back complete.** The JSON export now carries difficulty, chapter,
   handbook and exam key, and the subtype and configuration of interactive questions (PBQ), so it
-  re-imports without losses through the interface or occ. `ranking` PBQs can now be imported.
+  re-imports without losses through the interface or occ; `ranking` PBQs can now be imported. An
+  exported `multi` question with one correct answer stays multiple choice. The CSV export (also the
+  course statistics export) is plain RFC 4180 now, the format the import reads, so a backslash
+  before a quote no longer breaks the re-import.
 - **An empty pool was a dead end.** It now opens in **Manage** for everyone who may edit it, and
   Training offers **Add questions**.
-- **A correct answer after the eighth was lost.** Answers beyond the eighth were cut before the
-  correct one was looked up, so the first answer was marked correct instead. Such a question is
-  now skipped with the reason; a question with more than 50 answers is skipped as well.
-- **A correct-answer list naming the same answer twice** was silently merged, so a 0/1 list such
-  as `[1, 0, 1, 0]` marked the wrong answers. Any list naming an answer twice (also `["B", 1]`)
-  now skips the question with the reason, as does a list longer than the question's answers.
-- **A `difficulty` longer than 20 characters** passed the preview and then failed the whole import
-  with a server error, nothing saved. It is now cut to 20 characters. A `chapter_order` outside
-  1–9999 (0, negative, 10000 or more) is dropped: the interface stored 0 or 10000 as they were,
-  while occ skipped such a question or failed the whole pool. Both apply to
-  `occ learning:import-pool-json` as well, so the same file ends the same way in both.
-- **An exported `multi` question with one correct answer** came back as single choice through the
-  interface. An explicit `multi` now stays multiple choice.
-- **A CSV export with a backslash before a quote** did not import again. The export now writes
-  plain RFC 4180 CSV (also the course statistics export), the same format the import reads.
-- **Answer texts over 2,000 characters** were cut without a word; the import report now warns, in
-  JSON and CSV. A CSV header row no longer counts towards the 500-question limit.
+- **Wrong answers could be marked correct.** A correct answer after the eighth was cut off before
+  it was looked up, so the first answer was marked instead; a correct-answer list naming the same
+  answer twice (such as `[1, 0, 1, 0]` or `["B", 1]`) was silently merged. Such questions are now
+  skipped with the reason, as are questions with more than 50 answers and correct-answer lists
+  longer than the question's answers.
+- **An unknown question type failed the whole pool.** In `occ learning:import-pool-json` and the
+  pool import, the dry run counted a type such as `multiple_choice_extended` as importable, then
+  the real import refused the entire pool, valid questions included. Only `single`, `multi`,
+  `open` and `pbq` are accepted now (any letter case; `true_false` reads as `single`, the
+  historical `multiple` as `multi`). Any other type skips that one question with the reason, in
+  the dry run, the import and the question import of the interface. Creating or editing a
+  question refuses an unknown type; a question that already carries one can still be saved
+  unchanged.
+- **Out-of-range values.** A `difficulty` longer than 20 characters failed the whole import with a
+  server error; it is now cut to 20 characters. A `chapter_order` outside 1–9999 is dropped, in
+  the interface and in occ alike. Answer texts over 2,000 characters are still cut, but the import
+  report now warns. A CSV header row no longer counts towards the 500-question limit.
 - **`_meta.default_question_type: "pbq"`** no longer turns a question with several correct answers
-  into an interactive question, in the interface and in occ. Interactive questions in the
-  interface accept `text`, `question` and `frage` as the question text, not only `question_text`.
-- **An unknown question type failed the whole pool.** `occ learning:import-pool-json` and the
-  pool import in the Pools tab passed any `question_type` on: the dry run counted
-  `multiple_choice_extended` as importable, then the real import refused the entire pool
-  ("create failed"), valid questions included; a short unknown type such as `truefalse` was stored
-  as it was. Only `single`, `multi`, `open` and `pbq` are accepted now (any letter case,
-  `true_false` still reads as `single`, and the historical `multiple` now reads as `multi`); any other type skips that one question with the reason,
-  in the dry run and the import alike. The question import in the interface skips such a question
-  as well instead of turning it into single choice, and creating or editing a question refuses an
-  unknown type — a question that already carries one can still be saved unchanged.
+  into an interactive question. Interactive questions accept `text`, `question` and `frage` as the
+  question text, not only `question_text`.
 - Import errors from the server are shown in the reader's language.
 
 ### Changed
@@ -75,24 +65,22 @@ added and whose JSON file did not import.
   `{"name", "description", "_meta", "questions"}`, becomes one new pool, named by the new option
   `--pool-name`, else by the file's `name`, else by the file name. The command now also imports
   PBQs, and a question's own chapter wins over the pool's.
-- Manual and import guide describe who sees **Manage**, all accepted import formats and the
-  round trip export → import.
+- Manual and import guide describe who sees **Manage**, all accepted import formats and the round
+  trip export → import.
 
 ### Added
 - **Import pools in the Pools tab.** Instructors can import a JSON file with one or more pools
   (the format of `occ learning:import-pool-json`, also a plain question list or an export, which
-  becomes one pool named after the file) and get all pools with their questions in one step, each
-  owned by them. A preview from a server-side dry run lists every pool with how many questions can
-  be imported and why the others cannot, before anything is saved. Each pool is saved on its own:
-  a refused question is skipped, a pool that cannot be saved is rolled back completely, and the
-  other pools stay. Up to 50 pools and 5,000 questions per file, the same file-size setting and
-  rate limit as the question import. The import into an open pool points there for files with
-  several pools. New endpoint `POST /api/pools/import` (instructors only, `dry_run` for the
-  check run).
+  becomes one pool named after the file) in one step, each pool owned by them. A preview from a
+  server-side dry run lists every pool with how many questions can be imported and why the others
+  cannot, before anything is saved. Each pool is saved on its own: a refused question is skipped,
+  a pool that cannot be saved is rolled back completely, and the other pools stay. Up to 50 pools
+  and 5,000 questions per file, with the same file-size setting and rate limit as the question
+  import. New endpoint `POST /api/pools/import` (instructors only, `dry_run` for the check run).
 - `occ learning:import-pool-json` and the new import share one implementation, so a file gives
-  the same pools either way. As a result the occ dry run now checks every question and lists the
-  ones that would be skipped, and a pool that cannot be saved is rolled back as a whole, with the
-  technical reason written to the Nextcloud log instead of the output.
+  the same pools either way. The occ dry run now checks every question and lists the ones that
+  would be skipped, and a pool that cannot be saved is rolled back as a whole, with the technical
+  reason written to the Nextcloud log instead of the output.
 
 ## [5.7.1] - 2026-11-06 — Neutral texts, SQLite, tooling
 

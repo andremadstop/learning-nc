@@ -1,6 +1,6 @@
 # Learning — User & Administrator Manual
 
-For **Learning 5.7.1** on Nextcloud 33–35.
+For **Learning 5.8.0** on Nextcloud 33–35.
 
 This manual walks through the complete workflow, in the order you will actually use it:
 
