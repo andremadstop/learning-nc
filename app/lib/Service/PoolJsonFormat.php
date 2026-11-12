@@ -119,6 +119,11 @@ final class PoolJsonFormat {
         if ($type === '') {
             return null;
         }
+        // A choice name (multiple_choice) is single: a default applies only with at most one
+        // correct answer, several correct answers are multi before it.
+        if (in_array($type, QuestionService::CHOICE_TYPE_NAMES, true)) {
+            return 'single';
+        }
         return QuestionService::TYPE_ALIASES[$type] ?? $type;
     }
 

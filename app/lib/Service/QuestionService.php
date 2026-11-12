@@ -33,6 +33,15 @@ class QuestionService {
      */
     public const TYPE_ALIASES = ['true_false' => 'single', 'multiple' => 'multi'];
 
+    /**
+     * Type names the imports read as "a choice question" without saying single or multi
+     * (lower-case): single with one correct answer, multi with several — the rule for a question
+     * without a type, except that `_meta.default_question_type` never applies to it.
+     * "multiple_choice" is what app/data/subnetting_questions.json and many files from elsewhere
+     * write. Mirrored in importPreview.js CHOICE_TYPE_NAMES.
+     */
+    public const CHOICE_TYPE_NAMES = ['multiple_choice'];
+
     private $questionMapper;
     private $answerMapper;
     private $shareMapper;

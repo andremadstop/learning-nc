@@ -418,7 +418,9 @@ class PoolBulkImportService {
      * Reads `question_type` (the pool JSON format's own key) and also `type` / `typ`, the keys
      * that `occ learning:export-pool` and the import in the interface use — otherwise an
      * exported pool loses its multi and open questions on the way back in. Without any of these
-     * keys, several correct answers mean `multi`, as the import documentation says.
+     * keys, several correct answers mean `multi`, as the import documentation says. A choice
+     * name (QuestionService::CHOICE_TYPE_NAMES, e.g. multiple_choice) is `single` or `multi` by
+     * the correct answers, without the default type.
      *
      * The type is lower-cased (as ImportController::typeFrom() does) but not checked: a type
      * outside QuestionService::QUESTION_TYPES is returned as it is, and prepareQuestion() refuses
@@ -428,15 +430,19 @@ class PoolBulkImportService {
      * @param array<array{text: string, is_correct: bool}> $answers
      */
     public static function resolveQuestionType(array $question, string $defaultType, array $answers): string {
+        $correct = count(array_filter($answers, static fn (array $a): bool => $a['is_correct']));
         foreach (['question_type', 'type', 'typ'] as $key) {
             if (isset($question[$key]) && is_string($question[$key]) && trim($question[$key]) !== '') {
                 $type = strtolower(trim($question[$key]));
+                // multiple_choice: single or multi by the correct answers, never the default type.
+                if (in_array($type, QuestionService::CHOICE_TYPE_NAMES, true)) {
+                    return $correct > 1 ? 'multi' : 'single';
+                }
                 // Historical names (true_false, multiple); the interface import maps them the same way.
                 return QuestionService::TYPE_ALIASES[$type] ?? $type;
             }
         }
 
-        $correct = count(array_filter($answers, static fn (array $a): bool => $a['is_correct']));
         if ($correct > 1) {
             return 'multi';
         }

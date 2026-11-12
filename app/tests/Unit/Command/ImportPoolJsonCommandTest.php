@@ -283,4 +283,13 @@ class ImportPoolJsonCommandTest extends TestCase {
         [, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [['pool_name' => 'From the list', 'questions' => self::bareList()]]]), '--user' => 'alice']);
         $this->assertSame(['From the list'], array_column($this->createdPools, 'name'), $display);
     }
+
+    /** The audit's own file: named by its pool_name, all 25 multiple_choice questions importable. */
+    public function testTheSubnettingDataFileDryRunsCompletely(): void {
+        [$exit, $display] = $this->runCommand(['file' => __DIR__ . '/../../../data/subnetting_questions.json', '--user' => 'alice', '--dry-run' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit, $display);
+        $this->assertStringContainsString('Subnetting & IP-Adressierung (N10-009)', $display);
+        $this->assertStringContainsString('Dry-run: 1 Pools, 25 Fragen', $display);
+    }
 }

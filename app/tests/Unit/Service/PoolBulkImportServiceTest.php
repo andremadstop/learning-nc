@@ -360,4 +360,34 @@ class PoolBulkImportServiceTest extends TestCase {
         $this->assertSame(['multi', 'multi', 'multi'], array_map(static fn (array $q) => $q[6], $this->createdQuestions));
         $this->assertSame('multi', PoolBulkImportService::resolveQuestionType(['type' => ' Multiple '], 'single', []));
     }
+
+    /**
+     * "multiple_choice" (app/data/subnetting_questions.json, common in files from elsewhere) names
+     * a choice question without saying single or multi: single with one correct answer, multi
+     * with several — and never the file's default_question_type (audit 2026-11).
+     */
+    public function testMultipleChoiceIsSingleOrMultiByItsCorrectAnswers(): void {
+        $one = [['text' => 'a', 'is_correct' => true], ['text' => 'b']];
+        $two = [['text' => 'a', 'is_correct' => true], ['text' => 'b', 'is_correct' => true], ['text' => 'c']];
+        $doc = ['_meta' => ['default_question_type' => 'open'], 'pools' => [['name' => 'MC', 'questions' => [
+            ['text' => 'One correct', 'type' => 'multiple_choice', 'answers' => $one],
+            ['text' => 'Two correct', 'question_type' => 'Multiple_Choice', 'answers' => $two],
+        ]]]];
+
+        $dry = $this->importer()->import($doc, 'teacher', true, $this->englishL10n());
+        $real = $this->importer()->import($doc, 'teacher', false, $this->englishL10n());
+
+        $this->assertSame([], $dry[0]['question_errors']);
+        $this->assertSame([], $real[0]['question_errors']);
+        $this->assertSame([2, 2], [$dry[0]['importable'], $real[0]['imported']]);
+        $this->assertSame(['single', 'multi'], array_map(static fn (array $q) => $q[6], $this->createdQuestions));
+
+        // As the file's default it is single — several correct answers are multi anyway.
+        $default = ['_meta' => ['default_question_type' => 'multiple_choice'], 'pools' => [['name' => 'D', 'questions' => [
+            ['text' => 'Default one', 'answers' => $one],
+            ['text' => 'Default two', 'answers' => $two],
+        ]]]];
+        $this->importer()->import($default, 'teacher', false, $this->englishL10n());
+        $this->assertSame(['single', 'multi'], array_map(static fn (array $q) => $q[6], $this->createdQuestions));
+    }
 }

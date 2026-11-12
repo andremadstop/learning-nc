@@ -424,6 +424,30 @@
         {"text": "Own type", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
         {"text": "Default", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
       ]}
+    },
+    {
+      "name": "multiple_choice is single with one correct answer, multi with several, and never the default type (audit 2026-11)",
+      "input": {"_meta": {"default_question_type": "open"}, "questions": [
+        {"text": "One correct", "type": "multiple_choice", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Two correct", "type": "Multiple_Choice", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": true}, {"text": "c"}]},
+        {"text": "Marker list", "type": "multiple_choice", "options": ["a", "b", "c"], "correct": [0, 2]}
+      ]},
+      "expect": {"importable": 3, "errors": 0, "questions": [
+        {"text": "One correct", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Two correct", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": true}, {"text": "c", "correct": false}]},
+        {"text": "Marker list", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}, {"text": "c", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "multiple_choice as default_question_type is single, several correct answers stay multi (audit 2026-11)",
+      "input": {"_meta": {"default_question_type": "multiple_choice"}, "questions": [
+        {"text": "Default one", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Default two", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": true}, {"text": "c"}]}
+      ]},
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Default one", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Default two", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": true}, {"text": "c", "correct": false}]}
+      ]}
     }
   ]
 }
