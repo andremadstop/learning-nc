@@ -80,6 +80,8 @@ class ChunkingService {
      * @return array<int, array{text: string, chapter: ?string}>
      */
     private function splitIntoChunks(string $text): array {
+        // CRLF/CR documents would otherwise stay one paragraph (2026-11 audit)
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
         $paragraphs = preg_split('/\n{2,}/', $text);
         if ($paragraphs === false) {
             return [['text' => $text, 'chapter' => null]];
@@ -99,14 +101,17 @@ class ChunkingService {
             // Check if this paragraph is a heading
             $heading = $this->detectHeading($paragraph);
             if ($heading !== null) {
-                $currentChapter = $heading;
+                $currentChapter = $heading['heading'];
                 // If we have accumulated text, flush it before the new chapter
                 if (trim($currentBuffer) !== '') {
                     $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chunkChapter];
                     $currentBuffer = '';
                 }
                 $chunkChapter = $currentChapter;
-                continue;
+                $paragraph = $heading['body'];
+                if ($paragraph === '') {
+                    continue;
+                }
             }
 
             // Set chunk chapter if not yet set
@@ -200,23 +205,28 @@ class ChunkingService {
      * - Markdown setext headings: Heading\n====== or Heading\n------
      * - PDF-style: ALL CAPS lines shorter than 80 chars
      *
-     * @return string|null The heading text, or null if not a heading
+     * Only the first line(s) of a paragraph can be a heading. The lines after it come back as the
+     * paragraph body, so text written directly under a heading is not lost (2026-11 audit).
+     *
+     * @return array{heading: string, body: string}|null
      */
-    private function detectHeading(string $paragraph): ?string {
-        // Markdown ATX: # Heading
-        if (preg_match('/^#{1,6}\s+(.+)$/m', $paragraph, $matches)) {
-            return trim($matches[1]);
+    private function detectHeading(string $paragraph): ?array {
+        $lines = explode("\n", trim($paragraph));
+        $first = trim($lines[0]);
+
+        // Markdown ATX: # Heading (first line only; a '# comment' further down is body text)
+        if (preg_match('/^#{1,6}\s+(.+)$/', $first, $matches)) {
+            return ['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
         }
 
         // Markdown setext: Heading\n===== or Heading\n-----
-        if (preg_match('/^(.+)\n[=\-]{3,}$/m', $paragraph, $matches)) {
-            return trim($matches[1]);
+        if ($first !== '' && isset($lines[1]) && preg_match('/^[=\-]{3,}$/', trim($lines[1]))) {
+            return ['heading' => $first, 'body' => trim(implode("\n", array_slice($lines, 2)))];
         }
 
         // PDF-style: ALL CAPS, short line (< 80 chars), no sentence-ending punctuation
-        $lines = explode("\n", trim($paragraph));
         if (count($lines) === 1) {
-            $line = trim($lines[0]);
+            $line = $first;
             if (
                 mb_strlen($line) > 2
                 && mb_strlen($line) < 80
@@ -225,7 +235,7 @@ class ChunkingService {
                 && !preg_match('/[.!?]$/', $line)
             ) {
                 // Convert to title case for readability
-                return mb_convert_case($line, MB_CASE_TITLE);
+                return ['heading' => mb_convert_case($line, MB_CASE_TITLE), 'body' => ''];
             }
         }
 
