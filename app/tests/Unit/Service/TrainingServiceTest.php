@@ -150,7 +150,7 @@ class TrainingServiceTest extends TestCase {
         ]));
 
         $questionMapper = $this->createMock(QuestionMapper::class);
-        $questionMapper->method('findByPoolId')->with(42)->willReturn([$question]);
+        $questionMapper->method('findByPoolId')->willReturn([$question]);
         $answerMapper = $this->createMock(AnswerMapper::class);
         $answerMapper->method('findByQuestion')->willReturn([]);
         $poolMapper = $this->createMock(PoolMapper::class);

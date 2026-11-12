@@ -28,7 +28,7 @@ class MaintenanceServiceTest extends TestCase {
         $course->setId(7);
         $course->setInstructorId('owner');
         $mapper = $this->createMock(CourseMapper::class);
-        $mapper->method('findById')->with(7)->willReturn($course);
+        $mapper->method('findById')->willReturn($course);
 
         return new MaintenanceService(
             new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetch($memberRow))]),
