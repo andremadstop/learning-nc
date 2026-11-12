@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Unit\Service;
 use OCA\Learning\Db\StoryProgressMapper;
 use OCA\Learning\Service\CampaignGraphService;
 use OCA\Learning\Service\GeminiService;
+use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\StoryEngineService;
 use OCA\Learning\Service\TelosService;
 use OCP\ICacheFactory;
@@ -68,7 +69,8 @@ class StoryEngineServiceTest extends TestCase {
             $this->configMock,
             $this->cacheFactoryMock,
             $this->graphServiceMock,
-            $this->telosMock
+            $this->telosMock,
+            $this->createMock(QuestionService::class)
         );
     }
 

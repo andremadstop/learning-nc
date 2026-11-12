@@ -44,7 +44,7 @@ final class StoryRandomQuestionsTest extends TestCase {
 
 	private function fetch(?string $filter, int $count): array {
 		$method = new \ReflectionMethod(StoryEngineService::class, 'fetchFilteredQuestions');
-		return $method->invoke(Server::get(StoryEngineService::class), $filter, $count, 0);
+		return $method->invoke(Server::get(StoryEngineService::class), self::USER, $filter, $count, 0);
 	}
 
 	private function seedPoolWithQuestion(): void {

@@ -48,6 +48,7 @@ class StoryEngineService {
     private ICacheFactory $cacheFactory;
     private CampaignGraphService $graphService;
     private TelosService $telosService;
+    private QuestionService $questionService;
 
     public function __construct(
         StoryProgressMapper $progressMapper,
@@ -57,7 +58,8 @@ class StoryEngineService {
         IConfig $config,
         ICacheFactory $cacheFactory,
         CampaignGraphService $graphService,
-        TelosService $telosService
+        TelosService $telosService,
+        QuestionService $questionService
     ) {
         $this->progressMapper = $progressMapper;
         $this->db = $db;
@@ -67,6 +69,7 @@ class StoryEngineService {
         $this->cacheFactory = $cacheFactory;
         $this->graphService = $graphService;
         $this->telosService = $telosService;
+        $this->questionService = $questionService;
         // Resolve campaign directory relative to this file's location:
         // app/lib/Service/ → ../../../data/campaigns/
         $this->campaignDir = realpath(__DIR__ . '/../../../app/data/campaigns')
@@ -877,7 +880,7 @@ class StoryEngineService {
 
         return [
             'progress' => $this->serializeProgress($saved),
-            'scene'    => $this->buildSceneResponse($firstScene, $campaign, $characterClass, $userId, [], ''),
+            'scene'    => $this->buildSceneResponse($firstScene, $campaign, $characterClass, $userId, [], '', $progress),
         ];
     }
 
@@ -902,7 +905,7 @@ class StoryEngineService {
             'progress' => $this->serializeProgress($progress),
             'scene'    => $this->buildSceneResponse(
                 $scene, $campaign, $progress->getCharacterClass(),
-                $userId, $progress->getChoicesDecoded(), ''
+                $userId, $progress->getChoicesDecoded(), '', $progress
             ),
         ];
     }
@@ -941,14 +944,19 @@ class StoryEngineService {
         $skillCheck = $choice['skill_check'] ?? null;
 
         // If skill_check exists but has 0 pre-loaded questions (pool_filter didn't match),
-        // treat as no skill check — don't block the player
+        // treat as no skill check — don't block the player. The scene response remembered what
+        // it offered; only a progress without that record (mid-check at upgrade) probes again.
         if ($skillCheck !== null) {
-            $preloadedQuestions = $this->fetchFilteredQuestions(
-                $skillCheck['pool_filter'] ?? null,
-                (int)($skillCheck['question_count'] ?? 3),
-                0
-            );
-            if (empty($preloadedQuestions)) {
+            $offered = $this->offeredSkillQuestionIds($progress, $scene['id'], $choiceId);
+            if ($offered === null) {
+                $offered = array_column($this->fetchFilteredQuestions(
+                    $userId,
+                    $skillCheck['pool_filter'] ?? null,
+                    (int)($skillCheck['question_count'] ?? 3),
+                    0
+                ), 'id');
+            }
+            if ($offered === []) {
                 $skillCheck = null;
             }
         }
@@ -958,7 +966,8 @@ class StoryEngineService {
 
         if ($skillCheck !== null && $answerId !== null && $questionId !== null) {
             // Inline single-question skill-check evaluation
-            $skillResult = $this->evaluateSingleAnswer($questionId, $answerId);
+            $this->requireOfferedSkillQuestions($progress, $scene['id'], $choiceId, [$questionId]);
+            $skillResult = $this->evaluateSingleAnswer($userId, $questionId, $answerId);
             $nextSceneId = $skillResult['correct']
                 ? ($choice['success_scene'] ?? null)
                 : ($choice['fail_scene'] ?? null);
@@ -981,7 +990,7 @@ class StoryEngineService {
             'progress' => $this->serializeProgress($progress),
             'scene'    => $this->buildSceneResponse(
                 $currentScene, $campaign, $progress->getCharacterClass(),
-                $userId, $progress->getChoicesDecoded(), $choiceId
+                $userId, $progress->getChoicesDecoded(), $choiceId, $progress
             ),
         ];
 
@@ -1014,7 +1023,8 @@ class StoryEngineService {
         $scene     = $this->findScene($campaign, $progress->getCurrentSceneId());
         $choice    = $this->findChoice($scene, $choiceId);
 
-        $skillResult = $this->evaluateSingleAnswer($questionId, $answerId);
+        $this->requireOfferedSkillQuestions($progress, $scene['id'], $choiceId, [$questionId]);
+        $skillResult = $this->evaluateSingleAnswer($userId, $questionId, $answerId);
 
         $nextSceneId = $skillResult['correct']
             ? ($choice['success_scene'] ?? null)
@@ -1032,7 +1042,7 @@ class StoryEngineService {
             'progress'     => $this->serializeProgress($progress),
             'scene'        => $this->buildSceneResponse(
                 $nextScene, $campaign, $progress->getCharacterClass(),
-                $userId, $progress->getChoicesDecoded(), $choiceId
+                $userId, $progress->getChoicesDecoded(), $choiceId, $progress
             ),
             'skill_result' => $skillResult,
         ];
@@ -1062,12 +1072,22 @@ class StoryEngineService {
         $correctCount  = 0;
         $questionResults = [];
 
+        // Only the questions this scene offered for this choice, each at most once: a repeated
+        // known-correct question would otherwise pass any threshold.
+        $pairs = [];
         foreach ($answers as $entry) {
             $qId = (int)($entry['question_id'] ?? 0);
             $aId = (int)($entry['answer_id']   ?? 0);
             if ($qId === 0 || $aId === 0) continue;
+            if (isset($pairs[$qId])) {
+                throw new \InvalidArgumentException("Question {$qId} was answered more than once");
+            }
+            $pairs[$qId] = $aId;
+        }
+        $this->requireOfferedSkillQuestions($progress, $scene['id'], $choiceId, array_keys($pairs));
 
-            $result = $this->evaluateSingleAnswer($qId, $aId);
+        foreach ($pairs as $qId => $aId) {
+            $result = $this->evaluateSingleAnswer($userId, $qId, $aId);
             $questionResults[] = $result;
             if ($result['correct']) {
                 $correctCount++;
@@ -1096,7 +1116,7 @@ class StoryEngineService {
             'correct'          => $passed,
             'outcome'          => $outcome,
             'correct_count'    => $correctCount,
-            'total_count'      => count($answers),
+            'total_count'      => count($questionResults),
             'threshold'        => $threshold,
             'question_results' => $questionResults,
         ];
@@ -1109,7 +1129,7 @@ class StoryEngineService {
             'progress'     => $this->serializeProgress($progress),
             'scene'        => $this->buildSceneResponse(
                 $nextScene, $campaign, $progress->getCharacterClass(),
-                $userId, $progress->getChoicesDecoded(), $choiceId
+                $userId, $progress->getChoicesDecoded(), $choiceId, $progress
             ),
             'skill_result' => $skillResult,
         ];
@@ -1121,11 +1141,14 @@ class StoryEngineService {
      * Fetch skill-check questions for a scene choice, filtered by pool_filter and
      * adjusted for character class difficulty.
      *
-     * Returns an array of question payloads (id, text, answers[] without correct flag).
+     * Returns an array of question payloads (id, text, answers[] without correct flag), drawn
+     * only from pools $userId can read. When $sceneId is the user's current scene, these become
+     * the questions the submit endpoints accept for $choiceId.
      *
      * @return array<array{id: int, text: string, image_path: string|null, answers: array}>
      */
     public function getSkillCheckQuestions(
+        string $userId,
         string $campaignId,
         string $sceneId,
         string $choiceId,
@@ -1146,7 +1169,20 @@ class StoryEngineService {
             $campaign, $choice, $characterClass, $poolFilter
         );
 
-        return $this->fetchFilteredQuestions($poolFilter, $questionCount, $adjustment);
+        $questions = $this->fetchFilteredQuestions($userId, $poolFilter, $questionCount, $adjustment);
+
+        $progress = $this->progressMapper->findByUserAndCampaign($userId, $campaignId);
+        if ($progress !== null && $progress->getCurrentSceneId() === $sceneId) {
+            $pending = $progress->getPendingSkill();
+            if ($pending === null || ($pending['scene_id'] ?? null) !== $sceneId) {
+                $pending = ['scene_id' => $sceneId, 'choices' => []];
+            }
+            $pending['choices'][$choiceId] = array_column($questions, 'id');
+            $progress->setPendingSkill($pending);
+            $this->progressMapper->update($progress);
+        }
+
+        return $questions;
     }
 
     /**
@@ -1205,9 +1241,14 @@ class StoryEngineService {
      * Uses a LIKE-based keyword filter against pool name and description as a
      * pragmatic pool_filter approach — no extra DB column needed for Phase 32.
      *
+     * Only published questions from published pools $userId can read (owner, user share, course
+     * as instructor or member — the rule of QuestionService::hasPoolAccess). Before the 2026-11
+     * audit the keyword matched every pool in the instance, private ones and drafts included.
+     *
      * @return array<array{id: int, text: string, image_path: string|null, answers: array}>
      */
     private function fetchFilteredQuestions(
+        string  $userId,
         ?string $filter,
         int     $count,
         int     $difficultyModifier
@@ -1215,16 +1256,24 @@ class StoryEngineService {
         // Clamp difficulty modifier to a reasonable window
         $difficultyModifier = max(-2, min(2, $difficultyModifier));
 
+        $poolIds = $this->readablePoolIds($userId);
+        if ($poolIds === []) {
+            return [];
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('q.id', 'q.text', 'q.image_path', 'q.scenario')
-           ->from('learning_questions', 'q');
+           ->from('learning_questions', 'q')
+           ->innerJoin('q', 'learning_pools', 'p', $qb->expr()->eq('q.pool_id', 'p.id'))
+           ->where($qb->expr()->in('q.pool_id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)))
+           ->andWhere($qb->expr()->eq('q.review_status', $qb->createNamedParameter('published')))
+           ->andWhere($qb->expr()->eq('p.review_status', $qb->createNamedParameter('published')));
 
-        // Apply pool_filter: join on pool and filter by keyword in pool name
+        // Apply pool_filter: filter by keyword in pool name
         // Use LOWER() on both sides for case-insensitive matching (MySQL + PostgreSQL compatible)
         if ($filter !== null && $filter !== '') {
             $keyword = '%' . $this->db->escapeLikeParameter(strtolower($filter)) . '%';
-            $qb->innerJoin('q', 'learning_pools', 'p', $qb->expr()->eq('q.pool_id', 'p.id'))
-               ->where(
+            $qb->andWhere(
                    $qb->expr()->orX(
                        $qb->expr()->like(
                            $qb->createFunction('LOWER(`p`.`name`)'),
@@ -1310,14 +1359,18 @@ class StoryEngineService {
     /**
      * Evaluate whether $answerId is the correct answer for $questionId.
      *
+     * correct_answer_id stays null on a wrong pick while $userId has a graded exam open on the
+     * question's pool — the same rule as the question read APIs (audit 2026-11).
+     *
      * @return array{correct: bool, correct_answer_id: int|null, question_id: int, answer_id: int}
      */
-    private function evaluateSingleAnswer(int $questionId, int $answerId): array {
+    private function evaluateSingleAnswer(string $userId, int $questionId, int $answerId): array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('id', 'is_correct')
-           ->from('learning_answers')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)))
-           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
+        $qb->select('a.id', 'a.is_correct', 'q.pool_id')
+           ->from('learning_answers', 'a')
+           ->innerJoin('a', 'learning_questions', 'q', $qb->expr()->eq('a.question_id', 'q.id'))
+           ->where($qb->expr()->eq('a.id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('a.question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
 
         $result = $qb->executeQuery();
         $row    = $result->fetch();
@@ -1331,7 +1384,7 @@ class StoryEngineService {
 
         // Fetch correct answer ID for feedback
         $correctAnswerId = null;
-        if (!$correct) {
+        if (!$correct && !$this->questionService->isExamActiveOnPool((int)$row['pool_id'], $userId)) {
             $cqb = $this->db->getQueryBuilder();
             $cqb->select('id')
                 ->from('learning_answers')
@@ -1349,6 +1402,89 @@ class StoryEngineService {
             'question_id'       => $questionId,
             'answer_id'         => $answerId,
         ];
+    }
+
+    // ─── Offered Skill-Check Questions ───────────────────────────────────────
+
+    /**
+     * IDs of the pools $userId can read: owned, shared with them as a user, or attached to a
+     * course they teach or are a member of. Same rule as QuestionService::hasPoolAccess(), as a
+     * set, so the skill-check draw can filter in SQL before its LIMIT.
+     *
+     * @return list<int>
+     */
+    private function readablePoolIds(string $userId): array {
+        $ids = [];
+
+        $own = $this->db->getQueryBuilder();
+        $own->select('id')->from('learning_pools')
+            ->where($own->expr()->eq('user_id', $own->createNamedParameter($userId)));
+        $shared = $this->db->getQueryBuilder();
+        $shared->select('pool_id')->from('learning_pool_shares')
+            ->where($shared->expr()->eq('shared_with', $shared->createNamedParameter($userId)))
+            ->andWhere($shared->expr()->eq('share_type', $shared->createNamedParameter('user')));
+        $course = $this->db->getQueryBuilder();
+        $expr = $course->expr();
+        $course->select('cp.pool_id')
+            ->from('learning_course_pools', 'cp')
+            ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+            ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+                $expr->eq('cm.course_id', 'c.id'),
+                $expr->eq('cm.user_id', $course->createNamedParameter($userId))
+            ))
+            ->where($expr->orX(
+                $expr->eq('c.instructor_id', $course->createNamedParameter($userId)),
+                $expr->isNotNull('cm.id')
+            ));
+
+        foreach ([$own, $shared, $course] as $qb) {
+            $result = $qb->executeQuery();
+            while (($id = $result->fetchOne()) !== false) {
+                $ids[(int)$id] = true;
+            }
+            $result->closeCursor();
+        }
+
+        return array_keys($ids);
+    }
+
+    /**
+     * The question IDs the current scene offered for $choiceId, or null when nothing was
+     * recorded for this scene and choice (a progress from before the 2026-11 audit fix, a scene
+     * shown with dynamic choices, or a set the GET endpoint started for a sibling choice).
+     * Null is not "no questions": makeChoice probes again instead of skipping the check.
+     *
+     * @return list<int>|null
+     */
+    private function offeredSkillQuestionIds(StoryProgress $progress, string $sceneId, string $choiceId): ?array {
+        $pending = $progress->getPendingSkill();
+        if ($pending === null || ($pending['scene_id'] ?? null) !== $sceneId) {
+            return null;
+        }
+        $choices = $pending['choices'] ?? [];
+        if (!is_array($choices) || !array_key_exists($choiceId, $choices) || !is_array($choices[$choiceId])) {
+            return null;
+        }
+        return array_map('intval', $choices[$choiceId]);
+    }
+
+    /**
+     * Refuse any question the current scene did not offer for $choiceId. Without this the skill
+     * check evaluated — and named the correct answer for — any question in the instance.
+     *
+     * @param list<int> $questionIds
+     * @throws \InvalidArgumentException
+     */
+    private function requireOfferedSkillQuestions(StoryProgress $progress, string $sceneId, string $choiceId, array $questionIds): void {
+        $offered = $this->offeredSkillQuestionIds($progress, $sceneId, $choiceId) ?? [];
+        if ($questionIds === []) {
+            throw new \InvalidArgumentException('No skill-check answer given');
+        }
+        foreach ($questionIds as $questionId) {
+            if (!in_array($questionId, $offered, true)) {
+                throw new \InvalidArgumentException("Question {$questionId} was not offered for this choice");
+            }
+        }
     }
 
     // ─── Progress Helpers ─────────────────────────────────────────────────────
@@ -1449,6 +1585,8 @@ class StoryEngineService {
      * @param string|null $userId       User ID — required for Gemini narrator calls
      * @param array       $choicesSoFar Decoded choices history for narrative context
      * @param string      $lastChoiceId Last choice ID taken (for NPC dialog context)
+     * @param StoryProgress|null $progress When given, the skill-check questions offered here are
+     *                                     stored as the only ones the submit endpoints accept
      */
     private function buildSceneResponse(
         array  $scene,
@@ -1456,7 +1594,8 @@ class StoryEngineService {
         string $characterClass,
         ?string $userId = null,
         array  $choicesSoFar = [],
-        string $lastChoiceId = ''
+        string $lastChoiceId = '',
+        ?StoryProgress $progress = null
     ): array {
         // Resolve campaign-level + scene-level narrator flags (NARR-01, NARR-02)
         $narratorEnabled = !empty($campaign['narrator_mode']) || !empty($scene['narrator_mode']);
@@ -1469,6 +1608,7 @@ class StoryEngineService {
             : ($scene['choices'] ?? []);
 
         $choices = [];
+        $offered = [];
         foreach ($rawChoices as $choice) {
             $safeChoice = [
                 'id'       => $choice['id'],
@@ -1482,11 +1622,13 @@ class StoryEngineService {
                 $diffModifier = $this->resolveCharacterDifficultyModifier(
                     $campaign, $choice, $characterClass, $sc['pool_filter'] ?? null
                 );
-                $preloadedQuestions = $this->fetchFilteredQuestions(
+                $preloadedQuestions = $userId === null ? [] : $this->fetchFilteredQuestions(
+                    $userId,
                     $sc['pool_filter'] ?? null,
                     (int)($sc['question_count'] ?? 3),
                     $diffModifier
                 );
+                $offered[(string)$choice['id']] = array_column($preloadedQuestions, 'id');
                 // If pool_filter matched no questions, treat as no skill check
                 if (empty($preloadedQuestions)) {
                     $safeChoice['skill_check'] = null;
@@ -1504,6 +1646,11 @@ class StoryEngineService {
             }
 
             $choices[] = $safeChoice;
+        }
+
+        if ($progress !== null) {
+            $progress->setPendingSkill(['scene_id' => (string)$scene['id'], 'choices' => $offered]);
+            $this->progressMapper->update($progress);
         }
 
         // Resolve narrative — dynamic via Gemini or static (uses campaign-level flag)
