@@ -69,6 +69,14 @@
       "who_sees": "Kursteilnehmer + Dozent (je nach Freigabe). Admin sieht alles.",
       "retention": "Solange dein Account existiert",
       "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Lerninfrastruktur"
+    },
+    {
+      "name": "Externe Videos (Vimeo / YouTube)",
+      "items": "Beim Abspielen: deine IP-Adresse und die üblichen Browserdaten beim Anbieter; in dieser App: welche Abschnitte des Videos du angesehen hast (nur bis zum Abschluss) und ob du es abgeschlossen hast",
+      "purpose": "Pflichtvideos eines Kurses abspielen und ihren Abschluss für die Kursfreigabe nachweisen",
+      "who_sees": "Erst nach deinem Klick auf „Laden und ansehen“ lädt die Seite den Player von Vimeo bzw. YouTube (youtube-nocookie.com) und das Player-Skript des Anbieters (player.vimeo.com bzw. www.youtube.com). Der Anbieter erhält dabei deine IP-Adresse und kann eigene Daten erheben. Das Skript meldet der App, welche Abschnitte du angesehen hast.",
+      "retention": "Die angesehenen Abschnitte werden beim Abschluss gelöscht, gespeichert bleiben nur Abschlussstatus und -zeitpunkt. Was der Anbieter speichert, legt der Anbieter fest.",
+      "legal_basis": "Einwilligung (Art. 6(1)a) für die Verbindung zum Anbieter — Klick auf „Laden und ansehen“, vor dem nichts geladen wird"
     }
   ],
   "ai_notice": {

@@ -859,6 +859,20 @@ for a manufacturing enterprise — simply leave AI disabled. You lose the AI tut
 generation and automatic notes. Pools, courses, exams, certificates, compliance reports
 and all simulators are unaffected.
 
+### Required videos from Vimeo or YouTube
+
+A course's required content can include Vimeo or YouTube videos (source `vimeo` or
+`youtube-nocookie`, with the provider's video ID such as `dQw4w9WgXcQ` — not the full URL).
+Before the learner clicks **"Load and watch"**, nothing is loaded from the provider: no
+frame, no script, no cookie. After that click the page loads the provider's player
+(YouTube only from `youtube-nocookie.com`) **and the provider's player script**
+(`player.vimeo.com/api/player.js` or `www.youtube.com/iframe_api`). The script tells
+Learning which parts were watched; the server credits them under the same rules as a video
+from Nextcloud Files (real watch time, 95 % coverage, skipped parts do not count) and
+deletes the watched segments once the video is completed. The provider receives the
+learner's IP address and may collect its own data; the privacy page lists this under
+*Externe Videos (Vimeo / YouTube)*.
+
 ---
 
 ## 7. Languages and translations

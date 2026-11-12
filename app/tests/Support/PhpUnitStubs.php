@@ -677,6 +677,41 @@ namespace OCP\AppFramework\Http {
             public function isThrottled(): bool { return $this->throttled; }
             /** @return array<string, mixed> */
             public function getThrottleMetadata(): array { return $this->throttleMetadata; }
+            protected ?EmptyContentSecurityPolicy $csp = null;
+            public function setContentSecurityPolicy(EmptyContentSecurityPolicy $csp): self { $this->csp = $csp; return $this; }
+            public function getContentSecurityPolicy(): EmptyContentSecurityPolicy {
+                if ($this->csp === null) {
+                    $this->csp = new EmptyContentSecurityPolicy();
+                }
+                return $this->csp;
+            }
+        }
+    }
+
+    // CSP stubs: the real classes build the header string; tests only need the domains a controller
+    // added (test-only accessor getAllowed()). Method names mirror OCP, which PHPStan checks.
+    if (!class_exists(EmptyContentSecurityPolicy::class)) {
+        class EmptyContentSecurityPolicy {
+            /** @var array<string, list<string>> */
+            protected array $allowed = [];
+            /** @return $this */
+            public function addAllowedScriptDomain($domain) { $this->allowed['script'][] = (string)$domain; return $this; }
+            /** @return $this */
+            public function addAllowedFrameDomain($domain) { $this->allowed['frame'][] = (string)$domain; return $this; }
+            /** @return $this */
+            public function addAllowedChildSrcDomain($domain) { $this->allowed['child'][] = (string)$domain; return $this; }
+            /** @return $this */
+            public function addAllowedConnectDomain($domain) { $this->allowed['connect'][] = (string)$domain; return $this; }
+            /** @return $this */
+            public function addAllowedImageDomain($domain) { $this->allowed['image'][] = (string)$domain; return $this; }
+            /** @return list<string> */
+            public function getAllowed(string $kind): array { return $this->allowed[$kind] ?? []; }
+        }
+    }
+    if (!class_exists(ContentSecurityPolicy::class)) {
+        class ContentSecurityPolicy extends EmptyContentSecurityPolicy {
+            /** @var array<string, list<string>> */
+            protected array $allowed = ['script' => ["'self'"]];
         }
     }
 

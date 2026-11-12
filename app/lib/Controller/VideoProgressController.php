@@ -30,6 +30,9 @@ use OCP\IRequest;
  *  - Responses never leak raw intervals — only covered_pct (a number) and completed (a bool).
  */
 class VideoProgressController extends Controller {
+    /** Sources played by a provider's own player after consent (VideoConsentOverlay). */
+    private const THIRD_PARTY_SOURCES = ['vimeo', 'youtube-nocookie'];
+
     private VideoProgressService $service;
     private VideoProgressMapper $progressMapper;
     private CourseVideoMapper $videoMapper;
@@ -86,8 +89,8 @@ class VideoProgressController extends Controller {
      * Defensive server-side finalization. The client "I finished" is a HINT, never authoritative: we
      * mark complete ONLY if the SERVER's stored covered_pct already crosses the 95% threshold
      * (VideoProgressService::decideComplete). For third-party embeds (vimeo / youtube-nocookie) the
-     * server only has the intervals the player API reported via heartbeat — with no server-side
-     * intervals there is nothing to finalize, so completion stays honest best-effort via those pings.
+     * intervals come from the provider's player API (VideoConsentOverlay sends them as heartbeats
+     * after consent), under the same server caps as the native player.
      *
      * @NoAdminRequired
      */
@@ -195,7 +198,8 @@ class VideoProgressController extends Controller {
      *    403, so this endpoint cannot enumerate another course's content.
      *  - Only the student's OWN progress is annotated (progressState is keyed on $this->userId).
      *  - DSGVO: the raw video_ref (instructor file path) and intervals_json are NOT returned — only
-     *    id/source_type/title/duration/sort_order + covered_pct (number) + completed (bool).
+     *    id/source_type/title/duration/sort_order + covered_pct (number) + completed (bool), plus
+     *    embed_id (the provider's public video id) for vimeo / youtube-nocookie only.
      *
      * @NoAdminRequired
      */
@@ -214,7 +218,7 @@ class VideoProgressController extends Controller {
         $videos = [];
         foreach ($this->videoMapper->findByCourse($courseId) as $video) {
             $state = $this->progressState((int)$video->getId());
-            $videos[] = [
+            $row = [
                 'id' => (int)$video->getId(),
                 'source_type' => $video->getSourceType(),
                 'title' => $video->getTitle(),
@@ -223,6 +227,13 @@ class VideoProgressController extends Controller {
                 'covered_pct' => $state['covered_pct'],
                 'completed' => $state['completed'],
             ];
+            // A Vimeo / YouTube video is played by the provider's player, which needs the provider's
+            // public video id. That id is no file path and only ever sent for these two sources; an
+            // nc-files path or a document path stays on the server (audit 2026-11, H6).
+            if (in_array($video->getSourceType(), self::THIRD_PARTY_SOURCES, true)) {
+                $row['embed_id'] = (string)$video->getVideoRef();
+            }
+            $videos[] = $row;
         }
         return new DataResponse(['videos' => $videos]);
     }
