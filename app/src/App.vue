@@ -1417,7 +1417,12 @@ export default {
 
       if (route.name === 'pools') {
         this.mainView = 'pools';
-        if (!this._skipRouteReset) {
+        // openPoolFromCourse() sets the flag for exactly this navigation. Consume it here: the
+        // watcher runs several promise steps after router.push(), so clearing it in $nextTick
+        // came too early and backToPools() wiped the course context.
+        if (this._skipRouteReset) {
+          this._skipRouteReset = false;
+        } else {
           this.backToPools();
         }
         const routePoolId = Number(route.query?.poolId || 0);
@@ -1629,9 +1634,10 @@ export default {
       this.poolFromCourseObj = this.selectedCourse;
       this.selectedCourse = null;
       useOptionalCourseStore()?.setCourse(null);
-      this._skipRouteReset = true;
+      // Consumed by applyRouteState('pools'). Only set when the route really changes, otherwise
+      // no watcher run would clear it and the next visit to the pool list would skip its reset.
+      this._skipRouteReset = this.$route?.name !== 'pools';
       this.pushAppRoute({ name: 'pools' });
-      this.$nextTick(() => { this._skipRouteReset = false; });
       try {
         const response = await axios.get(
           generateUrl('/apps/learning/api/pools/' + poolId)
