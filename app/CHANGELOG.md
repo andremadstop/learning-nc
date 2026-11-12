@@ -17,8 +17,9 @@ Fixes from a full code audit of the app.
 - **Learners no longer receive the answer key with the questions.** Correct-answer flags,
   explanations and interactive (PBQ) solutions in question lists, search results and
   translations now go only to the pool's owner, users it was shared with as **Can edit**, and
-  the course's instructors. Learners and read-only shares no longer get them, also not before
-  an exam.
+  the course's instructors. Learners and read-only shares no longer get them. Practice modes
+  (training, spaced repetition, bot games) still show the correct answer after each answer, as
+  before.
 - **Exams no longer leak solutions through side paths.** During a graded exam the question
   APIs withhold the solution of every PBQ type, including the grading data of command-line and
   multi-panel PBQs, and the cheat sheet leaves out pools with an open graded exam.
