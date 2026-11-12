@@ -7,6 +7,7 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseArchiveService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\CsvFormulaGuard;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
@@ -397,14 +398,15 @@ class CourseController extends Controller {
         $handle = fopen('php://temp', 'r+');
         fputcsv($handle, ['Name', 'Risk Level', 'Critical Cards', 'Risk Reasons', 'Accuracy (%)', 'Last Active']);
         foreach (($students['at_risk'] ?? []) as $s) {
-            fputcsv($handle, [
+            // the display name is chosen by the learner: never let it become a spreadsheet formula
+            fputcsv($handle, CsvFormulaGuard::row([
                 $s['display_name'] ?? $s['user_id'] ?? '',
                 $s['risk_level'] ?? '',
                 $s['critical_cards_count'] ?? 0,
                 implode('; ', $s['risk_reasons'] ?? []),
                 $s['accuracy'] ?? '',
                 $s['last_active'] ?? '',
-            ]);
+            ]));
         }
         rewind($handle);
         $csv = stream_get_contents($handle);
