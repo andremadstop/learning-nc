@@ -65,6 +65,13 @@ describe('buildFrameVisualization', () => {
 		expect(frame.vlanId).toBe(20)
 		expect(frame.fields).toContain('802.1Q Tag')
 	})
+
+	// Audit 2026-11 (S37): IEEE 802.1Q inserts the 4-byte tag after the source MAC,
+	// before the EtherType. The preview showed it between destination and source MAC.
+	it('places the 802.1Q tag after the source MAC and before the EtherType', () => {
+		const frame = buildFrameVisualization({ portId: 'Gi0/1', mode: 'trunk', allowedVlans: [10, 20], nativeVlan: 1 }, 20)
+		expect(frame.fields).toEqual(['Dest MAC', 'Src MAC', '802.1Q Tag', 'EthType', 'Data'])
+	})
 })
 
 describe('calculateSubinterfaces', () => {

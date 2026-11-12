@@ -77,7 +77,7 @@ export function buildFrameVisualization(port, vlanId) {
 		return {
 			tagged: true,
 			vlanId: Number(vlanId),
-			fields: ['Dest MAC', '802.1Q Tag', 'Src MAC', 'EthType', 'Data'],
+			fields: ['Dest MAC', 'Src MAC', '802.1Q Tag', 'EthType', 'Data'],
 		}
 	}
 
