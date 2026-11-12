@@ -1079,6 +1079,19 @@ class LeitnerService {
                     }
                 }
                 break;
+            case 'ranking':
+                // Same rule as TrainingService::scorePbqAnswer — keep both scorers in step.
+                foreach (($config['items'] ?? []) as $item) {
+                    if (!isset($item['id']) || !isset($item['correct_position'])) {
+                        continue;
+                    }
+                    $maxPoints++;
+                    $userPos = $userAnswers[$item['id']] ?? null;
+                    if ($userPos !== null && (int)$userPos === (int)$item['correct_position']) {
+                        $points++;
+                    }
+                }
+                break;
         }
         $isCorrect = $maxPoints > 0 && ($points / $maxPoints) >= 0.5;
         return [$isCorrect, $points, $maxPoints];
