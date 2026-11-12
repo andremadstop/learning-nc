@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\LernplanService;
-use OCA\Learning\Service\Llm\LlmConsentException;
+use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -130,26 +130,14 @@ class LernplanController extends Controller {
      */
     private function handleRuntimeException(\RuntimeException $e): DataResponse {
         // 5.7.0 (spec 2.4): consent lost after the early check (revoked, or the admin changed the
-        // recipient) — the gateway sent nothing; answer like the early check so the client asks again.
-        if ($e instanceof LlmConsentException) {
-            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        // recipient) — the gateway sent nothing; LlmErrorResponse answers like the early check so
+        // the client asks again. Any other failed model call: its message is only the category
+        // (2026-11 audit), so map the category, not the message text.
+        if ($e instanceof LlmProviderException) {
+            return LlmErrorResponse::fromException($e, 'Generation failed');
         }
 
         $msg = $e->getMessage();
-
-        if (str_contains($msg, 'API key not configured')) {
-            return new DataResponse(
-                ['error' => 'AI service not configured. Please ask your administrator to configure the Gemini API key.'],
-                Http::STATUS_SERVICE_UNAVAILABLE
-            );
-        }
-
-        if (str_contains($msg, 'HTTP ') || str_contains($msg, 'curl error')) {
-            return new DataResponse(
-                ['error' => 'AI service temporarily unavailable. Please try again later.'],
-                Http::STATUS_SERVICE_UNAVAILABLE
-            );
-        }
 
         if (str_contains($msg, 'not found')) {
             return new DataResponse(

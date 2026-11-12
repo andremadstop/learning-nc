@@ -122,8 +122,9 @@ class DocumentService {
 
             $relativePath = $materialFolder . '/' . $name;
 
-            // Check if already registered
-            $existing = $this->documentMapper->findByPath($relativePath);
+            // Check if already registered for THIS course (the path is relative to the
+            // instructor's home; another course may have the same folder name)
+            $existing = $this->documentMapper->findByCourseAndPath($courseId, $relativePath);
             if ($existing !== null) {
                 continue;
             }

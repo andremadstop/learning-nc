@@ -1504,6 +1504,31 @@ namespace OCP\Files {
             public function getUserFolder($userId);
         }
     }
+    // 2026-11 audit (S14): DocumentService::scanFolder walks a folder listing. Subset of NC 33's
+    // lib/public/Files/{Node,Folder,NotFoundException}.php (constants copied verbatim).
+    if (!interface_exists(Node::class)) {
+        interface Node {
+            public const TYPE_FILE = 'file';
+            public const TYPE_FOLDER = 'dir';
+
+            public function getType();
+
+            public function getName();
+
+            public function getSize($includeMounts = true);
+        }
+    }
+    if (!interface_exists(Folder::class)) {
+        interface Folder extends Node {
+            public function get($path);
+
+            public function getDirectoryListing();
+        }
+    }
+    if (!class_exists(NotFoundException::class)) {
+        class NotFoundException extends \Exception {
+        }
+    }
 }
 
 namespace OCP\TaskProcessing\Exception {

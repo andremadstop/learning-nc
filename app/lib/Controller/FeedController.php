@@ -69,14 +69,18 @@ class FeedController extends Controller {
      *
      * @NoAdminRequired
      */
-    public function courseFeed(int $courseId): DataResponse {
+    public function courseFeed(int $courseId, int $limit = 50, int $offset = 0): DataResponse {
         try {
             $this->courseService->findById($courseId, $this->userId);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Course not found or no access'], Http::STATUS_FORBIDDEN);
         }
 
-        $items = $this->feedService->getCourseFeed($courseId);
+        // CourseFeed.vue pages with limit/offset ("Load more"); clamp so a crafted value cannot ask
+        // for an unbounded page or a negative OFFSET (an SQL error on PostgreSQL)
+        $limit = max(1, min($limit, 100));
+        $offset = max(0, $offset);
+        $items = $this->feedService->getCourseFeed($courseId, $limit, $offset);
         return new DataResponse([
             'items' => array_map(fn($item) => $item->jsonSerialize(), $items),
         ]);

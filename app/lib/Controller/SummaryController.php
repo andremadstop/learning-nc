@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\CsvFormulaGuard;
 use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataDownloadResponse;
@@ -137,8 +138,8 @@ class SummaryController extends Controller {
             fputcsv($handle, ['User', 'XP', 'Level', 'Accuracy (%)', 'Mastery (%)', 'Sessions', 'Streak', 'Badges', 'Duels Won', 'Swarm Contributions']);
 
             foreach ($data['students'] as $uid => $s) {
-                fputcsv($handle, [
-                    $uid,
+                fputcsv($handle, CsvFormulaGuard::row([
+                    (string)$uid,
                     $s['xp']['total_xp'] ?? 0,
                     $s['xp']['current_level'] ?? 1,
                     $s['sessions']['overall_accuracy'] ?? 0,
@@ -148,7 +149,7 @@ class SummaryController extends Controller {
                     count($s['badges'] ?? []),
                     $s['duels']['wins'] ?? 0,
                     $s['swarm']['approved_contributions'] ?? 0,
-                ]);
+                ]));
             }
 
             rewind($handle);

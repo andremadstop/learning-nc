@@ -24,18 +24,22 @@ class CourseDocumentMapper extends QBMapper {
     }
 
     /**
-     * @return CourseDocument|null
+     * The course's document at this path, if registered. file_path is relative to the instructor's
+     * home, so the same path in another course is a different file (2026-11 audit).
      */
-    public function findByPath(string $filePath): ?CourseDocument {
+    public function findByCourseAndPath(int $courseId, string $filePath): ?CourseDocument {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
             ->from($this->getTableName())
-            ->where($qb->expr()->eq('file_path', $qb->createNamedParameter($filePath)));
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('file_path', $qb->createNamedParameter($filePath)))
+            ->setMaxResults(1);
         try {
-            return $this->findEntity($qb);
+            $doc = $this->findEntity($qb);
         } catch (DoesNotExistException $e) {
             return null;
         }
+        return $doc instanceof CourseDocument ? $doc : null;
     }
 
     /**

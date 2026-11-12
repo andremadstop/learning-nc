@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\TelosService;
@@ -88,23 +89,14 @@ class NoteGeneratorController extends Controller {
                 'updated' => $result['updated'],
                 'content' => $result['content'],
             ]);
+        } catch (LlmProviderException $e) {
+            // A failed model call (incl. consent lost after the gate above): its message is only the
+            // category, so map the category — the old Gemini message texts no longer occur.
+            return LlmErrorResponse::fromException($e, 'Note generation failed');
         } catch (\RuntimeException $e) {
             // 5.5.2: the service refuses without valid consent — same contract as the gate above.
             if ($e->getMessage() === 'consent_required') {
                 return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
-            }
-            // Check if it's a Gemini availability problem
-            if (str_contains($e->getMessage(), 'API key not configured')) {
-                return new DataResponse(
-                    ['error' => 'AI service not configured. Please ask your administrator to configure the Gemini API key.'],
-                    Http::STATUS_SERVICE_UNAVAILABLE
-                );
-            }
-            if (str_contains($e->getMessage(), 'HTTP ') || str_contains($e->getMessage(), 'curl error')) {
-                return new DataResponse(
-                    ['error' => 'AI service temporarily unavailable. Please try again later.'],
-                    Http::STATUS_SERVICE_UNAVAILABLE
-                );
             }
             return new DataResponse(
                 ['error' => 'Note generation failed: ' . $e->getMessage()],
