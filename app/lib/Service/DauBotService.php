@@ -312,8 +312,9 @@ class DauBotService {
             'prompt' => (string)($node['prompt'] ?? 'Review the DAU-Bot action, identify the mistake, and choose the best correction.'),
             'bot_action' => $template['bot_action'],
             'symptom' => $template['symptom'],
-            'error_options' => $template['error_options'],
-            'fix_options' => $template['fix_options'],
+            // The catalog lists the correct option first; show them in a per-node order instead.
+            'error_options' => $this->deterministicShuffle($template['error_options'], $nodeId . '|error'),
+            'fix_options' => $this->deterministicShuffle($template['fix_options'], $nodeId . '|fix'),
             'expected_error_id' => $template['error_id'],
             'expected_fix_id' => $template['fix_id'],
             'pass_flag' => (string)($node['pass_flag'] ?? ('bot_corrected_' . $nodeId)),
@@ -451,6 +452,23 @@ class DauBotService {
         $type = strtolower(trim((string)($simulator['type'] ?? '')));
 
         return $type !== '' ? $type : null;
+    }
+
+    /**
+     * Reorder options by a hash of seed and option id: the same node always shows the same
+     * order (save/resume), different nodes show different ones.
+     *
+     * @param list<array<string, mixed>> $options
+     * @return list<array<string, mixed>>
+     */
+    private function deterministicShuffle(array $options, string $seed): array {
+        usort($options, static function (array $a, array $b) use ($seed): int {
+            $keyA = hash('crc32b', $seed . '|' . (string)($a['id'] ?? ''));
+            $keyB = hash('crc32b', $seed . '|' . (string)($b['id'] ?? ''));
+            return $keyA <=> $keyB ?: strcmp((string)($a['id'] ?? ''), (string)($b['id'] ?? ''));
+        });
+
+        return $options;
     }
 
     private function deterministicIndex(string $seed, int $count): int {
