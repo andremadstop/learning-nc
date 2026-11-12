@@ -1,6 +1,6 @@
 # Learning — User & Administrator Manual
 
-For **Learning 5.6.0** on Nextcloud 33–35.
+For **Learning 5.7.1** on Nextcloud 33–35.
 
 This manual walks through the complete workflow, in the order you will actually use it:
 
@@ -76,12 +76,17 @@ setup question:
 
 | | Where it comes from | What it grants |
 |---|---|---|
-| **Global instructor right** | Membership in one Nextcloud group — `learning-instructors` by default | May *create* courses and question pools at all. Without it, the "+ Create course" and "+ Create pool" buttons are not shown. |
+| **Global instructor right** | Membership in one Nextcloud group — `learning-instructors` by default | May *create* courses and question pools at all. Without it, the **+ Create Course**, **+ Create pool**, **Add starter pool** and **Generate questions** buttons are not shown. |
 | **Instructor of a course** | Creating the course, or being promoted by another instructor of it | Manage that course: enrol people, attach pools, see progress. |
 
 So a teacher who should set up their own courses needs the group membership first — see
 [2.3](#23-letting-teachers-create-courses-and-pools). Nothing else grants it, and it does
 **not** require Nextcloud administrator rights.
+
+Editing the questions of an existing pool is a third, separate right that belongs to the
+pool, not to the role: the pool's **owner** and everyone it was shared with as **Can edit**
+get the pool's **Manage** tab (add, edit, import, export questions), with or without the
+global instructor right. See [3.2](#32-add-questions).
 
 Everything else in Learning is scoped to the course. An instructor of course A cannot see
 course B. This matters for a works council discussion: instructor visibility is not global.
@@ -127,9 +132,10 @@ These settings apply to all users of Learning:
 - **Max import file size (MB)** — raise this before importing large question sets.
 - **Audit-Trail — Liveness** and **Support tickets** — operational settings.
 
-If certificates have not been set up yet, this page shows a warning banner telling you to
-run `occ learning:cert:init-issuer` once. There is no button for it — it is a server-side
-command. See [3.10](#310-completion-and-certificate).
+If certificates have not been set up yet, this page shows a warning banner. Click
+**Generate signing key** in the banner once (Nextcloud administrators only), or run
+`occ learning:cert:init-issuer` on the server instead. See
+[3.10](#310-completion-and-certificate).
 
 ### 2.3 Letting teachers create courses and pools
 
@@ -156,8 +162,9 @@ sudo -u www-data php occ group:add learning-instructors
 sudo -u www-data php occ group:adduser learning-instructors maria
 ```
 
-The change takes effect on the teacher's next page load. They will then see **Courses**
-with a create button, and **+ Create pool** in the Pools view.
+The change takes effect on the teacher's next page load. They will then see
+**+ Create Course** in the **Courses** tab, **+ Create pool** in the **Pools** tab, and a
+**Manage** tab inside every pool they may edit.
 
 > Nextcloud administrators always count as instructors, whether or not they are in the
 > group. That is why an admin account sees every creation button from the start — and why
@@ -189,9 +196,15 @@ has nothing to show.
 
 ### 3.1 Create a question pool
 
-Open **Learning** in the Nextcloud app bar, then **Pools** in the left sidebar.
+**Requires the global instructor right** — Nextcloud administrator, or member of the
+instructor group (see [2.3](#23-letting-teachers-create-courses-and-pools)). Without it
+the buttons below are not shown.
 
-Click **"+ Create pool"**. Give it a name and an optional description.
+Open **Learning** in the Nextcloud app bar. Learning has no left sidebar; its views are a
+row of tabs along the top of the page (**Courses**, **Pools**, **Settings**, plus
+**Today** and **Skill-Map** in the learner view). Click **Pools**.
+
+Click **+ Create pool**. Give it a name and an optional description.
 
 That is all a pool needs. It now exists, empty, owned by you.
 
@@ -237,9 +250,33 @@ chapter fields to `chapter-04` / `4` / the next heading.
 
 ### 3.2 Add questions
 
-Open the pool, then the **Manage** tab.
+**Requires edit rights on the pool**: you own it, or it was shared with you as **Can edit**.
+The global instructor right is not needed for this — it is only needed to *create* a pool
+(3.1). A pool you own also comes from `occ learning:import-pool-json --user=<you>`
+([Importing with occ](#importing-with-occ)).
 
-Click add-question and fill in the form. The fields are:
+1. In the **Pools** tab, click the pool's card (under **My Pools**; pools others shared
+   with you are under **Shared with me**).
+2. The pool opens with a row of mode tabs: **Training**, **Leitner**, **Exam**, **Arena**,
+   and, depending on your rights, **Statistics** and — last — **Manage**. A pool that has
+   no questions yet opens directly in **Manage** for everyone who may edit it; in
+   **Training**, an empty pool shows **Add questions**, which leads to the same place.
+3. In **Manage**, click **+ Add question** and fill in the form.
+
+The **Manage** tab is shown to everyone who may edit the pool: its owner and users with a
+**Can edit** share. If you expect it and do not see it:
+
+- **Show student view** is switched on. It shows the app as a learner sees it, without
+  **Manage**, pool creation and import, and a yellow banner on every page says
+  *Student view is on*. Click **Leave student view** in the banner (or switch it off under
+  **Settings**).
+- A red banner says your role could not be loaded. The app then falls back to the learner
+  view; click **Try again**.
+- The pool was shared with you as **Can view**. Instructors then see the last tab as
+  **View questions**, without editing; others see no such tab. Ask the owner for
+  **Can edit**.
+
+The form fields are:
 
 | Field | Options | Notes |
 |-------|---------|-------|
@@ -267,33 +304,210 @@ translated together with the question text.
 questions. The chapter heatmap — your best tool for spotting where a cohort struggles —
 is only as good as this field.
 
-#### Importing questions in bulk
+#### Getting questions in without a shell or an AI key
 
-Typing 200 questions through the form is not realistic. Two bulk routes exist:
+Typing 200 questions through the form is not realistic. Three routes need neither server
+access nor an AI provider:
 
-**JSON import** (recommended for a real rollout):
+- **Starter pools** — **Pools** tab → **Add starter pool** (instructors). Imports one of the bundled
+  English sample pools (CompTIA A+, Network+, Security+, Cisco CCNA, AWS Cloud
+  Practitioner basics; 20–30 questions each) as a new pool you own. Useful for trying
+  the app; not company content.
+- **Import in the interface** — **Manage** → **Import**, see below.
+- **The form** — **+ Add question**, as above.
 
-```bash
-sudo -u www-data php occ learning:import-pool-json /path/to/questions.json --user=<your-uid>
+#### Importing CSV or JSON in the interface
+
+Open the pool → **Manage** → **Import** (on an empty pool also **Import questions**).
+The dialog has a **CSV** and a **JSON** tab. Drop or choose a file, or paste the data into
+the text field. Which tab is used:
+
+- **A file** goes by its extension: `.json` opens the JSON tab, `.csv` and `.txt` the CSV
+  tab. A `.csv` or `.txt` file whose content is valid JSON (a list or an object) switches to
+  JSON.
+- **Pasted text** switches from CSV to JSON by itself only when it is valid JSON — a list
+  or an object. Text that merely starts with `[` or `{`, such as a CSV question
+  `[Network] Which port does SSH use?,…`, stays CSV. Once you have clicked the other tab
+  yourself, pasting no longer switches; removing a loaded file with **Clear** turns the
+  automatic switch back on.
+- **Broken JSON** (it starts with `[` or `{` but cannot be read) stays on the CSV tab. When
+  nothing in it can be imported as CSV, a note says that it looks like JSON, quotes the
+  error (for example a missing bracket or a stray comma) and points to the JSON tab.
+
+For CSV and for JSON, a preview below the text field shows the first questions and how many
+of them can be imported, with the reason for each one that cannot, before anything is saved.
+The questions are added to the pool you opened.
+
+**CSV** — one question per record:
+
+```
+question,answer1,answer2,...,answerN,correct_number,explanation
+What is 2+2?,3,4,5,6,2,Because math
+What is H2O?,Water,open
+"Which command lists files?
+(Linux shell)",ls,cd,pwd,1,"ls lists the directory.
+It takes options such as -l."
 ```
 
-The JSON schema, and a ready-made prompt for having an AI convert an existing PDF
-question catalogue into that schema, are documented in
+`correct_number` is **1-based** (1 = first answer); the explanation is optional; a header
+row is detected and skipped; comma or semicolon as separator (whichever splits the first
+question into more fields). A field in double quotes may contain the separator and line
+breaks, and `""` stands for one quote character — the format spreadsheet programs write.
+A backslash is an ordinary character, also in front of a quote. "Line N" in the import
+report and the 500-question limit count questions, not physical lines; a header row does
+not count towards the limit. A CSV export (`occ learning:export-pool <id> --format=csv`)
+uses the same quoting, so its texts come back as they were; it carries only text, answers,
+one correct answer and the explanation — for a complete round trip use the JSON export. The three-field form `question,model_answer,open` creates a free-text question. A
+CSV question always has exactly one correct answer.
+
+**JSON** — the importer accepts:
+
+| Shape | Example |
+|-------|---------|
+| A list of questions — also what **Export JSON** writes | `[{…}, {…}]` |
+| An object with a question list (`questions`, also `fragen` or `items`) | `{"questions": [{…}, {…}]}` |
+| The `occ import-pool-json` format with **one** pool | `{"_meta": {…}, "pools": [{"name": …, "questions": [{…}]}]}` |
+| A single question | `{"text": …, "answers": […]}` |
+
+A file with several pools is not split up by the interface; import it with
+`occ learning:import-pool-json` ([Importing with occ](#importing-with-occ)) or split it into
+one file per pool.
+
+When the file is in the pool format, its pool and `_meta` fill in what a question does not
+carry itself — the same rule as the occ command, **question > pool > `_meta`**:
+
+| Question field | Taken from, if the question has none |
+|---|---|
+| `chapter_key`, `chapter_title`, `chapter_order` | the pool |
+| `handbook_key`, `handbook_title` | the pool, else `_meta` |
+| `exam_key` | the pool's `exam_key_prefix` as `<prefix>-q<original_number>` (without `original_number`: the question's position, counted from 1) |
+| `difficulty` | `_meta.default_difficulty` |
+| type | `_meta.default_question_type`, unless several answers are marked correct — then the question is multiple choice, whichever type the default names (`pbq` included) |
+
+A value the question has itself is never overwritten, and nothing is invented: a field that
+is missing everywhere stays empty. The pool's `name` and `description` are **not** applied —
+the questions go into the pool you opened, which keeps its own name and description.
+
+Each question needs its text and answers. The text is read from `text`, `question`,
+`question_text` or `frage` — for interactive questions as well. Answers can be written
+in two ways:
+
+- **Objects** with a correctness flag:
+  `"answers": [{"text": "Paris", "is_correct": true}, {"text": "Rome", "is_correct": false}]`
+  (`correct` is read as well).
+- **Plain strings**, under `answers`, `options` or `choices`, plus a field on the question
+  that names the right one:
+
+  | Field | Meaning | Example |
+  |-------|---------|---------|
+  | `correct` or `answer` | a **0-based** index (`0` = first), a letter (`"B"`) or the answer text; a list such as `["B", 3]` marks several answers | `"options": ["Berlin", "Paris", "Rome"], "answer": 1` |
+  | `correct_index` | 0-based index | `"correct_index": 0` |
+  | `correct_number` | 1-based number, as in CSV | `"correct_number": 2` |
+  | `correct_answer` | the answer text | `"correct_answer": "Paris"` |
+
+  If an answer's text is itself `"A"` or `"2"`, a marker with that value means that
+  answer, not a letter or an index. The question is skipped, with the reason in the import
+  report, when a marker matches no answer (index out of range, unknown letter or text), when
+  a list names the same answer twice (for instance `["B", 1]`), or when a list has more
+  entries than the question has answers. A list of 0/1 values, one per answer (such as
+  `[1, 0, 1, 0]`), is **not** supported: list the correct answers instead (`[0, 2]`).
+
+Note the difference to CSV: the CSV `correct_number` counts from 1, a JSON number under
+`correct`, `answer` or `correct_index` counts from 0. Only the field named `correct_number`
+counts from 1 in JSON as well.
+
+Optional fields: `explanation`, `difficulty` (`easy`, `medium`, `hard`; a value longer
+than 20 characters is cut to 20), `scenario`, `chapter_key`, `chapter_title`,
+`chapter_order` (a whole number from 1 to 9999; a value outside, such as 0, a negative
+number or 10000, is dropped without a message, in the interface and in occ alike),
+`handbook_key`, `handbook_title`,
+`exam_key`. The type is read from `type` or its alias `question_type`. `open` makes a
+free-text question (the first answer, or `answer`, is the model answer) and `pbq` an
+interactive one. For a choice question, several answers marked correct always make it
+multiple choice, even under `"type": "single"`; `"type": "multi"` stays multiple choice
+with a single correct answer too (an export writes it that way). Without a type, one
+correct answer makes it single choice. If the file names no correct answer at all, the
+first answer is set as correct and the import report shows a warning — check those
+questions.
+
+An interactive question (`"type": "pbq"`) has no `answers`; it needs `subtype` (one of
+`dropdown`, `placement`, `cli`, `cable`, `multi_panel`, `switch_config`, `routing_config`,
+`diagnostic`, `ranking`) and a `pbq_config` object. Its difficulty defaults to `medium`.
+The layout of `pbq_config` differs per subtype and is easiest to take from an export of a
+question built in the form.
+
+Limits per import:
+
+- at most **500** questions; in CSV a header row does not count
+- at most **2 MB** by default; an administrator can set 1–10 MB under
+  **Max import file size (MB)** ([2.2](#22-global-settings))
+- 2–8 answers per choice question. In JSON, answers beyond the eighth are dropped with a
+  warning — unless one of them is marked correct, then the question is skipped; a question
+  with more than 50 answers is skipped as well. In CSV the line is rejected
+- question text up to 5,000 characters and answer text up to 2,000. Longer text is cut,
+  with a warning in the import report for each question — except a CSV question text over
+  5,000 characters, which rejects the line; scenario up to 10,000 characters, otherwise the
+  question is skipped
+- 5 imports per minute per user
+
+After the import the dialog reports how many questions were imported and lists skipped
+questions with the reason.
+
+**Template:** create two or three questions by hand, then open the **⋯** menu next to
+**Import** and choose **Export JSON** (or run
+`occ learning:export-pool <pool-id> --format=json`). The exported file is a plain list of
+questions — the best model for your own files. Per question it carries text, type,
+scenario, explanation, difficulty, chapter (`chapter_key`, `chapter_title`,
+`chapter_order`), `handbook_key`, `handbook_title`, `exam_key` and the answers with
+`is_correct`; an interactive question carries its `subtype` and `pbq_config` instead of
+answers. Empty fields are left out. The file goes back in unchanged, through
+**Manage → Import** into any pool you can edit, or with the occ command below as a new pool.
+Not exported: translations of questions, instructor notes and attached images.
+
+#### Importing with occ
+
+For large catalogues, several pools at once, or a scripted rollout, an administrator can
+import on the server:
+
+```bash
+sudo -u www-data php occ learning:import-pool-json /path/to/questions.json --user=<owner-uid> [--pool-name=<name>] [--dry-run]
+```
+
+The command **creates new pools**, owned by `--user`; it does not add to an existing one.
+It reads:
+
+- the pool format `{"_meta": {…}, "pools": [ … ]}` — any number of pools, each named by its
+  own `name`;
+- a plain list of questions, such as an export, or `{"name": …, "description": …,
+  "_meta": {…}, "questions": [ … ]}` — one pool, named by `--pool-name`, else the file's
+  `name`, else the file name without extension (an export is called `pool-<id>.json`, so
+  pass `--pool-name` for a readable name). `--pool-name` together with a `pools` file is
+  refused.
+
+`--dry-run` reads the file and lists the pools with their question counts without writing
+anything. The occ command reads answers only as objects with `is_correct`, not as plain
+strings with a separate marker. The schema, and a ready-made prompt for having an AI
+convert an existing PDF question catalogue into it, are in
 [`docs/import-pool-workflow.md`](import-pool-workflow.md).
 
-**CSV/JSON import in the UI** — the Manage tab has an import dialog for smaller sets.
+#### Generating questions with AI
 
-To get a template, create two or three questions by hand and export the pool:
+Only available when an administrator has connected an AI provider — Google Gemini with an
+API key, or a local Ollama server ([2.2](#22-global-settings), [section 6](#6-data-protection-and-the-ai-features))
+— and the user has given AI consent. Two entry points:
 
-```bash
-sudo -u www-data php occ learning:export-pool <pool-id> --format=json
-```
+- **Manage** → **Generate with AI** (the button appears only when a provider is
+  configured): paste source text (50–50,000 characters), choose 5–30 questions, review and
+  edit the generated questions, then import the selected ones into this pool.
+- **Pools** tab → **Generate questions**: creates a **new** pool from pasted text or from a
+  file in your Nextcloud.
 
-Now you have a valid file to imitate.
+Without consent, the request is refused and the consent dialog is offered; nothing is sent.
+Review every generated question before learners see it.
 
 ### 3.3 Create a course
 
-Go to **Courses** in the sidebar and create a course. You become its instructor
+Open the **Courses** tab and click **+ Create Course**. You become its instructor
 automatically.
 
 > No create button? You are not in the instructor group — see
@@ -433,7 +647,9 @@ Once enabled, a learner who meets the criteria is automatically issued a
 cryptographically signed (Ed25519) certificate. It can be printed as A4 and carries a QR
 code and a certificate ID.
 
-**Before this works, generate the issuer key once:**
+**Before this works, generate the issuer key once.** A Nextcloud administrator clicks
+**Generate signing key** in the warning banner under **Settings → Administration →
+Learning**, or runs:
 
 ```bash
 sudo -u www-data php occ learning:cert:init-issuer
@@ -482,7 +698,7 @@ All commands run as the web server user, from the Nextcloud root:
 | Command | Purpose |
 |---------|---------|
 | `learning:import-users <csv>` | create Nextcloud users from CSV, optionally into a group |
-| `learning:import-pool-json <file>` | bulk-import question pools |
+| `learning:import-pool-json <file>` | bulk-import question pools as new pools — a `pools` file, or a plain question list such as an export (`--pool-name`); see [`import-pool-workflow.md`](import-pool-workflow.md) |
 | `learning:export-pool <id>` | export a pool as JSON or CSV |
 | `learning:export-course <id>` | export a course with pools, members and statistics |
 | `learning:archive-course <id>` | snapshot a course and set it to archived |
@@ -651,6 +867,23 @@ Corrections are welcome as a pull request or an issue at
 instructor group — see [2.3](#23-letting-teachers-create-courses-and-pools). Nextcloud
 administrator rights are neither required nor a substitute for testing: an admin account
 always sees the buttons, so it cannot tell you whether a teacher will.
+
+**There is no Manage tab in a pool.** It is shown to the pool's owner and to users the pool
+was shared with as **Can edit**. Check whether the yellow
+*Student view is on* banner is shown — **Leave student view** brings the tab back — and
+whether the pool was shared with you only as **Can view**. See [3.2](#32-add-questions).
+Creating a new pool, by contrast, needs the global instructor right
+([2.3](#23-letting-teachers-create-courses-and-pools)).
+
+**A pool shows "No questions available for training".** The pool is empty. Add questions
+in its **Manage** tab ([3.2](#32-add-questions)).
+
+**The JSON import fails or imports nothing.** Read the preview under the text field and
+the reasons listed under the result. Common causes: the file contains several pools (use
+occ), a correct-answer number that counts from 1 under `answer`/`correct` (those count
+from 0; use `correct_number` for 1-based), or a marker that names no answer. Questions
+without any correct marker are imported with the first answer as correct and a warning.
+See [Importing CSV or JSON in the interface](#importing-csv-or-json-in-the-interface).
 
 **The assistant answers in the wrong language.** It follows the language you write in. If
 you ask it in Ukrainian it answers in Ukrainian. When it has to guess, it uses the content

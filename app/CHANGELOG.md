@@ -2,6 +2,73 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+Reported on GitHub #34 by a self-hosting administrator who could not find where questions are
+added and whose JSON file did not import.
+
+### Fixed
+- **Pasted JSON was read as CSV.** Format detection ran only for uploaded files. Pasted text that
+  is valid JSON (a list or an object) now switches the import dialog to JSON by itself — not once
+  the other tab was clicked by hand (removing a loaded file with **Clear** turns it back on), and
+  not for a CSV whose first field starts with `[` or `{`. Broken JSON stays on the CSV tab with a
+  note that quotes the JSON error and points to the JSON tab. The file upload endpoint
+  (`POST /api/pools/{poolId}/import/file`) reads the extension first (`.json`/`.csv`); a file
+  with neither is read as JSON only if its content is valid JSON, so a `.csv` starting with
+  `[Network] …` is no longer sent to the JSON reader.
+- **Many common JSON shapes were refused or crashed the import.** The import in the interface now
+  also reads answers as plain strings (`options`, `choices`) with the correct one named on the
+  question (`answer`, `correct`, `correct_index` counting from 0, `correct_number` counting from
+  1, a letter or the answer text), the documented pool file with one pool, and numbers where text
+  was expected. A marker that names no answer skips the question with the reason in the import report.
+- **The pool format lost its metadata in the interface.** The pool's chapter fields,
+  `exam_key_prefix` and the `_meta` defaults are now applied to the questions, in the order
+  question > pool > `_meta`, the same rule as `occ learning:import-pool-json`.
+- **CSV with line breaks inside quoted fields** (as spreadsheet programs write it) was torn apart
+  into broken lines. Quoted fields may now contain line breaks, the separator and `""`.
+- **An export did not come back complete.** The JSON export now carries difficulty, chapter,
+  handbook and exam key, and the subtype and configuration of interactive questions (PBQ), so it
+  re-imports without losses through the interface or occ. `ranking` PBQs can now be imported.
+- **An empty pool was a dead end.** It now opens in **Manage** for everyone who may edit it, and
+  Training offers **Add questions**.
+- **A correct answer after the eighth was lost.** Answers beyond the eighth were cut before the
+  correct one was looked up, so the first answer was marked correct instead. Such a question is
+  now skipped with the reason; a question with more than 50 answers is skipped as well.
+- **A correct-answer list naming the same answer twice** was silently merged, so a 0/1 list such
+  as `[1, 0, 1, 0]` marked the wrong answers. Any list naming an answer twice (also `["B", 1]`)
+  now skips the question with the reason, as does a list longer than the question's answers.
+- **A `difficulty` longer than 20 characters** passed the preview and then failed the whole import
+  with a server error, nothing saved. It is now cut to 20 characters. A `chapter_order` outside
+  1–9999 (0, negative, 10000 or more) is dropped: the interface stored 0 or 10000 as they were,
+  while occ skipped such a question or failed the whole pool. Both apply to
+  `occ learning:import-pool-json` as well, so the same file ends the same way in both.
+- **An exported `multi` question with one correct answer** came back as single choice through the
+  interface. An explicit `multi` now stays multiple choice.
+- **A CSV export with a backslash before a quote** did not import again. The export now writes
+  plain RFC 4180 CSV (also the course statistics export), the same format the import reads.
+- **Answer texts over 2,000 characters** were cut without a word; the import report now warns, in
+  JSON and CSV. A CSV header row no longer counts towards the 500-question limit.
+- **`_meta.default_question_type: "pbq"`** no longer turns a question with several correct answers
+  into an interactive question, in the interface and in occ. Interactive questions in the
+  interface accept `text`, `question` and `frage` as the question text, not only `question_text`.
+- Import errors from the server are shown in the reader's language.
+
+### Changed
+- **The Manage tab follows the pool's edit rights.** The pool's owner and users it was shared with
+  as **Can edit** see it, also without the instructor role. Creating a pool still needs the
+  instructor role.
+- **The student view is visible.** While it is on, a banner on every page says so and offers
+  **Leave student view**; a role that could not be loaded is reported instead of silently showing
+  the learner view.
+- **The import shows a preview**, for JSON and CSV, of how many questions can be imported, and why
+  the others cannot, before anything is saved.
+- **`occ learning:import-pool-json` reads an export directly**: a plain question list, or
+  `{"name", "description", "_meta", "questions"}`, becomes one new pool, named by the new option
+  `--pool-name`, else by the file's `name`, else by the file name. The command now also imports
+  PBQs, and a question's own chapter wins over the pool's.
+- Manual and import guide describe who sees **Manage**, all accepted import formats and the
+  round trip export → import.
+
 ## [5.7.1] - 2026-11-06 — Neutral texts, SQLite, tooling
 
 ### Fixed

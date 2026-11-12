@@ -11,6 +11,24 @@ software to install.
 3. Run `occ learning:import-pool-json <file> --user=<uid>`
 4. The pool shows up in the interface
 
+**No server shell?** A file with **one** pool in this format can also be imported in the
+interface: open a pool you can edit → **Manage** → **Import**, then drop the file or paste
+its content (JSON is recognised by itself). The questions are added to that pool; its name
+and description stay as they are, while the pool's chapter fields, `exam_key_prefix` and
+the `_meta` defaults are applied to the questions exactly as the occ command applies them.
+Files with several pools need the occ command, or one file per pool. The interface import
+needs edit rights on the pool — you own it or it was shared with you as **Can edit**; the
+instructor role is not required for that, only for creating a new pool (see
+[`MANUAL.md`, 3.2](MANUAL.md#32-add-questions)). Its limits and the further formats it
+accepts are described in
+[`MANUAL.md`, 3.2](MANUAL.md#importing-csv-or-json-in-the-interface).
+
+The field reference below holds for both routes. The interface import is more lenient in
+how answers may be written (for example, it also accepts answers as plain strings with a
+separate correct index — `answer`/`correct`/`correct_index` count from 0, only
+`correct_number` counts from 1); the occ command reads only answer objects with
+`is_correct`.
+
 ## JSON schema
 
 One file may contain any number of pools. Minimal example:
@@ -56,20 +74,34 @@ One file may contain any number of pools. Minimal example:
 
 | Field | Required | Type | Notes |
 |---|---|---|---|
+| `_meta.source` | no | string | Free-text provenance; not shown to learners |
+| `_meta.handbook_key` / `_meta.handbook_title` | no | string | Default handbook for every question that has none and whose pool has none |
+| `_meta.default_difficulty` | no | string | Difficulty for every question without its own `difficulty` |
+| `_meta.default_question_type` | no | string | Type for every question without its own type — but not when several answers are marked correct (that stays `multi`, also under `pbq`). `pbq` makes the other questions without a type interactive questions |
 | `pools[].name` | ✅ | string | Pool name as it appears in the interface |
 | `pools[].description` | no | string | Multi-line allowed |
-| `pools[].chapter_key` | no | string | e.g. `"1.1"` — groups pools in the interface |
-| `pools[].chapter_title` | no | string | Human-readable chapter title |
-| `pools[].chapter_order` | no | int | Sort order in the interface |
-| `pools[].exam_key_prefix` | no | string | Becomes `<prefix>-q<original_number>` for every question |
+| `pools[].chapter_key` | no | string | e.g. `"1.1"` — groups pools in the interface, and is the chapter of every question in the pool that has no `chapter_key` of its own |
+| `pools[].chapter_title` | no | string | Human-readable chapter title; filled into questions the same way |
+| `pools[].chapter_order` | no | int | Sort order in the interface, a whole number from 1 to 9999; filled into questions the same way. A value outside (0, negative, 10000 or more) is dropped without a message, by occ and by the import in the interface alike |
+| `pools[].handbook_key` / `pools[].handbook_title` | no | string | Handbook of the pool's questions that have none; wins over `_meta` |
+| `pools[].exam_key_prefix` | no | string | Becomes `<prefix>-q<original_number>` for every question without its own `exam_key` (without `original_number`: the position in the pool, counted from 1) |
 | `pools[].questions[].text` | ✅ | string | Markdown allowed — code blocks `\`\`\``, images via `![](...)` |
-| `pools[].questions[].answers` | ✅ | array | At least 2 entries |
+| `pools[].questions[].answers` | ✅ | array | At least 2 entries. The interface imports at most 8: further answers are dropped with a warning, but a correct answer after the eighth, or more than 50 answers, skips the question |
 | `pools[].questions[].answers[].is_correct` | ✅ | bool | More than one `true` makes it multiple choice |
-| `pools[].questions[].question_type` | no | string | `single` (default), `multi` or `open` (exactly one model answer). `type` is read as well, so a file from `occ learning:export-pool` keeps its types. Without a type, several answers with `is_correct: true` make the question `multi` |
+| `pools[].questions[].question_type` | no | string | `single` (default), `multi` or `open` (exactly one model answer). `type` is read as well, so a file from `occ learning:export-pool` keeps its types — `multi` stays `multi` with one correct answer too. Without a type, several answers with `is_correct: true` make the question `multi` |
 | `pools[].questions[].explanation` | no | string | Shown after the question is answered |
 | `pools[].questions[].scenario` | no | string | Scenario / info text shown **before** the question (case, situation, background). Plain text, line breaks kept, max 10 000 characters. The pool import in the UI also accepts `szenario`, `context` or `info` |
-| `pools[].questions[].difficulty` | no | string | `easy` \| `medium` \| `hard` |
+| `pools[].questions[].difficulty` | no | string | `easy` \| `medium` \| `hard`; at most 20 characters, a longer value is cut |
 | `pools[].questions[].original_number` | no | int/string | Original number from the PDF — for traceability |
+| `pools[].questions[].chapter_key`, `chapter_title`, `chapter_order`, `handbook_key`, `handbook_title`, `exam_key` | no | string / int | Per-question values; they win over the pool and `_meta`. An export writes them per question. `chapter_order` follows the pool rule: 1 to 9999, a value outside is dropped |
+| `pools[].questions[].subtype` | for `pbq` | string | Interactive question (`question_type: "pbq"`, no `answers`): `dropdown`, `placement`, `cli`, `cable`, `multi_panel`, `switch_config`, `routing_config`, `diagnostic` or `ranking` |
+| `pools[].questions[].pbq_config` | for `pbq` | object | Configuration of the interactive question; its layout differs per subtype — take it from an export |
+
+**Precedence:** a value on the question wins over the pool, the pool wins over `_meta`.
+Nothing is invented: a field missing on all three levels stays empty. The one exception is
+`difficulty`, which the occ command — and both routes for interactive questions — set to
+`medium` when none is given; the interface leaves a choice or free-text question without a
+difficulty. Both the occ command and the import in the interface follow this precedence.
 
 ## Prompt template (works with any model)
 
@@ -130,19 +162,33 @@ with the reason each was skipped.
 ## Running the import
 
 The `file` argument is a path **on the Nextcloud server**, readable by the web-server user, so
-copy the JSON there first. Always do the dry run — it parses and validates without writing
-anything to the database.
+copy the JSON there first. Always do the dry run — it reads the file, checks its overall
+shape and lists every pool with its number of questions, without writing anything to the
+database. The checks of individual questions (missing text, too few answers, unknown PBQ
+subtype) run only in the real import, which lists every skipped question with the reason.
 
 ```bash
-# 1. Dry run: parses and validates, writes nothing
+# 1. Dry run: checks the file shape and counts, writes nothing
 occ learning:import-pool-json /path/to/pool.json --user=<uid> --dry-run
 
 # 2. The real import
 occ learning:import-pool-json /path/to/pool.json --user=<uid>
 ```
 
-`--user` (or `-u`) is the Nextcloud user ID that will own the new pools. Afterwards you can
+`--user` (or `-u`) is the Nextcloud user ID that will own the new pools. The owner can edit
+them in the interface (**Manage** tab) even without the instructor role. Afterwards you can
 attach the pools to courses or share them with other users from the interface.
+
+Besides the `pools` format above, the command reads a file with **one** pool and no
+`pools` wrapper: a plain list of questions (what an export writes), or
+`{"name": …, "description": …, "_meta": {…}, "questions": [ … ]}`. The new pool is named by
+`--pool-name`, else by the file's `"name"`, else by the file name without extension:
+
+```bash
+occ learning:import-pool-json /tmp/pool-12.json --user=alice --pool-name="Network basics (2nd edition)"
+```
+
+`--pool-name` with a `pools` file is refused, because that file names its pools itself.
 
 **Where `occ` lives depends on your installation.** A few common shapes:
 
@@ -172,9 +218,11 @@ them.
 `is_correct: true`. The command sets `question_type` to `multi` by itself when it sees more
 than one correct answer.
 
-**Drag & drop and ordering questions.** Not supported by the importer — have the AI list them
-among the skipped questions. You can rebuild them by hand as multiple choice ("Which steps
-belong to the correct sequence?") or author them in the interface.
+**Drag & drop and ordering questions.** Leave them out of an AI conversion — have the AI list
+them among the skipped questions. Both importers do accept interactive questions
+(`question_type: "pbq"` with `subtype` and `pbq_config`, see the field reference), but the
+configuration layout is not documented here; build such questions in the interface and use
+an export as the model if you want to keep them in files.
 
 **Copyright.** An instructor's original PDF, and the JSON derived from it, is usually
 copyrighted material. **Do not commit it to a public repository** and do not share the pool
@@ -186,11 +234,25 @@ missing, or ask for the output in batches. Context windows differ — Claude off
 
 ## Round trip
 
-`learning:export-pool --format=json` emits the same format, so you can:
+`learning:export-pool --format=json` (and **Export JSON** in a pool's **Manage** tab) emits a
+plain **list of questions**, not the `pools` wrapper above. Per question it carries `text`,
+`type`, `scenario`, `explanation`, `difficulty`, `chapter_key`, `chapter_title`,
+`chapter_order`, `handbook_key`, `handbook_title`, `exam_key` and the `answers` with
+`is_correct`; an interactive question carries `subtype` and `pbq_config` instead of answers.
+Empty fields are left out. Translations of questions, instructor notes and attached images
+are not exported.
 
-- export an existing pool (`occ learning:export-pool <poolId> --format=json --output=pool.json`)
+That makes an export the best template for your own files, and it goes back in by either
+route without changes:
+
+- **Through the interface:** **Manage** → **Import** in any pool you can edit; the questions
+  are added to that pool.
+- **Through occ:** `occ learning:import-pool-json pool-12.json --user=<uid> --pool-name="…"`
+  creates a **new** pool from it; delete the old one by hand if you no longer need it.
+
+A typical edit cycle:
+
+- export the pool (`occ learning:export-pool <poolId> --format=json --output=pool.json`, or
+  **Export JSON** in the interface)
 - edit the JSON — add explanations, fix typos
-- re-import it with `learning:import-pool-json`, which creates a **new** pool
-- delete the old one by hand
-
-The format round-trips.
+- re-import it by one of the two routes above
