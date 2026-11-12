@@ -71,7 +71,7 @@ class ConsistencyCheckJob extends TimedJob {
     }
 
     private function reconcileUser(string $userId, $cache): void {
-        // Recalculate XP, level, sessions, mastered from source of truth
+        // Recalculate sessions and mastered; XP and level only ever go up (XpService::updateUserStats)
         $this->xpService->updateUserStats($userId);
 
         // Recalculate streak from session history

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\ICacheFactory;
 use OCP\IDBConnection;
 use OCP\IConfig;
@@ -230,7 +231,7 @@ class XpService {
     }
 
     /**
-     * Update full user stats (recalculate everything).
+     * Update full user stats (recalculate everything; XP and level are never lowered).
      */
     public function updateUserStats(string $userId): void {
         $xpData = $this->calculateXpFromDb($userId);
@@ -258,15 +259,7 @@ class XpService {
         $today = gmdate('Y-m-d');
 
         // UPSERT: try UPDATE first
-        $qb = $this->db->getQueryBuilder();
-        $qb->update('learning_user_stats')
-           ->set('total_xp', $qb->createNamedParameter($xpData['total_xp']))
-           ->set('current_level', $qb->createNamedParameter($xpData['level']))
-           ->set('total_sessions', $qb->createNamedParameter($totalSessions))
-           ->set('total_mastered', $qb->createNamedParameter($totalMastered))
-           ->set('updated_at', $qb->createNamedParameter(time()))
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $affected = $qb->executeStatement();
+        $affected = $this->updateRecalculatedStats($userId, $xpData, $totalSessions, $totalMastered);
 
         if ($affected === 0) {
             try {
@@ -287,15 +280,7 @@ class XpService {
             } catch (\OCP\DB\Exception $e) {
                 if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
                     // Race condition: retry as UPDATE
-                    $qb = $this->db->getQueryBuilder();
-                    $qb->update('learning_user_stats')
-                       ->set('total_xp', $qb->createNamedParameter($xpData['total_xp']))
-                       ->set('current_level', $qb->createNamedParameter($xpData['level']))
-                       ->set('total_sessions', $qb->createNamedParameter($totalSessions))
-                       ->set('total_mastered', $qb->createNamedParameter($totalMastered))
-                       ->set('updated_at', $qb->createNamedParameter(time()))
-                       ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-                    $qb->executeStatement();
+                    $this->updateRecalculatedStats($userId, $xpData, $totalSessions, $totalMastered);
                 } else {
                     throw $e;
                 }
@@ -303,6 +288,32 @@ class XpService {
         }
 
         $this->invalidateUserCaches($userId);
+    }
+
+    /**
+     * Write a recalculation onto an existing stats row.
+     *
+     * calculateXpFromDb() only knows completed sessions and Leitner counters, not per-question
+     * training XP, streak multipliers, rating-based Leitner XP, missions, goals or gameshow XP.
+     * Its total may therefore raise total_xp and current_level, but never lower them: a learner
+     * keeps the XP and level the award paths gave them. Session and mastered counts are taken
+     * from the recalculation.
+     *
+     * @param array{total_xp:int,level:int} $xpData
+     * @return int affected rows (0 = no stats row yet)
+     */
+    private function updateRecalculatedStats(string $userId, array $xpData, int $totalSessions, int $totalMastered): int {
+        $qb = $this->db->getQueryBuilder();
+        $xp = $qb->createNamedParameter($xpData['total_xp'], IQueryBuilder::PARAM_INT);
+        $level = $qb->createNamedParameter($xpData['level'], IQueryBuilder::PARAM_INT);
+        $qb->update('learning_user_stats')
+           ->set('total_xp', $qb->createFunction('CASE WHEN ' . $xp . ' > total_xp THEN ' . $xp . ' ELSE total_xp END'))
+           ->set('current_level', $qb->createFunction('CASE WHEN ' . $level . ' > current_level THEN ' . $level . ' ELSE current_level END'))
+           ->set('total_sessions', $qb->createNamedParameter($totalSessions))
+           ->set('total_mastered', $qb->createNamedParameter($totalMastered))
+           ->set('updated_at', $qb->createNamedParameter(time()))
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        return $qb->executeStatement();
     }
 
     /**
