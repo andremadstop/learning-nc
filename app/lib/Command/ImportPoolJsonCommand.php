@@ -106,9 +106,11 @@ class ImportPoolJsonCommand extends Command {
                 ));
             }
             if ($dryRun) {
-                if ($pool['name'] !== '') {
+                // What the real import would store: a pool that passes its own checks, and of it
+                // only the questions that pass theirs — not every question item of the file.
+                if ($pool['name'] !== '' && $pool['errors'] === []) {
                     $totalPools++;
-                    $totalQuestions += $pool['questions_total'];
+                    $totalQuestions += $pool['importable'];
                 }
             } elseif ($created) {
                 $output->writeln('  → Pool ID: ' . $pool['id']);

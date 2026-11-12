@@ -244,4 +244,25 @@ class ImportPoolJsonCommandTest extends TestCase {
         }
         self::fail('fixture case missing: ' . $name);
     }
+
+    /**
+     * The dry run counts what the import would store: questions that pass every check and pools
+     * that would be created — not every question item and every named pool (audit 2026-11:
+     * "Dry-run: 1 Pools, 25 Fragen" for a file whose 25 questions were all skipped).
+     */
+    public function testDryRunCountsOnlyWhatTheImportWouldStore(): void {
+        $refused = [
+            ['text' => 'Unknown type', 'type' => 'essay', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b']]],
+            ['text' => 'No answers'],
+        ];
+        [$exit, $display] = $this->runCommand(['file' => $this->writeJson($refused, 'x'), '--user' => 'alice', '--dry-run' => true]);
+        $this->assertSame(Command::SUCCESS, $exit, $display);
+        $this->assertStringContainsString('Dry-run: 1 Pools, 0 Fragen', $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [
+            ['name' => 'Kept', 'questions' => self::bareList()],
+            ['name' => 'Too long', 'description' => str_repeat('d', 2001), 'questions' => self::bareList()],
+        ]]), '--user' => 'alice', '--dry-run' => true]);
+        $this->assertStringContainsString('Dry-run: 1 Pools, 2 Fragen', $display);
+    }
 }
