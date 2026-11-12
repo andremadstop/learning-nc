@@ -26,6 +26,13 @@ class QuestionService {
      */
     public const QUESTION_TYPES = ['single', 'multi', 'open', 'pbq'];
 
+    /**
+     * Historical type names the imports read as a valid type (lower-case keys): true_false was
+     * removed in v3.7.0, multiple was repaired to multi by migration Version007800. Mirrored in
+     * importPreview.js TYPE_ALIASES.
+     */
+    public const TYPE_ALIASES = ['true_false' => 'single', 'multiple' => 'multi'];
+
     private $questionMapper;
     private $answerMapper;
     private $shareMapper;

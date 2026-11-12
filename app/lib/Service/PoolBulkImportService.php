@@ -431,8 +431,8 @@ class PoolBulkImportService {
         foreach (['question_type', 'type', 'typ'] as $key) {
             if (isset($question[$key]) && is_string($question[$key]) && trim($question[$key]) !== '') {
                 $type = strtolower(trim($question[$key]));
-                // true_false was removed in v3.7.0; the interface import maps it the same way.
-                return $type === 'true_false' ? 'single' : $type;
+                // Historical names (true_false, multiple); the interface import maps them the same way.
+                return QuestionService::TYPE_ALIASES[$type] ?? $type;
             }
         }
 

@@ -43,6 +43,8 @@ const MAX_TEXT_LENGTH = 5000
 const MAX_ANSWER_LENGTH = 2000
 /** QuestionService::QUESTION_TYPES — the question types the app knows (GitHub #34). */
 export const QUESTION_TYPES = ['single', 'multi', 'open', 'pbq']
+/** QuestionService::TYPE_ALIASES — historical names read as a valid type. */
+export const TYPE_ALIASES = { true_false: 'single', multiple: 'multi' }
 /** PoolJsonFormat::PBQ_SUBTYPES. */
 export const PBQ_SUBTYPES = ['dropdown', 'placement', 'cli', 'cable', 'multi_panel', 'switch_config', 'routing_config', 'diagnostic', 'ranking']
 
@@ -230,7 +232,7 @@ function defaultQuestionType(meta) {
 	if (type === '') {
 		return null
 	}
-	return type === 'true_false' ? 'single' : type
+	return hasOwn(TYPE_ALIASES, type) ? TYPE_ALIASES[type] : type
 }
 
 /**
@@ -266,13 +268,13 @@ function applyPoolDefaults(question, pool, meta, index) {
 // The JSON reader (ImportController helpers, same names)
 // ---------------------------------------------------------------------------------------------
 
-/** typeFrom(): type > question_type > typ, lower-cased; true_false reads as single. */
+/** typeFrom(): type > question_type > typ, lower-cased; true_false reads as single, multiple as multi. */
 function typeFrom(item) {
 	const type = scalarText(pick(item, 'type', 'question_type', 'typ')).toLowerCase()
 	if (type === '') {
 		return null
 	}
-	return type === 'true_false' ? 'single' : type
+	return hasOwn(TYPE_ALIASES, type) ? TYPE_ALIASES[type] : type
 }
 
 /** scenarioFrom(): scenario > szenario > context > info, strings only. */

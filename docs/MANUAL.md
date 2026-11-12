@@ -454,8 +454,8 @@ correct answer makes it single choice. If the file names no correct answer at al
 first answer is set as correct and the import report shows a warning — check those
 questions.
 
-Valid types are `single`, `multi`, `open` and `pbq`, in any letter case; the old
-`true_false` is read as `single`. Any other type (also in `_meta.default_question_type`)
+Valid types are `single`, `multi`, `open` and `pbq`, in any letter case; the old names
+`true_false` and `multiple` are read as `single` and `multi`. Any other type (also in `_meta.default_question_type`)
 skips that question with the reason in the import report — the rest of the file is
 imported. The same applies to `occ learning:import-pool-json` and the pool import in the
 Pools tab.

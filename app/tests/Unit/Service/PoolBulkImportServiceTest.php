@@ -341,4 +341,23 @@ class PoolBulkImportServiceTest extends TestCase {
 
         $this->assertSame(['<Q1: <Unknown question type>>'], $result[0]['question_errors']);
     }
+
+    /** The historical type "multiple" (repaired to multi by migration Version007800) reads as multi. */
+    public function testTheHistoricalTypeMultipleIsImportedAsMulti(): void {
+        $two = [['text' => 'a', 'is_correct' => true], ['text' => 'b']];
+        $doc = ['_meta' => ['default_question_type' => 'Multiple'], 'pools' => [['name' => 'M', 'questions' => [
+            ['text' => 'Own type', 'question_type' => 'multiple', 'answers' => $two],
+            ['text' => 'Upper', 'type' => 'MULTIPLE', 'answers' => $two],
+            ['text' => 'Default', 'answers' => $two],
+        ]]]];
+
+        $dry = $this->importer()->import($doc, 'teacher', true, $this->englishL10n());
+        $real = $this->importer()->import($doc, 'teacher', false, $this->englishL10n());
+
+        $this->assertSame([], $dry[0]['question_errors']);
+        $this->assertSame([], $real[0]['question_errors']);
+        $this->assertSame([3, 3], [$dry[0]['importable'], $real[0]['imported']]);
+        $this->assertSame(['multi', 'multi', 'multi'], array_map(static fn (array $q) => $q[6], $this->createdQuestions));
+        $this->assertSame('multi', PoolBulkImportService::resolveQuestionType(['type' => ' Multiple '], 'single', []));
+    }
 }

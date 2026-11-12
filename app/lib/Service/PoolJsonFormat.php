@@ -104,7 +104,7 @@ final class PoolJsonFormat {
         if ($type === '') {
             return null;
         }
-        return $type === 'true_false' ? 'single' : $type;
+        return QuestionService::TYPE_ALIASES[$type] ?? $type;
     }
 
     /**

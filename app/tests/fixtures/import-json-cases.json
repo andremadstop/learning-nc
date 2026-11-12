@@ -413,6 +413,17 @@
         {"text": "Mixed open", "type": "open", "answers": [{"text": "model", "correct": true}]},
         {"text": "Upper legacy", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
       ]}
+    },
+    {
+      "name": "the historical type multiple reads as multi, also as default_question_type",
+      "input": {"_meta": {"default_question_type": "Multiple"}, "questions": [
+        {"text": "Own type", "type": "multiple", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Default", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}
+      ]},
+      "expect": {"importable": 2, "errors": 0, "questions": [
+        {"text": "Own type", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Default", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
     }
   ]
 }

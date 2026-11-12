@@ -178,7 +178,7 @@ class ImportController extends Controller {
         if ($type === '') {
             return null;
         }
-        return $type === 'true_false' ? 'single' : $type; // true_false removed in v3.7.0 — normalize on import
+        return QuestionService::TYPE_ALIASES[$type] ?? $type; // historical names (true_false, multiple)
     }
 
     /**

@@ -56,7 +56,7 @@ added and whose JSON file did not import.
   `multiple_choice_extended` as importable, then the real import refused the entire pool
   ("create failed"), valid questions included; a short unknown type such as `truefalse` was stored
   as it was. Only `single`, `multi`, `open` and `pbq` are accepted now (any letter case,
-  `true_false` still reads as `single`); any other type skips that one question with the reason,
+  `true_false` still reads as `single`, and the historical `multiple` now reads as `multi`); any other type skips that one question with the reason,
   in the dry run and the import alike. The question import in the interface skips such a question
   as well instead of turning it into single choice, and creating or editing a question refuses an
   unknown type — a question that already carries one can still be saved unchanged.
