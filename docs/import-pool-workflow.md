@@ -89,7 +89,7 @@ One file may contain any number of pools. Minimal example:
 | `_meta.handbook_key` / `_meta.handbook_title` | no | string | Default handbook for every question that has none and whose pool has none |
 | `_meta.default_difficulty` | no | string | Difficulty for every question without its own `difficulty` |
 | `_meta.default_question_type` | no | string | One of `single`, `multi`, `open`, `pbq` (or the old `true_false`, `multiple`). Type for every question without its own type — but not when several answers are marked correct (that stays `multi`, also under `pbq`). `pbq` makes the other questions without a type interactive questions |
-| `pools[].name` | ✅ | string | Pool name as it appears in the interface |
+| `pools[].name` | ✅ | string | Pool name as it appears in the interface; `pool_name` is read as well |
 | `pools[].description` | no | string | Multi-line allowed |
 | `pools[].chapter_key` | no | string | e.g. `"1.1"` — groups pools in the interface, and is the chapter of every question in the pool that has no `chapter_key` of its own |
 | `pools[].chapter_title` | no | string | Human-readable chapter title; filled into questions the same way |
@@ -195,7 +195,8 @@ attach the pools to courses or share them with other users from the interface.
 Besides the `pools` format above, the command reads a file with **one** pool and no
 `pools` wrapper: a plain list of questions (what an export writes), or
 `{"name": …, "description": …, "_meta": {…}, "questions": [ … ]}`. The new pool is named by
-`--pool-name`, else by the file's `"name"`, else by the file name without extension:
+`--pool-name`, else by the file's `"name"` (or `"pool_name"`, as in `app/examples/pools/`), else by
+the file name without extension:
 
 ```bash
 occ learning:import-pool-json /tmp/pool-12.json --user=alice --pool-name="Network basics (2nd edition)"

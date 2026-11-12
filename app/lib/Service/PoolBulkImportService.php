@@ -45,7 +45,7 @@ class PoolBulkImportService {
     /**
      * The document as {_meta?, pools: [...]}, or null when it is none of the accepted shapes.
      * A bare list of questions, or an object with a "questions" list, becomes one pool named
-     * $poolName if given, else by the document's own "name", else $fallbackName.
+     * $poolName if given, else by the document's own "name" or "pool_name", else $fallbackName.
      *
      * @param array<mixed> $data
      * @return array<mixed>|null
@@ -58,7 +58,7 @@ class PoolBulkImportService {
             return ['pools' => [['name' => $poolName ?? $fallbackName, 'questions' => $data]]];
         }
         if (isset($data['questions']) && is_array($data['questions'])) {
-            $name = PoolJsonFormat::scalarText($data['name'] ?? null);
+            $name = PoolJsonFormat::poolName($data);
             $pool = ['name' => $poolName ?? ($name !== '' ? $name : $fallbackName), 'questions' => $data['questions']];
             if (isset($data['description']) && is_string($data['description'])) {
                 $pool['description'] = $data['description'];
@@ -119,7 +119,7 @@ class PoolBulkImportService {
         foreach (self::poolsOf($document) as $i => $poolData) {
             $index = $i + 1;
             $poolData = is_array($poolData) ? $poolData : [];
-            $name = PoolJsonFormat::scalarText($poolData['name'] ?? null);
+            $name = PoolJsonFormat::poolName($poolData);
             $questions = self::questionsOf($poolData);
             $result = [
                 'index' => $index,

@@ -265,4 +265,22 @@ class ImportPoolJsonCommandTest extends TestCase {
         ]]), '--user' => 'alice', '--dry-run' => true]);
         $this->assertStringContainsString('Dry-run: 1 Pools, 2 Fragen', $display);
     }
+
+    /**
+     * "pool_name" (app/examples/pools/*.json, app/data) names the pool like "name" — in a
+     * questions wrapper and in a pools list; an empty "name" falls through to it (audit 2026-11).
+     */
+    public function testPoolNameKeyNamesThePool(): void {
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['pool_name' => 'Subnetting', 'questions' => self::bareList()], 'subnetting_questions'), '--user' => 'alice']);
+        $this->assertSame(['Subnetting'], array_column($this->createdPools, 'name'), $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['name' => '', 'pool_name' => 'Fallback', 'questions' => self::bareList()]), '--user' => 'alice']);
+        $this->assertSame(['Fallback'], array_column($this->createdPools, 'name'), $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['name' => 'Name wins', 'pool_name' => 'Other', 'questions' => self::bareList()]), '--user' => 'alice']);
+        $this->assertSame(['Name wins'], array_column($this->createdPools, 'name'), $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [['pool_name' => 'From the list', 'questions' => self::bareList()]]]), '--user' => 'alice']);
+        $this->assertSame(['From the list'], array_column($this->createdPools, 'name'), $display);
+    }
 }

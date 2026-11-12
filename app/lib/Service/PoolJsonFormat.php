@@ -55,6 +55,21 @@ final class PoolJsonFormat {
         return null;
     }
 
+    /**
+     * Name of a pool object: "name", else "pool_name" (the key of app/examples/pools/*.json and
+     * of files from elsewhere); '' when neither holds a non-empty scalar. An empty "name" falls
+     * through to "pool_name".
+     */
+    public static function poolName(array $pool): string {
+        foreach (['name', 'pool_name'] as $key) {
+            $name = self::scalarText($pool[$key] ?? null);
+            if ($name !== '') {
+                return $name;
+            }
+        }
+        return '';
+    }
+
     public static function fieldText(array $item, string $field): ?string {
         $value = self::field($item, $field);
         return $value === null ? null : self::scalarText($value);
