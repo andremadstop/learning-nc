@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\NotFoundException;
 use OCA\Learning\Service\QuestionService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -40,6 +42,26 @@ class QuestionController extends Controller {
             return new DataResponse($this->service->find($id, $this->userId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Question not found'], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Grades one answer for the bot modes of Duel and Gameshow (learners no longer receive
+     * answers[].is_correct). 404 without read access, 403 during a graded exam on the pool,
+     * 400 for an answer of another question. Rate-limited: it reveals the correct answer.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function check(int $id, int $answerId): DataResponse {
+        try {
+            return new DataResponse($this->service->checkAnswer($id, $answerId, (string)$this->userId));
+        } catch (NotFoundException $e) {
+            return new DataResponse(['error' => 'Question not found'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'Not available during active exam'], Http::STATUS_FORBIDDEN);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => 'Invalid answer'], Http::STATUS_BAD_REQUEST);
         }
     }
 

@@ -494,7 +494,8 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import QuestionScenario from './QuestionScenario.vue';
-import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
+import { botAnswersCorrectly, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
+import { gradeBotAnswer } from '../utils/botGrading.js';
 import { createSseClient } from '../utils/sse-client.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
@@ -581,6 +582,7 @@ export default {
       botPhrase: '',
       botKlausEndPhrase: '',
       botHasAnswered: false,
+      botGradePending: false, // Antwort des Users wird gerade serverseitig bewertet
     };
   },
 
@@ -868,8 +870,8 @@ export default {
       if (!question || !question.answers) return;
 
       this.botHasAnswered = true;
-      const chosen = botChooseAnswer(question.answers, this.botLocalState.difficulty);
-      const isCorrect = chosen && chosen.is_correct;
+      // Klaus würfelt nur, ob er richtig liegt; die Lösung kennt der Client nicht (Audit 2026-11).
+      const isCorrect = botAnswersCorrectly(this.botLocalState.difficulty);
 
       if (isCorrect) {
         if (!this.isEliminationMode) {
@@ -883,7 +885,8 @@ export default {
         this.botPhrase = getBotPhrase('wrong');
       }
 
-      if (this.hasAnswered) {
+      // Während die Antwort des Users noch bewertet wird, schaltet onAnswer() weiter.
+      if (this.hasAnswered && !this.botGradePending) {
         this.botAdvanceQuestion();
       }
     },
@@ -1357,11 +1360,27 @@ export default {
         this.hasAnswered = true;
         this.selectedAnswerId = answerId;
         const question = this.currentQuestion;
-        const correct = question && question.answers
-          ? question.answers.find(a => a.is_correct)
-          : null;
-        this.correctAnswerId = correct ? correct.id : null;
-        this.answeredCorrect = correct ? answerId === correct.id : false;
+        // Der Server bewertet: Lernende erhalten kein is_correct mehr (Audit 2026-11).
+        let grade;
+        this.botGradePending = true;
+        this.loading = true;
+        try {
+          grade = await gradeBotAnswer(question.id, answerId);
+        } catch (e) {
+          if (this.botMode && this.currentQuestion === question) {
+            this.hasAnswered = false;
+            this.selectedAnswerId = null;
+            this.error = e.response?.data?.error || t('learning', 'Antwort konnte nicht gesendet werden');
+          }
+          return;
+        } finally {
+          this.botGradePending = false;
+          this.loading = false;
+        }
+        // Spiel inzwischen verlassen oder neu gestartet
+        if (!this.botMode || this.currentQuestion !== question) return;
+        this.correctAnswerId = grade.correctAnswerId;
+        this.answeredCorrect = grade.correct;
         this.lastQuestion = question;
         if (this.isEliminationMode) {
           if (!this.answeredCorrect) {

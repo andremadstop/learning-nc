@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   botChooseAnswer,
+  botAnswersCorrectly,
   botResponseDelay,
   botPhrase,
   createBotPlayer,
@@ -278,5 +279,27 @@ describe('BOT_PROFILES', () => {
       expect(val).toBeGreaterThanOrEqual(0);
       expect(val).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// botAnswersCorrectly — Klaus without the answer key (2026-11 audit)
+// ---------------------------------------------------------------------------
+describe('botAnswersCorrectly', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('is right below the difficulty rate and wrong at or above it', () => {
+    const rate = BOT_PROFILES.klaus.correctRate.medium;
+    vi.spyOn(Math, 'random').mockReturnValue(rate - 0.01);
+    expect(botAnswersCorrectly('medium')).toBe(true);
+    Math.random.mockReturnValue(rate);
+    expect(botAnswersCorrectly('medium')).toBe(false);
+  });
+
+  it('falls back to the medium rate for an unknown difficulty', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.54);
+    expect(botAnswersCorrectly('legendary')).toBe(true);
+    Math.random.mockReturnValue(0.56);
+    expect(botAnswersCorrectly('legendary')).toBe(false);
   });
 });

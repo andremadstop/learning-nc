@@ -122,12 +122,19 @@ class QuestionService {
 
     /**
      * Whether the question read APIs must withhold is_correct, explanation and the PBQ solution.
-     * The pool's editors (owner, edit share) are exempt: they can change the solution anyway, and
-     * the question editor loads through these paths and saves pbq_config, answers and explanation
-     * back as received — a stripped copy would erase the solution on save (audit 2026-11, D1).
+     * Only the pool's editors see them: the owner, an edit share and a course instructor of a course
+     * carrying the pool (who can export the answer key anyway, verifyExportAccess()). Everyone else —
+     * course members, read shares — gets the questions without the solution, with or without an exam.
+     * Until the 2026-11 audit the solution was withheld only during a graded exam, so a learner read
+     * the whole answer key before starting it (high finding, answer key).
+     *
+     * The editors must keep it: the question editor loads through these paths and saves pbq_config,
+     * answers and explanation back as received — a stripped copy would erase the solution on save
+     * (audit 2026-11, D1). Learners practise through Training/Leitner and grade through their own
+     * endpoints (and checkAnswer() for the bot modes), which never need the key on the client.
      */
     private function mustWithholdSolution(int $poolId, string $userId): bool {
-        return !$this->canEditPool($poolId, $userId) && $this->hasActiveExamOnPool($poolId, $userId);
+        return !$this->canEditPool($poolId, $userId) && !$this->isCourseInstructorForPool($poolId, $userId);
     }
 
     /**
@@ -326,7 +333,7 @@ class QuestionService {
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
-        // SECURITY: Strip is_correct during active exam to prevent oracle attack
+        // SECURITY: only the pool's editors receive the answer key (mustWithholdSolution)
         $stripCorrect = $this->mustWithholdSolution($poolId, $userId);
 
         $result = [];
@@ -361,7 +368,7 @@ class QuestionService {
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
-        // SECURITY: Strip is_correct during active exam to prevent oracle attack
+        // SECURITY: only the pool's editors receive the answer key (mustWithholdSolution)
         $stripCorrect = $this->mustWithholdSolution($poolId, $userId);
 
         $result = [];
@@ -393,7 +400,7 @@ class QuestionService {
             }
             $answers = $this->answerMapper->findByQuestion($question->getId());
 
-            // SECURITY: Strip is_correct during active exam to prevent oracle attack
+            // SECURITY: only the pool's editors receive the answer key (mustWithholdSolution)
             $stripCorrect = $this->mustWithholdSolution($question->getPoolId(), $userId);
 
             $questionData = $question->jsonSerialize();
@@ -413,6 +420,70 @@ class QuestionService {
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * find() with the answer key, for server-side code that grades or explains and never sends the
+     * key on (AiController::explain builds its prompt from the correct answers). Still checks read
+     * access. Never return its result to the client unfiltered — that is what find() is for.
+     */
+    public function findWithSolution(int $id, string $userId): array {
+        try {
+            $question = $this->questionMapper->findById($id);
+        } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
+            throw new Exception($e->getMessage());
+        }
+        if (!$this->hasPoolAccess($question->getPoolId(), $userId)) {
+            throw new Exception('No access');
+        }
+        $questionData = $question->jsonSerialize();
+        $questionData['answers'] = array_map(
+            static fn ($a) => $a->jsonSerialize(),
+            $this->answerMapper->findByQuestion($question->getId())
+        );
+        return $questionData;
+    }
+
+    /**
+     * Grades one answer of one question for the bot modes of Duel and Gameshow, which graded on the
+     * client with answers[].is_correct until learners stopped receiving it (2026-11 audit).
+     * Refused during a graded exam on the pool — it would otherwise be an exam oracle.
+     *
+     * @return array{correct: bool, correct_answer_id: ?int}
+     * @throws NotFoundException question missing or no read access
+     * @throws ForbiddenException graded exam open on the question's pool
+     * @throws \InvalidArgumentException the answer does not belong to the question
+     */
+    public function checkAnswer(int $questionId, int $answerId, string $userId): array {
+        try {
+            $question = $this->questionMapper->findById($questionId);
+        } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
+            throw new NotFoundException('Question not found');
+        }
+        $poolId = $question->getPoolId();
+        if (!$this->hasPoolAccess($poolId, $userId)) {
+            throw new NotFoundException('Question not found');
+        }
+        if ($this->hasActiveExamOnPool($poolId, $userId)) {
+            throw new ForbiddenException('Not available during active exam');
+        }
+
+        // Same lookup as DuelService::submitAnswer: the answer must belong to this question.
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('is_correct')->from('learning_answers')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        if ($row === false) {
+            throw new \InvalidArgumentException('Invalid answer');
+        }
+
+        return [
+            'correct' => (bool)$row['is_correct'],
+            'correct_answer_id' => $this->getCorrectAnswerIdForGame($questionId),
+        ];
     }
 
     public function findEntity(int $id, string $userId): Question {
@@ -440,9 +511,8 @@ class QuestionService {
 
     /**
      * Question-level mustWithholdSolution() for the translation endpoints: withhold translated
-     * explanations from a learner with an active exam, but not from the pool's editors —
-     * TranslationDialog saves the loaded explanations back, so a withheld copy would overwrite
-     * them with NULL (audit 2026-11).
+     * explanations from everyone but the pool's editors — TranslationDialog saves the loaded
+     * explanations back, so a withheld copy would overwrite them with NULL (audit 2026-11).
      */
     public function mustWithholdSolutionForQuestion(int $questionId, string $userId): bool {
         try {
@@ -684,7 +754,27 @@ class QuestionService {
 
     public function search(string $query, string $userId, int $limit = 50): array {
         $limit = max(1, min($limit, 100));
-        return $this->questionMapper->searchByText($query, $userId, $limit);
+        $rows = $this->questionMapper->searchByText($query, $userId, $limit);
+
+        // The rows are learning_questions.* (no answers): withhold explanation and the PBQ solution
+        // of every pool the user cannot edit, like find() does (2026-11 audit, answer key).
+        $withhold = [];
+        foreach ($rows as $i => $row) {
+            $poolId = (int)($row['pool_id'] ?? 0);
+            $withhold[$poolId] ??= $this->mustWithholdSolution($poolId, $userId);
+            if (!$withhold[$poolId]) {
+                continue;
+            }
+            unset($row['explanation']);
+            if (isset($row['pbq_config']) && is_string($row['pbq_config']) && $row['pbq_config'] !== '') {
+                $config = json_decode($row['pbq_config'], true);
+                $row['pbq_config'] = is_array($config)
+                    ? (string)json_encode(PbqSolutionStripper::strip($config))
+                    : null;
+            }
+            $rows[$i] = $row;
+        }
+        return $rows;
     }
 
     /**
