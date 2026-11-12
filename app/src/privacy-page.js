@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { translate as t, translatePlural as n } from '@nextcloud/l10n'
 import PrivacyPage from './components/PrivacyPage.vue'
+import { parseOperatorAttribute } from './utils/operatorInfo.js'
 
 const mountNode = document.getElementById('learning-privacy-page')
 const appUrl = mountNode?.dataset?.appUrl || ''
@@ -13,10 +14,13 @@ try {
 } catch (e) {
 	aiNotice = null
 }
+// the operator an admin entered (server-rendered); null = none, the page shows a hint
+const operator = parseOperatorAttribute(mountNode?.dataset?.operator)
 const app = createApp(PrivacyPage, {
 	appUrl,
 	imprintUrl,
 	aiNotice,
+	operator,
 })
 
 app.config.globalProperties.t = t

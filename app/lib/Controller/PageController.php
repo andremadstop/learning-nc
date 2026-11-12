@@ -4,6 +4,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\PublicAiNotice;
+use OCA\Learning\Service\OperatorInfo;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -16,6 +17,7 @@ class PageController extends Controller {
         IRequest $request,
         private IURLGenerator $urlGenerator,
         private ConnectionStore $connectionStore,
+        private OperatorInfo $operatorInfo,
     ) {
         parent::__construct($appName, $request);
     }
@@ -38,6 +40,8 @@ class PageController extends Controller {
             'imprintUrl' => $this->urlGenerator->linkToRoute('learning.page.impressum'),
             // who receives AI data right now, without any server address (public page)
             'aiNotice' => PublicAiNotice::describe($this->connectionStore->load()),
+            // the operator an admin entered (only these fields), null = none: the page shows a hint
+            'operator' => $this->operatorInfo->publicView(),
         ]);
     }
 
@@ -49,6 +53,7 @@ class PageController extends Controller {
         return new PublicTemplateResponse('learning', 'impressum', [
             'appUrl' => $this->urlGenerator->linkToRoute('learning.page.index'),
             'privacyUrl' => $this->urlGenerator->linkToRoute('learning.page.privacy'),
+            'operator' => $this->operatorInfo->publicView(),
         ]);
     }
 }

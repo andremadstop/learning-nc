@@ -3251,6 +3251,23 @@
         "Unknown question type": "Type de question inconnu",
         "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped": "Q%1$s : type de question « %2$s » inconnu (valides : %3$s) — ignorée",
         "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped": "Élément %1$s : type de question « %2$s » inconnu (valides : %3$s) — question ignorée",
-        "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped": "Élément {num} : type de question « {type} » inconnu (valides : {valid}) — question ignorée"
+        "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped": "Élément {num} : type de question « {type} » inconnu (valides : {valid}) — question ignorée",
+        "The operator of this platform has not entered any operator details yet. Please contact the administrators of this Nextcloud.": "L’exploitant de cette plateforme n’a pas encore saisi ses coordonnées. Veuillez contacter les administrateurs de ce Nextcloud.",
+        "Operator details (imprint and privacy notice)": "Coordonnées de l’exploitant (mentions légales et politique de confidentialité)",
+        "Learning shows these details on its imprint and privacy pages. Until name, postal address and contact email are entered, both pages show no operator, and Learning does not set the Nextcloud imprint and privacy links. Links already set in the Theming settings are never replaced. Saving with all fields empty removes the details.": "Learning affiche ces coordonnées dans ses mentions légales et sa politique de confidentialité. Tant que le nom, l’adresse postale et l’e-mail de contact ne sont pas saisis, ces deux pages n’indiquent aucun exploitant et Learning ne définit pas les liens Nextcloud vers les mentions légales et la confidentialité. Les liens déjà définis dans les paramètres de Theming ne sont jamais remplacés. Enregistrer avec tous les champs vides supprime les coordonnées.",
+        "Operator details saved": "Coordonnées de l’exploitant enregistrées",
+        "Save operator details": "Enregistrer les coordonnées de l’exploitant",
+        "Name of the operator": "Nom de l’exploitant",
+        "Postal address": "Adresse postale",
+        "Register entry (optional)": "Immatriculation au registre (facultatif)",
+        "For example the register court and number of a company or association.": "Par exemple le tribunal d’immatriculation et le numéro d’une entreprise ou d’une association.",
+        "Contact email": "E-mail de contact",
+        "Responsible for content (optional)": "Responsable du contenu (facultatif)",
+        "If empty, the imprint names the operator.": "Si ce champ est vide, les mentions légales indiquent l’exploitant.",
+        "This field is required.": "Ce champ est obligatoire.",
+        "Please enter a valid email address.": "Veuillez saisir une adresse e-mail valide.",
+        "This entry is too long.": "Cette saisie est trop longue.",
+        "Please check this entry.": "Veuillez vérifier cette saisie.",
+        "The operator details could not be saved.": "Les coordonnées de l’exploitant n’ont pas pu être enregistrées."
     }
 }

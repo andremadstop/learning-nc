@@ -14,7 +14,7 @@
 		</header>
 
 		<main class="legal-page__content">
-			<PrivacyInfo :show-heading="false" :show-page-links="false" :ai-notice="aiNotice" />
+			<PrivacyInfo :show-heading="false" :show-page-links="false" :ai-notice="aiNotice" :operator="operator" />
 		</main>
 	</div>
 </template>
@@ -39,6 +39,11 @@ export default {
 		imprintUrl: {
 			type: String,
 			default: '',
+		},
+		/** The operator an admin entered (parseOperator), null = none: a neutral hint is shown. */
+		operator: {
+			type: Object,
+			default: null,
 		},
 	},
 }

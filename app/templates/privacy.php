@@ -7,4 +7,5 @@ style('learning', 'style');
 	id="learning-privacy-page"
 	data-app-url="<?php p($_['appUrl']); ?>"
 	data-imprint-url="<?php p($_['imprintUrl']); ?>"
-	data-ai-notice="<?php p(json_encode($_['aiNotice'] ?? null)); ?>"></div>
+	data-ai-notice="<?php p(json_encode($_['aiNotice'] ?? null)); ?>"
+	data-operator="<?php p(json_encode($_['operator'] ?? null)); ?>"></div>

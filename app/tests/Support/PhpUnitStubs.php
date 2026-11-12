@@ -222,6 +222,8 @@ namespace OCP {
 
             public function setAppValue(string $appName, string $key, string $value);
 
+            public function deleteAppValue(string $appName, string $key);
+
             /**
              * @param mixed $default
              * @return mixed

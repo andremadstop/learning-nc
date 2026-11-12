@@ -24,6 +24,8 @@ use OCA\Learning\Service\CourseMergeService;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\DataMobilityService;
+use OCA\Learning\Service\OperatorInfo;
+use OCA\Learning\Service\ThemingLegalLinkSync;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Search\PoolSearchProvider;
@@ -164,26 +166,18 @@ class Application extends App implements IBootstrap {
         }
     }
 
+    /**
+     * Takes over the Nextcloud imprint/privacy links only once an operator is configured, never
+     * over a link set elsewhere (audit 2026-11; logic in ThemingLegalLinkSync).
+     */
     private function syncThemingLegalLinks(ContainerInterface $container): void {
         try {
             $config = $container->get(IConfig::class);
-            $urlGenerator = $container->get(IURLGenerator::class);
-
-            $desiredPrivacyUrl = $urlGenerator->linkToRouteAbsolute('learning.page.privacy');
-            $desiredImprintUrl = $urlGenerator->linkToRouteAbsolute('learning.page.impressum');
-
-            $currentPrivacyUrl = $config->getAppValue('theming', 'privacyUrl', '');
-            $currentImprintUrl = $config->getAppValue('theming', 'imprintUrl', '');
-
-            if (($currentPrivacyUrl === '' || str_contains($currentPrivacyUrl, '/apps/learning/privacy'))
-                && $currentPrivacyUrl !== $desiredPrivacyUrl) {
-                $config->setAppValue('theming', 'privacyUrl', $desiredPrivacyUrl);
-            }
-
-            if (($currentImprintUrl === '' || str_contains($currentImprintUrl, '/apps/learning/impressum'))
-                && $currentImprintUrl !== $desiredImprintUrl) {
-                $config->setAppValue('theming', 'imprintUrl', $desiredImprintUrl);
-            }
+            (new ThemingLegalLinkSync(
+                $config,
+                $container->get(IURLGenerator::class),
+                new OperatorInfo($config),
+            ))->sync();
         } catch (\Throwable $e) {
             $container->get(LoggerInterface::class)->warning(
                 'Learning: legal link sync failed: ' . $e->getMessage(),

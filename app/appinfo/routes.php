@@ -125,6 +125,10 @@ return [
         ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
         // 5.7.0: admin connection test — fixed test message, Gemini/Ollama only (AdminAiController)
         ['name' => 'adminAi#test', 'url' => '/api/admin/ai/test', 'verb' => 'POST'],
+        // audit 2026-11: operator details for imprint/privacy (admin form; public fields for signed-in users)
+        ['name' => 'legalOperator#get', 'url' => '/api/settings/admin/operator', 'verb' => 'GET'],
+        ['name' => 'legalOperator#save', 'url' => '/api/settings/admin/operator', 'verb' => 'PUT'],
+        ['name' => 'legalOperator#show', 'url' => '/api/legal/operator', 'verb' => 'GET'],
         ['name' => 'settings#getTools', 'url' => '/api/settings/tools', 'verb' => 'GET'],
         ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
