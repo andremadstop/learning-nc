@@ -2850,6 +2850,8 @@ OC.L10N.register(
     "Voice language" : "Мова голосу",
     "Von (Datum)" : "Від (дата)",
     "Vor deiner Zustimmung wird nichts von {provider} geladen — kein Skript, kein Cookie, keine Verbindung." : "До вашої згоди з {provider} нічого не завантажується — ні скрипт, ні cookie, ні з'єднання.",
+    "Nach deiner Zustimmung lädt diese Seite den Player und das Player-Skript von {provider}. Das Skript meldet der App, welche Abschnitte du angesehen hast; nur so kann ein Pflichtvideo als abgeschlossen gelten." : "Після вашої згоди ця сторінка завантажує плеєр і скрипт плеєра {provider}. Скрипт повідомляє застосунку, які частини ви переглянули; лише так обов'язкове відео може вважатися завершеним.",
+    "Der Player von {provider} hat sich nicht gemeldet. Dein Fortschritt bei diesem Video kann gerade nicht erfasst werden — lade die Seite neu und versuche es noch einmal." : "Плеєр {provider} не відповів. Ваш прогрес у цьому відео зараз не може бути записаний — перезавантажте сторінку та спробуйте ще раз.",
     "Warnung: Verdaechtige Ports entdeckt ({ports})" : "Увага: виявлено підозрілі порти ({ports})",
     "Warte auf Gegner..." : "Очікування суперника...",
     "Warte auf Spieler..." : "Очікування гравців...",

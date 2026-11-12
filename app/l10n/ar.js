@@ -2850,6 +2850,8 @@ OC.L10N.register(
     "Voice language" : "لغة الصوت",
     "Von (Datum)" : "من (تاريخ)",
     "Vor deiner Zustimmung wird nichts von {provider} geladen — kein Skript, kein Cookie, keine Verbindung." : "لا يتم تحميل أي شيء من {provider} قبل موافقتك — لا سكربت ولا كوكي ولا اتصال.",
+    "Nach deiner Zustimmung lädt diese Seite den Player und das Player-Skript von {provider}. Das Skript meldet der App, welche Abschnitte du angesehen hast; nur so kann ein Pflichtvideo als abgeschlossen gelten." : "بعد موافقتك، تقوم هذه الصفحة بتحميل المشغّل وسكربت المشغّل من {provider}. يُبلغ السكربت التطبيق بالأجزاء التي شاهدتها؛ وبهذه الطريقة فقط يمكن اعتبار الفيديو الإلزامي مكتملاً.",
+    "Der Player von {provider} hat sich nicht gemeldet. Dein Fortschritt bei diesem Video kann gerade nicht erfasst werden — lade die Seite neu und versuche es noch einmal." : "لم يستجب مشغّل {provider}. لا يمكن تسجيل تقدّمك في هذا الفيديو حالياً — أعد تحميل الصفحة وحاول مرة أخرى.",
     "Warnung: Verdaechtige Ports entdeckt ({ports})" : "تحذير: تم اكتشاف منافذ مشبوهة ({ports})",
     "Warte auf Gegner..." : "في انتظار الخصم...",
     "Warte auf Spieler..." : "في انتظار اللاعبين...",

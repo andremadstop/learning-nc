@@ -18,45 +18,7 @@ globalThis.t = (app, text) => text
 
 import axios from '@nextcloud/axios'
 import VideoPlayer from '../../src/components/VideoPlayer.vue'
-
-function makeServer(duration) {
-	const s = { intervals: [], lastPing: null, completed: false, pings: [] }
-	const pct = () => Math.min(1, s.intervals.reduce((sum, [a, b]) => sum + (b - a), 0) / duration)
-	const merge = (iv) => {
-		const all = [...s.intervals, iv].sort((x, y) => x[0] - y[0])
-		const out = []
-		for (const [a, b] of all) {
-			const last = out[out.length - 1]
-			if (last && a <= last[1]) last[1] = Math.max(last[1], b)
-			else out.push([a, b])
-		}
-		s.intervals = out
-	}
-	s.state = () => ({ covered_pct: s.completed ? 1 : pct(), completed: s.completed })
-	s.heartbeat = (start, end) => {
-		const now = Math.floor(Date.now() / 1000)
-		s.pings.push([start, end])
-		if (s.completed) return s.state()
-		const st = Math.max(0, Number(start))
-		if (!(Number(end) > st)) return s.state() // sanitizeInterval
-		if (s.lastPing !== null && now - s.lastPing < 5) return s.state() // isPlausiblePing
-		const first = s.lastPing === null
-		const maxCredit = first ? Math.min(15, duration * 0.5) : Math.max(0, now - s.lastPing) + 1
-		let e = Math.min(Number(end), duration)
-		if (e > st && maxCredit > 0) {
-			if (e - st > maxCredit) e = st + maxCredit
-			merge([st, e])
-		}
-		s.lastPing = now
-		if (!first && pct() >= 0.95) s.completed = true
-		return s.state()
-	}
-	s.complete = () => {
-		if (!s.completed && pct() >= 0.95) s.completed = true
-		return s.state()
-	}
-	return s
-}
+import { makeServer } from './support/videoProgressServer.js'
 
 function createPlayer(duration, server) {
 	const video = { currentTime: 0, paused: true, duration }
@@ -66,13 +28,16 @@ function createPlayer(duration, server) {
 		$emit: vi.fn(),
 		$refs: { video },
 	}
-	Object.assign(vm, VideoPlayer.data.call(vm))
-	for (const [name, def] of Object.entries(VideoPlayer.computed)) {
-		const getter = typeof def === 'function' ? def : def.get
-		Object.defineProperty(vm, name, { get: () => getter.call(vm), configurable: true })
-	}
-	for (const [name, fn] of Object.entries(VideoPlayer.methods)) {
-		vm[name] = fn.bind(vm)
+	// the heartbeat logic lives in a mixin shared with the third-party player (audit 2026-11, H6)
+	for (const part of [...(VideoPlayer.mixins || []), VideoPlayer]) {
+		if (part.data) Object.assign(vm, part.data.call(vm))
+		for (const [name, def] of Object.entries(part.computed || {})) {
+			const getter = typeof def === 'function' ? def : def.get
+			Object.defineProperty(vm, name, { get: () => getter.call(vm), configurable: true })
+		}
+		for (const [name, fn] of Object.entries(part.methods || {})) {
+			vm[name] = fn.bind(vm)
+		}
 	}
 	axios.post.mockImplementation((url, body) => {
 		if (url.endsWith('/heartbeat')) return Promise.resolve({ data: server.heartbeat(body.start, body.end) })

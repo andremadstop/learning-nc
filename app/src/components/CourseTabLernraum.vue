@@ -259,7 +259,12 @@
 						v-else-if="item.sourceType === 'vimeo' || item.sourceType === 'youtube-nocookie'"
 						:source-type="item.sourceType"
 						:embed-id="item.ref"
-						:title="item.title" />
+						:title="item.title"
+						:content-id="item.id"
+						:duration-seconds="item.durationSeconds"
+						:initial-completed="isItemComplete(item.id)"
+						@completed="onItemCompleted"
+						@progress="onItemProgress" />
 
 					<div v-else-if="item.sourceType === 'document'" class="video-item__document">
 						<a
@@ -852,6 +857,7 @@ export default {
 			// graceful degrade → no "Pflichtinhalte" tab) and returns the registry annotated
 			// with covered_pct/completed — WITHOUT the instructor file path (video_ref), which
 			// is DSGVO/IDOR-sensitive and only ever served by content_id via the stream endpoint.
+			// Vimeo / YouTube rows carry the provider's public video id as embed_id instead.
 			try {
 				const url = generateUrl('/apps/learning/api/video-progress/course/{courseId}', { courseId: this.courseId })
 				const response = await axios.get(url)
