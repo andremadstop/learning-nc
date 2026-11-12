@@ -89,8 +89,9 @@ class ChunkSearchService {
         $seen = [];
 
         foreach ($words as $word) {
-            // Remove non-alphanumeric edges (punctuation)
-            $clean = preg_replace('/^[^a-z0-9äöüß]+|[^a-z0-9äöüß]+$/u', '', $word);
+            // Remove punctuation at the edges. Unicode classes, so Cyrillic, Arabic and accented
+            // words survive (de/en/fr/ru/ar/uk); \p{M} keeps combining marks (2026-11 audit).
+            $clean = preg_replace('/^[^\p{L}\p{N}\p{M}]+|[^\p{L}\p{N}\p{M}]+$/u', '', $word);
             if ($clean === '' || $clean === null) {
                 continue;
             }

@@ -307,6 +307,8 @@ class ImportVaultCommand extends Command {
      * @return array<int, array{text: string, chapter: string|null}>
      */
     private function splitIntoChunks(string $text, ?string $fallbackChapter): array {
+        // CRLF/CR notes would otherwise stay one paragraph (2026-11 audit)
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
         $paragraphs = preg_split('/\n{2,}/', $text);
         if ($paragraphs === false) {
             return [['text' => $text, 'chapter' => $fallbackChapter]];
@@ -328,8 +330,11 @@ class ImportVaultCommand extends Command {
                     $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
                     $currentBuffer = '';
                 }
-                $chapter = $heading;
-                continue;
+                $chapter = $heading['heading'];
+                $paragraph = $heading['body'];
+                if ($paragraph === '') {
+                    continue;
+                }
             }
 
             $paragraphTokens = $this->estimateTokens($paragraph);
@@ -398,9 +403,16 @@ class ImportVaultCommand extends Command {
         return $chunks;
     }
 
-    private function detectHeading(string $paragraph): ?string {
-        if (preg_match('/^#{1,6}\s+(.+)$/m', $paragraph, $matches)) {
-            return trim($matches[1]);
+    /**
+     * Only the first line of a paragraph can be a heading; the lines after it are returned as the
+     * paragraph body, so text written directly under '## Title' is not lost (2026-11 audit).
+     *
+     * @return array{heading: string, body: string}|null
+     */
+    private function detectHeading(string $paragraph): ?array {
+        $lines = explode("\n", $paragraph);
+        if (preg_match('/^#{1,6}\s+(.+)$/', trim($lines[0]), $matches)) {
+            return ['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
         }
 
         return null;

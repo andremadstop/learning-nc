@@ -32,6 +32,14 @@ class RoleService {
         return $this->config->getAppValue($this->appName, 'instructor_group', 'learning-instructors');
     }
 
+    /**
+     * Nextcloud administrator. Unlike isInstructor() this is not satisfied by membership of the
+     * instructor group, so it can stand in for "may act on any course".
+     */
+    public function isAdmin(string $userId): bool {
+        return $this->groupManager->isAdmin($userId);
+    }
+
     public function isInstructor(string $userId): bool {
         // Nextcloud admins are always instructors
         if ($this->groupManager->isAdmin($userId)) {

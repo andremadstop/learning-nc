@@ -214,6 +214,8 @@ class RagImportService {
      * @return array<int, array{text: string, chapter: string|null}>
      */
     private function splitIntoChunks(string $text, ?string $fallbackChapter): array {
+        // CRLF/CR uploads would otherwise stay one paragraph (2026-11 audit)
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
         $paragraphs = preg_split('/\n{2,}/', $text);
         if ($paragraphs === false) {
             return [['text' => $text, 'chapter' => $fallbackChapter]];
@@ -236,8 +238,11 @@ class RagImportService {
                     $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
                     $currentBuffer = '';
                 }
-                $chapter = $heading;
-                continue;
+                $chapter = $heading['heading'];
+                $paragraph = $heading['body'];
+                if ($paragraph === '') {
+                    continue;
+                }
             }
 
             $paragraphTokens = $this->estimateTokens($paragraph);
@@ -313,19 +318,26 @@ class RagImportService {
     }
 
     /**
-     * Detect if a paragraph is a heading/chapter title.
+     * Detect a heading in the first line(s) of a paragraph.
      *
-     * @return string|null The heading text, or null if not a heading
+     * Only the first line counts (ATX '# Title', or setext 'Title' over '===' / '---'): a
+     * '# comment' line further down is body text. The lines after the heading are returned as
+     * the paragraph body, so text written directly under a heading is not lost (2026-11 audit).
+     *
+     * @return array{heading: string, body: string}|null
      */
-    private function detectHeading(string $paragraph): ?string {
+    private function detectHeading(string $paragraph): ?array {
+        $lines = explode("\n", $paragraph);
+        $first = trim($lines[0]);
+
         // Markdown ATX: # Heading
-        if (preg_match('/^#{1,6}\s+(.+)$/m', $paragraph, $matches)) {
-            return trim($matches[1]);
+        if (preg_match('/^#{1,6}\s+(.+)$/', $first, $matches)) {
+            return ['heading' => trim($matches[1]), 'body' => trim(implode("\n", array_slice($lines, 1)))];
         }
 
         // Markdown setext: Heading\n===== or Heading\n-----
-        if (preg_match('/^(.+)\n[=\-]{3,}$/m', $paragraph, $matches)) {
-            return trim($matches[1]);
+        if ($first !== '' && isset($lines[1]) && preg_match('/^[=\-]{3,}$/', trim($lines[1]))) {
+            return ['heading' => $first, 'body' => trim(implode("\n", array_slice($lines, 2)))];
         }
 
         return null;

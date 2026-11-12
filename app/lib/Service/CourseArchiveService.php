@@ -145,12 +145,15 @@ class CourseArchiveService {
     }
 
     /**
-     * Check if user is instructor for the course or admin.
+     * Check if user is instructor of THIS course (owner or co-instructor) or a Nextcloud admin.
+     *
+     * Membership of the global instructor group is not enough: an instructor of course A must
+     * not archive course B or read its snapshots (members + learning stats) — 2026-11 audit.
      *
      * @throws ForbiddenException
      */
     private function assertInstructorOrAdmin(int $courseId, string $userId): void {
-        if ($this->roleService->isInstructor($userId)) {
+        if ($this->roleService->isAdmin($userId)) {
             return;
         }
 
