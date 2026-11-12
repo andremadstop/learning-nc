@@ -60,6 +60,7 @@ final class GameshowSprintBonusTest extends TestCase {
 
         $sessionMapper = $this->createMock(GameshowSessionMapper::class);
         $sessionMapper->method('findByCode')->willReturn($session);
+        $sessionMapper->method('claimAdvance')->willReturn(true);
         $sessionMapper->method('update')->willThrowException(new \LogicException('stop after scoring'));
 
         $player = new GameshowPlayer();

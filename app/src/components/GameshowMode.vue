@@ -1715,6 +1715,15 @@ export default {
           return;
         }
 
+        // No answer from this player (time ran out, or eliminated and watching): the server moved
+        // on without it. Show the new question with a fresh countdown; the old interval stopped at 0.
+        if (this.phase === 'question' && !this.hasAnswered && indexAdvanced) {
+          this.lastQuestionIndex = newState.current_question_index - 1;
+          this.resetRoundState();
+          this.startTimer();
+          return;
+        }
+
         if (this.phase === 'lobby' || this.phase === 'join') {
           this.lastQuestionIndex = newState.current_question_index - 1;
           this.hasAnswered = false;

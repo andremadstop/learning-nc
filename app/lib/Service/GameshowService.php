@@ -37,6 +37,12 @@ class GameshowService {
     /** Session with all players inactive for this long is considered abandoned */
     private const STALE_SESSION_TIMEOUT = 300; // 5 minutes
 
+    /** Answer time per sprint/elimination question; the client timer and the sprint bonus use the same 15 s */
+    private const ANSWER_TIME_MS = 15000;
+
+    /** After the answer time, answers in flight still count for this long; then the question is resolved */
+    private const ANSWER_GRACE_MS = 3000;
+
     public function __construct(
         GameshowSessionMapper $sessionMapper,
         GameshowPlayerMapper $playerMapper,
@@ -310,6 +316,10 @@ class GameshowService {
         // Check for timed-out players
         $this->checkTimeouts($session, $players, $userId);
 
+        // A question nobody can answer any more (time is up, or the last missing player was
+        // removed) moves on here, so the SSE stream and the GET poll both unblock the game.
+        $session = $this->resolveQuestionIfDone($session, $session->getCurrentQuestionIndex());
+
         return $this->buildState($session, $userId, $lang);
     }
 
@@ -367,6 +377,17 @@ class GameshowService {
             }
         }
 
+        // Sprint/elimination: past the deadline the answer is not recorded; the question is
+        // resolved with this player counted as wrong (storing it would also file it under
+        // whatever question the session moves to next). The reply looks like a wrong answer.
+        if ($this->isTimedQuestionMode($session) && $this->isQuestionDeadlinePassed($session)) {
+            $session = $this->resolveQuestionIfDone($session, $questionIndex);
+            $state = $this->buildState($session, $userId, $lang);
+            $state['correct_answer_id'] = $this->questionService->getCorrectAnswerIdForGame($questionId);
+            $state['my_answer_correct'] = false;
+            return $state;
+        }
+
         // Validate answer server-side — it must belong to the question being played
         $qb = $this->db->getQueryBuilder();
         $qb->select('is_correct')
@@ -395,23 +416,7 @@ class GameshowService {
         // Determine correct answer ID for feedback
         $correctAnswerId = $this->questionService->getCorrectAnswerIdForGame($questionId);
 
-        // Check if ALL active (non-removed) players have answered this question
         $players = $this->playerMapper->findBySession($session->getId());
-        $activePlayers = $this->getActiveGameplayPlayers($session, $players);
-
-        $answersForQuestion = $this->answerMapper->findBySessionAndQuestion($session->getId(), $questionIndex);
-        $answeredUserIds = [];
-        foreach ($answersForQuestion as $a) {
-            $answeredUserIds[$a->getPlayerUid()] = true;
-        }
-
-        $allAnswered = true;
-        foreach ($activePlayers as $ap) {
-            if (!isset($answeredUserIds[$ap->getUserId()])) {
-                $allAnswered = false;
-                break;
-            }
-        }
 
         // Board-game modes handle scoring and turn rotation immediately (single-player-per-turn)
         if (in_array($session->getMode(), ['lernwuerfel', 'wissensturm'], true)) {
@@ -436,29 +441,132 @@ class GameshowService {
                 $session->setQuestionStartedAt(intval(microtime(true) * 1000));
             }
             $session = $this->sessionMapper->update($session);
-        } elseif ($allAnswered) {
-            // Score this question before advancing (mode-specific)
-            if ($session->getMode() === 'sprint') {
-                $this->sprintScoring($session, $questionIndex);
-            } elseif ($session->getMode() === 'elimination') {
-                $activePlayers = $this->eliminationScoring($session, $questionIndex);
-            }
-
-            $nextIndex = $questionIndex + 1;
-            if (($session->getMode() === 'elimination' && count($activePlayers) <= 1) || $nextIndex >= $session->getNumQuestions()) {
-                $session->setStatus('finished');
-                $this->awardGameshowXp($session);
-            } else {
-                $session->setCurrentQuestionIndex($nextIndex);
-                $session->setQuestionStartedAt(intval(microtime(true) * 1000));
-            }
-            $session = $this->sessionMapper->update($session);
+        } else {
+            // Sprint/elimination: moves on once every active player has answered
+            $session = $this->resolveQuestionIfDone($session, $questionIndex);
         }
 
         $state = $this->buildState($session, $userId, $lang);
         $state['correct_answer_id'] = $correctAnswerId;
         $state['my_answer_correct'] = $isCorrect;
         return $state;
+    }
+
+    private function isTimedQuestionMode(GameshowSession $session): bool {
+        return in_array($session->getMode(), ['sprint', 'elimination'], true);
+    }
+
+    private function isQuestionDeadlinePassed(GameshowSession $session): bool {
+        $startedAt = $session->getQuestionStartedAt();
+        if ($startedAt === null) {
+            return false;
+        }
+        return intval(microtime(true) * 1000) > (int)$startedAt + self::ANSWER_TIME_MS + self::ANSWER_GRACE_MS;
+    }
+
+    /**
+     * Sprint/elimination: score question $questionIndex and move on once every active player has
+     * answered it, or once the answer time plus grace is over. Players who have not answered by
+     * then are recorded with a wrong answer (no answer id, 0 points; in elimination it costs a
+     * life like any wrong answer).
+     *
+     * Every poll and every answer may get here at the same time; only the request that wins
+     * claimAdvance (a compare-and-swap on the question index) records, scores and finishes, the
+     * others get the session as the winner left it. Claim, missed answers, scoring and the final
+     * session update share one transaction, so no other poll sees the new index before the
+     * scores, lives and finish that belong to it; a competing claim waits on the row lock and
+     * then matches nothing. Any failure rolls the whole resolution back (on PostgreSQL a caught
+     * statement error would turn the COMMIT into a silent rollback), and the next poll retries.
+     */
+    private function resolveQuestionIfDone(GameshowSession $session, int $questionIndex): GameshowSession {
+        if ($session->getStatus() !== 'active' || !$this->isTimedQuestionMode($session)
+            || $session->getCurrentQuestionIndex() !== $questionIndex) {
+            return $session;
+        }
+
+        $players = $this->playerMapper->findBySession($session->getId());
+        $activePlayers = $this->getActiveGameplayPlayers($session, $players);
+        if ($activePlayers === []) {
+            return $session;
+        }
+
+        $answeredUserIds = [];
+        foreach ($this->answerMapper->findBySessionAndQuestion($session->getId(), $questionIndex) as $a) {
+            $answeredUserIds[$a->getPlayerUid()] = true;
+        }
+        $missing = array_values(array_filter(
+            $activePlayers,
+            fn (GameshowPlayer $p): bool => !isset($answeredUserIds[$p->getUserId()])
+        ));
+
+        if ($missing !== [] && !$this->isQuestionDeadlinePassed($session)) {
+            return $session;
+        }
+
+        $previousStartedAt = $session->getQuestionStartedAt();
+        $nowMs = intval(microtime(true) * 1000);
+        $sessionId = $session->getId();
+        $finished = false;
+
+        $this->db->beginTransaction();
+        try {
+            if (!$this->sessionMapper->claimAdvance($sessionId, $questionIndex, $nowMs)) {
+                $this->db->commit();
+                return $this->sessionMapper->findById($sessionId);
+            }
+
+            foreach ($missing as $player) {
+                $miss = new GameshowAnswer();
+                $miss->setSessionId($sessionId);
+                $miss->setQuestionIndex($questionIndex);
+                $miss->setPlayerUid($player->getUserId());
+                $miss->setAnswerId(null);
+                $miss->setIsCorrect(false);
+                $miss->setAnsweredAt($nowMs);
+                $miss->setPointsEarned(0);
+                $this->answerMapper->insert($miss);
+            }
+
+            // Scoring reads the start time of the question being scored, still on $session.
+            if ($session->getMode() === 'sprint') {
+                $this->sprintScoring($session, $questionIndex);
+            } else {
+                $activePlayers = $this->eliminationScoring($session, $questionIndex);
+            }
+
+            $nextIndex = $questionIndex + 1;
+            $finished = ($session->getMode() === 'elimination' && count($activePlayers) <= 1)
+                || $nextIndex >= $session->getNumQuestions();
+            if ($finished) {
+                // The claim already moved the index on; a finished game keeps its last question.
+                $session = $this->sessionMapper->findById($sessionId);
+                $session->setCurrentQuestionIndex($questionIndex);
+                $session->setQuestionStartedAt($previousStartedAt);
+                $session->setStatus('finished');
+            } else {
+                $session->setCurrentQuestionIndex($nextIndex);
+                $session->setQuestionStartedAt($nowMs);
+            }
+            $this->sessionMapper->update($session);
+            $this->db->commit();
+        } catch (\OCP\DB\Exception $e) {
+            $this->db->rollBack();
+            if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                throw $e;
+            }
+            // A real answer landed in the same moment; the next poll resolves with it.
+            return $this->sessionMapper->findById($sessionId);
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+
+        if ($finished) {
+            // After the commit: XP swallows its own errors, which must not happen inside the transaction.
+            $this->awardGameshowXp($session);
+        }
+
+        return $session;
     }
 
     /**
