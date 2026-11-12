@@ -32,7 +32,7 @@ class MaintenanceService {
     }
 
     /**
-     * Toggle maintenance mode for a course. Only the instructor may do this.
+     * Toggle maintenance mode for a course. Only the course owner or a co-instructor may do this.
      */
     public function toggleMaintenance(int $courseId, bool $enabled, string $userId): bool {
         $course = $this->courseMapper->findById($courseId);
@@ -46,7 +46,8 @@ class MaintenanceService {
             $result = $qb->executeQuery();
             $row = $result->fetch();
             $result->closeCursor();
-            if (!$row || $row['role'] !== 'co-instructor') {
+            // Co-instructors are members with role 'instructor' (CourseService::addMember).
+            if (!$row || $row['role'] !== 'instructor') {
                 throw new ForbiddenException('Only instructors can toggle maintenance mode');
             }
         }
