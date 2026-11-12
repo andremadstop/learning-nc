@@ -121,6 +121,16 @@ class QuestionService {
     }
 
     /**
+     * Whether the question read APIs must withhold is_correct, explanation and the PBQ solution.
+     * The pool's editors (owner, edit share) are exempt: they can change the solution anyway, and
+     * the question editor loads through these paths and saves pbq_config, answers and explanation
+     * back as received — a stripped copy would erase the solution on save (audit 2026-11, D1).
+     */
+    private function mustWithholdSolution(int $poolId, string $userId): bool {
+        return !$this->canEditPool($poolId, $userId) && $this->hasActiveExamOnPool($poolId, $userId);
+    }
+
+    /**
      * Check if user has an active (uncompleted) exam session on a given pool.
      * Used to suppress is_correct, explanation and the PBQ solution in question read APIs to
      * prevent exam oracle attacks.
@@ -317,7 +327,7 @@ class QuestionService {
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
         // SECURITY: Strip is_correct during active exam to prevent oracle attack
-        $stripCorrect = $this->hasActiveExamOnPool($poolId, $userId);
+        $stripCorrect = $this->mustWithholdSolution($poolId, $userId);
 
         $result = [];
         foreach ($questions as $question) {
@@ -352,7 +362,7 @@ class QuestionService {
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
         // SECURITY: Strip is_correct during active exam to prevent oracle attack
-        $stripCorrect = $this->hasActiveExamOnPool($poolId, $userId);
+        $stripCorrect = $this->mustWithholdSolution($poolId, $userId);
 
         $result = [];
         foreach ($questions as $question) {
@@ -384,7 +394,7 @@ class QuestionService {
             $answers = $this->answerMapper->findByQuestion($question->getId());
 
             // SECURITY: Strip is_correct during active exam to prevent oracle attack
-            $stripCorrect = $this->hasActiveExamOnPool($question->getPoolId(), $userId);
+            $stripCorrect = $this->mustWithholdSolution($question->getPoolId(), $userId);
 
             $questionData = $question->jsonSerialize();
             if ($stripCorrect) {
