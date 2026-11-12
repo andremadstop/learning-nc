@@ -151,10 +151,11 @@
       <div class="field-row lnc-a11y-toggle">
         <label>{{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}</label>
         <p class="field-desc">{{ t('learning', 'Stoppt Avatar-Animationen unabhängig vom Betriebssystem. Setzt OS-Bewegungspräferenzen nie ausser Kraft.') }}</p>
+        <!-- The label says "calm display": ON means animations OFF, so the switch shows the inverse. -->
         <NcCheckboxRadioSwitch
-          :model-value="form.animationsEnabled"
+          :model-value="!form.animationsEnabled"
           type="switch"
-          @update:model-value="onAnimationsEnabledChange(!!$event)" />
+          @update:model-value="onAnimationsEnabledChange(!$event)" />
       </div>
 
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
