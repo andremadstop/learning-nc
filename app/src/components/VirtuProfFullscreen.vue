@@ -230,6 +230,12 @@ export default {
     }
   },
   computed: {
+    // VirtuProf.vue appends with push(); a plain watcher on the array prop only fires when the
+    // array is replaced (the trim to 20). Watching the last element catches every append.
+    lastChatMessage() {
+      const list = this.chatMessages
+      return Array.isArray(list) && list.length > 0 ? list[list.length - 1] : null
+    },
     effectiveLanguage() {
       return this.language || 'de'
     },
@@ -300,7 +306,7 @@ export default {
     }
   },
   watch: {
-    chatMessages() {
+    lastChatMessage() {
       this.$nextTick(() => {
         this.scrollChatToBottom()
       })
