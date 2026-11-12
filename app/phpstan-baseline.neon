@@ -46,11 +46,6 @@ parameters:
 			path: lib/Db/CourseDocumentMapper.php
 
 		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\CourseDocumentMapper\\:\\:findByPath\\(\\) should return OCA\\\\Learning\\\\Db\\\\CourseDocument\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/Db/CourseDocumentMapper.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\CourseMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\Course but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/CourseMapper.php
