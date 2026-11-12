@@ -242,8 +242,9 @@ class LernprofilService {
         // Sort ascending by date
         usort($history, fn($a, $b) => strcmp($a['date'], $b['date']));
 
-        // Overall trend: compare first half vs second half of accuracies
-        $overallTrend = $this->computeTrend($allAccuracies);
+        // Overall trend: compare first half vs second half of accuracies. computeTrend() reads
+        // its input newest first, the sessions above run oldest first.
+        $overallTrend = $this->computeTrend(array_reverse($allAccuracies));
 
         return [
             'history' => $history,
