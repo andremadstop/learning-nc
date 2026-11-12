@@ -2,6 +2,96 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.9.0] - 2026-11-13 — Audit fixes: security, exams, team leads, videos
+
+> **Administrators, please act after the update: enter your operator details.** The imprint
+> and privacy pages no longer name a fixed operator. Enter name, postal address and contact
+> email under **Administration settings → Learning → Operator details (imprint and privacy
+> notice)**. Until you do, both pages show a neutral note instead of an operator, and Learning
+> no longer sets the Nextcloud imprint and privacy links (Theming). Links that already point to
+> Learning's pages are kept and lead to that note until the details are entered.
+
+Fixes from a full code audit of the app.
+
+### Security
+- **Learners no longer receive the answer key with the questions.** Correct-answer flags,
+  explanations and interactive (PBQ) solutions in question lists, search results and
+  translations now go only to the pool's owner, users it was shared with as **Can edit**, and
+  the course's instructors. Learners and read-only shares no longer get them, also not before
+  an exam.
+- **Exams no longer leak solutions through side paths.** During a graded exam the question
+  APIs withhold the solution of every PBQ type, including the grading data of command-line and
+  multi-panel PBQs, and the cheat sheet leaves out pools with an open graded exam.
+- **Adventure skill checks only use questions the player may see.** They draw only from
+  published pools the player has access to, accept only the questions they offered, and
+  neither draw from nor reveal answers for a pool with a running graded exam.
+- **Duel and Gameshow accept only answers to the current question**, and the Gameshow sprint
+  time bonus is measured on the server clock and capped at 500 points.
+- **Course archiving** and reading archive snapshots are limited to the course's instructors
+  and Nextcloud administrators.
+- **CSV exports** of at-risk learners and the class summary neutralise cell contents that a
+  spreadsheet program would run as a formula.
+
+### Changed
+- **Operator details are an admin setting** (see the note above). The imprint and privacy
+  pages use only what the administrator entered.
+- **Bot mode in Duel and Gameshow grades your answer on the server**, because the browser no
+  longer knows the correct answer.
+- **Exams:** answers that arrive with the automatic submission up to 30 seconds after the time
+  limit are still accepted, and the exam submits itself 5 seconds before the end. Before, all
+  answers of a timed-out exam could be lost (0 %).
+- **Gameshow:** when the 15 seconds run out, a missing answer counts as wrong and the game moves
+  on for everyone. Before, Sprint and Elimination could stop on a question nobody answered.
+- **Required Vimeo and YouTube videos report their progress.** After the learner's consent the
+  page loads the provider's player script, which tells Learning which parts were watched, so
+  such a video can be completed and unlocks the course quiz. Before, it could never be
+  completed. Nothing is loaded from the provider before consent; the privacy page lists the
+  new category.
+- **The nightly XP consistency check never lowers XP or the level.** It used to reset XP from
+  single training questions, streak bonuses, Leitner reviews, missions, goals and Gameshows
+  overnight. XP already lost this way cannot be restored.
+
+### Fixed
+- **Team lead dashboard:** members with a valid certificate (without expiry or expiring in
+  more than 30 days) are no longer listed as missing; expired certificates show as expired,
+  with a reminder button; the newest certificate counts. Due and expiry dates show as dates.
+- **Exam mode:** Enter on a focused button or navigation dot activates it instead of skipping
+  the question, and keeps its hotkey meaning after a mouse click; the next PBQ in an exam starts
+  with its own empty answer; pool editors keep the solutions and their explanation translations
+  during their own exam.
+- **Required videos from Nextcloud Files** send only the newly watched seconds, so they can
+  reach completion.
+- **Unified search** works on PostgreSQL.
+- **Course material search (RAG)** keeps Cyrillic, Arabic and accented keywords and keeps the
+  text directly under a Markdown heading; a sub-heading directly under a heading names the
+  chunk.
+- **Imports:** `pool_name` is read as the pool's name; question type `multiple_choice` becomes
+  single or multiple choice by the number of correct answers; the occ dry run counts only what
+  the import would store.
+- **Adventure mode:** skill-check questions work on MySQL/MariaDB; a new skill check starts
+  with an empty answer batch; bot-correction scenes no longer list the correct option first.
+- **Games and leagues:** a duel forfeit goes to the player who stayed; co-op players who were
+  ready first leave the lobby when the game starts; ranking PBQs are scored in the
+  spaced-repetition queue.
+- **Leitner:** switching the language during a review keeps the queue and the current card.
+- **Course feed:** "Load more" loads the next entries.
+- **Exam reminders** find exam dates saved with a time.
+- **Maintenance mode** can be switched by co-instructors.
+- **Material scan** detects duplicates per course instead of across all courses.
+- **PBQ builder:** applying an existing PBQ keeps the fields the builder does not edit.
+- **Navigation:** a pool opened from a course keeps its course context; the app works when
+  Nextcloud runs in a subdirectory or with `index.php` in its URLs.
+- **Calm display:** the switch shows ON when animations are off, and the setting applies after
+  every page load.
+- **Learning profile:** the history trend reads sessions newest first.
+- **Onboarding:** "Skip" on the Jumpstart screen declines the selected starter pool.
+- **VirtuProf:** auto-read and chat scrolling react to new messages.
+- **AI errors** of the note generator and the weekly plan are reported by cause (not
+  configured, rate limit, temporarily unavailable) instead of a generic server error.
+- **Admin settings:** an exam cooldown of 0 minutes is shown and saved as 0.
+- **Tools:** the subnet trainer accepts IPv6 answers in any valid notation; the VLAN frame
+  preview puts the 802.1Q tag after the source MAC.
+
 ## [5.8.0] - 2026-11-12 — Question import and pool import for self-hosters
 
 Reported on GitHub #34 by a self-hosting administrator who could not find where questions are

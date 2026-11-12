@@ -1,6 +1,6 @@
 # Learning — User & Administrator Manual
 
-For **Learning 5.8.0** on Nextcloud 33–35.
+For **Learning 5.9.0** on Nextcloud 33–35.
 
 This manual walks through the complete workflow, in the order you will actually use it:
 
@@ -131,6 +131,14 @@ These settings apply to all users of Learning:
   for mandatory compliance training.
 - **Max import file size (MB)** — raise this before importing large question sets.
 - **Audit-Trail — Liveness** and **Support tickets** — operational settings.
+- **Operator details (imprint and privacy notice)** — name, postal address and contact
+  email, optionally a register entry and the person responsible for content. Shown on
+  Learning's public imprint and privacy pages. Until name, address and email are entered,
+  both pages show a neutral note instead of an operator, and Learning does not set the
+  Nextcloud imprint/privacy links (Theming); links already set there to another address are
+  never replaced. Saving with all fields empty removes the details. **Since 5.9.0 this is
+  required:** earlier versions showed a fixed operator; after updating, enter your own
+  details here.
 
 If certificates have not been set up yet, this page shows a warning banner. Click
 **Generate signing key** in the banner once (Nextcloud administrators only), or run
