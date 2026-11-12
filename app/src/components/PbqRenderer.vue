@@ -1,5 +1,7 @@
 <template>
-  <div class="pbq-renderer">
+  <!-- Keyed on the question so the subtype child (CLI history, ranking order, drafts) is rebuilt
+       when a parent such as ExamMode reuses this instance for the next PBQ (audit 2026-11). -->
+  <div :key="questionKey" class="pbq-renderer">
     <div v-if="instructions.length" class="pbq-instructions">
       <p class="pbq-instructions__title">{{ t('learning', 'Anweisungen') }}</p>
       <ul>
@@ -131,7 +133,19 @@ export default {
       localAnswer: this.initialValue ? { ...this.initialValue } : {},
     }
   },
+  watch: {
+    // ExamMode swaps only the `question` prop between PBQs; data() ran once, so without this the
+    // next PBQ started with the previous one's answers and submitted them (audit 2026-11).
+    questionKey() {
+      this.localAnswer = this.initialValue ? { ...this.initialValue } : {}
+    },
+  },
   computed: {
+    questionKey() {
+      return this.question && this.question.id !== undefined && this.question.id !== null
+        ? String(this.question.id)
+        : undefined
+    },
     subtype() {
       if (this.question.pbq_subtype) return this.question.pbq_subtype
       // Auto-detect subtype from config structure

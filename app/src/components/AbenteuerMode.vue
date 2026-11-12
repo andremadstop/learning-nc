@@ -2010,6 +2010,13 @@ export default {
 				return 'lobby'
 			}
 
+			// Only the player who becomes ready last gets the scene from setReady(); everyone
+			// else learns about the start here, because /lobby never carries a scene. Switch the
+			// poll to /state so the scene arrives (audit 2026-11).
+			if (this.coopSessionStatus === 'playing') {
+				return 'state'
+			}
+
 			this.phase = 'coop-lobby'
 			return 'lobby'
 		},

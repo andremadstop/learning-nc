@@ -565,11 +565,39 @@ export default {
       }
       return params;
     },
+    // A language switch only swaps the translated text into the running queue. The fresh due list
+    // no longer holds the cards already rated this session and is re-sorted, so replacing the queue
+    // with it skipped unseen cards and moved currentItem (audit 2026-11). Length, order, the current
+    // card and all scheduling fields stay; cards the server did not return keep their text.
     mergeFutureDueQuestions(translatedQuestions) {
       if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
         return this.dueQuestions;
       }
-      return translatedQuestions;
+      const translatedById = new Map();
+      for (const translated of translatedQuestions) {
+        if (translated && translated.id !== undefined && translated.id !== null) {
+          translatedById.set(String(translated.id), translated);
+        }
+      }
+      return this.dueQuestions.map((item) => {
+        const translated = item ? translatedById.get(String(item.id)) : null;
+        if (!translated) {
+          return item;
+        }
+        const merged = { ...item };
+        for (const field of ['text', 'explanation', 'scenario', 'pbq_config']) {
+          if (Object.prototype.hasOwnProperty.call(translated, field)) {
+            merged[field] = translated[field];
+          }
+        }
+        if (Array.isArray(item.answers) && Array.isArray(translated.answers)) {
+          const answerTextById = new Map(translated.answers.map((answer) => [String(answer.id), answer.text]));
+          merged.answers = item.answers.map((answer) => (answerTextById.has(String(answer.id))
+            ? { ...answer, text: answerTextById.get(String(answer.id)) }
+            : answer));
+        }
+        return merged;
+      });
     },
     async refreshDueQuestionsForLanguage() {
       if (!this.started || this.showResults || this.dueQuestions.length === 0) {

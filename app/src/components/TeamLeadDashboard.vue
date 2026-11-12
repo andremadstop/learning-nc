@@ -58,7 +58,7 @@
 								</span>
 							</td>
 							<td class="teamlead-dashboard__cell teamlead-dashboard__cell--date">
-								{{ row.due_date || '—' }}
+								{{ formatReportDate(row.due_date) }}
 							</td>
 							<td class="teamlead-dashboard__cell">
 								<button
@@ -98,7 +98,7 @@
 					<tbody>
 						<tr v-for="row in upcomingExpirations" :key="'exp-' + row.member_ref" class="teamlead-dashboard__row">
 							<td class="teamlead-dashboard__cell">{{ row.display_name }}</td>
-							<td class="teamlead-dashboard__cell teamlead-dashboard__cell--date">{{ row.expires_at }}</td>
+							<td class="teamlead-dashboard__cell teamlead-dashboard__cell--date">{{ formatReportDate(row.expires_at) }}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -114,6 +114,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import { formatDate } from '../utils/cert-report.js'
 
 export default {
 	name: 'TeamLeadDashboard',
@@ -156,6 +157,17 @@ export default {
 	},
 
 	methods: {
+		/**
+		 * The group report sends due_date / expires_at as Unix seconds (int); printed raw they
+		 * showed up as "1767225600" (audit 2026-11). Empty values render as a dash.
+		 */
+		formatReportDate(value) {
+			if (value === null || value === undefined || value === '' || value === 0) return '—'
+			const seconds = Number(value)
+			if (!Number.isFinite(seconds)) return String(value)
+			return formatDate(seconds) || '—'
+		},
+
 		async fetchScopes() {
 			this.scopesLoading = true
 			try {

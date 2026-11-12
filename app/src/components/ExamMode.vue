@@ -539,12 +539,21 @@ export default {
       const tag = String(target.tagName).toLowerCase();
       return tag === 'input' || tag === 'textarea' || target.isContentEditable;
     },
+    // Enter on a focused button, link, select or role=button control (answer button, nav dot,
+    // "End Exam") belongs to that control. The window hotkey must not preventDefault() its
+    // native click and then skip the question (audit 2026-11).
+    isActivatableTarget(event) {
+      const target = event && event.target ? event.target : null;
+      if (!target || typeof target.closest !== 'function') return false;
+      return target.closest('button, a[href], select, summary, [role="button"]') !== null;
+    },
     handleExamHotkeys(event) {
       if (this.screen !== 'exam' || !this.currentQuestion || this.isLoading) return;
       if (this.isEditableTarget(event)) return;
 
       const key = String(event.key || '');
       if (key === 'Enter') {
+        if (event.defaultPrevented || this.isActivatableTarget(event)) return;
         event.preventDefault();
         if (this.lockDenied) return;
         if (this.isCurrentOpen) {
