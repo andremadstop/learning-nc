@@ -1445,6 +1445,22 @@ class StoryEngineService {
             $result->closeCursor();
         }
 
+        // A pool with a running graded exam of this user is left out entirely: even without
+        // correct_answer_id, the skill check's correct true/false would be a yes/no exam oracle.
+        if ($ids !== []) {
+            $exam = $this->db->getQueryBuilder();
+            $exam->select('pool_id')->from('learning_sessions')
+                ->where($exam->expr()->eq('user_id', $exam->createNamedParameter($userId)))
+                ->andWhere($exam->expr()->eq('mode', $exam->createNamedParameter('exam')))
+                ->andWhere($exam->expr()->isNull('exam_kind'))
+                ->andWhere($exam->expr()->isNull('completed_at'));
+            $result = $exam->executeQuery();
+            while (($id = $result->fetchOne()) !== false) {
+                unset($ids[(int)$id]);
+            }
+            $result->closeCursor();
+        }
+
         return array_keys($ids);
     }
 

@@ -167,6 +167,14 @@ final class StorySkillCheckAccessTest extends TestCase {
 		}
 	}
 
+	// Recheck of the 2026-11 high fixes: while a graded exam runs on a pool, the story must not
+	// draw that pool's questions at all — its correct true/false would still be a yes/no oracle.
+	public function testNoQuestionIsDrawnFromAPoolWithARunningGradedExam(): void {
+		$this->openExam($this->pools['own']);
+		$this->assertEqualsCanonicalizing(['shared-1', 'course-1'], $this->markers($this->fetch(self::KEYWORD)));
+		$this->assertEqualsCanonicalizing(['shared-1', 'course-1'], $this->markers($this->fetch(null)));
+	}
+
 	public function testAChoiceMissingFromTheRememberedSetStillHasItsSkillCheck(): void {
 		// A remembered set that lacks this choice (dynamic choices replaced the static IDs, or the
 		// GET endpoint recorded only a sibling choice) must not read as "no questions offered":
