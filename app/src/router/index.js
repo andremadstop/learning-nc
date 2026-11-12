@@ -1,5 +1,6 @@
 import { h } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import { generateUrl } from '@nextcloud/router'
 
 const RouteShellMarker = {
 	name: 'RouteShellMarker',
@@ -22,7 +23,9 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory('/apps/learning/'),
+  // generateUrl() adds the webroot and, without pretty URLs, index.php; a fixed
+  // '/apps/learning/' base breaks subdirectory and index.php-routed installs.
+  history: createWebHistory(generateUrl('/apps/learning/')),
   routes,
   scrollBehavior() {
     return { left: 0, top: 0 }
