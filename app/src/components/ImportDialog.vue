@@ -23,7 +23,7 @@
         <code class="example-code">[{"text":"What is 2+2?","answers":[{"text":"3","is_correct":false},{"text":"4","is_correct":true}],"explanation":"Basic math"}]</code><br/>
         <code class="example-code">[{"question":"Capital of France?","options":["Berlin","Paris","Rome"],"answer":1}]</code><br/>
         <small>
-          {{ t('learning', 'Also accepted: {"questions": […]}, a single question object, or the pool file format {"_meta": …, "pools": [ … ]} with exactly one pool (its name and description are not applied here; for several pools use "occ learning:import-pool-json").') }}<br/>
+          {{ t('learning', 'Also accepted: {"questions": […]}, a single question object, or the pool file format {"_meta": …, "pools": [ … ]} with exactly one pool (its name and description are not applied here). Instructors import a file with several pools in the Pools tab with "Import pools".') }}<br/>
           {{ t('learning', 'Answers: "answers", "options" or "choices" — objects with "is_correct", or plain strings. Without "is_correct", name the correct answer on the question: "answer", "correct" or "correct_index" count from 0 (0 = first answer), "correct_number" counts from 1; a letter (A = first) or the exact answer text also work, a list names several correct answers.') }}<br/>
           {{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers, "open" for free text with one model answer), exam_key, handbook_key, handbook_title, chapter_key, chapter_title, chapter_order.') }}
         </small>
@@ -118,7 +118,7 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess } from '@nextcloud/dialogs';
 import AccessibleDialog from './AccessibleDialog.vue';
-import { analyzeCsvImport, analyzeJsonImport } from '../utils/importPreview.js';
+import { analyzeCsvImport, analyzeJsonImport, importMessages } from '../utils/importPreview.js';
 
 const CSV_EXAMPLE = `What is the capital of France?,Berlin,Paris,London,Madrid,2,Paris has been the capital since the 10th century
 What color is the sky?,Green,Blue,Red,Yellow,2
@@ -173,7 +173,7 @@ export default {
   components: { AccessibleDialog, NcButton, NcNoteCard },
   props: { poolId: { type: Number, required: true } },
   data() {
-    return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], previewError: '', previewSummary: null, dragging: false, formatChosen: false };
+    return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], previewError: '', previewSummary: null, dragging: false, formatChosen: false, poolFileCount: 0 };
   },
   computed: {
     /** Broken JSON pasted on the CSV tab: name the parse error and the JSON tab (GitHub #34). */
@@ -256,6 +256,7 @@ export default {
     updatePreview() {
       this.previewError = '';
       this.previewSummary = null;
+      this.poolFileCount = 0;
       if (!this.textData.trim()) { this.preview = []; return; }
       try {
         // Same rules as the server's readers (GitHub #34): never "(4 answers)" for an item the
@@ -265,6 +266,7 @@ export default {
         if (analysis.error) {
           this.preview = [];
           this.previewError = analysis.error;
+          this.poolFileCount = analysis.poolCount || 0;
           return;
         }
         this.preview = analysis.items.slice(0, 3).map(item => ({ ...item, text: item.text.substring(0, 80) }));
@@ -288,6 +290,10 @@ export default {
         if (status === 429) {
           // UserRateLimit on the import routes: not a format problem, so do not say it is one.
           this.result = { imported: 0, errors: [t('learning', 'Too many imports in a short time. Please wait a minute and try again.')] };
+        } else if (this.poolFileCount > 1) {
+          // A file of several pools: the server only says this dialog takes one. Name the
+          // Pools-tab import, which creates all of them.
+          this.result = { imported: 0, errors: [importMessages.severalPools(this.poolFileCount)] };
         } else if (data && Array.isArray(data.errors) && data.errors.length > 0) {
           this.result = normalizeResult(data);
         } else {

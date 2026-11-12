@@ -9,6 +9,9 @@
         <NcButton type="button" variant="secondary" @click="showPoolGenerator = true">
           {{ t('learning', 'Fragen generieren') }}
         </NcButton>
+        <NcButton type="button" variant="secondary" class="pool-list-import-pools" @click="openPoolImport">
+          {{ t('learning', 'Pools importieren') }}
+        </NcButton>
         <NcButton type="button" variant="primary" @click="showCreateDialog">
           {{ t('learning', '+ Pool erstellen') }}
         </NcButton>
@@ -297,7 +300,10 @@
 
     <ShareDialog v-if="sharingPool" :poolId="sharingPool.id" :poolName="sharingPool.name" @close="sharingPool = null" />
 
-    <PoolGenerator v-if="showPoolGenerator" @close="showPoolGenerator = false" @created="showPoolGenerator = false; loadPools()" @import-into="openPoolForImport" />
+    <PoolGenerator v-if="showPoolGenerator" @close="showPoolGenerator = false" @created="showPoolGenerator = false; loadPools()" @import-into="openPoolForImport" @import-pools="openPoolImport" />
+
+    <!-- GitHub #34: a JSON file of several pools (the occ learning:import-pool-json format) creates them all. -->
+    <PoolBulkImportDialog v-if="showPoolImport" @close="closePoolImport" @imported="loadPools()" @maybe-imported="loadPools()" />
 
     <AccessibleDialog v-if="showStarterDialog" :name="t('learning', 'Starter Pools')" @closing="closeStarterDialog">
       <div class="starter-pools-dialog">
@@ -356,6 +362,7 @@ import ShareDialog from './ShareDialog.vue';
 import DailyChallengeCard from './DailyChallengeCard.vue';
 import AccessibleDialog from './AccessibleDialog.vue';
 import PoolGenerator from './PoolGenerator.vue';
+import PoolBulkImportDialog from './PoolBulkImportDialog.vue';
 import hintMixin from '../hintMixin.js';
 
 // Simple debounce utility
@@ -370,7 +377,7 @@ const debounce = (func, delay) => {
 
 export default {
   name: 'PoolList',
-  components: { AccessibleDialog, NcButton, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog, DailyChallengeCard, PoolGenerator },
+  components: { AccessibleDialog, NcButton, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog, DailyChallengeCard, PoolGenerator, PoolBulkImportDialog },
   mixins: [hintMixin],
   props: {
     userRole: { type: String, default: 'student' },
@@ -413,6 +420,7 @@ export default {
       poolSearchResults: [], // Client-side filtered pools
       questionSearchResults: [], // API results for questions
       showPoolGenerator: false,
+      showPoolImport: false,
       showDeleteConfirm: false,
       poolToDelete: null,
       // Smart Queue + Remediation + Daily Goal
@@ -542,6 +550,17 @@ export default {
     },
     // GitHub #34: a pool created in the generator's import tab opens right away; App opens an
     // empty pool its owner can edit in Manage, where the import is.
+    // The generator closes first: two dialogs on top of each other would fight over the focus.
+    openPoolImport() {
+      this.showPoolGenerator = false;
+      this.showPoolImport = true;
+    },
+    // The list is reloaded on every close, too: whatever the dialog created is then visible even
+    // if its 'imported' event never arrived.
+    closePoolImport() {
+      this.showPoolImport = false;
+      this.loadPools();
+    },
     openPoolForImport(pool) {
       this.showPoolGenerator = false;
       this.loadPools();

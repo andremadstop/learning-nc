@@ -100,6 +100,22 @@ class PoolService {
         $pool->setChapterOrder($this->normalizeChapterOrder($chapterOrder));
     }
 
+    /**
+     * The metadata checks of create() without writing anything: throws the same
+     * \InvalidArgumentException create() would throw for these handbook and chapter fields.
+     * The pool import (PoolBulkImportService) runs it before its dry-run branch, so the preview
+     * refuses the same pool the real import would roll back.
+     */
+    public function validateForImport(
+        ?string $handbookKey,
+        ?string $handbookTitle,
+        ?string $chapterKey,
+        ?string $chapterTitle,
+        ?int $chapterOrder
+    ): void {
+        $this->applyPoolMetadata(new Pool(), $handbookKey, $handbookTitle, $chapterKey, $chapterTitle, $chapterOrder);
+    }
+
     private function findPoolRow(int $id): ?array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')

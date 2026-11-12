@@ -8,26 +8,37 @@ software to install.
 
 1. Give your AI the PDF plus the prompt below → get JSON back
 2. Put the JSON somewhere your Nextcloud can read it
-3. Run `occ learning:import-pool-json <file> --user=<uid>`
-4. The pool shows up in the interface
+3. Run `occ learning:import-pool-json <file> --user=<uid>` — or, without a server shell,
+   upload it in the **Pools** tab with **Import pools** (instructors)
+4. The pools show up in the interface
 
-**No server shell?** A file with **one** pool in this format can also be imported in the
-interface: open a pool you can edit → **Manage** → **Import**, then drop the file or paste
-its content (JSON is recognised by itself). The questions are added to that pool; its name
-and description stay as they are, while the pool's chapter fields, `exam_key_prefix` and
-the `_meta` defaults are applied to the questions exactly as the occ command applies them.
-Files with several pools need the occ command, or one file per pool. The interface import
-needs edit rights on the pool — you own it or it was shared with you as **Can edit**; the
-instructor role is not required for that, only for creating a new pool (see
-[`MANUAL.md`, 3.2](MANUAL.md#32-add-questions)). Its limits and the further formats it
-accepts are described in
-[`MANUAL.md`, 3.2](MANUAL.md#importing-csv-or-json-in-the-interface).
+**No server shell?** The same file can be imported in the interface, in one of two ways:
 
-The field reference below holds for both routes. The interface import is more lenient in
-how answers may be written (for example, it also accepts answers as plain strings with a
+| | **Import pools** (Pools tab) | Question import (a pool → **Manage** → **Import**) |
+|---|---|---|
+| What it does | creates **new** pools, one per entry under `pools`, owned by you — like the occ command | adds the questions to the pool you opened; its name and description stay |
+| Who may | instructors only (Nextcloud administrators and the instructor group, see [`MANUAL.md`, 2.3](MANUAL.md#23-letting-teachers-create-courses-and-pools)) | anyone with edit rights on that pool — owner or **Can edit** share |
+| Pools per file | up to 50 | one (a file with several pools is not split up) |
+| Rules | exactly those of the occ command — the same code runs | more lenient, see below |
+| Limits | 50 pools, 5,000 questions in total, **Max import file size (MB)**, 5 imports per minute | 500 questions, **Max import file size (MB)**, 5 imports per minute |
+
+**Import pools:** **Pools** tab → **Import pools**, choose the file or paste its content. A
+preview shows every pool with how many of its questions can be imported and why the others
+cannot — it is the server's dry run, so the import then gives the same result. Each pool is
+saved on its own: a pool that fails is rolled back completely and the other pools stay. Details in
+[`MANUAL.md`, Importing whole pools in the Pools tab](MANUAL.md#importing-whole-pools-in-the-pools-tab).
+
+**Question import:** open a pool you can edit → **Manage** → **Import**, then drop the file
+or paste its content (JSON is recognised by itself). The pool's chapter fields,
+`exam_key_prefix` and the `_meta` defaults of a one-pool file are applied to the questions
+exactly as the occ command applies them. Its limits and the further formats it accepts are
+described in [`MANUAL.md`, 3.2](MANUAL.md#importing-csv-or-json-in-the-interface).
+
+The field reference below holds for all three routes. The question import is more lenient
+in how answers may be written (for example, it also accepts answers as plain strings with a
 separate correct index — `answer`/`correct`/`correct_index` count from 0, only
-`correct_number` counts from 1); the occ command reads only answer objects with
-`is_correct`.
+`correct_number` counts from 1); the occ command and **Import pools** read only answer
+objects with `is_correct`.
 
 ## JSON schema
 
@@ -86,11 +97,11 @@ One file may contain any number of pools. Minimal example:
 | `pools[].handbook_key` / `pools[].handbook_title` | no | string | Handbook of the pool's questions that have none; wins over `_meta` |
 | `pools[].exam_key_prefix` | no | string | Becomes `<prefix>-q<original_number>` for every question without its own `exam_key` (without `original_number`: the position in the pool, counted from 1) |
 | `pools[].questions[].text` | ✅ | string | Markdown allowed — code blocks `\`\`\``, images via `![](...)` |
-| `pools[].questions[].answers` | ✅ | array | At least 2 entries. The interface imports at most 8: further answers are dropped with a warning, but a correct answer after the eighth, or more than 50 answers, skips the question |
+| `pools[].questions[].answers` | ✅ | array | At least 2 entries, at most 8. The question import (**Manage** → **Import**) drops further answers with a warning, but a correct answer after the eighth, or more than 50 answers, skips the question; the occ command and **Import pools** skip a question with more than 8 answers |
 | `pools[].questions[].answers[].is_correct` | ✅ | bool | More than one `true` makes it multiple choice |
 | `pools[].questions[].question_type` | no | string | `single` (default), `multi` or `open` (exactly one model answer). `type` is read as well, so a file from `occ learning:export-pool` keeps its types — `multi` stays `multi` with one correct answer too. Without a type, several answers with `is_correct: true` make the question `multi` |
 | `pools[].questions[].explanation` | no | string | Shown after the question is answered |
-| `pools[].questions[].scenario` | no | string | Scenario / info text shown **before** the question (case, situation, background). Plain text, line breaks kept, max 10 000 characters. The pool import in the UI also accepts `szenario`, `context` or `info` |
+| `pools[].questions[].scenario` | no | string | Scenario / info text shown **before** the question (case, situation, background). Plain text, line breaks kept, max 10 000 characters. The question import (**Manage** → **Import**) also accepts `szenario`, `context` or `info`; occ and **Import pools** read only `scenario` |
 | `pools[].questions[].difficulty` | no | string | `easy` \| `medium` \| `hard`; at most 20 characters, a longer value is cut |
 | `pools[].questions[].original_number` | no | int/string | Original number from the PDF — for traceability |
 | `pools[].questions[].chapter_key`, `chapter_title`, `chapter_order`, `handbook_key`, `handbook_title`, `exam_key` | no | string / int | Per-question values; they win over the pool and `_meta`. An export writes them per question. `chapter_order` follows the pool rule: 1 to 9999, a value outside is dropped |
@@ -99,9 +110,9 @@ One file may contain any number of pools. Minimal example:
 
 **Precedence:** a value on the question wins over the pool, the pool wins over `_meta`.
 Nothing is invented: a field missing on all three levels stays empty. The one exception is
-`difficulty`, which the occ command — and both routes for interactive questions — set to
-`medium` when none is given; the interface leaves a choice or free-text question without a
-difficulty. Both the occ command and the import in the interface follow this precedence.
+`difficulty`, which the occ command and **Import pools** — and the question import for
+interactive questions — set to `medium` when none is given; the question import leaves a
+choice or free-text question without a difficulty. All three routes follow this precedence.
 
 ## Prompt template (works with any model)
 
@@ -162,13 +173,15 @@ with the reason each was skipped.
 ## Running the import
 
 The `file` argument is a path **on the Nextcloud server**, readable by the web-server user, so
-copy the JSON there first. Always do the dry run — it reads the file, checks its overall
-shape and lists every pool with its number of questions, without writing anything to the
-database. The checks of individual questions (missing text, too few answers, unknown PBQ
-subtype) run only in the real import, which lists every skipped question with the reason.
+copy the JSON there first. Always do the dry run — it runs every check of the real import
+(the file, each pool, each question: missing text, too few or too many answers, text too
+long, unknown PBQ subtype, …), lists every pool with its number of questions and every pool
+or question that would be skipped with the reason, and writes nothing to the database. Its
+summary line `Dry-run: N Pools, M Fragen` counts all questions in the file, including those
+that would be skipped.
 
 ```bash
-# 1. Dry run: checks the file shape and counts, writes nothing
+# 1. Dry run: runs every check, writes nothing
 occ learning:import-pool-json /path/to/pool.json --user=<uid> --dry-run
 
 # 2. The real import
@@ -189,6 +202,27 @@ occ learning:import-pool-json /tmp/pool-12.json --user=alice --pool-name="Networ
 ```
 
 `--pool-name` with a `pools` file is refused, because that file names its pools itself.
+
+**What the import does with errors.** Each pool is saved on its own:
+
+- A question that is refused is skipped and listed as `Pool <id> Q<n>: <reason>` — in a dry
+  run, or when the pool was not created, `Pool #<position> Q<n>: <reason>`. `<n>` is the
+  question's `original_number`, or else its position in the pool counted from 1. The pool
+  keeps its other questions.
+- A pool without a `name` (`Pool #<n> missing name`, `<n>` counted from 1), with a name over
+  200 characters or a description over 2,000 is skipped before anything is written. So is a
+  pool whose `handbook_key`/`chapter_key` exceed 64 characters, `handbook_title`/`chapter_title`
+  255 or `chapter_order` lies outside 1–9999 (`Pool '<name>': <reason> — skipped`) — in the
+  dry run as in the real import.
+- A pool that cannot be saved — the pool itself or one of its questions fails in the
+  database — is rolled back completely and listed as `Pool '<name>' create failed — skipped`;
+  the technical reason goes to the Nextcloud log. The pools before and after it stay.
+- A pool whose questions are all skipped is still created, empty. A pool with no questions
+  at all is created as well, with the warning `Pool '<name>' contains no questions`.
+
+Running the same file twice creates its pools twice. The occ command has no limit on the
+number of pools or questions; **Import pools** in the interface allows 50 pools and 5,000
+questions per file. The occ output is always in English.
 
 **Where `occ` lives depends on your installation.** A few common shapes:
 
@@ -242,11 +276,14 @@ plain **list of questions**, not the `pools` wrapper above. Per question it carr
 Empty fields are left out. Translations of questions, instructor notes and attached images
 are not exported.
 
-That makes an export the best template for your own files, and it goes back in by either
-route without changes:
+That makes an export the best template for your own files, and it goes back in by any of
+the three routes without changes:
 
-- **Through the interface:** **Manage** → **Import** in any pool you can edit; the questions
+- **Into an existing pool:** **Manage** → **Import** in any pool you can edit; the questions
   are added to that pool.
+- **As a new pool in the interface:** **Pools** tab → **Import pools** (instructors). The new
+  pool is named after the uploaded file (`pool-12.json` becomes `pool-12`) — pasted text
+  gives *Imported pool* — and can be renamed afterwards; there is no `--pool-name` here.
 - **Through occ:** `occ learning:import-pool-json pool-12.json --user=<uid> --pool-name="…"`
   creates a **new** pool from it; delete the old one by hand if you no longer need it.
 
@@ -255,4 +292,4 @@ A typical edit cycle:
 - export the pool (`occ learning:export-pool <poolId> --format=json --output=pool.json`, or
   **Export JSON** in the interface)
 - edit the JSON — add explanations, fix typos
-- re-import it by one of the two routes above
+- re-import it by one of the three routes above

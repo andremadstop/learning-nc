@@ -69,6 +69,22 @@ added and whose JSON file did not import.
 - Manual and import guide describe who sees **Manage**, all accepted import formats and the
   round trip export → import.
 
+### Added
+- **Import pools in the Pools tab.** Instructors can import a JSON file with one or more pools
+  (the format of `occ learning:import-pool-json`, also a plain question list or an export, which
+  becomes one pool named after the file) and get all pools with their questions in one step, each
+  owned by them. A preview from a server-side dry run lists every pool with how many questions can
+  be imported and why the others cannot, before anything is saved. Each pool is saved on its own:
+  a refused question is skipped, a pool that cannot be saved is rolled back completely, and the
+  other pools stay. Up to 50 pools and 5,000 questions per file, the same file-size setting and
+  rate limit as the question import. The import into an open pool points there for files with
+  several pools. New endpoint `POST /api/pools/import` (instructors only, `dry_run` for the
+  check run).
+- `occ learning:import-pool-json` and the new import share one implementation, so a file gives
+  the same pools either way. As a result the occ dry run now checks every question and lists the
+  ones that would be skipped, and a pool that cannot be saved is rolled back as a whole, with the
+  technical reason written to the Nextcloud log instead of the output.
+
 ## [5.7.1] - 2026-11-06 — Neutral texts, SQLite, tooling
 
 ### Fixed

@@ -216,6 +216,24 @@ class QuestionService {
     }
 
     /**
+     * The input checks of create() without writing anything: throws the same
+     * \InvalidArgumentException create() would throw for this text, these answers, this type,
+     * this scenario and these metadata fields. The pool import (PoolBulkImportService) runs it in
+     * its dry run and before each insert, so the preview never counts a question the real import
+     * then refuses.
+     *
+     * @param array<array{text?: mixed, is_correct?: mixed}> $answers
+     */
+    public function validateForImport(string $text, array $answers, ?string $questionType, ?string $scenario,
+                                      ?string $handbookKey = null, ?string $handbookTitle = null,
+                                      ?string $examKey = null, ?string $chapterKey = null,
+                                      ?string $chapterTitle = null, ?int $chapterOrder = null): void {
+        $this->validateQuestionInput($text, $answers, $questionType ?? 'single');
+        $this->normalizeScenario($scenario);
+        $this->applyQuestionMetadata(new Question(), $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
+    }
+
+    /**
      * Scenario / info text shown before the question (Codeberg #10). Line breaks are kept;
      * only surrounding whitespace is trimmed, and an empty text is stored as null.
      */

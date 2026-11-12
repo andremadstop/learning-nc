@@ -130,6 +130,11 @@
               @keydown.enter.prevent="createPoolForImport"
             />
           </div>
+          <!-- A file of several pools does not belong in one pool: the Pools tab imports it whole. -->
+          <p class="pg-file-hint pg-import-pools-hint">
+            {{ t('learning', 'A JSON file with several pools (the format of "occ learning:import-pool-json") creates all of them at once:') }}
+            <NcButton variant="secondary" class="pg-import-pools" @click="$emit('import-pools')">{{ t('learning', 'Import pools') }}</NcButton>
+          </p>
           <div class="pg-actions">
             <NcButton variant="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
             <NcButton
@@ -209,7 +214,7 @@ import { showSuccess } from '@nextcloud/dialogs';
 export default {
   name: 'PoolGenerator',
   components: { AiConsentHint, NcButton, NcNoteCard, NcLoadingIcon, PoolDraftReview },
-  emits: ['close', 'created', 'import-into'],
+  emits: ['close', 'created', 'import-into', 'import-pools'],
   data() {
     return {
       activeTab: 'text',
@@ -382,6 +387,12 @@ export default {
 </script>
 
 <style scoped>
+.pg-import-pools-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .pool-generator-overlay {
   position: fixed;
   inset: 0;

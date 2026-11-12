@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Service;
 
-use OCA\Learning\Command\ImportPoolJsonCommand;
 use OCA\Learning\Db\Answer;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\CourseMapper;
@@ -19,6 +18,7 @@ use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Unit\Controller\ImportControllerHarness;
+use OCA\Learning\Tests\Unit\Support\PoolImportHarness;
 use OCP\IUserManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -33,6 +33,7 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class PoolExportRoundTripTest extends TestCase {
     use ImportControllerHarness;
+    use PoolImportHarness;
 
     private const RANKING = ['intro_note' => 'Order them', 'items' => [['id' => 'a', 'label' => 'Plan', 'correct_position' => 1], ['id' => 'b', 'label' => 'Do', 'correct_position' => 2]]];
     private const DROPDOWN = ['questions' => [['id' => 'q1', 'prompt' => 'HTTPS', 'options' => ['22', '443'], 'correct' => '443']]];
@@ -152,7 +153,7 @@ class PoolExportRoundTripTest extends TestCase {
         $this->assertNotFalse($file);
         file_put_contents($file, json_encode($this->export(), JSON_THROW_ON_ERROR));
 
-        [, $display] = $this->runOcc(new ImportPoolJsonCommand($pools, $questions), ['file' => $file, '--user' => 'alice', '--pool-name' => 'Copy']);
+        [, $display] = $this->runOcc($this->occImportCommand($pools, $questions), ['file' => $file, '--user' => 'alice', '--pool-name' => 'Copy']);
         unlink($file);
 
         $this->assertCount(3, $created, $display);
@@ -248,7 +249,7 @@ class PoolExportRoundTripTest extends TestCase {
         $file = tempnam(sys_get_temp_dir(), 'learning-export-');
         $this->assertNotFalse($file);
         file_put_contents($file, $json);
-        [, $display] = $this->runOcc(new ImportPoolJsonCommand($pools, $questions), ['file' => $file, '--user' => 'alice', '--pool-name' => 'Copy']);
+        [, $display] = $this->runOcc($this->occImportCommand($pools, $questions), ['file' => $file, '--user' => 'alice', '--pool-name' => 'Copy']);
         unlink($file);
         $this->assertCount(1, $created, $display);
         $this->assertSame('multi', $created[0][6]);

@@ -201,6 +201,31 @@ describe('ImportDialog (GitHub #34)', () => {
 		expect(host.textContent).toContain('The file contains no pools')
 	})
 
+	it('a file with several pools points to "Import pools" in the Pools tab, before and after the import attempt', async () => {
+		await dialog()
+		const q = { text: 'Q?', answers: [{ text: 'a', is_correct: true }, { text: 'b' }] }
+		await paste(JSON.stringify({ pools: [{ name: 'One', questions: [q] }, { name: 'Two', questions: [q] }, { name: 'Three', questions: [q] }] }))
+		expect(vm.poolFileCount).toBe(3)
+		expect(host.querySelector('.preview-error').textContent).toContain('This file contains 3 pools')
+		expect(host.querySelector('.preview-error').textContent).toContain('"Import pools"')
+
+		// The server only says this dialog takes one pool; the dialog names where all of them go.
+		axios.post.mockRejectedValueOnce({ response: { status: 400, data: { error: 'The file contains 3 pools, but this dialog imports into one pool. Import them one at a time, or create all pools at once with "occ learning:import-pool-json"' } } })
+		await vm.doImport()
+		await flush()
+		expect(vm.result.errors).toHaveLength(1)
+		expect(vm.result.errors[0]).toContain('in the Pools tab with "Import pools"')
+	})
+
+	it('a single pool in the pools wrapper gets no several-pools hint', async () => {
+		await dialog()
+		const q = { text: 'Q?', answers: [{ text: 'a', is_correct: true }, { text: 'b' }] }
+		await paste(JSON.stringify({ pools: [{ name: 'One', questions: [q] }] }))
+		expect(vm.poolFileCount).toBe(0)
+		expect(host.querySelector('.preview-error')).toBeNull()
+		expect(host.textContent).not.toContain('This file contains')
+	})
+
 	it('a 400 with an errors list shows the list', async () => {
 		await dialog()
 		await paste('[{"text":"Q?","answers":["a"]}]')

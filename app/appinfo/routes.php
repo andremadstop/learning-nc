@@ -83,6 +83,8 @@ return [
         ['name' => 'import#importCsv', 'url' => '/api/pools/{poolId}/import/csv', 'verb' => 'POST'],
         ['name' => 'import#importJson', 'url' => '/api/pools/{poolId}/import/json', 'verb' => 'POST'],
         ['name' => 'import#importFile', 'url' => '/api/pools/{poolId}/import/file', 'verb' => 'POST'],
+        // Whole pools with their questions, the format of occ learning:import-pool-json (instructors)
+        ['name' => 'pool_import#importPools', 'url' => '/api/pools/import', 'verb' => 'POST'],
 
         // Export
         ['name' => 'export#exportCsv', 'url' => '/api/pools/{poolId}/export/csv', 'verb' => 'GET'],

@@ -208,6 +208,9 @@ Click **+ Create pool**. Give it a name and an optional description.
 
 That is all a pool needs. It now exists, empty, owned by you.
 
+To create several pools with their questions at once from a JSON file, use **Import pools**
+in the same tab ([Importing whole pools in the Pools tab](#importing-whole-pools-in-the-pools-tab)).
+
 **Naming matters more than it looks.** Pool names show up in the course view, in exam
 configuration and in compliance reports. Use names that will still make sense to a
 colleague in a year: "Occupational safety 2026 — machine operation", not "Test 1".
@@ -252,8 +255,9 @@ chapter fields to `chapter-04` / `4` / the next heading.
 
 **Requires edit rights on the pool**: you own it, or it was shared with you as **Can edit**.
 The global instructor right is not needed for this — it is only needed to *create* a pool
-(3.1). A pool you own also comes from `occ learning:import-pool-json --user=<you>`
-([Importing with occ](#importing-with-occ)).
+(3.1). A pool you own also comes from **Import pools** in the **Pools** tab
+([Importing whole pools in the Pools tab](#importing-whole-pools-in-the-pools-tab)) or from
+`occ learning:import-pool-json --user=<you>` ([Importing with occ](#importing-with-occ)).
 
 1. In the **Pools** tab, click the pool's card (under **My Pools**; pools others shared
    with you are under **Shared with me**).
@@ -313,8 +317,27 @@ access nor an AI provider:
   English sample pools (CompTIA A+, Network+, Security+, Cisco CCNA, AWS Cloud
   Practitioner basics; 20–30 questions each) as a new pool you own. Useful for trying
   the app; not company content.
-- **Import in the interface** — **Manage** → **Import**, see below.
+- **Import into a pool** — **Manage** → **Import**: questions from CSV or JSON into the pool
+  you opened, see below.
+- **Import pools** — **Pools** tab → **Import pools** (instructors): a JSON file with one or
+  more pools creates all of them with their questions, see
+  [Importing whole pools in the Pools tab](#importing-whole-pools-in-the-pools-tab).
 - **The form** — **+ Add question**, as above.
+
+The two imports side by side:
+
+| | Questions into an open pool | Import pools (Pools tab) |
+|---|---|---|
+| Where | the pool → **Manage** → **Import** | **Pools** tab → **Import pools** |
+| Who | anyone with edit rights on that pool (owner or **Can edit** share) | instructors only: Nextcloud administrators and members of the instructor group ([2.3](#23-letting-teachers-create-courses-and-pools)) |
+| Result | questions added to the pool you opened; its name and description stay | **new** pools, owned by you, each with its own questions |
+| Formats | CSV and JSON, read leniently (answers as plain strings with a separate marker, several field aliases) | JSON in the pool format of `occ learning:import-pool-json` only, with the same strict rules as occ |
+| Several pools in one file | not split up — use **Import pools** | yes, up to 50 |
+| Limits per import | 500 questions | 50 pools and 5,000 questions in total (counted before any check) |
+| File size | **Max import file size (MB)**, 2 MB by default | the same setting |
+| Rate | 5 imports per minute per user | 5 imports per minute per user |
+| Preview | before anything is saved | before anything is saved — a server-side check run with the same rules as the import |
+| Errors | per question | per question and per pool; one pool that fails does not stop the others |
 
 #### Importing CSV or JSON in the interface
 
@@ -369,9 +392,10 @@ CSV question always has exactly one correct answer.
 | The `occ import-pool-json` format with **one** pool | `{"_meta": {…}, "pools": [{"name": …, "questions": [{…}]}]}` |
 | A single question | `{"text": …, "answers": […]}` |
 
-A file with several pools is not split up by the interface; import it with
-`occ learning:import-pool-json` ([Importing with occ](#importing-with-occ)) or split it into
-one file per pool.
+A file with several pools is not split up here, because the questions all go into the pool
+you opened. Import it with **Import pools** in the **Pools** tab, which creates one new pool
+per entry ([Importing whole pools in the Pools tab](#importing-whole-pools-in-the-pools-tab)),
+or with `occ learning:import-pool-json` ([Importing with occ](#importing-with-occ)).
 
 When the file is in the pool format, its pool and `_meta` fill in what a question does not
 carry itself — the same rule as the occ command, **question > pool > `_meta`**:
@@ -461,13 +485,86 @@ scenario, explanation, difficulty, chapter (`chapter_key`, `chapter_title`,
 `chapter_order`), `handbook_key`, `handbook_title`, `exam_key` and the answers with
 `is_correct`; an interactive question carries its `subtype` and `pbq_config` instead of
 answers. Empty fields are left out. The file goes back in unchanged, through
-**Manage → Import** into any pool you can edit, or with the occ command below as a new pool.
+**Manage → Import** into any pool you can edit, or as a new pool with **Import pools** in the
+**Pools** tab or the occ command below.
 Not exported: translations of questions, instructor notes and attached images.
+
+#### Importing whole pools in the Pools tab
+
+**Requires the global instructor right** — Nextcloud administrator, or member of the
+instructor group ([2.3](#23-letting-teachers-create-courses-and-pools)), the same right as
+**+ Create pool**. Edit rights on existing pools are not enough, because this import creates
+new pools. The server checks the right itself; without it the import is refused.
+
+**Pools** tab → **Import pools**. Choose a JSON file or paste its content. The file is in the
+format of `occ learning:import-pool-json`, described in
+[`docs/import-pool-workflow.md`](import-pool-workflow.md):
+
+- `{"_meta": {…}, "pools": [ {"name": …, "questions": [ … ]}, … ]}` — every entry under
+  `pools` becomes a new pool, named by its own `name`, with its description, chapter fields
+  and questions;
+- a plain list of questions, such as an export, or `{"name": …, "questions": [ … ]}` — one
+  new pool. It takes the file's `name` if it has one, else the name of the uploaded file
+  without extension (an export `pool-12.json` becomes the pool `pool-12`; rename it
+  afterwards), else *Imported pool*.
+
+The import is one step for all pools in the file, and it reads the file by the same rules as
+the occ command — the same code runs in both. That means answers only as objects with
+`is_correct` (the plain-string forms of the question import are not read), `scenario` only
+under that name, 2–8 answers per choice question, at least one answer marked correct
+(exactly one when the question itself says `single`; there is no fallback to the first
+answer), and `medium` as the difficulty of a question without one. CSV is not accepted here.
+
+Before anything is saved, a preview lists every pool in the file with its name, how many of
+its questions can be imported out of how many it holds, and the reasons for each pool or
+question that cannot. The preview is not a guess made in the browser: the server runs the
+whole import with every check and writes nothing. The real import then gives the same
+result, unless the database itself fails.
+
+After the import, the result lists every pool: created or not, how many questions were
+imported, and what was skipped and why. Each new pool is owned by you, can be edited in its
+**Manage** tab, attached to courses and shared like a pool you created by hand.
+
+What happens on errors:
+
+- **A question that is refused** (missing text or answers, too few or too many answers, text
+  too long, unknown PBQ subtype, …) is skipped with the reason, shown as "Q*n*: …", where
+  *n* is the question's `original_number` or else its position in the pool, counted from 1.
+  The pool keeps its other questions.
+- **A pool without a name, with a name over 200 characters or a description over 2,000** is
+  skipped before anything is written. The same goes for a pool whose handbook or chapter key
+  is longer than 64 characters, whose handbook or chapter title is longer than 255, or whose
+  chapter number is outside 1–9999; the preview already says so. The other pools are imported.
+- **A pool that cannot be saved** is rolled back completely — no half-imported pool stays
+  behind — and listed with *create failed — skipped*. Each pool is saved on its own, so the
+  pools before and after it stay. The technical reason is written to the Nextcloud log, not
+  shown in the dialog.
+- **A pool whose questions are all refused is still created**, empty, with the reasons
+  listed. A pool with no questions at all is created as well, with the warning that it
+  contains no questions.
+- **The file as a whole is refused**, with nothing written, when it is empty, not valid
+  JSON, in none of the accepted shapes, contains no pools, more than 50 pools or more than
+  5,000 questions in total, or is larger than **Max import file size (MB)**
+  ([2.2](#22-global-settings)). Split a larger catalogue into several files.
+
+Importing the same file twice creates its pools twice; nothing is matched against pools that
+already exist. The dialog cannot be closed while the import runs. If the import gets no
+answer — the connection drops, or a proxy gives up on a large file — its result is unknown:
+the dialog says so, reloads the pool list and does not offer the same import again. Check the
+list before you import the file once more.
+
+Limits: 50 pools and 5,000 questions per import (the questions are counted before any
+check), the file size from **Max import file size (MB)** (2 MB by default, 1–10 MB), and
+5 requests per minute per user — the preview is one of them, so a preview plus an import
+count as two.
 
 #### Importing with occ
 
-For large catalogues, several pools at once, or a scripted rollout, an administrator can
-import on the server:
+For catalogues beyond the limits of the interface, or a scripted rollout, an administrator
+can import on the server. Several pools at once also work in the interface, with
+**Import pools** in the **Pools** tab
+([Importing whole pools in the Pools tab](#importing-whole-pools-in-the-pools-tab)); both use
+the same import code, so a file gives the same pools either way. The command:
 
 ```bash
 sudo -u www-data php occ learning:import-pool-json /path/to/questions.json --user=<owner-uid> [--pool-name=<name>] [--dry-run]
@@ -484,9 +581,13 @@ It reads:
   pass `--pool-name` for a readable name). `--pool-name` together with a `pools` file is
   refused.
 
-`--dry-run` reads the file and lists the pools with their question counts without writing
-anything. The occ command reads answers only as objects with `is_correct`, not as plain
-strings with a separate marker. The schema, and a ready-made prompt for having an AI
+`--dry-run` runs every check of the real import — of the file, of each pool and of each
+question — and lists the pools with their question counts and every pool or question that
+would be skipped, without writing anything. The occ command, like **Import pools**, reads
+answers only as objects with `is_correct`, not as plain strings with a separate marker. It
+has no limit on the number of pools or questions, and its output is always in English. Each
+pool is saved on its own: if one cannot be saved, it is rolled back completely, the reason
+goes to the Nextcloud log, and the other pools stay. The schema, and a ready-made prompt for having an AI
 convert an existing PDF question catalogue into it, are in
 [`docs/import-pool-workflow.md`](import-pool-workflow.md).
 
@@ -698,7 +799,7 @@ All commands run as the web server user, from the Nextcloud root:
 | Command | Purpose |
 |---------|---------|
 | `learning:import-users <csv>` | create Nextcloud users from CSV, optionally into a group |
-| `learning:import-pool-json <file>` | bulk-import question pools as new pools — a `pools` file, or a plain question list such as an export (`--pool-name`); see [`import-pool-workflow.md`](import-pool-workflow.md) |
+| `learning:import-pool-json <file>` | bulk-import question pools as new pools — a `pools` file, or a plain question list such as an export (`--pool-name`); the same import as **Import pools** in the **Pools** tab; see [`import-pool-workflow.md`](import-pool-workflow.md) |
 | `learning:export-pool <id>` | export a pool as JSON or CSV |
 | `learning:export-course <id>` | export a course with pools, members and statistics |
 | `learning:archive-course <id>` | snapshot a course and set it to archived |
@@ -880,7 +981,8 @@ in its **Manage** tab ([3.2](#32-add-questions)).
 
 **The JSON import fails or imports nothing.** Read the preview under the text field and
 the reasons listed under the result. Common causes: the file contains several pools (use
-occ), a correct-answer number that counts from 1 under `answer`/`correct` (those count
+**Import pools** in the **Pools** tab, see
+[Importing whole pools in the Pools tab](#importing-whole-pools-in-the-pools-tab)), a correct-answer number that counts from 1 under `answer`/`correct` (those count
 from 0; use `correct_number` for 1-based), or a marker that names no answer. Questions
 without any correct marker are imported with the first answer as correct and a warning.
 See [Importing CSV or JSON in the interface](#importing-csv-or-json-in-the-interface).

@@ -7,6 +7,7 @@ use OCA\Learning\Command\ImportPoolJsonCommand;
 use OCA\Learning\Db\Pool;
 use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\QuestionService;
+use OCA\Learning\Tests\Unit\Support\PoolImportHarness;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
@@ -20,6 +21,7 @@ use Symfony\Component\Console\Command\Command;
  */
 #[AllowMockObjectsWithoutExpectations]
 class ImportPoolJsonCommandTest extends TestCase {
+    use PoolImportHarness;
 
     /** @var list<array<string, mixed>> */
     public array $createdPools = [];
@@ -76,7 +78,7 @@ class ImportPoolJsonCommandTest extends TestCase {
             $this->createdQuestions[] = $args;
             return [];
         });
-        return new ImportPoolJsonCommand($pools, $questions);
+        return $this->occImportCommand($pools, $questions);
     }
 
     public function writeJson(mixed $data, string $basename = 'export'): string {

@@ -69,9 +69,10 @@ class Application extends App implements IBootstrap {
             );
         });
         $context->registerService(ImportPoolJsonCommand::class, function (ContainerInterface $container): ImportPoolJsonCommand {
+            // English output, whatever the instance's default language is.
             return new ImportPoolJsonCommand(
-                $container->get(\OCA\Learning\Service\PoolService::class),
-                $container->get(\OCA\Learning\Service\QuestionService::class)
+                $container->get(\OCA\Learning\Service\PoolBulkImportService::class),
+                $container->get(\OCP\L10N\IFactory::class)->get('learning', 'en')
             );
         });
         $context->registerService(ExportCourseCommand::class, function (ContainerInterface $container): ExportCourseCommand {

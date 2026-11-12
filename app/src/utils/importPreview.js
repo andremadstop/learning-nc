@@ -56,7 +56,9 @@ export const importMessages = {
 	invalidJson: () => t('learning', 'Invalid JSON — check for missing brackets, commas, or quotes'),
 	unreadableJson: (message) => t('learning', 'The JSON cannot be read: {message}', { message }, undefined, RAW),
 	noPools: () => t('learning', 'The file contains no pools — expected a list of questions'),
-	severalPools: (count) => t('learning', 'The file contains {count} pools, but this dialog imports into one pool. Import them one at a time, or create all pools at once with "occ learning:import-pool-json"', { count }, undefined, RAW),
+	// The server's question import says the same in its own words (ImportController); the
+	// dialog shows this one, which names the Pools-tab import of whole pool files.
+	severalPools: (count) => t('learning', 'This file contains {count} pools, but this dialog imports into one pool. Instructors can import all of them at once in the Pools tab with "Import pools" (or with "occ learning:import-pool-json").', { count }, undefined, RAW),
 	expectedList: () => t('learning', 'Expected a list of questions'),
 	noQuestions: () => t('learning', 'No questions found in the JSON'),
 	tooManyItems: () => t('learning', 'Maximum 500 items per import'),
@@ -498,7 +500,7 @@ function questionListFrom(data) {
 			return { error: importMessages.noPools() }
 		}
 		if (all.length > 1) {
-			return { error: importMessages.severalPools(all.length) }
+			return { error: importMessages.severalPools(all.length), poolCount: all.length }
 		}
 		pool = all[0]
 		const questions = pick(pool, 'questions')
@@ -545,7 +547,8 @@ function summarize(items, errors, warnings) {
  * exam_key, chapter_key, chapter_title, chapter_order}`.
  *
  * @param {string} text the pasted or loaded JSON
- * @return {{error: string}|{total: number, importable: number, items: Array<object>, errors: string[], warnings: string[]}}
+ * @return {{error: string, poolCount?: number}|{total: number, importable: number, items: Array<object>, errors: string[], warnings: string[]}}
+ *   poolCount: set when the file holds several pools (the Pools tab imports those)
  */
 export function analyzeJsonImport(text) {
 	const source = String(text ?? '').replace(/^\uFEFF/, '')
@@ -563,7 +566,7 @@ export function analyzeJsonImport(text) {
 
 	const shape = questionListFrom(data)
 	if (shape.error) {
-		return { error: shape.error }
+		return shape.poolCount ? { error: shape.error, poolCount: shape.poolCount } : { error: shape.error }
 	}
 	if (shape.items.length > MAX_IMPORT_ITEMS) {
 		return { error: importMessages.tooManyItems() }

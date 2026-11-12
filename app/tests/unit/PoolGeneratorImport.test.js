@@ -112,6 +112,26 @@ describe('PoolGenerator: the CSV/JSON import tab (GitHub #34)', () => {
 		expect(events).toContainEqual(['close'])
 	})
 
+	it('a file with several pools: the tab hands over to the Pools-tab "Import pools" dialog', async () => {
+		const { default: PoolGenerator } = await import('../../src/components/PoolGenerator.vue')
+		expect(PoolGenerator.emits).toContain('import-pools')
+		const events = []
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({ render: () => h(PoolGenerator, { onImportPools: () => events.push(['import-pools']) }) })
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = globalThis.n
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await flush()
+		host.querySelectorAll('.pg-tab')[2].click()
+		await flush()
+		host.querySelector('.pg-import-pools').click()
+		await flush()
+		expect(events).toEqual([['import-pools']])
+		expect(axios.post).not.toHaveBeenCalled()
+	})
+
 	it('without an AI provider it opens on the import tab, the one tab that works', async () => {
 		api.available = false
 		await mountGenerator()
@@ -133,6 +153,44 @@ describe('PoolGenerator: the CSV/JSON import tab (GitHub #34)', () => {
 		await flush()
 		expect(events).toEqual([])
 		expect(host.querySelector('.pg-error').textContent).toContain('Pool name must be 1-200 characters')
+	})
+})
+
+describe('PoolList: "Import pools" (GitHub #34)', () => {
+	it('opening the pool import closes the generator first: one dialog, one focus trap', async () => {
+		vi.doMock('../../src/components/ShareDialog.vue', () => withProps('ShareDialog', [], '<div />'))
+		vi.doMock('../../src/components/DailyChallengeCard.vue', () => withProps('DailyChallengeCard', [], '<div />'))
+		vi.doMock('../../src/components/PoolBulkImportDialog.vue', () => withProps('PoolBulkImportDialog', [], '<div />'))
+		const { default: PoolList } = await import('../../src/components/PoolList.vue')
+		const ctx = { showPoolGenerator: true, showPoolImport: false }
+		PoolList.methods.openPoolImport.call(ctx)
+		expect(ctx.showPoolGenerator).toBe(false)
+		expect(ctx.showPoolImport).toBe(true)
+	})
+
+	it('the header button and the dialog are wired, only for instructors', async () => {
+		const { readFileSync } = await import('node:fs')
+		const { resolve } = await import('node:path')
+		const source = readFileSync(resolve(process.cwd(), 'src/components/PoolList.vue'), 'utf8')
+		const actions = source.slice(source.indexOf('pool-list-header__actions'), source.indexOf('</div>', source.indexOf('pool-list-header__actions')))
+		expect(source).toMatch(/<div v-if="userRole === 'instructor'" class="pool-list-header__actions">/)
+		expect(actions).toContain('@click="openPoolImport"')
+		expect(actions).toContain("t('learning', 'Pools importieren')")
+		expect(source).toMatch(/<PoolBulkImportDialog v-if="showPoolImport" @close="closePoolImport" @imported="loadPools\(\)" @maybe-imported="loadPools\(\)" \/>/)
+		expect(source).toContain('@import-pools="openPoolImport"')
+	})
+})
+
+describe('PoolList: closing the pool import reloads the list (GitHub #34)', () => {
+	it('pools the dialog created are shown even if its "imported" event never arrived', async () => {
+		vi.doMock('../../src/components/ShareDialog.vue', () => withProps('ShareDialog', [], '<div />'))
+		vi.doMock('../../src/components/DailyChallengeCard.vue', () => withProps('DailyChallengeCard', [], '<div />'))
+		vi.doMock('../../src/components/PoolBulkImportDialog.vue', () => withProps('PoolBulkImportDialog', [], '<div />'))
+		const { default: PoolList } = await import('../../src/components/PoolList.vue')
+		const ctx = { showPoolImport: true, loadPools: vi.fn() }
+		PoolList.methods.closePoolImport.call(ctx)
+		expect(ctx.showPoolImport).toBe(false)
+		expect(ctx.loadPools).toHaveBeenCalledTimes(1)
 	})
 })
 

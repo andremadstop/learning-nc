@@ -200,7 +200,10 @@ describe('importPreview: shapes', () => {
 	it('several pools are refused with a clear message', () => {
 		const r = run({ pools: [{ name: 'One', questions: [q] }, { name: 'Two', questions: [q] }] })
 		expect(r.error).toContain('2 pools')
+		// Names the Pools-tab import of whole pool files (and still occ).
+		expect(r.error).toContain('"Import pools"')
 		expect(r.error).toContain('occ learning:import-pool-json')
+		expect(r.poolCount).toBe(2)
 	})
 
 	it('one pool in the pools wrapper is unwrapped', () => {
