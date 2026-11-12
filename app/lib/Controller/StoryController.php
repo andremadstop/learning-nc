@@ -261,7 +261,7 @@ class StoryController extends Controller {
         try {
             // Character class comes from user's active progress
             $characterClass = $this->service->getCharacterClass($this->userId, $campaignId);
-            $questions = $this->service->getSkillCheckQuestions($campaignId, $sceneId, $choiceId, $characterClass);
+            $questions = $this->service->getSkillCheckQuestions($this->userId, $campaignId, $sceneId, $choiceId, $characterClass);
             return new DataResponse(['questions' => $questions]);
         } catch (\RuntimeException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
