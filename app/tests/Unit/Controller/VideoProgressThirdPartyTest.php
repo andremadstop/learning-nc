@@ -10,7 +10,9 @@ use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\OperatorInfo;
 use OCA\Learning\Service\VideoProgressService;
+use OCP\IConfig;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -90,6 +92,7 @@ class VideoProgressThirdPartyTest extends TestCase {
             $this->createMock(IRequest::class),
             $this->createMock(IURLGenerator::class),
             $this->createMock(ConnectionStore::class),
+            new OperatorInfo($this->createMock(IConfig::class)),
         );
 
         $policy = $page->index()->getContentSecurityPolicy();

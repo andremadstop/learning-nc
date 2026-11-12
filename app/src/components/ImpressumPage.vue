@@ -13,32 +13,36 @@
 		</header>
 
 		<main class="legal-page__content">
-			<section class="legal-card">
-				<h2>Anbieter</h2>
-				<p><strong>{{ responsible.name }}</strong></p>
-				<p>{{ responsible.note }}</p>
-			</section>
+			<template v-if="operator">
+				<section class="legal-card">
+					<h2>Anbieter</h2>
+					<p><strong>{{ operator.name }}</strong></p>
+					<p class="legal-card__address">{{ operator.address }}</p>
+					<p v-if="operator.register">{{ operator.register }}</p>
+				</section>
 
-			<section class="legal-card">
-				<h2>Kontakt</h2>
-				<p>
-					E-Mail:
-					<a :href="'mailto:' + responsible.email">{{ responsible.email }}</a>
-				</p>
-			</section>
+				<section class="legal-card">
+					<h2>Kontakt</h2>
+					<p>
+						E-Mail:
+						<a :href="'mailto:' + operator.email">{{ operator.email }}</a>
+					</p>
+				</section>
 
-			<section class="legal-card">
-				<h2>Verantwortlich für Inhalte</h2>
-				<p>{{ responsible.name }}</p>
-				<p>{{ responsible.note }}</p>
+				<section class="legal-card">
+					<h2>Verantwortlich für Inhalte</h2>
+					<p>{{ operator.content_responsible || operator.name }}</p>
+					<p v-if="!operator.content_responsible" class="legal-card__address">{{ operator.address }}</p>
+				</section>
+			</template>
+			<section v-else class="legal-card legal-card--empty">
+				<p>{{ t('learning', 'The operator of this platform has not entered any operator details yet. Please contact the administrators of this Nextcloud.') }}</p>
 			</section>
 		</main>
 	</div>
 </template>
 
 <script>
-import { getPrivacyInfoData } from '../utils/privacyInfo.js'
-
 export default {
 	name: 'ImpressumPage',
 	props: {
@@ -50,10 +54,14 @@ export default {
 			type: String,
 			default: '',
 		},
-	},
-	computed: {
-		responsible() {
-			return getPrivacyInfoData().responsible || {}
+		/**
+		 * The operator an admin entered (parseOperator): {name, address, register, email,
+		 * content_responsible}. Null = none, a neutral hint is shown instead of an operator block
+		 * (audit 2026-11: the app author's company used to be shipped here for every installation).
+		 */
+		operator: {
+			type: Object,
+			default: null,
 		},
 	},
 }
@@ -144,6 +152,10 @@ export default {
 .legal-card p {
 	margin: 0 0 8px;
 	line-height: 1.6;
+}
+
+.legal-card__address {
+	white-space: pre-line;
 }
 
 .legal-card a {

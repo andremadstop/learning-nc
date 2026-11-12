@@ -439,7 +439,7 @@
       </template>
 
       <hr class="section-divider" />
-      <PrivacyInfo :ai-notice="privacyAiNotice" />
+      <PrivacyInfo :ai-notice="privacyAiNotice" :operator="operator" />
     </div>
   </div>
 </template>
@@ -453,6 +453,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import PrivacyInfo from './PrivacyInfo.vue'
+import { parseOperator } from '../utils/operatorInfo.js'
 import SkinOptionPreview from './SkinOptionPreview.vue'
 import hintMixin from '../hintMixin.js'
 import { novaAudio } from '../utils/nova-audio-manager.js'
@@ -531,6 +532,8 @@ export default {
       consentRecipient: null,
       consentLoaded: false,
       consentRevoking: false,
+      // the operator an admin entered, for the privacy section; null = none (neutral hint)
+      operator: null,
       consentRevoked: false,
       consentError: '',
       // Calendar token
@@ -619,6 +622,7 @@ export default {
     this.loadCalendarToken()
     this.loadLearningProfile()
     this.loadConsent()
+    this.loadOperator()
     this._offConsentChanged = onConsentChanged((valid) => {
       this.consentValid = valid
       if (!valid) this.consentStored = false
@@ -701,6 +705,15 @@ export default {
         // non-critical
       } finally {
         this.regenerating = false
+      }
+    },
+    /** Non-critical: without an answer the privacy section shows the neutral hint. */
+    async loadOperator() {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/legal/operator'))
+        this.operator = parseOperator(response.data?.operator)
+      } catch (e) {
+        this.operator = null
       }
     },
     async load() {

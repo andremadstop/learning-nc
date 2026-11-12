@@ -114,11 +114,17 @@
 
 		<h4>{{ t('learning', 'Verantwortlich') }}</h4>
 		<div class="privacy-info__responsible">
-			<p><strong>{{ responsible.name }}</strong></p>
-			<p>
-				<a :href="'mailto:' + responsible.email">{{ responsible.email }}</a>
+			<template v-if="operator">
+				<p><strong>{{ operator.name }}</strong></p>
+				<p class="privacy-info__address">{{ operator.address }}</p>
+				<p v-if="operator.register" class="section-desc">{{ operator.register }}</p>
+				<p>
+					<a :href="'mailto:' + operator.email">{{ operator.email }}</a>
+				</p>
+			</template>
+			<p v-else class="section-desc">
+				{{ t('learning', 'The operator of this platform has not entered any operator details yet. Please contact the administrators of this Nextcloud.') }}
 			</p>
-			<p v-if="responsible.note" class="section-desc">{{ responsible.note }}</p>
 		</div>
 	</div>
 </template>
@@ -166,6 +172,15 @@ export default {
 			type: String,
 			default: '',
 		},
+		/**
+		 * The operator an admin entered (parseOperator): {name, address, register, email,
+		 * content_responsible}. Null = none, a neutral hint is shown (audit 2026-11: the app author's
+		 * company used to be shipped here for every installation).
+		 */
+		operator: {
+			type: Object,
+			default: null,
+		},
 	},
 	computed: {
 		privacyData() {
@@ -185,9 +200,6 @@ export default {
 		},
 		rights() {
 			return Array.isArray(this.privacyData?.rights) ? this.privacyData.rights : []
-		},
-		responsible() {
-			return this.privacyData?.responsible || {}
 		},
 		hasPageLinks() {
 			return !!(this.appUrl || this.imprintUrl || this.privacyUrl)
@@ -372,6 +384,10 @@ export default {
 
 .privacy-info__rights li {
 	margin-bottom: 4px;
+}
+
+.privacy-info__address {
+	white-space: pre-line;
 }
 
 .privacy-info__responsible a {

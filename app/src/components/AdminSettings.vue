@@ -242,6 +242,8 @@
         </NcButton>
       </div>
 
+      <OperatorSettings />
+
       <details class="audit-section">
         <summary class="audit-summary">
           <h3 class="audit-summary-title">{{ t('learning', 'Recent Audit Events') }} ({{ auditEvents.length }})</h3>
@@ -378,6 +380,7 @@
 
 <script>
 import axios from '@nextcloud/axios'
+import OperatorSettings from './OperatorSettings.vue'
 import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
@@ -387,7 +390,7 @@ import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
   name: 'AdminSettings',
-  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard },
+  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
   data() {
     return {
       loading: true,
