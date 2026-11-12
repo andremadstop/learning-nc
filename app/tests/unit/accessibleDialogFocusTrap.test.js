@@ -20,6 +20,23 @@ import consent from '../../data/ai-consent.json'
  * prevented every Tab and sent focus back to the text body: the buttons were unreachable by
  * keyboard. This mounts the real NcDialog (other suites mock AccessibleDialog).
  */
+/**
+ * NcModal activates its focus trap asynchronously after mount. Under load (pre-push hook, parallel
+ * workers) that activation could land after afterEach had emptied the body and throw an unhandled
+ * "fallbackFocus was specified but was not a node". Wait until the trap is on @nextcloud/vue's trap
+ * stack, so no activation is still pending when a test ends.
+ */
+async function waitForTrap() {
+	await nextTick()
+	const until = Date.now() + 2000
+	while (Date.now() < until) {
+		// focus-trap pushes an activated trap onto @nextcloud/vue's shared stack
+		if ((window._nc_focus_trap ?? []).length > 0) return
+		await new Promise((r) => setTimeout(r, 10))
+	}
+	throw new Error('NcModal focus trap did not activate within 2 s')
+}
+
 describe('AccessibleDialog focus trap with the real NcDialog', () => {
 	let app, host
 	afterEach(() => { app?.unmount(); host?.remove(); document.body.innerHTML = '' })
@@ -38,8 +55,7 @@ describe('AccessibleDialog focus trap with the real NcDialog', () => {
 		})
 		app.config.warnHandler = () => {}
 		app.mount(host)
-		await nextTick()
-		await new Promise((r) => setTimeout(r, 50))
+		await waitForTrap()
 		return document.body.querySelector('.accessible-dialog__content')
 	}
 
@@ -98,8 +114,7 @@ describe('AccessibleDialog focus trap with the real NcDialog', () => {
 		app.config.globalProperties.t = (_a, s) => s
 		app.config.warnHandler = () => {}
 		app.mount(host)
-		await nextTick()
-		await new Promise((r) => setTimeout(r, 50))
+		await waitForTrap()
 		const labels = focusables().map((e) => e.textContent.trim())
 		expect(labels).toEqual(expect.arrayContaining([consent.locales.de.decline_label, consent.locales.de.accept_label]))
 		const content = document.body.querySelector('.accessible-dialog__content')

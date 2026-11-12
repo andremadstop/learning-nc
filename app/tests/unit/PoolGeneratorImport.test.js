@@ -7,6 +7,10 @@
  * pool its owner can edit in Manage, next to the Import button.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+// These suites mount full components (NcDialog, focus trap, TrainingMode/PoolList). Under the
+// pre-push hook's load they took longer than the 5 s default and failed spuriously.
+vi.setConfig({ testTimeout: 20000 })
 import { createApp, h, nextTick } from 'vue'
 
 vi.hoisted(() => {

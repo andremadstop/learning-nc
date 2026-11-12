@@ -4,6 +4,10 @@
  * limit) was reported as a format error. Plus the dead end of an empty pool in Training.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+// These suites mount full components (NcDialog, focus trap, TrainingMode/PoolList). Under the
+// pre-push hook's load they took longer than the 5 s default and failed spuriously.
+vi.setConfig({ testTimeout: 20000 })
 import { createApp, h, nextTick } from 'vue'
 
 vi.hoisted(() => {
