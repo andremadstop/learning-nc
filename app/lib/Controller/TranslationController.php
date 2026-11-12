@@ -29,8 +29,9 @@ class TranslationController extends Controller {
         try {
             // Verify user has access to this question's pool
             $this->questionService->find($questionId, $this->userId);
-            // MED-06: withhold translated explanations during an active exam (oracle guard).
-            $suppress = $this->questionService->isExamActiveForQuestion($questionId, (string)$this->userId);
+            // MED-06: withhold translated explanations during an active exam (oracle guard); the pool's
+            // editors are exempt, the dialog saves what it loaded (audit 2026-11).
+            $suppress = $this->questionService->mustWithholdSolutionForQuestion($questionId, (string)$this->userId);
             return new DataResponse($this->service->getQuestionTranslations($questionId, $suppress));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Question not found or no access'], Http::STATUS_NOT_FOUND);
@@ -46,7 +47,7 @@ class TranslationController extends Controller {
             $result = $this->service->translateQuestion($question, $lang);
             // MED-06: find() strips the source explanation during an active exam; the translated
             // explanation must not re-leak it through this path either.
-            if ($this->questionService->isExamActiveForQuestion($questionId, (string)$this->userId)) {
+            if ($this->questionService->mustWithholdSolutionForQuestion($questionId, (string)$this->userId)) {
                 unset($result['explanation']);
             }
             return new DataResponse($result);

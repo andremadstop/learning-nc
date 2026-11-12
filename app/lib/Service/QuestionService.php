@@ -439,6 +439,21 @@ class QuestionService {
     }
 
     /**
+     * Question-level mustWithholdSolution() for the translation endpoints: withhold translated
+     * explanations from a learner with an active exam, but not from the pool's editors —
+     * TranslationDialog saves the loaded explanations back, so a withheld copy would overwrite
+     * them with NULL (audit 2026-11).
+     */
+    public function mustWithholdSolutionForQuestion(int $questionId, string $userId): bool {
+        try {
+            $question = $this->questionMapper->findById($questionId);
+        } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
+            return false;
+        }
+        return $this->mustWithholdSolution($question->getPoolId(), $userId);
+    }
+
+    /**
      * AUDIT MED-10: public pool-level exam-oracle check for the VirtuProf/RAG path, which must
      * withhold pool answer keys while the user has an active exam on that pool.
      */

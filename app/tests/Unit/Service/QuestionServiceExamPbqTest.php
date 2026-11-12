@@ -118,4 +118,11 @@ class QuestionServiceExamPbqTest extends TestCase {
         $this->assertSame('Firewall', $question['pbq_config']['positions'][0]['correct'],
             'the editor saves pbq_config back; a stripped copy would erase the solution');
     }
+
+    public function testTranslationReaderExemptsEditorsButNotLearners(): void {
+        $this->assertFalse($this->service(true, 'owner')->mustWithholdSolutionForQuestion(10, 'owner'));
+        $this->assertFalse($this->service(true, 'edit')->mustWithholdSolutionForQuestion(10, 'editor'));
+        $this->assertTrue($this->service(true)->mustWithholdSolutionForQuestion(10, 'student'));
+        $this->assertFalse($this->service(false)->mustWithholdSolutionForQuestion(10, 'student'));
+    }
 }
