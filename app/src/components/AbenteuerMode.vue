@@ -1476,6 +1476,9 @@ export default {
 			this.skillCheckTotal = choice.skill_check?.question_count || 1
 			// Reset per-check pass counter (not session-wide)
 			this.skillChecksPassedThisRound = 0
+			// A new check never carries answers of an aborted one: the server refuses questions the
+			// scene did not offer and duplicates, so leftovers would fail every later check.
+			this.skillAnswersBatch = []
 
 			// Questions are pre-loaded in the scene response (buildSceneResponse includes them)
 			const preloaded = choice.skill_check?.questions
