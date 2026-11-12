@@ -3248,5 +3248,9 @@ OC.L10N.register(
     "Field exceeds maximum length" : "أحد حقول الكتاب أو الفصل طويل جدًا (المفاتيح 64 حرفًا كحد أقصى، والعناوين 255)",
     "Scenario must be max %s characters" : "يجب ألا يتجاوز نص السيناريو %s حرف",
     "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again." : "نتيجة الاستيراد غير معروفة: ربما أُنشئت بعض المجموعات بالفعل. تحقّق من قائمة المجموعات قبل الاستيراد مرة أخرى.",
+    "Unknown question type" : "نوع سؤال غير معروف",
+    "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped" : "س%1$s: نوع السؤال «%2$s» غير معروف (الأنواع الصالحة: %3$s) — تم تخطيه",
+    "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped" : "العنصر %1$s: نوع السؤال «%2$s» غير معروف (الأنواع الصالحة: %3$s) — تم تخطي السؤال",
+    "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped" : "العنصر {num}: نوع السؤال «{type}» غير معروف (الأنواع الصالحة: {valid}) — تم تخطي السؤال",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -3247,6 +3247,10 @@
         "Chapter order must be between 1 and 9999": "Die Kapitelnummer muss zwischen 1 und 9999 liegen",
         "Field exceeds maximum length": "Ein Handbuch- oder Kapitelfeld ist zu lang (Schlüssel max. 64, Titel max. 255 Zeichen)",
         "Scenario must be max %s characters": "Der Szenariotext darf höchstens %s Zeichen lang sein",
-        "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.": "Das Ergebnis des Imports ist unbekannt: Einige Pools wurden möglicherweise schon angelegt. Prüfe die Pool-Liste, bevor du erneut importierst."
+        "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.": "Das Ergebnis des Imports ist unbekannt: Einige Pools wurden möglicherweise schon angelegt. Prüfe die Pool-Liste, bevor du erneut importierst.",
+        "Unknown question type": "Unbekannter Fragetyp",
+        "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped": "F%1$s: unbekannter Fragetyp „%2$s“ (gültig: %3$s) — übersprungen",
+        "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped": "Eintrag %1$s: Unbekannter Fragetyp „%2$s“ (gültig: %3$s) — Frage übersprungen",
+        "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped": "Eintrag {num}: Unbekannter Fragetyp „{type}“ (gültig: {valid}) — Frage übersprungen"
     }
 }

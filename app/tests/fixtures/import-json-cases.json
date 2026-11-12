@@ -375,6 +375,44 @@
         {"text": "PBQ unter frage", "type": "pbq", "subtype": "ranking", "answers": []},
         {"text": "MC under question_text", "type": "single", "answers": [{"text": "a", "correct": false}, {"text": "b", "correct": true}]}
       ]}
+    },
+    {
+      "name": "an unknown question type is an error for that item only (GitHub #34)",
+      "input": [
+        {"text": "Valid", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Extended", "question_type": "multiple_choice_extended", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Short", "type": "truefalse", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Legacy", "type": "true_false", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}
+      ],
+      "expect": {"importable": 2, "errors": 2, "questions": [
+        {"text": "Valid", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Legacy", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
+    },
+    {
+      "name": "an unknown default_question_type is an error only for the items it applies to",
+      "input": {"_meta": {"default_question_type": "essay"}, "questions": [
+        {"text": "Own type", "type": "single", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Default", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Several correct", "answers": [{"text": "a", "is_correct": true}, {"text": "b", "is_correct": true}]}
+      ]},
+      "expect": {"importable": 2, "errors": 1, "questions": [
+        {"text": "Own type", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Several correct", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": true}]}
+      ]}
+    },
+    {
+      "name": "question types are read case-insensitively",
+      "input": [
+        {"text": "Upper multi", "type": "MULTI", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]},
+        {"text": "Mixed open", "question_type": "Open", "answer": "model"},
+        {"text": "Upper legacy", "typ": "TRUE_FALSE", "answers": [{"text": "a", "is_correct": true}, {"text": "b"}]}
+      ],
+      "expect": {"importable": 3, "errors": 0, "questions": [
+        {"text": "Upper multi", "type": "multi", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]},
+        {"text": "Mixed open", "type": "open", "answers": [{"text": "model", "correct": true}]},
+        {"text": "Upper legacy", "type": "single", "answers": [{"text": "a", "correct": true}, {"text": "b", "correct": false}]}
+      ]}
     }
   ]
 }

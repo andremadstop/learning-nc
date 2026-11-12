@@ -292,6 +292,15 @@ class PoolBulkImportService {
         $answers = $isPbq ? [] : self::answersFrom($q);
         $questionType = $isPbq ? 'pbq' : self::resolveQuestionType($q, $defaultType, $answers);
 
+        // A type the app does not know skips this question — in the dry run and the import alike —
+        // instead of being stored as it is or failing the pool on insert (GitHub #34).
+        if (!in_array($questionType, QuestionService::QUESTION_TYPES, true)) {
+            $errors[] = $l->t('Q%1$s: unknown question type \'%2$s\' (valid: %3$s) — skipped', [
+                $number, mb_substr($questionType, 0, 80), implode(', ', QuestionService::QUESTION_TYPES),
+            ]);
+            return null;
+        }
+
         // 'open' (fill-in / free-text) questions carry exactly ONE model answer;
         // MCQ (single/multi) need at least two options.
         if ($questionType === 'open') {
@@ -356,6 +365,7 @@ class PoolBulkImportService {
      */
     private static function localizedReason(string $message, IL10N $l): ?string {
         return match ($message) {
+            'Unknown question type' => $l->t('Unknown question type'),
             'Question text must be 1-5000 characters' => $l->t('Question text must be 1-5000 characters'),
             'Open questions need exactly 1 model answer' => $l->t('Open questions need exactly 1 model answer'),
             'Model answer text required' => $l->t('Model answer text required'),
@@ -410,13 +420,17 @@ class PoolBulkImportService {
      * exported pool loses its multi and open questions on the way back in. Without any of these
      * keys, several correct answers mean `multi`, as the import documentation says.
      *
+     * The type is lower-cased (as ImportController::typeFrom() does) but not checked: a type
+     * outside QuestionService::QUESTION_TYPES is returned as it is, and prepareQuestion() refuses
+     * the question with it.
+     *
      * @param array<mixed> $question
      * @param array<array{text: string, is_correct: bool}> $answers
      */
     public static function resolveQuestionType(array $question, string $defaultType, array $answers): string {
         foreach (['question_type', 'type', 'typ'] as $key) {
             if (isset($question[$key]) && is_string($question[$key]) && trim($question[$key]) !== '') {
-                $type = trim($question[$key]);
+                $type = strtolower(trim($question[$key]));
                 // true_false was removed in v3.7.0; the interface import maps it the same way.
                 return $type === 'true_false' ? 'single' : $type;
             }

@@ -41,6 +41,8 @@ const CSV_MAX_RECORDS = MAX_IMPORT_ITEMS + 2
 const DIFFICULTY_MAX_LENGTH = 20
 const MAX_TEXT_LENGTH = 5000
 const MAX_ANSWER_LENGTH = 2000
+/** QuestionService::QUESTION_TYPES — the question types the app knows (GitHub #34). */
+export const QUESTION_TYPES = ['single', 'multi', 'open', 'pbq']
 /** PoolJsonFormat::PBQ_SUBTYPES. */
 export const PBQ_SUBTYPES = ['dropdown', 'placement', 'cli', 'cable', 'multi_panel', 'switch_config', 'routing_config', 'diagnostic', 'ranking']
 
@@ -64,6 +66,7 @@ export const importMessages = {
 	tooManyItems: () => t('learning', 'Maximum 500 items per import'),
 	notAnObject: (num) => t('learning', 'Item {num}: Not a valid object', { num }, undefined, RAW),
 	missingText: (num) => t('learning', 'Item {num}: Missing question text', { num }, undefined, RAW),
+	unknownType: (num, type) => t('learning', 'Item {num}: Unknown question type \'{type}\' (valid: {valid}) — question skipped', { num, type, valid: QUESTION_TYPES.join(', ') }, undefined, RAW),
 	answersNotList: (num) => t('learning', 'Item {num}: Answers must be a list', { num }, undefined, RAW),
 	markerUnmatched: (num, shown) => t('learning', 'Item {num}: Correct answer "{shown}" matches no answer — numbers count from 0 (0 = first answer, or use correct_number to count from 1), letters from A, or give the exact answer text', { num, shown }, undefined, RAW),
 	markerDuplicate: (num, shown) => t('learning', 'Item {num}: Correct answer "{shown}" names the same answer twice — list each correct answer once (a 0/1 list per answer is not supported)', { num, shown }, undefined, RAW),
@@ -460,6 +463,11 @@ function normalizeJsonItem(raw, num, defaultType) {
 	// marked correct (that is a multiple-choice question).
 	if (type === null && defaultType !== null && !marksSeveralCorrect(raw)) {
 		type = defaultType
+	}
+
+	// An unknown type skips the item instead of silently becoming single or multi (GitHub #34).
+	if (type !== null && !QUESTION_TYPES.includes(type)) {
+		return { error: importMessages.unknownType(num, mbCut(type, 80)) }
 	}
 
 	if (type === 'open' && answers.length === 0 && scalarText(marker) !== '') {

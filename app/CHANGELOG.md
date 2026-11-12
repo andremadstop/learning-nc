@@ -51,6 +51,15 @@ added and whose JSON file did not import.
 - **`_meta.default_question_type: "pbq"`** no longer turns a question with several correct answers
   into an interactive question, in the interface and in occ. Interactive questions in the
   interface accept `text`, `question` and `frage` as the question text, not only `question_text`.
+- **An unknown question type failed the whole pool.** `occ learning:import-pool-json` and the
+  pool import in the Pools tab passed any `question_type` on: the dry run counted
+  `multiple_choice_extended` as importable, then the real import refused the entire pool
+  ("create failed"), valid questions included; a short unknown type such as `truefalse` was stored
+  as it was. Only `single`, `multi`, `open` and `pbq` are accepted now (any letter case,
+  `true_false` still reads as `single`); any other type skips that one question with the reason,
+  in the dry run and the import alike. The question import in the interface skips such a question
+  as well instead of turning it into single choice, and creating or editing a question refuses an
+  unknown type — a question that already carries one can still be saved unchanged.
 - Import errors from the server are shown in the reader's language.
 
 ### Changed

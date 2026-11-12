@@ -3247,6 +3247,10 @@
         "Chapter order must be between 1 and 9999": "Номер главы должен быть от 1 до 9999",
         "Field exceeds maximum length": "Поле учебника или главы слишком длинное (ключи до 64, названия до 255 символов)",
         "Scenario must be max %s characters": "Текст сценария — не более %s символов",
-        "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.": "Результат импорта неизвестен: некоторые пулы, возможно, уже созданы. Проверь список пулов, прежде чем импортировать снова."
+        "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.": "Результат импорта неизвестен: некоторые пулы, возможно, уже созданы. Проверь список пулов, прежде чем импортировать снова.",
+        "Unknown question type": "Неизвестный тип вопроса",
+        "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped": "В%1$s: неизвестный тип вопроса «%2$s» (допустимые: %3$s) — пропущен",
+        "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped": "Элемент %1$s: неизвестный тип вопроса «%2$s» (допустимые: %3$s) — вопрос пропущен",
+        "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped": "Элемент {num}: неизвестный тип вопроса «{type}» (допустимые: {valid}) — вопрос пропущен"
     }
 }

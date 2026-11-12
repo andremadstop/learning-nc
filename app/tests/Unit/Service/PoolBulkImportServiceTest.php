@@ -67,6 +67,10 @@ class PoolBulkImportServiceTest extends TestCase {
             if (in_array($args[2], $failingInserts, true)) {
                 throw new \RuntimeException('SQLSTATE[25P02]: in failed sql transaction');
             }
+            // question_type is varchar(20): a longer type fails as a statement, as on PostgreSQL.
+            if (strlen((string)$args[6]) > 20) {
+                throw new \RuntimeException('SQLSTATE[22001]: value too long for type character varying(20)');
+            }
             if ($args[2] === 'Refused on insert') {
                 throw new \InvalidArgumentException('Must have 2-8 answers');
             }
@@ -267,5 +271,74 @@ class PoolBulkImportServiceTest extends TestCase {
         ]]]], 'teacher', true, $this->englishL10n());
 
         $this->assertSame(['Q1: Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters'], $result[0]['question_errors']);
+    }
+
+    /**
+     * GitHub #34: a question type the app does not know skips that question — in the dry run
+     * and in the import alike — and never the pool. Before, the dry run counted such a question
+     * as importable; a type longer than the column then failed the whole pool on insert, and a
+     * short one ("truefalse") was stored as it was.
+     */
+    public function testAnUnknownQuestionTypeSkipsOnlyThatQuestion(): void {
+        $two = [['text' => 'a', 'is_correct' => true], ['text' => 'b']];
+        $doc = ['pools' => [['name' => 'Types', 'questions' => [
+            ['text' => 'Valid', 'answers' => $two],
+            ['text' => 'Extended', 'question_type' => 'multiple_choice_extended', 'answers' => $two],
+            ['text' => 'Short', 'type' => 'truefalse', 'answers' => $two],
+            ['text' => 'Upper', 'typ' => ' MULTI ', 'answers' => $two],
+            ['text' => 'Legacy', 'question_type' => 'true_false', 'answers' => $two],
+            ['text' => 'Long', 'question_type' => str_repeat('x', 200), 'answers' => $two],
+        ]]]];
+
+        $dry = $this->importer()->import($doc, 'teacher', true, $this->englishL10n());
+        $real = $this->importer()->import($doc, 'teacher', false, $this->englishL10n());
+
+        $expected = [
+            "Q2: unknown question type 'multiple_choice_extended' (valid: single, multi, open, pbq) — skipped",
+            "Q3: unknown question type 'truefalse' (valid: single, multi, open, pbq) — skipped",
+            "Q6: unknown question type '" . str_repeat('x', 80) . "' (valid: single, multi, open, pbq) — skipped",
+        ];
+        $this->assertSame($expected, $dry[0]['question_errors']);
+        $this->assertSame($expected, $real[0]['question_errors']);
+        $this->assertSame([], $real[0]['errors'], 'the pool is not refused');
+        $this->assertSame(3, $dry[0]['importable']);
+        $this->assertSame(3, $real[0]['imported']);
+        $this->assertSame(101, $real[0]['id']);
+        $this->assertSame([['Valid', 'single'], ['Upper', 'multi'], ['Legacy', 'single']],
+            array_map(static fn (array $q): array => [$q[2], $q[6]], $this->createdQuestions));
+        $this->assertSame([1, 1, 0], [$this->db->beginTransactionCalls, $this->db->commitCalls, $this->db->rollBackCalls]);
+    }
+
+    /** An unknown _meta.default_question_type skips the questions it would apply to, only those. */
+    public function testAnUnknownDefaultTypeSkipsOnlyTheQuestionsItAppliesTo(): void {
+        $doc = ['_meta' => ['default_question_type' => 'essay'], 'pools' => [['name' => 'D', 'questions' => [
+            ['text' => 'Own type', 'type' => 'single', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b']]],
+            ['text' => 'Default', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b']]],
+            ['text' => 'Several correct', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b', 'is_correct' => true]]],
+        ]]]];
+
+        $dry = $this->importer()->import($doc, 'teacher', true, $this->englishL10n());
+        $real = $this->importer()->import($doc, 'teacher', false, $this->englishL10n());
+
+        $expected = ["Q2: unknown question type 'essay' (valid: single, multi, open, pbq) — skipped"];
+        $this->assertSame($expected, $dry[0]['question_errors']);
+        $this->assertSame($expected, $real[0]['question_errors']);
+        $this->assertSame([2, 2], [$dry[0]['importable'], $real[0]['imported']]);
+        $this->assertSame(['single', 'multi'], array_map(static fn (array $q) => $q[6], $this->createdQuestions));
+    }
+
+    /** The service's own refusal of an unknown type reaches the caller in its language. */
+    public function testTheServicesUnknownTypeRefusalIsTranslated(): void {
+        $l = $this->createMock(IL10N::class);
+        $l->method('t')->willReturnCallback(
+            static fn (string $text, $parameters = []): string => '<' . vsprintf($text, is_array($parameters) ? $parameters : [$parameters]) . '>'
+        );
+        $questions = $this->createMock(QuestionService::class);
+        $questions->method('validateForImport')->willThrowException(new \InvalidArgumentException('Unknown question type'));
+        $result = $this->poolImporter($this->createMock(PoolService::class), $questions)->import(['pools' => [['name' => 'S', 'questions' => [
+            ['text' => 'Q', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b']]],
+        ]]]], 'teacher', true, $l);
+
+        $this->assertSame(['<Q1: <Unknown question type>>'], $result[0]['question_errors']);
     }
 }

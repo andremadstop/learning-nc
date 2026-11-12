@@ -3248,5 +3248,9 @@ OC.L10N.register(
     "Field exceeds maximum length" : "Поле учебника или главы слишком длинное (ключи до 64, названия до 255 символов)",
     "Scenario must be max %s characters" : "Текст сценария — не более %s символов",
     "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again." : "Результат импорта неизвестен: некоторые пулы, возможно, уже созданы. Проверь список пулов, прежде чем импортировать снова.",
+    "Unknown question type" : "Неизвестный тип вопроса",
+    "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped" : "В%1$s: неизвестный тип вопроса «%2$s» (допустимые: %3$s) — пропущен",
+    "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped" : "Элемент %1$s: неизвестный тип вопроса «%2$s» (допустимые: %3$s) — вопрос пропущен",
+    "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped" : "Элемент {num}: неизвестный тип вопроса «{type}» (допустимые: {valid}) — вопрос пропущен",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

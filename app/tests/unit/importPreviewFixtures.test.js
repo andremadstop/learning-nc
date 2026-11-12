@@ -13,7 +13,7 @@ vi.mock('@nextcloud/l10n', () => ({
 	translate: (app, text, vars) => text.replace(/{(\w+)}/g, (m, k) => (vars && k in vars ? String(vars[k]) : m)),
 }))
 
-import { analyzeJsonImport } from '../../src/utils/importPreview.js'
+import { analyzeJsonImport, QUESTION_TYPES } from '../../src/utils/importPreview.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const fixture = JSON.parse(readFileSync(resolve(here, '../fixtures/import-json-cases.json'), 'utf-8'))
@@ -50,5 +50,15 @@ describe('import preview runs the shared fixture cases (GitHub #34)', () => {
 				}
 			}
 		})
+	})
+})
+
+describe('the preview knows the same question types as the server (GitHub #34)', () => {
+	it('QUESTION_TYPES equals QuestionService::QUESTION_TYPES', () => {
+		const php = readFileSync(resolve(here, '../../lib/Service/QuestionService.php'), 'utf-8')
+		const match = php.match(/const QUESTION_TYPES = \[([^\]]*)\]/)
+		expect(match).not.toBeNull()
+		const server = [...match[1].matchAll(/'([^']*)'/g)].map((m) => m[1])
+		expect(QUESTION_TYPES).toEqual(server)
 	})
 })

@@ -19,6 +19,13 @@ use Psr\Log\LoggerInterface;
 class QuestionService {
     public const SCENARIO_MAX_LENGTH = 10000;
 
+    /**
+     * The question types the app knows: the three of the question form plus pbq. The only list —
+     * the pool import, the question import and the import preview (importPreview.js
+     * QUESTION_TYPES) check against it. Anything else is refused (GitHub #34).
+     */
+    public const QUESTION_TYPES = ['single', 'multi', 'open', 'pbq'];
+
     private $questionMapper;
     private $answerMapper;
     private $shareMapper;
@@ -154,7 +161,14 @@ class QuestionService {
         return levenshtein($a, $b);
     }
 
-    private function validateQuestionInput(string $text, array $answers, string $questionType = 'single'): void {
+    /**
+     * @param bool $checkType false only for update() of a question that keeps a type stored before
+     *        unknown types were refused: it stays editable and is checked as before (as MCQ).
+     */
+    private function validateQuestionInput(string $text, array $answers, string $questionType = 'single', bool $checkType = true): void {
+        if ($checkType && !in_array($questionType, self::QUESTION_TYPES, true)) {
+            throw new \InvalidArgumentException('Unknown question type');
+        }
         if (mb_strlen($text) < 1 || mb_strlen($text) > 5000) {
             throw new \InvalidArgumentException('Question text must be 1-5000 characters');
         }
@@ -536,9 +550,12 @@ class QuestionService {
                 throw new Exception('No edit access to this pool');
             }
 
-            $questionType = $questionType ?? ($question->getQuestionType() ?? 'single');
+            $storedType = $question->getQuestionType();
+            $questionType = $questionType ?? ($storedType ?? 'single');
 
-            $this->validateQuestionInput($text, $answers, $questionType);
+            // A type stored before unknown types were refused (GitHub #34) may be saved again
+            // unchanged, so such a question stays editable; any change must be to a known type.
+            $this->validateQuestionInput($text, $answers, $questionType, $questionType !== $storedType);
             $keepScenario = $scenario === null;
             $scenario = $this->normalizeScenario($scenario);
 

@@ -311,6 +311,15 @@ class ImportController extends Controller {
             $type = $defaultType;
         }
 
+        // A type the app does not know skips the item instead of silently becoming single or
+        // multi — the same rule as the pool import (GitHub #34).
+        if ($type !== null && !in_array($type, QuestionService::QUESTION_TYPES, true)) {
+            $errors[] = $this->l10n->t('Item %1$s: Unknown question type \'%2$s\' (valid: %3$s) — question skipped', [
+                $num, mb_substr($type, 0, 80), implode(', ', QuestionService::QUESTION_TYPES),
+            ]);
+            return null;
+        }
+
         // Open question without an answer list: the model answer may be given as "answer": "…".
         if ($type === 'open' && $answers === [] && self::scalarText($marker) !== '') {
             $answers[] = ['text' => self::scalarText($marker), 'is_correct' => true];

@@ -3248,5 +3248,9 @@ OC.L10N.register(
     "Field exceeds maximum length" : "Field exceeds maximum length",
     "Scenario must be max %s characters" : "Scenario must be max %s characters",
     "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again." : "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.",
+    "Unknown question type" : "Unknown question type",
+    "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped" : "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped",
+    "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped" : "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped",
+    "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped" : "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped",
 },
 "nplurals=2; plural=(n != 1);");

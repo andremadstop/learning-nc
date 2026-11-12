@@ -3247,6 +3247,10 @@
         "Chapter order must be between 1 and 9999": "Le numéro de chapitre doit être compris entre 1 et 9999",
         "Field exceeds maximum length": "Un champ de manuel ou de chapitre est trop long (clés 64 caractères max., titres 255 max.)",
         "Scenario must be max %s characters": "Le texte du scénario ne doit pas dépasser %s caractères",
-        "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.": "Le résultat de l’import est inconnu : certains pools ont peut-être déjà été créés. Vérifie la liste des pools avant d’importer à nouveau."
+        "The result of the import is unknown: some pools may already have been created. Check the pool list before importing again.": "Le résultat de l’import est inconnu : certains pools ont peut-être déjà été créés. Vérifie la liste des pools avant d’importer à nouveau.",
+        "Unknown question type": "Type de question inconnu",
+        "Q%1$s: unknown question type '%2$s' (valid: %3$s) — skipped": "Q%1$s : type de question « %2$s » inconnu (valides : %3$s) — ignorée",
+        "Item %1$s: Unknown question type '%2$s' (valid: %3$s) — question skipped": "Élément %1$s : type de question « %2$s » inconnu (valides : %3$s) — question ignorée",
+        "Item {num}: Unknown question type '{type}' (valid: {valid}) — question skipped": "Élément {num} : type de question « {type} » inconnu (valides : {valid}) — question ignorée"
     }
 }
