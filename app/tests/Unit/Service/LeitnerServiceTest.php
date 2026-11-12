@@ -298,6 +298,44 @@ class LeitnerServiceTest extends TestCase {
         $this->assertSame('safe', $items[0]['pbq_config']['nested']['keep'], 'nested non-solution keys must survive');
     }
 
+    /**
+     * 2026-11 audit S04: cli and multi_panel PBQs are graded against
+     * evaluation[].required_pattern — the exact command expected. The due-queue sent it (and the
+     * explanation next to it) during an active exam.
+     */
+    public function testGetDueQuestionsStripsCliEvaluationDuringActiveExam(): void {
+        $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 1,
+                'question_id' => 10,
+                'text' => 'Find the MAC address',
+                'question_type' => 'pbq',
+                'pbq_subtype' => 'multi_panel',
+                'explanation' => 'arp -a shows it',
+                'pbq_config' => json_encode([
+                    'cli' => [
+                        'terminals' => [['name' => 'Core Switch 1']],
+                        'evaluation' => [
+                            ['terminal' => 'Core Switch 1', 'required_pattern' => 'arp -a|show arp table', 'points' => 2, 'explanation' => 'Run arp -a'],
+                        ],
+                    ],
+                ]),
+            ],
+        ]));
+        $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([]));
+        $examBuilder = new FakeQueryBuilder(FakeResult::fromFetch(['id' => 1]));
+
+        $db = new FakeDbConnection([$itemsBuilder, $answersBuilder, $examBuilder]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $items = $this->createService($db, $poolMapper)->getDueQuestions(42, 'alice', 10);
+
+        $this->assertArrayNotHasKey('evaluation', $items[0]['pbq_config']['cli'], 'the grading key must be withheld during an active exam');
+        $this->assertStringNotContainsString('show arp table', (string)json_encode($items[0]['pbq_config']));
+        $this->assertSame('Core Switch 1', $items[0]['pbq_config']['cli']['terminals'][0]['name'], 'render config must survive');
+    }
+
     private function createService(FakeDbConnection $db, PoolMapper $poolMapper): LeitnerService {
         $shareMapper = $this->createMock(PoolShareMapper::class);
         $badgeService = $this->createMock(BadgeService::class);

@@ -361,39 +361,19 @@ class LeitnerService {
 
         // AUDIT v5.2.1 (pre-live review, finding D): while an exam is active on this pool, the
         // spaced-repetition due-queue must not become an oracle — withhold explanations and PBQ
-        // solution config (mirrors TrainingService::sanitizeQuestionForAttempt). Constructed attack
-        // (queue + exam on the same pool concurrently), but cheap to close.
+        // solution config (PbqSolutionStripper, as in TrainingService::sanitizeQuestionForAttempt).
+        // Constructed attack (queue + exam on the same pool concurrently), but cheap to close.
         if ($this->hasActiveExamOnPool($poolId, $userId)) {
             foreach ($items as &$item) {
                 unset($item['explanation']);
                 if (array_key_exists('pbq_config', $item)) {
-                    $item['pbq_config'] = self::stripPbqSolutionKeys($item['pbq_config']);
+                    $item['pbq_config'] = PbqSolutionStripper::strip($item['pbq_config']);
                 }
             }
             unset($item);
         }
 
         return $items;
-    }
-
-    /**
-     * AUDIT v5.2.1: recursively drop solution-bearing keys from a PBQ config (same key set as
-     * TrainingService::sanitizePbqConfigForAttempt) so the render config can stay while the answer
-     * key is withheld during an active exam.
-     */
-    private static function stripPbqSolutionKeys(mixed $value): mixed {
-        if (!is_array($value)) {
-            return $value;
-        }
-        $solutionKeys = ['correct', 'correct_position', 'correct_problem', 'correct_solution', 'expected', 'expected_value', 'answer_key'];
-        $sanitized = [];
-        foreach ($value as $key => $child) {
-            if (is_string($key) && in_array($key, $solutionKeys, true)) {
-                continue;
-            }
-            $sanitized[$key] = self::stripPbqSolutionKeys($child);
-        }
-        return $sanitized;
     }
 
     public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?int $rating = null, bool $preview = false, ?string $lang = null): array {

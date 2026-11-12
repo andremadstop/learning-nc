@@ -281,30 +281,6 @@ class TrainingService {
         );
     }
 
-    private function sanitizePbqConfigForAttempt(mixed $value): mixed {
-        if (!is_array($value)) {
-            return $value;
-        }
-
-        $solutionKeys = [
-            'correct',
-            'correct_position',
-            'correct_problem',
-            'correct_solution',
-            'expected',
-            'expected_value',
-            'answer_key',
-        ];
-        $sanitized = [];
-        foreach ($value as $key => $child) {
-            if (is_string($key) && in_array($key, $solutionKeys, true)) {
-                continue;
-            }
-            $sanitized[$key] = $this->sanitizePbqConfigForAttempt($child);
-        }
-        return $sanitized;
-    }
-
     private function sanitizeQuestionForAttempt(array $question): array {
         unset(
             $question['explanation'],
@@ -315,7 +291,7 @@ class TrainingService {
         );
 
         if (array_key_exists('pbq_config', $question)) {
-            $question['pbq_config'] = $this->sanitizePbqConfigForAttempt($question['pbq_config']);
+            $question['pbq_config'] = PbqSolutionStripper::strip($question['pbq_config']);
         }
 
         return $question;
