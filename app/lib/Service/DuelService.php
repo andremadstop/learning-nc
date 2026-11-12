@@ -246,7 +246,7 @@ class DuelService {
                     $session->setOpponentScore($session->getOpponentScore() + 100);
                 }
                 if ($session->getLeagueChallengeId() !== null) {
-                    $this->leagueService->recordExpiredDuel($session);
+                    $this->leagueService->recordExpiredDuel($session, $userId);
                 }
             }
         }
