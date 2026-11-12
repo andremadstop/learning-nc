@@ -271,3 +271,36 @@ describe('DEMO_SCENARIOS', () => {
 		}
 	})
 })
+
+// Audit 2026-11 (S36): IPv6 expected answers are stored fully expanded (formatIPv6), but the
+// comparison was a plain string match, so the RFC 5952 short form a learner types was marked wrong.
+describe('checkAnswers — IPv6 notation', () => {
+	const expected = { networkAddress: 'fe80:0000:0000:0000:0000:0000:0000:0000' }
+
+	it('accepts the compressed form', () => {
+		expect(checkAnswers(expected, { networkAddress: 'fe80::' })[0].correct).toBe(true)
+	})
+
+	it('accepts upper case and unpadded groups', () => {
+		expect(checkAnswers(expected, { networkAddress: 'FE80:0:0:0:0:0:0:0' })[0].correct).toBe(true)
+	})
+
+	it('accepts a prefix length when the expected answer has none', () => {
+		expect(checkAnswers(expected, { networkAddress: 'fe80::/64' })[0].correct).toBe(true)
+	})
+
+	it('still rejects a different address', () => {
+		expect(checkAnswers(expected, { networkAddress: 'fe80::1' })[0].correct).toBe(false)
+		expect(checkAnswers(expected, { networkAddress: '2001:db8::' })[0].correct).toBe(false)
+	})
+
+	it('compares the prefix when the expected answer carries one', () => {
+		const withPrefix = { networkAddress: '2001:0db8:0000:0000:0000:0000:0000:0000/32' }
+		expect(checkAnswers(withPrefix, { networkAddress: '2001:db8::/32' })[0].correct).toBe(true)
+		expect(checkAnswers(withPrefix, { networkAddress: '2001:db8::/48' })[0].correct).toBe(false)
+	})
+
+	it('keeps the expected answer shown to the learner unchanged', () => {
+		expect(checkAnswers(expected, { networkAddress: 'fe80::' })[0].expected).toBe(expected.networkAddress)
+	})
+})

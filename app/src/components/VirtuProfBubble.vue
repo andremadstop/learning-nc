@@ -1001,6 +1001,12 @@ export default {
     }
   },
   computed: {
+    // VirtuProf.vue appends with push(); a plain watcher on the array prop only fires when the
+    // array is replaced (the trim to 20). Watching the last element catches every append.
+    lastChatMessage() {
+      const list = this.chatMessages
+      return Array.isArray(list) && list.length > 0 ? list[list.length - 1] : null
+    },
     effectiveLanguage() {
       return this.language || 'de'
     },
@@ -1035,12 +1041,20 @@ export default {
     }
   },
   watch: {
-    chatMessages(newMessages) {
+    lastChatMessage(lastMessage) {
       this.$nextTick(() => {
         this.scrollChatToBottom()
       })
-      const lastMessage = Array.isArray(newMessages) ? newMessages[newMessages.length - 1] : null
       if (this.ttsEnabled && this.supportsSpeechSynthesis && lastMessage?.role === 'assistant' && lastMessage?.speakable === true) {
+        // Read each answer once: a pop (refused consent) or a trim can make an answer that was
+        // already spoken the last message again.
+        if (!this._spokenChatMessages) {
+          this._spokenChatMessages = new WeakSet()
+        }
+        if (this._spokenChatMessages.has(lastMessage)) {
+          return
+        }
+        this._spokenChatMessages.add(lastMessage)
         this.speakText(lastMessage.text)
       }
     },

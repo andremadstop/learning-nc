@@ -5,6 +5,8 @@
  * pre-computed expectedAnswers so no import of subnetMath needed.
  */
 
+import { expandIPv6 } from './ipv6Math.js'
+
 /**
  * Normalize a user-provided answer for comparison.
  * - Trims whitespace
@@ -39,6 +41,32 @@ export function normalizeAnswer(raw) {
 }
 
 /**
+ * Split an answer into an expanded IPv6 address and an optional prefix suffix.
+ * Returns null when the address part is not a valid IPv6 address.
+ */
+function splitIPv6(value) {
+	if (typeof value !== 'string' || !value.includes(':')) return null
+	const slashIdx = value.indexOf('/')
+	const addr = slashIdx === -1 ? value : value.substring(0, slashIdx)
+	const expanded = expandIPv6(addr)
+	if (expanded === null) return null
+	return { address: expanded, prefix: slashIdx === -1 ? '' : value.substring(slashIdx + 1).trim() }
+}
+
+/**
+ * IPv6 answers are equal when their expanded addresses match (case, zero padding and '::'
+ * compression do not matter). A prefix is compared only when the expected answer has one.
+ */
+function ipv6Equal(expectedNorm, givenNorm) {
+	const expected = splitIPv6(expectedNorm)
+	if (expected === null) return null
+	const given = splitIPv6(givenNorm)
+	if (given === null) return false
+	if (expected.address !== given.address) return false
+	return expected.prefix === '' || expected.prefix === given.prefix
+}
+
+/**
  * Compare expected answers with user answers field by field.
  * Special handling for CIDR fields: slash is optional.
  */
@@ -58,9 +86,11 @@ export function checkAnswers(expectedAnswers, userAnswers) {
 			givenNorm = givenNorm.replace(/^\//, '')
 		}
 
+		const ipv6Match = ipv6Equal(expectedNorm, givenNorm)
+
 		results.push({
 			field,
-			correct: expectedNorm === givenNorm,
+			correct: ipv6Match === null ? expectedNorm === givenNorm : ipv6Match,
 			expected: normalizeAnswer(expectedRaw),
 			given: normalizeAnswer(givenRaw),
 		})

@@ -112,14 +112,18 @@ namespace OCP\AppFramework {
             public function __construct(string $appName = '') {}
         }
     }
-
-    if (!interface_exists(IBootstrap::class)) {
-        interface IBootstrap {
-        }
-    }
 }
 
 namespace OCP\AppFramework\Bootstrap {
+    // Mirrors NC's OCP\AppFramework\Bootstrap\IBootstrap. It used to sit in OCP\AppFramework,
+    // so Application (and every path reading Application::APP_ID) could not load in unit tests.
+    if (!interface_exists(IBootstrap::class)) {
+        interface IBootstrap {
+            public function register(IRegistrationContext $context): void;
+            public function boot(IBootContext $context): void;
+        }
+    }
+
     if (!interface_exists(IBootContext::class)) {
         interface IBootContext {
             public function getServerContainer();
