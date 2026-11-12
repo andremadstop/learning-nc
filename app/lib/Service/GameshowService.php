@@ -363,11 +363,12 @@ class GameshowService {
             }
         }
 
-        // Validate answer server-side
+        // Validate answer server-side — it must belong to the question being played
         $qb = $this->db->getQueryBuilder();
         $qb->select('is_correct')
            ->from('learning_answers')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)));
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
         $res = $qb->executeQuery();
         $row = $res->fetch();
         $res->closeCursor();
