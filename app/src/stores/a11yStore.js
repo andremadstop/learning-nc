@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, getActivePinia } from 'pinia'
 
 /**
  * Accessibility preferences store.
@@ -29,3 +29,11 @@ export const useA11yStore = defineStore('a11y', {
 		},
 	},
 })
+
+/**
+ * The store when a Pinia instance is active, otherwise null (component tests mount without one).
+ */
+export function useOptionalA11yStore() {
+	const pinia = getActivePinia()
+	return pinia ? useA11yStore(pinia) : null
+}

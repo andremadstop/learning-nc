@@ -446,6 +446,7 @@ import { generateUrl } from '@nextcloud/router';
 import { useOptionalCourseStore } from './stores/courseStore.js';
 import { defineAsyncComponent } from 'vue';
 import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
+import { useOptionalA11yStore } from './stores/a11yStore.js';
 
 const VirtuProf = defineAsyncComponent(() => import('./components/VirtuProf.vue'));
 
@@ -725,6 +726,10 @@ export default {
         this.fsrsDetailedStats = (response.data?.fsrs_detailed_stats || 'no') === 'yes';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
         this.onboardingAcknowledged = response.data?.onboarding_acknowledged === 'yes';
+        // "Ruhige Darstellung": hydrate the a11y store on every page load. PersonalSettings.vue
+        // does this too, but renders only on the settings route — without this line the avatars
+        // animated again after each reload until Settings was opened.
+        useOptionalA11yStore()?.loadFromServerPayload(response.data);
       } catch (err) {
         this.contentLanguage = '';
         this.fsrsDetailedStats = false;
