@@ -38,13 +38,16 @@ class FeedItemMapper extends QBMapper {
      *
      * @return FeedItem[]
      */
-    public function findByCourse(int $courseId, int $limit = 50): array {
+    public function findByCourse(int $courseId, int $limit = 50, int $offset = 0): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
             ->from($this->getTableName())
             ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->orderBy('created_at', 'DESC')
-            ->setMaxResults($limit);
+            // id breaks ties, so consecutive pages neither repeat nor skip items with the same timestamp
+            ->addOrderBy('id', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
 
         return $this->findEntities($qb);
     }

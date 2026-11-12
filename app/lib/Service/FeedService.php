@@ -40,8 +40,8 @@ class FeedService {
      *
      * @return FeedItem[]
      */
-    public function getCourseFeed(int $courseId, int $limit = 50): array {
-        return $this->feedItemMapper->findByCourse($courseId, $limit);
+    public function getCourseFeed(int $courseId, int $limit = 50, int $offset = 0): array {
+        return $this->feedItemMapper->findByCourse($courseId, $limit, $offset);
     }
 
     /**
