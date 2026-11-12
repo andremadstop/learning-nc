@@ -244,4 +244,52 @@ class ImportPoolJsonCommandTest extends TestCase {
         }
         self::fail('fixture case missing: ' . $name);
     }
+
+    /**
+     * The dry run counts what the import would store: questions that pass every check and pools
+     * that would be created — not every question item and every named pool (audit 2026-11:
+     * "Dry-run: 1 Pools, 25 Fragen" for a file whose 25 questions were all skipped).
+     */
+    public function testDryRunCountsOnlyWhatTheImportWouldStore(): void {
+        $refused = [
+            ['text' => 'Unknown type', 'type' => 'essay', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b']]],
+            ['text' => 'No answers'],
+        ];
+        [$exit, $display] = $this->runCommand(['file' => $this->writeJson($refused, 'x'), '--user' => 'alice', '--dry-run' => true]);
+        $this->assertSame(Command::SUCCESS, $exit, $display);
+        $this->assertStringContainsString('Dry-run: 1 Pools, 0 Fragen', $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [
+            ['name' => 'Kept', 'questions' => self::bareList()],
+            ['name' => 'Too long', 'description' => str_repeat('d', 2001), 'questions' => self::bareList()],
+        ]]), '--user' => 'alice', '--dry-run' => true]);
+        $this->assertStringContainsString('Dry-run: 1 Pools, 2 Fragen', $display);
+    }
+
+    /**
+     * "pool_name" (app/examples/pools/*.json, app/data) names the pool like "name" — in a
+     * questions wrapper and in a pools list; an empty "name" falls through to it (audit 2026-11).
+     */
+    public function testPoolNameKeyNamesThePool(): void {
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['pool_name' => 'Subnetting', 'questions' => self::bareList()], 'subnetting_questions'), '--user' => 'alice']);
+        $this->assertSame(['Subnetting'], array_column($this->createdPools, 'name'), $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['name' => '', 'pool_name' => 'Fallback', 'questions' => self::bareList()]), '--user' => 'alice']);
+        $this->assertSame(['Fallback'], array_column($this->createdPools, 'name'), $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['name' => 'Name wins', 'pool_name' => 'Other', 'questions' => self::bareList()]), '--user' => 'alice']);
+        $this->assertSame(['Name wins'], array_column($this->createdPools, 'name'), $display);
+
+        [, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [['pool_name' => 'From the list', 'questions' => self::bareList()]]]), '--user' => 'alice']);
+        $this->assertSame(['From the list'], array_column($this->createdPools, 'name'), $display);
+    }
+
+    /** The audit's own file: named by its pool_name, all 25 multiple_choice questions importable. */
+    public function testTheSubnettingDataFileDryRunsCompletely(): void {
+        [$exit, $display] = $this->runCommand(['file' => __DIR__ . '/../../../data/subnetting_questions.json', '--user' => 'alice', '--dry-run' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit, $display);
+        $this->assertStringContainsString('Subnetting & IP-Adressierung (N10-009)', $display);
+        $this->assertStringContainsString('Dry-run: 1 Pools, 25 Fragen', $display);
+    }
 }

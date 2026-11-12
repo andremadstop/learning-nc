@@ -45,7 +45,7 @@ class PoolBulkImportService {
     /**
      * The document as {_meta?, pools: [...]}, or null when it is none of the accepted shapes.
      * A bare list of questions, or an object with a "questions" list, becomes one pool named
-     * $poolName if given, else by the document's own "name", else $fallbackName.
+     * $poolName if given, else by the document's own "name" or "pool_name", else $fallbackName.
      *
      * @param array<mixed> $data
      * @return array<mixed>|null
@@ -58,7 +58,7 @@ class PoolBulkImportService {
             return ['pools' => [['name' => $poolName ?? $fallbackName, 'questions' => $data]]];
         }
         if (isset($data['questions']) && is_array($data['questions'])) {
-            $name = PoolJsonFormat::scalarText($data['name'] ?? null);
+            $name = PoolJsonFormat::poolName($data);
             $pool = ['name' => $poolName ?? ($name !== '' ? $name : $fallbackName), 'questions' => $data['questions']];
             if (isset($data['description']) && is_string($data['description'])) {
                 $pool['description'] = $data['description'];
@@ -119,7 +119,7 @@ class PoolBulkImportService {
         foreach (self::poolsOf($document) as $i => $poolData) {
             $index = $i + 1;
             $poolData = is_array($poolData) ? $poolData : [];
-            $name = PoolJsonFormat::scalarText($poolData['name'] ?? null);
+            $name = PoolJsonFormat::poolName($poolData);
             $questions = self::questionsOf($poolData);
             $result = [
                 'index' => $index,
@@ -418,7 +418,9 @@ class PoolBulkImportService {
      * Reads `question_type` (the pool JSON format's own key) and also `type` / `typ`, the keys
      * that `occ learning:export-pool` and the import in the interface use — otherwise an
      * exported pool loses its multi and open questions on the way back in. Without any of these
-     * keys, several correct answers mean `multi`, as the import documentation says.
+     * keys, several correct answers mean `multi`, as the import documentation says. A choice
+     * name (QuestionService::CHOICE_TYPE_NAMES, e.g. multiple_choice) is `single` or `multi` by
+     * the correct answers, without the default type.
      *
      * The type is lower-cased (as ImportController::typeFrom() does) but not checked: a type
      * outside QuestionService::QUESTION_TYPES is returned as it is, and prepareQuestion() refuses
@@ -428,15 +430,19 @@ class PoolBulkImportService {
      * @param array<array{text: string, is_correct: bool}> $answers
      */
     public static function resolveQuestionType(array $question, string $defaultType, array $answers): string {
+        $correct = count(array_filter($answers, static fn (array $a): bool => $a['is_correct']));
         foreach (['question_type', 'type', 'typ'] as $key) {
             if (isset($question[$key]) && is_string($question[$key]) && trim($question[$key]) !== '') {
                 $type = strtolower(trim($question[$key]));
+                // multiple_choice: single or multi by the correct answers, never the default type.
+                if (in_array($type, QuestionService::CHOICE_TYPE_NAMES, true)) {
+                    return $correct > 1 ? 'multi' : 'single';
+                }
                 // Historical names (true_false, multiple); the interface import maps them the same way.
                 return QuestionService::TYPE_ALIASES[$type] ?? $type;
             }
         }
 
-        $correct = count(array_filter($answers, static fn (array $a): bool => $a['is_correct']));
         if ($correct > 1) {
             return 'multi';
         }

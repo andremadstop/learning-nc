@@ -55,6 +55,21 @@ final class PoolJsonFormat {
         return null;
     }
 
+    /**
+     * Name of a pool object: "name", else "pool_name" (the key of app/examples/pools/*.json and
+     * of files from elsewhere); '' when neither holds a non-empty scalar. An empty "name" falls
+     * through to "pool_name".
+     */
+    public static function poolName(array $pool): string {
+        foreach (['name', 'pool_name'] as $key) {
+            $name = self::scalarText($pool[$key] ?? null);
+            if ($name !== '') {
+                return $name;
+            }
+        }
+        return '';
+    }
+
     public static function fieldText(array $item, string $field): ?string {
         $value = self::field($item, $field);
         return $value === null ? null : self::scalarText($value);
@@ -103,6 +118,11 @@ final class PoolJsonFormat {
         $type = strtolower(self::scalarText($meta['default_question_type'] ?? null));
         if ($type === '') {
             return null;
+        }
+        // A choice name (multiple_choice) is single: a default applies only with at most one
+        // correct answer, several correct answers are multi before it.
+        if (in_array($type, QuestionService::CHOICE_TYPE_NAMES, true)) {
+            return 'single';
         }
         return QuestionService::TYPE_ALIASES[$type] ?? $type;
     }

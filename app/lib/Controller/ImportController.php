@@ -178,6 +178,11 @@ class ImportController extends Controller {
         if ($type === '') {
             return null;
         }
+        // A choice name (multiple_choice) is single here; importJson() makes a question with
+        // several correct answers multi, as for any single.
+        if (in_array($type, QuestionService::CHOICE_TYPE_NAMES, true)) {
+            return 'single';
+        }
         return QuestionService::TYPE_ALIASES[$type] ?? $type; // historical names (true_false, multiple)
     }
 

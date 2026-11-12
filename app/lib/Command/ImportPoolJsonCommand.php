@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * Also accepts a bare list of questions, or {"name"?, "description"?, "_meta"?, "questions": [...]},
  * as ONE pool — that is what `occ learning:export-pool` and the export in the interface write.
- * Its name comes from --pool-name, else the file's own "name", else the file name without
+ * Its name comes from --pool-name, else the file's own "name" (or "pool_name"), else the file name without
  * extension (an export is called pool-<id>.json).
  *
  * Usage:
@@ -106,9 +106,11 @@ class ImportPoolJsonCommand extends Command {
                 ));
             }
             if ($dryRun) {
-                if ($pool['name'] !== '') {
+                // What the real import would store: a pool that passes its own checks, and of it
+                // only the questions that pass theirs — not every question item of the file.
+                if ($pool['name'] !== '' && $pool['errors'] === []) {
                     $totalPools++;
-                    $totalQuestions += $pool['questions_total'];
+                    $totalQuestions += $pool['importable'];
                 }
             } elseif ($created) {
                 $output->writeln('  → Pool ID: ' . $pool['id']);

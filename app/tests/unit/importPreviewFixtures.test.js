@@ -13,7 +13,7 @@ vi.mock('@nextcloud/l10n', () => ({
 	translate: (app, text, vars) => text.replace(/{(\w+)}/g, (m, k) => (vars && k in vars ? String(vars[k]) : m)),
 }))
 
-import { analyzeJsonImport, QUESTION_TYPES, TYPE_ALIASES } from '../../src/utils/importPreview.js'
+import { analyzeJsonImport, CHOICE_TYPE_NAMES, QUESTION_TYPES, TYPE_ALIASES } from '../../src/utils/importPreview.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const fixture = JSON.parse(readFileSync(resolve(here, '../fixtures/import-json-cases.json'), 'utf-8'))
@@ -68,5 +68,14 @@ describe('the preview knows the same question types as the server (GitHub #34)',
 		expect(match).not.toBeNull()
 		const server = Object.fromEntries([...match[1].matchAll(/'([^']*)'\s*=>\s*'([^']*)'/g)].map((m) => [m[1], m[2]]))
 		expect(TYPE_ALIASES).toEqual(server)
+	})
+
+	it('CHOICE_TYPE_NAMES equals QuestionService::CHOICE_TYPE_NAMES', () => {
+		const php = readFileSync(resolve(here, '../../lib/Service/QuestionService.php'), 'utf-8')
+		const match = php.match(/const CHOICE_TYPE_NAMES = \[([^\]]*)\]/)
+		expect(match).not.toBeNull()
+		const server = [...match[1].matchAll(/'([^']*)'/g)].map((m) => m[1])
+		expect(server.length).toBeGreaterThan(0)
+		expect(CHOICE_TYPE_NAMES).toEqual(server)
 	})
 })

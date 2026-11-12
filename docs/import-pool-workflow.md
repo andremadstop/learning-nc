@@ -88,8 +88,8 @@ One file may contain any number of pools. Minimal example:
 | `_meta.source` | no | string | Free-text provenance; not shown to learners |
 | `_meta.handbook_key` / `_meta.handbook_title` | no | string | Default handbook for every question that has none and whose pool has none |
 | `_meta.default_difficulty` | no | string | Difficulty for every question without its own `difficulty` |
-| `_meta.default_question_type` | no | string | One of `single`, `multi`, `open`, `pbq` (or the old `true_false`, `multiple`). Type for every question without its own type — but not when several answers are marked correct (that stays `multi`, also under `pbq`). `pbq` makes the other questions without a type interactive questions |
-| `pools[].name` | ✅ | string | Pool name as it appears in the interface |
+| `_meta.default_question_type` | no | string | One of `single`, `multi`, `open`, `pbq` (or the old `true_false`, `multiple`, or `multiple_choice`, read as `single`). Type for every question without its own type — but not when several answers are marked correct (that stays `multi`, also under `pbq`). `pbq` makes the other questions without a type interactive questions |
+| `pools[].name` | ✅ | string | Pool name as it appears in the interface; `pool_name` is read as well |
 | `pools[].description` | no | string | Multi-line allowed |
 | `pools[].chapter_key` | no | string | e.g. `"1.1"` — groups pools in the interface, and is the chapter of every question in the pool that has no `chapter_key` of its own |
 | `pools[].chapter_title` | no | string | Human-readable chapter title; filled into questions the same way |
@@ -99,7 +99,7 @@ One file may contain any number of pools. Minimal example:
 | `pools[].questions[].text` | ✅ | string | Markdown allowed — code blocks `\`\`\``, images via `![](...)` |
 | `pools[].questions[].answers` | ✅ | array | At least 2 entries, at most 8. The question import (**Manage** → **Import**) drops further answers with a warning, but a correct answer after the eighth, or more than 50 answers, skips the question; the occ command and **Import pools** skip a question with more than 8 answers |
 | `pools[].questions[].answers[].is_correct` | ✅ | bool | More than one `true` makes it multiple choice |
-| `pools[].questions[].question_type` | no | string | `single` (default), `multi`, `open` (exactly one model answer) or `pbq` — no other type; letter case does not matter, the old names `true_false` and `multiple` are read as `single` and `multi`. A question with any other type is skipped with the reason, in the dry run and the import alike; the rest of the pool is imported. `type` is read as well, so a file from `occ learning:export-pool` keeps its types — `multi` stays `multi` with one correct answer too. Without a type, several answers with `is_correct: true` make the question `multi` |
+| `pools[].questions[].question_type` | no | string | `single` (default), `multi`, `open` (exactly one model answer) or `pbq` — no other type; letter case does not matter, the old names `true_false` and `multiple` are read as `single` and `multi`, and `multiple_choice` is `single` with one correct answer and `multi` with several (`_meta.default_question_type` never applies to it). A question with any other type is skipped with the reason, in the dry run and the import alike; the rest of the pool is imported. `type` is read as well, so a file from `occ learning:export-pool` keeps its types — `multi` stays `multi` with one correct answer too. Without a type, several answers with `is_correct: true` make the question `multi` |
 | `pools[].questions[].explanation` | no | string | Shown after the question is answered |
 | `pools[].questions[].scenario` | no | string | Scenario / info text shown **before** the question (case, situation, background). Plain text, line breaks kept, max 10 000 characters. The question import (**Manage** → **Import**) also accepts `szenario`, `context` or `info`; occ and **Import pools** read only `scenario` |
 | `pools[].questions[].difficulty` | no | string | `easy` \| `medium` \| `hard`; at most 20 characters, a longer value is cut |
@@ -195,7 +195,8 @@ attach the pools to courses or share them with other users from the interface.
 Besides the `pools` format above, the command reads a file with **one** pool and no
 `pools` wrapper: a plain list of questions (what an export writes), or
 `{"name": …, "description": …, "_meta": {…}, "questions": [ … ]}`. The new pool is named by
-`--pool-name`, else by the file's `"name"`, else by the file name without extension:
+`--pool-name`, else by the file's `"name"` (or `"pool_name"`, as in `app/examples/pools/`), else by
+the file name without extension:
 
 ```bash
 occ learning:import-pool-json /tmp/pool-12.json --user=alice --pool-name="Network basics (2nd edition)"
