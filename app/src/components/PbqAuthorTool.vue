@@ -490,6 +490,32 @@ function cloneJson(value, fallback) {
   }
 }
 
+function isPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+// Copy of `base` without the keys the builder form owns, so fields the form does not edit
+// (evaluation, images, instructions, coordinates, ...) survive a rebuild (audit 2026-11).
+function withoutKeys(base, keys) {
+  const rest = isPlainObject(base) ? cloneJson(base, {}) : {}
+  keys.forEach(key => { delete rest[key] })
+  return rest
+}
+
+function findById(list, id) {
+  if (!Array.isArray(list) || id === undefined || id === null || id === '') {
+    return null
+  }
+  return list.find(entry => isPlainObject(entry) && String(entry.id) === String(id)) || null
+}
+
+const CLI_KEYS = ['domain', 'terminals', 'command_outputs', 'hint']
+const PLACEMENT_KEYS = ['positions', 'device_options', 'scoring_mode', 'topology']
+const PLACEMENT_POSITION_KEYS = ['id', 'label', 'correct']
+const DROPDOWN_KEYS = ['questions', 'layout', 'sections']
+const DROPDOWN_QUESTION_KEYS = ['id', 'label', 'section', 'correct', 'placeholder', 'help_text', 'current_value', 'readonly_value', 'initial_value', 'scorable', 'options']
+const MULTI_PANEL_KEYS = ['cli', 'placement', 'dropdown', 'topology']
+
 function parseJson(text, fallback = null) {
   if (!text || typeof text !== 'string') {
     return fallback
@@ -537,6 +563,10 @@ export default {
   data() {
     return {
       selectedSubtype: 'cli',
+      // The config the builder was opened with; the build* methods start from it so fields the
+      // form does not edit are kept (audit 2026-11).
+      originalSubtype: '',
+      originalConfig: null,
       copySuccess: false,
       showJsonFallback: false,
       multiPanelMode: 'placement',
@@ -674,6 +704,8 @@ export default {
       if (!config || typeof config !== 'object' || Array.isArray(config)) {
         return
       }
+      this.originalSubtype = subtype
+      this.originalConfig = cloneJson(config, null)
 
       switch (subtype) {
         case 'cli':
@@ -792,9 +824,25 @@ export default {
         })
       }
     },
+    // The stored config a builder starts from: only while the subtype is still the one the
+    // builder was opened with, so switching e.g. cli -> dropdown carries nothing over.
+    originalBase(panel) {
+      if (!isPlainObject(this.originalConfig) || this.selectedSubtype !== this.originalSubtype) {
+        return {}
+      }
+      if (this.selectedSubtype === 'multi_panel') {
+        if (!panel) {
+          return this.originalConfig
+        }
+        return isPlainObject(this.originalConfig[panel]) ? this.originalConfig[panel] : {}
+      }
+      return panel === this.selectedSubtype ? this.originalConfig : {}
+    },
     buildCliConfig() {
+      const base = this.originalBase('cli')
+      // Form terminals are cloned from the stored ones, so their extra fields come along.
       const terminals = this.cliForm.terminals
-        .map(term => ({ name: (term.name || '').trim() }))
+        .map(term => ({ ...withoutKeys(term, ['name']), name: (term.name || '').trim() }))
         .filter(term => term.name)
 
       const commandRows = this.cliForm.commandOutputs
@@ -821,6 +869,7 @@ export default {
       }
 
       const config = {
+        ...withoutKeys(base, CLI_KEYS),
         domain: this.cliForm.domain,
         terminals: terminals.length ? terminals : createCliTerminals(),
         command_outputs: commandOutputs,
@@ -833,9 +882,11 @@ export default {
       return config
     },
     buildPlacementConfig() {
+      const base = this.originalBase('placement')
       const positions = this.placementForm.positions.map(position => {
         const parsedCorrect = parseChoiceValue(position.correctInput)
         const next = {
+          ...withoutKeys(findById(base.positions, position.id), PLACEMENT_POSITION_KEYS),
           id: position.id,
           label: position.label,
           correct: parsedCorrect,
@@ -844,6 +895,7 @@ export default {
       })
 
       const config = {
+        ...withoutKeys(base, PLACEMENT_KEYS),
         positions,
         device_options: [...this.placementForm.deviceOptions],
         scoring_mode: this.placementForm.scoringMode,
@@ -859,8 +911,11 @@ export default {
       return config
     },
     buildDropdownConfig() {
+      const base = this.originalBase('dropdown')
+      // Form sections are cloned from the stored ones (note_format etc. come along).
       const sections = this.dropdownForm.sections
         .map(section => ({
+          ...withoutKeys(section, ['id', 'title', 'note']),
           id: (section.id || '').trim(),
           title: section.title || '',
           note: section.note || '',
@@ -869,6 +924,7 @@ export default {
 
       const questions = this.dropdownForm.questions.map(question => {
         const next = {
+          ...withoutKeys(findById(base.questions, question.id), DROPDOWN_QUESTION_KEYS),
           id: question.id,
           label: question.label,
         }
@@ -889,6 +945,7 @@ export default {
       })
 
       const config = {
+        ...withoutKeys(base, DROPDOWN_KEYS),
         questions,
       }
 
@@ -903,6 +960,7 @@ export default {
     },
     buildMultiPanelConfig() {
       const config = {
+        ...withoutKeys(this.originalBase(), MULTI_PANEL_KEYS),
         cli: this.buildCliConfig(),
       }
 
@@ -911,6 +969,7 @@ export default {
       } else {
         const placement = this.buildPlacementConfig()
         config.placement = {
+          ...withoutKeys(placement, ['topology']),
           positions: placement.positions,
           device_options: placement.device_options,
           scoring_mode: placement.scoring_mode,
