@@ -127,7 +127,8 @@ class CertificateReportController extends Controller {
 
     /**
      * Group compliance report for a team lead (RBAC-02): all members of the group for a course,
-     * with status 'passed' | 'overdue' | 'missing'. The groupId is read from the request so
+     * with status 'passed' | 'expired' | 'overdue' | 'missing' and an 'expiring' flag (expiringDays
+     * only sets that flag, it never filters the members). The groupId is read from the request so
      * an absent/empty groupId fails closed inside the service (no "all-groups" fallback).
      *
      * @NoAdminRequired

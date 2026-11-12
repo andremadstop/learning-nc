@@ -62,34 +62,49 @@ class CertificateReportService {
      * cert read, or state read. Denial tests lock this with never()-expectations on all
      * data sources (RBAC-02 / assert-first invariant).
      *
-     * Row shape: {member_ref, display_name, status, passed_at, expires_at, due_date}
+     * Row shape: {member_ref, display_name, status, passed_at, expires_at, due_date, expiring}
      * member_ref is an opaque handle (never a raw uid/email); the reminder POST echoes it back.
-     * Status: 'passed' | 'overdue' | 'missing'
+     * Status: 'passed' | 'expired' | 'overdue' | 'missing'
      * Display names (both cert-derived and IGroupManager-derived) are guarded by looksLikeEmail.
+     *
+     * Classification uses ALL non-revoked certificates of the course; per member the newest one
+     * (issued_at, then id) counts. 'expired' = that certificate's expires_at lies in the past.
+     * The expiry window never filters the classification (audit 2026-11: with the window applied
+     * to the certificate read, a member holding a never-expiring or +365d certificate was shown as
+     * 'missing'); it only sets the per-row 'expiring' flag for the "expiring certificates" list.
      *
      * @param int      $courseId     the certifying course
      * @param string   $groupId      the NC group the lead is authorised to view
      * @param string   $leadUserId   the requesting team lead
-     * @param int|null $expiringDays optional expiry window (days)
-     * @return array<int, array{member_ref: string, display_name: string, status: string, passed_at: int|null, expires_at: int|null, due_date: int|null}>
+     * @param int|null $expiringDays optional expiry window (days) for the 'expiring' flag; null = no row flagged
+     * @return array<int, array{member_ref: string, display_name: string, status: string, passed_at: int|null, expires_at: int|null, due_date: int|null, expiring: bool}>
      * @throws ForbiddenException if groupId is empty, or caller holds no oversight for the group/course
      */
     public function getGroupReport(int $courseId, string $groupId, string $leadUserId, ?int $expiringDays): array {
         // SECURITY GATE — MUST be first; all data reads are after this line.
         $this->assertTeamLeadForGroup($courseId, $groupId, $leadUserId);
 
+        $now = $this->timeFactory->getTime();
         $expiresBefore = $expiringDays !== null
-            ? $this->timeFactory->getTime() + $expiringDays * self::SECONDS_PER_DAY
+            ? $now + $expiringDays * self::SECONDS_PER_DAY
             : null;
 
         $members = $this->assignmentService->expandGroup($groupId);
-        $certs   = $this->certificateMapper->findByCourseIdForUsers($courseId, $members, $expiresBefore);
+        // No expiry cutoff here: the status needs every non-revoked certificate.
+        $certs   = $this->certificateMapper->findByCourseIdForUsers($courseId, $members, null);
         $states  = $this->assignmentService->getStatesForCourseAndUsers($courseId, $members);
 
-        // Build cert lookup by userId (real DB guarantees these are members; mocks may differ in tests)
+        // Newest certificate per member (re-certification leaves several rows). The mapper result is
+        // unordered across chunks, so pick explicitly: higher issued_at wins, then higher id.
         $certsByUserId = [];
         foreach ($certs as $cert) {
-            $certsByUserId[$cert->getUserId()] = $cert;
+            $uid = $cert->getUserId();
+            $current = $certsByUserId[$uid] ?? null;
+            if ($current === null
+                || $cert->getIssuedAt() > $current->getIssuedAt()
+                || ($cert->getIssuedAt() === $current->getIssuedAt() && (int)$cert->getId() > (int)$current->getId())) {
+                $certsByUserId[$uid] = $cert;
+            }
         }
 
         // Build uid→IUser map from the group for non-cert member display names (one call, lazy)
@@ -101,21 +116,24 @@ class CertificateReportService {
             }
         }
 
-        $now  = $this->timeFactory->getTime();
         $rows = [];
         foreach ($members as $memberUid) {
             if (isset($certsByUserId[$memberUid])) {
-                // Passed: cert was earned (revoked already filtered in mapper)
+                // Cert was earned (revoked already filtered in mapper); valid unless its expiry has passed.
                 $cert = $certsByUserId[$memberUid];
                 [$frozenName, ] = $this->decodePayload($cert->getCredentialJson());
                 $displayName = $this->safeDisplayName($frozenName, $memberUid);
+                $expiresAt = $cert->getExpiresAt();
+                $isExpired = $expiresAt !== null && $expiresAt < $now;
                 $rows[] = [
                     'member_ref'   => $this->memberRef($memberUid),
                     'display_name' => $displayName,
-                    'status'       => 'passed',
+                    'status'       => $isExpired ? 'expired' : 'passed',
                     'passed_at'    => $cert->getIssuedAt(),
-                    'expires_at'   => $cert->getExpiresAt(),
+                    'expires_at'   => $expiresAt,
                     'due_date'     => $states[$memberUid]['due_date'] ?? null,
+                    'expiring'     => !$isExpired && $expiresAt !== null
+                        && $expiresBefore !== null && $expiresAt <= $expiresBefore,
                 ];
             } else {
                 // No cert — overdue when due_date is in the past and not already passed
@@ -137,6 +155,7 @@ class CertificateReportService {
                     'passed_at'    => null,
                     'expires_at'   => null,
                     'due_date'     => $state['due_date'] ?? null,
+                    'expiring'     => false,
                 ];
             }
         }

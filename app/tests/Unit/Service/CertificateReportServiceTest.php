@@ -684,4 +684,140 @@ class CertificateReportServiceTest extends TestCase {
         // The ref for 'charlie' must resolve to 'charlie' and dispatch exactly once.
         $service->remindMember(42, 'dept-a', $ref('charlie'), 'bob');
     }
+
+    // -------------------------------------------------------------------------
+    // Audit 2026-11 (H1/H7): classification must not depend on the expiry window
+    // -------------------------------------------------------------------------
+
+    /**
+     * Run getGroupReport the way TeamLeadDashboard.vue does (expiringDays=30) against a mapper that
+     * returns $certs, and return the rows keyed by member uid. The mapper MUST be asked for all
+     * non-revoked certificates (expiresBefore = null): with the 30-day cutoff a member holding a
+     * never-expiring or +365d certificate came back without a certificate and was shown as
+     * 'missing' with a reminder button.
+     *
+     * @param list<string>      $members
+     * @param list<Certificate> $certs
+     * @param array<string, array{status: string, due_date: int|null}> $states
+     * @return array<string, array<string, mixed>>
+     */
+    private function runGroupReport(array $members, array $certs, array $states = [], ?int $expiringDays = 30): array {
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->expects($this->once())
+            ->method('findByCourseIdForUsers')
+            ->with(10, $members, null)
+            ->willReturn($certs);
+
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('expandGroup')->willReturn($members);
+        $assignmentService->method('getStatesForCourseAndUsers')->willReturn($states);
+
+        $roleService = $this->createMock(RoleService::class);
+        $roleService->method('isTeamLeadForGroup')->willReturn(true);
+
+        $groupManager = $this->createMock(IGroupManager::class);
+        $groupManager->method('get')->willReturn(null);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            $roleService,
+            $assignmentService,
+            $this->createMock(ReminderService::class),
+            $groupManager
+        );
+
+        $rows = $service->getGroupReport(10, 'team-x', 'alice', $expiringDays);
+        $this->assertCount(count($members), $rows, 'one row per group member');
+
+        $out = [];
+        foreach ($members as $uid) {
+            $ref = substr(hash('sha256', 'learning:group_member_ref:v1:' . $uid), 0, 24);
+            foreach ($rows as $row) {
+                if ($row['member_ref'] === $ref) {
+                    $out[$uid] = $row;
+                }
+            }
+            $this->assertArrayHasKey($uid, $out, "row for $uid");
+        }
+        return $out;
+    }
+
+    public function testGroupReportValidCertificateOutsideExpiryWindowStaysPassed(): void {
+        $now = self::NOW;
+        $rows = $this->runGroupReport(
+            ['never', 'year'],
+            [
+                $this->makeGroupCert('never', 'Nina Never', 'score:90', $now - 5000, null, 'vid-never'),
+                $this->makeGroupCert('year', 'Yuri Year', 'score:90', $now - 5000, $now + 365 * 86400, 'vid-year'),
+            ]
+        );
+
+        $this->assertSame('passed', $rows['never']['status'], 'expires_at NULL must stay passed');
+        $this->assertSame('passed', $rows['year']['status'], 'expires_at +365d must stay passed');
+        $this->assertSame($now + 365 * 86400, $rows['year']['expires_at']);
+        $this->assertFalse($rows['never']['expiring'], 'never-expiring certificate is not in the expiry list');
+        $this->assertFalse($rows['year']['expiring'], '+365d is outside the 30-day expiry window');
+    }
+
+    public function testGroupReportCertificateExpiredYesterdayIsExpiredNotPassed(): void {
+        $now = self::NOW;
+        $rows = $this->runGroupReport(
+            ['gone'],
+            [$this->makeGroupCert('gone', 'Gina Gone', 'score:90', $now - 400 * 86400, $now - 86400, 'vid-gone')],
+            ['gone' => ['status' => 'passed', 'due_date' => null]]
+        );
+
+        $this->assertSame('expired', $rows['gone']['status']);
+        $this->assertNotSame('passed', $rows['gone']['status']);
+        $this->assertSame($now - 86400, $rows['gone']['expires_at']);
+        $this->assertSame($now - 400 * 86400, $rows['gone']['passed_at']);
+        $this->assertSame('Gina Gone', $rows['gone']['display_name'], 'frozen certificate name is kept');
+        $this->assertFalse($rows['gone']['expiring'], 'an already expired certificate is not "expiring"');
+    }
+
+    public function testGroupReportExpiringFlagOnlyInsideWindow(): void {
+        $now = self::NOW;
+        $rows = $this->runGroupReport(
+            ['soon', 'later'],
+            [
+                $this->makeGroupCert('soon', 'Sam Soon', 'score:90', $now - 5000, $now + 10 * 86400, 'vid-soon'),
+                $this->makeGroupCert('later', 'Lea Later', 'score:90', $now - 5000, $now + 31 * 86400, 'vid-later'),
+            ]
+        );
+        $this->assertSame('passed', $rows['soon']['status']);
+        $this->assertTrue($rows['soon']['expiring'], '+10d is inside the 30-day window');
+        $this->assertSame('passed', $rows['later']['status']);
+        $this->assertFalse($rows['later']['expiring'], '+31d is outside the 30-day window');
+
+        // No window requested → nothing is flagged, classification unchanged.
+        $rows = $this->runGroupReport(
+            ['soon'],
+            [$this->makeGroupCert('soon', 'Sam Soon', 'score:90', $now - 5000, $now + 10 * 86400, 'vid-soon')],
+            [],
+            null
+        );
+        $this->assertSame('passed', $rows['soon']['status']);
+        $this->assertFalse($rows['soon']['expiring']);
+    }
+
+    public function testGroupReportNewestCertificateWinsWhatEverTheMapperOrder(): void {
+        $now = self::NOW;
+        $olderExpired = $this->makeGroupCert('re', 'Old Name', 'score:80', $now - 800 * 86400, $now - 400 * 86400, 'vid-old');
+        $newerValid   = $this->makeGroupCert('re', 'New Name', 'score:95', $now - 10 * 86400, $now + 355 * 86400, 'vid-new');
+
+        // Older certificate returned LAST: a last-wins overwrite would pick the expired one.
+        $rows = $this->runGroupReport(['re'], [$newerValid, $olderExpired]);
+        $this->assertSame('passed', $rows['re']['status']);
+        $this->assertSame($now - 10 * 86400, $rows['re']['passed_at']);
+        $this->assertSame('New Name', $rows['re']['display_name']);
+
+        // And the reverse: newer certificate is the expired one, returned FIRST.
+        $olderValid  = $this->makeGroupCert('re', 'Old Name', 'score:80', $now - 300 * 86400, null, 'vid-old2');
+        $newerExpired = $this->makeGroupCert('re', 'New Name', 'score:95', $now - 100 * 86400, $now - 86400, 'vid-new2');
+        $rows = $this->runGroupReport(['re'], [$newerExpired, $olderValid]);
+        $this->assertSame('expired', $rows['re']['status']);
+        $this->assertSame($now - 100 * 86400, $rows['re']['passed_at']);
+    }
 }

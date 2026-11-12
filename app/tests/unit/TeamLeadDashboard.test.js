@@ -189,16 +189,36 @@ describe('TeamLeadDashboard.fetchReport', () => {
 		expect(instance.overdueOrMissing.map((r) => r.member_ref)).toEqual(['alice', 'bob'])
 	})
 
-	it('upcomingExpirations computed includes only passed rows with expires_at', () => {
+	it('upcomingExpirations computed includes only passed rows the backend flags as expiring', () => {
+		// Audit 2026-11 (H1/H7): the backend no longer pre-filters certificates to the 30-day
+		// window, so expires_at alone is not enough — a +365d certificate must not be listed.
 		const instance = createInstance()
 		instance.reportRows = [
-			makeRow({ member_ref: 'alice', status: 'overdue', expires_at: null }),
-			makeRow({ member_ref: 'carol', status: 'passed', expires_at: '2026-08-01' }),
-			makeRow({ member_ref: 'dave', status: 'passed', expires_at: null }),
+			makeRow({ member_ref: 'alice', status: 'overdue', expires_at: null, expiring: false }),
+			makeRow({ member_ref: 'carol', status: 'passed', expires_at: 1767225600, expiring: true }),
+			makeRow({ member_ref: 'dave', status: 'passed', expires_at: null, expiring: false }),
+			makeRow({ member_ref: 'year', status: 'passed', expires_at: 1798761600, expiring: false }),
+			makeRow({ member_ref: 'gone', status: 'expired', expires_at: 1700000000, expiring: false }),
 		]
 
-		expect(instance.upcomingExpirations.length).toBe(1)
-		expect(instance.upcomingExpirations[0].member_ref).toBe('carol')
+		expect(instance.upcomingExpirations.map((r) => r.member_ref)).toEqual(['carol'])
+	})
+
+	it('overdueOrMissing includes expired members (they need a reminder too)', () => {
+		const instance = createInstance()
+		instance.reportRows = [
+			makeRow({ member_ref: 'gone', status: 'expired', expires_at: 1700000000 }),
+			makeRow({ member_ref: 'year', status: 'passed', expires_at: 1798761600, expiring: false }),
+			makeRow({ member_ref: 'bob', status: 'missing' }),
+		]
+
+		expect(instance.overdueOrMissing.map((r) => r.member_ref)).toEqual(['gone', 'bob'])
+	})
+
+	it('statusLabel never labels an expired member as passed', () => {
+		const instance = createInstance()
+		expect(instance.statusLabel('expired')).toBe('Expired')
+		expect(instance.statusLabel('expired')).not.toBe(instance.statusLabel('passed'))
 	})
 
 	it('reportRows carry no email field', async () => {

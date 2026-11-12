@@ -145,10 +145,12 @@ export default {
 			return this.selectedScope ? this.selectedScope.group_id : null
 		},
 		overdueOrMissing() {
-			return this.reportRows.filter((r) => r.status === 'overdue' || r.status === 'missing')
+			return this.reportRows.filter((r) => r.status === 'overdue' || r.status === 'missing' || r.status === 'expired')
 		},
 		upcomingExpirations() {
-			return this.reportRows.filter((r) => r.status === 'passed' && !!r.expires_at)
+			// The backend classifies against all certificates and flags the ones inside the
+			// expiringDays window; expires_at alone would also list a +365d certificate.
+			return this.reportRows.filter((r) => r.status === 'passed' && r.expiring === true)
 		},
 	},
 
@@ -238,6 +240,7 @@ export default {
 		statusLabel(status) {
 			if (status === 'overdue') return t('learning', 'Überfällig')
 			if (status === 'missing') return t('learning', 'Fehlend')
+			if (status === 'expired') return t('learning', 'Expired')
 			return t('learning', 'Bestanden')
 		},
 	},
@@ -365,6 +368,11 @@ export default {
 .teamlead-dashboard__status-badge--missing {
 	background: color-mix(in srgb, var(--color-warning) 15%, transparent);
 	color: var(--color-warning);
+}
+
+.teamlead-dashboard__status-badge--expired {
+	background: color-mix(in srgb, var(--color-error) 12%, transparent);
+	color: var(--color-error);
 }
 
 .teamlead-dashboard__status-badge--passed {

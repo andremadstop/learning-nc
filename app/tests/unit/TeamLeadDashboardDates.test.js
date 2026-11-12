@@ -57,7 +57,7 @@ describe('TeamLeadDashboard date cells', () => {
 	it('renders due_date and expires_at Unix seconds as dates, not as raw numbers', async () => {
 		await mountWithRows([
 			{ display_name: 'A', member_ref: 'a', status: 'overdue', due_date: DUE, expires_at: null },
-			{ display_name: 'B', member_ref: 'b', status: 'passed', due_date: null, expires_at: EXPIRES },
+			{ display_name: 'B', member_ref: 'b', status: 'passed', due_date: null, expires_at: EXPIRES, expiring: true },
 		])
 		const cells = dateCells()
 		expect(cells).toHaveLength(2)
