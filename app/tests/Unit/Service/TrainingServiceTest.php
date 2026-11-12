@@ -275,6 +275,120 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame(['id' => 9], $db->executedStatements[0]['params']);
     }
 
+    private function timedExamSession(int $secondsPastDeadline): array {
+        return [
+            'id' => 9,
+            'pool_id' => 42,
+            'user_id' => 'alice',
+            'started_at' => time() - 600 - $secondsPastDeadline,
+            'time_limit_seconds' => 600,
+            'total_questions' => 1,
+            'correct_answers' => 0,
+            'mode' => 'exam',
+            'completed_at' => null,
+            'attempt_no' => 1,
+            'question_order_json' => '[10]',
+        ];
+    }
+
+    private function assertNoSessionClosed(FakeDbConnection $db): void {
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertFalse(
+                $builder->table === 'learning_sessions' && $builder->operation === 'update' && array_key_exists('completed_at', $builder->setCalls),
+                'the session must not be closed inside the grace period'
+            );
+        }
+    }
+
+    /**
+     * 2026-11 audit H4: the exam client sends all answers in one batch when the timer runs out.
+     * That request reaches the server after the deadline (interval jitter, latency, clock skew);
+     * it was refused with "Exam timed out" and the learner scored 0 %. Inside the grace period
+     * the batch must be recorded and the session must stay open for complete().
+     */
+    public function testExamBatchOneSecondAfterDeadlineIsStillRecorded(): void {
+        $sessionBuilder = new FakeQueryBuilder(FakeResult::fromFetch($this->timedExamSession(1)));
+        $questionInPoolBuilder = new FakeQueryBuilder(FakeResult::fromFetch(['id' => 10]));
+        $duplicateBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $questionTypeBuilder = new FakeQueryBuilder(FakeResult::fromFetch(['question_type' => 'pbq']));
+        $pbqConfigBuilder = new FakeQueryBuilder(FakeResult::fromFetch([
+            'pbq_subtype' => 'dropdown',
+            'pbq_config' => json_encode(['questions' => [['id' => 'q1', 'label' => 'Port', 'correct' => '443']]]),
+        ]));
+        $answerInsertBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $db = new FakeDbConnection([
+            $sessionBuilder,
+            $questionInPoolBuilder,
+            $duplicateBuilder,
+            $questionTypeBuilder,
+            $pbqConfigBuilder,
+            $answerInsertBuilder,
+        ]);
+        $service = $this->createService(db: $db);
+
+        $result = $service->submitBatch(9, [['questionId' => 10, 'pbqAnswers' => ['q1' => '443']]], 'alice');
+
+        $this->assertSame([['questionId' => 10, 'recorded' => true, 'suppressed' => true]], $result);
+        $this->assertSame('learning_user_answers', $answerInsertBuilder->table);
+        $this->assertSame('insert', $answerInsertBuilder->operation);
+        $this->assertStringContainsString('correct_answers = correct_answers + 1', $db->executedStatements[0]['sql']);
+        $this->assertNoSessionClosed($db);
+    }
+
+    /**
+     * Past the grace period the batch is refused, nothing is saved and the session is closed.
+     */
+    public function testExamBatchAfterGracePeriodIsRefusedAndClosesTheSession(): void {
+        $closeBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($this->timedExamSession(31))),
+            $closeBuilder,
+        ]);
+        $service = $this->createService(db: $db);
+
+        try {
+            $service->submitBatch(9, [['questionId' => 10, 'pbqAnswers' => ['q1' => '443']]], 'alice');
+            $this->fail('a batch after the grace period must be refused');
+        } catch (\Exception $e) {
+            $this->assertSame('Exam timed out', $e->getMessage());
+        }
+        $this->assertSame('update', $closeBuilder->operation);
+        $this->assertSame('learning_sessions', $closeBuilder->table);
+        $this->assertArrayHasKey('completed_at', $closeBuilder->setCalls);
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertNotSame('learning_user_answers', $builder->table, 'no answer may be stored');
+        }
+        $this->assertSame([], $db->executedStatements);
+    }
+
+    /**
+     * The grace period only lets the last batch in. A start inside it must neither resume the
+     * expired exam (handing its questions out again) nor close it under the in-flight batch.
+     */
+    public function testExamStartInsideGracePeriodNeitherResumesNorCloses(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($this->timedExamSession(5))),
+        ]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([$this->makeQuestion(10, 42, 'Existing')]);
+        $service = $this->createService(db: $db, questionMapper: $questionMapper, poolMapper: $poolMapper);
+
+        try {
+            $service->startSession(42, 'alice', null, 'exam');
+            $this->fail('a start inside the grace period must be refused');
+        } catch (\Exception $e) {
+            $this->assertSame('Exam timed out', $e->getMessage());
+        }
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertFalse(
+                $builder->table === 'learning_sessions' && in_array($builder->operation, ['insert', 'update'], true),
+                'no new session and no close inside the grace period'
+            );
+        }
+    }
+
     /**
      * VIDEO-03: on a gated course whose required video is incomplete, startSession() must throw
      * ForbiddenException (→ 403) and NEVER reach resolveCoursePoolContext / the session insert.
@@ -679,6 +793,38 @@ class TrainingServiceTest extends TestCase {
             $this->assertStringContainsString('exam is active', $e->getMessage());
         }
         $this->assertSame([], $insert->insertValues);
+    }
+
+    /**
+     * 2026-11 audit H4: a timed practice exam inside the grace period after its deadline is
+     * neither resumed (questions handed out again) nor closed under the in-flight final batch.
+     */
+    public function testPracticeStartInsideGracePeriodNeitherResumesNorCloses(): void {
+        $expired = ['id' => 601, 'pool_id' => 42, 'course_id' => 7, 'user_id' => 'alice', 'mode' => 'exam',
+            'exam_kind' => 'practice', 'pass_percent' => 75, 'started_at' => time() - 605,
+            'completed_at' => null, 'time_limit_seconds' => 600, 'total_questions' => 2,
+            'correct_answers' => 0, 'attempt_no' => 1, 'question_order_json' => json_encode([10, 20])];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($expired)),
+        ]);
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $this->practiceQuestionMapper(),
+            courseService: $this->practiceCourseService($this->practiceCourse(true, 2, 10), [10, 20], [42, 43]),
+        );
+
+        try {
+            $service->startPracticeExam(7, 'alice');
+            $this->fail('a practice start inside the grace period must be refused');
+        } catch (\Exception $e) {
+            $this->assertSame('Exam timed out', $e->getMessage());
+        }
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertFalse(
+                $builder->table === 'learning_sessions' && in_array($builder->operation, ['insert', 'update'], true),
+                'no new session and no close inside the grace period'
+            );
+        }
     }
 
     private function completedPracticeSession(int $correct, int $total, int $pass): array {
