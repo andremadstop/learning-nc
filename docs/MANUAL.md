@@ -1,6 +1,6 @@
 # Learning — User & Administrator Manual
 
-For **Learning 5.9.0** on Nextcloud 33–35.
+For **Learning 5.10.0** on Nextcloud 33–35.
 
 This manual walks through the complete workflow, in the order you will actually use it:
 
@@ -631,13 +631,19 @@ automatically.
 A course carries a title, a description, and optionally an exam date used for the
 student countdown.
 
+The optional field **Enrol all current members of this group** takes a Nextcloud group ID.
+When you set or change it and save, everyone who is in that group right now is enrolled as a
+student. People who join the group later are not added, and saving the course again enrols
+nobody, so people you removed by hand stay removed. The group must exist, be allowed for you
+by the sharing settings and have at most 1,000 members; otherwise the course is not saved.
+
 ### 3.4 Attach pools to the course
 
 In the course, open the **Administration** tab.
 
 Attach the pools you created in 3.1. For each attached pool you decide whether it is
-**required**. Required pools count towards course completion and towards certification;
-optional pools are practice material.
+**required**. In a course with certification, each required pool needs its own passed exam
+(see [3.10](#310-completion-and-certificate)); optional pools are practice material.
 
 This required/optional distinction is what turns a pile of questions into a defined
 training programme. Set it deliberately.
@@ -648,7 +654,9 @@ Open the course's **Learning space** tab → materials.
 
 Learning does not store documents itself. You **link a Nextcloud folder**:
 
-1. Enter the path in **Material folder**, e.g. `/CourseMaterial`
+1. Enter the path in **Material folder**, e.g. `/CourseMaterial`, or click
+   **Choose folder…** and pick it in the Nextcloud folder picker. Only the course owner can
+   link the folder. Your home folder itself is refused.
 2. Click **"Link folder"**
 3. Upload your PDFs and Markdown files into that folder in Files
 4. Click **Scan folder**
@@ -656,25 +664,42 @@ Learning does not store documents itself. You **link a Nextcloud folder**:
 The scan registers the documents so students see them in the course. The table columns
 are **File name**, **Type**, **Status**, **Size**, **Uploaded** and **Action**.
 
+**Course members can open every PDF and Markdown file directly in the linked folder**: the
+file names are links. Files in subfolders are not served, and neither are files of a folder
+that was shared with you as view-only (download disabled). Link a folder that holds only
+course material.
+
 Because it is a normal Nextcloud folder, all the usual mechanics apply: share it with a
 group, keep versions, sync it with the desktop client. A group folder works well when
 several instructors maintain the material together.
 
-If AI is enabled, **"Extract all"** additionally indexes the documents so
-the AI tutor can cite them. Without AI, the documents are simply available for download.
+If AI is enabled, **"Extract all"** additionally reads the text of the documents so the AI
+tutor (VirtuProf) can use it as course context; learners do not need it to read the files.
+The extracted text and the extraction status are shown to the course's instructors only.
+With AI off, the extraction controls are hidden. If the server lacks `pdftotext`, the page and
+the admin settings say so, and PDFs cannot be extracted (Markdown still can).
 
 ### 3.6 Enrol students
 
 Course → **Participants** tab.
 
-Type a Nextcloud username into **"Enter username to add..."** and click **Add**. The
-person appears in the member list with the role *student*.
+Search for people or groups in **"Search for a name or group …"**, pick the **Role**
+(*Learner* or *Instructor*) and click **Add**; you can choose several at once. The search
+follows Nextcloud's sharing rules and shows at most 25 results. Choosing a group enrols
+everyone who is in it right now; people who join the group later are not added. The result
+names who was added, who was already in the course, who was not found and which group was
+not available. Existing members keep their role. One step enrols at most 200 people, 20
+groups and 1,000 accounts in total. Enrolled people get a notification that links to the
+course.
+
+When sharing is limited to your own groups or user enumeration is restricted, you can only
+enrol groups you belong to yourself.
 
 **Make Instructor** promotes a member to co-instructor; **Make Student** demotes them.
 Co-instructors see the same progress data you do — worth a thought before promoting.
 
 There is no self-enrolment: someone is in a course because an instructor put them there.
-For a 20–30 person pilot, adding them one by one is a few minutes' work.
+For a pilot, put the participants in one Nextcloud group and add the group.
 
 ### 3.7 Configure what students may do
 
@@ -694,21 +719,25 @@ not shown to students. The modes are:
 For a corporate knowledge assessment, a common setup is: Training and Leitner on, Arena
 off, Exam on.
 
-**Course rules — tools** restricts the simulators per course.
+**Course rules — tools** restricts the simulators per course. Unticking **Show simulator
+tools in this course** hides the whole Tools area from learners (your selection stays stored).
 Globally disabled tools stay locked.
 
 **Exam date** sets the date and time used for the countdown on the
 student dashboard and for the exam reminders. It does not open or close any exam.
 
 **Course schedule** plans chapters with a **Start date** and a **Target date**.
-Students see it as a timeline.
+Students see it as a timeline on their learning dashboard. A **Chapter ID** that matches a
+course pool's chapter key (or name) shows the learners' progress in that pool. The dates
+only guide; they lock or open nothing.
 
 **Talk room** links a Nextcloud Talk room to the course — paste the token
 from the Talk URL.
 
-**Maintenance mode** keeps a small daily review portion running after the course ends,
-scheduled by the FSRS algorithm. For compliance training this is how knowledge survives
-past the test date.
+**Maintenance mode** shows every member a "Maintenance mode" card on their learning
+dashboard as soon as Leitner cards are due; its button opens the normal review queue. No
+course end is checked: switch it on when the course is over. For compliance training this
+is how knowledge survives past the test date.
 
 ### 3.8 The student's test attempt
 
@@ -719,8 +748,8 @@ In **Exam mode** the student picks a pool and sees up to two cards:
 - **Exam** — up to 90 questions from the pool (all of them if the pool is smaller),
   1.5 minutes per question, at most 120 minutes. In a course with certification enabled,
   it is judged by the course's **Minimum score (%)** and counts towards the certificate
-  when the pool is one of the **Required pools** (or none are set); otherwise the result
-  is shown on the 720/900 scale.
+  when the pool is one of the **Required pools** (or none are set). In a course without
+  certification, the result is shown on the 720/900 scale.
 - **Practice run** — only when the course offers practice exams. It uses the course's
   practice settings (number of questions, time limit, pass mark), ends with a review with
   explanations, and never counts towards a certificate.
@@ -766,12 +795,24 @@ Course → **Administration** tab → **Certification**.
 
 - **Enable certification**
 - **Minimum score (%)** — the passing threshold
-- **Required pools** — which pools must be completed
+- **Required pools** — the pools in which a passed exam is needed
 - **Validity duration (days, 0 = no expiry)** — for recurring training
 
-Once enabled, a learner who meets the criteria is automatically issued a
-cryptographically signed (Ed25519) certificate. It can be printed as A4 and carries a QR
-code and a certificate ID.
+**The pass rule.** With required pools, each of them needs its own exam at or above the
+**Minimum score (%)**, started from the **Exam** card in this course's exam mode; the best
+attempt per pool counts. Without required pools, the best exam of the course decides.
+Practice exams and practice runs never count, and Leitner mastery does not count either.
+The course's **Exam** learning mode must be on (3.7); the certificate settings warn when it
+is off, because then nobody can be certified.
+
+Once enabled, a learner who meets the rule is issued a cryptographically signed (Ed25519)
+certificate **right after the exam**; the result screen says so and links to it. It can be
+printed as A4 and carries a QR code and a certificate ID. Learners find their certificate
+and what is still missing in **Participants → Completion & certificate**, which is always
+shown in a certifying course. **Instructors of a course (owner and co-instructors) never
+receive a certificate in it**, also not through the student view. Under
+**Participants → Completion & certificate** you see who passed without receiving a
+certificate, and whether certificates can be signed at all.
 
 **Before this works, generate the issuer key once.** A Nextcloud administrator clicks
 **Generate signing key** in the warning banner under **Settings → Administration →
@@ -1040,9 +1081,13 @@ pools are empty. Check the Administration tab.
 **A learning mode is missing for students but visible to you.** It is disabled in course
 rules (3.7). Instructors see modes that students do not.
 
-**No certificate is issued although the score was reached.** Either the issuer key was
-never generated (`learning:cert:init-issuer`), or certification is not enabled for the
-course, or a *required* pool is still incomplete (3.4).
+**No certificate is issued although the score was reached.** Check, in this order: the
+issuer key was never generated (`learning:cert:init-issuer`); certification is not enabled
+for the course; a *required* pool has no passed exam yet (each needs its own, see 3.10);
+the attempt was a practice exam or practice run, or was started outside this course; the
+course's **Exam** mode is off; the learner is an instructor of the course; or the learner's
+certificate expired and the recertification period has not opened yet (it opens after the
+grace period, and only exams taken from then on count, see section 4).
 
 **Documents do not appear in the course.** The folder is linked but not scanned — click
 **Scan folder** after uploading (3.5).

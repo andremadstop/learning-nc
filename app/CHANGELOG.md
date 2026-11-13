@@ -2,6 +2,160 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.10.0] - 2026-11-13 — Certification, enrollment and course materials
+
+Reported by alphalib-g in GitHub #35: a small organisation that certifies its people every year
+found that learners passed and never got a certificate, that learners enrolled by typed user
+name could not see the course, and that learners could not open the course materials.
+
+> **Administrators, please read: certification follows a new rule.**
+> - **The certificate is issued right after a counting exam.** Before, it was only issued when
+>   the learner opened the completion tab, and that tab was hidden unless the course summary
+>   was released.
+> - **Every required pool needs its own passed exam.** With required pools, each of them needs
+>   an exam started in this course's exam mode at or above the course's **Minimum score (%)**;
+>   the best attempt per pool counts. Without required pools, the best exam of the course
+>   decides. **Leitner mastery no longer counts** towards the certificate.
+> - **Exams taken before the update count under the new rule**, including the former
+>   45-question "Practice exam" card, which always counted as an exam. A learner who already
+>   passed but lacked Leitner mastery receives the certificate the next time they open the
+>   course's completion tab.
+> - **Practice exams and the new pool practice runs never count.**
+> - **Instructors of a course get no certificate in it** (owner and co-instructors), also not
+>   through the student view.
+> - **A recertification counts only the exams of the new period.** The period opens once the
+>   certificate has expired and the grace days (default 14) have passed. Before, last year's
+>   exams renewed the certificate without a new exam.
+> - **Every PDF and Markdown file directly in a linked material folder can now be opened by all
+>   course members.** Link a folder that holds only course material; the home folder is refused.
+> - **Exam slots are removed** (Administration → Exam Slot). The setting said learners could
+>   only take the exam during a slot, but nothing on the learner side ever checked it.
+> - **A repair step corrects member ids.** Course members and pool shares stored with the wrong
+>   letter case (for example "Alice" for the account "alice") are rewritten to the real user id.
+>   A row that would then duplicate an existing one, or that names the course or pool owner, is
+>   deleted instead. Rows of deleted accounts are left alone.
+
+### Certification
+- **Issued right after the exam.** The exam result screen judges a counting exam by the course
+  pass mark and says "Certificate issued" with a button to open it, "Pool passed — still
+  required: …", that the pool is not required for the certificate, or the pass mark and the
+  retake rules. If the certificate check fails, the result is still saved and the screen points
+  to the completion tab.
+- **Pass rule per required pool** (see the note above). Only required pools that are still
+  attached to the course count; if none is left, any counting exam of the course decides.
+- **The completion tab ("Completion & certificate") is always shown in a certifying course.**
+  The course summary switch now only releases the statistics. The tab shows the pass and
+  certificate state (issued, expired, revoked or issuance failed), the required pools with the
+  best score, the pass mark, the validity, which exams count, and the retake rules, and offers
+  a retry instead of a blank tab when loading fails.
+- **A failed issuance is reported, not shown as success.** Without a usable signing key the
+  learner reads "contact your administrator". Under **Participants → Completion &
+  certificate**, instructors see who passed without receiving a certificate and whether
+  certificates can be signed at all.
+- **Recertification counts only exams of its own period** (see the note above). The same
+  applied after revoking a certificate: exams from before the revocation reissued it at once.
+- **Instructors are never certified in their own course.** The rule is still checked and shown,
+  but nothing is issued or written to the audit trail; the completion tab and the result screen
+  say why.
+- **An expired certificate is named on the result screen,** with the date and the note that a
+  retake counts once the renewal period has opened after the grace period.
+- **The certificate settings warn when the course's Exam mode is off,** because then nobody can
+  be certified.
+- The certificate notification opens the course's completion page.
+
+### Enrollment
+- **Enrol people and groups by search.** Under **Participants**, search for people or groups
+  (Nextcloud's sharing rules apply, at most 25 results), choose the role and add several at
+  once. Choosing a group enrols everyone who is in it right now; people who join the group later
+  are not added. The result names who was added, who was already in the course, who was not
+  found and which group was not available. Existing members keep their role, and a different
+  role picked for them is reported as not changed. One step enrols at most 200 people, 20 groups
+  and 1,000 accounts in total.
+- **Members are stored under their real user id.** Typing "Alice" for the account "alice"
+  stored "Alice", and on PostgreSQL that learner never saw the course. Pool shares had the same
+  problem. Existing rows are corrected by the repair step (see the note above).
+- **Clear messages instead of "Failed to add member":** unknown account, already a member, not
+  an instructor of this course.
+- **Group privacy:** when sharing is limited to own groups or user enumeration is restricted, a
+  non-administrator can only enrol groups they belong to, and a typed account outside their
+  groups looks like a missing one.
+- **Enrolled people get a notification** that links to the course (not when you enrol
+  yourself).
+- **The course form's group field works.** "Enrol all current members of this group" enrols the
+  group's members when the group is set or changed. The group is checked before saving (it must
+  exist, be allowed for you and have at most 1,000 members); otherwise the course is not saved.
+  Saving the course again enrols nobody, so people removed by hand stay removed. Before, the
+  field did nothing.
+
+### Exams
+- **Exam cards follow the pool and the course.** The exam has up to 90 questions from the pool
+  (all of them if it has fewer), 1.5 minutes per question and at most 120 minutes; it is
+  disabled on an empty pool. Before, every course offered fixed CompTIA cards (90 questions,
+  90 minutes, 720 of 900) and a 45-question "Practice exam" that in fact counted.
+- **The CompTIA 720/900 scale is only used in courses without certification.** In a certifying
+  course the result is a percentage against the course's **Minimum score (%)**, the same rule as
+  the certificate.
+- **New "Practice run" card per pool,** shown only when the course offers practice exams. It
+  uses the course's practice settings (questions, time limit, pass mark, attempt limit,
+  cooldown), ends with a review with explanations and never counts towards a certificate.
+- **An exam started from a course is composed by the server:** at least 45 questions (or all
+  eligible ones if the pool has fewer), without a question-type filter. Before, a shortened
+  request could turn a single correct answer into a pass.
+- The exam setup names the pass mark when the exam counts; texts no longer promise a
+  simulation of the real CompTIA exam in every course.
+- **Exam slots are removed** (see the note above). The exam date only drives the learners'
+  countdown and reminders, and its help text now says so.
+
+### Course administration
+- **Learners see the course schedule** as a timeline on their dashboard. Before, they got
+  "no schedule" because the schedule was readable by instructors only. The timeline matches
+  entries to pools by the pool's chapter key or name and shows a load error with a retry.
+- **Schedule editor:** a chapter ID column with suggestions from the pools' chapter keys; a
+  repeated ID is named before saving, and a refused save shows the server's reason.
+- **Every learning mode switch says what it does.** The Leitner sprint setting only shows while
+  Leitner is on, the adventure campaigns only while Adventure is on. A note explains that
+  gamification is a server-wide setting.
+- **New switch "Show simulator tools in this course"** (on by default, so existing courses keep
+  their tools).
+- Saving the tools, the sprint setting or the Talk room no longer stores a mode switch that was
+  changed elsewhere without its own save.
+- **The student view shows the course the way learners see it,** without the instructor tabs.
+  An instructor enrolled as a learner in a colleague's course no longer gets the Pools, Topics
+  and Knowledge tabs there.
+- Help texts for maintenance mode, topics and chapter keys describe what the app actually does.
+
+### Materials
+- **Learners can open the material files:** file names are links. Only files directly in the
+  course's current material folder are served, and files of a view-only share are not.
+- **The extracted text is no longer sent to learners.** The document list used to hand every
+  course member the full extracted text of each PDF and the extraction errors; status, errors
+  and paths now go only to the course's instructors.
+- **The owner picks the material folder** with a Nextcloud folder picker; the page says that
+  course members can open every PDF and Markdown file in it, and the home folder is refused.
+  Re-picking a folder that was typed in no longer registers its files twice.
+- **Extraction is explained:** with AI off, extraction status and buttons, the Knowledge tab and
+  the learners' Swarm tab are hidden; with AI on, the page says that extraction only feeds
+  VirtuProf. Without `pdftotext` the page and the admin settings say so, and "Extract all" leaves
+  PDFs alone instead of failing them.
+- Learners get their own empty state, and "Learning materials" comes first in the learning
+  space when a folder is set.
+
+### Fixes
+- **Database errors when starting a training or exam** were sent to the browser with the raw
+  driver message (table and column names, SQL); they are now logged and answered with a fixed
+  text.
+- **A running exam resumes only in the course it was started in.** Before, an exam started
+  outside a course or in another course sharing the pool was resumed here and counted for the
+  wrong course or none. Now the learner is told to finish it where it was started.
+- **Practice attempts are no exam scores:** they no longer appear as a pool's exam score in the
+  learning profile and earn no exam badges (quick thinker, exam ready).
+- **A schedule that failed to load can no longer be overwritten** from an empty editor.
+- **Course materials that failed to load** show an error with a retry instead of "no learning
+  materials", and no folder, scan or extract controls.
+- **The dashboard exam countdown** skipped every exam date saved with a time.
+- **Translations:** the exam-mode hint was English in French, Russian and Arabic; French showed
+  "Group" instead of "Groupe".
+
 ## [5.9.0] - 2026-11-13 — Audit fixes: security, exams, team leads, videos
 
 > **Administrators, please act after the update: enter your operator details.** The imprint

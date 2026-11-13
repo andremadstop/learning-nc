@@ -164,7 +164,7 @@ Exported files are roundtrip-compatible — you can re-import them into any pool
 1. Switch to the **Courses** tab
 2. Click **New Course** and add a title and description
 3. Assign question pools to the course
-4. Add students by Nextcloud username
+4. Under **Participants**, search for people or groups and add them (a group enrolls its current members)
 5. Track student progress from the **Instructor Dashboard**
 
 Students see the courses an instructor enrolled them in and their progress across all assigned pools; there is no self-enrollment.
