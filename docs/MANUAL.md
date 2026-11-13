@@ -803,7 +803,9 @@ and send recertification reminders automatically. Combined with **Validity durat
 
 1. Employee completes the course, receives a certificate valid for e.g. 365 days
 2. Before expiry, an automated reminder goes out
-3. The employee retakes the course; a new certificate is issued
+3. When the certificate has expired and the grace period (default 14 days) is over, a new
+   recertification period opens. The employee retakes the exams; only exams taken in this new
+   period count, and a new certificate is issued once they meet the pass mark
 4. Every issuance, revocation and completion is written to a tamper-proof audit trail
 
 **Compliance reports** give an organisation-wide completion overview for audits — who has
