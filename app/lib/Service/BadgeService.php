@@ -253,9 +253,12 @@ class BadgeService {
         $totalQ = (int)($data['total_questions'] ?? 0);
         $correctA = (int)($data['correct_answers'] ?? 0);
         $scorePct = $totalQ > 0 ? round($correctA / $totalQ * 100) : 0;
+        // Practice attempts (exam_kind set: course practice exam, pool practice run) are mode
+        // 'exam' but no exam run: they earn no exam badges, like every certificate query.
+        $isCountingExam = $mode === 'exam' && ($data['exam_kind'] ?? null) === null;
 
         // exam_ready: 3 exam sessions above 85%
-        if ($mode === 'exam' && $scorePct > 85) {
+        if ($isCountingExam && $scorePct > 85) {
             $examReadyRuns = $this->getSuccessfulExamRunCount($userId);
             if ($examReadyRuns >= self::BADGES['exam_ready']['threshold']) {
                 $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'exam_ready', $notify));
@@ -275,7 +278,7 @@ class BadgeService {
         }
 
         // quick_thinker: exam completed in <50% of allotted time with 80%+ score
-        if ($mode === 'exam' && $scorePct >= 80) {
+        if ($isCountingExam && $scorePct >= 80) {
             $timeLimit = (int)($data['time_limit_seconds'] ?? 0);
             $startedAt = (int)($data['started_at'] ?? 0);
             $completedAt = (int)($data['completed_at'] ?? 0);

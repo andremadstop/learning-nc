@@ -2084,7 +2084,12 @@ class TrainingService {
             'started_at' => (int)$session['started_at'],
             'time_limit_seconds' => isset($session['time_limit_seconds']) ? (int)$session['time_limit_seconds'] : 0,
         ];
-        $newBadges = $this->badgeService->checkAndAward($userId, 'session_complete', $sessionData);
+        // exam_kind goes to the badge check only: a practice attempt earns no exam badges.
+        $newBadges = $this->badgeService->checkAndAward(
+            $userId,
+            'session_complete',
+            $sessionData + ['exam_kind' => $session['exam_kind'] ?? null]
+        );
         $response['newly_earned_badges'] = $newBadges;
 
         // XP for this session

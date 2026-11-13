@@ -1242,6 +1242,48 @@ class TrainingServiceTest extends TestCase {
         $this->assertFalse($result['review_withheld']);
     }
 
+    /**
+     * GitHub #35: the badge check must learn that a session is a practice attempt, or it hands out
+     * exam badges (quick_thinker) for it. A key no reader gets would fail silently.
+     */
+    public function testCompletingAPracticeAttemptTellsTheBadgeCheckItsExamKind(): void {
+        $open = ['completed_at' => null] + ['exam_kind' => 'pool_practice'] + $this->completedPracticeSession(4, 4, 75);
+        $done = ['completed_at' => time()] + $open;
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($open)),   // verifySessionOwnership
+            new FakeQueryBuilder(new FakeResult(), 1),             // mark completed
+            new FakeQueryBuilder(FakeResult::fromFetch($done)),   // re-read the session
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),   // active exam on pool 42
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),   // active exam on pool 43
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),   // review: user answers
+        ]);
+        $calls = [];
+        $badgeService = $this->createMock(BadgeService::class);
+        $badgeService->method('checkAndAward')->willReturnCallback(
+            static function (string $userId, string $context, array $data) use (&$calls): array {
+                $calls[$context] = $data;
+                return [];
+            }
+        );
+        $xpService = $this->createMock(XpService::class);
+        $xpService->method('calculateXp')->willReturn(['level' => 1]);
+        $streakService = $this->createMock(StreakService::class);
+        $streakService->method('getStreak')->willReturn(['current_streak' => 0]);
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $this->practiceQuestionMapper(),
+            badgeService: $badgeService,
+            streakService: $streakService,
+            xpService: $xpService,
+        );
+
+        $service->completeSession(600, 'alice');
+
+        $this->assertArrayHasKey('session_complete', $calls, 'the badge check ran');
+        $this->assertSame('exam', $calls['session_complete']['mode']);
+        $this->assertSame('pool_practice', $calls['session_complete']['exam_kind']);
+    }
+
     public function testPracticeCompletionPassesAtThreshold(): void {
         $db = new FakeDbConnection([
             new FakeQueryBuilder(FakeResult::fromFetch($this->completedPracticeSession(3, 4, 75))),
