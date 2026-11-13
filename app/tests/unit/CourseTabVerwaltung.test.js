@@ -53,6 +53,9 @@ function createInstance(overrides = {}) {
 		visibleSubTabs: { get: () => CourseTabVerwaltung.computed.visibleSubTabs.call(instance) },
 		modeConfigKeys: { get: () => CourseTabVerwaltung.computed.modeConfigKeys.call(instance) },
 		toolConfigKeys: { get: () => CourseTabVerwaltung.computed.toolConfigKeys.call(instance) },
+		toolsSwitchedOn: { get: () => CourseTabVerwaltung.computed.toolsSwitchedOn.call(instance) },
+		leitnerModeOn: { get: () => CourseTabVerwaltung.computed.leitnerModeOn.call(instance) },
+		abenteuerModeOn: { get: () => CourseTabVerwaltung.computed.abenteuerModeOn.call(instance) },
 	})
 
 	for (const [name, fn] of Object.entries(CourseTabVerwaltung.methods || {})) {
@@ -114,6 +117,9 @@ describe('CourseTabVerwaltung', () => {
 		expect(result.training).toBe(true)
 		expect(result.abenteuer).toBe(false)
 		expect(result.course_summary).toBe(false)
+		// GitHub #35: every mode-config PUT rebuilds the whole config, so a missing tools key
+		// would be saved as the server default; the client keeps it explicit.
+		expect(result.tools).toBe(true)
 	})
 
 	it('syncs exam_date from the course prop', () => {

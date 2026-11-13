@@ -5,6 +5,13 @@
 			<span>{{ t('learning', 'Zeitplan wird geladen...') }}</span>
 		</div>
 
+		<div v-else-if="loadError" class="timeline-error" role="alert" data-test="timeline-error">
+			<p>{{ t('learning', 'Der Zeitplan konnte nicht geladen werden.') }}</p>
+			<button type="button" class="timeline-retry" @click="loadTimeline">
+				{{ t('learning', 'Erneut versuchen') }}
+			</button>
+		</div>
+
 		<div v-else-if="!schedule.length" class="timeline-empty">
 			<p>{{ t('learning', 'Kein Zeitplan vorhanden.') }}</p>
 		</div>
@@ -74,6 +81,7 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import { buildChapterProgressMap } from '../utils/chapterProgress.js'
 
 export default {
 	name: 'CourseTimeline',
@@ -92,6 +100,7 @@ export default {
 	data() {
 		return {
 			loading: false,
+			loadError: false,
 			schedule: [],
 			chaptersInScope: [],
 			examDate: '',
@@ -140,6 +149,7 @@ export default {
 	methods: {
 		async loadTimeline() {
 			this.loading = true
+			this.loadError = false
 			try {
 				const [scheduleRes, progressRes, readinessRes] = await Promise.allSettled([
 					axios.get(generateUrl('/apps/learning/api/courses/{courseId}/schedule', { courseId: this.courseId })),
@@ -151,27 +161,23 @@ export default {
 					const data = scheduleRes.value.data || {}
 					this.schedule = data.schedule || []
 					this.chaptersInScope = data.chapters_in_scope || []
+				} else {
+					// GitHub #35: a failed read is not "no schedule". Only a 403 (not a member of
+					// this course any more) stays quiet; anything else says so and can be retried.
+					this.schedule = []
+					this.loadError = scheduleRes.reason?.response?.status !== 403
 				}
 
 				if (progressRes.status === 'fulfilled') {
 					const pools = Array.isArray(progressRes.value.data)
 						? progressRes.value.data
 						: (progressRes.value.data?.pools || [])
-					const map = {}
-					for (const p of pools) {
-						const ref = p.chapter_ref || p.pool_name || ''
-						if (ref && p.total_questions > 0) {
-							map[ref] = Math.round((p.mastered || 0) / p.total_questions * 100)
-						}
-					}
-					this.progressMap = map
+					this.progressMap = buildChapterProgressMap(pools)
 				}
 
 				if (readinessRes.status === 'fulfilled') {
 					this.examDate = readinessRes.value.data?.exam_date || ''
 				}
-			} catch (e) {
-				// silent — timeline is optional widget
 			} finally {
 				this.loading = false
 			}
@@ -229,6 +235,27 @@ export default {
 }
 
 .timeline-empty p { margin: 0; }
+
+.timeline-error {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 12px 0;
+	color: var(--color-error-text, var(--color-error));
+	font-size: 0.9em;
+}
+
+.timeline-error p { margin: 0; }
+
+.timeline-retry {
+	padding: 4px 12px;
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius-element, var(--border-radius));
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	cursor: pointer;
+}
 
 /* Track: horizontal on desktop, vertical on mobile */
 .timeline-track {

@@ -1189,6 +1189,30 @@ class CourseService {
     }
 
     /**
+     * Batch-load the chapter key of each pool (null when the pool has none).
+     *
+     * @param int[] $poolIds
+     * @return array<int, string|null>
+     */
+    private function getPoolChapterKeys(array $poolIds): array {
+        if (empty($poolIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'chapter_key')
+            ->from('learning_pools')
+            ->where($qb->expr()->in('id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        $result = $qb->executeQuery();
+        $keys = [];
+        while ($row = $result->fetch()) {
+            $key = $row['chapter_key'] ?? null;
+            $keys[(int)$row['id']] = ($key === null || $key === '') ? null : (string)$key;
+        }
+        $result->closeCursor();
+        return $keys;
+    }
+
+    /**
      * Batch-load question counts per pool.
      */
     private function getQuestionCounts(array $poolIds): array {
@@ -1567,6 +1591,7 @@ class CourseService {
         }
 
         $poolNames = $this->getPoolNames($poolIds);
+        $poolChapterKeys = $this->getPoolChapterKeys($poolIds);
         $questionCounts = $this->getQuestionCounts($poolIds);
         $masteryData = $this->getBatchMastery([$userId], $poolIds);
         $sessionData = $this->getBatchSessionStats([$userId], $poolIds);
@@ -1583,6 +1608,9 @@ class CourseService {
             $pools[] = [
                 'pool_id' => $pid,
                 'pool_name' => $poolNames[$pid] ?? '(deleted)',
+                // GitHub #35: the course timeline matches a schedule entry's chapter_ref against
+                // this key. Without it only a chapter_ref equal to the pool name ever showed progress.
+                'chapter_key' => $poolChapterKeys[$pid] ?? null,
                 'total_questions' => $totalQ,
                 'mastered' => $mastered,
                 'answered' => $totalAnswered,
@@ -2149,7 +2177,12 @@ class CourseService {
 
     /**
      * Update the mode configuration for a course (instructor only).
-     * $modeConfig keys: training, leitner, swipe, exam, duel, league (bool each)
+     * $modeConfig keys: training, leitner, swipe, exam, duel, gameshow, league, oldschool,
+     * abenteuer, course_summary, tools (bool each). A missing key gets its default.
+     *
+     * tools (GitHub #35) is the course's master switch for the simulator tools: false hides the
+     * Werkzeuge tab and the tool hints, whatever enabled_tools says. Default true, so a course
+     * saved before the switch existed keeps its tools.
      */
     public function updateModeConfig(int $courseId, string $userId, array $modeConfig, ?string $talkRoomToken = null, ?bool $leitnerSprint = null): array {
         $course = $this->courseMapper->findById($courseId);
@@ -2157,7 +2190,7 @@ class CourseService {
             throw new ForbiddenException('Only instructors can update course mode config');
         }
 
-        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary'];
+        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools'];
         $clean = [];
         foreach ($allowed as $key) {
             $defaultValue = $key === 'course_summary' ? false : true;

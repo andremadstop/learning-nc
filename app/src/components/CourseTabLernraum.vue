@@ -337,7 +337,8 @@
 		<div v-else-if="currentSubTab === 'curriculum' && isInstructor" class="curriculum-section">
 			<div class="curriculum-header">
 				<h3>{{ t('learning', 'Themensteuerung') }}</h3>
-				<p class="curriculum-desc">{{ t('learning', 'Lege fest, welche Kapitel aktuell im Kurs aktiv sind. Bei aktivem Filter werden Kurs-Duelle automatisch auf diese Kapitel eingeschränkt.') }}</p>
+				<p class="curriculum-desc" data-test="curriculum-desc">{{ t('learning', 'Lege fest, welche Kapitel aktuell im Kurs aktiv sind. Bei aktivem Filter kommen in Training, Leitner, Prüfung, Probeprüfung, Duell und Gameshow dieses Kurses nur Fragen aus den gewählten Kapiteln vor, auch in der Prüfung für das Zertifikat. Fragen ohne Kapitel-Schlüssel fallen dann heraus. Ist kein Kapitel gewählt, wirkt der Filter nicht.') }}</p>
+				<p class="curriculum-desc">{{ t('learning', 'Die Kapitel stammen aus dem Kapitel-Schlüssel der einzelnen Fragen, nicht aus den Pool-Einstellungen.') }}</p>
 			</div>
 
 			<div v-if="loadingCurriculum" class="curriculum-loading">
@@ -570,7 +571,7 @@ import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
 import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
 import WiresharkLite from './WiresharkLite.vue'
-import { TOOL_CATALOG, effectiveCourseTools } from '../utils/toolCatalog.js'
+import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { lernraumTabIds } from '../utils/courseView.js'
 
 export default {
@@ -753,7 +754,7 @@ export default {
 			return labels[this.currentSubTab] || t('learning', 'Choose a learning mode')
 		},
 		courseToolTabs() {
-			const enabledSet = new Set(effectiveCourseTools(this.course?.enabled_tools, this.adminEnabledTools))
+			const enabledSet = new Set(courseToolIds(this.course, this.adminEnabledTools))
 			return TOOL_CATALOG
 				.filter((tool) => enabledSet.has(tool.id))
 				.map((tool) => ({

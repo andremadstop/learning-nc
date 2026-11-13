@@ -209,4 +209,19 @@ describe('CourseDetail rendered (GitHub #35)', () => {
 		expect(detail.currentTab).toBe('videos')
 		expect(host.querySelector('.lernraum-pill.active')?.textContent.trim()).toBe('Pflichtinhalte')
 	})
+	// GitHub #35: mode_config.tools switches off the Werkzeuge tab and the tool hints in the
+	// learning space, whatever enabled_tools says.
+	it('the tools master switch removes the Werkzeuge tab and the tool hints for learners', async () => {
+		api.course = course({ enabled_tools: null, mode_config: { training: true, leitner: true, exam: true, tools: true } })
+		await mountDetail({ userRole: 'student' })
+		expect(subTabLabels()).toContain('Werkzeuge')
+		expect(host.querySelector('.course-tools-callout')).toBeTruthy()
+		app.unmount()
+		host.remove()
+
+		api.course = course({ enabled_tools: null, mode_config: { training: true, leitner: true, exam: true, tools: false } })
+		await mountDetail({ userRole: 'student' })
+		expect(subTabLabels()).not.toContain('Werkzeuge')
+		expect(host.querySelector('.course-tools-callout')).toBeNull()
+	})
 })

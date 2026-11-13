@@ -138,6 +138,7 @@ describe('CourseDetail navigation logic', () => {
 			league: true,
 			abenteuer: false,
 			course_summary: false,
+			tools: true,
 		})
 	})
 
@@ -289,6 +290,17 @@ describe('CourseDetail navigation logic', () => {
 		const adminSome = createInstance({ adminEnabledTools: ['dns'] })
 		adminSome.course = { ...adminSome.course, enabled_tools: null }
 		expect(adminSome.lernraumLeafTabs).toContain('tools')
+	})
+
+	// GitHub #35: the master switch beats the tool selection, for routing too.
+	it('drops the tools tab while the course master switch is off', () => {
+		const instance = createInstance({ adminEnabledTools: null })
+		instance.course = { ...instance.course, enabled_tools: null, mode_config: { ...instance.course.mode_config, tools: false } }
+		expect(instance.hasCourseTools).toBe(false)
+		expect(instance.lernraumLeafTabs).not.toContain('tools')
+
+		instance.course = { ...instance.course, mode_config: { ...instance.course.mode_config, tools: true } }
+		expect(instance.lernraumLeafTabs).toContain('tools')
 	})
 
 	// Codeberg #9: without 'practice' in this whitelist the navigation drops the tab silently.

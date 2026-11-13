@@ -33,12 +33,20 @@ class ScheduleService {
     }
 
     /**
-     * Get the schedule for a course. Only instructors may access this.
+     * Get the schedule for a course. Every member of the course (and its owner) may read it;
+     * changing it stays with the instructors (setSchedule, deleteSchedule).
      *
-     * @return array{schedule: array, chapters_in_scope: string[]}
+     * GitHub #35: reading used to require an instructor, so the learners' dashboard timeline got
+     * a 403 for every student and showed "no schedule" although the instructor had planned one.
+     *
+     * known_chapter_refs are the chapter keys of the course's pools. The schedule editor offers
+     * them as suggestions: a schedule entry whose chapter_ref equals a pool's chapter key shows
+     * that pool's progress in the timeline.
+     *
+     * @return array{schedule: array, chapters_in_scope: string[], known_chapter_refs: string[]}
      */
     public function getSchedule(int $courseId, string $userId): array {
-        $this->requireInstructor($courseId, $userId);
+        $this->requireMember($courseId, $userId);
 
         $entries = $this->scheduleMapper->findByCourse($courseId);
         $scopeKeys = $this->getActiveScopeChapterRefs($courseId);
@@ -51,6 +59,7 @@ class ScheduleService {
         return [
             'schedule' => $result,
             'chapters_in_scope' => $scopeKeys,
+            'known_chapter_refs' => $this->getAllChapterRefsForCourse($courseId),
         ];
     }
 
@@ -76,7 +85,9 @@ class ScheduleService {
             if ($chapterRef === '') {
                 throw new \InvalidArgumentException("Entry $i: chapter_ref is required");
             }
-            if (strlen($chapterRef) > 255) {
+            // The column holds 255 characters on PostgreSQL and MySQL utf8mb4; strlen() counted
+            // bytes and refused a ref of 200 umlauts that the editor's maxlength let through.
+            if (mb_strlen($chapterRef) > 255) {
                 throw new \InvalidArgumentException("Entry $i: chapter_ref too long");
             }
             if (isset($seenRefs[$chapterRef])) {
@@ -176,6 +187,25 @@ class ScheduleService {
         $result->closeCursor();
 
         return $refs;
+    }
+
+    /**
+     * Ensure the user owns the course or is a member of it in any role.
+     *
+     * @throws ForbiddenException
+     */
+    private function requireMember(int $courseId, string $userId): void {
+        $course = $this->courseMapper->findById($courseId);
+        if ($course->getInstructorId() === $userId) {
+            return;
+        }
+        try {
+            $this->courseMemberMapper->findByCourseAndUser($courseId, $userId);
+            return;
+        } catch (DoesNotExistException $e) {
+            // not a member
+        }
+        throw new ForbiddenException('No permission to view schedule');
     }
 
     /**

@@ -15,12 +15,18 @@
 		<div v-if="currentSubTab === 'mode-config'" class="tab-content mode-config-section">
 			<h3>{{ t('learning', 'Kursregeln — Lernmodi') }}</h3>
 			<p class="mode-config-hint">{{ t('learning', 'Deaktivierte Modi werden Studierenden nicht angezeigt.') }}</p>
+			<p class="mode-config-hint" data-test="gamification-note">{{ t('learning', 'Gamification (XP, Abzeichen, Serien, Missionen) schaltet die Server-Administration für alle Kurse ein oder aus. Diese Modi bleiben auch ohne Gamification nutzbar, es gibt dann nur keine XP und Abzeichen dafür.') }}</p>
 			<div class="mode-toggles">
-				<div v-for="mode in modeConfigKeys" :key="mode.key" class="mode-toggle-row">
+				<div v-for="mode in modeConfigKeys" :key="mode.key" class="mode-toggle-row mode-toggle-row--described">
 					<label class="mode-toggle-label">
-						<input type="checkbox" :checked="modeConfigLocal[mode.key] !== false" @change="toggleMode(mode.key, $event.target.checked)" />
+						<input
+							type="checkbox"
+							:checked="modeConfigLocal[mode.key] !== false"
+							:aria-describedby="'mode-desc-' + mode.key"
+							@change="toggleMode(mode.key, $event.target.checked)" />
 						{{ mode.label }}
 					</label>
+					<small :id="'mode-desc-' + mode.key" class="mode-config-note mode-description" :data-test="'mode-desc-' + mode.key">{{ mode.description }}</small>
 				</div>
 			</div>
 			<NcButton variant="primary" :disabled="savingModeConfig" @click="saveModeConfig">
@@ -30,9 +36,20 @@
 
 			<div class="tool-config-section">
 				<h3>{{ t('learning', 'Kursregeln — Werkzeuge') }}</h3>
+				<label class="mode-toggle-label tools-master-toggle">
+					<input
+						type="checkbox"
+						data-test="tools-master"
+						:checked="toolsSwitchedOn"
+						aria-describedby="tools-master-desc"
+						@change="toggleMode('tools', $event.target.checked)" />
+					{{ t('learning', 'Simulator-Werkzeuge in diesem Kurs anzeigen') }}
+				</label>
+				<p id="tools-master-desc" class="mode-config-hint">{{ t('learning', 'Ausgeschaltet sehen die Lernenden keinen Werkzeuge-Bereich und keine Werkzeug-Hinweise im Lernraum. Deine Auswahl der einzelnen Werkzeuge bleibt gespeichert.') }}</p>
+				<template v-if="toolsSwitchedOn">
 				<p class="mode-config-hint">{{ t('learning', 'Hier kannst du die acht Simulatoren pro Kurs einschränken. Global deaktivierte Werkzeuge bleiben gesperrt.') }}</p>
 				<div v-if="loadingToolConfig" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
-				<div v-else class="mode-toggles">
+				<div v-else class="mode-toggles" data-test="tool-list">
 					<div v-for="tool in toolConfigKeys" :key="tool.key" class="mode-toggle-row">
 						<label class="mode-toggle-label">
 							<input
@@ -45,13 +62,14 @@
 						<small v-if="!isAdminToolEnabled(tool.key)" class="mode-config-note">{{ t('learning', 'Global deaktiviert') }}</small>
 					</div>
 				</div>
+				</template>
 				<NcButton variant="primary" :disabled="savingToolConfig || loadingToolConfig" @click="saveToolConfig">
 					{{ savingToolConfig ? t('learning', 'Saving...') : t('learning', 'Save tools') }}
 				</NcButton>
 				<NcNoteCard v-if="toolConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
 
-			<div class="sprint-config tool-config-section">
+			<div v-if="leitnerModeOn" class="sprint-config tool-config-section" data-test="leitner-sprint">
 				<h3>{{ t('learning', 'Leitner Sprint-Modus') }}</h3>
 				<p class="mode-config-hint">{{ t('learning', 'Sprint-Intervalle verkürzen die Wiederholungszeiten (4h/12h/1d/2d statt 1d/3d/7d/14d). Ideal für Intensivkurse.') }}</p>
 				<label class="mode-toggle-label">
@@ -89,15 +107,15 @@
 
 			<div class="maintenance-config tool-config-section">
 				<h3>{{ t('learning', 'Maintenance Mode') }}</h3>
-				<p class="mode-config-hint">{{ t('learning', 'Studenten erhalten nach Kursende taeglich eine kleine Wiederholungs-Portion basierend auf dem FSRS-Algorithmus.') }}</p>
+				<p class="mode-config-hint" data-test="maintenance-hint">{{ t('learning', 'Eingeschaltet zeigt das Lern-Dashboard jedes Mitglieds eine Karte „Wartungsmodus“, sobald Leitner-Karten fällig sind. Die Zahl darauf zählt die fälligen Karten aus allen Kursen im Wartungsmodus zusammen. Ihr Knopf öffnet die normale Wiederholungs-Warteschlange mit allen fälligen Karten; dort stehen die Karten dieses Kurses auch ohne den Modus. Ein Kursende wird nicht geprüft: Schalte den Modus ein, wenn der Kurs vorbei ist.') }}</p>
 				<label class="mode-toggle-label">
 					<input type="checkbox" v-model="maintenanceMode" @change="saveMaintenanceMode" />
-					{{ t('learning', 'Maintenance Mode nach Kursende') }}
+					{{ t('learning', 'Wartungskarte im Lern-Dashboard anzeigen') }}
 				</label>
 				<NcNoteCard v-if="maintenanceModeSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
 
-			<div class="campaign-config tool-config-section">
+			<div v-if="abenteuerModeOn" class="campaign-config tool-config-section" data-test="adventure-campaigns">
 				<h3>{{ t('learning', 'Abenteuer-Kampagnen') }}</h3>
 				<p class="mode-config-hint">{{ t('learning', 'Wähle welche Kampagnen für Studierende sichtbar sind. Keine Auswahl = alle verfügbar.') }}</p>
 				<div v-if="loadingCampaignList" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
@@ -236,7 +254,8 @@
 		<!-- Schedule -->
 		<div v-if="currentSubTab === 'schedule'" class="tab-content schedule-section">
 			<h3>{{ t('learning', 'Kurs-Zeitplan') }}</h3>
-			<p class="mode-config-hint">{{ t('learning', 'Kapitel mit Start- und Zieldatum planen. Studierende sehen den Zeitplan als Timeline.') }}</p>
+			<p class="mode-config-hint">{{ t('learning', 'Kapitel mit Start- und Zieldatum planen. Die Lernenden sehen den Zeitplan als Timeline auf ihrem Lern-Dashboard. Die Daten dienen nur der Orientierung: Sie sperren und öffnen nichts.') }}</p>
+			<p class="mode-config-hint" data-test="schedule-chapter-help">{{ t('learning', 'Kapitel-Kennung: Stimmt sie mit dem Kapitel-Schlüssel (oder dem Namen) eines Kurs-Pools überein, zeigt die Timeline den Fortschritt der Lernenden in diesem Pool. Vorgeschlagen werden die Kapitel-Schlüssel der Kurs-Pools; freier Text ist erlaubt, dann zeigt die Station nur Titel und Datum.') }}</p>
 
 			<div v-if="loadingSchedule" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
 
@@ -245,6 +264,7 @@
 					<thead>
 						<tr>
 							<th>{{ t('learning', 'Kapitel') }}</th>
+							<th>{{ t('learning', 'Kapitel-Kennung') }}</th>
 							<th>{{ t('learning', 'Startdatum') }}</th>
 							<th>{{ t('learning', 'Zieldatum') }}</th>
 							<th />
@@ -258,6 +278,17 @@
 									type="text"
 									class="schedule-input schedule-input--title"
 									:placeholder="t('learning', 'Kapitelname')" />
+							</td>
+							<td>
+								<input
+									v-model.trim="item.chapter_ref"
+									type="text"
+									maxlength="255"
+									list="schedule-chapter-refs"
+									class="schedule-input schedule-input--ref"
+									data-test="schedule-chapter-ref"
+									:aria-label="t('learning', 'Kapitel-Kennung')"
+									:placeholder="t('learning', 'z. B. chapter-03')" />
 							</td>
 							<td>
 								<input
@@ -279,6 +310,9 @@
 						</tr>
 					</tbody>
 				</table>
+				<datalist id="schedule-chapter-refs">
+					<option v-for="ref in knownChapterRefs" :key="ref" :value="ref" />
+				</datalist>
 
 				<div class="schedule-actions">
 					<NcButton variant="secondary" @click="addScheduleRow">
@@ -307,6 +341,35 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
+
+/**
+ * The rows the schedule PUT sends. A row without a chapter ID gets one from its title, so two
+ * rows can end up with the same ID even though neither input shows it.
+ */
+function buildSchedulePayload(items) {
+	return items.map((item, idx) => ({
+		chapter_ref: String(item.chapter_ref || item.chapter_title?.toLowerCase().replace(/\s+/g, '-') || `ch-${idx + 1}`).trim(),
+		chapter_title: item.chapter_title || '',
+		start_date: item.start_date || null,
+		target_date: item.target_date || null,
+		sort_order: idx + 1,
+	}))
+}
+
+/**
+ * GitHub #35: the table has a unique index (course_id, chapter_ref) and ScheduleService refuses a
+ * repeated ID with a 400 that the editor only showed as "Failed to save schedule".
+ */
+function firstDuplicateChapterRef(payload) {
+	const seen = new Set()
+	for (const entry of payload) {
+		if (seen.has(entry.chapter_ref)) {
+			return entry.chapter_ref
+		}
+		seen.add(entry.chapter_ref)
+	}
+	return null
+}
 
 export default {
 	name: 'CourseTabVerwaltung',
@@ -346,6 +409,10 @@ export default {
 		return {
 			currentSubTab: 'mode-config',
 			modeConfigLocal: {},
+			// The mode config as the server last stored it. The sprint, Talk and tools saves send
+			// this instead of modeConfigLocal, so switches changed elsewhere on the page without
+			// pressing their own Save are not stored with them (GitHub #35).
+			savedModeConfig: {},
 			savingModeConfig: false,
 			modeConfigSaved: false,
 			adminEnabledTools: [...ALL_TOOL_IDS],
@@ -368,6 +435,7 @@ export default {
 			maintenanceMode: false,
 			maintenanceModeSaved: false,
 			scheduleItems: [],
+			knownChapterRefs: [],
 			loadingSchedule: false,
 			savingSchedule: false,
 			scheduleSaved: false,
@@ -399,17 +467,29 @@ export default {
 				{ id: 'schedule', label: t('learning', 'Zeitplan') },
 			]
 		},
+		// GitHub #35: each switch says what it switches. The texts describe the current behaviour;
+		// change them together with it.
 		modeConfigKeys() {
 			return [
-				{ key: 'training', label: t('learning', 'Training') },
-				{ key: 'leitner', label: t('learning', 'Leitner') },
-				{ key: 'exam', label: t('learning', 'Prüfung') },
-				{ key: 'duel', label: t('learning', 'Duell') },
-				{ key: 'gameshow', label: t('learning', 'Gameshow') },
-				{ key: 'league', label: t('learning', 'Liga') },
-				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
-				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab') },
+				{ key: 'training', label: t('learning', 'Training'), description: t('learning', 'Üben mit Rückmeldung und Erklärung direkt nach jeder Antwort.') },
+				{ key: 'leitner', label: t('learning', 'Leitner'), description: t('learning', 'Karteikasten mit fünf Fächern: Richtig beantwortete Karten rücken ein Fach weiter und kommen in immer größeren Abständen wieder, falsch beantwortete zurück ins erste Fach. Die Sprint-Einstellung erscheint nur, solange Leitner eingeschaltet ist.') },
+				{ key: 'exam', label: t('learning', 'Prüfung'), description: t('learning', 'Prüfung über einen Pool, Rückmeldung erst am Ende. Bei aktiver Zertifizierung zählen nur Prüfungen, die hier im Kurs gestartet werden.') },
+				{ key: 'duel', label: t('learning', 'Duell'), description: t('learning', 'Zwei Kursmitglieder beantworten dieselben Fragen gegeneinander (Bereich Arena).') },
+				{ key: 'gameshow', label: t('learning', 'Gameshow'), description: t('learning', 'Quizrunde für mehrere Kursmitglieder gleichzeitig, in verschiedenen Spielformen (Bereich Arena).') },
+				{ key: 'league', label: t('learning', 'Liga'), description: t('learning', 'Wertung der Kursmitglieder über eine ganze Saison statt über eine einzelne Runde.') },
+				{ key: 'abenteuer', label: t('learning', 'Abenteuer'), description: t('learning', 'Story-Kampagnen, in denen die Fragen in eine Handlung eingebettet sind. Die Auswahl der Kampagnen erscheint nur, solange Abenteuer eingeschaltet ist.') },
+				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab'), description: t('learning', 'Gibt den Lernenden ihre Abschluss-Übersicht frei (Beherrschung, XP, Abzeichen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.') },
 			]
+		},
+		// Gate the settings that belong to a mode on the switch as the instructor sees it now.
+		leitnerModeOn() {
+			return this.modeConfigLocal.leitner !== false
+		},
+		abenteuerModeOn() {
+			return this.modeConfigLocal.abenteuer === true
+		},
+		toolsSwitchedOn() {
+			return this.modeConfigLocal.tools !== false
 		},
 		// CoursePool serialises `required` as an integer (0/1), hence the Number().
 		hasRequiredPools() {
@@ -481,6 +561,7 @@ export default {
 		lazyLoad(tab) {
 			if (tab === 'mode-config') {
 				this.modeConfigLocal = this.normalizeModeConfig(this.course?.mode_config || {})
+				this.savedModeConfig = this.normalizeModeConfig(this.course?.mode_config || {})
 				this.modeConfigSaved = false
 				this.loadToolSettings()
 				this.loadCampaignList()
@@ -500,6 +581,7 @@ export default {
 				league: true,
 				abenteuer: false,
 				course_summary: false,
+				tools: true,
 			}, modeConfig || {})
 		},
 
@@ -518,9 +600,11 @@ export default {
 		async saveModeConfig() {
 			this.savingModeConfig = true
 			try {
+				const sent = { ...this.modeConfigLocal }
 				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
-					modeConfig: this.modeConfigLocal,
+					modeConfig: sent,
 				})
+				this.savedModeConfig = this.normalizeModeConfig(res.data?.mode_config || sent)
 				this.modeConfigSaved = true
 				setTimeout(() => { this.modeConfigSaved = false }, 3000)
 				this.$emit('refresh-course-detail')
@@ -574,6 +658,23 @@ export default {
 		async saveToolConfig() {
 			this.savingToolConfig = true
 			try {
+				// GitHub #35: the master switch lives in mode_config. Saved on the last saved mode
+				// config, so pressing "Save tools" does not also save mode switches the instructor
+				// changed above without saving them.
+				const toolsOn = this.toolsSwitchedOn
+				const sent = { ...this.normalizeModeConfig(this.savedModeConfig), tools: toolsOn }
+				const modeRes = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
+					modeConfig: sent,
+				})
+				this.savedModeConfig = this.normalizeModeConfig(modeRes.data?.mode_config || sent)
+				this.modeConfigLocal.tools = this.savedModeConfig.tools !== false
+				if (!toolsOn) {
+					// The hidden per-tool selection stays as it was stored.
+					this.toolConfigSaved = true
+					this.$emit('refresh-course-detail')
+					setTimeout(() => { this.toolConfigSaved = false }, 3000)
+					return
+				}
 				const selectedTools = this.toolConfigKeys
 					.map((tool) => tool.key)
 					.filter((toolId) => this.isAdminToolEnabled(toolId) && this.toolConfigLocal[toolId] !== false)
@@ -616,10 +717,13 @@ export default {
 
 		async saveLeitnerSprint() {
 			try {
+				// Only the sprint flag is saved here; the mode switches go as last stored.
+				const sent = this.normalizeModeConfig(this.savedModeConfig)
 				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
-					modeConfig: this.modeConfigLocal,
+					modeConfig: sent,
 					leitnerSprint: this.leitnerSprint,
 				})
+				this.savedModeConfig = this.normalizeModeConfig(res.data?.mode_config || sent)
 				this.$emit('refresh-course-detail')
 			} catch (e) {
 				console.error('Failed to save leitner sprint', e)
@@ -629,10 +733,13 @@ export default {
 		async saveTalkRoomToken() {
 			this.savingTalkToken = true
 			try {
+				// Only the Talk token is saved here; the mode switches go as last stored.
+				const sent = this.normalizeModeConfig(this.savedModeConfig)
 				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
-					modeConfig: this.modeConfigLocal,
+					modeConfig: sent,
 					talkRoomToken: this.talkRoomToken,
 				})
+				this.savedModeConfig = this.normalizeModeConfig(res.data?.mode_config || sent)
 				this.$emit('refresh-course-detail')
 				this.talkTokenSaved = true
 				setTimeout(() => { this.talkTokenSaved = false }, 3000)
@@ -738,8 +845,10 @@ export default {
 				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`))
 				const items = res.data?.schedule || []
 				this.scheduleItems = items.map((item) => ({ ...item }))
+				this.knownChapterRefs = Array.isArray(res.data?.known_chapter_refs) ? res.data.known_chapter_refs : []
 			} catch (e) {
 				this.scheduleItems = []
+				this.knownChapterRefs = []
 			} finally {
 				this.loadingSchedule = false
 			}
@@ -767,13 +876,12 @@ export default {
 			this.savingSchedule = true
 			this.scheduleSaved = false
 			try {
-				const payload = this.scheduleItems.map((item, idx) => ({
-					chapter_ref: item.chapter_ref || item.chapter_title?.toLowerCase().replace(/\s+/g, '-') || `ch-${idx + 1}`,
-					chapter_title: item.chapter_title || '',
-					start_date: item.start_date || null,
-					target_date: item.target_date || null,
-					sort_order: idx + 1,
-				}))
+				const payload = buildSchedulePayload(this.scheduleItems)
+				const duplicate = firstDuplicateChapterRef(payload)
+				if (duplicate !== null) {
+					this.$emit('error', t('learning', 'Die Kapitel-Kennung „{ref}“ kommt mehrfach vor. Jede Zeile braucht eine eigene Kennung.', { ref: duplicate }))
+					return
+				}
 				const res = await axios.put(
 					generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`),
 					// CourseController::setSchedule() takes `entries`. Sending `schedule` left it at
@@ -787,7 +895,12 @@ export default {
 				setTimeout(() => { this.scheduleSaved = false }, 3000)
 			} catch (e) {
 				console.error('Failed to save schedule', e)
-				this.$emit('error', t('learning', 'Failed to save schedule'))
+				// A 400 carries ScheduleService's reason (which row, which field); without it the
+				// instructor could not tell what to change.
+				const reason = e?.response?.status === 400 ? e.response.data?.error : ''
+				this.$emit('error', reason
+					? `${t('learning', 'Failed to save schedule')}: ${reason}`
+					: t('learning', 'Failed to save schedule'))
 			} finally {
 				this.savingSchedule = false
 			}
@@ -906,6 +1019,9 @@ export default {
 .mode-config-hint { color: var(--color-text-maxcontrast); margin-bottom: 16px; font-size: 0.9em; }
 .mode-toggles { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
 .mode-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mode-toggle-row--described { flex-direction: column; align-items: flex-start; gap: 2px; }
+.mode-description { padding-left: 28px; line-height: 1.4; }
+.tools-master-toggle { margin-bottom: 8px; }
 .mode-toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1em; }
 .mode-toggle-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 .mode-toggle-label input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -989,6 +1105,10 @@ export default {
 
 .schedule-input--title {
 	min-width: 180px;
+}
+
+.schedule-input--ref {
+	min-width: 140px;
 }
 
 .schedule-remove-btn {

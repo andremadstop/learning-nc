@@ -133,6 +133,29 @@ describe('CourseTabLernraum', () => {
 	describe('tool selection reaches the learning space', () => {
 		const ids = (instance) => instance.courseToolTabs.map((tool) => tool.id)
 
+		// GitHub #35: mode_config.tools is the course's master switch; it beats the selection.
+		it('shows no tools, no tool hints and no tools tab while the master switch is off', () => {
+			const student = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true, tools: false }, enabled_tools: null },
+			})
+			expect(ids(student)).toEqual([])
+			expect(student.visibleSubTabs.map((tab) => tab.id)).not.toContain('tools')
+
+			const instructor = createInstance({
+				actsAsInstructor: true,
+				course: { is_instructor: true, material_folder: null, mode_config: { tools: false }, enabled_tools: ['dns'] },
+			})
+			expect(ids(instructor)).toEqual([])
+			expect(instructor.visibleSubTabs.map((tab) => tab.id)).not.toContain('tools')
+		})
+
+		it('keeps the tools of a course saved before the master switch existed', () => {
+			const instance = createInstance({
+				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: ['dns'] },
+			})
+			expect(ids(instance)).toEqual(['dns'])
+		})
+
 		it('shows no tools and no tools tab when the course switched every tool off', () => {
 			const instance = createInstance({
 				course: { is_instructor: false, material_folder: null, mode_config: { training: true }, enabled_tools: [] },

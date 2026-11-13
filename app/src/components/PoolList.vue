@@ -251,7 +251,7 @@
         <div class="chapter-meta-intro">
           <strong>{{ t('learning', 'Textbook reference (all optional)') }}</strong>
           <p>
-            {{ t('learning', 'Leave these empty unless this pool mirrors one chapter of a book or curriculum. A pool needs nothing but a name. Fill them in when you split a textbook into one pool per chapter: the keys are short internal identifiers you choose yourself, the titles are what people read, and the number orders the chapters.') }}
+            {{ t('learning', 'Leave these empty unless this pool mirrors one chapter of a book or curriculum. A pool needs nothing but a name. Fill them in when you split a textbook into one pool per chapter: the keys are short internal identifiers you choose yourself, the titles are what people read, and the number is shown before the chapter title.') }}
           </p>
         </div>
         <div class="chapter-form-grid">
@@ -267,12 +267,12 @@
           </div>
           <div class="form-group">
             <label for="pool-chapter-key">{{ t('learning', 'Chapter Key') }}</label>
-            <small class="field-help">{{ t('learning', 'Identifier for this one chapter, unique within the book. A course uses it to match pools when progress is carried over from an earlier course.') }}</small>
+            <small class="field-help">{{ t('learning', 'Identifier for this one chapter, unique within the book. A course uses it to match pools when progress is carried over from an earlier course, and the course schedule uses it to show the progress in this pool. The topic filter of a course does not read it: that filter uses the chapter key of each question.') }}</small>
             <input id="pool-chapter-key" v-model.trim="form.chapterKey" type="text" :placeholder="t('learning', 'e.g., chapter-03')" class="nc-input" />
           </div>
           <div class="form-group">
             <label for="pool-chapter-order">{{ t('learning', 'Chapter Number') }}</label>
-            <small class="field-help">{{ t('learning', 'Position of the chapter in the book. Decides the order chapters are listed in, nothing else.') }}</small>
+            <small class="field-help">{{ t('learning', 'Position of the chapter in the book, shown as “Chapter n” before the chapter title. It does not sort pools or questions and filters nothing.') }}</small>
             <input id="pool-chapter-order" v-model.number="form.chapterOrder" type="number" min="1" max="9999" :placeholder="t('learning', 'e.g., 3')" class="nc-input" />
           </div>
         </div>

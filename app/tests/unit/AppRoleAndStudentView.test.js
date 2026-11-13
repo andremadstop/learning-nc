@@ -354,3 +354,26 @@ describe('App.vue: a failed role request is not silent (GitHub #34)', () => {
 		expect(host.querySelector('.pool-list-stub').dataset.role).toBe('instructor')
 	})
 })
+
+/**
+ * GitHub #35: the course's tools master switch (mode_config.tools) is read by every view that
+ * lists tools. App.vue's global tools tabs went through courseToolIds() without a test, so
+ * reverting it to effectiveCourseTools() left the suite green.
+ */
+describe('App.vue: the tools tabs follow the course master switch (GitHub #35)', () => {
+	async function tabsFor(selectedCourse) {
+		const { default: App } = await import('../../src/App.vue')
+		const ctx = { selectedCourse, enabledTools: ['subnet', 'dns', 'firewall'] }
+		ctx.toolsTabs = App.computed.toolsTabs.call(ctx)
+		return App.computed.visibleToolsTabs.call(ctx).map((tab) => tab.id)
+	}
+
+	it('a selected course with the tools switched off has no visible tools', async () => {
+		expect(await tabsFor({ id: 5, title: 'Netz', mode_config: { tools: false }, enabled_tools: null })).toEqual([])
+	})
+
+	it('a selected course with the switch on, or saved before it existed, keeps its tools', async () => {
+		expect(await tabsFor({ id: 5, title: 'Netz', mode_config: { tools: true }, enabled_tools: ['dns'] })).toEqual(['dns'])
+		expect(await tabsFor({ id: 5, title: 'Netz', mode_config: { training: true }, enabled_tools: null })).toEqual(['subnet', 'dns', 'firewall'])
+	})
+})

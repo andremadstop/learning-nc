@@ -148,7 +148,7 @@ import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
 import ExamReadiness from './ExamReadiness.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
-import { effectiveCourseTools } from '../utils/toolCatalog.js'
+import { courseToolIds } from '../utils/toolCatalog.js'
 import { shouldShowCompletionTab } from '../utils/cert-report.js'
 import { actsAsCourseInstructor, lernraumTabIds } from '../utils/courseView.js'
 
@@ -258,7 +258,7 @@ export default {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)
 		},
 		hasCourseTools() {
-			return effectiveCourseTools(this.course?.enabled_tools, this.adminEnabledTools).length > 0
+			return courseToolIds(this.course, this.adminEnabledTools).length > 0
 		},
 		kommunikationLeafTabs() {
 			if (this.isInstructor) {
@@ -662,6 +662,7 @@ export default {
 				league: true,
 				abenteuer: false,
 				course_summary: false,
+				tools: true,
 			}, modeConfig || {})
 		},
 

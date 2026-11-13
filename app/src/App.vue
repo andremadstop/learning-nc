@@ -340,8 +340,12 @@
 
           <!-- ==================== WERKZEUGE VIEW ==================== -->
           <template v-else-if="route && route.name === 'tools'">
-            <NcNoteCard v-if="selectedCourse" type="info" class="tools-course-note">
+            <!-- GitHub #35: with the course's tools switched off there is nothing to call available. -->
+            <NcNoteCard v-if="selectedCourse && visibleToolsTabs.length" type="info" class="tools-course-note">
               {{ t('learning', 'Diese Werkzeuge sind auch im Kurs "{title}" verfügbar.', { title: selectedCourse.title || t('learning', 'Kurs') }) }}
+            </NcNoteCard>
+            <NcNoteCard v-else-if="selectedCourse" type="info" class="tools-course-empty">
+              {{ t('learning', 'Im Kurs "{title}" sind keine Werkzeuge freigeschaltet.', { title: selectedCourse.title || t('learning', 'Kurs') }) }}
             </NcNoteCard>
             <div v-if="visibleToolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
               <button
@@ -444,7 +448,7 @@ import {
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
 import TeamLeadDashboard from './components/TeamLeadDashboard.vue';
-import { ALL_TOOL_IDS, TOOL_CATALOG, effectiveCourseTools } from './utils/toolCatalog.js';
+import { ALL_TOOL_IDS, TOOL_CATALOG, courseToolIds } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { useOptionalCourseStore } from './stores/courseStore.js';
@@ -592,8 +596,9 @@ export default {
       return this.appInitialized && this.virtuProfEnabled;
     },
     toolsTabs() {
-      // Same rule as the course view (Codeberg #7): an empty course selection means no tools.
-      const enabled = effectiveCourseTools(this.selectedCourse?.enabled_tools, this.enabledTools);
+      // Same rule as the course view (Codeberg #7): an empty course selection means no tools,
+      // and so does the course's master switch (GitHub #35).
+      const enabled = courseToolIds(this.selectedCourse, this.enabledTools);
       return TOOL_CATALOG
         .map((tool) => ({
           id: tool.id,

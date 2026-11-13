@@ -27,3 +27,32 @@ export function effectiveCourseTools(courseTools, adminTools) {
   const course = Array.isArray(courseTools) ? courseTools : admin
   return ALL_TOOL_IDS.filter((id) => admin.includes(id) && course.includes(id))
 }
+
+/**
+ * Whether the course shows simulator tools at all (GitHub #35): mode_config.tools is the
+ * course's master switch. Only an explicit false switches them off, so a course saved before
+ * the switch existed keeps its tools.
+ *
+ * @param {object|null|undefined} course - the course (snake_case fields)
+ * @return {boolean}
+ */
+export function courseToolsSwitchedOn(course) {
+  return course?.mode_config?.tools !== false
+}
+
+/**
+ * The tools a course offers to the viewer: none while the master switch is off, otherwise
+ * effectiveCourseTools(). Every reader (routing, the Werkzeuge tab, the tool hints in the
+ * learning space, the global tools view with a course selected) goes through here, so the
+ * switch cannot be honoured in one place and missed in another.
+ *
+ * @param {object|null|undefined} course - the course (snake_case fields)
+ * @param {string[]|null|undefined} adminTools - the admin's global selection
+ * @return {string[]}
+ */
+export function courseToolIds(course, adminTools) {
+  if (!courseToolsSwitchedOn(course)) {
+    return []
+  }
+  return effectiveCourseTools(course?.enabled_tools, adminTools)
+}
