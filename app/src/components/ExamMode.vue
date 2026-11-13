@@ -884,6 +884,10 @@ export default {
         // Codeberg #9 follow-up: the one start error learners cannot fix themselves — say so.
         if (this.practice && serverError === 'No required pools in this course') {
           showError(t('learning', 'This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.'));
+        } else if (serverError === 'An exam on this pool is already running in another course context') {
+          // GitHub #35: a running exam counts for the course it was started in, so the server
+          // resumes it only there.
+          showError(t('learning', 'An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up.'));
         } else {
           showError(serverError || t('learning', 'Failed to start exam'));
         }

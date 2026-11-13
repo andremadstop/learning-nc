@@ -3353,5 +3353,6 @@ OC.L10N.register(
     "PDF text extraction is not available on this server (pdftotext missing). VirtuProf can only use Markdown course materials; students can still open every file." : "استخراج النص من ملفات PDF غير متاح على هذا الخادم (pdftotext غير مثبّت). لا يستطيع VirtuProf استخدام سوى مواد الدورة بصيغة Markdown؛ ولا يزال بإمكان المتعلمين فتح أي ملف.",
     "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben." : "لم تتم مشاركة أي مواد تعليمية لهذه الدورة بعد.",
     "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen." : "يمكن لأعضاء الدورة فتح كل ملف PDF وMarkdown في هذا المجلد.",
+    "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "يوجد اختبار لهذه المجموعة قيد التشغيل بالفعل في دورة أخرى أو خارج أي دورة. أكمله حيث بدأته، أو انتظر حتى ينتهي وقته.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

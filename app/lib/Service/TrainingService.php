@@ -54,6 +54,11 @@ class TrainingService {
     /** TRIG-01: Exam score threshold below which a weakness note is auto-generated. */
     /** Error for a practice exam limited to required pools in a course that marks none. */
     public const PRACTICE_NO_REQUIRED_POOLS = 'No required pools in this course';
+    /**
+     * Error for an exam start while a counting exam on the pool runs in another course context
+     * (another course, or outside any course). The client explains it to the learner.
+     */
+    public const EXAM_ACTIVE_IN_OTHER_CONTEXT = 'An exam on this pool is already running in another course context';
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
     /**
      * Seconds after an exam deadline during which the final answer batch is still accepted.
@@ -655,7 +660,8 @@ class TrainingService {
             $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
         }
 
-        // Resume existing active exam first.
+        // Resume an active counting exam on this pool first — only in the course context it was
+        // started in (checked below).
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
             ->from('learning_sessions')
@@ -679,6 +685,16 @@ class TrainingService {
             }
             if (!$timeoutInfo['timed_out']) {
                 if ($mode === 'exam') {
+                    // GitHub #35: a session keeps the course_id it was started with, and that
+                    // course is the one it counts for. Resumed from another context (another
+                    // course sharing the pool, or no course at all) it would count for the wrong
+                    // course or none. Refused, never closed: closing it here would let opening
+                    // the pool elsewhere end a running exam and use up an attempt (audit HIGH-11).
+                    // It stays resumable where it was started, or runs out on its own.
+                    $activeCourseId = isset($activeExam['course_id']) ? (int)$activeExam['course_id'] : null;
+                    if ($activeCourseId !== $courseId) {
+                        throw new \Exception(self::EXAM_ACTIVE_IN_OTHER_CONTEXT);
+                    }
                     $payload = $this->buildSessionStartPayload($timeoutInfo['session'], true, $contentLanguage);
                     $this->logAuditEvent('session_resumed', [
                         'user_id' => $userId,

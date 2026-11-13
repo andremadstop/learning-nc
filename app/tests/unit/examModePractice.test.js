@@ -102,6 +102,17 @@ describe('ExamMode — course practice exam', () => {
 		expect(vm.screen).not.toBe('exam')
 	})
 
+	// GitHub #35: the server resumes a running counting exam only in the course it was started in.
+	it('explains an exam on this pool that runs in another course context', async () => {
+		const { showError } = await import('@nextcloud/dialogs')
+		axios.post.mockRejectedValue({ response: { status: 400, data: { error: 'An exam on this pool is already running in another course context' } } })
+		const vm = createInstance({ poolId: 42, totalQuestions: 60 })
+		await vm.startExam(vm.visiblePresets[0])
+		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/training/start', expect.objectContaining({ poolId: 42, mode: 'exam', courseId: 7 }))
+		expect(showError).toHaveBeenCalledWith('An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up.')
+		expect(vm.screen).not.toBe('exam')
+	})
+
 	it('starts through the course endpoint, not the pool endpoint', async () => {
 		axios.post.mockResolvedValue(startResponse())
 		const vm = createInstance({ practice: true, practiceConfig: { questions: 1, minutes: 0, passPercent: 75 } })

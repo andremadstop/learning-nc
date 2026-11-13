@@ -174,53 +174,108 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame('Access Switch 1', $config['terminals'][0]['name'], 'render config must survive');
     }
 
-    public function testExamStartResumesActiveExamAcrossCourseContextMismatch(): void {
-        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch([
-            'id' => 77,
-            'pool_id' => 42,
-            'course_id' => 7,
-            'user_id' => 'alice',
-            'started_at' => time(),
-            'total_questions' => 1,
-            'correct_answers' => 0,
-            'mode' => 'exam',
-            'completed_at' => null,
-            'time_limit_seconds' => 600,
-            'attempt_no' => 1,
-            'question_order_json' => '[10]',
-        ]));
-        $db = new FakeDbConnection([$activeExamBuilder]);
+    /**
+     * GitHub #35: a running counting exam is resumed only in the course context it was started in.
+     * The DB driver hands course_id back as a string, so the fixture does too.
+     */
+    public function testExamStartResumesActiveExamInItsOwnCourse(): void {
+        [$service, $db] = $this->buildActiveExamService('7');
+
+        $payload = $service->startSession(42, 'alice', null, 'exam', null, null, 7);
+
+        $this->assertSame(77, $payload['session_id']);
+        $this->assertTrue($payload['resumed']);
+        $this->assertSame(7, $payload['course_id']);
+        $this->assertCount(1, $payload['questions']);
+        $this->assertNoSessionWritten($db);
+    }
+
+    public function testExamStartResumesActiveExamOutsideAnyCourse(): void {
+        [$service, $db] = $this->buildActiveExamService(null);
+
+        $payload = $service->startSession(42, 'alice', null, 'exam');
+
+        $this->assertSame(77, $payload['session_id']);
+        $this->assertTrue($payload['resumed']);
+        $this->assertNull($payload['course_id']);
+        $this->assertNoSessionWritten($db);
+    }
+
+    /**
+     * GitHub #35: the exam keeps the course_id it was started with. Resumed from another context
+     * it counted for the wrong course (or none). It is refused there — and, as audit HIGH-11
+     * requires, neither closed nor replaced by a new session: opening the pool elsewhere must not
+     * end a running exam or use up an attempt.
+     *
+     * @return iterable<string, array{0: ?string, 1: ?int}>
+     */
+    public static function mismatchedCourseContexts(): iterable {
+        yield 'started outside any course, resumed from a course' => [null, 7];
+        yield 'started in another course sharing the pool' => ['8', 7];
+        yield 'started in a course, resumed outside any course' => ['7', null];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('mismatchedCourseContexts')]
+    public function testExamStartRefusesActiveExamFromAnotherCourseContext(?string $sessionCourseId, ?int $requestedCourseId): void {
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->expects($this->never())->method('resolveCoursePoolContext');
+        [$service, $db] = $this->buildActiveExamService($sessionCourseId, $courseService);
+
+        try {
+            $service->startSession(42, 'alice', null, 'exam', null, null, $requestedCourseId);
+            $this->fail('an exam running in another course context must not be resumed here');
+        } catch (\Exception $e) {
+            $this->assertSame(TrainingService::EXAM_ACTIVE_IN_OTHER_CONTEXT, $e->getMessage());
+        }
+        $this->assertNoSessionWritten($db);
+    }
+
+    /**
+     * @return array{0: TrainingService, 1: FakeDbConnection}
+     */
+    private function buildActiveExamService(?string $sessionCourseId, ?CourseService $courseService = null): array {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch([
+                'id' => 77,
+                'pool_id' => 42,
+                'course_id' => $sessionCourseId,
+                'user_id' => 'alice',
+                'started_at' => time(),
+                'total_questions' => 1,
+                'correct_answers' => 0,
+                'mode' => 'exam',
+                'exam_kind' => null,
+                'completed_at' => null,
+                'time_limit_seconds' => 600,
+                'attempt_no' => 1,
+                'question_order_json' => '[10]',
+            ])),
+        ]);
 
         $questionMapper = $this->createMock(QuestionMapper::class);
-        $questionMapper->expects($this->once())
-            ->method('findByPoolId')
-            ->with(42)
-            ->willReturn([$this->makeQuestion(10, 42, 'Existing')]);
-
+        $questionMapper->method('findByPoolId')->with(42)->willReturn([$this->makeQuestion(10, 42, 'Existing')]);
+        $questionMapper->method('findByIds')->willReturn([$this->makeQuestion(10, 42, 'Existing')]);
         $answerMapper = $this->createMock(AnswerMapper::class);
-        $answerMapper->expects($this->atLeastOnce())->method('findByQuestion')
-            ->with(10)
-            ->willReturn([$this->makeAnswer(100, 10, 'Answer')]);
-
+        $answerMapper->method('findByQuestion')->willReturn([$this->makeAnswer(100, 10, 'Answer')]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService(
             db: $db,
             questionMapper: $questionMapper,
             answerMapper: $answerMapper,
-            poolMapper: $poolMapper
+            poolMapper: $poolMapper,
+            courseService: $courseService
         );
+        return [$service, $db];
+    }
 
-        $payload = $service->startSession(42, 'alice', null, 'exam', null, null, null);
-
-        $this->assertSame(77, $payload['session_id']);
-        $this->assertTrue($payload['resumed']);
-        $this->assertCount(1, $payload['questions']);
+    private function assertNoSessionWritten(FakeDbConnection $db): void {
         foreach ($db->issuedBuilders as $builder) {
             $this->assertFalse(
                 $builder->table === 'learning_sessions' && in_array($builder->operation, ['insert', 'update'], true),
-                'No broad auto-complete or new session insert should run when an active exam is resumed.'
+                'No broad auto-complete or new session insert may run for a running exam (audit HIGH-11).'
             );
         }
     }

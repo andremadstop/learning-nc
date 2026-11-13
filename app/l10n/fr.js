@@ -3353,5 +3353,6 @@ OC.L10N.register(
     "PDF text extraction is not available on this server (pdftotext missing). VirtuProf can only use Markdown course materials; students can still open every file." : "L’extraction de texte des PDF n’est pas disponible sur ce serveur (pdftotext manquant). VirtuProf ne peut utiliser que les supports de cours Markdown ; les apprenants peuvent tout de même ouvrir chaque fichier.",
     "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben." : "Aucun support de cours n'a encore été partagé pour ce cours.",
     "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen." : "Les membres du cours peuvent ouvrir chaque fichier PDF et Markdown de ce dossier.",
+    "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "Un examen sur ce pool est déjà en cours dans un autre cours ou en dehors d’un cours. Terminez-le là où vous l’avez commencé, ou attendez que son temps soit écoulé.",
 },
 "nplurals=2; plural=(n > 1);");
