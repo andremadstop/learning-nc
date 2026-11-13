@@ -117,4 +117,42 @@ class TrainingControllerStartTest extends TestCase {
         $this->assertSame('Failed to start practice exam', $response->getData()['error']);
         $this->assertStringNotContainsString('SQLSTATE', (string)json_encode($response->getData()));
     }
+
+    /** Pre-existing, same leak: the counting exam start and the course practice exam start. */
+    public function testCountingStartDatabaseErrorIsNotEchoedToTheClient(): void {
+        $service = $this->createMock(TrainingService::class);
+        $service->method('startSession')->willThrowException(new \OCP\DB\Exception(0, 'SQLSTATE[23505]: duplicate key value violates unique constraint "learning_sessions_pkey"'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error');
+        $controller = new TrainingController('learning', $this->createMock(IRequest::class), $service, $this->createMock(CertificationTrigger::class), 'alice', $logger);
+
+        $response = $controller->start(poolId: 3, mode: 'exam');
+
+        $this->assertSame(500, $response->getStatus());
+        $this->assertSame('Failed to start training session', $response->getData()['error']);
+    }
+
+    public function testCoursePracticeStartDatabaseErrorIsNotEchoedToTheClient(): void {
+        $service = $this->createMock(TrainingService::class);
+        $service->method('startPracticeExam')->willThrowException(new \OCP\DB\Exception(0, 'SQLSTATE[42P01]: relation "oc_learning_sessions" does not exist'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error');
+        $controller = new TrainingController('learning', $this->createMock(IRequest::class), $service, $this->createMock(CertificationTrigger::class), 'alice', $logger);
+
+        $response = $controller->startPractice(courseId: 7);
+
+        $this->assertSame(500, $response->getStatus());
+        $this->assertSame('Failed to start practice exam', $response->getData()['error']);
+    }
+
+    /** Intended refusals keep their reason: the learner must read "attempt limit", "cooldown" etc. */
+    public function testCountingStartRefusalKeepsTheServerReason(): void {
+        $service = $this->createMock(TrainingService::class);
+        $service->method('startSession')->willThrowException(new \Exception('Exam cooldown active'));
+
+        $response = $this->makeController($service)->start(poolId: 3, mode: 'exam');
+
+        $this->assertSame(400, $response->getStatus());
+        $this->assertSame('Exam cooldown active', $response->getData()['error']);
+    }
 }

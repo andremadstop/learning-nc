@@ -45,6 +45,10 @@ class TrainingController extends Controller {
             // distinguish "watch the video first" from a bad request. Subclass catch MUST precede the
             // generic \Exception below (which would otherwise swallow it as a 400).
             return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\DB\Exception $e) {
+            // A database error is no refusal: its driver message (table, column, SQL) stays in the log.
+            $this->logger->error('Starting a session failed', ['exception' => $e, 'poolId' => $poolId, 'mode' => $mode]);
+            return new DataResponse(['error' => 'Failed to start training session'], Http::STATUS_INTERNAL_SERVER_ERROR);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start training session'], 400);
         }
@@ -85,6 +89,9 @@ class TrainingController extends Controller {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\DB\Exception $e) {
+            $this->logger->error('Starting a practice exam failed', ['exception' => $e, 'courseId' => $courseId]);
+            return new DataResponse(['error' => 'Failed to start practice exam'], Http::STATUS_INTERNAL_SERVER_ERROR);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start practice exam'], 400);
         }
