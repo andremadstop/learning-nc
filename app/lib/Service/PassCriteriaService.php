@@ -5,7 +5,10 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
+use OCA\Learning\Db\CourseMemberMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -23,6 +26,13 @@ use Psr\Log\LoggerInterface;
  * its denominator was the learner's own Leitner items, so a single box-5 card read as 100 %, and
  * exams never create Leitner items, so a learner who only took exams could never pass.
  * getMasteryStats() stays for the course summary display.
+ *
+ * Instructors of the course (owner or co-instructor member) are never certified there (GitHub #35):
+ * the rule is still assessed and reported, but nothing is issued, emitted or marked passed, and the
+ * result carries ISSUANCE_INSTRUCTOR_OF_COURSE. An instructor sees the questions and answers of the
+ * course, so a certificate would attest nothing, and the student view lets an instructor take the
+ * course's counting exam as a preview — that preview must not leave a certificate or an entry in
+ * the tamper-evident compliance chain behind.
  *
  * PASS-07: First qualification emits a course.passed audit event (idempotent).
  * Triggers: CertificationTrigger right after a counting exam completes, and lazily
@@ -43,6 +53,7 @@ class PassCriteriaService {
         private readonly LoggerInterface $logger,
         private readonly CertificateMapper $certificateMapper,
         private readonly AssignmentService $assignmentService,
+        private readonly CourseMemberMapper $courseMemberMapper,
     ) {}
 
     public function evaluate(string $userId, int $courseId): PassResult {
@@ -65,10 +76,14 @@ class PassCriteriaService {
         $passedAt = null;
 
         if ($passed) {
-            // RECERT-05 union guard: only attempt issuance when the student is eligible.
-            // Branch A: never issued before (ASSIGN-04: self-learner path, no assignment row).
-            // Branch B: open per-user recertification period with an issuable status.
-            if ($this->mayIssue($userId, $courseId, $certificate)) {
+            if ($this->isInstructorOfCourse($course, $courseId, $userId)) {
+                // Read-only for instructors of the course: no certificate, no COURSE_PASSED, no
+                // markPassed. Reported as a reason, so no screen can present it as issued.
+                $issuanceError = PassResult::ISSUANCE_INSTRUCTOR_OF_COURSE;
+            } elseif ($this->mayIssue($userId, $courseId, $certificate)) {
+                // RECERT-05 union guard: only attempt issuance when the student is eligible.
+                // Branch A: never issued before (ASSIGN-04: self-learner path, no assignment row).
+                // Branch B: open per-user recertification period with an issuable status.
                 try {
                     // CERT-05: issue via issueIfPassedResult so the CAS winner/loser is known.
                     // Emit COURSE_PASSED and advance assignment status ONLY on the DB-insert winner
@@ -258,6 +273,10 @@ class PassCriteriaService {
 
         $found = [];
         foreach (array_values(array_unique($userIds)) as $userId) {
+            // evaluate() never issues to an instructor of the course — not a failed issuance.
+            if ($this->isInstructorOfCourse($course, $courseId, $userId)) {
+                continue;
+            }
             if (!$this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, [])['passed']) {
                 continue;
             }
@@ -272,6 +291,21 @@ class PassCriteriaService {
             $found[] = $userId;
         }
         return $found;
+    }
+
+    /**
+     * Owner or co-instructor member of the course — the same rule as
+     * CourseService::isInstructorOfCourse(), which is private there.
+     */
+    private function isInstructorOfCourse(Course $course, int $courseId, string $userId): bool {
+        if ($course->getInstructorId() === $userId) {
+            return true;
+        }
+        try {
+            return $this->courseMemberMapper->findByCourseAndUser($courseId, $userId)->getRole() === 'instructor';
+        } catch (DoesNotExistException $e) {
+            return false;
+        }
     }
 
     /**

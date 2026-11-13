@@ -590,6 +590,11 @@ export default {
       if (c.certificate_issued && c.certificate && c.certificate.verification_id) {
         return { type: 'success', text: t('learning', 'Certificate issued'), verificationId: c.certificate.verification_id }
       }
+      // GitHub #35: an instructor of the course (e.g. trying the exam in the student view) is never
+      // certified there — a fact, not a failed issuance.
+      if (c.passed && c.issuance_error === 'instructor_of_course') {
+        return { type: 'info', text: t('learning', 'Passed. You lead this course, so no certificate is issued to you here.') }
+      }
       if (c.passed && c.issuance_error) {
         return { type: 'warning', text: t('learning', 'You passed, but the certificate could not be issued yet — please contact your administrator.') }
       }

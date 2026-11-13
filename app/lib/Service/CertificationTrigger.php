@@ -21,7 +21,9 @@ use Psr\Log\LoggerInterface;
  * It reads the session itself and acts only on a counting exam: mode='exam', exam_kind IS NULL,
  * started from a course (course_id set), completed — in a course with cert_enabled whose member
  * (or instructor) the learner still is. Training sessions, practice exams and exams started
- * outside a course return null.
+ * outside a course return null. An instructor of the course gets the status block, but evaluate()
+ * issues nothing to them (PassResult::ISSUANCE_INSTRUCTOR_OF_COURSE) — the student view's exam is
+ * a preview.
  *
  * Never throws: the exam result must reach the learner whatever happens here. A compliance
  * audit failure (the issuance was rolled back) is logged at error level, anything else at warning

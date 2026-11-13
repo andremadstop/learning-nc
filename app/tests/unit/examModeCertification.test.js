@@ -93,6 +93,13 @@ describe('ExamMode — certification result (GitHub #35)', () => {
 		expect(vm.certificationMessage.verificationId).toBeUndefined()
 	})
 
+	// GitHub #35: the instructor's exam in the student view is a preview; the server issues nothing.
+	it('passed as an instructor of the course: says no certificate is issued, not that issuance failed', () => {
+		const vm = createInstance(result({ applicable: true, passed: true, threshold: 70, exam_passed: true, certificate_issued: false, certificate: null, issuance_error: 'instructor_of_course' }))
+
+		expect(vm.certificationMessage).toEqual({ type: 'info', text: 'Passed. You lead this course, so no certificate is issued to you here.' })
+	})
+
 	it('evaluation failed on the server: result kept, certificate status deferred to the completion tab', () => {
 		const vm = createInstance(result({ course_id: 7, error: 'evaluation_failed' }))
 

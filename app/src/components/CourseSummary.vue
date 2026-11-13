@@ -36,7 +36,10 @@
 					<span v-if="hasPassed && passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
 				</div>
 
-				<!-- Certificate state -->
+				<!-- Certificate state. GitHub #35: an instructor of the course is never certified there (e.g. after the exam in the student view); that is no failed issuance. -->
+				<NcNoteCard v-if="instructorNoCertificate" type="info" class="zeugnis-instructor">
+					{{ t('learning', 'Du leitest diesen Kurs. Kursleitungen erhalten in ihrem eigenen Kurs kein Zertifikat.') }}
+				</NcNoteCard>
 				<NcNoteCard v-if="issuanceFailed" type="warning" class="zeugnis-issuance-error">
 					{{ t('learning', 'Du hast bestanden, aber das Zertifikat konnte noch nicht ausgestellt werden. Bitte wende dich an deine Administration.') }}
 				</NcNoteCard>
@@ -412,8 +415,11 @@ export default {
 			if (!this.certificate || this.certificate.revoked) return null
 			return this.certificate.verification_id || null
 		},
+		instructorNoCertificate() {
+			return this.hasPassed && this.passStatus?.issuance_error === 'instructor_of_course'
+		},
 		issuanceFailed() {
-			return this.hasPassed && !!this.passStatus?.issuance_error
+			return this.hasPassed && !!this.passStatus?.issuance_error && !this.instructorNoCertificate
 		},
 		requiresPools() {
 			return this.passStatus?.requirement === 'required_pools'

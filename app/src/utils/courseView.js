@@ -3,7 +3,9 @@
  *
  * The student view is a UI preview only. The server still enforces every permission from the
  * real course membership; nothing here grants or removes a right. It only decides which tabs
- * the browser renders.
+ * the browser renders. What the instructor does in the preview is real (an exam attempt is
+ * stored like any other), but the server never certifies an instructor of the course
+ * (PassCriteriaService), so the preview leaves no certificate or compliance record behind.
  */
 
 /**

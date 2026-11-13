@@ -13,7 +13,7 @@ namespace OCA\Learning\Service;
  *   - pools: per required pool {pool_id, title, best_score, passed};
  *   - certificate: the newest certificate row for user+course, or null;
  *   - issuanceError: why a passed learner has no certificate ('signing_unavailable' |
- *     'issuance_failed'), never the underlying exception text.
+ *     'issuance_failed' | 'instructor_of_course'), never the underlying exception text.
  * poolsMastered keeps its name for API compatibility; it now means "all required pools passed".
  */
 final class PassResult {
@@ -21,6 +21,8 @@ final class PassResult {
     public const REQUIREMENT_ANY_EXAM = 'any_exam';
     public const ISSUANCE_SIGNING_UNAVAILABLE = 'signing_unavailable';
     public const ISSUANCE_FAILED = 'issuance_failed';
+    /** The user is an instructor of the course (owner or co-instructor); nothing is issued there. */
+    public const ISSUANCE_INSTRUCTOR_OF_COURSE = 'instructor_of_course';
 
     /**
      * @param list<array{pool_id: int, title: string|null, best_score: int|null, passed: bool}> $pools

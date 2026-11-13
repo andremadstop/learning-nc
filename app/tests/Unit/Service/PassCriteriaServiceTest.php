@@ -7,6 +7,8 @@ use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
+use OCA\Learning\Db\CourseMember;
+use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\AssignmentService;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\ComplianceAuditException;
@@ -20,6 +22,7 @@ use OCA\Learning\Service\SigningUnavailableException;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
+use OCP\AppFramework\Db\DoesNotExistException;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -71,6 +74,7 @@ class PassCriteriaServiceTest extends TestCase {
         array $poolTitles = [],
         ?LoggerInterface $logger = null,
         ?array $coursePoolIds = null,
+        ?CourseMemberMapper $members = null,
     ): PassCriteriaService {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
@@ -109,7 +113,26 @@ class PassCriteriaServiceTest extends TestCase {
         }
 
         $logger = $logger ?? $this->createMock(LoggerInterface::class);
-        return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger, $certMapper, $assignmentService);
+        return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger, $certMapper, $assignmentService,
+            $members ?? $this->members([]));
+    }
+
+    /**
+     * Course memberships by user id => role; anyone else is no member.
+     *
+     * @param array<string, string> $roles
+     */
+    private function members(array $roles): CourseMemberMapper {
+        $mapper = $this->createMock(CourseMemberMapper::class);
+        $mapper->method('findByCourseAndUser')->willReturnCallback(static function (int $courseId, string $userId) use ($roles): CourseMember {
+            if (!isset($roles[$userId])) {
+                throw new DoesNotExistException('no member');
+            }
+            $member = new CourseMember();
+            $member->setRole($roles[$userId]);
+            return $member;
+        });
+        return $mapper;
     }
 
     /**
@@ -363,7 +386,7 @@ class PassCriteriaServiceTest extends TestCase {
         $db = new FakeDbConnection([]);
 
         $service = new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance,
-            $this->createMock(LoggerInterface::class), $certMapper, $assignment);
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
 
         // recert-valid: open period, but the current certificate is still valid → not missing one.
         // recert-expired: open period and only an expired certificate → evaluate() would issue.
@@ -395,7 +418,7 @@ class PassCriteriaServiceTest extends TestCase {
         $issuance->method('issueIfPassedResult')->willReturn(new IssueResult(new Certificate(), true));
 
         $service = new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($this->passingBuilders()),
-            $issuance, $this->createMock(LoggerInterface::class), $certMapper, $assignment);
+            $issuance, $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
 
         $this->assertTrue($service->evaluate(self::USER, self::COURSE_ID)->isPassed());
     }
@@ -523,6 +546,65 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertNull($payload['certificate']);
         $this->assertSame('issuance_failed', $payload['issuance_error']);
         $this->assertStringNotContainsString('DB went away', json_encode($payload));
+    }
+
+    /**
+     * GitHub #35: an instructor of the course is never certified there. The student view lets the
+     * owner take the course's counting exam as a preview; before this guard the next evaluate()
+     * issued a certificate, appended COURSE_PASSED to the compliance chain and marked the
+     * assignment passed — none of which can be undone. Owner and co-instructor are covered; the
+     * rule is still assessed and reported, with a reason instead of a certificate.
+     */
+    public function testInstructorsOfTheCourseAreNeverCertified(): void {
+        foreach (['owner' => [], 'co-instructor' => [self::USER => 'instructor']] as $case => $roles) {
+            $course = $this->makeCourse(true, 80);
+            $course->setInstructorId($case === 'owner' ? self::USER : 'teacher');
+            $audit = $this->createMock(AuditService::class);
+            $audit->expects($this->never())->method('logComplianceEvent');
+            $issuance = $this->createMock(IssuanceService::class);
+            $issuance->expects($this->never())->method('issueIfPassedResult');
+            $assignment = $this->createMock(AssignmentService::class);
+            $assignment->expects($this->never())->method('markPassed');
+            $db = new FakeDbConnection($this->passingBuilders());
+
+            $service = $this->makeService($course, 95, null, [], $audit, $issuance, assignmentService: $assignment, db: $db,
+                members: $this->members($roles));
+            $payload = $service->evaluate(self::USER, self::COURSE_ID)->toArray();
+
+            $this->assertTrue($payload['passed'], $case . ': the rule is still assessed');
+            $this->assertSame(95, $payload['score'], $case);
+            $this->assertFalse($payload['certificate_issued'], $case);
+            $this->assertNull($payload['certificate'], $case);
+            $this->assertSame(PassResult::ISSUANCE_INSTRUCTOR_OF_COURSE, $payload['issuance_error'], $case);
+            $this->assertSame(0, $db->beginTransactionCalls, $case . ': no issuance transaction');
+        }
+    }
+
+    // The guard is about the course role: a student member in the same setup is certified.
+    public function testStudentMemberIsStillCertified(): void {
+        $course = $this->makeCourse(true, 80);
+        $course->setInstructorId('teacher');
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')->willReturn(new IssueResult(new Certificate(), true));
+
+        $service = $this->makeService($course, 95, null, $this->passingBuilders(), $audit, $issuance,
+            members: $this->members([self::USER => 'student', 'teacher' => 'instructor']));
+        $payload = $service->evaluate(self::USER, self::COURSE_ID)->toArray();
+
+        $this->assertTrue($payload['passed']);
+        $this->assertNull($payload['issuance_error']);
+    }
+
+    // An instructor without a certificate is no failed issuance, so the report does not list them.
+    public function testFindPassedWithoutCertificateSkipsInstructorsOfTheCourse(): void {
+        $course = $this->makeCourse(true, 80);
+        $course->setInstructorId('teacher');
+        $service = $this->makeService($course, 95, null, [], $this->createMock(AuditService::class),
+            members: $this->members(['co' => 'instructor', 'learner' => 'student']));
+
+        $this->assertSame(['learner'], $service->findPassedWithoutCertificate(self::COURSE_ID, ['teacher', 'co', 'learner']));
     }
 
     // GitHub #35: a missing or undecryptable issuer key is named as such for the administrator.

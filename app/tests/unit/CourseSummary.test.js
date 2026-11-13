@@ -374,6 +374,16 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 		expect(instance.certVerificationId).toBeNull()
 	})
 
+	// GitHub #35: an instructor of the course is never certified there (server rule). That is no
+	// failed issuance and must not read as one, nor as issued.
+	it('an instructor of the course gets the instructor note, not the issuance-failed warning', () => {
+		const instance = createLiveInstance({ passStatus: { applicable: true, passed: true, certificate: null, certificate_issued: false, issuance_error: 'instructor_of_course' } })
+
+		expect(instance.instructorNoCertificate).toBe(true)
+		expect(instance.issuanceFailed).toBe(false)
+		expect(instance.certVerificationId).toBeNull()
+	})
+
 	it('lists the required pools with best score and passed state', () => {
 		const instance = createLiveInstance({ passStatus: {
 			applicable: true, passed: false, threshold: 80, requirement: 'required_pools',
