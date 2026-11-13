@@ -166,6 +166,7 @@ class PassStatusControllerTest extends TestCase {
         $response = $this->makeReportController($report, $keys, $this->createMock(IRequest::class))->certReport(7);
 
         $this->assertSame(200, $response->getStatus());
+        $this->assertArrayHasKey('passed_without_certificate', $response->getData());
         $this->assertNull($response->getData()['passed_without_certificate']);
         $this->assertStringNotContainsString('db gone', json_encode($response->getData()));
     }

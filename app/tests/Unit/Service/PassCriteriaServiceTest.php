@@ -312,8 +312,9 @@ class PassCriteriaServiceTest extends TestCase {
 
     /**
      * GitHub #35 (review): the instructor sees who passed without getting a certificate, whatever
-     * made issuance fail. Read-only: nothing is issued, emitted or written. Listed: passed + no
-     * certificate. Not listed: not passed; holds a valid certificate; revoked without an open
+     * made issuance fail. Read-only: nothing is issued, emitted or written. Listed: passed and no
+     * certificate, or an open recertification period with only an expired one. Not listed: not
+     * passed; holds a valid certificate (also during an open period); revoked without an open
      * recertification period (no automatic reissue after a revoke).
      */
     public function testFindPassedWithoutCertificateIsReadOnlyAndRespectsUnionGuard(): void {
@@ -330,11 +331,17 @@ class PassCriteriaServiceTest extends TestCase {
         $revoked->setVerificationId('vid-revoked');
         $revoked->setIssuedAt(1700000000);
         $revoked->setRevoked(true);
+        $expired = new Certificate();
+        $expired->setVerificationId('vid-expired');
+        $expired->setIssuedAt(1600000000);
+        $expired->setExpiresAt(1650000000);
+        $expired->setRevoked(false);
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByUserAndCourse')->willReturnCallback(
             static fn(string $uid): ?Certificate => match ($uid) {
-                'holder' => $valid,
+                'holder', 'recert-valid' => $valid,
                 'revoked' => $revoked,
+                'recert-expired' => $expired,
                 default => null,
             }
         );
@@ -346,14 +353,24 @@ class PassCriteriaServiceTest extends TestCase {
         $summary->method('getBestExamScoresByPool')->willReturnCallback(
             static fn(string $uid): array => $uid === 'failed' ? [1 => 60] : [1 => 90]
         );
+        // Open recertification period (union guard branch B) for the two recert learners only.
         $assignment = $this->createMock(AssignmentService::class);
-        $assignment->method('getStatesForCourseAndUsers')->willReturn([]);
+        $assignment->method('getStatesForCourseAndUsers')->willReturnCallback(
+            static fn(int $courseId, array $uids): array => in_array($uids[0], ['recert-valid', 'recert-expired'], true)
+                ? [$uids[0] => ['status' => 'assigned', 'due_date' => null]]
+                : []
+        );
         $db = new FakeDbConnection([]);
 
         $service = new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance,
             $this->createMock(LoggerInterface::class), $certMapper, $assignment);
 
-        $this->assertSame(['nocert'], $service->findPassedWithoutCertificate(self::COURSE_ID, ['failed', 'holder', 'revoked', 'nocert']));
+        // recert-valid: open period, but the current certificate is still valid → not missing one.
+        // recert-expired: open period and only an expired certificate → evaluate() would issue.
+        $this->assertSame(
+            ['nocert', 'recert-expired'],
+            $service->findPassedWithoutCertificate(self::COURSE_ID, ['failed', 'holder', 'revoked', 'nocert', 'recert-valid', 'recert-expired'])
+        );
         $this->assertSame([], $db->issuedBuilders, 'no query besides the mocked services — certainly no write');
     }
 
