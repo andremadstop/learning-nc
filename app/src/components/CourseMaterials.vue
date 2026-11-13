@@ -71,7 +71,9 @@
 
 		<!-- Text extraction only feeds the AI assistant (GitHub #35): say so, and say it up front
 			when this server cannot read PDFs at all. -->
-		<template v-if="canExtract && materialFolder">
+		<!-- Neither this nor the actions below while the load failed: managesFiles is still true
+			when the document list (which carries canManageFiles) could not be read. -->
+		<template v-if="canExtract && materialFolder && !loadError">
 			<p class="extract-explanation">
 				{{ t('learning', 'Extrahieren liest den Text der Dateien, damit VirtuProf (KI-Assistent) das Material als Kurskontext nutzen kann. Zum Lesen brauchen Lernende das nicht.') }}
 			</p>
@@ -81,7 +83,7 @@
 		</template>
 
 		<!-- Action Buttons (course owner only) -->
-		<div v-if="managesFiles && materialFolder" class="material-actions">
+		<div v-if="managesFiles && materialFolder && !loadError" class="material-actions">
 			<button
 				type="button"
 				class="material-btn scan-btn"
@@ -259,6 +261,8 @@ export default {
 				}
 			} catch (e) {
 				console.error('Failed to load material folder', e)
+				// a retry that fails keeps no folder from an earlier read
+				this.materialFolder = null
 				this.loadError = true
 			}
 		},
@@ -273,6 +277,9 @@ export default {
 				this.pdfTextExtraction = parsed.pdfTextExtraction
 			} catch (e) {
 				console.error('Failed to load documents', e)
+				// no rows (with extract buttons) from an earlier read under the load error; the
+				// last known canManageFiles stays, null would hand a co-instructor the controls
+				this.documents = []
 				this.loadError = true
 			}
 		},

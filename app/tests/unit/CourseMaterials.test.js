@@ -284,6 +284,59 @@ describe('CourseMaterials (GitHub #35)', () => {
 		expect(host.querySelector('.empty-state').textContent).toContain('Ordner scannen')
 	})
 
+	// The document list carries can_manage_files: while it is missing, managesFiles is true for any
+	// instructor, and a co-instructor got scan and extract buttons the server refuses.
+	it('a failed document list shows an instructor no scan, extract or extraction note', async () => {
+		api.documents = new Error('500')
+		await mount({ isInstructor: true, aiEnabled: true })
+
+		expect(host.querySelector('.load-error')).not.toBeNull()
+		expect(host.querySelector('.material-actions')).toBeNull()
+		expect(host.querySelector('.scan-btn')).toBeNull()
+		expect(host.querySelector('.extract-all-btn')).toBeNull()
+		expect(host.querySelector('.extract-explanation')).toBeNull()
+
+		api.documents = { documents: [instructorRow(PDF)], can_manage_files: true, pdf_text_extraction: true }
+		host.querySelector('.retry-btn').click()
+		await flush()
+
+		expect(host.querySelector('.load-error')).toBeNull()
+		expect(host.querySelector('.scan-btn')).not.toBeNull()
+		expect(host.querySelector('.extract-explanation')).not.toBeNull()
+	})
+
+	it('a retry whose folder read fails keeps no folder from the earlier read', async () => {
+		api.documents = new Error('500')
+		await mount({ isInstructor: true, aiEnabled: true })
+		const component = app._instance.subTree.component.proxy
+		expect(component.materialFolder).toBe('/Kurs/Material')
+
+		api.folder = new Error('500')
+		api.documents = { documents: [], can_manage_files: true, pdf_text_extraction: true }
+		host.querySelector('.retry-btn').click()
+		await flush()
+
+		expect(host.querySelector('.load-error')).not.toBeNull()
+		expect(component.materialFolder).toBeNull()
+	})
+
+	it('a retry whose document list fails keeps no rows or extract buttons from the earlier read', async () => {
+		api.folder = new Error('500')
+		api.documents = { documents: [instructorRow(PDF)], can_manage_files: true, pdf_text_extraction: true }
+		await mount({ isInstructor: true, aiEnabled: true })
+		expect(host.querySelector('.load-error')).not.toBeNull()
+		expect(host.querySelector('.material-table')).not.toBeNull()
+
+		api.folder = '/Kurs/Material'
+		api.documents = new Error('500')
+		host.querySelector('.retry-btn').click()
+		await flush()
+
+		expect(host.querySelector('.load-error')).not.toBeNull()
+		expect(host.querySelector('.material-table')).toBeNull()
+		expect(host.querySelector('.extract-btn')).toBeNull()
+	})
+
 	it('a course without a linked folder (folder: null) is the normal empty state, not an error', async () => {
 		api.folder = null
 		api.documents = { documents: [], can_manage_files: false, pdf_text_extraction: true }
