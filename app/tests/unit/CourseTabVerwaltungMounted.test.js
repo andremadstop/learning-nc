@@ -62,7 +62,7 @@ async function flush() {
 describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 	let host, app
 
-	async function mountTab({ activeTab = 'mode-config', modeConfig = {} } = {}) {
+	async function mountTab({ activeTab = 'mode-config', modeConfig = {}, courseExtra = {} } = {}) {
 		host = document.createElement('div')
 		document.body.appendChild(host)
 		const tabRef = ref(null)
@@ -72,6 +72,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			mode_config: { ...SAVED_MODE_CONFIG, ...modeConfig },
 			leitner_sprint: false,
 			exam_date: null,
+			...courseExtra,
 		}
 		app = createApp({
 			render: () => h(CourseTabVerwaltung, { ref: tabRef, courseId: 5, course, coursePools: [], userRole: 'instructor', actsAsInstructor: true, activeTab }),
@@ -195,6 +196,56 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/5/mode-config', expect.objectContaining({
 			modeConfig: expect.objectContaining({ tools: false }),
 		}))
+	})
+
+	// Only exams started in the course count for the certificate. With the exam mode off nobody
+	// could ever be certified, and nothing said so.
+	describe('certification without the exam mode', () => {
+		const CERT_ON = { cert_enabled: true, cert_pass_percent: 80, cert_required_pool_ids: [], cert_validity_days: 0 }
+		const warning = () => host.querySelector('[data-test="cert-exam-mode-off"]')
+
+		it('warns in the certificate settings while the stored exam mode is off', async () => {
+			await mountTab({ modeConfig: { exam: false }, courseExtra: CERT_ON })
+
+			expect(warning()).not.toBeNull()
+			expect(warning().textContent).toContain('So kann niemand ein Zertifikat erhalten')
+			expect(warning().closest('.cert-config')).not.toBeNull()
+		})
+
+		it('no warning while the exam mode is on, or while certification is off', async () => {
+			await mountTab({ courseExtra: CERT_ON })
+			expect(warning()).toBeNull()
+			app.unmount()
+			host.remove()
+
+			await mountTab({ modeConfig: { exam: false }, courseExtra: { cert_enabled: false } })
+			expect(warning()).toBeNull()
+		})
+
+		it('follows the stored modes: an unsaved untick does not warn, saving it does, saving it back clears it', async () => {
+			await mountTab({ courseExtra: CERT_ON })
+
+			await toggle(modeCheckbox('Prüfung'), false)
+			expect(warning()).toBeNull()
+
+			buttonByText('Save').click()
+			await flush()
+			expect(warning()).not.toBeNull()
+
+			await toggle(modeCheckbox('Prüfung'), true)
+			buttonByText('Save').click()
+			await flush()
+			expect(warning()).toBeNull()
+		})
+
+		it('refuses nothing: the certificate settings still save with the exam mode off', async () => {
+			await mountTab({ modeConfig: { exam: false }, courseExtra: CERT_ON })
+
+			host.querySelector('.cert-config button').click()
+			await flush()
+
+			expect(axios.patch).toHaveBeenCalledWith('/apps/learning/api/courses/5/cert-config', expect.objectContaining({ certEnabled: true }))
+		})
 	})
 
 	// The sprint checkbox and the Talk token save on their own. They used to PUT modeConfigLocal,

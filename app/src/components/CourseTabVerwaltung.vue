@@ -149,6 +149,11 @@
 				</NcCheckboxRadioSwitch>
 
 				<template v-if="certEnabled">
+					<!-- GitHub #35: only exams started in the course count; with the exam mode off
+						nobody can be certified. A warning, nothing is refused. -->
+					<NcNoteCard v-if="certWithoutExamMode" type="warning" data-test="cert-exam-mode-off">
+						{{ t('learning', 'Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.') }}
+					</NcNoteCard>
 					<div class="cert-config-field">
 						<label>{{ t('learning', 'Mindest-Score (%)') }}</label>
 						<input
@@ -502,6 +507,11 @@ export default {
 			return this.modeConfigLocal.tools !== false
 		},
 		// CoursePool serialises `required` as an integer (0/1), hence the Number().
+		// GitHub #35: judged on the stored mode config, which is what learners get — an unsaved
+		// switch above changes nothing for them yet.
+		certWithoutExamMode() {
+			return this.certEnabled && this.savedModeConfig?.exam === false
+		},
 		hasRequiredPools() {
 			return (this.coursePools || []).some((pool) => Number(pool.required) === 1 || pool.required === true)
 		},

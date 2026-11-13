@@ -3355,5 +3355,6 @@ OC.L10N.register(
     "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen." : "Учасники курсу можуть відкрити кожен файл PDF і Markdown у цій теці.",
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "Іспит із цього пулу вже триває в іншому курсі або поза курсом. Завершіть його там, де ви його почали, або дочекайтеся, поки сплине його час.",
     "Die Lernmaterialien konnten nicht geladen werden." : "Не вдалося завантажити навчальні матеріали.",
+    "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere." : "Режим навчання «Іспит» у цьому курсі вимкнено. Сертифікати видаються лише за іспити, розпочаті тут, у курсі, тож ніхто не може отримати сертифікат. Увімкніть «Іспит» у режимах навчання вище та збережіть.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
