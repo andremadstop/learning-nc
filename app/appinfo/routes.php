@@ -204,7 +204,10 @@ return [
         ['name' => 'course#updatePool', 'url' => '/api/courses/{courseId}/pools/{poolId}', 'verb' => 'PUT'],
         ['name' => 'course#removePool', 'url' => '/api/courses/{courseId}/pools/{poolId}', 'verb' => 'DELETE'],
         ['name' => 'course#listMembers', 'url' => '/api/courses/{courseId}/members', 'verb' => 'GET'],
-        ['name' => 'course#addMember', 'url' => '/api/courses/{courseId}/members', 'verb' => 'POST'],
+        // GitHub #35: enrolment (canonical uid, 404/409, bulk + group snapshot, picker search)
+        ['name' => 'courseMember#add', 'url' => '/api/courses/{courseId}/members', 'verb' => 'POST'],
+        ['name' => 'courseMember#bulk', 'url' => '/api/courses/{courseId}/members/bulk', 'verb' => 'POST'],
+        ['name' => 'courseMember#search', 'url' => '/api/courses/{courseId}/member-search', 'verb' => 'GET'],
         ['name' => 'course#removeMember', 'url' => '/api/courses/{courseId}/members/{memberId}', 'verb' => 'DELETE'],
         ['name' => 'course#enroll', 'url' => '/api/courses/{courseId}/enroll', 'verb' => 'POST'],
         ['name' => 'course#progress', 'url' => '/api/courses/{courseId}/progress', 'verb' => 'GET'],

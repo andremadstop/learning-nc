@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * 2026-11 audit S23: toggleMaintenance() let a non-owner through only with the member role
  * 'co-instructor', which nothing ever stores — co-instructors are members with role
- * 'instructor' (CourseService::addMember, isInstructorOfCourse). They got a 403.
+ * 'instructor' (CourseEnrollmentService::addMember, isInstructorOfCourse). They got a 403.
  */
 #[AllowMockObjectsWithoutExpectations]
 class MaintenanceServiceTest extends TestCase {

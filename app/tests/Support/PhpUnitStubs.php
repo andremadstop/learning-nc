@@ -262,6 +262,12 @@ namespace OCP {
             /** @return IUser[] */
             public function getUsers(): array;
             public function addUser(IUser $user): void;
+            // GitHub #35: CourseEnrollmentService mirrors core's GroupPlugin. Signatures copied
+            // from NC 33's lib/public/IGroup.php.
+            public function getGID(): string;
+            public function hideFromCollaboration(): bool;
+            // Bounded group expansion (NC 33 lib/public/IGroup.php).
+            public function searchUsers(string $search, ?int $limit = null, ?int $offset = null): array;
         }
     }
 
@@ -278,6 +284,8 @@ namespace OCP {
             public function isInGroup($userId, $group);
             // RoleService::isInstructor() treats Nextcloud admins as instructors.
             public function isAdmin($userId);
+            // GitHub #35: "share with group members only" check (NC 33 lib/public/IGroupManager.php).
+            public function getUserGroupIds(IUser $user): array;
         }
     }
 
@@ -316,6 +324,7 @@ namespace OCP\Notification {
             public function setLink(string $link): self;
             public function setIcon(string $icon): self;
             public function getApp(): string;
+            public function getUser(): string;
             public function getSubject(): string;
             public function getSubjectParameters(): array;
         }
@@ -1715,6 +1724,40 @@ namespace OCP\Settings {
 
             /** @return int */
             public function getPriority();
+        }
+    }
+}
+
+// GitHub #35: member picker and group enrolment follow the instance's sharing rules. Signatures
+// copied from NC 33's lib/public/Collaboration/Collaborators/ISearch.php, Share/IShare.php and
+// Share/IManager.php (only what CourseEnrollmentService uses).
+namespace OCP\Collaboration\Collaborators {
+    if (!interface_exists(ISearch::class)) {
+        interface ISearch {
+            public function search($search, array $shareTypes, $lookup, $limit, $offset);
+            public function registerPlugin(array $pluginInfo);
+        }
+    }
+}
+
+namespace OCP\Share {
+    if (!interface_exists(IShare::class)) {
+        interface IShare {
+            public const TYPE_USER = 0;
+            public const TYPE_GROUP = 1;
+            public const TYPE_EMAIL = 4;
+        }
+    }
+
+    if (!interface_exists(IManager::class)) {
+        interface IManager {
+            public function shareWithGroupMembersOnly(): bool;
+            public function shareWithGroupMembersOnlyExcludeGroupsList(): array;
+            public function allowGroupSharing(): bool;
+            // Enumeration settings (NC 33 lib/public/Share/IManager.php).
+            public function allowEnumeration(): bool;
+            public function limitEnumerationToGroups(): bool;
+            public function limitEnumerationToPhone(): bool;
         }
     }
 }

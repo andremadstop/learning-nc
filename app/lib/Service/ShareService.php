@@ -45,10 +45,14 @@ class ShareService {
             throw new \InvalidArgumentException('permission must be read or edit');
         }
 
-        // S4: Validate that the target user actually exists
-        if (!$this->userManager->userExists($sharedWith)) {
+        // S4: Validate that the target user actually exists. GitHub #35: store the account's
+        // canonical uid — Nextcloud finds "Alice" for "alice", but share lookups compare exactly,
+        // so a share stored as typed never reached the person it was meant for.
+        $targetUser = $this->userManager->get(trim($sharedWith));
+        if ($targetUser === null) {
             throw new \InvalidArgumentException('User does not exist');
         }
+        $sharedWith = $targetUser->getUID();
 
         // Prevent sharing with yourself
         if ($sharedWith === $userId) {

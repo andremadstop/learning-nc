@@ -957,7 +957,11 @@ class CourseService {
     /**
      * Update course (instructor only)
      */
-    public function update(int $courseId, ?string $title, ?string $description, ?string $status, string $userId): Course {
+    /**
+     * @param ?string $ncGroupId null leaves the course group unchanged, '' removes it (GitHub #35).
+     *                           The caller checks that the group may be used and enrols its members.
+     */
+    public function update(int $courseId, ?string $title, ?string $description, ?string $status, string $userId, ?string $ncGroupId = null): Course {
         $course = $this->courseMapper->findById($courseId);
 
         if (!$this->isInstructorOfCourse($course, $userId)) {
@@ -982,6 +986,9 @@ class CourseService {
         }
         if ($status !== null && in_array($status, ['active', 'archived'])) {
             $course->setStatus($status);
+        }
+        if ($ncGroupId !== null) {
+            $course->setNcGroupId($ncGroupId === '' ? null : $ncGroupId);
         }
         $course->setUpdatedAt(time());
 
@@ -1080,46 +1087,6 @@ class CourseService {
 
         return array_map(fn($m) => $m->jsonSerialize(),
             $this->courseMemberMapper->findByCourse($courseId));
-    }
-
-    /**
-     * Add a member to a course (instructor only)
-     */
-    public function addMember(int $courseId, string $memberId, string $role, string $userId): CourseMember {
-        $course = $this->courseMapper->findById($courseId);
-
-        if (!$this->isInstructorOfCourse($course, $userId)) {
-            throw new \Exception('No permission');
-        }
-
-        if (!in_array($role, ['student', 'instructor'])) {
-            $role = 'student';
-        }
-
-        if (!$this->userManager->userExists($memberId)) {
-            throw new \Exception('User does not exist');
-        }
-
-        // Check if already a member
-        try {
-            $existing = $this->courseMemberMapper->findByCourseAndUser($courseId, $memberId);
-            // Update role if different
-            if ($existing->getRole() !== $role) {
-                $existing->setRole($role);
-                return $this->courseMemberMapper->update($existing);
-            }
-            return $existing;
-        } catch (DoesNotExistException $e) {
-            // New member
-        }
-
-        $member = new CourseMember();
-        $member->setCourseId($courseId);
-        $member->setUserId($memberId);
-        $member->setRole($role);
-        $member->setEnrolledAt(time());
-
-        return $this->courseMemberMapper->insert($member);
     }
 
     /**

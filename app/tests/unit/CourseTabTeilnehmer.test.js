@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApp, h, nextTick } from 'vue'
 import axios from '@nextcloud/axios'
 
 vi.mock('@nextcloud/axios', () => ({
@@ -40,6 +41,20 @@ vi.mock('../../src/components/StudentDetail.vue', () => stub('StudentDetail'))
 vi.mock('../../src/components/CourseSummary.vue', () => stub('CourseSummary'))
 vi.mock('../../src/components/BuddyMatching.vue', () => stub('BuddyMatching'))
 vi.mock('../../src/components/Klassenbuch.vue', () => stub('Klassenbuch'))
+// GitHub #35: the picker stub declares the real component's interface, so a renamed prop or a
+// dropped members-changed relay fails the wiring test below.
+const { pickerStub } = vi.hoisted(() => ({ pickerStub: { instance: null } }))
+vi.mock('../../src/components/CourseMemberPicker.vue', () => ({
+	default: {
+		name: 'CourseMemberPicker',
+		props: { courseId: { type: [Number, String], required: true } },
+		emits: ['members-changed'],
+		created() {
+			pickerStub.instance = this
+		},
+		template: '<div class="picker-stub" />',
+	},
+}))
 
 import CourseTabTeilnehmer from '../../src/components/CourseTabTeilnehmer.vue'
 
@@ -239,5 +254,42 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 		await instance.fetchCertReport()
 
 		expect(instance.certPassedWithoutCertificate).toEqual([])
+	})
+})
+
+describe('CourseTabTeilnehmer member picker wiring (GitHub #35)', () => {
+	it('passes the course id to the picker and relays members-changed so the list refreshes', async () => {
+		axios.get.mockResolvedValue({ data: [] })
+		pickerStub.instance = null
+		const membersChanged = vi.fn()
+		const host = document.createElement('div')
+		document.body.appendChild(host)
+		const app = createApp({
+			render: () => h(CourseTabTeilnehmer, {
+				courseId: 5,
+				course: { is_instructor: true, mode_config: { course_summary: false } },
+				userRole: 'instructor',
+				activeTab: 'members',
+				onMembersChanged: membersChanged,
+			}),
+		})
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = (app, s, p, c) => (c === 1 ? s : p)
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await nextTick()
+
+		try {
+			expect(pickerStub.instance).not.toBeNull()
+			expect(pickerStub.instance.courseId).toBe(5)
+
+			pickerStub.instance.$emit('members-changed')
+			await nextTick()
+
+			expect(membersChanged).toHaveBeenCalledTimes(1)
+		} finally {
+			app.unmount()
+			host.remove()
+		}
 	})
 })

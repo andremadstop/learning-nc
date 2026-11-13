@@ -145,13 +145,16 @@
 				</div>
 
 				<div v-if="userRole === 'instructor'" class="form-group">
-					<label for="course-group">{{ t('learning', 'NC Group ID') }}</label>
+					<label for="course-group">{{ t('learning', 'Nextcloud-Gruppe') }}</label>
 					<NcTextField id="course-group"
 						v-model="formData.ncGroupId"
-						:label="t('learning', 'Nextcloud group for auto-enrollment')"
+						:label="t('learning', 'Alle aktuellen Mitglieder dieser Gruppe einschreiben')"
 						:disabled="saving" />
 					<p class="field-hint">
-						{{ t('learning', 'Optional. Members of this Nextcloud group will be auto-enrolled.') }}
+						{{ t('learning', 'Optional. Beim Speichern werden alle eingeschrieben, die jetzt in dieser Gruppe sind (Gruppen-ID). Wer später dazukommt, wird nicht automatisch hinzugefügt – dafür gibt es im Kurs unter Teilnehmer die Suche nach Personen und Gruppen.') }}
+					</p>
+					<p v-if="groupAlreadySet" class="field-hint group-set-hint">
+						{{ t('learning', 'Diese Gruppe ist schon gesetzt. Ihre Mitglieder werden nur eingeschrieben, wenn die Gruppe gesetzt oder geändert wird – erneutes Speichern schreibt niemanden ein. Wer fehlt, kannst du unter Teilnehmer hinzufügen: dort nach der Gruppe suchen.') }}
 					</p>
 				</div>
 
@@ -213,7 +216,7 @@ import NcActions from '@nextcloud/vue/components/NcActions'
 import NcActionButton from '@nextcloud/vue/components/NcActionButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
-import { showSuccess } from '@nextcloud/dialogs'
+import { showSuccess, showError } from '@nextcloud/dialogs'
 import hintMixin from '../hintMixin.js'
 
 export default {
@@ -275,6 +278,15 @@ export default {
 				return t('learning', 'Create your first course to get started.')
 			}
 			return t('learning', 'You are not enrolled in any courses yet. Your instructor will add you to a course — check back soon!')
+		},
+		/**
+		 * GitHub #35: courses can carry a group from before the field enrolled anyone (it used to
+		 * restrict self-enrolment only), or from a save whose enrolment failed. Saving it again
+		 * enrols nobody, so the form says so instead of implying it happened.
+		 */
+		groupAlreadySet() {
+			const current = (this.editingCourse?.nc_group_id || '').trim()
+			return current !== '' && this.formData.ncGroupId.trim() === current
 		},
 	},
 
@@ -356,29 +368,56 @@ export default {
 				if (this.formData.description.trim()) {
 					payload.description = this.formData.description.trim()
 				}
-				if (this.formData.ncGroupId.trim()) {
-					payload.ncGroupId = this.formData.ncGroupId.trim()
+				// GitHub #35: on edit the group is always sent ('' removes it); the server enrols
+				// the group's current members when the group is new or changed.
+				const groupId = this.formData.ncGroupId.trim()
+				if (groupId || this.editingCourse) {
+					payload.ncGroupId = groupId
 				}
 
+				let data
 				if (this.editingCourse) {
 					const url = generateUrl('/apps/learning/api/courses/{id}', { id: this.editingCourse.id })
-					await axios.put(url, payload)
+					data = (await axios.put(url, payload)).data
 					showSuccess(t('learning', 'Course updated'))
 				} else {
 					const url = generateUrl('/apps/learning/api/courses')
-					await axios.post(url, payload)
+					data = (await axios.post(url, payload)).data
 					showSuccess(t('learning', 'Course created'))
 				}
+				this.reportGroupEnrollment(data?.enrollment)
 
 				this.closeModal()
 				await this.fetchCourses()
 			} catch (err) {
 				console.error('Failed to save course:', err)
-				const message = err.response?.data?.error || err.response?.data?.message
-				this.modalError = message || t('learning', 'Failed to save course. Please try again.')
+				const code = err.response?.data?.code
+				if (code === 'group_unavailable') {
+					this.modalError = t('learning', 'Die Gruppe „{group}“ gibt es nicht oder du darfst sie nach den Freigabe-Einstellungen nicht verwenden. Der Kurs wurde nicht gespeichert.', { group: this.formData.ncGroupId.trim() })
+				} else if (code === 'too_many') {
+					this.modalError = t('learning', 'Die Gruppe „{group}“ hat mehr als {max} Mitglieder, so viele können nicht in einem Schritt eingeschrieben werden. Der Kurs wurde nicht gespeichert.', { group: this.formData.ncGroupId.trim(), max: err.response.data.max })
+				} else {
+					const message = err.response?.data?.error || err.response?.data?.message
+					this.modalError = message || t('learning', 'Failed to save course. Please try again.')
+				}
 			} finally {
 				this.saving = false
 			}
+		},
+
+		reportGroupEnrollment(enrollment) {
+			if (!enrollment) {
+				return
+			}
+			if (enrollment.error) {
+				showError(t('learning', 'Der Kurs wurde gespeichert, aber die Mitglieder der Gruppe „{group}“ konnten nicht (vollständig) eingeschrieben werden. Prüfe die Liste unter Teilnehmer.', { group: enrollment.group_id }))
+				return
+			}
+			showSuccess(t('learning', 'Gruppe „{group}“ eingeschrieben – neu: {added}, schon im Kurs: {already}.', {
+				group: enrollment.group_id,
+				added: enrollment.added,
+				already: enrollment.already,
+			}))
 		},
 
 		async toggleStatus(course) {

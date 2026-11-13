@@ -67,6 +67,7 @@ class PassStatusControllerTest extends TestCase {
             $this->createMock(ScheduleService::class),
             $pass,
             new ExamAttemptPolicy($config),
+            $this->createMock(\OCA\Learning\Service\CourseEnrollmentService::class),
             $this->createMock(LoggerInterface::class),
             $userId
         );

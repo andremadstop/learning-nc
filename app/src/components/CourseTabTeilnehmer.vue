@@ -21,18 +21,8 @@
 				<h4>{{ t('learning', 'Members ({n})', { n: courseMembers.length }) }}</h4>
 			</div>
 
-			<div class="add-member-form">
-				<NcTextField v-model="newMemberUsername"
-					:label="t('learning', 'Username')"
-					:placeholder="t('learning', 'Enter username to add...')"
-					:disabled="addingMember"
-					@keydown.enter="addMember" />
-				<NcButton variant="secondary"
-					:disabled="!newMemberUsername.trim() || addingMember"
-					@click="addMember">
-					{{ addingMember ? t('learning', 'Adding...') : t('learning', 'Add') }}
-				</NcButton>
-			</div>
+			<!-- GitHub #35: search picker for people and groups instead of a typed username -->
+			<CourseMemberPicker :course-id="courseId" @members-changed="$emit('members-changed')" />
 
 			<NcNoteCard v-if="memberError" type="error" class="member-error">
 				{{ memberError }}
@@ -73,7 +63,7 @@
 			<NcEmptyContent v-if="courseMembers.length === 0"
 				:name="t('learning', 'No members yet')">
 				<template #description>
-					{{ t('learning', 'Add members by entering their username above.') }}
+					{{ t('learning', 'Suche oben nach Personen oder Gruppen, um sie hinzuzufügen.') }}
 				</template>
 			</NcEmptyContent>
 		</div>
@@ -508,12 +498,12 @@ import { showSuccess, showError } from '@nextcloud/dialogs'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcModal from '@nextcloud/vue/components/NcModal'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
 import { buildCertReportQuery, shouldShowCertReport, shouldShowCompletionTab, formatDate, formatScore } from '../utils/cert-report.js'
 import Klassenbuch from './Klassenbuch.vue'
+import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
 import CourseSummary from './CourseSummary.vue'
 import BuddyMatching from './BuddyMatching.vue'
@@ -526,7 +516,7 @@ export default {
 		NcEmptyContent,
 		NcLoadingIcon,
 		NcModal,
-		NcTextField,
+		CourseMemberPicker,
 		NcNoteCard,
 		Klassenbuch,
 		StudentDetail,
@@ -548,8 +538,6 @@ export default {
 			currentSubTab: 'members',
 
 			// Members
-			newMemberUsername: '',
-			addingMember: false,
 			memberError: '',
 			savingMember: null,
 			showRemoveMemberModal: false,
@@ -758,30 +746,6 @@ export default {
 		},
 
 		// Member CRUD
-		async addMember() {
-			const username = this.newMemberUsername.trim()
-			if (!username) return
-			this.addingMember = true
-			this.memberError = ''
-			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/members', { courseId: this.courseId })
-				await axios.post(url, { userId: username })
-				this.newMemberUsername = ''
-				this.$emit('members-changed')
-			} catch (err) {
-				console.error('Failed to add member:', err)
-				const message = err.response?.data?.error || err.response?.data?.message
-				if (err.response?.status === 404) {
-					this.memberError = t('learning', 'Benutzer "{name}" nicht gefunden.', { name: username })
-				} else if (err.response?.status === 409) {
-					this.memberError = t('learning', 'Benutzer "{name}" ist bereits Mitglied.', { name: username })
-				} else {
-					this.memberError = message || t('learning', 'Mitglied konnte nicht hinzugefügt werden.')
-				}
-			} finally {
-				this.addingMember = false
-			}
-		},
 		async toggleMemberRole(member) {
 			const newRole = member.role === 'student' ? 'instructor' : 'student'
 			this.savingMember = member.id
@@ -1083,14 +1047,7 @@ export default {
 .loading-container p { margin-top: 12px; }
 
 /* Members */
-.add-member-form {
-	display: flex;
-	gap: 8px;
-	align-items: flex-end;
-	margin-bottom: 16px;
-}
-
-.add-member-form .nc-text-field { flex: 1; }
+.members-section .member-picker { margin-bottom: 16px; }
 
 .member-error { margin-bottom: 12px; }
 
@@ -1345,7 +1302,6 @@ td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transpar
 @media (max-width: 768px) {
 	.member-item { flex-direction: column; align-items: flex-start; }
 	.member-actions { width: 100%; justify-content: flex-end; }
-	.add-member-form { flex-direction: column; align-items: stretch; }
 	.modal-content { padding: 16px; min-width: unset; }
 }
 

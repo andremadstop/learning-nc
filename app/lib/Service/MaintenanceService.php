@@ -46,7 +46,7 @@ class MaintenanceService {
             $result = $qb->executeQuery();
             $row = $result->fetch();
             $result->closeCursor();
-            // Co-instructors are members with role 'instructor' (CourseService::addMember).
+            // Co-instructors are members with role 'instructor' (CourseEnrollmentService::addMember).
             if (!$row || $row['role'] !== 'instructor') {
                 throw new ForbiddenException('Only instructors can toggle maintenance mode');
             }

@@ -41,6 +41,7 @@ class CsvFormulaInjectionTest extends TestCase {
             $this->createMock(ScheduleService::class),
             $this->createMock(PassCriteriaService::class),
             $this->createMock(ExamAttemptPolicy::class),
+            $this->createMock(\OCA\Learning\Service\CourseEnrollmentService::class),
             $this->createMock(LoggerInterface::class),
             'teacher'
         );

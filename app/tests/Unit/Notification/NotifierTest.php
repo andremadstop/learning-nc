@@ -111,4 +111,29 @@ class NotifierTest extends TestCase {
 
         $notifier->prepare($notification, 'de');
     }
+
+    /**
+     * GitHub #35: an instructor enrolled the person. Subject names the course, the link opens it.
+     */
+    public function testCourseEnrolledNamesTheCourseAndLinksToIt(): void {
+        $l = $this->createMock(IL10N::class);
+        $l->method('t')->willReturnCallback(fn (string $text, array $p = []) => vsprintf($text, $p));
+        $l10nFactory = $this->createMock(IFactory::class);
+        $l10nFactory->expects($this->atLeastOnce())->method('get')->with('learning', 'fr')->willReturn($l);
+        $urlGenerator = $this->createMock(IURLGenerator::class);
+        $urlGenerator->method('linkToRouteAbsolute')->willReturn('https://nc.example/apps/learning/');
+        $urlGenerator->method('getAbsoluteURL')->willReturn('https://nc.example/img/app.svg');
+        $notifier = new Notifier($l10nFactory, $urlGenerator);
+
+        $notification = $this->makeNotification('learning', 'course_enrolled', [
+            'course_title' => 'Arbeitsschutz 2026',
+            'course_id' => 12,
+        ]);
+        $notification->expects($this->once())->method('setParsedSubject')
+            ->with('You were enrolled in the course Arbeitsschutz 2026')->willReturnSelf();
+        $notification->expects($this->once())->method('setLink')
+            ->with('https://nc.example/apps/learning/courses/12')->willReturnSelf();
+
+        $notifier->prepare($notification, 'fr');
+    }
 }

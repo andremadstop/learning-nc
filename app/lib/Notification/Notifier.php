@@ -93,6 +93,21 @@ class Notifier implements INotifier {
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
+            case 'course_enrolled':
+                // GitHub #35: an instructor enrolled this person. Without it the course just
+                // appeared in the list one day, if the learner ever looked.
+                $params = $notification->getSubjectParameters();
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $notification->setParsedSubject(
+                    $l->t('You were enrolled in the course %s', [$courseTitle])
+                );
+                $courseId = (int)($params['course_id'] ?? 0);
+                $notification->setLink($courseId > 0
+                    ? rtrim($appUrl, '/') . '/courses/' . $courseId
+                    : $appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
+                break;
+
             case 'compliance_reminder':
                 $params = $notification->getSubjectParameters();
                 $courseTitle = (string)($params['course_title'] ?? '');

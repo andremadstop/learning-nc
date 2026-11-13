@@ -6,9 +6,11 @@ use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseArchiveService;
+use OCA\Learning\Service\CourseEnrollmentService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CsvFormulaGuard;
 use OCA\Learning\Service\ExamAttemptPolicy;
+use OCA\Learning\Service\GroupUnavailableException;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
@@ -29,6 +31,7 @@ class CourseController extends Controller {
     private ScheduleService $scheduleService;
     private PassCriteriaService $passCriteriaService;
     private ExamAttemptPolicy $examAttemptPolicy;
+    private CourseEnrollmentService $enrollment;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -43,6 +46,7 @@ class CourseController extends Controller {
         ScheduleService $scheduleService,
         PassCriteriaService $passCriteriaService,
         ExamAttemptPolicy $examAttemptPolicy,
+        CourseEnrollmentService $enrollment,
         LoggerInterface $logger,
         ?string $userId
     ) {
@@ -55,6 +59,7 @@ class CourseController extends Controller {
         $this->scheduleService = $scheduleService;
         $this->passCriteriaService = $passCriteriaService;
         $this->examAttemptPolicy = $examAttemptPolicy;
+        $this->enrollment = $enrollment;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -101,11 +106,76 @@ class CourseController extends Controller {
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function create(string $title, ?string $description = null, ?string $ncGroupId = null): DataResponse {
+        // GitHub #35: the group field promised auto-enrolment and did nothing. Now the group's
+        // current members are enrolled when the course is saved. The group is checked BEFORE the
+        // course exists, so a mistyped or invisible group does not leave a half-made course behind.
+        $groupId = $ncGroupId === null ? '' : trim($ncGroupId);
+        if ($groupId !== '') {
+            if (!$this->roleService->isInstructor($this->userId)) {
+                return new DataResponse(['error' => 'Failed to create course'], Http::STATUS_BAD_REQUEST);
+            }
+            $rejected = null;
+            $groupId = $this->preflightGroup($groupId, $rejected);
+            if ($rejected !== null) {
+                return $rejected;
+            }
+        }
         try {
-            $course = $this->courseService->create($title, $description, $ncGroupId, $this->userId);
-            return new DataResponse($course, Http::STATUS_CREATED);
+            $course = $this->courseService->create($title, $description, $groupId !== '' ? $groupId : null, $this->userId);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to create course'], Http::STATUS_BAD_REQUEST);
+        }
+        $data = $course->jsonSerialize();
+        if ($groupId !== '') {
+            $data['enrollment'] = $this->enrolGroupSnapshot($course, $groupId);
+        }
+        return new DataResponse($data, Http::STATUS_CREATED);
+    }
+
+    /**
+     * Checks the course group BEFORE anything is saved: usable for this caller and small enough to
+     * enrol in one step. Otherwise the course would keep a group whose members were never
+     * enrolled, while the form says "enrol all current members of this group".
+     *
+     * @param-out ?DataResponse $rejected the 400 response when the group cannot be used
+     * @return string the group's canonical id
+     */
+    private function preflightGroup(string $groupId, ?DataResponse &$rejected): string {
+        try {
+            return $this->enrollment->assertGroupEnrollable($groupId, (string)$this->userId);
+        } catch (GroupUnavailableException $e) {
+            $rejected = new DataResponse(['error' => 'Group not available', 'code' => 'group_unavailable'], Http::STATUS_BAD_REQUEST);
+        } catch (\InvalidArgumentException $e) {
+            $rejected = new DataResponse([
+                'error' => 'Group too large',
+                'code' => 'too_many',
+                'max' => CourseEnrollmentService::MAX_ENROLMENTS,
+            ], Http::STATUS_BAD_REQUEST);
+        }
+        return $groupId;
+    }
+
+    /**
+     * Enrol the group's current members and summarise the outcome for the course form. A failure
+     * is reported in the response (the course itself is saved), never swallowed.
+     *
+     * @return array{group_id: string, added: int, already: int, failed: int, error: ?string}
+     */
+    private function enrolGroupSnapshot(Course $course, string $groupId): array {
+        try {
+            $result = $this->enrollment->enrolGroupSnapshot($course, $groupId, (string)$this->userId);
+            return [
+                'group_id' => $groupId,
+                'added' => count($result['added']),
+                'already' => count($result['already']),
+                'failed' => count($result['failed']),
+                'error' => $result['failed'] === [] ? null : 'failed',
+            ];
+        } catch (\Throwable $e) {
+            $this->logger->error('Enrolling the course group failed: ' . $e->getMessage(), ['app' => 'learning']);
+            $code = $e instanceof GroupUnavailableException ? 'group_unavailable'
+                : (($e instanceof \InvalidArgumentException && $e->getMessage() === 'too_many') ? 'too_many' : 'failed');
+            return ['group_id' => $groupId, 'added' => 0, 'already' => 0, 'failed' => 0, 'error' => $code];
         }
     }
 
@@ -113,10 +183,36 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function update(int $courseId, ?string $title = null, ?string $description = null, ?string $status = null): DataResponse {
+    public function update(int $courseId, ?string $title = null, ?string $description = null, ?string $status = null, ?string $ncGroupId = null): DataResponse {
         try {
-            $course = $this->courseService->update($courseId, $title, $description, $status, $this->userId);
-            return new DataResponse($course);
+            // GitHub #35: the edit form always sent ncGroupId and nothing read it. null = leave the
+            // group alone, '' = remove it. A changed group enrols its current members; saving the
+            // course again with the same group does not re-add people who were removed by hand.
+            $groupId = null;
+            if ($ncGroupId !== null) {
+                $existing = $this->courseService->assertInstructorOfCourse($courseId, (string)$this->userId);
+                $requested = trim($ncGroupId);
+                $current = (string)($existing->getNcGroupId() ?? '');
+                if ($requested !== $current) {
+                    $groupId = $requested;
+                    if ($groupId !== '') {
+                        $rejected = null;
+                        $groupId = $this->preflightGroup($groupId, $rejected);
+                        if ($rejected !== null) {
+                            return $rejected;
+                        }
+                        if ($groupId === $current) {
+                            $groupId = null; // the same group, typed in another case
+                        }
+                    }
+                }
+            }
+            $course = $this->courseService->update($courseId, $title, $description, $status, $this->userId, $groupId);
+            $data = $course->jsonSerialize();
+            if ($groupId !== null && $groupId !== '') {
+                $data['enrollment'] = $this->enrolGroupSnapshot($course, $groupId);
+            }
+            return new DataResponse($data);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
@@ -238,19 +334,6 @@ class CourseController extends Controller {
             return new DataResponse($this->courseService->getMembers($courseId, $this->userId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'No permission to view members'], Http::STATUS_FORBIDDEN);
-        }
-    }
-
-    /**
-     * @NoAdminRequired
-     */
-    #[UserRateLimit(limit: 20, period: 60)]
-    public function addMember(int $courseId, string $userId, string $role = 'student'): DataResponse {
-        try {
-            $member = $this->courseService->addMember($courseId, $userId, $role, $this->userId);
-            return new DataResponse($member, Http::STATUS_CREATED);
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => 'Failed to add member'], Http::STATUS_BAD_REQUEST);
         }
     }
 
