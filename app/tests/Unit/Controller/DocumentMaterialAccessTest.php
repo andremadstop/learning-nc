@@ -472,15 +472,20 @@ class DocumentMaterialAccessTest extends TestCase {
         $this->assertSame(Http::STATUS_OK, $this->controller('student')->download(self::COURSE, 51)->getStatus());
     }
 
-    /** The whole home was never meant to be a material folder: nothing of it is served. */
+    /**
+     * The whole home was never meant to be a material folder: nothing of it is served. Before
+     * the server refused '/', a course could have it, and its scan stored '//' . name — exactly
+     * what a scan of that folder "would store today", so a raw comparison served the home root.
+     */
     public function testCourseWhoseFolderIsTheHomeServesNothing(): void {
         $this->enrolled('student');
         $this->courseService->method('canManageCourse')->willReturn(false);
         $this->course->setMaterialFolder('/');
-        $doc = self::doc(52, 'privat.pdf', 'pdf', '/privat.pdf');
+        $doc = self::doc(52, 'privat.pdf', 'pdf', '//privat.pdf');
         $this->documentMapper->method('findByCourseId')->willReturn([$doc]);
         $this->documentMapper->method('findById')->willReturn($doc);
-        $this->homeFiles['/privat.pdf'] = $this->fileNode('home root');
+        // a resolver that let the row through would find the file in the home root
+        $this->children['privat.pdf'] = $this->fileNode('home root');
 
         $this->assertFalse($this->controller('student')->index(self::COURSE)->getData()['documents'][0]['downloadable']);
         $this->assertSame(Http::STATUS_NOT_FOUND, $this->controller('student')->download(self::COURSE, 52)->getStatus());
