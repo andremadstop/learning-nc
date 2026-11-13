@@ -1324,7 +1324,7 @@ OC.L10N.register(
     "Prüfung durch den Dozenten" : "Review by instructor",
     "Prüfungs-Übersicht konnte nicht geladen werden" : "Could not load exam overview",
     "Prüfungsmodus blendet Feedback aus und sammelt deine Antworten für die Auswertung." : "Exam mode hides feedback and collects your answers for evaluation.",
-    "Prüfungsmodus ohne Hinweise — Ergebnis erst nach allen Fragen." : "Exam mode without hints — result only after all questions.",
+    "Prüfungsmodus ohne Hinweise — Ergebnis erst nach allen Fragen." : "وضع الامتحان بدون تلميحات — النتيجة فقط بعد كل الأسئلة.",
     "Prüfungsmodus sammelt Antworten ohne sofortiges Feedback." : "Exam mode collects answers without immediate feedback.",
     "Prüfungsmodus zeigt Feedback erst am Ende des Durchlaufs." : "Exam mode shows feedback only at the end of the run.",
     "Prüfungsmodus — kein Feedback bis zum Ende." : "وضع الامتحان — لا ملاحظات حتى النهاية.",
