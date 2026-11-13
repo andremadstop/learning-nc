@@ -3354,5 +3354,6 @@ OC.L10N.register(
     "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben." : "لم تتم مشاركة أي مواد تعليمية لهذه الدورة بعد.",
     "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen." : "يمكن لأعضاء الدورة فتح كل ملف PDF وMarkdown في هذا المجلد.",
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "يوجد اختبار لهذه المجموعة قيد التشغيل بالفعل في دورة أخرى أو خارج أي دورة. أكمله حيث بدأته، أو انتظر حتى ينتهي وقته.",
+    "Die Lernmaterialien konnten nicht geladen werden." : "تعذّر تحميل المواد التعليمية.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

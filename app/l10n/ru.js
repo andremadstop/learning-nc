@@ -3354,5 +3354,6 @@ OC.L10N.register(
     "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben." : "Для этого курса ещё не опубликованы учебные материалы.",
     "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen." : "Участники курса могут открыть любой файл PDF и Markdown в этой папке.",
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "Экзамен по этому пулу уже идёт в другом курсе или вне курса. Завершите его там, где вы его начали, или дождитесь окончания его времени.",
+    "Die Lernmaterialien konnten nicht geladen werden." : "Не удалось загрузить учебные материалы.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

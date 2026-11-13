@@ -1,7 +1,9 @@
 <template>
 	<div class="course-materials">
 		<!-- Folder Setting Section (course owner only: the folder lives in the owner's home) -->
-		<div v-if="managesFiles" class="material-folder-section">
+		<!-- Hidden while the page could not be loaded: an empty field would invite the owner to
+			link a folder over the one that is linked (GitHub #35). -->
+		<div v-if="managesFiles && !loadError" class="material-folder-section">
 			<h4>{{ t('learning', 'Materialordner') }}</h4>
 			<div class="folder-input-row">
 				<input
@@ -39,8 +41,16 @@
 			{{ errorMessage }}
 		</div>
 
+		<!-- A failed load is no empty course (GitHub #35): say so and offer a retry. -->
+		<div v-if="loadError && !loading" class="error-message load-error" role="alert">
+			<p>{{ t('learning', 'Die Lernmaterialien konnten nicht geladen werden.') }}</p>
+			<button type="button" class="material-btn retry-btn" @click="loadData">
+				{{ t('learning', 'Erneut versuchen') }}
+			</button>
+		</div>
+
 		<!-- Empty States -->
-		<div v-if="!materialFolder && !loading" class="empty-state">
+		<div v-else-if="!materialFolder && !loading" class="empty-state">
 			<p>{{ t('learning', 'Kein Materialordner verknüpft. Bitte einen Nextcloud-Ordner auswählen.') }}</p>
 		</div>
 
@@ -191,6 +201,8 @@ export default {
 			settingFolder: false,
 			extracting: {},
 			errorMessage: null,
+			// GitHub #35: the folder or the document list could not be read
+			loadError: false,
 			// null until the server said so (older server, failed read)
 			canManageFiles: null,
 			pdfTextExtraction: null,
@@ -226,6 +238,7 @@ export default {
 
 		async loadData() {
 			this.loading = true
+			this.loadError = false
 			try {
 				await Promise.all([
 					this.loadFolder(),
@@ -246,6 +259,7 @@ export default {
 				}
 			} catch (e) {
 				console.error('Failed to load material folder', e)
+				this.loadError = true
 			}
 		},
 
@@ -259,6 +273,7 @@ export default {
 				this.pdfTextExtraction = parsed.pdfTextExtraction
 			} catch (e) {
 				console.error('Failed to load documents', e)
+				this.loadError = true
 			}
 		},
 
@@ -451,6 +466,10 @@ export default {
 	color: #c62828;
 	border-radius: var(--border-radius, 4px);
 	font-size: 14px;
+}
+
+.load-error p {
+	margin: 0 0 8px;
 }
 
 .empty-state {

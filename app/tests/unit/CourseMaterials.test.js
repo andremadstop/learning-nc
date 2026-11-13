@@ -18,8 +18,8 @@ const { api, picker } = vi.hoisted(() => ({
 vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn((url) => {
-			if (url === '/apps/learning/api/courses/9/material-folder') return Promise.resolve({ data: { folder: api.folder } })
-			if (url === '/apps/learning/api/courses/9/documents') return Promise.resolve({ data: api.documents })
+			if (url === '/apps/learning/api/courses/9/material-folder') return api.folder instanceof Error ? Promise.reject(api.folder) : Promise.resolve({ data: { folder: api.folder } })
+			if (url === '/apps/learning/api/courses/9/documents') return api.documents instanceof Error ? Promise.reject(api.documents) : Promise.resolve({ data: api.documents })
 			return Promise.resolve({ data: {} })
 		}),
 		post: vi.fn((url, body) => {
@@ -245,6 +245,52 @@ describe('CourseMaterials (GitHub #35)', () => {
 		expect(picker.built.mime).toEqual(['httpd/unix-directory'])
 		expect(api.posts[0]).toEqual({ url: '/apps/learning/api/courses/9/material-folder', body: { folder: '/Kurse/Security' } })
 		expect(host.querySelector('.folder-input').value).toBe('/Kurse/Security')
+	})
+
+	// A failed load used to land in the empty state: "no materials released yet" for learners,
+	// "no folder linked" for the owner — and the owner was invited to link a folder over the
+	// linked one.
+	it('a failed document list is an error with a retry, not "no materials yet"', async () => {
+		api.documents = new Error('500')
+		await mount({ isInstructor: false, aiEnabled: true })
+
+		expect(host.querySelector('.load-error').textContent).toContain('konnten nicht geladen werden')
+		expect(host.querySelector('.empty-state')).toBeNull()
+		expect(host.textContent).not.toContain('noch keine Lernmaterialien')
+
+		api.documents = { documents: [PDF], can_manage_files: false, pdf_text_extraction: true }
+		host.querySelector('.retry-btn').click()
+		await flush()
+
+		expect(host.querySelector('.load-error')).toBeNull()
+		expect(host.querySelector('a.material-file-link').textContent).toBe('Skript.pdf')
+	})
+
+	it('a failed folder read shows the owner an error, not "no folder linked" and an empty link field', async () => {
+		api.folder = new Error('404')
+		api.documents = { documents: [], can_manage_files: true, pdf_text_extraction: true }
+		await mount({ isInstructor: true, aiEnabled: true })
+
+		expect(host.querySelector('.load-error')).not.toBeNull()
+		expect(host.querySelector('.empty-state')).toBeNull()
+		expect(host.querySelector('.material-folder-section')).toBeNull()
+
+		api.folder = '/Kurs/Material'
+		host.querySelector('.retry-btn').click()
+		await flush()
+
+		expect(host.querySelector('.load-error')).toBeNull()
+		expect(host.querySelector('.folder-input').value).toBe('/Kurs/Material')
+		expect(host.querySelector('.empty-state').textContent).toContain('Ordner scannen')
+	})
+
+	it('a course without a linked folder (folder: null) is the normal empty state, not an error', async () => {
+		api.folder = null
+		api.documents = { documents: [], can_manage_files: false, pdf_text_extraction: true }
+		await mount({ isInstructor: false, aiEnabled: true })
+
+		expect(host.querySelector('.load-error')).toBeNull()
+		expect(host.querySelector('.empty-state')).not.toBeNull()
 	})
 
 	it('closing the picker or choosing the whole home folder links nothing', async () => {

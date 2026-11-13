@@ -3354,5 +3354,6 @@ OC.L10N.register(
     "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben." : "Aucun support de cours n'a encore été partagé pour ce cours.",
     "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen." : "Les membres du cours peuvent ouvrir chaque fichier PDF et Markdown de ce dossier.",
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "Un examen sur ce pool est déjà en cours dans un autre cours ou en dehors d’un cours. Terminez-le là où vous l’avez commencé, ou attendez que son temps soit écoulé.",
+    "Die Lernmaterialien konnten nicht geladen werden." : "Les supports de cours n'ont pas pu être chargés.",
 },
 "nplurals=2; plural=(n > 1);");
