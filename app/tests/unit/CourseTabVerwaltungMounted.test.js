@@ -18,7 +18,7 @@ vi.mock('@nextcloud/axios', () => ({
 			if (url === '/apps/learning/api/settings/tools') return Promise.resolve({ data: { enabled_tools: null } })
 			if (url === '/apps/learning/api/courses/5/tools') return Promise.resolve({ data: { enabled_tools: null } })
 			if (url === '/apps/learning/api/story/campaigns') return Promise.resolve({ data: { campaigns: [{ campaign_id: 'wannacry', title: 'WannaCry', difficulty: 'easy' }] } })
-			if (url === '/apps/learning/api/courses/5/schedule') return Promise.resolve({ data: api.schedule })
+			if (url === '/apps/learning/api/courses/5/schedule') return api.schedule instanceof Error ? Promise.reject(api.schedule) : Promise.resolve({ data: api.schedule })
 			return Promise.resolve({ data: {} })
 		}),
 		put: vi.fn((url, body) => {
@@ -338,6 +338,32 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			await flush()
 
 			expect(emitted).toEqual([['error', 'Failed to save schedule: Entry 0: chapter_ref too long']])
+		})
+
+		// Pre-existing: a failed GET left an empty editor that looked like "no schedule yet". Adding a
+		// row and saving then replaced the whole stored schedule (setSchedule deletes before inserting).
+		it('a failed load shows an error with retry and offers no editor that could overwrite the schedule', async () => {
+			api.schedule = Object.assign(new Error('boom'), { response: { status: 500 } })
+			const tab = await mountTab({ activeTab: 'schedule' })
+
+			expect(host.querySelector('[data-test="schedule-load-error"]')).toBeTruthy()
+			expect(Array.from(host.querySelectorAll('button')).some((b) => b.textContent.trim() === '+ Kapitel hinzufuegen')).toBe(false)
+			expect(Array.from(host.querySelectorAll('button')).some((b) => b.textContent.trim() === 'Zeitplan speichern')).toBe(false)
+
+			// Even a programmatic save is refused while the stored schedule is unknown.
+			tab.scheduleItems = [{ chapter_ref: 'x', chapter_title: 'X', start_date: null, target_date: null }]
+			await tab.saveSchedule()
+			expect(axios.put.mock.calls.some(([url]) => url === '/apps/learning/api/courses/5/schedule')).toBe(false)
+
+			api.schedule = {
+				schedule: [{ chapter_ref: 'chapter-01', chapter_title: 'Basics', start_date: null, target_date: null, sort_order: 1 }],
+				chapters_in_scope: [],
+				known_chapter_refs: [],
+			}
+			buttonByText('Erneut versuchen').click()
+			await flush()
+			expect(host.querySelector('[data-test="schedule-load-error"]')).toBeNull()
+			expect(host.querySelector('[data-test="schedule-chapter-ref"]').value).toBe('chapter-01')
 		})
 
 		it('free text stays allowed: a typed chapter_ref outside the suggestions is sent as typed', async () => {

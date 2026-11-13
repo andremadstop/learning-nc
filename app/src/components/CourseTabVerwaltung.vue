@@ -259,6 +259,15 @@
 
 			<div v-if="loadingSchedule" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
 
+			<!-- After a failed load the editor stays hidden: saving an empty or partial editor would
+				replace the stored schedule (setSchedule deletes every row before inserting). -->
+			<div v-else-if="scheduleLoadError" class="schedule-load-error" data-test="schedule-load-error">
+				<NcNoteCard type="error">{{ t('learning', 'Der Zeitplan konnte nicht geladen werden.') }}</NcNoteCard>
+				<NcButton variant="secondary" @click="loadSchedule">
+					{{ t('learning', 'Erneut versuchen') }}
+				</NcButton>
+			</div>
+
 			<template v-else>
 				<table v-if="scheduleItems.length" class="schedule-table">
 					<thead>
@@ -437,6 +446,7 @@ export default {
 			scheduleItems: [],
 			knownChapterRefs: [],
 			loadingSchedule: false,
+			scheduleLoadError: false,
 			savingSchedule: false,
 			scheduleSaved: false,
 			deletingSchedule: false,
@@ -841,14 +851,19 @@ export default {
 
 		async loadSchedule() {
 			this.loadingSchedule = true
+			this.scheduleLoadError = false
 			try {
 				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`))
 				const items = res.data?.schedule || []
 				this.scheduleItems = items.map((item) => ({ ...item }))
 				this.knownChapterRefs = Array.isArray(res.data?.known_chapter_refs) ? res.data.known_chapter_refs : []
 			} catch (e) {
+				// An empty editor here looked like "no schedule yet"; a row added and saved then
+				// replaced the whole stored schedule.
+				console.error('Failed to load schedule', e)
 				this.scheduleItems = []
 				this.knownChapterRefs = []
+				this.scheduleLoadError = true
 			} finally {
 				this.loadingSchedule = false
 			}
@@ -873,6 +888,9 @@ export default {
 		},
 
 		async saveSchedule() {
+			if (this.scheduleLoadError) {
+				return
+			}
 			this.savingSchedule = true
 			this.scheduleSaved = false
 			try {
@@ -1130,5 +1148,12 @@ export default {
 	display: flex;
 	gap: 8px;
 	flex-wrap: wrap;
+}
+
+.schedule-load-error {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
 }
 </style>
