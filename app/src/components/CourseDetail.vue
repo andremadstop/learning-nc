@@ -243,7 +243,7 @@ export default {
 			return ['feed', 'buddies', 'schwarm']
 		},
 		verwaltungLeafTabs() {
-			return ['mode-config', 'schedule', 'exam-slot']
+			return ['mode-config', 'schedule']
 		},
 		lernraumLeafTabs() {
 			if (this.isInstructor) {

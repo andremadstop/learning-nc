@@ -221,6 +221,8 @@
 				:courseId="courseId"
 				:totalQuestions="selectedLearningPoolQuestionCount"
 				:contentLanguage="contentLanguage"
+				:courseCertification="examCertification"
+				:poolPractice="poolPracticeConfig"
 				@back="resetLearningPoolSelection" />
 		</div>
 
@@ -717,7 +719,7 @@ export default {
 			if (this.modeEnabled('exam')) {
 				tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			}
-			// Codeberg #9: independent of mode_config.exam, which governs the CompTIA presets —
+			// Codeberg #9: independent of mode_config.exam, which governs the pool exam tab —
 			// a course can offer its own practice exam with the preset exam switched off.
 			if (this.course?.practice_enabled) {
 				tabs.push({ id: 'practice', label: t('learning', 'Course practice exam') })
@@ -780,6 +782,33 @@ export default {
 				passPercent: Number(c.practice_pass_percent ?? 75),
 				requiredOnly: c.practice_required_only === true,
 			}
+		},
+		/**
+		 * GitHub #35: the certificate rule for the selected pool's exam, or null when the course
+		 * does not certify. Same rule as PassCriteriaService::resolveRequiredPoolIds: only required
+		 * pools still linked to the course count; with none left, every counting exam counts.
+		 */
+		examCertification() {
+			const c = this.course || {}
+			if (!c.cert_enabled || !this.selectedLearningPool) {
+				return null
+			}
+			const linked = new Set(this.coursePools.map((pool) => Number(pool.pool_id)))
+			const required = (Array.isArray(c.cert_required_pool_ids) ? c.cert_required_pool_ids : [])
+				.map(Number)
+				.filter((id) => linked.has(id))
+			return {
+				passPercent: Number(c.cert_pass_percent ?? 80),
+				countsForCertificate: required.length === 0 || required.includes(Number(this.selectedLearningPool.pool_id)),
+			}
+		},
+		// GitHub #35: the "Practice run" card in a pool's exam mode follows the course practice rules.
+		poolPracticeConfig() {
+			if (!this.course?.practice_enabled) {
+				return null
+			}
+			const { questions, minutes, passPercent } = this.practiceConfig
+			return { questions, minutes, passPercent }
 		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)

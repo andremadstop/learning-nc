@@ -85,9 +85,11 @@ describe('ExamMode — course practice exam', () => {
 		expect(vm.visiblePresets[0].meta).toBe('Questions: 30 · no time limit · pass mark: 70%')
 	})
 
-	it('leaves the CompTIA presets untouched outside practice mode', () => {
-		const vm = createInstance({ poolId: 42 })
-		expect(vm.visiblePresets.map((p) => p.id)).toEqual(['full', 'light'])
+	// GitHub #35: outside the practice tab, the pool's exam card (and, with practice rules, the
+	// practice run card) — never the course practice exam card.
+	it('shows the pool exam card outside practice mode', () => {
+		const vm = createInstance({ poolId: 42, totalQuestions: 30 })
+		expect(vm.visiblePresets.map((p) => p.id)).toEqual(['exam'])
 	})
 
 	// Codeberg #9 follow-up: the server's raw English error would leave the learner guessing.

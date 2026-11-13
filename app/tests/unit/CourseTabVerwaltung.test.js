@@ -67,10 +67,19 @@ describe('CourseTabVerwaltung', () => {
 		vi.clearAllMocks()
 	})
 
-	it('has mode-config, schedule and exam-slot sub-tabs', () => {
+	// GitHub #35: the exam slot is gone — nothing on the learner side ever read it.
+	it('has mode-config and schedule sub-tabs, no exam slot', () => {
 		const instance = createInstance()
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['mode-config', 'schedule', 'exam-slot'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['mode-config', 'schedule'])
+	})
+
+	it('a stale exam-slot link falls back to the course rules', () => {
+		const instance = createInstance({ currentSubTab: 'schedule' })
+
+		instance.syncFromActiveTab('exam-slot')
+
+		expect(instance.currentSubTab).toBe('mode-config')
 	})
 
 	it('modeConfigKeys returns expected mode keys', () => {
@@ -87,15 +96,15 @@ describe('CourseTabVerwaltung', () => {
 		expect(keys.length).toBe(8)
 	})
 
-	it('emits tab-change when selecting exam-slot pill', () => {
+	it('emits tab-change when selecting the schedule pill', () => {
 		const instance = createInstance({
 			currentSubTab: 'mode-config',
 		})
 
-		instance.selectSubTab('exam-slot')
+		instance.selectSubTab('schedule')
 
-		expect(instance.$emit).toHaveBeenCalledWith('tab-change', 'exam-slot')
-		expect(instance.currentSubTab).toBe('exam-slot')
+		expect(instance.$emit).toHaveBeenCalledWith('tab-change', 'schedule')
+		expect(instance.currentSubTab).toBe('schedule')
 	})
 
 	it('normalizeModeConfig fills defaults', () => {

@@ -9,6 +9,7 @@ use OCA\Learning\Service\TrainingService;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * GitHub #35: POST /api/training/complete issues the certificate for a counting exam right away
@@ -20,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 class TrainingControllerCompleteTest extends TestCase {
 
     private function makeController(TrainingService $service, CertificationTrigger $trigger, ?string $userId = 'alice'): TrainingController {
-        return new TrainingController('learning', $this->createMock(IRequest::class), $service, $trigger, $userId);
+        return new TrainingController('learning', $this->createMock(IRequest::class), $service, $trigger, $userId, $this->createMock(LoggerInterface::class));
     }
 
     public function testCompletionCarriesTheCertificationBlock(): void {

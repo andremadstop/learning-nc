@@ -599,7 +599,7 @@ export default {
       return {
         train: t('learning', 'Schnelles Quiz — teste dein Wissen mit zufälligen Fragen.'),
         leitner: t('learning', 'Spaced Repetition — schwierige Fragen kommen häufiger. 5 Boxen, Schritt für Schritt.'),
-        exam: t('learning', 'Prüfungsmodus — kein Feedback bis zum Ende, wie eine echte Prüfung.'),
+        exam: t('learning', 'Prüfungsmodus — kein Feedback bis zum Ende.'),
         gameshow: t('learning', 'Arena mit Duell, Sprint oder Elimination.'),
         stats: t('learning', 'Lernstatistiken und Box-Verteilung für diesen Pool.'),
         manage: t('learning', 'Fragen hinzufügen, bearbeiten, löschen und importieren.'),
@@ -843,7 +843,6 @@ export default {
             'heatmap': 'view:course-heatmap',
             'weak-questions': 'view:course-weak-questions',
             'announcements': 'view:course-announcements',
-            'exam-slot': 'view:course-exam-slot',
             'requests': 'view:course-requests',
             'mode-config': 'view:course-mode-config',
             'materials': 'view:course-materials',
@@ -919,9 +918,9 @@ export default {
           shortText: t('learning', 'Beantworte fällige Karten. Richtige rücken vor, falsche gehen zurück.'),
         },
         'view:course-exam': {
-          title: t('learning', 'Prüfungssimulation'),
-          text: t('learning', 'Prüfungsmodus simuliert einen echten Test: keine Hinweise, ein Zeitlimit und dein Ergebnis erst am Ende. Nutze ihn, um zu prüfen ob du bereit bist.'),
-          shortText: t('learning', 'Simulierte Prüfung — Ergebnis erst nach allen Fragen.'),
+          title: t('learning', 'Prüfung'),
+          text: t('learning', 'Prüfungsmodus: keine Hinweise, ein Zeitlimit und dein Ergebnis erst am Ende. Vergibt der Kurs ein Zertifikat, siehst du vor dem Start, ob die Prüfung dafür zählt. Ein Probedurchlauf zählt nie.'),
+          shortText: t('learning', 'Prüfungsmodus ohne Hinweise — Ergebnis erst nach allen Fragen.'),
         },
         'view:course-my-progress': {
           title: t('learning', 'Mein Fortschritt'),
@@ -989,11 +988,6 @@ export default {
           text: t('learning', 'Veröffentliche Ankündigungen für alle Kursteilnehmer. Nutze sie für Prüfungserinnerungen, Terminänderungen oder Lerntipps.'),
           shortText: t('learning', 'Nachrichten für alle Studierenden veröffentlichen.'),
         },
-        'view:course-exam-slot': {
-          title: t('learning', 'Prüfungstermin'),
-          text: t('learning', 'Plane Prüfungszeitfenster: Start/Ende festlegen, Pools wählen und Zeitlimits konfigurieren. Studierende können die Prüfung nur während des Zeitfensters ablegen.'),
-          shortText: t('learning', 'Zeitgesteuerte Prüfungsfenster für Studierende planen.'),
-        },
         'view:course-requests': {
           title: t('learning', 'Anfragen'),
           text: t('learning', 'Studierenden-Anfragen und Fehlermeldungen. Prüfe gemeldete Fragen, beantworte Hilfeanfragen und verbessere deine Inhalte.'),
@@ -1026,8 +1020,8 @@ export default {
           shortText: t('learning', 'Beantworte fällige Karten. Richtige rücken vor, falsche gehen zurück.'),
         },
         'view:exam': {
-          title: t('learning', 'Prüfungssimulation'),
-          text: t('learning', 'Prüfungsmodus: keine Hinweise, kein sofortiges Feedback, Zeitlimit wie in der echten Prüfung. Dein Ergebnis siehst du erst am Ende.'),
+          title: t('learning', 'Prüfung'),
+          text: t('learning', 'Prüfungsmodus: keine Hinweise, kein sofortiges Feedback, mit Zeitlimit. Dein Ergebnis siehst du erst am Ende.'),
           shortText: t('learning', 'Prüfungsmodus ohne Hinweise — Ergebnis erst nach allen Fragen.'),
         },
         'view:pool-manage': {

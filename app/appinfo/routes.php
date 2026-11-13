@@ -233,9 +233,6 @@ return [
         ['name' => 'course#getAnnouncements', 'url' => '/api/courses/{courseId}/announcements', 'verb' => 'GET'],
         ['name' => 'course#createAnnouncement', 'url' => '/api/courses/{courseId}/announcements', 'verb' => 'POST'],
         ['name' => 'course#deleteAnnouncement', 'url' => '/api/courses/{courseId}/announcements/{announcementId}', 'verb' => 'DELETE'],
-        ['name' => 'course#getActiveExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/active', 'verb' => 'GET'],
-        ['name' => 'course#createExamSlot', 'url' => '/api/courses/{courseId}/exam-slot', 'verb' => 'POST'],
-        ['name' => 'course#closeExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/close', 'verb' => 'POST'],
         ['name' => 'course#updateExamDate', 'url' => '/api/courses/{courseId}/exam-date', 'verb' => 'PATCH'],
         ['name' => 'supportTicket#instructorList', 'url' => '/api/courses/{courseId}/support-tickets', 'verb' => 'GET'],
 

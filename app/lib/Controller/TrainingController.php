@@ -9,24 +9,35 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class TrainingController extends Controller {
     private TrainingService $service;
     private CertificationTrigger $certificationTrigger;
     private ?string $userId;
+    private LoggerInterface $logger;
 
-    public function __construct(string $appName, IRequest $request, TrainingService $service, CertificationTrigger $certificationTrigger, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, TrainingService $service, CertificationTrigger $certificationTrigger, ?string $userId, LoggerInterface $logger) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->certificationTrigger = $certificationTrigger;
         $this->userId = $userId;
+        $this->logger = $logger;
     }
 
     /**
+     * examKind='practice' (GitHub #35) starts a pool practice run of a course instead: it never
+     * counts towards a certificate, and the course's practice rules decide length, time and pass
+     * mark — limit, timeLimitSeconds and questionType are ignored. Any other examKind is refused
+     * rather than silently starting a counting exam.
+     *
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function start(int $poolId, ?int $limit = null, string $mode = 'training', ?int $timeLimitSeconds = null, ?string $lang = null, ?int $courseId = null, ?string $questionType = null): DataResponse {
+    public function start(int $poolId, ?int $limit = null, string $mode = 'training', ?int $timeLimitSeconds = null, ?string $lang = null, ?int $courseId = null, ?string $questionType = null, ?string $examKind = null): DataResponse {
+        if ($examKind !== null) {
+            return $this->startPoolPractice($poolId, $examKind, $courseId, $lang);
+        }
         try {
             return new DataResponse($this->service->startSession($poolId, $this->userId, $limit, $mode, $timeLimitSeconds, $lang, $courseId, $questionType), 201);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
@@ -36,6 +47,28 @@ class TrainingController extends Controller {
             return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start training session'], 400);
+        }
+    }
+
+    private function startPoolPractice(int $poolId, string $examKind, ?int $courseId, ?string $lang): DataResponse {
+        if ($examKind !== TrainingService::EXAM_KIND_PRACTICE) {
+            return new DataResponse(['error' => 'Unknown exam kind'], Http::STATUS_BAD_REQUEST);
+        }
+        if ($courseId === null) {
+            return new DataResponse(['error' => 'A practice run needs a course'], Http::STATUS_BAD_REQUEST);
+        }
+        try {
+            return new DataResponse($this->service->startPoolPracticeExam($poolId, $courseId, $this->userId, $lang), 201);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\DB\Exception $e) {
+            // A database error is no refusal: its driver message (table, column, SQL) stays in the log.
+            $this->logger->error('Starting a pool practice run failed', ['exception' => $e, 'poolId' => $poolId, 'courseId' => $courseId]);
+            return new DataResponse(['error' => 'Failed to start practice exam'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start practice exam'], 400);
         }
     }
 

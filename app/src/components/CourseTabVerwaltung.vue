@@ -74,7 +74,7 @@
 
 			<div class="exam-date-config tool-config-section">
 				<h3>{{ t('learning', 'Prüfungstermin') }}</h3>
-				<p class="mode-config-hint">{{ t('learning', 'Prüfungsdatum und -uhrzeit für den Dashboard-Countdown setzen.') }}</p>
+				<p class="mode-config-hint">{{ t('learning', 'Nur für den Countdown und die Erinnerungen der Lernenden. Der Termin öffnet oder schließt keine Prüfung.') }}</p>
 				<div class="exam-date-row">
 					<input v-model="examDateLocal" type="datetime-local" class="exam-date-input" />
 					<NcButton variant="primary" :disabled="savingExamDate" @click="saveExamDate">
@@ -177,7 +177,7 @@
 			<!-- Probeprüfung (Codeberg #9) -->
 			<div class="practice-config tool-config-section">
 				<h3>{{ t('learning', 'Probeprüfung') }}</h3>
-				<p class="mode-config-hint">{{ t('learning', 'Lernende starten die Probeprüfung selbst. Die Fragen werden bei jedem Versuch neu zufällig aus allen Pools des Kurses gezogen. Probeprüfungen zählen nicht für das Zertifikat.') }}</p>
+				<p class="mode-config-hint">{{ t('learning', 'Lernende starten die Probeprüfung selbst. Die Fragen werden bei jedem Versuch neu zufällig aus den Pools des Kurses gezogen. Zusätzlich bietet jeder Pool im Prüfungsmodus einen Probedurchlauf mit denselben Einstellungen, nur aus diesem Pool. Beides zählt nicht für das Zertifikat.') }}</p>
 				<NcCheckboxRadioSwitch :model-value="practiceEnabled" @update:model-value="practiceEnabled = !!$event">
 					{{ t('learning', 'Probeprüfung anbieten') }}
 				</NcCheckboxRadioSwitch>
@@ -220,7 +220,7 @@
 					<NcCheckboxRadioSwitch :model-value="practiceRequiredOnly" @update:model-value="practiceRequiredOnly = !!$event">
 						{{ t('learning', 'Nur Pflicht-Pools verwenden') }}
 					</NcCheckboxRadioSwitch>
-					<p class="mode-config-hint">{{ t('learning', 'Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung.') }}</p>
+					<p class="mode-config-hint">{{ t('learning', 'Zieht die Fragen nur aus Pools, die als Pflicht markiert sind. Ergänzende Pools bleiben zum freien Üben verfügbar, kommen aber nicht in die Probeprüfung. Für den Probedurchlauf eines Pools gilt diese Einschränkung nicht.') }}</p>
 					<NcNoteCard v-if="practiceRequiredOnly && !hasRequiredPools" type="warning">
 						{{ t('learning', 'Kein Pool dieses Kurses ist als Pflicht markiert. So kann niemand die Probeprüfung starten. Markiere die prüfungsrelevanten Pools im Lernraum unter den Pool-Regeln als Pflicht.') }}
 					</NcNoteCard>
@@ -295,32 +295,6 @@
 			</template>
 		</div>
 
-		<!-- Exam Slot -->
-		<div v-if="currentSubTab === 'exam-slot'" class="tab-content exam-slot-section">
-			<div v-if="activeExamSlot" class="active-slot-banner">
-				<NcNoteCard type="warning">
-					{{ t('learning', 'Exam is running!') }} {{ t('learning', 'Ends at:') }} {{ formatTimestamp(activeExamSlot.ends_at) }}
-				</NcNoteCard>
-				<NcButton variant="error" @click="closeExamSlot">{{ t('learning', 'Close exam') }}</NcButton>
-			</div>
-			<div v-else class="start-slot-form">
-				<h3>{{ t('learning', 'Start exam slot') }}</h3>
-				<div class="form-row-cd">
-					<label>{{ t('learning', 'Duration (minutes)') }}</label>
-					<input v-model.number="examSlotDuration" type="number" min="10" max="300" class="nc-input" />
-				</div>
-				<div class="form-row-cd">
-					<label>{{ t('learning', 'Question scope') }}</label>
-					<select v-model="examSlotScope" class="nc-select-cd">
-						<option value="all">{{ t('learning', 'All course questions') }}</option>
-						<option value="curriculum">{{ t('learning', 'Active curriculum only') }}</option>
-					</select>
-				</div>
-				<NcButton variant="primary" :disabled="startingExamSlot" @click="startExamSlot">
-					{{ t('learning', 'Start exam') }}
-				</NcButton>
-			</div>
-		</div>
 	</div>
 </template>
 
@@ -384,10 +358,6 @@ export default {
 			examDateLocal: '',
 			savingExamDate: false,
 			examDateSaved: false,
-			activeExamSlot: null,
-			examSlotDuration: 90,
-			examSlotScope: 'all',
-			startingExamSlot: false,
 			availableCampaigns: [],
 			selectedCampaignIds: [],
 			loadingCampaignList: false,
@@ -424,7 +394,6 @@ export default {
 			return [
 				{ id: 'mode-config', label: t('learning', 'Kursregeln') },
 				{ id: 'schedule', label: t('learning', 'Zeitplan') },
-				{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
 			]
 		},
 		modeConfigKeys() {
@@ -515,9 +484,6 @@ export default {
 			}
 			if (tab === 'schedule') {
 				this.loadSchedule()
-			}
-			if (tab === 'exam-slot') {
-				this.fetchActiveExamSlot()
 			}
 		},
 
@@ -698,40 +664,6 @@ export default {
 			await this.saveExamDate()
 		},
 
-		async fetchActiveExamSlot() {
-			if (!this.course) return
-			try {
-				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/active`))
-				this.activeExamSlot = res.data.exam_slot || null
-			} catch (e) {
-				this.activeExamSlot = null
-			}
-		},
-
-		async startExamSlot() {
-			this.startingExamSlot = true
-			try {
-				const res = await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot`), {
-					durationMinutes: this.examSlotDuration,
-					scopeMode: this.examSlotScope,
-				})
-				this.activeExamSlot = res.data.slot || res.data
-			} catch (e) {
-				console.error('Failed to start exam slot', e)
-			} finally {
-				this.startingExamSlot = false
-			}
-		},
-
-		async closeExamSlot() {
-			try {
-				await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/close`))
-				this.activeExamSlot = null
-			} catch (e) {
-				console.error('Failed to close exam slot', e)
-			}
-		},
-
 		async loadCampaignList() {
 			this.loadingCampaignList = true
 			try {
@@ -796,14 +728,6 @@ export default {
 			}
 		},
 
-		formatTimestamp(timestamp) {
-			if (!timestamp) return ''
-			try {
-				return new Date(timestamp * 1000).toLocaleTimeString()
-			} catch {
-				return String(timestamp)
-			}
-		},
 
 		async loadSchedule() {
 			this.loadingSchedule = true
@@ -994,13 +918,6 @@ export default {
 	font-size: 0.95em;
 	max-width: 100%;
 }
-
-/* Exam Slot */
-.exam-slot-section {}
-.active-slot-banner { margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
-.start-slot-form h3 { margin: 0 0 16px 0; font-size: 1.1em; font-weight: 600; }
-.form-row-cd { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.form-row-cd label { font-weight: 600; font-size: 0.9em; }
 
 /* Talk token input */
 .talk-token-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }

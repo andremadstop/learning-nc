@@ -90,7 +90,9 @@
 								: t('learning', 'Noch keine Prüfung') }}
 						</p>
 					</template>
-					<p class="zeugnis-meta">{{ t('learning', 'Die Probeprüfung des Kurses zählt nicht für das Zertifikat. Jede Prüfung, die du im Prüfungsmodus eines Pools dieses Kurses startest, zählt – auch die kürzere Übungsprüfung.') }}</p>
+					<!-- GitHub #35: with required pools only their exams count — same rule as PassCriteriaService. -->
+					<p v-if="requiresPools" class="zeugnis-meta zeugnis-counting-note">{{ t('learning', 'Probeprüfungen und Probedurchläufe zählen nicht für das Zertifikat. Es zählen nur Prüfungen in den Pflicht-Pools oben, die du im Prüfungsmodus mit „Prüfung starten“ beginnst.') }}</p>
+					<p v-else class="zeugnis-meta zeugnis-counting-note">{{ t('learning', 'Probeprüfungen und Probedurchläufe zählen nicht für das Zertifikat. Es zählt jede Prüfung, die du im Prüfungsmodus eines Pools dieses Kurses mit „Prüfung starten“ beginnst.') }}</p>
 					<p v-if="retakeText" class="zeugnis-meta">{{ retakeText }}</p>
 					<p v-if="validityText" class="zeugnis-meta">{{ validityText }}</p>
 				</div>

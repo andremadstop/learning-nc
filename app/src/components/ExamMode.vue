@@ -7,7 +7,7 @@
       <h3 class="exam-title">{{ practice ? t('learning', 'Course practice exam') : t('learning', 'Exam Mode') }}</h3>
       <p v-if="practice && practiceConfig?.requiredOnly" class="exam-description">{{ t('learning', 'Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
       <p v-else-if="practice" class="exam-description">{{ t('learning', 'Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
-      <p v-else class="exam-description">{{ t('learning', 'Simulate the real CompTIA exam. No feedback until the end.') }}</p>
+      <p v-else class="exam-description">{{ setupDescription }}</p>
 
       <div class="preset-grid">
         <div
@@ -19,10 +19,11 @@
           <div class="preset-content">
             <h4 class="preset-title">{{ preset.title }}</h4>
             <p class="preset-meta">{{ preset.meta }}</p>
+            <p v-if="preset.note" class="preset-note">{{ preset.note }}</p>
             <NcButton
               variant="primary"
               wide
-              :disabled="isLoading"
+              :disabled="isLoading || preset.disabled === true"
               @click="startExam(preset)"
             >
               {{ preset.buttonLabel }}
@@ -171,7 +172,7 @@
             {{ t('learning', 'Pass mark: {percent}%', { percent: resultsData.pass_percent }) }}
           </div>
           <div v-else-if="coursePassMarkApplies" class="result-banner__threshold">
-            {{ t('learning', 'Pass mark: {percent}%', { percent: certification.threshold }) }}
+            {{ t('learning', 'Pass mark: {percent}%', { percent: coursePassMark.threshold }) }}
           </div>
           <div v-else class="result-banner__threshold">
             {{ t('learning', 'Passing score: {score}/{max}', { score: examPassScore, max: examMaxScore }) }}
@@ -307,6 +308,13 @@ import Certificate from './Certificate.vue';
 // final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
 const EXAM_AUTO_SUBMIT_LEAD_SECONDS = 5;
 
+// GitHub #35: the exam card is sized by the pool, not by a fixed CompTIA preset. At most 90
+// questions, 1.5 minutes per question, capped at TrainingService's 7200-second maximum so the card
+// never promises a time the server does not grant.
+const EXAM_MAX_QUESTIONS = 90;
+const EXAM_SECONDS_PER_QUESTION = 90;
+const EXAM_MAX_SECONDS = 7200;
+
 export default {
   name: 'ExamMode',
   components: { QuestionScenario, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, NcModal, BadgeUnlock, Certificate, PbqRenderer, QuestionLanguageSwitcher },
@@ -319,7 +327,14 @@ export default {
     // { questions, minutes, passPercent } as configured by the instructor.
     practiceConfig: { type: Object, default: null },
     totalQuestions: { type: Number, required: true },
-    contentLanguage: { type: String, default: '' }
+    contentLanguage: { type: String, default: '' },
+    // GitHub #35: the course's certificate rule for this pool — { passPercent, countsForCertificate }
+    // — or null when the course does not certify (or there is no course). A certifying course
+    // judges every counting exam by its pass mark instead of the 720/900 scale.
+    courseCertification: { type: Object, default: null },
+    // GitHub #35: the course's practice rules — { questions, minutes, passPercent } — when the course
+    // offers practice exams; null hides the "Practice run" card. A practice run never counts.
+    poolPractice: { type: Object, default: null },
   },
   data() {
     return {
@@ -328,26 +343,6 @@ export default {
       focusFromPointer: false,
       screen: 'setup',
       isLoading: false,
-      examPresets: [
-        {
-          id: 'full',
-          icon: '🎯',
-          title: t('learning', 'Full Exam'),
-          meta: t('learning', '90 questions · 90 minutes · 720/900'),
-          buttonLabel: t('learning', 'Start Exam'),
-          questionCount: 90,
-          timeLimitSeconds: 90 * 60,
-        },
-        {
-          id: 'light',
-          icon: '⚡',
-          title: t('learning', 'Practice Exam'),
-          meta: t('learning', '45 questions · 45 minutes · 720/900'),
-          buttonLabel: t('learning', 'Start Practice'),
-          questionCount: 45,
-          timeLimitSeconds: 45 * 60,
-        },
-      ],
       examPassScore: 720,
       examMaxScore: 900,
 
@@ -379,6 +374,8 @@ export default {
       newBadges: [],
       certificateModalOpen: false,
       questionLanguage: this.contentLanguage || '',
+      // The running attempt is a pool practice run (exam_kind 'practice'), not a counting exam.
+      practiceRun: false,
     };
   },
   computed: {
@@ -433,6 +430,77 @@ export default {
       if (mins <= 0) return this.answeredCount;
       return Math.round(this.answeredCount / mins * 10) / 10;
     },
+    // The course's certificate rule, validated; null outside a certifying course.
+    certificationRule() {
+      const c = this.courseCertification
+      if (!c || !this.courseId) return null
+      const passPercent = Number(c.passPercent)
+      if (!Number.isFinite(passPercent) || passPercent <= 0) return null
+      return { passPercent, countsForCertificate: c.countsForCertificate !== false }
+    },
+    setupDescription() {
+      const rule = this.certificationRule
+      if (rule && rule.countsForCertificate) {
+        return t('learning', 'This exam counts towards your certificate. Pass mark: {percent}%. No feedback until the end.', { percent: rule.passPercent })
+      }
+      if (rule) {
+        return t('learning', 'This pool is not required for the certificate. No feedback until the end.')
+      }
+      return t('learning', 'Exam mode: no feedback until the end.')
+    },
+    // Questions the exam card asks for: the pool's eligible questions, at most 90. 0 = none known.
+    examQuestionCount() {
+      const total = Math.floor(Number(this.totalQuestions) || 0)
+      return total > 0 ? Math.min(total, EXAM_MAX_QUESTIONS) : 0
+    },
+    examTimeLimitSeconds() {
+      const minutes = Math.max(1, Math.round(this.examQuestionCount * EXAM_SECONDS_PER_QUESTION / 60))
+      return Math.min(minutes * 60, EXAM_MAX_SECONDS)
+    },
+    examPresets() {
+      const count = this.examQuestionCount
+      const minutes = this.examTimeLimitSeconds / 60
+      const rule = this.certificationRule
+      let meta
+      if (count === 0) {
+        meta = t('learning', 'No questions available')
+      } else if (rule) {
+        meta = t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: count, minutes, percent: rule.passPercent })
+      } else {
+        meta = t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {score}/{max}', { questions: count, minutes, score: this.examPassScore, max: this.examMaxScore })
+      }
+      const presets = [{
+        id: 'exam',
+        kind: 'exam',
+        icon: '🎯',
+        title: t('learning', 'Exam'),
+        meta,
+        buttonLabel: t('learning', 'Start Exam'),
+        questionCount: count,
+        timeLimitSeconds: this.examTimeLimitSeconds,
+        disabled: count === 0,
+      }]
+      const practiceCfg = this.poolPractice
+      if (practiceCfg && this.courseId) {
+        const configured = Math.max(1, Math.floor(Number(practiceCfg.questions) || 20))
+        const questions = count > 0 ? Math.min(configured, Math.floor(Number(this.totalQuestions))) : configured
+        const practiceMinutes = Math.max(0, Math.floor(Number(practiceCfg.minutes) || 0))
+        const percent = Number(practiceCfg.passPercent) || 75
+        presets.push({
+          id: 'practice-run',
+          kind: 'practice-run',
+          icon: '📝',
+          title: t('learning', 'Practice run'),
+          meta: practiceMinutes > 0
+            ? t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions, minutes: practiceMinutes, percent })
+            : t('learning', 'Questions: up to {questions} · no time limit · pass mark: {percent}%', { questions, percent }),
+          note: t('learning', 'Does not count towards the certificate. Review with explanations at the end.'),
+          buttonLabel: t('learning', 'Start practice run'),
+          disabled: count === 0,
+        })
+      }
+      return presets
+    },
     visiblePresets() {
       if (!this.practice) {
         return this.examPresets
@@ -451,6 +519,10 @@ export default {
     },
     isTimed() {
       return this.examDurationSeconds !== null && this.examDurationSeconds > 0
+    },
+    // A course practice exam or a pool practice run: never counts, the server judges it.
+    isPracticeAttempt() {
+      return this.practice || this.practiceRun
     },
     isPracticeResult() {
       return !!this.resultsData && this.resultsData.exam_kind === 'practice'
@@ -472,7 +544,7 @@ export default {
       // GitHub #35: in a certifying course the server judges the attempt against the course's
       // pass mark — the 720/900 preset scale would contradict the certificate.
       if (this.coursePassMarkApplies) {
-        return this.certification.exam_passed === true
+        return this.coursePassMark.passed === true
       }
       return this.scaledExamScore >= this.examPassScore;
     },
@@ -485,13 +557,25 @@ export default {
       return !this.isPracticeResult && !!this.certification && !this.certification.error
         && this.certification.applicable === true
     },
-    // The server judged this attempt against the course pass mark. Also true when the
-    // certificate check itself failed: the course is known to certify, so the 720/900 preset
-    // verdict would still be the wrong one.
-    coursePassMarkApplies() {
+    // The course pass mark this counting attempt is judged by, as { threshold, passed }, or null
+    // for the legacy 720/900 scale. Normally the server's judgement from the certification block —
+    // also when the certificate check itself failed, since the course is known to certify. When
+    // the block carries no judgement but the course certifies, the same rule is applied here
+    // (rounded like CertificationTrigger), so a certifying course never shows 720/900.
+    coursePassMark() {
+      if (this.isPracticeResult || !this.resultsData) return null
       const c = this.certification
-      return !this.isPracticeResult && !!c && typeof c.threshold === 'number' && typeof c.exam_passed === 'boolean'
-        && (c.applicable === true || !!c.error)
+      if (c && typeof c.threshold === 'number' && typeof c.exam_passed === 'boolean' && (c.applicable === true || !!c.error)) {
+        return { threshold: c.threshold, passed: c.exam_passed }
+      }
+      const rule = this.certificationRule
+      if (!rule) return null
+      const total = Number(this.resultsData.total_questions) || 0
+      const score = total > 0 ? Math.round((Number(this.resultsData.correct_answers) || 0) * 100 / total) : 0
+      return { threshold: rule.passPercent, passed: total > 0 && score >= rule.passPercent }
+    },
+    coursePassMarkApplies() {
+      return this.coursePassMark !== null
     },
     usesPercentScore() {
       return this.isPracticeResult || this.coursePassMarkApplies
@@ -711,8 +795,13 @@ export default {
       this.isLoading = true;
       try {
         const resolvedPreset = preset || this.visiblePresets[0];
+        const isPracticeRun = !this.practice && resolvedPreset.kind === 'practice-run';
         let r
-        if (this.practice) {
+        if (isPracticeRun) {
+          // GitHub #35: examKind is what makes the server start a practice run instead of a
+          // counting exam; the course's practice rules decide length, time and pass mark.
+          r = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload({ poolId: this.poolId, mode: 'exam', examKind: 'practice' }));
+        } else if (this.practice) {
           const lang = this.effectiveContentLanguage
           r = await axios.post(
             generateUrl('/apps/learning/api/courses/{courseId}/practice-exam/start', { courseId: this.courseId }),
@@ -728,6 +817,7 @@ export default {
         }
         this.session = r.data.session_id;
         const questions = r.data.questions;
+        this.practiceRun = !this.practice && (isPracticeRun || r.data.exam_kind === 'practice');
 
         if (!questions.length) {
           showError(t('learning', 'No questions available'));
@@ -750,7 +840,7 @@ export default {
         // null/0 from the server = untimed (practice exams only); presets always carry a limit.
         this.examDurationSeconds = r.data.time_limit_seconds
           ? Number(r.data.time_limit_seconds)
-          : (this.practice ? null : Number(resolvedPreset.timeLimitSeconds));
+          : (this.isPracticeAttempt ? null : Number(resolvedPreset.timeLimitSeconds));
         this.examDeadlineAt = Number(r.data.exam_deadline_at || 0) || null;
         const serverNow = Number(r.data.server_time || Math.floor(Date.now() / 1000));
         this.timeLeftSeconds = this.examDeadlineAt
@@ -1182,7 +1272,7 @@ export default {
           score_percentage: Math.round(this.detailedResults.filter(r => r.isCorrect).length / this.questions.length * 100),
           timed_out: !!forceTimedOut,
           attempt_no: this.attemptNo,
-          ...(this.practice ? { exam_kind: 'practice', pass_percent: this.practiceConfig?.passPercent, passed: false } : {}),
+          ...(this.isPracticeAttempt ? { exam_kind: 'practice', pass_percent: (this.practice ? this.practiceConfig : this.poolPractice)?.passPercent, passed: false } : {}),
         };
       } finally {
         this.isLoading = false;
@@ -1229,6 +1319,7 @@ export default {
       this.examDurationSeconds = null;
       this.attemptNo = null;
       this.resumedFromServer = false;
+      this.practiceRun = false;
       this.lockDenied = false;
       this.stopStatusPolling();
       this.releaseExamLock();
@@ -1308,6 +1399,11 @@ export default {
   color: var(--color-text-maxcontrast);
   font-size: 14px;
   line-height: 1.5;
+}
+.preset-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
 }
 .start-actions { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 24px; max-width: 300px; margin-left: auto; margin-right: auto; }
 

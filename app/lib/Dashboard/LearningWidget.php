@@ -57,7 +57,7 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
         if ($primaryExam !== null) {
             $items[] = new WidgetItem(
                 $this->buildCountdownTitle($primaryExam['exam_date']),
-                $primaryExam['title'] . ' - ' . $primaryExam['exam_date'],
+                $primaryExam['title'] . ' - ' . self::formatExamDate($primaryExam['exam_date']),
                 $appUrl,
                 '',
                 'exam-course-' . (string)$primaryExam['id']
@@ -87,10 +87,8 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
                 continue;
             }
 
-            $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
-            $errors = \DateTimeImmutable::getLastErrors();
-            $hasWarnings = is_array($errors) && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0);
-            if ($parsedDate === false || $hasWarnings) {
+            $parsedDate = self::parseExamDay($examDate);
+            if ($parsedDate === null) {
                 continue;
             }
 
@@ -122,10 +120,42 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
         return null;
     }
 
+    /**
+     * The calendar day of a course's exam date, or null if it is not a valid date.
+     *
+     * The course tab saves YYYY-MM-DDTHH:MM (<input type="datetime-local">); older courses hold
+     * YYYY-MM-DD. Parsing only the second form skipped every date set in the current UI, and the
+     * widget said "No exam scheduled" (GitHub #35). The countdown counts whole days,
+     * so the time of day is dropped: an exam today at 14:00 is "today", not "0 days".
+     */
+    public static function parseExamDay(string $examDate): ?\DateTimeImmutable {
+        $examDate = trim($examDate);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $examDate) === 1) {
+            $format = 'Y-m-d\\TH:i';
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $examDate) === 1) {
+            $format = '!Y-m-d';
+        } else {
+            return null;
+        }
+        $parsed = \DateTimeImmutable::createFromFormat($format, $examDate);
+        $errors = \DateTimeImmutable::getLastErrors();
+        $hasWarnings = is_array($errors) && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0);
+        // Round trip rejects overflowing values such as 2026-02-30 that PHP would roll over.
+        if ($parsed === false || $hasWarnings || $parsed->format(str_replace('!', '', $format)) !== $examDate) {
+            return null;
+        }
+        return $parsed->setTime(0, 0);
+    }
+
+    /** YYYY-MM-DDTHH:MM reads as "YYYY-MM-DD HH:MM" in the widget's subtitle. */
+    private static function formatExamDate(string $examDate): string {
+        return str_replace('T', ' ', $examDate);
+    }
+
     private function buildCountdownTitle(string $examDate): string {
         $today = new \DateTimeImmutable('today');
-        $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
-        if ($parsedDate === false) {
+        $parsedDate = self::parseExamDay($examDate);
+        if ($parsedDate === null) {
             return $this->l10n->t('Exam date scheduled');
         }
 

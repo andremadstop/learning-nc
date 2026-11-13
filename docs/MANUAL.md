@@ -698,7 +698,7 @@ off, Exam on.
 Globally disabled tools stay locked.
 
 **Exam date** sets the date and time used for the countdown on the
-student dashboard.
+student dashboard and for the exam reminders. It does not open or close any exam.
 
 **Course schedule** plans chapters with a **Start date** and a **Target date**.
 Students see it as a timeline.
@@ -714,7 +714,18 @@ past the test date.
 
 A student opens **Learning**, sees their course, and picks a mode.
 
-In **Exam mode** the experience is deliberately exam-like:
+In **Exam mode** the student picks a pool and sees up to two cards:
+
+- **Exam** — up to 90 questions from the pool (all of them if the pool is smaller),
+  1.5 minutes per question, at most 120 minutes. In a course with certification enabled,
+  it is judged by the course's **Minimum score (%)** and counts towards the certificate
+  when the pool is one of the **Required pools** (or none are set); otherwise the result
+  is shown on the 720/900 scale.
+- **Practice run** — only when the course offers practice exams. It uses the course's
+  practice settings (number of questions, time limit, pass mark), ends with a review with
+  explanations, and never counts towards a certificate.
+
+The exam itself is deliberately exam-like:
 
 - a time limit, with automatic submission when it expires
 - no feedback until the end

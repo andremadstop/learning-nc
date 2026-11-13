@@ -645,59 +645,6 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
-    public function getActiveExamSlot(int $courseId): DataResponse {
-        try {
-            return new DataResponse(['exam_slot' => $this->courseService->getActiveExamSlot($courseId, $this->userId)]);
-        } catch (\OCA\Learning\Service\ForbiddenException $e) {
-            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
-        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
-        } catch (\Exception $e) {
-            $this->logger->error('getActiveExamSlot error: ' . $e->getMessage(), ['app' => 'learning']);
-            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * @NoAdminRequired
-     */
-    #[UserRateLimit(limit: 10, period: 60)]
-    public function createExamSlot(int $courseId, int $durationMinutes = 90, string $scopeMode = 'all'): DataResponse {
-        try {
-            $slot = $this->courseService->createExamSlot($courseId, $this->userId, $durationMinutes, $scopeMode);
-            return new DataResponse(['exam_slot' => $slot], Http::STATUS_CREATED);
-        } catch (\OCA\Learning\Service\ForbiddenException $e) {
-            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
-        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
-        } catch (\Exception $e) {
-            $this->logger->error('createExamSlot error: ' . $e->getMessage(), ['app' => 'learning']);
-            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * @NoAdminRequired
-     */
-    #[UserRateLimit(limit: 10, period: 60)]
-    public function closeExamSlot(int $courseId): DataResponse {
-        try {
-            $this->courseService->closeExamSlot($courseId, $this->userId);
-            return new DataResponse([], Http::STATUS_NO_CONTENT);
-        } catch (\OCA\Learning\Service\ForbiddenException $e) {
-            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
-        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
-        } catch (\Exception $e) {
-            $this->logger->error('closeExamSlot error: ' . $e->getMessage(), ['app' => 'learning']);
-            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * @NoAdminRequired
-     */
     #[UserRateLimit(limit: 20, period: 60)]
     public function updateModeConfig(int $courseId, array $modeConfig = [], ?string $talkRoomToken = null, ?bool $leitnerSprint = null): DataResponse {
         try {

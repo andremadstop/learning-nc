@@ -57,7 +57,7 @@ export const SCRIPTS = {
     delay: 800,
     steps: [
       {
-        text: 'Exam mode runs like a real exam: one session, no immediate feedback, full review at the end.',
+        text: 'Exam mode: one session, no immediate feedback, full review at the end.',
         animation: 'talk',
       },
     ],

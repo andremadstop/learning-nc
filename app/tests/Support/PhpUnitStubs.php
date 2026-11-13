@@ -186,6 +186,8 @@ namespace OCP {
     if (!interface_exists(IL10N::class)) {
         interface IL10N {
             public function t(string $text, array $parameters = []): string;
+
+            public function n(string $text_singular, string $text_plural, int $count, array $parameters = []): string;
         }
     }
 
@@ -1758,6 +1760,65 @@ namespace OCP\Share {
             public function allowEnumeration(): bool;
             public function limitEnumerationToGroups(): bool;
             public function limitEnumerationToPhone(): bool;
+        }
+    }
+}
+
+// GitHub #35: the dashboard widget's exam-date parsing is tested through getItemsV2(). Signatures
+// copied from NC 33's lib/public/Dashboard/{IWidget,IAPIWidgetV2,IIconWidget}.php and
+// Dashboard/Model/{WidgetItem,WidgetItems}.php.
+namespace OCP\Dashboard {
+    if (!interface_exists(IWidget::class)) {
+        interface IWidget {
+            public function getId(): string;
+            public function getTitle(): string;
+            public function getOrder(): int;
+            public function getIconClass(): string;
+            public function getUrl(): ?string;
+            public function load(): void;
+        }
+    }
+    if (!interface_exists(IAPIWidgetV2::class)) {
+        interface IAPIWidgetV2 extends IWidget {
+            public function getItemsV2(string $userId, ?string $since = null, int $limit = 7): \OCP\Dashboard\Model\WidgetItems;
+        }
+    }
+    if (!interface_exists(IIconWidget::class)) {
+        interface IIconWidget extends IWidget {
+            public function getIconUrl(): string;
+        }
+    }
+}
+
+namespace OCP\Dashboard\Model {
+    if (!class_exists(WidgetItem::class)) {
+        final class WidgetItem {
+            public function __construct(
+                private string $title = '',
+                private string $subtitle = '',
+                private string $link = '',
+                private string $iconUrl = '',
+                private string $sinceId = '',
+                private string $overlayIconUrl = '',
+            ) {}
+            public function getTitle(): string { return $this->title; }
+            public function getSubtitle(): string { return $this->subtitle; }
+            public function getLink(): string { return $this->link; }
+            public function getIconUrl(): string { return $this->iconUrl; }
+            public function getSinceId(): string { return $this->sinceId; }
+            public function getOverlayIconUrl(): string { return $this->overlayIconUrl; }
+        }
+    }
+    if (!class_exists(WidgetItems::class)) {
+        class WidgetItems {
+            public function __construct(
+                private array $items = [],
+                private string $emptyContentMessage = '',
+                private string $halfEmptyContentMessage = '',
+            ) {}
+            public function getItems(): array { return $this->items; }
+            public function getEmptyContentMessage(): string { return $this->emptyContentMessage; }
+            public function getHalfEmptyContentMessage(): string { return $this->halfEmptyContentMessage; }
         }
     }
 }

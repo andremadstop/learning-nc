@@ -122,6 +122,38 @@ describe('CourseSummary template — certifying course with unreleased statistic
 	})
 })
 
+// GitHub #35 review: with required pools only their exams count (PassCriteriaService). The
+// counting note must say so instead of promising that every exam in the course counts.
+describe('CourseSummary template — which exams count', () => {
+	const countingNote = () => host.querySelector('.zeugnis-counting-note')?.textContent ?? ''
+
+	it('with required pools: only exams in those pools count', async () => {
+		axios.get.mockResolvedValue({ data: {
+			applicable: true, passed: false, score: null, threshold: 80, requirement: 'required_pools',
+			pools: [{ pool_id: 3, title: 'Brandschutz', best_score: null, passed: false }],
+		} })
+
+		mount(CourseSummary, { courseId: 7, courseName: 'Arbeitsschutz', course: certCourse })
+		await flush()
+
+		expect(countingNote()).toContain('Es zählen nur Prüfungen in den Pflicht-Pools oben')
+		expect(countingNote()).not.toContain('Es zählt jede Prüfung')
+		expect(host.querySelectorAll('.zeugnis-counting-note')).toHaveLength(1)
+	})
+
+	it('without required pools: every exam in a pool of the course counts', async () => {
+		axios.get.mockResolvedValue({ data: {
+			applicable: true, passed: false, score: null, threshold: 80, requirement: 'any_exam', pools: [],
+		} })
+
+		mount(CourseSummary, { courseId: 7, courseName: 'Arbeitsschutz', course: certCourse })
+		await flush()
+
+		expect(countingNote()).toContain('Es zählt jede Prüfung, die du im Prüfungsmodus eines Pools dieses Kurses')
+		expect(host.querySelectorAll('.zeugnis-counting-note')).toHaveLength(1)
+	})
+})
+
 describe('CourseTabTeilnehmer template — instructor completion view', () => {
 	it('renders the signing warning and the passed-without-certificate list', async () => {
 		axios.get.mockResolvedValue({ data: {
@@ -177,5 +209,41 @@ describe('ExamMode template — result screen of a counting exam', () => {
 		expect(note.textContent).toContain('Certificate issued')
 		expect(note.querySelector('.certification-result__action').textContent).toContain('Open certificate')
 		expect(host.querySelector('.result-banner__threshold').textContent).toContain('Pass mark: 70%')
+	})
+})
+
+describe('ExamMode template — setup cards (GitHub #35)', () => {
+	it('certifying course with practice rules: header names the pass mark, two cards, the practice run says it does not count', async () => {
+		mount(ExamMode, {
+			poolId: 3, courseId: 7, totalQuestions: 40,
+			courseCertification: { passPercent: 80, countsForCertificate: true },
+			poolPractice: { questions: 20, minutes: 0, passPercent: 70 },
+		})
+		await flush()
+
+		expect(host.querySelector('.exam-description').textContent).toBe('This exam counts towards your certificate. Pass mark: 80%. No feedback until the end.')
+		const cards = [...host.querySelectorAll('.preset-card')]
+		expect(cards.map((c) => c.querySelector('.preset-title').textContent)).toEqual(['Exam', 'Practice run'])
+		expect(cards[0].querySelector('.preset-meta').textContent).toBe('Questions: up to 40 · time limit: 60 min · pass mark: 80%')
+		expect(cards[0].querySelector('.preset-note')).toBeNull()
+		expect(cards[0].querySelector('button').getAttribute('disabled')).toBeNull()
+		expect(cards[1].querySelector('.preset-note').textContent).toBe('Does not count towards the certificate. Review with explanations at the end.')
+	})
+
+	it('no course rules: one neutral exam card, no CompTIA wording', async () => {
+		mount(ExamMode, { poolId: 3, totalQuestions: 40 })
+		await flush()
+
+		expect(host.querySelector('.exam-description').textContent).toBe('Exam mode: no feedback until the end.')
+		expect(host.querySelectorAll('.preset-card')).toHaveLength(1)
+		expect(host.textContent).not.toContain('CompTIA')
+	})
+
+	it('an empty pool disables the exam button', async () => {
+		mount(ExamMode, { poolId: 3, courseId: 7, totalQuestions: 0 })
+		await flush()
+
+		const button = host.querySelector('.preset-card button')
+		expect(button.getAttribute('disabled')).not.toBeNull()
 	})
 })
