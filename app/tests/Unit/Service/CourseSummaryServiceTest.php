@@ -98,4 +98,72 @@ class CourseSummaryServiceTest extends TestCase {
         }
         $this->assertTrue($hasCompletedFilter, 'getExamScore must exclude incomplete exams (completed_at IS NOT NULL)');
     }
+
+    /**
+     * GitHub #35: the per-pool best score is the certificate's pass rule. It must count only
+     * counting exams of THIS course: mode='exam', exam_kind IS NULL (a practice exam stores an
+     * anchor pool_id and would otherwise satisfy that pool), completed, course_id filter.
+     */
+    public function testBestExamScoresByPoolCountsOnlyCountingExamsOfTheCourse(): void {
+        $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: []));
+        $service = $this->makeService(new FakeDbConnection([$builder]));
+
+        $service->getBestExamScoresByPool(self::USER, self::COURSE_ID, [3, 4]);
+
+        // where() and andWhere() together: the user filter sits in where(). Without it every
+        // learner would inherit the best exam of anyone in the same course and pool.
+        $conds = array_merge($builder->whereCalls, $builder->andWhereCalls);
+        $this->assertContains(['type' => 'isNull', 'field' => 'exam_kind'], $conds, 'practice exams must never count');
+        $this->assertContains(['type' => 'isNotNull', 'field' => 'completed_at'], $conds);
+        $byLeft = [];
+        foreach ($conds as $c) {
+            if (isset($c['left'])) {
+                $byLeft[$c['left']] = $c['right']['value'] ?? null;
+            }
+        }
+        $this->assertSame(self::USER, $byLeft['user_id'] ?? null, 'scores must be the learner\'s own');
+        $this->assertSame(self::COURSE_ID, $byLeft['course_id'] ?? null);
+        $this->assertSame('exam', $byLeft['mode'] ?? null);
+        $this->assertSame([3, 4], $byLeft['pool_id'] ?? null);
+    }
+
+    // GitHub #35: best attempt per pool, same rounding as getExamScore(); zero-question rows skipped.
+    public function testBestExamScoresByPoolPicksBestPerPool(): void {
+        $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: [
+            ['pool_id' => '3', 'correct_answers' => '7', 'total_questions' => '10'],  // 70
+            ['pool_id' => '3', 'correct_answers' => '17', 'total_questions' => '20'], // 85 (best for 3)
+            ['pool_id' => '4', 'correct_answers' => '2', 'total_questions' => '3'],   // 66.7 -> 67
+            ['pool_id' => '4', 'correct_answers' => '0', 'total_questions' => '0'],   // ignored
+        ]));
+        $service = $this->makeService(new FakeDbConnection([$builder]));
+
+        $this->assertSame([3 => 85, 4 => 67], $service->getBestExamScoresByPool(self::USER, self::COURSE_ID, [3, 4]));
+    }
+
+    public function testBestExamScoresByPoolWithoutPoolsRunsNoQuery(): void {
+        $db = new FakeDbConnection([]);
+        $service = $this->makeService($db);
+
+        $this->assertSame([], $service->getBestExamScoresByPool(self::USER, self::COURSE_ID, []));
+        $this->assertSame([], $service->getPoolTitles([]));
+    }
+
+    public function testGetPoolTitlesMapsIdToName(): void {
+        $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: [
+            ['id' => '3', 'name' => 'Brandschutz'],
+        ]));
+        $service = $this->makeService(new FakeDbConnection([$builder]));
+
+        $this->assertSame([3 => 'Brandschutz'], $service->getPoolTitles([3, 9]));
+        $this->assertSame('learning_pools', $builder->from['table'] ?? null);
+        $idFilter = null;
+        foreach (array_merge($builder->whereCalls, $builder->andWhereCalls) as $c) {
+            if (($c['left'] ?? null) === 'id') {
+                $idFilter = $c;
+            }
+        }
+        $this->assertNotNull($idFilter, 'only the requested pools are read');
+        $this->assertSame('in', $idFilter['type']);
+        $this->assertSame([3, 9], $idFilter['right']['value'] ?? null);
+    }
 }

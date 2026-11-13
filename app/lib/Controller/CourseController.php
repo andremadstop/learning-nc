@@ -8,6 +8,7 @@ use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseArchiveService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CsvFormulaGuard;
+use OCA\Learning\Service\ExamAttemptPolicy;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
@@ -27,6 +28,7 @@ class CourseController extends Controller {
     private RoleService $roleService;
     private ScheduleService $scheduleService;
     private PassCriteriaService $passCriteriaService;
+    private ExamAttemptPolicy $examAttemptPolicy;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -40,6 +42,7 @@ class CourseController extends Controller {
         RoleService $roleService,
         ScheduleService $scheduleService,
         PassCriteriaService $passCriteriaService,
+        ExamAttemptPolicy $examAttemptPolicy,
         LoggerInterface $logger,
         ?string $userId
     ) {
@@ -51,6 +54,7 @@ class CourseController extends Controller {
         $this->roleService = $roleService;
         $this->scheduleService = $scheduleService;
         $this->passCriteriaService = $passCriteriaService;
+        $this->examAttemptPolicy = $examAttemptPolicy;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -866,7 +870,10 @@ class CourseController extends Controller {
                 return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
             }
             $result = $this->passCriteriaService->evaluate($this->userId, $courseId);
-            return new DataResponse($result->toArray());
+            $payload = $result->toArray();
+            // GitHub #35: learners see the retake rules that are actually enforced.
+            $payload['attempt_policy'] = $this->examAttemptPolicy->toArray();
+            return new DataResponse($payload);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {

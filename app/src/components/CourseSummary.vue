@@ -6,7 +6,7 @@
 				<h3>{{ t('learning', 'Dein Kursabschluss') }}</h3>
 				<p class="summary-subtitle">{{ courseName }}</p>
 			</div>
-			<div class="summary-actions">
+			<div v-if="statsReleased" class="summary-actions">
 				<NcButton
 					variant="tertiary"
 					disabled
@@ -22,6 +22,94 @@
 			</div>
 		</div>
 
+		<!-- Certification (Phase 154). GitHub #35: shown whenever the course certifies, independent of the released summary statistics below. -->
+		<div v-if="zeugnisVisible" class="widget-card zeugnisstatus-card">
+			<p class="card-kicker">{{ t('learning', 'Zertifizierung') }}</p>
+			<div v-if="!certApplicable" class="zeugnis-state">
+				<span class="zeugnis-label zeugnis-na">{{ t('learning', 'Kein Zertifikat für diesen Kurs') }}</span>
+			</div>
+			<template v-else>
+				<!-- Outcome -->
+				<div class="zeugnis-state">
+					<span v-if="hasPassed" class="zeugnis-label zeugnis-passed">✓ {{ t('learning', 'Bestanden') }}</span>
+					<span v-else class="zeugnis-label zeugnis-not-passed">{{ t('learning', 'Noch nicht bestanden') }}</span>
+					<span v-if="hasPassed && passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
+				</div>
+
+				<!-- Certificate state -->
+				<NcNoteCard v-if="issuanceFailed" type="warning" class="zeugnis-issuance-error">
+					{{ t('learning', 'Du hast bestanden, aber das Zertifikat konnte noch nicht ausgestellt werden. Bitte wende dich an deine Administration.') }}
+				</NcNoteCard>
+				<NcNoteCard v-else-if="certificateRevoked" type="error">
+					{{ t('learning', 'Dein Zertifikat wurde widerrufen. Bitte wende dich an deine Kursleitung.') }}
+				</NcNoteCard>
+				<div v-else-if="certificate" class="zeugnis-state zeugnis-certificate">
+					<span v-if="certificate.expired" class="zeugnis-meta zeugnis-expired">
+						{{ t('learning', 'Dein Zertifikat ist am {date} abgelaufen.', { date: formatTimestamp(certificate.expires_at) }) }}
+					</span>
+					<template v-else>
+						<span class="zeugnis-label zeugnis-passed">{{ t('learning', 'Zertifikat ausgestellt') }}</span>
+						<span class="zeugnis-meta">
+							{{ certificate.expires_at
+								? t('learning', 'Gültig bis {date}', { date: formatTimestamp(certificate.expires_at) })
+								: t('learning', 'Gültig ohne Ablaufdatum') }}
+						</span>
+					</template>
+				</div>
+				<NcButton
+					v-if="certVerificationId"
+					variant="primary"
+					class="zeugnis-cert-action"
+					@click="showCertModal = true">
+					{{ t('learning', 'Zertifikat ansehen') }}
+				</NcButton>
+
+				<!-- What is required -->
+				<div class="zeugnis-requirements">
+					<p class="zeugnis-requirements-title">{{ t('learning', 'Was du für das Zertifikat brauchst') }}</p>
+					<p class="zeugnis-meta">{{ t('learning', 'Bestehensgrenze: {percent} %', { percent: passStatus.threshold }) }}</p>
+					<template v-if="requiresPools">
+						<p class="zeugnis-meta">{{ t('learning', 'Bestehe in jedem dieser Pflicht-Pools eine Prüfung im Prüfungsmodus dieses Kurses:') }}</p>
+						<ul class="zeugnis-pool-list">
+							<li v-for="pool in requiredPools" :key="pool.pool_id" class="zeugnis-pool" :class="{ 'zeugnis-pool--passed': pool.passed }">
+								<span class="zeugnis-pool-name">{{ pool.title || t('learning', 'Pool #{id}', { id: pool.pool_id }) }}</span>
+								<span class="zeugnis-pool-score">
+									{{ pool.best_score !== null
+										? t('learning', 'Bestes Ergebnis: {score} %', { score: pool.best_score })
+										: t('learning', 'Noch keine Prüfung') }}
+								</span>
+								<span class="zeugnis-pool-state">{{ pool.passed ? '✓ ' + t('learning', 'Bestanden') : t('learning', 'Noch nicht bestanden') }}</span>
+							</li>
+						</ul>
+					</template>
+					<template v-else>
+						<p class="zeugnis-meta">{{ t('learning', 'Bestehe eine beliebige Prüfung im Prüfungsmodus dieses Kurses.') }}</p>
+						<p class="zeugnis-meta">
+							{{ passStatus.score !== null
+								? t('learning', 'Bestes Ergebnis: {score} %', { score: passStatus.score })
+								: t('learning', 'Noch keine Prüfung') }}
+						</p>
+					</template>
+					<p class="zeugnis-meta">{{ t('learning', 'Die Probeprüfung des Kurses zählt nicht für das Zertifikat. Jede Prüfung, die du im Prüfungsmodus eines Pools dieses Kurses startest, zählt – auch die kürzere Übungsprüfung.') }}</p>
+					<p v-if="retakeText" class="zeugnis-meta">{{ retakeText }}</p>
+					<p v-if="validityText" class="zeugnis-meta">{{ validityText }}</p>
+				</div>
+			</template>
+		</div>
+
+		<!-- GitHub #35: with the statistics unreleased, this card is the whole tab — never a blank page. -->
+		<div v-if="passStatusLoading && !statsReleased" class="loading-container pass-status-loading">
+			<NcLoadingIcon :size="44" />
+			<p>{{ t('learning', 'Lade Kursabschluss...') }}</p>
+		</div>
+		<NcNoteCard v-else-if="passStatusError" type="error" class="pass-status-error">
+			<p>{{ t('learning', 'Der Stand deines Zertifikats konnte nicht geladen werden.') }}</p>
+			<NcButton variant="secondary" @click="fetchPassStatus">
+				{{ t('learning', 'Erneut versuchen') }}
+			</NcButton>
+		</NcNoteCard>
+
+		<template v-if="statsReleased">
 		<div v-if="loading" class="loading-container">
 			<NcLoadingIcon :size="44" />
 			<p>{{ t('learning', 'Lade Kursabschluss...') }}</p>
@@ -78,35 +166,6 @@
 							<span class="snapshot-inline-label">{{ t('learning', 'Freigegeben') }}</span>
 						</div>
 					</div>
-				</div>
-			</div>
-
-			<!-- Zeugnisstatus / Pass status (Phase 154) -->
-			<div v-if="zeugnisVisible" class="widget-card zeugnisstatus-card">
-				<p class="card-kicker">{{ t('learning', 'Zertifizierung') }}</p>
-				<!-- Cert not enabled for this course -->
-				<div v-if="!certApplicable" class="zeugnis-state">
-					<span class="zeugnis-label zeugnis-na">{{ t('learning', 'Kein Zertifikat für diesen Kurs') }}</span>
-				</div>
-				<!-- Passed -->
-				<div v-else-if="hasPassed" class="zeugnis-state">
-					<span class="zeugnis-label zeugnis-passed">✓ {{ t('learning', 'Bestanden') }}</span>
-					<span v-if="passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
-					<NcButton
-						v-if="certVerificationId"
-						variant="primary"
-						class="zeugnis-cert-action"
-						@click="showCertModal = true">
-						{{ t('learning', 'Zertifikat ansehen') }}
-					</NcButton>
-				</div>
-				<!-- Not yet passed -->
-				<div v-else class="zeugnis-state">
-					<span class="zeugnis-label zeugnis-not-passed">{{ t('learning', 'Noch nicht bestanden') }}</span>
-					<span v-if="passStatus.score !== null" class="zeugnis-meta">
-						{{ t('learning', 'Aktueller Score') }}: {{ passStatus.score }}%
-						({{ t('learning', 'Mindest-Score (%)') }}: {{ passStatus.threshold }}%)
-					</span>
 				</div>
 			</div>
 
@@ -207,6 +266,7 @@
 				</p>
 			</div>
 		</template>
+		</template>
 
 		<NcModal
 			v-if="showCertModal && certVerificationId"
@@ -229,7 +289,6 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { getPassStatus } from '../services/CourseService.js'
-import { listCertificates } from '../services/CertificateService.js'
 import Certificate from './Certificate.vue'
 
 const MASTERY_RING_RADIUS = 54
@@ -255,6 +314,11 @@ export default {
 			type: String,
 			default: '',
 		},
+		// The course (snake_case fields). Without it every section shows, as before #35.
+		course: {
+			type: Object,
+			default: null,
+		},
 	},
 
 	data() {
@@ -275,7 +339,7 @@ export default {
 			icsCopied: false,
 			passStatus: null,
 			passStatusLoading: false,
-			certVerificationId: null,
+			passStatusError: false,
 			showCertModal: false,
 		}
 	},
@@ -329,6 +393,57 @@ export default {
 			if (!this.passStatus?.passedAt) return null
 			return new Date(this.passStatus.passedAt * 1000).toLocaleDateString()
 		},
+		// GitHub #35: the summary statistics are released by mode_config.course_summary; the
+		// certification card is not. Without a course prop everything shows (old behaviour).
+		statsReleased() {
+			if (!this.course) return true
+			return this.course.mode_config?.course_summary === true
+		},
+		certificate() {
+			return this.passStatus?.certificate || null
+		},
+		certificateRevoked() {
+			return this.certificate?.revoked === true
+		},
+		// A revoked certificate is not offered; an expired one still opens (its verify page says so).
+		certVerificationId() {
+			if (!this.certificate || this.certificate.revoked) return null
+			return this.certificate.verification_id || null
+		},
+		issuanceFailed() {
+			return this.hasPassed && !!this.passStatus?.issuance_error
+		},
+		requiresPools() {
+			return this.passStatus?.requirement === 'required_pools'
+		},
+		requiredPools() {
+			return Array.isArray(this.passStatus?.pools) ? this.passStatus.pools : []
+		},
+		retakeText() {
+			const policy = this.passStatus?.attempt_policy
+			if (!policy) return ''
+			if (Number(policy.cooldown_minutes) > 0) {
+				return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens {limit}. Mindestabstand zwischen zwei Versuchen (Minuten): {minutes}.', {
+					limit: policy.limit_per_day,
+					minutes: policy.cooldown_minutes,
+				})
+			}
+			return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens {limit}.', { limit: policy.limit_per_day })
+		},
+		// Same precedence as IssuanceService::computeExpiry: months (when set) win over the legacy days.
+		validityText() {
+			if (!this.course) return ''
+			const months = this.course.cert_validity_months
+			if (months !== null && months !== undefined) {
+				return Number(months) > 0
+					? t('learning', 'Gültigkeitsdauer (Monate): {n}', { n: Number(months) })
+					: t('learning', 'Gültigkeit: unbegrenzt')
+			}
+			const days = Number(this.course.cert_validity_days || 0)
+			return days > 0
+				? t('learning', 'Gültigkeitsdauer (Tage): {n}', { n: days })
+				: t('learning', 'Gültigkeit: unbegrenzt')
+		},
 	},
 
 	mounted() {
@@ -336,10 +451,19 @@ export default {
 	},
 
 	watch: {
+		statsReleased(released) {
+			if (released && !this.summary && !this.loading) {
+				this.loadSummaryState()
+			}
+		},
 		courseId: {
 			immediate: true,
 			handler(newId, oldId) {
-				this.loadSummaryState()
+				// Unreleased statistics are not loaded at all: no summary read, no AI reflection
+				// call, no calendar token for a learner who only came for the certificate.
+				if (this.statsReleased) {
+					this.loadSummaryState()
+				}
 				// Initial load handled by mounted(); refetch only on actual course change.
 				if (oldId !== undefined) {
 					this.fetchPassStatus()
@@ -352,35 +476,16 @@ export default {
 		async fetchPassStatus() {
 			if (!this.courseId) return
 			this.passStatusLoading = true
+			this.passStatusError = false
 			try {
+				// The pass status carries the certificate itself (GitHub #35) — no second lookup.
 				this.passStatus = await getPassStatus(this.courseId)
-				if (this.passStatus?.passed) {
-					this.resolveCertificate()
-				}
 			} catch (e) {
 				console.error('fetchPassStatus failed', e)
 				this.passStatus = null
+				this.passStatusError = true
 			} finally {
 				this.passStatusLoading = false
-			}
-		},
-
-		// Resolve the issued certificate for this course (if any) so the "Zertifikat
-		// ansehen" action can open it. Empty until a real cert exists (issuance + the
-		// 155-01 migration land in 155-07) — the button stays hidden until then.
-		async resolveCertificate() {
-			this.certVerificationId = null
-			try {
-				const certs = await listCertificates()
-				const match = (Array.isArray(certs) ? certs : [])
-					.filter((c) => Number(c.course_id) === Number(this.courseId) && !c.revoked)
-					.sort((a, b) => (b.issued_at || 0) - (a.issued_at || 0))[0]
-				if (match) {
-					this.certVerificationId = match.verification_id
-				}
-			} catch (e) {
-				// No certificate endpoint data yet (table not migrated / none issued) — stay hidden.
-				this.certVerificationId = null
 			}
 		},
 
@@ -714,6 +819,63 @@ export default {
 
 .zeugnis-cert-action {
 	margin-top: 10px;
+	align-self: flex-start;
+}
+
+.zeugnis-requirements {
+	margin-top: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.zeugnis-requirements p {
+	margin: 0;
+}
+
+.zeugnis-requirements-title {
+	font-weight: 700;
+	color: var(--color-main-text);
+}
+
+.zeugnis-pool-list {
+	list-style: none;
+	margin: 4px 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.zeugnis-pool {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	gap: 12px;
+	align-items: center;
+	padding: 8px 12px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 10px);
+}
+
+.zeugnis-pool-name {
+	overflow-wrap: anywhere;
+}
+
+.zeugnis-pool-score,
+.zeugnis-pool-state {
+	color: var(--color-text-maxcontrast);
+	white-space: nowrap;
+}
+
+.zeugnis-pool--passed .zeugnis-pool-state {
+	color: var(--color-success);
+}
+
+@media (max-width: 600px) {
+	.zeugnis-pool {
+		grid-template-columns: 1fr;
+		gap: 2px;
+	}
 }
 
 .cert-modal-body {

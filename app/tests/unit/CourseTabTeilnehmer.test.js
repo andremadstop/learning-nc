@@ -166,3 +166,78 @@ describe('CourseTabTeilnehmer', () => {
 		])
 	})
 })
+
+// GitHub #35: the completion tab is where the certificate lives. A certifying course shows it to
+// learners even when the summary statistics (mode_config.course_summary) are not released.
+describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #35)', () => {
+	it('shows "Abschluss & Zertifikat" to students when cert_enabled and course_summary is off', () => {
+		const instance = createInstance({
+			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
+			userRole: 'student',
+		})
+
+		expect(instance.visibleSubTabs).toEqual([
+			{ id: 'classbook', label: 'Klassenbuch' },
+			{ id: 'my-progress', label: 'Mein Fortschritt' },
+			{ id: 'summary', label: 'Abschluss & Zertifikat' },
+		])
+	})
+
+	it('a deep link to the summary tab (certificate notification) selects it for students', () => {
+		const instance = createInstance({
+			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
+			userRole: 'student',
+			activeTab: 'summary',
+		})
+
+		instance.syncFromActiveTab('summary')
+
+		expect(instance.currentSubTab).toBe('summary')
+	})
+
+	it('keeps the student completion tab hidden for a non-certifying course without released summary', () => {
+		const instance = createInstance({
+			course: { is_instructor: false, cert_enabled: false, mode_config: { course_summary: false } },
+			userRole: 'student',
+		})
+
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('summary')
+	})
+
+	it('stores the signing availability the cert report returns for the instructor warning', async () => {
+		const instance = createInstance({
+			course: { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } },
+		})
+		instance.certFilters = () => ({})
+		axios.get.mockResolvedValueOnce({ data: { rows: [], signing_available: false } })
+
+		await instance.fetchCertReport()
+
+		expect(instance.certSigningAvailable).toBe(false)
+	})
+
+	// Review: per learner, not only the instance-wide key state.
+	it('stores the members who passed without a certificate', async () => {
+		const instance = createInstance({
+			course: { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } },
+		})
+		instance.certFilters = () => ({})
+		axios.get.mockResolvedValueOnce({ data: { rows: [], signing_available: true, passed_without_certificate: [{ display_name: 'Jane Doe' }] } })
+
+		await instance.fetchCertReport()
+
+		expect(instance.certPassedWithoutCertificate).toEqual([{ display_name: 'Jane Doe' }])
+	})
+
+	it('treats a missing or failed passed-without-certificate check as an empty list', async () => {
+		const instance = createInstance({
+			course: { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } },
+		})
+		instance.certFilters = () => ({})
+		axios.get.mockResolvedValueOnce({ data: { rows: [], signing_available: true, passed_without_certificate: null } })
+
+		await instance.fetchCertReport()
+
+		expect(instance.certPassedWithoutCertificate).toEqual([])
+	})
+})

@@ -161,7 +161,7 @@
       <div v-if="resultsData" class="results-summary">
         <div class="result-banner" :class="resultBannerClass">
           <div class="result-banner__status">{{ passedExam ? t('learning', 'Passed') : t('learning', 'Not passed') }}</div>
-          <div v-if="isPracticeResult" class="result-banner__scaled-score">
+          <div v-if="usesPercentScore" class="result-banner__scaled-score">
             <span ref="examScoreNumber">{{ resultsData.score_percentage }}</span>%
           </div>
           <div v-else class="result-banner__scaled-score">
@@ -170,10 +170,27 @@
           <div v-if="isPracticeResult" class="result-banner__threshold">
             {{ t('learning', 'Pass mark: {percent}%', { percent: resultsData.pass_percent }) }}
           </div>
+          <div v-else-if="coursePassMarkApplies" class="result-banner__threshold">
+            {{ t('learning', 'Pass mark: {percent}%', { percent: certification.threshold }) }}
+          </div>
           <div v-else class="result-banner__threshold">
             {{ t('learning', 'Passing score: {score}/{max}', { score: examPassScore, max: examMaxScore }) }}
           </div>
         </div>
+
+        <!-- GitHub #35: what this attempt means for the course certificate -->
+        <NcNoteCard v-if="certificationMessage" :type="certificationMessage.type" class="certification-result">
+          <p class="certification-result__text">{{ certificationMessage.text }}</p>
+          <p v-if="certificationMessage.retake" class="certification-result__retake">{{ certificationMessage.retake }}</p>
+          <NcButton
+            v-if="certificationMessage.verificationId"
+            variant="primary"
+            class="certification-result__action"
+            @click="certificateModalOpen = true"
+          >
+            {{ t('learning', 'Open certificate') }}
+          </NcButton>
+        </NcNoteCard>
 
         <div class="stats-grid">
           <div class="stat-item">
@@ -255,6 +272,15 @@
         <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
       <BadgeUnlock :badges="newBadges" />
+      <NcModal
+        v-if="certificateModalOpen && certificationMessage && certificationMessage.verificationId"
+        size="large"
+        @close="certificateModalOpen = false"
+      >
+        <div class="certificate-modal-body">
+          <Certificate :verification-id="certificationMessage.verificationId" />
+        </div>
+      </NcModal>
     </div>
   </div>
 </template>
@@ -274,6 +300,8 @@ import QuestionScenario from './QuestionScenario.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
+import NcModal from '@nextcloud/vue/components/NcModal';
+import Certificate from './Certificate.vue';
 
 // Seconds before the deadline at which the countdown submits the exam. The server accepts the
 // final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
@@ -281,7 +309,7 @@ const EXAM_AUTO_SUBMIT_LEAD_SECONDS = 5;
 
 export default {
   name: 'ExamMode',
-  components: { QuestionScenario, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, NcModal, BadgeUnlock, Certificate, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     // Not needed for a course practice exam, which draws across all of the course's pools.
     poolId: { type: Number, default: null },
@@ -349,6 +377,7 @@ export default {
       openAnswerTexts: {},
       pbqAnswers: {},
       newBadges: [],
+      certificateModalOpen: false,
       questionLanguage: this.contentLanguage || '',
     };
   },
@@ -440,7 +469,67 @@ export default {
       if (this.isPracticeResult) {
         return this.resultsData.passed === true
       }
+      // GitHub #35: in a certifying course the server judges the attempt against the course's
+      // pass mark — the 720/900 preset scale would contradict the certificate.
+      if (this.coursePassMarkApplies) {
+        return this.certification.exam_passed === true
+      }
       return this.scaledExamScore >= this.examPassScore;
+    },
+    // The certification block the server adds to a counting exam's completion (GitHub #35).
+    certification() {
+      const block = this.resultsData && this.resultsData.certification
+      return block && typeof block === 'object' ? block : null
+    },
+    certificationApplies() {
+      return !this.isPracticeResult && !!this.certification && !this.certification.error
+        && this.certification.applicable === true
+    },
+    // The server judged this attempt against the course pass mark. Also true when the
+    // certificate check itself failed: the course is known to certify, so the 720/900 preset
+    // verdict would still be the wrong one.
+    coursePassMarkApplies() {
+      const c = this.certification
+      return !this.isPracticeResult && !!c && typeof c.threshold === 'number' && typeof c.exam_passed === 'boolean'
+        && (c.applicable === true || !!c.error)
+    },
+    usesPercentScore() {
+      return this.isPracticeResult || this.coursePassMarkApplies
+    },
+    certificationMessage() {
+      const c = this.certification
+      if (!c || this.isPracticeResult) return null
+      if (c.error) {
+        return { type: 'info', text: t('learning', 'Your result is saved. The certificate status could not be checked right now; please look at the completion tab of the course later.') }
+      }
+      if (c.applicable !== true) return null
+      if (c.certificate_issued && c.certificate && c.certificate.verification_id) {
+        return { type: 'success', text: t('learning', 'Certificate issued'), verificationId: c.certificate.verification_id }
+      }
+      if (c.passed && c.issuance_error) {
+        return { type: 'warning', text: t('learning', 'You passed, but the certificate could not be issued yet — please contact your administrator.') }
+      }
+      if (c.passed && c.certificate && c.certificate.revoked) {
+        return { type: 'error', text: t('learning', 'Your certificate for this course was revoked. Please contact your instructor.') }
+      }
+      if (c.passed) {
+        return null
+      }
+      const retake = this.retakeText(c.attempt_policy)
+      if (c.requirement === 'required_pools') {
+        const missing = (Array.isArray(c.pools) ? c.pools : [])
+          .filter(p => !p.passed)
+          .map(p => p.title || t('learning', 'Pool #{id}', { id: p.pool_id }))
+        // An exam on a course pool the certificate does not require counts for nothing — even a
+        // passing one must not read as progress.
+        if (c.counts_for_requirement === false) {
+          return { type: 'info', text: t('learning', 'This pool is not required for the certificate. Still required: {pools}', { pools: missing.join(', ') }) }
+        }
+        if (c.exam_passed && missing.length > 0) {
+          return { type: 'info', text: t('learning', 'Pool passed — still required: {pools}', { pools: missing.join(', ') }), retake }
+        }
+      }
+      return { type: 'warning', text: t('learning', 'Not passed yet. The pass mark is {percent}%.', { percent: c.threshold }), retake }
     },
     resultBannerClass() {
       return this.passedExam ? 'result-banner--passed' : 'result-banner--failed';
@@ -1077,7 +1166,7 @@ export default {
         // countUp animation
         this.$nextTick(() => {
           if (this.$refs.examScoreNumber && this.resultsData) {
-            countUp(this.$refs.examScoreNumber, this.isPracticeResult ? this.resultsData.score_percentage : this.scaledExamScore, 1200);
+            countUp(this.$refs.examScoreNumber, this.usesPercentScore ? this.resultsData.score_percentage : this.scaledExamScore, 1200);
           }
         });
         // Show badge unlocks
@@ -1116,7 +1205,16 @@ export default {
       this.$emit('back');
     },
 
+    // The enforced retake rules (ExamAttemptPolicy on the server), stated plainly.
+    retakeText(policy) {
+      if (!policy) return '';
+      if (Number(policy.cooldown_minutes) > 0) {
+        return t('learning', 'You can retake the exam. Attempts per pool in 24 hours: at most {limit}. Minimum gap between two attempts (minutes): {minutes}.', { limit: policy.limit_per_day, minutes: policy.cooldown_minutes });
+      }
+      return t('learning', 'You can retake the exam. Attempts per pool in 24 hours: at most {limit}.', { limit: policy.limit_per_day });
+    },
     retakeExam() {
+      this.certificateModalOpen = false;
       this.cleanupSnake();
       this.screen = 'setup';
       this.session = null;
@@ -1393,6 +1491,13 @@ export default {
   color: var(--color-text-maxcontrast);
   font-size: 14px;
 }
+
+.certification-result { width: 100%; max-width: 500px; margin-top: 12px; }
+.certification-result__text,
+.certification-result__retake { margin: 0 0 6px; }
+.certification-result__retake { color: var(--color-text-maxcontrast); }
+.certification-result__action { margin-top: 6px; }
+.certificate-modal-body { padding: 24px; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; max-width: 500px; margin-top: 12px; }
 .stat-item {

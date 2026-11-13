@@ -336,3 +336,32 @@ describe('CourseDetail navigation logic', () => {
 		expect(instructorCourseStore.currentTab).toBe('pools')
 	})
 })
+
+// GitHub #35: CourseDetail keeps its own copy of the learner tab list (teilnehmerLeafTabs); it must
+// agree with CourseTabTeilnehmer, otherwise the visibleTabs watcher throws the learner out of the
+// completion tab and the certificate notification's deep link lands nowhere.
+describe('CourseDetail — completion tab in certifying courses (GitHub #35)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		setActivePinia(createPinia())
+	})
+
+	it('lists summary for students when cert_enabled even with course_summary off', () => {
+		const instance = createInstance({
+			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
+		})
+
+		expect(instance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress', 'summary'])
+	})
+
+	it('resolves the /courses/<id>/summary deep link to the summary leaf under Teilnehmer', () => {
+		const instance = createInstance({
+			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
+		})
+
+		instance.syncCurrentTabFromRoute('summary')
+
+		expect(instance.currentTab).toBe('summary')
+		expect(instance.activeMegaTab).toBe('teilnehmer')
+	})
+})

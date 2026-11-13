@@ -103,16 +103,22 @@ class IssuanceServiceTest extends TestCase {
         ?AuditService $audit = null,
         ?FakeDbConnection $db = null,
         int $issuedAt = self::ISSUED_AT,
-        ?\Throwable $notifyThrows = null
+        ?\Throwable $notifyThrows = null,
+        ?\Throwable $signingThrows = null,
+        ?array &$notifySubject = null
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
         $db = $db ?? new FakeDbConnection();
         $keyService = $this->createMock(KeyService::class);
         $keyService->method('hostDid')->willReturn(self::HOST_DID);
-        $keyService->method('getActiveSigningMaterial')->willReturn([
-            'key' => $this->key,
-            'secret' => $this->secretRaw,
-        ]);
+        if ($signingThrows !== null) {
+            $keyService->method('getActiveSigningMaterial')->willThrowException($signingThrows);
+        } else {
+            $keyService->method('getActiveSigningMaterial')->willReturn([
+                'key' => $this->key,
+                'secret' => $this->secretRaw,
+            ]);
+        }
         $signingService = new SigningService($keyService);
 
         $certMapper = $this->createMock(CertificateMapper::class);
@@ -134,9 +140,16 @@ class IssuanceServiceTest extends TestCase {
         }
 
         $notif = $this->createMock(INotification::class);
-        foreach (['setApp', 'setUser', 'setObject', 'setSubject', 'setDateTime'] as $m) {
+        foreach (['setApp', 'setUser', 'setObject', 'setDateTime'] as $m) {
             $notif->method($m)->willReturnSelf();
         }
+        $notifySubjectRef = &$notifySubject;
+        $notif->method('setSubject')->willReturnCallback(
+            function (string $subject, array $params) use ($notif, &$notifySubjectRef): INotification {
+                $notifySubjectRef = ['subject' => $subject, 'params' => $params];
+                return $notif;
+            }
+        );
         $manager = $this->createMock(IManager::class);
         $manager->method('createNotification')->willReturn($notif);
         $manager->method('getCount')->willReturn(0);
@@ -640,5 +653,59 @@ class IssuanceServiceTest extends TestCase {
         } finally {
             date_default_timezone_set($originalTz);
         }
+    }
+
+    /**
+     * GitHub #35: a missing or undecryptable issuer key surfaces as SigningUnavailableException
+     * (still a RuntimeException), so the pass status can say "signing unavailable" instead of
+     * a generic failure. Nothing is inserted, nobody is notified.
+     */
+    public function testMissingSigningKeyRaisesSigningUnavailable(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, expectInsert: false, expectNotify: false,
+            signingThrows: new \RuntimeException('No active signing key'));
+
+        $this->expectException(\OCA\Learning\Service\SigningUnavailableException::class);
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+    }
+
+    /**
+     * GitHub #35 (review): a database error while reading the key is not "signing unavailable".
+     * It must propagate as itself so the pass status says issuance_failed, not send the
+     * administrator after an issuer key that is fine.
+     */
+    public function testDatabaseErrorWhileReadingKeyIsNotSigningUnavailable(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, expectInsert: false, expectNotify: false,
+            signingThrows: new class('connection lost') extends \OCP\DB\Exception {
+                public function __construct(string $message) {
+                    // Constructor signatures differ between the OCP stubs and the server class.
+                    \Exception::__construct($message);
+                }
+            });
+
+        try {
+            $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+            $this->fail('the database error must propagate');
+        } catch (\OCA\Learning\Service\SigningUnavailableException $e) {
+            $this->fail('a database error was reported as signing unavailable');
+        } catch (\OCP\DB\Exception $e) {
+            $this->assertSame('connection lost', $e->getMessage());
+        }
+    }
+
+    // GitHub #35: the notification carries course_id so the Notifier can link to the completion tab.
+    public function testNotificationCarriesCourseId(): void {
+        $captured = null;
+        $subject = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, notifySubject: $subject);
+
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNotNull($result);
+        $this->assertTrue($result->wasCreated);
+        $this->assertSame('certificate_issued', $subject['subject'] ?? null);
+        $this->assertSame(self::COURSE_ID, $subject['params']['course_id'] ?? null);
+        $this->assertSame('Security+ Kurs', $subject['params']['course_title'] ?? null);
     }
 }

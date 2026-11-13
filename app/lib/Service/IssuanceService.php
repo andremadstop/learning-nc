@@ -116,7 +116,7 @@ class IssuanceService {
 
         $credential = $this->buildCredential($verificationId, $courseId, $course, $result, $recipientName, $issuedAt, $expiresAt);
 
-        $material = $this->keyService->getActiveSigningMaterial();
+        $material = $this->activeSigningMaterial();
         /** @var CertKey $key */
         $key = $material['key'];
         // Secret zeroing must survive a sign() throw → try/finally. Pass the secret straight from
@@ -180,7 +180,7 @@ class IssuanceService {
         }
 
         // Side effects AFTER the atomic commit only — a rolled-back issuance must never notify/log success.
-        $this->notify($userId, $verificationId, (string)$course->getTitle());
+        $this->notify($userId, $verificationId, (string)$course->getTitle(), $courseId);
 
         $this->logger->info('Issued certificate {vid} for user {user} course {course}', [
             'vid' => $verificationId,
@@ -224,7 +224,7 @@ class IssuanceService {
 
         $credential = $this->buildCredential($verificationId, $courseId, $course, $result, $recipientName, $issuedAt, $expiresAt);
 
-        $material = $this->keyService->getActiveSigningMaterial();
+        $material = $this->activeSigningMaterial();
         /** @var CertKey $key */
         $key = $material['key'];
         try {
@@ -275,7 +275,7 @@ class IssuanceService {
         }
 
         // Side effects after the atomic commit only — a rolled-back issuance must never notify.
-        $this->notify($userId, $verificationId, (string)$course->getTitle());
+        $this->notify($userId, $verificationId, (string)$course->getTitle(), $courseId);
         $this->logger->info('Issued certificate {vid} for user {user} course {course}', [
             'vid'    => $verificationId,
             'user'   => $userId,
@@ -283,6 +283,25 @@ class IssuanceService {
         ]);
 
         return new IssueResult($stored, true);
+    }
+
+    /**
+     * The active issuer key and its secret. Any failure to obtain them (no active key, a key
+     * that does not decrypt) becomes a SigningUnavailableException, so callers can tell an
+     * issuer-key problem apart from other issuance failures (GitHub #35).
+     *
+     * @return array{key: CertKey, secret: string}
+     */
+    private function activeSigningMaterial(): array {
+        try {
+            return $this->keyService->getActiveSigningMaterial();
+        } catch (\RuntimeException $e) {
+            // Only what getActiveSigningMaterial() itself raises — no key, undecryptable key,
+            // invalid key. A database error (OCP\DB\Exception is not a RuntimeException) or any
+            // other failure propagates and is reported as issuance_failed, so a transient outage
+            // does not send the administrator after a key that is fine.
+            throw new SigningUnavailableException('Certificate signing unavailable: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -429,13 +448,14 @@ class IssuanceService {
      * and no later call could repair it (UNIQUE loser path never emits). Notification failure
      * is logged and dropped; the compliance write-set always wins over the convenience ping.
      */
-    private function notify(string $userId, string $verificationId, string $courseTitle): void {
+    private function notify(string $userId, string $verificationId, string $courseTitle, int $courseId): void {
         try {
             $notification = $this->notificationManager->createNotification();
+            // course_id lets the Notifier link straight to the course's completion tab (GitHub #35).
             $notification->setApp('learning')
                 ->setUser($userId)
                 ->setObject('certificate', $verificationId)
-                ->setSubject('certificate_issued', ['course_title' => $courseTitle]);
+                ->setSubject('certificate_issued', ['course_title' => $courseTitle, 'course_id' => $courseId]);
 
             if ($this->notificationManager->getCount($notification) === 0) {
                 $notification->setDateTime($this->timeFactory->getDateTime());

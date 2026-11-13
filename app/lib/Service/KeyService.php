@@ -90,6 +90,21 @@ class KeyService {
     }
 
     /**
+     * True when a certificate could be signed right now: an active key exists AND its secret
+     * decrypts to a valid signing key (GitHub #35 — hasActiveKey() alone says yes for a key that
+     * no longer decrypts, e.g. after a secret change). The secret is wiped before returning.
+     */
+    public function canSign(): bool {
+        try {
+            $material = $this->getActiveSigningMaterial();
+        } catch (\Throwable $e) {
+            return false;
+        }
+        sodium_memzero($material['secret']);
+        return true;
+    }
+
+    /**
      * Generate + persist a fresh Ed25519 keypair as an active signing key.
      *
      * Deliberately does NOT pre-check findActive() — that guard belongs to public init(). rotate()

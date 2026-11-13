@@ -143,6 +143,7 @@ import ExamReadiness from './ExamReadiness.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { effectiveCourseTools } from '../utils/toolCatalog.js'
+import { shouldShowCompletionTab } from '../utils/cert-report.js'
 
 export default {
 	name: 'CourseDetail',
@@ -278,7 +279,9 @@ export default {
 				return ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
 			}
 			const tabs = ['classbook', 'my-progress']
-			if (this.isCourseSummaryReleased) tabs.push('summary')
+			// GitHub #35: a certifying course always shows the completion tab (the certificate
+			// lives there); course_summary only releases the summary statistics inside it.
+			if (shouldShowCompletionTab(this.course)) tabs.push('summary')
 			return tabs
 		},
 		hasEnabledArenaModes() {

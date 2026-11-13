@@ -393,7 +393,8 @@
 		<div v-if="currentSubTab === 'summary' && !isInstructor" class="summary-section">
 			<CourseSummary
 				:courseId="courseId"
-				:courseName="course?.title || ''" />
+				:courseName="course?.title || ''"
+				:course="course" />
 		</div>
 
 		<div v-if="currentSubTab === 'summary' && isInstructor" class="summary-section">
@@ -405,6 +406,17 @@
 						{{ t('learning', 'Export CSV') }}
 					</NcButton>
 				</div>
+				<NcNoteCard v-if="certSigningAvailable === false" type="error" class="cert-signing-warning">
+					{{ t('learning', 'Zertifikate können derzeit nicht ausgestellt werden: Es gibt keinen nutzbaren Signaturschlüssel. Teilnehmende, die bestehen, erhalten erst ein Zertifikat, wenn die Administration den Schlüssel eingerichtet hat (occ learning:cert:init-issuer).') }}
+				</NcNoteCard>
+				<NcNoteCard v-if="certPassedWithoutCertificate.length > 0" type="warning" class="cert-passed-without-certificate">
+					<p>{{ t('learning', 'Bestanden, aber noch kein Zertifikat ausgestellt — bitte wende dich an die Administration:') }}</p>
+					<ul>
+						<li v-for="(entry, index) in certPassedWithoutCertificate" :key="index">
+							{{ entry.display_name }}
+						</li>
+					</ul>
+				</NcNoteCard>
 				<NcNoteCard type="info">
 					{{ t('learning', 'Der Bericht zeigt ausgestellte Zertifikate, keine historischen Bestehensereignisse.') }}
 				</NcNoteCard>
@@ -500,7 +512,7 @@ import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
-import { buildCertReportQuery, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
+import { buildCertReportQuery, shouldShowCertReport, shouldShowCompletionTab, formatDate, formatScore } from '../utils/cert-report.js'
 import Klassenbuch from './Klassenbuch.vue'
 import StudentDetail from './StudentDetail.vue'
 import CourseSummary from './CourseSummary.vue'
@@ -561,6 +573,10 @@ export default {
 
 			// Compliance report (cert)
 			certRows: [],
+			// null = unknown (not loaded / older server); false = certificates cannot be signed.
+			certSigningAvailable: null,
+			// GitHub #35: members who passed but hold no certificate ([{display_name}]).
+			certPassedWithoutCertificate: [],
 			revokingVid: null,
 			certFromDate: '',
 			certToDate: '',
@@ -612,15 +628,20 @@ export default {
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
 					{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
-					{ id: 'summary', label: t('learning', 'Abschluss') },
+					{ id: 'summary', label: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss') },
 				]
 			}
 			const tabs = [
 				{ id: 'classbook', label: t('learning', 'Klassenbuch') },
 				{ id: 'my-progress', label: t('learning', 'Mein Fortschritt') },
 			]
-			if (this.isCourseSummaryReleased) {
-				tabs.push({ id: 'summary', label: t('learning', 'Abschluss') })
+			// GitHub #35: a certifying course always shows the completion tab — the certificate lives
+			// there. course_summary only releases the summary statistics inside it.
+			if (shouldShowCompletionTab(this.course)) {
+				tabs.push({
+					id: 'summary',
+					label: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss'),
+				})
 			}
 			return tabs
 		},
@@ -897,6 +918,12 @@ export default {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report', { courseId: this.courseId })
 				const response = await axios.get(url + (qs ? '?' + qs : ''))
 				this.certRows = response.data.rows || []
+				this.certSigningAvailable = typeof response.data.signing_available === 'boolean'
+					? response.data.signing_available
+					: null
+				this.certPassedWithoutCertificate = Array.isArray(response.data.passed_without_certificate)
+					? response.data.passed_without_certificate
+					: []
 			} catch (err) {
 				console.error('Failed to fetch cert report:', err)
 				this.$emit('error', t('learning', 'Compliance-Bericht konnte nicht geladen werden.'))

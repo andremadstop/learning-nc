@@ -5,8 +5,10 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Db\CourseMemberMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IGroupManager;
+use OCP\IUserManager;
 
 /**
  * DSGVO-safe, owner-scoped compliance report for a certifying course (156-01, REPORT-01..04).
@@ -36,6 +38,9 @@ class CertificateReportService {
     private AssignmentService $assignmentService;
     private ReminderService $reminderService;
     private IGroupManager $groupManager;
+    private PassCriteriaService $passCriteriaService;
+    private CourseMemberMapper $courseMemberMapper;
+    private IUserManager $userManager;
 
     public function __construct(
         CourseService $courseService,
@@ -44,7 +49,10 @@ class CertificateReportService {
         RoleService $roleService,
         AssignmentService $assignmentService,
         ReminderService $reminderService,
-        IGroupManager $groupManager
+        IGroupManager $groupManager,
+        PassCriteriaService $passCriteriaService,
+        CourseMemberMapper $courseMemberMapper,
+        IUserManager $userManager
     ) {
         $this->courseService = $courseService;
         $this->certificateMapper = $certificateMapper;
@@ -53,6 +61,9 @@ class CertificateReportService {
         $this->assignmentService = $assignmentService;
         $this->reminderService = $reminderService;
         $this->groupManager = $groupManager;
+        $this->passCriteriaService = $passCriteriaService;
+        $this->courseMemberMapper = $courseMemberMapper;
+        $this->userManager = $userManager;
     }
 
     /**
@@ -301,6 +312,33 @@ class CertificateReportService {
         }
 
         return ['rows' => $rows];
+    }
+
+    /**
+     * Course members who passed but hold no certificate (GitHub #35): issuance failed for them, or
+     * has not run yet. The instructor sees the same "passed, but the certificate could not be
+     * issued" state the learner sees. Read-only — see PassCriteriaService::findPassedWithoutCertificate().
+     *
+     * Same output rules as the report rows: display name only, never the account id or an email.
+     *
+     * @return list<array{display_name: string}>
+     * @throws \OCP\AppFramework\Db\DoesNotExistException course not found (→ 404)
+     * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
+     */
+    public function getPassedWithoutCertificate(int $courseId, string $userId): array {
+        // Gate BEFORE any read — owner-scoped, IDOR-safe.
+        $this->courseService->assertInstructorOfCourse($courseId, $userId);
+
+        $memberIds = array_map(
+            static fn($member): string => (string)$member->getUserId(),
+            $this->courseMemberMapper->findByCourse($courseId)
+        );
+        $rows = [];
+        foreach ($this->passCriteriaService->findPassedWithoutCertificate($courseId, $memberIds) as $memberUid) {
+            $user = $this->userManager->get($memberUid);
+            $rows[] = ['display_name' => $this->safeDisplayName($user !== null ? $user->getDisplayName() : null, $memberUid)];
+        }
+        return $rows;
     }
 
     /**

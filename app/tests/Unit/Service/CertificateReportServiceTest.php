@@ -16,6 +16,7 @@ use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\FeedService;
+use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\ReminderService;
 use OCA\Learning\Service\RoleService;
@@ -107,6 +108,20 @@ class CertificateReportServiceTest extends TestCase {
             $this->createMock(AssignmentService::class),
             $this->createMock(ReminderService::class),
             $this->createMock(IGroupManager::class),
+            ...$this->makePassMocks(),
+        ];
+    }
+
+    /**
+     * The GitHub #35 constructor additions (passed-without-certificate list), inert by default.
+     *
+     * @return array{0: PassCriteriaService, 1: CourseMemberMapper, 2: IUserManager}
+     */
+    private function makePassMocks(): array {
+        return [
+            $this->createMock(PassCriteriaService::class),
+            $this->createMock(CourseMemberMapper::class),
+            $this->createMock(IUserManager::class),
         ];
     }
 
@@ -402,7 +417,8 @@ class CertificateReportServiceTest extends TestCase {
             $this->createMock(RoleService::class),   // isTeamLeadForGroup returns false by default
             $assignmentService,
             $this->createMock(ReminderService::class),
-            $this->createMock(IGroupManager::class)
+            $this->createMock(IGroupManager::class),
+            ...$this->makePassMocks()
         );
 
         $this->expectException(ForbiddenException::class);
@@ -430,7 +446,8 @@ class CertificateReportServiceTest extends TestCase {
             $this->createMock(RoleService::class),
             $assignmentService,
             $this->createMock(ReminderService::class),
-            $this->createMock(IGroupManager::class)
+            $this->createMock(IGroupManager::class),
+            ...$this->makePassMocks()
         );
 
         $this->expectException(ForbiddenException::class);
@@ -491,7 +508,8 @@ class CertificateReportServiceTest extends TestCase {
             $roleService,
             $assignmentService,
             $this->createMock(ReminderService::class),
-            $groupManager
+            $groupManager,
+            ...$this->makePassMocks()
         );
 
         $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
@@ -550,7 +568,8 @@ class CertificateReportServiceTest extends TestCase {
             $roleService,
             $assignmentService,
             $this->createMock(ReminderService::class),
-            $groupManager
+            $groupManager,
+            ...$this->makePassMocks()
         );
 
         $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
@@ -608,7 +627,8 @@ class CertificateReportServiceTest extends TestCase {
             $roleService,
             $assignmentService,
             $this->createMock(ReminderService::class),
-            $groupManager
+            $groupManager,
+            ...$this->makePassMocks()
         );
 
         $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
@@ -642,7 +662,8 @@ class CertificateReportServiceTest extends TestCase {
             $roleService,
             $assignmentService,
             $reminderService,
-            $this->createMock(IGroupManager::class)
+            $this->createMock(IGroupManager::class),
+            ...$this->makePassMocks()
         );
 
         $this->expectException(ForbiddenException::class);
@@ -678,7 +699,8 @@ class CertificateReportServiceTest extends TestCase {
             $roleService,
             $assignmentService,
             $reminderService,
-            $this->createMock(IGroupManager::class)
+            $this->createMock(IGroupManager::class),
+            ...$this->makePassMocks()
         );
 
         // The ref for 'charlie' must resolve to 'charlie' and dispatch exactly once.
@@ -725,7 +747,8 @@ class CertificateReportServiceTest extends TestCase {
             $roleService,
             $assignmentService,
             $this->createMock(ReminderService::class),
-            $groupManager
+            $groupManager,
+            ...$this->makePassMocks()
         );
 
         $rows = $service->getGroupReport(10, 'team-x', 'alice', $expiringDays);
@@ -819,5 +842,66 @@ class CertificateReportServiceTest extends TestCase {
         $rows = $this->runGroupReport(['re'], [$newerExpired, $olderValid]);
         $this->assertSame('expired', $rows['re']['status']);
         $this->assertSame($now - 100 * 86400, $rows['re']['passed_at']);
+    }
+
+    /**
+     * GitHub #35 (review): the instructor sees members who passed but got no certificate —
+     * display names only, the same uid/email guard as the report rows.
+     */
+    public function testPassedWithoutCertificateListsDisplayNamesOnly(): void {
+        $m1 = new CourseMember();
+        $m1->setUserId('jane.doe');
+        $m2 = new CourseMember();
+        $m2->setUserId('max');
+        $m3 = new CourseMember();
+        $m3->setUserId('anna');
+        $members = $this->createMock(CourseMemberMapper::class);
+        $members->expects($this->once())->method('findByCourse')->with(self::COURSE_ID)->willReturn([$m1, $m2, $m3]);
+
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->expects($this->once())->method('findPassedWithoutCertificate')
+            ->with(self::COURSE_ID, ['jane.doe', 'max', 'anna'])
+            ->willReturn(['jane.doe', 'max']);
+
+        $jane = $this->createMock(\OCP\IUser::class);
+        $jane->method('getDisplayName')->willReturn('Jane Doe');
+        $max = $this->createMock(\OCP\IUser::class);
+        $max->method('getDisplayName')->willReturn('max'); // NC returns the uid when no name is set
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturnMap([['jane.doe', $jane], ['max', $max]]);
+
+        [$role, $assign, $reminder, $groups] = array_slice($this->makeNewMocks(), 0, 4);
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $this->createMock(CertificateMapper::class),
+            $this->makeTime(),
+            $role, $assign, $reminder, $groups,
+            $pass, $members, $users
+        );
+
+        $this->assertSame(
+            [['display_name' => 'Jane Doe'], ['display_name' => 'Teilnehmer:in']],
+            $service->getPassedWithoutCertificate(self::COURSE_ID, 'alice')
+        );
+    }
+
+    // A foreign instructor is refused before any member or pass state is read.
+    public function testPassedWithoutCertificateForeignInstructorReadsNothing(): void {
+        $members = $this->createMock(CourseMemberMapper::class);
+        $members->expects($this->never())->method('findByCourse');
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->expects($this->never())->method('findPassedWithoutCertificate');
+
+        [$role, $assign, $reminder, $groups] = array_slice($this->makeNewMocks(), 0, 4);
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $this->createMock(CertificateMapper::class),
+            $this->makeTime(),
+            $role, $assign, $reminder, $groups,
+            $pass, $members, $this->createMock(IUserManager::class)
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $service->getPassedWithoutCertificate(self::COURSE_ID, 'bob');
     }
 }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\CertificationTrigger;
 use OCA\Learning\Service\TrainingService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -11,11 +12,13 @@ use OCP\IRequest;
 
 class TrainingController extends Controller {
     private TrainingService $service;
+    private CertificationTrigger $certificationTrigger;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, TrainingService $service, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, TrainingService $service, CertificationTrigger $certificationTrigger, ?string $userId) {
         parent::__construct($appName, $request);
         $this->service = $service;
+        $this->certificationTrigger = $certificationTrigger;
         $this->userId = $userId;
     }
 
@@ -94,10 +97,27 @@ class TrainingController extends Controller {
     #[UserRateLimit(limit: 20, period: 60)]
     public function complete(int $sessionId, ?string $lang = null): DataResponse {
         try {
-            return new DataResponse($this->service->completeSession($sessionId, $this->userId, $lang));
+            $response = $this->service->completeSession($sessionId, $this->userId, $lang);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to complete session'], 400);
         }
+
+        // GitHub #35: a counting exam in a certifying course issues the certificate now, after
+        // the completion is stored — not only when the learner later opens the completion tab.
+        // Outside the try above on purpose: a certification problem must never turn a completed
+        // exam into an error response. The trigger itself never throws; this guard is the belt
+        // to its braces.
+        try {
+            $certification = $this->userId !== null
+                ? $this->certificationTrigger->afterSessionCompleted($sessionId, $this->userId)
+                : null;
+        } catch (\Throwable $e) {
+            $certification = null;
+        }
+        if ($certification !== null) {
+            $response['certification'] = $certification;
+        }
+        return new DataResponse($response);
     }
 
     /**

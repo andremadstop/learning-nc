@@ -16,6 +16,7 @@ use OCA\Learning\Service\IssuanceService;
 use OCA\Learning\Service\IssueResult;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\PassResult;
+use OCA\Learning\Service\SigningUnavailableException;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
@@ -24,7 +25,9 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
 /**
- * Behavioral contract for PassCriteriaService::evaluate() — the two-gate evaluator.
+ * Behavioral contract for PassCriteriaService::evaluate(). GitHub #35 replaced the two-gate rule
+ * (best exam + Leitner mastery) with: every required pool needs its own counting exam >= the
+ * pass mark; without required pools the best counting exam of the course decides.
  *
  * PASS-05 structural note: "lucky-guess exclusion" is structural, NOT a DB column.
  * Verified against the codebase: there is no is_guessed column in app/lib/, and the
@@ -64,12 +67,22 @@ class PassCriteriaServiceTest extends TestCase {
         ?CertificateMapper $certMapper = null,
         ?AssignmentService $assignmentService = null,
         ?FakeDbConnection $db = null,
+        array $bestByPool = [],
+        array $poolTitles = [],
+        ?LoggerInterface $logger = null,
+        ?array $coursePoolIds = null,
     ): PassCriteriaService {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
 
         $summary = $this->createMock(CourseSummaryService::class);
         $summary->method('getExamScore')->willReturn($examScore);
+        $summary->method('getBestExamScoresByPool')->willReturn($bestByPool);
+        $summary->method('getPoolTitles')->willReturn($poolTitles);
+        // Default: every configured required pool is still linked to the course.
+        $summary->method('getCoursePoolIds')->willReturn(
+            $coursePoolIds ?? array_map('intval', (array)json_decode((string)$course->getCertRequiredPoolIds(), true))
+        );
         if ($masteryStats !== null) {
             $summary->method('getMasteryStats')->willReturn($masteryStats);
         }
@@ -95,7 +108,7 @@ class PassCriteriaServiceTest extends TestCase {
                 ->willReturn(new IssueResult(new Certificate(), true));
         }
 
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = $logger ?? $this->createMock(LoggerInterface::class);
         return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger, $certMapper, $assignmentService);
     }
 
@@ -170,25 +183,204 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertSame(85, $result->getScore());
     }
 
-    // PASS-03: pool mastery_rate < threshold → Gate 2 fails even though Gate 1 passed
-    public function testEvaluateFailsWhenPoolMasteryBelowThreshold(): void {
+    /**
+     * GitHub #35: with required pools, EVERY pool needs its own counting exam >= threshold.
+     * Leitner mastery is no longer part of certification: it is mocked as perfect here and must
+     * not rescue a failed pool (old Gate 2 would have read one box-5 card as 100 %).
+     */
+    public function testRequiredPoolsAllPassedIssues(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->never())->method('logComplianceEvent');
+        $audit->expects($this->once())->method('logComplianceEvent');
 
-        // mastery_rate is already a percentage (0-100); 79.5 < 80 → Gate 2 fails
         $service = $this->makeService(
             $this->makeCourse(true, 80, json_encode([1, 2])),
-            85,
-            ['total_mastered' => 79, 'total_questions' => 100, 'mastery_rate' => 79.5],
+            null, // no course-wide best exam needed for the pool rule
+            null,
+            $this->passingBuilders(),
+            $audit,
+            bestByPool: [1 => 92, 2 => 81],
+            poolTitles: [1 => 'Brandschutz', 2 => 'Erste Hilfe'],
+        );
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertTrue($result->isPoolsMastered());
+        $this->assertSame(81, $result->getScore(), 'the pass rests on the lowest best-per-pool score');
+        $this->assertSame(PassResult::REQUIREMENT_REQUIRED_POOLS, $result->getRequirement());
+        $this->assertSame([
+            ['pool_id' => 1, 'title' => 'Brandschutz', 'best_score' => 92, 'passed' => true],
+            ['pool_id' => 2, 'title' => 'Erste Hilfe', 'best_score' => 81, 'passed' => true],
+        ], $result->getPools());
+        $this->assertSame($result->getPools(), $result->toArray()['pools']);
+    }
+
+    // GitHub #35: one required pool below the pass mark blocks the certificate.
+    public function testOneFailedRequiredPoolBlocks(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([1, 2])),
+            95, // a great exam elsewhere in the course does not replace a required pool
+            ['total_mastered' => 100, 'total_questions' => 100, 'mastery_rate' => 100.0],
             [],
-            $audit
+            $audit,
+            $issuance,
+            bestByPool: [1 => 95, 2 => 79],
         );
         $result = $service->evaluate(self::USER, self::COURSE_ID);
 
         $this->assertFalse($result->isPassed());
         $this->assertFalse($result->isPoolsMastered());
-        $this->assertSame(85, $result->getScore());
+        $this->assertSame(79, $result->getScore());
+        $this->assertFalse($result->getPools()[1]['passed']);
         $this->assertNull($result->getPassedAt());
+    }
+
+    /**
+     * GitHub #35: a required pool without any counting exam is not passed. A pool whose name
+     * cannot be read is still listed, by id (title null).
+     */
+    public function testRequiredPoolWithoutExamIsNotPassed(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([1, 2])),
+            90,
+            null,
+            [],
+            $audit,
+            bestByPool: [1 => 90],
+            poolTitles: [1 => 'Brandschutz'],
+        );
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertFalse($result->isPassed());
+        $this->assertNull($result->getScore(), 'no score while a required pool has no counting exam');
+        $this->assertSame(['pool_id' => 2, 'title' => null, 'best_score' => null, 'passed' => false], $result->getPools()[1]);
+    }
+
+    /**
+     * GitHub #35 (review): a required pool that is no longer part of the course (removed, or
+     * deleted — the FK cascade drops its course link) cannot be examined any more, because exams
+     * start only on course pools. It must not block the certificate for every learner; only the
+     * required pools still in the course count, and they are the only ones listed.
+     */
+    public function testRequiredPoolNoLongerInCourseNeitherBlocksNorIsListed(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent');
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([1, 2])),
+            null,
+            null,
+            $this->passingBuilders(),
+            $audit,
+            bestByPool: [1 => 90],
+            poolTitles: [1 => 'Brandschutz', 2 => 'Alter Pool'],
+            coursePoolIds: [1, 3],
+        );
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame(90, $result->getScore());
+        $this->assertSame([['pool_id' => 1, 'title' => 'Brandschutz', 'best_score' => 90, 'passed' => true]], $result->getPools());
+    }
+
+    // GitHub #35 (review): no configured required pool is left in the course → any counting exam.
+    public function testAllRequiredPoolsGoneFallsBackToAnyExam(): void {
+        $audit = $this->createMock(AuditService::class);
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([2])),
+            84,
+            null,
+            $this->passingBuilders(),
+            $audit,
+            coursePoolIds: [1, 3],
+        );
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame(PassResult::REQUIREMENT_ANY_EXAM, $result->getRequirement());
+        $this->assertSame(84, $result->getScore());
+        $this->assertSame([], $result->getPools());
+    }
+
+    /**
+     * GitHub #35 (review): the instructor sees who passed without getting a certificate, whatever
+     * made issuance fail. Read-only: nothing is issued, emitted or written. Listed: passed + no
+     * certificate. Not listed: not passed; holds a valid certificate; revoked without an open
+     * recertification period (no automatic reissue after a revoke).
+     */
+    public function testFindPassedWithoutCertificateIsReadOnlyAndRespectsUnionGuard(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+
+        $valid = new Certificate();
+        $valid->setVerificationId('vid-valid');
+        $valid->setIssuedAt(1700000000);
+        $valid->setRevoked(false);
+        $revoked = new Certificate();
+        $revoked->setVerificationId('vid-revoked');
+        $revoked->setIssuedAt(1700000000);
+        $revoked->setRevoked(true);
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturnCallback(
+            static fn(string $uid): ?Certificate => match ($uid) {
+                'holder' => $valid,
+                'revoked' => $revoked,
+                default => null,
+            }
+        );
+
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse(true, 80, json_encode([1])));
+        $summary = $this->createMock(CourseSummaryService::class);
+        $summary->method('getCoursePoolIds')->willReturn([1]);
+        $summary->method('getBestExamScoresByPool')->willReturnCallback(
+            static fn(string $uid): array => $uid === 'failed' ? [1 => 60] : [1 => 90]
+        );
+        $assignment = $this->createMock(AssignmentService::class);
+        $assignment->method('getStatesForCourseAndUsers')->willReturn([]);
+        $db = new FakeDbConnection([]);
+
+        $service = new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance,
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment);
+
+        $this->assertSame(['nocert'], $service->findPassedWithoutCertificate(self::COURSE_ID, ['failed', 'holder', 'revoked', 'nocert']));
+        $this->assertSame([], $db->issuedBuilders, 'no query besides the mocked services — certainly no write');
+    }
+
+    public function testFindPassedWithoutCertificateForNonCertifyingCourseIsEmpty(): void {
+        $service = $this->makeService($this->makeCourse(false), 95, null, [], $this->createMock(AuditService::class));
+        $this->assertSame([], $service->findPassedWithoutCertificate(self::COURSE_ID, ['alice']));
+    }
+
+    // GitHub #35: the Leitner mastery gate is gone — evaluate() never reads it.
+    public function testMasteryIsNotConsultedForCertification(): void {
+        $audit = $this->createMock(AuditService::class);
+        $summary = $this->createMock(CourseSummaryService::class);
+        $summary->expects($this->never())->method('getMasteryStats');
+        $summary->method('getBestExamScoresByPool')->willReturn([1 => 85]);
+        $summary->method('getCoursePoolIds')->willReturn([1]);
+
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse(true, 80, json_encode([1])));
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $assignment = $this->createMock(AssignmentService::class);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassedResult')->willReturn(new IssueResult(new Certificate(), true));
+
+        $service = new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($this->passingBuilders()),
+            $issuance, $this->createMock(LoggerInterface::class), $certMapper, $assignment);
+
+        $this->assertTrue($service->evaluate(self::USER, self::COURSE_ID)->isPassed());
     }
 
     // PASS-05: structural — ReadinessService is never referenced in PassCriteriaService source
@@ -291,20 +483,121 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertFalse($result->isPassed());
     }
 
-    // Issuance is a side-effect: a throwing IssuanceService must NOT break the pass-status read path
-    public function testEvaluateSwallowsIssuanceFailure(): void {
+    /**
+     * GitHub #35 (deliberate revision of testEvaluateSwallowsIssuanceFailure): a failed issuance
+     * keeps the pass (it is a fact about the exams) but no longer looks like a complete success:
+     * certificate_issued=false plus a reason code, never the exception text, and an error log.
+     */
+    public function testIssuanceFailureIsReportedNotSwallowed(): void {
         $audit = $this->createMock(AuditService::class);
-
         $issuance = $this->createMock(IssuanceService::class);
-        // 164-04: evaluate() routes through issueIfPassedResult
         $issuance->method('issueIfPassedResult')
-            ->willThrowException(new \RuntimeException('No active signing key'));
+            ->willThrowException(new \RuntimeException('DB went away while inserting'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error');
+
+        $service = $this->makeService($this->makeCourse(true, 80), 95, null, $this->passingBuilders(), $audit, $issuance, logger: $logger);
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+        $payload = $result->toArray();
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame(95, $result->getScore());
+        $this->assertFalse($payload['certificate_issued']);
+        $this->assertNull($payload['certificate']);
+        $this->assertSame('issuance_failed', $payload['issuance_error']);
+        $this->assertStringNotContainsString('DB went away', json_encode($payload));
+    }
+
+    // GitHub #35: a missing or undecryptable issuer key is named as such for the administrator.
+    public function testSigningUnavailableIsReportedAsSuch(): void {
+        $audit = $this->createMock(AuditService::class);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassedResult')
+            ->willThrowException(new SigningUnavailableException('No active signing key — run occ'));
 
         $service = $this->makeService($this->makeCourse(true, 80), 95, null, $this->passingBuilders(), $audit, $issuance);
-        $result = $service->evaluate(self::USER, self::COURSE_ID);
+        $payload = $service->evaluate(self::USER, self::COURSE_ID)->toArray();
 
-        $this->assertTrue($result->isPassed(), 'evaluate() returns a normal PassResult even when issuance throws');
-        $this->assertSame(95, $result->getScore());
+        $this->assertTrue($payload['passed']);
+        $this->assertFalse($payload['certificate_issued']);
+        $this->assertSame('signing_unavailable', $payload['issuance_error']);
+        $this->assertStringNotContainsString('occ', json_encode($payload));
+    }
+
+    // GitHub #35: the response carries the issued certificate so the UI can open it.
+    public function testIssuedCertificateIsReturned(): void {
+        $audit = $this->createMock(AuditService::class);
+        $cert = $this->makeCert('vid-new', revoked: false, expiresAt: null);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassedResult')->willReturn(new IssueResult($cert, true));
+
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $this->passingBuilders(), $audit, $issuance);
+        $payload = $service->evaluate(self::USER, self::COURSE_ID)->toArray();
+
+        $this->assertTrue($payload['certificate_issued']);
+        $this->assertSame('vid-new', $payload['certificate']['verification_id']);
+        $this->assertNull($payload['issuance_error']);
+    }
+
+    /**
+     * GitHub #35: certificate_issued reflects the CURRENT certificate, not "this call issued".
+     * After the first pass mayIssue() is false and nothing is issued — the existing valid cert
+     * must still be reported, a revoked one must not be reported as an issuance failure, and an
+     * expired one is not "issued".
+     */
+    public function testCertificateIssuedReflectsExistingCertificate(): void {
+        $audit = $this->createMock(AuditService::class);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+
+        $cases = [
+            'valid'   => [$this->makeCert('vid-a', false, null), true],
+            'revoked' => [$this->makeCert('vid-b', true, null), false],
+            'expired' => [$this->makeCert('vid-c', false, time() - 10), false],
+        ];
+        foreach ($cases as $label => [$cert, $issued]) {
+            $certMapper = $this->createMock(CertificateMapper::class);
+            $certMapper->method('findByUserAndCourse')->willReturn($cert);
+            $service = $this->makeService($this->makeCourse(true, 80), 90, null, $this->passingBuilders(), $audit, $issuance, $certMapper);
+            $payload = $service->evaluate(self::USER, self::COURSE_ID)->toArray();
+
+            $this->assertSame($issued, $payload['certificate_issued'], $label);
+            $this->assertSame($cert->getVerificationId(), $payload['certificate']['verification_id'], $label);
+            $this->assertNull($payload['issuance_error'], $label . ': no issuance was attempted, so none failed');
+        }
+    }
+
+    /**
+     * Union guard Branch B (previously untested): a certificate exists, but an open
+     * recertification period with an issuable status allows a fresh issuance; a terminal status
+     * does not.
+     */
+    public function testUnionGuardBranchBOpenPeriodAllowsIssuance(): void {
+        foreach (['assigned' => 1, 'in_progress' => 1, 'overdue' => 1, 'passed' => 0, 'cancelled' => 0] as $status => $expectedIssues) {
+            $audit = $this->createMock(AuditService::class);
+            $audit->expects($this->exactly($expectedIssues))->method('logComplianceEvent');
+            $certMapper = $this->createMock(CertificateMapper::class);
+            $certMapper->method('findByUserAndCourse')->willReturn($this->makeCert('vid-old', false, time() - 100));
+            $assignment = $this->createMock(AssignmentService::class);
+            $assignment->method('getStatesForCourseAndUsers')->willReturn([self::USER => ['status' => $status]]);
+            $issuance = $this->createMock(IssuanceService::class);
+            $issuance->expects($this->exactly($expectedIssues))->method('issueIfPassedResult')
+                ->willReturn(new IssueResult($this->makeCert('vid-renewed', false, null), true));
+
+            $service = $this->makeService($this->makeCourse(true, 80), 90, null, $this->passingBuilders(), $audit, $issuance, $certMapper, $assignment);
+            $payload = $service->evaluate(self::USER, self::COURSE_ID)->toArray();
+
+            $this->assertSame($expectedIssues === 1 ? 'vid-renewed' : 'vid-old', $payload['certificate']['verification_id'], $status);
+        }
+    }
+
+    private function makeCert(string $verificationId, bool $revoked, ?int $expiresAt): Certificate {
+        $cert = new Certificate();
+        $cert->setVerificationId($verificationId);
+        $cert->setRevoked($revoked);
+        $cert->setIssuedAt(time() - 1000);
+        $cert->setExpiresAt($expiresAt);
+        return $cert;
     }
 
     // ---- RECERT-05 RED locking tests (Wave 2, 164-02) ----------------------------------

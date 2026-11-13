@@ -68,3 +68,27 @@ export function formatDate(unix) {
 	const day = String(d.getUTCDate()).padStart(2, '0')
 	return `${y}-${m}-${day}`
 }
+
+/**
+ * GitHub #35: whether a LEARNER sees the course's completion tab. A certifying course always
+ * shows it — that is where the certificate lives — independent of mode_config.course_summary,
+ * which only releases the summary statistics. Before, a certifying course with course_summary
+ * off (the default) hid the only place a learner could get a certificate.
+ *
+ * @param {object|null|undefined} course - the course (snake_case fields)
+ * @return {boolean}
+ */
+export function shouldShowCompletionTab(course) {
+	if (!course) return false
+	return course.cert_enabled === true || course.mode_config?.course_summary === true
+}
+
+/**
+ * Whether the summary statistics (mastery, XP, badges, AI reflection …) are released to learners.
+ *
+ * @param {object|null|undefined} course - the course (snake_case fields)
+ * @return {boolean}
+ */
+export function isSummaryReleased(course) {
+	return course?.mode_config?.course_summary === true
+}

@@ -10,6 +10,7 @@ use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseArchiveService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CourseSummaryService;
+use OCA\Learning\Service\ExamAttemptPolicy;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
@@ -39,6 +40,7 @@ class CsvFormulaInjectionTest extends TestCase {
             $this->createMock(RoleService::class),
             $this->createMock(ScheduleService::class),
             $this->createMock(PassCriteriaService::class),
+            $this->createMock(ExamAttemptPolicy::class),
             $this->createMock(LoggerInterface::class),
             'teacher'
         );

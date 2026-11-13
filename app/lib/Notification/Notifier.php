@@ -83,7 +83,13 @@ class Notifier implements INotifier {
                 $notification->setParsedSubject(
                     $l->t('Certificate issued: %s', [$courseTitle])
                 );
-                $notification->setLink($appUrl);
+                // GitHub #35: open the course's completion tab, where the certificate is. The
+                // router serves /courses/<id>/<tab>; notifications from before course_id was
+                // stored keep linking to the app root.
+                $courseId = (int)($params['course_id'] ?? 0);
+                $notification->setLink($courseId > 0
+                    ? rtrim($appUrl, '/') . '/courses/' . $courseId . '/summary'
+                    : $appUrl);
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 

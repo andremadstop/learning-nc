@@ -98,6 +98,75 @@ class CourseSummaryService {
     }
 
     /**
+     * Best counting-exam score (0-100) per pool for $userId in $courseId, restricted to $poolIds
+     * (GitHub #35: every required pool of a certifying course needs its own passed exam).
+     *
+     * Same counting rule and rounding as getExamScore(): mode='exam', exam_kind IS NULL (practice
+     * exams never count, even though they store an anchor pool_id), the course the exam was started
+     * from, completed, score = round(correct * 100 / total). Pools without such an exam are absent
+     * from the result.
+     *
+     * @param int[] $poolIds
+     * @return array<int, int> pool id => best score
+     */
+    public function getBestExamScoresByPool(string $userId, int $courseId, array $poolIds): array {
+        $poolIds = array_values(array_unique(array_map('intval', $poolIds)));
+        if ($poolIds === []) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('pool_id', 'correct_answers', 'total_questions')
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('exam_kind'))
+            ->andWhere($qb->expr()->isNotNull('completed_at'));
+
+        $result = $qb->executeQuery();
+        $best = [];
+        while ($row = $result->fetch()) {
+            $total = (int)$row['total_questions'];
+            if ($total <= 0) {
+                continue;
+            }
+            $poolId = (int)$row['pool_id'];
+            $score = (int) round((int)$row['correct_answers'] * 100 / $total);
+            if (!isset($best[$poolId]) || $score > $best[$poolId]) {
+                $best[$poolId] = $score;
+            }
+        }
+        $result->closeCursor();
+        return $best;
+    }
+
+    /**
+     * Pool names by id, for showing the required pools of a certifying course. Ids of pools that
+     * no longer exist are absent; callers show them by id rather than dropping them.
+     *
+     * @param int[] $poolIds
+     * @return array<int, string> pool id => name
+     */
+    public function getPoolTitles(array $poolIds): array {
+        $poolIds = array_values(array_unique(array_map('intval', $poolIds)));
+        if ($poolIds === []) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'name')
+            ->from('learning_pools')
+            ->where($qb->expr()->in('id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)));
+        $result = $qb->executeQuery();
+        $titles = [];
+        while ($row = $result->fetch()) {
+            $titles[(int)$row['id']] = (string)$row['name'];
+        }
+        $result->closeCursor();
+        return $titles;
+    }
+
+    /**
      * Get class summary for an instructor.
      *
      * @return array{students: array, class_stats: array}
@@ -279,9 +348,13 @@ class CourseSummaryService {
         return $narrative;
     }
 
-    // --- Private aggregation methods ---
-
-    private function getCoursePoolIds(int $courseId): array {
+    /**
+     * Ids of the pools currently linked to the course (learning_course_pools). Public since
+     * GitHub #35: the certificate pass rule only requires pools that are still part of the course.
+     *
+     * @return list<int>
+     */
+    public function getCoursePoolIds(int $courseId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('pool_id')
             ->from('learning_course_pools')
@@ -294,6 +367,8 @@ class CourseSummaryService {
         $result->closeCursor();
         return $ids;
     }
+
+    // --- Private aggregation methods ---
 
     public function getMasteryStats(string $userId, array $poolIds): array {
         if (empty($poolIds)) {

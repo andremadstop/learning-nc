@@ -86,4 +86,29 @@ class NotifierTest extends TestCase {
         $notification = $this->makeNotification('learning', 'completely_unknown_subject_xyz_163');
         $notifier->prepare($notification, 'de');
     }
+
+    /**
+     * GitHub #35: the certificate notification opens the course's completion tab
+     * (/courses/<id>/summary), not the app root. Old notifications without course_id keep the root.
+     */
+    public function testCertificateIssuedLinksToCompletionTab(): void {
+        $notifier = $this->makeNotifier();
+        $notification = $this->makeNotification('learning', 'certificate_issued', [
+            'course_title' => 'Arbeitsschutz 2026',
+            'course_id' => 12,
+        ]);
+        $notification->expects($this->once())->method('setLink')
+            ->with('https://nc.example/apps/learning/courses/12/summary')->willReturnSelf();
+
+        $notifier->prepare($notification, 'de');
+    }
+
+    public function testCertificateIssuedWithoutCourseIdLinksToAppRoot(): void {
+        $notifier = $this->makeNotifier();
+        $notification = $this->makeNotification('learning', 'certificate_issued', ['course_title' => 'Alt']);
+        $notification->expects($this->once())->method('setLink')
+            ->with('https://nc.example/apps/learning')->willReturnSelf();
+
+        $notifier->prepare($notification, 'de');
+    }
 }

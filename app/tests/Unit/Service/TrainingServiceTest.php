@@ -539,6 +539,121 @@ class TrainingServiceTest extends TestCase {
         );
     }
 
+    /**
+     * GitHub #35: an exam started from a course counts towards the certificate, so the client may
+     * not shrink it. limit=1 with a type filter used to give a one-question exam (one correct
+     * answer = 100 % = certificate). The server ignores the type filter and uses at least
+     * COURSE_EXAM_MIN_QUESTIONS questions, or every eligible one when the pool has fewer.
+     */
+    public function testCourseExamIgnoresClientLimitAndTypeFilterBelowMinimum(): void {
+        $questions = [];
+        for ($i = 1; $i <= 30; $i++) {
+            $q = $this->makeQuestion(100 + $i, 42, 'Q' . $i);
+            $q->setQuestionType($i <= 20 ? 'single' : 'multi');
+            $questions[] = $q;
+        }
+        [$service, $db] = $this->buildCourseExamService($questions);
+
+        $payload = $service->startSession(42, 'alice', 1, 'exam', 3600, null, 7, 'single');
+
+        $insert = $this->findInsertBuilder($db);
+        $this->assertSame(30, $insert->insertValues['total_questions']['value'], 'all 30 eligible questions, not 1 and not only the 20 single-choice ones');
+        $this->assertSame(30, $payload['total_questions']);
+        $this->assertSame(7, $insert->insertValues['course_id']['value']);
+    }
+
+    public function testCourseExamRaisesSmallLimitToMinimum(): void {
+        $questions = [];
+        for ($i = 1; $i <= 60; $i++) {
+            $questions[] = $this->makeQuestion(200 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions);
+
+        $service->startSession(42, 'alice', 1, 'exam', 3600, null, 7);
+
+        $this->assertSame(TrainingService::COURSE_EXAM_MIN_QUESTIONS, $this->findInsertBuilder($db)->insertValues['total_questions']['value']);
+    }
+
+    public function testCourseExamKeepsLargerClientLimit(): void {
+        $questions = [];
+        for ($i = 1; $i <= 120; $i++) {
+            $questions[] = $this->makeQuestion(400 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions);
+
+        $service->startSession(42, 'alice', 90, 'exam', 5400, null, 7);
+
+        $this->assertSame(90, $this->findInsertBuilder($db)->insertValues['total_questions']['value']);
+    }
+
+    /** Exams outside a course never count towards a certificate; their size stays the client's. */
+    public function testPoolExamWithoutCourseKeepsClientLimit(): void {
+        $questions = [];
+        for ($i = 1; $i <= 60; $i++) {
+            $questions[] = $this->makeQuestion(300 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions, false);
+
+        $service->startSession(42, 'alice', 5, 'exam', 600);
+
+        $this->assertSame(5, $this->findInsertBuilder($db)->insertValues['total_questions']['value']);
+    }
+
+    /**
+     * @param Question[] $questions
+     * @return array{0: TrainingService, 1: FakeDbConnection}
+     */
+    private function buildCourseExamService(array $questions, bool $fromCourse = true): array {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),      // active exam lookup
+            new FakeQueryBuilder(new FakeResult(), 0),               // close open training sessions
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempts in the last 24 h
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // last start (cooldown)
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempt number
+            new FakeQueryBuilder(new FakeResult(), 0, 99),           // insert
+        ]);
+        $ids = array_map(static fn(Question $q): int => (int)$q->getId(), $questions);
+
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByIds')->willReturnCallback(
+            static fn(array $wanted): array => array_values(array_filter($questions, static fn(Question $q): bool => in_array((int)$q->getId(), $wanted, true)))
+        );
+        $questionMapper->method('findByPoolId')->willReturn($questions);
+
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestion')
+            ->willReturnCallback(fn(int $questionId): array => [$this->makeAnswer($questionId * 10, $questionId, 'Answer')]);
+
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        if ($fromCourse) {
+            $courseService->expects($this->once())->method('resolveCoursePoolContext')
+                ->with(7, 42, 'alice')
+                ->willReturn(['question_ids' => $ids]);
+        }
+
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            poolMapper: $poolMapper,
+            courseService: $courseService,
+        );
+        return [$service, $db];
+    }
+
+    private function findInsertBuilder(FakeDbConnection $db): FakeQueryBuilder {
+        foreach ($db->issuedBuilders as $builder) {
+            if (isset($builder->insertValues['total_questions'])) {
+                return $builder;
+            }
+        }
+        $this->fail('no session insert was issued');
+    }
+
     public function testCompleteSessionAwardsXpUpdatesCacheAndMergesBadges(): void {
         $db = new FakeDbConnection([
             new FakeQueryBuilder(FakeResult::fromFetch([

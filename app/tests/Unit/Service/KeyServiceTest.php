@@ -464,4 +464,26 @@ class KeyServiceTest extends TestCase {
         $this->expectException(\RuntimeException::class);
         $service->getActiveSigningMaterial();
     }
+
+    /**
+     * GitHub #35: canSign() is what the instructor's compliance view shows. It must say no for a
+     * missing key AND for a key whose secret no longer decrypts (hasActiveKey() says yes there).
+     */
+    public function testCanSignReflectsUsableKey(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $mapper = $this->makeMapper();
+        $service = $this->makeService($mapper);
+        $this->assertFalse($service->canSign(), 'no active key');
+
+        $service->init();
+        $this->assertTrue($service->canSign(), 'active key that decrypts');
+
+        $broken = $this->createMock(EncryptionService::class);
+        $broken->method('decrypt')->willReturn(null);
+        $brokenService = $this->makeService($mapper, $broken);
+        $this->assertTrue($brokenService->hasActiveKey());
+        $this->assertFalse($brokenService->canSign(), 'active key whose secret does not decrypt');
+    }
 }

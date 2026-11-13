@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\KeyService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
@@ -30,6 +31,7 @@ use Psr\Log\LoggerInterface;
 class CertificateReportController extends Controller {
 
     private CertificateReportService $reportService;
+    private KeyService $keyService;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -37,11 +39,13 @@ class CertificateReportController extends Controller {
         string $appName,
         IRequest $request,
         CertificateReportService $reportService,
+        KeyService $keyService,
         LoggerInterface $logger,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->reportService = $reportService;
+        $this->keyService = $keyService;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -65,6 +69,18 @@ class CertificateReportController extends Controller {
                 $this->toIntOrNull($this->request->getParam('to')),
                 $this->toIntOrNull($this->request->getParam('expiringDays'))
             );
+            // GitHub #35: tell the instructor when certificates cannot be issued at all (no or no
+            // usable issuer key) — learners then pass without getting one. Read only after the
+            // instructor gate inside getCourseReport() has passed.
+            $result['signing_available'] = $this->keyService->canSign();
+            // GitHub #35: members who passed but got no certificate, whatever the cause. A read
+            // path: if it fails the report still loads, with null meaning "could not be checked".
+            try {
+                $result['passed_without_certificate'] = $this->reportService->getPassedWithoutCertificate($courseId, $this->userId);
+            } catch (\Throwable $e) {
+                $this->logger->warning('certReport: passed-without-certificate check failed: ' . $e->getMessage(), ['app' => 'learning']);
+                $result['passed_without_certificate'] = null;
+            }
             return new DataResponse($result);
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

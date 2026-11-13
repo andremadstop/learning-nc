@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCP\IDBConnection;
@@ -11,13 +12,22 @@ use Psr\Log\LoggerInterface;
 /**
  * Evaluates whether a student has met the pass criteria for a certifying course.
  *
- * Two-gate evaluation (PASS-02 + PASS-03):
- *   Gate 1: best exam score >= cert_pass_percent
- *   Gate 2: mastery_rate of required pools >= cert_pass_percent
+ * Pass rule (GitHub #35, replaces the two-gate PASS-02/PASS-03 rule):
+ *   - cert_required_pool_ids non-empty → EVERY required pool needs a counting exam on that pool
+ *     whose score >= cert_pass_percent (best attempt per pool counts);
+ *   - no required pools → the best counting exam of the course >= cert_pass_percent.
+ * A counting exam is a learning_sessions row with mode='exam', exam_kind IS NULL (practice exams
+ * never count), course_id = this course, completed_at set.
+ *
+ * The former Gate 2 (Leitner box-5 mastery over the required pools) is gone from certification:
+ * its denominator was the learner's own Leitner items, so a single box-5 card read as 100 %, and
+ * exams never create Leitner items, so a learner who only took exams could never pass.
+ * getMasteryStats() stays for the course summary display.
  *
  * PASS-07: First qualification emits a course.passed audit event (idempotent).
- * Trigger: lazy — called from GET /pass-status (154-04); the idempotency guard makes
- * repeated GET calls safe. The event is NOT emitted at exam-completion time.
+ * Triggers: CertificationTrigger right after a counting exam completes, and lazily
+ * GET /pass-status (the retry path). Both go through evaluate(); the union guard plus the
+ * UNIQUE CAS slot make repeated calls safe.
  *
  * MUST NOT call the FSRS readiness service — it throws without exam_date and pass
  * evaluation is orthogonal to FSRS readiness. See 154-CONTEXT.md locked decisions
@@ -43,42 +53,22 @@ class PassCriteriaService {
         }
 
         $threshold = $course->getCertPassPercent() ?? 80;
+        $requiredPoolIds = $this->resolveRequiredPoolIds($courseId, $course->getCertRequiredPoolIds());
+        $rule = $this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, $this->courseSummaryService->getPoolTitles($requiredPoolIds));
+        $passed = $rule['passed'];
+        $score = $rule['score'];
+        $poolsMastered = $rule['pools_passed'];
 
-        // Gate 1: exam score (PASS-02, PASS-05).
-        // getExamScore() queries learning_sessions mode='exam' completed_at IS NOT NULL.
-        // Guess exclusion is structural: exam-mode sessions have no "Guessed" button (that
-        // self-rating lives only in the Leitner/FSRS UI), so a guess can never inflate the
-        // exam score. No is_guessed column is needed or queried here.
-        $score = $this->courseSummaryService->getExamScore($userId, $courseId);
-        $scoreMet = $score !== null && $score >= $threshold;
-
-        // Gate 2: pool mastery (PASS-03).
-        // mastery_rate from getMasteryStats() is ALREADY a percentage (0-100.0,
-        // round($mastered/$total*100,1)). Compare directly: mastery_rate >= threshold (both
-        // are percentage-points). Research Pattern 2 assumed a fractional rate and applied a
-        // x100 multiplier — that is WRONG per the codebase; direct comparison is correct here.
-        //
-        // Semantics: getMasteryStats($requiredPoolIds) returns ONE aggregate rate over the
-        // UNION of all required pools. A student strong on pools A+B but weak on C can still
-        // clear the gate if the aggregate rate >= threshold. Intentional: single threshold,
-        // single rate.
-        $rawIds = $course->getCertRequiredPoolIds();
-        $requiredPoolIds = $rawIds !== null ? (json_decode($rawIds, true) ?? []) : [];
-        $poolsMastered = empty($requiredPoolIds);
-
-        if (!empty($requiredPoolIds)) {
-            $masteryStats = $this->courseSummaryService->getMasteryStats($userId, $requiredPoolIds);
-            $poolsMastered = $masteryStats['mastery_rate'] >= $threshold;
-        }
-
-        $passed = $scoreMet && $poolsMastered;
+        // Read once: feeds the union guard (Branch A) and the certificate shown to the learner.
+        $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+        $issuanceError = null;
         $passedAt = null;
 
         if ($passed) {
             // RECERT-05 union guard: only attempt issuance when the student is eligible.
             // Branch A: never issued before (ASSIGN-04: self-learner path, no assignment row).
             // Branch B: open per-user recertification period with an issuable status.
-            if ($this->mayIssue($userId, $courseId)) {
+            if ($this->mayIssue($userId, $courseId, $certificate)) {
                 try {
                     // CERT-05: issue via issueIfPassedResult so the CAS winner/loser is known.
                     // Emit COURSE_PASSED and advance assignment status ONLY on the DB-insert winner
@@ -119,12 +109,23 @@ class PassCriteriaService {
                         }
                         throw $e;
                     }
+                    if ($issueResult !== null) {
+                        // Winner: the new row. CAS loser: the concurrent winner's row.
+                        $certificate = $issueResult->certificate;
+                    }
                 } catch (ComplianceAuditException $e) {
                     throw $e; // compliance-audit failure — fail closed, do not swallow
                 } catch (\Throwable $e) {
-                    $this->logger->warning(
-                        'Certificate issuance failed for user {user} course {course}: {msg}',
-                        ['user' => $userId, 'course' => $courseId, 'msg' => $e->getMessage()]
+                    // GitHub #35: a passed learner without a certificate must not look like a
+                    // complete success. The pass stands (it is a fact about the exams); the
+                    // missing certificate is reported as a reason code — never the message,
+                    // which can name key handling details. The next evaluate() retries.
+                    $issuanceError = $e instanceof SigningUnavailableException
+                        ? PassResult::ISSUANCE_SIGNING_UNAVAILABLE
+                        : PassResult::ISSUANCE_FAILED;
+                    $this->logger->error(
+                        'Certificate issuance failed for user {user} course {course} ({reason}): {msg}',
+                        ['user' => $userId, 'course' => $courseId, 'reason' => $issuanceError, 'msg' => $e->getMessage(), 'app' => 'learning']
                     );
                 }
             }
@@ -133,7 +134,168 @@ class PassCriteriaService {
             $passedAt = $this->getPassedAt($userId, $courseId);
         }
 
-        return new PassResult($passed, $score, $threshold, $poolsMastered, $passedAt);
+        return new PassResult(
+            $passed,
+            $score,
+            $threshold,
+            $poolsMastered,
+            $passedAt,
+            true,
+            $rule['requirement'],
+            $rule['pools'],
+            $this->describeCertificate($certificate),
+            $issuanceError,
+        );
+    }
+
+    /**
+     * The pass rule alone, without any side effect (GitHub #35).
+     *
+     * Required pools: each needs a counting exam on that pool with score >= threshold. Only pools
+     * still linked to the course count as required: an exam can only be started on a course pool
+     * (resolveCoursePoolContext), so a pool removed from the course or deleted would block every
+     * learner for good — and the instructor's certificate settings list only the course's current
+     * pools, so the stale id could neither be seen nor unticked there. If none of the configured
+     * pools is left, the course falls back to the no-required-pools rule. The score the pass is
+     * based on is the LOWEST best-per-pool score — every pool reached at least that — and null
+     * while any required pool has no counting exam yet.
+     * No required pools: the best counting exam of the course decides.
+     *
+     * @param list<int> $requiredPoolIds from resolveRequiredPoolIds()
+     * @param array<int, string> $titles pool id => name, for the listing only
+     * @return array{passed: bool, score: int|null, pools_passed: bool, requirement: string, pools: list<array{pool_id: int, title: string|null, best_score: int|null, passed: bool}>}
+     */
+    private function assessRule(string $userId, int $courseId, array $requiredPoolIds, int $threshold, array $titles): array {
+        if ($requiredPoolIds === []) {
+            // Guess exclusion is structural: exam-mode sessions have no "Guessed" button (that
+            // self-rating lives only in the Leitner/FSRS UI), so a guess can never inflate the
+            // exam score. No is_guessed column is needed or queried here.
+            $score = $this->courseSummaryService->getExamScore($userId, $courseId);
+            return [
+                'passed' => $score !== null && $score >= $threshold,
+                'score' => $score,
+                'pools_passed' => true,
+                'requirement' => PassResult::REQUIREMENT_ANY_EXAM,
+                'pools' => [],
+            ];
+        }
+
+        $best = $this->courseSummaryService->getBestExamScoresByPool($userId, $courseId, $requiredPoolIds);
+        $pools = [];
+        $allPassed = true;
+        $lowest = null;
+        $allAttempted = true;
+        foreach ($requiredPoolIds as $poolId) {
+            $poolScore = isset($best[$poolId]) ? (int)$best[$poolId] : null;
+            $poolPassed = $poolScore !== null && $poolScore >= $threshold;
+            $allPassed = $allPassed && $poolPassed;
+            if ($poolScore === null) {
+                $allAttempted = false;
+            } elseif ($lowest === null || $poolScore < $lowest) {
+                $lowest = $poolScore;
+            }
+            $pools[] = [
+                'pool_id' => $poolId,
+                'title' => $titles[$poolId] ?? null,
+                'best_score' => $poolScore,
+                'passed' => $poolPassed,
+            ];
+        }
+
+        return [
+            'passed' => $allPassed,
+            'score' => $allAttempted ? $lowest : null,
+            'pools_passed' => $allPassed,
+            'requirement' => PassResult::REQUIREMENT_REQUIRED_POOLS,
+            'pools' => $pools,
+        ];
+    }
+
+    /**
+     * The configured required pools (cert_required_pool_ids) that are still linked to the course,
+     * deduplicated, in configured order. See assessRule() for why unlinked pools are dropped.
+     *
+     * @return list<int>
+     */
+    private function resolveRequiredPoolIds(int $courseId, ?string $rawRequiredPoolIds): array {
+        $decoded = $rawRequiredPoolIds !== null ? json_decode($rawRequiredPoolIds, true) : null;
+        $requiredPoolIds = [];
+        foreach (is_array($decoded) ? $decoded : [] as $id) {
+            $id = (int)$id;
+            if ($id > 0 && !in_array($id, $requiredPoolIds, true)) {
+                $requiredPoolIds[] = $id;
+            }
+        }
+        if ($requiredPoolIds === []) {
+            return [];
+        }
+        $coursePoolIds = $this->courseSummaryService->getCoursePoolIds($courseId);
+        return array_values(array_filter(
+            $requiredPoolIds,
+            static fn(int $id): bool => in_array($id, $coursePoolIds, true)
+        ));
+    }
+
+    /**
+     * Read-only (GitHub #35): which of $userIds meet the pass rule and may be issued a certificate
+     * (union guard), yet hold no valid one — the learners who see "you passed, but the certificate
+     * could not be issued yet". Lets the instructor see them too, whatever made issuance fail.
+     *
+     * Never issues, emits or writes: evaluate() is the only path that does. A revoked certificate
+     * without an open recertification period is excluded by the union guard (no automatic
+     * reissue after a revoke), so those learners are not listed as failures.
+     *
+     * @param string[] $userIds
+     * @return list<string> the subset of $userIds, in input order
+     */
+    public function findPassedWithoutCertificate(int $courseId, array $userIds): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!($course->getCertEnabled() ?? false) || $userIds === []) {
+            return [];
+        }
+        $threshold = $course->getCertPassPercent() ?? 80;
+        $requiredPoolIds = $this->resolveRequiredPoolIds($courseId, $course->getCertRequiredPoolIds());
+
+        $found = [];
+        foreach (array_values(array_unique($userIds)) as $userId) {
+            if (!$this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, [])['passed']) {
+                continue;
+            }
+            $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+            if (!$this->mayIssue($userId, $courseId, $certificate)) {
+                continue;
+            }
+            $described = $this->describeCertificate($certificate);
+            if ($described !== null && !$described['revoked'] && !$described['expired']) {
+                continue; // holds a valid certificate (e.g. recertification not yet reissued)
+            }
+            $found[] = $userId;
+        }
+        return $found;
+    }
+
+    /**
+     * The certificate as the learner and the UI see it. Expired and revoked stay distinguishable
+     * from "none": a revoked learner must not be told issuance failed.
+     *
+     * @return array{verification_id: string, issued_at: int, expires_at: int|null, expired: bool, revoked: bool}|null
+     */
+    private function describeCertificate(?Certificate $certificate): ?array {
+        if ($certificate === null) {
+            return null;
+        }
+        $verificationId = (string)$certificate->getVerificationId();
+        if ($verificationId === '') {
+            return null;
+        }
+        $expiresAt = $certificate->getExpiresAt() !== null ? (int)$certificate->getExpiresAt() : null;
+        return [
+            'verification_id' => $verificationId,
+            'issued_at' => (int)$certificate->getIssuedAt(),
+            'expires_at' => $expiresAt,
+            'expired' => $expiresAt !== null && $expiresAt <= time(),
+            'revoked' => (bool)$certificate->getRevoked(),
+        ];
     }
 
     /**
@@ -162,9 +324,10 @@ class PassCriteriaService {
      * SC2: after a punitive revoke (revoked=true, active_idem_key=NULL) with NO open period
      * this returns false — do NOT auto-reissue after a punitive revoke.
      */
-    private function mayIssue(string $userId, int $courseId): bool {
-        // Branch A: student has no certificate history at all — always allow
-        if (!$this->hasEverIssuedCertificate($userId, $courseId)) {
+    private function mayIssue(string $userId, int $courseId, ?Certificate $newestCertificate): bool {
+        // Branch A: student has no certificate history at all — always allow.
+        // $newestCertificate is the UNFILTERED findByUserAndCourse() row read by evaluate().
+        if ($newestCertificate === null) {
             return true;
         }
         // Branch B: cert exists, but there is an open recertification period
@@ -172,14 +335,6 @@ class PassCriteriaService {
         $state = $states[$userId] ?? null;
         return $state !== null
             && in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true);
-    }
-
-    /**
-     * Returns true when a certificate row exists for (user, course) — revoked, expired, or valid.
-     * UNFILTERED: a punitively-revoked cert still counts as "ever issued".
-     */
-    private function hasEverIssuedCertificate(string $userId, int $courseId): bool {
-        return $this->certificateMapper->findByUserAndCourse($userId, $courseId) !== null;
     }
 
     /**

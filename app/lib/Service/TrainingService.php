@@ -49,6 +49,13 @@ class TrainingService {
      * skew can still land that request after it (2026-11 audit H4). New starts stay refused.
      */
     public const EXAM_SUBMIT_GRACE_SECONDS = 30;
+    /**
+     * Fewest questions an exam started from a course may have (GitHub #35). Such an exam counts
+     * towards the course certificate, and the client used to choose its length: limit=1 turned a
+     * single correct answer into a 100 % pass. The size of the smallest exam preset in ExamMode,
+     * so both presets behave as before; a pool with fewer eligible questions is used in full.
+     */
+    public const COURSE_EXAM_MIN_QUESTIONS = 45;
 
     public function __construct(
         IDBConnection $db,
@@ -194,12 +201,14 @@ class TrainingService {
         return $answers;
     }
 
+    // ExamAttemptPolicy is the single source for these limits: the pass status shows learners
+    // the same numbers that are enforced here (GitHub #35).
     private function getExamAttemptLimitPerDay(): int {
-        return max(1, min(50, (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5')));
+        return (new ExamAttemptPolicy($this->config))->limitPerDay();
     }
 
     private function getExamAttemptCooldownMinutes(): int {
-        return max(0, min(1440, (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10')));
+        return (new ExamAttemptPolicy($this->config))->cooldownMinutes();
     }
 
     private function enforceExamStartPolicy(int $poolId, string $userId): void {
@@ -685,6 +694,18 @@ class TrainingService {
             $questions = $this->questionMapper->findByIds($questionIds);
         } else {
             $questions = $this->questionMapper->findByPoolId($poolId);
+        }
+
+        // GitHub #35: an exam started from a course is a counting exam — it can issue the course
+        // certificate. Its composition is the server's decision, not the client's: no question-type
+        // filter, and at least COURSE_EXAM_MIN_QUESTIONS questions (all eligible ones if the pool
+        // has fewer). Without this, limit=1 or a narrow type filter made a certificate a guess.
+        $isCourseExam = $mode === 'exam' && $courseId !== null;
+        if ($isCourseExam) {
+            $questionType = null;
+            if ($limit !== null && $limit > 0) {
+                $limit = max($limit, min(self::COURSE_EXAM_MIN_QUESTIONS, count($questions)));
+            }
         }
 
         // Filter by question type if requested (e.g. 'pbq' for simulator-only practice)

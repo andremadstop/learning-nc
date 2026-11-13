@@ -294,3 +294,131 @@ describe('Zeugnisstatus computeds (Phase 154)', () => {
 		expect(instance.passedAtFormatted.length).toBeGreaterThan(0)
 	})
 })
+
+// GitHub #35: the certification card shows for every certifying course, independent of the
+// released summary statistics, and tells the learner exactly where they stand.
+describe('CourseSummary — certification card (GitHub #35)', () => {
+	function createLiveInstance(overrides = {}) {
+		const instance = {
+			...CourseSummary.data(),
+			courseId: 7,
+			courseName: 'Arbeitsschutz',
+			course: null,
+			...overrides,
+		}
+		for (const [name, def] of Object.entries(CourseSummary.computed)) {
+			const getter = typeof def === 'function' ? def : def.get
+			Object.defineProperty(instance, name, { get: () => getter.call(instance), configurable: true })
+		}
+		for (const [name, fn] of Object.entries(CourseSummary.methods || {})) {
+			instance[name] = fn.bind(instance)
+		}
+		return instance
+	}
+
+	const certCourse = (extra = {}) => ({ cert_enabled: true, mode_config: { course_summary: false }, cert_validity_months: 12, ...extra })
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('does not load the unreleased statistics (no summary read, no AI reflection, no ICS token)', () => {
+		const instance = createLiveInstance({ course: certCourse() })
+		instance.loadSummaryState = vi.fn()
+
+		CourseSummary.watch.courseId.handler.call(instance, 7, undefined)
+
+		expect(instance.statsReleased).toBe(false)
+		expect(instance.loadSummaryState).not.toHaveBeenCalled()
+	})
+
+	it('still loads the statistics when course_summary is released', () => {
+		const instance = createLiveInstance({ course: certCourse({ mode_config: { course_summary: true } }) })
+		instance.loadSummaryState = vi.fn()
+
+		CourseSummary.watch.courseId.handler.call(instance, 7, undefined)
+
+		expect(instance.loadSummaryState).toHaveBeenCalledTimes(1)
+	})
+
+	it('takes the certificate from the pass status — no certificate list lookup', async () => {
+		const instance = createLiveInstance({ course: certCourse() })
+		axios.get.mockResolvedValueOnce({ data: {
+			applicable: true, passed: true, score: 90, threshold: 80, passedAt: 1700000000,
+			certificate_issued: true, issuance_error: null,
+			certificate: { verification_id: 'vid-9', issued_at: 1700000000, expires_at: null, expired: false, revoked: false },
+		} })
+
+		await instance.fetchPassStatus()
+
+		expect(axios.get).toHaveBeenCalledTimes(1)
+		expect(axios.get.mock.calls[0][0]).toContain('/pass-status')
+		expect(instance.certVerificationId).toBe('vid-9')
+		expect(instance.issuanceFailed).toBe(false)
+	})
+
+	it('offers an expired certificate but never a revoked one', () => {
+		const expired = createLiveInstance({ passStatus: { applicable: true, passed: true, certificate: { verification_id: 'vid-e', expired: true, revoked: false } } })
+		const revoked = createLiveInstance({ passStatus: { applicable: true, passed: true, certificate: { verification_id: 'vid-r', expired: false, revoked: true } } })
+
+		expect(expired.certVerificationId).toBe('vid-e')
+		expect(revoked.certVerificationId).toBeNull()
+		expect(revoked.certificateRevoked).toBe(true)
+		expect(revoked.issuanceFailed).toBe(false)
+	})
+
+	it('flags a passed learner without certificate when issuance failed', () => {
+		const instance = createLiveInstance({ passStatus: { applicable: true, passed: true, certificate: null, certificate_issued: false, issuance_error: 'signing_unavailable' } })
+
+		expect(instance.issuanceFailed).toBe(true)
+		expect(instance.certVerificationId).toBeNull()
+	})
+
+	it('lists the required pools with best score and passed state', () => {
+		const instance = createLiveInstance({ passStatus: {
+			applicable: true, passed: false, threshold: 80, requirement: 'required_pools',
+			pools: [
+				{ pool_id: 3, title: 'Brandschutz', best_score: 92, passed: true },
+				{ pool_id: 4, title: null, best_score: null, passed: false },
+			],
+		} })
+
+		expect(instance.requiresPools).toBe(true)
+		expect(instance.requiredPools).toHaveLength(2)
+		expect(instance.requiredPools[1].passed).toBe(false)
+	})
+
+	// Review: with the statistics unreleased, a failing pass-status read must not leave a blank tab.
+	it('marks a failed pass-status read so the tab can offer a retry', async () => {
+		const instance = createLiveInstance({ course: certCourse() })
+		axios.get.mockRejectedValueOnce(new Error('500'))
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+
+		await instance.fetchPassStatus()
+
+		expect(instance.passStatus).toBeNull()
+		expect(instance.passStatusError).toBe(true)
+		expect(instance.passStatusLoading).toBe(false)
+
+		axios.get.mockResolvedValueOnce({ data: { applicable: true, passed: false, threshold: 80 } })
+		await instance.fetchPassStatus()
+		expect(instance.passStatusError).toBe(false)
+	})
+
+	it('states the enforced retake rules and the validity', () => {
+		const instance = createLiveInstance({
+			course: certCourse(),
+			passStatus: { applicable: true, passed: false, attempt_policy: { limit_per_day: 5, cooldown_minutes: 10 } },
+		})
+		const noCooldown = createLiveInstance({
+			course: certCourse({ cert_validity_months: null, cert_validity_days: 0 }),
+			passStatus: { applicable: true, passed: false, attempt_policy: { limit_per_day: 3, cooldown_minutes: 0 } },
+		})
+
+		expect(instance.retakeText).toContain('5')
+		expect(instance.retakeText).toContain('10')
+		expect(instance.validityText).toBe('Gültigkeitsdauer (Monate): 12')
+		expect(noCooldown.retakeText).toBe('Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens 3.')
+		expect(noCooldown.validityText).toBe('Gültigkeit: unbegrenzt')
+	})
+})
