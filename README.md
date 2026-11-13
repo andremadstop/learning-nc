@@ -24,7 +24,7 @@ Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souve
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject, from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate**, turning any course into a real credential.
 
-> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. [Open an issue](https://github.com/andremadstop/learning-nc/issues) or email me.
+> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. [Open an issue](https://github.com/andremadstop/learning-nc/issues).
 
 ![Student dashboard](screenshots/08-en-dashboard.png)
 
