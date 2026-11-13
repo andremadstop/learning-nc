@@ -70,12 +70,12 @@ class DocumentScanCourseScopeTest extends TestCase {
         return $doc;
     }
 
-    private function service(CourseDocumentMapper $mapper, int $courseId): DocumentService {
+    private function service(CourseDocumentMapper $mapper, int $courseId, string $folderSpelling = 'Learning/Material'): DocumentService {
         $course = new Course();
         $course->setInstructorId('teacher-b');
-        $course->setMaterialFolder('Learning/Material');
+        $course->setMaterialFolder($folderSpelling);
         $courseMapper = $this->createMock(CourseMapper::class);
-        $courseMapper->method('findById')->with($courseId)->willReturn($course);
+        $courseMapper->expects($this->atLeastOnce())->method('findById')->with($courseId)->willReturn($course);
 
         $file = $this->createMock(Node::class);
         $file->method('getType')->willReturn(Node::TYPE_FILE);
@@ -85,9 +85,9 @@ class DocumentScanCourseScopeTest extends TestCase {
         $folder->method('getType')->willReturn(Node::TYPE_FOLDER);
         $folder->method('getDirectoryListing')->willReturn([$file]);
         $userFolder = $this->createMock(Folder::class);
-        $userFolder->method('get')->with('Learning/Material')->willReturn($folder);
+        $userFolder->expects($this->once())->method('get')->with($folderSpelling)->willReturn($folder);
         $root = $this->createMock(IRootFolder::class);
-        $root->method('getUserFolder')->with('teacher-b')->willReturn($userFolder);
+        $root->expects($this->once())->method('getUserFolder')->with('teacher-b')->willReturn($userFolder);
 
         return new DocumentService($mapper, $courseMapper, $root, $this->createMock(LoggerInterface::class));
     }
@@ -109,6 +109,29 @@ class DocumentScanCourseScopeTest extends TestCase {
 
         self::assertCount(0, $mapper->inserted);
         self::assertCount(1, $docs);
+    }
+
+    /**
+     * GitHub #35: the file picker hands out '/Learning/Material'; a course whose folder was typed
+     * as 'Learning/Material' and is picked again must not register every file a second time
+     * (duplicate rows, duplicate AI context).
+     */
+    public function testRescanAfterRelinkingWithALeadingSlashRegistersNothing(): void {
+        $mapper = $this->memoryMapper([self::doc(2, 'Learning/Material/skript.pdf')]);
+
+        $docs = $this->service($mapper, 2, '/Learning/Material')->scanFolder(2, 'teacher-b');
+
+        self::assertCount(0, $mapper->inserted);
+        self::assertCount(1, $docs);
+    }
+
+    public function testNewRowsAreStoredInTheNormalizedSpelling(): void {
+        $mapper = $this->memoryMapper([]);
+
+        $this->service($mapper, 2, 'Learning/Material/')->scanFolder(2, 'teacher-b');
+
+        self::assertCount(1, $mapper->inserted);
+        self::assertSame('/Learning/Material/skript.pdf', $mapper->inserted[0]->getFilePath());
     }
 
     public function testMapperLookupFiltersOnCourseAndPath(): void {

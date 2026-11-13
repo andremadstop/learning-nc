@@ -1015,7 +1015,7 @@ export default {
           shortText: t('learning', 'Lernmodi für Studierende aktivieren/deaktivieren.'),
         },
         'view:course-materials': {
-          title: t('learning', 'Materialien'),
+          title: t('learning', 'Lernmaterial'),
           text: t('learning', 'Lade Lernmaterialien hoch und verwalte sie: PDFs, Links, Dokumente. Studierende sehen diese als Referenzmaterial neben ihren Fragen.'),
           shortText: t('learning', 'Referenzmaterialien für Studierende hochladen.'),
         },

@@ -1051,7 +1051,6 @@
         "Mastery Progress": "Mastery Progress",
         "Mastery, Rangliste, XP, Streaks und Badges.": "Maîtrise, classement, XP, séries et badges.",
         "Mastery, leaderboard, XP, streaks and badges.": "Mastery, leaderboard, XP, streaks and badges.",
-        "Materialien": "Supports",
         "Materials": "Materials",
         "Max import file size (MB)": "Max import file size (MB)",
         "Maximale Server": "Maximum Servers",
@@ -3342,6 +3341,17 @@
         "Wartungskarte im Lern-Dashboard anzeigen": "Afficher la carte de maintenance dans le tableau de bord d'apprentissage",
         "Leave these empty unless this pool mirrors one chapter of a book or curriculum. A pool needs nothing but a name. Fill them in when you split a textbook into one pool per chapter: the keys are short internal identifiers you choose yourself, the titles are what people read, and the number is shown before the chapter title.": "Laissez ces champs vides, sauf si ce pool correspond à un chapitre d'un livre ou d'un programme. Un pool n'a besoin que d'un nom. Remplissez-les lorsque vous découpez un manuel en un pool par chapitre : les clés sont de courts identifiants internes que vous choisissez vous-même, les titres sont ce que les gens lisent, et le numéro s'affiche devant le titre du chapitre.",
         "Die Kapitel-Kennung „{ref}“ kommt mehrfach vor. Jede Zeile braucht eine eigene Kennung.": "L'identifiant de chapitre « {ref} » apparaît plusieurs fois. Chaque ligne a besoin de son propre identifiant.",
-        "Im Kurs \"{title}\" sind keine Werkzeuge freigeschaltet.": "Aucun outil n'est activé dans le cours « {title} »."
+        "Im Kurs \"{title}\" sind keine Werkzeuge freigeschaltet.": "Aucun outil n'est activé dans le cours « {title} ».",
+        "Lernmaterial": "Supports de cours",
+        "Ordner auswählen…": "Choisir un dossier…",
+        "Materialordner auswählen": "Choisir le dossier des supports",
+        "Diesen Ordner verknüpfen": "Lier ce dossier",
+        "Extrahieren liest den Text der Dateien, damit VirtuProf (KI-Assistent) das Material als Kurskontext nutzen kann. Zum Lesen brauchen Lernende das nicht.": "Extraire le texte pour que VirtuProf (assistant IA) puisse utiliser ce support comme contexte du cours. Ce n’est pas nécessaire pour que les apprenants lisent le fichier.",
+        "PDF-Textextraktion ist auf diesem Server nicht verfügbar (pdftotext fehlt). Lernende können die Dateien trotzdem öffnen.": "L’extraction de texte des PDF n’est pas disponible sur ce serveur (pdftotext manquant) ; les apprenants peuvent tout de même ouvrir les fichiers.",
+        "Ohne pdftotext nicht möglich": "Impossible sans pdftotext",
+        "Diese Datei liegt nicht mehr im Materialordner.": "Ce fichier ne se trouve plus dans le dossier des supports.",
+        "PDF text extraction is not available on this server (pdftotext missing). VirtuProf can only use Markdown course materials; students can still open every file.": "L’extraction de texte des PDF n’est pas disponible sur ce serveur (pdftotext manquant). VirtuProf ne peut utiliser que les supports de cours Markdown ; les apprenants peuvent tout de même ouvrir chaque fichier.",
+        "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben.": "Aucun support de cours n'a encore été partagé pour ce cours.",
+        "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen.": "Les membres du cours peuvent ouvrir chaque fichier PDF et Markdown de ce dossier."
     }
 }

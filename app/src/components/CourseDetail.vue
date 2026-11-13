@@ -64,6 +64,7 @@
 					:content-language="contentLanguage"
 					:fsrs-detailed-stats="fsrsDetailedStats"
 					:admin-enabled-tools="adminEnabledTools"
+					:ai-enabled="adminAiEnabled"
 					@all-pools-loaded="allPools = $event"
 					@error="error = $event"
 					@knowledge-pending-count="knowledgePendingCount = $event"
@@ -113,6 +114,7 @@
 				:user-role="userRole"
 				:acts-as-instructor="actsAsInstructor"
 				:active-tab="currentTab"
+				:ai-enabled="adminAiEnabled"
 				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@refresh-course-detail="fetchCourseDetail" />
@@ -213,6 +215,8 @@ export default {
 			allPools: [],
 			// The admin's global tool selection; null until loaded or when unreadable (= all).
 			adminEnabledTools: null,
+			// GitHub #35: the admin's AI switch (GET /api/settings/tools); unknown counts as off
+			adminAiEnabled: false,
 
 			// Student progress (for student own progress bars — kept for fetchStudentProgress)
 			studentProgress: [],
@@ -264,7 +268,8 @@ export default {
 			if (this.isInstructor) {
 				return ['announcements', 'feed', 'requests']
 			}
-			return ['feed', 'buddies', 'schwarm']
+			// GitHub #35: the swarm contributes to the AI assistant's knowledge; see CourseTabKommunikation
+			return this.adminAiEnabled ? ['feed', 'buddies', 'schwarm'] : ['feed', 'buddies']
 		},
 		verwaltungLeafTabs() {
 			return ['mode-config', 'schedule']
@@ -276,6 +281,7 @@ export default {
 				actsAsInstructor: this.isInstructor,
 				hasCourseTools: this.hasCourseTools,
 				hasVideos: this.hasCourseVideos,
+				aiEnabled: this.adminAiEnabled,
 			})
 		},
 		wettbewerbLeafTabs() {
@@ -673,8 +679,12 @@ export default {
 			try {
 				const response = await axios.get(generateUrl('/apps/learning/api/settings/tools'))
 				this.adminEnabledTools = Array.isArray(response.data?.enabled_tools) ? response.data.enabled_tools : null
+				this.adminAiEnabled = response.data?.ai_enabled === true
 			} catch (e) {
 				this.adminEnabledTools = null
+				// The knowledge import and the text extraction only serve the AI assistant: a failed
+				// read hides them instead of offering them on a server where AI may be off.
+				this.adminAiEnabled = false
 			}
 		},
 		async fetchCourseDetail() {

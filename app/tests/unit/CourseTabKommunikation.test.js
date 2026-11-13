@@ -76,16 +76,24 @@ describe('CourseTabKommunikation', () => {
 
 	// GitHub #35: the student view must win over the course membership in every mega-tab.
 	it('the student view (actsAsInstructor false) shows an own course with the learner sub-tabs', () => {
-		const instance = createInstance({ course: { is_instructor: true }, userRole: 'student', actsAsInstructor: false })
+		const instance = createInstance({ course: { is_instructor: true }, userRole: 'student', actsAsInstructor: false, aiEnabled: true })
 
 		expect(instance.isInstructor).toBe(false)
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies', 'schwarm'])
 	})
 
 	it('builds student sub-tabs: feed, buddies, schwarm', () => {
-		const instance = createInstance()
+		const instance = createInstance({ aiEnabled: true })
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies', 'schwarm'])
+	})
+
+	// GitHub #35: with AI off the knowledge moderation is gone, so nobody could ever read a swarm
+	// contribution; the swarm is left out instead of collecting into a queue nobody opens.
+	it('leaves out the swarm while the admin has AI switched off', () => {
+		const instance = createInstance({ aiEnabled: false })
+
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies'])
 	})
 
 	it('emits tab-change with correct leaf ID when selecting a sub-tab', () => {

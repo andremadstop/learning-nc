@@ -283,4 +283,26 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $this->assertSame('http://ollama.lan:11434', $view['ai_ollama_url']);
         $this->assertSame('m', $view['ai_ollama_model']);
     }
+
+    /**
+     * GitHub #35: the course view reads the admin's AI switch from GET /api/settings/tools (every
+     * user may call it) to leave out the knowledge import and the text extraction when AI is off.
+     * Same meaning as on the admin page: switched on with a provider.
+     */
+    public function testToolSettingsTellEveryUserWhetherAiIsSwitchedOn(): void {
+        $this->values->set('learning', 'ai_provider', 'gemini');
+        $this->values->set('learning', 'ai_enabled', 'yes');
+        $this->assertTrue($this->controller()->getTools()->getData()['ai_enabled']);
+
+        $this->values->set('learning', 'ai_enabled', 'no');
+        $this->assertFalse($this->controller()->getTools()->getData()['ai_enabled']);
+
+        $this->values->set('learning', 'ai_provider', '');
+        $this->values->set('learning', 'ai_enabled', 'yes');
+        $this->assertFalse($this->controller()->getTools()->getData()['ai_enabled'], 'no provider is AI off');
+    }
+
+    public function testTheAdminPageSaysWhetherPdfTextExtractionWorks(): void {
+        $this->assertIsBool($this->adminView()['pdf_text_extraction_available']);
+    }
 }

@@ -105,7 +105,17 @@ describe('CourseTabLernraum', () => {
 	it('builds student sub-tabs from the enabled learning modes', () => {
 		const instance = createInstance()
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['training', 'leitner', 'exam', 'tools', 'materials'])
+		// GitHub #35: the learning material comes before practice and exam, and is the landing tab
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['materials', 'training', 'leitner', 'exam', 'tools'])
+		expect(instance.defaultSubTab()).toBe('materials')
+		expect(instance.visibleSubTabs[0].label).toBe('Lernmaterial')
+	})
+
+	it('without a material folder the first learning mode stays the landing tab', () => {
+		const instance = createInstance({ course: {
+			is_instructor: false, material_folder: null, mode_config: { training: true, leitner: true, exam: true },
+		} })
+
 		expect(instance.defaultSubTab()).toBe('training')
 	})
 
@@ -228,9 +238,23 @@ describe('CourseTabLernraum', () => {
 			},
 			userRole: 'instructor',
 			actsAsInstructor: true,
+			aiEnabled: true,
 		})
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['pools', 'tools', 'curriculum', 'materials', 'knowledge'])
+	})
+
+	// GitHub #35: the knowledge import only feeds the AI assistant
+	it('leaves out the knowledge tab while the admin has AI switched off', () => {
+		const instance = createInstance({
+			course: { is_instructor: true, material_folder: null, mode_config: { training: true, leitner: true, exam: true } },
+			userRole: 'instructor',
+			actsAsInstructor: true,
+			aiEnabled: false,
+		})
+
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('knowledge')
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toContain('materials')
 	})
 
 	it('switches into the embedded tools leaf and remembers the requested simulator', () => {
@@ -392,7 +416,7 @@ describe('CourseTabLernraum', () => {
 	// instructor enrolled as a student in a colleague's course got Pools/Themen/Wissen there, and
 	// the student view could not hide them. CourseDetail now hands down one flag.
 	describe('course-level role and student view (GitHub #35)', () => {
-		const studentTabs = ['training', 'leitner', 'exam', 'materials']
+		const studentTabs = ['materials', 'training', 'leitner', 'exam']
 
 		it('a global instructor who is a student of this course gets the learner sub-tabs', () => {
 			const instance = createInstance({ userRole: 'instructor', actsAsInstructor: false, course: {

@@ -59,13 +59,21 @@ describe('lernraumTabIds (GitHub #35)', () => {
 	const course = { mode_config: { training: true, leitner: true, exam: true }, practice_enabled: true, material_folder: '/M' }
 
 	it('instructor list', () => {
-		expect(lernraumTabIds(course, { actsAsInstructor: true, hasCourseTools: true })).toEqual(['pools', 'tools', 'curriculum', 'materials', 'knowledge'])
-		expect(lernraumTabIds(course, { actsAsInstructor: true })).toEqual(['pools', 'curriculum', 'materials', 'knowledge'])
+		expect(lernraumTabIds(course, { actsAsInstructor: true, hasCourseTools: true, aiEnabled: true })).toEqual(['pools', 'tools', 'curriculum', 'materials', 'knowledge'])
+		expect(lernraumTabIds(course, { actsAsInstructor: true, aiEnabled: true })).toEqual(['pools', 'curriculum', 'materials', 'knowledge'])
 	})
 
-	it('learner list in display order, required content first', () => {
+	// The knowledge import only feeds the AI assistant; an unknown AI state counts as off.
+	it('instructor list without AI has no knowledge tab', () => {
+		expect(lernraumTabIds(course, { actsAsInstructor: true, aiEnabled: false })).toEqual(['pools', 'curriculum', 'materials'])
+		expect(lernraumTabIds(course, { actsAsInstructor: true })).toEqual(['pools', 'curriculum', 'materials'])
+	})
+
+	it('learner list in display order: required content, then the learning material, then practice and exam', () => {
 		expect(lernraumTabIds(course, { hasVideos: true, hasCourseTools: true }))
-			.toEqual(['videos', 'training', 'leitner', 'exam', 'practice', 'tools', 'materials'])
+			.toEqual(['videos', 'materials', 'training', 'leitner', 'exam', 'practice', 'tools'])
+		expect(lernraumTabIds(course, { hasCourseTools: true }))
+			.toEqual(['materials', 'training', 'leitner', 'exam', 'practice', 'tools'])
 	})
 
 	it('a disabled Training is not listed; a missing mode_config means every mode is on', () => {

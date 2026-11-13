@@ -34,19 +34,25 @@ export function actsAsCourseInstructor(course, studentViewActive) {
  * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
  * @param {boolean} options.hasCourseTools - at least one simulator is enabled for the course
  * @param {boolean} options.hasVideos - the course has required content (videos or documents)
+ * @param {boolean} options.aiEnabled - the admin switched the AI assistant on (GET /api/settings/tools);
+ *   the knowledge import only feeds the assistant, so without it the tab is left out
  * @return {string[]}
  */
-export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTools = false, hasVideos = false } = {}) {
+export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTools = false, hasVideos = false, aiEnabled = false } = {}) {
 	if (actsAsInstructor) {
 		const tabs = ['pools']
 		if (hasCourseTools) tabs.push('tools')
-		tabs.push('curriculum', 'materials', 'knowledge')
+		tabs.push('curriculum', 'materials')
+		if (aiEnabled) tabs.push('knowledge')
 		return tabs
 	}
 	const modeConfig = course?.mode_config || {}
 	const enabled = (key) => modeConfig[key] !== false
 	const tabs = []
 	if (hasVideos) tabs.push('videos')
+	// GitHub #35: learners read the material before they practise and take the exam, so the
+	// material comes before the learning modes (and becomes the landing tab without videos).
+	if (course?.material_folder) tabs.push('materials')
 	if (enabled('training')) tabs.push('training')
 	if (enabled('leitner')) tabs.push('leitner')
 	if (enabled('exam')) tabs.push('exam')
@@ -54,6 +60,5 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
 	// a course can offer its own practice exam with the preset exam switched off.
 	if (course?.practice_enabled) tabs.push('practice')
 	if (hasCourseTools) tabs.push('tools')
-	if (course?.material_folder) tabs.push('materials')
 	return tabs
 }

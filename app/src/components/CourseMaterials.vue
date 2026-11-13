@@ -1,7 +1,7 @@
 <template>
 	<div class="course-materials">
-		<!-- Folder Setting Section (instructor only) -->
-		<div v-if="isInstructor" class="material-folder-section">
+		<!-- Folder Setting Section (course owner only: the folder lives in the owner's home) -->
+		<div v-if="managesFiles" class="material-folder-section">
 			<h4>{{ t('learning', 'Materialordner') }}</h4>
 			<div class="folder-input-row">
 				<input
@@ -9,8 +9,17 @@
 					type="text"
 					class="folder-input"
 					:placeholder="t('learning', '/Kursmaterial')"
+					:aria-label="t('learning', 'Materialordner')"
 					:disabled="settingFolder" />
 				<button
+					type="button"
+					class="material-btn pick-folder-btn"
+					:disabled="settingFolder"
+					@click="pickFolder">
+					{{ t('learning', 'Ordner auswählen…') }}
+				</button>
+				<button
+					type="button"
 					class="primary material-btn"
 					:disabled="!folderInput.trim() || settingFolder"
 					@click="setFolder">
@@ -19,6 +28,9 @@
 			</div>
 			<p v-if="materialFolder" class="current-folder">
 				{{ t('learning', 'Aktueller Ordner:') }} <strong>{{ materialFolder }}</strong>
+			</p>
+			<p class="folder-visibility-hint">
+				{{ t('learning', 'Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen.') }}
 			</p>
 		</div>
 
@@ -32,8 +44,13 @@
 			<p>{{ t('learning', 'Kein Materialordner verknüpft. Bitte einen Nextcloud-Ordner auswählen.') }}</p>
 		</div>
 
-		<div v-else-if="materialFolder && documents.length === 0 && !loading" class="empty-state">
+		<div v-else-if="managesFiles && materialFolder && documents.length === 0 && !loading" class="empty-state">
 			<p>{{ t('learning', 'Keine Dokumente gefunden. Laden Sie PDF- oder Markdown-Dateien in den Ordner hoch und klicken Sie "Ordner scannen".') }}</p>
+		</div>
+
+		<!-- Learners can neither upload nor scan: no instruction meant for the course owner. -->
+		<div v-else-if="materialFolder && documents.length === 0 && !loading" class="empty-state learner-empty-state">
+			<p>{{ t('learning', 'Für diesen Kurs wurden noch keine Lernmaterialien freigegeben.') }}</p>
 		</div>
 
 		<!-- Loading -->
@@ -42,16 +59,30 @@
 			<p>{{ t('learning', 'Lade Materialien...') }}</p>
 		</div>
 
-		<!-- Action Buttons (instructor only) -->
-		<div v-if="isInstructor && materialFolder" class="material-actions">
+		<!-- Text extraction only feeds the AI assistant (GitHub #35): say so, and say it up front
+			when this server cannot read PDFs at all. -->
+		<template v-if="canExtract && materialFolder">
+			<p class="extract-explanation">
+				{{ t('learning', 'Extrahieren liest den Text der Dateien, damit VirtuProf (KI-Assistent) das Material als Kurskontext nutzen kann. Zum Lesen brauchen Lernende das nicht.') }}
+			</p>
+			<p v-if="pdfTextExtraction === false" class="pdf-unavailable-note" role="status">
+				{{ t('learning', 'PDF-Textextraktion ist auf diesem Server nicht verfügbar (pdftotext fehlt). Lernende können die Dateien trotzdem öffnen.') }}
+			</p>
+		</template>
+
+		<!-- Action Buttons (course owner only) -->
+		<div v-if="managesFiles && materialFolder" class="material-actions">
 			<button
-				class="material-btn"
+				type="button"
+				class="material-btn scan-btn"
 				:disabled="scanning"
 				@click="scanFolder">
 				{{ scanning ? t('learning', 'Scanne...') : t('learning', 'Ordner scannen') }}
 			</button>
 			<button
-				class="material-btn primary"
+				v-if="canExtract"
+				type="button"
+				class="material-btn primary extract-all-btn"
 				:disabled="extractingAll || !hasExtractableDocuments"
 				@click="extractAll">
 				{{ extractingAll ? t('learning', 'Extrahiere alle...') : t('learning', 'Alle extrahieren') }}
@@ -65,21 +96,36 @@
 					<tr>
 						<th>{{ t('learning', 'Dateiname') }}</th>
 						<th>{{ t('learning', 'Typ') }}</th>
-						<th>{{ t('learning', 'Status') }}</th>
+						<th v-if="showExtractionStatus">
+							{{ t('learning', 'Status') }}
+						</th>
 						<th>{{ t('learning', 'Größe') }}</th>
 						<th>{{ t('learning', 'Hochgeladen') }}</th>
-						<th v-if="isInstructor">{{ t('learning', 'Aktion') }}</th>
+						<th v-if="canExtract">
+							{{ t('learning', 'Aktion') }}
+						</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-for="doc in documents" :key="doc.id">
-						<td class="cell-filename">{{ doc.file_name }}</td>
+						<td class="cell-filename">
+							<a
+								v-if="doc.downloadable"
+								class="material-file-link"
+								:href="downloadUrl(doc)"
+								target="_blank"
+								rel="noopener noreferrer">{{ doc.file_name }}</a>
+							<span
+								v-else
+								class="material-file-unavailable"
+								:title="t('learning', 'Diese Datei liegt nicht mehr im Materialordner.')">{{ doc.file_name }}</span>
+						</td>
 						<td>
 							<span class="type-badge" :class="'type-' + doc.file_type">
 								{{ doc.file_type === 'pdf' ? 'PDF' : 'Markdown' }}
 							</span>
 						</td>
-						<td>
+						<td v-if="showExtractionStatus">
 							<span
 								class="status-badge"
 								:class="'status-' + doc.status"
@@ -89,11 +135,13 @@
 						</td>
 						<td>{{ formatFileSize(doc.file_size) }}</td>
 						<td>{{ formatDate(doc.created_at) }}</td>
-						<td v-if="isInstructor">
+						<td v-if="canExtract">
 							<button
 								v-if="doc.status === 'uploaded'"
-								class="material-btn small"
-								:disabled="extracting[doc.id]"
+								type="button"
+								class="material-btn small extract-btn"
+								:disabled="extracting[doc.id] || !isExtractable(doc)"
+								:title="isExtractable(doc) ? '' : t('learning', 'Ohne pdftotext nicht möglich')"
 								@click="extractDocument(doc)">
 								{{ extracting[doc.id] ? t('learning', 'Extrahiere...') : t('learning', 'Extrahieren') }}
 							</button>
@@ -109,6 +157,8 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { getFilePickerBuilder } from '@nextcloud/dialogs'
+import { parseDocumentsResponse } from '../utils/courseMaterials.js'
 
 export default {
 	name: 'CourseMaterials',
@@ -119,6 +169,12 @@ export default {
 			required: true,
 		},
 		isInstructor: {
+			type: Boolean,
+			default: false,
+		},
+		// GitHub #35: the admin's AI switch. Text extraction only feeds the AI assistant, so
+		// without it there is nothing to extract for.
+		aiEnabled: {
 			type: Boolean,
 			default: false,
 		},
@@ -135,12 +191,29 @@ export default {
 			settingFolder: false,
 			extracting: {},
 			errorMessage: null,
+			// null until the server said so (older server, failed read)
+			canManageFiles: null,
+			pdfTextExtraction: null,
 		}
 	},
 
 	computed: {
+		// Folder, scan and extraction run in the course owner's home; a co-instructor gets a 403
+		// there. The server does not know about the student view, so the instructor role of this
+		// view (false while the owner previews the course as a learner) always has a say; without
+		// an answer from the server it alone decides, as before.
+		managesFiles() {
+			return this.isInstructor && this.canManageFiles !== false
+		},
+		canExtract() {
+			return this.managesFiles && this.aiEnabled
+		},
+		// The status only describes the text extraction for the AI assistant.
+		showExtractionStatus() {
+			return this.isInstructor && this.aiEnabled
+		},
 		hasExtractableDocuments() {
-			return this.documents.some(doc => doc.status === 'uploaded')
+			return this.documents.some(doc => doc.status === 'uploaded' && this.isExtractable(doc))
 		},
 	},
 
@@ -180,10 +253,63 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/documents', { courseId: this.courseId })
 				const response = await axios.get(url)
-				this.documents = response.data || []
+				const parsed = parseDocumentsResponse(response.data)
+				this.documents = parsed.documents
+				this.canManageFiles = parsed.canManageFiles
+				this.pdfTextExtraction = parsed.pdfTextExtraction
 			} catch (e) {
 				console.error('Failed to load documents', e)
 			}
+		},
+
+		downloadUrl(doc) {
+			return generateUrl('/apps/learning/api/courses/{courseId}/documents/{documentId}/download', {
+				courseId: this.courseId,
+				documentId: doc.id,
+			})
+		},
+
+		isExtractable(doc) {
+			return doc.file_type !== 'pdf' || this.pdfTextExtraction !== false
+		},
+
+		// GitHub #35: choose the folder in the Nextcloud file picker instead of typing a path.
+		// The text field stays for manual entry.
+		async pickFolder() {
+			let chosen = null
+			try {
+				const picker = getFilePickerBuilder(t('learning', 'Materialordner auswählen'))
+					.setMultiSelect(false)
+					.allowDirectories(true)
+					.setMimeTypeFilter(['httpd/unix-directory'])
+					.setButtonFactory((selected, currentPath) => {
+						const target = selected[0]?.path || currentPath
+						return [{
+							label: t('learning', 'Diesen Ordner verknüpfen'),
+							variant: 'primary',
+							// the whole home folder is no material folder
+							disabled: !target || target === '/',
+							callback: (nodes) => {
+								chosen = nodes[0]?.path || currentPath
+							},
+						}]
+					})
+					.build()
+				await picker.pickNodes()
+			} catch (e) {
+				// closed without choosing
+				return
+			}
+			if (!chosen || chosen === '/') {
+				return
+			}
+			// the picker spells '/Kurs'; a folder typed as 'Kurs' is the same one
+			const trimSlashes = (path) => String(path || '').replace(/^\/+|\/+$/g, '')
+			if (trimSlashes(chosen) === trimSlashes(this.materialFolder)) {
+				return
+			}
+			this.folderInput = chosen
+			await this.setFolder()
 		},
 
 		async setFolder() {
@@ -192,8 +318,10 @@ export default {
 			this.errorMessage = null
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/material-folder', { courseId: this.courseId })
-				await axios.post(url, { folder: this.folderInput.trim() })
-				this.materialFolder = this.folderInput.trim()
+				const response = await axios.post(url, { folder: this.folderInput.trim() })
+				// the server stores one spelling of the path (GitHub #35)
+				this.materialFolder = response.data?.folder || this.folderInput.trim()
+				this.folderInput = this.materialFolder
 				await this.scanFolder()
 			} catch (e) {
 				this.errorMessage = e.response?.data?.error || t('learning', 'Ordner konnte nicht verknüpft werden. Prüfen Sie ob der Pfad existiert.')
@@ -304,6 +432,12 @@ export default {
 	font-size: 14px;
 }
 
+.folder-visibility-hint {
+	margin-top: 4px;
+	font-size: 13px;
+	color: var(--color-text-maxcontrast, #767676);
+}
+
 .current-folder {
 	margin-top: 8px;
 	font-size: 13px;
@@ -384,6 +518,30 @@ export default {
 .cell-filename {
 	word-break: break-all;
 	max-width: 300px;
+}
+
+.material-file-link {
+	color: var(--color-primary-element, #00679e);
+	text-decoration: underline;
+}
+
+.material-file-unavailable {
+	color: var(--color-text-maxcontrast, #767676);
+	cursor: help;
+}
+
+.extract-explanation,
+.pdf-unavailable-note {
+	margin: 0 0 12px 0;
+	font-size: 13px;
+	color: var(--color-text-maxcontrast, #767676);
+}
+
+.pdf-unavailable-note {
+	padding: 8px 12px;
+	border-left: 4px solid var(--color-warning, #e9a700);
+	background: var(--color-background-hover, #f5f5f5);
+	color: var(--color-main-text, #222);
 }
 
 .type-badge {

@@ -182,3 +182,26 @@ describe('AdminSettings certificate issuer initialisation', () => {
 		expect(axios.post).not.toHaveBeenCalled()
 	})
 })
+
+// GitHub #35: one line in the admin settings says whether course materials can be read as text.
+describe('AdminSettings pdftotext hint', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('maps pdf_text_extraction_available; an older server leaves it unknown (no hint)', async () => {
+		mockAdminPayload({ daily_challenge_enabled: 'yes', pdf_text_extraction_available: false })
+		const instance = createInstance()
+		expect(instance.pdfTextExtractionAvailable).toBe(null)
+		await instance.load()
+		expect(instance.pdfTextExtractionAvailable).toBe(false)
+
+		mockAdminPayload({ daily_challenge_enabled: 'yes', pdf_text_extraction_available: true })
+		await instance.load()
+		expect(instance.pdfTextExtractionAvailable).toBe(true)
+
+		mockAdminPayload({ daily_challenge_enabled: 'yes' })
+		await instance.load()
+		expect(instance.pdfTextExtractionAvailable).toBe(null)
+	})
+})

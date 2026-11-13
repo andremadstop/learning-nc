@@ -1061,7 +1061,6 @@
         "Mastery Progress": "Lernfortschritt",
         "Mastery, Rangliste, XP, Streaks und Badges.": "Mastery, Rangliste, XP, Streaks und Badges.",
         "Mastery, leaderboard, XP, streaks and badges.": "Meisterschaft, Bestenliste, XP, Streaks und Abzeichen.",
-        "Materialien": "Materialien",
         "Materials": "Materialien",
         "Max import file size (MB)": "Maximale Größe der Importdatei (MB)",
         "Maximale Server": "Maximale Server",
@@ -3342,6 +3341,17 @@
         "Wartungskarte im Lern-Dashboard anzeigen": "Wartungskarte im Lern-Dashboard anzeigen",
         "Leave these empty unless this pool mirrors one chapter of a book or curriculum. A pool needs nothing but a name. Fill them in when you split a textbook into one pool per chapter: the keys are short internal identifiers you choose yourself, the titles are what people read, and the number is shown before the chapter title.": "Lass diese Felder leer, sofern dieser Pool nicht ein Kapitel eines Buches oder Lehrplans abbildet. Ein Pool braucht nichts außer einem Namen. Fülle sie aus, wenn du ein Lehrbuch in einen Pool pro Kapitel aufteilst: Die Schlüssel sind kurze interne Kennungen, die du selbst wählst, die Titel sind das, was die Leute lesen, und die Nummer wird vor dem Kapiteltitel angezeigt.",
         "Die Kapitel-Kennung „{ref}“ kommt mehrfach vor. Jede Zeile braucht eine eigene Kennung.": "Die Kapitel-Kennung „{ref}“ kommt mehrfach vor. Jede Zeile braucht eine eigene Kennung.",
-        "Im Kurs \"{title}\" sind keine Werkzeuge freigeschaltet.": "Im Kurs \"{title}\" sind keine Werkzeuge freigeschaltet."
+        "Im Kurs \"{title}\" sind keine Werkzeuge freigeschaltet.": "Im Kurs \"{title}\" sind keine Werkzeuge freigeschaltet.",
+        "Lernmaterial": "Lernmaterial",
+        "Ordner auswählen…": "Ordner auswählen…",
+        "Materialordner auswählen": "Materialordner auswählen",
+        "Diesen Ordner verknüpfen": "Diesen Ordner verknüpfen",
+        "Extrahieren liest den Text der Dateien, damit VirtuProf (KI-Assistent) das Material als Kurskontext nutzen kann. Zum Lesen brauchen Lernende das nicht.": "Extrahieren liest den Text der Dateien, damit VirtuProf (KI-Assistent) das Material als Kurskontext nutzen kann. Zum Lesen brauchen Lernende das nicht.",
+        "PDF-Textextraktion ist auf diesem Server nicht verfügbar (pdftotext fehlt). Lernende können die Dateien trotzdem öffnen.": "PDF-Textextraktion ist auf diesem Server nicht verfügbar (pdftotext fehlt). Lernende können die Dateien trotzdem öffnen.",
+        "Ohne pdftotext nicht möglich": "Ohne pdftotext nicht möglich",
+        "Diese Datei liegt nicht mehr im Materialordner.": "Diese Datei liegt nicht mehr im Materialordner.",
+        "PDF text extraction is not available on this server (pdftotext missing). VirtuProf can only use Markdown course materials; students can still open every file.": "PDF-Textextraktion ist auf diesem Server nicht verfügbar (pdftotext fehlt). VirtuProf kann nur Markdown-Kursmaterial nutzen; Lernende können trotzdem jede Datei öffnen.",
+        "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben.": "Für diesen Kurs wurden noch keine Lernmaterialien freigegeben.",
+        "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen.": "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen."
     }
 }

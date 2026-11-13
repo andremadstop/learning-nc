@@ -69,7 +69,7 @@
 		</div>
 
 		<!-- Schwarm (student only) -->
-		<div v-if="currentSubTab === 'schwarm' && !isInstructor" class="tab-content">
+		<div v-if="currentSubTab === 'schwarm' && !isInstructor && aiEnabled" class="tab-content">
 			<StudentKnowledgeContribute :course-id="courseId" />
 		</div>
 	</div>
@@ -113,6 +113,13 @@ export default {
 			type: String,
 			default: '',
 		},
+		// GitHub #35: the swarm feeds the AI assistant's course knowledge, and its moderation lives
+		// in the knowledge tab, which is left out while the admin has AI switched off. Without AI a
+		// contribution would wait in a queue nobody can open.
+		aiEnabled: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	data() {
@@ -141,11 +148,14 @@ export default {
 					{ id: 'requests', label: t('learning', 'Anfragen') },
 				]
 			}
-			return [
+			const tabs = [
 				{ id: 'feed', label: t('learning', 'Feed') },
 				{ id: 'buddies', label: t('learning', 'Lernpartner') },
-				{ id: 'schwarm', label: t('learning', 'Schwarm') },
 			]
+			if (this.aiEnabled) {
+				tabs.push({ id: 'schwarm', label: t('learning', 'Schwarm') })
+			}
+			return tabs
 		},
 	},
 

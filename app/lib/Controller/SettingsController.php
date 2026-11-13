@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\AuditCheckpointService;
+use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
@@ -90,6 +91,8 @@ class SettingsController extends Controller {
                 ? $connection->model
                 : $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
             'ai_enabled' => $connection->enabled && $connection->provider !== 'disabled' ? 'yes' : 'no',
+            // GitHub #35: course materials can only feed the AI assistant from PDFs with pdftotext
+            'pdf_text_extraction_available' => DocumentService::detectPdfTextExtraction(),
             // Certificates (v5.0.0): false on a fresh install until the admin runs
             // `occ learning:cert:init-issuer`. Drives the admin-settings setup banner.
             'cert_issuer_ready' => $this->keyService->hasActiveKey(),
@@ -337,8 +340,18 @@ class SettingsController extends Controller {
      * @NoAdminRequired
      */
     public function getTools(): DataResponse {
+        // GitHub #35: the course view also needs the admin's AI switch, to leave out what only
+        // serves the AI assistant (knowledge import, text extraction of materials). Same
+        // predicate as getAdmin(). A read failure hides those parts rather than the page.
+        try {
+            $connection = $this->connectionStore->load();
+            $aiEnabled = $connection->enabled && $connection->provider !== 'disabled';
+        } catch (\Throwable $e) {
+            $aiEnabled = false;
+        }
         return new DataResponse([
             'enabled_tools' => $this->getConfiguredTools(),
+            'ai_enabled' => $aiEnabled,
         ]);
     }
 

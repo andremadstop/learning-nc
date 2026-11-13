@@ -676,11 +676,22 @@ namespace OCP\AppFramework\Http {
             protected bool $throttled = false;
             /** @var array<string, mixed> */
             protected array $throttleMetadata = [];
+            /** @var array<string, string> */
+            protected array $headers = [];
+            // GitHub #35: signature of OCP\AppFramework\Http\Response::__construct (NC 33), so a
+            // streamed response built as `new class(...) extends Response` carries its headers.
+            /** @param array<string, string> $headers */
+            public function __construct(int $status = 200, array $headers = []) {
+                $this->status = $status;
+                $this->headers = $headers;
+            }
             public function setStatus(int $status): self { $this->status = $status; return $this; }
             public function getStatus(): int { return $this->status; }
             public function render() { return ''; }
+            /** @return $this */
+            public function addHeader($name, $value) { $this->headers[(string)$name] = (string)$value; return $this; }
             /** @return array<string, string> */
-            public function getHeaders(): array { return []; }
+            public function getHeaders(): array { return $this->headers; }
             /** @param array<string, mixed> $metadata */
             public function throttle(array $metadata = []): self {
                 $this->throttled = true;
@@ -698,6 +709,24 @@ namespace OCP\AppFramework\Http {
                 }
                 return $this->csp;
             }
+        }
+    }
+
+    // GitHub #35: streamed responses (DocumentController::download). Signatures copied from NC 33
+    // lib/public/AppFramework/Http/IOutput.php and ICallbackResponse.php.
+    if (!interface_exists(IOutput::class)) {
+        interface IOutput {
+            public function setOutput($out);
+            public function setReadfile($path);
+            public function setHeader($header);
+            public function getHttpResponseCode();
+            public function setHttpResponseCode($code);
+            public function setCookie($name, $value, $expire, $path, $domain, $secure, $httpOnly, $sameSite = 'Lax');
+        }
+    }
+    if (!interface_exists(ICallbackResponse::class)) {
+        interface ICallbackResponse {
+            public function callback(IOutput $output);
         }
     }
 
@@ -1568,6 +1597,12 @@ namespace OCP\Files {
             public function getName();
 
             public function getSize($includeMounts = true);
+
+            // GitHub #35: the material download refuses unreadable and view-only shared files
+            // (NC 33 lib/public/Files/Node.php).
+            public function getStorage();
+
+            public function isReadable();
         }
     }
     if (!interface_exists(Folder::class)) {
@@ -1577,8 +1612,34 @@ namespace OCP\Files {
             public function getDirectoryListing();
         }
     }
+    // GitHub #35: the material download reads a file node (NC 33 lib/public/Files/File.php; the
+    // mime type is declared on FileInfo there).
+    if (!interface_exists(File::class)) {
+        interface File extends Node {
+            public function getContent();
+
+            public function fopen($mode);
+
+            public function getMimeType();
+        }
+    }
     if (!class_exists(NotFoundException::class)) {
         class NotFoundException extends \Exception {
+        }
+    }
+}
+
+namespace OCP\Files\Storage {
+    // GitHub #35: view-only shares (NC 33 lib/public/Files/Storage/{IStorage,ISharedStorage}.php,
+    // subset).
+    if (!interface_exists(IStorage::class)) {
+        interface IStorage {
+            public function instanceOfStorage(string $class);
+        }
+    }
+    if (!interface_exists(ISharedStorage::class)) {
+        interface ISharedStorage extends IStorage {
+            public function getShare(): \OCP\Share\IShare;
         }
     }
 }
@@ -1748,6 +1809,14 @@ namespace OCP\Share {
             public const TYPE_USER = 0;
             public const TYPE_GROUP = 1;
             public const TYPE_EMAIL = 4;
+
+            // GitHub #35: the "download" permission of a view-only share (NC 33 IShare.php).
+            public function getAttributes(): ?IAttributes;
+        }
+    }
+    if (!interface_exists(IAttributes::class)) {
+        interface IAttributes {
+            public function getAttribute(string $scope, string $key): mixed;
         }
     }
 

@@ -406,8 +406,10 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toEqual(['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation'])
 		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam'])
 		expect(instance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress'])
-		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies', 'schwarm'])
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies'])
 		expect(instance.wettbewerbLeafTabs).toEqual(['leaderboard', 'league', 'arena'])
+		instance.adminAiEnabled = true
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies', 'schwarm'])
 	})
 
 	it('a global student enrolled as co-instructor keeps the instructor tabs (the membership decides)', () => {
@@ -415,6 +417,8 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 
 		expect(instance.actsAsInstructor).toBe(true)
 		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toContain('verwaltung')
+		expect(instance.lernraumLeafTabs).toEqual(['pools', 'curriculum', 'materials'])
+		instance.adminAiEnabled = true
 		expect(instance.lernraumLeafTabs).toEqual(['pools', 'curriculum', 'materials', 'knowledge'])
 	})
 
@@ -433,6 +437,28 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.currentTab).toBe('training')
 		expect(instance.activeMegaTab).toBe('lernraum')
 		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/my-progress')
+	})
+
+	// GitHub #35: the knowledge tab follows the admin's AI switch from GET /api/settings/tools;
+	// a failed read hides it rather than offering it on a server where AI may be off.
+	it('reads the AI switch with the tool settings; a failed read counts as off', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		const instance = createInstance({ course: ownCourse(), userRole: 'instructor' })
+
+		axios.get.mockImplementation(() => Promise.resolve({ data: { enabled_tools: null, ai_enabled: true } }))
+		await instance.fetchAdminEnabledTools()
+		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/settings/tools')
+		expect(instance.adminAiEnabled).toBe(true)
+		expect(instance.lernraumLeafTabs).toContain('knowledge')
+
+		axios.get.mockImplementation(() => Promise.reject(new Error('500')))
+		await instance.fetchAdminEnabledTools()
+		expect(instance.adminAiEnabled).toBe(false)
+		expect(instance.lernraumLeafTabs).not.toContain('knowledge')
+
+		axios.get.mockImplementation(() => Promise.resolve({ data: { enabled_tools: null } }))
+		await instance.fetchAdminEnabledTools()
+		expect(instance.adminAiEnabled).toBe(false)
 	})
 
 	it('a course with Training switched off does not route learners to Training', () => {

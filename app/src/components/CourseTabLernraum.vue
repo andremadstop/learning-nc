@@ -386,10 +386,10 @@
 		</div>
 
 		<div v-else-if="currentSubTab === 'materials'" class="tab-content materials-section">
-			<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
+			<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" :ai-enabled="aiEnabled" />
 		</div>
 
-		<div v-else-if="currentSubTab === 'knowledge' && isInstructor" class="tab-content knowledge-section">
+		<div v-else-if="currentSubTab === 'knowledge' && isInstructor && aiEnabled" class="tab-content knowledge-section">
 			<CourseKnowledgeImport :course-id="courseId" :is-instructor="isInstructor" />
 			<KnowledgeModeration :course-id="courseId" @pending-count="handleKnowledgePendingCount" />
 		</div>
@@ -649,6 +649,12 @@ export default {
 			type: Array,
 			default: null,
 		},
+		// GitHub #35: the admin's AI switch. Knowledge import and text extraction only feed the
+		// AI assistant and are left out when it is off.
+		aiEnabled: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	data() {
@@ -706,7 +712,7 @@ export default {
 				pools: t('learning', 'Pools'),
 				tools: t('learning', 'Werkzeuge'),
 				curriculum: t('learning', 'Themen'),
-				materials: t('learning', 'Materialien'),
+				materials: t('learning', 'Lernmaterial'),
 				knowledge: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : ''),
 				videos: t('learning', 'Pflichtinhalte'),
 				training: t('learning', 'Training'),
@@ -718,6 +724,7 @@ export default {
 				actsAsInstructor: this.isInstructor,
 				hasCourseTools: this.courseToolTabs.length > 0,
 				hasVideos: this.courseVideos.length > 0,
+				aiEnabled: this.aiEnabled,
 			}).map((id) => ({ id, label: labels[id] }))
 		},
 		selectedLearningPoolQuestionCount() {

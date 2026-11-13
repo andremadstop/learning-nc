@@ -185,6 +185,10 @@
           </small>
         </div>
 
+        <NcNoteCard v-if="pdfTextExtractionAvailable === false" type="warning" class="pdf-extraction-hint">
+          {{ t('learning', 'PDF text extraction is not available on this server (pdftotext missing). VirtuProf can only use Markdown course materials; students can still open every file.') }}
+        </NcNoteCard>
+
         <div v-if="showGeminiConfig" class="field-row">
           <label for="gemini-api-key">{{ t('learning', 'Gemini API Key') }}</label>
           <input
@@ -398,6 +402,8 @@ export default {
       error: '',
       saved: false,
       certIssuerReady: true,
+      // GitHub #35: null = not reported by the server; false shows the pdftotext hint
+      pdfTextExtractionAvailable: null,
       certIssuerInitializing: false,
       certIssuerError: '',
       certIssuerJustCreated: false,
@@ -504,6 +510,10 @@ export default {
         this.form.aiOllamaModel = (data.ai_ollama_model || 'llama3').trim() || 'llama3'
         this.form.aiEnabled = this.form.aiProvider !== 'disabled' && (data.ai_enabled || 'no') === 'yes'
         this.form.geminiApiKeySet = data.gemini_api_key_set === true
+        // GitHub #35: course materials feed the AI assistant only if PDFs can be read as text
+        this.pdfTextExtractionAvailable = typeof data.pdf_text_extraction_available === 'boolean'
+          ? data.pdf_text_extraction_available
+          : null
         this.form.geminiApiKey = ''
         // Certificates (v5.0.0): banner nudges fresh installs to init the signing key.
         this.certIssuerReady = data.cert_issuer_ready !== false

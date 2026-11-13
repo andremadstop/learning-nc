@@ -331,6 +331,8 @@ return [
         ['name' => 'document#index',       'url' => '/api/courses/{courseId}/documents',                     'verb' => 'GET'],
         ['name' => 'document#extract',     'url' => '/api/courses/{courseId}/documents/{documentId}/extract', 'verb' => 'POST'],
         ['name' => 'document#extractAll',  'url' => '/api/courses/{courseId}/documents/extract-all',         'verb' => 'POST'],
+        // GitHub #35: course members open a material file (only from the course's material folder)
+        ['name' => 'document#download',    'url' => '/api/courses/{courseId}/documents/{documentId}/download', 'verb' => 'GET'],
 
         // RAG Knowledge Import (Instructor)
         ['name' => 'rag_import#importText',     'url' => '/api/courses/{courseId}/knowledge/import-text',  'verb' => 'POST'],
