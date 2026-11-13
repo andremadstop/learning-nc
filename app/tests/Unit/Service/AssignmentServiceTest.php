@@ -314,4 +314,23 @@ class AssignmentServiceTest extends TestCase {
         $this->assertContains($now - 14 * 86400, $paramValues,
             'expires_at cutoff must honor the recert_grace_days config window');
     }
+
+    /**
+     * GitHub #35: a recertification counts only exams completed since its period opened
+     * (PassCriteriaService::issuanceWindow). The period start must be read from the table; if the
+     * column dropped out of the select, the window would fall to 0 and last year's exams would
+     * renew the certificate again.
+     */
+    public function testStatesCarryThePeriodStart(): void {
+        $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: [
+            ['subject_id' => 'alice', 'status' => 'assigned', 'due_date' => null, 'assigned_at' => '1800000000'],
+        ]));
+        $service = new AssignmentService(new FakeDbConnection([$builder]), $this->createMock(IGroupManager::class),
+            $this->createMock(AuditService::class), $this->createMock(\OCP\IConfig::class), $this->createMock(\Psr\Log\LoggerInterface::class));
+
+        $states = $service->getStatesForCourseAndUsers(5, ['alice']);
+
+        $this->assertContains('assigned_at', $builder->selects, 'the period start is read from the table');
+        $this->assertSame(['status' => 'assigned', 'due_date' => null, 'assigned_at' => 1800000000], $states['alice']);
+    }
 }
