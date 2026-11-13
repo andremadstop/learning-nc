@@ -167,7 +167,7 @@ Exported files are roundtrip-compatible — you can re-import them into any pool
 4. Add students by Nextcloud username
 5. Track student progress from the **Instructor Dashboard**
 
-Students can self-enroll in courses and see their progress across all assigned pools.
+Students see the courses an instructor enrolled them in and their progress across all assigned pools; there is no self-enrollment.
 
 ### Sharing Pools
 
