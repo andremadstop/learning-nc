@@ -65,13 +65,16 @@ class PassCriteriaService {
 
         $threshold = $course->getCertPassPercent() ?? 80;
         $requiredPoolIds = $this->resolveRequiredPoolIds($courseId, $course->getCertRequiredPoolIds());
-        $rule = $this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, $this->courseSummaryService->getPoolTitles($requiredPoolIds));
-        $passed = $rule['passed'];
-        $score = $rule['score'];
-        $poolsMastered = $rule['pools_passed'];
 
         // Read once: feeds the union guard (Branch A) and the certificate shown to the learner.
         $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+        // Read BEFORE the rule: in an open recertification period only that period's exams count.
+        $window = $this->issuanceWindow($userId, $courseId, $certificate);
+
+        $rule = $this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, $this->courseSummaryService->getPoolTitles($requiredPoolIds), $window['completed_after']);
+        $passed = $rule['passed'];
+        $score = $rule['score'];
+        $poolsMastered = $rule['pools_passed'];
         $issuanceError = null;
         $passedAt = null;
 
@@ -80,7 +83,7 @@ class PassCriteriaService {
                 // Read-only for instructors of the course: no certificate, no COURSE_PASSED, no
                 // markPassed. Reported as a reason, so no screen can present it as issued.
                 $issuanceError = PassResult::ISSUANCE_INSTRUCTOR_OF_COURSE;
-            } elseif ($this->mayIssue($userId, $courseId, $certificate)) {
+            } elseif ($window['may_issue']) {
                 // RECERT-05 union guard: only attempt issuance when the student is eligible.
                 // Branch A: never issued before (ASSIGN-04: self-learner path, no assignment row).
                 // Branch B: open per-user recertification period with an issuable status.
@@ -175,17 +178,18 @@ class PassCriteriaService {
      * based on is the LOWEST best-per-pool score — every pool reached at least that — and null
      * while any required pool has no counting exam yet.
      * No required pools: the best counting exam of the course decides.
+     * $completedAfter (issuanceWindow()) limits both cases to exams completed at or after it.
      *
      * @param list<int> $requiredPoolIds from resolveRequiredPoolIds()
      * @param array<int, string> $titles pool id => name, for the listing only
      * @return array{passed: bool, score: int|null, pools_passed: bool, requirement: string, pools: list<array{pool_id: int, title: string|null, best_score: int|null, passed: bool}>}
      */
-    private function assessRule(string $userId, int $courseId, array $requiredPoolIds, int $threshold, array $titles): array {
+    private function assessRule(string $userId, int $courseId, array $requiredPoolIds, int $threshold, array $titles, ?int $completedAfter = null): array {
         if ($requiredPoolIds === []) {
             // Guess exclusion is structural: exam-mode sessions have no "Guessed" button (that
             // self-rating lives only in the Leitner/FSRS UI), so a guess can never inflate the
             // exam score. No is_guessed column is needed or queried here.
-            $score = $this->courseSummaryService->getExamScore($userId, $courseId);
+            $score = $this->courseSummaryService->getExamScore($userId, $courseId, $completedAfter);
             return [
                 'passed' => $score !== null && $score >= $threshold,
                 'score' => $score,
@@ -195,7 +199,7 @@ class PassCriteriaService {
             ];
         }
 
-        $best = $this->courseSummaryService->getBestExamScoresByPool($userId, $courseId, $requiredPoolIds);
+        $best = $this->courseSummaryService->getBestExamScoresByPool($userId, $courseId, $requiredPoolIds, $completedAfter);
         $pools = [];
         $allPassed = true;
         $lowest = null;
@@ -277,11 +281,14 @@ class PassCriteriaService {
             if ($this->isInstructorOfCourse($course, $courseId, $userId)) {
                 continue;
             }
-            if (!$this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, [])['passed']) {
+            // The window first, as in evaluate(): in an open recertification period an exam of
+            // an earlier period does not make the learner "passed without certificate".
+            $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+            $window = $this->issuanceWindow($userId, $courseId, $certificate);
+            if (!$window['may_issue']) {
                 continue;
             }
-            $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
-            if (!$this->mayIssue($userId, $courseId, $certificate)) {
+            if (!$this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, [], $window['completed_after'])['passed']) {
                 continue;
             }
             $described = $this->describeCertificate($certificate);
@@ -357,18 +364,29 @@ class PassCriteriaService {
      *
      * SC2: after a punitive revoke (revoked=true, active_idem_key=NULL) with NO open period
      * this returns false — do NOT auto-reissue after a punitive revoke.
+     *
+     * completed_after (GitHub #35): in Branch B only exams completed since the period opened
+     * (assigned_at) count. Without it, the exam that earned the previous certificate renewed it:
+     * once the daily RecertPeriodCloseJob opened the next period, merely opening the completion
+     * tab issued a new certificate for another validity term, with no new exam. The same holds
+     * for revoke-and-reassign: exams from before the revoke must not reissue. null = no limit
+     * (Branch A, or no issuance possible at all).
+     *
+     * @return array{may_issue: bool, completed_after: int|null}
      */
-    private function mayIssue(string $userId, int $courseId, ?Certificate $newestCertificate): bool {
+    private function issuanceWindow(string $userId, int $courseId, ?Certificate $newestCertificate): array {
         // Branch A: student has no certificate history at all — always allow.
         // $newestCertificate is the UNFILTERED findByUserAndCourse() row read by evaluate().
         if ($newestCertificate === null) {
-            return true;
+            return ['may_issue' => true, 'completed_after' => null];
         }
         // Branch B: cert exists, but there is an open recertification period
         $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId]);
         $state = $states[$userId] ?? null;
-        return $state !== null
-            && in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true);
+        if ($state === null || !in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true)) {
+            return ['may_issue' => false, 'completed_after' => null];
+        }
+        return ['may_issue' => true, 'completed_after' => (int)($state['assigned_at'] ?? 0)];
     }
 
     /**

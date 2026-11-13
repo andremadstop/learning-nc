@@ -166,4 +166,35 @@ class CourseSummaryServiceTest extends TestCase {
         $this->assertSame('in', $idFilter['type']);
         $this->assertSame([3, 9], $idFilter['right']['value'] ?? null);
     }
+
+    /**
+     * GitHub #35: a recertification period counts only its own exams. Both pass-rule queries must
+     * apply completed_at >= the period start when given one, and no such bound otherwise.
+     */
+    public function testExamScoreQueriesApplyTheCompletedAfterWindow(): void {
+        $find = static function (FakeQueryBuilder $builder): ?array {
+            foreach (array_merge($builder->whereCalls, $builder->andWhereCalls) as $c) {
+                if (($c['type'] ?? null) === 'gte' && ($c['left'] ?? null) === 'completed_at') {
+                    return $c;
+                }
+            }
+            return null;
+        };
+
+        $perPool = new FakeQueryBuilder(new FakeResult(fetchQueue: []));
+        $any = new FakeQueryBuilder(new FakeResult(fetchQueue: []));
+        $service = $this->makeService(new FakeDbConnection([$perPool, $any]));
+        $service->getBestExamScoresByPool(self::USER, self::COURSE_ID, [3], 1_800_000_000);
+        $service->getExamScore(self::USER, self::COURSE_ID, 1_800_000_000);
+        $this->assertSame(1_800_000_000, $find($perPool)['right']['value'] ?? null, 'per-pool rule bounded by the period start');
+        $this->assertSame(1_800_000_000, $find($any)['right']['value'] ?? null, 'any-exam rule bounded by the period start');
+
+        $perPool = new FakeQueryBuilder(new FakeResult(fetchQueue: []));
+        $any = new FakeQueryBuilder(new FakeResult(fetchQueue: []));
+        $service = $this->makeService(new FakeDbConnection([$perPool, $any]));
+        $service->getBestExamScoresByPool(self::USER, self::COURSE_ID, [3]);
+        $service->getExamScore(self::USER, self::COURSE_ID);
+        $this->assertNull($find($perPool), 'no window, no bound');
+        $this->assertNull($find($any));
+    }
 }

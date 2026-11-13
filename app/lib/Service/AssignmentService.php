@@ -327,7 +327,10 @@ class AssignmentService {
      * Chunked to 999 per PARAM_STR_ARRAY limits.
      *
      * @param list<string> $userIds
-     * @return array<string, array{status: string, due_date: int|null}> keyed by subject_id (user UID)
+     * assigned_at is when the period opened. A recertification only counts exams completed from
+     * then on (PassCriteriaService), so an exam from an earlier period never renews a certificate.
+     *
+     * @return array<string, array{status: string, due_date: int|null, assigned_at: int}> keyed by subject_id (user UID)
      */
     public function getStatesForCourseAndUsers(int $courseId, array $userIds): array {
         if ($userIds === []) {
@@ -336,7 +339,7 @@ class AssignmentService {
         $stateMap = [];
         foreach (array_chunk($userIds, 999) as $chunk) {
             $qb = $this->db->getQueryBuilder();
-            $qb->select('subject_id', 'status', 'due_date')
+            $qb->select('subject_id', 'status', 'due_date', 'assigned_at')
                ->from('learning_assignments')
                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
                ->andWhere($qb->expr()->eq('subject_type', $qb->createNamedParameter('user')))
@@ -351,6 +354,7 @@ class AssignmentService {
                 $stateMap[$uid] = [
                     'status'   => $row['status'],
                     'due_date' => $row['due_date'] !== null ? (int) $row['due_date'] : null,
+                    'assigned_at' => (int) ($row['assigned_at'] ?? 0),
                 ];
             }
             $result->closeCursor();

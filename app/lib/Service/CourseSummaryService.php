@@ -71,8 +71,11 @@ class CourseSummaryService {
      * Training sessions and incomplete exams are excluded. This is also the structural
      * guess exclusion (PASS-05): guessed answers only exist in the Leitner/FSRS flow,
      * never in exam-mode sessions, so a guess can never inflate the exam score.
+     *
+     * $completedAfter (unix time) limits the count to exams completed at or after it: a
+     * recertification period only counts its own exams (PassCriteriaService).
      */
-    public function getExamScore(string $userId, int $courseId): ?int {
+    public function getExamScore(string $userId, int $courseId, ?int $completedAfter = null): ?int {
         $qb = $this->db->getQueryBuilder();
         $qb->select('correct_answers', 'total_questions')
             ->from('learning_sessions')
@@ -81,6 +84,9 @@ class CourseSummaryService {
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
             ->andWhere($qb->expr()->isNull('exam_kind'))
             ->andWhere($qb->expr()->isNotNull('completed_at'));
+        if ($completedAfter !== null) {
+            $qb->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($completedAfter, IQueryBuilder::PARAM_INT)));
+        }
 
         $result = $qb->executeQuery();
         $bestScore = null;
@@ -104,12 +110,12 @@ class CourseSummaryService {
      * Same counting rule and rounding as getExamScore(): mode='exam', exam_kind IS NULL (practice
      * exams never count, even though they store an anchor pool_id), the course the exam was started
      * from, completed, score = round(correct * 100 / total). Pools without such an exam are absent
-     * from the result.
+     * from the result. $completedAfter as in getExamScore().
      *
      * @param int[] $poolIds
      * @return array<int, int> pool id => best score
      */
-    public function getBestExamScoresByPool(string $userId, int $courseId, array $poolIds): array {
+    public function getBestExamScoresByPool(string $userId, int $courseId, array $poolIds, ?int $completedAfter = null): array {
         $poolIds = array_values(array_unique(array_map('intval', $poolIds)));
         if ($poolIds === []) {
             return [];
@@ -123,6 +129,9 @@ class CourseSummaryService {
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
             ->andWhere($qb->expr()->isNull('exam_kind'))
             ->andWhere($qb->expr()->isNotNull('completed_at'));
+        if ($completedAfter !== null) {
+            $qb->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($completedAfter, IQueryBuilder::PARAM_INT)));
+        }
 
         $result = $qb->executeQuery();
         $best = [];

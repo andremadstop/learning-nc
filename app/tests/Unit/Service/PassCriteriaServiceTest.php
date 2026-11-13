@@ -1062,4 +1062,154 @@ class PassCriteriaServiceTest extends TestCase {
             'a failed COURSE_PASSED emit must roll back the outer transaction (incl. the nested cert INSERT)');
         $this->assertSame(0, $db->commitCalls, 'nothing commits when the emit fails');
     }
+
+    // ---- GitHub #35: a recertification counts only the exams of its own period ------------------
+
+    private const PERIOD_OPENED_AT = 1_800_000_000;
+
+    /**
+     * A summary service backed by exam rows [pool_id, score, completed_at] that applies the
+     * completedAfter window like the real queries (completed_at >= completedAfter), and records
+     * the windows it was asked for.
+     *
+     * @param list<array{0: int, 1: int, 2: int}> $exams
+     * @param list<int|null> $windows filled with every completedAfter it receives
+     */
+    private function summaryWithExams(array $exams, array $coursePoolIds, array &$windows): CourseSummaryService {
+        $summary = $this->createMock(CourseSummaryService::class);
+        $summary->method('getCoursePoolIds')->willReturn($coursePoolIds);
+        $summary->method('getPoolTitles')->willReturn([]);
+        $summary->method('getBestExamScoresByPool')->willReturnCallback(
+            static function (string $uid, int $courseId, array $poolIds, ?int $completedAfter = null) use ($exams, &$windows): array {
+                $windows[] = $completedAfter;
+                $best = [];
+                foreach ($exams as [$poolId, $score, $completedAt]) {
+                    if (!in_array($poolId, $poolIds, true) || ($completedAfter !== null && $completedAt < $completedAfter)) {
+                        continue;
+                    }
+                    $best[$poolId] = max($best[$poolId] ?? 0, $score);
+                }
+                return $best;
+            }
+        );
+        $summary->method('getExamScore')->willReturnCallback(
+            static function (string $uid, int $courseId, ?int $completedAfter = null) use ($exams, &$windows): ?int {
+                $windows[] = $completedAfter;
+                $best = null;
+                foreach ($exams as [, $score, $completedAt]) {
+                    if ($completedAfter === null || $completedAt >= $completedAfter) {
+                        $best = max($best ?? 0, $score);
+                    }
+                }
+                return $best;
+            }
+        );
+        return $summary;
+    }
+
+    /** An expired certificate plus an open recertification period opened at PERIOD_OPENED_AT. */
+    private function recertService(CourseSummaryService $summary, AuditService $audit, IssuanceService $issuance, ?string $poolIds, array $builders): PassCriteriaService {
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse(true, 75, $poolIds));
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn($this->makeCert('vid-last-year', false, self::PERIOD_OPENED_AT - 86400));
+        $assignment = $this->createMock(AssignmentService::class);
+        $assignment->method('getStatesForCourseAndUsers')->willReturnCallback(
+            static fn(int $courseId, array $uids): array => [$uids[0] => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => self::PERIOD_OPENED_AT]]
+        );
+        return new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($builders), $issuance,
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
+    }
+
+    public function testRecertificationIgnoresExamsFromBeforeThePeriod(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+
+        // Both required pools passed last year, nothing since the period opened.
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 90, self::PERIOD_OPENED_AT - 400 * 86400], [2, 85, self::PERIOD_OPENED_AT - 399 * 86400]], [1, 2], $windows);
+        $service = $this->recertService($summary, $audit, $issuance, json_encode([1, 2]), []);
+
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertFalse($result->isPassed(), 'last year\'s exams must not renew the certificate');
+        $this->assertSame([self::PERIOD_OPENED_AT], $windows, 'the rule is read from the period start');
+        $payload = $result->toArray();
+        $this->assertNull($payload['pools'][0]['best_score']);
+        $this->assertSame('vid-last-year', $payload['certificate']['verification_id']);
+        $this->assertNull($payload['issuance_error']);
+    }
+
+    public function testRecertificationWithoutRequiredPoolsIgnoresExamsFromBeforeThePeriod(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 95, self::PERIOD_OPENED_AT - 1]], [1], $windows);
+        $service = $this->recertService($summary, $audit, $issuance, null, []);
+
+        $this->assertFalse($service->evaluate(self::USER, self::COURSE_ID)->isPassed());
+        $this->assertSame([self::PERIOD_OPENED_AT], $windows);
+    }
+
+    public function testRecertificationIssuesAfterExamsOfThePeriod(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')
+            ->willReturn(new IssueResult($this->makeCert('vid-this-year', false, null), true));
+
+        // Last year's passes plus this period's exams on both pools (pool 2 only on the second try).
+        $windows = [];
+        $summary = $this->summaryWithExams([
+            [1, 90, self::PERIOD_OPENED_AT - 400 * 86400],
+            [2, 85, self::PERIOD_OPENED_AT - 399 * 86400],
+            [1, 80, self::PERIOD_OPENED_AT],
+            [2, 60, self::PERIOD_OPENED_AT + 3600],
+            [2, 76, self::PERIOD_OPENED_AT + 7200],
+        ], [1, 2], $windows);
+        $service = $this->recertService($summary, $audit, $issuance, json_encode([1, 2]), $this->passingBuilders());
+
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame(76, $result->toArray()['score'], 'the lowest best score of this period');
+        $this->assertSame('vid-this-year', $result->toArray()['certificate']['verification_id']);
+    }
+
+    public function testFindPassedWithoutCertificateIgnoresExamsFromBeforeThePeriod(): void {
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 90, self::PERIOD_OPENED_AT - 400 * 86400]], [1], $windows);
+        $service = $this->recertService($summary, $this->createMock(AuditService::class), $issuance, json_encode([1]), []);
+
+        $this->assertSame([], $service->findPassedWithoutCertificate(self::COURSE_ID, ['old-pass']),
+            'a learner in an open period with only last year\'s pass has not passed this period');
+        $this->assertSame([self::PERIOD_OPENED_AT], $windows);
+    }
+
+    // Branch A (never certified) still counts every counting exam of the course.
+    public function testFirstCertificationCountsEveryExam(): void {
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 90, 1_600_000_000]], [1], $windows);
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse(true, 75, json_encode([1])));
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn(null);
+        $assignment = $this->createMock(AssignmentService::class);
+        $assignment->method('getStatesForCourseAndUsers')->willReturn([]);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')->willReturn(new IssueResult(new Certificate(), true));
+        $service = new PassCriteriaService($courseMapper, $summary, $this->createMock(AuditService::class),
+            new FakeDbConnection($this->passingBuilders()), $issuance,
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
+
+        $this->assertTrue($service->evaluate(self::USER, self::COURSE_ID)->isPassed());
+        $this->assertSame([null], $windows);
+    }
 }
