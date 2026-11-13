@@ -166,6 +166,7 @@ describe('CourseTabTeilnehmer template — instructor completion view', () => {
 			courseId: 7,
 			course: { ...certCourse, is_instructor: true },
 			userRole: 'instructor',
+			actsAsInstructor: true,
 			activeTab: 'summary',
 		})
 		await flush()
@@ -183,6 +184,7 @@ describe('CourseTabTeilnehmer template — instructor completion view', () => {
 			courseId: 7,
 			course: { ...certCourse, is_instructor: true },
 			userRole: 'instructor',
+			actsAsInstructor: true,
 			activeTab: 'summary',
 		})
 		await flush()

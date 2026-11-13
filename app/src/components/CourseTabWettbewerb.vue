@@ -217,6 +217,8 @@ export default {
 	},
 
 	props: {
+		// GitHub #35: CourseDetail's single instructor gate (membership, student view off).
+		actsAsInstructor: { type: Boolean, default: false },
 		courseId: { type: Number, required: true },
 		course: { type: Object, default: null },
 		userRole: { type: String, required: true },
@@ -251,8 +253,9 @@ export default {
 	},
 
 	computed: {
+		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
 		isInstructor() {
-			return this.course && this.course.is_instructor
+			return this.actsAsInstructor
 		},
 		myUserId() {
 			const user = getCurrentUser()

@@ -571,6 +571,7 @@ import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, effectiveCourseTools } from '../utils/toolCatalog.js'
+import { lernraumTabIds } from '../utils/courseView.js'
 
 export default {
 	name: 'CourseTabLernraum',
@@ -616,6 +617,11 @@ export default {
 			validator(value) {
 				return ['instructor', 'student'].includes(value)
 			},
+		},
+		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
+		actsAsInstructor: {
+			type: Boolean,
+			default: false,
 		},
 		coursePools: {
 			type: Array,
@@ -688,49 +694,30 @@ export default {
 	},
 
 	computed: {
+		// GitHub #35: the course membership decides, never the global role — an instructor who is
+		// a student in a colleague's course got the instructor sub-tabs there. CourseDetail computes
+		// the flag once (membership + student view) and passes it down.
 		isInstructor() {
-			return this.userRole === 'instructor' || this.course?.is_instructor === true
+			return this.actsAsInstructor
 		},
 		visibleSubTabs() {
-			if (this.isInstructor) {
-				const tabs = [
-					{ id: 'pools', label: t('learning', 'Pools') },
-				]
-				if (this.courseToolTabs.length > 0) {
-					tabs.push({ id: 'tools', label: t('learning', 'Werkzeuge') })
-				}
-				tabs.push(
-					{ id: 'curriculum', label: t('learning', 'Themen') },
-					{ id: 'materials', label: t('learning', 'Materialien') },
-					{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : '') },
-				)
-				return tabs
+			const labels = {
+				pools: t('learning', 'Pools'),
+				tools: t('learning', 'Werkzeuge'),
+				curriculum: t('learning', 'Themen'),
+				materials: t('learning', 'Materialien'),
+				knowledge: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : ''),
+				videos: t('learning', 'Pflichtinhalte'),
+				training: t('learning', 'Training'),
+				leitner: t('learning', 'Leitner'),
+				exam: t('learning', 'Exam'),
+				practice: t('learning', 'Course practice exam'),
 			}
-			const tabs = []
-			if (this.courseVideos.length > 0) {
-				tabs.push({ id: 'videos', label: t('learning', 'Pflichtinhalte') })
-			}
-			if (this.modeEnabled('training')) {
-				tabs.push({ id: 'training', label: t('learning', 'Training') })
-			}
-			if (this.modeEnabled('leitner')) {
-				tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
-			}
-			if (this.modeEnabled('exam')) {
-				tabs.push({ id: 'exam', label: t('learning', 'Exam') })
-			}
-			// Codeberg #9: independent of mode_config.exam, which governs the pool exam tab —
-			// a course can offer its own practice exam with the preset exam switched off.
-			if (this.course?.practice_enabled) {
-				tabs.push({ id: 'practice', label: t('learning', 'Course practice exam') })
-			}
-			if (this.courseToolTabs.length > 0) {
-				tabs.push({ id: 'tools', label: t('learning', 'Werkzeuge') })
-			}
-			if (this.course?.material_folder) {
-				tabs.push({ id: 'materials', label: t('learning', 'Materialien') })
-			}
-			return tabs
+			return lernraumTabIds(this.course, {
+				actsAsInstructor: this.isInstructor,
+				hasCourseTools: this.courseToolTabs.length > 0,
+				hasVideos: this.courseVideos.length > 0,
+			}).map((id) => ({ id, label: labels[id] }))
 		},
 		selectedLearningPoolQuestionCount() {
 			if (!this.selectedLearningPool) {
@@ -835,6 +822,13 @@ export default {
 		this.ensureActiveToolVisible()
 	},
 
+	beforeUnmount() {
+		// CourseDetail keeps its own copy of "required content exists" to route the Pflichtinhalte
+		// leaf. A remounted Lernraum starts without the list, so a stale true would make CourseDetail
+		// pick a leaf this component cannot show yet — the two would disagree until a reload.
+		this.$emit('videos-available', false)
+	},
+
 	watch: {
 		allPools: {
 			immediate: true,
@@ -865,6 +859,15 @@ export default {
 		},
 		courseToolTabs() {
 			this.ensureActiveToolVisible()
+		},
+		// The student view can be left (banner) while the course stays open: the sub-tabs follow,
+		// and the student-only data is fetched when the view turns into the student one.
+		isInstructor(nowInstructor) {
+			if (!nowInstructor) {
+				this.fetchQueueCount()
+				this.fetchCourseVideos()
+			}
+			this.syncFromActiveTab(this.activeTab)
 		},
 	},
 
@@ -907,6 +910,11 @@ export default {
 				this.courseVideos = []
 			} finally {
 				this.videosLoaded = true
+				// CourseDetail routes the Pflichtinhalte leaf only while it exists.
+				this.$emit('videos-available', this.courseVideos.length > 0)
+				// A requested Pflichtinhalte leaf (deep link) could not be shown before the list
+				// arrived and fell back to the default; resolve it again now that it is known.
+				this.syncFromActiveTab(this.activeTab)
 			}
 		},
 		normalizeVideo(row) {

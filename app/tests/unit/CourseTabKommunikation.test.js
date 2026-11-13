@@ -41,6 +41,9 @@ function createInstance(overrides = {}) {
 		activeTab: 'feed',
 		$emit: vi.fn(),
 		$delete: vi.fn(),
+		// The prop CourseDetail hands down. Set per test; the harness does not re-derive it from
+		// the course (that copy of CourseDetail's rule would test itself, not the component).
+		actsAsInstructor: false,
 		...overrides,
 	}
 
@@ -65,9 +68,18 @@ describe('CourseTabKommunikation', () => {
 		const instance = createInstance({
 			course: { is_instructor: true },
 			userRole: 'instructor',
+			actsAsInstructor: true,
 		})
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['announcements', 'feed', 'requests'])
+	})
+
+	// GitHub #35: the student view must win over the course membership in every mega-tab.
+	it('the student view (actsAsInstructor false) shows an own course with the learner sub-tabs', () => {
+		const instance = createInstance({ course: { is_instructor: true }, userRole: 'student', actsAsInstructor: false })
+
+		expect(instance.isInstructor).toBe(false)
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies', 'schwarm'])
 	})
 
 	it('builds student sub-tabs: feed, buddies, schwarm', () => {

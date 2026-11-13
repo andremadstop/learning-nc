@@ -55,7 +55,12 @@ vi.mock('../../src/components/PoolList.vue', () => withProps('PoolList', ['userR
 vi.mock('../../src/components/TrainingMode.vue', () => withProps('TrainingMode', ['poolId', 'totalQuestions', 'canManage', 'contentLanguage'],
 	'<div class="training-stub" :data-can-manage="String(canManage)" :data-total="totalQuestions"><button class="add-q" @click="$emit(\'manage\')">add</button></div>'))
 vi.mock('../../src/components/QuestionList.vue', () => withProps('QuestionList', ['poolId', 'poolName', 'readonly'], '<div class="question-list-stub" />'))
-for (const name of ['LeitnerMode', 'ExamMode', 'AnalyticsDashboard', 'CourseList', 'CourseDetail', 'StudentDetail',
+// GitHub #35: the course views get the effective role and the student-view flag.
+vi.mock('../../src/components/CourseList.vue', () => withProps('CourseList', ['userRole', 'studentViewActive'],
+	'<div class="course-list-stub" :data-role="userRole" :data-preview="String(studentViewActive)" />'))
+vi.mock('../../src/components/CourseDetail.vue', () => withProps('CourseDetail', ['courseId', 'userRole', 'studentViewActive'],
+	'<div class="course-detail-stub" :data-course="courseId" :data-role="userRole" :data-preview="String(studentViewActive)" />'))
+for (const name of ['LeitnerMode', 'ExamMode', 'AnalyticsDashboard', 'StudentDetail',
 	'InstructorDashboard', 'SmartQueue', 'AdminSettings', 'GameshowMode', 'DuelMode', 'ArenaSelector', 'AbenteuerMode',
 	'SubnetCalculator', 'DnsResolver', 'FirewallBuilder', 'PortScanner', 'RoutingTable', 'NatTable', 'WiresharkLite',
 	'AuthFlowSimulator', 'OnboardingIntro', 'OnboardingRedesign', 'SkillMap', 'StudentDashboard', 'TeamLeadDashboard',
@@ -156,6 +161,45 @@ describe('App.vue: the student view can always be left (GitHub #34)', () => {
 		expect(list.dataset.role).toBe('student')
 		expect(list.dataset.preview).toBe('true')
 		expect(list.dataset.group).toBe('learning-instructors')
+	})
+})
+
+describe('App.vue: the student view reaches the course views (GitHub #35)', () => {
+	it('an instructor in the student view opens a course as a learner, with the course banner', async () => {
+		localStorage.setItem('learning:view-as-student', 'yes')
+		await mountApp('/courses/5/lernraum')
+		const detail = host.querySelector('.course-detail-stub')
+		expect(detail).not.toBeNull()
+		expect(detail.dataset.course).toBe('5')
+		expect(detail.dataset.role).toBe('student')
+		expect(detail.dataset.preview).toBe('true')
+		expect(banner().textContent).toContain('Schüler-Ansicht aktiv')
+		expect(banner().textContent).toContain('diesen Kurs')
+		// One banner, one exit: CourseDetail does not render a second one.
+		expect(host.querySelectorAll('.student-view-banner')).toHaveLength(1)
+
+		banner().querySelector('.student-view-banner__exit').click()
+		await settle()
+		expect(host.querySelector('.course-detail-stub').dataset.preview).toBe('false')
+		expect(host.querySelector('.course-detail-stub').dataset.role).toBe('instructor')
+	})
+
+	it('the course list gets the effective role and the preview flag', async () => {
+		localStorage.setItem('learning:view-as-student', 'yes')
+		await mountApp('/courses')
+		const list = host.querySelector('.course-list-stub')
+		expect(list).not.toBeNull()
+		expect(list.dataset.role).toBe('student')
+		expect(list.dataset.preview).toBe('true')
+		expect(banner().textContent).not.toContain('diesen Kurs')
+	})
+
+	it('without the student view an instructor opens a course with the instructor role', async () => {
+		await mountApp('/courses/5/lernraum')
+		const detail = host.querySelector('.course-detail-stub')
+		expect(detail.dataset.role).toBe('instructor')
+		expect(detail.dataset.preview).toBe('false')
+		expect(banner()).toBeNull()
 	})
 })
 

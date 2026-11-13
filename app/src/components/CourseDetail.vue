@@ -57,6 +57,7 @@
 					:course-id="courseId"
 					:course="course"
 					:user-role="userRole"
+					:acts-as-instructor="actsAsInstructor"
 					:course-pools="coursePools"
 					:all-pools="allPools"
 					:active-tab="currentTab"
@@ -71,7 +72,8 @@
 					@open-tool="$emit('open-tool', $event)"
 					@pool-selected="selectedLearningPool = $event"
 					@refresh-course-detail="fetchCourseDetail"
-					@tab-change="onLeafTabChange" />
+					@tab-change="onLeafTabChange"
+					@videos-available="onVideosAvailable" />
 			</div>
 
 			<CourseTabTeilnehmer
@@ -79,6 +81,7 @@
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
+				:acts-as-instructor="actsAsInstructor"
 				:course-members="courseMembers"
 				:course-pools="coursePools"
 				:active-tab="currentTab"
@@ -92,6 +95,7 @@
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
+				:acts-as-instructor="actsAsInstructor"
 				:course-pools="coursePools"
 				:active-tab="currentTab"
 				:content-language="contentLanguage"
@@ -107,6 +111,7 @@
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
+				:acts-as-instructor="actsAsInstructor"
 				:active-tab="currentTab"
 				@tab-change="onLeafTabChange"
 				@error="error = $event"
@@ -118,6 +123,7 @@
 				:course="course"
 				:course-pools="coursePools"
 				:user-role="userRole"
+				:acts-as-instructor="actsAsInstructor"
 				:active-tab="currentTab"
 				@tab-change="onLeafTabChange"
 				@error="error = $event"
@@ -144,6 +150,7 @@ import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { effectiveCourseTools } from '../utils/toolCatalog.js'
 import { shouldShowCompletionTab } from '../utils/cert-report.js'
+import { actsAsCourseInstructor, lernraumTabIds } from '../utils/courseView.js'
 
 export default {
 	name: 'CourseDetail',
@@ -184,6 +191,11 @@ export default {
 			type: String,
 			default: '',
 		},
+		// GitHub #35: an instructor previewing the app as a student (App.vue studentViewActive).
+		studentViewActive: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	data() {
@@ -208,12 +220,24 @@ export default {
 
 			// Arena sub-mode (received from Wettbewerb child for VirtuProf context)
 			arenaSubMode: null,
+
+			// Reported by CourseTabLernraum once it knows whether required content exists.
+			hasCourseVideos: false,
 		}
 	},
 
 	computed: {
+		/**
+		 * GitHub #35: the one gate for every instructor tab in the course, handed to each mega-tab
+		 * as actsAsInstructor. The course membership decides (never the global role), and the
+		 * student view turns it off. That view is a UI preview only: the server keeps enforcing
+		 * permissions from the real membership, so nothing here grants or removes a right.
+		 */
+		actsAsInstructor() {
+			return actsAsCourseInstructor(this.course, this.studentViewActive)
+		},
 		isInstructor() {
-			return this.course && this.course.is_instructor
+			return this.actsAsInstructor
 		},
 		talkRoomUrl() {
 			const token = String(this.course?.talk_room_token || '').trim()
@@ -245,22 +269,14 @@ export default {
 		verwaltungLeafTabs() {
 			return ['mode-config', 'schedule']
 		},
+		// Same list as the Lernraum sub-navigation (one helper), so a disabled Training is not
+		// routed to and the required content (videos) has a leaf of its own.
 		lernraumLeafTabs() {
-			if (this.isInstructor) {
-				const tabs = ['pools']
-				if (this.hasCourseTools) tabs.push('tools')
-				tabs.push('curriculum', 'materials', 'knowledge')
-				return tabs
-			}
-			const mc = this.course?.mode_config || {}
-			const enabled = (key) => mc[key] !== false
-			const tabs = ['training']
-			if (enabled('leitner')) tabs.push('leitner')
-			if (enabled('exam')) tabs.push('exam')
-			if (this.course?.practice_enabled) tabs.push('practice')
-			if (this.hasCourseTools) tabs.push('tools')
-			if (this.course?.material_folder) tabs.push('materials')
-			return tabs
+			return lernraumTabIds(this.course, {
+				actsAsInstructor: this.isInstructor,
+				hasCourseTools: this.hasCourseTools,
+				hasVideos: this.hasCourseVideos,
+			})
 		},
 		wettbewerbLeafTabs() {
 			const mc = this.course?.mode_config || {}
@@ -608,6 +624,18 @@ export default {
 				useOptionalVirtuProfStore()?.trigger('liga-first-visit')
 			}
 		},
+		/**
+		 * CourseTabLernraum reports whether required content (Pflichtinhalte) exists: after its
+		 * fetch, and false when it unmounts. A leaf that is gone falls back to the default, so
+		 * currentTab never names a sub-tab the Lernraum does not show — a click on that sub-tab
+		 * would then change nothing.
+		 */
+		onVideosAvailable(available) {
+			this.hasCourseVideos = available === true
+			if (!this.hasCourseVideos && this.currentTab === 'videos') {
+				this.currentTab = this.defaultLernraumTab()
+			}
+		},
 		selectTab(tabId) {
 			const resolvedTabId = this.resolveSelectableTab(tabId)
 			this.currentTab = resolvedTabId
@@ -651,6 +679,9 @@ export default {
 		async fetchCourseDetail() {
 			this.loading = true
 			this.error = ''
+			// The Lernraum unmounts while loading and reports its required content again after the
+			// remount; a stale flag would route learners to a videos leaf it does not show yet.
+			this.hasCourseVideos = false
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}', { courseId: this.courseId })
 				const [response] = await Promise.all([axios.get(url), this.fetchAdminEnabledTools()])
@@ -661,9 +692,9 @@ export default {
 				this.coursePools = response.data.pools || []
 				this.courseMembers = response.data.members || []
 
-				// Default tab for students
-				if (!this.course.is_instructor) {
-					this.currentTab = this.presetDuelCode ? 'arena' : 'training'
+				// Default tab for students (and for an instructor in the student view)
+				if (!this.isInstructor) {
+					this.currentTab = this.presetDuelCode ? 'arena' : this.defaultLernraumTab()
 					this.activeMegaTab = this.presetDuelCode ? 'wettbewerb' : 'lernraum'
 					this.arenaSubMode = this.presetDuelCode ? 'duel' : null
 					this.activeLearningMode = 'training'

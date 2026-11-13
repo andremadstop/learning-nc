@@ -12,7 +12,8 @@
 		</div>
 
 		<div v-if="currentSubTab === 'classbook'" class="classbook-section">
-			<Klassenbuch :course-id="courseId" :user-role="userRole" />
+			<!-- GitHub #35: the role inside this course (kudos are a student action), not the global one. -->
+			<Klassenbuch :course-id="courseId" :user-role="isInstructor ? 'instructor' : 'student'" />
 		</div>
 
 		<!-- Members (instructor only) -->
@@ -525,6 +526,8 @@ export default {
 	},
 
 	props: {
+		// GitHub #35: CourseDetail's single instructor gate (membership, student view off).
+		actsAsInstructor: { type: Boolean, default: false },
 		courseId: { type: Number, required: true },
 		course: { type: Object, default: null },
 		userRole: { type: String, required: true },
@@ -594,8 +597,9 @@ export default {
 	},
 
 	computed: {
+		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
 		isInstructor() {
-			return this.course && this.course.is_instructor
+			return this.actsAsInstructor
 		},
 		myUserId() {
 			const user = getCurrentUser()

@@ -60,6 +60,9 @@ function createInstance(overrides = {}) {
 		contentLanguage: 'de',
 		presetDuelCode: '',
 		$emit: vi.fn(),
+		// The prop CourseDetail hands down. Set per test; the harness does not re-derive it from
+		// the course (that copy of CourseDetail's rule would test itself, not the component).
+		actsAsInstructor: true,
 		...overrides,
 	}
 
@@ -87,6 +90,15 @@ describe('CourseTabWettbewerb', () => {
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['leaderboard', 'league', 'arena', 'abenteuer'])
 	})
 
+	// GitHub #35: the student view must win over the course membership in every mega-tab.
+	it('the student view (actsAsInstructor false) shows an own course with the learner sub-tabs', () => {
+		const instance = createInstance({ userRole: 'student', actsAsInstructor: false })
+
+		expect(instance.isInstructor).toBe(false)
+		// abenteuer is switched off in this course; an instructor would still see it.
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['leaderboard', 'league', 'arena'])
+	})
+
 	it('hides arena pill for students when all arena modes are disabled', () => {
 		const instance = createInstance({
 			course: {
@@ -99,6 +111,7 @@ describe('CourseTabWettbewerb', () => {
 				},
 			},
 			userRole: 'student',
+			actsAsInstructor: false,
 		})
 
 		const ids = instance.visibleSubTabs.map((tab) => tab.id)

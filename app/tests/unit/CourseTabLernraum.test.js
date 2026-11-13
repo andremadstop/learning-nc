@@ -61,6 +61,8 @@ function createInstance(overrides = {}) {
 			},
 		},
 		userRole: 'student',
+		// The prop CourseDetail hands down (course membership minus the student view).
+		actsAsInstructor: false,
 		coursePools: [],
 		allPools: [],
 		activeTab: 'training',
@@ -190,7 +192,7 @@ describe('CourseTabLernraum', () => {
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('practice')
 	})
 
-	it('switches to the instructor Lernraum subnav when the role changes', () => {
+	it('shows the instructor Lernraum subnav to an instructor of the course', () => {
 		const instance = createInstance({
 			course: {
 				is_instructor: true,
@@ -202,6 +204,7 @@ describe('CourseTabLernraum', () => {
 				},
 			},
 			userRole: 'instructor',
+			actsAsInstructor: true,
 		})
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['pools', 'tools', 'curriculum', 'materials', 'knowledge'])
@@ -261,6 +264,7 @@ describe('CourseTabLernraum', () => {
 		it('Test B: instructor still sees instructor tabs regardless of mode_config.training', () => {
 			const instance = createInstance({
 				userRole: 'instructor',
+				actsAsInstructor: true,
 				course: {
 					is_instructor: true,
 					material_folder: null,
@@ -347,6 +351,7 @@ describe('CourseTabLernraum', () => {
 		it('Test J: instructor instance does not have hero card conditions met (isInstructor=true)', () => {
 			const instance = createInstance({
 				userRole: 'instructor',
+				actsAsInstructor: true,
 				course: {
 					is_instructor: true,
 					material_folder: null,
@@ -357,6 +362,103 @@ describe('CourseTabLernraum', () => {
 
 			// Hero card must only render when !isInstructor — verify instructor flag is set
 			expect(instance.isInstructor).toBe(true)
+		})
+	})
+
+	// GitHub #35: isInstructor was `userRole === 'instructor' || course.is_instructor`, so a global
+	// instructor enrolled as a student in a colleague's course got Pools/Themen/Wissen there, and
+	// the student view could not hide them. CourseDetail now hands down one flag.
+	describe('course-level role and student view (GitHub #35)', () => {
+		const studentTabs = ['training', 'leitner', 'exam', 'materials']
+
+		it('a global instructor who is a student of this course gets the learner sub-tabs', () => {
+			const instance = createInstance({ userRole: 'instructor', actsAsInstructor: false, course: {
+				is_instructor: false, material_folder: '/Materials', mode_config: { training: true, leitner: true, exam: true }, enabled_tools: [],
+			} })
+
+			expect(instance.isInstructor).toBe(false)
+			expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(studentTabs)
+		})
+
+		it('the student view shows an own course with the learner sub-tabs', () => {
+			const instance = createInstance({ userRole: 'student', actsAsInstructor: false, course: {
+				is_instructor: true, material_folder: '/Materials', mode_config: { training: true, leitner: true, exam: true }, enabled_tools: [],
+			} })
+
+			expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(studentTabs)
+		})
+
+		it('lists required content first once it is loaded and reports it to CourseDetail', async () => {
+			const axios = (await import('@nextcloud/axios')).default
+			axios.get.mockResolvedValueOnce({ data: { videos: [{ id: 3, title: 'Unterweisung', sort_order: 1 }] } })
+			const instance = createInstance({ course: {
+				is_instructor: false, material_folder: null, mode_config: { training: true, leitner: false, exam: false }, enabled_tools: [],
+			} })
+
+			await instance.fetchCourseVideos()
+
+			expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['videos', 'training'])
+			expect(instance.$emit).toHaveBeenCalledWith('videos-available', true)
+		})
+
+		// A deep link to Pflichtinhalte arrives before the list: the sub-tab falls back to the
+		// default first and must resolve to the requested leaf once the list is known.
+		it('resolves a requested Pflichtinhalte leaf once the required content is loaded', async () => {
+			const axios = (await import('@nextcloud/axios')).default
+			axios.get.mockResolvedValueOnce({ data: { videos: [{ id: 3, title: 'Unterweisung', sort_order: 1 }] } })
+			const instance = createInstance({ activeTab: 'videos', course: {
+				is_instructor: false, material_folder: null, mode_config: { training: true, leitner: false, exam: false }, enabled_tools: [],
+			} })
+			instance.syncFromActiveTab('videos')
+			expect(instance.currentSubTab).toBe('training')
+
+			await instance.fetchCourseVideos()
+
+			expect(instance.currentSubTab).toBe('videos')
+		})
+
+		it('tells CourseDetail on unmount that its required-content list is gone', () => {
+			const instance = createInstance()
+
+			CourseTabLernraum.beforeUnmount.call(instance)
+
+			expect(instance.$emit).toHaveBeenCalledWith('videos-available', false)
+		})
+
+		// Review: the watcher that follows the student view switched on or off while the course
+		// stays open was untested.
+		it('switching into the student view fetches the learner data and lands on a learner sub-tab', () => {
+			const instance = createInstance({ activeTab: 'pools', actsAsInstructor: true, course: {
+				is_instructor: true, material_folder: null, mode_config: { training: true, leitner: true, exam: true }, enabled_tools: [],
+			} })
+			instance.syncFromActiveTab('pools')
+			expect(instance.currentSubTab).toBe('pools')
+			instance.fetchQueueCount = vi.fn()
+			instance.fetchCourseVideos = vi.fn()
+
+			instance.actsAsInstructor = false
+			CourseTabLernraum.watch.isInstructor.call(instance, false)
+
+			expect(instance.fetchQueueCount).toHaveBeenCalledTimes(1)
+			expect(instance.fetchCourseVideos).toHaveBeenCalledTimes(1)
+			expect(instance.currentSubTab).toBe('training')
+		})
+
+		it('leaving the student view lands on an instructor sub-tab without learner fetches', () => {
+			const instance = createInstance({ activeTab: 'training', actsAsInstructor: false, course: {
+				is_instructor: true, material_folder: null, mode_config: { training: true, leitner: true, exam: true }, enabled_tools: [],
+			} })
+			instance.syncFromActiveTab('training')
+			expect(instance.currentSubTab).toBe('training')
+			instance.fetchQueueCount = vi.fn()
+			instance.fetchCourseVideos = vi.fn()
+
+			instance.actsAsInstructor = true
+			CourseTabLernraum.watch.isInstructor.call(instance, true)
+
+			expect(instance.fetchQueueCount).not.toHaveBeenCalled()
+			expect(instance.fetchCourseVideos).not.toHaveBeenCalled()
+			expect(instance.currentSubTab).toBe('pools')
 		})
 	})
 })

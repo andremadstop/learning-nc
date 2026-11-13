@@ -40,7 +40,9 @@ const { stub } = vi.hoisted(() => ({
 vi.mock('../../src/components/StudentDetail.vue', () => stub('StudentDetail'))
 vi.mock('../../src/components/CourseSummary.vue', () => stub('CourseSummary'))
 vi.mock('../../src/components/BuddyMatching.vue', () => stub('BuddyMatching'))
-vi.mock('../../src/components/Klassenbuch.vue', () => stub('Klassenbuch'))
+vi.mock('../../src/components/Klassenbuch.vue', () => ({
+	default: { name: 'Klassenbuch', props: ['courseId', 'userRole'], template: '<div class="klassenbuch-stub" :data-role="userRole" />' },
+}))
 // GitHub #35: the picker stub declares the real component's interface, so a renamed prop or a
 // dropped members-changed relay fails the wiring test below.
 const { pickerStub } = vi.hoisted(() => ({ pickerStub: { instance: null } }))
@@ -79,6 +81,9 @@ function createInstance(overrides = {}) {
 		activeTab: 'members',
 		$emit: vi.fn(),
 		$delete: vi.fn(),
+		// The prop CourseDetail hands down. Set per test; the harness does not re-derive it from
+		// the course (that copy of CourseDetail's rule would test itself, not the component).
+		actsAsInstructor: true,
 		...overrides,
 	}
 
@@ -108,6 +113,14 @@ describe('CourseTabTeilnehmer', () => {
 		])
 	})
 
+	// GitHub #35: the student view must win over the course membership in every mega-tab.
+	it('the student view (actsAsInstructor false) shows an own course with the learner sub-tabs', () => {
+		const instance = createInstance({ userRole: 'student', actsAsInstructor: false })
+
+		expect(instance.isInstructor).toBe(false)
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress'])
+	})
+
 	it('builds student sub-tabs with classbook + my-progress (no summary when disabled)', () => {
 		const instance = createInstance({
 			course: {
@@ -115,6 +128,7 @@ describe('CourseTabTeilnehmer', () => {
 				mode_config: { course_summary: false },
 			},
 			userRole: 'student',
+			actsAsInstructor: false,
 		})
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress'])
@@ -127,6 +141,7 @@ describe('CourseTabTeilnehmer', () => {
 				mode_config: { course_summary: true },
 			},
 			userRole: 'student',
+			actsAsInstructor: false,
 		})
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress', 'summary'])
@@ -189,6 +204,7 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 		const instance = createInstance({
 			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
 			userRole: 'student',
+			actsAsInstructor: false,
 		})
 
 		expect(instance.visibleSubTabs).toEqual([
@@ -202,6 +218,7 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 		const instance = createInstance({
 			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
 			userRole: 'student',
+			actsAsInstructor: false,
 			activeTab: 'summary',
 		})
 
@@ -214,6 +231,7 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 		const instance = createInstance({
 			course: { is_instructor: false, cert_enabled: false, mode_config: { course_summary: false } },
 			userRole: 'student',
+			actsAsInstructor: false,
 		})
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).not.toContain('summary')
@@ -222,6 +240,7 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 	it('stores the signing availability the cert report returns for the instructor warning', async () => {
 		const instance = createInstance({
 			course: { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } },
+			actsAsInstructor: true,
 		})
 		instance.certFilters = () => ({})
 		axios.get.mockResolvedValueOnce({ data: { rows: [], signing_available: false } })
@@ -235,6 +254,7 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 	it('stores the members who passed without a certificate', async () => {
 		const instance = createInstance({
 			course: { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } },
+			actsAsInstructor: true,
 		})
 		instance.certFilters = () => ({})
 		axios.get.mockResolvedValueOnce({ data: { rows: [], signing_available: true, passed_without_certificate: [{ display_name: 'Jane Doe' }] } })
@@ -247,6 +267,7 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 	it('treats a missing or failed passed-without-certificate check as an empty list', async () => {
 		const instance = createInstance({
 			course: { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } },
+			actsAsInstructor: true,
 		})
 		instance.certFilters = () => ({})
 		axios.get.mockResolvedValueOnce({ data: { rows: [], signing_available: true, passed_without_certificate: null } })
@@ -269,6 +290,7 @@ describe('CourseTabTeilnehmer member picker wiring (GitHub #35)', () => {
 				courseId: 5,
 				course: { is_instructor: true, mode_config: { course_summary: false } },
 				userRole: 'instructor',
+				actsAsInstructor: true,
 				activeTab: 'members',
 				onMembersChanged: membersChanged,
 			}),
@@ -291,5 +313,38 @@ describe('CourseTabTeilnehmer member picker wiring (GitHub #35)', () => {
 			app.unmount()
 			host.remove()
 		}
+	})
+})
+
+// GitHub #35: Klassenbuch got the global role, so a global instructor who is a student of this course
+// (or an instructor in the student view) was not treated as a learner there (no kudos).
+describe('CourseTabTeilnehmer classbook role (GitHub #35)', () => {
+	async function classbookRole(props) {
+		axios.get.mockResolvedValue({ data: [] })
+		const host = document.createElement('div')
+		document.body.appendChild(host)
+		const app = createApp({
+			render: () => h(CourseTabTeilnehmer, { courseId: 5, activeTab: 'classbook', ...props }),
+		})
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = (app, s, p, c) => (c === 1 ? s : p)
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await nextTick()
+		try {
+			return host.querySelector('.klassenbuch-stub')?.dataset.role
+		} finally {
+			app.unmount()
+			host.remove()
+		}
+	}
+
+	it('passes the role inside the course, not the global one', async () => {
+		expect(await classbookRole({
+			course: { is_instructor: false, mode_config: { course_summary: false } }, userRole: 'instructor', actsAsInstructor: false,
+		})).toBe('student')
+		expect(await classbookRole({
+			course: { is_instructor: true, mode_config: { course_summary: false } }, userRole: 'student', actsAsInstructor: true,
+		})).toBe('instructor')
 	})
 })

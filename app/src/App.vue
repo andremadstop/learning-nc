@@ -10,7 +10,7 @@
              persisted in localStorage, so it must stay visible and switchable from every page. -->
         <NcNoteCard v-if="studentViewActive" type="warning" class="student-view-banner">
           <div class="app-banner__body">
-            <span>{{ t('learning', 'Schüler-Ansicht aktiv: Du siehst die App so wie Lernende. Verwalten, Pool-Erstellung und Import sind ausgeblendet.') }}</span>
+            <span>{{ studentViewBannerText }}</span>
             <NcButton variant="primary" class="student-view-banner__exit" @click="setStudentViewOverride(false)">
               {{ t('learning', 'Schüler-Ansicht beenden') }}
             </NcButton>
@@ -303,9 +303,12 @@
               @selectCourse="selectCourse"
             />
 
+            <!-- GitHub #35: the course views get the effective role and the student-view flag like
+                 every other view; inside a course only the membership plus that flag gate the tabs. -->
             <CourseList
               v-else-if="!selectedCourse"
-              :userRole="userRole"
+              :userRole="effectiveUserRole"
+              :student-view-active="studentViewActive"
               @selectCourse="selectCourse"
             />
 
@@ -319,7 +322,8 @@
             <CourseDetail
               v-else
               :courseId="selectedCourse.id"
-              :userRole="userRole"
+              :userRole="effectiveUserRole"
+              :student-view-active="studentViewActive"
               :contentLanguage="contentLanguage"
               :fsrsDetailedStats="fsrsDetailedStats"
               :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
@@ -547,6 +551,13 @@ export default {
     // An instructor who switched to the student view (a real student never is in it).
     studentViewActive() {
       return this.studentViewOverride && this.userRole === 'instructor';
+    },
+    // GitHub #35: inside a course the banner says what the view does there. One banner, one exit.
+    studentViewBannerText() {
+      const inCourse = !!this.selectedCourse && ['courses', 'course-tab'].includes(this.$route?.name);
+      return inCourse
+        ? t('learning', 'Schüler-Ansicht aktiv: Du siehst diesen Kurs so, wie Lernende ihn sehen. Verwaltung und Lehrkraft-Bereiche sind ausgeblendet. Das ist nur eine Vorschau, deine Rechte im Kurs bleiben unverändert.')
+        : t('learning', 'Schüler-Ansicht aktiv: Du siehst die App so wie Lernende. Verwalten, Pool-Erstellung und Import sind ausgeblendet.');
     },
     // May add questions to the open pool: its owner or an edit share, whatever the role — the
     // same rule as the backend (canEditPool), which has no instructor gate (GitHub #34). The

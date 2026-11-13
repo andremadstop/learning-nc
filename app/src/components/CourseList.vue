@@ -27,8 +27,9 @@
 		</NcNoteCard>
 
 		<template v-if="!loading">
-			<!-- Instructor: own courses -->
-			<div v-if="userRole === 'instructor' && ownCourses.length > 0" class="course-section">
+			<!-- Instructor: own courses. GitHub #35: the student view keeps them listed (opening one
+				is how an instructor previews it as a learner) but without the management actions. -->
+			<div v-if="(userRole === 'instructor' || studentViewActive) && ownCourses.length > 0" class="course-section own-courses">
 				<h4>{{ t('learning', 'My Courses ({n})', { n: ownCourses.length }) }}</h4>
 				<div class="course-grid">
 					<div v-for="course in ownCourses"
@@ -44,7 +45,7 @@
 								<span class="status-badge" :class="course.status">
 									{{ course.status === 'active' ? t('learning', 'Active') : t('learning', 'Archived') }}
 								</span>
-								<NcActions>
+								<NcActions v-if="userRole === 'instructor'">
 									<NcActionButton @click.stop="editCourse(course)">
 										{{ t('learning', 'Edit') }}
 									</NcActionButton>
@@ -242,6 +243,11 @@ export default {
 			validator(value) {
 				return ['instructor', 'student'].includes(value)
 			},
+		},
+		// GitHub #35: an instructor previewing the app as a student (userRole is then 'student').
+		studentViewActive: {
+			type: Boolean,
+			default: false,
 		},
 	},
 

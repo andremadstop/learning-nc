@@ -67,6 +67,7 @@ function createInstance(overrides = {}) {
 		userRole: 'student',
 		contentLanguage: 'de',
 		presetDuelCode: '',
+		studentViewActive: false,
 		course: {
 			is_instructor: false,
 			material_folder: null,
@@ -98,6 +99,7 @@ function createInstance(overrides = {}) {
 	}
 
 	Object.defineProperties(instance, {
+		actsAsInstructor: { get: () => CourseDetail.computed.actsAsInstructor.call(instance) },
 		isInstructor: { get: () => CourseDetail.computed.isInstructor.call(instance) },
 		isCourseSummaryReleased: { get: () => CourseDetail.computed.isCourseSummaryReleased.call(instance) },
 		hasCourseTools: { get: () => CourseDetail.computed.hasCourseTools.call(instance) },
@@ -363,5 +365,93 @@ describe('CourseDetail — completion tab in certifying courses (GitHub #35)', (
 
 		expect(instance.currentTab).toBe('summary')
 		expect(instance.activeMegaTab).toBe('teilnehmer')
+	})
+})
+
+// GitHub #35: the student view must show a course the way a learner sees it. CourseDetail got the
+// real global role and read course.is_instructor directly, so an instructor in the student view
+// still saw Verwaltung and every instructor sub-tab.
+describe('CourseDetail — student view and course-level role (GitHub #35)', () => {
+	const ownCourse = (extra = {}) => ({
+		is_instructor: true,
+		material_folder: null,
+		enabled_tools: [],
+		mode_config: {
+			training: true, leitner: true, exam: true, duel: true, gameshow: true, league: true, abenteuer: false, course_summary: false,
+		},
+		...extra,
+	})
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		setActivePinia(createPinia())
+	})
+
+	it('the student view hides Verwaltung and the instructor sub-tabs of an own course', () => {
+		const instance = createInstance({ course: ownCourse(), userRole: 'student', studentViewActive: true })
+
+		expect(instance.actsAsInstructor).toBe(false)
+		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toEqual(['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation'])
+		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam'])
+		expect(instance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress'])
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies', 'schwarm'])
+		expect(instance.wettbewerbLeafTabs).toEqual(['leaderboard', 'league', 'arena'])
+	})
+
+	it('a global student enrolled as co-instructor keeps the instructor tabs (the membership decides)', () => {
+		const instance = createInstance({ course: ownCourse(), userRole: 'student', studentViewActive: false })
+
+		expect(instance.actsAsInstructor).toBe(true)
+		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toContain('verwaltung')
+		expect(instance.lernraumLeafTabs).toEqual(['pools', 'curriculum', 'materials', 'knowledge'])
+	})
+
+	it('loading an own course in the student view opens the learner default tab and the learner progress', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockImplementation((url) => {
+			if (url === '/apps/learning/api/courses/{courseId}') {
+				return Promise.resolve({ data: { id: 11, ...ownCourse(), pools: [], members: [] } })
+			}
+			return Promise.resolve({ data: { pools: [] } })
+		})
+		const instance = createInstance({ course: null, userRole: 'student', studentViewActive: true, currentTab: 'pools' })
+
+		await instance.fetchCourseDetail()
+
+		expect(instance.currentTab).toBe('training')
+		expect(instance.activeMegaTab).toBe('lernraum')
+		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/my-progress')
+	})
+
+	it('a course with Training switched off does not route learners to Training', () => {
+		const instance = createInstance({
+			course: ownCourse({ is_instructor: false, mode_config: { training: false, leitner: true, exam: true } }),
+		})
+
+		expect(instance.lernraumLeafTabs).not.toContain('training')
+		expect(instance.defaultLernraumTab()).toBe('leitner')
+	})
+
+	it('a reload forgets the required-content flag until the remounted learning space reports it again', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockImplementation((url) => {
+			if (url === '/apps/learning/api/courses/{courseId}') {
+				return Promise.resolve({ data: { id: 11, ...ownCourse({ is_instructor: false }), pools: [], members: [] } })
+			}
+			return Promise.resolve({ data: { pools: [] } })
+		})
+		const instance = createInstance({ hasCourseVideos: true, currentTab: 'videos' })
+
+		await instance.fetchCourseDetail()
+
+		expect(instance.hasCourseVideos).toBe(false)
+		expect(instance.currentTab).toBe('training')
+	})
+
+	it('routes the required-content leaf (videos) into Lernraum once the learning space reports it', () => {
+		const instance = createInstance({ hasCourseVideos: true })
+
+		expect(instance.lernraumLeafTabs[0]).toBe('videos')
+		expect(instance.megaTabForLeaf('videos')).toBe('lernraum')
 	})
 })
