@@ -177,8 +177,14 @@ class CourseEnrollmentService {
                 $result['groupsUnavailable'][] = $gid;
                 continue;
             }
-            // Bounded: never load more of a huge group than could be enrolled anyway.
-            foreach ($this->groupMemberUids($group, self::MAX_ENROLMENTS - count($targets)) as $uid) {
+            // Bounded: never load more of a huge group than could be enrolled anyway. The bound is
+            // the fixed limit, never "what is left": a group overlapping earlier picks would fill a
+            // smaller slice with people already collected and silently drop the rest of it.
+            $groupUids = $this->groupMemberUids($group, self::MAX_ENROLMENTS);
+            if (count($groupUids) > self::MAX_ENROLMENTS) {
+                throw new \InvalidArgumentException('too_many');
+            }
+            foreach ($groupUids as $uid) {
                 $targets[$uid] = $targets[$uid] ?? false;
             }
             if (count($targets) > self::MAX_ENROLMENTS) {

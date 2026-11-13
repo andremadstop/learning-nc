@@ -606,6 +606,35 @@ class CourseEnrollmentServiceTest extends TestCase {
         $this->assertSame([CourseEnrollmentService::MAX_ENROLMENTS + 1], $this->expandedLimits, 'one more than the limit is enough to know');
     }
 
+    public function testAGroupOverlappingEarlierPicksIsEnrolledInFull(): void {
+        // B starts with 500 people already collected through A. A slice sized "what is left" (400)
+        // would hold only those and silently drop u601..u700 while answering 200.
+        $this->groups['a'] = array_map(fn (int $i) => 'u' . $i, range(1, 600));
+        $this->groups['b'] = array_merge(
+            array_map(fn (int $i) => 'u' . $i, range(1, 500)),
+            array_map(fn (int $i) => 'u' . $i, range(601, 700))
+        );
+
+        $result = $this->service()->bulkAdd(self::COURSE_ID, [], ['a', 'b'], 'student', self::OWNER);
+
+        $this->assertCount(700, $result['added']);
+        $this->assertContains('u700', $this->uids($result['added']));
+        $limit = CourseEnrollmentService::MAX_ENROLMENTS + 1;
+        $this->assertSame([$limit, $limit], $this->expandedLimits, 'every group is expanded with the fixed bound');
+    }
+
+    public function testBulkRejectsAGroupLargerThanTheLimitWithoutLoadingAllOfIt(): void {
+        $this->groups['everyone'] = array_map(fn (int $i) => 'u' . $i, range(1, 5000));
+        try {
+            $this->service()->bulkAdd(self::COURSE_ID, [], ['everyone'], 'student', self::OWNER);
+            $this->fail('expected too_many');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('too_many', $e->getMessage());
+        }
+        $this->assertSame([CourseEnrollmentService::MAX_ENROLMENTS + 1], $this->expandedLimits);
+        $this->assertSame([], $this->inserted);
+    }
+
     public function testAssertGroupEnrollableAcceptsAGroupAtTheLimit(): void {
         $this->groups['team'] = array_map(fn (int $i) => 'u' . $i, range(1, CourseEnrollmentService::MAX_ENROLMENTS));
         $this->assertSame('team', $this->service()->assertGroupEnrollable('team', self::OWNER));
