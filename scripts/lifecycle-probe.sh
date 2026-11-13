@@ -26,6 +26,13 @@
 #            `occ learning:audit:verify` passes over the 3 seeded chained events on 5.5.1 before the
 #            upgrade and again after it, so the redaction cannot have touched the hash chain.
 # These run before check-working-state.php, which writes audit rows and a pool of its own.
+# The member repair step (CanonicalizeMemberUserIds, GitHub #35) is checked by
+# scripts/lifecycle-fixtures/member-case.php: wrongly cased course members and pool shares are
+# seeded (upgrade: on 5.5.1, before the upgrade; fresh: after `app:enable`, before the repair run)
+# and must come out under the canonical uid, duplicates and owner rows removed, orphans and group
+# shares untouched; in the upgrade scenario again after both repair runs (a rerun changes nothing).
+# On a fresh install <install> runs while the tables are still empty, so there the checker can show
+# the step's registration in the installed info.xml, and the repair run shows its effect.
 # The app under test is app/ from the git index, or from PROBE_REF (e.g. to prove the checks go
 # red on a release without the fix). The fixtures always come from the git index — never the
 # working copy, so an unstaged fixture edit cannot validate a probe nobody reviewed.
@@ -59,6 +66,7 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/learning-life.XXXXXX")"
 SEEDER="$WORK/repo/scripts/lifecycle-fixtures/seed-5.5.1.sql.php"
 CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-working-state.php"
 LLM_CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-llm-upgrade.php"
+MEMBER_CASE="$WORK/repo/scripts/lifecycle-fixtures/member-case.php"
 PASS="throwaway-$$-$RANDOM"   # dies with the containers; never leaves this machine
 CREATED=()                     # "container:<name>" / "network:<name>", in creation order
 FAILED=0
@@ -101,7 +109,7 @@ if [ -n "${PROBE_REF:-}" ]; then
 else
 	echo "==> app under test from git index"
 fi
-for f in "$SEEDER" "$CHECKER" "$LLM_CHECKER"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
+for f in "$SEEDER" "$CHECKER" "$LLM_CHECKER" "$MEMBER_CASE"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
 mkdir -p "$WORK/new/learning"
 for f in "${RELEASE_SET[@]}"; do
 	[ -e "$WORK/repo/app/$f" ] || { echo "working state lacks app/$f" >&2; exit 2; }
@@ -192,6 +200,28 @@ seed() {
 	[ "$rc" -eq 0 ] && grep -q '^SEED chained_rows=3 ' <<<"$out"
 }
 
+# add_users — the accounts the member-case fixture refers to (seed() adds them on upgrade)
+add_users() {
+	local u
+	for u in lc-user1 lc-user2 lc-user3; do
+		docker exec -u www-data -w /var/www/html -e OC_PASS="$PASS" "$NC" \
+			php occ user:add --password-from-env "$u" >/dev/null || return 1
+	done
+}
+
+# member_case <seed|check> — wrongly cased members/shares in, canonical ones out (member-case.php)
+member_case() {
+	docker cp "$MEMBER_CASE" "$NC:/tmp/member-case.php" || return 1
+	local out rc=0
+	out="$(docker exec -u www-data "$NC" php /tmp/member-case.php "$1" 2>&1)" || rc=$?
+	echo "$out"
+	if [ "$1" = seed ]; then
+		[ "$rc" -eq 0 ] && grep -q '^SEED member_rows=5 ' <<<"$out" && grep -q '^SEED share_rows=3 ' <<<"$out"
+	else
+		[ "$rc" -eq 0 ] && grep -q '^CHECK result=ok$' <<<"$out"
+	fi
+}
+
 # working_state <expected_last_seq> — the fresh-install regressions of 5.5.2 are gone
 working_state() {
 	docker cp "$CHECKER" "$NC:/tmp/check.php" || return 1
@@ -277,7 +307,10 @@ check fresh_enable occ app:enable learning
 check fresh_schema learning_tables
 check fresh_enabled app_enabled
 check fresh_version version_is "$NEW_VERSION"
+check fresh_users add_users
+check fresh_member_seed member_case seed
 check fresh_repair occ_clean maintenance:repair
+check fresh_member_case member_case check
 check fresh_llm llm_contract fresh
 check fresh_working_state working_state 1
 
@@ -289,6 +322,7 @@ check upgrade_enable_old occ app:enable learning
 check upgrade_old_version version_is "$OLD_VERSION"
 check seed seed
 check upgrade_audit_verify_old audit_verify 3
+check upgrade_member_seed member_case seed
 check upgrade_swap swap_to_working_state
 if [ -n "$PROBE_FAIL_AFTER" ]; then
 	check upgrade_occ_upgrade_injected upgrade_injected
@@ -298,6 +332,7 @@ if [ -n "$PROBE_FAIL_AFTER" ]; then
 fi
 check upgrade_occ_upgrade occ_clean upgrade
 check upgrade_new_version version_is "$NEW_VERSION"
+check upgrade_member_case member_case check
 check upgrade_llm llm_contract upgraded
 check upgrade_state_0 llm_snapshot 0
 check upgrade_repair_1 occ_clean maintenance:repair
@@ -306,6 +341,7 @@ check upgrade_repair_1_no_change same_state 0 1
 check upgrade_repair_2 occ_clean maintenance:repair
 check upgrade_state_2 llm_snapshot 2
 check upgrade_repair_2_no_change same_state 1 2
+check upgrade_member_case_after_repair member_case check
 check upgrade_llm_after_repair llm_contract upgraded
 check upgrade_audit_verify_new audit_verify 3
 # changes state, so after the no-change comparisons: the running task finishes, the sweep deletes it
