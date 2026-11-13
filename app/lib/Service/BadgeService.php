@@ -502,6 +502,8 @@ class BadgeService {
            ->from('learning_sessions')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           // Practice attempts (exam_kind set) are not exam runs: they never count.
+           ->andWhere($qb->expr()->isNull('exam_kind'))
            ->andWhere($qb->expr()->isNotNull('completed_at'))
            ->andWhere($qb->expr()->gt('total_questions', $qb->createNamedParameter(0)))
            ->andWhere(

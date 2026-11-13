@@ -781,6 +781,8 @@ class LernprofilService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           // Practice attempts (exam_kind set) are no exam score of the pool.
+           ->andWhere($qb->expr()->isNull('exam_kind'))
            ->andWhere($qb->expr()->isNotNull('completed_at'))
            ->orderBy('completed_at', 'DESC')
            ->setMaxResults(count($poolIds) * 5);
