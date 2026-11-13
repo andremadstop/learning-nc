@@ -181,6 +181,7 @@
 
         <!-- GitHub #35: what this attempt means for the course certificate -->
         <NcNoteCard v-if="certificationMessage" :type="certificationMessage.type" class="certification-result">
+          <p v-if="certificationMessage.expiry" class="certification-result__text">{{ certificationMessage.expiry }}</p>
           <p class="certification-result__text">{{ certificationMessage.text }}</p>
           <p v-if="certificationMessage.retake" class="certification-result__retake">{{ certificationMessage.retake }}</p>
           <NcButton
@@ -601,9 +602,27 @@ export default {
       if (c.passed && c.certificate && c.certificate.revoked) {
         return { type: 'error', text: t('learning', 'Your certificate for this course was revoked. Please contact your instructor.') }
       }
+      // GitHub #35: the certificate expired and no recertification period is open yet (the grace
+      // days after the expiry). The rule still reads the old exams as passed, but nothing can be
+      // issued, and an exam taken now does not count once the period opens (PassCriteriaService
+      // issuanceWindow). The grace days are server config, not in this block — no date is promised.
+      const expired = !!(c.certificate && c.certificate.expired && !c.certificate.revoked)
+      const expiry = expired && c.certificate.expires_at
+        ? t('learning', 'Your certificate for this course expired on {date}.', { date: new Date(c.certificate.expires_at * 1000).toLocaleDateString() })
+        : ''
+      if (c.passed && expired) {
+        return {
+          type: 'warning',
+          text: expiry || t('learning', 'Your certificate for this course has expired.'),
+          retake: t('learning', 'Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.'),
+        }
+      }
       if (c.passed) {
         return null
       }
+      // Not passed with an expired certificate: the renewal is under way or not open yet — the
+      // block cannot tell which, so only the expiry is added to the usual verdict.
+      const extra = expiry ? { expiry } : {}
       const retake = this.retakeText(c.attempt_policy)
       if (c.requirement === 'required_pools') {
         const missing = (Array.isArray(c.pools) ? c.pools : [])
@@ -612,13 +631,13 @@ export default {
         // An exam on a course pool the certificate does not require counts for nothing — even a
         // passing one must not read as progress.
         if (c.counts_for_requirement === false) {
-          return { type: 'info', text: t('learning', 'This pool is not required for the certificate. Still required: {pools}', { pools: missing.join(', ') }) }
+          return { type: 'info', text: t('learning', 'This pool is not required for the certificate. Still required: {pools}', { pools: missing.join(', ') }), ...extra }
         }
         if (c.exam_passed && missing.length > 0) {
-          return { type: 'info', text: t('learning', 'Pool passed — still required: {pools}', { pools: missing.join(', ') }), retake }
+          return { type: 'info', text: t('learning', 'Pool passed — still required: {pools}', { pools: missing.join(', ') }), retake, ...extra }
         }
       }
-      return { type: 'warning', text: t('learning', 'Not passed yet. The pass mark is {percent}%.', { percent: c.threshold }), retake }
+      return { type: 'warning', text: t('learning', 'Not passed yet. The pass mark is {percent}%.', { percent: c.threshold }), retake, ...extra }
     },
     resultBannerClass() {
       return this.passedExam ? 'result-banner--passed' : 'result-banner--failed';

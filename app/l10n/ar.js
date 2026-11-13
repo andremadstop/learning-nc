@@ -3356,5 +3356,8 @@ OC.L10N.register(
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "يوجد اختبار لهذه المجموعة قيد التشغيل بالفعل في دورة أخرى أو خارج أي دورة. أكمله حيث بدأته، أو انتظر حتى ينتهي وقته.",
     "Die Lernmaterialien konnten nicht geladen werden." : "تعذّر تحميل المواد التعليمية.",
     "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere." : "وضع التعلم «اختبار» معطّل في هذا المقرر. لا تُمنح الشهادات إلا على الاختبارات التي تبدأ هنا في المقرر، لذلك لا يمكن لأحد الحصول على شهادة. فعّل «اختبار» ضمن أوضاع التعلم أعلاه ثم احفظ.",
+    "Your certificate for this course expired on {date}." : "انتهت صلاحية شهادتك لهذا المقرر في {date}.",
+    "Your certificate for this course has expired." : "انتهت صلاحية شهادتك لهذا المقرر.",
+    "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry." : "الاختبارات التي تؤديها الآن لا تجدّدها. تُحتسب إعادة الاختبار لشهادة جديدة بمجرد بدء فترة التجديد، بعد فترة السماح التي تلي انتهاء الصلاحية.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

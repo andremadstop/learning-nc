@@ -3356,5 +3356,8 @@ OC.L10N.register(
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up.",
     "Die Lernmaterialien konnten nicht geladen werden." : "The course materials could not be loaded.",
     "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere." : "The \"Exam\" learning mode is switched off in this course. Certificates are only earned with exams started here in the course, so nobody can receive a certificate. Switch on \"Exam\" under the learning modes above and save.",
+    "Your certificate for this course expired on {date}." : "Your certificate for this course expired on {date}.",
+    "Your certificate for this course has expired." : "Your certificate for this course has expired.",
+    "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry." : "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.",
 },
 "nplurals=2; plural=(n != 1);");

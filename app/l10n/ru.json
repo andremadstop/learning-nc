@@ -3355,6 +3355,9 @@
         "Kursmitglieder können jede PDF- und Markdown-Datei in diesem Ordner öffnen.": "Участники курса могут открыть любой файл PDF и Markdown в этой папке.",
         "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up.": "Экзамен по этому пулу уже идёт в другом курсе или вне курса. Завершите его там, где вы его начали, или дождитесь окончания его времени.",
         "Die Lernmaterialien konnten nicht geladen werden.": "Не удалось загрузить учебные материалы.",
-        "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.": "Режим обучения «Экзамен» в этом курсе отключён. Сертификаты выдаются только за экзамены, начатые здесь, в курсе, поэтому никто не может получить сертификат. Включите «Экзамен» в режимах обучения выше и сохраните."
+        "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.": "Режим обучения «Экзамен» в этом курсе отключён. Сертификаты выдаются только за экзамены, начатые здесь, в курсе, поэтому никто не может получить сертификат. Включите «Экзамен» в режимах обучения выше и сохраните.",
+        "Your certificate for this course expired on {date}.": "Срок действия вашего сертификата по этому курсу истёк {date}.",
+        "Your certificate for this course has expired.": "Срок действия вашего сертификата по этому курсу истёк.",
+        "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.": "Экзамены, сданные сейчас, его не продлевают. Повторная попытка засчитывается для нового сертификата, как только откроется период продления — после льготного срока, следующего за истечением."
     }
 }

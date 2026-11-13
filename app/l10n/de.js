@@ -3356,5 +3356,8 @@ OC.L10N.register(
     "An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up." : "Eine Prüfung zu diesem Pool läuft bereits in einem anderen Kurs oder außerhalb eines Kurses. Schließe sie dort ab, wo du sie begonnen hast, oder warte, bis ihre Zeit abgelaufen ist.",
     "Die Lernmaterialien konnten nicht geladen werden." : "Die Lernmaterialien konnten nicht geladen werden.",
     "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere." : "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.",
+    "Your certificate for this course expired on {date}." : "Dein Zertifikat für diesen Kurs ist am {date} abgelaufen.",
+    "Your certificate for this course has expired." : "Dein Zertifikat für diesen Kurs ist abgelaufen.",
+    "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry." : "Prüfungen, die du jetzt ablegst, verlängern es nicht. Eine Wiederholung zählt für ein neues Zertifikat, sobald der Erneuerungszeitraum beginnt, nach der Karenzzeit im Anschluss an den Ablauf.",
 },
 "nplurals=2; plural=(n != 1);");

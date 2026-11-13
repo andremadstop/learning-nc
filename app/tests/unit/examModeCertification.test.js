@@ -134,6 +134,56 @@ describe('ExamMode — certification result (GitHub #35)', () => {
 		expect(vm.certificationMessage.text).not.toContain('Pool passed')
 	})
 
+	// The certificate expired and the renewal period is not open yet (grace days): the rule still
+	// reads last period's exams as passed, nothing is issued — the screen used to show nothing.
+	describe('expired certificate', () => {
+		const EXPIRES = 1767225600 // 2026-01-01
+		const expiredOn = new Date(EXPIRES * 1000).toLocaleDateString()
+		const expiredCert = { verification_id: 'vid-old', issued_at: 1735689600, expires_at: EXPIRES, expired: true, revoked: false }
+
+		it('passed earlier, certificate expired, no renewal period open: says so and when a retake counts', () => {
+			const vm = createInstance(result({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: false, certificate: expiredCert, issuance_error: null, attempt_policy: policy }))
+
+			const msg = vm.certificationMessage
+			expect(msg).not.toBeNull()
+			expect(msg.type).toBe('warning')
+			expect(msg.text).toBe(`Your certificate for this course expired on ${expiredOn}.`)
+			expect(msg.retake).toBe('Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.')
+			expect(msg.verificationId).toBeUndefined()
+		})
+
+		it('also with required pools: the expired state, not silence', () => {
+			const vm = createInstance(result({
+				applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'required_pools', counts_for_requirement: true,
+				certificate_issued: false, certificate: expiredCert, attempt_policy: policy,
+				pools: [{ pool_id: 3, title: 'Brandschutz', best_score: 90, passed: true }],
+			}))
+
+			expect(vm.certificationMessage.text).toContain('expired on')
+		})
+
+		it('not passed in the renewal: the usual verdict, with the expiry stated', () => {
+			const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, requirement: 'any_exam', certificate_issued: false, certificate: expiredCert, attempt_policy: policy }, { score_percentage: 60 }))
+
+			expect(vm.certificationMessage.type).toBe('warning')
+			expect(vm.certificationMessage.text).toBe('Not passed yet. The pass mark is 80%.')
+			expect(vm.certificationMessage.expiry).toBe(`Your certificate for this course expired on ${expiredOn}.`)
+		})
+
+		it('a revoked certificate that has also expired still reads as revoked', () => {
+			const vm = createInstance(result({ applicable: true, passed: true, threshold: 70, exam_passed: true, certificate_issued: false, certificate: { ...expiredCert, revoked: true } }))
+
+			expect(vm.certificationMessage.type).toBe('error')
+			expect(vm.certificationMessage.text).toBe('Your certificate for this course was revoked. Please contact your instructor.')
+		})
+
+		it('a valid certificate adds no expiry line to a failed attempt', () => {
+			const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, certificate: { ...expiredCert, expires_at: null, expired: false }, attempt_policy: policy }))
+
+			expect(vm.certificationMessage.expiry).toBeUndefined()
+		})
+	})
+
 	it('no certification block (training course, exam outside a course): legacy preset verdict, no message', () => {
 		const vm = createInstance({ total_questions: 20, correct_answers: 16, score_percentage: 80 })
 
