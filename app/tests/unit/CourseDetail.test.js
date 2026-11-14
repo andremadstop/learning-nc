@@ -38,9 +38,6 @@ vi.mock('../../src/components/DuelMode.vue', () => stub('DuelMode'))
 vi.mock('../../src/components/GameshowMode.vue', () => stub('GameshowMode'))
 vi.mock('../../src/components/TrainingMode.vue', () => stub('TrainingMode'))
 vi.mock('../../src/components/ArenaSelector.vue', () => stub('ArenaSelector'))
-vi.mock('../../src/components/OldschoolSelector.vue', () => stub('OldschoolSelector'))
-vi.mock('../../src/components/WissensturmMode.vue', () => stub('WissensturmMode'))
-vi.mock('../../src/components/LernwuerfelMode.vue', () => stub('LernwuerfelMode'))
 vi.mock('../../src/components/AbenteuerMode.vue', () => stub('AbenteuerMode'))
 vi.mock('../../src/components/CourseTabLernraum.vue', () => stub('CourseTabLernraum'))
 vi.mock('../../src/components/CourseTabTeilnehmer.vue', () => stub('CourseTabTeilnehmer'))
@@ -86,12 +83,6 @@ function createInstance(overrides = {}) {
 			$emit: vi.fn(),
 		},
 		$emit: vi.fn(),
-		$set: vi.fn((obj, key, value) => {
-			obj[key] = value
-		}),
-		$delete: vi.fn((obj, key) => {
-			delete obj[key]
-		}),
 		$nextTick: vi.fn((cb) => {
 			if (typeof cb === 'function') cb()
 		}),

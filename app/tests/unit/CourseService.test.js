@@ -39,10 +39,10 @@ describe('CourseService — Phase 154 additions', () => {
 			expect(result).toEqual(mockData)
 		})
 
-		it('returns applicable=false when cert is disabled for the course', async () => {
-			axios.get.mockResolvedValueOnce({ data: { applicable: false, passed: false, score: null, threshold: 80, poolsMastered: false, passedAt: null } })
-			const result = await getPassStatus(3)
-			expect(result.applicable).toBe(false)
+		it('rejects with the request error instead of resolving to an empty status', async () => {
+			const err = Object.assign(new Error('Request failed with status code 403'), { response: { status: 403 } })
+			axios.get.mockRejectedValueOnce(err)
+			await expect(getPassStatus(3)).rejects.toBe(err)
 		})
 	})
 

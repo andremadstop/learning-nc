@@ -42,9 +42,6 @@ function createInstance(overrides = {}) {
 		userRole: 'instructor',
 		activeTab: 'mode-config',
 		$emit: vi.fn(),
-		$set: vi.fn((obj, key, value) => {
-			obj[key] = value
-		}),
 		...overrides,
 	}
 
