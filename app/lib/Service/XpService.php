@@ -156,11 +156,22 @@ class XpService {
      * Level is synced AFTER the atomic XP increment to avoid stale-read races.
      */
     public function incrementSessionXp(string $userId, int $sessionXp, int $currentStreak): void {
+        $today = gmdate('Y-m-d');
+
         if (!$this->isGamificationEnabled()) {
+            // GitHub #36: no XP and no streak, but the session still happened. The session count
+            // and the last activity are no gamification (at-risk signals, "Last active", online
+            // dot); before, they stayed frozen until the nightly reconciliation.
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_user_stats')
+               ->set('total_sessions', $qb->createFunction('total_sessions + 1'))
+               ->set('last_activity_date', $qb->createNamedParameter($today))
+               ->set('updated_at', $qb->createNamedParameter(time()))
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+            $qb->executeStatement();
+            $this->invalidateUserCaches($userId);
             return;
         }
-
-        $today = gmdate('Y-m-d');
 
         // Atomic UPDATE first (no pre-read of total_xp)
         $qb = $this->db->getQueryBuilder();

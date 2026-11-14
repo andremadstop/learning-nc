@@ -99,6 +99,30 @@ class StreakService {
     }
 
     /**
+     * The UTC day (Y-m-d) of the user's latest completed session, or null without one.
+     *
+     * Not gated on gamification: learning_user_stats.last_activity_date feeds the at-risk
+     * signals, the "Last active" column and the classbook online dot, which are no gamification.
+     * getStreak() returns null for it with gamification off, and the nightly reconciliation
+     * wrote that null into the stats row, so every learner read as never active (GitHub #36).
+     * Same day as getStreak()'s last_activity_date with gamification on.
+     */
+    public function lastActivityDate(string $userId): ?string {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('MAX(completed_at) AS last_completed'))
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->isNotNull('completed_at'));
+        $result = $qb->executeQuery();
+        $value = $result->fetchOne();
+        $result->closeCursor();
+        if ($value === null || $value === false || (int)$value <= 0) {
+            return null;
+        }
+        return gmdate('Y-m-d', (int)$value);
+    }
+
+    /**
      * Calculate daily learning streak from completed sessions.
      *
      * @return array{current_streak: int, longest_streak: int, last_activity_date: ?string, is_active_today: bool}

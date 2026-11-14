@@ -157,7 +157,8 @@ class FakeQueryBuilder {
         return $expression;
     }
 
-    public function createNamedParameter(mixed $value, mixed $type = null): array {
+    // mixed, not array: a test may hand out a parameter that can also be concatenated into SQL.
+    public function createNamedParameter(mixed $value, mixed $type = null): mixed {
         $parameter = ['value' => $value, 'type' => $type];
         $this->namedParameters[] = $parameter;
         return $parameter;

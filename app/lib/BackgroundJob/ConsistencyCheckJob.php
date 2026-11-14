@@ -76,6 +76,9 @@ class ConsistencyCheckJob extends TimedJob {
 
         // Recalculate streak from session history
         $streak = $this->streakService->getStreak($userId);
+        // GitHub #36: the streak is empty with gamification off, the last activity is not; it
+        // comes from the sessions either way (at-risk signals, "Last active", online dot).
+        $lastActivity = $streak['last_activity_date'] ?? $this->streakService->lastActivityDate($userId);
 
         $qb = $this->db->getQueryBuilder();
         $qb->update('learning_user_stats')
@@ -85,7 +88,7 @@ class ConsistencyCheckJob extends TimedJob {
                ' > longest_streak THEN ' . $qb->createNamedParameter($streak['longest_streak']) .
                ' ELSE longest_streak END'
            ))
-           ->set('last_activity_date', $qb->createNamedParameter($streak['last_activity_date']))
+           ->set('last_activity_date', $qb->createNamedParameter($lastActivity))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
         $qb->executeStatement();
 
