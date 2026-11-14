@@ -352,7 +352,7 @@ PROMPT;
 
             foreach ($weakPools as $idx => $pool) {
                 $poolName  = $pool['pool_name'] ?? '';
-                $slug      = $this->slugify($poolName);
+                $slug      = NoteSlug::forPool($poolName, (int)($pool['pool_id'] ?? 0));
                 $errorRate = number_format((float)($pool['error_rate'] ?? 0), 1);
                 $trend     = $pool['trend'] ?? 'stable';
                 $trendIcon = match($trend) {
@@ -462,27 +462,6 @@ PROMPT;
 
         $body = substr($rest, $closePos + 3);
         return ltrim($body, "\n\r");
-    }
-
-    /**
-     * Convert a pool name to a safe, stable filename slug.
-     * Mirrors NoteGeneratorService::slugify().
-     */
-    private function slugify(string $name): string {
-        $slug = mb_strtolower($name);
-
-        $replacements = ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss'];
-        $slug = str_replace(array_keys($replacements), array_values($replacements), $slug);
-
-        $slug = preg_replace('/[^a-z0-9\-]/', '-', $slug) ?? $slug;
-        $slug = preg_replace('/-+/', '-', $slug) ?? $slug;
-        $slug = trim($slug, '-');
-
-        if ($slug === '') {
-            $slug = 'note';
-        }
-
-        return $slug;
     }
 
     /**
