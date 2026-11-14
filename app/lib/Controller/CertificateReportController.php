@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
  * CSV download are byte-identical filtered sets. Authorization is per-course (the service gate maps
  * a foreign instructor to ForbiddenException → 403, a missing course to DoesNotExistException → 404).
  * The account identifier and email never appear in any surface — the projection is done in the
- * service and only the safe 5-field DTO reaches here.
+ * service and only the safe DTO (5 display fields plus the expired flag) reaches here.
  *
  * Auth mirrors CertificateController: a `?string $userId` ctor param (NC injects null when
  * unauthenticated) with a null-guard → 401; all endpoints are @NoAdminRequired so a non-admin

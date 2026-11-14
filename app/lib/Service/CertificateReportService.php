@@ -16,9 +16,10 @@ use OCP\IUserManager;
  * One shared read path feeds BOTH the on-screen JSON table and the CSV download, so the two are
  * always the same filtered set. For each issued certificate it decodes the stored, already-signed
  * VC-JWT payload to recover the frozen recipient display name and the achieved score, then projects
- * to a strict 5-field DTO. The account identifier is NEVER read into any output field, and an
- * email-shaped frozen name (defence-in-depth against a hand-edited / legacy row) falls back to a
- * neutral pseudonym — so no plaintext email can reach a report surface.
+ * to a strict DTO (5 display fields plus the expired flag). The account identifier is NEVER
+ * read into any output field, and an email-shaped frozen name (defence-in-depth against a
+ * hand-edited / legacy row) falls back to a neutral pseudonym — so no plaintext email can
+ * reach a report surface.
  */
 class CertificateReportService {
 
