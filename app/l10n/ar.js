@@ -2041,7 +2041,7 @@ OC.L10N.register(
     "Zertifikat konnte nicht gelesen werden." : "تعذّر قراءة الشهادة.",
     "Zertifikat widerrufen? Diese Aktion kann nicht rückgängig gemacht werden." : "إبطال الشهادة؟ لا يمكن التراجع عن هذا الإجراء.",
     "Zertifikat wurde widerrufen" : "تم إبطال الشهادة",
-    "Zertifizierung" : "Certification",
+    "Zertifizierung" : "إصدار الشهادات",
     "Zertifizierung aktivieren" : "تفعيل الشهادة",
     "Zeugnis sichern" : "حفظ الشهادة",
     "Zeugnisstatus" : "حالة الشهادة",

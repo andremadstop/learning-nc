@@ -2041,7 +2041,7 @@ OC.L10N.register(
     "Zertifikat konnte nicht gelesen werden." : "Не удалось прочитать сертификат.",
     "Zertifikat widerrufen? Diese Aktion kann nicht rückgängig gemacht werden." : "Отозвать сертификат? Это действие нельзя отменить.",
     "Zertifikat wurde widerrufen" : "Сертификат отозван",
-    "Zertifizierung" : "Certification",
+    "Zertifizierung" : "Сертификация",
     "Zertifizierung aktivieren" : "Включить сертификацию",
     "Zeugnis sichern" : "Сохранить свидетельство",
     "Zeugnisstatus" : "Статус свидетельства",

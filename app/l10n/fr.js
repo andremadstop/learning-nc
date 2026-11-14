@@ -1486,7 +1486,7 @@ OC.L10N.register(
     "Short summary" : "Short summary",
     "Show detailed FSRS intervals, stability and recall estimates in Leitner mode." : "Show detailed FSRS intervals, stability and recall estimates in Leitner mode.",
     "Show student view" : "Afficher la vue étudiant",
-    "Show this pool as required" : "Show this pool as required",
+    "Show this pool as required" : "Afficher ce pool comme obligatoire",
     "Show worst questions" : "Show worst questions",
     "Showing {start}-{end} of {total}" : "Showing {start}-{end} of {total}",
     "Sicher, Klaus zu entfernen?" : "Sure to remove Klaus?",
