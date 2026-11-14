@@ -101,7 +101,7 @@ export function buildPrivacyCategories(provider = '') {
 			name: t('learning', 'Gamification', undefined, undefined, RAW),
 			items: t('learning', 'Badges, XP, Streak-Zähler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt', undefined, undefined, RAW),
 			purpose: t('learning', 'Motivation, Lernfortschritt sichtbar machen (sofern Gamification aktiviert ist)', undefined, undefined, RAW),
-			who_sees: t('learning', 'Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die App diese Werte niemandem an.', undefined, undefined, RAW),
+			who_sees: t('learning', 'Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die Lernoberfläche diese Werte niemandem an; in deinem Datenexport sind sie weiterhin enthalten.', undefined, undefined, RAW),
 			retention: untilAccountDeleted(),
 			legal_basis: t('learning', 'Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation', undefined, undefined, RAW),
 		},

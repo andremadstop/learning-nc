@@ -470,7 +470,7 @@
         "Rechtliche Verpflichtung (Art. 6(1)c)": "Legal obligation (Art. 6(1)(c) GDPR)",
         "Badges, XP, Streak-Zähler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt": "Badges, XP, streak counter, leaderboard rank, arena results, adventure progress",
         "Motivation, Lernfortschritt sichtbar machen (sofern Gamification aktiviert ist)": "Motivation, making learning progress visible (if gamification is turned on)",
-        "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die App diese Werte niemandem an.": "If gamification is turned on: you + course participants (leaderboard); the instructor sees aggregated statistics. If gamification is turned off, the app shows these values to no one.",
+        "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die Lernoberfläche diese Werte niemandem an; in deinem Datenexport sind sie weiterhin enthalten.": "If gamification is turned on: you + course participants (leaderboard); the instructor sees aggregated statistics. If gamification is turned off, the learning interface shows these values to no one; they are still included in your data export.",
         "Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation": "Legitimate interest (Art. 6(1)(f) GDPR) — learning motivation",
         "Simulator-Sessions, PBQ-Ergebnisse, Exam-Readiness-Score, Kursabschluss-Status": "Simulator sessions, PBQ results, exam readiness score, course completion status",
         "Prüfungsvorbereitung, Kompetenz-Nachweis": "Exam preparation, proof of competence",

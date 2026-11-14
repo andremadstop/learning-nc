@@ -464,7 +464,7 @@
         "Rechtliche Verpflichtung (Art. 6(1)c)": "Rechtliche Verpflichtung (Art. 6(1)c)",
         "Badges, XP, Streak-Zähler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt": "Badges, XP, Streak-Zähler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt",
         "Motivation, Lernfortschritt sichtbar machen (sofern Gamification aktiviert ist)": "Motivation, Lernfortschritt sichtbar machen (sofern Gamification aktiviert ist)",
-        "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die App diese Werte niemandem an.": "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die App diese Werte niemandem an.",
+        "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die Lernoberfläche diese Werte niemandem an; in deinem Datenexport sind sie weiterhin enthalten.": "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die Lernoberfläche diese Werte niemandem an; in deinem Datenexport sind sie weiterhin enthalten.",
         "Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation": "Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation",
         "Simulator-Sessions, PBQ-Ergebnisse, Exam-Readiness-Score, Kursabschluss-Status": "Simulator-Sessions, PBQ-Ergebnisse, Exam-Readiness-Score, Kursabschluss-Status",
         "Prüfungsvorbereitung, Kompetenz-Nachweis": "Prüfungsvorbereitung, Kompetenz-Nachweis",

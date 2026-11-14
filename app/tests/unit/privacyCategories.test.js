@@ -127,7 +127,7 @@ describe('privacy page: data categories (#38)', () => {
 		setTestLanguage('de')
 		const byId = Object.fromEntries(buildPrivacyCategories().map((c) => [c.id, c]))
 		expect(byId.gamification.who_sees).toMatch(/^Sofern Gamification aktiviert ist: /)
-		expect(byId.gamification.who_sees).toContain('Ist Gamification ausgeschaltet, zeigt die App diese Werte niemandem an.')
+		expect(byId.gamification.who_sees).toContain('Ist Gamification ausgeschaltet, zeigt die Lernoberfläche diese Werte niemandem an; in deinem Datenexport sind sie weiterhin enthalten.')
 		expect(byId['learning-data'].who_sees).toContain('Sofern Gamification aktiviert ist, sind XP und Badges im Leaderboard')
 		expect(byId['learning-data'].who_sees).not.toMatch(/XP\/Badges im Leaderboard für alle\.$/)
 	})

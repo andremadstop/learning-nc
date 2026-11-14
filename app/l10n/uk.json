@@ -464,7 +464,7 @@
         "Rechtliche Verpflichtung (Art. 6(1)c)": "Юридичний обов’язок (ст. 6(1)(c) GDPR)",
         "Badges, XP, Streak-Zähler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt": "Значки, XP, лічильник серії, місце в таблиці лідерів, результати арени, поступ у пригоді",
         "Motivation, Lernfortschritt sichtbar machen (sofern Gamification aktiviert ist)": "Мотивація, наочний навчальний поступ (якщо гейміфікацію ввімкнено)",
-        "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die App diese Werte niemandem an.": "Якщо гейміфікацію ввімкнено: ви самі + учасники курсу (таблиця лідерів), викладач бачить узагальнену статистику. Якщо гейміфікацію вимкнено, застосунок нікому не показує ці значення.",
+        "Sofern Gamification aktiviert ist: du selbst + Kursteilnehmer (Leaderboard), der Dozent sieht eine aggregierte Statistik. Ist Gamification ausgeschaltet, zeigt die Lernoberfläche diese Werte niemandem an; in deinem Datenexport sind sie weiterhin enthalten.": "Якщо гейміфікацію ввімкнено: ви самі + учасники курсу (таблиця лідерів), викладач бачить узагальнену статистику. Якщо гейміфікацію вимкнено, навчальний інтерфейс нікому не показує ці значення; у вашому експорті даних вони й далі містяться.",
         "Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation": "Законний інтерес (ст. 6(1)(f) GDPR) — навчальна мотивація",
         "Simulator-Sessions, PBQ-Ergebnisse, Exam-Readiness-Score, Kursabschluss-Status": "Сесії симулятора, результати PBQ, показник готовності до іспиту, статус завершення курсу",
         "Prüfungsvorbereitung, Kompetenz-Nachweis": "Підготовка до іспиту, підтвердження компетентності",
