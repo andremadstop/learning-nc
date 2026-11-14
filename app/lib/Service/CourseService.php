@@ -1701,8 +1701,24 @@ class CourseService {
     /**
      * Build ORDER BY for leaderboard based on allowed sort keys.
      */
-    private function applyLeaderboardSorting($qb, string $sortKey, string $sortDir): void {
+    private function applyLeaderboardSorting($qb, string $sortKey, string $sortDir, bool $gamificationEnabled = true): void {
         $dir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
+
+        // GitHub #36: with gamification off XP is a frozen old value; it must not decide ties
+        // (and with them the medals) either. The tie-break is the user id only.
+        if (!$gamificationEnabled) {
+            $column = match ($sortKey) {
+                'user_id' => 'cm.user_id',
+                'total_mastered' => 'total_mastered',
+                'last_activity_date' => 'us.last_activity_date',
+                default => 'total_sessions',
+            };
+            $qb->orderBy($column, $dir);
+            if ($column !== 'cm.user_id') {
+                $qb->addOrderBy('cm.user_id', 'ASC');
+            }
+            return;
+        }
 
         switch ($sortKey) {
             case 'user_id':
@@ -1759,7 +1775,8 @@ class CourseService {
         $sortDir = strtolower((string)$sortDir) === 'asc' ? 'asc' : 'desc';
         // GitHub #36: with gamification off XP, level and streak are frozen old values; the
         // ranking (and its medals) goes by mastered cards, or by sessions without Leitner.
-        if (in_array($sortKey, ['total_xp', 'current_level', 'current_streak'], true) && !$this->xpService->isGamificationEnabled()) {
+        $gamificationEnabled = $this->xpService->isGamificationEnabled();
+        if (in_array($sortKey, ['total_xp', 'current_level', 'current_streak'], true) && !$gamificationEnabled) {
             $sortKey = $this->isLeitnerEnabledFor($course) ? 'total_mastered' : 'total_sessions';
             $sortDir = 'desc';
         }
@@ -1799,7 +1816,7 @@ class CourseService {
             $qb->andWhere($qb->expr()->isNotNull('us.last_activity_date'))
                 ->andWhere($qb->expr()->gte('us.last_activity_date', $qb->createNamedParameter($activeSince)));
         }
-        $this->applyLeaderboardSorting($qb, $sortKey, $sortDir);
+        $this->applyLeaderboardSorting($qb, $sortKey, $sortDir, $gamificationEnabled);
         $qb->setFirstResult($offset)->setMaxResults($limit);
         $result = $qb->executeQuery();
 
@@ -1886,8 +1903,8 @@ class CourseService {
 
         // Privacy: students see limited fields (no user_id, no streak, no sessions)
         if (!$isInstructor) {
-            $entries = array_map(function ($entry) use ($userId) {
-                return [
+            $entries = array_map(function ($entry) use ($userId, $gamificationEnabled) {
+                $visible = [
                     'rank' => $entry['rank'],
                     'display_name' => $entry['display_name'],
                     'is_me' => $entry['user_id'] === $userId,
@@ -1895,6 +1912,12 @@ class CourseService {
                     'current_level' => $entry['current_level'],
                     'total_mastered' => $entry['total_mastered'],
                 ];
+                // GitHub #36: with gamification off XP and level are frozen old values; learners
+                // do not get them for their fellow learners.
+                if (!$gamificationEnabled) {
+                    unset($visible['total_xp'], $visible['current_level']);
+                }
+                return $visible;
             }, $entries);
         }
 

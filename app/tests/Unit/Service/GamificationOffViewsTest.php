@@ -178,6 +178,39 @@ class GamificationOffViewsTest extends TestCase {
         $this->assertSame(['total_xp', 'desc'], $this->leaderboardSort(true, null));
     }
 
+    /** @return array{0: array, 1: FakeQueryBuilder} the learner's leaderboard rows and the row query */
+    private function learnerLeaderboard(bool $gamification): array {
+        $rows = new FakeQueryBuilder(new FakeResult([
+            ['user_id' => 'learner', 'total_xp' => 900, 'current_level' => 6, 'total_mastered' => 4, 'current_streak' => 2, 'total_sessions' => 9, 'last_activity_date' => '2026-03-04'],
+        ]));
+        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchOne(1)), $rows]);
+        $board = $this->courseService($db, $gamification, $this->membersWith($this->student()), $this->noPools())
+            ->getLeaderboard(7, 'learner', 25, 0, 'total_mastered', 'desc');
+        return [$board['leaderboard'], $rows];
+    }
+
+    public function testLeaderboardGivesLearnersNoXpOrLevelWithGamificationOff(): void {
+        [$off] = $this->learnerLeaderboard(false);
+        $this->assertCount(1, $off);
+        $this->assertArrayNotHasKey('total_xp', $off[0]);
+        $this->assertArrayNotHasKey('current_level', $off[0]);
+        $this->assertSame(4, $off[0]['total_mastered']);
+
+        [$on] = $this->learnerLeaderboard(true);
+        $this->assertSame(900, $on[0]['total_xp'], 'with gamification on learners keep XP and level');
+        $this->assertSame(6, $on[0]['current_level']);
+    }
+
+    public function testLeaderboardTieBreakIgnoresFrozenXpWithGamificationOff(): void {
+        [, $off] = $this->learnerLeaderboard(false);
+        $columns = array_map(static fn (array $order): string => $order['field'], $off->orderBys);
+        $this->assertSame(['total_mastered', 'cm.user_id'], $columns);
+
+        [, $on] = $this->learnerLeaderboard(true);
+        $columns = array_map(static fn (array $order): string => $order['field'], $on->orderBys);
+        $this->assertSame(['total_mastered', 'total_xp', 'cm.user_id'], $columns, 'unchanged with gamification on');
+    }
+
     // ── Student detail (My progress / instructor drill-down) ────────────────────
 
     public function testStudentDetailLastActiveComesFromTheSessionsAndBadgesAreSkipped(): void {
