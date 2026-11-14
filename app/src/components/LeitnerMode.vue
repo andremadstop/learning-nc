@@ -483,7 +483,9 @@ export default {
         if (!q) return;
         useOptionalVirtuProfStore()?.updateContext({
           poolId: this.poolId,
-          courseId: this.courseId,
+          // GitHub #40: VirtuProf merges contexts, so a null here wiped the course a pool opened
+          // from a course carries (App.vue); the question then went to the admin inbox.
+          ...(this.courseId ? { courseId: this.courseId } : {}),
           questionContext: {
             questionText: q.text || '',
             answers: (q.answers || []).map(a => a.text || a),
