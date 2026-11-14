@@ -98,7 +98,7 @@ class ImportUsersCommand extends Command {
         // Sync path: create users immediately, print each password once
         $dataRows = array_slice($allLines, 1);
         foreach ($dataRows as $line) {
-            $cols = str_getcsv($line);
+            $cols = str_getcsv($line, ',', '"', '');
             $uid  = trim($cols[0] ?? '');
             $name = trim($cols[1] ?? $uid);
             if ($uid === '') {

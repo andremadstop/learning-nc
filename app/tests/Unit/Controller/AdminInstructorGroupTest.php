@@ -56,11 +56,24 @@ class AdminInstructorGroupTest extends TestCase {
             $config,
             $this->createMock(IDBConnection::class),
             $this->createMock(KeyService::class),
-            $this->createMock(AuditCheckpointService::class),
+            $this->livenessStub(),
             $this->connectionStore(),
             $this->createMock(\OCA\Learning\Service\Llm\ApiKeyStore::class),
             'admin'
         );
+    }
+
+    /** A real-shaped liveness array: a stub returning [] made getAdmin() read undefined keys (#172). */
+    private function livenessStub(): AuditCheckpointService {
+        $checkpoints = $this->createStub(AuditCheckpointService::class);
+        $checkpoints->method('getLivenessStatus')->willReturn([
+            'last_checkpoint_at' => 0,
+            'events_since_checkpoint' => 0,
+            'anchor_enabled' => false,
+            'last_anchor_status' => 'none',
+            'is_overdue' => false,
+        ]);
+        return $checkpoints;
     }
 
     private function saveWithGroup(string $group): string {

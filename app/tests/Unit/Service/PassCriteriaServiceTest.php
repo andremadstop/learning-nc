@@ -709,10 +709,10 @@ class PassCriteriaServiceTest extends TestCase {
         return $cert;
     }
 
-    // ---- RECERT-05 RED locking tests (Wave 2, 164-02) ----------------------------------
-    // These tests fail NOW (against stubs) and flip GREEN in 164-04 when the union guard
-    // is implemented. Do NOT "fix" them before 164-04 — they are the executable specification
-    // that Codex reviews before implementation.
+    // ---- RECERT-05 locking tests (written RED in 164-02, GREEN since 164-04) ---------------
+    // They were the executable specification for the union guard; 164-04 implemented it and
+    // they pass. The "RED at Wave 2" / "GREEN in 164-04" notes below record why each
+    // expectation exists — a failure here today is a regression, not a pending specification.
 
     /**
      * RECERT-05 guard: a NEW assignment period MUST allow a fresh pass+issuance even though

@@ -10,8 +10,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 /**
  * 5.6.0 Task A4: every provider adapter cleans model output through one normalizer. The
  * BOM/\uXXXX/mojibake logic is taken over from GeminiProvider; the parity test below pins that
- * it is the same logic (same bytes out for the same bytes in) while the old provider is still
- * in service. New on top: reasoning models (Ollama deepseek-r1/qwen3, some OpenAI-compatible
+ * it is the same logic (same bytes out for the same bytes in) against the outputs of the removed
+ * provider, recorded as hex. New on top: reasoning models (Ollama deepseek-r1/qwen3, some OpenAI-compatible
  * hosts) put their chain of thought into <think>…</think>, which must never reach a learner.
  */
 class LlmOutputNormalizerTest extends TestCase {

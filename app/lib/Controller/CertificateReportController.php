@@ -255,7 +255,7 @@ class CertificateReportController extends Controller {
         if ($handle === false) {
             return '';
         }
-        fputcsv($handle, $fields);
+        fputcsv($handle, $fields, ',', '"', '');
         rewind($handle);
         $line = rtrim((string)stream_get_contents($handle), "\n");
         fclose($handle);

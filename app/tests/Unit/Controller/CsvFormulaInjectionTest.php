@@ -74,6 +74,26 @@ class CsvFormulaInjectionTest extends TestCase {
         self::assertSame('12', $cells[4]);
     }
 
+    /**
+     * Audit #172: the export passed no $escape, so PHP's backslash escape applied — a quote right
+     * after a backslash was not doubled and spreadsheets (RFC 4180, no escape character) split the
+     * cell. The exports now write plain RFC 4180 like DataMobilityService does.
+     */
+    public function testAtRiskExportWritesRfc4180ForBackslashQuote(): void {
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getAtRiskStudents')->willReturn(['at_risk' => [[
+            'user_id' => 'alex',
+            'display_name' => 'Alex \\"the\\" Demo',
+            'risk_level' => 'low',
+        ]]]);
+
+        $lines = explode("\n", trim($this->courseController($courseService)->exportAtRiskCsv(7)->render()));
+
+        $cells = str_getcsv($lines[1], ',', '"', '');
+        self::assertSame('Alex \\"the\\" Demo', $cells[0]);
+        self::assertSame('low', $cells[1]);
+    }
+
     public function testClassSummaryExportNeutralisesFormulaUserIds(): void {
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('findById')->willReturn(['is_instructor' => true]);

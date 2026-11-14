@@ -483,7 +483,7 @@ class CourseController extends Controller {
         }
 
         $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, ['Name', 'Risk Level', 'Critical Cards', 'Risk Reasons', 'Accuracy (%)', 'Last Active']);
+        fputcsv($handle, ['Name', 'Risk Level', 'Critical Cards', 'Risk Reasons', 'Accuracy (%)', 'Last Active'], ',', '"', '');
         foreach (($students['at_risk'] ?? []) as $s) {
             // the display name is chosen by the learner: never let it become a spreadsheet formula
             fputcsv($handle, CsvFormulaGuard::row([
@@ -493,7 +493,7 @@ class CourseController extends Controller {
                 implode('; ', $s['risk_reasons'] ?? []),
                 $s['accuracy'] ?? '',
                 $s['last_active'] ?? '',
-            ]));
+            ]), ',', '"', '');
         }
         rewind($handle);
         $csv = stream_get_contents($handle);
