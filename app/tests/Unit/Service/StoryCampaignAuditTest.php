@@ -178,6 +178,16 @@ final class StoryCampaignAuditTest extends TestCase {
         $this->assertContains('zero_day_rechenzentrum', $listed);
     }
 
+    /**
+     * #4: the course admin list shows only titles; two campaigns with one title cannot be told apart.
+     */
+    public function testShippedCampaignTitlesAreUnique(): void {
+        $titles = array_column($this->makeService()->listCampaigns(), 'title', 'campaign_id');
+        $counts = array_count_values($titles);
+        $duplicates = array_filter($titles, static fn(string $title): bool => $counts[$title] > 1);
+        $this->assertSame([], $duplicates, 'campaigns sharing a title');
+    }
+
     public function testRequiresNotFlagClosesTheEdgeOnceTheFlagIsSet(): void {
         $graph = new CampaignGraphService(
             $this->createMock(CampaignStateMapper::class),

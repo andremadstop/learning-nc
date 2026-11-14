@@ -580,7 +580,7 @@ const STATIC_CAMPAIGNS = [
 	{
 		id: 'grosser_ausfall',
 		icon: '📡',
-		title: 'Der große Ausfall',
+		title: 'Der große Ausfall (klassisch)',
 		description: 'Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.',
 		difficulty: 'intermediate',
 		focus_areas: ['Network+'],
