@@ -52,6 +52,24 @@ class ClassbookService {
      */
     public function getClassbook(int $courseId, string $viewerId): array {
         $course = $this->courseService->findById($courseId, $viewerId);
+        $modeConfig = is_array($course['mode_config'] ?? null) ? $course['mode_config'] : [];
+        $isCourseInstructor = (bool)($course['is_instructor'] ?? false);
+
+        // GitHub #36: with the course switch mode_config.classbook off, learners see no class
+        // register, and no other member's profile leaves the server for them either (same as the
+        // buddies switch, #40). Instructors keep the register. A missing key counts as on.
+        if (!$isCourseInstructor && !self::classbookEnabledIn($modeConfig)) {
+            return [
+                'profiles' => [],
+                'current_user_id' => $viewerId,
+                'kudos_remaining' => 0,
+                'daily_kudos_limit' => self::DAILY_KUDOS_LIMIT,
+                'my_visibility' => 'private',
+                'can_toggle_visibility' => false,
+                'is_instructor' => false,
+            ];
+        }
+
         $members = $this->courseMemberMapper->findByCourse($courseId);
         $memberIds = array_map(static fn(CourseMember $member): string => $member->getUserId(), $members);
         $memberRoles = [];
@@ -67,7 +85,6 @@ class ClassbookService {
         $statsMap = $this->getUserStats($memberIds);
         // GitHub #36: the superpower fallback counts cards in Leitner box 5; a course without
         // Leitner never fills it, so there is no fallback then (a missing key counts as on).
-        $modeConfig = is_array($course['mode_config'] ?? null) ? $course['mode_config'] : [];
         $leitnerEnabled = ($modeConfig['leitner'] ?? true) !== false;
         $topPoolProgressMap = $leitnerEnabled ? $this->getTopPoolProgress($courseId, $memberIds) : [];
         $kudosCounts = $this->kudosMapper->countReceivedByCourseAndUsers($courseId, $memberIds);
@@ -126,15 +143,26 @@ class ClassbookService {
             'daily_kudos_limit' => self::DAILY_KUDOS_LIMIT,
             'my_visibility' => isset($telosMap[$viewerId]) ? $telosMap[$viewerId]->getVisibility() : 'private',
             'can_toggle_visibility' => (($memberRoles[$viewerId] ?? 'student') === 'student'),
-            'is_instructor' => (bool)($course['is_instructor'] ?? false),
+            'is_instructor' => $isCourseInstructor,
         ];
+    }
+
+    /** @param array<string, mixed> $modeConfig */
+    private static function classbookEnabledIn(array $modeConfig): bool {
+        return ($modeConfig['classbook'] ?? true) !== false;
     }
 
     /**
      * @return array<string, mixed>
      */
     public function giveKudos(int $courseId, string $fromUser, string $toUser, string $message = ''): array {
-        $this->courseService->findById($courseId, $fromUser);
+        $course = $this->courseService->findById($courseId, $fromUser);
+        $modeConfig = is_array($course['mode_config'] ?? null) ? $course['mode_config'] : [];
+        // GitHub #36: kudos live in the class register; a learner cannot send any while the
+        // course has it switched off.
+        if (!($course['is_instructor'] ?? false) && !self::classbookEnabledIn($modeConfig)) {
+            throw new ForbiddenException('The class register is switched off in this course');
+        }
 
         if ($fromUser === $toUser) {
             throw new \RuntimeException('You cannot give kudos to yourself');
