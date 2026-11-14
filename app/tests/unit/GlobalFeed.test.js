@@ -20,9 +20,7 @@ vi.mock('@nextcloud/router', () => ({
 }))
 
 // Mock @nextcloud/l10n
-vi.mock('@nextcloud/l10n', () => ({
-	translate: (app, str) => str,
-}))
+vi.mock('@nextcloud/l10n', async () => (await import('./support/l10nCatalog.js')).l10nMock())
 
 // Mock @nextcloud/vue components
 vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => ({
@@ -30,6 +28,7 @@ vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => ({
 }))
 
 import axios from '@nextcloud/axios'
+import { setTestLanguage } from './support/l10nCatalog.js'
 
 import GlobalFeed from '../../src/components/GlobalFeed.vue'
 
@@ -87,11 +86,26 @@ describe('GlobalFeed renders feed items with title and type badge', () => {
 		expect(instance.items[0].title).toBe('Welcome')
 	})
 
-	it('typeLabel returns German label for known types', () => {
+	// Audit #183: the labels were German literals outside t(); the mock answers from the catalogues.
+	it('typeLabel returns the label in the reader\'s language', () => {
 		const instance = createFeedInstance()
-		expect(instance.typeLabel('announcement')).toBe('Ankuendigung')
+		setTestLanguage('de')
+		expect(instance.typeLabel('announcement')).toBe('Ankündigung')
 		expect(instance.typeLabel('pool_added')).toBe('Neuer Pool')
 		expect(instance.typeLabel('unknown_type')).toBe('unknown_type')
+		setTestLanguage('en')
+		expect(instance.typeLabel('announcement')).toBe('Announcement')
+		expect(instance.typeLabel('pool_added')).toBe('New pool')
+		setTestLanguage('de')
+	})
+
+	it('formatRelativeTime and itemTitle follow the reader\'s language', () => {
+		const instance = createFeedInstance()
+		setTestLanguage('en')
+		const now = Math.floor(Date.now() / 1000)
+		expect(instance.formatRelativeTime(now - 3 * 3600)).toBe('3 hours ago')
+		expect(instance.itemTitle({ type: 'pool_added', title: 'Neuer Fragenpool: VLAN', meta: { pool_name: 'VLAN' } })).toBe('New question pool: VLAN')
+		setTestLanguage('de')
 	})
 
 	it('typeIcon returns icon for known types', () => {

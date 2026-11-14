@@ -20,11 +20,10 @@ vi.mock('@nextcloud/router', () => ({
 }))
 
 // Mock @nextcloud/l10n
-vi.mock('@nextcloud/l10n', () => ({
-	translate: (app, str) => str,
-}))
+vi.mock('@nextcloud/l10n', async () => (await import('./support/l10nCatalog.js')).l10nMock())
 
 import axios from '@nextcloud/axios'
+import { setTestLanguage } from './support/l10nCatalog.js'
 import BuddyMatching from '../../src/components/BuddyMatching.vue'
 
 function makeBuddy(overrides = {}) {
@@ -139,5 +138,17 @@ describe('BuddyMatching template sections', () => {
 
 	it('has mounted lifecycle hook', () => {
 		expect(BuddyMatching.mounted).toBeDefined()
+	})
+})
+
+// Audit #177: the load error was a German literal for every reader.
+describe('BuddyMatching load error in the reader\'s language', () => {
+	it('shows the error through the catalogue', async () => {
+		setTestLanguage('en')
+		axios.get.mockRejectedValueOnce(new Error('Network error'))
+		const instance = createInstance(5)
+		await instance.fetchBuddies()
+		expect(instance.error).toBe('Study partners could not be loaded.')
+		setTestLanguage('de')
 	})
 })

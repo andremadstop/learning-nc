@@ -100,7 +100,7 @@
 							</span>
 						</div>
 						<div class="at-risk-reasons">
-							<span v-for="(reason, idx) in student.risk_reasons" :key="idx" class="risk-reason-tag">
+							<span v-for="(reason, idx) in riskReasonLabels(student)" :key="idx" class="risk-reason-tag">
 								{{ reason }}
 							</span>
 						</div>
@@ -706,6 +706,31 @@ export default {
 		},
 		formatXp(value) {
 			return formatXp(value)
+		},
+		/**
+		 * The at-risk reasons in the reader's language (audit #154). The server sends them as codes
+		 * with their number; a server without risk_reason_codes still gets its German sentences shown.
+		 *
+		 * @param {object} student at-risk entry from the API
+		 * @return {string[]}
+		 */
+		riskReasonLabels(student) {
+			const codes = student?.risk_reason_codes
+			if (!Array.isArray(codes)) {
+				return student?.risk_reasons || []
+			}
+			return codes.map(({ code, n }) => {
+				switch (code) {
+				case 'inactive_days': return t('learning', 'Inaktiv seit {n} Tagen', { n })
+				case 'never_active': return t('learning', 'Noch nie aktiv gewesen')
+				case 'low_accuracy': return t('learning', 'Trefferquote {n} %', { n })
+				case 'critical_cards': return t('learning', 'Kritische Karten: {n}', { n })
+				case 'box_one_share': return t('learning', '{n} % der Karten in Box 1', { n })
+				case 'streak_lost': return t('learning', 'Streak verloren (war {n})', { n })
+				case 'few_sessions': return t('learning', 'Sessions in 14 Tagen: {n}', { n })
+				default: return code
+				}
+			})
 		},
 		formatLastActive(dateStr) {
 			return formatRelativeDateString(dateStr)

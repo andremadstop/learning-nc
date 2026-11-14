@@ -1052,10 +1052,12 @@ class CourseService {
         $this->feedService->createAutoItem(
             $courseId,
             'pool_added',
+            // The stored title stays German for older clients; the feed shows it in the reader's
+            // language from meta.pool_name (audit #154).
             'Neuer Fragenpool: ' . $poolName,
             null,
             $userId,
-            ['pool_id' => $poolId]
+            ['pool_id' => $poolId, 'pool_name' => $poolName]
         );
 
         return $inserted;
@@ -1925,6 +1927,9 @@ class CourseService {
         foreach ($studentIds as $sid) {
             $stats = $userStats[$sid] ?? null;
             $reasons = [];
+            // The same reasons as codes, which the frontend translates; $reasons stays German for
+            // the CSV export and older clients (audit #154).
+            $reasonCodes = [];
             $score = 0;
 
             // Signal 1: Inactive >7 days (HIGH)
@@ -1941,8 +1946,10 @@ class CourseService {
             if ($lastActive === null || ($daysSinceActive !== null && $daysSinceActive > 7)) {
                 if ($daysSinceActive !== null) {
                     $reasons[] = "Inaktiv seit {$daysSinceActive} Tagen";
+                    $reasonCodes[] = ['code' => 'inactive_days', 'n' => $daysSinceActive];
                 } else {
                     $reasons[] = "Noch nie aktiv gewesen";
+                    $reasonCodes[] = ['code' => 'never_active'];
                 }
                 $score += 2;
             }
@@ -1959,6 +1966,7 @@ class CourseService {
             $accuracy = $totalQ > 0 ? round($totalCorrect / $totalQ * 100) : null;
             if ($accuracy !== null && $accuracy < 50) {
                 $reasons[] = "Accuracy {$accuracy}%";
+                $reasonCodes[] = ['code' => 'low_accuracy', 'n' => (int)$accuracy];
                 $score += 2;
             }
 
@@ -1973,14 +1981,17 @@ class CourseService {
                 $criticalShare = $criticalCards / $reviewedFsrsCards;
                 if ($criticalCards >= 10 || $criticalShare >= 0.35) {
                     $reasons[] = "{$criticalCards} kritische Karten";
+                    $reasonCodes[] = ['code' => 'critical_cards', 'n' => (int)$criticalCards];
                     $score += 2;
                 } elseif ($criticalCards >= 3 || $criticalShare >= 0.2) {
                     $reasons[] = "{$criticalCards} kritische Karten";
+                    $reasonCodes[] = ['code' => 'critical_cards', 'n' => (int)$criticalCards];
                     $score += 1;
                 }
             } elseif ($totalCards > 0 && ($box1Count / $totalCards) > 0.6) {
                 $pct = round($box1Count / $totalCards * 100);
                 $reasons[] = "{$pct}% der Karten in Box 1";
+                $reasonCodes[] = ['code' => 'box_one_share', 'n' => (int)$pct];
                 $score += 1;
             }
 
@@ -1997,6 +2008,7 @@ class CourseService {
                 $longestStreak = $row ? (int)$row['longest_streak'] : 0;
                 if ($longestStreak > 7) {
                     $reasons[] = "Streak verloren (war {$longestStreak})";
+                    $reasonCodes[] = ['code' => 'streak_lost', 'n' => $longestStreak];
                     $score += 1;
                 }
             }
@@ -2005,6 +2017,7 @@ class CourseService {
             $recentSessions = $recentSessionCounts[$sid] ?? 0;
             if ($recentSessions < 3) {
                 $reasons[] = "Nur {$recentSessions} Sessions in 14 Tagen";
+                $reasonCodes[] = ['code' => 'few_sessions', 'n' => $recentSessions];
                 $score += 1;
             }
 
@@ -2016,6 +2029,7 @@ class CourseService {
                     'risk_level' => $riskLevel,
                     'risk_score' => $score,
                     'risk_reasons' => $reasons,
+                    'risk_reason_codes' => $reasonCodes,
                     'last_active' => $lastActive,
                     'accuracy' => $accuracy,
                     'critical_cards_count' => $criticalCards,

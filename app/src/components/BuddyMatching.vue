@@ -36,6 +36,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import { translate as t } from '@nextcloud/l10n'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 
@@ -77,7 +78,7 @@ export default {
 				this.canHelpMe = response.data.can_help_me || []
 				this.iCanHelp = response.data.i_can_help || []
 			} catch (e) {
-				this.error = 'Lernpartner konnten nicht geladen werden.'
+				this.error = t('learning', 'Lernpartner konnten nicht geladen werden.')
 			} finally {
 				this.loading = false
 			}

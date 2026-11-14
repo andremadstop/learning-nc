@@ -20,11 +20,10 @@ vi.mock('@nextcloud/router', () => ({
 }))
 
 // Mock @nextcloud/l10n
-vi.mock('@nextcloud/l10n', () => ({
-	translate: (app, str) => str,
-}))
+vi.mock('@nextcloud/l10n', async () => (await import('./support/l10nCatalog.js')).l10nMock())
 
 import axios from '@nextcloud/axios'
+import { setTestLanguage } from './support/l10nCatalog.js'
 
 // Import the component definition
 import CourseFeed from '../../src/components/CourseFeed.vue'
@@ -71,31 +70,59 @@ describe('CourseFeed component definition', () => {
 	})
 })
 
+// Audit #177: the labels were a German object literal outside t() and read 'Ankuendigung' in
+// every language. The l10n mock answers from the real catalogues, so these only pass if the label
+// goes through t() with a key the catalogue has.
 describe('CourseFeed.typeLabel()', () => {
 	const instance = createInstance()
 
-	it('maps announcement to Ankuendigung', () => {
-		expect(instance.typeLabel('announcement')).toBe('Ankuendigung')
-	})
-
-	it('maps pool_added to Neuer Pool', () => {
+	it('labels every type in German for a German reader, with umlauts', () => {
+		setTestLanguage('de')
+		expect(instance.typeLabel('announcement')).toBe('Ankündigung')
 		expect(instance.typeLabel('pool_added')).toBe('Neuer Pool')
-	})
-
-	it('maps milestone to Meilenstein', () => {
 		expect(instance.typeLabel('milestone')).toBe('Meilenstein')
-	})
-
-	it('maps content_update to Aktualisierung', () => {
 		expect(instance.typeLabel('content_update')).toBe('Aktualisierung')
-	})
-
-	it('maps progress to Fortschritt', () => {
 		expect(instance.typeLabel('progress')).toBe('Fortschritt')
 	})
 
-	it('returns capitalized type for unknown types', () => {
+	it('labels every type in the reader\'s language', () => {
+		setTestLanguage('en')
+		expect(instance.typeLabel('announcement')).toBe('Announcement')
+		expect(instance.typeLabel('pool_added')).toBe('New pool')
+		expect(instance.typeLabel('milestone')).toBe('Milestone')
+		expect(instance.typeLabel('content_update')).toBe('Update')
+		expect(instance.typeLabel('progress')).toBe('Progress')
+		setTestLanguage('uk')
+		expect(instance.typeLabel('announcement')).toBe('Оголошення')
+		setTestLanguage('de')
+	})
+
+	it('returns the type itself for unknown types', () => {
 		expect(instance.typeLabel('unknown_thing')).toBe('unknown_thing')
+	})
+})
+
+// Audit #154: a "new pool" item carries the pool name in meta and is titled in the reader's language.
+describe('CourseFeed.itemTitle()', () => {
+	const instance = createInstance()
+
+	it('titles a new pool in the reader\'s language from meta.pool_name', () => {
+		setTestLanguage('fr')
+		const item = makeFeedItem({ type: 'pool_added', title: 'Neuer Fragenpool: Subnetting', meta: { pool_id: 3, pool_name: 'Subnetting' } })
+		expect(instance.itemTitle(item)).toBe('Nouveau pool de questions : Subnetting')
+		setTestLanguage('de')
+	})
+
+	it('keeps the stored title of an older row without pool_name, and of instructor items', () => {
+		setTestLanguage('en')
+		expect(instance.itemTitle(makeFeedItem({ type: 'pool_added', title: 'Neuer Fragenpool: Alt', meta: { pool_id: 3 } }))).toBe('Neuer Fragenpool: Alt')
+		expect(instance.itemTitle(makeFeedItem({ title: 'Willkommen im Kurs' }))).toBe('Willkommen im Kurs')
+		setTestLanguage('de')
+	})
+
+	it('does not HTML-escape the pool name (Vue renders it as text)', () => {
+		const item = makeFeedItem({ type: 'pool_added', meta: { pool_name: 'R&D <intern>' } })
+		expect(instance.itemTitle(item)).toBe('Neuer Fragenpool: R&D <intern>')
 	})
 })
 
@@ -115,50 +142,38 @@ describe('CourseFeed.typeIcon()', () => {
 	})
 })
 
+// Audit #177/#183: 'gerade eben' / 'vor 3 Stunden' were German literals for every reader.
 describe('CourseFeed.formatRelativeTime()', () => {
 	const instance = createInstance()
+	const now = () => Math.floor(Date.now() / 1000)
 
-	it('returns "gerade eben" for timestamps less than 60 seconds ago', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 10)).toBe('gerade eben')
-		expect(instance.formatRelativeTime(now)).toBe('gerade eben')
+	it('speaks German to a German reader', () => {
+		setTestLanguage('de')
+		expect(instance.formatRelativeTime(now() - 10)).toBe('jetzt')
+		expect(instance.formatRelativeTime(now() - 90)).toBe('vor 1 Minute')
+		expect(instance.formatRelativeTime(now() - 300)).toBe('vor 5 Minuten')
+		expect(instance.formatRelativeTime(now() - 7200)).toBe('vor 2 Stunden')
+		expect(instance.formatRelativeTime(now() - 86400 * 3)).toBe('vor 3 Tagen')
 	})
 
-	it('returns "vor X Minuten" for timestamps within the hour', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 120)).toBe('vor 2 Minuten')
-		expect(instance.formatRelativeTime(now - 300)).toBe('vor 5 Minuten')
+	it('speaks the reader\'s language, with its plural forms', () => {
+		setTestLanguage('en')
+		expect(instance.formatRelativeTime(now() - 10)).toBe('now')
+		expect(instance.formatRelativeTime(now() - 7200)).toBe('2 hours ago')
+		setTestLanguage('fr')
+		expect(instance.formatRelativeTime(now() - 86400 * 3)).toBe('il y a 3 jours')
+		setTestLanguage('ru')
+		expect(instance.formatRelativeTime(now() - 300)).toBe('5 минут назад')
+		setTestLanguage('de')
 	})
 
-	it('returns "vor 1 Minute" for singular', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 90)).toBe('vor 1 Minute')
-	})
-
-	it('returns "vor X Stunden" for timestamps within the day', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 7200)).toBe('vor 2 Stunden')
-	})
-
-	it('returns "vor 1 Stunde" for singular', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 3600)).toBe('vor 1 Stunde')
-	})
-
-	it('returns "vor X Tagen" for timestamps within 30 days', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 86400 * 3)).toBe('vor 3 Tagen')
-	})
-
-	it('returns "vor 1 Tag" for singular', () => {
-		const now = Math.floor(Date.now() / 1000)
-		expect(instance.formatRelativeTime(now - 86400)).toBe('vor 1 Tag')
-	})
-
-	it('returns DD.MM.YYYY for timestamps older than 30 days', () => {
+	it('shows the date in the reader\'s format after 30 days', () => {
 		// 2026-01-15 00:00:00 UTC
-		const result = instance.formatRelativeTime(1768521600)
-		expect(result).toMatch(/^\d{2}\.\d{2}\.\d{4}$/)
+		setTestLanguage('de')
+		expect(instance.formatRelativeTime(1768521600)).toMatch(/^\d{1,2}\.\d{1,2}\.2026$/)
+		setTestLanguage('en')
+		expect(instance.formatRelativeTime(1768521600)).toMatch(/^\d{1,2}\/\d{1,2}\/2026$/)
+		setTestLanguage('de')
 	})
 })
 

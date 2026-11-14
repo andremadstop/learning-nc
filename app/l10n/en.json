@@ -3363,6 +3363,19 @@
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Renewal is open: if you pass the exam(s) now, your certificate is renewed.",
         "Die neue Gültigkeit schließt an den {date} an.": "The new validity continues from {date}.",
         "Die Erneuerung öffnet am {date}.": "Renewal opens on {date}.",
-        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that."
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.",
+        "Ankündigung": "Announcement",
+        "Neuer Pool": "New pool",
+        "Meilenstein": "Milestone",
+        "Aktualisierung": "Update",
+        "Neuer Fragenpool: {name}": "New question pool: {name}",
+        "Lernpartner konnten nicht geladen werden.": "Study partners could not be loaded.",
+        "Inaktiv seit {n} Tagen": "Inactive for {n} days",
+        "Noch nie aktiv gewesen": "Never active",
+        "Trefferquote {n} %": "Accuracy {n}%",
+        "Kritische Karten: {n}": "Critical cards: {n}",
+        "{n} % der Karten in Box 1": "{n}% of cards in box 1",
+        "Streak verloren (war {n})": "Streak lost (was {n})",
+        "Sessions in 14 Tagen: {n}": "Sessions in 14 days: {n}"
     }
 }

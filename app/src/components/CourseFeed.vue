@@ -15,7 +15,7 @@
 						<span class="feed-type-badge">{{ typeLabel(item.type) }}</span>
 						<span class="feed-time">{{ formatRelativeTime(item.created_at) }}</span>
 					</div>
-					<strong class="feed-title">{{ item.title }}</strong>
+					<strong class="feed-title">{{ itemTitle(item) }}</strong>
 					<p v-if="item.body" class="feed-body">{{ item.body }}</p>
 				</div>
 			</div>
@@ -33,22 +33,8 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import { translate as t } from '@nextcloud/l10n'
-
-const TYPE_LABELS = {
-	announcement: 'Ankuendigung',
-	pool_added: 'Neuer Pool',
-	milestone: 'Meilenstein',
-	content_update: 'Aktualisierung',
-	progress: 'Fortschritt',
-}
-
-const TYPE_ICONS = {
-	announcement: '\uD83D\uDCE2',
-	pool_added: '\uD83D\uDCDA',
-	milestone: '\u2B50',
-	content_update: '\uD83D\uDD04',
-	progress: '\uD83D\uDCCA',
-}
+import { formatRelativeTime as relativeTime } from '../utils/relativeTime.js'
+import { feedItemTitle, feedTypeIcon, feedTypeLabel } from '../utils/feedItem.js'
 
 export default {
 	name: 'CourseFeed',
@@ -105,37 +91,19 @@ export default {
 		},
 
 		formatRelativeTime(timestamp) {
-			const now = Math.floor(Date.now() / 1000)
-			const diff = now - timestamp
-
-			if (diff < 60) {
-				return 'gerade eben'
-			}
-			const minutes = Math.floor(diff / 60)
-			if (minutes < 60) {
-				return minutes === 1 ? 'vor 1 Minute' : `vor ${minutes} Minuten`
-			}
-			const hours = Math.floor(diff / 3600)
-			if (hours < 24) {
-				return hours === 1 ? 'vor 1 Stunde' : `vor ${hours} Stunden`
-			}
-			const days = Math.floor(diff / 86400)
-			if (days <= 30) {
-				return days === 1 ? 'vor 1 Tag' : `vor ${days} Tagen`
-			}
-			const date = new Date(timestamp * 1000)
-			const dd = String(date.getDate()).padStart(2, '0')
-			const mm = String(date.getMonth() + 1).padStart(2, '0')
-			const yyyy = date.getFullYear()
-			return `${dd}.${mm}.${yyyy}`
+			return relativeTime(timestamp)
 		},
 
 		typeLabel(type) {
-			return TYPE_LABELS[type] || type
+			return feedTypeLabel(type)
 		},
 
 		typeIcon(type) {
-			return TYPE_ICONS[type] || '\uD83D\uDCCC'
+			return feedTypeIcon(type)
+		},
+
+		itemTitle(item) {
+			return feedItemTitle(item)
 		},
 	},
 }
