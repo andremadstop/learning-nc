@@ -346,4 +346,42 @@ class TelosControllerTest extends TestCase {
         $this->assertArrayNotHasKey('help_offer', $captured, 'null means leave as is, not clear');
         $this->assertArrayNotHasKey('help_wanted', $captured);
     }
+
+    /**
+     * GitHub #40: with the course switch mode_config.buddies off, the endpoint hands out no other
+     * member's name or help topics, even when a learner calls it directly.
+     */
+    public function testGetCourseBuddiesReturnsNothingWithTheCourseSwitchOff(): void {
+        $this->courseServiceMock->method('findById')->willReturn([
+            'id' => 7,
+            'is_instructor' => false,
+            'mode_config' => ['buddies' => false],
+        ]);
+        $this->telosMock->expects($this->never())->method('getCourseBuddies');
+
+        $response = $this->makeController('student-A')->getCourseBuddies(7);
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(['can_help_me' => [], 'i_can_help' => []], $response->getData());
+    }
+
+    /**
+     * GitHub #40: a course saved before the switch existed (no buddies key, or no mode_config at
+     * all) keeps its learning partners.
+     */
+    public function testGetCourseBuddiesWithoutTheSwitchKeyStillMatches(): void {
+        $matches = [
+            'can_help_me' => [['user_id' => 'u2', 'display_name' => 'U2', 'topics' => ['dns']]],
+            'i_can_help' => [],
+        ];
+        $this->courseServiceMock->method('findById')->willReturnOnConsecutiveCalls(
+            ['id' => 7, 'is_instructor' => false, 'mode_config' => ['leitner' => true]],
+            ['id' => 8, 'is_instructor' => false, 'mode_config' => null]
+        );
+        $this->telosMock->expects($this->exactly(2))->method('getCourseBuddies')->willReturn($matches);
+
+        $controller = $this->makeController('student-A');
+        $this->assertSame($matches, $controller->getCourseBuddies(7)->getData());
+        $this->assertSame($matches, $controller->getCourseBuddies(8)->getData());
+    }
 }

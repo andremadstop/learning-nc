@@ -404,7 +404,15 @@ class TelosController extends Controller {
 
         try {
             // Verify enrollment: findById throws DoesNotExistException if no access
-            $this->courseService->findById($courseId, $this->userId);
+            $course = $this->courseService->findById($courseId, $this->userId);
+
+            // GitHub #40: with the course switch mode_config.buddies off, no other member's name or
+            // help topics leave the server. A missing key counts as on, like the frontend
+            // (buddiesEnabled) and updateModeConfig's defaults.
+            $modeConfig = is_array($course['mode_config'] ?? null) ? $course['mode_config'] : [];
+            if (($modeConfig['buddies'] ?? true) === false) {
+                return new DataResponse(['can_help_me' => [], 'i_can_help' => []]);
+            }
 
             $buddies = $this->telosService->getCourseBuddies($this->userId, $courseId);
             return new DataResponse($buddies);
