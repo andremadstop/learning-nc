@@ -313,8 +313,8 @@ export default {
 .ticket-header-cd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .ticket-subject-cd { font-weight: 600; }
 .ticket-status-cd { font-size: 0.85em; padding: 2px 8px; border-radius: 4px; }
-.ticket-status-cd.status-open { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
-.ticket-status-cd.status-answered { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
+.ticket-status-cd.status-open { background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); }
+.ticket-status-cd.status-answered { background: var(--color-success); color: var(--color-success-text, var(--color-success)); }
 .ticket-message-cd { color: var(--color-text-maxcontrast); margin-bottom: 8px; }
 .ticket-reply-cd { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
 .requests-empty p { margin: 0 0 4px; }

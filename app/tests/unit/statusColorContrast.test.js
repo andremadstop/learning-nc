@@ -116,6 +116,9 @@ const CASES = [
 	['CourseTabTeilnehmer.vue', '.at-risk-card.risk-medium', 'line'],
 	['CourseTabTeilnehmer.vue', '.risk-badge.high', 'pill'],
 	['CourseTabTeilnehmer.vue', '.risk-badge.medium', 'pill'],
+	// review of #40 — learner question status in Kommunikation
+	['CourseTabKommunikation.vue', '.ticket-status-cd.status-open', 'pill'],
+	['CourseTabKommunikation.vue', '.ticket-status-cd.status-answered', 'pill'],
 ]
 
 const TEXT_OK = new RegExp(`^var\\(--color-(${TINT})-text\\b`)
