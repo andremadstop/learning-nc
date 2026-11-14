@@ -3,12 +3,16 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Controller;
 
+use OCA\Learning\Controller\CertificateReportController;
 use OCA\Learning\Controller\CourseController;
 use OCA\Learning\Controller\SummaryController;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseArchiveService;
+use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\CsvFormulaGuard;
+use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\ExamAttemptPolicy;
 use OCA\Learning\Service\PassCriteriaService;
@@ -98,5 +102,47 @@ class CsvFormulaInjectionTest extends TestCase {
         self::assertSame("\t-cmd", str_getcsv($lines[1], ',', '"', '\\')[0]);
         self::assertSame('10', str_getcsv($lines[1], ',', '"', '\\')[1]);
         self::assertSame('bob', str_getcsv($lines[2], ',', '"', '\\')[0]);
+    }
+
+    /**
+     * Audit #138: every export writes RFC 4180 with an explicit empty escape character. With
+     * fputcsv's default escape ("\\") a field containing \" was written without doubling the
+     * quote, so it came back torn apart — and PHP 8.4 deprecates relying on that default.
+     */
+    public function testCsvLineDoublesEveryQuoteAndTreatsBackslashAsText(): void {
+        $line = CsvFormulaGuard::line(['C:\\path\\"quoted"', 'plain']);
+
+        self::assertSame('"C:\\path\\""quoted""",plain', $line);
+        self::assertSame(['C:\\path\\"quoted"', 'plain'], str_getcsv($line, ',', '"', ''));
+    }
+
+    /** Audit #138/#139: the certificate report CSV uses the shared writer (guard + RFC 4180). */
+    public function testCertificateReportCsvUsesTheSharedWriter(): void {
+        $report = $this->createMock(CertificateReportService::class);
+        $report->method('getCourseReport')->willReturn(['rows' => [[
+            'display_name' => 'Anna \\"Ace\\" Muster',
+            'passed_at' => 1700000000,
+            'score' => '=1+1',
+            'expires_at' => null,
+            'verification_id' => 'vid-1',
+        ]]]);
+        $request = $this->createMock(IRequest::class);
+        $request->method('getParam')->willReturn(null);
+        $controller = new CertificateReportController(
+            'learning',
+            $request,
+            $report,
+            $this->createMock(KeyService::class),
+            $this->createMock(LoggerInterface::class),
+            'teacher'
+        );
+
+        $resp = $controller->exportCertReportCsv(7);
+
+        self::assertInstanceOf(DataDownloadResponse::class, $resp);
+        $lines = explode("\n", $resp->render());
+        $cells = str_getcsv($lines[1], ',', '"', '');
+        self::assertSame('Anna \\"Ace\\" Muster', $cells[0]);
+        self::assertSame("\t=1+1", $cells[2]);
     }
 }

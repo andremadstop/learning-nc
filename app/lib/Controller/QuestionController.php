@@ -25,13 +25,22 @@ class QuestionController extends Controller {
      * @NoAdminRequired
      */
     public function index(int $poolId, int $limit = 0, int $offset = 0): DataResponse {
-        // If no limit specified, return all (backwards compatible)
-        if ($limit <= 0) {
-            return new DataResponse($this->service->findByPool($poolId, $this->userId));
+        // A deleted, unshared or foreign pool is a 404 like in every other action here, not a
+        // 500 with a logged stack trace (audit #64).
+        try {
+            // If no limit specified, return all (backwards compatible)
+            if ($limit <= 0) {
+                return new DataResponse($this->service->findByPool($poolId, $this->userId));
+            }
+            $limit = max(1, min($limit, 200));
+            $offset = max(0, $offset);
+            return new DataResponse($this->service->findByPoolPaged($poolId, $this->userId, $limit, $offset));
+        } catch (\OCP\DB\Exception $e) {
+            // A database failure is no missing pool: keep it a 500 and in the log.
+            throw $e;
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Pool not found or no access'], Http::STATUS_NOT_FOUND);
         }
-        $limit = max(1, min($limit, 200));
-        $offset = max(0, $offset);
-        return new DataResponse($this->service->findByPoolPaged($poolId, $this->userId, $limit, $offset));
     }
 
     /**

@@ -124,7 +124,7 @@ class DataMobilityService {
 
             if ($type === 'open') {
                 $modelAnswer = !empty($answers) ? $answers[0]->getText() : '';
-                $lines[] = $this->csvLine([$question->getText(), $modelAnswer, 'open']);
+                $lines[] = CsvFormulaGuard::line([$question->getText(), $modelAnswer, 'open']);
             } else {
                 $fields = [$question->getText()];
                 $correctIndex = null;
@@ -139,7 +139,7 @@ class DataMobilityService {
                 if ($explanation !== null && $explanation !== '') {
                     $fields[] = $explanation;
                 }
-                $lines[] = $this->csvLine($fields);
+                $lines[] = CsvFormulaGuard::line($fields);
             }
         }
 
@@ -225,7 +225,7 @@ class DataMobilityService {
         $masteryStats = $this->getBatchMastery($studentIds, $poolIds);
 
         // Header
-        $lines = [$this->csvLine([
+        $lines = [CsvFormulaGuard::line([
             'user_id', 'display_name', 'xp', 'level', 'streak',
             'total_sessions', 'total_mastered', 'total_questions_answered',
             'total_correct', 'accuracy_percent', 'last_activity',
@@ -254,7 +254,7 @@ class DataMobilityService {
             }
             $accuracy = $totalQ > 0 ? round(($totalCorrect / $totalQ) * 100, 1) : 0;
 
-            $lines[] = $this->csvLine([
+            $lines[] = CsvFormulaGuard::line([
                 $userId, $displayName, (string)$totalXp, (string)$level, (string)$streak,
                 (string)$totalSessions, (string)$totalMastered, (string)$totalQ,
                 (string)$totalCorrect, (string)$accuracy, $lastActivity,
@@ -397,30 +397,5 @@ class DataMobilityService {
         }
         $result->closeCursor();
         return $data;
-    }
-
-    /**
-     * Encode a row as CSV with formula-injection protection.
-     *
-     * @param array<int, string> $fields
-     */
-    private function csvLine(array $fields): string {
-        $fields = array_map(function ($f) {
-            if (is_string($f) && $f !== '' && in_array($f[0], ['=', '+', '-', '@'], true)) {
-                return "\t" . $f;
-            }
-            return $f;
-        }, $fields);
-        $handle = fopen('php://temp', 'r+');
-        if ($handle === false) {
-            return '';
-        }
-        // RFC 4180, no backslash escape: what ImportController::csvRecords() reads back. With the
-        // default escape "\\", a field containing \" was written so that it came back torn apart.
-        fputcsv($handle, $fields, ',', '"', '');
-        rewind($handle);
-        $line = rtrim((string)stream_get_contents($handle), "\n");
-        fclose($handle);
-        return $line;
     }
 }

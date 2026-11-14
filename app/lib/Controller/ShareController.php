@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\ShareService;
 use OCA\Learning\Service\NotFoundException;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -63,6 +64,10 @@ class ShareController extends Controller {
             return new DataResponse($share);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => 'Share not found'], Http::STATUS_NOT_FOUND);
+        } catch (DoesNotExistException $e) {
+            // The caller does not own the pool (QBMapper::find): a 404 like create/destroy, not a
+            // 500 with a logged exception (audit #66).
+            return new DataResponse(['error' => 'Share not found or no access'], Http::STATUS_NOT_FOUND);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => 'Invalid permission value'], Http::STATUS_BAD_REQUEST);
         }
