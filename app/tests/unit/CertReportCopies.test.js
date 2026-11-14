@@ -124,15 +124,26 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		expect(window.location.href).toBe(`/apps/learning/api/courses/5/certificates/${VID}/download`)
 	})
 
-	it('Download all (ZIP) uses the same filters as the table and the CSV', async () => {
-		const zip = buttonByText(view.host, 'Alle herunterladen (ZIP)')
-		expect(zip).toBeTruthy()
+	function reportQueries() {
+		return axios.get.mock.calls.map(([url]) => url).filter((url) => /\/cert-report(\?|$)/.test(url))
+	}
 
-		buttonByText(view.host, 'Export CSV').click()
-		const csvQuery = window.location.href.split('?')[1] || ''
-		zip.click()
-		expect(window.location.href.split('?')[0]).toBe('/apps/learning/api/courses/5/cert-report/export/zip')
-		expect(window.location.href.split('?')[1] || '').toBe(csvQuery)
+	it('Download all (ZIP) packs the list the table shows: the applied filter, not unapplied edits', async () => {
+		const input = view.host.querySelector('.cert-report-filters input[type="number"]')
+		input.value = '30'
+		input.dispatchEvent(new Event('input'))
+		buttonByText(view.host, 'Filter anwenden').click()
+		await flush()
+		const applied = reportQueries().at(-1).split('?')[1]
+		expect(applied).toContain('expiringDays=30')
+
+		// Edited but not applied: the table still shows the 30-day list, so the ZIP must too.
+		input.value = '5'
+		input.dispatchEvent(new Event('input'))
+		await nextTick()
+
+		buttonByText(view.host, 'Alle herunterladen (ZIP)').click()
+		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/zip?' + applied)
 	})
 
 	it('View opens the learner certificate through the instructor endpoint, without the LinkedIn action', async () => {

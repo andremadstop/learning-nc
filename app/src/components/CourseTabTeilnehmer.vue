@@ -619,6 +619,8 @@ export default {
 			certPassedWithoutCertificate: [],
 			revokingVid: null,
 			viewingCertVid: null,
+			// GitHub #42: the filter query the table was last loaded with — the ZIP packs that list.
+			certAppliedQuery: '',
 			certFromDate: '',
 			certToDate: '',
 			certExpiringDays: '',
@@ -961,6 +963,7 @@ export default {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report', { courseId: this.courseId })
 				const response = await axios.get(url + (qs ? '?' + qs : ''))
 				this.certRows = response.data.rows || []
+				this.certAppliedQuery = qs
 				this.certSigningAvailable = typeof response.data.signing_available === 'boolean'
 					? response.data.signing_available
 					: null
@@ -986,9 +989,10 @@ export default {
 		downloadCertificate(row) {
 			window.location.href = courseDownloadUrl(this.courseId, row.verification_id)
 		},
-		// GitHub #42: every certificate of the filtered table in one ZIP — same query as table and CSV.
+		// GitHub #42: every certificate of the table as shown, in one ZIP — the query the rows were
+		// loaded with, not filter inputs that were edited but not applied yet.
 		downloadAllCertificates() {
-			window.location.href = certReportZipUrl(this.courseId, buildCertReportQuery(this.certFilters()))
+			window.location.href = certReportZipUrl(this.courseId, this.certAppliedQuery)
 		},
 		// Instructor revoke: owner-gated + idempotent server-side (VERIFY-05). The /cert-report DTO
 		// has no revoked flag, so we always allow the click and refetch — a revoked cert reflects
