@@ -24,15 +24,18 @@ Note:
 
 **Before any action, take a database snapshot** of the three audit tables:
 ```
-# PostgreSQL (devcloud / Relay):
-docker exec devcloud-db pg_dump -U oc_admin nextcloud \
+# Database name, user and table prefix (oc_ by default) are in config/config.php:
+# dbname, dbuser, dbtableprefix. In a container setup, run the command inside the DB container.
+
+# PostgreSQL:
+pg_dump -U <dbuser> <dbname> \
     -t "oc_learning_audit_events" \
     -t "oc_learning_audit_chain_state" \
     -t "oc_learning_audit_checkpoints" \
     > /tmp/audit-snapshot-$(date +%Y%m%d-%H%M).sql
 
 # MariaDB:
-mysqldump -u oc_admin -p nextcloud \
+mysqldump -u <dbuser> -p <dbname> \
     oc_learning_audit_events oc_learning_audit_chain_state oc_learning_audit_checkpoints \
     > /tmp/audit-snapshot-$(date +%Y%m%d-%H%M).sql
 ```
@@ -83,8 +86,16 @@ occ learning:audit:verify
 
 ## Reference
 
-- Chain design & 6-field canonical: Phase 160 migration notes + Phase 161 RESEARCH.md §Pattern 2
-- DSGVO-01 erasure compatibility (`user_id` NULL is not tamper): Phase 160 RESEARCH.md §DSGVO-01
-- Checkpoint signing (Ed25519 / `signed_payload` verbatim): Phase 161 RESEARCH.md §Pattern 1
-- Forgejo anchor mechanics: Phase 161 RESEARCH.md §AUDIT-05 / Pitfall 7
+How the chain works, so the symptoms above can be read:
+
+- Each compliance event stores a `chain_hash` over six fields of the event plus the previous
+  event's hash (`AuditService::logComplianceEvent`). Changing any stored field of one row breaks
+  that row and every later one.
+- `user_id` is not one of the hashed fields. Account deletion (DSGVO Art. 17) and the retention job
+  set it to NULL; `user_ref` and `chain_hash` stay as they are, so the chain still verifies.
+- A checkpoint signs the chain head with the app's Ed25519 issuer key; `signed_payload` is stored
+  verbatim and verified byte for byte.
+- If a Forgejo anchor is configured, every checkpoint payload is also committed to that repository.
+  The commit lies outside the Nextcloud admin's control, so a difference to `signed_payload` shows
+  a change made after anchoring.
 - Current audit config: `occ config:list learning | grep -E "audit|forgejo|checkpoint"`

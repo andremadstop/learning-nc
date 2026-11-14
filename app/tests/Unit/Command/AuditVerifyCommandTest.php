@@ -50,7 +50,8 @@ final class CapturingOutput implements OutputInterface {
  */
 class AuditVerifyCommandTest extends TestCase {
 
-    private const RUNBOOK = 'docs/audit-fork-runbook.md';
+    // Audit #204: an installed app has no docs/ directory, so occ points to the public runbook.
+    private const RUNBOOK = 'https://github.com/andremadstop/learning-nc/blob/main/docs/audit-fork-runbook.md';
 
     // ── helpers ──────────────────────────────────────────────────────────────
 

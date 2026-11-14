@@ -39,7 +39,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * (FAILURE) on any integrity failure. On failure the fork-resolution runbook path is printed.
  */
 class AuditVerifyCommand extends Command {
-    private const RUNBOOK_PATH = 'docs/audit-fork-runbook.md';
+    // A public URL, not a repo path: docs/ is not part of an installed app (audit #204).
+    private const RUNBOOK_PATH = 'https://github.com/andremadstop/learning-nc/blob/main/docs/audit-fork-runbook.md';
     private const GENESIS_PREV_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
 
     public function __construct(
@@ -56,7 +57,7 @@ class AuditVerifyCommand extends Command {
             ->setDescription('Verify audit chain integrity, checkpoint signatures, and Forgejo anchor consistency')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Output result as JSON')
             ->addOption('from-seq', null, InputOption::VALUE_OPTIONAL, 'Start from seq_num', 1)
-            ->addOption('fork-runbook', null, InputOption::VALUE_NONE, 'Print fork resolution runbook path');
+            ->addOption('fork-runbook', null, InputOption::VALUE_NONE, 'Print where the fork resolution runbook is');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {

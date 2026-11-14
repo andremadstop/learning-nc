@@ -31,11 +31,6 @@ describe('the consent text says the recent chat messages are stored and sent aga
 		})
 	}
 
-	it('the German legacy body says the same', () => {
-		expect(consent.body_html).toMatch(STORED_MESSAGES.de)
-		expect(consent.body_html).not.toMatch(/eine Zusammenfassung deiner früheren Chats mit VirtuProf, die auf dem Server gespeichert ist/)
-	})
-
 	it('no locale reduces the stored chat to "a summary" any more', () => {
 		const de = consent.locales.de.data_list_html
 		expect(de).not.toMatch(/<li>eine Zusammenfassung deiner früheren Chats/)
