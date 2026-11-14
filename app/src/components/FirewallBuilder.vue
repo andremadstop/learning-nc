@@ -262,7 +262,7 @@ export default {
   methods: {
     addRule() {
       this.rules.push(createRule({
-        id: `rule-${this.rules.length + 1}`,
+        id: this.nextRuleId(),
         action: 'deny',
         protocol: 'tcp',
         srcIp: 'any',
@@ -271,6 +271,15 @@ export default {
         dstPort: 'any',
         log: false,
       }))
+    },
+    nextRuleId() {
+      // Length + 1 repeated an existing ID after a removal: duplicate v-for keys, and the packet
+      // test highlighted two rows as the match (audit #98).
+      const used = this.rules
+        .map((rule) => /^rule-(\d+)$/.exec(String(rule.id)))
+        .filter(Boolean)
+        .map((match) => Number(match[1]))
+      return `rule-${Math.max(this.rules.length, ...used) + 1}`
     },
     removeRule(index) {
       this.rules.splice(index, 1)

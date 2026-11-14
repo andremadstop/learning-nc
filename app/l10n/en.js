@@ -3365,5 +3365,6 @@ OC.L10N.register(
     "Die Erneuerung öffnet am {date}." : "Renewal opens on {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.",
     "The daily challenge has changed. Please answer the new question." : "The daily challenge has changed. Please answer the new question.",
+    "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "VLAN {id} is the trunk's native VLAN: its frames stay untagged on the trunk as well.",
 },
 "nplurals=2; plural=(n != 1);");

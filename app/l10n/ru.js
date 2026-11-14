@@ -3365,5 +3365,6 @@ OC.L10N.register(
     "Die Erneuerung öffnet am {date}." : "Продление откроется {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют.",
     "The daily challenge has changed. Please answer the new question." : "Ежедневное задание изменилось. Ответь, пожалуйста, на новый вопрос.",
+    "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "VLAN {id} — native VLAN транка: его кадры и на транке передаются без тега.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

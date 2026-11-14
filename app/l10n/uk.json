@@ -3364,6 +3364,7 @@
         "Die neue Gültigkeit schließt an den {date} an.": "Новий строк дії почнеться з {date}.",
         "Die Erneuerung öffnet am {date}.": "Поновлення відкриється {date}.",
         "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Про сертифікат вирішує лише вибір «Обов'язкові пули» в розділі Адміністрування → Правила курсу → Сертифікація. Ці перемикачі на це не впливають.",
-        "The daily challenge has changed. Please answer the new question.": "Щоденний виклик змінився. Будь ласка, дай відповідь на нове запитання."
+        "The daily challenge has changed. Please answer the new question.": "Щоденний виклик змінився. Будь ласка, дай відповідь на нове запитання.",
+        "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged.": "VLAN {id} — native VLAN транку: його кадри й на транку передаються без тегу."
     }
 }

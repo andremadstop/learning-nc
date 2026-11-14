@@ -246,6 +246,16 @@
               </div>
             </div>
           </template>
+          <template v-else-if="res.isPbq">
+            <!-- A PBQ has no answer rows: the server scored it in points (audit #37). -->
+            <div class="review-answer">
+              <span class="review-label">{{ t('learning', 'Your answer:') }}</span>
+              <span :class="res.isCorrect ? 'text-success' : 'text-error'">
+                <template v-if="res.pbqMaxPoints !== null">{{ res.pbqPoints }}/{{ res.pbqMaxPoints }} {{ t('learning', 'points') }}</template>
+                <template v-else>{{ t('learning', 'Skipped') }}</template>
+              </span>
+            </div>
+          </template>
           <template v-else>
             <div class="review-answer">
               <span class="review-label">{{ t('learning', 'Your answer:') }}</span>
@@ -1265,6 +1275,10 @@ export default {
             isCorrect: rv ? rv.is_correct : false,
             isMulti: rv ? rv.questionType === 'multi' : q.question_type === 'multi',
             isOpen: isOpen,
+            // A PBQ review entry carries the server's points; without one the PBQ was not answered.
+            isPbq: q.question_type === 'pbq' || !!(rv && rv.is_pbq),
+            pbqPoints: rv && rv.is_pbq ? (rv.pbq_points ?? 0) : null,
+            pbqMaxPoints: rv && rv.is_pbq ? (rv.pbq_max_points ?? 0) : null,
             answerDetails: answerDetails,
             explanation: rv && rv.explanation ? rv.explanation : null,
             instructorNote: q.instructor_note || null,
