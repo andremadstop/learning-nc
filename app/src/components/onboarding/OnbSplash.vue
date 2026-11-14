@@ -3,7 +3,7 @@
     <div class="onb-splash__content">
       <CharacterAvatar character-id="nova" :size="96" state="idle" />
       <h1 class="onb-splash__title">
-        {{ t('learning', 'Hi {name}, bereit für deine Mission?', { name: firstName }) }}
+        {{ t('learning', 'Hi {name}, bereit für deine Mission?', { name: greetingName }) }}
       </h1>
       <button
         type="button"
@@ -45,10 +45,12 @@ export default {
   },
 
   computed: {
-    firstName() {
+    // GitHub #49: the whole display name. Its first word is not always the first name
+    // ("Doe Jane" was greeted as "Doe").
+    greetingName() {
       const display = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function'
         && OC.getCurrentUser()?.displayName) || ''
-      return display.split(' ')[0] || ''
+      return String(display).trim()
     },
     reducedMotion() {
       return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches

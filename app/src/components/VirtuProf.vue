@@ -470,11 +470,12 @@ export default {
       this.consentValid = false
     }
     this._offConsentChanged = onConsentChanged((valid) => this.handleConsentChanged(valid))
-    // GREET-01: Extract first name from Nextcloud display name
+    // GREET-01: greet by the Nextcloud display name. GitHub #49: the whole name; its first
+    // word is not always the first name ("Doe Jane" was greeted as "Doe").
     try {
       const user = getCurrentUser()
       if (user?.displayName) {
-        this.userFirstName = String(user.displayName).split(/\s+/)[0] || ''
+        this.userFirstName = String(user.displayName).trim()
       }
     } catch (e) {
       this.userFirstName = ''

@@ -1301,15 +1301,6 @@ class CourseService {
         return $name;
     }
 
-    private function getFirstName(string $userId): string {
-        $full = trim($this->getDisplayName($userId));
-        if ($full === '') {
-            return $userId;
-        }
-        $parts = preg_split('/\s+/', $full, 2);
-        return $parts[0] !== '' ? $parts[0] : $full;
-    }
-
     /**
      * Batch-load pool names for a set of pool IDs.
      */
@@ -1925,7 +1916,9 @@ class CourseService {
             $rank++;
             $entries[] = [
                 'user_id' => $row['user_id'],
-                'display_name' => $this->getFirstName($row['user_id']),
+                // GitHub #49: the whole display name, as in the class register and the progress
+                // table. The first word was taken as the first name, so "Doe Jane" read "Doe".
+                'display_name' => $this->getDisplayName($row['user_id']),
                 'total_xp' => (int)$row['total_xp'],
                 'current_level' => (int)$row['current_level'],
                 'total_mastered' => (int)$row['total_mastered'],
