@@ -3585,6 +3585,19 @@
         "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht.": "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht.",
         "Lernprofil öffnen": "Lernprofil öffnen",
         "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben.": "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben.",
-        "Offen (Status einer Frage)": "Offen"
+        "Offen (Status einer Frage)": "Offen",
+        "Prüfung in diesem Kurs": "Prüfung in diesem Kurs",
+        "Fragen pro Prüfung": "Fragen pro Prüfung",
+        "Zeitlimit (Minuten)": "Zeitlimit (Minuten)",
+        "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße.": "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße.",
+        "Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}.": "Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}.",
+        "Fragen pro Prüfung: eine ganze Zahl ab 1.": "Fragen pro Prüfung: eine ganze Zahl ab 1.",
+        "Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten.": "Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten.",
+        "Kurs-Vorgabe: {value}": "Kurs-Vorgabe: {value}",
+        "Nach Poolgröße": "Nach Poolgröße",
+        "Nach Fragenzahl": "Nach Fragenzahl",
+        "Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {score}/{max}": "Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {score}/{max}",
+        "Prüfungsumfang (Vorgabe für alle Pools)": "Prüfungsumfang (Vorgabe für alle Pools)",
+        "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.": "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße."
     }
 }

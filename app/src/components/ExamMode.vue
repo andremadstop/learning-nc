@@ -347,6 +347,9 @@ export default {
     // GitHub #35: the course's practice rules — { questions, minutes, passPercent } — when the course
     // offers practice exams; null hides the "Practice run" card. A practice run never counts.
     poolPractice: { type: Object, default: null },
+    // GitHub #47: { questions, minutes } the course sets for this pool's exam (pool rule, else
+    // course default), as the server computed and enforces it; null = the pool-sized card.
+    examScope: { type: Object, default: null },
   },
   data() {
     return {
@@ -467,12 +470,28 @@ export default {
       }
       return t('learning', 'Exam mode: no feedback until the end.')
     },
-    // Questions the exam card asks for: the pool's eligible questions, at most 90. 0 = none known.
+    // GitHub #47: the course's configured question count and minutes, each null when not set.
+    // Only inside a course: the server applies them only to exams started there.
+    configuredExamQuestions() {
+      const value = this.courseId && this.examScope ? Math.floor(Number(this.examScope.questions) || 0) : 0
+      return value > 0 ? value : null
+    },
+    configuredExamMinutes() {
+      const value = this.courseId && this.examScope ? Math.floor(Number(this.examScope.minutes) || 0) : 0
+      return value > 0 ? value : null
+    },
+    // Questions the exam card asks for: the course's configured count (never more than the pool
+    // has), else the pool's eligible questions, at most 90. 0 = none known.
     examQuestionCount() {
       const total = Math.floor(Number(this.totalQuestions) || 0)
-      return total > 0 ? Math.min(total, EXAM_MAX_QUESTIONS) : 0
+      if (total <= 0) return 0
+      const configured = this.configuredExamQuestions
+      return configured !== null ? Math.min(total, configured) : Math.min(total, EXAM_MAX_QUESTIONS)
     },
     examTimeLimitSeconds() {
+      if (this.configuredExamMinutes !== null) {
+        return this.configuredExamMinutes * 60
+      }
       const minutes = Math.max(1, Math.round(this.examQuestionCount * EXAM_SECONDS_PER_QUESTION / 60))
       return Math.min(minutes * 60, EXAM_MAX_SECONDS)
     },
@@ -481,8 +500,14 @@ export default {
       const minutes = this.examTimeLimitSeconds / 60
       const rule = this.certificationRule
       let meta
+      const exact = this.configuredExamQuestions !== null
       if (count === 0) {
         meta = t('learning', 'No questions available')
+      } else if (exact && rule) {
+        // GitHub #47: the course fixed the count, so the card names it exactly.
+        meta = t('learning', 'Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: count, minutes, percent: rule.passPercent })
+      } else if (exact) {
+        meta = t('learning', 'Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {score}/{max}', { questions: count, minutes, score: this.examPassScore, max: this.examMaxScore })
       } else if (rule) {
         meta = t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: count, minutes, percent: rule.passPercent })
       } else {

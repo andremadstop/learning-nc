@@ -3585,6 +3585,19 @@
         "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht.": "Les partenaires d’apprentissage sont d’autres membres du cours qui peuvent vous aider sur un sujet, ou qui cherchent de l’aide sur un sujet que vous maîtrisez. Pour les trouver, saisissez vos sujets dans votre profil d’apprentissage sous « Je peux aider sur... » et « J'ai besoin d'aide sur... », puis réglez la visibilité sur « Cours ». Une correspondance apparaît dès qu’un autre membre du cours a saisi le même sujet, écrit de la même façon, et que son profil n’est pas réglé sur « Privé ».",
         "Lernprofil öffnen": "Ouvrir le profil d’apprentissage",
         "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben.": "Dans l’espace Communication, les apprenants voient d’autres membres du cours qui peuvent les aider sur un sujet, ou qui cherchent de l’aide sur un sujet qu’ils maîtrisent eux-mêmes. Cela repose sur les sujets d’entraide que les deux ont saisis dans leur profil d’apprentissage.",
-        "Offen (Status einer Frage)": "Ouverte"
+        "Offen (Status einer Frage)": "Ouverte",
+        "Prüfung in diesem Kurs": "Examen dans ce cours",
+        "Fragen pro Prüfung": "Questions par examen",
+        "Zeitlimit (Minuten)": "Limite de temps (minutes)",
+        "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße.": "S'applique uniquement aux examens de ce cours. Les questions sont tirées au hasard dans le pool à chaque tentative. Les champs vides reprennent la valeur par défaut du cours définie dans Administration → Règles du cours → Certification ; sans valeur par défaut, l'examen suit la taille du pool comme auparavant.",
+        "Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}.": "Questions par examen : un nombre entier de 1 à {max}.",
+        "Fragen pro Prüfung: eine ganze Zahl ab 1.": "Questions par examen : un nombre entier supérieur ou égal à 1.",
+        "Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten.": "Limite de temps : un nombre entier de 1 à 600 minutes.",
+        "Kurs-Vorgabe: {value}": "Valeur par défaut du cours : {value}",
+        "Nach Poolgröße": "Selon la taille du pool",
+        "Nach Fragenzahl": "Selon le nombre de questions",
+        "Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {score}/{max}": "Questions : {questions} · limite de temps : {minutes} min · seuil de réussite : {score}/{max}",
+        "Prüfungsumfang (Vorgabe für alle Pools)": "Contenu de l'examen (valeur par défaut pour tous les pools)",
+        "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.": "S'applique à chaque examen de ce cours dont le pool n'a pas de valeur propre dans les règles du pool. Les questions sont tirées au hasard dans le pool à chaque tentative. Champs vides : l'examen suit la taille du pool comme auparavant."
     }
 }

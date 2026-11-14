@@ -228,6 +228,7 @@
 				:contentLanguage="contentLanguage"
 				:courseCertification="examCertification"
 				:poolPractice="poolPracticeConfig"
+				:examScope="selectedLearningPool.exam_scope || null"
 				@back="onExamBack" />
 		</div>
 
@@ -509,6 +510,44 @@
 					{{ t('learning', 'Only the "Required pools" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.') }}
 				</p>
 
+				<!-- GitHub #47: the scope of a counting exam on this pool, in this course only. -->
+				<fieldset class="rules-field rules-exam-scope" data-test="pool-rules-exam-scope">
+					<legend>{{ t('learning', 'Prüfung in diesem Kurs') }}</legend>
+					<div class="rules-exam-scope__inputs">
+						<div class="rules-exam-scope__input">
+							<label for="pool-rule-exam-questions">{{ t('learning', 'Fragen pro Prüfung') }}</label>
+							<input
+								id="pool-rule-exam-questions"
+								v-model="poolRulesForm.examQuestions"
+								type="number"
+								min="1"
+								:max="poolRulesMaxQuestions || null"
+								step="1"
+								inputmode="numeric"
+								class="nc-input"
+								data-test="pool-rule-exam-questions"
+								:placeholder="examQuestionsPlaceholder">
+						</div>
+						<div class="rules-exam-scope__input">
+							<label for="pool-rule-exam-minutes">{{ t('learning', 'Zeitlimit (Minuten)') }}</label>
+							<input
+								id="pool-rule-exam-minutes"
+								v-model="poolRulesForm.examMinutes"
+								type="number"
+								min="1"
+								max="600"
+								step="1"
+								inputmode="numeric"
+								class="nc-input"
+								data-test="pool-rule-exam-minutes"
+								:placeholder="examMinutesPlaceholder">
+						</div>
+					</div>
+					<p class="rules-help">
+						{{ t('learning', 'Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße.') }}
+					</p>
+				</fieldset>
+
 				<div class="rules-field">
 					<label for="pool-rule-exam">{{ t('learning', 'Exam key filter') }}</label>
 					<select id="pool-rule-exam" v-model="poolRulesForm.filterExamKey" class="nc-input">
@@ -698,6 +737,8 @@ export default {
 				filterExamKey: '',
 				filterChapterKey: '',
 				filterQuestionIdsText: '',
+				examQuestions: '',
+				examMinutes: '',
 			},
 			selectedPoolIds: [],
 			loadingCurriculum: false,
@@ -782,6 +823,23 @@ export default {
 					...tool,
 					shortLabel: t('learning', tool.shortLabelKey),
 				}))
+		},
+		// GitHub #47: the pool's size bounds its exam question count (the server checks the same).
+		poolRulesMaxQuestions() {
+			const pool = this.editingPoolRules
+			return pool ? Math.max(0, Math.floor(Number(pool.total_question_count ?? pool.question_count) || 0)) : 0
+		},
+		examQuestionsPlaceholder() {
+			const value = this.course && this.course.exam_questions
+			return value
+				? t('learning', 'Kurs-Vorgabe: {value}', { value })
+				: t('learning', 'Nach Poolgröße')
+		},
+		examMinutesPlaceholder() {
+			const value = this.course && this.course.exam_minutes
+			return value
+				? t('learning', 'Kurs-Vorgabe: {value}', { value })
+				: t('learning', 'Nach Fragenzahl')
 		},
 		practiceConfig() {
 			const c = this.course || {}
@@ -1144,6 +1202,32 @@ export default {
 				.map((value) => Number.parseInt(value, 10))
 				.filter((value) => Number.isInteger(value) && value > 0)
 		},
+		/**
+		 * GitHub #47: the exam scope fields of the pool rules dialog. Empty = null (course
+		 * default); anything else must be a whole number in range, like the server checks.
+		 */
+		parsePoolRuleExamScope() {
+			const parse = (raw) => {
+				const text = String(raw ?? '').trim()
+				if (text === '') {
+					return null
+				}
+				const value = Number(text)
+				return Number.isInteger(value) ? value : NaN
+			}
+			const questions = parse(this.poolRulesForm.examQuestions)
+			const minutes = parse(this.poolRulesForm.examMinutes)
+			const maxQuestions = this.poolRulesMaxQuestions
+			if (questions !== null && (Number.isNaN(questions) || questions < 1 || (maxQuestions > 0 && questions > maxQuestions))) {
+				return { error: maxQuestions > 0
+					? t('learning', 'Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}.', { max: maxQuestions })
+					: t('learning', 'Fragen pro Prüfung: eine ganze Zahl ab 1.') }
+			}
+			if (minutes !== null && (Number.isNaN(minutes) || minutes < 1 || minutes > 600)) {
+				return { error: t('learning', 'Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten.') }
+			}
+			return { questions, minutes, error: '' }
+		},
 		openPoolRulesModal(pool) {
 			this.editingPoolRules = { ...pool }
 			this.poolRulesError = ''
@@ -1158,6 +1242,8 @@ export default {
 				filterExamKey: pool.filter_exam_key || '',
 				filterChapterKey: pool.filter_chapter_key || '',
 				filterQuestionIdsText: Array.isArray(pool.filter_question_ids) ? pool.filter_question_ids.join(', ') : '',
+				examQuestions: pool.exam_questions ? String(pool.exam_questions) : '',
+				examMinutes: pool.exam_minutes ? String(pool.exam_minutes) : '',
 			}
 			this.showPoolRulesModal = true
 		},
@@ -1168,6 +1254,11 @@ export default {
 		},
 		async savePoolRules() {
 			if (!this.editingPoolRules) {
+				return
+			}
+			const examScope = this.parsePoolRuleExamScope()
+			if (examScope.error) {
+				this.poolRulesError = examScope.error
 				return
 			}
 			this.savingPoolRules = true
@@ -1184,6 +1275,9 @@ export default {
 					filterChapterKey: this.poolRulesForm.filterChapterKey || null,
 					filterQuestionIds: this.parsePoolRuleQuestionIds(),
 					examRelevant: this.poolRulesForm.examRelevant,
+					// GitHub #47: always both keys; null = the course default applies.
+					examQuestions: examScope.questions,
+					examMinutes: examScope.minutes,
 				})
 				this.closePoolRulesModal()
 				this.$emit('refresh-course-detail')
@@ -1962,6 +2056,38 @@ export default {
 	flex-direction: column;
 	gap: 8px;
 	margin-bottom: 16px;
+}
+
+/* GitHub #47: exam scope of the pool in this course */
+.rules-exam-scope {
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	padding: 12px;
+	margin-inline: 0;
+}
+
+.rules-exam-scope legend {
+	font-weight: 600;
+	padding-inline: 4px;
+}
+
+.rules-exam-scope__inputs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.rules-exam-scope__input {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1 1 160px;
+	min-width: 0;
+}
+
+.rules-exam-scope__input input {
+	width: 100%;
+	max-width: 200px;
 }
 
 .rules-checkbox {

@@ -215,6 +215,37 @@
 					</div>
 				</template>
 
+				<!-- GitHub #47: course default of the exam scope. Outside the certification switch:
+					it applies to every exam in the course, certified or not. -->
+				<div class="cert-config-field exam-scope-default" data-test="exam-scope-default">
+					<h4>{{ t('learning', 'Prüfungsumfang (Vorgabe für alle Pools)') }}</h4>
+					<p class="mode-config-hint">{{ t('learning', 'Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.') }}</p>
+					<label for="exam-scope-questions">{{ t('learning', 'Fragen pro Prüfung') }}</label>
+					<input
+						id="exam-scope-questions"
+						v-model="examScopeQuestions"
+						type="number"
+						min="1"
+						max="500"
+						step="1"
+						inputmode="numeric"
+						class="cert-config-input"
+						data-test="exam-scope-questions"
+						:placeholder="t('learning', 'Nach Poolgröße')" />
+					<label for="exam-scope-minutes">{{ t('learning', 'Zeitlimit (Minuten)') }}</label>
+					<input
+						id="exam-scope-minutes"
+						v-model="examScopeMinutes"
+						type="number"
+						min="1"
+						max="600"
+						step="1"
+						inputmode="numeric"
+						class="cert-config-input"
+						data-test="exam-scope-minutes"
+						:placeholder="t('learning', 'Nach Fragenzahl')" />
+				</div>
+
 				<NcButton variant="primary" :disabled="certSaving" @click="saveCertConfig">
 					{{ certSaving ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
 				</NcButton>
@@ -488,6 +519,9 @@ export default {
 			certPassPercent: 80,
 			certRequiredPoolIds: [],
 			certValidityDays: 0,
+			// GitHub #47: course default of the exam scope; '' = none.
+			examScopeQuestions: '',
+			examScopeMinutes: '',
 			certSaving: false,
 			certSaved: false,
 			practiceEnabled: false,
@@ -596,6 +630,8 @@ export default {
 						? c.cert_required_pool_ids.map((id) => Number(id))
 						: []
 					this.certValidityDays = c.cert_validity_days ?? 0
+					this.examScopeQuestions = c.exam_questions ? String(c.exam_questions) : ''
+					this.examScopeMinutes = c.exam_minutes ? String(c.exam_minutes) : ''
 					this.practiceEnabled = !!c.practice_enabled
 					this.practiceQuestions = c.practice_questions ?? 20
 					this.practiceMinutes = c.practice_minutes ?? 0
@@ -1016,7 +1052,29 @@ export default {
 			}
 		},
 
+		/**
+		 * GitHub #47: '' = no course default, sent as 0. Anything else must be a whole number in
+		 * range; returns null for an invalid value.
+		 */
+		parseExamScopeDefault(raw, max) {
+			const text = String(raw ?? '').trim()
+			if (text === '') {
+				return 0
+			}
+			const value = Number(text)
+			return Number.isInteger(value) && value >= 1 && value <= max ? value : null
+		},
 		async saveCertConfig() {
+			const examQuestions = this.parseExamScopeDefault(this.examScopeQuestions, 500)
+			const examMinutes = this.parseExamScopeDefault(this.examScopeMinutes, 600)
+			if (examQuestions === null) {
+				this.$emit('error', t('learning', 'Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}.', { max: 500 }))
+				return
+			}
+			if (examMinutes === null) {
+				this.$emit('error', t('learning', 'Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten.'))
+				return
+			}
 			this.certSaving = true
 			this.certSaved = false
 			try {
@@ -1025,6 +1083,8 @@ export default {
 					certPassPercent: this.certPassPercent,
 					certRequiredPoolIds: this.certRequiredPoolIds,
 					certValidityDays: this.certValidityDays,
+					examQuestions,
+					examMinutes,
 				})
 				// Server response is camelCase (CourseController::updateCertConfig)
 				this.certEnabled = result.certEnabled ?? false
@@ -1033,6 +1093,8 @@ export default {
 					? result.certRequiredPoolIds.map((id) => Number(id))
 					: []
 				this.certValidityDays = result.certValidityDays ?? 0
+				this.examScopeQuestions = result.examQuestions ? String(result.examQuestions) : ''
+				this.examScopeMinutes = result.examMinutes ? String(result.examMinutes) : ''
 				this.certSaved = true
 				setTimeout(() => { this.certSaved = false }, 3000)
 				this.$emit('refresh-course-detail')
