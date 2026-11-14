@@ -1299,7 +1299,7 @@ OC.L10N.register(
     "One question per day for bonus XP — a quick warm-up!" : "Одне питання на день за бонусні XP — швидка розминка!",
     "Only active ({n}d)" : "Лише активні ({n} д)",
     "Only you" : "Лише ви",
-    "Open" : "Відкрити",
+    "Open" : "Відкрито",
     "Open Duel" : "Відкрита дуель",
     "Open Duel appears once a challenge has been accepted and a duel code already exists. At that point the match is ready to be played from inside the league tab itself." : "«Відкрита дуель» з'являється, щойно виклик прийнято й код дуелі вже існує. У цей момент матч готовий до гри прямо з вкладки ліги.",
     "Open a course, choose a learning mode like Training or Leitner and then pick one of the assigned pools. The mode starts only after the pool selection, so the teacher controls the available material through course pools and optional filters." : "Відкрийте курс, оберіть режим навчання, наприклад Тренування або Лейтнер, а потім оберіть один із призначених пулів. Режим починається лише після вибору пулу, тож викладач керує доступним матеріалом через пули курсу та необов'язкові фільтри.",
