@@ -100,6 +100,30 @@ class LegalOperatorControllerTest extends TestCase {
         ], $this->theming);
     }
 
+    public function testALinkClearedAfterTheFirstSyncStaysEmptyWhenTheOperatorIsSavedAgain(): void {
+        // Audit #206: an empty theming link used to be read as "fill it in" on every save, so an
+        // admin who removed the footer link on purpose got it back with the next typo fix.
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+        $this->assertSame('https://cloud.example/learning.page.privacy', $this->theming['privacyUrl']);
+        $this->theming = ['privacyUrl' => '', 'imprintUrl' => ''];
+
+        $resp = $this->controller()->save('Musterschule e.V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertSame(['privacyUrl' => '', 'imprintUrl' => ''], $this->theming);
+    }
+
+    public function testRemovingAndReenteringTheOperatorFillsTheEmptyLinksAgain(): void {
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+        $this->controller()->save('', '', '', '', '');
+        $this->theming = [];
+
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+
+        $this->assertSame('https://cloud.example/learning.page.privacy', $this->theming['privacyUrl']);
+        $this->assertSame('https://cloud.example/learning.page.impressum', $this->theming['imprintUrl']);
+    }
+
     public function testARefusedEntryWritesNoFooterLink(): void {
         $this->controller()->save('Musterschule e. V.', '', '', '', '');
 

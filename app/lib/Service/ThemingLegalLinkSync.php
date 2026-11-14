@@ -16,7 +16,8 @@ use OCP\IURLGenerator;
  * audit #206 it still ran on every request and rewrote its own link whenever the host differed:
  * cron and occ build absolute URLs from overwrite.cli.url, the web from the request, so the two
  * kept flipping the stored value. It now runs when an admin saves the operator details
- * (LegalOperatorController), in a web request with the instance's real address.
+ * (LegalOperatorController), in a web request with the instance's real address, and only when that
+ * save makes the entry complete: later an empty link is the admin's choice and stays empty (#206).
  */
 class ThemingLegalLinkSync {
     private const LINKS = [

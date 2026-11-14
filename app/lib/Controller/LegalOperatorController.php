@@ -58,14 +58,18 @@ class LegalOperatorController extends Controller {
         if ($errors !== []) {
             return new DataResponse(['error' => 'invalid_operator', 'fields' => $errors], Http::STATUS_BAD_REQUEST);
         }
+        $wasConfigured = $this->operatorInfo->isConfigured();
         $this->operatorInfo->save($values);
-        // The Nextcloud footer links follow a complete operator entry (they used to be synced on
-        // every request, audit #206). The details are stored either way; a failing theming write
-        // only costs the footer link and is logged.
-        try {
-            $this->legalLinks->sync();
-        } catch (\Throwable $e) {
-            $this->logger->warning('Learning: legal link sync failed: ' . $e->getMessage(), ['app' => 'learning', 'exception' => $e]);
+        // The Nextcloud footer links follow the operator entry when it becomes complete (they used
+        // to be synced on every request, audit #206). Only then: a later save, e.g. a typo fix,
+        // must not refill a link the admin has cleared on purpose since. The details are stored
+        // either way; a failing theming write only costs the footer link and is logged.
+        if (!$wasConfigured && $this->operatorInfo->isConfigured()) {
+            try {
+                $this->legalLinks->sync();
+            } catch (\Throwable $e) {
+                $this->logger->warning('Learning: legal link sync failed: ' . $e->getMessage(), ['app' => 'learning', 'exception' => $e]);
+            }
         }
 
         return new DataResponse([
