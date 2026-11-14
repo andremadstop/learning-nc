@@ -143,20 +143,9 @@ class QuestionService {
      * prevent exam oracle attacks.
      */
     private function hasActiveExamOnPool(int $poolId, string $userId): bool {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
-           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-           // Practice exams never count and must not lock a pool (an untimed one could stay open).
-           ->andWhere($qb->expr()->isNull('exam_kind'))
-           ->andWhere($qb->expr()->isNull('completed_at'))
-           ->setMaxResults(1);
-        $result = $qb->executeQuery();
-        $hasExam = $result->fetch();
-        $result->closeCursor();
-        return $hasExam !== false;
+        // One deadline-aware check for every read path (audit #56): an expired timed exam no
+        // longer locks the pool just because no TrainingService path has closed it yet.
+        return ExamLock::isActiveOnPool($this->db, $poolId, $userId);
     }
 
     public static function isOpenAnswerCorrect(string $userAnswer, string $modelAnswer): bool {
