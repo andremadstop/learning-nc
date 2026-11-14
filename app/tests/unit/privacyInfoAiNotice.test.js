@@ -94,13 +94,18 @@ describe('privacy-info.json keeps no second copy of the AI notice', () => {
 	})
 
 	it('names no fixed provider anywhere in the file', () => {
-		const raw = JSON.stringify(privacyData)
-		expect(raw).not.toMatch(/Google|Gemini|OpenAI|Anthropic|Mistral|Ollama/)
-		expect(raw).toContain('{provider}')
+		expect(JSON.stringify(privacyData)).not.toMatch(/Google|Gemini|OpenAI|Anthropic|Mistral|Ollama/)
+	})
+
+	it('the category texts name no fixed provider either; the recipient is a placeholder', () => {
+		const src = fs.readFileSync(path.resolve(process.cwd(), 'src/utils/privacyInfo.js'), 'utf8')
+		expect(src).not.toMatch(/Google|Gemini|OpenAI|Anthropic|Mistral|Ollama/)
+		expect(src).toContain('{provider}')
 	})
 
 	it('no longer claims the profile stays home or the chat stays in the browser', () => {
-		const raw = JSON.stringify(privacyData)
+		// the category texts live in privacyInfo.js since #38; check what the page builds
+		const raw = JSON.stringify(privacyData) + JSON.stringify(buildPrivacyCategoryGroups())
 		expect(raw).not.toMatch(/NICHT an Google/)
 		expect(raw).not.toMatch(/Lernprofil werden NICHT/)
 		expect(raw).not.toMatch(/lokal im Browser/)
@@ -110,16 +115,17 @@ describe('privacy-info.json keeps no second copy of the AI notice', () => {
 
 describe('category texts carry the recipient too', () => {
 	it('fills {provider} in the AI category and keeps a fallback without one', () => {
-		const withProvider = buildPrivacyCategoryGroups(privacyData, 'Google Gemini')
+		const withProvider = buildPrivacyCategoryGroups('Google Gemini')
 		const ai = withProvider.find((g) => g.id === 'ai').entries.find((e) => e.name.startsWith('KI-Interaktion'))
 		expect(ai.who_sees).toContain('Google Gemini')
 		expect(ai.who_sees).not.toContain('{provider}')
 		expect(ai.items).toMatch(/Lernprofil/)
 		expect(ai.retention).toMatch(/Server/)
 
-		const without = buildPrivacyCategoryGroups(privacyData)
+		const without = buildPrivacyCategoryGroups()
 		const ai2 = without.find((g) => g.id === 'ai').entries.find((e) => e.name.startsWith('KI-Interaktion'))
 		expect(ai2.who_sees).not.toContain('{provider}')
-		expect(ai2.who_sees).toContain(privacyData.ai_notice.provider_fallback)
+		// a sentence of its own, not a lower-case fallback put in front of "verarbeitet" (#38)
+		expect(ai2.who_sees).toMatch(/^Der vom Betreiber eingerichtete KI-Dienst verarbeitet die Anfrage\./)
 	})
 })

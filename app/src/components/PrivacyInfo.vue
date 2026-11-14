@@ -68,7 +68,7 @@
 
 				<div
 					v-for="entry in group.entries"
-					:key="group.id + '-' + entry.name"
+					:key="entry.id"
 					class="privacy-info__entry">
 					<h6 v-if="showEntryHeading(group, entry)">{{ entry.name }}</h6>
 					<p v-if="entry.description" class="privacy-info__entry-description">{{ entry.description }}</p>
@@ -197,7 +197,7 @@ export default {
 			return Array.isArray(this.privacyData?.sections) ? this.privacyData.sections : []
 		},
 		namedCategories() {
-			return buildPrivacyCategoryGroups(this.privacyData, this.aiNotice?.active ? this.aiNotice.provider : '')
+			return buildPrivacyCategoryGroups(this.aiNotice?.active ? this.aiNotice.provider : '')
 		},
 		rights() {
 			return buildRights()

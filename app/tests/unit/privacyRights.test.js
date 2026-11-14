@@ -3,6 +3,8 @@
  *
  *   38-a  The six rights came raw from the German-only privacy-info.json and were rendered without
  *         t(), so an English (or Arabic, Ukrainian ...) reader saw "Auskunft (Art. 15 DSGVO)".
+ *   38-f  Withdrawal of consent (Art. 7(3)) and the complaint to a supervisory authority (Art. 77)
+ *         were missing, although Art. 13(2)(c)/(d) requires both.
  *   38-b  The compiler drops the line break between </strong> and <span>, so the bold name and the
  *         bracket ran together: "Auskunft(Art. 15 DSGVO)".
  *
@@ -32,6 +34,12 @@ async function render(lang) {
 	return [...host.querySelectorAll('.privacy-info__rights li')]
 }
 
+async function rerender(lang) {
+	app?.unmount()
+	host?.remove()
+	return render(lang)
+}
+
 afterEach(() => {
 	app?.unmount()
 	host?.remove()
@@ -40,7 +48,7 @@ afterEach(() => {
 	setTestLanguage('de')
 })
 
-const RIGHT_KEYS = ['Auskunft', 'Berichtigung', 'Löschung', 'Einschränkung', 'Widerspruch', 'Datenportabilität']
+const RIGHT_KEYS = ['Auskunft', 'Berichtigung', 'Löschung', 'Einschränkung', 'Widerspruch', 'Datenportabilität', 'Widerruf der Einwilligung', 'Beschwerde bei einer Aufsichtsbehörde']
 const RIGHT_DESCRIPTIONS = [
 	'Du kannst jederzeit erfahren, welche Daten über dich gespeichert sind.',
 	'Unrichtige Daten können korrigiert werden.',
@@ -48,18 +56,30 @@ const RIGHT_DESCRIPTIONS = [
 	'Du kannst die Verarbeitung einschränken lassen.',
 	'Du kannst der Verarbeitung widersprechen.',
 	'Du kannst deine Daten in einem gängigen Format erhalten.',
+	'Eine erteilte Einwilligung (etwa für die KI-Funktionen, das Telos-Profil, das Schwarmgedächtnis oder externe Videos) kannst du jederzeit mit Wirkung für die Zukunft widerrufen. Die Verarbeitung bis zum Widerruf bleibt rechtmäßig.',
+	'Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, insbesondere in dem EU-Mitgliedstaat deines Aufenthaltsorts, deines Arbeitsplatzes oder des mutmaßlichen Verstoßes.',
 ]
 
 describe('privacy page: your rights (#38)', () => {
-	it('lists the six rights in English, not in German', async () => {
+	it('lists the eight rights in English, not in German', async () => {
 		const items = await render('en')
 		const text = items.map((li) => li.textContent).join('\n')
-		expect(items).toHaveLength(6)
+		expect(items).toHaveLength(8)
 		expect(text).toContain('Access')
 		expect(text).toContain('Art. 15 GDPR')
 		expect(text).toContain('You can find out at any time which data is stored about you.')
 		expect(text).not.toContain('Auskunft')
 		expect(text).not.toContain('DSGVO')
+	})
+
+	it('names withdrawal of consent (Art. 7(3)) and the complaint right (Art. 77) (38-f)', async () => {
+		const items = await render('en')
+		const text = items.map((li) => li.textContent.replace(/\s+/g, ' ').trim())
+		expect(text[6]).toMatch(/^Withdrawal of consent \(Art\. 7\(3\) GDPR\) — .*at any time with effect for the future\. Processing carried out before the withdrawal remains lawful\.$/)
+		expect(text[7]).toMatch(/^Complaint to a supervisory authority \(Art\. 77 GDPR\) — .*supervisory authority/)
+		const de = (await rerender('de')).map((li) => li.textContent.replace(/\s+/g, ' ').trim())
+		expect(de[6]).toMatch(/^Widerruf der Einwilligung \(Art\. 7 Abs\. 3 DSGVO\) — .*Die Verarbeitung bis zum Widerruf bleibt rechtmäßig\.$/)
+		expect(de[7]).toMatch(/^Beschwerde bei einer Aufsichtsbehörde \(Art\. 77 DSGVO\)/)
 	})
 
 	it.each(['fr', 'ru', 'ar', 'uk'])('every right has its own translation in %s', async (lang) => {

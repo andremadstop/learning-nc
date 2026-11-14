@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import consent from '../../data/ai-consent.json'
-import privacyData from '../../data/privacy-info.json'
+import { buildPrivacyCategories } from '../../src/utils/privacyInfo.js'
+import { catalogue } from './support/l10nCatalog.js'
 
 // Review finding (Codex): AiChatMemoryService::saveExchange() stores every user message (up to
 // 1000 chars) and every reply verbatim, loadMemory() returns the recent ones and the prompt carries
@@ -40,10 +41,16 @@ describe('the consent text says the recent chat messages are stored and sent aga
 
 describe('privacy page and settings say the same', () => {
 	it('privacy-info.json AI category names the stored messages', () => {
-		const ai = privacyData.categories.find((c) => c.name.startsWith('KI-Interaktion'))
+		const ai = buildPrivacyCategories().find((c) => c.id === 'ai-interaction')
 		expect(ai.items).toMatch(/Nachrichten.*Antworten.*gespeichert/)
 		expect(ai.retention).toMatch(/Nachrichten/)
 		expect(ai.retention).not.toMatch(/^Die Zusammenfassung deiner früheren Chats liegt/)
+	})
+
+	// GitHub #38: the category is translated now; every language has to say what the consent text says
+	it.each(LANGS)('the AI category names the stored messages in %s too', (lang) => {
+		const key = buildPrivacyCategories().find((c) => c.id === 'ai-interaction').items
+		expect(catalogue(lang)[key]).toMatch(STORED_MESSAGES[lang])
 	})
 
 	it('the settings data table no longer says "a summary on this server"', () => {

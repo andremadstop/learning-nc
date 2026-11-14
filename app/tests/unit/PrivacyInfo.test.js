@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import fs from 'fs'
 
+import { buildPrivacyCategories } from '../../src/utils/privacyInfo.js'
+
 function readJson(relativePath) {
 	return JSON.parse(
 		fs.readFileSync(new URL(relativePath, import.meta.url), 'utf8'),
@@ -8,12 +10,14 @@ function readJson(relativePath) {
 }
 
 const privacyInfo = readJson('../../data/privacy-info.json')
+// GitHub #38: the category texts left the German-only JSON for literal t() calls
+const categories = buildPrivacyCategories()
 
-describe('privacy-info.json', () => {
-	const requiredFields = ['name', 'items', 'purpose', 'who_sees', 'retention', 'legal_basis']
+describe('privacy categories', () => {
+	const requiredFields = ['id', 'group', 'name', 'items', 'purpose', 'who_sees', 'retention', 'legal_basis']
 
 	it('each category has all required fields', () => {
-		for (const category of privacyInfo.categories) {
+		for (const category of categories) {
 			for (const field of requiredFields) {
 				expect(category, `Category "${category.name}" missing field "${field}"`).toHaveProperty(field)
 				expect(category[field], `Category "${category.name}" has empty "${field}"`).not.toBe('')
@@ -21,26 +25,26 @@ describe('privacy-info.json', () => {
 		}
 	})
 
-	const namedCategoryMap = {
-		learning: 'Lerndaten',
-		ai: 'Persoenlichkeitsprofil|Persönlichkeitsprofil|KI-Interaktion',
-		social: 'Schwarm',
-		audit: 'Audit',
-		gamification: 'Gamification',
-		assessment: 'Pruefung|Prüfung',
-		external: 'Externe',
-	}
+	it('ids are unique (the page keys its entries by them)', () => {
+		const ids = categories.map((c) => c.id)
+		expect(new Set(ids).size).toBe(ids.length)
+	})
 
-	it.each(Object.entries(namedCategoryMap))(
-		'covers named category "%s" (matching: %s)',
-		(namedType, pattern) => {
-			const regex = new RegExp(pattern)
-			const match = privacyInfo.categories.find(c => regex.test(c.name))
-			expect(match, `No category name matches pattern "${pattern}" for named type "${namedType}"`).toBeDefined()
+	it.each(['learning', 'ai', 'social', 'audit', 'gamification', 'assessment', 'external'])(
+		'covers the named group "%s"',
+		(group) => {
+			expect(categories.some((c) => c.group === group), `No category in group "${group}"`).toBe(true)
 		},
 	)
 
 	it('has at least 8 category entries (7 named types, ai has two entries)', () => {
-		expect(privacyInfo.categories.length).toBeGreaterThanOrEqual(8)
+		expect(categories.length).toBeGreaterThanOrEqual(8)
+	})
+
+	it('privacy-info.json keeps only the version, no German texts', () => {
+		expect(privacyInfo.version).toBe('1.3')
+		expect(privacyInfo.categories).toBeUndefined()
+		expect(privacyInfo.rights).toBeUndefined()
+		expect(privacyInfo.ai_notice).toBeUndefined()
 	})
 })
