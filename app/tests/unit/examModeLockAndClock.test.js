@@ -109,6 +109,42 @@ describe('ExamMode — read-only second tab (audit #36)', () => {
 		clearInterval(vm.timerInterval)
 	})
 
+	it('stays read-only at the deadline when the answering tab frees the lock to submit', async () => {
+		const store = new Map()
+		vi.stubGlobal('localStorage', {
+			getItem: (k) => (store.has(k) ? store.get(k) : null),
+			setItem: (k, v) => store.set(k, String(v)),
+			removeItem: (k) => store.delete(k),
+		})
+		const vm = createInstance()
+		vm.session = 7
+		vm.screen = 'exam'
+		vm.questions = [{ id: 10, text: 'Q10', question_type: 'single', answers: [{ id: 100, text: 'Yes' }] }]
+		vm.refreshSessionStatus = vi.fn()
+		// Tab A holds the lock.
+		store.set('learning_exam_lock_7', JSON.stringify({ tabId: 'tab_A', ts: Date.now() }))
+		vm.startExamLock()
+		expect(vm.lockDenied).toBe(true)
+		vm.examDeadlineAt = Math.floor(Date.now() / 1000) + 6
+		vm.startTimer()
+
+		vi.advanceTimersByTime(1000) // deadline lead reached while locked
+		expect(vm.refreshSessionStatus).toHaveBeenCalledTimes(1)
+
+		// Tab A starts finishExam: it frees the lock before its batch reaches the server.
+		store.delete('learning_exam_lock_7')
+		vi.advanceTimersByTime(20000) // heartbeats and ticks would have taken the lock over
+
+		expect(axios.post).not.toHaveBeenCalled()
+		expect(vm.lockDenied).toBe(true)
+		expect(store.has('learning_exam_lock_7')).toBe(false)
+		expect(vm.refreshSessionStatus.mock.calls.length).toBeGreaterThan(1)
+		await vm.finishExam({ forceTimedOut: true })
+		expect(axios.post).not.toHaveBeenCalled()
+		clearInterval(vm.timerInterval)
+		vm.stopLockHeartbeat()
+	})
+
 	it('the answering tab still submits at the deadline', () => {
 		const vm = createInstance()
 		const finish = vi.fn()

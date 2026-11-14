@@ -364,6 +364,9 @@ export default {
       attemptNo: null,
       resumedFromServer: false,
       lockDenied: false,
+      // Audit #36: this tab was read-only when the deadline came. It stays read-only until the
+      // result is in, even if the answering tab frees the lock while it submits.
+      lockedAtDeadline: false,
       tabLockId: null,
       lockHeartbeat: null,
       statusPollTimer: null,
@@ -978,10 +981,16 @@ export default {
         // Submit a few seconds early: the batch must reach the server before its grace period
         // after the deadline runs out (2026-11 audit H4).
         if (this.timeLeftSeconds <= EXAM_AUTO_SUBMIT_LEAD_SECONDS) {
-          if (this.lockDenied) {
+          if (this.lockDenied || this.lockedAtDeadline) {
             // Audit #36: the read-only tab holds none of the answers. It must not submit an
             // empty batch and complete the session under the answering tab; it waits for the
-            // result instead (the server closes the exam after its grace period).
+            // result instead (the server closes the exam after its grace period). The answering
+            // tab frees the lock as it starts submitting, so this tab stops claiming it: taking
+            // it over would let the next tick complete the exam before that batch has landed.
+            if (!this.lockedAtDeadline) {
+              this.lockedAtDeadline = true;
+              this.stopLockHeartbeat();
+            }
             this.pollStatusWhileLocked();
           } else {
             this.finishExam({ forceTimedOut: true });
@@ -1004,6 +1013,7 @@ export default {
       return this.session ? `learning_exam_lock_${this.session}` : null
     },
     claimLock() {
+      if (this.lockedAtDeadline) return false
       const key = this.lockKey()
       if (!key || !this.tabLockId) return true
       const now = Date.now()
@@ -1027,11 +1037,14 @@ export default {
       if (this.lockHeartbeat) clearInterval(this.lockHeartbeat)
       this.lockHeartbeat = setInterval(() => this.claimLock(), 5000)
     },
-    releaseExamLock() {
+    stopLockHeartbeat() {
       if (this.lockHeartbeat) {
         clearInterval(this.lockHeartbeat)
         this.lockHeartbeat = null
       }
+    },
+    releaseExamLock() {
+      this.stopLockHeartbeat()
       const key = this.lockKey()
       if (!key || !this.tabLockId) return
       const raw = localStorage.getItem(key)
@@ -1199,7 +1212,7 @@ export default {
 
     async finishExam({ forceTimedOut = false } = {}) {
       // Audit #36: only the tab holding the exam lock (and the answers) may complete it.
-      if (this.isLoading || this.lockDenied) return;
+      if (this.isLoading || this.lockDenied || this.lockedAtDeadline) return;
       if (this.timerInterval) {
         clearInterval(this.timerInterval);
         this.timerInterval = null;
@@ -1388,6 +1401,7 @@ export default {
       this.resumedFromServer = false;
       this.practiceRun = false;
       this.lockDenied = false;
+      this.lockedAtDeadline = false;
       this.stopStatusPolling();
       this.releaseExamLock();
       if (this.timerInterval) clearInterval(this.timerInterval);
