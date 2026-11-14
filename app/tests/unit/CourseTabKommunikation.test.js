@@ -40,7 +40,6 @@ function createInstance(overrides = {}) {
 		userRole: 'student',
 		activeTab: 'feed',
 		$emit: vi.fn(),
-		$delete: vi.fn(),
 		// The prop CourseDetail hands down. Set per test; the harness does not re-derive it from
 		// the course (that copy of CourseDetail's rule would test itself, not the component).
 		actsAsInstructor: false,

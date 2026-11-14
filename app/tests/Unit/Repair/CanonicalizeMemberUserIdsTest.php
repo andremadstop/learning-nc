@@ -86,7 +86,7 @@ class CanonicalizeMemberUserIdsTest extends TestCase {
             $row = array_merge($this->tables[$table][$id], $q['set']);
             foreach ($this->tables[$table] as $otherId => $other) {
                 if ($otherId !== $id && $this->uniqueKey($table, $other) === $this->uniqueKey($table, $row)) {
-                    throw new \OCP\DB\Exception('duplicate key', \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION);
+                    throw new \OCP\DB\Exception(\OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION, 'duplicate key');
                 }
             }
             $this->tables[$table][$id] = $row;

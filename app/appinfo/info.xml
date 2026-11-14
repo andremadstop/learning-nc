@@ -111,12 +111,18 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/11-en-pools.png</screenshot>
 
     <dependencies>
-        <php min-version="8.1"/>
+        <php min-version="8.2"/>
         <nextcloud min-version="33" max-version="35"/>
     </dependencies>
 
     <background-jobs>
         <job>OCA\Learning\BackgroundJob\SendRemindersJob</job>
+        <job>OCA\Learning\BackgroundJob\ConsistencyCheckJob</job>
+        <job>OCA\Learning\BackgroundJob\WeeklyLernplanJob</job>
+        <job>OCA\Learning\BackgroundJob\ChunkingJob</job>
+        <job>OCA\Learning\BackgroundJob\AuditCheckpointJob</job>
+        <job>OCA\Learning\BackgroundJob\RecertPeriodCloseJob</job>
+        <job>OCA\Learning\BackgroundJob\RetentionJob</job>
     </background-jobs>
 
     <repair-steps>
@@ -124,6 +130,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
             <step>OCA\Learning\Repair\MigrateLlmConfiguration</step>
             <step>OCA\Learning\Repair\CanonicalizeMemberUserIds</step>
+            <step>OCA\Learning\Repair\RemoveRetiredBackgroundJobs</step>
         </post-migration>
         <install>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>

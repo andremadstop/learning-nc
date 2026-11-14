@@ -63,7 +63,12 @@ class ExportController extends Controller {
         }
 
         $export = $this->dataMobilityService->exportPoolJson($poolId);
-        $json = json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        // invalid UTF-8 in imported content becomes U+FFFD instead of failing the whole export;
+        // anything json_encode still refuses is a 500 with a message, not a TypeError (audit #199)
+        $json = json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        if ($json === false) {
+            return new DataResponse(['error' => 'Export could not be encoded: ' . json_last_error_msg()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
         return new DataDownloadResponse($json, 'pool-' . $poolId . '.json', 'application/json');
     }
 

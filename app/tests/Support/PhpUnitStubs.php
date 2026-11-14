@@ -36,13 +36,13 @@ namespace OCP\DB\QueryBuilder {
 
     if (!interface_exists(IQueryBuilder::class)) {
         interface IQueryBuilder {
+            // Values as NC 33 resolves them (Doctrine ParameterType / ArrayParameterType / Types),
+            // so a test that compares a literal type tests Nextcloud, not the stub (audit #199).
+            public const PARAM_NULL = 0;
             public const PARAM_INT = 1;
+            public const PARAM_STR = 2;
+            public const PARAM_BOOL = 'boolean';
             public const PARAM_INT_ARRAY = 101;
-            // Phase 160: additional type constants used by AssignmentService/MigrationService
-            public const PARAM_STR = 16;
-            public const PARAM_NULL = 4;
-            public const PARAM_BOOL = 5;
-            // Phase 163: PARAM_STR_ARRAY for chunked IN queries (CertificateMapper, AssignmentService)
             public const PARAM_STR_ARRAY = 102;
 
             // Phase 160: full DML/query surface so PHPUnit can mock/configure each method
@@ -87,13 +87,13 @@ namespace OCP\DB {
     }
 
     if (!class_exists(Exception::class)) {
-        // Minimal stub of OCP\DB\Exception so unit tests can simulate a UNIQUE-constraint violation
-        // (the real class wraps a Doctrine exception; tests only need getReason()).
+        // Minimal stub of OCP\DB\Exception so unit tests can simulate a UNIQUE-constraint violation.
+        // The real class wraps a Doctrine exception and takes (message, code, previous); this stub
+        // takes the reason directly because tests only need getReason(). The REASON_* values are
+        // the real NC 33 ones (audit #199: UNIQUE was 7 here, which is FOREIGN_KEY in Nextcloud).
         class Exception extends \Exception {
-            public const REASON_UNIQUE_CONSTRAINT_VIOLATION = 7;
-            // Mirrors the real OCP\DB\Exception value — UninstallCommand uses it to tell an
-            // absent table apart from a query that failed for any other reason.
             public const REASON_DATABASE_OBJECT_NOT_FOUND = 4;
+            public const REASON_UNIQUE_CONSTRAINT_VIOLATION = 14;
             private int $reason;
             public function __construct(int $reason = 0, string $message = '') {
                 parent::__construct($message);
@@ -341,7 +341,7 @@ namespace OCP\Notification {
     }
 
     if (!class_exists(UnknownNotificationException::class)) {
-        class UnknownNotificationException extends \Exception {
+        class UnknownNotificationException extends \InvalidArgumentException {
         }
     }
 
@@ -474,24 +474,48 @@ namespace Symfony\Component\Console\Tester {
         }
     }
 
-    // Minimal OutputInterface for CommandTester: discards all output.
+    // Minimal OutputInterface for CommandTester: collects the output for getDisplay().
     if (!class_exists(StubConsoleOutput::class)) {
         class StubConsoleOutput implements \Symfony\Component\Console\Output\OutputInterface {
-            public function writeln(string|array $messages, int $options = 0): void {}
-            public function write(string|array $messages, bool $newline = false, int $options = 0): void {}
+            public string $buffer = '';
+            public function writeln(string|array $messages, int $options = 0): void {
+                $this->write($messages, true, $options);
+            }
+            public function write(string|array $messages, bool $newline = false, int $options = 0): void {
+                foreach ((array)$messages as $message) {
+                    $this->buffer .= $message . ($newline ? "\n" : '');
+                }
+            }
         }
     }
 
+    // Like Symfony's CommandTester, getStatusCode()/getDisplay() report the last execute(); before
+    // audit #199 they always returned 0 and '', so an assertion on them passed for a failing command.
     if (!class_exists(CommandTester::class)) {
         class CommandTester {
+            private ?int $statusCode = null;
+            private ?StubConsoleOutput $output = null;
+
             public function __construct(private \Symfony\Component\Console\Command\Command $command) {}
 
             public function execute(array $input, array $options = []): int {
-                return $this->command->run(new StubConsoleInput($input), new StubConsoleOutput());
+                $this->output = new StubConsoleOutput();
+                return $this->statusCode = $this->command->run(new StubConsoleInput($input), $this->output);
             }
 
-            public function getDisplay(): string { return ''; }
-            public function getStatusCode(): int { return 0; }
+            public function getDisplay(): string {
+                if ($this->output === null) {
+                    throw new \RuntimeException('Output not initialized, did you execute the command before requesting the display?');
+                }
+                return $this->output->buffer;
+            }
+
+            public function getStatusCode(): int {
+                if ($this->statusCode === null) {
+                    throw new \RuntimeException('Status code not initialized, did you execute the command before requesting the status code?');
+                }
+                return $this->statusCode;
+            }
         }
     }
 }
@@ -647,26 +671,6 @@ namespace OCP\AppFramework {
 }
 
 namespace OCP\AppFramework\Http {
-    if (!class_exists(DataResponse::class)) {
-        class DataResponse {
-            private $data;
-            private int $status;
-
-            public function __construct($data = [], int $status = 200) {
-                $this->data = $data;
-                $this->status = $status;
-            }
-
-            public function getData() {
-                return $this->data;
-            }
-
-            public function getStatus(): int {
-                return $this->status;
-            }
-        }
-    }
-
     // Base Response so methods typed `: Response` may return JSONResponse|DataDownloadResponse.
     if (!class_exists(Response::class)) {
         class Response {
@@ -708,6 +712,24 @@ namespace OCP\AppFramework\Http {
                     $this->csp = new EmptyContentSecurityPolicy();
                 }
                 return $this->csp;
+            }
+        }
+    }
+
+    // Declared after Response: like the real class it extends Response (audit #199), so a method
+    // typed `: Response` that returns a DataResponse behaves as on Nextcloud.
+    if (!class_exists(DataResponse::class)) {
+        class DataResponse extends Response {
+            private $data;
+
+            /** @param array<string, string> $headers */
+            public function __construct(mixed $data = [], int $statusCode = 200, array $headers = []) {
+                parent::__construct($statusCode, $headers);
+                $this->data = $data;
+            }
+
+            public function getData() {
+                return $this->data;
             }
         }
     }
@@ -778,7 +800,11 @@ namespace OCP\AppFramework\Http {
             private string $filename;
             private string $contentType;
 
-            public function __construct($data, string $filename, string $contentType) {
+            // string $data like NC 33: under strict_types a json_encode() false is a TypeError there,
+            // and the stub used to accept it (audit #199).
+            /** @param array<string, string> $headers */
+            public function __construct(string $data, string $filename, string $contentType, int $status = 200, array $headers = []) {
+                parent::__construct($status, $headers);
                 $this->data = $data;
                 $this->filename = $filename;
                 $this->contentType = $contentType;
@@ -815,8 +841,12 @@ namespace OCP\AppFramework\Http {
             private array $params;
             private string $renderAs;
 
-            /** @param array<string, mixed> $params */
-            public function __construct(string $appName, string $templateName, array $params = [], string $renderAs = 'user') {
+            /**
+             * @param array<string, mixed> $params
+             * @param array<string, string> $headers
+             */
+            public function __construct(string $appName, string $templateName, array $params = [], string $renderAs = 'user', int $status = 200, array $headers = []) {
+                parent::__construct($status, $headers);
                 $this->appName = $appName;
                 $this->templateName = $templateName;
                 $this->params = $params;
@@ -864,30 +894,20 @@ namespace OCP\AppFramework\Http\Attributes {
 
 namespace OCP\AppFramework\Http\Template {
     if (!class_exists(PublicTemplateResponse::class)) {
-        // Mirrors OCP\AppFramework\Http\Template\PublicTemplateResponse (extends TemplateResponse →
-        // Response). The controller builds one with (app, template, params); tests read getParams()
-        // + isThrottled(). Header title is stored for completeness.
-        class PublicTemplateResponse extends \OCP\AppFramework\Http\Response {
-            private string $appName;
-            private string $templateName;
-            /** @var array<string, mixed> */
-            private array $params;
+        // Mirrors OCP\AppFramework\Http\Template\PublicTemplateResponse, which extends TemplateResponse
+        // (audit #199: the stub extended Response directly). The controller builds one with
+        // (app, template, params); tests read getParams() + isThrottled().
+        class PublicTemplateResponse extends \OCP\AppFramework\Http\TemplateResponse {
             private string $headerTitle = '';
 
             /**
              * @param array<string, mixed> $params
              * @param array<string, string> $headers
              */
-            public function __construct(string $appName, string $templateName, array $params = [], $status = 200, array $headers = []) {
-                $this->appName = $appName;
-                $this->templateName = $templateName;
-                $this->params = $params;
-                $this->status = $status;
+            public function __construct(string $appName, string $templateName, array $params = [], int $status = 200, array $headers = []) {
+                parent::__construct($appName, $templateName, $params, 'public', $status, $headers);
             }
 
-            /** @return array<string, mixed> */
-            public function getParams(): array { return $this->params; }
-            public function getTemplateName(): string { return $this->templateName; }
             public function setHeaderTitle(string $title): self { $this->headerTitle = $title; return $this; }
             public function getHeaderTitle(): string { return $this->headerTitle; }
         }
@@ -1072,441 +1092,6 @@ namespace Psr\Log {
             public function debug($message, array $context = []);
 
             public function log($level, $message, array $context = []);
-        }
-    }
-}
-
-namespace OCA\Learning\Db {
-    if (!class_exists(Analytics::class)) {
-        class Analytics {
-        }
-    }
-
-    if (!class_exists(AnalyticsMapper::class)) {
-        class AnalyticsMapper {
-            public function record(string $userId, ?int $poolId, string $metricType, string $metricValueJson): Analytics {
-                return new Analytics();
-            }
-
-            public function findByUser(string $userId): array {
-                return [];
-            }
-
-            public function findByUserAndPool(string $userId, int $poolId): array {
-                return [];
-            }
-
-            public function findByType(string $metricType, ?string $userId = null): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(PoolMapper::class)) {
-        class PoolMapper {
-            public function find(int $poolId, string $userId) {
-                return null;
-            }
-        }
-    }
-
-    if (!class_exists(PoolShareMapper::class)) {
-        class PoolShareMapper {
-            public function findByPoolAndUser(int $poolId, string $userId) {
-                return null;
-            }
-        }
-    }
-
-    if (!class_exists(QuestionMapper::class)) {
-        class QuestionMapper {
-            public function findByPoolId(int $poolId): array {
-                return [];
-            }
-
-            public function findByIds(array $ids): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(AnswerMapper::class)) {
-        class AnswerMapper {
-            public function findByQuestion(int $questionId): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(CourseMapper::class)) {
-        class CourseMapper {
-            public function findById(int $id): Course {
-                return new Course();
-            }
-
-            public function findByInstructor(string $userId): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(CoursePoolMapper::class)) {
-        class CoursePoolMapper {
-            public function findByCourseAndPool(int $courseId, int $poolId): CoursePool {
-                return new CoursePool();
-            }
-
-            public function findByCourse(int $courseId): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(CourseMemberMapper::class)) {
-        class CourseMemberMapper {
-            public function findByCourseAndUser(int $courseId, string $userId): CourseMember {
-                return new CourseMember();
-            }
-
-            public function findByUser(string $userId): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(CurriculumScopeMapper::class)) {
-        class CurriculumScopeMapper {
-        }
-    }
-
-    if (!class_exists(Course::class)) {
-        class Course implements \JsonSerializable {
-            private int $id = 0;
-            private string $instructorId = '';
-
-            public function getId(): int {
-                return $this->id;
-            }
-
-            public function setId(int $id): void {
-                $this->id = $id;
-            }
-
-            public function getInstructorId(): string {
-                return $this->instructorId;
-            }
-
-            public function setInstructorId(string $instructorId): void {
-                $this->instructorId = $instructorId;
-            }
-
-            public function jsonSerialize(): array {
-                return [
-                    'id' => $this->id,
-                    'instructor_id' => $this->instructorId,
-                ];
-            }
-        }
-    }
-
-    if (!class_exists(CourseMember::class)) {
-        class CourseMember implements \JsonSerializable {
-            private int $courseId = 0;
-            private string $userId = '';
-            private string $role = 'student';
-
-            public function getCourseId(): int {
-                return $this->courseId;
-            }
-
-            public function setCourseId(int $courseId): void {
-                $this->courseId = $courseId;
-            }
-
-            public function getUserId(): string {
-                return $this->userId;
-            }
-
-            public function setUserId(string $userId): void {
-                $this->userId = $userId;
-            }
-
-            public function getRole(): string {
-                return $this->role;
-            }
-
-            public function setRole(string $role): void {
-                $this->role = $role;
-            }
-
-            public function jsonSerialize(): array {
-                return [
-                    'course_id' => $this->courseId,
-                    'user_id' => $this->userId,
-                    'role' => $this->role,
-                ];
-            }
-        }
-    }
-
-    if (!class_exists(CoursePool::class)) {
-        class CoursePool {
-            private int $courseId = 0;
-            private int $poolId = 0;
-            private bool $required = false;
-            private bool $requiredEnforced = false;
-            private ?string $filterExamKey = null;
-            private ?string $filterChapterKey = null;
-            private ?string $filterQuestionIds = null;
-
-            public function getCourseId(): int {
-                return $this->courseId;
-            }
-
-            public function setCourseId(int $courseId): void {
-                $this->courseId = $courseId;
-            }
-
-            public function getPoolId(): int {
-                return $this->poolId;
-            }
-
-            public function setPoolId(int $poolId): void {
-                $this->poolId = $poolId;
-            }
-
-            public function getRequired(): bool {
-                return $this->required;
-            }
-
-            public function setRequired(bool $required): void {
-                $this->required = $required;
-            }
-
-            public function getRequiredEnforced(): bool {
-                return $this->requiredEnforced;
-            }
-
-            public function setRequiredEnforced(bool $requiredEnforced): void {
-                $this->requiredEnforced = $requiredEnforced;
-            }
-
-            public function getFilterExamKey(): ?string {
-                return $this->filterExamKey;
-            }
-
-            public function setFilterExamKey(?string $filterExamKey): void {
-                $this->filterExamKey = $filterExamKey;
-            }
-
-            public function getFilterChapterKey(): ?string {
-                return $this->filterChapterKey;
-            }
-
-            public function setFilterChapterKey(?string $filterChapterKey): void {
-                $this->filterChapterKey = $filterChapterKey;
-            }
-
-            public function getFilterQuestionIds(): ?string {
-                return $this->filterQuestionIds;
-            }
-
-            public function setFilterQuestionIds(?string $filterQuestionIds): void {
-                $this->filterQuestionIds = $filterQuestionIds;
-            }
-        }
-    }
-
-    if (!class_exists(Question::class)) {
-        class Question implements \JsonSerializable {
-            private int $id = 0;
-            private int $poolId = 0;
-            private string $userId = '';
-            private string $text = '';
-            private string $explanation = '';
-            private string $difficulty = 'easy';
-            private string $questionType = 'single';
-            private ?string $pbqSubtype = null;
-            private ?string $pbqConfig = null;
-
-            public function getId(): int {
-                return $this->id;
-            }
-
-            public function setId(int $id): void {
-                $this->id = $id;
-            }
-
-            public function getPoolId(): int {
-                return $this->poolId;
-            }
-
-            public function setPoolId(int $poolId): void {
-                $this->poolId = $poolId;
-            }
-
-            public function getUserId(): string {
-                return $this->userId;
-            }
-
-            public function setUserId(string $userId): void {
-                $this->userId = $userId;
-            }
-
-            public function setText(string $text): void {
-                $this->text = $text;
-            }
-
-            public function setExplanation(string $explanation): void {
-                $this->explanation = $explanation;
-            }
-
-            public function setDifficulty(string $difficulty): void {
-                $this->difficulty = $difficulty;
-            }
-
-            public function getQuestionType(): string {
-                return $this->questionType;
-            }
-
-            public function setQuestionType(string $questionType): void {
-                $this->questionType = $questionType;
-            }
-
-            public function getPbqSubtype(): ?string {
-                return $this->pbqSubtype;
-            }
-
-            public function setPbqSubtype(?string $pbqSubtype): void {
-                $this->pbqSubtype = $pbqSubtype;
-            }
-
-            public function getPbqConfig(): ?string {
-                return $this->pbqConfig;
-            }
-
-            public function setPbqConfig(?string $pbqConfig): void {
-                $this->pbqConfig = $pbqConfig;
-            }
-
-            public function jsonSerialize(): array {
-                return [
-                    'id' => $this->id,
-                    'pool_id' => $this->poolId,
-                    'user_id' => $this->userId,
-                    'text' => $this->text,
-                    'explanation' => $this->explanation,
-                    'difficulty' => $this->difficulty,
-                    'question_type' => $this->questionType,
-                    'pbq_subtype' => $this->pbqSubtype,
-                    'pbq_config' => $this->pbqConfig ? json_decode($this->pbqConfig, true) : null,
-                ];
-            }
-        }
-    }
-
-    if (!class_exists(Answer::class)) {
-        class Answer implements \JsonSerializable {
-            private int $id = 0;
-            private int $questionId = 0;
-            private string $text = '';
-            private bool $isCorrect = false;
-            private int $position = 0;
-
-            public function getId(): int {
-                return $this->id;
-            }
-
-            public function setId(int $id): void {
-                $this->id = $id;
-            }
-
-            public function setQuestionId(int $questionId): void {
-                $this->questionId = $questionId;
-            }
-
-            public function setText(string $text): void {
-                $this->text = $text;
-            }
-
-            public function setIsCorrect(bool $isCorrect): void {
-                $this->isCorrect = $isCorrect;
-            }
-
-            public function setPosition(int $position): void {
-                $this->position = $position;
-            }
-
-            public function jsonSerialize(): array {
-                return [
-                    'id' => $this->id,
-                    'question_id' => $this->questionId,
-                    'text' => $this->text,
-                    'is_correct' => $this->isCorrect,
-                    'position' => $this->position,
-                ];
-            }
-        }
-    }
-}
-
-namespace OCA\Learning\Service {
-    if (!class_exists(BadgeService::class)) {
-        class BadgeService {
-            public function checkAndAward(string $userId, string $event, array $context = [], bool $persist = true): array {
-                return [];
-            }
-        }
-    }
-
-    if (!class_exists(StreakService::class)) {
-        class StreakService {
-            public function getStreak(string $userId, bool $touch = false): array {
-                return ['current_streak' => 0];
-            }
-        }
-    }
-
-    if (!class_exists(XpService::class)) {
-        class XpService {
-            public function applyMultiplier(int $baseXp, int $streak): int {
-                return $baseXp;
-            }
-
-            public function calculateSessionXp(array $sessionData, int $streak): int {
-                return 0;
-            }
-
-            public function incrementSessionXp(string $userId, int $sessionXp, int $streak): void {
-            }
-
-            public function calculateXp(string $userId): array {
-                return ['level' => 1];
-            }
-        }
-    }
-
-    if (!class_exists(TranslationService::class)) {
-        class TranslationService {
-            public function normalizeLang(?string $lang): ?string {
-                return $lang ?: null;
-            }
-
-            public function translateQuestions(array $questions, ?string $lang): array {
-                return $questions;
-            }
-        }
-    }
-
-    if (!class_exists(RoleService::class)) {
-        class RoleService {
-            public function getRole(?string $userId): string {
-                return 'student';
-            }
-
-            public function getInstructorGroup(): ?string {
-                return null;
-            }
         }
     }
 }

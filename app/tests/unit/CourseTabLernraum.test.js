@@ -70,9 +70,6 @@ function createInstance(overrides = {}) {
 		activeTab: 'training',
 		contentLanguage: 'de',
 		$emit: vi.fn(),
-		$set: vi.fn((obj, key, value) => {
-			obj[key] = value
-		}),
 		...overrides,
 	}
 

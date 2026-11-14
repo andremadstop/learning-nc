@@ -3,6 +3,12 @@ includes:
 
 parameters:
     level: 5
+    # The PHP range the app runs on: Nextcloud 33 needs PHP >= 8.2 (lib/versioncheck.php), and
+    # info.xml says the same. Without this PHPStan judged the code by the gate image's PHP 8.4,
+    # so 8.3/8.4-only syntax or functions would pass the gate and fail on PHP 8.2 (audit #171).
+    phpVersion:
+        min: 80200
+        max: 80599
     paths:
         - lib/
     excludePaths:
@@ -11,22 +17,14 @@ parameters:
         - vendor/nextcloud/ocp/
         - /var/www/html/3rdparty/symfony/console/
     ignoreErrors:
-        # NC DI injects null for userId in unauthenticated contexts
-        - '#Parameter .* \$userId .* expects string, string\|null given#'
         # NC QBMapper provides magic getters/setters via __call()
         - '#Call to an undefined method OCA\\Learning\\Db\\.*::(get|set)#'
         # NC QBMapper::findEntities() returns Entity[] not specific subtype
         # (PHPStan 2 reports the inferred type as list<Entity>, PHPStan 1 as array<int, Entity>)
         - '#should return array<OCA\\Learning\\Db\\.*> but returns (array<int, |list<)OCP\\AppFramework\\Db\\Entity>#'
-        # IQueryBuilder fluent interface not fully typed in stubs
-        - '#Call to an undefined method OCP\\DB\\QueryBuilder\\IQueryBuilder#'
-        # Rate limit + public-page attributes require NC 29+ stubs (absent from the ocp dev package;
-        # present at runtime on the NC server). Phase 157 public verify route uses the attribute form.
+        # Rate-limit attributes are absent from the ocp dev package (present at runtime on the NC
+        # server); the other attribute classes are in it by now.
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\UserRateLimit#'
-        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoAdminRequired#'
-        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoCSRFRequired#'
-        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\PublicPage#'
-        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\BruteForceProtection#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\AnonRateLimit#'
         # method_exists() guards for OCP API differences between Nextcloud 33 and 35: the dev stubs
         # (one version) always have the method, other supported versions may not. Keep the runtime check.
@@ -38,4 +36,7 @@ parameters:
                 - lib/Search/QuestionSearchProvider.php
                 - lib/Service/ClassbookService.php
     treatPhpDocTypesAsCertain: false
-    reportUnmatchedIgnoredErrors: false
+    # An ignore that no longer matches is reported (audit #233): stale entries hid dead code
+    # (CourseService::poolExists, an unused TranslationService dependency) and pointed to a file
+    # that does not exist. Remove the entry when the error it covered is gone.
+    reportUnmatchedIgnoredErrors: true

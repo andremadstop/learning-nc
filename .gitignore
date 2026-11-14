@@ -77,7 +77,6 @@ scripts/*.sql
 scripts/pbq/
 scripts/__pycache__/
 scripts/translation_json_to_sql.py
-scripts/test-api.sh
 
 # Docker (dev only — except CI e2e)
 docker-compose*.yml
@@ -110,30 +109,30 @@ Thumbs.db
 /.tmpq/
 /.tmpq_upgrade2/
 scripts/*
-!scripts/deploy-prod.sh
-!scripts/gate-container.sh
-!scripts/gate-container.env.example
-!scripts/schema-dump.sh
-!scripts/nc-integration.sh
-!scripts/lifecycle-probe.sh
-!scripts/lifecycle-fixtures/
-!scripts/lifecycle-fixtures/*.sql.php
-!scripts/fill_pool_explanations.php
-!scripts/apply_pool_manual_fixes.py
-!scripts/test-api.sh
+!scripts/check-consent-locales.py
 !scripts/check-forbidden-names.sh
 !scripts/check-forbidden-names.test.sh
-!scripts/check-i18n-parity.sh
-!scripts/check-node-modules.py
-!scripts/check-i18n-placeholders.py
 !scripts/check-i18n-coverage.py
-!scripts/check-consent-locales.py
+!scripts/check-i18n-parity.sh
+!scripts/check-i18n-placeholders.py
+!scripts/check-node-modules.py
 !scripts/check-sql-columns.py
-!scripts/validate-pool-json.mjs
-!scripts/l10n_js_sync.py
+!scripts/db-uninstall-probe.php
+!scripts/deploy-dev.sh
+!scripts/deploy-prod.sh
+!scripts/e2e/
+!scripts/gate-container.env.example
+!scripts/gate-container.sh
 !scripts/gen-virtuprof-strings.mjs
-!scripts/verify-release.sh
+!scripts/l10n_js_sync.py
+!scripts/lifecycle-fixtures/
+!scripts/lifecycle-probe.sh
+!scripts/nc-integration.sh
+!scripts/schema-dump.sh
+!scripts/test-api.sh
 !scripts/verify-credential.py
+!scripts/verify-issued-cert-gate.sh
+!scripts/verify-release.sh
 .env
 .env.*
 .ralph/
@@ -174,7 +173,6 @@ app/tests/*
 # Test artifacts
 tests/auth-state.json
 test-results/
-!scripts/check-vhtml-security.py
 
 # Copyright-sensitive question dump — local only, never ship as starter pool
 /app/data/starter-pools/comptia-cysa-plus-cs0-003.json
@@ -187,6 +185,7 @@ test-results/
 
 # Build output (full app build — not for repo)
 /build/learning/
+/app/build/
 
 # Release archives
 learning-*.tar.gz

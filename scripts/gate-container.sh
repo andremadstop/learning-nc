@@ -175,7 +175,9 @@ EOF'
 	echo "==> self-test 4/4: a test that calls exit(0) must fail the gate (PHPUnit exits 0 early)"
 	rc=0; out="$(run_phpunit tests/Unit/GateExitProbeTest.php 2>&1)" || rc=$?
 	echo "$out" | tail -n 5
-	if [ "$rc" -eq 0 ] || ! grep -qE "no JUnit report|JUnit report unreadable" <<<"$out"; then
+	# Either the JUnit check catches it, or PHPUnit itself does: since PHPUnit 13 (composer.lock:
+	# 13.4.6) it reports the early exit as a fatal error and exits 2. Both fail the gate.
+	if [ "$rc" -eq 0 ] || ! grep -qE "no JUnit report|JUnit report unreadable|Premature end of PHP process" <<<"$out"; then
 		echo "SELF-TEST FAIL: an early exit(0) passed the PHPUnit gate" >&2
 		exit 1
 	fi

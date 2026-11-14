@@ -5,9 +5,9 @@ This is a third-party verification path that does NOT use the app's own PHP/sodi
 it re-checks an issued VC-JWT signature with Python `cryptography` (Ed25519). It exists to
 prove that anyone — not just learning-nc — can verify a credential issued by this instance.
 
-NOT an app dependency and NEVER shipped: it lives in repo-root scripts/, which the app
-release Makefile allowlist (appinfo/css/img/js/lib/templates) and the deploy bundle both
-exclude. (Re-audited by the 155-07 leakage gate.)
+NOT an app dependency and NEVER shipped: it lives in repo-root scripts/, outside app/, so
+neither the release file set (RELEASE_SET in scripts/lifecycle-probe.sh, the `release` target
+in app/Makefile) nor the deploy bundle can contain it. (Re-audited by the 155-07 leakage gate.)
 
 Usage:
     verify-credential.py <compact-jwt> <base64url-public-key-x>

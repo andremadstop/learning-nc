@@ -15,6 +15,9 @@
  *                  (learning_qst_translations / learning_ans_translations exist)
  *   scenario       a question and a question translation keep their scenario text through the
  *                  mappers (Codeberg #10: both scenario columns exist on this instance)
+ *   jobs           every background job in appinfo/info.xml is in the job list and no retired
+ *                  one (RemoveRetiredBackgroundJobs::RETIRED) is (audit #133: the jobs used to be
+ *                  added by Application::boot() on every request, now Nextcloud registers them)
  * The last line is `CHECK result=ok|fail`; exit 0 only if every check passed.
  */
 declare(strict_types=1);
@@ -142,6 +145,20 @@ $check('scenario', function () {
 	$questions->delete($q);
 	$pools->delete($pool);
 	return $ok;
+});
+
+$check('jobs', function () {
+	$jobList = Server::get(\OCP\BackgroundJob\IJobList::class);
+	$info = Server::get(\OCP\App\IAppManager::class)->getAppInfo('learning');
+	$declared = $info['background-jobs'] ?? [];
+	$missing = array_values(array_filter($declared, fn (string $job) => !$jobList->has($job, null)));
+	$retired = array_values(array_filter(
+		\OCA\Learning\Repair\RemoveRetiredBackgroundJobs::RETIRED,
+		fn (string $job) => $jobList->has($job, null)
+	));
+	echo 'CHECK jobs detail: declared=' . count($declared) . ' missing=' . json_encode($missing)
+		. ' retired_present=' . json_encode($retired) . "\n";
+	return count($declared) >= 7 && $missing === [] && $retired === [];
 });
 
 echo 'CHECK result=' . ($failed ? 'fail' : 'ok') . "\n";

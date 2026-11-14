@@ -49,7 +49,7 @@ class ImportUsersJob extends QueuedJob {
         $dataRows = array_slice($allLines, 1);
 
         foreach ($dataRows as $line) {
-            $cols = str_getcsv($line);
+            $cols = str_getcsv($line, ',', '"', '');
             $uid  = trim($cols[0] ?? '');
             $name = trim($cols[1] ?? $uid);
             if ($uid === '') {

@@ -249,10 +249,12 @@ class ClassResolutionTest extends TestCase {
             // File and class name can both be right while the namespace is not — Nextcloud
             // resolves the FQCN, so the namespace has to match the path.
             //
-            // Checked by reading the declaration, NOT with class_exists(): loading these classes
-            // pulls in server interfaces (OCP\Settings\ISettings and friends) that the unit-test
-            // stub set does not ship, so class_exists() raises a fatal error instead of returning
-            // false — an environment gap, not a defect in the app.
+            // Checked by reading the declaration, NOT with class_exists(): loading some of these
+            // classes pulls in server interfaces the unit-test stub set does not ship (checked
+            // 2026-11: OCP\Settings\IIconSection for AdminSection, OCP\Activity\ISetting for
+            // Activity\Setting; OCP\Settings\ISettings is stubbed by now), so class_exists() raises
+            // a fatal error instead of returning false — an environment gap, not a defect in the
+            // app. Reading the source also keeps the check case-exact, which class_exists() is not.
             $expectedNamespace = 'OCA\\Learning' . (str_contains($relative, '/') ? '\\' . str_replace('/', '\\', dirname($relative)) : '');
             if (!preg_match('/^\s*namespace\s+' . preg_quote($expectedNamespace, '/') . '\s*;/m', $source)) {
                 $problems[] = sprintf('lib/%s.php must declare "namespace %s;" for %s to resolve', $relative, $expectedNamespace, $class);

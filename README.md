@@ -17,7 +17,7 @@ A learning platform that runs inside your own Nextcloud: flashcards with spaced 
 Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souverain Systems UG, a small IT company in Potsdam for teams that want to own their data, and teaches IT security. The app began as his own exam preparation for IT certifications and grew with the course groups that used it on his Nextcloud; the simulators, exam presets and certificates are what those courses needed and what hosted platforms only offer in exchange for the data. Written with AI, used in real courses, checked by 1,830 automated tests and pre-push gates (PHPStan, ESLint, Vitest, PHPUnit). What it stands on: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md).
 
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 ![Tests](https://img.shields.io/badge/Tests-1830%20passed-brightgreen)
 ![Version](https://img.shields.io/badge/Version-5.10.0-blue)
@@ -175,7 +175,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 ## Technical
 
 - **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9
-- **Backend:** PHP 8.1+, Nextcloud App Framework, QBMapper
+- **Backend:** PHP 8.2+, Nextcloud App Framework, QBMapper
 - **Tests:** 1,830 automated tests (1,329 Vitest, 501 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
 - **Real-time:** Server-Sent Events for multiplayer modes
 - **Caching:** Redis support for leaderboard and session data
@@ -183,7 +183,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 ## Requirements
 
 - Nextcloud 33–35
-- PHP 8.1+
+- PHP 8.2+
 - PostgreSQL 13+ or MySQL 8+
 
 ## Try It

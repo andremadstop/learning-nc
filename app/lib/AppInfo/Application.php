@@ -2,14 +2,6 @@
 declare(strict_types=1);
 namespace OCA\Learning\AppInfo;
 
-use OCA\Learning\BackgroundJob\AuditCheckpointJob;
-use OCA\Learning\BackgroundJob\ChunkingJob;
-use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
-use OCA\Learning\BackgroundJob\NotificationJob;
-use OCA\Learning\BackgroundJob\RecertPeriodCloseJob;
-use OCA\Learning\BackgroundJob\RetentionJob;
-use OCA\Learning\BackgroundJob\SendRemindersJob;
-use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\AuditVerifyCommand;
 use OCA\Learning\Command\ExportCourseCommand;
@@ -118,39 +110,10 @@ class Application extends App implements IBootstrap {
         $container = $context->getServerContainer();
         $this->registerHelpSettings($container);
         $this->syncThemingLegalLinks($container);
-        $jobList = $container->get(IJobList::class);
-        try {
-            if ($jobList->has(NotificationJob::class, null)) {
-                $jobList->remove(NotificationJob::class, null);
-            }
-            if (!$jobList->has(SendRemindersJob::class, null)) {
-                $jobList->add(SendRemindersJob::class);
-            }
-            if (!$jobList->has(ConsistencyCheckJob::class, null)) {
-                $jobList->add(ConsistencyCheckJob::class);
-            }
-            if (!$jobList->has(WeeklyLernplanJob::class, null)) {
-                $jobList->add(WeeklyLernplanJob::class);
-            }
-            if (!$jobList->has(ChunkingJob::class, null)) {
-                $jobList->add(ChunkingJob::class);
-            }
-            if (!$jobList->has(AuditCheckpointJob::class, null)) {
-                $jobList->add(AuditCheckpointJob::class);
-            }
-            if (!$jobList->has(RecertPeriodCloseJob::class, null)) {
-                $jobList->add(RecertPeriodCloseJob::class);
-            }
-            if (!$jobList->has(RetentionJob::class, null)) {
-                $jobList->add(RetentionJob::class);
-            }
-        } catch (\Throwable $e) {
-            // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)
-            $container->get(LoggerInterface::class)->warning(
-                'Learning: job registration failed: ' . $e->getMessage(),
-                ['app' => 'learning']
-            );
-        }
+        // Background jobs are declared in appinfo/info.xml; Nextcloud registers them on install and
+        // on every app upgrade. They used to be added here on every boot, i.e. 8 job-list queries
+        // per request (audit #133). The retired NotificationJob is removed by the repair step
+        // RemoveRetiredBackgroundJobs.
     }
 
     private function registerHelpSettings(ContainerInterface $container): void {

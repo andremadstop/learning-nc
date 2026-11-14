@@ -1,38 +1,31 @@
-import { describe, it, expect } from 'vitest'
-import FirewallBuilder from '../../src/components/FirewallBuilder.vue'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import DnsResolver from '../../src/components/DnsResolver.vue'
-import RoutingTable from '../../src/components/RoutingTable.vue'
-import NatTable from '../../src/components/NatTable.vue'
 import PortScanner from '../../src/components/PortScanner.vue'
-import WiresharkLite from '../../src/components/WiresharkLite.vue'
-import AuthFlowSimulator from '../../src/components/AuthFlowSimulator.vue'
 
-describe('Simulator Lifecycle — beforeUnmount hooks', () => {
-	it('FirewallBuilder has beforeUnmount hook', () => {
-		expect(typeof FirewallBuilder.beforeUnmount).toBe('function')
+// Only the two simulators that start timers have something to clean up. The other simulators'
+// beforeUnmount hooks are empty, so checking that they exist proved nothing (audit #251).
+describe('Simulator lifecycle — timers are cleared on unmount', () => {
+	afterEach(() => {
+		vi.restoreAllMocks()
 	})
 
-	it('RoutingTable has beforeUnmount hook', () => {
-		expect(typeof RoutingTable.beforeUnmount).toBe('function')
+	it('DnsResolver stops its step timer when it unmounts', () => {
+		const ctx = { clearTimer: vi.fn() }
+		DnsResolver.beforeUnmount.call(ctx)
+		expect(ctx.clearTimer).toHaveBeenCalledTimes(1)
 	})
 
-	it('NatTable has beforeUnmount hook', () => {
-		expect(typeof NatTable.beforeUnmount).toBe('function')
+	it('DnsResolver.clearTimer clears the step interval and forgets it', () => {
+		const spy = vi.spyOn(window, 'clearInterval')
+		const ctx = { stepTimer: 42 }
+		DnsResolver.methods.clearTimer.call(ctx)
+		expect(spy).toHaveBeenCalledWith(42)
+		expect(ctx.stepTimer).toBeNull()
 	})
 
-	it('WiresharkLite has beforeUnmount hook', () => {
-		expect(typeof WiresharkLite.beforeUnmount).toBe('function')
-	})
-
-	it('AuthFlowSimulator has beforeUnmount hook', () => {
-		expect(typeof AuthFlowSimulator.beforeUnmount).toBe('function')
-	})
-
-	it('DnsResolver has beforeUnmount hook (regression guard)', () => {
-		expect(typeof DnsResolver.beforeUnmount).toBe('function')
-	})
-
-	it('PortScanner has beforeUnmount hook (regression guard)', () => {
-		expect(typeof PortScanner.beforeUnmount).toBe('function')
+	it('PortScanner clears its scan interval when it unmounts', () => {
+		const spy = vi.spyOn(window, 'clearInterval')
+		PortScanner.beforeUnmount.call({ intervalId: 42 })
+		expect(spy).toHaveBeenCalledWith(42)
 	})
 })

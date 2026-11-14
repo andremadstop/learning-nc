@@ -3,7 +3,7 @@
 Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-29--31-blue)
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 
 ## Features
@@ -230,7 +230,7 @@ php occ app:remove learning                              # then remove the app i
 ## Requirements
 
 - Nextcloud 29, 30, or 31
-- PHP 8.1 or higher
+- PHP 8.2 or higher
 - PostgreSQL 13+ or MySQL 8+
 
 ## Development
