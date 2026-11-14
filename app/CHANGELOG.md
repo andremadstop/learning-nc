@@ -19,6 +19,9 @@ All notable changes to this project will be documented in this file.
   certificate it renews (`renews`).
 - The reminder notification and the completion tab now say that an exam renews the certificate,
   and the tab shows the day renewal opens.
+- The exam result for an expired certificate no longer promises that a retake counts after the
+  grace days: renewal now covers that time, so the note only remains for a certificate whose
+  period was closed without a new one open, and asks the learner to contact the instructor.
 - The course certificate report filtered by expiry no longer lists a certificate that was
   already renewed or replaced; the unfiltered history still lists every certificate.
 - The pool rules dialog says that only **Required pools** in the course's certification
