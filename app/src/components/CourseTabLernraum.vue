@@ -115,14 +115,6 @@
 		</div>
 
 		<div v-else-if="isStudentLearningTab" class="student-learning-section">
-			<div v-if="!selectedLearningPool" class="smart-queue-hero" @click="$emit('openSmartQueue')">
-				<div class="smart-queue-hero__count">{{ queueCount }}</div>
-				<div class="smart-queue-hero__label">{{ t('learning', 'fällig — alle Kurse') }}</div>
-				<NcButton variant="primary" @click.stop="$emit('openSmartQueue')">
-					{{ t('learning', 'Smart Queue starten') }}
-				</NcButton>
-			</div>
-
 			<div v-if="!selectedLearningPool && courseToolTabs.length" class="course-tools-callout">
 				<div class="course-tools-callout__header">
 					<h5>{{ t('learning', 'Simulatoren im Kurs') }}</h5>
@@ -147,12 +139,20 @@
 					<h4>{{ activeLearningModeLabel }}</h4>
 				</div>
 
+				<!-- GitHub #39: a certified course's Exam tab shows the certificate state from /pass-status. -->
+				<div v-if="examCertStatus" class="exam-cert-summary">
+					<span class="exam-cert-summary__threshold">{{ t('learning', 'Bestehensgrenze: {percent} %', { percent: examCertStatus.threshold }) }}</span>
+					<span v-if="!examCertRequiresPools" class="exam-cert-status">
+						<CertPoolResult :best-score="examCertStatus.score ?? null" :passed="examCertStatus.passed === true" />
+					</span>
+				</div>
+
 				<div v-if="coursePools.length > 0" class="pool-list">
 					<div
 						v-for="pool in sortedPools"
 						:key="'learning-' + pool.pool_id"
 						class="pool-item"
-						:class="{ 'pool-item-loading': loadingLearningPoolId === pool.pool_id, 'pool-item-locked': pool.locked_for_student }"
+						:class="{ 'pool-item-loading': loadingLearningPoolId === pool.pool_id, 'pool-item-locked': pool.locked_for_student, 'pool-item--cert': !!examCertPool(pool) }"
 						tabindex="0"
 						role="button"
 						@click="selectLearningPool(pool)"
@@ -170,7 +170,8 @@
 							</div>
 						</div>
 						<div class="pool-badges">
-							<span v-if="pool.required" class="required-badge">
+							<!-- GitHub #39: the learning-path "Required" says nothing about the certificate; a certified course's Exam tab shows the certificate state instead. -->
+							<span v-if="pool.required && !showExamCertStatus" class="required-badge">
 								{{ t('learning', 'Required') }}
 							</span>
 							<span v-if="pool.required_enforced" class="required-badge required-enforced-badge">
@@ -183,6 +184,9 @@
 								{{ summary }}
 							</span>
 						</div>
+						<span v-if="examCertPool(pool)" class="exam-cert-status">
+							<CertPoolResult :best-score="examCertPool(pool).best_score ?? null" :passed="examCertPool(pool).passed === true" />
+						</span>
 					</div>
 				</div>
 
@@ -190,8 +194,9 @@
 					{{ t('learning', 'Optional pools are locked until these required pools are completed once: {names}', { names: currentRequiredBlockers.join(', ') }) }}
 				</NcNoteCard>
 
+				<!-- GitHub #39: its own condition — as v-else it hung on the blocker warning above and showed under every filled list. -->
 				<NcEmptyContent
-					v-else
+					v-if="coursePools.length === 0"
 					:name="t('learning', 'No pools assigned')">
 					<template #description>
 						{{ t('learning', 'No question pools are available in this course yet.') }}
@@ -223,7 +228,7 @@
 				:contentLanguage="contentLanguage"
 				:courseCertification="examCertification"
 				:poolPractice="poolPracticeConfig"
-				@back="resetLearningPoolSelection" />
+				@back="onExamBack" />
 		</div>
 
 		<div v-else-if="currentSubTab === 'videos' && !isInstructor" class="student-videos-section">
@@ -560,6 +565,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import AuthFlowSimulator from './AuthFlowSimulator.vue'
+import CertPoolResult from './CertPoolResult.vue'
 import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
 import CourseMaterials from './CourseMaterials.vue'
 import DnsResolver from './DnsResolver.vue'
@@ -578,12 +584,14 @@ import VideoPlayer from './VideoPlayer.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { lernraumTabIds } from '../utils/courseView.js'
+import { getPassStatus } from '../services/CourseService.js'
 
 export default {
 	name: 'CourseTabLernraum',
 
 	components: {
 		AuthFlowSimulator,
+		CertPoolResult,
 		DnsResolver,
 		FirewallBuilder,
 		NcButton,
@@ -667,8 +675,9 @@ export default {
 			currentSubTab: '',
 			knowledgePendingCount: 0,
 			selectedLearningPool: null,
-			queueCount: 0,
-			loadingQueueCount: false,
+			// GitHub #39: /pass-status for a certified course's Exam tab (null = none / not loaded).
+			examPassStatus: null,
+			examPassStatusLoading: false,
 			poolQuestionCounts: {},
 			loadingLearningPoolId: null,
 			showAddPoolModal: false,
@@ -810,6 +819,19 @@ export default {
 			const { questions, minutes, passPercent } = this.practiceConfig
 			return { questions, minutes, passPercent }
 		},
+		// GitHub #39: only a certified course's Exam tab changes; a missing flag means no certificate.
+		showExamCertStatus() {
+			return !this.isInstructor && this.currentSubTab === 'exam' && !!this.course?.cert_enabled
+		},
+		examCertStatus() {
+			if (!this.showExamCertStatus || !this.examPassStatus || this.examPassStatus.applicable === false) {
+				return null
+			}
+			return this.examPassStatus
+		},
+		examCertRequiresPools() {
+			return this.examCertStatus?.requirement === 'required_pools'
+		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)
 		},
@@ -829,7 +851,6 @@ export default {
 
 	mounted() {
 		if (!this.isInstructor) {
-			this.fetchQueueCount()
 			this.fetchCourseVideos()
 		}
 		this.ensureActiveToolVisible()
@@ -873,11 +894,20 @@ export default {
 		courseToolTabs() {
 			this.ensureActiveToolVisible()
 		},
+		// Entering a certified course's Exam tab (also via deep link or leaving the instructor's
+		// student view toggle) reads the certificate state once; returning from an exam is onExamBack.
+		showExamCertStatus: {
+			immediate: true,
+			handler(show) {
+				if (show) {
+					this.fetchExamPassStatus()
+				}
+			},
+		},
 		// The student view can be left (banner) while the course stays open: the sub-tabs follow,
 		// and the student-only data is fetched when the view turns into the student one.
 		isInstructor(nowInstructor) {
 			if (!nowInstructor) {
-				this.fetchQueueCount()
 				this.fetchCourseVideos()
 			}
 			this.syncFromActiveTab(this.activeTab)
@@ -885,15 +915,35 @@ export default {
 	},
 
 	methods: {
-		async fetchQueueCount() {
-			this.loadingQueueCount = true
+		/**
+		 * GitHub #39: GET pass-status evaluates (audit event, possibly issuance) and is rate-limited,
+		 * so it is read only on entering the Exam tab and after returning from an exam — never per
+		 * render or pool change. A failure only costs the state display; the list stays usable.
+		 */
+		async fetchExamPassStatus() {
+			if (this.examPassStatusLoading || !this.courseId) {
+				return
+			}
+			this.examPassStatusLoading = true
 			try {
-				const r = await axios.get(generateUrl('/apps/learning/api/leitner/queue/count'))
-				this.queueCount = r.data.count || 0
+				const status = await getPassStatus(this.courseId)
+				this.examPassStatus = status && typeof status === 'object' ? status : null
 			} catch (e) {
-				// non-fatal
+				this.examPassStatus = null
 			} finally {
-				this.loadingQueueCount = false
+				this.examPassStatusLoading = false
+			}
+		},
+		examCertPool(pool) {
+			if (!this.examCertStatus || !this.examCertRequiresPools || !Array.isArray(this.examCertStatus.pools)) {
+				return null
+			}
+			return this.examCertStatus.pools.find((entry) => Number(entry.pool_id) === Number(pool.pool_id)) || null
+		},
+		onExamBack() {
+			this.resetLearningPoolSelection()
+			if (this.showExamCertStatus) {
+				this.fetchExamPassStatus()
 			}
 		},
 		async fetchCourseVideos() {
@@ -1580,6 +1630,35 @@ export default {
 	display: flex;
 	gap: 6px;
 	flex-shrink: 0;
+}
+
+/* GitHub #39: certificate state in a certified course's Exam tab (logical properties for RTL). */
+.exam-cert-summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+	margin-block-end: 12px;
+	color: var(--color-text-maxcontrast);
+}
+
+.exam-cert-status {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 4px 12px;
+	min-width: 0;
+}
+
+@media (max-width: 600px) {
+	.pool-item--cert {
+		flex-wrap: wrap;
+	}
+
+	.pool-item--cert .exam-cert-status {
+		flex-basis: 100%;
+		justify-content: flex-start;
+	}
 }
 
 .required-badge {

@@ -57,7 +57,8 @@ const CASES = [
 	['CourseSummary.vue', '.summary-toast', 'pill'],
 	['CourseSummary.vue', '.zeugnis-passed', 'text'],
 	['CourseSummary.vue', '.zeugnis-not-passed', 'text'],
-	['CourseSummary.vue', '.zeugnis-pool--passed .zeugnis-pool-state', 'text'],
+	// #39: the per-pool result moved into the component shared with the Exam tab
+	['CertPoolResult.vue', '.cert-pool-result__state--passed', 'text'],
 	['CourseSummary.vue', '.trouble-accuracy', 'text'],
 	['CourseSummary.vue', '.zeugnisstatus-card', 'line'],
 	['CourseSummary.vue', '.narrative-card', 'line'],

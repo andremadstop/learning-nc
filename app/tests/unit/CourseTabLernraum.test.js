@@ -352,62 +352,15 @@ describe('CourseTabLernraum', () => {
 		})
 	})
 
-	describe('Smart Queue hero card (UX-04)', () => {
-		it('Test H: queueCount is visible in student data when set to 7 and no pool is selected', () => {
-			const instance = createInstance({
-				userRole: 'student',
-				course: {
-					is_instructor: false,
-					material_folder: null,
-					mode_config: { training: true, leitner: true, exam: true },
-				},
-				selectedLearningPool: null,
-			})
-			// Set queueCount directly (simulates async fetch completing)
-			instance.queueCount = 7
+	// GitHub #39: the cross-course Smart Queue hero (UX-04) is no longer part of the course
+	// Lernraum — its button was never wired up there and it mixed in other courses. It stays on
+	// the dashboard and the pool list. The rendered check lives in courseTabLernraumExamTab.test.js.
+	describe('no Smart Queue in the course (GitHub #39)', () => {
+		it('carries no queue count and no queue-count loader', () => {
+			const instance = createInstance()
 
-			// Verify the data property exists and holds the value
-			expect(instance.queueCount).toBe(7)
-			// Verify hero card condition: !isInstructor && !selectedLearningPool
-			expect(instance.isInstructor).toBe(false)
-			expect(instance.selectedLearningPool).toBeNull()
-		})
-
-		it('Test I: fetchQueueCount calls correct endpoint and sets queueCount', async () => {
-			const axios = (await import('@nextcloud/axios')).default
-			const { generateUrl } = await import('@nextcloud/router')
-			axios.get.mockResolvedValueOnce({ data: { count: 5 } })
-
-			const instance = createInstance({
-				userRole: 'student',
-				course: {
-					is_instructor: false,
-					material_folder: null,
-					mode_config: null,
-				},
-			})
-
-			await instance.fetchQueueCount()
-
-			expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/leitner/queue/count')
-			expect(generateUrl).toHaveBeenCalledWith('/apps/learning/api/leitner/queue/count')
-			expect(instance.queueCount).toBe(5)
-		})
-
-		it('Test J: instructor instance does not have hero card conditions met (isInstructor=true)', () => {
-			const instance = createInstance({
-				userRole: 'instructor',
-				actsAsInstructor: true,
-				course: {
-					is_instructor: true,
-					material_folder: null,
-					mode_config: { training: true, leitner: true, exam: true },
-				},
-				selectedLearningPool: null,
-			})
-
-			// Hero card must only render when !isInstructor — verify instructor flag is set
-			expect(instance.isInstructor).toBe(true)
+			expect('queueCount' in instance).toBe(false)
+			expect(CourseTabLernraum.methods.fetchQueueCount).toBeUndefined()
 		})
 	})
 
@@ -479,13 +432,11 @@ describe('CourseTabLernraum', () => {
 			} })
 			instance.syncFromActiveTab('pools')
 			expect(instance.currentSubTab).toBe('pools')
-			instance.fetchQueueCount = vi.fn()
 			instance.fetchCourseVideos = vi.fn()
 
 			instance.actsAsInstructor = false
 			CourseTabLernraum.watch.isInstructor.call(instance, false)
 
-			expect(instance.fetchQueueCount).toHaveBeenCalledTimes(1)
 			expect(instance.fetchCourseVideos).toHaveBeenCalledTimes(1)
 			expect(instance.currentSubTab).toBe('training')
 		})
@@ -496,13 +447,11 @@ describe('CourseTabLernraum', () => {
 			} })
 			instance.syncFromActiveTab('training')
 			expect(instance.currentSubTab).toBe('training')
-			instance.fetchQueueCount = vi.fn()
 			instance.fetchCourseVideos = vi.fn()
 
 			instance.actsAsInstructor = true
 			CourseTabLernraum.watch.isInstructor.call(instance, true)
 
-			expect(instance.fetchQueueCount).not.toHaveBeenCalled()
 			expect(instance.fetchCourseVideos).not.toHaveBeenCalled()
 			expect(instance.currentSubTab).toBe('pools')
 		})

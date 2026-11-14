@@ -82,12 +82,7 @@
 						<ul class="zeugnis-pool-list">
 							<li v-for="pool in requiredPools" :key="pool.pool_id" class="zeugnis-pool" :class="{ 'zeugnis-pool--passed': pool.passed }">
 								<span class="zeugnis-pool-name">{{ pool.title || t('learning', 'Pool #{id}', { id: pool.pool_id }) }}</span>
-								<span class="zeugnis-pool-score">
-									{{ pool.best_score !== null
-										? t('learning', 'Bestes Ergebnis: {score} %', { score: pool.best_score })
-										: t('learning', 'Noch keine Prüfung') }}
-								</span>
-								<span class="zeugnis-pool-state">{{ pool.passed ? '✓ ' + t('learning', 'Bestanden') : t('learning', 'Noch nicht bestanden') }}</span>
+								<CertPoolResult :best-score="pool.best_score" :passed="pool.passed === true" />
 							</li>
 						</ul>
 					</template>
@@ -303,6 +298,7 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { getPassStatus } from '../services/CourseService.js'
 import Certificate from './Certificate.vue'
+import CertPoolResult from './CertPoolResult.vue'
 import { exportMarkdown } from '../utils/summary-export.js'
 
 const MASTERY_RING_RADIUS = 54
@@ -313,6 +309,7 @@ export default {
 	components: {
 		AiConsentHint,
 		Certificate,
+		CertPoolResult,
 		NcButton,
 		NcLoadingIcon,
 		NcModal,
@@ -911,17 +908,6 @@ export default {
 
 .zeugnis-pool-name {
 	overflow-wrap: anywhere;
-}
-
-.zeugnis-pool-score,
-.zeugnis-pool-state {
-	color: var(--color-text-maxcontrast);
-	white-space: nowrap;
-}
-
-.zeugnis-pool--passed .zeugnis-pool-state {
-	color: var(--color-success-text, var(--color-success));
-	font-weight: 600;
 }
 
 @media (max-width: 600px) {
