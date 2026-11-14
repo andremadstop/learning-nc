@@ -16,7 +16,10 @@ use PHPUnit\Framework\TestCase;
  * accuracy rose was told "declining" — in the API and in Fortschritt.md ("Trend: Rückgang").
  */
 class LernprofilTrendTest extends TestCase {
-    /** @param list<float> $accuracies oldest first, as the session query returns them */
+    /**
+     * @param list<float> $accuracies oldest first; the session query returns them newest first
+     *        (ORDER BY completed_at DESC, audit #79), so the fake hands them out reversed
+     */
     private function historyFor(array $accuracies): array {
         $rows = [];
         $start = time() - 20 * 86400;
@@ -29,7 +32,7 @@ class LernprofilTrendTest extends TestCase {
                 'mode' => 'training',
             ];
         }
-        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchAll($rows))]);
+        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchAll(array_reverse($rows)))]);
         $service = new LernprofilService($db, new FakeCacheFactory());
         return $service->getLernhistorie('learner', 30);
     }

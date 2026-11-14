@@ -193,11 +193,14 @@ class LernprofilService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'))
            ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($cutoff)))
-           ->orderBy('completed_at', 'ASC')
+           // The cap keeps the newest 500 sessions: ordered ascending, it kept the oldest ones and
+           // dropped the current weeks for a learner with more sessions in the window (audit #79).
+           ->orderBy('completed_at', 'DESC')
            ->setMaxResults(500); // safety cap
 
         $result = $qb->executeQuery();
-        $sessions = $result->fetchAll();
+        // oldest first from here on, as the grouping and the trend below expect
+        $sessions = array_reverse($result->fetchAll());
         $result->closeCursor();
 
         // Group by date
@@ -717,29 +720,26 @@ class LernprofilService {
             return [];
         }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('pool_id', 'correct_answers', 'total_questions', 'completed_at')
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('training')))
-           ->andWhere($qb->expr()->isNotNull('completed_at'))
-           ->orderBy('completed_at', 'DESC')
-           ->setMaxResults(count($poolIds) * 10);
-
-        $result = $qb->executeQuery();
-        $rows = $result->fetchAll();
-        $result->closeCursor();
-
-        // Group by pool, keep last 10 per pool
+        // One query per pool with its own limit: a single query capped at count($poolIds) * 10
+        // let one busy pool fill the whole limit and left the other pools without sessions
+        // (audit #78). A learner has few pools; a window function is not portable to every engine.
         $byPool = [];
-        foreach ($rows as $row) {
-            $pid = (int)$row['pool_id'];
-            if (!isset($byPool[$pid])) {
-                $byPool[$pid] = [];
-            }
-            if (count($byPool[$pid]) < 10) {
-                $byPool[$pid][] = $row;
+        foreach (array_values(array_unique(array_map('intval', $poolIds))) as $pid) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('pool_id', 'correct_answers', 'total_questions', 'completed_at')
+               ->from('learning_sessions')
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($pid, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('training')))
+               ->andWhere($qb->expr()->isNotNull('completed_at'))
+               ->orderBy('completed_at', 'DESC')
+               ->setMaxResults(10);
+
+            $result = $qb->executeQuery();
+            $rows = $result->fetchAll();
+            $result->closeCursor();
+            if ($rows !== []) {
+                $byPool[$pid] = $rows;
             }
         }
 
@@ -775,30 +775,26 @@ class LernprofilService {
             return [];
         }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('pool_id', 'correct_answers', 'total_questions', 'completed_at')
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-           // Practice attempts (exam_kind set) are no exam score of the pool.
-           ->andWhere($qb->expr()->isNull('exam_kind'))
-           ->andWhere($qb->expr()->isNotNull('completed_at'))
-           ->orderBy('completed_at', 'DESC')
-           ->setMaxResults(count($poolIds) * 5);
-
-        $result = $qb->executeQuery();
-        $rows = $result->fetchAll();
-        $result->closeCursor();
-
+        // One query per pool, see getTrainingStatsByPool() (audit #78).
         $byPool = [];
-        foreach ($rows as $row) {
-            $pid = (int)$row['pool_id'];
-            if (!isset($byPool[$pid])) {
-                $byPool[$pid] = [];
-            }
-            if (count($byPool[$pid]) < 5) {
-                $byPool[$pid][] = $row;
+        foreach (array_values(array_unique(array_map('intval', $poolIds))) as $pid) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('pool_id', 'correct_answers', 'total_questions', 'completed_at')
+               ->from('learning_sessions')
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($pid, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+               // Practice attempts (exam_kind set) are no exam score of the pool.
+               ->andWhere($qb->expr()->isNull('exam_kind'))
+               ->andWhere($qb->expr()->isNotNull('completed_at'))
+               ->orderBy('completed_at', 'DESC')
+               ->setMaxResults(5);
+
+            $result = $qb->executeQuery();
+            $rows = $result->fetchAll();
+            $result->closeCursor();
+            if ($rows !== []) {
+                $byPool[$pid] = $rows;
             }
         }
 

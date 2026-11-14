@@ -2431,7 +2431,9 @@ class CourseService {
             $qb->expr()->eq('cm.user_id', 's.user_id')
         ))
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->andWhere($qb->expr()->in('cm.role', $qb->createNamedParameter(['student', 'co_instructor'], \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+        // Learners only. Members are 'student' or 'instructor' (co-instructors included); the
+        // former filter also listed a role 'co_instructor' that never exists (audit #226).
+        ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
         ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
 
