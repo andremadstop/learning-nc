@@ -27,15 +27,18 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 final class LeitnerQueueAndBadgeTest extends TestCase {
 
-    private function service(FakeDbConnection $db, ?BadgeService $badges = null): LeitnerService {
+    private function service(FakeDbConnection $db, ?BadgeService $badges = null, ?TranslationService $translation = null): LeitnerService {
         $streakService = $this->createMock(StreakService::class);
         $streakService->method('getStreak')->willReturn(['current_streak' => 0]);
         $xpService = $this->createMock(XpService::class);
         $xpService->method('calculateXp')->willReturn(['level' => 1]);
         $xpService->method('applyMultiplier')->willReturnArgument(0);
-        $translationService = $this->createMock(TranslationService::class);
+        $translationService = $translation;
+        if ($translationService === null) {
+            $translationService = $this->createMock(TranslationService::class);
+            $translationService->method('translateQuestions')->willReturnCallback(static fn(array $items): array => $items);
+        }
         $translationService->method('normalizeLang')->willReturn(null);
-        $translationService->method('translateQuestions')->willReturnCallback(static fn(array $items): array => $items);
         $translationService->method('translateAnswerRows')->willReturnCallback(static fn(array $rows): array => $rows);
         $config = $this->createMock(IConfig::class);
         $config->method('getUserValue')->willReturn('');
@@ -105,5 +108,33 @@ final class LeitnerQueueAndBadgeTest extends TestCase {
 
         $this->assertTrue($response['correct']);
         $this->assertSame([$badge], $response['newly_earned_badges']);
+    }
+
+    /**
+     * Pre-existing (found with audit #229): the open-question model answer was blanked before the
+     * translation, and translateQuestions() wrote the translated model answer back.
+     */
+    public function testTranslatedModelAnswerOfAnOpenQuestionStaysHidden(): void {
+        $translation = $this->createMock(TranslationService::class);
+        $translation->method('translateQuestions')->willReturnCallback(static function (array $items): array {
+            foreach ($items as &$item) {
+                foreach ($item['answers'] ?? [] as $i => $answer) {
+                    $item['answers'][$i]['text'] = 'translated model answer';
+                }
+            }
+            return $items;
+        });
+        $rows = [['id' => 1, 'question_id' => 10, 'pool_id' => 1, 'correct_count' => 0, 'incorrect_count' => 3,
+            'question_type' => 'open', 'pbq_config' => null]];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($rows)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([
+                ['id' => 90, 'question_id' => 10, 'text' => 'model answer', 'is_correct' => 1, 'position' => 0],
+            ])),
+        ]);
+
+        $items = $this->service($db, null, $translation)->getRemediationQueue('alice', 5);
+
+        $this->assertSame('', $items[0]['answers'][0]['text']);
     }
 }

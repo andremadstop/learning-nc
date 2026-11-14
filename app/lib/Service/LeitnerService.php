@@ -123,7 +123,11 @@ class LeitnerService {
     }
 
     private function translateQueueItems(array $items, ?string $lang): array {
-        return $this->translationService->translateQuestions($items, $lang);
+        $items = $this->translationService->translateQuestions($items, $lang);
+        // The translation writes translated answer texts back, the model answer of an open
+        // question included; it has to stay hidden until the question is answered.
+        $this->stripOpenAnswers($items);
+        return $items;
     }
 
     private function hydrateQueueItems(array &$items): void {
@@ -820,8 +824,8 @@ class LeitnerService {
     private function stripOpenAnswers(array &$items): void {
         foreach ($items as &$item) {
             if (($item['question_type'] ?? 'single') === 'open') {
-                foreach ($item['answers'] as &$a) {
-                    $a['text'] = '';
+                foreach ($item['answers'] ?? [] as $i => $a) {
+                    $item['answers'][$i]['text'] = '';
                 }
             }
         }
