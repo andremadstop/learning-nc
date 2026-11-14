@@ -130,6 +130,8 @@ export default {
 				return p.pool_id === this.selectedNode.id;
 			}.bind(this));
 			if (!pool || !pool.leitner_stats) { return null; }
+			// GitHub #36: the course of the pool has Leitner off, the boxes never fill.
+			if (pool.leitner_enabled === false) { return null; }
 			// Return box counts excluding 'total'
 			var stats = {};
 			var keys = Object.keys(pool.leitner_stats);

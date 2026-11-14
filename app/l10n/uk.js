@@ -3508,5 +3508,7 @@ OC.L10N.register(
     "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "Цей сертифікат відкликано, він більше не дійсний.",
     "Dieses Zertifikat ist abgelaufen." : "Термін дії цього сертифіката минув.",
     "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "Довідник учасників курсу в розділі «Учасники»: учні можуть зробити свій профіль видимим у курсі, запропонувати допомогу й висловлювати одне одному «Респект».",
+    "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen." : "Ваша панель показує картки до повторення, прогрес за сьогодні та ваш розклад. VirtuProf допомагає вам із питаннями.",
+    "slide:student:progress:text:without-gamification" : "Навчальна статистика, прогрес за сьогодні та завершення курсу — ви завжди бачите, де перебуваєте.\n\nВаш викладач бачить лише агреговані дані курсу, а не ваш індивідуальний профіль.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

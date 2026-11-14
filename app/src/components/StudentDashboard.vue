@@ -49,14 +49,14 @@
             </button>
           </div>
 
-          <!-- Daily Challenge -->
-          <DailyChallengeCard />
+          <!-- Daily Challenge. GitHub #36: XP and challenges are gamification. -->
+          <DailyChallengeCard v-if="gamificationEnabled" />
         </div>
 
         <!-- Right column: Streak + Daily Progress + Quick Links -->
         <div class="dashboard-col-right">
-          <!-- Streak Widget -->
-          <div class="widget-card widget-streak">
+          <!-- Streak Widget (GitHub #36: gamification only) -->
+          <div v-if="gamificationEnabled" class="widget-card widget-streak">
             <p class="section-label">{{ t('learning', 'Streak') }}</p>
             <div class="streak-main">
               <span class="streak-flame">&#x1F525;</span>
@@ -73,7 +73,7 @@
           <!-- Daily Progress Widget -->
           <div class="widget-card widget-progress">
             <p class="section-label">{{ t('learning', 'Tagesfortschritt') }}</p>
-            <div class="progress-stats">
+            <div class="progress-stats" :class="{ 'progress-stats--two': !gamificationEnabled }">
               <div class="progress-stat">
                 <!-- The server reports cards reviewed today, not XP: the tile said '12 XP heute'
                      for 12 cards (audit #188). -->
@@ -84,7 +84,7 @@
                 <span class="progress-value">{{ dailySessions }}</span>
                 <span class="progress-label">{{ t('learning', 'Sessions') }}</span>
               </div>
-              <div class="progress-stat">
+              <div v-if="gamificationEnabled" class="progress-stat">
                 <span class="progress-value">{{ userLevel }}</span>
                 <span class="progress-label">{{ t('learning', 'Level') }}</span>
               </div>
@@ -163,6 +163,9 @@ export default {
   props: {
     // Codeberg #7: an admin who switched every tool off should not be offered a tools link.
     toolsAvailable: { type: Boolean, default: true },
+    // GitHub #36: the admin's global gamification switch (App.vue). Off hides the daily
+    // challenge, the streak and the level; due cards, the schedule and the feed stay.
+    gamificationEnabled: { type: Boolean, default: true },
   },
   data() {
     return {
@@ -572,6 +575,10 @@ export default {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   text-align: center;
+}
+
+.progress-stats--two {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .progress-stat {

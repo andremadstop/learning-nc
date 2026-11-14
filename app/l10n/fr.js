@@ -3508,5 +3508,7 @@ OC.L10N.register(
     "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "Ce certificat a été révoqué et n’est plus valable.",
     "Dieses Zertifikat ist abgelaufen." : "Ce certificat a expiré.",
     "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "Annuaire des membres du cours dans l’espace Participants : les apprenants peuvent rendre leur profil visible dans le cours, proposer leur aide et s’envoyer des « Bravo ».",
+    "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen." : "Votre tableau de bord affiche les cartes dues, la progression du jour et votre planning. VirtuProf vous aide pour vos questions.",
+    "slide:student:progress:text:without-gamification" : "Statistiques d’apprentissage, progression du jour et bilan de cours — vous voyez toujours où vous en êtes.\n\nVotre formateur ne voit que des données de cours agrégées, pas votre profil individuel.",
 },
 "nplurals=2; plural=(n > 1);");

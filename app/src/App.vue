@@ -88,6 +88,7 @@
           <template v-if="route && route.name === 'dashboard'">
             <StudentDashboard
               :tools-available="enabledTools.length > 0"
+              :gamification-enabled="gamificationEnabled"
               @openSmartQueue="openSmartQueue"
               @openRemediation="openRemediation"
               @switchView="switchMainView"
@@ -390,6 +391,7 @@
           ref="virtuprof"
           :enabled="virtuProfEnabled"
           :user-role="userRole"
+          :gamification-enabled="gamificationEnabled"
           :fullscreen-active="mainView === 'virtuprof-fullscreen'"
           @open-duel="openVirtuProfDuel"
           @open-fullscreen="openVirtuProfFullscreen"
@@ -400,6 +402,7 @@
 
       <OnboardingRedesign
         v-if="showOnboarding"
+        :gamification-enabled="gamificationEnabled"
         @done="onOnboardingDone" />
 
       <OnboardingIntro

@@ -72,6 +72,7 @@ export const STUDENT_SLIDES_FULL = [
     icon: '\uD83D\uDCCA',
     titleKey: 'slide:student:progress:title',
     textKey: 'slide:student:progress:text',
+    textKeyWithoutGamification: 'slide:student:progress:text:without-gamification',
   },
 ]
 
@@ -152,6 +153,7 @@ export const STUDENT_SLIDES = [
     icon: '📊',
     titleKey: 'Fortschritt & VirtuProf',
     textKey: 'Dein Dashboard zeigt fällige Karten, Streak und Level. VirtuProf hilft dir bei Fragen.',
+    textKeyWithoutGamification: 'Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen.',
   },
 ]
 
@@ -220,6 +222,22 @@ export const AI_CONSENT_TILES = [
 ]
 
 /* ── Getters ──────────────────────────────────────────── */
+
+/**
+ * GitHub #36: with the admin's gamification switch off there is no streak, XP or level. A slide
+ * that names them has a textKeyWithoutGamification; this swaps it in. The decks themselves stay
+ * untouched (scripts/gen-virtuprof-strings.mjs reads both fields for the VirtuProf catalogue).
+ *
+ * @param {Array} slides a slide deck
+ * @param {boolean} gamificationEnabled anything but false counts as on
+ * @return {Array}
+ */
+export function slidesForGamification(slides, gamificationEnabled = true) {
+  if (gamificationEnabled !== false) return slides
+  return slides.map((slide) => (slide.textKeyWithoutGamification
+    ? { ...slide, textKey: slide.textKeyWithoutGamification }
+    : slide))
+}
 
 /**
  * Returns the trimmed 3-slide array for a given role (used in onboarding wizard).

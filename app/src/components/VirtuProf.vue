@@ -1,6 +1,6 @@
 <template>
   <div>
-    <OnboardingIntro v-if="showOnboardingIntro" :role="userRole" @done="onIntroFinished" />
+    <OnboardingIntro v-if="showOnboardingIntro" :role="userRole" :gamification-enabled="gamificationEnabled" @done="onIntroFinished" />
     <AiConsentPrompt
       v-if="showAiConsentDialog"
       source="dialog"
@@ -231,6 +231,11 @@ export default {
     fullscreenActive: {
       type: Boolean,
       default: false,
+    },
+    // GitHub #36: the admin's gamification switch (App.vue), for the onboarding slides.
+    gamificationEnabled: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {

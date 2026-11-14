@@ -72,7 +72,7 @@
 
 <script>
 import { translateVirtuProf, detectVirtuProfLanguage } from '../utils/virtuprof-i18n.js'
-import { getSlidesForRoleFull as getSlidesForRole } from '../utils/onboarding-slides.js'
+import { getSlidesForRoleFull as getSlidesForRole, slidesForGamification } from '../utils/onboarding-slides.js'
 
 export default {
 	name: 'OnboardingIntro',
@@ -81,6 +81,12 @@ export default {
 		role: {
 			type: String,
 			default: 'student',
+		},
+		// GitHub #36: the admin's gamification switch (App.vue → VirtuProf). Off swaps in the
+		// slide texts without streak, XP and level.
+		gamificationEnabled: {
+			type: Boolean,
+			default: true,
 		},
 	},
 
@@ -103,7 +109,7 @@ export default {
 			return detectVirtuProfLanguage()
 		},
 		slides() {
-			return getSlidesForRole(this.role)
+			return slidesForGamification(getSlidesForRole(this.role), this.gamificationEnabled)
 		},
 		currentSlide() {
 			return this.slides[this.slideIndex] || this.slides[0]

@@ -12,6 +12,7 @@
         <component
           :is="currentStepComponent"
           :key="store.step"
+          v-bind="currentStepProps"
           @next="advance"
         />
       </transition>
@@ -90,6 +91,11 @@ export default {
 
   emits: ['done'],
 
+  props: {
+    // GitHub #36: handed to the tour step only (the other steps have no use for it).
+    gamificationEnabled: { type: Boolean, default: true },
+  },
+
   setup() {
     const store = useOnboardingStore()
     return { store }
@@ -106,6 +112,9 @@ export default {
   computed: {
     currentStepComponent() {
       return STEP_COMPONENTS[this.store.step] || null
+    },
+    currentStepProps() {
+      return this.store.step === 'tour' ? { gamificationEnabled: this.gamificationEnabled } : {}
     },
     transitionName() {
       return this.transitionDirection === 'next' ? 'onb-slide-next' : 'onb-slide-prev'

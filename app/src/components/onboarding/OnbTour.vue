@@ -46,11 +46,17 @@
 <script>
 import { t } from '@nextcloud/l10n'
 import { useOnboardingStore } from '../../stores/onboardingStore.js'
-import { slidesForWizard } from '../../utils/onboarding-slides.js'
+import { slidesForGamification, slidesForWizard } from '../../utils/onboarding-slides.js'
 
 export default {
   name: 'OnbTour',
   emits: ['next'],
+
+  props: {
+    // GitHub #36: the admin's gamification switch (App.vue → OnboardingRedesign). Off swaps in
+    // the slide texts without streak and level.
+    gamificationEnabled: { type: Boolean, default: true },
+  },
 
   setup() {
     const store = useOnboardingStore()
@@ -67,7 +73,7 @@ export default {
 
   computed: {
     slides() {
-      return slidesForWizard(this.store.role || 'student')
+      return slidesForGamification(slidesForWizard(this.store.role || 'student'), this.gamificationEnabled)
     },
     currentSlide() {
       return this.slides[this.store.tourSlideIndex] || this.slides[0]

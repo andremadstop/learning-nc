@@ -3507,6 +3507,8 @@
         "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).": "PDF: «Просмотреть», затем «Печать» (сохранить как PDF). «Скачать» даёт подписанный, машинно проверяемый файл сертификата (Open Badges, JSON).",
         "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "Этот сертификат отозван и больше не действителен.",
         "Dieses Zertifikat ist abgelaufen.": "Срок действия этого сертификата истёк.",
-        "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.": "Справочник участников курса в разделе «Участники»: учащиеся могут сделать свой профиль видимым в курсе, предложить помощь и выражать друг другу «Респект»."
+        "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.": "Справочник участников курса в разделе «Участники»: учащиеся могут сделать свой профиль видимым в курсе, предложить помощь и выражать друг другу «Респект».",
+        "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen.": "Панель показывает карточки к повторению, прогресс за день и расписание. VirtuProf поможет с вопросами.",
+        "slide:student:progress:text:without-gamification": "Статистика обучения, прогресс за день и итог курса — ты всегда видишь, где стоишь.\n\nТвой преподаватель видит только агрегированные данные курса, а не твой индивидуальный профиль."
     }
 }

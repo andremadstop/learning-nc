@@ -286,7 +286,7 @@ class LernprofilService {
         // instructor can attach a pool that was merely edit-shared with them, which handed the
         // pool's owner the id and title of a course they are not in. Same membership test as
         // resolvePoolIds() uses.
-        $qb->select('cp.pool_id', 'c.id AS course_id', 'c.title AS course_name')
+        $qb->select('cp.pool_id', 'c.id AS course_id', 'c.title AS course_name', 'c.mode_config')
            ->from('learning_course_pools', 'cp')
            ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
            ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
@@ -319,6 +319,7 @@ class LernprofilService {
                 $courseMap[$pid] = [
                     'course_id' => (int)$row['course_id'],
                     'course_name' => $row['course_name'],
+                    'leitner_enabled' => self::leitnerEnabledIn($row['mode_config'] ?? null),
                 ];
             }
         }
@@ -330,14 +331,26 @@ class LernprofilService {
             if (isset($courseMap[$pid])) {
                 $pool['course_id'] = $courseMap[$pid]['course_id'];
                 $pool['course_name'] = $courseMap[$pid]['course_name'];
+                $pool['leitner_enabled'] = $courseMap[$pid]['leitner_enabled'];
             } else {
                 $pool['course_id'] = null;
                 $pool['course_name'] = null;
+                // A pool outside any course has the Leitner mode of its own.
+                $pool['leitner_enabled'] = true;
             }
             $enriched[] = $pool;
         }
 
         return $enriched;
+    }
+
+    /**
+     * GitHub #36: whether a course offers the Leitner mode, from its stored mode_config JSON.
+     * A missing config or key counts as on, like the frontend (normalizeModeConfig).
+     */
+    private static function leitnerEnabledIn(mixed $rawModeConfig): bool {
+        $config = is_string($rawModeConfig) && $rawModeConfig !== '' ? json_decode($rawModeConfig, true) : null;
+        return !is_array($config) || ($config['leitner'] ?? true) !== false;
     }
 
     /**

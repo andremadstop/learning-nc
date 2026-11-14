@@ -167,6 +167,8 @@ async function collectKeys() {
     for (const slide of deck) {
       add(slide?.titleKey, SLIDES_MODULE)
       add(slide?.textKey, SLIDES_MODULE)
+      // GitHub #36: the text a slide shows instead with gamification off (slidesForGamification)
+      add(slide?.textKeyWithoutGamification, SLIDES_MODULE)
     }
   }
 
