@@ -83,4 +83,25 @@ class CourseFeedPagingTest extends TestCase {
         self::assertSame($expectedLimit, $qb->maxResults);
         self::assertSame($expectedOffset, $qb->firstResult);
     }
+
+    /**
+     * Audit #207: the aggregated feed (index) had no bounds at all.
+     */
+    #[DataProvider('outOfRange')]
+    public function testUserFeedClampsLimitAndOffset(int $limit, int $offset, int $expectedLimit, int $expectedOffset): void {
+        $service = $this->createMock(FeedService::class);
+        $service->expects($this->once())->method('getUserFeed')
+            ->with('alice', $expectedLimit, $expectedOffset)
+            ->willReturn([]);
+        $controller = new FeedController(
+            'learning',
+            $this->createMock(IRequest::class),
+            $service,
+            $this->createMock(CourseMapper::class),
+            $this->createMock(CourseService::class),
+            'alice'
+        );
+
+        self::assertSame(200, $controller->index($limit, $offset)->getStatus());
+    }
 }

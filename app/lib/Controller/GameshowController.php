@@ -8,12 +8,13 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class GameshowController extends Controller {
     private GameshowService $service;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, GameshowService $service, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, GameshowService $service, ?string $userId, private LoggerInterface $logger) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->userId = $userId;
@@ -34,8 +35,8 @@ class GameshowController extends Controller {
                 $this->service->createSession($poolId, $this->userId, $mode, $maxPlayers, $courseId),
                 Http::STATUS_CREATED
             );
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create gameshow session'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to create gameshow session', 'create');
         }
     }
 
@@ -46,8 +47,8 @@ class GameshowController extends Controller {
     public function join(string $code): DataResponse {
         try {
             return new DataResponse($this->service->joinSession($code, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to join gameshow session'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to join gameshow session', 'join');
         }
     }
 
@@ -58,8 +59,8 @@ class GameshowController extends Controller {
     public function ready(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->setReady($code, $this->userId, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to set ready'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to set ready', 'ready');
         }
     }
 
@@ -70,8 +71,8 @@ class GameshowController extends Controller {
     public function state(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->getState($code, $this->userId, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to get gameshow state'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to get gameshow state', 'state');
         }
     }
 
@@ -82,8 +83,8 @@ class GameshowController extends Controller {
     public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->submitAnswer($code, $this->userId, $answerId, $answeredAt, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to submit answer'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to submit answer', 'answer');
         }
     }
 
@@ -94,8 +95,8 @@ class GameshowController extends Controller {
     public function history(): DataResponse {
         try {
             return new DataResponse($this->service->getHistory($this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'history');
         }
     }
 
@@ -106,8 +107,8 @@ class GameshowController extends Controller {
     public function courseLobby(int $courseId): DataResponse {
         try {
             return new DataResponse($this->service->getCourseLobby($courseId, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load course lobby'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to load course lobby', 'courseLobby');
         }
     }
 }

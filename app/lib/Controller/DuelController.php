@@ -8,12 +8,13 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class DuelController extends Controller {
     private DuelService $service;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, DuelService $service, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, DuelService $service, ?string $userId, private LoggerInterface $logger) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->userId = $userId;
@@ -27,8 +28,8 @@ class DuelController extends Controller {
         try {
             $numQuestions = max(5, min(50, $numQuestions));
             return new DataResponse($this->service->createDuel($poolId, $this->userId, $numQuestions, $courseId), Http::STATUS_CREATED);
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create duel'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to create duel', 'create');
         }
     }
 
@@ -39,8 +40,8 @@ class DuelController extends Controller {
     public function join(string $code): DataResponse {
         try {
             return new DataResponse($this->service->joinDuel($code, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to join duel'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to join duel', 'join');
         }
     }
 
@@ -51,8 +52,8 @@ class DuelController extends Controller {
     public function ready(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->setReady($code, $this->userId, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to set ready'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to set ready', 'ready');
         }
     }
 
@@ -63,8 +64,8 @@ class DuelController extends Controller {
     public function state(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->getState($code, $this->userId, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to get duel state'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to get duel state', 'state');
         }
     }
 
@@ -75,8 +76,8 @@ class DuelController extends Controller {
     public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->submitAnswer($code, $this->userId, $answerId, $answeredAt, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to submit answer'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to submit answer', 'answer');
         }
     }
 
@@ -87,8 +88,8 @@ class DuelController extends Controller {
     public function rematch(string $code): DataResponse {
         try {
             return new DataResponse($this->service->rematch($code, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create rematch'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to create rematch', 'rematch');
         }
     }
 
@@ -106,8 +107,8 @@ class DuelController extends Controller {
                 $this->service->createInvite($poolId, $this->userId, $inviteeUid, $numQuestions, $courseId),
                 Http::STATUS_CREATED
             );
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create duel invite'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to create duel invite', 'invite');
         }
     }
 
@@ -118,8 +119,8 @@ class DuelController extends Controller {
     public function invites(): DataResponse {
         try {
             return new DataResponse($this->service->listInvites($this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load duel invites'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to load duel invites', 'invites');
         }
     }
 
@@ -130,8 +131,8 @@ class DuelController extends Controller {
     public function acceptInvite(int $id): DataResponse {
         try {
             return new DataResponse($this->service->acceptInvite($id, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to accept duel invite'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to accept duel invite', 'acceptInvite');
         }
     }
 
@@ -142,8 +143,8 @@ class DuelController extends Controller {
     public function declineInvite(int $id): DataResponse {
         try {
             return new DataResponse($this->service->declineInvite($id, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to decline duel invite'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to decline duel invite', 'declineInvite');
         }
     }
 
@@ -154,8 +155,8 @@ class DuelController extends Controller {
     public function cancelInvite(int $id): DataResponse {
         try {
             return new DataResponse($this->service->cancelInvite($id, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to cancel duel invite'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to cancel duel invite', 'cancelInvite');
         }
     }
 
@@ -166,8 +167,8 @@ class DuelController extends Controller {
     public function opponents(int $courseId): DataResponse {
         try {
             return new DataResponse($this->service->getInviteCandidates($courseId, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load duel opponents'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to load duel opponents', 'opponents');
         }
     }
 }

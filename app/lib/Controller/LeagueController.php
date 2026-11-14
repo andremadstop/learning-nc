@@ -9,13 +9,15 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class LeagueController extends Controller {
     public function __construct(
         string $appName,
         IRequest $request,
         private LeagueService $service,
-        private ?string $userId
+        private ?string $userId,
+        private LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);
     }
@@ -31,7 +33,7 @@ class LeagueController extends Controller {
                 Http::STATUS_CREATED
             );
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'create');
         }
     }
 
@@ -43,7 +45,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->getOverview($courseId, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'active');
         }
     }
 
@@ -55,7 +57,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->startSeason($courseId, $id, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'start');
         }
     }
 
@@ -67,7 +69,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->finishSeason($courseId, $id, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'finish');
         }
     }
 
@@ -79,7 +81,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->challengeOpponent($courseId, $id, $opponentUid, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'challenge');
         }
     }
 
@@ -91,7 +93,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->acceptChallenge($courseId, $id, $challengeId, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'accept');
         }
     }
 
@@ -103,7 +105,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->getTable($courseId, $id, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'table');
         }
     }
 
@@ -115,7 +117,7 @@ class LeagueController extends Controller {
         try {
             return new DataResponse($this->service->getChampionsLeague($courseId, $id, (string)$this->userId));
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Request failed', 'cl');
         }
     }
 }

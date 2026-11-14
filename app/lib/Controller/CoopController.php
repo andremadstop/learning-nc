@@ -9,12 +9,13 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class CoopController extends Controller {
     private CoopService $service;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, CoopService $service, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, CoopService $service, ?string $userId, private LoggerInterface $logger) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->userId = $userId;
@@ -44,8 +45,8 @@ class CoopController extends Controller {
                 ),
                 Http::STATUS_CREATED
             );
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create coop session'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to create coop session', 'create');
         }
     }
 
@@ -67,8 +68,8 @@ class CoopController extends Controller {
                     (string)($this->request->getParam('displayName', $this->request->getParam('display_name', '')))
                 )
             );
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to join coop session'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to join coop session', 'join');
         }
     }
 
@@ -83,8 +84,8 @@ class CoopController extends Controller {
 
         try {
             return new DataResponse($this->service->getLobby($id, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load coop lobby'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to load coop lobby', 'lobby');
         }
     }
 
@@ -106,8 +107,8 @@ class CoopController extends Controller {
                     trim((string)$this->request->getParam('action', ''))
                 )
             );
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to update coop ready state'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to update coop ready state', 'ready');
         }
     }
 
@@ -122,8 +123,8 @@ class CoopController extends Controller {
 
         try {
             return new DataResponse($this->service->getState($id, $this->userId));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load coop state'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to load coop state', 'state');
         }
     }
 
@@ -140,8 +141,8 @@ class CoopController extends Controller {
 
         try {
             return new DataResponse($this->service->submitVote($id, $this->userId, $edgeId, $this->collectVotePayload()));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to submit coop vote'], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return GameErrorResponse::fromThrowable($e, $this->logger, 'Failed to submit coop vote', 'vote');
         }
     }
 
