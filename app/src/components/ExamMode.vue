@@ -161,7 +161,8 @@
 
       <div v-if="resultsData" class="results-summary">
         <div class="result-banner" :class="resultBannerClass">
-          <div class="result-banner__status">{{ passedExam ? t('learning', 'Passed') : t('learning', 'Not passed') }}</div>
+          <div v-if="scoreOnlyResult" class="result-banner__status">{{ t('learning', 'Prüfung beendet') }}</div>
+          <div v-else class="result-banner__status">{{ passedExam ? t('learning', 'Passed') : t('learning', 'Not passed') }}</div>
           <div v-if="usesPercentScore" class="result-banner__scaled-score">
             <span ref="examScoreNumber">{{ resultsData.score_percentage }}</span>%
           </div>
@@ -174,7 +175,7 @@
           <div v-else-if="coursePassMarkApplies" class="result-banner__threshold">
             {{ t('learning', 'Pass mark: {percent}%', { percent: coursePassMark.threshold }) }}
           </div>
-          <div v-else class="result-banner__threshold">
+          <div v-else-if="!scoreOnlyResult" class="result-banner__threshold">
             {{ t('learning', 'Passing score: {score}/{max}', { score: examPassScore, max: examMaxScore }) }}
           </div>
         </div>
@@ -622,8 +623,15 @@ export default {
     coursePassMarkApplies() {
       return this.coursePassMark !== null
     },
+    // GitHub #47: a counting exam the course has sized, in a course without a pass mark. Its card
+    // names only questions and minutes, so the result shows the percentage and no verdict instead
+    // of judging it on the 720/900 scale the card never mentioned.
+    scoreOnlyResult() {
+      return !!this.resultsData && !this.isPracticeResult && !this.coursePassMarkApplies
+        && this.configuredExamQuestions !== null
+    },
     usesPercentScore() {
-      return this.isPracticeResult || this.coursePassMarkApplies
+      return this.isPracticeResult || this.coursePassMarkApplies || this.scoreOnlyResult
     },
     certificationMessage() {
       const c = this.certification
@@ -685,6 +693,7 @@ export default {
       return { type: 'warning', text: t('learning', 'Not passed yet. The pass mark is {percent}%.', { percent: c.threshold }), retake, ...extra }
     },
     resultBannerClass() {
+      if (this.scoreOnlyResult) return 'result-banner--neutral';
       return this.passedExam ? 'result-banner--passed' : 'result-banner--failed';
     },
     isCurrentMulti() {
@@ -1691,6 +1700,10 @@ export default {
 .result-banner--passed {
   background: color-mix(in srgb, var(--color-success) 14%, var(--color-main-background));
   border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+.result-banner--neutral {
+  background: color-mix(in srgb, var(--color-primary-element) 10%, var(--color-main-background));
+  border-color: color-mix(in srgb, var(--color-primary-element) 30%, transparent);
 }
 .result-banner--failed {
   background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background));

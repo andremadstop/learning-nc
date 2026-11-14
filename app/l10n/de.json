@@ -3597,6 +3597,7 @@
         "Nach Poolgröße": "Nach Poolgröße",
         "Nach Fragenzahl": "Nach Fragenzahl",
         "Fragen: {questions} · Zeitlimit: {minutes} Min.": "Fragen: {questions} · Zeitlimit: {minutes} Min.",
+        "Prüfung beendet": "Prüfung beendet",
         "Prüfungsumfang (Vorgabe für alle Pools)": "Prüfungsumfang (Vorgabe für alle Pools)",
         "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.": "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße."
     }

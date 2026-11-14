@@ -89,6 +89,36 @@ describe('ExamMode exam card (#47)', () => {
 	})
 })
 
+describe('ExamMode result of a course-sized exam (#47)', () => {
+	const result = { total_questions: 20, correct_answers: 15, score_percentage: 75 }
+
+	it('shows the percentage and no 720/900 verdict when the card named none', () => {
+		const vm = instanceOf(ExamMode, { ...examProps, examScope: { questions: 20, minutes: 30 } })
+		vm.resultsData = result
+		expect(vm.scoreOnlyResult).toBe(true)
+		expect(vm.usesPercentScore).toBe(true)
+		expect(vm.resultBannerClass).toBe('result-banner--neutral')
+		const template = fs.readFileSync(path.resolve(__dirname, '../../src/components/ExamMode.vue'), 'utf8')
+		expect(template).toContain('v-else-if="!scoreOnlyResult" class="result-banner__threshold"')
+	})
+
+	it('keeps the course pass mark when the course certifies', () => {
+		const vm = instanceOf(ExamMode, { ...examProps, examScope: { questions: 20, minutes: 30 }, courseCertification: { passPercent: 80 } })
+		vm.resultsData = result
+		expect(vm.scoreOnlyResult).toBe(false)
+		expect(vm.passedExam).toBe(false)
+		expect(vm.resultBannerClass).toBe('result-banner--failed')
+	})
+
+	it('keeps the 720/900 scale its card announced when nothing is configured', () => {
+		const vm = instanceOf(ExamMode, { ...examProps })
+		vm.resultsData = result
+		expect(vm.scoreOnlyResult).toBe(false)
+		expect(vm.usesPercentScore).toBe(false)
+		expect(vm.scaledExamScore).toBe(675)
+	})
+})
+
 describe('Pool rules dialog (#47)', () => {
 	beforeEach(() => {
 		axios.put.mockReset()
