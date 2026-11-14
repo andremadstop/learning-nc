@@ -3601,5 +3601,6 @@ OC.L10N.register(
     "Prüfung beendet" : "انتهى الاختبار",
     "Prüfungsumfang (Vorgabe für alle Pools)" : "نطاق الاختبار (القيمة الافتراضية لجميع المجموعات)",
     "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße." : "ينطبق على كل اختبار في هذه الدورة لا تملك مجموعته قيمة خاصة بها في قواعد المجموعة. تُسحب الأسئلة عشوائيًا من المجموعة في كل محاولة. الحقول الفارغة: يتبع الاختبار حجم المجموعة كما كان من قبل.",
+    "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min." : "الأسئلة: حتى {questions} · المهلة الزمنية: {minutes} دقيقة",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

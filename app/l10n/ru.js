@@ -3601,5 +3601,6 @@ OC.L10N.register(
     "Prüfung beendet" : "Экзамен завершён",
     "Prüfungsumfang (Vorgabe für alle Pools)" : "Объём экзамена (по умолчанию для всех пулов)",
     "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße." : "Действует для каждого экзамена в этом курсе, если у его пула нет собственного значения в правилах пула. При каждой попытке вопросы выбираются из пула случайным образом. Пустые поля: экзамен, как и раньше, зависит от размера пула.",
+    "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min." : "Вопросов: до {questions} · ограничение времени: {minutes} мин",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

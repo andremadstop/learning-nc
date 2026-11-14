@@ -279,3 +279,24 @@ describe('ExamMode setup — practice run card', () => {
 		expect(vm.certificationMessage).toBeNull()
 	})
 })
+
+// GitHub #46: the pool window's exam counts for no course. Its card and result still spoke of the
+// 720/900 scale that was removed everywhere else.
+describe('ExamMode in the pool window — no 720/900 (GitHub #46)', () => {
+	it('names only questions and minutes on the card', () => {
+		const vm = createInstance({ courseId: null, totalQuestions: 30 })
+		const [exam] = vm.visiblePresets
+
+		expect(exam.meta).toBe('Fragen: bis zu 30 · Zeitlimit: 45 Min.')
+		expect(exam.meta).not.toContain('900')
+	})
+
+	it('shows the result in percent without a verdict', () => {
+		const vm = createInstance({ courseId: null })
+		vm.resultsData = { total_questions: 20, correct_answers: 16, score_percentage: 80 }
+
+		expect(vm.scoreOnlyResult).toBe(true)
+		expect(vm.usesPercentScore).toBe(true)
+		expect(vm.resultBannerClass).toBe('result-banner--neutral')
+	})
+})

@@ -3601,5 +3601,6 @@ OC.L10N.register(
     "Prüfung beendet" : "Examen terminé",
     "Prüfungsumfang (Vorgabe für alle Pools)" : "Contenu de l'examen (valeur par défaut pour tous les pools)",
     "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße." : "S'applique à chaque examen de ce cours dont le pool n'a pas de valeur propre dans les règles du pool. Les questions sont tirées au hasard dans le pool à chaque tentative. Champs vides : l'examen suit la taille du pool comme auparavant.",
+    "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min." : "Questions : jusqu’à {questions} · limite de temps : {minutes} min",
 },
 "nplurals=2; plural=(n > 1);");

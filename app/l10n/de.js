@@ -3601,5 +3601,6 @@ OC.L10N.register(
     "Prüfung beendet" : "Prüfung beendet",
     "Prüfungsumfang (Vorgabe für alle Pools)" : "Prüfungsumfang (Vorgabe für alle Pools)",
     "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße." : "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.",
+    "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min." : "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min.",
 },
 "nplurals=2; plural=(n != 1);");

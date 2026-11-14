@@ -512,6 +512,9 @@ export default {
         meta = t('learning', 'Fragen: {questions} · Zeitlimit: {minutes} Min.', { questions: count, minutes })
       } else if (rule) {
         meta = t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: count, minutes, percent: rule.passPercent })
+      } else if (!this.courseId) {
+        // GitHub #46: a pool-window exam counts for no course; no 720/900 pass mark on its card.
+        meta = t('learning', 'Fragen: bis zu {questions} · Zeitlimit: {minutes} Min.', { questions: count, minutes })
       } else {
         meta = t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {score}/{max}', { questions: count, minutes, score: this.examPassScore, max: this.examMaxScore })
       }
@@ -626,9 +629,10 @@ export default {
     // GitHub #47: a counting exam the course has sized, in a course without a pass mark. Its card
     // names only questions and minutes, so the result shows the percentage and no verdict instead
     // of judging it on the 720/900 scale the card never mentioned.
+    // GitHub #46: likewise every exam from the pool window, which counts for no course.
     scoreOnlyResult() {
       return !!this.resultsData && !this.isPracticeResult && !this.coursePassMarkApplies
-        && this.configuredExamQuestions !== null
+        && (this.configuredExamQuestions !== null || !this.courseId)
     },
     usesPercentScore() {
       return this.isPracticeResult || this.coursePassMarkApplies || this.scoreOnlyResult
