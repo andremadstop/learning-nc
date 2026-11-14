@@ -13,6 +13,7 @@ use OCP\IConfig;
  * per pool: at most limitPerDay() attempts within a rolling 24 hours, and at least
  * cooldownMinutes() between two starts. "Per pool" means per pool in one context (GitHub #47):
  * a course exam counts only the exams of that pool in that course, the pool window only its own.
+ * toArray() names this scope 'pool_context', and the texts say "per pool in this course".
  */
 class ExamAttemptPolicy {
     public const DEFAULT_LIMIT_PER_DAY = 5;
@@ -39,7 +40,7 @@ class ExamAttemptPolicy {
         return [
             'limit_per_day' => $this->limitPerDay(),
             'cooldown_minutes' => $this->cooldownMinutes(),
-            'scope' => 'pool',
+            'scope' => 'pool_context',
         ];
     }
 }

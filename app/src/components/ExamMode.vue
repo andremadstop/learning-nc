@@ -1395,9 +1395,9 @@ export default {
     retakeText(policy) {
       if (!policy) return '';
       if (Number(policy.cooldown_minutes) > 0) {
-        return t('learning', 'You can retake the exam. Attempts per pool in 24 hours: at most {limit}. Minimum gap between two attempts (minutes): {minutes}.', { limit: policy.limit_per_day, minutes: policy.cooldown_minutes });
+        return t('learning', 'You can retake the exam. Attempts per pool in this course in 24 hours: at most {limit}. Minimum gap between two attempts (minutes): {minutes}.', { limit: policy.limit_per_day, minutes: policy.cooldown_minutes });
       }
-      return t('learning', 'You can retake the exam. Attempts per pool in 24 hours: at most {limit}.', { limit: policy.limit_per_day });
+      return t('learning', 'You can retake the exam. Attempts per pool in this course in 24 hours: at most {limit}.', { limit: policy.limit_per_day });
     },
     retakeExam() {
       this.certificateModalOpen = false;

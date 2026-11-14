@@ -90,7 +90,7 @@ class PassStatusControllerTest extends TestCase {
         $this->assertSame(81, $data['pools'][0]['best_score']);
         $this->assertFalse($data['certificate_issued']);
         $this->assertSame('signing_unavailable', $data['issuance_error']);
-        $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool'], $data['attempt_policy']);
+        $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool_context'], $data['attempt_policy']);
     }
 
     // The shown retake rules are the enforced ones, including the clamp TrainingService applies.

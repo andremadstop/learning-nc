@@ -445,7 +445,7 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 		expect(instance.retakeText).toContain('5')
 		expect(instance.retakeText).toContain('10')
 		expect(instance.validityText).toBe('Gültigkeitsdauer (Monate): 12')
-		expect(noCooldown.retakeText).toBe('Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens 3.')
+		expect(noCooldown.retakeText).toBe('Wiederholen ist erlaubt. Versuche pro Pool in diesem Kurs in 24 Stunden: höchstens 3.')
 		expect(noCooldown.validityText).toBe('Gültigkeit: unbegrenzt')
 	})
 

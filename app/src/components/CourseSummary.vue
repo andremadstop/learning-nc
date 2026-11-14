@@ -455,12 +455,12 @@ export default {
 			const policy = this.passStatus?.attempt_policy
 			if (!policy) return ''
 			if (Number(policy.cooldown_minutes) > 0) {
-				return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens {limit}. Mindestabstand zwischen zwei Versuchen (Minuten): {minutes}.', {
+				return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in diesem Kurs in 24 Stunden: höchstens {limit}. Mindestabstand zwischen zwei Versuchen (Minuten): {minutes}.', {
 					limit: policy.limit_per_day,
 					minutes: policy.cooldown_minutes,
 				})
 			}
-			return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens {limit}.', { limit: policy.limit_per_day })
+			return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in diesem Kurs in 24 Stunden: höchstens {limit}.', { limit: policy.limit_per_day })
 		},
 		// GitHub #35: renewal is open since the first reminder (server: renewal_open_since).
 		renewalOpen() {

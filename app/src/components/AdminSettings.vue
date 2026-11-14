@@ -111,7 +111,7 @@
       </div>
 
       <div class="field-row">
-        <label for="exam-attempt-limit">{{ t('learning', 'Exam attempts per 24h (per pool/user)') }}</label>
+        <label for="exam-attempt-limit">{{ t('learning', 'Exam attempts per 24h (per user, pool and course)') }}</label>
         <input
           id="exam-attempt-limit"
           v-model.number="form.examAttemptLimitPerDay"

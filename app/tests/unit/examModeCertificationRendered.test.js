@@ -38,7 +38,7 @@ import ExamMode from '../../src/components/ExamMode.vue'
 const EXPIRES = 1767225600
 const expiredOn = new Date(EXPIRES * 1000).toLocaleDateString()
 const expiredCert = { verification_id: 'vid-old', issued_at: 1735689600, expires_at: EXPIRES, expired: true, revoked: false }
-const policy = { limit_per_day: 5, cooldown_minutes: 10, scope: 'pool' }
+const policy = { limit_per_day: 5, cooldown_minutes: 10, scope: 'pool_context' }
 
 describe('ExamMode certification note rendered (GitHub #35)', () => {
 	let host, app

@@ -43,7 +43,7 @@ function createInstance(resultsData) {
 	return instance
 }
 
-const policy = { limit_per_day: 5, cooldown_minutes: 10, scope: 'pool' }
+const policy = { limit_per_day: 5, cooldown_minutes: 10, scope: 'pool_context' }
 function result(certification, extra = {}) {
 	return { total_questions: 20, correct_answers: 15, score_percentage: 75, ...extra, certification }
 }
@@ -82,7 +82,7 @@ describe('ExamMode — certification result (GitHub #35)', () => {
 
 		expect(vm.passedExam).toBe(false)
 		expect(vm.certificationMessage.text).toBe('Not passed yet. The pass mark is 80%.')
-		expect(vm.certificationMessage.retake).toBe('You can retake the exam. Attempts per pool in 24 hours: at most 5. Minimum gap between two attempts (minutes): 10.')
+		expect(vm.certificationMessage.retake).toBe('You can retake the exam. Attempts per pool in this course in 24 hours: at most 5. Minimum gap between two attempts (minutes): 10.')
 	})
 
 	it('passed but issuance failed: asks to contact the administrator', () => {

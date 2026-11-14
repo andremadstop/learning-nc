@@ -101,7 +101,7 @@ class CertificationTriggerTest extends TestCase {
         $this->assertSame(85, $block['exam_score']);
         $this->assertTrue($block['exam_passed']);
         $this->assertTrue($block['counts_for_requirement'], 'without required pools every counting exam counts');
-        $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool'], $block['attempt_policy']);
+        $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool_context'], $block['attempt_policy']);
         // The session is read for this user only — another user's session id must not count.
         $this->assertContains(['type' => 'eq', 'left' => 'user_id', 'right' => ['value' => self::USER, 'type' => null]], $builder->andWhereCalls);
     }
