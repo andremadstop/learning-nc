@@ -7,7 +7,7 @@ const { test, expect } = require('@playwright/test')
  * render. This walks a fresh account through the introduction and then asks the question the
  * whole issue is about: does it come back?
  */
-const ORIGIN = new URL(process.env.E2E_BASE_URL || 'https://devcloud.andrestiebitz.de/apps/learning').origin
+const ORIGIN = new URL(process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning').origin
 
 test('a new user meets the introduction, dismisses it, and it stays gone', async ({ page }) => {
   // 1. First visit — the wizard must appear for a genuinely new account.

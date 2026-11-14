@@ -6,11 +6,6 @@ const { test, expect } = require('@playwright/test')
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-async function goToApp(page) {
-  await page.goto('/apps/learning/')
-  await page.waitForLoadState('networkidle')
-}
-
 async function removeOnboarding(page) {
   await page.evaluate(() => {
     document.querySelectorAll('.onboarding-redesign, .onboarding-intro').forEach(el => el.remove())
@@ -135,6 +130,7 @@ test.describe('Phase 6 — Instructor Notes', () => {
     await page.waitForSelector('#question-text', { timeout: 15_000 })
 
     const UNIQUE_TEXT = 'E2E-Test-' + Date.now()
+    const NOTE_TEXT = 'E2E-Note-' + Date.now()
 
     // Fill question
     await page.fill('#question-text', UNIQUE_TEXT)
@@ -152,39 +148,60 @@ test.describe('Phase 6 — Instructor Notes', () => {
       await radio.click({ force: true })
     }
 
+    // Fill the instructor note — the point of this test.
+    const noteField = page.locator('#instructor-note')
+    await noteField.scrollIntoViewIfNeeded()
+    await noteField.fill(NOTE_TEXT)
+
     // Save
     const saveBtn = page.locator('button').filter({ hasText: /Speichern|Save/i }).first()
     await saveBtn.scrollIntoViewIfNeeded()
     await saveBtn.click()
 
-    // Wait for save to complete — either dialog closes or success toast appears
-    await page.waitForTimeout(3000)
-
-    // Verify the question appears in the list
-    const questionItem = page.locator('.question-item').filter({ hasText: UNIQUE_TEXT }).first()
-    const saved = await questionItem.isVisible({ timeout: 10_000 }).catch(() => false)
-
-    // If the form stays open after save, it still succeeded if no error appeared.
-    // Verify no error message is shown (NcNoteCard type="error").
+    // No error card may appear (NcNoteCard type="error").
     const errorCard = page.locator('[class*="note-card"][class*="error"], .nc-notecard--error')
     const hasError = await errorCard.isVisible({ timeout: 2_000 }).catch(() => false)
     expect(hasError).toBeFalsy()
+
+    // The question must actually be in the list — a silently failed save leaves no error card
+    // either, so the error check alone proves nothing.
+    const questionItem = page.locator('.question-item').filter({ hasText: UNIQUE_TEXT }).first()
+    await expect(questionItem).toBeVisible({ timeout: 10_000 })
+
+    // Retrieve: reopen the question for editing and read the stored note back from the server.
+    await openPoolManageView(page)
+    const reloadedItem = page.locator('.question-item').filter({ hasText: UNIQUE_TEXT }).first()
+    await expect(reloadedItem).toBeVisible({ timeout: 15_000 })
+    await reloadedItem.locator('.question-actions button').first().click()
+    await page.getByRole('menuitem', { name: /Bearbeiten|Edit/ }).first().click()
+    await expect(page.locator('#instructor-note')).toHaveValue(NOTE_TEXT, { timeout: 10_000 })
   })
 
   test('P6-3: Training mode renders without critical JS errors', async ({ page }) => {
-    await goToApp(page)
-    await page.evaluate(() => {
-      document.querySelectorAll('.onboarding-redesign, .onboarding-intro').forEach(el => el.remove())
-    })
-
-    const appContent = page.locator('#app-content').first()
-    await expect(appContent).toBeVisible({ timeout: 30_000 })
-
+    // Listen before the first navigation, otherwise errors thrown while the bundle loads are missed.
     const errors = []
     page.on('console', msg => {
       if (msg.type() === 'error') errors.push(msg.text())
     })
-    await page.waitForTimeout(3000)
+    page.on('pageerror', err => errors.push(String(err && err.stack ? err.stack : err)))
+
+    await openPoolManageView(page)
+
+    // Actually open training mode: the "Training" tab of the selected pool.
+    const trainingTab = page.locator('[role="tab"]').filter({ hasText: /^\s*Training\s*$/ }).first()
+    await expect(trainingTab).toBeVisible({ timeout: 15_000 })
+    await trainingTab.click()
+    const trainingMode = page.locator('.training-mode').first()
+    await expect(trainingMode).toBeVisible({ timeout: 15_000 })
+
+    // Start a session when the pool offers one, so the question renderer runs as well.
+    const startBtn = trainingMode.locator('.start-actions button').first()
+    if (await startBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await startBtn.click()
+      await page.waitForLoadState('networkidle')
+    }
+
+    await page.waitForTimeout(2000)
     const criticalErrors = errors.filter(e => e.includes('TypeError') || e.includes('ReferenceError'))
     expect(criticalErrors).toHaveLength(0)
   })

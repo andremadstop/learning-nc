@@ -7,7 +7,7 @@ const { test, expect } = require('@playwright/test')
  * out. If the header swallows the click, a user cannot leave the wizard at all, which is exactly
  * what Codeberg #5 is complaining about.
  */
-const ORIGIN = new URL(process.env.E2E_BASE_URL || 'https://devcloud.andrestiebitz.de/apps/learning').origin
+const ORIGIN = new URL(process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning').origin
 
 test('the global skip button can be clicked past the first step', async ({ page }) => {
   // goto first: localStorage is not reachable on about:blank.
