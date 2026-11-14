@@ -12,6 +12,9 @@ use OCA\Learning\Service\TelosService;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
+use OCA\Learning\Tests\Support\FakeResult;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -169,5 +172,45 @@ class StoryEngineServiceTest extends TestCase {
         $method = new \ReflectionMethod(StoryEngineService::class, 'callGeminiForStory');
 
         $this->assertSame('', $method->invoke($this->makeService(), 'system', 'user', 'user-A', 250));
+    }
+
+    /**
+     * Audit #56: the skill-check candidates left out a pool with an open counting exam even after
+     * its time limit had run out, so a closed tab kept the pool out of the story indefinitely.
+     *
+     * @param list<array<string, mixed>> $openExams
+     * @return list<int>
+     */
+    private function readablePoolIdsWith(array $openExams): array {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult([['id' => 41], ['id' => 42]])),
+            new FakeQueryBuilder(new FakeResult()),
+            new FakeQueryBuilder(new FakeResult()),
+            // fetch() and fetchAll() both yield the rows, so the old fetchOne() loop sees them too.
+            new FakeQueryBuilder(new FakeResult($openExams)),
+        ]);
+        $service = new StoryEngineService(
+            $this->progressMapperMock,
+            $db,
+            $this->loggerMock,
+            $this->geminiServiceMock,
+            $this->configMock,
+            $this->cacheFactoryMock,
+            $this->graphServiceMock,
+            $this->telosMock,
+            $this->createMock(QuestionService::class)
+        );
+        $method = new \ReflectionMethod(StoryEngineService::class, 'readablePoolIds');
+        return $method->invoke($service, 'student');
+    }
+
+    public function testSkillChecksSkipAPoolWithARunningExam(): void {
+        $ids = $this->readablePoolIdsWith([['pool_id' => 42, 'started_at' => time() - 60, 'time_limit_seconds' => 1800]]);
+        $this->assertSame([41], $ids);
+    }
+
+    public function testSkillChecksUseAPoolWhoseTimedExamHasExpired(): void {
+        $ids = $this->readablePoolIdsWith([['pool_id' => 42, 'started_at' => time() - 7200, 'time_limit_seconds' => 1800]]);
+        $this->assertSame([41, 42], $ids);
     }
 }

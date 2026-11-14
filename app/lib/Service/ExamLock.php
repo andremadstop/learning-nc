@@ -46,6 +46,33 @@ final class ExamLock {
     }
 
     /**
+     * The pools on which $userId has a running counting exam — the set form of isActiveOnPool()
+     * for read paths that filter many pools at once (Lernprofil cheat sheet, story skill checks).
+     *
+     * @return list<int>
+     */
+    public static function activePoolIds(IDBConnection $db, string $userId, ?int $now = null): array {
+        $now ??= time();
+        $qb = $db->getQueryBuilder();
+        $qb->select('pool_id', 'started_at', 'time_limit_seconds')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('exam_kind'))
+           ->andWhere($qb->expr()->isNull('completed_at'));
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        $ids = [];
+        foreach ($rows as $row) {
+            if (self::isRunning($row, $now)) {
+                $ids[(int)$row['pool_id']] = true;
+            }
+        }
+        return array_keys($ids);
+    }
+
+    /**
      * An open counting exam still runs unless its time limit (plus the submit grace period) is
      * over. An untimed exam runs until it is completed.
      *

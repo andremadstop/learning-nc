@@ -583,23 +583,14 @@ class LernprofilService {
     }
 
     /**
-     * Pools on which the user has an open graded exam. Same condition as
-     * QuestionService::hasActiveExamOnPool: practice exams (exam_kind set) never count.
+     * Pools on which the user has a running graded exam: ExamLock::activePoolIds, the set form of
+     * the lock QuestionService::isExamActiveOnPool uses. Practice exams (exam_kind set) never
+     * count, and a timed exam past its deadline plus grace period no longer does (audit #56).
      *
      * @return int[]
      */
     private function getOpenGradedExamPoolIds(string $userId): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->selectDistinct('pool_id')
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-           ->andWhere($qb->expr()->isNull('exam_kind'))
-           ->andWhere($qb->expr()->isNull('completed_at'));
-        $result = $qb->executeQuery();
-        $rows = $result->fetchAll();
-        $result->closeCursor();
-        return array_map('intval', array_column($rows, 'pool_id'));
+        return ExamLock::activePoolIds($this->db, $userId);
     }
 
     private function getOwnedPoolIds(string $userId): array {

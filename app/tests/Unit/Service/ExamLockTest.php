@@ -109,4 +109,20 @@ class ExamLockTest extends TestCase {
 
         $this->assertTrue($service->isExamActiveOnPool(42, 'alice'));
     }
+
+    /** The set form for the cheat sheet and the story skill checks keeps only running exams. */
+    public function testActivePoolIdsKeepsOnlyRunningExams(): void {
+        $query = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            ['pool_id' => 41, 'started_at' => self::NOW - 7200, 'time_limit_seconds' => 1800],
+            ['pool_id' => 42, 'started_at' => self::NOW - 60, 'time_limit_seconds' => 1800],
+            ['pool_id' => 43, 'started_at' => self::NOW - 86400, 'time_limit_seconds' => 0],
+            ['pool_id' => 42, 'started_at' => self::NOW - 30, 'time_limit_seconds' => 1800],
+        ]));
+        $db = new FakeDbConnection([$query]);
+
+        $this->assertSame([42, 43], ExamLock::activePoolIds($db, 'alice', self::NOW));
+        $this->assertContains(['type' => 'isNull', 'field' => 'exam_kind'], $query->andWhereCalls);
+        $this->assertContains(['type' => 'isNull', 'field' => 'completed_at'], $query->andWhereCalls);
+        $this->assertCount(1, $db->issuedBuilders);
+    }
 }
