@@ -26,6 +26,77 @@ All notable changes to this project will be documented in this file.
   already renewed or replaced; the unfiltered history still lists every certificate.
 - The pool rules dialog says that only **Required pools** in the course's certification
   settings decide about the certificate; "Show this pool as required" and "Exam relevant" do not.
+- **Requires PHP 8.2** (`info.xml`), as Nextcloud 33 already does. Static analysis now checks
+  PHP 8.2–8.5.
+- `occ learning:import-vault` no longer skips `Eigene-Notizen/`, `Bilder/` and `tools/` (only
+  `.obsidian/` and `.venv/`). Whatever is imported is reachable for every course member through
+  the AI tutor; to keep the old behaviour pass
+  `--exclude='**/Eigene-Notizen/**,**/Bilder/**,**/tools/**'`. `occ learning:import-pool-json`
+  exits 1 when no pool was imported or none is importable, also with `--dry-run`.
+- `occ learning:archive-course` and `occ learning:merge-course` no longer need a user called
+  `admin`; occ acts as the server administrator and records `occ` as the snapshot's creator. A
+  merge archives its source course inside the merge transaction, so a failed merge leaves it
+  active. `occ learning:import-users` reports a failing row and goes on with the next one, and
+  sets the e-mail column.
+- Course figures (dashboard, chapter heatmap, weak questions, CSV) count only the course's own
+  students: no learners of other courses that share a pool, no instructors. The course CSV's
+  `total_mastered` now counts the course's pools only.
+- Streak days, the calendar feed and the daily figures use UTC days whatever the database's time
+  zone; the calendar feed dates cards by their next review.
+- CSV exports and the user import follow RFC 4180 (no backslash escape) and guard every field
+  against spreadsheet formulas.
+- Gameshow: the next question is hidden and refused (`400 Question has not started yet`) during
+  the reveal, so no player gets a head start; creating a game lists and accepts only the live
+  modes (the retired board-game modes answer 400). Duel speed uses the server's receipt time.
+- Background jobs are declared in `info.xml` instead of being checked on every request; the
+  retired notification job is removed by a repair step. The footer legal links are written when
+  the operator details are saved, not on every request.
+- German at-risk labels and some game commentary are worded without plural forms; feed labels,
+  relative times, at-risk reasons, legal pages, onboarding, dock labels, avatar names and game
+  texts are translated into all six languages.
+
+### Fixed
+- **Exams:** an opened but untouched ranking PBQ is no longer graded; a second tab stays
+  read-only until the result and cannot end the exam; the countdown follows server time; an
+  expired timed exam no longer locks its pool for training, cheat sheets or story skill checks;
+  aborting a counting exam keeps the attempt; a refused start keeps training open.
+- **Certificates:** the course report marks expired certificates; the pass date survives
+  retention.
+- **PBQs and simulators** grade what the learner sees; the question form creates and edits PBQs
+  as PBQs; the Smart Queue shows PBQ cards and the maintenance queue, with the remediation limit.
+- **Leitner:** retry after a failed AI explanation; the level-up shows on the result screen; the
+  translated model answer of an open question stays hidden in the queues.
+- **Daily challenge:** one answerable question the learner can access, pinned for the day.
+- **Adventure:** no silent fallbacks, real progress badges, verdicts from the server; every
+  campaign loads under one ID, the featured campaigns load as graphs again, and the linear
+  "Der große Ausfall" has its own title. Ended co-op sessions no longer earn the simulator badge.
+- **VirtuProf:** chat answers learning questions instead of filing tickets for every question
+  about errors; ticket confirmations are visible and translated; the summary chip works in every
+  language; course tickets go only to courses the author can see.
+- **Materials and knowledge:** sources with `/` in the name can be deleted; dead chunking runs
+  are retried; failed uploads are rejected; replaced images are cleaned up; one save per click;
+  the pool search finds the right page; video seek ends where playback was; non-Latin pool names
+  get distinct note files.
+- **Course administration:** failed chapter, sprint, Talk and schedule saves are reported; the
+  Talk token and course description can be cleared; the schedule save is atomic; course deletion
+  removes the course's rows in one transaction; archives and learners' summaries are told apart.
+- **Settings and UI:** a failed settings load shows a retry button and never saves defaults;
+  avatar glow, Talk link, timers and delayed tones work again.
+- Reminders survive cron drift; the weekly note job continues after the last batch instead of
+  restarting with the same 200 users.
+- Release tarball (`make release`) ships `l10n/` and `data/`.
+
+### Security & privacy
+- Deleting an account removes the remaining personal rows (kudos, video progress, pool shares,
+  oversight rows) and pseudonymises assignments; inherited rights end with it.
+- Hidden notes, private profiles and the search follow their owners' settings.
+- Only the course owner registers Nextcloud-files videos, and only video files are streamed.
+- Unreadable pools answer 404.
+
+### Removed
+- Unused components, mapper and service methods, the unused analytics stack, the retired
+  notification job, the per-user UI language setting (the Nextcloud language applies) and dead
+  one-off scripts.
 
 ## [5.10.0] - 2026-11-13 — Certification, enrollment and course materials
 
