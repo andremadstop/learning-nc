@@ -13,7 +13,19 @@
 				<div class="feed-content">
 					<div class="feed-header">
 						<span class="feed-type-badge">{{ typeLabel(item.type) }}</span>
-						<span class="feed-time">{{ formatRelativeTime(item.created_at) }}</span>
+						<span class="feed-header-end">
+							<span class="feed-time">{{ formatRelativeTime(item.created_at) }}</span>
+							<!-- GitHub #40: instructors delete an announcement right here; the separate
+								list under "New announcement" duplicated the feed. -->
+							<NcButton v-if="canDelete(item)"
+								variant="tertiary"
+								size="small"
+								class="feed-delete"
+								:aria-label="t('learning', 'Ankündigung löschen')"
+								@click="requestDelete(item)">
+								{{ t('learning', 'Löschen') }}
+							</NcButton>
+						</span>
 					</div>
 					<strong class="feed-title">{{ itemTitle(item) }}</strong>
 					<p v-if="item.body" class="feed-body">{{ item.body }}</p>
@@ -25,6 +37,20 @@
 			@click="loadMore">
 			{{ t('learning', 'Mehr laden...') }}
 		</button>
+
+		<AccessibleDialog v-if="confirmItem"
+			:name="t('learning', 'Ankündigung löschen')"
+			@closing="cancelDelete">
+			<p>{{ t('learning', 'Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed.', { title: confirmItem.title }, undefined, { escape: false, sanitize: false }) }}</p>
+			<template #actions>
+				<NcButton variant="tertiary" :disabled="deleting" @click="cancelDelete">
+					{{ t('learning', 'Nicht löschen') }}
+				</NcButton>
+				<NcButton variant="error" :disabled="deleting" @click="confirmDelete">
+					{{ t('learning', 'Löschen') }}
+				</NcButton>
+			</template>
+		</AccessibleDialog>
 	</div>
 </template>
 
@@ -32,6 +58,9 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import { showError } from '@nextcloud/dialogs'
+import AccessibleDialog from './AccessibleDialog.vue'
 import { translate as t } from '@nextcloud/l10n'
 import { formatRelativeTime as relativeTime } from '../utils/relativeTime.js'
 import { feedItemTitle, feedTypeIcon, feedTypeLabel } from '../utils/feedItem.js'
@@ -40,6 +69,8 @@ export default {
 	name: 'CourseFeed',
 
 	components: {
+		AccessibleDialog,
+		NcButton,
 		NcLoadingIcon,
 	},
 
@@ -47,6 +78,12 @@ export default {
 		courseId: {
 			type: Number,
 			required: true,
+		},
+		// GitHub #40: CourseDetail's instructor gate (membership, student view off). The server
+		// checks the course instructor again on delete.
+		canManage: {
+			type: Boolean,
+			default: false,
 		},
 	},
 
@@ -56,11 +93,19 @@ export default {
 			loading: false,
 			hasMore: false,
 			offset: 0,
+			// announcements of the course, only to find the id of a feed row written before the
+			// feed carried meta.announcement_id
+			announcements: [],
+			confirmItem: null,
+			deleting: false,
 		}
 	},
 
 	mounted() {
 		this.fetchFeed()
+		if (this.canManage) {
+			this.fetchAnnouncements()
+		}
 	},
 
 	methods: {
@@ -82,6 +127,72 @@ export default {
 				console.error('Failed to fetch feed:', error)
 			} finally {
 				this.loading = false
+			}
+		},
+
+		async fetchAnnouncements() {
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/announcements', {
+					courseId: this.courseId,
+				})
+				const response = await axios.get(url)
+				this.announcements = Array.isArray(response.data?.announcements) ? response.data.announcements : []
+			} catch (error) {
+				// Only legacy rows lose their delete button; linked rows carry their id.
+				console.error('Failed to fetch announcements:', error)
+			}
+		},
+
+		/**
+		 * The announcement behind a feed row: meta.announcement_id since GitHub #40, otherwise
+		 * the announcement with the same title created within two seconds of the feed row.
+		 *
+		 * @param {object} item feed item
+		 * @return {number|null}
+		 */
+		announcementIdFor(item) {
+			if (item?.type !== 'announcement') return null
+			const linked = Number(item.meta?.announcement_id)
+			if (Number.isInteger(linked) && linked > 0) return linked
+			const created = Number(item.created_at)
+			const match = this.announcements.find((a) => a.title === item.title
+				&& Math.abs(Number(a.created_at) - created) <= 2)
+			return match ? Number(match.id) : null
+		},
+
+		canDelete(item) {
+			return this.canManage && this.announcementIdFor(item) !== null
+		},
+
+		requestDelete(item) {
+			this.confirmItem = item
+		},
+
+		cancelDelete() {
+			if (!this.deleting) {
+				this.confirmItem = null
+			}
+		},
+
+		async confirmDelete() {
+			const item = this.confirmItem
+			const announcementId = this.announcementIdFor(item)
+			if (!item || announcementId === null) return
+			this.deleting = true
+			try {
+				await axios.delete(generateUrl('/apps/learning/api/courses/{courseId}/announcements/{announcementId}', {
+					courseId: this.courseId,
+					announcementId,
+				}))
+				// the server removed every feed copy of this announcement
+				this.items = this.items.filter((i) => this.announcementIdFor(i) !== announcementId)
+				this.announcements = this.announcements.filter((a) => Number(a.id) !== announcementId)
+				this.confirmItem = null
+			} catch (error) {
+				console.error('Failed to delete announcement:', error)
+				showError(t('learning', 'Die Ankündigung konnte nicht gelöscht werden.'))
+			} finally {
+				this.deleting = false
 			}
 		},
 
@@ -167,10 +278,19 @@ export default {
 	display: block;
 }
 
+.feed-header-end {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* GitHub #40: an announcement keeps the line breaks its author typed. Text, never v-html. */
 .feed-body {
 	color: var(--color-text-maxcontrast);
 	margin-top: 4px;
 	margin-bottom: 0;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 
 .feed-empty {

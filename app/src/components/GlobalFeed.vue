@@ -197,11 +197,14 @@ export default {
 	font-size: 0.95em;
 }
 
+/* GitHub #40: an announcement keeps the line breaks its author typed. Text, never v-html. */
 .feed-body {
 	color: var(--color-text-maxcontrast);
 	margin-top: 2px;
 	margin-bottom: 0;
 	font-size: 0.9em;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 
 .feed-empty {

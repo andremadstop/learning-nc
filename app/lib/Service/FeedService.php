@@ -70,6 +70,44 @@ class FeedService {
     }
 
     /**
+     * Delete the feed copy of a course announcement (GitHub #40).
+     *
+     * Since GitHub #40 the feed row carries meta.announcement_id. Rows written before that have no
+     * meta; they are matched by title and creation time, which the announcement insert and the
+     * feed insert take within the same or the next second. A row whose meta names another
+     * announcement is never touched.
+     *
+     * @return int Number of deleted feed rows
+     */
+    public function deleteAnnouncementItems(int $courseId, int $announcementId, ?string $title, ?int $createdAt): int {
+        $ids = [];
+        foreach ($this->feedItemMapper->findByCourseAndType($courseId, 'announcement') as $item) {
+            if (self::belongsToAnnouncement($item, $announcementId, $title, $createdAt)) {
+                $ids[] = (int)$item->getId();
+            }
+        }
+        return $this->feedItemMapper->deleteByIds($courseId, $ids);
+    }
+
+    /**
+     * Whether a feed row is the copy of the given announcement.
+     */
+    public static function belongsToAnnouncement(FeedItem $item, int $announcementId, ?string $title, ?int $createdAt): bool {
+        $meta = $item->getMeta();
+        $decoded = $meta !== null && $meta !== '' ? json_decode($meta, true) : null;
+        if (is_array($decoded) && array_key_exists('announcement_id', $decoded)) {
+            return (int)$decoded['announcement_id'] === $announcementId;
+        }
+        // Legacy row without the link: same title (stored cut to 255 characters) and created
+        // within two seconds of the announcement.
+        if ($title === null || $createdAt === null) {
+            return false;
+        }
+        return $item->getTitle() === mb_substr($title, 0, 255)
+            && abs((int)$item->getCreatedAt() - $createdAt) <= 2;
+    }
+
+    /**
      * Delete feed items older than N days.
      *
      * @return int Number of deleted items

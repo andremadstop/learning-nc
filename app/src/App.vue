@@ -1131,6 +1131,13 @@ export default {
       };
     },
     virtuprofContextPayload() {
+      // GitHub #40: VirtuProf merges each context into the previous one, so a course left out
+      // here was not cleared. A course question sent from the dashboard then still went to the
+      // last course's instructor, and one sent from a course page never carried the course id
+      // and fell back to the admin inbox. Every payload states its course, null outside one.
+      return { courseId: null, courseTitle: '', ...this.virtuprofAreaPayload() };
+    },
+    virtuprofAreaPayload() {
       const mainView = this.mainView === 'virtuprof-fullscreen' ? this.previousMainView : this.mainView;
       if (mainView === 'dashboard') {
         return { area: 'dashboard' };
@@ -1169,12 +1176,14 @@ export default {
         if (this.selectedStudent) {
           return {
             area: 'course-my-progress',
+            courseId: this.selectedCourse?.id ?? null,
             courseTitle: this.selectedCourse?.title || '',
           };
         }
         if (this.selectedCourse) {
           return {
             area: 'course-detail',
+            courseId: this.selectedCourse.id ?? null,
             courseTitle: this.selectedCourse.title || '',
           };
         }

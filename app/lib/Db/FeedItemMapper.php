@@ -53,6 +53,40 @@ class FeedItemMapper extends QBMapper {
     }
 
     /**
+     * All feed items of one type in a course, unpaginated (GitHub #40: the rows an announcement
+     * delete has to look at; the meta link is matched in PHP, not as a JSON string in SQL).
+     *
+     * @return FeedItem[]
+     */
+    public function findByCourseAndType(int $courseId, string $type): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('type', $qb->createNamedParameter($type)));
+
+        return $this->findEntities($qb);
+    }
+
+    /**
+     * Delete feed items by id, scoped to one course.
+     *
+     * @param int[] $ids
+     * @return int Number of deleted rows
+     */
+    public function deleteByIds(int $courseId, array $ids): int {
+        if ($ids === []) {
+            return 0;
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->in('id', $qb->createNamedParameter(array_values($ids), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+
+        return $qb->executeStatement();
+    }
+
+    /**
      * Delete feed items older than the given timestamp.
      *
      * @return int Number of deleted rows

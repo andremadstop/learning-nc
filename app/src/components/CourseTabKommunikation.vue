@@ -11,50 +11,44 @@
 			</button>
 		</div>
 
-		<!-- Announcements (instructor only) -->
+		<!-- Announcements (instructor only). GitHub #40: only the form; published announcements
+			are listed, and deleted, in the feed. -->
 		<div v-if="currentSubTab === 'announcements' && isInstructor" class="tab-content announcements-section">
 			<div class="announcement-form">
 				<h3>{{ t('learning', 'New announcement') }}</h3>
 				<input v-model="newAnnouncementTitle" type="text" :placeholder="t('learning', 'Title')" class="nc-input announcement-input" />
-				<textarea v-model="newAnnouncementBody" :placeholder="t('learning', 'Message...')" class="nc-textarea" rows="3" />
+				<textarea v-model="newAnnouncementBody" :placeholder="t('learning', 'Message...')" class="nc-textarea announcement-textarea" rows="6" />
+				<p class="announcement-hint">{{ t('learning', 'Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen.') }}</p>
 				<NcButton variant="primary" :disabled="savingAnnouncement || !newAnnouncementTitle.trim()" @click="createAnnouncement">
 					{{ t('learning', 'Publish') }}
 				</NcButton>
-			</div>
-			<div class="announcements-list">
-				<div v-if="announcements.length === 0" class="empty-hint">{{ t('learning', 'No announcements yet.') }}</div>
-				<div v-for="a in announcements" :key="a.id" class="announcement-item">
-					<div class="announcement-header">
-						<strong>{{ a.title }}</strong>
-						<NcButton variant="tertiary" @click="deleteAnnouncement(a.id)">{{ t('learning', 'Delete') }}</NcButton>
-					</div>
-					<p class="announcement-body">{{ a.body }}</p>
-					<small class="announcement-date">{{ formatDate(a.created_at) }}</small>
-				</div>
 			</div>
 		</div>
 
 		<!-- Feed (both roles) -->
 		<div v-if="currentSubTab === 'feed'" class="tab-content">
-			<CourseFeed :course-id="courseId" />
+			<CourseFeed :course-id="courseId" :can-manage="isInstructor" />
 		</div>
 
-		<!-- Requests (instructor only) -->
+		<!-- Questions from learners (instructor only): course questions sent through the help
+			assistant. GitHub #40: named for what it holds, and the empty state says where the
+			questions come from. -->
 		<div v-if="currentSubTab === 'requests' && isInstructor" class="tab-content requests-section">
 			<div v-if="loadingRequests" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
-			<div v-else-if="courseTickets.length === 0" class="empty-hint">
-				{{ t('learning', 'No open requests for this course.') }}
+			<div v-else-if="courseTickets.length === 0" class="empty-hint requests-empty">
+				<p>{{ t('learning', 'Noch keine Fragen von Lernenden zu diesem Kurs.') }}</p>
+				<p>{{ t('learning', 'Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.') }}</p>
 			</div>
 			<div v-else class="tickets-list-cd">
 				<div v-for="ticket in courseTickets" :key="ticket.id" class="ticket-item-cd">
 					<div class="ticket-header-cd">
 						<span class="ticket-subject-cd">{{ ticket.subject }}</span>
-						<span class="ticket-status-cd" :class="'status-' + ticket.status">{{ ticket.status }}</span>
+						<span class="ticket-status-cd" :class="'status-' + ticket.status">{{ ticketStatusLabel(ticket.status) }}</span>
 					</div>
 					<p class="ticket-message-cd">{{ ticket.message }}</p>
 					<div v-if="ticket.status === 'open'" class="ticket-reply-cd">
-						<textarea v-model="ticketReplies[ticket.id]" :placeholder="t('learning', 'Your answer...')" class="nc-textarea" rows="3" />
-						<NcButton variant="primary" @click="answerTicket(ticket.id)">{{ t('learning', 'Send answer') }}</NcButton>
+						<textarea v-model="ticketReplies[ticket.id]" :placeholder="t('learning', 'Your answer...')" class="nc-textarea ticket-reply-textarea" rows="4" />
+						<NcButton variant="primary" :disabled="!!answeringTickets[ticket.id]" @click="answerTicket(ticket.id)">{{ t('learning', 'Send answer') }}</NcButton>
 					</div>
 					<div v-if="ticket.answer_text" class="ticket-answer-cd">
 						<strong>{{ t('learning', 'Answer:') }}</strong> {{ ticket.answer_text }}
@@ -80,6 +74,7 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
+import { showError } from '@nextcloud/dialogs'
 import CourseFeed from './CourseFeed.vue'
 import BuddyMatching from './BuddyMatching.vue'
 import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
@@ -125,13 +120,13 @@ export default {
 	data() {
 		return {
 			currentSubTab: '',
-			announcements: [],
 			newAnnouncementTitle: '',
 			newAnnouncementBody: '',
 			savingAnnouncement: false,
 			loadingRequests: false,
 			courseTickets: [],
 			ticketReplies: {},
+			answeringTickets: {},
 		}
 	},
 
@@ -145,7 +140,7 @@ export default {
 				return [
 					{ id: 'announcements', label: t('learning', 'Ankuendigungen') },
 					{ id: 'feed', label: t('learning', 'Feed') },
-					{ id: 'requests', label: t('learning', 'Anfragen') },
+					{ id: 'requests', label: t('learning', 'Fragen von Lernenden') },
 				]
 			}
 			const tabs = [
@@ -192,64 +187,35 @@ export default {
 		},
 
 		lazyLoad(tab) {
-			if (tab === 'announcements' && this.isInstructor) {
-				this.fetchAnnouncements()
-			}
 			if (tab === 'requests' && this.isInstructor) {
 				this.fetchCourseTickets()
 			}
 		},
 
-		formatDate(timestamp) {
-			if (!timestamp) return ''
-			try {
-				const ts = typeof timestamp === 'number' ? timestamp * 1000 : Date.parse(timestamp)
-				const date = new Date(ts)
-				if (isNaN(date.getTime())) return String(timestamp)
-				return date.toLocaleDateString(undefined, {
-					year: 'numeric',
-					month: 'short',
-					day: 'numeric',
-				})
-			} catch {
-				return String(timestamp)
-			}
-		},
-
-		async fetchAnnouncements() {
-			if (!this.course) return
-			try {
-				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`))
-				this.announcements = res.data.announcements || res.data || []
-			} catch (e) {
-				console.error('Failed to load announcements', e)
-			}
+		ticketStatusLabel(status) {
+			if (status === 'open') return t('learning', 'Open')
+			if (status === 'answered') return t('learning', 'Answered')
+			return status
 		},
 
 		async createAnnouncement() {
 			if (!this.newAnnouncementTitle.trim()) return
 			this.savingAnnouncement = true
 			try {
-				const res = await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`), {
+				await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`), {
 					title: this.newAnnouncementTitle,
 					body: this.newAnnouncementBody,
 				})
-				this.announcements.unshift(res.data.announcement || res.data)
 				this.newAnnouncementTitle = ''
 				this.newAnnouncementBody = ''
+				// GitHub #40: the published announcement is shown where everyone reads it
+				this.selectSubTab('feed')
 			} catch (e) {
+				// GitHub #40: a refused or failed publish used to leave only a console line
 				console.error('Failed to create announcement', e)
+				showError(t('learning', 'Die Ankündigung konnte nicht veröffentlicht werden.'))
 			} finally {
 				this.savingAnnouncement = false
-			}
-		},
-
-		async deleteAnnouncement(id) {
-			try {
-				await axios.delete(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements/${id}`))
-				this.announcements = this.announcements.filter(a => a.id !== id)
-			} catch (e) {
-				console.error('Failed to delete announcement', e)
 			}
 		},
 
@@ -261,6 +227,7 @@ export default {
 				this.courseTickets = res.data.tickets || res.data || []
 			} catch (e) {
 				console.error('Failed to load course tickets', e)
+				showError(t('learning', 'Die Fragen von Lernenden konnten nicht geladen werden.'))
 			} finally {
 				this.loadingRequests = false
 			}
@@ -268,7 +235,8 @@ export default {
 
 		async answerTicket(ticketId) {
 			const answer = this.ticketReplies[ticketId]
-			if (!answer || !answer.trim()) return
+			if (!answer || !answer.trim() || this.answeringTickets[ticketId]) return
+			this.answeringTickets[ticketId] = true
 			try {
 				await axios.post(generateUrl(`/apps/learning/api/settings/admin/support-tickets/${ticketId}/answer`), {
 					answerText: answer,
@@ -280,7 +248,11 @@ export default {
 				}
 				delete this.ticketReplies[ticketId]
 			} catch (e) {
+				// GitHub #40: the typed answer stays in the field, and the instructor learns it was not sent
 				console.error('Failed to answer ticket', e)
+				showError(t('learning', 'Die Antwort konnte nicht gesendet werden.'))
+			} finally {
+				delete this.answeringTickets[ticketId]
 			}
 		},
 	},
@@ -319,11 +291,21 @@ export default {
 .announcement-form { margin-bottom: 24px; padding: 16px; background: var(--color-background-dark); border-radius: 8px; }
 .announcement-form h3 { margin: 0 0 12px 0; font-size: 1.1em; font-weight: 600; }
 .announcement-input { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
-.announcements-list { display: flex; flex-direction: column; gap: 8px; }
-.announcement-item { padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; }
-.announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.announcement-body { color: var(--color-text-maxcontrast); margin: 4px 0; }
-.announcement-date { color: var(--color-text-maxcontrast); font-size: 0.85em; }
+.announcement-hint { color: var(--color-text-maxcontrast); font-size: 0.9em; margin: 4px 0 12px; }
+
+/* GitHub #40: Nextcloud core gives every textarea width: 130px; flex stretch cannot override an
+   explicit width, so both fields set their own. */
+.announcement-textarea,
+.ticket-reply-textarea {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	min-height: 8em;
+	box-sizing: border-box;
+	margin-inline: 0;
+	resize: vertical;
+}
+.ticket-reply-textarea { min-height: 6em; }
 
 /* Requests */
 .requests-section {}
@@ -336,5 +318,6 @@ export default {
 .ticket-status-cd.status-answered { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
 .ticket-message-cd { color: var(--color-text-maxcontrast); margin-bottom: 8px; }
 .ticket-reply-cd { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.requests-empty p { margin: 0 0 4px; }
 .ticket-answer-cd { margin-top: 8px; padding: 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 0.9em; }
 </style>

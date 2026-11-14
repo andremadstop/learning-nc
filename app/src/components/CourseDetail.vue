@@ -515,6 +515,8 @@ export default {
 			}
 			useOptionalVirtuProfStore()?.updateContext({
 				area,
+				// GitHub #40: without the id a course question fell back to the admin inbox
+				courseId: this.courseId,
 				courseTitle: this.course?.title || '',
 				poolName: this.selectedLearningPool?.pool_name || '',
 			})

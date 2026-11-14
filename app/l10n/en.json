@@ -3486,6 +3486,17 @@
         "Your previous exam has just run out of time. Please try again in a moment.": "Your previous exam has just run out of time. Please try again in a moment.",
         "Die Kapitelauswahl konnte nicht gespeichert werden.": "The chapter selection could not be saved.",
         "Talk-Token konnte nicht gespeichert werden.": "The Talk token could not be saved.",
-        "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt.": "Invalid Talk token: only letters and digits are allowed."
+        "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt.": "Invalid Talk token: only letters and digits are allowed.",
+        "Ankündigung löschen": "Delete announcement",
+        "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed.": "Do you really want to delete the announcement “{title}”? It disappears from the feed for all course members.",
+        "Nicht löschen": "Keep it",
+        "Die Ankündigung konnte nicht gelöscht werden.": "The announcement could not be deleted.",
+        "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen.": "Published announcements appear in the feed. You can also delete them there.",
+        "Fragen von Lernenden": "Questions from learners",
+        "Noch keine Fragen von Lernenden zu diesem Kurs.": "No questions from learners for this course yet.",
+        "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "Questions about this course that learners send you through the VirtuProf help assistant appear here.",
+        "Die Ankündigung konnte nicht veröffentlicht werden.": "The announcement could not be published.",
+        "Die Fragen von Lernenden konnten nicht geladen werden.": "The questions from learners could not be loaded.",
+        "Die Antwort konnte nicht gesendet werden.": "The answer could not be sent."
     }
 }

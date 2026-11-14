@@ -11,8 +11,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn(),
+		delete: vi.fn(),
 	},
 }))
+
+vi.mock('@nextcloud/dialogs', () => ({ showError: vi.fn() }))
+vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
+vi.mock('../../src/components/AccessibleDialog.vue', () => ({ default: { name: 'AccessibleDialog', template: '<div><slot /></div>' } }))
 
 // Mock @nextcloud/router
 vi.mock('@nextcloud/router', () => ({
@@ -23,6 +28,9 @@ vi.mock('@nextcloud/router', () => ({
 vi.mock('@nextcloud/l10n', async () => (await import('./support/l10nCatalog.js')).l10nMock())
 
 import axios from '@nextcloud/axios'
+import { showError } from '@nextcloud/dialogs'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { setTestLanguage } from './support/l10nCatalog.js'
 
 // Import the component definition
@@ -45,11 +53,12 @@ function makeFeedItem(overrides = {}) {
 /**
  * Creates a minimal component instance to access methods without mounting.
  */
-function createInstance(courseId = 5) {
+function createInstance(courseId = 5, canManage = false) {
 	const data = typeof CourseFeed.data === 'function' ? CourseFeed.data() : {}
 	return {
 		...data,
 		courseId,
+		canManage,
 		...CourseFeed.methods,
 	}
 }
@@ -242,4 +251,100 @@ describe('CourseFeed.fetchFeed()', () => {
 		expect(instance.offset).toBe(50)
 		expect(instance.hasMore).toBe(false)
 	})
+})
+
+// GitHub #40: the separate announcement list under "New announcement" duplicated the feed and was
+// the only place to delete. Instructors now delete in the feed, which also removes the feed copy
+// the old delete left behind for every course member.
+describe('CourseFeed announcement delete (GitHub #40)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('offers delete only to instructors, and only on announcements', () => {
+		const learner = createInstance(5, false)
+		const instructor = createInstance(5, true)
+		const linked = makeFeedItem({ meta: { announcement_id: 9 } })
+
+		expect(learner.canDelete(linked)).toBe(false)
+		expect(instructor.canDelete(linked)).toBe(true)
+		expect(instructor.canDelete(makeFeedItem({ type: 'pool_added', meta: { pool_id: 3 } }))).toBe(false)
+	})
+
+	it('finds the announcement of a legacy feed row by title and creation time', () => {
+		const instance = createInstance(5, true)
+		instance.announcements = [
+			{ id: 4, title: 'Willkommen im Kurs', created_at: 1700000000 },
+			{ id: 5, title: 'Andere', created_at: 1700000000 },
+		]
+
+		expect(instance.announcementIdFor(makeFeedItem({ created_at: 1700000001 }))).toBe(4)
+		expect(instance.announcementIdFor(makeFeedItem({ created_at: 1700000100 }))).toBe(null)
+		expect(instance.canDelete(makeFeedItem({ created_at: 1700000100 }))).toBe(false)
+	})
+
+	it('loads the announcement list for instructors only', async () => {
+		axios.get.mockResolvedValue({ data: { items: [], announcements: [] } })
+		const learner = createInstance(5, false)
+		CourseFeed.mounted.call(learner)
+		expect(axios.get).not.toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/announcements')
+
+		const instructor = createInstance(5, true)
+		CourseFeed.mounted.call(instructor)
+		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/announcements')
+	})
+
+	it('deletes through the existing announcement route after the confirmation and drops the item', async () => {
+		axios.delete.mockResolvedValue({})
+		const instance = createInstance(5, true)
+		const item = makeFeedItem({ id: 31, meta: { announcement_id: 9 } })
+		const other = makeFeedItem({ id: 32, meta: { announcement_id: 10 } })
+		instance.items = [item, other]
+
+		instance.requestDelete(item)
+		expect(axios.delete).not.toHaveBeenCalled()
+		expect(instance.confirmItem).toBe(item)
+
+		await instance.confirmDelete()
+
+		expect(axios.delete).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/announcements/{announcementId}')
+		expect(instance.items).toEqual([other])
+		expect(instance.confirmItem).toBe(null)
+		expect(showError).not.toHaveBeenCalled()
+	})
+
+	it('cancelling the confirmation deletes nothing', () => {
+		const instance = createInstance(5, true)
+		instance.requestDelete(makeFeedItem({ meta: { announcement_id: 9 } }))
+		instance.cancelDelete()
+		expect(instance.confirmItem).toBe(null)
+		expect(axios.delete).not.toHaveBeenCalled()
+	})
+
+	it('a refused delete is shown and keeps the item', async () => {
+		axios.delete.mockRejectedValue({ response: { status: 403 } })
+		const instance = createInstance(5, true)
+		const item = makeFeedItem({ id: 31, meta: { announcement_id: 9 } })
+		instance.items = [item]
+		instance.requestDelete(item)
+
+		await instance.confirmDelete()
+
+		expect(showError).toHaveBeenCalledTimes(1)
+		expect(instance.items).toEqual([item])
+		expect(instance.deleting).toBe(false)
+	})
+})
+
+// GitHub #40: multi-line announcements ran together in the feed. Text interpolation, no v-html.
+describe('feed body keeps line breaks (GitHub #40)', () => {
+	for (const file of ['CourseFeed.vue', 'GlobalFeed.vue']) {
+		it(`${file} renders the body as text with pre-wrap`, () => {
+			const source = readFileSync(resolve(__dirname, `../../src/components/${file}`), 'utf8')
+			const rule = source.match(/\.feed-body\s*\{[^}]*\}/)?.[0] || ''
+			expect(rule).toMatch(/white-space:\s*pre-wrap/)
+			expect(source).toMatch(/class="feed-body">\{\{ item\.body \}\}/)
+			expect(source.split('</template>')[0]).not.toMatch(/v-html=/)
+		})
+	}
 })

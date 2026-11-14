@@ -2866,8 +2866,9 @@ class CourseService {
         // of a hardcoded 'oc_' sequence name, which breaks on non-default Nextcloud table prefixes.
         $newId = $qb->getLastInsertId();
 
-        // Auto-create feed item for the announcement
-        $this->feedService->createAutoItem($courseId, 'announcement', $title, $body, $userId);
+        // Auto-create feed item for the announcement. GitHub #40: the feed row names its
+        // announcement, so deleting the announcement can remove it from the feed as well.
+        $this->feedService->createAutoItem($courseId, 'announcement', $title, $body, $userId, ['announcement_id' => (int)$newId]);
 
         return [
             'id' => (int)$newId,
@@ -2889,11 +2890,38 @@ class CourseService {
             throw new ForbiddenException('No permission');
         }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->delete('learning_course_announcements')
-            ->where($qb->expr()->eq('id', $qb->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
-        $qb->executeStatement();
+        // GitHub #40: the announcement used to vanish only from the instructor's list while its
+        // feed copy stayed visible to every course member. Both go in one transaction, so a failed
+        // feed delete cannot leave a half-deleted announcement behind a success response.
+        $this->db->beginTransaction();
+        try {
+            $find = $this->db->getQueryBuilder();
+            $find->select('title', 'created_at')
+                ->from('learning_course_announcements')
+                ->where($find->expr()->eq('id', $find->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($find->expr()->eq('course_id', $find->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $result = $find->executeQuery();
+            $row = $result->fetch();
+            $result->closeCursor();
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete('learning_course_announcements')
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $qb->executeStatement();
+
+            // Without the announcement row only a feed copy linked by meta can still be matched.
+            $this->feedService->deleteAnnouncementItems(
+                $courseId,
+                $announcementId,
+                is_array($row) ? (string)$row['title'] : null,
+                is_array($row) ? (int)$row['created_at'] : null
+            );
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     /**
