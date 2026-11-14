@@ -193,7 +193,7 @@ class VirtuProfController extends Controller {
     }
 
     /**
-     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int, onboarding_declined: bool, skin: string}
+     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, bot_sounds_enabled: bool, voice_lang: string, onboarding_reminder_count: int, onboarding_declined: bool, skin: string}
      */
     private function buildStatePayload(): array {
         $dismissed = json_decode(
@@ -215,6 +215,7 @@ class VirtuProfController extends Controller {
             'ai_enabled' => $this->isAiFeatureAvailable(),
             'tts_enabled' => $this->getTtsEnabled(),
             'stt_enabled' => $this->getSttEnabled(),
+            'bot_sounds_enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_bot_sounds_enabled', 'no') === 'yes',
             'voice_lang' => $this->getVoiceLanguage(),
             'onboarding_reminder_count' => $this->getOnboardingReminderCount(),
             'onboarding_declined' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_declined', 'no') === 'yes',
@@ -461,7 +462,8 @@ class VirtuProfController extends Controller {
         ?string $voiceLang = null,
         ?int $onboardingReminderCount = null,
         ?bool $onboardingDeclined = null,
-        ?string $skin = null
+        ?string $skin = null,
+        ?bool $botSoundsEnabled = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -475,6 +477,10 @@ class VirtuProfController extends Controller {
         }
         if ($sttEnabled !== null) {
             $this->config->setUserValue($this->userId, 'learning', 'virtuprof_stt_enabled', $sttEnabled ? 'yes' : 'no');
+        }
+        if ($botSoundsEnabled !== null) {
+            // audit #17: PersonalSettings sent this all along; it was dropped and never stored
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_bot_sounds_enabled', $botSoundsEnabled ? 'yes' : 'no');
         }
         if ($voiceLang !== null) {
             $this->config->setUserValue(
@@ -852,7 +858,11 @@ class VirtuProfController extends Controller {
 
     /**
      * Detect whether the message is a file-creation intent.
-     * Matches German and English keywords for summary, plan, and progress intents.
+     * Matches German and English command phrases for summary, plan, and progress intents.
+     *
+     * Audit #16: only explicit commands. The bare words 'lernplan', 'learning plan' and
+     * 'fortschritt' matched ordinary questions ("Wie verbessere ich meinen Fortschritt bei
+     * Subnetting?") and wrote a file instead of answering.
      */
     private function isFileIntent(string $lowerMessage): bool {
         $patterns = [
@@ -867,9 +877,7 @@ class VirtuProfController extends Controller {
             'create summary',
             'generate summary',
             'create learning plan',
-            'learning plan',
-            'lernplan',
-            'fortschritt',
+            'generate learning plan',
         ];
 
         foreach ($patterns as $pattern) {
@@ -967,17 +975,19 @@ class VirtuProfController extends Controller {
     // TICKET-INTENT helpers
     // -------------------------------------------------------------------------
 
+    /**
+     * Audit #16: only explicit requests to file a ticket. Plain problem descriptions ('geht nicht',
+     * 'not working', 'ist kaputt') are what learners say about the subject matter too ("Mein Ping
+     * zwischen den VLANs geht nicht") — those filed a ticket and got no answer. The same holds for
+     * bare openings and nouns ('kann ich einen fehler', 'fehler gefunden', 'feedback geben',
+     * 'bug report'): "Wie kann ich einen Fehler in der Subnetzmaske erkennen?" is a question.
+     */
     private function isTicketIntent(string $lowerMessage): bool {
         $patterns = [
             'bug melden', 'fehler melden', 'problem melden',
-            'bug report', 'report a bug', 'report bug',
+            'report a bug', 'report bug',
             'ticket erstellen', 'ticket anlegen', 'support ticket',
-            'feedback geben', 'feedback senden',
-            'etwas funktioniert nicht', 'geht nicht', 'ist kaputt',
-            'something is broken', 'not working', "doesn't work",
-            'ich möchte einen fehler', 'ich will einen bug',
-            'kann ich bei dir einen bug', 'kann ich einen fehler',
-            'fehler gefunden', 'bug gefunden',
+            'feedback senden',
         ];
 
         foreach ($patterns as $pattern) {

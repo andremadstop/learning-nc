@@ -129,13 +129,13 @@ describe('question error report confirmation (audit #187)', () => {
 		const ctx = reportContext()
 		await VirtuProf.methods.handleReportError.call(ctx)
 		const msg = ctx.chatMessages.at(-1)
-		expect(msg.text).toBe('Merci pour le signalement ! Ton formateur a été prévenu et va vérifier la question.')
+		expect(msg.text).toBe('Merci pour le signalement ! La question a été transmise pour vérification.')
 	})
 
 	it('reports a failed send the same way', async () => {
 		axios.post.mockRejectedValue(new Error('down'))
 		const ctx = reportContext()
 		await VirtuProf.methods.handleReportError.call(ctx)
-		expect(ctx.chatMessages.at(-1).text).toBe('Le signalement d\'erreur n\'a malheureusement pas pu être envoyé. Réessaie plus tard.')
+		expect(ctx.chatMessages.at(-1).text).toBe('Le signalement n\'a pas pu être envoyé. Veuillez réessayer plus tard.')
 	})
 })

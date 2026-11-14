@@ -27,7 +27,7 @@ final class LlmErrorResponse {
         return match ($e->category) {
             'disabled' => new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE),
             'config', 'auth' => new DataResponse(
-                ['error' => 'AI service not configured. Please ask your administrator to configure the Gemini API key.'],
+                ['error' => 'AI service not configured. Please ask your administrator to check the AI provider settings.'],
                 Http::STATUS_SERVICE_UNAVAILABLE
             ),
             'rate_limit' => new DataResponse(['error' => 'Rate limit exceeded'], Http::STATUS_TOO_MANY_REQUESTS),

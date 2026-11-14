@@ -3465,6 +3465,11 @@
         "rekursiv": "récursif",
         "Der Popularisierer": "Le Vulgarisateur",
         "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.": "La campagne n’a pas pu être lancée. Réessaie.",
-        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "Ta décision n’a pas pu être enregistrée. Réessaie."
+        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "Ta décision n’a pas pu être enregistrée. Réessaie.",
+        "Failed to load pending contributions.": "Impossible de charger les contributions en attente.",
+        "Moderation failed.": "La modération a échoué.",
+        "Answered": "Répondu",
+        "Thanks for the report! The question has been passed on for review.": "Merci pour le signalement ! La question a été transmise pour vérification.",
+        "The report could not be sent. Please try again later.": "Le signalement n'a pas pu être envoyé. Veuillez réessayer plus tard."
     }
 }

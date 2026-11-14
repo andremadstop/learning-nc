@@ -3465,6 +3465,11 @@
         "rekursiv": "rekursiv",
         "Der Popularisierer": "Der Popularisierer",
         "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.": "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.",
-        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut."
+        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+        "Failed to load pending contributions.": "Ausstehende Beiträge konnten nicht geladen werden.",
+        "Moderation failed.": "Moderation fehlgeschlagen.",
+        "Answered": "Beantwortet",
+        "Thanks for the report! The question has been passed on for review.": "Danke für die Meldung! Die Frage wurde zur Prüfung weitergegeben.",
+        "The report could not be sent. Please try again later.": "Die Meldung konnte nicht gesendet werden. Bitte versuche es später erneut."
     }
 }

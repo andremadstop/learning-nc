@@ -9,6 +9,12 @@ use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
 
 class SupportTicketService {
+    /**
+     * The categories clients send: the ticket form (VirtuProfBubble: technical, course_content)
+     * and VirtuProf's 'report this question' (question_error). Anything else is filed as technical.
+     */
+    private const CATEGORIES = ['technical', 'course_content', 'question_error'];
+
     private SupportTicketMapper $ticketMapper;
     private CourseService $courseService;
     private GeminiService $geminiService;
@@ -29,8 +35,15 @@ class SupportTicketService {
     public function create(string $userId, ?string $subject, string $message, array $context = [], ?string $category = null): SupportTicket {
         $subject = trim((string)$subject);
         $message = trim($message);
+        // Audit #84/#145: a course the author cannot see is dropped from the ticket, so a
+        // course_content ticket cannot be routed into a foreign course's instructor inbox.
+        if ($this->normalizeInt($context['courseId'] ?? null) !== null
+            && !$this->canSeeCourse((int)$context['courseId'], $userId)) {
+            unset($context['courseId']);
+        }
         if ($subject === '') {
-            $subject = $this->buildFallbackSubject($context);
+            // audit #84: a subject the user never typed must not fail as 'Subject too long'
+            $subject = mb_substr($this->buildFallbackSubject($context), 0, 255);
         }
         if ($message === '') {
             throw new \InvalidArgumentException('Message is required');
@@ -206,11 +219,24 @@ class SupportTicketService {
         }
     }
 
+    private function canSeeCourse(int $courseId, string $userId): bool {
+        try {
+            $this->courseService->findById($courseId, $userId);
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     private function resolveRouting(?string $category, ?int $courseId): array {
+        // audit #84: any other string (the column holds 32 characters) used to reach the insert
+        if (!in_array($category, self::CATEGORIES, true)) {
+            $category = 'technical';
+        }
         if ($category === 'course_content' && $courseId !== null) {
             return ['routing_target_type' => 'course_instructor', 'routing_course_id' => $courseId, 'category' => $category];
         }
-        return ['routing_target_type' => 'admin', 'routing_course_id' => null, 'category' => $category ?? 'technical'];
+        return ['routing_target_type' => 'admin', 'routing_course_id' => null, 'category' => $category];
     }
 
     private function serializeTicket(SupportTicket $ticket): array {

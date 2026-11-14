@@ -18,6 +18,26 @@ class ChunkSearchService {
         'the', 'is', 'are', 'was', 'what', 'how', 'where', 'who',
         'on', 'at', 'with', 'of', 'to', 'for', 'and', 'or', 'not',
         'it', 'this', 'that', 'be', 'has', 'have', 'can', 'do',
+        // audit #151: the other four interface languages, plus the German umlaut forms. Words
+        // under 3 characters are dropped by length anyway; entries are in mb_strtolower form.
+        'für', 'über', 'warum', 'welche', 'welcher', 'welches', 'sich', 'einen', 'einem', 'einer',
+        'why', 'which', 'does', 'from', 'there', 'their', 'when',
+        // French
+        'les', 'des', 'une', 'est', 'que', 'qui', 'pour', 'dans', 'avec', 'pas', 'sur', 'par',
+        'aux', 'ces', 'son', 'ses', 'mais', 'comme', 'quoi', 'quel', 'quelle', 'quels', 'quelles',
+        'comment', 'pourquoi', 'est-ce', "qu'est-ce", 'qu’est-ce', 'sont', 'être', 'avoir', 'fait', 'leur',
+        // Russian
+        'что', 'как', 'для', 'это', 'или', 'так', 'его', 'она', 'они', 'при', 'где', 'кто',
+        'такое', 'чем', 'зачем', 'почему', 'какой', 'какая', 'какое', 'какие', 'если', 'есть', 'был',
+        'была', 'было', 'быть', 'также', 'между', 'когда', 'нет',
+        // Ukrainian
+        'що', 'таке', 'як', 'для', 'або', 'цей', 'ця', 'це', 'ці', 'який', 'яка', 'яке', 'які', 'чому',
+        'навіщо', 'коли', 'якщо', 'між', 'також', 'був', 'була', 'було', 'бути', 'має', 'мають',
+        'від', 'про', 'при', 'але', 'там', 'тут', 'хто', 'де',
+        // Arabic
+        'في', 'من', 'على', 'إلى', 'الى', 'عن', 'مع', 'هذا', 'هذه', 'ذلك', 'التي', 'الذي', 'الذين',
+        'ما', 'ماذا', 'لماذا', 'كيف', 'هل', 'هو', 'هي', 'كان', 'كانت', 'بين', 'أو', 'او', 'أن',
+        'إن', 'لا', 'لم', 'لن', 'عند', 'كل', 'بعد', 'قبل',
     ];
 
     private RagChunkMapper $chunkMapper;

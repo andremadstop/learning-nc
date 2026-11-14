@@ -3466,5 +3466,10 @@ OC.L10N.register(
     "Der Popularisierer" : "Популяризатор",
     "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "Не удалось запустить кампанию. Попробуйте ещё раз.",
     "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Не удалось сохранить твоё решение. Попробуй ещё раз.",
+    "Failed to load pending contributions." : "Не удалось загрузить ожидающие материалы.",
+    "Moderation failed." : "Не удалось выполнить модерацию.",
+    "Answered" : "Отвечено",
+    "Thanks for the report! The question has been passed on for review." : "Спасибо за сообщение! Вопрос передан на проверку.",
+    "The report could not be sent. Please try again later." : "Не удалось отправить сообщение. Пожалуйста, повторите попытку позже.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

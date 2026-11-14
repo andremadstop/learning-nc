@@ -166,6 +166,27 @@ class RagImportController extends Controller {
      * @NoAdminRequired
      */
     public function deleteImported(int $courseId, string $title): DataResponse {
+        return $this->deleteImportedTitle($courseId, $title);
+    }
+
+    /**
+     * Delete imported knowledge chunks by title, the title as query parameter
+     * (DELETE /api/courses/{courseId}/knowledge?title=...).
+     *
+     * Audit #93: a title with '/' ('Kapitel 3 / Netzwerktopologien') cannot travel as a path
+     * segment ('%2F' is refused by Apache or matches no route), so such a source could never
+     * be deleted. The path route above stays for older clients.
+     *
+     * @NoAdminRequired
+     */
+    public function deleteImportedByQuery(int $courseId, string $title = ''): DataResponse {
+        if (trim($title) === '') {
+            return new DataResponse(['error' => 'Title is required'], Http::STATUS_BAD_REQUEST);
+        }
+        return $this->deleteImportedTitle($courseId, $title);
+    }
+
+    private function deleteImportedTitle(int $courseId, string $title): DataResponse {
         try {
             if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);

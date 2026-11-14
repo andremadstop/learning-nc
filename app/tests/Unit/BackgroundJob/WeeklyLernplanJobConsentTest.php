@@ -14,6 +14,7 @@ use OCA\Learning\Service\Llm\LlmPurpose;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IAppConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -51,7 +52,8 @@ class WeeklyLernplanJobConsentTest extends TestCase {
             $notes,
             $profile,
             $this->createMock(LoggerInterface::class),
-            $gateway
+            $gateway,
+            $this->createMock(IAppConfig::class)
         );
     }
 

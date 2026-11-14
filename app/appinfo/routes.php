@@ -339,6 +339,8 @@ return [
         ['name' => 'rag_import#importFile',     'url' => '/api/courses/{courseId}/knowledge/import-file',  'verb' => 'POST'],
         ['name' => 'rag_import#listImported',   'url' => '/api/courses/{courseId}/knowledge',              'verb' => 'GET'],
         ['name' => 'rag_import#deleteImported', 'url' => '/api/courses/{courseId}/knowledge/{title}',      'verb' => 'DELETE'],
+        // audit #93: title as query parameter, so a title with '/' can be deleted
+        ['name' => 'rag_import#deleteImportedByQuery', 'url' => '/api/courses/{courseId}/knowledge', 'verb' => 'DELETE'],
 
         // Pool Generator (Phase 145)
         ['name' => 'pool_generator#providerInfo', 'url' => '/api/pool-generator/provider-info', 'verb' => 'GET'],

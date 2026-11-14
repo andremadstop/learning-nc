@@ -3466,5 +3466,10 @@ OC.L10N.register(
     "Der Popularisierer" : "The Science Communicator",
     "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "The campaign could not be started. Please try again.",
     "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Your decision could not be saved. Please try again.",
+    "Failed to load pending contributions." : "Failed to load pending contributions.",
+    "Moderation failed." : "Moderation failed.",
+    "Answered" : "Answered",
+    "Thanks for the report! The question has been passed on for review." : "Thanks for the report! The question has been passed on for review.",
+    "The report could not be sent. Please try again later." : "The report could not be sent. Please try again later.",
 },
 "nplurals=2; plural=(n != 1);");
