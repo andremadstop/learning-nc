@@ -73,7 +73,8 @@ describe('ExamMode exam card (#47)', () => {
 	it('never promises more questions than the pool has', () => {
 		const vm = instanceOf(ExamMode, { ...examProps, examScope: { questions: 50, minutes: null } })
 		expect(vm.examQuestionCount).toBe(30)
-		expect(vm.examPresets[0].meta).toBe('Fragen: 30 · Zeitlimit: 45 Min. · Bestehensgrenze: 720/900')
+		expect(vm.examPresets[0].meta).toBe('Fragen: 30 · Zeitlimit: 45 Min.')
+		expect(vm.examPresets[0].meta).not.toContain('900')
 	})
 
 	it('keeps the pool-sized card when nothing is configured', () => {

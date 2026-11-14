@@ -3596,7 +3596,7 @@
         "Kurs-Vorgabe: {value}": "القيمة الافتراضية للدورة: {value}",
         "Nach Poolgröße": "حسب حجم المجموعة",
         "Nach Fragenzahl": "حسب عدد الأسئلة",
-        "Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {score}/{max}": "الأسئلة: {questions} · المهلة الزمنية: {minutes} دقيقة · درجة النجاح: {score}/{max}",
+        "Fragen: {questions} · Zeitlimit: {minutes} Min.": "الأسئلة: {questions} · المهلة الزمنية: {minutes} دقيقة",
         "Prüfungsumfang (Vorgabe für alle Pools)": "نطاق الاختبار (القيمة الافتراضية لجميع المجموعات)",
         "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.": "ينطبق على كل اختبار في هذه الدورة لا تملك مجموعته قيمة خاصة بها في قواعد المجموعة. تُسحب الأسئلة عشوائيًا من المجموعة في كل محاولة. الحقول الفارغة: يتبع الاختبار حجم المجموعة كما كان من قبل."
     }

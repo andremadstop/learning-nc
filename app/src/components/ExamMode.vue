@@ -507,7 +507,8 @@ export default {
         // GitHub #47: the course fixed the count, so the card names it exactly.
         meta = t('learning', 'Questions: {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: count, minutes, percent: rule.passPercent })
       } else if (exact) {
-        meta = t('learning', 'Fragen: {questions} · Zeitlimit: {minutes} Min. · Bestehensgrenze: {score}/{max}', { questions: count, minutes, score: this.examPassScore, max: this.examMaxScore })
+        // No 720/900 scale on a card the course has sized: count and minutes only.
+        meta = t('learning', 'Fragen: {questions} · Zeitlimit: {minutes} Min.', { questions: count, minutes })
       } else if (rule) {
         meta = t('learning', 'Questions: up to {questions} · time limit: {minutes} min · pass mark: {percent}%', { questions: count, minutes, percent: rule.passPercent })
       } else {
