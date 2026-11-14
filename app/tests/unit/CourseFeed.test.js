@@ -513,3 +513,62 @@ describe('CourseFeed announcement edit (GitHub #40)', () => {
 		expect(style).toMatch(/\.feed-edit-textarea\s*\{[^}]*width:\s*100%/)
 	})
 })
+
+// Review of #40: after a confirmed delete the row with the Delete button that opened the dialog
+// is gone, and the dialog's focus trap returned focus to that detached button, so keyboard focus
+// fell to <body> (WCAG 2.4.3). Focus now moves to the next remaining Delete button, else the
+// previous one, else the feed itself.
+describe('CourseFeed focus after delete (GitHub #40)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	async function mountWith(items) {
+		axios.get.mockImplementation((url) => Promise.resolve({
+			data: url.endsWith('/feed') ? { items } : { announcements: [] },
+		}))
+		axios.delete.mockResolvedValue({})
+		const el = document.createElement('div')
+		document.body.appendChild(el)
+		const app = createApp(CourseFeed, { courseId: 5, canManage: true })
+		const vm = app.mount(el)
+		await new Promise((r) => setTimeout(r, 0))
+		await nextTick()
+		return { vm, el, unmount: () => { app.unmount(); el.remove() } }
+	}
+
+	async function deleteRow(vm, el, feedId) {
+		const button = el.querySelector(`[data-feed-id="${feedId}"] .feed-delete`)
+		button.focus()
+		expect(document.activeElement).toBe(button)
+		vm.requestDelete(vm.items.find((i) => i.id === feedId))
+		await vm.confirmDelete()
+		await nextTick()
+		await nextTick()
+	}
+
+	it('moves focus to the Delete button of the next announcement', async () => {
+		const { vm, el, unmount } = await mountWith([
+			makeFeedItem({ id: 1, meta: { announcement_id: 9 } }),
+			makeFeedItem({ id: 2, type: 'pool_added', title: 'Pool', meta: { pool_id: 3 } }),
+			makeFeedItem({ id: 3, meta: { announcement_id: 10 } }),
+		])
+		await deleteRow(vm, el, 1)
+		expect(document.activeElement).not.toBe(document.body)
+		expect(document.activeElement).toBe(el.querySelector('[data-feed-id="3"] .feed-delete'))
+		unmount()
+	})
+
+	it('falls back to the previous announcement, then to the feed', async () => {
+		const { vm, el, unmount } = await mountWith([
+			makeFeedItem({ id: 1, meta: { announcement_id: 9 } }),
+			makeFeedItem({ id: 2, meta: { announcement_id: 10 } }),
+		])
+		await deleteRow(vm, el, 2)
+		expect(document.activeElement).toBe(el.querySelector('[data-feed-id="1"] .feed-delete'))
+
+		await deleteRow(vm, el, 1)
+		expect(document.activeElement).toBe(el.querySelector('.course-feed'))
+		unmount()
+	})
+})

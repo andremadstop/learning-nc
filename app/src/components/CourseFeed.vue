@@ -1,5 +1,5 @@
 <template>
-	<div class="course-feed">
+	<div class="course-feed" tabindex="-1">
 		<NcLoadingIcon v-if="loading && items.length === 0" :size="32" />
 		<div v-else-if="items.length === 0" class="feed-empty">
 			{{ t('learning', 'Noch keine Neuigkeiten.') }}
@@ -7,6 +7,7 @@
 		<div v-else class="feed-list">
 			<div v-for="item in items"
 				:key="item.id"
+				:data-feed-id="item.id"
 				class="feed-item"
 				:class="'feed-type--' + item.type">
 				<span class="feed-icon">{{ typeIcon(item.type) }}</span>
@@ -90,6 +91,7 @@
 </template>
 
 <script>
+import { nextTick } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
@@ -227,6 +229,7 @@ export default {
 			const item = this.confirmItem
 			const announcementId = this.announcementIdFor(item)
 			if (!item || announcementId === null) return
+			const focusTarget = this.focusTargetAfterDelete(item, announcementId)
 			this.deleting = true
 			try {
 				await axios.delete(generateUrl('/apps/learning/api/courses/{courseId}/announcements/{announcementId}', {
@@ -237,12 +240,43 @@ export default {
 				this.items = this.items.filter((i) => this.announcementIdFor(i) !== announcementId)
 				this.announcements = this.announcements.filter((a) => Number(a.id) !== announcementId)
 				this.confirmItem = null
+				this.restoreFocusAfterDelete(focusTarget)
 			} catch (error) {
 				console.error('Failed to delete announcement:', error)
 				showError(t('learning', 'Die Ankündigung konnte nicht gelöscht werden.'))
 			} finally {
 				this.deleting = false
 			}
+		},
+
+		/**
+		 * The feed row whose Delete button gets the focus once an announcement is gone: the next
+		 * row that keeps one, else the previous one; null means the feed itself. The dialog's
+		 * focus trap returns focus to the button that opened it, which leaves the DOM with the
+		 * row, so focus fell to <body> (WCAG 2.4.3).
+		 *
+		 * @param {object} item the deleted feed item
+		 * @param {number} announcementId its announcement
+		 * @return {number|string|null} the id of the feed row to focus
+		 */
+		focusTargetAfterDelete(item, announcementId) {
+			const index = this.items.indexOf(item)
+			const keeps = (i) => this.announcementIdFor(i) !== announcementId && this.canDelete(i)
+			const next = this.items.slice(index + 1).find(keeps)
+			const previous = this.items.slice(0, Math.max(index, 0)).reverse().find(keeps)
+			return (next || previous)?.id ?? null
+		},
+
+		restoreFocusAfterDelete(feedId) {
+			nextTick(() => {
+				const root = this.$el
+				if (!root || typeof root.querySelector !== 'function') return
+				const row = feedId === null
+					? null
+					: Array.from(root.querySelectorAll('.feed-item')).find((el) => el.dataset.feedId === String(feedId))
+				const target = row?.querySelector('.feed-delete') || root
+				target.focus()
+			})
 		},
 
 		requestEdit(item) {
@@ -324,6 +358,11 @@ export default {
 <style scoped>
 .course-feed {
 	padding: 16px;
+}
+
+/* focus target after the last announcement was deleted; a click inside draws no frame */
+.course-feed:focus:not(:focus-visible) {
+	outline: none;
 }
 
 .feed-list {
