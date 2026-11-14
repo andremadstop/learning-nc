@@ -3510,5 +3510,7 @@ OC.L10N.register(
     "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "Справочник участников курса в разделе «Участники»: учащиеся могут сделать свой профиль видимым в курсе, предложить помощь и выражать друг другу «Респект».",
     "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen." : "Панель показывает карточки к повторению, прогресс за день и расписание. VirtuProf поможет с вопросами.",
     "slide:student:progress:text:without-gamification" : "Статистика обучения, прогресс за день и итог курса — ты всегда видишь, где стоишь.\n\nТвой преподаватель видит только агрегированные данные курса, а не твой индивидуальный профиль.",
+    "Spielmodi" : "Игровые режимы",
+    "{n} aktiv" : "активно: {n}",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

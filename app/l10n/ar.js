@@ -3510,5 +3510,7 @@ OC.L10N.register(
     "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "دليل أعضاء الدورة في قسم المشاركين: يمكن للمتعلمين إظهار ملفهم الشخصي في الدورة وعرض المساعدة وتبادل الإشادة فيما بينهم.",
     "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen." : "لوحة التحكم تعرض البطاقات المستحقة وتقدم اليوم وجدولك. VirtuProf يساعدك في الأسئلة.",
     "slide:student:progress:text:without-gamification" : "إحصاءات التعلم وتقدم اليوم وإتمام الدورة — ترى دائمًا أين أنت.\n\nمدربك يرى بيانات الدورة المُجمَّعة فقط، لا ملفك الشخصي.",
+    "Spielmodi" : "أوضاع اللعب",
+    "{n} aktiv" : "النشطة: {n}",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -23,6 +23,23 @@ use OCA\Learning\Service\NotFoundException;
 use OCA\Learning\Service\ForbiddenException;
 
 class CourseService {
+    /**
+     * Mode config of a course created while gamification is off (GitHub #36): the defaults the
+     * course view uses (CourseDetail normalizeModeConfig), with duel, gameshow and league off.
+     */
+    private const MODE_CONFIG_WITHOUT_GAMIFICATION = [
+        'training' => true,
+        'leitner' => true,
+        'exam' => true,
+        'duel' => false,
+        'gameshow' => false,
+        'league' => false,
+        'abenteuer' => false,
+        'course_summary' => false,
+        'tools' => true,
+        'classbook' => true,
+    ];
+
     private const AVAILABLE_TOOL_IDS = [
         'subnet',
         'dns',
@@ -928,6 +945,12 @@ class CourseService {
         $course->setCreatedAt($now);
         $course->setUpdatedAt($now);
         $course->setAllowedCampaigns(json_encode(['solarwinds', 'wannacry', 'log4shell', 'phishing_friday', 'ransomware']));
+        // GitHub #36: on an instance without gamification a new course starts without the
+        // competition modes; the instructor can still switch them on. With gamification on the
+        // mode config stays empty (= the defaults), as before. Existing courses are not touched.
+        if (!$this->xpService->isGamificationEnabled()) {
+            $course->setModeConfig(json_encode(self::MODE_CONFIG_WITHOUT_GAMIFICATION));
+        }
 
         return $this->courseMapper->insert($course);
     }

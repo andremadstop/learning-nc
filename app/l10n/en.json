@@ -3509,6 +3509,8 @@
         "Dieses Zertifikat ist abgelaufen.": "This certificate has expired.",
         "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.": "Directory of the course members in the Participants area: learners can make their profile visible in the course, offer help and give each other kudos.",
         "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen.": "Your dashboard shows due cards, today's progress and your schedule. VirtuProf helps you with questions.",
-        "slide:student:progress:text:without-gamification": "Learning stats, today's progress and your course completion — you always see where you stand.\n\nYour instructor sees only aggregated course data, not your individual profile."
+        "slide:student:progress:text:without-gamification": "Learning stats, today's progress and your course completion — you always see where you stand.\n\nYour instructor sees only aggregated course data, not your individual profile.",
+        "Spielmodi": "Game modes",
+        "{n} aktiv": "{n} active"
     }
 }

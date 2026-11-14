@@ -50,7 +50,19 @@ vi.mock('../../src/components/GameshowMode.vue', () => stub('GameshowMode'))
 vi.mock('../../src/components/AbenteuerMode.vue', () => stub('AbenteuerMode'))
 vi.mock('../../src/components/CourseTabLernraum.vue', () => stub('CourseTabLernraum'))
 vi.mock('../../src/components/CourseTabKommunikation.vue', () => stub('CourseTabKommunikation'))
-vi.mock('../../src/components/CourseTabVerwaltung.vue', () => stub('CourseTabVerwaltung'))
+// Renders the gamification switch it receives, so the CourseDetail -> Verwaltung binding is checked.
+vi.mock('../../src/components/CourseTabVerwaltung.vue', async () => {
+	const { h: render } = await import('vue')
+	return {
+		default: {
+			name: 'CourseTabVerwaltung',
+			props: { gamificationEnabled: { type: Boolean, default: true } },
+			render() {
+				return render('div', { class: 'stub-verwaltung', 'data-gamification': String(this.gamificationEnabled) })
+			},
+		},
+	}
+})
 vi.mock('../../src/components/ExamReadiness.vue', () => stub('ExamReadiness'))
 
 import CourseDetail from '../../src/components/CourseDetail.vue'
@@ -212,6 +224,17 @@ describe('CourseDetail — old bookmarks on moved leaves, first load (GitHub #36
 			expect(detail.activeMegaTab).toBe(area)
 			expect(detail.currentTab).toBe(leaf)
 			expect(megaIds(detail)).toContain(area)
+		})
+	}
+})
+
+describe('CourseDetail hands the gamification switch to the course rules (GitHub #36)', () => {
+	for (const enabled of [false, true]) {
+		it(`Verwaltung receives gamificationEnabled=${enabled}`, async () => {
+			const detail = await renderCourse({ props: { userRole: 'instructor', gamificationEnabled: enabled }, course: { is_instructor: true, mode_config: {} } })
+			detail.selectMegaTab('verwaltung')
+			await flush()
+			expect(host.querySelector('.stub-verwaltung')?.dataset.gamification).toBe(String(enabled))
 		})
 	}
 })

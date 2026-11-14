@@ -142,6 +142,7 @@
 				:user-role="userRole"
 				:acts-as-instructor="actsAsInstructor"
 				:active-tab="currentTab"
+				:gamification-enabled="gamificationEnabled"
 				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@refresh-course-detail="fetchCourseDetail" />

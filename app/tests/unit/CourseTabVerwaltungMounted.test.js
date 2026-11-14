@@ -63,7 +63,7 @@ async function flush() {
 describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 	let host, app
 
-	async function mountTab({ activeTab = 'mode-config', modeConfig = {}, courseExtra = {} } = {}) {
+	async function mountTab({ activeTab = 'mode-config', modeConfig = {}, courseExtra = {}, props = {} } = {}) {
 		host = document.createElement('div')
 		document.body.appendChild(host)
 		const tabRef = ref(null)
@@ -76,7 +76,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			...courseExtra,
 		}
 		app = createApp({
-			render: () => h(CourseTabVerwaltung, { ref: tabRef, courseId: 5, course, coursePools: [], userRole: 'instructor', actsAsInstructor: true, activeTab }),
+			render: () => h(CourseTabVerwaltung, { ref: tabRef, courseId: 5, course, coursePools: [], userRole: 'instructor', actsAsInstructor: true, activeTab, ...props }),
 		})
 		app.config.globalProperties.t = globalThis.t
 		app.config.warnHandler = () => {}
@@ -125,6 +125,41 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 		}
 		expect(host.querySelector('[data-test="mode-desc-leitner"]').textContent).toContain('fünf Fächern')
 		expect(host.querySelector('[data-test="gamification-note"]').textContent).toContain('Server-Administration')
+	})
+
+	// GitHub #36: the class register switch is described like every other mode switch
+	it('describes the class register switch', async () => {
+		await mountTab()
+		expect(host.querySelector('[data-test="mode-desc-classbook"]').textContent).toContain('Kudos')
+		expect(modeCheckbox('Klassenbuch').checked).toBe(true)
+	})
+
+	// GitHub #36: without gamification the competition modes sit in a collapsed "Spielmodi" area
+	it('groups duel, gameshow, league and adventure as collapsed game modes with gamification off', async () => {
+		await mountTab({ props: { gamificationEnabled: false }, modeConfig: { duel: true, gameshow: false, league: true, abenteuer: false } })
+		const area = host.querySelector('[data-test="game-modes"]')
+		expect(area).toBeTruthy()
+		expect(area.open).toBe(false)
+		const inArea = Array.from(area.querySelectorAll('input[aria-describedby]')).map((i) => i.getAttribute('aria-describedby'))
+		expect(inArea).toEqual(['mode-desc-duel', 'mode-desc-gameshow', 'mode-desc-league', 'mode-desc-abenteuer'])
+		expect(host.querySelector('[data-test="game-modes-count"]').textContent).toBe('2 aktiv')
+		expect(host.querySelector('[data-test="game-mode-active-duel"]')).toBeTruthy()
+		expect(host.querySelector('[data-test="game-mode-active-gameshow"]')).toBeNull()
+		// the other switches stay outside
+		const outside = Array.from(host.querySelectorAll('.mode-config-section > .mode-toggles > .mode-toggle-row--described input')).map((i) => i.getAttribute('aria-describedby'))
+		expect(outside).toEqual(['mode-desc-training', 'mode-desc-leitner', 'mode-desc-exam', 'mode-desc-classbook', 'mode-desc-course_summary'])
+
+		// the count follows an unsaved switch
+		const league = area.querySelector('input[aria-describedby="mode-desc-league"]')
+		await toggle(league, false)
+		expect(host.querySelector('[data-test="game-modes-count"]').textContent).toBe('1 aktiv')
+	})
+
+	it('keeps the mode list unchanged with gamification on', async () => {
+		await mountTab()
+		expect(host.querySelector('[data-test="game-modes"]')).toBeNull()
+		const order = Array.from(host.querySelectorAll('.mode-toggle-row input[aria-describedby^="mode-desc-"]')).map((i) => i.getAttribute('aria-describedby'))
+		expect(order).toEqual(['mode-desc-training', 'mode-desc-leitner', 'mode-desc-exam', 'mode-desc-duel', 'mode-desc-gameshow', 'mode-desc-league', 'mode-desc-abenteuer', 'mode-desc-classbook', 'mode-desc-course_summary'])
 	})
 
 	it('shows the Leitner sprint setting only while Leitner is on', async () => {

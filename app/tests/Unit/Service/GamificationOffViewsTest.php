@@ -326,6 +326,47 @@ class GamificationOffViewsTest extends TestCase {
         $this->assertTrue($default['classbook'], 'a course saved without the key keeps the classbook');
     }
 
+    // ── New course: no competition modes on an instance without gamification ───
+
+    private function createdModeConfig(bool $gamification): ?string {
+        $courses = $this->createMock(CourseMapper::class);
+        $courses->method('insert')->willReturnArgument(0);
+        $roles = $this->createMock(RoleService::class);
+        $roles->method('isInstructor')->willReturn(true);
+        $service = new CourseService(
+            $courses,
+            $this->noPools(),
+            $this->createMock(CourseMemberMapper::class),
+            $roles,
+            new FakeDbConnection(),
+            $this->createMock(IGroupManager::class),
+            $this->createMock(IUserManager::class),
+            $this->xp($gamification),
+            $this->createMock(BadgeService::class),
+            $this->createMock(StreakService::class),
+            $this->createMock(CurriculumScopeMapper::class),
+            $this->createMock(FeedService::class)
+        );
+        return $service->create('Brandschutz', null, null, 'teacher')->getModeConfig();
+    }
+
+    public function testNewCourseStartsWithoutDuelGameshowAndLeagueWithGamificationOff(): void {
+        $config = json_decode((string)$this->createdModeConfig(false), true);
+        $this->assertIsArray($config);
+        $this->assertFalse($config['duel']);
+        $this->assertFalse($config['gameshow']);
+        $this->assertFalse($config['league']);
+        $this->assertFalse($config['abenteuer'], 'the adventure keeps its default (off)');
+        $this->assertTrue($config['training']);
+        $this->assertTrue($config['leitner']);
+        $this->assertTrue($config['exam']);
+        $this->assertTrue($config['classbook']);
+    }
+
+    public function testNewCourseKeepsTheEmptyModeConfigWithGamificationOn(): void {
+        $this->assertNull($this->createdModeConfig(true));
+    }
+
     // ── Course summary + AI reflection ──────────────────────────────────────────
 
     private function summaryService(bool $gamification, GeminiService $gemini, ?StreakService $streak = null): CourseSummaryService {

@@ -17,7 +17,7 @@
 			<p class="mode-config-hint">{{ t('learning', 'Deaktivierte Modi werden Studierenden nicht angezeigt.') }}</p>
 			<p class="mode-config-hint" data-test="gamification-note">{{ t('learning', 'Gamification (XP, Abzeichen, Serien, Missionen) schaltet die Server-Administration für alle Kurse ein oder aus. Diese Modi bleiben auch ohne Gamification nutzbar, es gibt dann nur keine XP und Abzeichen dafür.') }}</p>
 			<div class="mode-toggles">
-				<div v-for="mode in modeConfigKeys" :key="mode.key" class="mode-toggle-row mode-toggle-row--described">
+				<div v-for="mode in primaryModeKeys" :key="mode.key" class="mode-toggle-row mode-toggle-row--described">
 					<label class="mode-toggle-label">
 						<input
 							type="checkbox"
@@ -29,6 +29,28 @@
 					<small :id="'mode-desc-' + mode.key" class="mode-config-note mode-description" :data-test="'mode-desc-' + mode.key">{{ mode.description }}</small>
 				</div>
 			</div>
+			<!-- GitHub #36: without gamification the competition modes sit in a collapsed area; the
+				heading counts the active ones, so nothing stays switched on unseen. -->
+			<details v-if="!gamificationEnabled" class="game-modes" data-test="game-modes">
+				<summary class="game-modes__summary">
+					<span class="game-modes__title">{{ t('learning', 'Spielmodi') }}</span>
+					<span class="game-modes__count" data-test="game-modes-count">{{ t('learning', '{n} aktiv', { n: activeGameModeCount }) }}</span>
+				</summary>
+				<div class="mode-toggles game-modes__list">
+					<div v-for="mode in gameModeKeys" :key="mode.key" class="mode-toggle-row mode-toggle-row--described">
+						<label class="mode-toggle-label">
+							<input
+								type="checkbox"
+								:checked="modeConfigLocal[mode.key] !== false"
+								:aria-describedby="'mode-desc-' + mode.key"
+								@change="toggleMode(mode.key, $event.target.checked)" />
+							{{ mode.label }}
+							<span v-if="modeConfigLocal[mode.key] !== false" class="game-modes__active" :data-test="'game-mode-active-' + mode.key">{{ t('learning', 'Aktiv') }}</span>
+						</label>
+						<small :id="'mode-desc-' + mode.key" class="mode-config-note mode-description" :data-test="'mode-desc-' + mode.key">{{ mode.description }}</small>
+					</div>
+				</div>
+			</details>
 			<NcButton variant="primary" :disabled="savingModeConfig" @click="saveModeConfig">
 				{{ savingModeConfig ? t('learning', 'Saving...') : t('learning', 'Save') }}
 			</NcButton>
@@ -385,6 +407,9 @@ function firstDuplicateChapterRef(payload) {
 	return null
 }
 
+// GitHub #36: the competition modes, grouped as "Spielmodi" when gamification is off.
+const GAME_MODE_KEYS = ['duel', 'gameshow', 'league', 'abenteuer']
+
 export default {
 	name: 'CourseTabVerwaltung',
 
@@ -397,6 +422,8 @@ export default {
 	props: {
 		// GitHub #35: CourseDetail's single instructor gate (membership, student view off).
 		actsAsInstructor: { type: Boolean, default: false },
+		// GitHub #36: the admin's global gamification switch (App.vue → CourseDetail). Default on.
+		gamificationEnabled: { type: Boolean, default: true },
 		courseId: {
 			type: Number,
 			required: true,
@@ -496,6 +523,19 @@ export default {
 				{ key: 'classbook', label: t('learning', 'Klassenbuch'), description: t('learning', 'Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.') },
 				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab'), description: t('learning', 'Gibt den Lernenden ihre Abschluss-Übersicht frei (Beherrschung, XP, Abzeichen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.') },
 			]
+		},
+		// GitHub #36: with gamification off duel, gameshow, league and adventure are "Spielmodi" in
+		// a collapsed area of their own. With gamification on the list is the same as before.
+		primaryModeKeys() {
+			if (this.gamificationEnabled) return this.modeConfigKeys
+			return this.modeConfigKeys.filter((mode) => !GAME_MODE_KEYS.includes(mode.key))
+		},
+		gameModeKeys() {
+			if (this.gamificationEnabled) return []
+			return this.modeConfigKeys.filter((mode) => GAME_MODE_KEYS.includes(mode.key))
+		},
+		activeGameModeCount() {
+			return this.gameModeKeys.filter((mode) => this.modeConfigLocal[mode.key] !== false).length
 		},
 		// Gate the settings that belong to a mode on the switch as the instructor sees it now.
 		leitnerModeOn() {
@@ -1061,6 +1101,18 @@ export default {
 .mode-toggle-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 .mode-toggle-label input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
 .mode-config-saved { margin-top: 12px; }
+.game-modes { margin: -8px 0 20px; border: 1px solid var(--color-border); border-radius: var(--border-radius-large, 8px); padding: 8px 12px; }
+.game-modes__summary { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; }
+.game-modes__count { color: var(--color-text-maxcontrast); font-weight: 400; font-size: 0.9em; }
+.game-modes__list { margin: 12px 0 4px; }
+.game-modes__active {
+	margin-inline-start: 4px;
+	padding: 0 8px;
+	border-radius: 10px;
+	font-size: 0.8em;
+	background: var(--color-primary-element-light, var(--color-background-dark));
+	color: var(--color-primary-element-light-text, var(--color-main-text));
+}
 .mode-config-note { color: var(--color-text-maxcontrast); font-size: 0.85em; }
 .tool-config-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
 .tool-config-section h3 { margin: 0 0 8px; }
