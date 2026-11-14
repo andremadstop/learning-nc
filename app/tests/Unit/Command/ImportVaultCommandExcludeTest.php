@@ -73,4 +73,21 @@ class ImportVaultCommandExcludeTest extends TestCase {
         $this->assertStringContainsString('Would import 2 files', $display);
         $this->assertStringContainsString('Skipped excluded: 3 (.obsidian/, .venv/, Privat/**, Bilder/**)', $display);
     }
+
+    /**
+     * The README tells admins how to get the pre-5.11 behaviour back; the old hard exclude
+     * matched the folders at any depth, so the documented patterns must as well.
+     */
+    public function testDocumentedExcludeRestoresTheOldSkipAtAnyDepth(): void {
+        foreach (['Eigene-Notizen/geheim.md', 'Kapitel 1/Eigene-Notizen/auch-geheim.md'] as $path) {
+            @mkdir(dirname($this->vault . '/' . $path), 0777, true);
+            file_put_contents($this->vault . '/' . $path, str_repeat('Private Notiz, nicht für den Kurs. ', 3));
+        }
+
+        [, $display] = $this->runImport('**/Eigene-Notizen/**,**/Bilder/**,**/tools/**');
+
+        $this->assertStringContainsString('Would import 2 files', $display);
+        $this->assertStringContainsString('Skipped excluded: 5', $display);
+        $this->assertStringNotContainsString('geheim', $display);
+    }
 }

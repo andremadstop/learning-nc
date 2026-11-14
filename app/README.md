@@ -183,10 +183,22 @@ Students see the courses an instructor enrolled them in and their progress acros
 Import Markdown files from an Obsidian vault into the RAG chunk database for AI-powered explanations.
 
 ```bash
-php occ learning:import-vault --path=/data/my-vault --course-id=20
+php occ learning:import-vault /data/my-vault --course-id=20
 ```
 
 - Recursively processes all `*.md` files
+- Only `.obsidian/` and `.venv/` are always skipped. Up to 5.10.0 the folders `Eigene-Notizen/`,
+  `Bilder/` and `tools/` were skipped as well; they are now imported, and every learner in the
+  course can reach their content through the AI tutor. Keep private folders out with `--exclude`
+  (comma-separated globs, matched against the path in the vault and the file name; `**/` matches
+  at any depth):
+
+  ```bash
+  php occ learning:import-vault /data/my-vault --course-id=20 \
+      --exclude='**/Eigene-Notizen/**,**/Bilder/**,**/tools/**'
+  ```
+
+  Run with `--dry-run` first: the summary lists the excludes that were applied.
 - Cleans Obsidian syntax (frontmatter, wikilinks, callouts, image embeds)
 - Splits into ~500-token chunks with sentence-boundary awareness
 - Idempotent: re-running deletes previous vault chunks for the same course
