@@ -4,6 +4,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\MissionService;
+use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Controller;
@@ -17,6 +18,9 @@ use OCP\IRequest;
 class UserStateController extends Controller {
     private const CACHE_NAMESPACE = 'learning';
     private const USER_STATE_CACHE_PREFIX = 'user_state_';
+    /** Question types the daily challenge card can answer. */
+    private const DAILY_CHALLENGE_TYPES = ['single', 'multi', 'open'];
+    private const DAILY_CHALLENGE_PICK_KEY = 'daily_challenge_pick';
 
     private BadgeService $badgeService;
     private StreakService $streakService;
@@ -25,6 +29,7 @@ class UserStateController extends Controller {
     private IDBConnection $db;
     private ICacheFactory $cacheFactory;
     private IConfig $config;
+    private QuestionService $questionService;
     private ?string $userId;
 
     public function __construct(
@@ -37,6 +42,7 @@ class UserStateController extends Controller {
         IDBConnection $db,
         ICacheFactory $cacheFactory,
         IConfig $config,
+        QuestionService $questionService,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
@@ -47,6 +53,7 @@ class UserStateController extends Controller {
         $this->db = $db;
         $this->cacheFactory = $cacheFactory;
         $this->config = $config;
+        $this->questionService = $questionService;
         $this->userId = $userId;
     }
 
@@ -128,30 +135,13 @@ class UserStateController extends Controller {
         $completed = $statsRow && ($statsRow['last_challenge_date'] ?? null) === $today;
         $wasCorrect = $completed ? (bool)$statsRow['last_challenge_correct'] : null;
 
-        // Get total questions the user has in their Leitner system (deterministic order)
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('l.id', 'l.question_id', 'l.pool_id')
-           ->from('learning_leitner_items', 'l')
-           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($this->userId)))
-           ->orderBy('l.question_id', 'ASC')
-           ->addOrderBy('l.id', 'ASC');
-        $result = $qb->executeQuery();
-        $allItems = $result->fetchAll();
-        $result->closeCursor();
-
-        if (empty($allItems)) {
+        $questionId = $this->pickDailyQuestionId($today, $completed);
+        if ($questionId === null) {
             return new DataResponse([
                 'available' => false,
-                'reason' => 'no_leitner_items',
+                'reason' => $completed ? 'question_deleted' : 'no_leitner_items',
             ]);
         }
-
-        // Deterministic question selection: hash(userId + date) % count
-        $hash = crc32($this->userId . $today);
-        $index = abs($hash) % count($allItems);
-        $selectedItem = $allItems[$index];
-        $questionId = (int)$selectedItem['question_id'];
-        $poolId = (int)$selectedItem['pool_id'];
 
         // Load question + answers + pool name
         $qb = $this->db->getQueryBuilder();
@@ -213,7 +203,7 @@ class UserStateController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
-    public function answerChallenge(?array $answer_ids = null, ?string $answer_text = null): DataResponse {
+    public function answerChallenge(?array $answer_ids = null, ?string $answer_text = null, ?int $question_id = null): DataResponse {
         $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
         $userEnabled = $this->config->getUserValue((string)$this->userId, 'learning', 'daily_challenge', 'yes');
         if ($globalEnabled !== 'yes' || $userEnabled !== 'yes') {
@@ -227,24 +217,29 @@ class UserStateController extends Controller {
             return new DataResponse(['error' => 'Answer text too long (max 2000 chars)'], 400);
         }
 
-        // Reproduce the same question selection (deterministic order)
+        // A used day is final. Checked before the pick, because picking on a used day could move
+        // the pin to another question, which GET would then show as answered, with its solution.
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.question_id')
-           ->from('learning_leitner_items', 'l')
-           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($this->userId)))
-           ->orderBy('l.question_id', 'ASC')
-           ->addOrderBy('l.id', 'ASC');
+        $qb->select('last_challenge_date')
+           ->from('learning_user_stats')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)));
         $result = $qb->executeQuery();
-        $allItems = $result->fetchAll();
+        $doneRow = $result->fetch();
         $result->closeCursor();
-
-        if (empty($allItems)) {
-            return new DataResponse(['error' => 'No questions available'], 400);
+        if ($doneRow && ($doneRow['last_challenge_date'] ?? null) === $today) {
+            return new DataResponse(['error' => 'Already completed today'], 400);
         }
 
-        $hash = crc32($this->userId . $today);
-        $index = abs($hash) % count($allItems);
-        $questionId = (int)$allItems[$index]['question_id'];
+        $questionId = $this->pickDailyQuestionId($today, false);
+        if ($questionId === null) {
+            return new DataResponse(['error' => 'No questions available'], 400);
+        }
+        // The card says which question it shows. If today's question is no longer that one
+        // (a pool was added, removed or unshared since the card loaded), grading the answer
+        // against another question would use up the day on a question nobody saw.
+        if ($question_id !== null && $question_id !== $questionId) {
+            return new DataResponse(['error' => 'The daily challenge has changed', 'question_id' => $questionId], 409);
+        }
 
         // Determine question type for strict type-gating
         $qb = $this->db->getQueryBuilder();
@@ -418,6 +413,73 @@ class UserStateController extends Controller {
             'explanation' => $qRow ? $qRow['explanation'] : null,
             'correct_answer_ids' => $correctIds,
         ]);
+    }
+
+    /**
+     * Today's challenge question for the current user, or null when there is none.
+     *
+     * Candidates are the user's Leitner items whose question type the card can answer (single,
+     * multi, open — a PBQ has no answer rows, so it could never be completed) and whose pool the
+     * user can still read (shares and course memberships can be revoked while the Leitner items
+     * stay, so a later re-share keeps the progress). The pick is hash(user + day) over that list
+     * and is then pinned for the day in the user config, so GET and POST grade the same question
+     * even when the Leitner set changes during the day (audit #13, #14, #146).
+     *
+     * @param bool $completed Today's challenge is done. A pinned question that is no longer
+     *                        available is then not replaced: another question would be shown
+     *                        as answered, with its solution.
+     */
+    private function pickDailyQuestionId(string $today, bool $completed): ?int {
+        $userId = (string)$this->userId;
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('l.question_id', 'q.pool_id')
+           ->from('learning_leitner_items', 'l')
+           ->innerJoin('l', 'learning_questions', 'q', $qb->expr()->eq('l.question_id', 'q.id'))
+           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->in('q.question_type', $qb->createNamedParameter(
+               self::DAILY_CHALLENGE_TYPES,
+               \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY
+           )))
+           ->orderBy('l.question_id', 'ASC')
+           ->addOrderBy('l.id', 'ASC');
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        $access = [];
+        $candidates = [];
+        foreach ($rows as $row) {
+            $poolId = (int)$row['pool_id'];
+            if (!array_key_exists($poolId, $access)) {
+                $access[$poolId] = $this->questionService->hasPoolAccess($poolId, $userId);
+            }
+            if ($access[$poolId]) {
+                $candidates[] = (int)$row['question_id'];
+            }
+        }
+
+        $pinned = $this->config->getUserValue($userId, 'learning', self::DAILY_CHALLENGE_PICK_KEY, '');
+        $pinnedQuestionId = null;
+        if (preg_match('/^(\d{4}-\d{2}-\d{2}):(\d+)$/', $pinned, $m) === 1 && $m[1] === $today) {
+            $pinnedQuestionId = (int)$m[2];
+        }
+        if ($pinnedQuestionId !== null) {
+            if (in_array($pinnedQuestionId, $candidates, true)) {
+                return $pinnedQuestionId;
+            }
+            if ($completed) {
+                return null;
+            }
+        }
+
+        if ($candidates === []) {
+            return null;
+        }
+
+        $hash = crc32($userId . $today);
+        $questionId = $candidates[abs($hash) % count($candidates)];
+        $this->config->setUserValue($userId, 'learning', self::DAILY_CHALLENGE_PICK_KEY, $today . ':' . $questionId);
+        return $questionId;
     }
 
     /**

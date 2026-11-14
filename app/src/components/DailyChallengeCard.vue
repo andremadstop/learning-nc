@@ -73,6 +73,7 @@ export default {
       challengeCountdownSec: 0,
       challengeCountdownTimer: null,
       challengeRefreshInFlight: false,
+      challengeUtcDay: null,
     }
   },
 
@@ -108,7 +109,9 @@ export default {
     async submitChallenge() {
       this.challengeSubmitting = true
       try {
-        const payload = {}
+        // The server checks this against today's pinned question, so a card that went stale
+        // (Leitner set changed in another tab) cannot be graded against a question it never showed.
+        const payload = { question_id: this.dailyChallenge.question.id }
         if (this.dailyChallenge.question.question_type === 'open') {
           payload.answer_text = this.challengeOpenAnswer
         } else {
@@ -121,6 +124,13 @@ export default {
           showSuccess(t('learning', 'Daily Challenge completed! +{n} XP', { n: r.data.xp_earned }))
         }
       } catch (e) {
+        if (e.response?.status === 409) {
+          this.challengeSelectedIds = []
+          this.challengeOpenAnswer = ''
+          await this.loadDailyChallenge()
+          showError(t('learning', 'The daily challenge has changed. Please answer the new question.'))
+          return
+        }
         const msg = e.response?.data?.error || t('learning', 'Failed to submit answer')
         showError(msg)
       } finally {
@@ -150,13 +160,18 @@ export default {
     },
 
     updateChallengeCountdown() {
-      const previous = this.challengeCountdownSec
+      const previousDay = this.challengeUtcDay
       const now = new Date()
       const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0))
+      this.challengeUtcDay = now.toISOString().slice(0, 10)
       this.challengeCountdownSec = Math.max(0, Math.floor((next.getTime() - now.getTime()) / 1000))
+      // Refresh once the UTC day (the server's gmdate day) has actually changed. Checking for a
+      // countdown of 0 fired in the last second BEFORE midnight, so the server still returned the
+      // old, completed challenge, and a throttled background tab skipped that second altogether
+      // (audit #96).
       if (
-        previous > 0
-        && this.challengeCountdownSec === 0
+        previousDay !== null
+        && previousDay !== this.challengeUtcDay
         && this.dailyChallenge
         && this.dailyChallenge.completed
         && !this.challengeRefreshInFlight

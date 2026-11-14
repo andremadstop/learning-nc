@@ -3364,5 +3364,6 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "Новий строк дії почнеться з {date}.",
     "Die Erneuerung öffnet am {date}." : "Поновлення відкриється {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Про сертифікат вирішує лише вибір «Обов'язкові пули» в розділі Адміністрування → Правила курсу → Сертифікація. Ці перемикачі на це не впливають.",
+    "The daily challenge has changed. Please answer the new question." : "Щоденний виклик змінився. Будь ласка, дай відповідь на нове запитання.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

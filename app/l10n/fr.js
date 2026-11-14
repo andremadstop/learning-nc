@@ -3364,5 +3364,6 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "La nouvelle validité prend le relais à partir du {date}.",
     "Die Erneuerung öffnet am {date}." : "Le renouvellement ouvre le {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Seule la sélection « Pools obligatoires » sous Administration → Règles du cours → Certification décide du certificat. Ces options n'y changent rien.",
+    "The daily challenge has changed. Please answer the new question." : "Le défi du jour a changé. Réponds à la nouvelle question.",
 },
 "nplurals=2; plural=(n > 1);");
