@@ -491,9 +491,7 @@ class TrainingServiceTest extends TestCase {
         $poolMapper->expects($this->atLeastOnce())->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
-        // courseId is null, so isVideoGateEnabled is never consulted; the pool→gated-course reverse
-        // lookup is what closes the bypass.
-        $courseService->expects($this->never())->method('isVideoGateEnabled');
+        // courseId is null; the pool→gated-course reverse lookup is what closes the bypass.
         $courseService->expects($this->atLeastOnce())->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
 
         $videoProgressService = $this->createMock(VideoProgressService::class);

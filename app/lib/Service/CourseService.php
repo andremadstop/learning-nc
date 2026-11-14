@@ -551,20 +551,6 @@ class CourseService {
         return $this->coursePoolMapper->update($coursePool);
     }
 
-    /**
-     * Check pool exists
-     */
-    private function poolExists(int $poolId): bool {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*)'))
-            ->from('learning_pools')
-            ->where($qb->expr()->eq('id', $qb->createNamedParameter($poolId)));
-        $result = $qb->executeQuery();
-        $count = (int)$result->fetchOne();
-        $result->closeCursor();
-        return $count > 0;
-    }
-
     private function countQuestionsInPool(int $poolId): int {
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*)'))
@@ -654,15 +640,6 @@ class CourseService {
             throw new ForbiddenException('Not enrolled in this course');
         }
         return $course;
-    }
-
-    /**
-     * Whether the server-side video/material gate is active for a course (Phase 162, B2).
-     * Cheap read, no side effects. Consumed by TrainingService (162-03) before gating the quiz.
-     */
-    public function isVideoGateEnabled(int $courseId): bool {
-        $course = $this->courseMapper->findById($courseId);
-        return $course->getVideoGateEnabled() ?? false;
     }
 
     /**
@@ -996,8 +973,41 @@ class CourseService {
     }
 
     /**
-     * Delete course (creator only)
-     * FIX3-HI-2: Clean up course_pools and course_members before deleting course
+     * Course-scoped rows that go with the course (audit #155). Until then only the pool links
+     * and the members were removed, and announcements, team-lead scopes (myTeamLeadScopes kept
+     * a scope on a course that no longer existed), feed, kudos and videos stayed behind.
+     *
+     * Deliberately kept, with their course_id:
+     *   - learning_certificates, learning_audit_events: compliance evidence (DSGVO-01, Art.17(3)(b));
+     *     the retention job ages them out.
+     *   - learning_assignments: evidence of the obligation; only the active period is closed
+     *     (active_period_key = NULL), as RetentionService expects of a finished period.
+     *   - learning_course_snapshots: a student's summary is "permanent" and stays readable for the
+     *     student without the course (SummaryController::getSnapshot); an archive snapshot is the
+     *     course's backup.
+     *   - learning sessions, duels, gameshows, leagues and support tickets: the users' own history.
+     *
+     * Tables from rename migrations can be missing on an install (Codeberg #7), so each table is
+     * checked before it is touched: a failed DELETE would poison the PostgreSQL transaction.
+     */
+    private const COURSE_SCOPED_TABLES = [
+        'learning_course_pools',
+        'learning_course_members',
+        'learning_course_announcements',
+        'learning_course_curriculum_scopes',
+        'learning_course_question_overrides',
+        'learning_course_exam_slots',
+        'learning_course_schedule',
+        'learning_course_documents',
+        'learning_course_videos',
+        'learning_feed_items',
+        'learning_kudos',
+        'learning_oversight',
+        'learning_rag_chunks',
+    ];
+
+    /**
+     * Delete course (creator only), with its course-scoped rows, in one transaction.
      */
     public function delete(int $courseId, string $userId): void {
         $course = $this->courseMapper->findById($courseId);
@@ -1006,18 +1016,48 @@ class CourseService {
             throw new \Exception('Only the course creator can delete it');
         }
 
-        // Delete related records (no FK CASCADE exists)
-        $qb = $this->db->getQueryBuilder();
-        $qb->delete('learning_course_pools')
-            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId)));
-        $qb->executeStatement();
+        $this->db->beginTransaction();
+        try {
+            // Video progress hangs off the video rows (content_id), not off the course. Completion
+            // proofs are in the compliance chain (course.video.completed), not here.
+            $videoIds = [];
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')->from('learning_course_videos')
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $result = $qb->executeQuery();
+            while (($id = $result->fetchOne()) !== false) {
+                $videoIds[] = (int)$id;
+            }
+            $result->closeCursor();
+            foreach (array_chunk($videoIds, 500) as $chunk) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->delete('learning_video_progress')
+                    ->where($qb->expr()->in('content_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+                $qb->executeStatement();
+            }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->delete('learning_course_members')
-            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId)));
-        $qb->executeStatement();
+            foreach (self::COURSE_SCOPED_TABLES as $table) {
+                if (!$this->db->tableExists($table)) {
+                    continue;
+                }
+                $qb = $this->db->getQueryBuilder();
+                $qb->delete($table)
+                    ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+                $qb->executeStatement();
+            }
 
-        $this->courseMapper->delete($course);
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_assignments')
+                ->set('active_period_key', $qb->createNamedParameter(null, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_NULL))
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $qb->executeStatement();
+
+            $this->courseMapper->delete($course);
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     /**
@@ -1350,7 +1390,7 @@ class CourseService {
             return [];
         }
         $qb = $this->db->getQueryBuilder();
-        $qb->select('user_id', 'total_xp', 'current_level', 'current_streak', 'total_sessions', 'total_mastered', 'last_activity_date')
+        $qb->select('user_id', 'total_xp', 'current_level', 'current_streak', 'longest_streak', 'total_sessions', 'total_mastered', 'last_activity_date')
             ->from('learning_user_stats')
             ->where($qb->expr()->in('user_id', $qb->createNamedParameter($userIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
         $result = $qb->executeQuery();
@@ -1360,6 +1400,7 @@ class CourseService {
                 'total_xp' => (int)$row['total_xp'],
                 'current_level' => (int)$row['current_level'],
                 'current_streak' => (int)$row['current_streak'],
+                'longest_streak' => (int)$row['longest_streak'],
                 'total_sessions' => (int)$row['total_sessions'],
                 'total_mastered' => (int)$row['total_mastered'],
                 'last_activity_date' => $row['last_activity_date'],
@@ -1986,15 +2027,8 @@ class CourseService {
 
             // Signal 4: Lost streak (was >7, now 0) (MEDIUM)
             if ($stats && $stats['current_streak'] === 0) {
-                // Check longest_streak from DB for this signal
-                $qb = $this->db->getQueryBuilder();
-                $qb->select('longest_streak')
-                    ->from('learning_user_stats')
-                    ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($sid)));
-                $result = $qb->executeQuery();
-                $row = $result->fetch();
-                $result->closeCursor();
-                $longestStreak = $row ? (int)$row['longest_streak'] : 0;
+                // From the batch read above, not one query per student (audit #208).
+                $longestStreak = $stats['longest_streak'];
                 if ($longestStreak > 7) {
                     $reasons[] = "Streak verloren (war {$longestStreak})";
                     $score += 1;
