@@ -162,13 +162,14 @@
       </svg>
     </div>
 
-    <div v-if="inviteCount > 0" class="chibi-invite-badge" :aria-label="`${inviteCount} Duel-Einladung(en)`">
+    <div v-if="inviteCount > 0" class="chibi-invite-badge" :aria-label="inviteBadgeLabel(inviteCount)">
       {{ inviteCount > 9 ? '9+' : inviteCount }}
     </div>
   </div>
 </template>
 
 <script>
+import { inviteBadgeLabel } from '../utils/inviteBadge.js'
 import { useA11yStore } from '../stores/a11yStore.js'
 import { playWave } from '../utils/character-animations.js'
 
@@ -214,6 +215,7 @@ export default {
 		if (this.waveTimer) clearTimeout(this.waveTimer)
 	},
 	methods: {
+		inviteBadgeLabel,
 		animationsDisabled() {
 			const prefersReduced = typeof window !== 'undefined'
 				&& typeof window.matchMedia === 'function'

@@ -37,9 +37,11 @@ export function translate(app, text, vars = {}) {
 export function l10nMock() {
 	return {
 		translate,
+		t: translate,
 		translatePlural: (app, single, plural, count, vars = {}) => translate(app, count === 1 ? single : plural, { ...vars, n: count }),
 		getLanguage: () => language,
 		getLocale: () => language,
 		getCanonicalLocale: () => language,
+		isRTL: () => language === 'ar',
 	}
 }

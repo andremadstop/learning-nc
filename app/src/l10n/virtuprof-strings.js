@@ -975,7 +975,7 @@ export const fr = {
   "Eine fällige Karte ist bereit zur Wiederholung, basierend auf ihrer aktuellen Box und dem Zeitplan. Wenn keine Karten fällig sind, zeigt das Dashboard, dass du gerade alles aufgeholt hast.": "Une carte due est prête à être révisée, selon sa boîte actuelle et le calendrier. Lorsqu'aucune carte n'est due, le tableau de bord indique que vous êtes à jour.",
   "Einstellungen & Sprache": "Paramètres & langue",
   "Elimination": "Élimination",
-  "English": "English",
+  "English": "Anglais",
   "Erste Schritte": "Premiers pas",
   "Erstelle Fragenpools, importiere per CSV/JSON oder lass die KI Fragen aus deinem Material generieren.": "Créez des pools de questions, importez via CSV/JSON ou laissez l'IA générer des questions à partir de vos supports.",
   "Erstelle Kurse, verwalte Teilnehmer und behalte den Überblick über den Lernfortschritt.": "Créez des cours, gérez les participants et suivez la progression de l'apprentissage.",
