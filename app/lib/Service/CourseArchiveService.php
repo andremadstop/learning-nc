@@ -47,11 +47,77 @@ class CourseArchiveService {
      * @throws ForbiddenException if user lacks permission
      */
     public function archiveCourse(int $courseId, string $userId): array {
-        $course = $this->courseMapper->findById($courseId);
+        $snapshotId = $this->snapshotCourse($courseId, $userId);
+        $this->markArchived($courseId);
+
+        $this->logger->info('Course {courseId} archived by {userId}, snapshot {snapshotId}', [
+            'courseId' => $courseId,
+            'userId' => $userId,
+            'snapshotId' => $snapshotId,
+            'app' => 'learning',
+        ]);
+
+        return [
+            'snapshot_id' => $snapshotId,
+            'course_id' => $courseId,
+        ];
+    }
+
+    /**
+     * Archive from occ. Whoever runs occ administers the server, so there is no user whose
+     * course rights could be checked; the old command passed the user 'admin', which failed on
+     * every instance without an admin account of that name (audit #135). $actor is recorded as
+     * the snapshot's creator.
+     *
+     * @return array{snapshot_id: int, course_id: int}
+     * @throws DoesNotExistException if course not found
+     */
+    public function archiveCourseFromConsole(int $courseId, string $actor): array {
+        $this->courseMapper->findById($courseId);
+        $snapshotId = $this->insertSnapshot($courseId, $actor);
+        $this->markArchived($courseId);
+
+        $this->logger->info('Course {courseId} archived via occ as {actor}, snapshot {snapshotId}', [
+            'courseId' => $courseId,
+            'actor' => $actor,
+            'snapshotId' => $snapshotId,
+            'app' => 'learning',
+        ]);
+
+        return [
+            'snapshot_id' => $snapshotId,
+            'course_id' => $courseId,
+        ];
+    }
+
+    /**
+     * Take a snapshot of the course without changing it.
+     *
+     * @throws DoesNotExistException if course not found
+     * @throws ForbiddenException if user lacks permission
+     */
+    public function snapshotCourse(int $courseId, string $userId): int {
+        $this->courseMapper->findById($courseId);
 
         // Check instructor/admin permission
         $this->assertInstructorOrAdmin($courseId, $userId);
 
+        return $this->insertSnapshot($courseId, $userId);
+    }
+
+    /**
+     * Set the course status to 'archived'. Inside a transaction of the caller, a rollback undoes
+     * it (the merge archives its source course this way).
+     *
+     * @throws DoesNotExistException if course not found
+     */
+    public function markArchived(int $courseId): void {
+        $course = $this->courseMapper->findById($courseId);
+        $course->setStatus('archived');
+        $this->courseMapper->update($course);
+    }
+
+    private function insertSnapshot(int $courseId, string $userId): int {
         // Create JSON snapshot via DataMobilityService
         $snapshotData = $this->dataMobilityService->exportCourse($courseId);
         $snapshotJson = json_encode($snapshotData, JSON_UNESCAPED_UNICODE);
@@ -70,23 +136,32 @@ class CourseArchiveService {
                 'created_at' => $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT),
             ]);
         $qb->executeStatement();
-        $snapshotId = (int) $this->db->lastInsertId('learning_course_snapshots');
+        return (int) $this->db->lastInsertId('learning_course_snapshots');
+    }
 
-        // Set course status to archived
-        $course->setStatus('archived');
-        $this->courseMapper->update($course);
+    /**
+     * Read a snapshot from occ (see archiveCourseFromConsole()).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getSnapshotFromConsole(int $snapshotId): ?array {
+        $row = $this->findSnapshotRow($snapshotId);
+        return $row === null ? null : $this->formatSnapshotRow($row);
+    }
 
-        $this->logger->info('Course {courseId} archived by {userId}, snapshot {snapshotId}', [
-            'courseId' => $courseId,
-            'userId' => $userId,
-            'snapshotId' => $snapshotId,
-            'app' => 'learning',
-        ]);
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findSnapshotRow(int $snapshotId): ?array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from('learning_course_snapshots')
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($snapshotId, IQueryBuilder::PARAM_INT)));
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
 
-        return [
-            'snapshot_id' => $snapshotId,
-            'course_id' => $courseId,
-        ];
+        return $row === false ? null : $row;
     }
 
     /**
@@ -96,15 +171,8 @@ class CourseArchiveService {
      * @throws ForbiddenException if user lacks permission
      */
     public function getSnapshot(int $snapshotId, string $userId): ?array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from('learning_course_snapshots')
-            ->where($qb->expr()->eq('id', $qb->createNamedParameter($snapshotId, IQueryBuilder::PARAM_INT)));
-        $result = $qb->executeQuery();
-        $row = $result->fetch();
-        $result->closeCursor();
-
-        if ($row === false) {
+        $row = $this->findSnapshotRow($snapshotId);
+        if ($row === null) {
             return null;
         }
 

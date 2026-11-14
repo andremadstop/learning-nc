@@ -28,7 +28,7 @@ class MergeCourseCommand extends Command {
     protected function configure(): void {
         $this
             ->setName('learning:merge-course')
-            ->setDescription('Merge a source course into a target course (copies members, Leitner items, stats)')
+            ->setDescription('Merge a source course into a target course (copies members and Leitner items)')
             ->addArgument('sourceCourseId', InputArgument::REQUIRED, 'Source course ID (will be archived)')
             ->addArgument('targetCourseId', InputArgument::REQUIRED, 'Target course ID (receives data)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview what would happen without making changes')
@@ -112,7 +112,6 @@ class MergeCourseCommand extends Command {
         $output->writeln($prefix . 'Members skipped: ' . $report['members_skipped']);
         $output->writeln($prefix . 'Items copied:    ' . $report['items_copied']);
         $output->writeln($prefix . 'Items skipped:   ' . $report['items_skipped']);
-        $output->writeln($prefix . 'Stats merged:    ' . $report['stats_merged']);
 
         if (isset($report['pool_mappings']) && is_array($report['pool_mappings'])) {
             $output->writeln($prefix . 'Pool mappings:   ' . count($report['pool_mappings']));

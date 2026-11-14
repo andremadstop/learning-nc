@@ -295,15 +295,28 @@ class CoopServiceTest extends TestCase {
 
         $db = new FakeDbConnection([new FakeQueryBuilder(new \OCA\Learning\Tests\Support\FakeResult(), 1)]);
 
+        // The story reached its end: the simulator badge (finished coop sessions) is checked for
+        // every player now, not only at the next simulator in a later session (audit #152)
+        $badged = [];
+        $badgeService = $this->createMock(BadgeService::class);
+        $badgeService->expects($this->exactly(2))
+            ->method('checkAndAward')
+            ->willReturnCallback(function (string $userId, string $trigger) use (&$badged): array {
+                $badged[] = [$userId, $trigger];
+                return [];
+            });
+
         $service = $this->createService(
             db: $db,
             sessionMapper: $sessionMapper,
             playerMapper: $playerMapper,
             voteMapper: $voteMapper,
-            storyEngineService: $storyEngineService
+            storyEngineService: $storyEngineService,
+            badgeService: $badgeService
         );
 
         $payload = $service->submitVote(91, 'alice', 'edge-a', []);
+        $this->assertSame([['alice', 'simulator_complete'], ['bob', 'simulator_complete']], $badged);
 
         $this->assertSame('finished', $payload['session']['status']);
         $this->assertSame('scene-2', $payload['scene']['id']);

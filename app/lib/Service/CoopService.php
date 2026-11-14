@@ -343,16 +343,22 @@ class CoopService {
                 'resolved_at' => time(),
             ];
 
+            $finished = $this->isGraphFinished($nextGraphState);
             $session->setCurrentNodeId((string)($nextGraphState['scene']['id'] ?? $session->getCurrentNodeId()));
-            $session->setStatus($this->isGraphFinished($nextGraphState) ? 'finished' : 'playing');
+            $session->setStatus($finished ? 'finished' : 'playing');
             $session->setLastHeartbeat(time());
             $session->setStateBagFromArray($nextStateBag);
             $this->sessionMapper->update($session);
             $this->voteMapper->deleteBySessionAndNode($session->getId(), $previousNodeId);
 
+            $sessionPlayers = $this->playerMapper->findBySession($session->getId());
+            if ($finished) {
+                $this->awardSessionFinished($session, $sessionPlayers);
+            }
+
             return $this->buildStatePayload(
                 $session,
-                $this->playerMapper->findBySession($session->getId()),
+                $sessionPlayers,
                 $this->decorateGraphState($nextGraphState, $nextStateBag)
             );
         } catch (\Throwable $e) {
@@ -395,6 +401,27 @@ class CoopService {
         $session->setLastHeartbeat($now);
         $this->playerMapper->update($player);
         $this->sessionMapper->update($session);
+    }
+
+    /**
+     * The simulator badge counts finished coop sessions, but was only checked when a simulator
+     * inside a running session completed, so the session that reached the threshold never
+     * counted until the next one (audit #152). Checked for every player once the story reaches
+     * its end. A badge failure must not undo the finished session: the vote has been applied.
+     *
+     * @param CoopPlayer[] $players
+     */
+    private function awardSessionFinished(CoopSession $session, array $players): void {
+        foreach ($players as $player) {
+            try {
+                $this->badgeService->checkAndAward($player->getUserId(), 'simulator_complete', []);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Coop badge check failed: ' . $e->getMessage(), [
+                    'app' => 'learning',
+                    'session_id' => $session->getId(),
+                ]);
+            }
+        }
     }
 
     private function maybeExpireAbandonedSession(CoopSession $session, array $players): CoopSession {

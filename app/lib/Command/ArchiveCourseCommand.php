@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace OCA\Learning\Command;
 
 use OCA\Learning\Service\CourseArchiveService;
-use OCA\Learning\Service\ForbiddenException;
 use OCP\AppFramework\Db\DoesNotExistException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,6 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Usage: php occ learning:archive-course <courseId> [--output=<path>]
  */
 class ArchiveCourseCommand extends Command {
+    public const ACTOR = 'occ';
+
     private CourseArchiveService $archiveService;
 
     public function __construct(CourseArchiveService $archiveService) {
@@ -44,13 +45,14 @@ class ArchiveCourseCommand extends Command {
         $outputPath = $input->getOption('output');
 
         try {
-            // OCC runs as admin context — use 'admin' as userId
-            $result = $this->archiveService->archiveCourse($courseId, 'admin');
+            // occ is the server administrator: no course permission check, and no user named
+            // 'admin' needed (audit #135). The snapshot records 'occ' as its creator.
+            $result = $this->archiveService->archiveCourseFromConsole($courseId, self::ACTOR);
             $output->writeln('<info>Course ' . $courseId . ' archived. Snapshot ID: ' . $result['snapshot_id'] . '</info>');
 
             // Optionally export to file
             if (is_string($outputPath) && $outputPath !== '') {
-                $snapshotData = $this->archiveService->getSnapshot($result['snapshot_id'], 'admin');
+                $snapshotData = $this->archiveService->getSnapshotFromConsole($result['snapshot_id']);
                 if ($snapshotData !== null && isset($snapshotData['snapshot'])) {
                     $json = json_encode($snapshotData['snapshot'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                     if ($json !== false) {
@@ -68,9 +70,6 @@ class ArchiveCourseCommand extends Command {
             return Command::SUCCESS;
         } catch (DoesNotExistException $e) {
             $output->writeln('<error>Course ' . $courseId . ' not found</error>');
-            return Command::FAILURE;
-        } catch (ForbiddenException $e) {
-            $output->writeln('<error>Not authorized: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         } catch (\Throwable $e) {
             $output->writeln('<error>Archive failed: ' . $e->getMessage() . '</error>');

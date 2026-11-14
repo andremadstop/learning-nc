@@ -17,8 +17,8 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Service for merging courses (Jahrgangs-Merge).
- * Copies members, Leitner items (with FSRS values), and user stats
- * from a source course into a target course.
+ * Copies members and Leitner items (with FSRS values) from a source course into a target course.
+ * User stats (XP, level, streak) are per user, not per course, so there is nothing to merge.
  */
 class CourseMergeService {
     private CourseMapper $courseMapper;
@@ -53,7 +53,7 @@ class CourseMergeService {
     /**
      * Merge source course into target course.
      *
-     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, stats_merged: int, snapshot_id: int|null}
+     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, snapshot_id: int|null}
      * @throws DoesNotExistException if course not found
      * @throws ForbiddenException if user is not admin/instructor
      */
@@ -90,7 +90,6 @@ class CourseMergeService {
             'members_skipped' => 0,
             'items_copied' => 0,
             'items_skipped' => 0,
-            'stats_merged' => 0,
             'snapshot_id' => null,
         ];
 
@@ -98,9 +97,9 @@ class CourseMergeService {
             return $this->dryRunReport($sourceMembers, $targetMemberUserIds, $poolMapping, $questionMapping);
         }
 
-        // Safety: archive source course before merge
-        $archiveResult = $this->archiveService->archiveCourse($sourceCourseId, $userId);
-        $report['snapshot_id'] = $archiveResult['snapshot_id'];
+        // Safety: snapshot the source course before the merge. It becomes 'archived' only inside
+        // the transaction, so a failed merge leaves it active (audit #153).
+        $report['snapshot_id'] = $this->archiveService->snapshotCourse($sourceCourseId, $userId);
 
         $this->db->beginTransaction();
         try {
@@ -125,8 +124,8 @@ class CourseMergeService {
             $report['items_copied'] = $itemResult['copied'];
             $report['items_skipped'] = $itemResult['skipped'];
 
-            // 3. Merge user stats
-            $report['stats_merged'] = $this->mergeUserStats($sourceMembers, $targetCourseId);
+            // 3. Archive the source course, in the same transaction
+            $this->archiveService->markArchived($sourceCourseId);
 
             $this->db->commit();
         } catch (\Throwable $e) {
@@ -140,7 +139,6 @@ class CourseMergeService {
             'user' => $userId,
             'members_copied' => $report['members_copied'],
             'items_copied' => $report['items_copied'],
-            'stats_merged' => $report['stats_merged'],
             'app' => 'learning',
         ]);
 
@@ -357,47 +355,13 @@ class CourseMergeService {
     }
 
     /**
-     * Merge user_stats: add XP, recalculate level, keep higher streak.
-     *
-     * @param CourseMember[] $sourceMembers
-     * @return int number of stats merged
-     */
-    private function mergeUserStats(array $sourceMembers, int $targetCourseId): int {
-        $merged = 0;
-
-        foreach ($sourceMembers as $member) {
-            $userId = $member->getUserId();
-
-            // Get current user stats
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('*')
-                ->from('learning_user_stats')
-                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-            $result = $qb->executeQuery();
-            $stats = $result->fetch();
-            $result->closeCursor();
-
-            if ($stats === false) {
-                continue;
-            }
-
-            // Stats are global per user (not per course), so no merge needed for
-            // XP/level/streak — they are already aggregated.
-            // We just ensure the user's stats record exists, which it does.
-            $merged++;
-        }
-
-        return $merged;
-    }
-
-    /**
      * Generate a dry-run report without modifying the database.
      *
      * @param CourseMember[] $sourceMembers
      * @param array<string, true> $targetMemberUserIds
      * @param array<int, int> $poolMapping
      * @param array<int, int> $questionMapping
-     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, stats_merged: int, snapshot_id: null, pool_mappings: array<int, int>, question_mappings_count: int}
+     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, snapshot_id: null, pool_mappings: array<int, int>, question_mappings_count: int}
      */
     private function dryRunReport(
         array $sourceMembers,
@@ -444,7 +408,6 @@ class CourseMergeService {
             'members_skipped' => $membersSkipped,
             'items_copied' => $itemsCopied,
             'items_skipped' => $itemsSkipped,
-            'stats_merged' => count($sourceMembers),
             'snapshot_id' => null,
             'pool_mappings' => $poolMapping,
             'question_mappings_count' => count($questionMapping),
