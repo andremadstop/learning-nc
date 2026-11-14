@@ -125,9 +125,10 @@ describe('CourseFeed.itemTitle()', () => {
 		setTestLanguage('de')
 	})
 
-	it('keeps the stored title of an older row without pool_name, and of instructor items', () => {
+	it('translates an older row without pool_name from its stored title, and keeps instructor items', () => {
 		setTestLanguage('en')
-		expect(instance.itemTitle(makeFeedItem({ type: 'pool_added', title: 'Neuer Fragenpool: Alt', meta: { pool_id: 3 } }))).toBe('Neuer Fragenpool: Alt')
+		// GitHub #48: the pool name is read from the stored German title of a pre-5.11.0 row
+		expect(instance.itemTitle(makeFeedItem({ type: 'pool_added', title: 'Neuer Fragenpool: Alt', meta: { pool_id: 3 } }))).toBe('New question pool: Alt')
 		expect(instance.itemTitle(makeFeedItem({ title: 'Willkommen im Kurs' }))).toBe('Willkommen im Kurs')
 		setTestLanguage('de')
 	})

@@ -108,6 +108,19 @@ describe('GlobalFeed renders feed items with title and type badge', () => {
 		setTestLanguage('de')
 	})
 
+	// GitHub #48: rows written before meta.pool_name existed carry only the German title
+	it('a "new pool" row from before 5.11.0 is shown in the reader\'s language too', () => {
+		const instance = createFeedInstance()
+		setTestLanguage('en')
+		expect(instance.itemTitle({ type: 'pool_added', title: 'Neuer Fragenpool: Pool 1', meta: { pool_id: 3 } })).toBe('New question pool: Pool 1')
+		expect(instance.itemTitle({ type: 'pool_added', title: 'Neuer Fragenpool: R&D: <intern>', meta: null })).toBe('New question pool: R&D: <intern>')
+		// an announcement that happens to start with the prefix is the instructor's own text
+		expect(instance.itemTitle({ type: 'announcement', title: 'Neuer Fragenpool: bald', meta: {} })).toBe('Neuer Fragenpool: bald')
+		// a pool_added title without the prefix is left as it is
+		expect(instance.itemTitle({ type: 'pool_added', title: 'Something else' })).toBe('Something else')
+		setTestLanguage('de')
+	})
+
 	it('typeIcon returns icon for known types', () => {
 		const instance = createFeedInstance()
 		expect(instance.typeIcon('announcement')).toBeTruthy()

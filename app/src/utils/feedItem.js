@@ -38,16 +38,25 @@ export function feedTypeIcon(type) {
 	return TYPE_ICONS[type] || '📌'
 }
 
+/** The German title prefix the server has stored for "new pool" items since 3.4.0. */
+const LEGACY_POOL_ADDED_PREFIX = 'Neuer Fragenpool: '
+
 /**
- * The item title in the reader's language where the server stored what it needs: a "new pool"
- * item carries meta.pool_name since 5.10.x. Older rows and instructor-written items keep their
- * stored title.
+ * The item title in the reader's language: a "new pool" item is stored as its type plus
+ * meta.pool_name (since 5.11.0) and rendered here. Rows written before that carry only the
+ * German title "Neuer Fragenpool: <name>"; the pool name is taken from that title (GitHub #48),
+ * so those rows are translated too without recreating the course. Instructor-written items keep
+ * their stored title.
  *
  * @param {object} item feed item from the API
  * @return {string}
  */
 export function feedItemTitle(item) {
-	const poolName = item?.meta?.pool_name
+	let poolName = item?.meta?.pool_name
+	if (item?.type === 'pool_added' && (typeof poolName !== 'string' || poolName === '')
+		&& typeof item?.title === 'string' && item.title.startsWith(LEGACY_POOL_ADDED_PREFIX)) {
+		poolName = item.title.slice(LEGACY_POOL_ADDED_PREFIX.length)
+	}
 	if (item?.type === 'pool_added' && typeof poolName === 'string' && poolName !== '') {
 		// rendered as text by Vue, so no HTML escaping or sanitizing here ("R&D" must not become
 		// "R&amp;D", "<intern>" must not vanish)
