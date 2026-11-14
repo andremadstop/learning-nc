@@ -86,7 +86,11 @@
         <router-view v-slot="{ route }">
           <!-- ==================== DASHBOARD VIEW (Student) ==================== -->
           <template v-if="route && route.name === 'dashboard'">
+            <!-- GitHub #36: only once the personal settings are in. gamificationEnabled starts as
+              true, so a reload of "Heute" mounted the daily challenge (and its request) and
+              flashed streak and level before the switch arrived. -->
             <StudentDashboard
+              v-if="appInitialized"
               :tools-available="enabledTools.length > 0"
               :gamification-enabled="gamificationEnabled"
               @openSmartQueue="openSmartQueue"
