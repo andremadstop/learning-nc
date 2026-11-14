@@ -468,7 +468,13 @@ class CourseController extends Controller {
     }
 
     /**
+     * GitHub #45: the "Export CSV" button of the at-risk list navigates the browser here (no
+     * request token), so without the CSRF exemption the instructor got "CSRF check failed".
+     * Read-only GET; the instructor gate in getAtRiskStudents (ForbiddenException → 403) and the
+     * rate limit stay in force.
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportAtRiskCsv(int $courseId): Http\Response {

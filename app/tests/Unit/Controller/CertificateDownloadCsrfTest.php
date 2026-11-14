@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Unit\Controller;
 use OCA\Learning\Controller\CertificateController;
 use OCA\Learning\Controller\CertificateReportController;
 use OCA\Learning\Controller\CourseCertificateController;
+use OCA\Learning\Controller\CourseController;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +28,29 @@ class CertificateDownloadCsrfTest extends TestCase {
             'certificate report CSV' => [CertificateReportController::class, 'exportCertReportCsv'],
             'instructor copy of a certificate (#42)' => [CourseCertificateController::class, 'download'],
             'instructor ZIP of the report (#42)' => [CourseCertificateController::class, 'exportZip'],
+            'at-risk CSV on the same Participants tab (#45)' => [CourseController::class, 'exportAtRiskCsv'],
         ];
+    }
+
+    /**
+     * The exemption is only harmless on a GET: a CSRF-exempt route that writes could be triggered
+     * from a foreign page. Every navigation download must be routed as GET only.
+     *
+     * @param class-string $class
+     */
+    #[DataProvider('navigationDownloads')]
+    public function testNavigationDownloadIsRoutedAsGetOnly(string $class, string $method): void {
+        $routes = require __DIR__ . '/../../../appinfo/routes.php';
+        $short = (new \ReflectionClass($class))->getShortName();
+        $name = lcfirst(substr($short, 0, -strlen('Controller'))) . '#' . $method;
+        $verbs = [];
+        foreach ($routes['routes'] as $route) {
+            if ($route['name'] === $name) {
+                $verbs[] = $route['verb'] ?? 'GET';
+            }
+        }
+        $this->assertNotSame([], $verbs, "route $name must exist");
+        $this->assertSame(['GET'], array_values(array_unique($verbs)), "route $name must be GET only");
     }
 
     /** @param class-string $class */
@@ -50,6 +73,7 @@ class CertificateDownloadCsrfTest extends TestCase {
             'group report' => [CertificateReportController::class, 'groupReport'],
             'remind (writes)' => [CertificateReportController::class, 'remindMember'],
             'instructor view (#42)' => [CourseCertificateController::class, 'show'],
+            'at-risk list (#45)' => [CourseController::class, 'atRisk'],
         ];
     }
 

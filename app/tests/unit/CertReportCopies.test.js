@@ -154,6 +154,30 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/zip?' + applied)
 	})
 
+	// GitHub #45: the CSV went out with the filter inputs as they were typed, so after an edit
+	// without "Filter anwenden" it held a different set than the table. It follows the table now.
+	it('Export CSV exports the list the table shows: the applied filter, not unapplied edits', async () => {
+		const input = view.host.querySelector('.cert-report-filters input[type="number"]')
+		input.value = '30'
+		input.dispatchEvent(new Event('input'))
+		buttonByText(view.host, 'Filter anwenden').click()
+		await flush()
+		const applied = reportQueries().at(-1).split('?')[1]
+		expect(applied).toContain('expiringDays=30')
+
+		input.value = '5'
+		input.dispatchEvent(new Event('input'))
+		await nextTick()
+
+		buttonByText(view.host, 'Export CSV').click()
+		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/csv?' + applied)
+	})
+
+	it('Export CSV without a filter carries no query string', () => {
+		buttonByText(view.host, 'Export CSV').click()
+		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/csv')
+	})
+
 	it('View opens the learner certificate through the instructor endpoint, without the LinkedIn action', async () => {
 		expect(view.host.querySelector('.cert-view-modal')).toBeNull()
 		view.host.querySelector('.cert-view').click()

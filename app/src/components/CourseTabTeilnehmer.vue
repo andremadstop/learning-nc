@@ -951,8 +951,8 @@ export default {
 		formatCertScore(score) {
 			return formatScore(score)
 		},
-		// Table fetch and CSV export share buildCertReportQuery() so their filter
-		// params are byte-identical (must-have: table == CSV filtered set).
+		// The table fetch builds its query with buildCertReportQuery() and keeps it as
+		// certAppliedQuery; the CSV and the ZIP reuse that query (must-have: table == CSV filtered set).
 		async fetchCertReport() {
 			try {
 				const qs = buildCertReportQuery(this.certFilters())
@@ -971,8 +971,10 @@ export default {
 				this.$emit('error', t('learning', 'Compliance-Bericht konnte nicht geladen werden.'))
 			}
 		},
+		// GitHub #45: the CSV is the list the table shows — the query the rows were loaded with, not
+		// filter inputs that were edited but not applied yet (same rule as the ZIP, #42).
 		exportCertReportCsv() {
-			const qs = buildCertReportQuery(this.certFilters())
+			const qs = this.certAppliedQuery
 			const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report/export/csv', { courseId: this.courseId })
 			window.location.href = url + (qs ? '?' + qs : '')
 		},
