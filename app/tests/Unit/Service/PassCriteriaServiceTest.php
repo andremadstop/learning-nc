@@ -157,6 +157,51 @@ class PassCriteriaServiceTest extends TestCase {
         ];
     }
 
+    /**
+     * Audit #166: retention nulls user_id on every audit row older than retention_years, so the
+     * course.passed event is no longer found for a learner who still holds a valid certificate.
+     * passedAt then falls back to that certificate's issue time instead of disappearing.
+     */
+    public function testPassedAtFallsBackToTheActiveCertificateWhenTheAuditEventAgedOut(): void {
+        $cert = new Certificate();
+        $cert->setVerificationId('vid-active');
+        $cert->setRevoked(false);
+        $cert->setIssuedAt(1690000000);
+        $cert->setActiveIdemKey(self::USER . ':' . self::COURSE_ID);
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn($cert);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80), 92, null,
+            [new FakeQueryBuilder(new FakeResult())], // getPassedAt: the event lost its user_id
+            $this->createMock(AuditService::class), $issuance, $certMapper
+        );
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame(1690000000, $result->getPassedAt());
+    }
+
+    /** A revoked certificate stands for no pass: without the audit event there is no date. */
+    public function testPassedAtStaysEmptyWhenOnlyARevokedCertificateIsLeft(): void {
+        $cert = new Certificate();
+        $cert->setVerificationId('vid-revoked');
+        $cert->setRevoked(true);
+        $cert->setIssuedAt(1690000000);
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn($cert);
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80), 92, null,
+            [new FakeQueryBuilder(new FakeResult())],
+            $this->createMock(AuditService::class), null, $certMapper
+        );
+
+        $this->assertNull($service->evaluate(self::USER, self::COURSE_ID)->getPassedAt());
+    }
+
     // PASS-01: cert_enabled=false → PassResult::notApplicable() returned, no DB writes
     public function testEvaluateReturnsNotApplicableWhenCertDisabled(): void {
         $audit = $this->createMock(AuditService::class);
@@ -901,8 +946,7 @@ class PassCriteriaServiceTest extends TestCase {
         $lastWasCreated = null;
         $seq = 0;
         $issuance = $this->createMock(IssuanceService::class);
-        // Legacy single-cert path is FORBIDDEN — the impl MUST route through issueIfPassedResult.
-        $issuance->expects($this->never())->method('issueIfPassed');
+        // The only issuance path is issueIfPassedResult (the legacy issueIfPassed is removed, audit #228).
         $issuance->expects($this->exactly(2))
             ->method('issueIfPassedResult')
             ->willReturnCallback(function () use (&$lastWasCreated, &$seq, $cert): IssueResult {

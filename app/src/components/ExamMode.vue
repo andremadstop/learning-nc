@@ -143,10 +143,10 @@
             {{ index + 1 }}
           </div>
         </div>
-        <NcButton variant="error" class="end-exam-btn" @click="confirmEndExam">
+        <NcButton variant="error" class="end-exam-btn" :disabled="lockDenied" @click="confirmEndExam">
           {{ t('learning', 'End Exam') }}
         </NcButton>
-        <NcButton variant="tertiary" class="abort-exam-btn" @click="confirmAbortExam">
+        <NcButton variant="tertiary" class="abort-exam-btn" :disabled="lockDenied" @click="confirmAbortExam">
           {{ t('learning', 'Abort') }}
         </NcButton>
       </div>
@@ -368,9 +368,16 @@ export default {
       examStartTime: null,
       examEndTime: null,
       examDeadlineAt: null,
+      // Server clock minus local clock, in seconds (audit #181): the countdown runs on the
+      // server's time, so a wrong local clock cannot end the exam early or late.
+      clockOffsetSeconds: 0,
+      lastLockedStatusPollAt: 0,
       attemptNo: null,
       resumedFromServer: false,
       lockDenied: false,
+      // Audit #36: this tab was read-only when the deadline came. It stays read-only until the
+      // result is in, even if the answering tab frees the lock while it submits.
+      lockedAtDeadline: false,
       tabLockId: null,
       lockHeartbeat: null,
       statusPollTimer: null,
@@ -880,6 +887,7 @@ export default {
           : (this.isPracticeAttempt ? null : Number(resolvedPreset.timeLimitSeconds));
         this.examDeadlineAt = Number(r.data.exam_deadline_at || 0) || null;
         const serverNow = Number(r.data.server_time || Math.floor(Date.now() / 1000));
+        this.clockOffsetSeconds = r.data.server_time ? Number(r.data.server_time) - Date.now() / 1000 : 0;
         this.timeLeftSeconds = this.examDeadlineAt
           ? Math.max(0, this.examDeadlineAt - serverNow)
           : this.examDurationSeconds;
@@ -916,6 +924,10 @@ export default {
         // Codeberg #9 follow-up: the one start error learners cannot fix themselves — say so.
         if (this.practice && serverError === 'No required pools in this course') {
           showError(t('learning', 'This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.'));
+        } else if (serverError === 'Exam timed out') {
+          // Audit #181: the previous exam's time is up, but its grace period for the last answers
+          // is still running — a start a few seconds later succeeds.
+          showError(t('learning', 'Your previous exam has just run out of time. Please try again in a moment.'));
         } else if (serverError === 'An exam on this pool is already running in another course context') {
           // GitHub #35: a running exam counts for the course it was started in, so the server
           // resumes it only there.
@@ -972,7 +984,7 @@ export default {
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = setInterval(() => {
         if (this.examDeadlineAt) {
-          const now = Math.floor(Date.now() / 1000);
+          const now = Math.floor(this.serverNowSeconds());
           this.timeLeftSeconds = Math.max(0, this.examDeadlineAt - now);
         } else if (this.timeLeftSeconds > 0) {
           this.timeLeftSeconds -= 1;
@@ -981,16 +993,39 @@ export default {
         // Submit a few seconds early: the batch must reach the server before its grace period
         // after the deadline runs out (2026-11 audit H4).
         if (this.timeLeftSeconds <= EXAM_AUTO_SUBMIT_LEAD_SECONDS) {
-          this.finishExam({ forceTimedOut: true });
+          if (this.lockDenied || this.lockedAtDeadline) {
+            // Audit #36: the read-only tab holds none of the answers. It must not submit an
+            // empty batch and complete the session under the answering tab; it waits for the
+            // result instead (the server closes the exam after its grace period). The answering
+            // tab frees the lock as it starts submitting, so this tab stops claiming it: taking
+            // it over would let the next tick complete the exam before that batch has landed.
+            if (!this.lockedAtDeadline) {
+              this.lockedAtDeadline = true;
+              this.stopLockHeartbeat();
+            }
+            this.pollStatusWhileLocked();
+          } else {
+            this.finishExam({ forceTimedOut: true });
+          }
         } else {
           this.timeLeftSeconds = Math.max(0, this.timeLeftSeconds);
         }
       }, 1000);
     },
+    serverNowSeconds() {
+      return Date.now() / 1000 + (this.clockOffsetSeconds || 0);
+    },
+    pollStatusWhileLocked() {
+      const now = Date.now();
+      if (now - this.lastLockedStatusPollAt < 5000) return;
+      this.lastLockedStatusPollAt = now;
+      this.refreshSessionStatus();
+    },
     lockKey() {
       return this.session ? `learning_exam_lock_${this.session}` : null
     },
     claimLock() {
+      if (this.lockedAtDeadline) return false
       const key = this.lockKey()
       if (!key || !this.tabLockId) return true
       const now = Date.now()
@@ -1014,11 +1049,14 @@ export default {
       if (this.lockHeartbeat) clearInterval(this.lockHeartbeat)
       this.lockHeartbeat = setInterval(() => this.claimLock(), 5000)
     },
-    releaseExamLock() {
+    stopLockHeartbeat() {
       if (this.lockHeartbeat) {
         clearInterval(this.lockHeartbeat)
         this.lockHeartbeat = null
       }
+    },
+    releaseExamLock() {
+      this.stopLockHeartbeat()
       const key = this.lockKey()
       if (!key || !this.tabLockId) return
       const raw = localStorage.getItem(key)
@@ -1048,6 +1086,11 @@ export default {
           { params: this.buildStatusParams(false) }
         )
         const s = r.data || {}
+        if (typeof s.server_time === 'number') {
+          // Keep the countdown on the server's clock; the next tick would otherwise overwrite
+          // remaining_seconds with the local clock again (audit #181).
+          this.clockOffsetSeconds = s.server_time - Date.now() / 1000
+        }
         if (typeof s.remaining_seconds === 'number') {
           this.timeLeftSeconds = s.remaining_seconds
         }
@@ -1150,7 +1193,7 @@ export default {
     },
 
     confirmEndExam() {
-      if (this.isLoading) {
+      if (this.isLoading || this.lockDenied) {
         return;
       }
       const shouldEnd = window.confirm(
@@ -1165,11 +1208,14 @@ export default {
     },
 
     confirmAbortExam() {
-      if (this.isLoading) {
+      if (this.isLoading || this.lockDenied) {
         return;
       }
-      const shouldAbort = window.confirm(
-        t('learning', 'Abort the exam? Your progress will be discarded and no result will be saved.')
+      // Audit #31: an aborted counting exam is kept as a used attempt (the attempt limit and the
+      // cooldown apply); only a practice attempt is discarded.
+      const shouldAbort = window.confirm(this.isPracticeAttempt
+        ? t('learning', 'Abort the exam? Your progress will be discarded and no result will be saved.')
+        : t('learning', 'Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply.')
       );
       if (shouldAbort) {
         this.abortExam();
@@ -1177,7 +1223,8 @@ export default {
     },
 
     async finishExam({ forceTimedOut = false } = {}) {
-      if (this.isLoading) return;
+      // Audit #36: only the tab holding the exam lock (and the answers) may complete it.
+      if (this.isLoading || this.lockDenied || this.lockedAtDeadline) return;
       if (this.timerInterval) {
         clearInterval(this.timerInterval);
         this.timerInterval = null;
@@ -1283,8 +1330,10 @@ export default {
             pbqMaxPoints: rv && rv.is_pbq ? (rv.pbq_max_points ?? 0) : null,
             answerDetails: answerDetails,
             explanation: rv && rv.explanation ? rv.explanation : null,
-            instructorNote: q.instructor_note || null,
-            noteVisible: q.note_visible || false,
+            // Audit #239: the attempt payload never carries the note; the server review adds it
+            // after completion, and only when it is marked visible.
+            instructorNote: rv && rv.instructor_note ? rv.instructor_note : null,
+            noteVisible: !!(rv && rv.instructor_note),
           });
         }
         this.detailedResults = results;
@@ -1361,11 +1410,14 @@ export default {
       this.resultsData = null;
       this.detailedResults = [];
       this.examDeadlineAt = null;
+      this.clockOffsetSeconds = 0;
+      this.lastLockedStatusPollAt = 0;
       this.examDurationSeconds = null;
       this.attemptNo = null;
       this.resumedFromServer = false;
       this.practiceRun = false;
       this.lockDenied = false;
+      this.lockedAtDeadline = false;
       this.stopStatusPolling();
       this.releaseExamLock();
       if (this.timerInterval) clearInterval(this.timerInterval);

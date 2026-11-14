@@ -137,18 +137,8 @@ class AiController extends Controller {
         // Block explain during active exam on same pool (prevents oracle bypass)
         $poolId = (int)($question['pool_id'] ?? 0);
         if ($poolId > 0) {
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id')
-               ->from('learning_sessions')
-               ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
-               ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)))
-               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-               // Practice exams never count and must not lock a pool (an untimed one could stay open).
-               ->andWhere($qb->expr()->isNull('exam_kind'))
-               ->andWhere($qb->expr()->isNull('completed_at'));
-            $examResult = $qb->executeQuery();
-            $hasActiveExam = (bool)$examResult->fetch();
-            $examResult->closeCursor();
+            // The shared deadline-aware check (audit #56): an expired timed exam no longer blocks.
+            $hasActiveExam = $this->questionService->isExamActiveOnPool($poolId, (string)$this->userId);
             if ($hasActiveExam) {
                 return new JSONResponse(['error' => 'Not available during active exam'], Http::STATUS_FORBIDDEN);
             }

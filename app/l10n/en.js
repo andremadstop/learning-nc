@@ -3474,5 +3474,7 @@ OC.L10N.register(
     "The daily challenge has changed. Please answer the new question." : "The daily challenge has changed. Please answer the new question.",
     "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "VLAN {id} is the trunk's native VLAN: its frames stay untagged on the trunk as well.",
     "The AI explanation could not be generated. Please try again." : "The AI explanation could not be generated. Please try again.",
+    "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply.",
+    "Your previous exam has just run out of time. Please try again in a moment." : "Your previous exam has just run out of time. Please try again in a moment.",
 },
 "nplurals=2; plural=(n != 1);");

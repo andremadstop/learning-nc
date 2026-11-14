@@ -3474,5 +3474,7 @@ OC.L10N.register(
     "The daily challenge has changed. Please answer the new question." : "Щоденний виклик змінився. Будь ласка, дай відповідь на нове запитання.",
     "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "VLAN {id} — native VLAN транку: його кадри й на транку передаються без тегу.",
     "The AI explanation could not be generated. Please try again." : "Не вдалося створити пояснення ШІ. Спробуйте ще раз.",
+    "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Перервати іспит? Він усе одно зараховується як спроба: ваші відповіді не надсилаються, і діють обмеження на повторне складання.",
+    "Your previous exam has just run out of time. Please try again in a moment." : "Час вашого попереднього іспиту щойно сплив. Спробуйте ще раз за мить.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

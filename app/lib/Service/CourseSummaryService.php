@@ -16,6 +16,9 @@ use OCP\IDBConnection;
  * Students see their own summary. Instructors see a class overview.
  */
 class CourseSummaryService {
+    /** learning_course_snapshots.snapshot_kind of a learner's summary (archives: CourseArchiveService). */
+    public const SNAPSHOT_KIND = 'summary';
+
 
     private IDBConnection $db;
     private CourseMemberMapper $courseMemberMapper;
@@ -224,6 +227,7 @@ class CourseSummaryService {
                 'course_id' => $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
                 'snapshot_data' => $qb->createNamedParameter(json_encode($summary)),
                 'created_at' => $qb->createNamedParameter(time(), IQueryBuilder::PARAM_INT),
+                'snapshot_kind' => $qb->createNamedParameter(self::SNAPSHOT_KIND),
             ]);
         $qb->executeStatement();
         return (int)$qb->getLastInsertId();
@@ -238,6 +242,9 @@ class CourseSummaryService {
             ->from('learning_course_snapshots')
             ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            // The table also holds course archives; an instructor who archived the course must
+            // not get the export back as a summary, nor the narrative written into it (audit #51).
+            ->andWhere($qb->expr()->eq('snapshot_kind', $qb->createNamedParameter(self::SNAPSHOT_KIND)))
             ->orderBy('created_at', 'DESC')
             ->setMaxResults(1);
         $result = $qb->executeQuery();

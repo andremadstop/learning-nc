@@ -3474,5 +3474,7 @@ OC.L10N.register(
     "The daily challenge has changed. Please answer the new question." : "Die tägliche Herausforderung hat sich geändert. Bitte beantworte die neue Frage.",
     "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged.",
     "The AI explanation could not be generated. Please try again." : "Die KI-Erklärung konnte nicht erstellt werden. Bitte versuche es erneut.",
+    "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Prüfung abbrechen? Sie zählt trotzdem als Versuch: Deine Antworten werden nicht eingereicht, und die Regeln für eine Wiederholung gelten.",
+    "Your previous exam has just run out of time. Please try again in a moment." : "Die Zeit deiner vorherigen Prüfung ist gerade abgelaufen. Bitte versuche es gleich noch einmal.",
 },
 "nplurals=2; plural=(n != 1);");

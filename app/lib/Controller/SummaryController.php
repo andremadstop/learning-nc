@@ -135,10 +135,10 @@ class SummaryController extends Controller {
 
             $data = $this->summaryService->getClassSummary($courseId);
             $handle = fopen('php://temp', 'r+');
-            fputcsv($handle, ['User', 'XP', 'Level', 'Accuracy (%)', 'Mastery (%)', 'Sessions', 'Streak', 'Badges', 'Duels Won', 'Swarm Contributions'], ',', '"', '');
+            CsvFormulaGuard::writeRow($handle, ['User', 'XP', 'Level', 'Accuracy (%)', 'Mastery (%)', 'Sessions', 'Streak', 'Badges', 'Duels Won', 'Swarm Contributions']);
 
             foreach ($data['students'] as $uid => $s) {
-                fputcsv($handle, CsvFormulaGuard::row([
+                CsvFormulaGuard::writeRow($handle, [
                     (string)$uid,
                     $s['xp']['total_xp'] ?? 0,
                     $s['xp']['current_level'] ?? 1,
@@ -149,7 +149,7 @@ class SummaryController extends Controller {
                     count($s['badges'] ?? []),
                     $s['duels']['wins'] ?? 0,
                     $s['swarm']['approved_contributions'] ?? 0,
-                ]), ',', '"', '');
+                ]);
             }
 
             rewind($handle);

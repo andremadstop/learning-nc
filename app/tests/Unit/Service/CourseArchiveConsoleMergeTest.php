@@ -58,7 +58,11 @@ final class CourseArchiveConsoleMergeTest extends TestCase {
             public function getQueryBuilder() {
                 return new class {
                     public function __call(string $name, array $args): mixed {
-                        return $name === 'executeStatement' ? 1 : $this;
+                        return match ($name) {
+                            'executeStatement' => 1,
+                            'getLastInsertId' => 3,
+                            default => $this,
+                        };
                     }
                 };
             }

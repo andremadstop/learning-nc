@@ -169,7 +169,7 @@ class AssignmentService {
      *                    caller (RecertPeriodCloseJob) selects it via its expiry query.
      */
     public function closePeriod(string $subjectType, string $subjectId, int $courseId, int $certId): void {
-        // The cert's UNIQUE slot value (mirrors IssuanceService::issueIfPassed/issueIfPassedResult)
+        // The cert's UNIQUE slot value (mirrors IssuanceService::issueIfPassedResult)
         $idemKey   = "{$subjectId}:{$courseId}";
         // The assignment's UNIQUE slot value (mirrors createAssignment)
         $periodKey = "{$courseId}:{$subjectType}:{$subjectId}";

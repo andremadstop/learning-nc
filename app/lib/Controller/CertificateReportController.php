@@ -6,6 +6,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\KeyService;
+use OCA\Learning\Service\CsvFormulaGuard;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
@@ -22,7 +23,7 @@ use Psr\Log\LoggerInterface;
  * CSV download are byte-identical filtered sets. Authorization is per-course (the service gate maps
  * a foreign instructor to ForbiddenException → 403, a missing course to DoesNotExistException → 404).
  * The account identifier and email never appear in any surface — the projection is done in the
- * service and only the safe 5-field DTO reaches here.
+ * service and only the safe DTO (5 display fields plus the expired flag) reaches here.
  *
  * Auth mirrors CertificateController: a `?string $userId` ctor param (NC injects null when
  * unauthenticated) with a null-guard → 401; all endpoints are @NoAdminRequired so a non-admin
@@ -123,14 +124,16 @@ class CertificateReportController extends Controller {
 
         // DE-source header labels (i18n source convention); NO recipient-id / email column.
         $lines = [];
-        $lines[] = $this->csvLine(['Name', 'Bestanden am', 'Score (%)', 'Gültig bis', 'Verifizierungs-ID']);
+        $lines[] = CsvFormulaGuard::line(['Name', 'Bestanden am', 'Score (%)', 'Gültig bis', 'Verifizierungs-ID', 'Status']);
         foreach ($result['rows'] as $r) {
-            $lines[] = $this->csvLine([
+            $lines[] = CsvFormulaGuard::line([
                 (string)$r['display_name'],
                 $r['passed_at'] !== null ? gmdate('Y-m-d', (int)$r['passed_at']) : '',
                 $r['score'] !== '' ? (string)$r['score'] : '—',
                 $r['expires_at'] !== null ? gmdate('Y-m-d', (int)$r['expires_at']) : '',
                 (string)$r['verification_id'],
+                // An expiry filter also lists certificates that already expired (audit #222).
+                !empty($r['expired']) ? 'abgelaufen' : 'gültig',
             ]);
         }
 
@@ -235,30 +238,5 @@ class CertificateReportController extends Controller {
             return null;
         }
         return is_numeric($value) ? (int)$value : null;
-    }
-
-    /**
-     * Encode a row as CSV with formula-injection protection. Copied from DataMobilityService (its
-     * csvLine is private and unreachable by DI): tab-prefix any field starting with = + - @ so a
-     * spreadsheet app never evaluates a cell as a formula.
-     *
-     * @param array<int, string> $fields
-     */
-    private function csvLine(array $fields): string {
-        $fields = array_map(function ($f) {
-            if (is_string($f) && $f !== '' && in_array($f[0], ['=', '+', '-', '@'], true)) {
-                return "\t" . $f;
-            }
-            return $f;
-        }, $fields);
-        $handle = fopen('php://temp', 'r+');
-        if ($handle === false) {
-            return '';
-        }
-        fputcsv($handle, $fields, ',', '"', '');
-        rewind($handle);
-        $line = rtrim((string)stream_get_contents($handle), "\n");
-        fclose($handle);
-        return $line;
     }
 }

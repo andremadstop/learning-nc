@@ -11,11 +11,14 @@ vi.mock('@nextcloud/router', () => ({
 	generateUrl: vi.fn((url, params = {}) => url.replace('{courseId}', String(params.courseId))),
 }))
 
+vi.mock('@nextcloud/dialogs', () => ({ showError: vi.fn() }))
+
 vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
 vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => ({ default: { name: 'NcLoadingIcon', template: '<span />' } }))
 vi.mock('@nextcloud/vue/components/NcNoteCard', () => ({ default: { name: 'NcNoteCard', template: '<div><slot /></div>' } }))
 
 import axios from '@nextcloud/axios'
+import { showError } from '@nextcloud/dialogs'
 import CourseSummary from '../../src/components/CourseSummary.vue'
 
 globalThis.t = (app, text, vars = {}) => {
@@ -226,6 +229,20 @@ describe('CourseSummary', () => {
 		vi.runAllTimers()
 		expect(instance.snapshotSaved).toBe(false)
 		vi.useRealTimers()
+	})
+
+	// Audit #95: the error card replaced the whole summary, so a failed save hid the data.
+	it('a failed snapshot save keeps the loaded summary and shows a toast', async () => {
+		const summary = { mastery: { mastery_rate: 80 }, badges: [], trouble_spots: [] }
+		const instance = createInstance({ summary })
+		axios.post.mockRejectedValueOnce({ response: { status: 429, data: {} } })
+
+		await instance.saveSnapshot()
+
+		expect(instance.error).toBe('')
+		expect(instance.summary).toBe(summary)
+		expect(instance.savingSnapshot).toBe(false)
+		expect(showError).toHaveBeenCalledWith('Snapshot konnte nicht gespeichert werden.')
 	})
 })
 

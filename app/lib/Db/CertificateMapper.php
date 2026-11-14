@@ -138,7 +138,8 @@ class CertificateMapper extends QBMapper {
      * @param int|null $from          issued_at >= from (inclusive), when not null
      * @param int|null $to            issued_at <= to (inclusive), when not null
      * @param int|null $expiresBefore absolute unix cutoff: expires_at IS NOT NULL AND <= cutoff
-     *                                (already-expired INCLUDED; never-expiring EXCLUDED), when not null
+     *                                (already-expired INCLUDED — the report marks them `expired`;
+     *                                never-expiring EXCLUDED), when not null
      * @return Certificate[]
      */
     public function findByCourseId(int $courseId, ?int $from, ?int $to, ?int $expiresBefore): array {
@@ -168,16 +169,16 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
-     * Certificates for a specific course restricted to the given user IDs, with optional expiry filter.
+     * The non-revoked certificates of a course, restricted to the given user IDs. No expiry filter:
+     * the group report classifies every certificate itself (audit #222 removed the unused cutoff).
      *
      * Empty $userIds returns [] immediately — no IN () malformed query.
      * Chunks to 999 per NC QueryBuilder PARAM_STR_ARRAY limits.
      *
      * @param list<string> $userIds
-     * @param int|null     $expiresBefore absolute unix cutoff (same semantics as findByCourseId)
      * @return Certificate[]
      */
-    public function findByCourseIdForUsers(int $courseId, array $userIds, ?int $expiresBefore): array {
+    public function findByCourseIdForUsers(int $courseId, array $userIds): array {
         if ($userIds === []) {
             return [];
         }
@@ -189,10 +190,6 @@ class CertificateMapper extends QBMapper {
                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
                ->andWhere($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
                ->andWhere($qb->expr()->in('user_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
-            if ($expiresBefore !== null) {
-                $qb->andWhere($qb->expr()->isNotNull('expires_at'))
-                   ->andWhere($qb->expr()->lte('expires_at', $qb->createNamedParameter($expiresBefore, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
-            }
             $out = array_merge($out, $this->findEntities($qb));
         }
         return $out;

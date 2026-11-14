@@ -47,6 +47,7 @@ final class CheatSheetTableRoutedQueryBuilder extends FakeQueryBuilder {
  * Every other answer-bearing read path withholds them during an active exam.
  */
 class LernprofilCheatSheetExamTest extends TestCase {
+    /** @param list<int|array<string, mixed>> $openExamPools pool id, or a full session row */
     private function cheatSheet(array $openExamPools): array {
         $rows = [
             'learning_pools' => [['id' => 42], ['id' => 43]],
@@ -63,7 +64,7 @@ class LernprofilCheatSheetExamTest extends TestCase {
                 ['question_id' => 10, 'text' => 'Exam answer'],
                 ['question_id' => 11, 'text' => 'Other answer'],
             ],
-            'learning_sessions' => array_map(static fn (int $id): array => ['pool_id' => $id], $openExamPools),
+            'learning_sessions' => array_map(static fn (int|array $exam): array => is_int($exam) ? ['pool_id' => $exam] : $exam, $openExamPools),
         ];
         $builders = [];
         for ($i = 0; $i < 20; $i++) {
@@ -87,5 +88,18 @@ class LernprofilCheatSheetExamTest extends TestCase {
 
         $this->assertSame([42, 43], array_column($sheet['spots'], 'pool_id'));
         $this->assertSame(['Exam answer'], $sheet['spots'][0]['correct_answers']);
+    }
+
+    /** Audit #56: a timed exam past its deadline (never closed) no longer hides the pool. */
+    public function testAnExpiredTimedExamNoLongerHidesThePool(): void {
+        $sheet = $this->cheatSheet([['pool_id' => 42, 'started_at' => time() - 7200, 'time_limit_seconds' => 1800]]);
+
+        $this->assertSame([42, 43], array_column($sheet['spots'], 'pool_id'));
+    }
+
+    public function testARunningTimedExamStillHidesThePool(): void {
+        $sheet = $this->cheatSheet([['pool_id' => 42, 'started_at' => time() - 60, 'time_limit_seconds' => 1800]]);
+
+        $this->assertSame([43], array_column($sheet['spots'], 'pool_id'));
     }
 }
