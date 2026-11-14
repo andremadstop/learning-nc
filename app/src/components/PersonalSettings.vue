@@ -37,15 +37,6 @@
       </div>
 
       <div class="field-row">
-        <label for="ui-language">{{ t('learning', 'UI Language') }}</label>
-        <select id="ui-language" v-model="form.uiLanguage" class="nc-input">
-          <option value="">{{ t('learning', 'System default') }}</option>
-          <option value="de">{{ t('learning', 'German (Deutsch)') }}</option>
-          <option value="en">{{ t('learning', 'English') }}</option>
-        </select>
-      </div>
-
-      <div class="field-row">
         <label for="content-language">{{ t('learning', 'Content Language') }}</label>
         <select id="content-language" v-model="form.contentLanguage" class="nc-input">
           <option value="">{{ t('learning', 'Original content') }}</option>
@@ -158,11 +149,19 @@
           @update:model-value="onAnimationsEnabledChange(!$event)" />
       </div>
 
-      <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
+      <!-- NcNoteCard has no action prop or event; the retry button lives in its slot (audit #104). -->
+      <NcNoteCard v-if="error" type="error">
+        <p>{{ error }}</p>
+        <NcButton v-if="loadFailed" class="retry-load" @click="load">
+          {{ t('learning', 'Retry') }}
+        </NcButton>
+      </NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
       <div class="actions">
-        <NcButton variant="primary" :disabled="saving" @click="save">
+        <!-- After a failed load the form holds defaults, not the user's settings: saving would
+             overwrite every stored value with them (audit #104). -->
+        <NcButton variant="primary" :disabled="saving || loadFailed" @click="save">
           {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
         </NcButton>
       </div>
@@ -506,9 +505,9 @@ export default {
       saving: false,
       error: '',
       saved: false,
+      loadFailed: false,
       form: {
         dailyChallengeEnabled: true,
-        uiLanguage: '',
         contentLanguage: '',
         virtuProfEnabled: true,
         virtuProfTtsEnabled: false,
@@ -719,6 +718,7 @@ export default {
     async load() {
       this.loading = true
       this.error = ''
+      this.loadFailed = false
       try {
         const [settingsResponse, virtuProfResponse] = await Promise.all([
           axios.get(generateUrl('/apps/learning/api/settings/personal')),
@@ -727,7 +727,6 @@ export default {
         const data = settingsResponse.data || {}
         const virtuProfData = virtuProfResponse.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
-        this.form.uiLanguage = ['de', 'en', ''].includes(data.ui_language) ? data.ui_language : ''
         this.form.contentLanguage = ['de', 'en', 'ru', 'ar', ''].includes(data.content_language) ? data.content_language : ''
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
         this.form.virtuProfTtsEnabled = virtuProfData.tts_enabled === true
@@ -746,6 +745,7 @@ export default {
         this.form.skinId = virtuProfData.skin || 'nova'
         useSkinStore().loadFromServerPayload(virtuProfData)
       } catch (e) {
+        this.loadFailed = true
         this.error = t('learning', 'Failed to load settings')
       } finally {
         this.loading = false
@@ -826,6 +826,9 @@ export default {
       useSkinStore().setSkin(id)
     },
     async save() {
+      if (this.loadFailed) {
+        return
+      }
       this.saving = true
       this.error = ''
       this.saved = false
@@ -833,7 +836,6 @@ export default {
         await Promise.all([
           axios.put(generateUrl('/apps/learning/api/settings/personal'), {
             daily_challenge: this.form.dailyChallengeEnabled ? 'yes' : 'no',
-            ui_language: ['de', 'en'].includes(this.form.uiLanguage) ? this.form.uiLanguage : '',
             content_language: ['de', 'en', 'ru', 'ar'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
             virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
             notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',

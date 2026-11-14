@@ -1311,7 +1311,9 @@ export default {
 					this.curriculumSaved = false
 				}, 2500)
 			} catch (err) {
-				// Keep the current selection intact and let the user retry.
+				// Keep the current selection intact and let the user retry — but say that it
+				// failed: the spinner just stopped, and the instructor took it as saved (audit #179).
+				this.$emit('error', t('learning', 'Die Kapitelauswahl konnte nicht gespeichert werden.'))
 			} finally {
 				this.savingCurriculum = false
 			}

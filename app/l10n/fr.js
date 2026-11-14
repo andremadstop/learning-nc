@@ -3476,5 +3476,8 @@ OC.L10N.register(
     "The AI explanation could not be generated. Please try again." : "L’explication par l’IA n’a pas pu être générée. Veuillez réessayer.",
     "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Abandonner l'examen ? Il compte quand même comme une tentative : vos réponses ne sont pas envoyées et les limites pour repasser l'examen s'appliquent.",
     "Your previous exam has just run out of time. Please try again in a moment." : "Le temps de votre examen précédent vient d'expirer. Veuillez réessayer dans un instant.",
+    "Die Kapitelauswahl konnte nicht gespeichert werden." : "La sélection des chapitres n'a pas pu être enregistrée.",
+    "Talk-Token konnte nicht gespeichert werden." : "Le jeton Talk n'a pas pu être enregistré.",
+    "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt." : "Jeton Talk invalide : seules les lettres et les chiffres sont autorisés.",
 },
 "nplurals=2; plural=(n > 1);");

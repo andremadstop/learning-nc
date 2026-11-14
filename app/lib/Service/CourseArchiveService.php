@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\DataMobilityService;
@@ -18,6 +19,9 @@ use Psr\Log\LoggerInterface;
 class CourseArchiveService {
     /** learning_course_snapshots.snapshot_kind of a course archive (summaries: CourseSummaryService). */
     public const SNAPSHOT_KIND = 'archive';
+
+    /** Snapshot creator recorded for occ / system actions that have no Nextcloud user. */
+    public const SYSTEM_ACTOR = 'occ';
 
     private CourseMapper $courseMapper;
     private CourseMemberMapper $courseMemberMapper;
@@ -106,6 +110,17 @@ class CourseArchiveService {
         $this->assertInstructorOrAdmin($courseId, $userId);
 
         return $this->insertSnapshot($courseId, $userId);
+    }
+
+    /**
+     * Snapshot without a permission check, for occ (see archiveCourseFromConsole()); the merge
+     * command takes its safety snapshot this way (audit #8). $actor is recorded as the creator.
+     *
+     * @throws DoesNotExistException if course not found
+     */
+    public function snapshotCourseFromConsole(int $courseId, string $actor): int {
+        $this->courseMapper->findById($courseId);
+        return $this->insertSnapshot($courseId, $actor);
     }
 
     /**

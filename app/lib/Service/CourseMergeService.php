@@ -63,6 +63,26 @@ class CourseMergeService {
             throw new ForbiddenException('Only instructors/admins can merge courses');
         }
 
+        return $this->doMerge($sourceCourseId, $targetCourseId, $userId, $dryRun);
+    }
+
+    /**
+     * Merge on behalf of the system (occ): there is no acting Nextcloud user, so no permission
+     * check runs and the safety snapshot records CourseArchiveService::SYSTEM_ACTOR.
+     * Never call this from a controller — use mergeCourse() with the session user.
+     *
+     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, snapshot_id: int|null}
+     * @throws DoesNotExistException if course not found
+     */
+    public function mergeCourseAsSystem(int $sourceCourseId, int $targetCourseId, bool $dryRun = false): array {
+        return $this->doMerge($sourceCourseId, $targetCourseId, null, $dryRun);
+    }
+
+    /**
+     * @param string|null $userId acting user; null = system (occ), already authorised by the caller
+     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, snapshot_id: int|null}
+     */
+    private function doMerge(int $sourceCourseId, int $targetCourseId, ?string $userId, bool $dryRun): array {
         // Validate both courses exist
         $sourceCourse = $this->courseMapper->findById($sourceCourseId);
         $targetCourse = $this->courseMapper->findById($targetCourseId);
@@ -98,8 +118,11 @@ class CourseMergeService {
         }
 
         // Safety: snapshot the source course before the merge. It becomes 'archived' only inside
-        // the transaction, so a failed merge leaves it active (audit #153).
-        $report['snapshot_id'] = $this->archiveService->snapshotCourse($sourceCourseId, $userId);
+        // the transaction, so a failed merge leaves it active (audit #153). From occ there is no
+        // user to check (audit #8).
+        $report['snapshot_id'] = $userId === null
+            ? $this->archiveService->snapshotCourseFromConsole($sourceCourseId, CourseArchiveService::SYSTEM_ACTOR)
+            : $this->archiveService->snapshotCourse($sourceCourseId, $userId);
 
         $this->db->beginTransaction();
         try {
@@ -136,7 +159,7 @@ class CourseMergeService {
         $this->logger->info('Course merge {source} -> {target} by {user}: {members_copied} members, {items_copied} items', [
             'source' => $sourceCourseId,
             'target' => $targetCourseId,
-            'user' => $userId,
+            'user' => $userId ?? CourseArchiveService::SYSTEM_ACTOR,
             'members_copied' => $report['members_copied'],
             'items_copied' => $report['items_copied'],
             'app' => 'learning',

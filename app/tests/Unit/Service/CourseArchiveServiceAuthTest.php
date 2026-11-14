@@ -101,4 +101,14 @@ class CourseArchiveServiceAuthTest extends TestCase {
         $this->expectExceptionMessage('passed-auth');
         $service->listSnapshots(self::COURSE_ID, 'carol');
     }
+
+    /**
+     * Audit #8: the occ path has no Nextcloud user and must not depend on one — even when no
+     * user passes any role check, archiveCourseFromConsole reaches the snapshot export.
+     */
+    public function testSystemArchiveNeedsNoUser(): void {
+        $service = $this->makeService(false, false, 'alice', null);
+        $this->expectExceptionMessage('passed-auth');
+        $service->archiveCourseFromConsole(self::COURSE_ID, CourseArchiveService::SYSTEM_ACTOR);
+    }
 }

@@ -255,6 +255,14 @@ class DuelService {
         return $this->buildState($session, $userId, $contentLanguage);
     }
 
+    /**
+     * Submit an answer for the current question.
+     *
+     * $answeredAt (the client's Date.now()) is not used: applyScoring compares the two players'
+     * times for the speed bonus, and two client clocks are not comparable — a device running
+     * behind always counted as faster, and a forged value won every both-correct question
+     * (audit #22, #73). The server receipt time is stored instead, as in GameshowService.
+     */
     public function submitAnswer(string $code, string $userId, int $answerId, int $answeredAt, ?string $lang = null): array {
         $session = $this->sessionMapper->findByCode($code);
         $this->assertParticipant($session, $userId);
@@ -295,7 +303,7 @@ class DuelService {
         $answer->setQuestionIndex($questionIndex);
         $answer->setPlayerUid($userId);
         $answer->setAnswerCorrect($answerCorrect);
-        $answer->setAnsweredAt($answeredAt);
+        $answer->setAnsweredAt(intval(microtime(true) * 1000));
         $answer->setPointsEarned(0);
         $this->answerMapper->insert($answer);
 
@@ -583,6 +591,13 @@ class DuelService {
             $allIds[] = (int)$row['id'];
         }
         $result->closeCursor();
+
+        // Every caller (createDuel, createInvite, rematch) needs at least one playable question:
+        // an empty list made an 'active' duel without a current question that never finished
+        // (audit #74, e.g. a PBQ-only pool).
+        if ($allIds === []) {
+            throw new \RuntimeException('No questions available in this pool');
+        }
 
         shuffle($allIds);
         return array_slice($allIds, 0, $numQuestions);

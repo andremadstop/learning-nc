@@ -58,7 +58,7 @@ class SettingsControllerLanguageTest extends TestCase {
     private function save(string $contentLanguage): string {
         $this->written = [];
         $controller = $this->makeController();
-        $response = $controller->savePersonal('yes', '', 'yes', $contentLanguage);
+        $response = $controller->savePersonal('yes', 'yes', $contentLanguage);
 
         $this->assertSame(200, $response->getStatus());
 
@@ -87,5 +87,21 @@ class SettingsControllerLanguageTest extends TestCase {
         // Guards the deliberate gap above: if someone widens the whitelist without the
         // migration, this turns red and points at the reason.
         $this->assertSame('', $this->save('uk'));
+    }
+
+    /**
+     * Audit #12/#61/#218: 'UI Language' was stored and never read. An old client may still send
+     * it; it is accepted and not stored, and the settings no longer report it.
+     */
+    public function testUiLanguageIsNeitherStoredNorReported(): void {
+        $this->written = [];
+        $controller = $this->makeController();
+        $this->config->method('getUserValue')->willReturnArgument(3);
+
+        $response = $controller->savePersonal('yes', 'yes', 'de', 'yes', 'no', 'yes', 'en');
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertArrayNotHasKey('ui_language', $this->written);
+        $this->assertArrayNotHasKey('ui_language', $controller->getPersonal()->getData());
     }
 }

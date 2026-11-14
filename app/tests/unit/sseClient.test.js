@@ -110,6 +110,26 @@ describe('createSseClient', () => {
 		client.close();
 	});
 
+	it('makes no extra request after a reconnect: the stream sends the state itself (audit #119)', () => {
+		const fetchSpy = vi.fn(() => Promise.resolve({ ok: false }));
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = fetchSpy;
+		try {
+			const onState = vi.fn();
+			const client = createSseClient('/apps/learning/api/sse/duel/RECON', { onState });
+			FakeEventSource.instances[0].emit('error');
+			vi.advanceTimersByTime(1000);
+			FakeEventSource.instances[1].emit('open');
+			FakeEventSource.instances[1].emit('state', { data: JSON.stringify({ code: 'RECON' }) });
+
+			expect(fetchSpy).not.toHaveBeenCalled();
+			expect(onState).toHaveBeenCalledWith({ code: 'RECON' });
+			client.close();
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
 	it('waits for the browser to come back online before reconnecting', () => {
 		Object.defineProperty(globalThis.navigator, 'onLine', {
 			value: false,

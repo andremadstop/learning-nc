@@ -3476,5 +3476,8 @@ OC.L10N.register(
     "The AI explanation could not be generated. Please try again." : "Не вдалося створити пояснення ШІ. Спробуйте ще раз.",
     "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Перервати іспит? Він усе одно зараховується як спроба: ваші відповіді не надсилаються, і діють обмеження на повторне складання.",
     "Your previous exam has just run out of time. Please try again in a moment." : "Час вашого попереднього іспиту щойно сплив. Спробуйте ще раз за мить.",
+    "Die Kapitelauswahl konnte nicht gespeichert werden." : "Не вдалося зберегти вибір розділів.",
+    "Talk-Token konnte nicht gespeichert werden." : "Не вдалося зберегти токен Talk.",
+    "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt." : "Недійсний токен Talk: дозволено лише літери та цифри.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

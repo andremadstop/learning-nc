@@ -75,8 +75,10 @@
             <p class="section-label">{{ t('learning', 'Tagesfortschritt') }}</p>
             <div class="progress-stats">
               <div class="progress-stat">
-                <span class="progress-value">{{ dailyXp }}</span>
-                <span class="progress-label">XP {{ t('learning', 'heute') }}</span>
+                <!-- The server reports cards reviewed today, not XP: the tile said '12 XP heute'
+                     for 12 cards (audit #188). -->
+                <span class="progress-value">{{ dailyCards }}</span>
+                <span class="progress-label">{{ t('learning', 'cards') }} {{ t('learning', 'heute') }}</span>
               </div>
               <div class="progress-stat">
                 <span class="progress-value">{{ dailySessions }}</span>
@@ -214,7 +216,7 @@ export default {
     streakActiveToday() {
       return !!this.userState.streak.is_active_today
     },
-    dailyXp() {
+    dailyCards() {
       return this.userState.daily_progress?.cards_reviewed_today || 0
     },
     dailySessions() {

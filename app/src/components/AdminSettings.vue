@@ -599,7 +599,7 @@ export default {
       this.ticketError = ''
       this.ticketSuccess = ''
       try {
-        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 100, target: 'admin' } })
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 100 } })
         this.supportTickets = Array.isArray(res.data?.tickets) ? res.data.tickets : []
         const nextAnswers = {}
         this.supportTickets.forEach(ticket => {

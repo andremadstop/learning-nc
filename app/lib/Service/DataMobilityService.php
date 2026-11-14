@@ -241,7 +241,10 @@ class DataMobilityService {
             $level = (int)($us['current_level'] ?? 1);
             $streak = (int)($us['current_streak'] ?? 0);
             $totalSessions = (int)($us['total_sessions'] ?? 0);
-            $totalMastered = (int)($us['total_mastered'] ?? 0);
+            // Mastered cards in this course's pools, like the other per-course columns; the
+            // global learning_user_stats.total_mastered also counted other courses and private
+            // pools, and the course query result was thrown away (audit #158).
+            $totalMastered = array_sum($masteryStats[$userId] ?? []);
             $lastActivity = (string)($us['last_activity_date'] ?? '');
 
             // Aggregate session stats across all pools

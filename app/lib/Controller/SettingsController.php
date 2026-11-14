@@ -270,7 +270,6 @@ class SettingsController extends Controller {
 
         return new DataResponse([
             'daily_challenge' => $this->config->getUserValue($this->userId, 'learning', 'daily_challenge', 'yes'),
-            'ui_language' => $this->config->getUserValue($this->userId, 'learning', 'ui_language', ''),
             'content_language' => $this->config->getUserValue($this->userId, 'learning', 'content_language', ''),
             'virtuprof_enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes'),
             'notifications_enabled' => $this->config->getUserValue($this->userId, 'learning', 'notifications_enabled', 'yes'),
@@ -286,7 +285,7 @@ class SettingsController extends Controller {
      * Codeberg #5: whether the intro had been seen lived in window.localStorage alone, which is
      * scoped to one browser on one machine, so a second device brought the wizard back.
      *
-     * Deliberately parameterless and idempotent: savePersonal() demands three mandatory
+     * Deliberately parameterless and idempotent: savePersonal() demands two mandatory
      * parameters, so a partial PUT for this single flag would be rejected inside NC's dispatcher
      * before the controller body runs. Deliberately not UserTelos::onboarding_completed, which
      * every profile save sets and which therefore means "a profile exists", not "intro seen".
@@ -308,19 +307,21 @@ class SettingsController extends Controller {
      */
     public function savePersonal(
         string $daily_challenge,
-        string $ui_language,
         string $notifications_enabled,
         string $content_language = '',
         string $virtuprof_enabled = 'yes',
         string $fsrs_detailed_stats = 'no',
-        string $animations_enabled = 'yes'
+        string $animations_enabled = 'yes',
+        // Accepted and ignored for clients that still send it: the 'UI Language' setting was
+        // stored but never read — the interface follows the Nextcloud language — so the field
+        // is gone (audit #12, #61, #218). Values already stored stay untouched and unused.
+        string $ui_language = ''
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], 401);
         }
 
         $this->config->setUserValue($this->userId, 'learning', 'daily_challenge', $daily_challenge === 'yes' ? 'yes' : 'no');
-        $this->config->setUserValue($this->userId, 'learning', 'ui_language', in_array($ui_language, ['de', 'en', ''], true) ? $ui_language : '');
         // Codeberg #6: 'ar' was missing here while the dropdown has offered Arabic for
         // months — the PUT answered 200 and stored '' instead. The set must match the
         // <option> values in PersonalSettings.vue AND TranslationService::ALLOWED_LANGS,

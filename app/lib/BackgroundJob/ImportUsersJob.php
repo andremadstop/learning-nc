@@ -2,12 +2,14 @@
 declare(strict_types=1);
 namespace OCA\Learning\BackgroundJob;
 
+use OCA\Learning\Command\ImportUsersCommand;
 use OCA\Learning\Service\AuditService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\QueuedJob;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;
+use Psr\Log\LoggerInterface;
 
 /**
  * Background job for bulk NC user import (dispatched when CSV > 50 rows).
@@ -26,6 +28,7 @@ class ImportUsersJob extends QueuedJob {
         private readonly IGroupManager $groupManager,
         private readonly AuditService  $auditService,
         ITimeFactory $timeFactory,
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct($timeFactory);
     }
@@ -49,29 +52,41 @@ class ImportUsersJob extends QueuedJob {
         $dataRows = array_slice($allLines, 1);
 
         foreach ($dataRows as $line) {
-            $cols = str_getcsv($line, ',', '"', '');
-            $uid  = trim($cols[0] ?? '');
-            $name = trim($cols[1] ?? $uid);
+            $cols  = str_getcsv($line, ',', '"', '');
+            $uid   = trim($cols[0] ?? '');
+            $name  = trim($cols[1] ?? $uid);
+            $email = trim($cols[2] ?? '');
             if ($uid === '') {
                 continue;
             }
 
-            // Password generated here — never from job args (security: args persist in oc_jobs)
+            // Password generated here — never from job args (security: args persist in oc_jobs).
+            // A failing row is logged and skipped; it must not end the job (audit #9).
             $password = bin2hex(random_bytes(12));
-            $user     = $this->userManager->createUser($uid, $password);
+            $user = null;
+            $error = 'createUser returned no user';
+            try {
+                $user = $this->userManager->createUser($uid, $password);
+            } catch (\Throwable $e) {
+                $error = $e->getMessage();
+            }
             unset($password); // clear immediately after createUser hashes it
 
             if (!($user instanceof IUser)) {
+                $this->logger->warning('ImportUsersJob: failed to create user {uid}: {error}', [
+                    'uid' => $uid,
+                    'error' => $error,
+                    'app' => 'learning',
+                ]);
                 continue;
             }
 
-            if ($name !== '') {
-                $user->setDisplayName($name);
-            }
-
-            if ($group !== null) {
-                $grp = $this->groupManager->get($group);
-                $grp?->addUser($user);
+            foreach (ImportUsersCommand::completeImportedUser($user, $name, $email, $group, $this->groupManager) as $warning) {
+                $this->logger->warning('ImportUsersJob: user {uid}: {warning}', [
+                    'uid' => $uid,
+                    'warning' => $warning,
+                    'app' => 'learning',
+                ]);
             }
 
             $this->auditService->logEvent('user.imported', $adminUid, ['username' => $uid]);

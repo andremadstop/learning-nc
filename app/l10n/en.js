@@ -3476,5 +3476,8 @@ OC.L10N.register(
     "The AI explanation could not be generated. Please try again." : "The AI explanation could not be generated. Please try again.",
     "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply.",
     "Your previous exam has just run out of time. Please try again in a moment." : "Your previous exam has just run out of time. Please try again in a moment.",
+    "Die Kapitelauswahl konnte nicht gespeichert werden." : "The chapter selection could not be saved.",
+    "Talk-Token konnte nicht gespeichert werden." : "The Talk token could not be saved.",
+    "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt." : "Invalid Talk token: only letters and digits are allowed.",
 },
 "nplurals=2; plural=(n != 1);");

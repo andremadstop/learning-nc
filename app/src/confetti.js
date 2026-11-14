@@ -81,3 +81,15 @@ export function celebrateBadge() {
 		shapes: ['star', 'circle'],
 	})
 }
+
+/**
+ * Two bursts when a gameshow is won. GameshowMode used require('canvas-confetti'), which
+ * does not exist in the Vite/ESM bundle, so its confetti never fired (audit #99).
+ */
+export function celebrateGameshowWin() {
+	if (prefersReducedMotion()) return
+	confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } })
+	setTimeout(() => {
+		confetti({ particleCount: 60, spread: 100, origin: { y: 0.5 }, startVelocity: 25 })
+	}, 300)
+}

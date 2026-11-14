@@ -297,9 +297,6 @@ return [
         ['name' => 'gameshow#answer', 'url' => '/api/gameshow/{code}/answer', 'verb' => 'POST'],
         ['name' => 'sse#gameshowStream', 'url' => '/api/sse/gameshow/{code}', 'verb' => 'GET'],
         ['name' => 'gameshow#courseLobby', 'url' => '/api/courses/{courseId}/gameshow/lobby', 'verb' => 'GET'],
-        // Board-game extensions (Phase 28)
-        ['name' => 'gameshow#roll', 'url' => '/api/gameshow/{code}/roll', 'verb' => 'POST'],
-        ['name' => 'gameshow#category', 'url' => '/api/gameshow/{code}/category', 'verb' => 'POST'],
 
         // Story-RPG (Phase 32)
         ['name' => 'story#listCampaigns',          'url' => '/api/story/campaigns',                                               'verb' => 'GET'],

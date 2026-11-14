@@ -121,3 +121,72 @@ describe('GameshowMode: a question the player let run out', () => {
 		vm.stopTimer()
 	})
 })
+
+/**
+ * Audit #160: during the reveal the server already points at the next question but hides it
+ * (current_question null) until shortly before its start. A client whose last state still lacks
+ * it when the question phase begins fetches the state once instead of showing an empty question.
+ */
+describe('GameshowMode: a question the server still hides', () => {
+	beforeEach(() => {
+		vi.useFakeTimers()
+		vi.setSystemTime(new Date('2026-11-12T10:00:00Z'))
+	})
+
+	afterEach(() => {
+		vi.useRealTimers()
+	})
+
+	it('fetches the state when the question starts and it is still missing', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockReset()
+		const now = Date.now()
+		const vm = createInstance({
+			gameshowCode: 'abc123',
+			phase: 'question',
+			hasAnswered: false,
+			lastQuestionIndex: -1,
+			timerValue: 0,
+			state: stateAt(0, now - 19000),
+		})
+		const hidden = { ...stateAt(1, now + 4000), current_question: null, server_now_ms: now }
+		vm.applyStateTransitions(hidden)
+
+		expect(vm.phase).toBe('leaderboard')
+		expect(vm.currentQuestion).toBeNull()
+		expect(axios.get).not.toHaveBeenCalled()
+
+		axios.get.mockResolvedValueOnce({ data: { ...stateAt(1, now + 4000), server_now_ms: now + 4000 } })
+		vi.advanceTimersByTime(4000)
+		await Promise.resolve()
+		await Promise.resolve()
+
+		expect(vm.phase).toBe('question')
+		expect(axios.get).toHaveBeenCalledTimes(1)
+		expect(axios.get.mock.calls[0][0]).toBe('/apps/learning/api/gameshow/abc123/state')
+		expect(vm.currentQuestion.id).toBe(11)
+		vm.stopTimer()
+	})
+
+	it('does not fetch when the pushed state already carries the question', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockReset()
+		const now = Date.now()
+		const vm = createInstance({
+			gameshowCode: 'abc123',
+			phase: 'question',
+			hasAnswered: false,
+			lastQuestionIndex: -1,
+			timerValue: 0,
+			state: stateAt(0, now - 19000),
+		})
+		vm.applyStateTransitions({ ...stateAt(1, now + 4000), current_question: null, server_now_ms: now })
+		vm.applyStateTransitions({ ...stateAt(1, now + 4000), server_now_ms: now })
+		vi.advanceTimersByTime(4000)
+
+		expect(vm.phase).toBe('question')
+		expect(vm.currentQuestion.id).toBe(11)
+		expect(axios.get).not.toHaveBeenCalled()
+		vm.stopTimer()
+	})
+})

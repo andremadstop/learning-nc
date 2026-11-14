@@ -6,6 +6,8 @@
  * Uses component definition directly (no @vue/test-utils — project pattern).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 // Mock @nextcloud/axios
 vi.mock('@nextcloud/axios', () => ({
@@ -235,5 +237,17 @@ describe('DailyChallengeCard completed state', () => {
 		await instance.loadDailyChallenge()
 		expect(instance.dailyChallenge.completed).toBe(true)
 		expect(instance.challengeXpEarned).toBe(10)
+	})
+})
+
+describe('StudentDashboard daily progress tile (audit #188)', () => {
+	it('labels the reviewed-cards count as cards, not XP', () => {
+		const instance = { userState: { daily_progress: { cards_reviewed_today: 12, sessions_today: 2 } } }
+		expect(StudentDashboard.computed.dailyCards.call(instance)).toBe(12)
+		expect(StudentDashboard.computed.dailyXp).toBeUndefined()
+
+		const template = readFileSync(resolve(__dirname, '../../src/components/StudentDashboard.vue'), 'utf8')
+		expect(template).toContain("{{ dailyCards }}")
+		expect(template).not.toMatch(/XP \{\{ t\('learning', 'heute'\) \}\}/)
 	})
 })

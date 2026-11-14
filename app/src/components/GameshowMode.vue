@@ -498,6 +498,7 @@ import { botAnswersCorrectly, botResponseDelay, botPhrase as getBotPhrase } from
 import { gradeBotAnswer } from '../utils/botGrading.js';
 import { createSseClient } from '../utils/sse-client.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
+import { celebrateGameshowWin } from '../confetti.js';
 
 export default {
   name: 'GameshowMode',
@@ -553,6 +554,10 @@ export default {
       lastQuestionIndex: -1,
       timerValue: 15,
       timerInterval: null,
+      // Handles of the reveal/feedback/bot pauses; cleared when the game is left (audit #97).
+      pendingTimeouts: [],
+      // Server clock minus this device's clock (ms), from server_now_ms of the last state.
+      clockOffsetMs: 0,
       questionLanguage: this.contentLanguage || '',
       barsVisible: false,
       spotlightActive: false,
@@ -783,6 +788,7 @@ export default {
     this.stopPolling();
     this.stopTimer();
     this.clearBotTimeout();
+    this.clearPendingTimeouts();
   },
 
   watch: {
@@ -796,6 +802,9 @@ export default {
     },
     timerValue(val) {
       this.pulseBorder = val <= 5 && val > 0 && this.phase === 'question';
+    },
+    state(newState) {
+      this.updateClockOffset(newState);
     },
   },
 
@@ -848,6 +857,22 @@ export default {
       }
     },
 
+    // setTimeout whose handle is kept, so leaving the game cancels it: a pause that ran out after
+    // "Abbrechen" used to switch the left component back to a question and restart its timer.
+    later(fn, ms) {
+      const handle = setTimeout(() => {
+        this.pendingTimeouts = this.pendingTimeouts.filter((h) => h !== handle);
+        fn();
+      }, ms);
+      this.pendingTimeouts.push(handle);
+      return handle;
+    },
+
+    clearPendingTimeouts() {
+      this.pendingTimeouts.forEach((h) => clearTimeout(h));
+      this.pendingTimeouts = [];
+    },
+
     clearBotTimeout() {
       if (this.botLocalState.botAnswerTimeout) {
         clearTimeout(this.botLocalState.botAnswerTimeout);
@@ -897,7 +922,7 @@ export default {
       const myEliminated = isElim && this.botLocalState.myLives <= 0;
       const botEliminated = isElim && this.botLocalState.botLives <= 0;
       if (next >= this.botLocalState.totalQuestions || myEliminated || botEliminated) {
-        setTimeout(() => {
+        this.later(() => {
           if (isElim) {
             this.botKlausEndPhrase = botEliminated && !myEliminated
               ? getBotPhrase('lose')
@@ -915,7 +940,7 @@ export default {
       }
 
       this.phase = 'feedback';
-      setTimeout(() => {
+      this.later(() => {
         this.botLocalState.currentIndex = next;
         this.hasAnswered = false;
         this.botHasAnswered = false;
@@ -1094,10 +1119,11 @@ export default {
           this.finishedCelebrated = false;
           this.readyClicked = false;
           this.resetRoundState();
-          this.phase = r.data.status === 'active' ? 'question' : 'lobby';
+          this.updateClockOffset(r.data);
           if (r.data.status === 'active') {
-            this.spotlightActive = true;
-            this.startTimer();
+            this.enterQuestionWhenStarted();
+          } else {
+            this.phase = 'lobby';
           }
           this.emitVirtuProf('arena-session-restored', {
             mode: r.data.mode || this.mode,
@@ -1155,11 +1181,69 @@ export default {
 
     // ---------- Timer ----------
 
+    // question_started_at is server time; a device clock that runs behind used to show more
+    // time than the server allows and lost answers as "too late" (audit #160).
+    updateClockOffset(state) {
+      if (state && typeof state.server_now_ms === 'number') {
+        this.clockOffsetMs = state.server_now_ms - Date.now();
+      }
+    },
+
+    // Milliseconds until the current question starts by the server clock (0 once it runs).
+    msUntilQuestionStart() {
+      if (!this.state || !this.state.question_started_at) return 0;
+      return Math.max(0, this.state.question_started_at - (Date.now() + (this.clockOffsetMs || 0)));
+    },
+
+    // Shows the current question once the server has started it. The next question starts only
+    // after the reveal (REVEAL_MS); a player who skipped the reveal (no answer, or a reload in
+    // the middle of it) would otherwise see it seconds early — with an answer that counts as
+    // given at the start (audit #160). Meanwhile the standings are shown.
+    enterQuestionWhenStarted() {
+      const wait = this.msUntilQuestionStart();
+      if (wait <= 0) {
+        this.phase = 'question';
+        this.spotlightActive = true;
+        this.startTimer();
+        this.fetchQuestionIfMissing();
+        return;
+      }
+      this.stopTimer();
+      this.enterLeaderboard();
+      const index = this.state.current_question_index;
+      this.later(() => {
+        if (this.phase !== 'leaderboard' || !this.state || this.state.status !== 'active'
+          || this.state.current_question_index !== index) {
+          return;
+        }
+        this.phase = 'question';
+        this.spotlightActive = true;
+        this.startTimer();
+        this.fetchQuestionIfMissing();
+      }, wait);
+    },
+
+    // The server hides the next question until shortly before its start (audit #160). The state
+    // pushed by SSE (every second) or the poll (500 ms) normally brings it in time; if the last
+    // state still lacks it when the question phase begins, fetch it once.
+    fetchQuestionIfMissing() {
+      if (this.botMode || !this.gameshowCode || !this.state) return;
+      if (this.state.status !== 'active' || this.state.current_question) return;
+      this.pollState();
+    },
+
+    // Seconds left on the current question by the server clock. The server starts the next
+    // question only after the reveal (GameshowService::REVEAL_MS), so a client that is a bit
+    // early sees at most the full 15 s.
+    remainingSeconds() {
+      const elapsed = Date.now() + (this.clockOffsetMs || 0) - this.state.question_started_at;
+      return Math.min(15, Math.max(0, Math.ceil((15000 - elapsed) / 1000)));
+    },
+
     startTimer() {
       this.stopTimer();
       if (this.state && this.state.question_started_at) {
-        const elapsed = Date.now() - this.state.question_started_at;
-        this.timerValue = Math.max(0, Math.ceil((15000 - elapsed) / 1000));
+        this.timerValue = this.remainingSeconds();
       } else {
         this.timerValue = 15;
       }
@@ -1181,8 +1265,7 @@ export default {
 
     syncTimer() {
       if (this.state && this.state.question_started_at) {
-        const elapsed = Date.now() - this.state.question_started_at;
-        const remaining = Math.max(0, Math.ceil((15000 - elapsed) / 1000));
+        const remaining = this.remainingSeconds();
         // Only correct if drift exceeds 2 seconds
         if (Math.abs(this.timerValue - remaining) > 2) {
           this.timerValue = remaining;
@@ -1336,6 +1419,7 @@ export default {
 
     cancelGame() {
       this.clearBotTimeout();
+      this.clearPendingTimeouts();
       this.botMode = false;
       localStorage.removeItem('learning_gameshow_session');
       this.stopPolling();
@@ -1471,32 +1555,35 @@ export default {
       });
     },
 
+    // Reveal 1800/2500 ms, leaderboard after 50 ms, next question after another 3000 ms:
+    // 5550 ms in all, which GameshowService::REVEAL_MS mirrors for the next question's start.
     showFeedbackThenNext(newIndex) {
       this.stopTimer();
       this.spotlightActive = false;
       this.revealPhase = 'pending';
-      setTimeout(() => {
+      this.later(() => {
         this.revealPhase = this.answeredCorrect ? 'correct' : 'wrong';
         if (!this.answeredCorrect) {
           this.screenShake = true;
-          setTimeout(() => { this.screenShake = false; }, 500);
+          this.later(() => { this.screenShake = false; }, 500);
         }
       }, 1800);
-      setTimeout(() => {
+      this.later(() => {
         this.revealPhase = 'none';
         this.phase = 'feedback';
-        setTimeout(() => {
+        this.later(() => {
           this.enterLeaderboard();
           // VIRT-02: Standings commentary after leaderboard
           this.emitVirtuProf('gameshow-standings-update', {
             commentary: this.buildStandingsCommentary(),
           });
-          setTimeout(() => {
+          this.later(() => {
             this.lastQuestionIndex = newIndex - 1;
             this.resetRoundState();
             this.phase = 'question';
             this.spotlightActive = true;
             this.startTimer();
+            this.fetchQuestionIfMissing();
             // VIRT-01: Round announcement for next question
             this.emitVirtuProf('gameshow-round-announce', {
               round: this.questionDisplay,
@@ -1510,24 +1597,24 @@ export default {
     showFeedbackThenTransition(targetPhase) {
       this.spotlightActive = false;
       this.revealPhase = 'pending';
-      setTimeout(() => {
+      this.later(() => {
         this.revealPhase = this.answeredCorrect ? 'correct' : 'wrong';
         if (!this.answeredCorrect) {
           this.screenShake = true;
-          setTimeout(() => { this.screenShake = false; }, 500);
+          this.later(() => { this.screenShake = false; }, 500);
         }
       }, 1800);
-      setTimeout(() => {
+      this.later(() => {
         this.revealPhase = 'none';
         this.phase = 'feedback';
-        setTimeout(() => {
+        this.later(() => {
           if (targetPhase === 'finished') {
             this.enterLeaderboard();
             // VIRT-02: Final standings commentary
             this.emitVirtuProf('gameshow-standings-update', {
               commentary: this.buildStandingsCommentary(),
             });
-            setTimeout(() => {
+            this.later(() => {
               // Winner announcement
               if (this.sortedPlayers.length > 0) {
                 this.emitVirtuProf('gameshow-winner', {
@@ -1544,17 +1631,7 @@ export default {
     },
 
     fireConfetti() {
-      try {
-        const confetti = require('canvas-confetti');
-        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (prefersReduced) return;
-        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-        setTimeout(() => {
-          confetti({ particleCount: 60, spread: 100, origin: { y: 0.5 }, startVelocity: 25 });
-        }, 300);
-      } catch (e) {
-        // canvas-confetti not available, skip
-      }
+      celebrateGameshowWin();
     },
 
     // ---------- VirtuProf helpers ----------
@@ -1621,6 +1698,7 @@ export default {
     newRound() {
       this.stopPolling();
       this.stopTimer();
+      this.clearPendingTimeouts();
       this.gameshowCode = '';
       this.state = null;
       this.resetRoundState();
@@ -1705,6 +1783,7 @@ export default {
       const prevState = this.state;
       const prevIndex = prevState ? prevState.current_question_index : -1;
       this.state = newState;
+      this.updateClockOffset(newState);
 
       if (newState.status === 'finished') {
         localStorage.removeItem('learning_gameshow_session');
@@ -1741,7 +1820,7 @@ export default {
         if (this.phase === 'question' && !this.hasAnswered && indexAdvanced) {
           this.lastQuestionIndex = newState.current_question_index - 1;
           this.resetRoundState();
-          this.startTimer();
+          this.enterQuestionWhenStarted();
           return;
         }
 

@@ -129,35 +129,11 @@ class StreakService {
         }
 
         $today = gmdate('Y-m-d');
-        $yesterday = gmdate('Y-m-d', strtotime('-1 day', strtotime($today)));
-        $twoDaysAgo = gmdate('Y-m-d', strtotime('-2 day', strtotime($today)));
         $freezeState = $this->getFreezeState($userId);
         $freezeTokens = (int)$freezeState['tokens'];
         $canUseFreeze = $freezeTokens > 0;
 
-        $currentStreak = 0;
-        $freezeUsed = false;
-        if ($dates[0] === $today || $dates[0] === $yesterday || ($dates[0] === $twoDaysAgo && $canUseFreeze)) {
-            $expected = $dates[0];
-            foreach ($dates as $date) {
-                if ($date === $expected) {
-                    $currentStreak++;
-                    $expected = gmdate('Y-m-d', strtotime('-1 day', strtotime($expected)));
-                    continue;
-                }
-
-                if ($canUseFreeze && !$freezeUsed) {
-                    $skipDay = gmdate('Y-m-d', strtotime('-1 day', strtotime($expected)));
-                    if ($date === $skipDay) {
-                        $freezeUsed = true;
-                        $expected = gmdate('Y-m-d', strtotime('-1 day', strtotime($skipDay)));
-                        $currentStreak++;
-                        continue;
-                    }
-                }
-                break;
-            }
-        }
+        [$currentStreak, $freezeUsed] = self::currentStreakFromDates($dates, $today, $canUseFreeze);
 
         // Calculate longest streak
         $longestStreak = 0;
@@ -197,5 +173,56 @@ class StreakService {
             'freeze_tokens' => max(0, $freezeTokens),
             'freeze_used' => $freezeUsed,
         ];
+    }
+
+    /**
+     * Current streak over activity dates (Y-m-d, newest first). One freeze token bridges one
+     * missed day; the bridged day itself is not counted.
+     *
+     * A streak whose newest day is two days ago survives only because yesterday is bridged, so
+     * the token is spoken for and cannot bridge a second, older gap (audit #83: one token used to
+     * cover two gaps). It is NOT reported as used here: getStreak(consume: true) also runs per
+     * answered question, before today's session is completed, and charging then would leave no
+     * token for the bridge once the session completes (dates [today, today-2, …] bridge yesterday
+     * in the loop and charge exactly once).
+     *
+     * @param list<string> $dates
+     * @return array{0: int, 1: bool} [current streak, freeze used]
+     */
+    private static function currentStreakFromDates(array $dates, string $today, bool $canUseFreeze): array {
+        if ($dates === []) {
+            return [0, false];
+        }
+        $yesterday = gmdate('Y-m-d', strtotime('-1 day', strtotime($today)));
+        $twoDaysAgo = gmdate('Y-m-d', strtotime('-2 day', strtotime($today)));
+
+        $bridgeReserved = $dates[0] === $twoDaysAgo && $canUseFreeze;
+        if (!$bridgeReserved && $dates[0] !== $today && $dates[0] !== $yesterday) {
+            return [0, false];
+        }
+
+        $currentStreak = 0;
+        $freezeUsed = false;
+        $expected = $dates[0];
+        foreach ($dates as $date) {
+            if ($date === $expected) {
+                $currentStreak++;
+                $expected = gmdate('Y-m-d', strtotime('-1 day', strtotime($expected)));
+                continue;
+            }
+
+            if ($canUseFreeze && !$freezeUsed && !$bridgeReserved) {
+                $skipDay = gmdate('Y-m-d', strtotime('-1 day', strtotime($expected)));
+                if ($date === $skipDay) {
+                    $freezeUsed = true;
+                    $expected = gmdate('Y-m-d', strtotime('-1 day', strtotime($skipDay)));
+                    $currentStreak++;
+                    continue;
+                }
+            }
+            break;
+        }
+
+        return [$currentStreak, $freezeUsed];
     }
 }

@@ -481,7 +481,8 @@ namespace Symfony\Component\Console\Tester {
         }
     }
 
-    // Minimal OutputInterface for CommandTester: collects the output for getDisplay().
+    // Minimal OutputInterface for CommandTester: buffers the output without style tags,
+    // like an undecorated Symfony output.
     if (!class_exists(StubConsoleOutput::class)) {
         class StubConsoleOutput implements \Symfony\Component\Console\Output\OutputInterface {
             public string $buffer = '';
@@ -490,7 +491,8 @@ namespace Symfony\Component\Console\Tester {
             }
             public function write(string|array $messages, bool $newline = false, int $options = 0): void {
                 foreach ((array)$messages as $message) {
-                    $this->buffer .= $message . ($newline ? "\n" : '');
+                    $this->buffer .= preg_replace('#</?(info|error|comment|question)>#', '', (string)$message)
+                        . ($newline ? "\n" : '');
                 }
             }
         }

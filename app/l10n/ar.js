@@ -3476,5 +3476,8 @@ OC.L10N.register(
     "The AI explanation could not be generated. Please try again." : "تعذّر إنشاء شرح الذكاء الاصطناعي. يُرجى المحاولة مرة أخرى.",
     "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "هل تريد إلغاء الامتحان؟ سيُحتسب مع ذلك محاولةً: لن تُرسل إجاباتك، وتسري قيود إعادة الامتحان.",
     "Your previous exam has just run out of time. Please try again in a moment." : "انتهى وقت امتحانك السابق للتو. يُرجى المحاولة مرة أخرى بعد لحظات.",
+    "Die Kapitelauswahl konnte nicht gespeichert werden." : "تعذّر حفظ اختيار الفصول.",
+    "Talk-Token konnte nicht gespeichert werden." : "تعذّر حفظ رمز Talk.",
+    "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt." : "رمز Talk غير صالح: يُسمح بالأحرف والأرقام فقط.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -38,6 +38,10 @@ class FeedController extends Controller {
      * @NoAdminRequired
      */
     public function index(int $limit = 50, int $offset = 0): DataResponse {
+        // Same bounds as courseFeed: an unbounded limit loaded every row of every course, a
+        // negative offset is an SQL error on PostgreSQL (audit #207).
+        $limit = max(1, min($limit, 100));
+        $offset = max(0, $offset);
         $items = $this->feedService->getUserFeed($this->userId, $limit, $offset);
 
         // Enrich items with course_name for global feed display

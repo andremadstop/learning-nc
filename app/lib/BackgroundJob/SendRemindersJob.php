@@ -13,6 +13,7 @@ class SendRemindersJob extends TimedJob {
     private ReminderService $reminderService;
     private RecertReminderService $recertReminderService;
     private LoggerInterface $logger;
+    private ITimeFactory $clock;
 
     public function __construct(
         ITimeFactory $time,
@@ -25,10 +26,16 @@ class SendRemindersJob extends TimedJob {
         $this->reminderService = $reminderService;
         $this->recertReminderService = $recertReminderService;
         $this->logger = $logger;
+        $this->clock = $time;
     }
 
     protected function run($argument): void {
-        $hour = (int)(new \DateTimeImmutable('now'))->format('G');
+        // The hourly TimedJob drifts: NC runs it once time() - lastRun > interval and stores the
+        // start time, so with 5-minute cron ticks a run can jump from 08:58 to 10:03 and skip an
+        // hour completely. The daily windows therefore open at 09:00 / 20:00 and stay open for the
+        // rest of the day; ReminderService's per-user day guards (last_due_reminder,
+        // last_streak_warning) and UNIQUE(cert_id, threshold_days) keep the later runs idempotent.
+        $hour = (int)$this->clock->getDateTime('now')->format('G');
         $dueSent = 0;
         $streakSent = 0;
         $examSent = 0;
@@ -43,7 +50,7 @@ class SendRemindersJob extends TimedJob {
             ]);
         }
 
-        if ($hour === 9) {
+        if ($hour >= 9) {
             try {
                 $dueSent = $this->reminderService->sendDueCardReminders();
             } catch (\Throwable $e) {
@@ -65,7 +72,7 @@ class SendRemindersJob extends TimedJob {
             }
         }
 
-        if ($hour === 20) {
+        if ($hour >= 20) {
             try {
                 $streakSent = $this->reminderService->sendStreakWarnings();
             } catch (\Throwable $e) {

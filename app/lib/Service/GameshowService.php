@@ -43,6 +43,22 @@ class GameshowService {
     /** After the answer time, answers in flight still count for this long; then the question is resolved */
     private const ANSWER_GRACE_MS = 3000;
 
+    /**
+     * After a question is resolved, every client plays the reveal before it shows the next one:
+     * GameshowMode.showFeedbackThenNext waits 2500 + 50 + 3000 ms. The next question's clock
+     * starts after that pause; started at the moment of resolution, the reveal ate a third of
+     * the 15 s answer time (audit #160). Keep in sync with the frontend.
+     */
+    public const REVEAL_MS = 5550;
+
+    /**
+     * How early (by the server clock) the next question may be read and answered. Covers the
+     * client's clock-offset estimate and the SSE tick (1 s), so a client that shows the question
+     * at its start already has it. Earlier the question is hidden and an answer is refused; an
+     * answer inside the window counts as given at the start (audit #160).
+     */
+    public const EARLY_START_TOLERANCE_MS = 1000;
+
     public function __construct(
         GameshowSessionMapper $sessionMapper,
         GameshowPlayerMapper $playerMapper,
@@ -71,23 +87,12 @@ class GameshowService {
         $this->questionService = $questionService;
     }
 
-    /** Valid game modes, including board-game extensions */
-    private const VALID_MODES = ['sprint', 'elimination', 'lernwuerfel', 'wissensturm'];
-
-    /** Board positions for special fields in Lernwürfel (0-indexed field numbers, 1-30) */
-    private const LERNWUERFEL_SPECIAL_FIELDS = [
-        5  => 'bonus_roll',  // ★ Extra roll
-        10 => 'shield',      // ★ Protection (cannot be sent back for 1 round)
-        15 => 'trap',        // ★ Skip next turn
-        20 => 'bonus_roll',
-        25 => 'shield',
-    ];
-
-    /** Number of board fields for Lernwürfel */
-    private const LERNWUERFEL_BOARD_SIZE = 30;
-
-    /** Number of category blocks needed to win Wissensturm */
-    private const WISSENSTURM_BLOCKS_TO_WIN = 5;
+    /**
+     * Valid game modes. The board-game modes Lernwürfel/Wissensturm lost their frontend long ago
+     * and were unwinnable through the API; their backend was removed too (audit #227). The
+     * board_state column stays for old rows.
+     */
+    private const VALID_MODES = ['sprint', 'elimination'];
 
     // ---------- Public API ----------
 
@@ -96,7 +101,7 @@ class GameshowService {
      */
     public function createSession(int $poolId, string $userId, string $mode, int $maxPlayers = 5, ?int $courseId = null): array {
         if (!in_array($mode, self::VALID_MODES, true)) {
-            throw new \RuntimeException('Invalid mode: must be sprint, elimination, lernwuerfel, or wissensturm');
+            throw new \RuntimeException('Invalid mode: must be sprint or elimination');
         }
         $maxPlayers = max(2, min(5, $maxPlayers));
 
@@ -236,11 +241,6 @@ class GameshowService {
             $session->setStartedAt(time());
             $session->setQuestionStartedAt(intval(microtime(true) * 1000));
 
-            // Initialise board state for board-game modes
-            if (in_array($session->getMode(), ['lernwuerfel', 'wissensturm'], true)) {
-                $session->setBoardState(json_encode($this->initBoardState($session->getMode(), $activePlayers)));
-            }
-
             $session = $this->sessionMapper->update($session);
         }
 
@@ -346,18 +346,9 @@ class GameshowService {
             throw new \RuntimeException('You have been eliminated from this session');
         }
 
-        // Board-game modes: enforce turn order — only active player may answer
-        if (in_array($session->getMode(), ['lernwuerfel', 'wissensturm'], true)) {
-            $boardState = json_decode($session->getBoardState() ?? '{}', true);
-            $activePlayerIndex = $boardState['active_player_index'] ?? 0;
-            $boardPhase = $boardState['phase'] ?? 'roll';
-
-            if ($boardPhase !== 'question') {
-                throw new \RuntimeException('It is not the question phase — please roll the dice first');
-            }
-            if ($player->getSlot() !== $activePlayerIndex) {
-                throw new \RuntimeException('It is not your turn');
-            }
+        // Sessions left over from the removed board-game modes cannot be played any more.
+        if (!$this->isTimedQuestionMode($session)) {
+            throw new \RuntimeException('This game mode is no longer supported');
         }
 
         $questionIndex = $session->getCurrentQuestionIndex();
@@ -368,6 +359,13 @@ class GameshowService {
         }
 
         $questionId = (int)$questionIds[$questionIndex];
+
+        // During the reveal the session already points at the next question. An answer sent
+        // then (a modified client, a raw POST) would be stored at the start: elapsed 0, rank 1
+        // and the full time bonus after seconds of extra reading time (audit #160).
+        if (!$this->hasQuestionStarted($session)) {
+            throw new \RuntimeException('Question has not started yet');
+        }
 
         // Check if player already answered this question
         $existingAnswers = $this->answerMapper->findBySessionAndQuestion($session->getId(), $questionIndex);
@@ -409,42 +407,17 @@ class GameshowService {
         $answer->setPlayerUid($userId);
         $answer->setAnswerId($answerId);
         $answer->setIsCorrect($isCorrect);
-        $answer->setAnsweredAt(intval(microtime(true) * 1000));
+        // The next question starts only after the reveal (REVEAL_MS); an answer inside the
+        // tolerance before that (clock-offset jitter) counts as given at the start.
+        $answer->setAnsweredAt(max(intval(microtime(true) * 1000), (int)($session->getQuestionStartedAt() ?? 0)));
         $answer->setPointsEarned(0); // Scoring handled by mode-specific logic in Phase 9/10
         $this->answerMapper->insert($answer);
 
         // Determine correct answer ID for feedback
         $correctAnswerId = $this->questionService->getCorrectAnswerIdForGame($questionId);
 
-        $players = $this->playerMapper->findBySession($session->getId());
-
-        // Board-game modes handle scoring and turn rotation immediately (single-player-per-turn)
-        if (in_array($session->getMode(), ['lernwuerfel', 'wissensturm'], true)) {
-            $boardState = json_decode($session->getBoardState() ?? '{}', true);
-
-            if ($session->getMode() === 'lernwuerfel') {
-                $finished = $this->lernwuerfelScoring($session, $player, $isCorrect, $boardState);
-            } else {
-                $finished = $this->wissensturmScoring($session, $player, $isCorrect, $boardState);
-            }
-
-            if ($finished) {
-                $session->setStatus('finished');
-                $this->awardGameshowXp($session);
-            } else {
-                // Advance to next player's roll phase
-                $this->advanceTurn($session, $boardState, $players);
-                $session->setBoardState(json_encode($boardState));
-                // Rotate question for next player (re-use question pool round-robin)
-                $nextIndex = ($questionIndex + 1) % count($questionIds);
-                $session->setCurrentQuestionIndex($nextIndex);
-                $session->setQuestionStartedAt(intval(microtime(true) * 1000));
-            }
-            $session = $this->sessionMapper->update($session);
-        } else {
-            // Sprint/elimination: moves on once every active player has answered
-            $session = $this->resolveQuestionIfDone($session, $questionIndex);
-        }
+        // Moves on once every active player has answered
+        $session = $this->resolveQuestionIfDone($session, $questionIndex);
 
         $state = $this->buildState($session, $userId, $lang);
         $state['correct_answer_id'] = $correctAnswerId;
@@ -454,6 +427,15 @@ class GameshowService {
 
     private function isTimedQuestionMode(GameshowSession $session): bool {
         return in_array($session->getMode(), ['sprint', 'elimination'], true);
+    }
+
+    /** True once the current question may be read and answered (see EARLY_START_TOLERANCE_MS). */
+    private function hasQuestionStarted(GameshowSession $session): bool {
+        $startedAt = $session->getQuestionStartedAt();
+        if ($startedAt === null) {
+            return true;
+        }
+        return intval(microtime(true) * 1000) >= (int)$startedAt - self::EARLY_START_TOLERANCE_MS;
     }
 
     private function isQuestionDeadlinePassed(GameshowSession $session): bool {
@@ -505,12 +487,13 @@ class GameshowService {
 
         $previousStartedAt = $session->getQuestionStartedAt();
         $nowMs = intval(microtime(true) * 1000);
+        $nextStartedAt = $nowMs + self::REVEAL_MS;
         $sessionId = $session->getId();
         $finished = false;
 
         $this->db->beginTransaction();
         try {
-            if (!$this->sessionMapper->claimAdvance($sessionId, $questionIndex, $nowMs)) {
+            if (!$this->sessionMapper->claimAdvance($sessionId, $questionIndex, $nextStartedAt)) {
                 $this->db->commit();
                 return $this->sessionMapper->findById($sessionId);
             }
@@ -545,7 +528,7 @@ class GameshowService {
                 $session->setStatus('finished');
             } else {
                 $session->setCurrentQuestionIndex($nextIndex);
-                $session->setQuestionStartedAt($nowMs);
+                $session->setQuestionStartedAt($nextStartedAt);
             }
             $this->sessionMapper->update($session);
             $this->db->commit();
@@ -700,17 +683,14 @@ class GameshowService {
             ];
         }
 
-        // Load current question (only when active)
+        // Load current question (only when active, and not before it starts: during the reveal
+        // the index already points at the next question, which nobody may read yet — audit #160).
+        // The client waits for question_started_at by server_now_ms and gets the question with
+        // the state that is pushed shortly before the start.
         $currentQuestion = null;
-        if ($status === 'active' && $currentIndex < count($questionIds)) {
+        if ($status === 'active' && $currentIndex < count($questionIds) && $this->hasQuestionStarted($session)) {
             $questionId = (int)$questionIds[$currentIndex];
             $currentQuestion = $this->questionService->loadQuestionForGame($questionId, $contentLanguage);
-        }
-
-        // Decode board state for board-game modes
-        $boardStateData = null;
-        if (in_array($session->getMode(), ['lernwuerfel', 'wissensturm'], true) && $session->getBoardState() !== null) {
-            $boardStateData = json_decode($session->getBoardState(), true);
         }
 
         return [
@@ -728,8 +708,9 @@ class GameshowService {
             'current_question' => $currentQuestion,
             'my_slot' => $mySlot,
             'question_started_at' => $session->getQuestionStartedAt(),
+            // Lets the client measure its clock offset; question_started_at is server time (audit #160).
+            'server_now_ms' => intval(microtime(true) * 1000),
             'winner_user_id' => $winner instanceof GameshowPlayer ? $winner->getUserId() : null,
-            'board_state' => $boardStateData,
         ];
     }
 
@@ -843,6 +824,7 @@ class GameshowService {
             $highestScore = 0;
             $winner = null;
             $playerData = [];
+            $isElimination = $session->getMode() === 'elimination';
 
             foreach ($players as $p) {
                 $pData = [
@@ -857,10 +839,17 @@ class GameshowService {
                     $myScore = $p->getScore();
                 }
 
-                if (!$p->getIsRemoved() && $p->getScore() > $highestScore) {
+                if (!$isElimination && !$p->getIsRemoved() && $p->getScore() > $highestScore) {
                     $highestScore = $p->getScore();
                     $winner = $p->getDisplayName();
                 }
+            }
+
+            // Elimination only takes lives and never scores (every score is 0), so the winner is
+            // the last player standing, as in buildState (audit #159).
+            if ($isElimination) {
+                $survivors = $this->getActiveGameplayPlayers($session, $players);
+                $winner = count($survivors) === 1 ? $survivors[0]->getDisplayName() : null;
             }
 
             $result[] = [
@@ -876,382 +865,6 @@ class GameshowService {
         }
 
         return $result;
-    }
-
-    // ---------- Board-game public API ----------
-
-    /**
-     * BACK-03: Roll the dice for the active player in a board-game session.
-     *
-     * - Validates the caller is the active player and phase === 'roll'.
-     * - Generates a random dice result (1-6).
-     * - Handles 'trap' skip: if active player is trapped, advances turn automatically.
-     * - Stores result in board_state, transitions phase to 'question'.
-     * - Handles Lernwürfel rule: rolling a 6 grants an extra roll next time.
-     *
-     * @return array Full session state including updated board_state
-     */
-    public function rollDice(string $code, string $userId, ?string $lang = null): array {
-        $session = $this->sessionMapper->findByCode($code);
-
-        if ($session->getStatus() !== 'active') {
-            throw new \RuntimeException('Session is not active');
-        }
-        if (!in_array($session->getMode(), ['lernwuerfel', 'wissensturm'], true)) {
-            throw new \RuntimeException('rollDice is only available in board-game modes');
-        }
-
-        $player = $this->playerMapper->findBySessionAndUser($session->getId(), $userId);
-        if ($player->getIsRemoved()) {
-            throw new \RuntimeException('You have been removed from this session');
-        }
-
-        $boardState = json_decode($session->getBoardState() ?? '{}', true);
-        $activePlayerIndex = $boardState['active_player_index'] ?? 0;
-
-        if ($player->getSlot() !== $activePlayerIndex) {
-            throw new \RuntimeException('It is not your turn');
-        }
-
-        $phase = $boardState['phase'] ?? 'roll';
-        if ($phase !== 'roll') {
-            throw new \RuntimeException('Dice already rolled — answer the question first');
-        }
-
-        // Handle trap (skip turn)
-        $skipTurns = $boardState['skip_turns'] ?? [];
-        $slotKey = (string)$activePlayerIndex;
-        if (($skipTurns[$slotKey] ?? 0) > 0) {
-            // Skip this turn — decrement trap counter and advance to next player
-            $skipTurns[$slotKey]--;
-            $boardState['skip_turns'] = $skipTurns;
-            $boardState['dice_result'] = null;
-            $boardState['special_effect'] = null;
-            $players = $this->playerMapper->findBySession($session->getId());
-            $this->advanceTurn($session, $boardState, $players);
-            $session->setBoardState(json_encode($boardState));
-            $session = $this->sessionMapper->update($session);
-
-            $state = $this->buildState($session, $userId, $lang);
-            $state['turn_skipped'] = true;
-            return $state;
-        }
-
-        // Roll the dice
-        $diceResult = random_int(1, 6);
-        $boardState['dice_result'] = $diceResult;
-        $boardState['phase'] = 'question';
-        $boardState['special_effect'] = null;
-
-        // For Wissensturm: category is chosen by player at answer time via selected_category
-        if ($session->getMode() === 'wissensturm') {
-            $boardState['steal_pending'] = false;
-            $boardState['steal_from_slot'] = null;
-        }
-
-        // Select a question relevant to the active player (advance question pointer)
-        $session->setBoardState(json_encode($boardState));
-        $session->setQuestionStartedAt(intval(microtime(true) * 1000));
-        $session = $this->sessionMapper->update($session);
-
-        return $this->buildState($session, $userId, $lang);
-    }
-
-    /**
-     * BACK-01, BACK-03: Select a Wissensturm category before answering.
-     *
-     * The active player may choose which category (pool_id) they want to answer
-     * from. Only valid in the 'question' phase.
-     *
-     * @return array Full session state
-     */
-    public function selectCategory(string $code, string $userId, int $categoryPoolId, ?string $lang = null): array {
-        $session = $this->sessionMapper->findByCode($code);
-
-        if ($session->getStatus() !== 'active') {
-            throw new \RuntimeException('Session is not active');
-        }
-        if ($session->getMode() !== 'wissensturm') {
-            throw new \RuntimeException('selectCategory is only available in wissensturm mode');
-        }
-
-        $player = $this->playerMapper->findBySessionAndUser($session->getId(), $userId);
-        $boardState = json_decode($session->getBoardState() ?? '{}', true);
-        $activePlayerIndex = $boardState['active_player_index'] ?? 0;
-
-        if ($player->getSlot() !== $activePlayerIndex) {
-            throw new \RuntimeException('It is not your turn');
-        }
-        if (($boardState['phase'] ?? 'roll') !== 'question') {
-            throw new \RuntimeException('Not in question phase');
-        }
-
-        // The category is a pool id chosen by the caller, and selectQuestions() below does not
-        // check pool access — so an arbitrary id would read out of a pool the session has nothing
-        // to do with. Authorise against the SESSION, not against the caller's own pool access:
-        // players who joined a session legitimately are not required to have access to its pool,
-        // so checking hasPoolAccess() here would break the mode for exactly the people meant to
-        // play it.
-        if (!$this->isPoolInSessionScope($session, $categoryPoolId)) {
-            throw new \RuntimeException('That category does not belong to this session');
-        }
-
-        // Load a question from the chosen pool/category
-        $questionIds = $this->selectQuestions($categoryPoolId, 1, $userId);
-        if (empty($questionIds)) {
-            throw new \RuntimeException('No questions available for this category');
-        }
-
-        $boardState['selected_category'] = $categoryPoolId;
-        // Override question for this turn — store the selected question id
-        $boardState['current_question_override'] = $questionIds[0];
-        $session->setBoardState(json_encode($boardState));
-        $session->setQuestionStartedAt(intval(microtime(true) * 1000));
-        $session = $this->sessionMapper->update($session);
-
-        return $this->buildState($session, $userId, $lang);
-    }
-
-    // ---------- Board-game scoring (private) ----------
-
-    /**
-     * BACK-01, BACK-02: Lernwürfel scoring after an answer.
-     *
-     * - Correct: move figure forward by dice_result fields.
-     *   - Landing on an occupied field: send opponent to start (field 0).
-     *   - Landing on a special field: apply bonus_roll / shield / trap effect.
-     *   - Rolling a 6 → extra roll (phase returns to 'roll' for same player).
-     *   - Reaching field LERNWUERFEL_BOARD_SIZE → game finished.
-     * - Incorrect: figure stays on current field.
-     *
-     * @param array &$boardState Mutable board-state array
-     * @return bool true if session should finish (winner reached end)
-     */
-    private function lernwuerfelScoring(GameshowSession $session, GameshowPlayer $player, bool $isCorrect, array &$boardState): bool {
-        $slot = $player->getSlot();
-        $slotKey = (string)$slot;
-        $positions = $boardState['positions'] ?? [];
-        $shieldedSlots = $boardState['shielded_slots'] ?? [];
-        $skipTurns = $boardState['skip_turns'] ?? [];
-        $diceResult = $boardState['dice_result'] ?? 1;
-
-        // Award score point for correct answer
-        if ($isCorrect) {
-            $player->setScore($player->getScore() + 1);
-            $this->playerMapper->update($player);
-        }
-
-        // Move figure on correct answer
-        if ($isCorrect) {
-            $currentPos = (int)($positions[$slotKey] ?? 0);
-            $newPos = $currentPos + $diceResult;
-
-            if ($newPos >= self::LERNWUERFEL_BOARD_SIZE) {
-                // Player reached the end — win!
-                $positions[$slotKey] = self::LERNWUERFEL_BOARD_SIZE;
-                $boardState['positions'] = $positions;
-                $session->setBoardState(json_encode($boardState));
-                $this->sessionMapper->update($session);
-                return true;
-            }
-
-            // Collision: send unshielded opponent on the same destination field to start
-            foreach ($positions as $otherSlotKey => $otherPos) {
-                if ($otherSlotKey === $slotKey) {
-                    continue;
-                }
-                if ($otherPos === $newPos) {
-                    // Check shield
-                    if (!in_array((int)$otherSlotKey, $shieldedSlots, true)) {
-                        $positions[$otherSlotKey] = 0;
-                    }
-                }
-            }
-
-            // Apply special field effect
-            $specialEffect = self::LERNWUERFEL_SPECIAL_FIELDS[$newPos] ?? null;
-            if ($specialEffect === 'shield') {
-                // Player is protected for 1 landing
-                if (!in_array($slot, $shieldedSlots, true)) {
-                    $shieldedSlots[] = $slot;
-                }
-            } elseif ($specialEffect === 'trap') {
-                // Player skips next turn
-                $skipTurns[$slotKey] = ($skipTurns[$slotKey] ?? 0) + 1;
-            }
-            // bonus_roll: dice_result already applied, next turn stays with same player
-            // (handled in advanceTurn — skip advance if bonus_roll)
-
-            $positions[$slotKey] = $newPos;
-            $boardState['special_effect'] = $specialEffect;
-        } else {
-            $boardState['special_effect'] = null;
-        }
-
-        // Remove shield once used (player landed here so opponent tried to collide — shield consumed)
-        $shieldedSlots = array_values(array_filter($shieldedSlots, fn($s) => $s !== $slot || !$isCorrect));
-
-        $boardState['positions'] = $positions;
-        $boardState['shielded_slots'] = $shieldedSlots;
-        $boardState['skip_turns'] = $skipTurns;
-
-        return false;
-    }
-
-    /**
-     * BACK-01, BACK-02: Wissensturm scoring after an answer.
-     *
-     * - Correct: add a block of selected_category colour to player's tower.
-     *   - Opponent steal: if steal_pending was true, block moves from opponent's tower.
-     *   - Winning condition: player has all WISSENSTURM_BLOCKS_TO_WIN unique colours.
-     * - Incorrect: remove topmost block from player's tower (if any).
-     *   - Set steal_pending=true so that if next player answers correctly they can steal.
-     *
-     * @param array &$boardState Mutable board-state array
-     * @return bool true if session should finish (player collected all categories)
-     */
-    private function wissensturmScoring(GameshowSession $session, GameshowPlayer $player, bool $isCorrect, array &$boardState): bool {
-        $slot = $player->getSlot();
-        $slotKey = (string)$slot;
-        $towers = $boardState['towers'] ?? [];
-        $selectedCategory = $boardState['selected_category'] ?? null;
-        $stealPending = $boardState['steal_pending'] ?? false;
-        $stealFromSlot = $boardState['steal_from_slot'] ?? null;
-
-        if (!isset($towers[$slotKey])) {
-            $towers[$slotKey] = [];
-        }
-
-        if ($isCorrect) {
-            if ($stealPending && $stealFromSlot !== null && (string)$stealFromSlot !== $slotKey) {
-                // Steal: take topmost block from the player who gave steal opportunity
-                $fromKey = (string)$stealFromSlot;
-                if (!empty($towers[$fromKey])) {
-                    $stolenBlock = array_pop($towers[$fromKey]);
-                    $towers[$slotKey][] = $stolenBlock;
-                }
-                $boardState['steal_pending'] = false;
-                $boardState['steal_from_slot'] = null;
-            } elseif ($selectedCategory !== null) {
-                // Add block for selected category
-                $towers[$slotKey][] = (string)$selectedCategory;
-            }
-
-            // Award score point
-            $player->setScore($player->getScore() + 1);
-            $this->playerMapper->update($player);
-
-            // Check win: player needs WISSENSTURM_BLOCKS_TO_WIN unique colours
-            $uniqueColours = array_unique($towers[$slotKey]);
-            if (count($uniqueColours) >= self::WISSENSTURM_BLOCKS_TO_WIN) {
-                $boardState['towers'] = $towers;
-                $session->setBoardState(json_encode($boardState));
-                $this->sessionMapper->update($session);
-                return true;
-            }
-        } else {
-            // Incorrect: remove topmost block
-            if (!empty($towers[$slotKey])) {
-                array_pop($towers[$slotKey]);
-            }
-            // Enable steal for the next active player
-            $boardState['steal_pending'] = true;
-            $boardState['steal_from_slot'] = $slot;
-        }
-
-        $boardState['towers'] = $towers;
-        $boardState['selected_category'] = null;
-        return false;
-    }
-
-    /**
-     * Advance turn to next active (non-removed) player.
-     *
-     * Handles Lernwürfel "bonus_roll" special effect — same player goes again.
-     * Updates active_player_index in board_state and resets phase to 'roll'.
-     *
-     * @param GameshowPlayer[] $players All session players
-     * @param array &$boardState Mutable board-state array
-     */
-    private function advanceTurn(GameshowSession $session, array &$boardState, array $players): void {
-        $specialEffect = $boardState['special_effect'] ?? null;
-        $currentIndex = $boardState['active_player_index'] ?? 0;
-
-        // Lernwürfel bonus_roll: same player rolls again
-        if ($session->getMode() === 'lernwuerfel' && $specialEffect === 'bonus_roll') {
-            $boardState['phase'] = 'roll';
-            $boardState['dice_result'] = null;
-            $boardState['special_effect'] = null;
-            return;
-        }
-
-        // Find next active slot (skip removed players)
-        $activePlayers = array_values(array_filter($players, fn(GameshowPlayer $p) => !$p->getIsRemoved()));
-        if (empty($activePlayers)) {
-            return;
-        }
-
-        /** @var list<int> $slots */
-        $slots = array_map(fn(GameshowPlayer $p) => $p->getSlot(), $activePlayers);
-        sort($slots);
-
-        // Find position of current slot in sorted list, advance to next
-        $pos = array_search($currentIndex, $slots, true);
-        if ($pos === false) {
-            $nextSlot = $slots[0];
-        } else {
-            $nextSlot = $slots[($pos + 1) % count($slots)];
-        }
-
-        $boardState['active_player_index'] = $nextSlot;
-        $boardState['phase'] = 'roll';
-        $boardState['dice_result'] = null;
-        $boardState['special_effect'] = null;
-    }
-
-    // ---------- Board-game board initialisation ----------
-
-    /**
-     * Build the initial board state for a board-game session.
-     *
-     * @param string $mode 'lernwuerfel' | 'wissensturm'
-     * @param GameshowPlayer[] $activePlayers
-     * @return array Board state array (will be JSON-encoded)
-     */
-    private function initBoardState(string $mode, array $activePlayers): array {
-        $base = [
-            'active_player_index' => 0, // Slot 0 (creator) goes first
-            'phase' => 'roll',
-            'dice_result' => null,
-            'special_effect' => null,
-            'skip_turns' => [],
-        ];
-
-        if ($mode === 'lernwuerfel') {
-            $positions = [];
-            $skipTurns = [];
-            foreach ($activePlayers as $p) {
-                $positions[(string)$p->getSlot()] = 0;
-                $skipTurns[(string)$p->getSlot()] = 0;
-            }
-            return array_merge($base, [
-                'positions' => $positions,
-                'skip_turns' => $skipTurns,
-                'shielded_slots' => [],
-            ]);
-        }
-
-        // wissensturm
-        $towers = [];
-        foreach ($activePlayers as $p) {
-            $towers[(string)$p->getSlot()] = [];
-        }
-        return array_merge($base, [
-            'towers' => $towers,
-            'selected_category' => null,
-            'steal_pending' => false,
-            'steal_from_slot' => null,
-        ]);
     }
 
     // ---------- XP Integration ----------
@@ -1399,30 +1012,5 @@ class GameshowService {
 
         shuffle($allIds);
         return array_slice($allIds, 0, $numQuestions);
-    }
-
-    /**
-     * A Wissensturm category must be a pool the session itself covers: the pool it was created
-     * with, or — for a course session — any pool of that course. Anything else is a pool the
-     * session was never scoped to.
-     */
-    private function isPoolInSessionScope(GameshowSession $session, int $poolId): bool {
-        if ((int)$session->getPoolId() === $poolId) {
-            return true;
-        }
-        $courseId = $session->getCourseId();
-        if ($courseId === null) {
-            return false;
-        }
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('cp.id')
-           ->from('learning_course_pools', 'cp')
-           ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter((int)$courseId, IQueryBuilder::PARAM_INT)))
-           ->andWhere($qb->expr()->eq('cp.pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
-           ->setMaxResults(1);
-        $result = $qb->executeQuery();
-        $row = $result->fetch();
-        $result->closeCursor();
-        return $row !== false;
     }
 }

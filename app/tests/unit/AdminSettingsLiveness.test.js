@@ -205,3 +205,16 @@ describe('AdminSettings pdftotext hint', () => {
 		expect(instance.pdfTextExtractionAvailable).toBe(null)
 	})
 })
+
+describe('AdminSettings support-ticket list request (audit #235)', () => {
+	it('sends only the limit — adminList() reads no target and always lists admin tickets', async () => {
+		axios.get.mockResolvedValueOnce({ data: { tickets: [] } })
+		const vm = createInstance()
+
+		await vm.loadSupportTickets()
+
+		const [url, config] = axios.get.mock.calls.at(-1)
+		expect(url).toBe('/apps/learning/api/settings/admin/support-tickets')
+		expect(config).toEqual({ params: { limit: 100 } })
+	})
+})

@@ -528,3 +528,18 @@ describe('pool rules dialog: certificate hint (GitHub #35)', () => {
 		}
 	})
 })
+
+describe('CourseTabLernraum: saving the chapter selection (audit #179)', () => {
+	it('emits an error when the save fails instead of stopping silently', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.put.mockRejectedValueOnce({ response: { status: 403 } })
+		const instance = createInstance({ curriculumEnabled: true, selectedChapterKeys: ['k1'] })
+
+		await instance.saveCurriculumScope()
+
+		expect(instance.$emit).toHaveBeenCalledWith('error', 'Die Kapitelauswahl konnte nicht gespeichert werden.')
+		expect(instance.curriculumSaved).toBe(false)
+		expect(instance.savingCurriculum).toBe(false)
+		expect(instance.selectedChapterKeys).toEqual(['k1'])
+	})
+})

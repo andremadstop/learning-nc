@@ -95,32 +95,41 @@ class ImportUsersCommand extends Command {
             return self::SUCCESS;
         }
 
-        // Sync path: create users immediately, print each password once
+        // Sync path: create users immediately, print each password once.
+        // One bad row (existing uid, invalid name, password policy) is reported and skipped;
+        // it must not abort the rows after it (audit #9).
         $dataRows = array_slice($allLines, 1);
+        $failed = 0;
         foreach ($dataRows as $line) {
-            $cols = str_getcsv($line, ',', '"', '');
-            $uid  = trim($cols[0] ?? '');
-            $name = trim($cols[1] ?? $uid);
+            $cols  = str_getcsv($line, ',', '"', '');
+            $uid   = trim($cols[0] ?? '');
+            $name  = trim($cols[1] ?? $uid);
+            $email = trim($cols[2] ?? '');
             if ($uid === '') {
                 continue;
             }
 
             // Generate random password — 24 hex chars, printed once then discarded
             $password = bin2hex(random_bytes(12));
-            $user     = $this->userManager->createUser($uid, $password);
+            try {
+                $user = $this->userManager->createUser($uid, $password);
+            } catch (\Throwable $e) {
+                unset($password);
+                $failed++;
+                $output->writeln("<error>Failed to create user: $uid (" . $e->getMessage() . ')</error>');
+                continue;
+            }
             if (!($user instanceof IUser)) {
                 unset($password);
+                $failed++;
                 $output->writeln("<error>Failed to create user: $uid</error>");
                 continue;
             }
 
-            if ($name !== '') {
-                $user->setDisplayName($name);
-            }
-
-            if ($group !== null) {
-                $grp = $this->groupManager->get($group);
-                $grp?->addUser($user);
+            // The account exists from here on: its password must be printed even if a
+            // follow-up step fails, otherwise nobody can ever log in with it.
+            foreach (self::completeImportedUser($user, $name, $email, $group, $this->groupManager) as $warning) {
+                $output->writeln("<comment>User $uid: $warning</comment>");
             }
 
             $this->auditService->logEvent('user.imported', $adminUid, ['username' => $uid]);
@@ -128,6 +137,52 @@ class ImportUsersCommand extends Command {
             unset($password); // clear plaintext from scope
         }
 
+        if ($failed > 0) {
+            $output->writeln("<error>$failed row(s) could not be imported.</error>");
+            return self::FAILURE;
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Display name, email and group for a freshly created user. Shared with ImportUsersJob.
+     * Each step is independent: a failure is returned as a warning, never thrown.
+     *
+     * @return list<string> warnings
+     */
+    public static function completeImportedUser(IUser $user, string $name, string $email, ?string $group, IGroupManager $groupManager): array {
+        $warnings = [];
+        if ($name !== '') {
+            try {
+                $user->setDisplayName($name);
+            } catch (\Throwable $e) {
+                $warnings[] = 'display name not set (' . $e->getMessage() . ')';
+            }
+        }
+        if ($email !== '') {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                $warnings[] = "invalid email address ignored: $email";
+            } else {
+                try {
+                    $user->setSystemEMailAddress($email);
+                } catch (\Throwable $e) {
+                    $warnings[] = 'email address not set (' . $e->getMessage() . ')';
+                }
+            }
+        }
+        if ($group !== null) {
+            try {
+                $grp = $groupManager->get($group);
+                if ($grp === null) {
+                    $warnings[] = "group not found: $group";
+                } else {
+                    $grp->addUser($user);
+                }
+            } catch (\Throwable $e) {
+                $warnings[] = "not added to group $group (" . $e->getMessage() . ')';
+            }
+        }
+        return $warnings;
     }
 }
