@@ -21,15 +21,15 @@ import BuddyMatching from '../../src/components/BuddyMatching.vue'
 // "Telos profile" the app shows nowhere.
 describe('kommunikationTabIds — learning partner switch (GitHub #40)', () => {
 	it('keeps the learning partners for a course saved before the switch existed', () => {
-		expect(kommunikationTabIds({ mode_config: {} })).toEqual(['feed', 'buddies'])
-		expect(kommunikationTabIds({ mode_config: null }, { aiEnabled: true })).toEqual(['feed', 'buddies', 'schwarm'])
-		expect(kommunikationTabIds(null)).toEqual(['feed', 'buddies'])
+		expect(kommunikationTabIds({ mode_config: {} })).toEqual(['feed', 'my-questions', 'buddies'])
+		expect(kommunikationTabIds({ mode_config: null }, { aiEnabled: true })).toEqual(['feed', 'my-questions', 'buddies', 'schwarm'])
+		expect(kommunikationTabIds(null)).toEqual(['feed', 'my-questions', 'buddies'])
 		expect(buddiesEnabled(null)).toBe(true)
 	})
 
 	it('drops the learning partners when the course switched them off', () => {
-		expect(kommunikationTabIds({ mode_config: { buddies: false } })).toEqual(['feed'])
-		expect(kommunikationTabIds({ mode_config: { buddies: false } }, { aiEnabled: true })).toEqual(['feed', 'schwarm'])
+		expect(kommunikationTabIds({ mode_config: { buddies: false } })).toEqual(['feed', 'my-questions'])
+		expect(kommunikationTabIds({ mode_config: { buddies: false } }, { aiEnabled: true })).toEqual(['feed', 'my-questions', 'schwarm'])
 		expect(buddiesEnabled({ mode_config: { buddies: false } })).toBe(false)
 	})
 

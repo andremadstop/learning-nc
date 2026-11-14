@@ -343,6 +343,7 @@ namespace OCP\Notification {
         interface IManager {
             public function createNotification(): INotification;
             public function notify(INotification $notification): void;
+            public function markProcessed(INotification $notification): void;
             public function getCount(INotification $notification): int;
         }
     }

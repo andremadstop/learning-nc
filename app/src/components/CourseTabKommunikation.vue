@@ -30,14 +30,14 @@
 			<CourseFeed :course-id="courseId" :can-manage="isInstructor" />
 		</div>
 
-		<!-- Questions from learners (instructor only): course questions sent through the help
-			assistant. GitHub #40: named for what it holds, and the empty state says where the
-			questions come from. -->
+		<!-- Questions from learners (instructor only): course questions sent from the learners'
+			"Frage stellen" tab (#59) or through the help assistant. GitHub #40: named for what it
+			holds, and the empty state says where the questions come from. -->
 		<div v-if="currentSubTab === 'requests' && isInstructor" class="tab-content requests-section">
 			<div v-if="loadingRequests" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
 			<div v-else-if="courseTickets.length === 0" class="empty-hint requests-empty">
 				<p>{{ t('learning', 'Noch keine Fragen von Lernenden zu diesem Kurs.') }}</p>
-				<p>{{ t('learning', 'Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.') }}</p>
+				<p>{{ t('learning', 'Hier erscheinen Fragen zu diesem Kurs, die Lernende dir unter „Frage stellen“ im Bereich Kommunikation oder über den Hilfe-Assistenten VirtuProf schicken.') }}</p>
 			</div>
 			<div v-else class="tickets-list-cd">
 				<div v-for="ticket in courseTickets" :key="ticket.id" class="ticket-item-cd">
@@ -55,6 +55,11 @@
 					</div>
 				</div>
 			</div>
+		</div>
+
+		<!-- GitHub #59: questions to the instructors (learners, also without VirtuProf) -->
+		<div v-if="currentSubTab === 'my-questions' && !isInstructor" class="tab-content">
+			<CourseLearnerQuestions :course-id="courseId" />
 		</div>
 
 		<!-- Buddies (student only) -->
@@ -76,6 +81,7 @@ import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { showError } from '@nextcloud/dialogs'
 import CourseFeed from './CourseFeed.vue'
+import CourseLearnerQuestions from './CourseLearnerQuestions.vue'
 import BuddyMatching from './BuddyMatching.vue'
 import { buddiesEnabled, kommunikationTabIds } from '../utils/courseView.js'
 import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
@@ -86,6 +92,7 @@ export default {
 	components: {
 		NcButton,
 		CourseFeed,
+		CourseLearnerQuestions,
 		BuddyMatching,
 		StudentKnowledgeContribute,
 	},
@@ -145,6 +152,7 @@ export default {
 				announcements: t('learning', 'Ankuendigungen'),
 				feed: t('learning', 'Feed'),
 				requests: t('learning', 'Fragen von Lernenden'),
+				'my-questions': t('learning', 'Frage stellen'),
 				buddies: t('learning', 'Lernpartner'),
 				schwarm: t('learning', 'Schwarm'),
 			}

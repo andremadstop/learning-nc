@@ -102,6 +102,44 @@ class SupportTicketController extends Controller {
     }
 
     /**
+     * GitHub #59: a learner asks the instructors of a course from its communication tab, with or
+     * without VirtuProf. Only a learner of the course; the question reaches "Questions from
+     * learners" of that course.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function askCourse(int $courseId, ?string $subject = null, string $message = ''): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            return new DataResponse(['question' => $this->service->askCourseQuestion($courseId, $this->userId, $subject, $message)], Http::STATUS_CREATED);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * GitHub #59: the caller's own questions to the instructors of a course, with the answers.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function myCourseQuestions(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            return new DataResponse($this->service->listMyCourseQuestions($courseId, $this->userId));
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]

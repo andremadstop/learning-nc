@@ -240,6 +240,9 @@ return [
         ['name' => 'course#updateAnnouncement', 'url' => '/api/courses/{courseId}/announcements/{announcementId}', 'verb' => 'PUT'],
         ['name' => 'course#updateExamDate', 'url' => '/api/courses/{courseId}/exam-date', 'verb' => 'PATCH'],
         ['name' => 'supportTicket#instructorList', 'url' => '/api/courses/{courseId}/support-tickets', 'verb' => 'GET'],
+        // GitHub #59: learner questions to the course's instructors, without VirtuProf
+        ['name' => 'supportTicket#askCourse', 'url' => '/api/courses/{courseId}/questions', 'verb' => 'POST'],
+        ['name' => 'supportTicket#myCourseQuestions', 'url' => '/api/courses/{courseId}/questions/mine', 'verb' => 'GET'],
 
         // Lernprofil
         ['name' => 'lernprofil#profile', 'url' => '/api/profile', 'verb' => 'GET'],

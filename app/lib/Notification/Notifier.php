@@ -138,6 +138,36 @@ class Notifier implements INotifier {
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
+            case 'ticket_created':
+                // GitHub #59: a learner asked the instructors of a course a question
+                $params = $notification->getSubjectParameters();
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $notification->setParsedSubject(
+                    $l->t('Neue Frage von Lernenden im Kurs %s', [$courseTitle])
+                );
+                $courseId = (int)($params['course_id'] ?? 0);
+                $notification->setLink($courseId > 0
+                    ? rtrim($appUrl, '/') . '/courses/' . $courseId . '/requests'
+                    : $appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
+                break;
+
+            case 'ticket_answered':
+            case 'ticket_answer_updated':
+                // GitHub #59: the learner's question got an answer, or its answer was changed
+                $params = $notification->getSubjectParameters();
+                $ticketSubject = (string)($params['ticket_subject'] ?? '');
+                $notification->setParsedSubject($notification->getSubject() === 'ticket_answered'
+                    ? $l->t('Deine Frage „%s“ wurde beantwortet', [$ticketSubject])
+                    : $l->t('Die Antwort auf deine Frage „%s“ wurde geändert', [$ticketSubject]));
+                // a course question opens the learner's list of questions in that course
+                $courseId = (int)($params['course_id'] ?? 0);
+                $notification->setLink($courseId > 0
+                    ? rtrim($appUrl, '/') . '/courses/' . $courseId . '/my-questions'
+                    : $appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
+                break;
+
             default:
                 throw new UnknownNotificationException('Unknown subject');
         }

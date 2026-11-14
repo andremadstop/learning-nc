@@ -375,6 +375,25 @@ describe('CourseDetail — completion tab in certifying courses (GitHub #35)', (
 		expect(instance.currentTab).toBe('summary')
 		expect(instance.activeMegaTab).toBe('abschluss')
 	})
+
+	// GitHub #59: the answer notification links /courses/<id>/my-questions
+	it('resolves the /courses/<id>/my-questions deep link (answer notification) to the communication area', () => {
+		const instance = createInstance({ course: { is_instructor: false, mode_config: {} } })
+
+		instance.syncCurrentTabFromRoute('my-questions')
+
+		expect(instance.currentTab).toBe('my-questions')
+		expect(instance.activeMegaTab).toBe('kommunikation')
+	})
+
+	it('sends an instructor with the learner link to the first communication leaf', () => {
+		const instance = createInstance({ course: { is_instructor: true, mode_config: {} }, userRole: 'instructor' })
+
+		instance.syncCurrentTabFromRoute('my-questions')
+
+		expect(instance.activeMegaTab).toBe('kommunikation')
+		expect(instance.currentTab).toBe('announcements')
+	})
 })
 
 // GitHub #35: the student view must show a course the way a learner sees it. CourseDetail got the
@@ -403,10 +422,10 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toEqual(['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation'])
 		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam'])
 		expect(instance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook'])
-		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies'])
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'my-questions', 'buddies'])
 		expect(instance.wettbewerbLeafTabs).toEqual(['leaderboard', 'league', 'arena'])
 		instance.adminAiEnabled = true
-		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies', 'schwarm'])
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'my-questions', 'buddies', 'schwarm'])
 	})
 
 	// GitHub #40: learning partners have their own course switch; a deep link to the hidden leaf
@@ -414,10 +433,10 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 	it('leaves out the learning partners when the course switched them off', () => {
 		const instance = createInstance({ course: ownCourse({ mode_config: { buddies: false } }), userRole: 'student', studentViewActive: true })
 
-		expect(instance.kommunikationLeafTabs).toEqual(['feed'])
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'my-questions'])
 		expect(instance.megaTabForLeaf('buddies')).toBe(null)
 		instance.adminAiEnabled = true
-		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'schwarm'])
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'my-questions', 'schwarm'])
 	})
 
 	it('a global student enrolled as co-instructor keeps the instructor tabs (the membership decides)', () => {

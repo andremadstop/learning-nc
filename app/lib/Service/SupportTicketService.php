@@ -19,17 +19,71 @@ class SupportTicketService {
     private CourseService $courseService;
     private GeminiService $geminiService;
     private TelosService $telosService;
+    private ?SupportTicketNotifier $notifier;
 
     public function __construct(
         SupportTicketMapper $ticketMapper,
         CourseService $courseService,
         GeminiService $geminiService,
-        TelosService $telosService
+        TelosService $telosService,
+        ?SupportTicketNotifier $notifier = null
     ) {
         $this->ticketMapper = $ticketMapper;
         $this->courseService = $courseService;
         $this->geminiService = $geminiService;
         $this->telosService = $telosService;
+        $this->notifier = $notifier;
+    }
+
+    /**
+     * GitHub #59: a learner asks the instructors of a course from its communication tab, without
+     * VirtuProf. Only a learner of the course may (an instructor, also in the student view, gets
+     * ForbiddenException); the question takes the same path as VirtuProf's course questions and
+     * lands in "Questions from learners".
+     *
+     * @return array<string, mixed> the question as the learner sees it
+     * @throws ForbiddenException when the user is no learner of the course
+     * @throws \InvalidArgumentException for an empty or too long text
+     */
+    public function askCourseQuestion(int $courseId, string $userId, ?string $subject, string $message): array {
+        $course = $this->learnerCourse($courseId, $userId);
+        if (empty($course['can_ask'])) {
+            throw new ForbiddenException('Only learners of this course can ask its instructors');
+        }
+        $ticket = $this->create($userId, $subject, $message, [
+            'courseId' => $courseId,
+            'courseTitle' => (string)($course['title'] ?? ''),
+        ], 'course_content');
+        return $this->serializeForLearner($ticket);
+    }
+
+    /**
+     * GitHub #59: the caller's own questions to the instructors of a course, and whether the
+     * caller may ask there.
+     *
+     * @return array{questions: list<array<string, mixed>>, can_ask: bool}
+     * @throws ForbiddenException when the user cannot see the course
+     */
+    public function listMyCourseQuestions(int $courseId, string $userId): array {
+        $course = $this->learnerCourse($courseId, $userId);
+        return [
+            'questions' => array_map([$this, 'serializeForLearner'], $this->ticketMapper->findByUserAndRoutingCourse($userId, $courseId, 50)),
+            'can_ask' => (bool)$course['can_ask'],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed> the course, with can_ask = the user is a learner of it
+     * @throws ForbiddenException when the user is no member of the course
+     */
+    private function learnerCourse(int $courseId, string $userId): array {
+        try {
+            $course = $this->courseService->findById($courseId, $userId);
+        } catch (\Throwable $e) {
+            throw new ForbiddenException('No access to this course');
+        }
+        $course['can_ask'] = empty($course['is_instructor']);
+        return $course;
     }
 
     public function create(string $userId, ?string $subject, string $message, array $context = [], ?string $category = null): SupportTicket {
@@ -80,6 +134,9 @@ class SupportTicketService {
 
         /** @var SupportTicket $ticket */
         $ticket = $this->ticketMapper->insert($ticket);
+
+        // GitHub #59: the course's instructors learn of a new question without opening the tab
+        $this->notifier?->questionAsked($ticket);
 
         // AI Triage: classify ticket if AI is enabled AND the user consented to AI use.
         // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R4): the ticket free-text is sent to
@@ -152,6 +209,7 @@ class SupportTicketService {
             }
         }
 
+        $previousAnswer = $ticket->getAnswerText();
         $ticket->setStatus('answered');
         $ticket->setAnswerText($answerText);
         $ticket->setAnsweredBy($answeredBy);
@@ -160,6 +218,8 @@ class SupportTicketService {
 
         /** @var SupportTicket $u */
         $u = $this->ticketMapper->update($ticket);
+        // GitHub #59: the learner learns of an answer, and of a changed one
+        $this->notifier?->answerGiven($u, $previousAnswer, $answeredBy);
         return $this->serializeTicket($u);
     }
 
@@ -176,6 +236,7 @@ class SupportTicketService {
             throw new \InvalidArgumentException('Ticket has no AI draft answer to approve');
         }
 
+        $previousAnswer = $ticket->getAnswerText();
         $ticket->setStatus('answered');
         $ticket->setAnswerText($ticket->getAiDraftAnswer());
         $ticket->setAnsweredBy($answeredBy);
@@ -184,6 +245,7 @@ class SupportTicketService {
 
         /** @var SupportTicket $u */
         $u = $this->ticketMapper->update($ticket);
+        $this->notifier?->answerGiven($u, $previousAnswer, $answeredBy);
         return $this->serializeTicket($u);
     }
 
@@ -240,6 +302,24 @@ class SupportTicketService {
         $data['context'] = !empty($data['context_json']) ? (json_decode((string)$data['context_json'], true) ?: []) : [];
         unset($data['context_json']);
         return $data;
+    }
+
+    /**
+     * GitHub #59: what a learner sees of their own question. No AI triage fields, no draft and
+     * no account id of whoever answered.
+     *
+     * @return array<string, mixed>
+     */
+    private function serializeForLearner(SupportTicket $ticket): array {
+        return [
+            'id' => (int)$ticket->getId(),
+            'subject' => (string)$ticket->getSubject(),
+            'message' => (string)$ticket->getMessage(),
+            'status' => (string)$ticket->getStatus(),
+            'answer_text' => $ticket->getAnswerText(),
+            'answered_at' => $ticket->getAnsweredAt() !== null ? (int)$ticket->getAnsweredAt() : null,
+            'created_at' => (int)$ticket->getCreatedAt(),
+        ];
     }
 
     private function buildFallbackSubject(array $context): string {

@@ -95,13 +95,13 @@ describe('CourseTabKommunikation', () => {
 		const instance = createInstance({ course: { is_instructor: true }, userRole: 'student', actsAsInstructor: false, aiEnabled: true })
 
 		expect(instance.isInstructor).toBe(false)
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies', 'schwarm'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'my-questions', 'buddies', 'schwarm'])
 	})
 
 	it('builds student sub-tabs: feed, buddies, schwarm', () => {
 		const instance = createInstance({ aiEnabled: true })
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies', 'schwarm'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'my-questions', 'buddies', 'schwarm'])
 	})
 
 	// GitHub #35: with AI off the knowledge moderation is gone, so nobody could ever read a swarm
@@ -109,7 +109,7 @@ describe('CourseTabKommunikation', () => {
 	it('leaves out the swarm while the admin has AI switched off', () => {
 		const instance = createInstance({ aiEnabled: false })
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'my-questions', 'buddies'])
 	})
 
 	// GitHub #40: the course switch mode_config.buddies hides the learning partners, and a deep
@@ -117,7 +117,7 @@ describe('CourseTabKommunikation', () => {
 	it('leaves out the learning partners when the course switched them off', () => {
 		const instance = createInstance({ course: { is_instructor: false, mode_config: { buddies: false } }, aiEnabled: true })
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'schwarm'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'my-questions', 'schwarm'])
 		instance.syncFromActiveTab('buddies')
 		expect(instance.currentSubTab).toBe('feed')
 	})

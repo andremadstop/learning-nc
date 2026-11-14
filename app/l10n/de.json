@@ -3547,7 +3547,6 @@
         "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen.": "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen.",
         "Fragen von Lernenden": "Fragen von Lernenden",
         "Noch keine Fragen von Lernenden zu diesem Kurs.": "Noch keine Fragen von Lernenden zu diesem Kurs.",
-        "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.",
         "Die Ankündigung konnte nicht veröffentlicht werden.": "Die Ankündigung konnte nicht veröffentlicht werden.",
         "Die Fragen von Lernenden konnten nicht geladen werden.": "Die Fragen von Lernenden konnten nicht geladen werden.",
         "Die Antwort konnte nicht gesendet werden.": "Die Antwort konnte nicht gesendet werden.",
@@ -3643,6 +3642,22 @@
         "Karten in Box 1: %s": "Karten in Box 1: %s",
         "Benutzer-ID": "Benutzer-ID",
         "Beherrschung": "Beherrschung",
-        "Gewonnene Duelle": "Gewonnene Duelle"
+        "Gewonnene Duelle": "Gewonnene Duelle",
+        "Frage stellen": "Frage stellen",
+        "Frage an die Kursleitung": "Frage an die Kursleitung",
+        "Deine Frage geht an die Lehrenden dieses Kurses. Nur sie und du sehen die Frage und die Antwort.": "Deine Frage geht an die Lehrenden dieses Kurses. Nur sie und du sehen die Frage und die Antwort.",
+        "Betreff (optional)": "Betreff (optional)",
+        "Deine Frage": "Deine Frage",
+        "Frage senden": "Frage senden",
+        "In der Schüler-Ansicht kannst du keine Fragen senden. Die Fragen der Lernenden findest du ohne Schüler-Ansicht unter „Fragen von Lernenden“.": "In der Schüler-Ansicht kannst du keine Fragen senden. Die Fragen der Lernenden findest du ohne Schüler-Ansicht unter „Fragen von Lernenden“.",
+        "Meine Fragen": "Meine Fragen",
+        "Du hast in diesem Kurs noch keine Fragen gestellt.": "Du hast in diesem Kurs noch keine Fragen gestellt.",
+        "Deine Fragen konnten nicht geladen werden.": "Deine Fragen konnten nicht geladen werden.",
+        "Deine Frage wurde an die Kursleitung gesendet.": "Deine Frage wurde an die Kursleitung gesendet.",
+        "Die Frage konnte nicht gesendet werden.": "Die Frage konnte nicht gesendet werden.",
+        "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir unter „Frage stellen“ im Bereich Kommunikation oder über den Hilfe-Assistenten VirtuProf schicken.": "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir unter „Frage stellen“ im Bereich Kommunikation oder über den Hilfe-Assistenten VirtuProf schicken.",
+        "Neue Frage von Lernenden im Kurs %s": "Neue Frage von Lernenden im Kurs %s",
+        "Deine Frage „%s“ wurde beantwortet": "Deine Frage „%s“ wurde beantwortet",
+        "Die Antwort auf deine Frage „%s“ wurde geändert": "Die Antwort auf deine Frage „%s“ wurde geändert"
     }
 }

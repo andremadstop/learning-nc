@@ -161,7 +161,8 @@ export function abschlussTabIds(course, { actsAsInstructor = false } = {}) {
  * Learning partners have their own course switch (mode_config.buddies, a missing key counts as
  * on), so a mandatory training can leave them out; a deep link to the hidden leaf then falls back
  * to the feed. The swarm feeds the AI assistant's course knowledge and exists only while the
- * admin has AI on (GitHub #35). Instructors keep their three leaves.
+ * admin has AI on (GitHub #35). Instructors keep their three leaves. Learners always get
+ * "my-questions", where they ask the instructors and read the answers without VirtuProf (#59).
  *
  * @param {object|null|undefined} course - the course detail (snake_case fields)
  * @param {object} options
@@ -173,7 +174,7 @@ export function kommunikationTabIds(course, { actsAsInstructor = false, aiEnable
 	if (actsAsInstructor) {
 		return ['announcements', 'feed', 'requests']
 	}
-	const tabs = ['feed']
+	const tabs = ['feed', 'my-questions']
 	if (buddiesEnabled(course)) tabs.push('buddies')
 	if (aiEnabled) tabs.push('schwarm')
 	return tabs
