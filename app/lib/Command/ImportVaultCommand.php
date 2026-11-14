@@ -28,8 +28,12 @@ class ImportVaultCommand extends Command {
     /** Minimum cleaned file length to be imported */
     private const MIN_FILE_LENGTH = 50;
 
-    /** Directory names to exclude from import */
-    private const EXCLUDED_DIRS = ['/Eigene-Notizen/', '/.obsidian/', '/Bilder/', '/.venv/', '/tools/'];
+    /**
+     * Directories that never hold course notes: Obsidian's settings and a Python venv. This list
+     * also had 'Eigene-Notizen', 'Bilder' and 'tools' from one particular vault, so a chapter
+     * folder "tools/" was dropped without notice (2026-11 audit #137); such folders go in --exclude.
+     */
+    private const EXCLUDED_DIRS = ['/.obsidian/', '/.venv/'];
 
     public function __construct(
         RagChunkMapper $chunkMapper,
@@ -48,7 +52,7 @@ class ImportVaultCommand extends Command {
             ->addOption('course-id', null, InputOption::VALUE_REQUIRED, 'Course ID to associate chunks with')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview matching files and chunks without DB writes')
             ->addOption('pattern', null, InputOption::VALUE_REQUIRED, 'Glob pattern for markdown files', '**/*.md')
-            ->addOption('exclude', null, InputOption::VALUE_REQUIRED, 'Comma-separated exclude patterns', '');
+            ->addOption('exclude', null, InputOption::VALUE_REQUIRED, 'Comma-separated glob patterns, matched against the path in the vault and the file name, e.g. "Private/**,Bilder/**,*.excalidraw.md". .obsidian/ and .venv/ are always skipped', '');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
@@ -191,7 +195,10 @@ class ImportVaultCommand extends Command {
         $output->writeln("  Chunks: {$totalChunks}");
         $output->writeln("  Tokens: {$totalTokens}");
         $output->writeln("  Skipped existing: {$skippedExisting}");
-        $output->writeln("  Skipped excluded: {$skippedExcluded}");
+        $output->writeln("  Skipped excluded: {$skippedExcluded} (" . implode(', ', array_merge(
+            array_map(static fn(string $dir): string => trim($dir, '/') . '/', self::EXCLUDED_DIRS),
+            $excludePatterns
+        )) . ')');
         $output->writeln("  Skipped short: {$skippedShort}");
         $output->writeln("  Skipped unreadable: {$skippedUnreadable}");
 

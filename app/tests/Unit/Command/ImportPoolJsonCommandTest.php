@@ -106,7 +106,7 @@ class ImportPoolJsonCommandTest extends TestCase {
         $this->assertSame('alice', $this->createdPools[0]['user']);
         $this->assertSame(['Single', 'Open'], array_map(static fn (array $a) => $a[2], $this->createdQuestions));
         $this->assertSame(['single', 'open'], array_map(static fn (array $a) => $a[6], $this->createdQuestions));
-        $this->assertStringContainsString('1 Pools, 2 Fragen', $display);
+        $this->assertStringContainsString('1 pools, 2 questions', $display);
     }
 
     public function testPoolNameOptionNamesTheBareListPool(): void {
@@ -138,7 +138,7 @@ class ImportPoolJsonCommandTest extends TestCase {
 
         $this->assertSame(Command::SUCCESS, $exit, $display);
         $this->assertSame([], $this->createdPools);
-        $this->assertStringContainsString('Dry-run: 1 Pools, 2 Fragen', $display);
+        $this->assertStringContainsString('Dry-run: 1 pools, 2 questions', $display);
     }
 
     public function testPoolNameWithAPoolsFileIsRefused(): void {
@@ -257,13 +257,13 @@ class ImportPoolJsonCommandTest extends TestCase {
         ];
         [$exit, $display] = $this->runCommand(['file' => $this->writeJson($refused, 'x'), '--user' => 'alice', '--dry-run' => true]);
         $this->assertSame(Command::SUCCESS, $exit, $display);
-        $this->assertStringContainsString('Dry-run: 1 Pools, 0 Fragen', $display);
+        $this->assertStringContainsString('Dry-run: 1 pools, 0 questions', $display);
 
         [, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [
             ['name' => 'Kept', 'questions' => self::bareList()],
             ['name' => 'Too long', 'description' => str_repeat('d', 2001), 'questions' => self::bareList()],
         ]]), '--user' => 'alice', '--dry-run' => true]);
-        $this->assertStringContainsString('Dry-run: 1 Pools, 2 Fragen', $display);
+        $this->assertStringContainsString('Dry-run: 1 pools, 2 questions', $display);
     }
 
     /**
@@ -286,10 +286,36 @@ class ImportPoolJsonCommandTest extends TestCase {
 
     /** The audit's own file: named by its pool_name, all 25 multiple_choice questions importable. */
     public function testTheSubnettingDataFileDryRunsCompletely(): void {
-        [$exit, $display] = $this->runCommand(['file' => __DIR__ . '/../../../data/subnetting_questions.json', '--user' => 'alice', '--dry-run' => true]);
+        [$exit, $display] = $this->runCommand(['file' => __DIR__ . '/../../../examples/pools/subnetting-ip-adressierung-n10-009-de.json', '--user' => 'alice', '--dry-run' => true]);
 
         $this->assertSame(Command::SUCCESS, $exit, $display);
         $this->assertStringContainsString('Subnetting & IP-Adressierung (N10-009)', $display);
-        $this->assertStringContainsString('Dry-run: 1 Pools, 25 Fragen', $display);
+        $this->assertStringContainsString('Dry-run: 1 pools, 25 questions', $display);
+    }
+
+    /**
+     * Audit #136: a file whose every pool was refused still exited 0, so a script reported success.
+     * The output was also half German ("Imported: 0 Pools, 0 Fragen.") although occ speaks English.
+     */
+    public function testNothingImportedWithErrorsExitsWithFailure(): void {
+        $refused = ['pools' => [['name' => 'Too long', 'description' => str_repeat('d', 2001), 'questions' => self::bareList()]]];
+
+        [$exit, $display] = $this->runCommand(['file' => $this->writeJson($refused), '--user' => 'alice']);
+        $this->assertSame(Command::FAILURE, $exit, $display);
+        $this->assertStringContainsString('Imported: 0 pools, 0 questions.', $display);
+        $this->assertStringNotContainsString('Fragen', $display);
+
+        [$exit, $display] = $this->runCommand(['file' => $this->writeJson($refused), '--user' => 'alice', '--dry-run' => true]);
+        $this->assertSame(Command::FAILURE, $exit, $display);
+    }
+
+    public function testAPartlyRefusedFileStillSucceeds(): void {
+        [$exit, $display] = $this->runCommand(['file' => $this->writeJson(['pools' => [
+            ['name' => 'Kept', 'questions' => self::bareList()],
+            ['name' => 'Too long', 'description' => str_repeat('d', 2001), 'questions' => self::bareList()],
+        ]]), '--user' => 'alice']);
+
+        $this->assertSame(Command::SUCCESS, $exit, $display);
+        $this->assertStringContainsString('(2 questions, chapter', $display);
     }
 }
