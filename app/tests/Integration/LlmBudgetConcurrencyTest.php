@@ -286,6 +286,8 @@ final class LlmBudgetConcurrencyTest extends TestCase {
                 $code = proc_close($procs[$i]);
                 unset($procs[$i]);
                 $this->assertSame(0, $code, "worker {$i} exit {$code}: {$out} {$err}");
+                // an empty or unknown line is not an outcome: show what the worker said (#120)
+                $this->assertContains($out, ['OK', 'RATE_LIMIT'], "worker {$i} printed '{$out}', stderr: '{$err}'");
                 $outcomes[$out] = ($outcomes[$out] ?? 0) + 1;
             }
             ksort($outcomes);
