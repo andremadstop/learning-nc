@@ -266,3 +266,21 @@ describe('texts without XP, streaks and badges with gamification off (GitHub #36
 		}
 	})
 })
+
+describe('CourseRecentSessions in the student view (GitHub #36)', () => {
+	it('shows the empty hint, not an error, when the viewer is no student of the course (404)', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockImplementationOnce(() => Promise.reject(Object.assign(new Error('404'), { response: { status: 404 } })))
+		const { default: CourseRecentSessions } = await import('../../src/components/CourseRecentSessions.vue')
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({ render: () => h(CourseRecentSessions, { courseId: 5, studentId: 'teacher' }) })
+		app.config.globalProperties.t = globalThis.t
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await flush()
+		expect(host.querySelector('.empty-hint')).not.toBeNull()
+		expect(host.textContent).not.toContain('Failed to load')
+	})
+})
+

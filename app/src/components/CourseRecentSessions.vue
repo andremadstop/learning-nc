@@ -71,9 +71,13 @@ export default {
 				const response = await axios.get(url)
 				this.sessions = Array.isArray(response.data?.recent_sessions) ? response.data.recent_sessions : []
 			} catch (err) {
+				this.sessions = []
+				// An instructor in the student view is no student of the course (404): nothing to list.
+				if (err?.response?.status === 404) {
+					return
+				}
 				console.error('Failed to fetch recent sessions:', err)
 				this.error = true
-				this.sessions = []
 			} finally {
 				this.loading = false
 			}
