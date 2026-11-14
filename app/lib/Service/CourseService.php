@@ -2431,7 +2431,8 @@ class CourseService {
             $qb->expr()->eq('cm.user_id', 's.user_id')
         ))
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->andWhere($qb->expr()->in('cm.role', $qb->createNamedParameter(['student', 'co_instructor'], \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+        // Students only, like every other course figure ('co_instructor' is no role) (audit #50)
+        ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
         ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
 
@@ -2454,8 +2455,11 @@ class CourseService {
         ->from('learning_user_answers', 'ua')
         ->innerJoin('ua', 'learning_questions', 'q', $qb2->expr()->eq('ua.question_id', 'q.id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb2->expr()->eq('cp.pool_id', 'q.pool_id'))
-        ->where($qb2->expr()->eq('cp.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->groupBy('q.id', 'q.text', 'q.chapter_key')
+        ->where($qb2->expr()->eq('cp.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        // The same learners as the chapter rows above: the top questions no longer mix in
+        // answers from other courses sharing the pool (audit #50)
+        $this->restrictToCourseStudents($qb2, $courseId);
+        $qb2->groupBy('q.id', 'q.text', 'q.chapter_key')
         ->having($qb2->createFunction('COUNT(ua.id) >= 5'))
         ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
         ->setMaxResults(50);
@@ -2526,8 +2530,9 @@ class CourseService {
         ->from('learning_user_answers', 'ua')
         ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
-        ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->groupBy('q.id', 'q.text', 'q.chapter_key', 'q.chapter_title')
+        ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        $this->restrictToCourseStudents($qb, $courseId);
+        $qb->groupBy('q.id', 'q.text', 'q.chapter_key', 'q.chapter_title')
         ->having($qb->createFunction('COUNT(ua.id) >= 5'))
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
         ->setMaxResults(max(1, min(100, $limit)));
@@ -2611,6 +2616,28 @@ class CourseService {
     }
 
     /**
+     * Join learning_course_members as cm onto a query over learning_sessions aliased s: only
+     * sessions of students of $courseId remain. A pool can belong to several courses and to
+     * self-learners; course figures count the course's own students only (audit #50).
+     */
+    private function joinCourseStudents(\OCP\DB\QueryBuilder\IQueryBuilder $qb, int $courseId): void {
+        $qb->innerJoin('s', 'learning_course_members', 'cm', $qb->expr()->andX(
+            $qb->expr()->eq('cm.user_id', 's.user_id'),
+            $qb->expr()->eq('cm.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)),
+            $qb->expr()->eq('cm.role', $qb->createNamedParameter('student'))
+        ));
+    }
+
+    /**
+     * The same restriction for a query over learning_user_answers aliased ua, which has no
+     * user_id: through the answer's session.
+     */
+    private function restrictToCourseStudents(\OCP\DB\QueryBuilder\IQueryBuilder $qb, int $courseId): void {
+        $qb->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('s.id', 'ua.session_id'));
+        $this->joinCourseStudents($qb, $courseId);
+    }
+
+    /**
      * Get per-course instructor dashboard with activity stats.
      */
     public function getCourseDashboard(int $courseId, string $userId): array {
@@ -2630,10 +2657,11 @@ class CourseService {
         $activeLearners = 0;
         if (!empty($poolIds)) {
             $qb = $this->db->getQueryBuilder();
-            $qb->select($qb->createFunction('COUNT(DISTINCT user_id) AS cnt'))
-                ->from('learning_sessions')
-                ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-                ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($sevenDaysAgo)));
+            $qb->select($qb->createFunction('COUNT(DISTINCT s.user_id) AS cnt'))
+                ->from('learning_sessions', 's')
+                ->where($qb->expr()->in('s.pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb->expr()->gte('s.started_at', $qb->createNamedParameter($sevenDaysAgo)));
+            $this->joinCourseStudents($qb, $courseId);
             $r = $qb->executeQuery();
             $activeLearners = (int)$r->fetchOne();
             $r->closeCursor();
@@ -2663,6 +2691,7 @@ class CourseService {
             ->innerJoin('q', 'learning_course_pools', 'cp', $qb3->expr()->eq('cp.pool_id', 'q.pool_id'))
             ->where($qb3->expr()->eq('cp.course_id', $qb3->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb3->expr()->gte('ua.answered_at', $qb3->createNamedParameter($sevenDaysAgo)));
+            $this->restrictToCourseStudents($qb3, $courseId);
             $r3 = $qb3->executeQuery();
             $row3 = $r3->fetch();
             $r3->closeCursor();
@@ -2674,11 +2703,14 @@ class CourseService {
         $recentActivity = [];
         if (!empty($poolIds)) {
             $qb4 = $this->db->getQueryBuilder();
-            $qb4->select('pool_id', 'mode', 'user_id', 'completed_at')
-                ->from('learning_sessions')
-                ->where($qb4->expr()->in('pool_id', $qb4->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-                ->andWhere($qb4->expr()->isNotNull('completed_at'))
-                ->orderBy('completed_at', 'DESC')
+            $qb4->select('s.pool_id', 's.mode', 's.user_id', 's.completed_at')
+                ->from('learning_sessions', 's')
+                ->where($qb4->expr()->in('s.pool_id', $qb4->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb4->expr()->isNotNull('s.completed_at'));
+            // Only this course's students: the pool may be shared with other courses and
+            // self-learners, whose user IDs are none of this instructor's business (audit #50)
+            $this->joinCourseStudents($qb4, $courseId);
+            $qb4->orderBy('s.completed_at', 'DESC')
                 ->setMaxResults(20);
             $r4 = $qb4->executeQuery();
             while ($row = $r4->fetch()) {
