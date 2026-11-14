@@ -604,7 +604,9 @@ class LeitnerService {
 
                 // trouble_fixer badge: correct answer promoting from box 1
                 if ($currentBox === 1 && $newBox >= 2) {
-                    $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', []);
+                    // notify=false: the dispatchNotifications() call below sends every badge of
+                    // this answer once; notifying here as well sent this one twice (audit #76).
+                    $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', [], false);
                     $response['newly_earned_badges'] = array_merge($response['newly_earned_badges'], $troubleBadges);
                 }
             }
@@ -707,19 +709,22 @@ class LeitnerService {
            ->andWhere($qb->expr()->gte('l.incorrect_count', $qb->createNamedParameter(3)))
            ->andWhere($qb->expr()->lte('l.box', $qb->createNamedParameter(2)))
            ->orderBy('l.incorrect_count', 'DESC')
-           ->addOrderBy('l.last_reviewed', 'ASC')
-           ->setMaxResults($limit);
+           ->addOrderBy('l.last_reviewed', 'ASC');
 
         $result = $qb->executeQuery();
         $items = $result->fetchAll();
         $result->closeCursor();
 
-        // Filter by <30% accuracy in PHP (avoids platform-specific float division in SQL)
+        // Filter by <30% accuracy in PHP (avoids platform-specific float division in SQL), and
+        // only then apply the limit: with the LIMIT in SQL, items with many errors but ≥30%
+        // accuracy filled the window and the queue came back short of getRemediationCount
+        // (audit #77). The candidate set is small (box ≤ 2 and ≥ 3 errors of one user).
         $items = array_values(array_filter($items, function ($item) {
             $total = (int)$item['correct_count'] + (int)$item['incorrect_count'];
             if ($total === 0) return false;
             return ((int)$item['correct_count'] / $total) < 0.3;
         }));
+        $items = array_slice($items, 0, $limit);
 
         if (!empty($items)) {
             $this->attachAnswersToItems($items);

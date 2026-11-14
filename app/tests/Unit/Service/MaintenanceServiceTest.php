@@ -61,4 +61,81 @@ class MaintenanceServiceTest extends TestCase {
         $this->expectException(ForbiddenException::class);
         $service->toggleMaintenance(7, true, 'stranger');
     }
+
+    /**
+     * Audit #229: the maintenance queue (now opened by the dashboard widget, audit #41) shipped
+     * the explanation and the raw PBQ config with its solution while an exam was open on the pool.
+     *
+     * @param array<int, array<string, mixed>> $examRows
+     * @return array<int, array<string, mixed>>
+     */
+    private function maintenanceQueue(array $examRows, ?TranslationService $translation = null): array {
+        $items = [
+            ['id' => 1, 'question_id' => 10, 'pool_id' => 5, 'user_id' => 'alice', 'box' => 1, 'next_review' => 0,
+                'stability' => null, 'last_reviewed' => null, 'text' => 'PBQ', 'explanation' => 'because',
+                'question_type' => 'pbq', 'pbq_subtype' => 'dropdown',
+                'pbq_config' => '{"questions":[{"id":"q1","options":["a","b"],"correct":"b"}]}', 'pool_name' => 'P'],
+            ['id' => 2, 'question_id' => 11, 'pool_id' => 6, 'user_id' => 'alice', 'box' => 1, 'next_review' => 0,
+                'stability' => null, 'last_reviewed' => null, 'text' => 'Open', 'explanation' => 'why',
+                'question_type' => 'open', 'pbq_subtype' => null, 'pbq_config' => null, 'pool_name' => 'Q'],
+        ];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult([['id' => 3]])),                      // maintenance courses
+            new FakeQueryBuilder(new FakeResult([['pool_id' => 5], ['pool_id' => 6]])), // their pools
+            new FakeQueryBuilder(FakeResult::fromFetchAll($items)),                    // due items
+            new FakeQueryBuilder(new FakeResult([                                      // answers
+                ['id' => 90, 'question_id' => 11, 'text' => 'model answer', 'is_correct' => 1, 'position' => 0],
+            ])),
+            new FakeQueryBuilder(new FakeResult($examRows)),                           // open exams
+        ]);
+        if ($translation === null) {
+            $translation = $this->createMock(TranslationService::class);
+            $translation->method('translateQuestions')->willReturnArgument(0);
+        }
+        $service = new MaintenanceService(
+            $db,
+            $this->createMock(CourseMapper::class),
+            new FsrsService(),
+            $translation,
+            $this->createMock(IConfig::class)
+        );
+        $byId = [];
+        foreach ($service->getMaintenanceQueue('alice', 10) as $item) {
+            $byId[(int) $item['id']] = $item;
+        }
+        return $byId;
+    }
+
+    public function testMaintenanceQueueStripsSolutionsOfAPoolWithAnOpenExam(): void {
+        $items = $this->maintenanceQueue([['pool_id' => 5]]);
+
+        $this->assertArrayNotHasKey('explanation', $items[1]);
+        $this->assertSame(['questions' => [['id' => 'q1', 'options' => ['a', 'b']]]], $items[1]['pbq_config']);
+        // the other pool has no exam open
+        $this->assertSame('why', $items[2]['explanation']);
+    }
+
+    public function testMaintenanceQueueDecodesPbqConfigWithoutAnExam(): void {
+        $items = $this->maintenanceQueue([]);
+
+        $this->assertSame('because', $items[1]['explanation']);
+        $this->assertSame('b', $items[1]['pbq_config']['questions'][0]['correct']);
+    }
+
+    public function testMaintenanceQueueHidesTheTranslatedModelAnswerOfAnOpenQuestion(): void {
+        $translation = $this->createMock(TranslationService::class);
+        $translation->method('translateQuestions')->willReturnCallback(static function (array $items): array {
+            foreach ($items as &$item) {
+                foreach ($item['answers'] ?? [] as $i => $answer) {
+                    $item['answers'][$i]['text'] = 'translated model answer';
+                }
+            }
+            return $items;
+        });
+
+        $items = $this->maintenanceQueue([], $translation);
+
+        $this->assertSame('', $items[2]['answers'][0]['text']);
+        $this->assertArrayNotHasKey('is_correct', $items[2]['answers'][0]);
+    }
 }

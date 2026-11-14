@@ -1586,8 +1586,9 @@ export default {
         this.pushAppRoute({ name: 'courses' });
       }
     },
-    openSmartQueue() {
-      this.smartQueueMode = 'queue';
+    openSmartQueue(payload) {
+      // The dashboard's maintenance widget asks for the maintenance queue (audit #41).
+      this.smartQueueMode = payload && payload.maintenance ? 'maintenance' : 'queue';
       this.currentView = 'smartQueue';
     },
     openCourseTool(_toolId) {

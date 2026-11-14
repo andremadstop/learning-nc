@@ -11,7 +11,7 @@
     </div>
 
     <div v-else-if="!started" class="sq-ready">
-      <h3>{{ mode === 'remediation' ? t('learning', 'Trouble Spots') : t('learning', 'Smart Queue') }}</h3>
+      <h3>{{ mode === 'remediation' ? t('learning', 'Trouble Spots') : (mode === 'maintenance' ? t('learning', 'Maintenance Mode') : t('learning', 'Smart Queue')) }}</h3>
       <p>{{ mode === 'remediation' ? t('learning', '{n} problem questions to practice', { n: items.length }) : t('learning', '{n} questions due — sorted by priority: most urgent first.', { n: items.length }) }}</p>
       <NcButton variant="primary" @click="started = true">{{ t('learning', 'Start Review') }}</NcButton>
       <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
@@ -33,7 +33,28 @@
         <QuestionScenario :question="currentItem" />
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
-        <div v-if="!answered && isOpenQuestion" class="open-answer-area">
+        <!-- PBQ: rendered and scored like in LeitnerMode; without it the card had no controls
+             and every later due card of the session was unreachable (audit #40). -->
+        <div v-if="!answered && isPbq" class="pbq-answer-area">
+          <PbqRenderer
+            :question="currentItem"
+            :disabled="submitting"
+            @submit="submitPbqAnswer"
+            @skip="skipQuestion"
+          />
+        </div>
+        <div v-else-if="answered && isPbq" class="answer-feedback">
+          <NcNoteCard :type="lastCorrect ? 'success' : 'error'">
+            {{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
+            — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
+          </NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="info">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+          </NcNoteCard>
+          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question →') : t('learning', 'See Results') }}</NcButton>
+        </div>
+        <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
           <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
           <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
             {{ t('learning', 'Submit Answer') }}
@@ -58,6 +79,9 @@
           <template v-else>
             <button v-for="answer in currentItem.answers" :key="answer.id" @click="submitAnswer(answer)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
           </template>
+          <div v-if="!hasAnswerOptions" class="multi-submit-area">
+            <NcButton variant="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
+          </div>
         </div>
         <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
           <NcNoteCard :type="lastCorrect ? 'success' : 'error'">{{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -137,14 +161,15 @@ import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import PbqRenderer from './PbqRenderer.vue';
 import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'SmartQueue',
-  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher },
+  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher, PbqRenderer },
   mixins: [hintMixin],
   props: {
-    mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation'].includes(v) },
+    mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation', 'maintenance'].includes(v) },
     contentLanguage: { type: String, default: '' },
   },
   data() {
@@ -169,6 +194,8 @@ export default {
       newBadges: [],
       levelBefore: 0,
       levelAfter: 0,
+      pbqPoints: 0,
+      pbqMaxPoints: 0,
       questionLanguage: this.contentLanguage || '',
     };
   },
@@ -176,6 +203,14 @@ export default {
     currentItem() { return this.items[this.currentIndex] || null; },
     isCurrentMulti() { return this.currentItem && this.currentItem.question_type === 'multi'; },
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
+    isPbq() { return !!this.currentItem && this.currentItem.question_type === 'pbq'; },
+    hasAnswerOptions() { return !!this.currentItem && Array.isArray(this.currentItem.answers) && this.currentItem.answers.length > 0; },
+    queueEndpoint() {
+      if (this.mode === 'remediation') return '/apps/learning/api/leitner/remediation';
+      // Maintenance: due cards of the courses in maintenance mode only (audit #41).
+      if (this.mode === 'maintenance') return '/apps/learning/api/maintenance/queue';
+      return '/apps/learning/api/leitner/queue';
+    },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.items.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; },
     effectiveContentLanguage() { return this.questionLanguage || ''; },
@@ -207,7 +242,8 @@ export default {
   },
   methods: {
     queueParams() {
-      const params = { limit: 30 };
+      // The maintenance widget promises a short session (~10 cards, the endpoint's default).
+      const params = { limit: this.mode === 'maintenance' ? 10 : 30 };
       if (this.effectiveContentLanguage) {
         params.lang = this.effectiveContentLanguage;
       }
@@ -224,8 +260,7 @@ export default {
         return;
       }
       try {
-        const endpoint = this.mode === 'remediation' ? '/apps/learning/api/leitner/remediation' : '/apps/learning/api/leitner/queue';
-        const r = await axios.get(generateUrl(endpoint), { params: this.queueParams() });
+        const r = await axios.get(generateUrl(this.queueEndpoint), { params: this.queueParams() });
         if (Array.isArray(r.data)) {
           this.items = this.mergeFutureItems(r.data);
           this.lastCorrectAnswerTexts = this.displayCorrectAnswerTexts;
@@ -237,8 +272,7 @@ export default {
     async loadQueue() {
       this.loading = true;
       try {
-        const endpoint = this.mode === 'remediation' ? '/apps/learning/api/leitner/remediation' : '/apps/learning/api/leitner/queue';
-        const r = await axios.get(generateUrl(endpoint), { params: this.queueParams() });
+        const r = await axios.get(generateUrl(this.queueEndpoint), { params: this.queueParams() });
         this.items = r.data;
         if (this.items.length > 0) {
           this.started = true;
@@ -264,6 +298,25 @@ export default {
       } finally {
         this.submitting = false;
       }
+    },
+    async submitPbqAnswer(pbqAnswers) {
+      this.submitting = true;
+      try {
+        const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+          itemId: this.currentItem.id,
+          pbqAnswers,
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
+        });
+        this.handleAnswerResponse(r.data);
+      } catch (e) {
+        showError(t('learning', 'Failed to submit answer'));
+      } finally {
+        this.submitting = false;
+      }
+    },
+    skipQuestion() {
+      // Not answered, not counted: the card stays due and comes back in the next session.
+      this.nextQuestion();
     },
     toggleMultiAnswer(answerId) {
       const idx = this.selectedAnswerIds.indexOf(answerId);
@@ -309,6 +362,8 @@ export default {
       this.lastCorrect = data.correct;
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [data.correct_answer_text || ''];
       this.answered = true;
+      this.pbqPoints = data.pbq_points ?? 0;
+      this.pbqMaxPoints = data.pbq_max_points ?? 0;
       if (data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
       if (data.new_box === 5) { celebrateMastery(); }
       if (data.newly_earned_badges && data.newly_earned_badges.length > 0) {

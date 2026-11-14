@@ -84,7 +84,7 @@ class MaintenanceService {
         // 3) Get due leitner items from those pools
         $now = time();
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty AS q_difficulty',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty AS q_difficulty',
                      'q.question_type', 'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
             ->from('learning_leitner_items', 'l')
             ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
@@ -110,8 +110,73 @@ class MaintenanceService {
 
         $items = array_slice($items, 0, $limit);
         $this->hydrateAnswers($items);
+        foreach ($items as &$item) {
+            if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
+                $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+            }
+        }
+        unset($item);
 
-        return $this->translationService->translateQuestions($items, $contentLanguage);
+        $items = $this->translationService->translateQuestions($items, $contentLanguage);
+
+        // Model answer of an open question stays hidden until answered (as in the Leitner queue).
+        // After the translation, which would otherwise write a translated model answer back.
+        foreach ($items as &$item) {
+            if (($item['question_type'] ?? 'single') === 'open') {
+                foreach ($item['answers'] ?? [] as $i => $answer) {
+                    $item['answers'][$i]['text'] = '';
+                }
+            }
+        }
+        unset($item);
+
+        // While an exam is open on a pool, the queue must not become an oracle for it: no
+        // explanation, no PBQ solution — the same rule as LeitnerService::getDueQuestions
+        // (audit #229; this endpoint shipped both, and pbq_config as a raw JSON string).
+        $examPools = $this->getPoolsWithActiveExam($userId, array_values(array_unique(
+            array_map(static fn(array $item): int => (int) $item['pool_id'], $items)
+        )));
+        if ($examPools !== []) {
+            foreach ($items as &$item) {
+                if (!in_array((int) $item['pool_id'], $examPools, true)) {
+                    continue;
+                }
+                unset($item['explanation']);
+                if (array_key_exists('pbq_config', $item)) {
+                    $item['pbq_config'] = PbqSolutionStripper::strip($item['pbq_config']);
+                }
+            }
+            unset($item);
+        }
+
+        return $items;
+    }
+
+    /**
+     * Pools among $poolIds on which the user has a graded exam open (practice exams never lock).
+     *
+     * @param int[] $poolIds
+     * @return int[]
+     */
+    private function getPoolsWithActiveExam(string $userId, array $poolIds): array {
+        if ($poolIds === []) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('pool_id')
+            ->from('learning_sessions')
+            ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('exam_kind'))
+            ->andWhere($qb->expr()->isNull('completed_at'));
+        $result = $qb->executeQuery();
+        $ids = [];
+        while ($row = $result->fetch()) {
+            $ids[] = (int) $row['pool_id'];
+        }
+        $result->closeCursor();
+        return array_values(array_unique($ids));
     }
 
     /**
