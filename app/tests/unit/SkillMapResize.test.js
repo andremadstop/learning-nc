@@ -125,12 +125,18 @@ describe('SkillMap resize loop (#36 h)', () => {
 		document.body.innerHTML = ''
 	})
 
-	it('builds the graph with a positive height, centred vertically', async () => {
+	// The SVG and the forces must use the canvas's own size. The old code raised
+	// the height to at least 400px, so on the 360px mobile canvas the SVG was
+	// taller than its box and forceCenter sat 20px below the visible middle.
+	it('builds the graph with the canvas size, also below 400px (mobile)', async () => {
+		canvasSize = { w: 375, h: 360 }
 		const { app } = await mountMap()
+		expect(renderer.createSkillMap).toHaveBeenCalledTimes(1)
+		const [, svgWidth, svgHeight] = renderer.createSkillMap.mock.calls[0]
+		expect([svgWidth, svgHeight]).toEqual([375, 360])
 		expect(renderer.createForceSimulation).toHaveBeenCalledTimes(1)
 		const [, , width, height] = renderer.createForceSimulation.mock.calls[0]
-		expect(width).toBe(900)
-		expect(height).toBe(500)
+		expect([width, height]).toEqual([375, 360])
 		app.unmount()
 	})
 
