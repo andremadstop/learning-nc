@@ -56,7 +56,7 @@ const RIGHT_DESCRIPTIONS = [
 	'Du kannst die Verarbeitung einschränken lassen.',
 	'Du kannst der Verarbeitung widersprechen.',
 	'Du kannst deine Daten in einem gängigen Format erhalten.',
-	'Eine erteilte Einwilligung (etwa für die KI-Funktionen, das Telos-Profil, das Schwarmgedächtnis oder externe Videos) kannst du jederzeit mit Wirkung für die Zukunft widerrufen. Die Verarbeitung bis zum Widerruf bleibt rechtmäßig.',
+	'Eine erteilte Einwilligung kannst du jederzeit mit Wirkung für die Zukunft widerrufen. Die Verarbeitung bis zum Widerruf bleibt rechtmäßig. Die Einwilligung in die KI-Funktionen widerrufst du in den Einstellungen dieser App; dort setzt du auch dein Telos-Profil zurück. Die Einwilligung für ein externes Video gilt nur für das gerade geöffnete Video; beim nächsten Öffnen fragt die App erneut. Eigene Beiträge zum Schwarmgedächtnis kannst du in der App nicht selbst zurückziehen: Wende dich dafür an deinen Dozenten oder an den Verantwortlichen (siehe „Verantwortlich“ unten).',
 	'Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, insbesondere in dem EU-Mitgliedstaat deines Aufenthaltsorts, deines Arbeitsplatzes oder des mutmaßlichen Verstoßes.',
 ]
 
@@ -75,11 +75,30 @@ describe('privacy page: your rights (#38)', () => {
 	it('names withdrawal of consent (Art. 7(3)) and the complaint right (Art. 77) (38-f)', async () => {
 		const items = await render('en')
 		const text = items.map((li) => li.textContent.replace(/\s+/g, ' ').trim())
-		expect(text[6]).toMatch(/^Withdrawal of consent \(Art\. 7\(3\) GDPR\) — .*at any time with effect for the future\. Processing carried out before the withdrawal remains lawful\.$/)
+		expect(text[6]).toMatch(/^Withdrawal of consent \(Art\. 7\(3\) GDPR\) — .*at any time with effect for the future\. Processing carried out before the withdrawal remains lawful\. /)
 		expect(text[7]).toMatch(/^Complaint to a supervisory authority \(Art\. 77 GDPR\) — .*supervisory authority/)
 		const de = (await rerender('de')).map((li) => li.textContent.replace(/\s+/g, ' ').trim())
-		expect(de[6]).toMatch(/^Widerruf der Einwilligung \(Art\. 7 Abs\. 3 DSGVO\) — .*Die Verarbeitung bis zum Widerruf bleibt rechtmäßig\.$/)
+		expect(de[6]).toMatch(/^Widerruf der Einwilligung \(Art\. 7 Abs\. 3 DSGVO\) — .*Die Verarbeitung bis zum Widerruf bleibt rechtmäßig\. /)
 		expect(de[7]).toMatch(/^Beschwerde bei einer Aufsichtsbehörde \(Art\. 77 DSGVO\)/)
+	})
+
+	// Reviewer finding on #38: the withdrawal right listed the swarm memory as revocable "at any time",
+	// but students have no delete route for their contributions (only POST contribute and GET
+	// my-contributions). The text has to say how each consent is withdrawn, and for the swarm memory
+	// that the way goes through the instructor or the controller.
+	it('the withdrawal right says how each consent is withdrawn, the swarm memory via instructor or controller', async () => {
+		const en = (await render('en')).map((li) => li.textContent.replace(/\s+/g, ' ').trim())[6]
+		expect(en).toContain('in the settings of this app')
+		expect(en).toContain('reset your Telos profile')
+		expect(en).toContain('only applies to the video you have just opened')
+		expect(en).toContain('You cannot withdraw your own swarm memory contributions yourself in the app')
+		expect(en).toContain('contact your instructor or the controller')
+		expect(en).toContain(`“${catalogue('en')['Verantwortlich']}”`)
+		for (const lang of ['fr', 'ru', 'ar', 'uk']) {
+			const li = (await rerender(lang)).map((item) => item.textContent)[6]
+			// the section the text points to is named as its heading reads in that language
+			expect(li, lang).toContain(catalogue(lang)['Verantwortlich'])
+		}
 	})
 
 	it.each(['fr', 'ru', 'ar', 'uk'])('every right has its own translation in %s', async (lang) => {

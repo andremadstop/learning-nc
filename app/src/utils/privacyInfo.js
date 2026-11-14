@@ -268,12 +268,15 @@ export function buildRights() {
 			article: t('learning', 'Art. {n} DSGVO', { n: 20 }),
 			description: t('learning', 'Du kannst deine Daten in einem gängigen Format erhalten.'),
 		},
-		// Art. 13(2)(c) and (d): withdrawal of consent and the complaint to a supervisory authority (#38, 38-f)
+		// Art. 13(2)(c) and (d): withdrawal of consent and the complaint to a supervisory authority (#38, 38-f).
+		// The withdrawal text names the way for each consent: AI consent and Telos reset in the personal
+		// settings, the video consent is per opened video (VideoConsentOverlay keeps it in component state),
+		// and the swarm memory has no student delete route, so it names the instructor and the controller.
 		{
 			id: 'withdrawal',
 			name: t('learning', 'Widerruf der Einwilligung'),
 			article: t('learning', 'Art. {n} Abs. {p} DSGVO', { n: 7, p: 3 }),
-			description: t('learning', 'Eine erteilte Einwilligung (etwa für die KI-Funktionen, das Telos-Profil, das Schwarmgedächtnis oder externe Videos) kannst du jederzeit mit Wirkung für die Zukunft widerrufen. Die Verarbeitung bis zum Widerruf bleibt rechtmäßig.'),
+			description: t('learning', 'Eine erteilte Einwilligung kannst du jederzeit mit Wirkung für die Zukunft widerrufen. Die Verarbeitung bis zum Widerruf bleibt rechtmäßig. Die Einwilligung in die KI-Funktionen widerrufst du in den Einstellungen dieser App; dort setzt du auch dein Telos-Profil zurück. Die Einwilligung für ein externes Video gilt nur für das gerade geöffnete Video; beim nächsten Öffnen fragt die App erneut. Eigene Beiträge zum Schwarmgedächtnis kannst du in der App nicht selbst zurückziehen: Wende dich dafür an deinen Dozenten oder an den Verantwortlichen (siehe „Verantwortlich“ unten).'),
 		},
 		{
 			id: 'complaint',
