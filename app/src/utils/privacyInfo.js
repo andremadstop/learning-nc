@@ -58,7 +58,7 @@ export function buildPrivacyCategories(provider = '') {
 			name: t('learning', 'Persönlichkeitsprofil (Telos)', undefined, undefined, RAW),
 			items: t('learning', 'Lernziele, Stärken, Schwächen, Erfahrungslevel, Hilfe-Angebote/-Gesuche', undefined, undefined, RAW),
 			purpose: t('learning', 'Personalisierte KI-Erklärungen, Buddy Matching', undefined, undefined, RAW),
-			who_sees: t('learning', 'Du + VirtuProf. Bei Sichtbarkeit \'Kurs\': Kursteilnehmer sehen Hilfe-Themen + Bio. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst.', undefined, undefined, RAW),
+			who_sees: t('learning', 'Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst.', undefined, undefined, RAW),
 			retention: t('learning', 'Solange dein Account existiert, Opt-in via Onboarding', undefined, undefined, RAW),
 			legal_basis: t('learning', 'Einwilligung (Art. 6(1)a) — Telos ist opt-in', undefined, undefined, RAW),
 		},

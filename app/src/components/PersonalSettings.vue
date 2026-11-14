@@ -29,7 +29,8 @@
         </NcCheckboxRadioSwitch>
       </div>
 
-      <div class="switch-row">
+      <!-- GitHub #36/#58: the daily challenge only exists with gamification on (StudentDashboard). -->
+      <div v-if="gamificationEnabled" class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.dailyChallengeEnabled"
           type="switch"
@@ -46,60 +47,6 @@
           <option value="en">{{ t('learning', 'English') }}</option>
           <option value="ru">{{ t('learning', 'Russian') }}</option>
           <option value="ar">{{ t('learning', 'Arabic') }}</option>
-        </select>
-      </div>
-
-      <div class="switch-row">
-        <NcCheckboxRadioSwitch
-          :model-value="form.virtuProfEnabled"
-          type="switch"
-          @update:model-value="form.virtuProfEnabled = !!$event">
-          {{ t('learning', 'Virtual assistant') }}
-        </NcCheckboxRadioSwitch>
-      </div>
-
-      <hr class="section-divider" />
-
-      <h3>{{ t('learning', 'VirtuProf Settings') }}</h3>
-      <p class="section-desc">{{ t('learning', 'Control whether VirtuProf reads answers aloud and whether push-to-talk is available in the chat bubble.') }}</p>
-
-      <div class="switch-row">
-        <NcCheckboxRadioSwitch
-          :model-value="form.virtuProfTtsEnabled"
-          type="switch"
-          @update:model-value="form.virtuProfTtsEnabled = !!$event">
-          {{ t('learning', 'Speech output') }}
-        </NcCheckboxRadioSwitch>
-      </div>
-
-      <div class="switch-row">
-        <NcCheckboxRadioSwitch
-          :model-value="form.virtuProfSttEnabled"
-          type="switch"
-          @update:model-value="form.virtuProfSttEnabled = !!$event">
-          {{ t('learning', 'Voice input (push-to-talk)') }}
-        </NcCheckboxRadioSwitch>
-      </div>
-
-      <div class="switch-row">
-        <NcCheckboxRadioSwitch
-          :model-value="form.botSoundsEnabled"
-          type="switch"
-          :description="t('learning', 'Short sound cues for bot interactions')"
-          @update:model-value="onBotSoundsToggle(!!$event)">
-          {{ t('learning', 'Bot sounds') }}
-        </NcCheckboxRadioSwitch>
-      </div>
-
-      <div class="field-row">
-        <label for="virtuprof-voice-lang">{{ t('learning', 'Voice language') }}</label>
-        <select id="virtuprof-voice-lang" v-model="form.virtuProfVoiceLang" class="nc-input">
-          <option
-            v-for="option in voiceLanguageOptions"
-            :key="option.value"
-            :value="option.value">
-            {{ option.label }}
-          </option>
         </select>
       </div>
 
@@ -122,31 +69,6 @@
         </NcCheckboxRadioSwitch>
       </div>
 
-      <div class="field-row">
-        <label for="virtuprof-skin">{{ t('learning', 'Charakter-Auswahl') }}</label>
-        <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Änderungen wirken sofort.') }}</p>
-        <NcSelect
-          id="virtuprof-skin"
-          :model-value="selectedSkinOption"
-          :options="skinOptions"
-          :clearable="false"
-          label-outside
-          @update:model-value="onSkinChange">
-          <template #option="option">
-            <span class="skin-option-row">
-              <SkinOptionPreview :skin-id="option.value" />
-              <span class="skin-option-row__label">{{ option.label }}</span>
-            </span>
-          </template>
-          <template #selected-option="option">
-            <span class="skin-option-row">
-              <SkinOptionPreview :skin-id="option.value" />
-              <span class="skin-option-row__label">{{ option.label }}</span>
-            </span>
-          </template>
-        </NcSelect>
-      </div>
-
       <div class="switch-row lnc-a11y-toggle">
         <!-- The label says "calm display": ON means animations OFF, so the switch shows the inverse. -->
         <NcCheckboxRadioSwitch
@@ -157,6 +79,91 @@
           {{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}
         </NcCheckboxRadioSwitch>
       </div>
+
+      <hr class="section-divider" />
+
+      <h3>{{ t('learning', 'VirtuProf Settings') }}</h3>
+
+      <!-- GitHub #58: the assistant's own switch heads its section; its other settings only show while
+           it is on (they do nothing otherwise). Notifications, FSRS statistics and calm display are not
+           VirtuProf settings and stay above. save() still sends every value. -->
+      <div class="switch-row">
+        <NcCheckboxRadioSwitch
+          :model-value="form.virtuProfEnabled"
+          type="switch"
+          @update:model-value="form.virtuProfEnabled = !!$event">
+          {{ t('learning', 'Virtual assistant') }}
+        </NcCheckboxRadioSwitch>
+      </div>
+
+      <template v-if="form.virtuProfEnabled">
+        <p class="section-desc">{{ t('learning', 'Control whether VirtuProf reads answers aloud and whether push-to-talk is available in the chat bubble.') }}</p>
+
+        <div class="switch-row">
+          <NcCheckboxRadioSwitch
+            :model-value="form.virtuProfTtsEnabled"
+            type="switch"
+            @update:model-value="form.virtuProfTtsEnabled = !!$event">
+            {{ t('learning', 'Speech output') }}
+          </NcCheckboxRadioSwitch>
+        </div>
+
+        <div class="switch-row">
+          <NcCheckboxRadioSwitch
+            :model-value="form.virtuProfSttEnabled"
+            type="switch"
+            @update:model-value="form.virtuProfSttEnabled = !!$event">
+            {{ t('learning', 'Voice input (push-to-talk)') }}
+          </NcCheckboxRadioSwitch>
+        </div>
+
+        <div class="switch-row">
+          <NcCheckboxRadioSwitch
+            :model-value="form.botSoundsEnabled"
+            type="switch"
+            :description="t('learning', 'Short sound cues for bot interactions')"
+            @update:model-value="onBotSoundsToggle(!!$event)">
+            {{ t('learning', 'Bot sounds') }}
+          </NcCheckboxRadioSwitch>
+        </div>
+
+        <div class="field-row">
+          <label for="virtuprof-voice-lang">{{ t('learning', 'Voice language') }}</label>
+          <select id="virtuprof-voice-lang" v-model="form.virtuProfVoiceLang" class="nc-input">
+            <option
+              v-for="option in voiceLanguageOptions"
+              :key="option.value"
+              :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="virtuprof-skin">{{ t('learning', 'Charakter-Auswahl') }}</label>
+          <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Änderungen wirken sofort.') }}</p>
+          <NcSelect
+            id="virtuprof-skin"
+            :model-value="selectedSkinOption"
+            :options="skinOptions"
+            :clearable="false"
+            label-outside
+            @update:model-value="onSkinChange">
+            <template #option="option">
+              <span class="skin-option-row">
+                <SkinOptionPreview :skin-id="option.value" />
+                <span class="skin-option-row__label">{{ option.label }}</span>
+              </span>
+            </template>
+            <template #selected-option="option">
+              <span class="skin-option-row">
+                <SkinOptionPreview :skin-id="option.value" />
+                <span class="skin-option-row__label">{{ option.label }}</span>
+              </span>
+            </template>
+          </NcSelect>
+        </div>
+      </template>
 
       <!-- NcNoteCard has no action prop or event; the retry button lives in its slot (audit #104). -->
       <NcNoteCard v-if="error" type="error">
@@ -178,7 +185,9 @@
       <hr class="section-divider" />
 
       <h3 id="learning-profile" ref="learningProfileHeading">{{ t('learning', 'Learning Profile') }}</h3>
-      <p class="section-desc">{{ t('learning', 'This profile helps VirtuProf adapt explanations and lets instructors see only aggregated class-level patterns.') }}</p>
+      <!-- GitHub #58: the profile is not VirtuProf-only (learning partners, class register, the
+           instructors' class profile with each person's exam target); the text says so. -->
+      <p class="section-desc">{{ t('learning', 'VirtuProf nutzt dein Lernprofil (wenn eingeschaltet), um Erklärungen anzupassen. Außerdem findet es passende Lernpartner. Mit der Sichtbarkeit „Kurs“ oder „Öffentlich“ erscheinst du im Klassenbuch deiner Kurse, und die Kursleitung sieht im Klassenprofil dein Prüfungsziel mit Datum sowie Erfahrungsstufe und Lernstunden zusammengefasst mit den anderen.') }}</p>
 
       <details class="data-transparency">
         <summary class="data-transparency__toggle">
@@ -198,7 +207,7 @@
               <tr>
                 <td>{{ t('learning', 'Learning profile (role, goals, strengths)') }}</td>
                 <td>{{ t('learning', 'This server only') }}</td>
-                <td>{{ t('learning', 'You + VirtuProf') }}</td>
+                <td>{{ t('learning', 'Du und VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“ auch deine Kurse: Kurzbio und Hilfe-Themen im Klassenbuch, dein Prüfungsziel mit Datum für die Kursleitung') }}</td>
                 <td>{{ t('learning', 'KI-Dienst (nur mit deiner Einwilligung)') }}</td>
               </tr>
               <tr>
@@ -240,22 +249,25 @@
 
       <template v-else>
         <div class="profile-stats-grid">
-          <div class="profile-stat-card">
-            <span class="profile-stat-label">{{ t('learning', 'Level') }}</span>
-            <strong class="profile-stat-value">{{ userState.xp?.level || 1 }}</strong>
-          </div>
-          <div class="profile-stat-card">
-            <span class="profile-stat-label">{{ t('learning', 'XP') }}</span>
-            <strong class="profile-stat-value">{{ userState.xp?.total_xp || 0 }}</strong>
-          </div>
-          <div class="profile-stat-card">
-            <span class="profile-stat-label">{{ t('learning', 'Streak') }}</span>
-            <strong class="profile-stat-value">{{ userState.streak?.current_streak || 0 }}</strong>
-          </div>
-          <div class="profile-stat-card">
-            <span class="profile-stat-label">{{ t('learning', 'Badges') }}</span>
-            <strong class="profile-stat-value">{{ (userState.badges || []).length }}</strong>
-          </div>
+          <!-- GitHub #36/#58: with gamification off the stored level and XP are frozen old values -->
+          <template v-if="gamificationEnabled">
+            <div class="profile-stat-card">
+              <span class="profile-stat-label">{{ t('learning', 'Level') }}</span>
+              <strong class="profile-stat-value">{{ userState.xp?.level || 1 }}</strong>
+            </div>
+            <div class="profile-stat-card">
+              <span class="profile-stat-label">{{ t('learning', 'XP') }}</span>
+              <strong class="profile-stat-value">{{ userState.xp?.total_xp || 0 }}</strong>
+            </div>
+            <div class="profile-stat-card">
+              <span class="profile-stat-label">{{ t('learning', 'Streak') }}</span>
+              <strong class="profile-stat-value">{{ userState.streak?.current_streak || 0 }}</strong>
+            </div>
+            <div class="profile-stat-card">
+              <span class="profile-stat-label">{{ t('learning', 'Badges') }}</span>
+              <strong class="profile-stat-value">{{ (userState.badges || []).length }}</strong>
+            </div>
+          </template>
           <div class="profile-stat-card">
             <span class="profile-stat-label">{{ t('learning', 'Mastered') }}</span>
             <strong class="profile-stat-value">{{ profileSummary.total_mastered || 0 }}</strong>
@@ -516,6 +528,9 @@ export default {
       error: '',
       saved: false,
       loadFailed: false,
+      // GitHub #36/#58: the admin's global gamification switch, from the same /settings/personal
+      // answer App.vue reads; with it off there is no level, XP, streak, badge or daily challenge.
+      gamificationEnabled: true,
       form: {
         dailyChallengeEnabled: true,
         contentLanguage: '',
@@ -619,9 +634,11 @@ export default {
     },
     visibilityHint() {
       const hints = {
-        private: t('learning', 'Only VirtuProf uses your profile. Nobody else can see it.'),
-        course: t('learning', 'Course participants can see your help topics and bio.'),
-        public: t('learning', 'All users of this server can see your help topics and bio.'),
+        // GitHub #58: "public" is shown nowhere outside courses (ClassbookService, buddies); the
+        // hints say what each setting really shows and to whom.
+        private: t('learning', 'Nur VirtuProf nutzt dein Profil, niemand sonst sieht es. Du erscheinst dann nicht im Klassenbuch deiner Kurse.'),
+        course: t('learning', 'Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum.'),
+        public: t('learning', 'Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum.'),
       }
       return hints[this.telosForm.visibility] || hints.private
     },
@@ -747,6 +764,7 @@ export default {
         ])
         const data = settingsResponse.data || {}
         const virtuProfData = virtuProfResponse.data || {}
+        this.gamificationEnabled = data.gamification_enabled !== false
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
         this.form.contentLanguage = ['de', 'en', 'ru', 'ar', ''].includes(data.content_language) ? data.content_language : ''
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
