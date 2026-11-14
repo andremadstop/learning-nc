@@ -142,9 +142,35 @@ class ClassbookService {
             'kudos_remaining' => $this->getRemainingKudos($courseId, $viewerId),
             'daily_kudos_limit' => self::DAILY_KUDOS_LIMIT,
             'my_visibility' => isset($telosMap[$viewerId]) ? $telosMap[$viewerId]->getVisibility() : 'private',
-            'can_toggle_visibility' => (($memberRoles[$viewerId] ?? 'student') === 'student'),
+            // GitHub #50: only an enrolled learner has a register profile to show. The course owner
+            // has no member row, so the old default 'student' gave the owner a switch that flipped
+            // their global profile visibility and never showed them in this register.
+            'can_toggle_visibility' => !$isCourseInstructor && (($memberRoles[$viewerId] ?? null) === 'student'),
             'is_instructor' => $isCourseInstructor,
         ];
+    }
+
+    /**
+     * GitHub #50: whether the user may switch their class register visibility from this course:
+     * an enrolled learner of a course whose register is on. Instructors (owner or co-instructor)
+     * are always listed and have nothing to switch.
+     *
+     * @throws \Exception when the user cannot see the course
+     */
+    public function canToggleVisibility(int $courseId, string $userId): bool {
+        $course = $this->courseService->findById($courseId, $userId);
+        if ((bool)($course['is_instructor'] ?? false)) {
+            return false;
+        }
+        $modeConfig = is_array($course['mode_config'] ?? null) ? $course['mode_config'] : [];
+        if (!self::classbookEnabledIn($modeConfig)) {
+            return false;
+        }
+        try {
+            return $this->courseMemberMapper->findByCourseAndUser($courseId, $userId)->getRole() === 'student';
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return false;
+        }
     }
 
     /** @param array<string, mixed> $modeConfig */

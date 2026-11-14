@@ -83,4 +83,39 @@ describe('Klassenbuch', () => {
 
 		expect(instance.canGiveKudos({ user_id: 'bob' })).toBe(true)
 	})
+
+	// GitHub #50: a success note only when the server reports a real change
+	it('shows no success note when the visibility did not change', async () => {
+		axios.post.mockResolvedValueOnce({ data: { visibility: 'private' } })
+		const instance = createInstance({ myVisibility: 'private', canToggleVisibility: true })
+		instance.loadClassbook = vi.fn()
+
+		await instance.toggleVisibility()
+
+		expect(instance.success).toBe('')
+		expect(instance.error).not.toBe('')
+		expect(instance.loadClassbook).not.toHaveBeenCalled()
+	})
+
+	it('shows no success note when the server refuses the switch', async () => {
+		axios.post.mockRejectedValueOnce({ response: { status: 403, data: {} } })
+		const instance = createInstance({ myVisibility: 'private', canToggleVisibility: true })
+
+		await instance.toggleVisibility()
+
+		expect(instance.success).toBe('')
+		expect(instance.myVisibility).toBe('private')
+	})
+
+	it('reports a real change from private to visible', async () => {
+		axios.post.mockResolvedValueOnce({ data: { visibility: 'course' } })
+		const instance = createInstance({ myVisibility: 'private', canToggleVisibility: true })
+		instance.loadClassbook = vi.fn()
+
+		await instance.toggleVisibility()
+
+		expect(instance.myVisibility).toBe('course')
+		expect(instance.success).toBe('Dein Klassenbuch-Profil ist jetzt sichtbar.')
+		expect(instance.loadClassbook).toHaveBeenCalled()
+	})
 })

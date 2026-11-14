@@ -210,12 +210,21 @@ export default {
 		async toggleVisibility() {
 			this.togglingVisibility = true
 			this.error = ''
+			this.success = ''
+			const before = this.myVisibility
 			try {
 				const response = await axios.post(generateUrl('/apps/learning/api/courses/{courseId}/classbook/visibility', {
 					courseId: this.courseId,
 				}))
-				this.myVisibility = response.data?.visibility || this.myVisibility
-				this.success = this.myVisibility === 'private'
+				const after = response.data?.visibility
+				// GitHub #50: a success note only for a change the server reports. A missing or
+				// unchanged value used to read as "now visible" / "private again" all the same.
+				if (!after || after === before) {
+					this.error = t('learning', 'Sichtbarkeit konnte nicht geändert werden.')
+					return
+				}
+				this.myVisibility = after
+				this.success = after === 'private'
 					? t('learning', 'Dein Klassenbuch-Profil ist wieder privat.')
 					: t('learning', 'Dein Klassenbuch-Profil ist jetzt sichtbar.')
 				await this.loadClassbook()

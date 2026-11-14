@@ -75,9 +75,14 @@ class ClassbookController extends Controller {
     #[UserRateLimit(limit: 5, period: 60)]
     public function toggleVisibility(int $courseId): DataResponse {
         try {
-            $this->courseService->findById($courseId, $this->userId);
+            $allowed = $this->classbookService->canToggleVisibility($courseId, (string)$this->userId);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'No access'], Http::STATUS_FORBIDDEN);
+        }
+        // GitHub #50: an instructor (or the owner, who has no member row) has no learner profile
+        // in this register. The switch used to flip their global visibility and report success.
+        if (!$allowed) {
+            return new DataResponse(['error' => 'Only learners of this course can change their visibility here'], Http::STATUS_FORBIDDEN);
         }
 
         $telos = $this->telosMapper->findByUserIdOrNull($this->userId);
