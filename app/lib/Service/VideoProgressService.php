@@ -253,18 +253,22 @@ class VideoProgressService {
     /**
      * Record a watch heartbeat atomically. One user's concurrent tabs are serialized via CAS on
      * last_ping_ts (NC has no forUpdate()); the first-ping INSERT race surfaces as a unique-constraint
-     * violation and is retried. Implausible (<5s) pings are discarded silently.
+     * violation and is retried. Implausible (<5s) pings are discarded.
+     *
+     * Returns false when the ping was discarded (<5 s after the last accepted one, e.g. from a second
+     * tab, or retries exhausted), so the client keeps those seconds for its next ping. It used to
+     * answer like a recorded ping, and the client had already dropped the chunk (2026-11 audit #111).
      *
      * @param array{0: int|float, 1: int|float} $newInterval [start, end] in seconds
      * @throws DoesNotExistException if the content_id is not a registered course video
      */
-    public function recordHeartbeat(string $userId, int $contentId, array $newInterval): void {
+    public function recordHeartbeat(string $userId, int $contentId, array $newInterval): bool {
         $video = $this->videoMapper->findById($contentId);
         $courseId = (int)$video->getCourseId();
         $duration = $video->getDurationSeconds();
         $sanitized = $this->sanitizeInterval($newInterval);
         if ($sanitized === null) {
-            return; // nothing usable to record
+            return true; // nothing usable to record, nothing to send again
         }
         $now = $this->timeFactory->getTime();
 
@@ -277,7 +281,7 @@ class VideoProgressService {
                 $transition = $this->computeHeartbeatTransition([], null, $sanitized, $now, $duration);
                 // First-ping transition is never null (null last_ping_ts is always plausible).
                 if ($transition === null) {
-                    return;
+                    return false;
                 }
                 $entity = new VideoProgress();
                 $entity->setUserId($userId);
@@ -296,11 +300,11 @@ class VideoProgressService {
                 if ($transition['complete']) {
                     $this->markComplete($userId, $contentId, $courseId);
                 }
-                return;
+                return true;
             }
 
             if ($row->getCompletedAt() !== null) {
-                return; // already complete — idempotent no-op
+                return true; // already complete — idempotent no-op
             }
 
             $lastPing = $row->getLastPingTs();
@@ -312,7 +316,7 @@ class VideoProgressService {
                 $duration
             );
             if ($transition === null) {
-                return; // implausible <5s ping — discard silently
+                return false; // implausible <5s ping — discarded, the client sends it again
             }
 
             $affected = $this->casUpdateProgress($userId, $contentId, $lastPing, $transition);
@@ -322,9 +326,10 @@ class VideoProgressService {
             if ($transition['complete']) {
                 $this->markComplete($userId, $contentId, $courseId);
             }
-            return;
+            return true;
         }
-        // Retries exhausted under heavy same-user contention — drop this ping (next one recovers).
+        // Retries exhausted under heavy same-user contention — dropped; the client sends it again.
+        return false;
     }
 
     /**

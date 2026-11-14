@@ -106,6 +106,15 @@ class RagImportController extends Controller {
             if ($file === null || !isset($file['tmp_name'])) {
                 return new DataResponse(['error' => 'No file uploaded'], Http::STATUS_BAD_REQUEST);
             }
+            // A rejected upload has tmp_name '' and size 0: it passed the size check below and
+            // file_get_contents('') threw a ValueError the catch did not cover → 500 (audit #65).
+            $uploadError = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+            if ($uploadError === UPLOAD_ERR_INI_SIZE || $uploadError === UPLOAD_ERR_FORM_SIZE) {
+                return new DataResponse(['error' => 'File too large (max 5 MB)'], Http::STATUS_BAD_REQUEST);
+            }
+            if ($uploadError !== UPLOAD_ERR_OK || !is_string($file['tmp_name']) || $file['tmp_name'] === '') {
+                return new DataResponse(['error' => 'No file uploaded or upload error'], Http::STATUS_BAD_REQUEST);
+            }
 
             $name = $file['name'] ?? 'unknown.txt';
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));

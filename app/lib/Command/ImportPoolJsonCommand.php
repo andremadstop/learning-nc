@@ -97,7 +97,7 @@ class ImportPoolJsonCommand extends Command {
             $created = $pool['id'] !== null;
             if ($pool['name'] !== '') {
                 $output->writeln(sprintf(
-                    '<info>Pool %d/%d:</info> %s (%d Fragen, chapter %s)',
+                    '<info>Pool %d/%d:</info> %s (%d questions, chapter %s)',
                     $pool['index'],
                     $poolCount,
                     $pool['name'],
@@ -130,7 +130,7 @@ class ImportPoolJsonCommand extends Command {
 
         $output->writeln('');
         $output->writeln(sprintf(
-            '<info>%s: %d Pools, %d Fragen.</info>',
+            '<info>%s: %d pools, %d questions.</info>',
             $dryRun ? 'Dry-run' : 'Imported',
             $totalPools,
             $totalQuestions
@@ -141,6 +141,12 @@ class ImportPoolJsonCommand extends Command {
             foreach ($errors as $err) {
                 $output->writeln('  - ' . $err);
             }
+        }
+
+        // Nothing imported (or, in a dry run, nothing importable) and errors to show: a script
+        // must not read that as success (2026-11 audit #136).
+        if ($totalPools === 0 && $errors !== []) {
+            return Command::FAILURE;
         }
 
         return Command::SUCCESS;

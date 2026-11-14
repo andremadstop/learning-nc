@@ -57,19 +57,29 @@ class CourseDocumentMapper extends QBMapper {
     /**
      * Find documents that are extracted but not yet chunked.
      *
+     * A document left in 'chunking' since before $staleChunkingBefore is picked up again: the job
+     * that set it died without reaching its catch (time limit, OOM, killed cron), and nothing else
+     * ever resets the status (2026-11 audit #62). Re-chunking is safe, chunkDocument() deletes the
+     * document's old chunks first. 0 leaves such documents alone.
+     *
      * @return CourseDocument[]
      */
-    public function findExtractedUnchunked(int $limit = 10): array {
+    public function findExtractedUnchunked(int $limit = 10, int $staleChunkingBefore = 0): array {
         $qb = $this->db->getQueryBuilder();
+        $waiting = [
+            $qb->expr()->isNull('chunking_status'),
+            $qb->expr()->eq('chunking_status', $qb->createNamedParameter('pending')),
+        ];
+        if ($staleChunkingBefore > 0) {
+            $waiting[] = $qb->expr()->andX(
+                $qb->expr()->eq('chunking_status', $qb->createNamedParameter('chunking')),
+                $qb->expr()->lt('updated_at', $qb->createNamedParameter($staleChunkingBefore, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT))
+            );
+        }
         $qb->select('*')
             ->from($this->getTableName())
             ->where($qb->expr()->eq('status', $qb->createNamedParameter('extracted')))
-            ->andWhere(
-                $qb->expr()->orX(
-                    $qb->expr()->isNull('chunking_status'),
-                    $qb->expr()->eq('chunking_status', $qb->createNamedParameter('pending'))
-                )
-            )
+            ->andWhere($qb->expr()->orX(...$waiting))
             ->orderBy('created_at', 'ASC')
             ->setMaxResults($limit);
         return $this->findEntities($qb);

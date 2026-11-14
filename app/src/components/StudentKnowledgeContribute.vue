@@ -46,7 +46,7 @@
 					{{ submitting ? t('learning', 'Sende...') : t('learning', 'Beitrag einreichen') }}
 				</button>
 				<span class="contribute-counter">
-					{{ t('learning', '{n} / {max} Beiträge', { n: contributions.length, max: maxContributions }) }}
+					{{ t('learning', '{n} / {max} Abschnitte', { n: contributions.length, max: maxContributions }) }}
 				</span>
 			</div>
 
@@ -71,16 +71,16 @@
 				<p>{{ t('learning', 'Lade...') }}</p>
 			</div>
 
-			<div v-else-if="contributions.length === 0" class="empty-state">
+			<div v-else-if="contributionGroups.length === 0" class="empty-state">
 				<p>{{ t('learning', 'Du hast noch keine Beiträge eingereicht.') }}</p>
 			</div>
 
 			<div v-else class="contributions-list">
-				<div v-for="item in contributions"
-					:key="item.id"
+				<div v-for="item in contributionGroups"
+					:key="item.key"
 					class="contribution-item">
 					<div class="contribution-header">
-						<span class="contribution-title">{{ item.title || item.source_file }}</span>
+						<span class="contribution-title">{{ item.title }}</span>
 						<span class="status-badge" :class="statusClass(item.status)">
 							{{ statusLabel(item.status) }}
 						</span>
@@ -97,7 +97,47 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { translate as t } from '@nextcloud/l10n'
+import { translate as t, getLanguage } from '@nextcloud/l10n'
+
+const SWARM_CONSENT_KEY = 'learning_swarm_consent_v1'
+
+/** Storage may be blocked (private mode, site data off): then the info dialog simply shows again. */
+function swarmConsentSeen() {
+	try {
+		return localStorage.getItem(SWARM_CONSENT_KEY) !== null
+	} catch (e) {
+		return false
+	}
+}
+
+/**
+ * The API lists the stored chunks of the student's contributions; a long contribution is split into
+ * several. One list entry per contribution: chunks with the same title and submission time
+ * (2026-11 audit #189). Approved only when every chunk is, rejected only when every chunk is.
+ *
+ * @param {Array<object>} chunks rows of my-contributions
+ * @return {Array<{key: string, title: string, created_at: number, status: string, chunks: number}>}
+ */
+export function groupContributions(chunks) {
+	const groups = new Map()
+	for (const chunk of Array.isArray(chunks) ? chunks : []) {
+		const title = chunk.title || chunk.source_file || ''
+		const key = title + '|' + (chunk.created_at ?? '')
+		const group = groups.get(key)
+		if (group) {
+			group.statuses.add(chunk.status)
+			group.chunks++
+		} else {
+			groups.set(key, { key, title, created_at: chunk.created_at, statuses: new Set([chunk.status]), chunks: 1 })
+		}
+	}
+	return [...groups.values()].map(({ statuses, ...group }) => {
+		let status = 'pending'
+		if (statuses.size === 1 && statuses.has('approved')) status = 'approved'
+		if (statuses.size === 1 && statuses.has('rejected')) status = 'rejected'
+		return { ...group, status }
+	})
+}
 
 export default {
 	name: 'StudentKnowledgeContribute',
@@ -120,11 +160,14 @@ export default {
 			success: null,
 			piiWarnings: [],
 			maxContributions: 50,
-			showConsentInfo: !localStorage.getItem('learning_swarm_consent_v1'),
+			showConsentInfo: !swarmConsentSeen(),
 		}
 	},
 
 	computed: {
+		contributionGroups() {
+			return groupContributions(this.contributions)
+		},
 		canSubmit() {
 			return this.title.trim().length > 0
 				&& this.text.trim().length > 0
@@ -140,7 +183,11 @@ export default {
 		t,
 
 		dismissConsentInfo() {
-			localStorage.setItem('learning_swarm_consent_v1', '1')
+			try {
+				localStorage.setItem(SWARM_CONSENT_KEY, '1')
+			} catch (e) {
+				// blocked storage: the dialog closes now and shows again next time
+			}
 			this.showConsentInfo = false
 		},
 
@@ -205,7 +252,8 @@ export default {
 
 		formatDate(timestamp) {
 			if (!timestamp) return '-'
-			return new Date(timestamp * 1000).toLocaleDateString('de-DE')
+			// The reader's language, not always German (audit #189).
+			return new Date(timestamp * 1000).toLocaleDateString(getLanguage() || undefined)
 		},
 		formatPiiWarningTypes(warnings) {
 			const labels = {

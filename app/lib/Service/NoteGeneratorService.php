@@ -111,7 +111,7 @@ class NoteGeneratorService {
         $languageName = $this->geminiService->languageName($language);
 
         // 5. Build filename (NOTE-04: filename = topic slug)
-        $filename = $this->slugify($poolName) . '.md';
+        $filename = NoteSlug::forPool($poolName, $poolId) . '.md';
         $noteExisted = $this->fileService->listNotes($userId, self::SUBFOLDER) !== []
             && $this->noteFileExists($userId, $filename);
 
@@ -329,33 +329,6 @@ PROMPT;
         // Body starts after closing --- and any trailing newline
         $body = substr($rest, $closePos + 3);
         return ltrim($body, "\n\r");
-    }
-
-    /**
-     * Convert a pool name to a safe, stable filename slug.
-     * e.g. "VLAN Konfiguration" → "vlan-konfiguration"
-     */
-    private function slugify(string $name): string {
-        // Lowercase
-        $slug = mb_strtolower($name);
-
-        // Replace German umlauts
-        $replacements = ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss'];
-        $slug = str_replace(array_keys($replacements), array_values($replacements), $slug);
-
-        // Replace non-alphanumeric (except hyphen) with hyphen
-        $slug = preg_replace('/[^a-z0-9\-]/', '-', $slug) ?? $slug;
-
-        // Collapse multiple hyphens, trim
-        $slug = preg_replace('/-+/', '-', $slug) ?? $slug;
-        $slug = trim($slug, '-');
-
-        // Fallback
-        if ($slug === '') {
-            $slug = 'note';
-        }
-
-        return $slug;
     }
 
     /**

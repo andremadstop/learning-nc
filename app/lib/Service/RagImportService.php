@@ -154,9 +154,15 @@ class RagImportService {
             }
         }
 
+        // Two or three capitalised words in any cased script after a name cue. [A-ZÄÖÜ][a-zäöüß]+
+        // missed every Cyrillic name (ru/uk are interface languages), and under the /i of the second
+        // pattern it also took lower-case words for a name (2026-11 audit #80). \p{Lu} ignores /i, so
+        // both patterns can match the cue in any case ("Kontakt:", "Name:").
+        // Arabic has no capital letters, so this heuristic cannot see Arabic names at all.
+        $name = '(\p{Lu}\p{Ll}+(?:\s+\p{Lu}\p{Ll}+){1,2})';
         $namePatterns = [
-            '/(?:\b(?:name|kontakt|ansprechpartner)\s*[:\-]?\s*)([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+){1,2})/u',
-            '/(?:\b(?:mein name ist|ich bin|i am|my name is)\s+)([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+){1,2})/iu',
+            '/(?:\b(?:name|kontakt|ansprechpartner|имя|ім[\'ʼ’]я|контакт)\s*[:\-]?\s*)' . $name . '/iu',
+            '/(?:\b(?:mein name ist|ich bin|i am|my name is|меня зовут|мене звати|я)\s+)' . $name . '/iu',
         ];
 
         foreach ($namePatterns as $pattern) {

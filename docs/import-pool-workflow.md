@@ -177,8 +177,9 @@ copy the JSON there first. Always do the dry run — it runs every check of the 
 (the file, each pool, each question: missing text, too few or too many answers, text too
 long, unknown PBQ subtype, …), lists every pool with its number of questions and every pool
 or question that would be skipped with the reason, and writes nothing to the database. Its
-summary line `Dry-run: N Pools, M Fragen` counts all questions in the file, including those
-that would be skipped.
+summary line `Dry-run: N pools, M questions` counts what the real import would store. When no
+pool would be imported (or, without `--dry-run`, none was) and there are errors, the command
+exits with status 1, so a script can tell.
 
 ```bash
 # 1. Dry run: runs every check, writes nothing

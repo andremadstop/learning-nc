@@ -200,10 +200,11 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function search(string $query): DataResponse {
+    public function search(string $query, ?int $poolId = null): DataResponse {
         if (strlen($query) < 2) {
             return new DataResponse(['error' => 'Query must be at least 2 characters'], Http::STATUS_BAD_REQUEST);
         }
-        return new DataResponse($this->service->search($query, $this->userId));
+        $poolId = $poolId !== null && $poolId > 0 ? $poolId : null;
+        return new DataResponse($this->service->search($query, $this->userId, 50, $poolId));
     }
 }

@@ -2200,6 +2200,7 @@ OC.L10N.register(
     "{days} days in a row. Consistency beats intensity." : "{days} days in a row. Consistency beats intensity.",
     "{imported} of {total} questions imported" : "{imported} of {total} questions imported",
     "{label} — next review in {interval}" : "{label} — next review in {interval}",
+    "{n} / {max} Abschnitte" : "{n} / {max} sections",
     "{n} / {max} Beiträge" : "{n} / {max} contributions",
     "{n} Antworten ausstehend" : "{n} answers pending",
     "{n} Beiträge ausstehend" : "{n} contributions pending",

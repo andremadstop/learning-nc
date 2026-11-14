@@ -2167,6 +2167,7 @@ OC.L10N.register(
     "{days} days in a row. Consistency beats intensity." : "{days} дней подряд. Постоянство важнее интенсивности.",
     "{imported} of {total} questions imported" : "{imported} из {total} вопросов импортировано",
     "{label} — next review in {interval}" : "{label} — следующее повторение через {interval}",
+    "{n} / {max} Abschnitte" : "{n} / {max} фрагментов",
     "{n} / {max} Beiträge" : "{n} / {max} вкладов",
     "{n} Antworten ausstehend" : "{n} answers pending",
     "{n} Beiträge ausstehend" : "{n} contributions pending",

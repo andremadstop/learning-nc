@@ -76,13 +76,15 @@ class VideoProgressController extends Controller {
         try {
             // Server is the source of truth: recordHeartbeat sanitizes the interval, discards <5s pings,
             // and performs the CAS-serialized merge (162-01). This controller only delegates.
-            $this->service->recordHeartbeat($this->userId, $contentId, [$start, $end]);
+            $accepted = $this->service->recordHeartbeat($this->userId, $contentId, [$start, $end]);
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Unknown content'], Http::STATUS_NOT_FOUND);
         } catch (\Throwable $e) {
             return new DataResponse(['error' => 'Failed to record progress'], Http::STATUS_BAD_REQUEST);
         }
-        return new DataResponse($this->progressState($contentId));
+        // 'accepted' false: the ping was discarded (too soon after another tab's), the client keeps
+        // the seconds and sends them again (audit #111).
+        return new DataResponse($this->progressState($contentId) + ['accepted' => $accepted]);
     }
 
     /**

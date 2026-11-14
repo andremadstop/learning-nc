@@ -24,7 +24,8 @@ export function makeServer(duration) {
 		if (s.completed) return s.state()
 		const st = Math.max(0, Number(start))
 		if (!(Number(end) > st)) return s.state() // sanitizeInterval
-		if (s.lastPing !== null && now - s.lastPing < 5) return s.state() // isPlausiblePing
+		// isPlausiblePing: dropped, and the server says so (audit #111)
+		if (s.lastPing !== null && now - s.lastPing < 5) return { ...s.state(), accepted: false }
 		const first = s.lastPing === null
 		const maxCredit = first ? Math.min(15, duration * 0.5) : Math.max(0, now - s.lastPing) + 1
 		let e = Math.min(Number(end), duration)

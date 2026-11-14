@@ -125,7 +125,32 @@ class QuestionMapper extends QBMapper {
         }
     }
 
-    public function searchByText(string $query, string $userId, int $limit = 50): array {
+    /**
+     * Question ids of a pool in the order the pool's question list pages through them
+     * (findByPoolIdPaged), so a search hit can be placed on its page (2026-11 audit #108).
+     *
+     * @return list<int>
+     */
+    public function findIdsInPoolOrder(int $poolId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
+        $this->applyBookQuestionOrder($qb);
+        $result = $qb->executeQuery();
+        $ids = [];
+        while (($row = $result->fetch()) !== false) {
+            $ids[] = (int)$row['id'];
+        }
+        $result->closeCursor();
+        return $ids;
+    }
+
+    /**
+     * @param int|null $poolId only questions of this pool; the access joins still apply, so a pool
+     *                         the user cannot see yields nothing
+     */
+    public function searchByText(string $query, string $userId, int $limit = 50, ?int $poolId = null): array {
         $qb = $this->db->getQueryBuilder();
         $expr = $qb->expr();
         $qb->selectDistinct("q.*", "p.name as pool_name")
@@ -158,6 +183,9 @@ class QuestionMapper extends QBMapper {
            )
            ->orderBy("q.created_at", "DESC")
            ->setMaxResults($limit);
+        if ($poolId !== null) {
+            $qb->andWhere($expr->eq("q.pool_id", $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
+        }
         return $qb->executeQuery()->fetchAll();
     }
 }

@@ -2194,6 +2194,7 @@ OC.L10N.register(
     "{days} days in a row. Consistency beats intensity." : "{days} днів поспіль. Послідовність важливіша за інтенсивність.",
     "{imported} of {total} questions imported" : "Імпортовано {imported} з {total} питань",
     "{label} — next review in {interval}" : "{label} — наступне повторення через {interval}",
+    "{n} / {max} Abschnitte" : "{n} / {max} фрагментів",
     "{n} / {max} Beiträge" : "{n} / {max} внесків",
     "{n} Antworten ausstehend" : "{n} відповідей очікує",
     "{n} Beiträge ausstehend" : "{n} внесків очікує",

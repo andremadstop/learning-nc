@@ -362,7 +362,7 @@ class PoolBulkImportServiceTest extends TestCase {
     }
 
     /**
-     * "multiple_choice" (app/data/subnetting_questions.json, common in files from elsewhere) names
+     * "multiple_choice" (app/examples/pools/subnetting-ip-adressierung-n10-009-de.json, common in files from elsewhere) names
      * a choice question without saying single or multi: single with one correct answer, multi
      * with several — and never the file's default_question_type (audit 2026-11).
      */
