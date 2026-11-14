@@ -480,6 +480,15 @@ class CampaignGraphService {
             }
         }
 
+        // The edge is open only while the flag is NOT set (zero_day_rechenzentrum: configure the
+        // WAF only while it is not configured yet).
+        if (isset($conditions['requires_not_flag'])) {
+            $flag = (string)$conditions['requires_not_flag'];
+            if (!empty($stateBag['flags'][$flag])) {
+                return false;
+            }
+        }
+
         if (isset($conditions['requires_item'])) {
             $item = (string)$conditions['requires_item'];
             if (!in_array($item, $stateBag['items'] ?? [], true)) {

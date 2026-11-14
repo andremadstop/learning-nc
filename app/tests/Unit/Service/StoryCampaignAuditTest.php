@@ -137,8 +137,7 @@ final class StoryCampaignAuditTest extends TestCase {
         }
         // listCampaigns() drops a file that fails validation without a word: the graph Phishing
         // Friday did, over the simulator type 'portscanner', so the featured campaign never showed.
-        // (zero_day_rechenzentrum fails the same way, over the condition 'requires_not_flag' the
-        // engine does not know; reported separately, not part of this fix.)
+        // testEveryShippedCampaignIsListed() guards all files against that.
         $this->assertContains('phishing_friday', $ids);
         // The featured graph campaign starts as a graph campaign
         $this->assertTrue((new CampaignGraphService(
@@ -146,6 +145,49 @@ final class StoryCampaignAuditTest extends TestCase {
             $this->createMock(LoggerInterface::class),
             $this->createMock(DauBotService::class)
         ))->isGraphCampaign($this->makeService()->loadCampaign('phishing_friday')));
+    }
+
+    /**
+     * Every shipped campaign file must survive listCampaigns(): a file that fails validation is
+     * only logged and never reaches a learner. The featured zero_day_rechenzentrum was dropped
+     * this way over the condition 'requires_not_flag', which the schema did not know.
+     */
+    public function testEveryShippedCampaignIsListed(): void {
+        $warnings = [];
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->method('warning')->willReturnCallback(
+            static function (string $message, array $context = []) use (&$warnings): void {
+                $warnings[] = ($context['file'] ?? '?') . ': ' . ($context['err'] ?? $message);
+            }
+        );
+        $listed = array_column($this->makeService(null, null, $logger)->listCampaigns(), 'campaign_id');
+
+        $shipped = [];
+        foreach (glob(dirname(__DIR__, 3) . '/data/campaigns/*.json') ?: [] as $file) {
+            if (basename($file) !== 'campaign-schema.json') {
+                $shipped[] = basename($file, '.json');
+            }
+        }
+        $this->assertNotEmpty($shipped);
+        $this->assertSame(
+            [],
+            array_values(array_diff($shipped, $listed)),
+            "shipped campaigns that listCampaigns() drops:\n" . implode("\n", $warnings)
+        );
+        $this->assertCount(count($shipped), $listed);
+        $this->assertContains('zero_day_rechenzentrum', $listed);
+    }
+
+    public function testRequiresNotFlagClosesTheEdgeOnceTheFlagIsSet(): void {
+        $graph = new CampaignGraphService(
+            $this->createMock(CampaignStateMapper::class),
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(DauBotService::class)
+        );
+        $conditions = ['requires_not_flag' => 'waf_configured'];
+        $this->assertTrue($graph->evaluateConditions($conditions, ['flags' => [], 'items' => [], 'reputation' => []]));
+        $this->assertTrue($graph->evaluateConditions($conditions, ['flags' => ['waf_configured' => false], 'items' => [], 'reputation' => []]));
+        $this->assertFalse($graph->evaluateConditions($conditions, ['flags' => ['waf_configured' => true], 'items' => [], 'reputation' => []]));
     }
 
     public function testInternalGraphTestCampaignIsNotShipped(): void {
