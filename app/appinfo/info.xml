@@ -131,6 +131,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
             <step>OCA\Learning\Repair\MigrateLlmConfiguration</step>
             <step>OCA\Learning\Repair\CanonicalizeMemberUserIds</step>
             <step>OCA\Learning\Repair\RemoveRetiredJobs</step>
+            <step>OCA\Learning\Repair\RemoveOrphanedAnnouncementFeedItems</step>
         </post-migration>
         <install>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
