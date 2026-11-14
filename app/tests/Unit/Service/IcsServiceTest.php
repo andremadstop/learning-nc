@@ -248,23 +248,21 @@ class IcsServiceTest extends TestCase {
 
     public function testRenderCalendarForUserAggregatesDueCardsIntoGroupedEvents(): void {
         $todayStart = $this->todayStart();
-        $lastReviewed = $todayStart + (10 * 86400);
-        $dueDate = gmdate('Ymd', $lastReviewed + (7 * 86400));
-        $endDate = gmdate('Ymd', $lastReviewed + (8 * 86400));
+        $nextReview = $todayStart + (10 * 86400) + 3600;
+        $dueDate = gmdate('Ymd', $nextReview);
+        $endDate = gmdate('Ymd', $nextReview + 86400);
         $rows = [
             [
                 'course_id' => 2,
                 'course_title' => 'Network+',
                 'box' => 3,
-                'last_reviewed' => $lastReviewed,
-                'next_review' => $lastReviewed,
+                'next_review' => $nextReview,
             ],
             [
                 'course_id' => 2,
                 'course_title' => 'Network+',
                 'box' => 3,
-                'last_reviewed' => $lastReviewed,
-                'next_review' => $lastReviewed,
+                'next_review' => $nextReview,
             ],
         ];
 
@@ -283,20 +281,30 @@ class IcsServiceTest extends TestCase {
         $this->assertStringContainsString('URL:https://cloud.example/apps/learning/', $calendar);
     }
 
-    public function testRenderCalendarForUserQueriesOnlyBoxesThreeToFive(): void {
-        $builder = new FakeQueryBuilder(new FakeResult());
+    /**
+     * Audit #54: the feed dated cards by fixed box intervals (box 3 = last_reviewed + 7 days) and
+     * left boxes 1-2 out, while the queue makes a card due at next_review (the FSRS interval).
+     */
+    public function testRenderCalendarForUserDatesEveryBoxByNextReview(): void {
+        $todayStart = $this->todayStart();
+        $rows = [
+            // box 3 with an FSRS interval of 2 days: due in 2 days, not 7
+            ['course_id' => 2, 'course_title' => 'Network+', 'box' => 3, 'next_review' => $todayStart + (2 * 86400) + 60],
+            // box 1, overdue: today
+            ['course_id' => 2, 'course_title' => 'Network+', 'box' => 1, 'next_review' => $todayStart - (3 * 86400)],
+        ];
+        $builder = new FakeQueryBuilder(new FakeResult($rows));
         $service = $this->createServiceWithRows($builder);
 
-        $service->renderCalendarForUser('alice');
+        $calendar = $service->renderCalendarForUser('alice');
 
-        $boxFilter = null;
+        $this->assertSame(2, substr_count($calendar, 'BEGIN:VEVENT'));
+        $this->assertStringContainsString('DTSTART;VALUE=DATE:' . gmdate('Ymd', $todayStart + (2 * 86400)), $calendar);
+        $this->assertStringContainsString('DTSTART;VALUE=DATE:' . gmdate('Ymd', $todayStart), $calendar);
+        $this->assertStringContainsString('aus Box 1.', $calendar);
         foreach ($builder->namedParameters as $parameter) {
-            if ($parameter['type'] === IQueryBuilder::PARAM_INT_ARRAY) {
-                $boxFilter = $parameter['value'];
-            }
+            $this->assertNotSame(IQueryBuilder::PARAM_INT_ARRAY, $parameter['type'], 'no box filter');
         }
-
-        $this->assertSame([3, 4, 5], $boxFilter);
     }
 
     public function testRenderCalendarForTokenReturnsNullForMalformedToken(): void {
@@ -342,19 +350,6 @@ class IcsServiceTest extends TestCase {
         $this->assertIsString($calendar);
         $this->assertStringContainsString('BEGIN:VCALENDAR', $calendar);
         $this->assertSame(0, substr_count($calendar, 'BEGIN:VEVENT'));
-    }
-
-    public function testCalculateDueTimestampUsesConfiguredIntervalsAndNextReviewFallback(): void {
-        $service = new IcsService(new FakeDbConnection(), $this->createMock(UserTelosMapper::class), $this->createUrlGenerator());
-        $method = new \ReflectionMethod(IcsService::class, 'calculateDueTimestamp');
-        $method->setAccessible(true);
-
-        $base = $this->todayStart() + (5 * 86400);
-
-        $this->assertSame($base + (7 * 86400), $method->invoke($service, 3, $base, 111));
-        $this->assertSame($base + (14 * 86400), $method->invoke($service, 4, $base, 111));
-        $this->assertSame($base + (30 * 86400), $method->invoke($service, 5, $base, 111));
-        $this->assertSame($base + (14 * 86400), $method->invoke($service, 4, null, $base));
     }
 
     private function createServiceWithRows(FakeQueryBuilder $builder): IcsService {

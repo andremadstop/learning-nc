@@ -3471,5 +3471,8 @@ OC.L10N.register(
     "Answered" : "Відповідь надано",
     "Thanks for the report! The question has been passed on for review." : "Дякуємо за повідомлення! Питання передано на перевірку.",
     "The report could not be sent. Please try again later." : "Не вдалося надіслати повідомлення. Спробуйте пізніше.",
+    "The daily challenge has changed. Please answer the new question." : "Щоденний виклик змінився. Будь ласка, дай відповідь на нове запитання.",
+    "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "VLAN {id} — native VLAN транку: його кадри й на транку передаються без тегу.",
+    "The AI explanation could not be generated. Please try again." : "Не вдалося створити пояснення ШІ. Спробуйте ще раз.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

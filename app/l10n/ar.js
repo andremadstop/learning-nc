@@ -3471,5 +3471,8 @@ OC.L10N.register(
     "Answered" : "تمت الإجابة",
     "Thanks for the report! The question has been passed on for review." : "شكرًا على البلاغ! تم تمرير السؤال للمراجعة.",
     "The report could not be sent. Please try again later." : "تعذّر إرسال البلاغ. يرجى المحاولة لاحقًا.",
+    "The daily challenge has changed. Please answer the new question." : "تغيّر التحدي اليومي. يرجى الإجابة عن السؤال الجديد.",
+    "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "الشبكة VLAN {id} هي شبكة VLAN الأصلية للجذع: تبقى إطاراتها غير موسومة على الجذع أيضًا.",
+    "The AI explanation could not be generated. Please try again." : "تعذّر إنشاء شرح الذكاء الاصطناعي. يُرجى المحاولة مرة أخرى.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -45,10 +45,13 @@
 
       <div class="form-group">
         <label for="question-type">{{ t('learning', 'Antworttyp') }}</label>
-        <select id="question-type" v-model="form.questionType" class="nc-input" @change="onQuestionTypeChange">
+        <!-- A PBQ is type 'pbq' (Training/Exam/Leitner recognise it only by that); the type
+             follows the PBQ Type below and is not chosen here (audit #38). -->
+        <select id="question-type" v-model="form.questionType" class="nc-input" :disabled="isPbq" @change="onQuestionTypeChange">
           <option value="single">{{ t('learning', 'Einzelauswahl') }}</option>
           <option value="multi">{{ t('learning', 'Mehrfachauswahl') }}</option>
           <option value="open">{{ t('learning', 'Freitext') }}</option>
+          <option v-if="isPbq" value="pbq">PBQ</option>
         </select>
       </div>
 
@@ -90,8 +93,8 @@
         <textarea id="model-answer" v-model="modelAnswer" aria-required="true" required rows="2" :placeholder="t('learning', 'Die erwartete richtige Antwort...')" class="nc-input"></textarea>
       </div>
 
-      <!-- MC answers -->
-      <div v-else class="form-group">
+      <!-- MC answers (a PBQ has none: its solution is in the PBQ config) -->
+      <div v-else-if="!isPbq" class="form-group">
         <label>{{ form.questionType === 'multi' ? t('learning', 'Antworten (alle richtigen auswählen)') : t('learning', 'Antworten (die richtige auswählen)') }} <span aria-hidden="true">*</span></label>
         <div class="answers-form">
           <div v-for="(answer, index) in form.answers" :key="index" class="answer-row">
@@ -287,6 +290,9 @@ export default {
         return t('learning', 'PBQ Config must be valid JSON.');
       }
     },
+    isPbq() {
+      return this.form.questionType === 'pbq' || !!this.form.pbqSubtype;
+    },
     pbqConfigDisplayError() {
       return this.pbqConfigManualError || this.pbqConfigLiveError;
     }
@@ -377,8 +383,17 @@ export default {
     },
     onPbqSubtypeChange() {
       this.pbqConfigManualError = null;
+      this.syncTypeWithPbqSubtype();
       if (!this.form.pbqSubtype) {
         this.form.pbqConfig = '';
+      }
+    },
+    syncTypeWithPbqSubtype() {
+      if (this.form.pbqSubtype) {
+        this.form.questionType = 'pbq';
+      } else if (this.form.questionType === 'pbq') {
+        // "Keine (Standardfrage)": back to a choice question that needs its answers.
+        this.form.questionType = 'single';
       }
     },
     addAnswer() {
@@ -409,6 +424,7 @@ export default {
     applyPbqBuilderConfig(payload) {
       this.form.pbqSubtype = payload.subtype || '';
       this.form.pbqConfig = payload.json || '';
+      this.syncTypeWithPbqSubtype();
       this.pbqConfigManualError = null;
       this.showAuthorTool = false;
     },
@@ -417,7 +433,8 @@ export default {
       const rawConfig = this.form.pbqConfig ? this.form.pbqConfig.trim() : '';
 
       if (!rawSubtype && !rawConfig) {
-        return { pbqSubtype: null, pbqConfig: null, error: null };
+        // '' (not null) so the server clears a stored subtype and config; null means "keep".
+        return { pbqSubtype: '', pbqConfig: null, error: null };
       }
 
       if (!rawSubtype) {
@@ -481,7 +498,9 @@ export default {
       this.saving = true;
       this.pbqConfigManualError = null;
       let filteredAnswers;
-      if (this.form.questionType === 'open') {
+      if (this.isPbq) {
+        filteredAnswers = [];
+      } else if (this.form.questionType === 'open') {
         filteredAnswers = [{ text: this.modelAnswer, is_correct: true }];
       } else if (this.form.questionType === 'multi') {
         this.form.answers.forEach((answer, index) => {
@@ -508,7 +527,7 @@ export default {
         // Always sent: '' clears a stored scenario, an omitted key would keep it.
         scenario: this.form.scenario || '',
         difficulty: this.form.difficulty || null,
-        questionType: this.form.questionType,
+        questionType: this.isPbq ? 'pbq' : this.form.questionType,
         answers: filteredAnswers,
         imageFile: this.imageFile,
         removeImage: this.removeExistingImage,

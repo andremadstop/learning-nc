@@ -72,6 +72,19 @@ describe('buildFrameVisualization', () => {
 		const frame = buildFrameVisualization({ portId: 'Gi0/1', mode: 'trunk', allowedVlans: [10, 20], nativeVlan: 1 }, 20)
 		expect(frame.fields).toEqual(['Dest MAC', 'Src MAC', '802.1Q Tag', 'EthType', 'Data'])
 	})
+
+	// Audit #198: frames of the native VLAN cross the trunk untagged.
+	it('leaves a native-VLAN frame untagged on the trunk', () => {
+		const port = { portId: 'Gi0/1', mode: 'trunk', allowedVlans: [1, 10], nativeVlan: 10 }
+		expect(buildFrameVisualization(port, 10)).toEqual({
+			tagged: false,
+			native: true,
+			vlanId: 10,
+			fields: ['Dest MAC', 'Src MAC', 'EthType', 'Data'],
+		})
+		expect(buildFrameVisualization(port, 1).tagged).toBe(true)
+		expect(buildFrameVisualization({ portId: 'Gi0/1', mode: 'trunk' }, 1).native).toBe(true)
+	})
 })
 
 describe('calculateSubinterfaces', () => {

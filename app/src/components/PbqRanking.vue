@@ -57,7 +57,8 @@ export default {
       const total = this.items.length
       let correct = 0
       this.orderedItems.forEach((item, idx) => {
-        if ((this.value[item.id] ?? (idx + 1)) === item.correct_position) correct++
+        // Scored like the server: only the submitted position counts.
+        if (this.value[item.id] === item.correct_position) correct++
       })
       return `${correct}/${total} an korrekter Position`
     },
@@ -72,6 +73,15 @@ export default {
         }
       },
     },
+  },
+  mounted() {
+    // The displayed order is an answer, too: an untouched ranking was submitted as {} and scored
+    // 0 while the screen showed it in order (audit #58). Report it once, marked as the initial
+    // order: it fills the answer the submit button sends, but it is not an interaction, so a graded
+    // exam does not count a ranking that was only opened (and maybe skipped) as answered.
+    if (!this.disabled && Object.keys(this.value || {}).length === 0 && this.order.length > 0) {
+      this.emitOrder({ initial: true })
+    }
   },
   methods: {
     computeInitialOrder() {
@@ -92,14 +102,14 @@ export default {
       })
       return sorted.map(i => i.id)
     },
-    emitOrder() {
+    emitOrder(meta = { initial: false }) {
       const update = {}
       this.order.forEach((id, idx) => {
         update[id] = idx + 1
       })
       // Emit one event per item (matches dropdown convention)
       Object.entries(update).forEach(([id, pos]) => {
-        this.$emit('update', id, pos)
+        this.$emit('update', id, pos, meta)
       })
     },
     onDragStart(ev, idx) {

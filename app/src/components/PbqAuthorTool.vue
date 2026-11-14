@@ -468,7 +468,21 @@ function createDiagnosticTemplate() {
 }
 
 function createCableTemplate() {
+  // PbqCable renders only through cables and remediation_options; without them the PBQ showed
+  // nothing and could only be submitted empty (audit #103). Pins 3 and 6 are not connected:
+  // the open pair the question asks for.
   return {
+    cables: [
+      {
+        id: 'cable1',
+        label: 'PC1 → Switch1',
+        pins: [[1, 1], [2, 2], [4, 4], [5, 5], [7, 7], [8, 8]],
+      },
+    ],
+    remediation_options: {
+      problems: ['Open pair', 'Crossed pair', 'Split pair', 'Short circuit'],
+      solutions: ['Replace the cable', 'Re-terminate the connector', 'Use a crossover cable'],
+    },
     questions: [
       {
         id: 'c1',

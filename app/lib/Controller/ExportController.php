@@ -75,18 +75,6 @@ class ExportController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
-    public function exportIcs(): Http\Response {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
-        }
-        $cal = $this->icsService->renderCalendarForUser($this->userId);
-        return new DataDownloadResponse($cal, 'learning-nc.ics', 'text/calendar; charset=utf-8');
-    }
-
-    /**
-     * @NoAdminRequired
-     */
     #[UserRateLimit(limit: 10, period: 60)]
     public function getCalendarToken(): DataResponse {
         if ($this->userId === null) {
@@ -107,6 +95,10 @@ class ExportController extends Controller {
     }
 
     /**
+     * Legacy alias of ics#feed: v2.7.0 handed out this URL, and calendars subscribed back then
+     * still poll it. New links come from IcsService::buildFeedUrl (learning.ics.feed). Both
+     * render through IcsService::renderCalendarForToken, so a fix there covers both (audit #134).
+     *
      * @PublicPage
      * @NoCSRFRequired
      */

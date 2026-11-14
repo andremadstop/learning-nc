@@ -123,7 +123,11 @@ class LeitnerService {
     }
 
     private function translateQueueItems(array $items, ?string $lang): array {
-        return $this->translationService->translateQuestions($items, $lang);
+        $items = $this->translationService->translateQuestions($items, $lang);
+        // The translation writes translated answer texts back, the model answer of an open
+        // question included; it has to stay hidden until the question is answered.
+        $this->stripOpenAnswers($items);
+        return $items;
     }
 
     private function hydrateQueueItems(array &$items): void {
@@ -604,7 +608,9 @@ class LeitnerService {
 
                 // trouble_fixer badge: correct answer promoting from box 1
                 if ($currentBox === 1 && $newBox >= 2) {
-                    $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', []);
+                    // notify=false: the dispatchNotifications() call below sends every badge of
+                    // this answer once; notifying here as well sent this one twice (audit #76).
+                    $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', [], false);
                     $response['newly_earned_badges'] = array_merge($response['newly_earned_badges'], $troubleBadges);
                 }
             }
@@ -707,19 +713,22 @@ class LeitnerService {
            ->andWhere($qb->expr()->gte('l.incorrect_count', $qb->createNamedParameter(3)))
            ->andWhere($qb->expr()->lte('l.box', $qb->createNamedParameter(2)))
            ->orderBy('l.incorrect_count', 'DESC')
-           ->addOrderBy('l.last_reviewed', 'ASC')
-           ->setMaxResults($limit);
+           ->addOrderBy('l.last_reviewed', 'ASC');
 
         $result = $qb->executeQuery();
         $items = $result->fetchAll();
         $result->closeCursor();
 
-        // Filter by <30% accuracy in PHP (avoids platform-specific float division in SQL)
+        // Filter by <30% accuracy in PHP (avoids platform-specific float division in SQL), and
+        // only then apply the limit: with the LIMIT in SQL, items with many errors but ≥30%
+        // accuracy filled the window and the queue came back short of getRemediationCount
+        // (audit #77). The candidate set is small (box ≤ 2 and ≥ 3 errors of one user).
         $items = array_values(array_filter($items, function ($item) {
             $total = (int)$item['correct_count'] + (int)$item['incorrect_count'];
             if ($total === 0) return false;
             return ((int)$item['correct_count'] / $total) < 0.3;
         }));
+        $items = array_slice($items, 0, $limit);
 
         if (!empty($items)) {
             $this->attachAnswersToItems($items);
@@ -815,8 +824,8 @@ class LeitnerService {
     private function stripOpenAnswers(array &$items): void {
         foreach ($items as &$item) {
             if (($item['question_type'] ?? 'single') === 'open') {
-                foreach ($item['answers'] as &$a) {
-                    $a['text'] = '';
+                foreach ($item['answers'] ?? [] as $i => $a) {
+                    $item['answers'][$i]['text'] = '';
                 }
             }
         }
@@ -916,7 +925,11 @@ class LeitnerService {
                         continue;
                     }
                     $maxPoints++;
-                    if (isset($userAnswers[$q['id']]) && $userAnswers[$q['id']] === $q['correct']) {
+                    // A preset initial_value is shown as selected and only a change is submitted, so
+                    // an untouched row answers with it — as switch/routing fall back to 'initial'
+                    // (audit #186). Keep both scorers (Training/Leitner) in step.
+                    $actual = $userAnswers[$q['id']] ?? ($q['initial_value'] ?? null);
+                    if ($actual !== null && $actual === ($q['correct'] ?? null)) {
                         $points++;
                     }
                 }
@@ -981,7 +994,8 @@ class LeitnerService {
                         continue;
                     }
                     $maxPoints++;
-                    if ((($userAnswers['dropdown'] ?? [])[$q['id']] ?? null) === $q['correct']) {
+                    $actual = ($userAnswers['dropdown'] ?? [])[$q['id']] ?? ($q['initial_value'] ?? null);
+                    if ($actual !== null && $actual === ($q['correct'] ?? null)) {
                         $points++;
                     }
                 }

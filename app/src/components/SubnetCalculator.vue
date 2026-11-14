@@ -342,7 +342,8 @@
 					</div>
 
 					<p class="vlan-frame__hint">
-						<span v-if="frameVisualization.tagged">{{ t('learning', 'Auf dem Trunk wird der 802.1Q-Tag gesetzt; der Native VLAN Traffic kann untagged bleiben.') }}</span>
+						<span v-if="frameVisualization.native">{{ t('learning', 'VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged.', { id: frameVisualization.vlanId }) }}</span>
+						<span v-else-if="frameVisualization.tagged">{{ t('learning', 'Auf dem Trunk wird der 802.1Q-Tag gesetzt; der Native VLAN Traffic kann untagged bleiben.') }}</span>
 						<span v-else>{{ t('learning', 'Am Access-Port bleibt der Frame für Endgeräte untagged.') }}</span>
 					</p>
 				</article>

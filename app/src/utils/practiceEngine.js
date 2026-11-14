@@ -30,10 +30,9 @@ export function normalizeAnswer(raw) {
 	// If looks like dotted notation, strip leading zeros from each part
 	if (ipPart.includes('.')) {
 		const parts = ipPart.split('.')
-		const normalized = parts.map(p => {
-			const num = parseInt(p, 10)
-			return isNaN(num) ? p : String(num)
-		}).join('.')
+		// Only all-digit parts lose their leading zeros; '63x' must stay '63x' and compare
+		// unequal, parseInt turned it into 63 (audit #117).
+		const normalized = parts.map(p => (/^\d+$/.test(p) ? String(Number(p)) : p)).join('.')
 		return normalized + cidrSuffix
 	}
 

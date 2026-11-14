@@ -1847,7 +1847,11 @@ class TrainingService {
                         continue;
                     }
                     $maxPoints++;
-                    if (isset($userAnswers[$q['id']]) && $userAnswers[$q['id']] === $q['correct']) {
+                    // A preset initial_value is shown as selected and only a change is submitted, so
+                    // an untouched row answers with it — as switch/routing fall back to 'initial'
+                    // (audit #186). Keep both scorers (Training/Leitner) in step.
+                    $actual = $userAnswers[$q['id']] ?? ($q['initial_value'] ?? null);
+                    if ($actual !== null && $actual === ($q['correct'] ?? null)) {
                         $points++;
                     }
                 }
@@ -1912,7 +1916,8 @@ class TrainingService {
                         continue;
                     }
                     $maxPoints++;
-                    if ((($userAnswers['dropdown'] ?? [])[$q['id']] ?? null) === $q['correct']) {
+                    $actual = ($userAnswers['dropdown'] ?? [])[$q['id']] ?? ($q['initial_value'] ?? null);
+                    if ($actual !== null && $actual === ($q['correct'] ?? null)) {
                         $points++;
                     }
                 }

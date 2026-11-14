@@ -74,6 +74,15 @@ export function buildFrameVisualization(port, vlanId) {
 	}
 
 	if (port.mode === 'trunk') {
+		// Frames of the native VLAN cross a trunk untagged (audit #198).
+		if (Number(vlanId) === Number(port.nativeVlan ?? 1)) {
+			return {
+				tagged: false,
+				native: true,
+				vlanId: Number(vlanId),
+				fields: ['Dest MAC', 'Src MAC', 'EthType', 'Data'],
+			}
+		}
 		return {
 			tagged: true,
 			vlanId: Number(vlanId),

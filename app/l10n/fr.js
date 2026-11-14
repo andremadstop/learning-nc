@@ -3471,5 +3471,8 @@ OC.L10N.register(
     "Answered" : "Répondu",
     "Thanks for the report! The question has been passed on for review." : "Merci pour le signalement ! La question a été transmise pour vérification.",
     "The report could not be sent. Please try again later." : "Le signalement n'a pas pu être envoyé. Veuillez réessayer plus tard.",
+    "The daily challenge has changed. Please answer the new question." : "Le défi du jour a changé. Réponds à la nouvelle question.",
+    "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "Le VLAN {id} est le VLAN natif du trunk : ses trames restent non étiquetées, même sur le trunk.",
+    "The AI explanation could not be generated. Please try again." : "L’explication par l’IA n’a pas pu être générée. Veuillez réessayer.",
 },
 "nplurals=2; plural=(n > 1);");

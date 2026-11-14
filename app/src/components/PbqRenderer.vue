@@ -221,8 +221,12 @@ export default {
       }
       return url
     },
-    onUpdate(key, value) {
+    onUpdate(key, value, meta) {
       this.localAnswer[String(key)] = value
+      // A ranking reports its displayed order on mount (audit #58). That completes the answer the
+      // submit button sends, but it is not a change by the learner: ExamMode grades every PBQ it
+      // received a 'change' for, so forwarding it would grade an opened-and-skipped ranking.
+      if (meta && meta.initial) return
       this.$emit('change', { ...this.localAnswer })
     },
   },

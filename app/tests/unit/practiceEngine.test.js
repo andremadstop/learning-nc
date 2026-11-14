@@ -304,3 +304,19 @@ describe('checkAnswers — IPv6 notation', () => {
 		expect(checkAnswers(expected, { networkAddress: 'fe80::' })[0].expected).toBe(expected.networkAddress)
 	})
 })
+
+// Audit #117: parseInt dropped trailing garbage ('63x' → 63), so such answers counted as correct.
+describe('normalizeAnswer with garbage in an octet', () => {
+	it('keeps non-numeric octets as typed', () => {
+		expect(normalizeAnswer('192.168.10.63x')).toBe('192.168.10.63x')
+	})
+
+	it('does not accept trailing garbage as the correct address', () => {
+		const [broadcast, network] = checkAnswers(
+			{ broadcast: '192.168.10.63', network: '10.0.0.0' },
+			{ broadcast: '192.168.10.63x', network: '10.0.0.0abc' },
+		)
+		expect(broadcast.correct).toBe(false)
+		expect(network.correct).toBe(false)
+	})
+})

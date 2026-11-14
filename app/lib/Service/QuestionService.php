@@ -591,6 +591,28 @@ class QuestionService {
         return $this->questionMapper->update($question);
     }
 
+    /**
+     * A question with a PBQ subtype is a PBQ: Training, Exam and Leitner recognise one only by
+     * question_type 'pbq', and the form saved new PBQs as 'single' (audit #38). A PBQ has no
+     * answer rows (its solution is in pbq_config), so answers sent along are not stored. '' as
+     * subtype means "no PBQ" and must not leave the type at 'pbq'.
+     *
+     * @param array<int, array<string, mixed>> $answers
+     * @return array{0: string, 1: array<int, array<string, mixed>>}
+     */
+    private function applyPbqSubtypeToType(string $questionType, array $answers, ?string $pbqSubtype): array {
+        if ($pbqSubtype !== null && $pbqSubtype !== '') {
+            return ['pbq', []];
+        }
+        if ($pbqSubtype === '' && $questionType === 'pbq') {
+            throw new \InvalidArgumentException('A PBQ needs a PBQ type');
+        }
+        if ($questionType === 'pbq') {
+            $answers = [];
+        }
+        return [$questionType, $answers];
+    }
+
     public function create(int $poolId, string $userId, string $text, ?string $explanation,
                            ?string $difficulty, array $answers, ?string $questionType = null,
                            ?string $pbqSubtype = null, ?string $pbqConfig = null,
@@ -604,6 +626,7 @@ class QuestionService {
         }
 
         $questionType = $questionType ?? 'single';
+        [$questionType, $answers] = $this->applyPbqSubtypeToType($questionType, $answers, $pbqSubtype);
 
         $this->validateQuestionInput($text, $answers, $questionType);
         $scenario = $this->normalizeScenario($scenario);
@@ -617,8 +640,8 @@ class QuestionService {
             $question->setExplanation($explanation);
             $question->setDifficulty($difficulty);
             $question->setQuestionType($questionType);
-            if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
-            if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
+            if ($pbqSubtype !== null && $pbqSubtype !== '') { $question->setPbqSubtype($pbqSubtype); }
+            if ($pbqConfig !== null && $pbqSubtype !== '') { $question->setPbqConfig($pbqConfig); }
             $question->setInstructorNote($instructorNote);
             $question->setNoteVisible($noteVisible);
             $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
@@ -667,6 +690,7 @@ class QuestionService {
 
             $storedType = $question->getQuestionType();
             $questionType = $questionType ?? ($storedType ?? 'single');
+            [$questionType, $answers] = $this->applyPbqSubtypeToType($questionType, $answers, $pbqSubtype);
 
             // A type stored before unknown types were refused (GitHub #34) may be saved again
             // unchanged, so such a question stays editable; any change must be to a known type.
@@ -680,8 +704,14 @@ class QuestionService {
                 $question->setExplanation($explanation);
                 $question->setDifficulty($difficulty);
                 $question->setQuestionType($questionType);
-                if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
-                if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
+                if ($pbqSubtype === '') {
+                    // '' = the form chose "no PBQ": clear subtype and config (null = keep stored).
+                    $question->setPbqSubtype(null);
+                    $question->setPbqConfig(null);
+                } else {
+                    if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
+                    if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
+                }
                 $question->setInstructorNote($instructorNote);
                 $question->setNoteVisible($noteVisible);
                 $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
