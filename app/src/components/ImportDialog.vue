@@ -320,7 +320,7 @@ export default {
 .dropzone:hover, .dropzone--active { border-color: var(--color-primary-element); background: var(--color-primary-element-light); }
 .dropzone-hint { color: var(--color-text-maxcontrast); font-size: 14px; }
 .dropzone-file { font-size: 14px; }
-.dropzone-file small { color: var(--color-text-maxcontrast); margin-left: 8px; }
+.dropzone-file small { color: var(--color-text-maxcontrast); margin-inline-start: 8px; }
 .input-actions { display: flex; gap: 8px; margin-top: 8px; }
 .example-code { display: block; margin: 2px 0; }
 .or-divider { text-align: center; font-size: 12px; color: var(--color-text-maxcontrast); margin: 8px 0; }
