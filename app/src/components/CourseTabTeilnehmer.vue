@@ -451,7 +451,7 @@
 					<table class="cert-report-table">
 						<thead>
 							<tr>
-								<th scope="col">{{ t('learning', 'Name') }}</th>
+								<th scope="col">{{ t('learning', 'Name (Person)') }}</th>
 								<th scope="col">{{ t('learning', 'Bestanden am') }}</th>
 								<th scope="col">{{ t('learning', 'Score (%)') }}</th>
 								<th scope="col">{{ t('learning', 'Gültig bis') }}</th>

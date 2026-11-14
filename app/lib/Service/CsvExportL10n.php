@@ -35,7 +35,8 @@ class CsvExportL10n {
     /** @return list<string> */
     public function certReportHeader(): array {
         return [
-            $this->t('Name'),
+            // The person's name: the generic 'Name' is a thing's name (ru "Название").
+            $this->t('Name (Person)'),
             $this->t('Bestanden am'),
             $this->t('Ergebnis') . ' (%)',
             $this->t('Gültig bis'),
@@ -51,7 +52,8 @@ class CsvExportL10n {
     /** @return list<string> */
     public function atRiskHeader(): array {
         return [
-            $this->t('Name'),
+            // The person's name: the generic 'Name' is a thing's name (ru "Название").
+            $this->t('Name (Person)'),
             $this->t('Risikostufe'),
             $this->t('Kritische Karten'),
             $this->t('Risikogründe'),

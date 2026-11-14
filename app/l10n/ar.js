@@ -3631,6 +3631,7 @@ OC.L10N.register(
     "Dieser Lernmodus ist in deinem Kurs ausgeschaltet." : "وضع التعلّم هذا مُعطّل في دورتك.",
     "Abgelaufen (Zertifikatsstatus)" : "منتهي الصلاحية",
     "Gültig (Zertifikatsstatus)" : "صالح",
+    "Name (Person)" : "الاسم",
     "Risikostufe" : "مستوى الخطر",
     "Kritische Karten" : "البطاقات الحرجة",
     "Risikogründe" : "أسباب الخطر",

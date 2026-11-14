@@ -34,7 +34,7 @@ use Psr\Log\LoggerInterface;
 #[AllowMockObjectsWithoutExpectations]
 class CsvExportLanguageTest extends TestCase {
     private const EN = [
-        'Name' => 'Name',
+        'Name (Person)' => 'Name',
         'Bestanden am' => 'Passed on',
         'Ergebnis' => 'Result',
         'Gültig bis' => 'Valid until',

@@ -3631,6 +3631,7 @@ OC.L10N.register(
     "Dieser Lernmodus ist in deinem Kurs ausgeschaltet." : "This learning mode is switched off in your course.",
     "Abgelaufen (Zertifikatsstatus)" : "Expired",
     "Gültig (Zertifikatsstatus)" : "Valid",
+    "Name (Person)" : "Name",
     "Risikostufe" : "Risk level",
     "Kritische Karten" : "Critical cards",
     "Risikogründe" : "Risk reasons",

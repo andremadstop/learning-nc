@@ -3631,6 +3631,7 @@ OC.L10N.register(
     "Dieser Lernmodus ist in deinem Kurs ausgeschaltet." : "Цей режим навчання вимкнено у твоєму курсі.",
     "Abgelaufen (Zertifikatsstatus)" : "Термін дії минув",
     "Gültig (Zertifikatsstatus)" : "Дійсний",
+    "Name (Person)" : "Ім'я",
     "Risikostufe" : "Рівень ризику",
     "Kritische Karten" : "Критичні картки",
     "Risikogründe" : "Причини ризику",
