@@ -20,16 +20,12 @@ describe('ai-consent.json', () => {
 		expect(Object.keys(consent.locales).sort()).toEqual([...LANGS].sort())
 	})
 
-	it('keeps the legacy top-level fields the VirtuProf dialog still reads until D3', () => {
+	it('carries the text only per language, no stale top-level copy (audit #250)', () => {
+		// The German top-level fields served the old VirtuProf dialog until 5.7.0 D3; nothing reads
+		// them since, and a seventh copy of the text would drift from the six real ones.
 		for (const key of ['title', 'body_html', 'accept_label', 'decline_label']) {
-			expect(typeof consent[key]).toBe('string')
-			expect(consent[key].trim()).not.toBe('')
+			expect(consent).not.toHaveProperty(key)
 		}
-	})
-
-	it('legacy body names no fixed provider or country, since the recipient is configurable', () => {
-		expect(consent.body_html).not.toMatch(/Gemini|Google|USA/)
-		expect(consent.body_html).not.toMatch(/\{\w+\}/)
 	})
 
 	it('the German source lists what is really sent (spec 3.6)', () => {

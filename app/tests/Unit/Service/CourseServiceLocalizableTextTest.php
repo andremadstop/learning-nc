@@ -70,7 +70,7 @@ class CourseServiceLocalizableTextTest extends TestCase {
 
         $lastActive = (new \DateTime('today', new \DateTimeZone('UTC')))->modify('-12 days')->format('Y-m-d');
         $userStats = new FakeQueryBuilder(new FakeResult([[
-            'user_id' => 'learner', 'total_xp' => 0, 'current_level' => 1, 'current_streak' => 4,
+            'user_id' => 'learner', 'total_xp' => 0, 'current_level' => 1, 'current_streak' => 4, 'longest_streak' => 4,
             'total_sessions' => 2, 'total_mastered' => 0, 'last_activity_date' => $lastActive,
         ]]));
         $db = new FakeDbConnection([$userStats]);

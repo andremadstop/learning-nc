@@ -10,10 +10,6 @@ parameters:
 			count: 1
 			path: lib/Controller/ImportController.php
 
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnalyticsMapper\\:\\:record\\(\\) should return OCA\\\\Learning\\\\Db\\\\Analytics but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/Db/AnalyticsMapper.php
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnswerMapper\\:\\:createOrUpdate\\(\\) should return OCA\\\\Learning\\\\Db\\\\Answer but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
@@ -50,10 +46,6 @@ parameters:
 			count: 1
 			path: lib/Db/DuelInviteMapper.php
 
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\DuelInviteMapper\\:\\:findBySessionId\\(\\) should return OCA\\\\Learning\\\\Db\\\\DuelInvite\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\|null\\.$#"
-			count: 1
-			path: lib/Db/DuelInviteMapper.php
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\DuelSessionMapper\\:\\:findByCode\\(\\) should return OCA\\\\Learning\\\\Db\\\\DuelSession but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"

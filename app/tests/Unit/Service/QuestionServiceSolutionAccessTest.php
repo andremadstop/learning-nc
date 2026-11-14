@@ -38,6 +38,8 @@ use Psr\Log\LoggerInterface;
 class QuestionServiceSolutionAccessTest extends TestCase {
     private const POOL = 42;
 
+    private bool $noteVisible = false;
+
     private function question(): Question {
         $question = new Question();
         $question->setId(10);
@@ -45,6 +47,8 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $question->setText('Which port does HTTPS use?');
         $question->setExplanation('443 is the registered HTTPS port.');
         $question->setQuestionType('single');
+        $question->setInstructorNote('Answer B is the trap.');
+        $question->setNoteVisible($this->noteVisible);
         return $question;
     }
 
@@ -164,6 +168,34 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $this->assertSame([false, true], array_map(static fn (array $a): bool => (bool)$a['is_correct'], $question['answers']));
     }
 
+    /**
+     * #18/#26/#55 (audit 2026-11): a note the instructor kept hidden (note_visible=false) reached
+     * every reader; only the Vue templates checked note_visible.
+     */
+    #[DataProvider('learnerReadPaths')]
+    public function testLearnerGetsNoHiddenInstructorNote(callable $read, string $role): void {
+        $question = $read($this->service($role));
+
+        $this->assertArrayNotHasKey('instructor_note', $question);
+    }
+
+    #[DataProvider('learnerReadPaths')]
+    public function testLearnerGetsAVisibleInstructorNote(callable $read, string $role): void {
+        $this->noteVisible = true;
+        $question = $read($this->service($role));
+
+        $this->assertSame('Answer B is the trap.', $question['instructor_note']);
+    }
+
+    #[DataProvider('editorReadPaths')]
+    public function testEditorsKeepAHiddenInstructorNote(callable $read, string $role): void {
+        // The question editor saves the note back as received; a stripped copy would erase it.
+        $question = $read($this->service($role));
+
+        $this->assertSame('Answer B is the trap.', $question['instructor_note']);
+        $this->assertFalse($question['note_visible']);
+    }
+
     public function testTranslationEndpointsFollowTheSameRule(): void {
         $this->assertTrue($this->service('read-share')->mustWithholdSolutionForQuestion(10, 'u'));
         $this->assertFalse($this->service('owner')->mustWithholdSolutionForQuestion(10, 'u'));
@@ -195,10 +227,13 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $questionMapper = $this->createMock(QuestionMapper::class);
         $questionMapper->method('searchByText')->willReturn([
             ['id' => 1, 'pool_id' => 7, 'text' => 'own pool', 'explanation' => 'mine',
-                'pbq_config' => '{"positions":[{"id":"a","correct":"Firewall"}]}'],
+                'pbq_config' => '{"positions":[{"id":"a","correct":"Firewall"}]}',
+                'instructor_note' => 'own note', 'note_visible' => false],
             ['id' => 2, 'pool_id' => 8, 'text' => 'course pool', 'explanation' => 'secret',
-                'pbq_config' => '{"positions":[{"id":"a","label":"Edge","correct":"Firewall"}]}'],
-            ['id' => 3, 'pool_id' => 8, 'text' => 'course pool 2', 'explanation' => 'secret 2', 'pbq_config' => null],
+                'pbq_config' => '{"positions":[{"id":"a","label":"Edge","correct":"Firewall"}]}',
+                'instructor_note' => 'hidden note', 'note_visible' => '0'],
+            ['id' => 3, 'pool_id' => 8, 'text' => 'course pool 2', 'explanation' => 'secret 2', 'pbq_config' => null,
+                'instructor_note' => 'shared note', 'note_visible' => '1'],
         ]);
         $poolMapper = $this->createMock(PoolMapper::class);
         $poolMapper->method('find')->willReturnCallback(static function (int $poolId): Pool {
@@ -228,6 +263,15 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $this->assertSame('Edge', $config['positions'][0]['label']);
         $this->assertArrayNotHasKey('correct', $config['positions'][0]);
         $this->assertNull($rows[2]['pbq_config']);
+    }
+
+    public function testSearchWithholdsHiddenNotesOfPoolsTheUserCannotEdit(): void {
+        // Raw rows: MariaDB returns note_visible as '0'/'1'.
+        $rows = $this->searchService()->search('pool', 'u');
+
+        $this->assertSame('own note', $rows[0]['instructor_note'], 'the editor keeps a hidden note');
+        $this->assertArrayNotHasKey('instructor_note', $rows[1]);
+        $this->assertSame('shared note', $rows[2]['instructor_note'], 'a visible note stays');
     }
 
     public function testGradingLoaderKeepsTheKeyForServerSideUse(): void {

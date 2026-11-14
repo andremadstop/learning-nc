@@ -191,9 +191,37 @@ class TelosServiceTest extends TestCase {
         $this->assertFalse($this->service->hasAiConsent('alice'));
     }
 
-    public function testCurrentAiConsentVersionComesFromConsentService(): void {
-        $this->consent->method('currentVersion')->willReturn('3.0');
+    private function profile(string $uid, string $visibility, string $cert): UserTelos {
+        $entity = new UserTelos();
+        $entity->setUserId($uid);
+        $entity->setVisibility($visibility);
+        $entity->setOnboardingCompleted(true);
+        $entity->setTelosJson(json_encode([
+            'experience_level' => 'beginner',
+            'target_cert' => $cert,
+            'hours_per_week' => 5,
+            'target_date' => date('Y-m-d', time() + 30 * 86400),
+        ]));
+        return $entity;
+    }
 
-        $this->assertSame('3.0', $this->service->currentAiConsentVersion());
+    /**
+     * Audit #57: 'private' promises "only VirtuProf uses your profile", yet the instructor's class
+     * view listed the student's target certificate and exam date by user id.
+     */
+    public function testCourseAggregateLeavesPrivateProfilesOut(): void {
+        $this->mapper->method('findByUserIds')->willReturn([
+            $this->profile('open', 'course', 'Network+'),
+            $this->profile('hidden', 'private', 'Security+'),
+        ]);
+        $this->encryption->method('decrypt')->willReturnArgument(0);
+
+        $aggregate = $this->service->aggregateForCourse(['open', 'hidden']);
+
+        $this->assertSame(['open'], array_column($aggregate['upcoming_exams'], 'user_id'));
+        $this->assertSame(['Network+' => 1], $aggregate['target_certs']);
+        $this->assertSame(['beginner' => 1], $aggregate['experience_levels']);
+        $this->assertSame(2, $aggregate['onboarded'], 'onboarding is app state, not profile content');
+        $this->assertSame(2, $aggregate['total']);
     }
 }

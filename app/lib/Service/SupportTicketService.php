@@ -133,10 +133,6 @@ class SupportTicketService {
         return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByUser($userId, max(1, min(100, $limit))));
     }
 
-    public function listRecent(int $limit = 100): array {
-        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findRecent(max(1, min(200, $limit))));
-    }
-
     public function answer(int $ticketId, string $answerText, string $answeredBy, bool $isAdmin = false, ?int $instructorCourseId = null): array {
         $answerText = trim($answerText);
         if ($answerText === '') {

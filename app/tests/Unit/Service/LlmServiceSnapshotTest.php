@@ -92,7 +92,6 @@ class LlmServiceSnapshotTest extends TestCase {
 
         $service = $this->service();
         $this->assertSame('disabled', $service->getProviderId());
-        $this->assertFalse($service->isEnabled());
         $this->assertFalse($service->isAvailable());
     }
 

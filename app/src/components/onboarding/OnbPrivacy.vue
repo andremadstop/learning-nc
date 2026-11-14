@@ -11,7 +11,7 @@
       </p>
       <a
         class="onb-privacy__link"
-        href="/settings/user/privacy"
+        :href="privacyUrl"
         target="_blank"
         rel="noopener"
       >
@@ -30,10 +30,18 @@
 
 <script>
 import { t } from '@nextcloud/l10n'
+import { generateUrl } from '@nextcloud/router'
 
 export default {
   name: 'OnbPrivacy',
   emits: ['next'],
+  computed: {
+    // Through generateUrl, so a Nextcloud under a subpath or without pretty URLs opens the page
+    // instead of a 404 (audit #115).
+    privacyUrl() {
+      return generateUrl('/settings/user/privacy')
+    },
+  },
   methods: { t },
 }
 </script>

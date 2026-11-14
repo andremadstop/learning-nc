@@ -323,7 +323,7 @@
 
         <p class="audit-liveness__hint field-help">
           {{ t('learning', 'Kettenintegrität prüfen:') }} <code>occ learning:audit:verify</code><br>
-          {{ t('learning', 'Fork-Auflösung:') }} <code>docs/audit-fork-runbook.md</code>
+          {{ t('learning', 'Fork-Auflösung:') }} <a href="https://github.com/andremadstop/learning-nc/blob/main/docs/audit-fork-runbook.md" target="_blank" rel="noopener noreferrer"><code>audit-fork-runbook.md</code></a>
         </p>
       </div>
 

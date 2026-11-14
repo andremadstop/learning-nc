@@ -104,9 +104,4 @@ class ShareService {
         $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
         return $share !== null;
     }
-
-    public function canEdit(int $poolId, string $userId): bool {
-        $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
-        return $share !== null && $share->getPermission() === 'edit';
-    }
 }

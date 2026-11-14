@@ -41,18 +41,4 @@ class CampaignStateMapper extends QBMapper {
            ->orderBy('updated_at', 'DESC');
         return $this->findEntities($qb);
     }
-
-    /**
-     * Find in-progress state records for a user.
-     * @return CampaignState[]
-     */
-    public function findInProgressByUser(string $userId): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-           ->from($this->getTableName())
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter('in_progress')))
-           ->orderBy('updated_at', 'DESC');
-        return $this->findEntities($qb);
-    }
 }

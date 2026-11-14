@@ -64,29 +64,6 @@ class AiChatMemoryMapper extends QBMapper {
     }
 
     /**
-     * Return the IDs of the N oldest entries for this user.
-     *
-     * @return int[]
-     */
-    public function findOldestIdsByUser(string $userId, int $count): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
-           ->from($this->getTableName())
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->orderBy('created_at', 'ASC')
-           ->setMaxResults($count);
-
-        $result = $qb->executeQuery();
-        $ids = [];
-        while ($row = $result->fetch()) {
-            $ids[] = (int)$row['id'];
-        }
-        $result->closeCursor();
-
-        return $ids;
-    }
-
-    /**
      * Return the N oldest entries as AiChatMemory entities (for compression).
      *
      * @return AiChatMemory[]

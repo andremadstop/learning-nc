@@ -494,7 +494,7 @@ class IssuanceService {
 
     /**
      * Fire exactly one NC notification for the freshly issued certificate (CERT-12).
-     * Deduped via getCount() (mirrors NotificationJob::sendNotification).
+     * Deduped via getCount(), as the retired NotificationJob did.
      *
      * BEST-EFFORT (post-impl-review HIGH 3): a throwing notification backend must NEVER turn a
      * committed issuance into an apparent failure — the caller (PassCriteriaService) would then

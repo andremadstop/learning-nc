@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  * EXACTLY once (guarded by an atomic `completed_at IS NULL` UPDATE).
  *
  * The pure decision methods (mergeIntervals, coveredPct, decideComplete, isPlausiblePing,
- * computeCompletionState, isDurationValidForGate, computeHeartbeatTransition) are tested DB-free.
+ * isDurationValidForGate, computeHeartbeatTransition) are tested DB-free.
  * markComplete/markDocumentRead are tested with a fluent QueryBuilder stub whose executeStatement()
  * return value drives the exactly-once guard.
  */
@@ -259,17 +259,6 @@ class VideoProgressServiceTest extends TestCase {
         $this->assertNotNull($t);
         $this->assertLessThan(0.95, $t['covered_pct'], 'one ping can never store completable coverage');
         $this->assertFalse($svc->decideComplete($t['covered_pct']), 'complete() could not finalize it');
-    }
-
-    // ---- computeCompletionState (DSGVO transient cleanup, VIDEO-06) ----------
-
-    public function testComputeCompletionStateClearsTransientFields(): void {
-        $svc = $this->makeService();
-        $state = $svc->computeCompletionState(self::NOW);
-        $this->assertSame(self::NOW, $state['completed_at']);
-        $this->assertNull($state['intervals_json']);
-        $this->assertNull($state['covered_pct']);
-        $this->assertNull($state['last_ping_ts']);
     }
 
     // ---- duration integrity / document exemption (W1) -----------------------

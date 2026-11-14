@@ -116,15 +116,6 @@ class QuestionMapper extends QBMapper {
         }
     }
 
-    public function deleteById(int $id, string $userId): void {
-        try {
-            $question = $this->find($id, $userId);
-            $this->delete($question);
-        } catch (DoesNotExistException $e) {
-            // Already deleted or doesn't exist
-        }
-    }
-
     /**
      * Question ids of a pool in the order the pool's question list pages through them
      * (findByPoolIdPaged), so a search hit can be placed on its page (2026-11 audit #108).
@@ -167,8 +158,9 @@ class QuestionMapper extends QBMapper {
                $expr->eq("cm.course_id", "c.id"),
                $expr->eq("cm.user_id", $qb->createNamedParameter($userId))
            ))
+           // Pool owner, not question author (audit #150, same rule as QuestionSearchProvider).
            ->where($expr->orX(
-               $expr->eq("q.user_id", $qb->createNamedParameter($userId)),
+               $expr->eq("p.user_id", $qb->createNamedParameter($userId)),
                $expr->isNotNull("s.id"),
                $expr->eq("c.instructor_id", $qb->createNamedParameter($userId)),
                $expr->isNotNull("cm.id")

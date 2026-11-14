@@ -98,8 +98,11 @@ class QuestionSearchProvider implements IProvider {
                 $expr->eq('cm.course_id', 'c.id'),
                 $expr->eq('cm.user_id', $qb->createNamedParameter($userId))
             ))
+            // Access follows the pool, as in PoolSearchProvider: its owner, a share, a course.
+            // Not q.user_id (audit #150): that is whoever wrote the question, so the owner missed
+            // an editor's questions and an editor kept finding them after the share was revoked.
             ->where($expr->orX(
-                $expr->eq('q.user_id', $qb->createNamedParameter($userId)),
+                $expr->eq('p.user_id', $qb->createNamedParameter($userId)),
                 $expr->isNotNull('s.id'),
                 $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
                 $expr->isNotNull('cm.id')

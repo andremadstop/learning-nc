@@ -32,15 +32,4 @@ class EpochProgress extends Entity {
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
     }
-
-    /**
-     * Decode museum_viewed JSON into an array of fact IDs.
-     * @return string[]
-     */
-    public function getMuseumViewedDecoded(): array {
-        if ($this->museumViewed === null || $this->museumViewed === '') {
-            return [];
-        }
-        return json_decode($this->museumViewed, true) ?? [];
-    }
 }

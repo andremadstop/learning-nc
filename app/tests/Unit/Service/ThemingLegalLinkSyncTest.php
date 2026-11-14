@@ -92,12 +92,24 @@ class ThemingLegalLinkSyncTest extends TestCase {
         $this->assertSame('https://schule.example/impressum', $this->values['theming']['imprintUrl']);
     }
 
-    public function testAnOwnLinkFromAnOldAddressIsRefreshed(): void {
+    public function testAnOwnLinkIsKeptWhenOnlyTheHostDiffers(): void {
+        // Audit #206: cron/occ see overwrite.cli.url, the web the request host. Rewriting the own
+        // link whenever they differed made the stored value flip between the two.
         $this->configureOperator();
         $this->values['theming'] = [
-            'privacyUrl' => 'http://old.example/apps/learning/privacy',
+            'privacyUrl' => 'http://localhost/apps/learning/privacy',
             'imprintUrl' => self::IMPRINT,
         ];
+
+        $this->sync()->sync();
+
+        $this->assertSame([], $this->writes);
+        $this->assertSame('http://localhost/apps/learning/privacy', $this->values['theming']['privacyUrl']);
+    }
+
+    public function testOnlyTheEmptyLinkIsFilled(): void {
+        $this->configureOperator();
+        $this->values['theming'] = ['imprintUrl' => 'https://schule.example/impressum'];
 
         $this->sync()->sync();
 

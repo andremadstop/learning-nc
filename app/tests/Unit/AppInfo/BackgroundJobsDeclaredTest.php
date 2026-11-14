@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\AppInfo;
 
-use OCA\Learning\Repair\RemoveRetiredBackgroundJobs;
+use OCA\Learning\Repair\RemoveRetiredJobs;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,7 +19,7 @@ class BackgroundJobsDeclaredTest extends TestCase {
      * @var array<string, string>
      */
     private const NOT_DECLARED = [
-        // retired, removed from the job list by RemoveRetiredBackgroundJobs
+        // retired, removed from the job list by RemoveRetiredJobs
         'OCA\Learning\BackgroundJob\NotificationJob' => 'retired',
         // one-off: scheduled by the LegacyAiTaskCleanup repair step only when there is work
         'OCA\Learning\BackgroundJob\LegacyAiTaskCleanupJob' => 'scheduled on demand',
@@ -52,7 +52,7 @@ class BackgroundJobsDeclaredTest extends TestCase {
         $info = simplexml_load_file($this->appRoot() . '/appinfo/info.xml');
         $this->assertNotFalse($info);
         $declared = array_map('strval', $info->xpath('/info/background-jobs/job') ?: []);
-        foreach (RemoveRetiredBackgroundJobs::RETIRED as $job) {
+        foreach (RemoveRetiredJobs::RETIRED_JOBS as $job) {
             $this->assertNotContains($job, $declared);
         }
     }

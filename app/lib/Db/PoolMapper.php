@@ -49,9 +49,4 @@ class PoolMapper extends QBMapper {
             return $this->update($pool);
         }
     }
-
-    public function deleteById(int $id, string $userId): void {
-        $pool = $this->find($id, $userId);
-        $this->delete($pool);
-    }
 }

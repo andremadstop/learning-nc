@@ -13,6 +13,10 @@ use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\VideoProgressService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\Files\File;
+use OCP\Files\Folder;
+use OCP\Files\IRootFolder;
+use OCP\Files\NotFoundException;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
@@ -39,8 +43,28 @@ class CourseVideoControllerTest extends TestCase {
     /** @var CourseService&\PHPUnit\Framework\MockObject\MockObject */
     private $courseService;
     private VideoProgressService $videoProgressService;
+    /** @var IRootFolder&\PHPUnit\Framework\MockObject\MockObject */
+    private $rootFolder;
+    /** @var array<string, string> path => MIME type in the owner's home */
+    private array $ownerFiles = ['Videos/intro.mp4' => 'video/mp4', 'Documents/payslip.pdf' => 'application/pdf'];
+    /** owners whose home was opened */
+    private array $openedHomes = [];
 
     protected function setUp(): void {
+        $this->rootFolder = $this->createMock(IRootFolder::class);
+        $this->rootFolder->method('getUserFolder')->willReturnCallback(function (string $uid): Folder {
+            $this->openedHomes[] = $uid;
+            $folder = $this->createMock(Folder::class);
+            $folder->method('get')->willReturnCallback(function (string $path): File {
+                if (!isset($this->ownerFiles[$path])) {
+                    throw new NotFoundException($path);
+                }
+                $file = $this->createMock(File::class);
+                $file->method('getMimeType')->willReturn($this->ownerFiles[$path]);
+                return $file;
+            });
+            return $folder;
+        });
         $this->videoMapper = $this->createMock(CourseVideoMapper::class);
         $this->courseService = $this->createMock(CourseService::class);
         // Real service so the pure isDurationValidForGate logic runs; its deps are never called by it.
@@ -53,15 +77,23 @@ class CourseVideoControllerTest extends TestCase {
         );
     }
 
-    private function makeController(): CourseVideoController {
+    private function course(string $owner = 'instructor-uid'): Course {
+        $course = new Course();
+        $course->setId(5);
+        $course->setInstructorId($owner);
+        return $course;
+    }
+
+    private function makeController(string $uid = 'instructor-uid'): CourseVideoController {
         return new CourseVideoController(
             'learning',
             $this->createMock(IRequest::class),
             $this->videoMapper,
             $this->courseService,
             $this->videoProgressService,
+            $this->rootFolder,
             $this->createMock(LoggerInterface::class),
-            'instructor-uid',
+            $uid,
         );
     }
 
@@ -92,7 +124,7 @@ class CourseVideoControllerTest extends TestCase {
     }
 
     public function testCreateAllowsNcFilesVideoWithPositiveDuration(): void {
-        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->createMock(Course::class));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
         $this->videoMapper->expects($this->once())->method('insert')->willReturnArgument(0);
 
         $resp = $this->makeController()->create(5, 'nc-files', 'Videos/intro.mp4', 'Intro', 120);
@@ -113,12 +145,103 @@ class CourseVideoControllerTest extends TestCase {
         $existing->setVideoRef('Videos/intro.mp4');
         $existing->setDurationSeconds(120);
         $this->videoMapper->method('findById')->willReturn($existing);
-        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->createMock(Course::class));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
         $this->videoMapper->expects($this->never())->method('update');
 
         $resp = $this->makeController()->update(9, null, null, null, 0);
 
         $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    // ---- audit #15: nc-files rows stream from the OWNER's home to every member ----------------
+
+    public function testCoInstructorCannotAddAFileFromTheOwnersHome(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course('owner-uid'));
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController('co-instructor')->create(5, 'nc-files', 'Documents/payslip.pdf', 'x', 1);
+
+        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+        $this->assertSame([], $this->openedHomes, 'the owner\'s home is not even opened');
+    }
+
+    public function testOwnerCannotRegisterAFileThatIsNoVideo(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController()->create(5, 'nc-files', 'Documents/payslip.pdf', 'x', 1);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testOwnerCannotRegisterAMissingFile(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController()->create(5, 'nc-files', 'Videos/gone.mp4', 'x', 60);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testCoInstructorCanStillAddAnEmbed(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course('owner-uid'));
+        $this->videoMapper->expects($this->once())->method('insert')->willReturnArgument(0);
+
+        $resp = $this->makeController('co-instructor')->create(5, 'youtube-nocookie', 'dQw4w9WgXcQ', 'Embed', 60);
+
+        $this->assertSame(Http::STATUS_CREATED, $resp->getStatus());
+    }
+
+    private function existingRow(string $sourceType, string $ref): CourseVideo {
+        $existing = new CourseVideo();
+        $existing->setCourseId(5);
+        $existing->setSourceType($sourceType);
+        $existing->setVideoRef($ref);
+        $existing->setDurationSeconds(120);
+        return $existing;
+    }
+
+    public function testCoInstructorCannotRepointAnNcFilesRow(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('nc-files', 'Videos/intro.mp4'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course('owner-uid'));
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController('co-instructor')->update(9, null, 'Documents/payslip.pdf');
+
+        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+    }
+
+    public function testCoInstructorCannotTurnAnEmbedIntoAnNcFilesRow(): void {
+        // The old ref, now read as a path in the owner's home.
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('vimeo', 'Documents/payslip.pdf'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course('owner-uid'));
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController('co-instructor')->update(9, 'nc-files');
+
+        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+    }
+
+    public function testCoInstructorCanRenameAnNcFilesRow(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('nc-files', 'Videos/intro.mp4'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course('owner-uid'));
+        $this->videoMapper->expects($this->once())->method('update')->willReturnArgument(0);
+
+        $resp = $this->makeController('co-instructor')->update(9, null, null, 'New title');
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+    }
+
+    public function testOwnerCanRepointToAnotherVideo(): void {
+        $this->ownerFiles['Videos/part2.mp4'] = 'video/webm';
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('nc-files', 'Videos/intro.mp4'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->once())->method('update')->willReturnArgument(0);
+
+        $resp = $this->makeController()->update(9, null, 'Videos/part2.mp4');
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+        $this->assertSame(['instructor-uid'], $this->openedHomes);
     }
 
     public function testCreateRejectsWhenUnauthenticated(): void {
@@ -128,6 +251,7 @@ class CourseVideoControllerTest extends TestCase {
             $this->videoMapper,
             $this->courseService,
             $this->videoProgressService,
+            $this->rootFolder,
             $this->createMock(LoggerInterface::class),
             null,
         );

@@ -16,8 +16,6 @@ use OCA\Learning\Service\CourseMergeService;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\DataMobilityService;
-use OCA\Learning\Service\OperatorInfo;
-use OCA\Learning\Service\ThemingLegalLinkSync;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Search\PoolSearchProvider;
@@ -29,9 +27,7 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\BackgroundJob\IJobList;
-use OCP\IConfig;
 use OCP\IGroupManager;
-use OCP\IURLGenerator;
 use OCP\IUserManager;
 use OCP\Settings\IManager as SettingsManager;
 use OCP\User\Events\UserDeletedEvent;
@@ -106,14 +102,16 @@ class Application extends App implements IBootstrap {
         });
     }
 
+    /**
+     * Runs on every request, so it stays free of database work (audit #206). Until 5.10 it also
+     * checked eight background jobs (eight SELECTs on oc_jobs per request) and wrote the theming
+     * legal links. The timed jobs are now declared in info.xml (<background-jobs>), which Nextcloud
+     * registers on install and upgrade; the retired NotificationJob is removed by the repair step
+     * RemoveRetiredJobs; the legal links follow the operator details when an admin saves them
+     * (LegalOperatorController).
+     */
     public function boot(IBootContext $context): void {
-        $container = $context->getServerContainer();
-        $this->registerHelpSettings($container);
-        $this->syncThemingLegalLinks($container);
-        // Background jobs are declared in appinfo/info.xml; Nextcloud registers them on install and
-        // on every app upgrade. They used to be added here on every boot, i.e. 8 job-list queries
-        // per request (audit #133). The retired NotificationJob is removed by the repair step
-        // RemoveRetiredBackgroundJobs.
+        $this->registerHelpSettings($context->getServerContainer());
     }
 
     private function registerHelpSettings(ContainerInterface $container): void {
@@ -124,26 +122,6 @@ class Application extends App implements IBootstrap {
         } catch (\Throwable $e) {
             $container->get(LoggerInterface::class)->warning(
                 'Learning: help settings registration failed: ' . $e->getMessage(),
-                ['app' => self::APP_ID]
-            );
-        }
-    }
-
-    /**
-     * Takes over the Nextcloud imprint/privacy links only once an operator is configured, never
-     * over a link set elsewhere (audit 2026-11; logic in ThemingLegalLinkSync).
-     */
-    private function syncThemingLegalLinks(ContainerInterface $container): void {
-        try {
-            $config = $container->get(IConfig::class);
-            (new ThemingLegalLinkSync(
-                $config,
-                $container->get(IURLGenerator::class),
-                new OperatorInfo($config),
-            ))->sync();
-        } catch (\Throwable $e) {
-            $container->get(LoggerInterface::class)->warning(
-                'Learning: legal link sync failed: ' . $e->getMessage(),
                 ['app' => self::APP_ID]
             );
         }

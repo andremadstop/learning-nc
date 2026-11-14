@@ -315,6 +315,7 @@ namespace OCP {
             public function getParams(): array;
             // Signature copied from NC 33's lib/public/IRequest.php.
             public function getUploadedFile(string $key);
+            // Signature copied from NC 33's lib/public/IRequest.php (VideoStreamController reads Range).
             public function getHeader(string $name): string;
         }
     }

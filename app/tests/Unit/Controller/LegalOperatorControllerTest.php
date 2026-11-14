@@ -5,8 +5,11 @@ namespace OCA\Learning\Tests\Unit\Controller;
 
 use OCA\Learning\Controller\LegalOperatorController;
 use OCA\Learning\Service\OperatorInfo;
+use OCA\Learning\Service\ThemingLegalLinkSync;
 use OCP\IConfig;
 use OCP\IRequest;
+use OCP\IURLGenerator;
+use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
@@ -20,14 +23,22 @@ use PHPUnit\Framework\TestCase;
 class LegalOperatorControllerTest extends TestCase {
     /** @var array<string, string> */
     private array $appValues = [];
+    /** @var array<string, string> theming app values (the footer links) */
+    private array $theming = [];
 
     private function controller(): LegalOperatorController {
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(
-            fn (string $app, string $key, $default = '') => $this->appValues[$key] ?? $default
+            fn (string $app, string $key, $default = '') => $app === 'theming'
+                ? ($this->theming[$key] ?? $default)
+                : ($this->appValues[$key] ?? $default)
         );
         $config->method('setAppValue')->willReturnCallback(
             function (string $app, string $key, $value): void {
+                if ($app === 'theming') {
+                    $this->theming[$key] = (string)$value;
+                    return;
+                }
                 $this->appValues[$key] = (string)$value;
             }
         );
@@ -36,7 +47,13 @@ class LegalOperatorControllerTest extends TestCase {
                 unset($this->appValues[$key]);
             }
         );
-        return new LegalOperatorController('learning', $this->createMock(IRequest::class), new OperatorInfo($config));
+        $urls = $this->createMock(IURLGenerator::class);
+        $urls->method('linkToRouteAbsolute')->willReturnCallback(
+            static fn (string $route): string => 'https://cloud.example/' . $route
+        );
+        $operator = new OperatorInfo($config);
+        return new LegalOperatorController('learning', $this->createMock(IRequest::class), $operator,
+            new ThemingLegalLinkSync($config, $urls, $operator), $this->createMock(LoggerInterface::class));
     }
 
     public function testAValidEntryIsStoredAndReturned(): void {
@@ -69,6 +86,48 @@ class LegalOperatorControllerTest extends TestCase {
         $this->assertSame(400, $resp->getStatus());
         $this->assertSame(['email' => 'invalid'], $resp->getData()['fields']);
         $this->assertSame('Musterschule e. V.', $this->appValues['operator_name']);
+    }
+
+    public function testAValidEntryFillsTheEmptyFooterLinks(): void {
+        // Audit #206: no longer synced on every request, so saving the operator must do it.
+        $this->theming = ['imprintUrl' => 'https://schule.example/impressum'];
+
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+
+        $this->assertSame([
+            'imprintUrl' => 'https://schule.example/impressum',
+            'privacyUrl' => 'https://cloud.example/learning.page.privacy',
+        ], $this->theming);
+    }
+
+    public function testALinkClearedAfterTheFirstSyncStaysEmptyWhenTheOperatorIsSavedAgain(): void {
+        // Audit #206: an empty theming link used to be read as "fill it in" on every save, so an
+        // admin who removed the footer link on purpose got it back with the next typo fix.
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+        $this->assertSame('https://cloud.example/learning.page.privacy', $this->theming['privacyUrl']);
+        $this->theming = ['privacyUrl' => '', 'imprintUrl' => ''];
+
+        $resp = $this->controller()->save('Musterschule e.V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertSame(['privacyUrl' => '', 'imprintUrl' => ''], $this->theming);
+    }
+
+    public function testRemovingAndReenteringTheOperatorFillsTheEmptyLinksAgain(): void {
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+        $this->controller()->save('', '', '', '', '');
+        $this->theming = [];
+
+        $this->controller()->save('Musterschule e. V.', 'Schulweg 1', '', 'kontakt@musterschule.example', '');
+
+        $this->assertSame('https://cloud.example/learning.page.privacy', $this->theming['privacyUrl']);
+        $this->assertSame('https://cloud.example/learning.page.impressum', $this->theming['imprintUrl']);
+    }
+
+    public function testARefusedEntryWritesNoFooterLink(): void {
+        $this->controller()->save('Musterschule e. V.', '', '', '', '');
+
+        $this->assertSame([], $this->theming);
     }
 
     public function testSavingAllFieldsEmptyRemovesTheOperator(): void {

@@ -28,6 +28,9 @@ use PHPUnit\Framework\TestCase;
 final class SearchProvidersTest extends TestCase {
 	private const USER = 'search-providers-it';
 	private const MARKER = 'Zebrafinch7781';
+	/** wrote a question into USER's pool through an edit share that was revoked since */
+	private const FORMER_EDITOR = 'search-providers-it-ed';
+	private const EDITOR_MARKER = 'Kingfisher4412';
 
 	private IDBConnection $db;
 
@@ -52,6 +55,15 @@ final class SearchProvidersTest extends TestCase {
 		$question->setCreatedAt($now);
 		$question->setUpdatedAt($now);
 		Server::get(QuestionMapper::class)->insert($question);
+
+		$byEditor = new Question();
+		$byEditor->setPoolId((int)$pool->getId());
+		$byEditor->setUserId(self::FORMER_EDITOR);
+		$byEditor->setText('Which bird is a ' . self::EDITOR_MARKER . '?');
+		$byEditor->setExplanation('Written by the former editor');
+		$byEditor->setCreatedAt($now);
+		$byEditor->setUpdatedAt($now);
+		Server::get(QuestionMapper::class)->insert($byEditor);
 	}
 
 	protected function tearDown(): void {
@@ -80,21 +92,46 @@ final class SearchProvidersTest extends TestCase {
 		$this->assertStringContainsString(self::MARKER, $titles[0]);
 	}
 
+	/**
+	 * Audit #150: access followed q.user_id (the author), not the pool. The owner did not find a
+	 * question an editor had added, and the editor still found it after losing the share.
+	 */
+	public function testQuestionSearchFollowsThePoolOwnerNotTheAuthor(): void {
+		$provider = new QuestionSearchProvider(
+			Server::get(IFactory::class)->get('learning', 'en'),
+			Server::get(IURLGenerator::class),
+			$this->db
+		);
+
+		$owner = $this->titles($provider->search($this->user(), $this->query(self::EDITOR_MARKER)));
+		$this->assertCount(1, $owner, 'the pool owner finds the question an editor wrote');
+
+		$former = $this->titles($provider->search($this->user(self::FORMER_EDITOR), $this->query(self::EDITOR_MARKER)));
+		$this->assertSame([], $former, 'the author without a share finds nothing');
+	}
+
+	public function testQuestionApiSearchFollowsThePoolOwnerNotTheAuthor(): void {
+		$mapper = Server::get(QuestionMapper::class);
+
+		$this->assertCount(1, $mapper->searchByText(strtolower(self::EDITOR_MARKER), self::USER));
+		$this->assertSame([], $mapper->searchByText(strtolower(self::EDITOR_MARKER), self::FORMER_EDITOR));
+	}
+
 	/** @return string[] */
 	private function titles(SearchResult $result): array {
 		$data = json_decode((string)json_encode($result), true);
 		return array_map(static fn (array $entry): string => (string)$entry['title'], $data['entries'] ?? []);
 	}
 
-	private function user(): IUser {
+	private function user(string $uid = self::USER): IUser {
 		$user = $this->createStub(IUser::class);
-		$user->method('getUID')->willReturn(self::USER);
+		$user->method('getUID')->willReturn($uid);
 		return $user;
 	}
 
-	private function query(): ISearchQuery {
+	private function query(string $marker = self::MARKER): ISearchQuery {
 		$query = $this->createStub(ISearchQuery::class);
-		$query->method('getTerm')->willReturn(strtolower(self::MARKER));
+		$query->method('getTerm')->willReturn(strtolower($marker));
 		$query->method('getCursor')->willReturn(null);
 		$query->method('getLimit')->willReturn(10);
 		return $query;
@@ -104,7 +141,10 @@ final class SearchProvidersTest extends TestCase {
 		foreach (['learning_questions', 'learning_pools'] as $table) {
 			$qb = $this->db->getQueryBuilder();
 			$qb->delete($table)
-				->where($qb->expr()->eq('user_id', $qb->createNamedParameter(self::USER)))
+				->where($qb->expr()->in('user_id', $qb->createNamedParameter(
+					[self::USER, self::FORMER_EDITOR],
+					\OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY
+				)))
 				->executeStatement();
 		}
 	}

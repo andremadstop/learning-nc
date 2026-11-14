@@ -26,10 +26,6 @@ class LlmService {
         return $this->connectionStore->load()->provider;
     }
 
-    public function isEnabled(): bool {
-        return self::isActive($this->connectionStore->load());
-    }
-
     /**
      * Switched on, a backend 5.7.0 routes, and what that backend needs: Gemini a key for exactly
      * this endpoint, Ollama nothing.

@@ -87,9 +87,28 @@ class UserDeletedListener implements IEventListener {
         // Exact names, never LIKE: '_' is a wildcard and legal in a uid, and a long uid is hashed.
         $this->deleteBudgetRows($userId);
 
+        // Audit #19/#49: personal rows that stayed behind, and rights a recreated account with the
+        // same uid would have inherited (uids are often first names and get reused).
+        // Kudos carry a message text and are exported as the user's data (DataExportService).
+        $this->deleteByUserColumns('learning_kudos', ['from_user', 'to_user'], $userId);
+        // The completion proof outlives this row: VideoProgressService writes it into the
+        // compliance chain (course.video.completed), which is pseudonymised below, not deleted.
+        $this->deleteByUserColumns('learning_video_progress', ['user_id'], $userId);
+        // Nothing writes learning_analytics any more (audit #221), but old rows still name the user.
+        $this->deleteByUserColumns('learning_analytics', ['user_id'], $userId);
+        // A pool share and a team-lead scope are access rights keyed by the uid string.
+        $this->deleteUserPoolShares($userId);
+        $this->deleteByUserColumns('learning_oversight', ['lead_user_id'], $userId);
+        // A mandatory assignment stays as evidence of the obligation, pseudonymised like the
+        // retention job does it (RetentionService): no subject, and no longer an active period,
+        // so a new account with the same uid does not inherit it. Group assignments are untouched.
+        $this->pseudonymiseUserAssignments($userId);
+
         // Keep shared knowledge but remove the personal reference.
         $this->setColumnToNull('learning_support_tickets', 'answered_by', $userId);
         $this->setColumnToNull('learning_rag_chunks', 'user_id', $userId);
+        $this->setColumnToNull('learning_feed_items', 'actor_id', $userId);
+        $this->setColumnToNull('learning_pool_shares', 'created_by', $userId);
 
         // DSGVO-01 Art.17: compliance audit rows (seq_num IS NOT NULL) MUST be retained during
         // the retention period (Art.17(3)(b) — Nachweispflicht, ArbSchG / AGG §12).
@@ -121,6 +140,28 @@ class UserDeletedListener implements IEventListener {
                 $qbAuditDel->expr()->isNull('seq_num')
             ));
         $qbAuditDel->executeStatement();
+    }
+
+    private function deleteUserPoolShares(string $userId): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete('learning_pool_shares')
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('share_type', $qb->createNamedParameter('user', \PDO::PARAM_STR)),
+                $qb->expr()->eq('shared_with', $qb->createNamedParameter($userId, \PDO::PARAM_STR))
+            ));
+        $qb->executeStatement();
+    }
+
+    private function pseudonymiseUserAssignments(string $userId): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_assignments')
+            ->set('subject_id', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+            ->set('active_period_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+            ->where($qb->expr()->andX(
+                $qb->expr()->eq('subject_type', $qb->createNamedParameter('user', \PDO::PARAM_STR)),
+                $qb->expr()->eq('subject_id', $qb->createNamedParameter($userId, \PDO::PARAM_STR))
+            ));
+        $qb->executeStatement();
     }
 
     private function deleteBudgetRows(string $userId): void {

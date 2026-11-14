@@ -143,21 +143,6 @@ class VideoProgressService {
     }
 
     /**
-     * The transient-cleanup state written at completion (VIDEO-06 / DSGVO Art.5): only completed_at
-     * survives; intervals_json, covered_pct and last_ping_ts are nulled.
-     *
-     * @return array{completed_at: int, intervals_json: null, covered_pct: null, last_ping_ts: null}
-     */
-    public function computeCompletionState(int $now): array {
-        return [
-            'completed_at' => $now,
-            'intervals_json' => null,
-            'covered_pct' => null,
-            'last_ping_ts' => null,
-        ];
-    }
-
-    /**
      * W1 duration integrity: a VIDEO source (nc-files/vimeo/youtube-nocookie) with null/0 duration
      * is a misconfigured gate. A document source is EXEMPT — documents legitimately have no duration.
      */

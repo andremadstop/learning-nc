@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  * NOTE-01: generateSummary() — Gemini generates a topic summary on trigger
  * NOTE-02: Summary includes: key points, common mistake, practice recommendation
  * NOTE-03: Wiki-links to related questions/simulations embedded in summary
- * NOTE-04: generateSummary() writes to filename = topic slug → overwrites, no duplicates
+ * NOTE-04: generateSummary() names the file after the topic slug → overwrites, no duplicates
  *
  * Privacy: No PII sent to Gemini — only pool_name, question texts, error_rate.
  */
