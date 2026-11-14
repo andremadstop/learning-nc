@@ -382,6 +382,14 @@ class TrainingService {
             sort($questionIds);
         }
 
+        // One grouped query for every answer of the session (audit #210): a 90-question exam cost
+        // 90 single queries on every start and resume.
+        $loadedIds = array_values(array_filter(array_map('intval', $questionIds), static fn(int $id): bool => isset($byId[$id])));
+        $answersByQuestion = [];
+        foreach (array_chunk($loadedIds, 1000) as $chunk) {
+            $answersByQuestion += $this->answerMapper->findByQuestions($chunk);
+        }
+
         $questionsWithAnswers = [];
         foreach ($questionIds as $qid) {
             if (!isset($byId[$qid])) {
@@ -393,7 +401,7 @@ class TrainingService {
             if ($suppressAnswerMetadata) {
                 $qData = $this->sanitizeQuestionForAttempt($qData);
             }
-            $answers = $this->answerMapper->findByQuestion($q->getId());
+            $answers = $answersByQuestion[(int)$q->getId()] ?? [];
             $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
             $qData['answers'] = array_map(static function ($a) {
                 $row = $a->jsonSerialize();
@@ -2328,7 +2336,7 @@ class TrainingService {
     private function getSessionReview(int $sessionId, ?string $lang = null, bool $withExplanations = false): array {
         // Fetch all user answers for this session
         $qb = $this->db->getQueryBuilder();
-        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type', 'q.explanation AS question_explanation', 'q.scenario AS question_scenario')
+        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type', 'q.explanation AS question_explanation', 'q.scenario AS question_scenario', 'q.instructor_note AS question_instructor_note', 'q.note_visible AS question_note_visible')
            ->from('learning_user_answers', 'ua')
            ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
            ->where($qb->expr()->eq('ua.session_id', $qb->createNamedParameter($sessionId)))
@@ -2337,25 +2345,38 @@ class TrainingService {
         $userAnswers = $result->fetchAll();
         $result->closeCursor();
 
+        // Every answer of the answered questions in one query per 1000 ids (audit #210: it was two
+        // queries per question). The correct ones are derived from is_correct — the same rows,
+        // order (position) and columns getAllCorrectAnswers() reads.
+        $answersByQuestion = [];
+        $answeredIds = array_values(array_unique(array_map(static fn(array $ua): int => (int)$ua['question_id'], $userAnswers)));
+        foreach (array_chunk($answeredIds, 1000) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id', 'question_id', 'text', 'is_correct')
+               ->from('learning_answers')
+               ->where($qb->expr()->in('question_id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_INT_ARRAY)))
+               ->orderBy('question_id', 'ASC')
+               ->addOrderBy('position', 'ASC');
+            $aResult = $qb->executeQuery();
+            foreach ($aResult->fetchAll() as $row) {
+                $answersByQuestion[(int)$row['question_id']][] = $row;
+            }
+            $aResult->closeCursor();
+        }
+
         $review = [];
         foreach ($userAnswers as $ua) {
             $questionId = (int)$ua['question_id'];
             $isCorrect = filter_var($ua['is_correct'], FILTER_VALIDATE_BOOLEAN);
 
-            // Get correct answers for this question
-            $correctRows = $this->getAllCorrectAnswers($questionId);
+            // All answers for this question (for multi-select review), and the correct ones
+            $allAnswers = $answersByQuestion[$questionId] ?? [];
+            $correctRows = array_values(array_filter(
+                $allAnswers,
+                static fn(array $a): bool => filter_var($a['is_correct'], FILTER_VALIDATE_BOOLEAN)
+            ));
             $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
             $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
-
-            // Get all answers for this question (for multi-select review)
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id', 'text', 'is_correct')
-               ->from('learning_answers')
-               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
-               ->orderBy('position', 'ASC');
-            $aResult = $qb->executeQuery();
-            $allAnswers = $aResult->fetchAll();
-            $aResult->closeCursor();
 
             // Determine user's selected answer IDs
             $userAnswerIds = [];
@@ -2388,6 +2409,14 @@ class TrainingService {
                 $explanation = trim((string)($ua['question_explanation'] ?? ''));
                 $entry['explanation'] = $explanation !== '' ? $explanation : null;
             }
+
+            // An instructor note marked visible belongs to the review (audit #239): the attempt
+            // payload strips it during the exam, so the review is the only place it can appear.
+            // A review exists only for a completed session. A hidden note never leaves the server.
+            $note = trim((string)($ua['question_instructor_note'] ?? ''));
+            $entry['instructor_note'] = ($note !== '' && filter_var($ua['question_note_visible'] ?? false, FILTER_VALIDATE_BOOLEAN))
+                ? $note
+                : null;
 
             if (($ua['question_type'] ?? '') === 'pbq') {
                 $pbqData = json_decode($ua['answer_ids'] ?? '{}', true) ?: [];

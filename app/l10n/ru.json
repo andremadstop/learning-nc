@@ -3363,6 +3363,8 @@
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Продление открыто: если вы сейчас сдадите экзамен(ы), ваш сертификат будет продлён.",
         "Die neue Gültigkeit schließt an den {date} an.": "Новый срок действия начнётся с {date}.",
         "Die Erneuerung öffnet am {date}.": "Продление откроется {date}.",
-        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют."
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют.",
+        "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply.": "Прервать экзамен? Он всё равно засчитывается как попытка: ваши ответы не отправляются, и действуют ограничения на повторную сдачу.",
+        "Your previous exam has just run out of time. Please try again in a moment.": "Время вашего предыдущего экзамена только что истекло. Попробуйте ещё раз через минуту."
     }
 }

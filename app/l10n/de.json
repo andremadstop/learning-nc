@@ -3363,6 +3363,8 @@
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.",
         "Die neue Gültigkeit schließt an den {date} an.": "Die neue Gültigkeit schließt an den {date} an.",
         "Die Erneuerung öffnet am {date}.": "Die Erneuerung öffnet am {date}.",
-        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Über das Zertifikat entscheidet nur die Auswahl „Pflicht-Pools“ unter Verwaltung → Kursregeln → Zertifizierung. Diese Schalter ändern daran nichts."
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Über das Zertifikat entscheidet nur die Auswahl „Pflicht-Pools“ unter Verwaltung → Kursregeln → Zertifizierung. Diese Schalter ändern daran nichts.",
+        "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply.": "Prüfung abbrechen? Sie zählt trotzdem als Versuch: Deine Antworten werden nicht eingereicht, und die Regeln für eine Wiederholung gelten.",
+        "Your previous exam has just run out of time. Please try again in a moment.": "Die Zeit deiner vorherigen Prüfung ist gerade abgelaufen. Bitte versuche es gleich noch einmal."
     }
 }

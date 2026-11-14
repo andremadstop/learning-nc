@@ -3364,5 +3364,7 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "تبدأ مدة الصلاحية الجديدة من {date}.",
     "Die Erneuerung öffnet am {date}." : "يُتاح التجديد في {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "وحده اختيار «المجمعات الإلزامية» في الإدارة ← قواعد المقرر ← إصدار الشهادات يحدد الحصول على الشهادة. هذه الخيارات لا تغيّر ذلك.",
+    "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "هل تريد إلغاء الامتحان؟ سيُحتسب مع ذلك محاولةً: لن تُرسل إجاباتك، وتسري قيود إعادة الامتحان.",
+    "Your previous exam has just run out of time. Please try again in a moment." : "انتهى وقت امتحانك السابق للتو. يُرجى المحاولة مرة أخرى بعد لحظات.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -3364,5 +3364,7 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "La nouvelle validité prend le relais à partir du {date}.",
     "Die Erneuerung öffnet am {date}." : "Le renouvellement ouvre le {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Seule la sélection « Pools obligatoires » sous Administration → Règles du cours → Certification décide du certificat. Ces options n'y changent rien.",
+    "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Abandonner l'examen ? Il compte quand même comme une tentative : vos réponses ne sont pas envoyées et les limites pour repasser l'examen s'appliquent.",
+    "Your previous exam has just run out of time. Please try again in a moment." : "Le temps de votre examen précédent vient d'expirer. Veuillez réessayer dans un instant.",
 },
 "nplurals=2; plural=(n > 1);");

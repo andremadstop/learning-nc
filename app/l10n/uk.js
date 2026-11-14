@@ -3364,5 +3364,7 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "Новий строк дії почнеться з {date}.",
     "Die Erneuerung öffnet am {date}." : "Поновлення відкриється {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Про сертифікат вирішує лише вибір «Обов'язкові пули» в розділі Адміністрування → Правила курсу → Сертифікація. Ці перемикачі на це не впливають.",
+    "Abort the exam? It still counts as an attempt: your answers are not submitted, and the limits for retaking the exam apply." : "Перервати іспит? Він усе одно зараховується як спроба: ваші відповіді не надсилаються, і діють обмеження на повторне складання.",
+    "Your previous exam has just run out of time. Please try again in a moment." : "Час вашого попереднього іспиту щойно сплив. Спробуйте ще раз за мить.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
