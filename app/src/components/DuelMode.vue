@@ -432,7 +432,7 @@ export default {
       const my = this.botLocalState.myScore;
       const bot = this.botLocalState.botScore;
       if (my === bot) return t('learning', 'Unentschieden!');
-      return my > bot ? t('learning', 'Du hast gewonnen!') : '🤓 Klaus gewinnt!';
+      return my > bot ? t('learning', 'Du hast gewonnen!') : '🤓 ' + t('learning', 'Klaus gewinnt!');
     },
     createButtonLabel() {
       if (this.loading) {

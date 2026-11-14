@@ -171,7 +171,7 @@
             :class="actorClass(actor.id)"
           >
             <span class="sim-tool__stage-node-label">{{ actor.label }}</span>
-            <small>{{ actor.caption }}</small>
+            <small>{{ actor.id === 'resolver' ? t('learning', 'rekursiv') : actor.caption }}</small>
           </div>
         </div>
 
@@ -273,7 +273,6 @@ const STATUS_LABELS = Object.freeze({
   missing_domain: 'NXDOMAIN',
   dnssec_failure: 'SERVFAIL',
   cname_loop: 'SERVFAIL',
-  invalid_request: 'Ungültig',
 });
 
 export default {
@@ -343,6 +342,8 @@ export default {
     },
     statusLabel() {
       if (!this.lookupResult) return '';
+      // the DNS codes (NXDOMAIN …) are protocol terms; only the invalid-request label is a word (audit #182)
+      if (this.lookupResult.status === 'invalid_request') return t('learning', 'Ungültig');
       return STATUS_LABELS[this.lookupResult.status] || this.lookupResult.status;
     },
     statusClass() {
