@@ -27,6 +27,14 @@ class NcFilesVideoAdapter implements VideoSourceAdapter {
     }
 
     /**
+     * Only videos are registered and streamed from the owner's home (audit #15): the registry
+     * check and the stream endpoint share this rule.
+     */
+    public static function isVideoMime(?string $mime): bool {
+        return is_string($mime) && str_starts_with(strtolower($mime), 'video/');
+    }
+
+    /**
      * Playback descriptor for the native <video> element: the client streams through the
      * enrollment-gated /api/video-stream/{id} endpoint — never a direct NC share/file URL.
      *

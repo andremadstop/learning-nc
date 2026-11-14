@@ -97,12 +97,13 @@ class VideoStreamController extends Controller {
             $this->logger->error('Video stream file resolve failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new Response(Http::STATUS_INTERNAL_SERVER_ERROR);
         }
-        if (!($node instanceof File)) {
+        // Videos only: a row pointing at any other file of the owner's home is never served (audit #15).
+        if (!($node instanceof File) || !NcFilesVideoAdapter::isVideoMime($node->getMimeType())) {
             return new Response(Http::STATUS_NOT_FOUND);
         }
 
         $size = (int)$node->getSize();
-        $mime = $node->getMimeType() ?: 'application/octet-stream';
+        $mime = $node->getMimeType();
 
         // 4. Parse Range defensively → 416 marker, or [start, end].
         $range = $this->parseRange($this->request->getHeader('Range'), $size);
