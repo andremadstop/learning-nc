@@ -295,6 +295,7 @@ import axios from '@nextcloud/axios'
 import AiConsentHint from './AiConsentHint.vue'
 import { isConsentRefusal } from '../utils/aiConsent.js'
 import { generateUrl } from '@nextcloud/router'
+import { showError } from '@nextcloud/dialogs'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcModal from '@nextcloud/vue/components/NcModal'
@@ -611,7 +612,9 @@ export default {
 					this.snapshotSaved = false
 				}, 3000)
 			} catch (error) {
-				this.error = error?.response?.data?.error || t('learning', 'Snapshot konnte nicht gespeichert werden.')
+				// A toast, not this.error: the error card replaces the whole summary, so a failed
+				// save (rate limit, 500) would hide the data and the retry button (audit #95).
+				showError(error?.response?.data?.error || t('learning', 'Snapshot konnte nicht gespeichert werden.'))
 			} finally {
 				this.savingSnapshot = false
 			}

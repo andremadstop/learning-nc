@@ -296,6 +296,9 @@ export default {
       showQuestionSearch: false,
       questionSearchTerm: '',
       questionSearchResults: [],
+      // Feedback per answered question id (audit #42): the server accepts one answer per question,
+      // so a jump back shows the stored result instead of an answer form it would refuse.
+      answeredFeedback: {},
     };
   },
   mounted() {
@@ -391,12 +394,58 @@ export default {
         })
         .slice(0, 10);
     },
-    jumpToQuestion(index) {
-      this.currentIndex = index;
+    // Clears everything that belongs to the question on screen: the explanation of the previous
+    // question must never appear under the next one (audit #42).
+    resetQuestionState() {
+      clearInterval(this.explainPollTimer);
+      this.explainPollTimer = null;
+      this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
+      this.aiConsentRequired = false;
       this.answered = false;
-      this.selectedAnswerId = null;
+      this.isCorrect = false;
+      this.correctAnswerTexts = [];
       this.selectedAnswerIds = [];
+      this.selectedAnswerId = null;
+      this.lastSelectedAnswerId = null;
+      this.lastSelectedAnswerIds = [];
       this.openAnswer = '';
+      this.lastOpenAnswer = '';
+      this.pbqPoints = 0; this.pbqMaxPoints = 1;
+    },
+    rememberFeedback() {
+      if (!this.currentQuestion) return;
+      this.answeredFeedback = {
+        ...this.answeredFeedback,
+        [this.currentQuestion.id]: {
+          isCorrect: this.isCorrect,
+          correctAnswerTexts: this.correctAnswerTexts.slice(),
+          pbqPoints: this.pbqPoints,
+          pbqMaxPoints: this.pbqMaxPoints,
+          selectedAnswerId: this.selectedAnswerId,
+          lastSelectedAnswerId: this.lastSelectedAnswerId,
+          lastSelectedAnswerIds: this.lastSelectedAnswerIds.slice(),
+          lastOpenAnswer: this.lastOpenAnswer,
+        },
+      };
+    },
+    showQuestionAt(index) {
+      this.resetQuestionState();
+      this.currentIndex = index;
+      const stored = this.questions[index] ? this.answeredFeedback[this.questions[index].id] : null;
+      if (stored) {
+        this.isCorrect = stored.isCorrect;
+        this.correctAnswerTexts = stored.correctAnswerTexts.slice();
+        this.pbqPoints = stored.pbqPoints;
+        this.pbqMaxPoints = stored.pbqMaxPoints;
+        this.selectedAnswerId = stored.selectedAnswerId;
+        this.lastSelectedAnswerId = stored.lastSelectedAnswerId;
+        this.lastSelectedAnswerIds = stored.lastSelectedAnswerIds.slice();
+        this.lastOpenAnswer = stored.lastOpenAnswer;
+        this.answered = true;
+      }
+    },
+    jumpToQuestion(index) {
+      this.showQuestionAt(index);
       this.showQuestionSearch = false;
       this.questionSearchTerm = '';
       this.questionSearchResults = [];
@@ -474,6 +523,7 @@ export default {
         if (this.activeQuestionType) { payload.questionType = this.activeQuestionType; }
         const response = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(payload));
         this.session = response.data.session_id; this.questions = response.data.questions;
+        this.answeredFeedback = {};
       } catch (error) { this.loadError = error.response?.data?.error || t('learning', 'Failed to start training.'); }
       finally { this.starting = false; }
     },
@@ -499,6 +549,7 @@ export default {
         this.pbqMaxPoints = response.data.pbq_max_points ?? 1;
         this.correctAnswerTexts = [];
         this.answered = true;
+        this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
       finally { this.submitting = false; }
     },
@@ -515,6 +566,7 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = [response.data.correct_answer_text || ''];
         this.answered = true;
+        this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
       finally { this.submitting = false; }
     },
@@ -531,6 +583,7 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
         this.answered = true;
+        this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
       finally { this.submitting = false; }
     },
@@ -548,6 +601,7 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
         this.answered = true;
+        this.rememberFeedback();
         // TRIG-02: Check if 5+ wrong answers on this pool → offer summary
         if (!this.isCorrect && response.data.wrong_answers_on_pool >= 5) {
           this.wrongAnswersOnPool = response.data.wrong_answers_on_pool;
@@ -604,19 +658,11 @@ export default {
       }, 1500);
     },
     async nextQuestion() {
-      clearInterval(this.explainPollTimer);
-      this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
       if (this.currentIndex < this.questions.length - 1) {
-        this.currentIndex++;
-        this.answered = false;
-        this.selectedAnswerIds = [];
-        this.selectedAnswerId = null;
-        this.lastSelectedAnswerId = null;
-        this.lastSelectedAnswerIds = [];
-        this.openAnswer = '';
-        this.lastOpenAnswer = '';
-        this.pbqPoints = 0; this.pbqMaxPoints = 1;
+        this.showQuestionAt(this.currentIndex + 1);
       } else {
+        clearInterval(this.explainPollTimer);
+        this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
         await this.completeSession();
       }
     },
@@ -657,16 +703,14 @@ export default {
     },
     skipQuestion() {
       if (this.currentIndex < this.questions.length - 1) {
-        this.currentIndex++;
-        this.answered = false;
-        this.selectedAnswerId = null;
-        this.selectedAnswerIds = [];
+        this.showQuestionAt(this.currentIndex + 1);
       } else {
         this.completeSession();
       }
     },
     restartTraining() {
       this.session = null; this.questions = []; this.currentIndex = 0; this.answered = false;
+      this.answeredFeedback = {};
       this.showResults = false; this.results = null; this.loadError = null;
       this.selectedAnswerIds = [];
       this.selectedAnswerId = null;
