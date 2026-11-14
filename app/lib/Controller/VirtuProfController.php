@@ -938,17 +938,16 @@ class VirtuProfController extends Controller {
     /**
      * Audit #16: only explicit requests to file a ticket. Plain problem descriptions ('geht nicht',
      * 'not working', 'ist kaputt') are what learners say about the subject matter too ("Mein Ping
-     * zwischen den VLANs geht nicht") — those filed a ticket and got no answer.
+     * zwischen den VLANs geht nicht") — those filed a ticket and got no answer. The same holds for
+     * bare openings and nouns ('kann ich einen fehler', 'fehler gefunden', 'feedback geben',
+     * 'bug report'): "Wie kann ich einen Fehler in der Subnetzmaske erkennen?" is a question.
      */
     private function isTicketIntent(string $lowerMessage): bool {
         $patterns = [
             'bug melden', 'fehler melden', 'problem melden',
-            'bug report', 'report a bug', 'report bug',
+            'report a bug', 'report bug',
             'ticket erstellen', 'ticket anlegen', 'support ticket',
-            'feedback geben', 'feedback senden',
-            'ich möchte einen fehler', 'ich will einen bug',
-            'kann ich bei dir einen bug', 'kann ich einen fehler',
-            'fehler gefunden', 'bug gefunden',
+            'feedback senden',
         ];
 
         foreach ($patterns as $pattern) {

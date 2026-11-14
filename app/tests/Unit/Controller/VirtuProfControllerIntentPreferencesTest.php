@@ -75,6 +75,11 @@ class VirtuProfControllerIntentPreferencesTest extends TestCase {
             'progress question' => ['Wie kann ich meinen Fortschritt bei Subnetting verbessern?'],
             'plan question' => ['Was gehört in einen guten Lernplan für Security+?'],
             'learning plan question' => ['What makes a good learning plan for Network+?'],
+            'detect an error' => ['Wie kann ich einen Fehler in der Subnetzmaske erkennen?'],
+            'understand an error' => ['Ich möchte einen Fehler in meiner ACL verstehen'],
+            'give feedback' => ['Wie kann ich konstruktives Feedback geben?'],
+            'found an error' => ['Ich habe einen Fehler gefunden, aber wo liegt er in meiner Rechnung?'],
+            'bug report content' => ['What belongs in a good bug report for software testing?'],
         ];
     }
 
@@ -95,6 +100,9 @@ class VirtuProfControllerIntentPreferencesTest extends TestCase {
             'bug melden' => ['isTicketIntent', 'Ich möchte einen Bug melden'],
             'report a bug' => ['isTicketIntent', 'I want to report a bug'],
             'ticket erstellen' => ['isTicketIntent', 'Ticket erstellen bitte'],
+            'bug melden mit bei dir' => ['isTicketIntent', 'Kann ich bei dir einen Bug melden?'],
+            'fehler melden' => ['isTicketIntent', 'Ich möchte einen Fehler melden'],
+            'feedback senden' => ['isTicketIntent', 'Feedback senden: der Timer springt'],
         ];
     }
 
