@@ -324,7 +324,7 @@ export default {
 .question-text { font-size: 15px; line-height: 1.6; margin-bottom: 14px; font-weight: 500; color: var(--color-main-text); }
 .answers-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 12px; }
 .answer-item { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 13px; display: flex; align-items: center; gap: 10px; line-height: 1.4; color: var(--color-text-maxcontrast); border: 1px solid transparent; transition: transform 0.15s; }
-.answer-item.correct { background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); color: var(--color-success); font-weight: 600; border-color: color-mix(in srgb, var(--color-success) 30%, transparent); }
+.answer-item.correct { background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); color: var(--color-success-text, var(--color-success)); font-weight: 600; border-color: var(--color-border-success, var(--color-element-success)); }
 .answer-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; line-height: 1; }
 .correct .answer-icon { background: var(--color-success); color: var(--color-success-text, var(--color-success)); }
 .answer-item:not(.correct) .answer-icon { background: var(--color-background-dark); color: var(--color-text-maxcontrast); font-size: 10px; }

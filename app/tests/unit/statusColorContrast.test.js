@@ -76,6 +76,8 @@ const CASES = [
 	// 37-g — white text on a full tint
 	['AdminSettings.vue', '.audit-overdue-warning', 'pill'],
 	['QuestionList.vue', '.correct .answer-icon', 'pill'],
+	// the answer text next to that icon (same element, was still the tint: 1.18:1 light)
+	['QuestionList.vue', '.answer-item.correct', 'text'],
 	['PbqPlacement.vue', '.pbq-hotspot', 'pill'],
 	['PbqPlacement.vue', '.pbq-hotspot--assigned', 'pill'],
 	['DailyChallengeCard.vue', '.dc-done-badge', 'pill'],
