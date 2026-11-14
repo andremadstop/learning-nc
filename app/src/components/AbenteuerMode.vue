@@ -2079,7 +2079,8 @@ export default {
 			this.coopError = ''
 			this.loadingScene = false
 
-			if (this.coopSessionStatus === 'finished') {
+			// 'aborted': ended by the host or expired before the story reached its end
+			if (this.coopSessionStatus === 'finished' || this.coopSessionStatus === 'aborted') {
 				this.handleCoopSessionEnded(t('learning', 'Die Coop-Session wurde beendet.'))
 				return 'lobby'
 			}
@@ -2151,7 +2152,8 @@ export default {
 				&& this.coopSessionStatus === 'playing',
 			)
 
-			if (this.coopSessionStatus === 'finished' && !normalizedScene.is_ending) {
+			if (this.coopSessionStatus === 'aborted'
+				|| (this.coopSessionStatus === 'finished' && !normalizedScene.is_ending)) {
 				this.handleCoopSessionEnded(t('learning', 'Der Host hat die Coop-Session beendet.'))
 				return 'lobby'
 			}

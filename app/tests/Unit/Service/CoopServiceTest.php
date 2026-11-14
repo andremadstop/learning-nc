@@ -328,6 +328,82 @@ class CoopServiceTest extends TestCase {
         );
     }
 
+    /**
+     * Audit #152: only a story that reached its end is 'finished' and counts toward the simulator
+     * badge (BadgeService counts status = 'finished'). Before, a lobby the host ended at once
+     * counted just the same, so three empty lobbies earned 'Practitioner'.
+     */
+    public function testHostEndingARunningSessionMarksItAborted(): void {
+        $payload = $this->endSessionAs('playing');
+        $this->assertSame('aborted', $payload['session']['status']);
+        $this->assertSame('aborted', $this->endSessionAs('lobby')['session']['status']);
+    }
+
+    public function testHostEndingAFinishedStoryKeepsItFinished(): void {
+        // End pressed on the epilog must not take the badge credit back
+        $this->assertSame('finished', $this->endSessionAs('finished')['session']['status']);
+    }
+
+    public function testAnAbandonedSessionExpiresAsAborted(): void {
+        $session = $this->makeSession(66, 'GONE1234', 'lobby', 'scene-start', 'alice');
+        $session->setLastHeartbeat(time() - 3600);
+        $alice = $this->makePlayer(66, 'alice', 'Alice', 'security', true, false);
+        $alice->setLastHeartbeat(time() - 3600);
+        $bob = $this->makePlayer(66, 'bob', 'Bob', 'helpdesk', false, false);
+        $bob->setLastHeartbeat(time() - 3600);
+
+        $sessionMapper = $this->createMock(CoopSessionMapper::class);
+        $sessionMapper->method('findById')->willReturn($session);
+        $sessionMapper->expects($this->once())->method('update')
+            ->willReturnCallback(static fn(CoopSession $entity): CoopSession => $entity);
+        $playerMapper = $this->createMock(CoopPlayerMapper::class);
+        $playerMapper->method('findBySessionAndUser')->willReturn($alice);
+        $playerMapper->method('findBySession')->willReturn([$alice, $bob]);
+        // A closed session no longer takes a ready toggle
+        $playerMapper->expects($this->never())->method('update');
+        $storyEngineService = $this->createMock(StoryEngineService::class);
+        $storyEngineService->method('getGraphScene')->willReturn($this->makeGraphState('scene-start'));
+
+        $service = $this->createService(
+            db: new FakeDbConnection(),
+            sessionMapper: $sessionMapper,
+            playerMapper: $playerMapper,
+            storyEngineService: $storyEngineService
+        );
+
+        $payload = $service->setReady(66, 'alice', true, '');
+        $this->assertSame('aborted', $payload['session']['status']);
+        $this->assertSame('aborted', $session->getStatus());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function endSessionAs(string $status): array {
+        $session = $this->makeSession(65, 'ENDS1234', $status, 'scene-start', 'alice');
+        $alice = $this->makePlayer(65, 'alice', 'Alice', 'security', true, true);
+        $bob = $this->makePlayer(65, 'bob', 'Bob', 'helpdesk', false, true);
+
+        $sessionMapper = $this->createMock(CoopSessionMapper::class);
+        $sessionMapper->method('findById')->willReturn($session);
+        $sessionMapper->method('update')
+            ->willReturnCallback(static fn(CoopSession $entity): CoopSession => $entity);
+        $playerMapper = $this->createMock(CoopPlayerMapper::class);
+        $playerMapper->method('findBySessionAndUser')->willReturn($alice);
+        $playerMapper->method('findBySession')->willReturn([$alice, $bob]);
+        $storyEngineService = $this->createMock(StoryEngineService::class);
+        $storyEngineService->method('getGraphScene')->willReturn($this->makeGraphState('scene-start'));
+
+        $service = $this->createService(
+            db: new FakeDbConnection(),
+            sessionMapper: $sessionMapper,
+            playerMapper: $playerMapper,
+            storyEngineService: $storyEngineService
+        );
+
+        return $service->setReady(65, 'alice', null, 'end');
+    }
+
     private function createService(
         FakeDbConnection $db,
         ?CoopSessionMapper $sessionMapper = null,
