@@ -3,7 +3,7 @@
 		<div v-for="(sess, idx) in sessions" :key="idx" class="session-item">
 			<span class="session-date">{{ formatDate(sess.completed_at) }}</span>
 			<span class="session-pool">{{ sess.pool_name }}</span>
-			<span class="session-mode">{{ sess.mode }}</span>
+			<span v-if="modeLabel(sess.mode)" class="session-mode">{{ modeLabel(sess.mode) }}</span>
 			<span class="session-score">{{ sess.score }}</span>
 		</div>
 	</div>
@@ -11,6 +11,9 @@
 </template>
 
 <script>
+import { getCanonicalLocale, translate as t } from '@nextcloud/l10n'
+import { intlLocale } from '../utils/relativeTime.js'
+
 /**
  * The recent completed sessions of one learner in a course (GET /api/courses/{id}/students/{uid},
  * recent_sessions). Shown in the instructor drill-down and in "Mein Fortschritt", and in the
@@ -27,13 +30,35 @@ export default {
 	},
 
 	methods: {
+		t,
+
+		/**
+		 * The session mode in the reader's language. The server sends the stored value
+		 * (training, exam, …); shown raw it was English in every language. An unknown value
+		 * gets no badge rather than a raw database word.
+		 *
+		 * @param {string} mode stored session mode
+		 * @return {string}
+		 */
+		modeLabel(mode) {
+			switch (mode) {
+			case 'training': return t('learning', 'Training')
+			case 'exam': return t('learning', 'Prüfung')
+			case 'leitner': return t('learning', 'Leitner')
+			case 'duel': return t('learning', 'Duell')
+			case 'gameshow': return t('learning', 'Gameshow')
+			default: return ''
+			}
+		},
+
 		formatDate(timestamp) {
 			if (!timestamp) return ''
 			try {
 				const ts = typeof timestamp === 'number' ? timestamp * 1000 : Date.parse(timestamp)
 				const date = new Date(ts)
 				if (isNaN(date.getTime())) return String(timestamp)
-				return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+				// the Nextcloud locale, not the browser's
+				return date.toLocaleDateString(intlLocale(getCanonicalLocale()), { year: 'numeric', month: 'short', day: 'numeric' })
 			} catch {
 				return String(timestamp)
 			}
