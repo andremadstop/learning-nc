@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [5.11.0] - 2026-11-14 — Renewal window and audit follow-up
 
 ### Changed
 - **Renewal opens with the first reminder** (GitHub #35). The reminders 30 and 7 days before
