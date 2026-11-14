@@ -3363,5 +3363,6 @@ OC.L10N.register(
     "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert." : "Renewal is open: if you pass the exam(s) now, your certificate is renewed.",
     "Die neue Gültigkeit schließt an den {date} an." : "The new validity continues from {date}.",
     "Die Erneuerung öffnet am {date}." : "Renewal opens on {date}.",
+    "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.",
 },
 "nplurals=2; plural=(n != 1);");

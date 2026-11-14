@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 vi.mock('@nextcloud/axios', () => ({
 	default: {
@@ -507,5 +509,25 @@ describe('CourseTabLernraum', () => {
 			expect(instance.fetchCourseVideos).not.toHaveBeenCalled()
 			expect(instance.currentSubTab).toBe('pools')
 		})
+	})
+})
+
+describe('pool rules dialog: certificate hint (GitHub #35)', () => {
+	const HINT = 'Only the "Required pools" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.'
+	const sfc = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
+
+	it('sits in the Pool Rules dialog, after the required and exam-relevant switches', () => {
+		const dialog = sfc.slice(sfc.indexOf("t('learning', 'Pool Rules')"), sfc.indexOf("t('learning', 'Exam key filter')"))
+		expect(dialog).toContain(HINT)
+		expect(dialog.indexOf(HINT)).toBeGreaterThan(dialog.indexOf("'Show this pool as required'"))
+		expect(dialog.indexOf(HINT)).toBeGreaterThan(dialog.indexOf("'Exam relevant (counts towards exam readiness)'"))
+	})
+
+	it.each(['de', 'en', 'fr', 'ru', 'ar', 'uk'])('is translated in %s and names that language\'s labels', (lang) => {
+		const tr = JSON.parse(readFileSync(resolve(__dirname, `../../l10n/${lang}.json`), 'utf8')).translations
+		expect(tr[HINT]).toBeTruthy()
+		for (const label of ['Pflicht-Pools', 'Verwaltung', 'Kursregeln', 'Zertifizierung']) {
+			expect(tr[HINT]).toContain(tr[label])
+		}
 	})
 })

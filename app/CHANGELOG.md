@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
   and the tab shows the day renewal opens.
 - The course certificate report filtered by expiry no longer lists a certificate that was
   already renewed or replaced; the unfiltered history still lists every certificate.
+- The pool rules dialog says that only **Required pools** in the course's certification
+  settings decide about the certificate; "Show this pool as required" and "Exam relevant" do not.
 
 ## [5.10.0] - 2026-11-13 — Certification, enrollment and course materials
 

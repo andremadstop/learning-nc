@@ -3363,5 +3363,6 @@ OC.L10N.register(
     "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert." : "Поновлення відкрите: якщо ви зараз складете іспит(и), ваш сертифікат буде поновлено.",
     "Die neue Gültigkeit schließt an den {date} an." : "Новий строк дії почнеться з {date}.",
     "Die Erneuerung öffnet am {date}." : "Поновлення відкриється {date}.",
+    "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Про сертифікат вирішує лише вибір «Обов'язкові пули» в розділі Адміністрування → Правила курсу → Сертифікація. Ці перемикачі на це не впливають.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

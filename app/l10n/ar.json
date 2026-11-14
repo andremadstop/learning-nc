@@ -3362,6 +3362,7 @@
         "Erneuerung offen": "التجديد متاح",
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "التجديد متاح: إذا نجحت الآن في الاختبار (الاختبارات)، تُجدَّد شهادتك.",
         "Die neue Gültigkeit schließt an den {date} an.": "تبدأ مدة الصلاحية الجديدة من {date}.",
-        "Die Erneuerung öffnet am {date}.": "يُتاح التجديد في {date}."
+        "Die Erneuerung öffnet am {date}.": "يُتاح التجديد في {date}.",
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "وحده اختيار «المجمعات الإلزامية» في الإدارة ← قواعد المقرر ← إصدار الشهادات يحدد الحصول على الشهادة. هذه الخيارات لا تغيّر ذلك."
     }
 }

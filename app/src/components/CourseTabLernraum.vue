@@ -499,6 +499,11 @@
 					</label>
 				</div>
 
+				<!-- GitHub #35: these switches look like certificate settings but are not. -->
+				<p class="rules-help rules-cert-hint" data-test="pool-rules-cert-hint">
+					{{ t('learning', 'Only the "Required pools" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.') }}
+				</p>
+
 				<div class="rules-field">
 					<label for="pool-rule-exam">{{ t('learning', 'Exam key filter') }}</label>
 					<select id="pool-rule-exam" v-model="poolRulesForm.filterExamKey" class="nc-input">
