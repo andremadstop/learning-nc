@@ -10,24 +10,24 @@ use OCA\Learning\Service\Llm\LlmProviderException;
 use OCA\Learning\Service\Llm\LlmPurpose;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
+use OCP\IAppConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 /**
  * WeeklyLernplanJob — Phase 27: Auto-Trigger (TRIG-03)
  *
- * NC BackgroundJob that runs weekly (Sunday, ~00:00).
- * For every active user, finds their weakest pool and generates a
- * refreshed /Learning/Zusammenfassungen/ note so the user finds
- * fresh material at the start of the week.
+ * NC TimedJob with a 7-day interval (counted from its last run, not tied to a weekday).
+ * For active users, finds their weakest pool and generates a refreshed
+ * /Learning/Zusammenfassungen/ note.
  *
- * TRIG-03: Jeden Sonntag wird /Learning/Lernplan.md automatisch
- *          aktualisiert — der User findet Montagmorgens einen frischen Plan.
- *
- * The job is idempotent: if the note already exists for this week,
+ * The job is idempotent: if the note already exists,
  * NoteGeneratorService.generateSummary() overwrites it (same filename → same topic).
  *
- * Batch size is capped to avoid long-running jobs on large installations.
+ * Batch size is capped to avoid long-running jobs on large installations. The last user id of a
+ * full batch is kept as the app value weekly_lernplan_cursor, so the next run continues after it
+ * and wraps to the start once the list is through (audit #7: before, every run took the same
+ * alphabetically first 200 users, and everyone after them never got a note).
  */
 class WeeklyLernplanJob extends TimedJob {
     private IDBConnection $db;
@@ -35,6 +35,10 @@ class WeeklyLernplanJob extends TimedJob {
     private LernprofilService $lernprofilService;
     private LoggerInterface $logger;
     private LlmGateway $gateway;
+    private IAppConfig $appConfig;
+
+    /** App value holding the last user id of the previous full batch ('' = start from the beginning). */
+    public const CURSOR_KEY = 'weekly_lernplan_cursor';
 
     /** Maximum users to process per job run — prevents long-running jobs. */
     private const BATCH_SIZE = 200;
@@ -48,7 +52,8 @@ class WeeklyLernplanJob extends TimedJob {
         NoteGeneratorService $noteGeneratorService,
         LernprofilService $lernprofilService,
         LoggerInterface $logger,
-        LlmGateway $gateway
+        LlmGateway $gateway,
+        IAppConfig $appConfig
     ) {
         parent::__construct($time);
         // Run once per week (7 days)
@@ -58,6 +63,7 @@ class WeeklyLernplanJob extends TimedJob {
         $this->lernprofilService = $lernprofilService;
         $this->logger = $logger;
         $this->gateway = $gateway;
+        $this->appConfig = $appConfig;
     }
 
     protected function run($argument): void {
@@ -151,25 +157,47 @@ class WeeklyLernplanJob extends TimedJob {
     }
 
     /**
-     * Return a list of user IDs that have at least one learning session in the last 60 days.
+     * Return the next batch of user IDs that have at least one learning session in the last 60 days.
      *
-     * This avoids regenerating notes for dormant accounts.
+     * This avoids regenerating notes for dormant accounts. The batch starts after the stored
+     * cursor; a full batch moves the cursor to its last user id, a short one (the end of the
+     * list) resets it, so the next run starts from the beginning again.
+     *
+     * @return list<string>
      */
     private function getActiveUsers(): array {
         $cutoff = time() - (60 * 86400);
+        $cursor = $this->appConfig->getValueString('learning', self::CURSOR_KEY, '');
 
+        $users = $this->fetchActiveUserBatch($cutoff, $cursor);
+        if ($users === [] && $cursor !== '') {
+            // the previous batch ended exactly at the end of the list: wrap around now
+            $users = $this->fetchActiveUserBatch($cutoff, '');
+        }
+
+        $next = count($users) >= self::BATCH_SIZE ? (string)end($users) : '';
+        $this->appConfig->setValueString('learning', self::CURSOR_KEY, $next);
+
+        return $users;
+    }
+
+    /** @return list<string> */
+    private function fetchActiveUserBatch(int $cutoff, string $after): array {
         $qb = $this->db->getQueryBuilder();
         $qb->selectDistinct('user_id')
            ->from('learning_sessions')
            ->where($qb->expr()->isNotNull('completed_at'))
-           ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($cutoff)))
-           ->orderBy('user_id', 'ASC')
+           ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($cutoff)));
+        if ($after !== '') {
+            $qb->andWhere($qb->expr()->gt('user_id', $qb->createNamedParameter($after)));
+        }
+        $qb->orderBy('user_id', 'ASC')
            ->setMaxResults(self::BATCH_SIZE);
 
         $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
 
-        return array_column($rows, 'user_id');
+        return array_values(array_map('strval', array_column($rows, 'user_id')));
     }
 }
