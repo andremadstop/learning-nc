@@ -40,6 +40,10 @@ class TrainingController extends Controller {
         }
         try {
             return new DataResponse($this->service->startSession($poolId, $this->userId, $limit, $mode, $timeLimitSeconds, $lang, $courseId, $questionType), 201);
+        } catch (\OCA\Learning\Service\CourseModeClosedException $e) {
+            // GitHub #39: the course switched this mode off. Before the ForbiddenException catch
+            // (its parent), so the client is not told to watch a video.
+            return new DataResponse(['error' => 'This learning mode is switched off for your course', 'gate' => 'mode'], Http::STATUS_FORBIDDEN);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             // VIDEO-03: the video/material gate is a hard 403, not a generic 400 — the client must
             // distinguish "watch the video first" from a bad request. Subclass catch MUST precede the

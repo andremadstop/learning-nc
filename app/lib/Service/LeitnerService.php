@@ -54,15 +54,60 @@ class LeitnerService {
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
+        return $this->hasDirectPoolAccess($poolId, $userId) || $this->hasCoursePoolAccess($poolId, $userId);
+    }
+
+    /** Owner or share recipient: reaches the pool without any course (GitHub #39). */
+    private function hasDirectPoolAccess(int $poolId, string $userId): bool {
         try {
             $this->poolMapper->find($poolId, $userId);
             return true;
         } catch (DoesNotExistException $e) {
-            $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
-            if ($share !== null) {
-                return true;
-            }
-            return $this->hasCoursePoolAccess($poolId, $userId);
+            return $this->shareMapper->findByPoolAndUser($poolId, $userId) !== null;
+        }
+    }
+
+    /**
+     * GitHub #39 (B1): the course switch for Leitner (mode_config.leitner) hid only the tab; the
+     * due queue, the answers and the Smart Queue still served the pool. Throws when the pool is
+     * reachable for the user only through courses that switched Leitner off (or the given course
+     * did). Owners, share recipients and the course's instructors keep it.
+     *
+     * @throws CourseModeClosedException
+     */
+    private function assertLeitnerOpen(int $poolId, string $userId, ?int $courseId = null): void {
+        if ($this->hasDirectPoolAccess($poolId, $userId)) {
+            return;
+        }
+        if ($this->courseService->isPoolModeClosedByCourses($poolId, $userId, 'leitner', $courseId)) {
+            throw new CourseModeClosedException('leitner');
+        }
+    }
+
+    /** @var array<string, int[]> per-request memo of getLeitnerClosedPoolIds */
+    private array $leitnerClosedPoolIds = [];
+
+    /**
+     * Pools whose Leitner cards the cross-pool queues (Smart Queue, remediation) and their counts
+     * leave out (GitHub #39): closed by the course switches and not owned or shared.
+     *
+     * @return int[]
+     */
+    private function getLeitnerClosedPoolIds(string $userId): array {
+        if (!isset($this->leitnerClosedPoolIds[$userId])) {
+            $this->leitnerClosedPoolIds[$userId] = array_values(array_filter(
+                $this->courseService->getPoolIdsClosedForMode($userId, 'leitner'),
+                fn (int $poolId): bool => !$this->hasDirectPoolAccess($poolId, $userId)
+            ));
+        }
+        return $this->leitnerClosedPoolIds[$userId];
+    }
+
+    /** @param \OCP\DB\QueryBuilder\IQueryBuilder $qb */
+    private function excludeClosedPools($qb, string $column, string $userId): void {
+        $closed = $this->getLeitnerClosedPoolIds($userId);
+        if ($closed !== []) {
+            $qb->andWhere($qb->expr()->notIn($column, $qb->createNamedParameter($closed, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
     }
 
@@ -288,6 +333,7 @@ class LeitnerService {
            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
            ->orderBy('l.next_review', 'ASC');
+        $this->excludeClosedPools($qb, 'l.pool_id', $userId);
 
         $result = $qb->executeQuery();
         $items = $result->fetchAll();
@@ -308,6 +354,7 @@ class LeitnerService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->lte('next_review', $qb->createNamedParameter($now)));
+        $this->excludeClosedPools($qb, 'pool_id', $userId);
         $result = $qb->executeQuery();
         $count = (int)$result->fetch()['cnt'];
         $result->closeCursor();
@@ -318,6 +365,7 @@ class LeitnerService {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
         }
+        $this->assertLeitnerOpen($poolId, $userId, $courseId);
 
         $limit = max(1, min($limit, 100));
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
@@ -388,6 +436,8 @@ class LeitnerService {
         if (!$item) {
             throw new \Exception('Item not found');
         }
+        // GitHub #39: the answer reveals the solution, so a closed Leitner mode takes none.
+        $this->assertLeitnerOpen((int)$item['pool_id'], $userId);
 
         $questionId = (int)$item['question_id'];
 
@@ -703,6 +753,7 @@ class LeitnerService {
            ->andWhere($qb->expr()->lte('l.box', $qb->createNamedParameter(2)))
            ->orderBy('l.incorrect_count', 'DESC')
            ->addOrderBy('l.last_reviewed', 'ASC');
+        $this->excludeClosedPools($qb, 'l.pool_id', $userId);
 
         $result = $qb->executeQuery();
         $items = $result->fetchAll();
@@ -740,6 +791,7 @@ class LeitnerService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->gte('incorrect_count', $qb->createNamedParameter(3)))
            ->andWhere($qb->expr()->lte('box', $qb->createNamedParameter(2)));
+        $this->excludeClosedPools($qb, 'pool_id', $userId);
         $result = $qb->executeQuery();
         $count = 0;
         while ($row = $result->fetch()) {
@@ -756,6 +808,7 @@ class LeitnerService {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
         }
+        $this->assertLeitnerOpen($poolId, $userId, $courseId);
 
         $courseQuestionIds = $this->resolveCourseQuestionIds($courseId, $poolId, $userId);
         if ($courseQuestionIds === []) {

@@ -91,6 +91,10 @@ final class FakeExpressionBuilder {
         return ['type' => 'in', 'left' => $left, 'right' => $right];
     }
 
+    public function notIn(mixed $left, mixed $right): array {
+        return ['type' => 'notIn', 'left' => $left, 'right' => $right];
+    }
+
     public function like(mixed $left, mixed $right): array {
         return ['type' => 'like', 'left' => $left, 'right' => $right];
     }

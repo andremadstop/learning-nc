@@ -588,16 +588,13 @@ class TrainingService {
         ];
     }
 
-    private function hasPoolAccess(int $poolId, string $userId): bool {
+    /** Owner or share recipient: reaches the pool without any course (GitHub #39). */
+    private function hasDirectPoolAccess(int $poolId, string $userId): bool {
         try {
             $this->poolMapper->find($poolId, $userId);
             return true;
         } catch (DoesNotExistException $e) {
-            $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
-            if ($share !== null) {
-                return true;
-            }
-            return $this->hasCoursePoolAccess($poolId, $userId);
+            return $this->shareMapper->findByPoolAndUser($poolId, $userId) !== null;
         }
     }
 
@@ -685,7 +682,8 @@ class TrainingService {
             $mode = 'training';
         }
 
-        if (!$this->hasPoolAccess($poolId, $userId)) {
+        $directAccess = $this->hasDirectPoolAccess($poolId, $userId);
+        if (!$directAccess && !$this->hasCoursePoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
         }
 
@@ -702,6 +700,14 @@ class TrainingService {
         // incomplete/misconfigured.
         foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
             $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
+        }
+
+        // GitHub #39 (B1): the course switches for Training and the exam are enforced here, not
+        // only as hidden tabs. Closed when the pool is reachable only through courses that switched
+        // the mode off (or the given course did); owners, share recipients and the course's
+        // instructors keep it. Before the resume, so a closed mode hands out no questions at all.
+        if (!$directAccess && $this->courseService->isPoolModeClosedByCourses($poolId, $userId, $mode, $courseId)) {
+            throw new CourseModeClosedException($mode);
         }
 
         // Resume an active counting exam on this pool first — only in the course context it was

@@ -2335,9 +2335,89 @@ class CourseService {
      * (normalizeModeConfig) and updateModeConfig's defaults (GitHub #36).
      */
     private function isLeitnerEnabledFor(Course $course): bool {
-        $raw = $course->getModeConfig();
+        return self::isModeEnabledInConfig($course->getModeConfig(), 'leitner');
+    }
+
+    /**
+     * Whether a course's mode_config switches a mode on. A missing key, an empty or broken config
+     * counts as on, like the frontend (normalizeModeConfig) and updateModeConfig's defaults.
+     */
+    private static function isModeEnabledInConfig(mixed $raw, string $modeKey): bool {
         $config = is_string($raw) && $raw !== '' ? json_decode($raw, true) : null;
-        return !is_array($config) || ($config['leitner'] ?? true) !== false;
+        return !is_array($config) || ($config[$modeKey] ?? true) !== false;
+    }
+
+    /**
+     * GitHub #39 (B1): the course switches for Training, Leitner and the exam (mode_config keys
+     * 'training', 'leitner', 'exam') hid only the tabs; the API served the modes anyway, so a pool
+     * of a compliance course stayed a source for the answers of its certificate exam.
+     *
+     * Returns the pools among $poolIds (all of the user's course pools when null) that the user
+     * reaches through courses only where the mode is off: every course holding the pool that the
+     * user belongs to is one they learn in (not instructor of) and that has the mode switched off.
+     * A pool also held by a course with the mode on, or by a course the user leads (the instructor
+     * preview), stays open. Pools outside any of the user's courses are never returned, so a pool
+     * without a course (self-study) is untouched. Ownership and pool shares are the caller's
+     * business: an owner or share recipient reaches the pool without a course.
+     *
+     * @param int[]|null $poolIds
+     * @return int[]
+     */
+    public function getPoolIdsClosedForMode(string $userId, string $modeKey, ?array $poolIds = null): array {
+        if ($poolIds !== null && $poolIds === []) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('cp.pool_id', 'c.instructor_id', 'c.mode_config', 'cm.role')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+               $expr->eq('cm.course_id', 'c.id'),
+               $expr->eq('cm.user_id', $qb->createNamedParameter($userId))
+           ))
+           ->where($expr->orX(
+               $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
+               $expr->isNotNull('cm.id')
+           ));
+        if ($poolIds !== null) {
+            $qb->andWhere($expr->in('cp.pool_id', $qb->createNamedParameter(array_values(array_map('intval', $poolIds)), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
+        $result = $qb->executeQuery();
+        $open = [];
+        $closed = [];
+        while ($row = $result->fetch()) {
+            $poolId = (int)$row['pool_id'];
+            $leads = $row['instructor_id'] === $userId || ($row['role'] ?? null) === 'instructor';
+            if ($leads || self::isModeEnabledInConfig($row['mode_config'] ?? null, $modeKey)) {
+                $open[$poolId] = true;
+            } else {
+                $closed[$poolId] = true;
+            }
+        }
+        $result->closeCursor();
+        return array_values(array_map('intval', array_keys(array_diff_key($closed, $open))));
+    }
+
+    /**
+     * GitHub #39 (B1): whether the course switches close $modeKey on this pool for the user.
+     * With a course context the switch of that course decides (its instructors keep the preview);
+     * without one, every course the user reaches the pool through (getPoolIdsClosedForMode).
+     * A course context the user has no access to is left to the caller's access checks.
+     */
+    public function isPoolModeClosedByCourses(int $poolId, string $userId, string $modeKey, ?int $courseId = null): bool {
+        if ($courseId !== null) {
+            try {
+                $course = $this->courseMapper->findById($courseId);
+            } catch (DoesNotExistException $e) {
+                return false;
+            }
+            if (!$this->hasAccess($course, $userId) || $this->isInstructorOfCourse($course, $userId)) {
+                return false;
+            }
+            return !self::isModeEnabledInConfig($course->getModeConfig(), $modeKey);
+        }
+        return in_array($poolId, $this->getPoolIdsClosedForMode($userId, $modeKey, [$poolId]), true);
     }
 
     /**

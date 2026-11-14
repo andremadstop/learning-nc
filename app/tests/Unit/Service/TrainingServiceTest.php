@@ -235,6 +235,57 @@ class TrainingServiceTest extends TestCase {
     }
 
     /**
+     * GitHub #39 (B1): Training and the exam switched off in every course the learner reaches the
+     * pool through are refused by the API too, before any session work; the tabs alone hid nothing.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('closedModes')]
+    public function testAModeTheCoursesSwitchedOffIsRefused(string $mode, ?int $courseId): void {
+        $courseAccess = new FakeQueryBuilder(FakeResult::fromFetch(['id' => 1]));
+        $db = new FakeDbConnection([$courseAccess]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willThrowException(new \OCP\AppFramework\Db\DoesNotExistException('not the owner'));
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->expects($this->once())->method('isPoolModeClosedByCourses')
+            ->with(42, 'alice', $mode, $courseId)->willReturn(true);
+        $courseService->expects($this->never())->method('resolveCoursePoolContext');
+
+        $service = $this->createService(db: $db, poolMapper: $poolMapper, courseService: $courseService);
+        try {
+            $service->startSession(42, 'alice', null, $mode, null, null, $courseId);
+            $this->fail('a mode the course switched off must not start');
+        } catch (\OCA\Learning\Service\CourseModeClosedException $e) {
+        }
+        $this->assertCount(1, $db->issuedBuilders, 'no active-exam lookup and no session insert after the refusal');
+    }
+
+    public static function closedModes(): array {
+        return [
+            'training from the pool window' => ['training', null],
+            'training in the course' => ['training', 7],
+            'exam from the pool window' => ['exam', null],
+        ];
+    }
+
+    /** GitHub #39: the owner of a pool reaches it without a course, the switches do not apply. */
+    public function testTheOwnerIsNotAskedAboutCourseSwitches(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),
+            new FakeQueryBuilder(new FakeResult(), 0, 99),
+        ]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([$this->makeQuestion(10, 42, 'First')]);
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->expects($this->never())->method('isPoolModeClosedByCourses');
+
+        $service = $this->createService(db: $db, questionMapper: $questionMapper, poolMapper: $poolMapper, courseService: $courseService);
+        $this->assertSame(99, $service->startSession(42, 'alice', null, 'training')['session_id']);
+    }
+
+    /**
      * @return array{0: TrainingService, 1: FakeDbConnection}
      */
     private function buildActiveExamService(?string $sessionCourseId, ?CourseService $courseService = null): array {

@@ -8,6 +8,7 @@ use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
@@ -83,6 +84,9 @@ class LeitnerController extends Controller {
         try {
             $count = $this->service->initializePool($poolId, $this->userId, $courseId);
             return new DataResponse(['initialized' => $count]);
+        } catch (\OCA\Learning\Service\CourseModeClosedException $e) {
+            // GitHub #39: the course switched Leitner off for this pool.
+            return new DataResponse(['error' => 'This learning mode is switched off for your course', 'gate' => 'mode'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to initialize pool'], 400);
         }
@@ -98,6 +102,9 @@ class LeitnerController extends Controller {
         try {
             $limit = max(1, min($limit, 100));
             return new DataResponse($this->service->getDueQuestions($poolId, $this->userId, $limit, $lang, $courseId));
+        } catch (\OCA\Learning\Service\CourseModeClosedException $e) {
+            // GitHub #39: the course switched Leitner off for this pool.
+            return new DataResponse(['error' => 'This learning mode is switched off for your course', 'gate' => 'mode'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load due questions'], 400);
         }
@@ -113,6 +120,9 @@ class LeitnerController extends Controller {
         }
         try {
             return new DataResponse($this->service->answerQuestion($itemId, $answerId, $this->userId, $answerIds, $answerText, $pbqAnswers, $rating, $preview, $lang));
+        } catch (\OCA\Learning\Service\CourseModeClosedException $e) {
+            // GitHub #39: the course switched Leitner off for this pool.
+            return new DataResponse(['error' => 'This learning mode is switched off for your course', 'gate' => 'mode'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to submit answer'], 400);
         }
