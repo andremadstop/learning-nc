@@ -79,23 +79,18 @@ class StreakService {
             ];
         }
 
-        // Get distinct dates with completed sessions (UTC)
+        // Distinct UTC days with completed sessions. The day is bucketed arithmetically
+        // (completed_at minus its remainder of 86400 = that UTC day's midnight) and formatted with
+        // gmdate() below: TO_CHAR/FROM_UNIXTIME rendered the date in the DB session's time zone,
+        // while $today is UTC, so on a Europe/Berlin database a session at 00:30 local time fell
+        // on neither today nor yesterday and the streak read 0 (audit #167). Portable to
+        // PostgreSQL, MySQL/MariaDB and SQLite alike.
         $qb = $this->db->getQueryBuilder();
-        // Portable: multiply by 1.0 ensures no int truncation; works on PG, MySQL, SQLite
-        $platform = $this->db->getDatabasePlatform()->getName();
-        if ($platform === 'postgresql') {
-            $dateFn = "TO_CHAR(TO_TIMESTAMP(completed_at), 'YYYY-MM-DD')";
-        } elseif ($platform === 'sqlite') {
-            // SQLite has no FROM_UNIXTIME: /api/v1/user/state answered 500 on every SQLite install
-            $dateFn = "strftime('%Y-%m-%d', completed_at, 'unixepoch')";
-        } else {
-            $dateFn = "FROM_UNIXTIME(completed_at, '%Y-%m-%d')";
-        }
-        $qb->selectDistinct($qb->createFunction($dateFn . ' as activity_date'))
+        $qb->selectDistinct($qb->createFunction('(completed_at - (completed_at % 86400)) AS day_start'))
            ->from('learning_sessions')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'))
-           ->orderBy('activity_date', 'DESC')
+           ->orderBy('day_start', 'DESC')
            ->setMaxResults(365);
 
         $result = $qb->executeQuery();
@@ -114,7 +109,7 @@ class StreakService {
             ];
         }
 
-        $dates = array_map(fn($r) => $r['activity_date'], $rows);
+        $dates = array_map(static fn(array $r): string => gmdate('Y-m-d', (int)$r['day_start']), $rows);
         $today = gmdate('Y-m-d');
         $yesterday = gmdate('Y-m-d', strtotime('-1 day', strtotime($today)));
         $twoDaysAgo = gmdate('Y-m-d', strtotime('-2 day', strtotime($today)));

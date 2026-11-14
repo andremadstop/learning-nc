@@ -8,18 +8,11 @@ use DateTimeImmutable;
 use DateTimeZone;
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
-use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use OCP\IURLGenerator;
 use Sabre\VObject\Component\VCalendar;
 
 class IcsService {
-    private const BOX_INTERVAL_DAYS = [
-        3 => 7,
-        4 => 14,
-        5 => 30,
-    ];
-
     private IDBConnection $db;
     private UserTelosMapper $userTelosMapper;
     private IURLGenerator $urlGenerator;
@@ -62,10 +55,6 @@ class IcsService {
             'token' => $token,
             'url' => $this->buildFeedUrl($token),
         ];
-    }
-
-    public function ensureTokenExists(string $userId): string {
-        return $this->ensureCalendarToken($userId)['token'];
     }
 
     public function renderCalendarForToken(string $token): ?string {
@@ -158,7 +147,10 @@ class IcsService {
      */
     private function loadDueEventGroups(string $userId): array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('c.id AS course_id', 'c.title AS course_title', 'l.box', 'l.last_reviewed', 'l.next_review')
+        // Every box, dated by next_review — the date the queue makes the card due (FSRS interval).
+        // Fixed box intervals (7/14/30 days from last_reviewed, boxes 3-5 only) put cards on other
+        // days than the queue and left boxes 1-2 out (audit #54).
+        $qb->select('c.id AS course_id', 'c.title AS course_title', 'l.box', 'l.next_review')
             ->from('learning_leitner_items', 'l')
             ->innerJoin('l', 'learning_course_pools', 'cp', 'cp.pool_id = l.pool_id')
             ->innerJoin('cp', 'learning_courses', 'c', 'c.id = cp.course_id')
@@ -167,10 +159,6 @@ class IcsService {
                 $qb->expr()->eq('cm.user_id', $qb->createNamedParameter($userId))
             ))
             ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
-            ->andWhere($qb->expr()->in(
-                'l.box',
-                $qb->createNamedParameter(array_keys(self::BOX_INTERVAL_DAYS), IQueryBuilder::PARAM_INT_ARRAY)
-            ))
             ->orderBy('c.title', 'ASC')
             ->addOrderBy('l.box', 'ASC');
 
@@ -181,12 +169,8 @@ class IcsService {
         while ($row = $result->fetch()) {
             $courseId = (int)$row['course_id'];
             $box = (int)$row['box'];
-            $lastReviewed = isset($row['last_reviewed']) ? (int)$row['last_reviewed'] : null;
-            $nextReview = (int)$row['next_review'];
-            $dueTimestamp = max(
-                $todayStart,
-                $this->calculateDueTimestamp($box, $lastReviewed, $nextReview)
-            );
+            // Overdue cards are due today.
+            $dueTimestamp = max($todayStart, (int)$row['next_review']);
             $dueDate = gmdate('Y-m-d', $dueTimestamp);
             $groupKey = implode(':', [$courseId, $box, $dueDate]);
 
@@ -216,16 +200,5 @@ class IcsService {
         });
 
         return $groups;
-    }
-
-    private function calculateDueTimestamp(int $box, ?int $lastReviewed, int $nextReview): int {
-        $baseTimestamp = ($lastReviewed !== null && $lastReviewed > 0) ? $lastReviewed : $nextReview;
-        $intervalDays = self::BOX_INTERVAL_DAYS[$box] ?? 0;
-
-        if ($intervalDays <= 0) {
-            return $nextReview;
-        }
-
-        return $baseTimestamp + ($intervalDays * 86400);
     }
 }
