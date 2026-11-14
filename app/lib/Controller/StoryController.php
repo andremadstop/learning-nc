@@ -22,12 +22,15 @@ use OCP\IRequest;
  *   GET  /api/story/campaigns/{campaignId}/graph-scene → graphScene
  *   POST /api/story/campaigns/{campaignId}/graph-traverse → graphTraverse
  *   GET  /api/story/campaigns/{campaignId}/graph-state → graphState
- *   GET  /api/story/campaigns/{campaignId}/scene/{sceneId}/questions/{choiceId}
- *                                                     → getSkillCheckQuestions
+ *   GET  /api/story/skill-questions?campaignId=&sceneId=&choiceId= → getSkillCheckQuestions
  *   POST /api/story/campaigns/{campaignId}/choice     → makeChoice
  *   POST /api/story/campaigns/{campaignId}/answer     → submitSkillAnswer
  *   POST /api/story/campaigns/{campaignId}/batch      → submitSkillBatch
  *   POST /api/story/campaigns/{campaignId}/freetext   → submitFreetext
+ *
+ * Body and query keys are camelCase: Nextcloud binds a value only to the exact parameter name, so
+ * a snake_case key (character_class, choice_id, ...) is silently dropped. Campaigns are not
+ * course-bound; no endpoint reads a courseId (audit #143).
  *   GET  /api/story/progress                          → listProgress
  */
 class StoryController extends Controller {
@@ -92,8 +95,8 @@ class StoryController extends Controller {
      * Start (or restart) a campaign for the current user.
      *
      * POST body:
-     *   character_class  string  One of: architect|security|sysadmin|helpdesk
-     *   coop_user_ids    string  Optional JSON array of additional user IDs
+     *   characterClass  string  One of: architect|security|sysadmin|helpdesk
+     *   coopUserIds     string  Optional JSON array of additional user IDs
      *
      * @NoAdminRequired
      */
@@ -278,9 +281,9 @@ class StoryController extends Controller {
      * pending skill-check questions for the caller to answer via /answer or /batch.
      *
      * POST body:
-     *   choice_id    string  ID of the chosen option
-     *   question_id  int     Optional — question answered (single-question inline check)
-     *   answer_id    int     Optional — answer selected (paired with question_id)
+     *   choiceId    string  ID of the chosen option
+     *   questionId  int     Optional — question answered (single-question inline check)
+     *   answerId    int     Optional — answer selected (paired with questionId)
      *
      * @NoAdminRequired
      */
@@ -295,7 +298,7 @@ class StoryController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         if ($choiceId === '') {
-            return new DataResponse(['error' => 'choice_id is required'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'choiceId is required'], Http::STATUS_BAD_REQUEST);
         }
         try {
             $result = $this->service->makeChoice(
@@ -320,9 +323,9 @@ class StoryController extends Controller {
      * Submit a single skill-check answer and advance the story.
      *
      * POST body:
-     *   choice_id    string
-     *   question_id  int
-     *   answer_id    int
+     *   choiceId    string
+     *   questionId  int
+     *   answerId    int
      *
      * @NoAdminRequired
      */
@@ -337,7 +340,7 @@ class StoryController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         if ($choiceId === '' || $questionId <= 0 || $answerId <= 0) {
-            return new DataResponse(['error' => 'choice_id, question_id and answer_id are required'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'choiceId, questionId and answerId are required'], Http::STATUS_BAD_REQUEST);
         }
         try {
             $result = $this->service->submitSkillAnswer($this->userId, $campaignId, $choiceId, $questionId, $answerId);
@@ -355,8 +358,8 @@ class StoryController extends Controller {
      * Submit a full skill-check batch (all questions for a choice at once).
      *
      * POST body:
-     *   choice_id  string
-     *   answers    JSON string: [{question_id: int, answer_id: int}, ...]
+     *   choiceId  string
+     *   answers   JSON string: [{question_id: int, answer_id: int}, ...] (keys inside the JSON stay snake_case)
      *
      * @NoAdminRequired
      */
@@ -370,7 +373,7 @@ class StoryController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         if ($choiceId === '') {
-            return new DataResponse(['error' => 'choice_id is required'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'choiceId is required'], Http::STATUS_BAD_REQUEST);
         }
 
         $answersDecoded = json_decode($answers, true);

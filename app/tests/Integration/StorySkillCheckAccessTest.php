@@ -21,9 +21,9 @@ use PHPUnit\Framework\TestCase;
 final class StorySkillCheckAccessTest extends TestCase {
 	private const PLAYER = 'story-acl-player';
 	private const OTHER = 'story-acl-other';
-	/** Matches pool_filter 'security' of phishing_friday's first scene, and nothing else in the instance. */
+	/** Matches pool_filter 'security' of phishing_friday_classic's first scene, and nothing else in the instance. */
 	private const KEYWORD = 'kestrelquill';
-	private const CAMPAIGN = 'phishing_friday';
+	private const CAMPAIGN = 'phishing_friday_classic';
 	private const SCENE = 's1_entdeckung';
 	private const CHOICE = 'c1_global_alert';
 

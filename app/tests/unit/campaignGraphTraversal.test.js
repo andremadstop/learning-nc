@@ -25,9 +25,18 @@ describe('campaign graph traversal', () => {
 		expect(campaigns.length).toBeGreaterThan(0)
 	})
 
+	it('ships no internal test campaign to learners (audit #5, #174)', () => {
+		expect(campaigns.map(c => c.file)).not.toContain('test_graph_campaign.json')
+	})
+
 	describe.each(campaigns)('$file', ({ file, data }) => {
 		const isGraph = !!data.graph
 		const isScenes = !!data.scenes
+
+		// StoryEngineService::loadCampaign() opens '<campaign_id>.json' (audit #4, #32)
+		it('campaign_id equals the file name', () => {
+			expect(data.campaign_id).toBe(file.replace(/\.json$/, ''))
+		})
 
 		it('uses either graph or scenes format', () => {
 			expect(isGraph || isScenes).toBe(true)

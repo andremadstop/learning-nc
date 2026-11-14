@@ -720,6 +720,10 @@ class CampaignGraphService {
         $state->setGraphPosition($targetNodeId);
         $state->setStateBagFromArray($newBag);
         $state->setActNumber($targetActNumber);
+        if (!empty($targetNode['is_ending'])) {
+            // The campaign list shows it as finished (audit #88); a new start resets the row
+            $state->setStatus('completed');
+        }
         $state->setUpdatedAt(time());
         $this->stateMapper->update($state);
 
@@ -816,6 +820,25 @@ class CampaignGraphService {
         }
 
         return $this->serializeState($state);
+    }
+
+    /**
+     * The user's graph campaigns: started ('in_progress') or ended on an ending node
+     * ('completed'), for the campaign list.
+     *
+     * @return list<array{campaign_id: string, status: string, act_number: int, updated_at: int}>
+     */
+    public function listUserStates(string $userId): array {
+        $rows = [];
+        foreach ($this->stateMapper->findAllByUser($userId) as $state) {
+            $rows[] = [
+                'campaign_id' => (string)$state->getCampaignId(),
+                'status' => (string)$state->getStatus(),
+                'act_number' => (int)$state->getActNumber(),
+                'updated_at' => (int)$state->getUpdatedAt(),
+            ];
+        }
+        return $rows;
     }
 
     /**

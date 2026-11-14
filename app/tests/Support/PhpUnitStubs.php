@@ -160,6 +160,11 @@ namespace OCP\Security {
 namespace OCP {
     if (!interface_exists(IDBConnection::class)) {
         interface IDBConnection {
+            public const PLATFORM_MYSQL = 'mysql';
+            public const PLATFORM_ORACLE = 'oracle';
+            public const PLATFORM_POSTGRES = 'postgres';
+            public const PLATFORM_SQLITE = 'sqlite';
+
             public function getQueryBuilder();
 
             public function executeQuery(string $sql, array $params = []);
