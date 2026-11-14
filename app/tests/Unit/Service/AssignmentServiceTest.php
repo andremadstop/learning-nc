@@ -41,16 +41,20 @@ class AssignmentServiceTest extends TestCase {
         $db = $this->createMock(\OCP\IDBConnection::class);
         $qb = $this->createMock(\OCP\DB\QueryBuilder\IQueryBuilder::class);
         $qb->method('insert')->willReturnSelf();
-        $qb->method('values')->willReturnSelf();
+        $captured = null;
+        $qb->method('values')->willReturnCallback(function (array $values) use (&$captured, $qb) {
+            $captured = $values;
+            return $qb;
+        });
         $qb->method('createNamedParameter')->willReturnArgument(0);
         $qb->method('executeStatement')->willReturn(1);
         $db->method('getQueryBuilder')->willReturn($qb);
 
         $service = new AssignmentService($db, $gm, $audit, $this->createMock(\OCP\IConfig::class), $this->createMock(\Psr\Log\LoggerInterface::class));
         $service->createAssignment(5, 'user', 'alice', 'admin', null);
-        // Verify via mock: the 'active_period_key' passed to values() equals '5:user:alice'
-        // (Use argument capture or test the constant format via string assertion if needed)
-        $this->assertTrue(true); // structural test — RED if class missing
+        // extendDeadline() and the UNIQUE index match on exactly this key
+        $this->assertIsArray($captured, 'createAssignment() must pass its columns to values()');
+        $this->assertSame('5:user:alice', $captured['active_period_key'] ?? null);
     }
 
     public function testExtendDeadlineLogsAdminEvent(): void {

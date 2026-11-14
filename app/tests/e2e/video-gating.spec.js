@@ -11,11 +11,11 @@
  * and Art.13 wording checks stay MANUAL (human-only) — see 162-04-PLAN.md how-to-verify.
  *
  * PRECONDITION (why this skips by default):
- *   The student registry-read path is currently instructor-gated server-side
- *   (CourseVideoController::index → 403 for students), so a student cannot yet load
- *   the "Pflichtinhalte" tab live. This spec therefore skips unless a seeded gated
- *   course id is provided AND (once the backend follow-up lands) the student can read
- *   it. Mirrors the critical-flows.spec.js env-gated skip pattern.
+ *   The student path itself is open: CourseTabLernraum loads the gated content via
+ *   GET /api/video-progress/course/{courseId} (videoProgress#courseStatus, enrollment-checked),
+ *   not via the instructor-only registry (courseVideo#index). What is missing is a fixture:
+ *   scripts/e2e/seed-fixtures.sh does not seed a gated course, so the spec skips until
+ *   E2E_VIDEO_COURSE_ID points at one. Mirrors the critical-flows.spec.js env-gated skip pattern.
  *
  * Required env to run live:
  *   - E2E_VIDEO_COURSE_ID     numeric id of a course with video_gate_enabled + ≥1 nc-files
@@ -41,7 +41,7 @@ async function maybeLoginStudent(page) {
 	if (!STUDENT_USER || !STUDENT_PW) {
 		return
 	}
-	const baseURL = process.env.E2E_BASE_URL || 'https://devcloud.andrestiebitz.de/apps/learning'
+	const baseURL = process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning'
 	const origin = new URL(baseURL).origin
 	await page.goto(`${origin}/login`, { waitUntil: 'domcontentloaded' })
 	const user = page.locator('input[name="user"], #user, input[autocomplete="username"]').first()
@@ -58,7 +58,7 @@ async function maybeLoginStudent(page) {
 /**
  * Open the student "Pflichtinhalte" tab for the seeded course. Returns true when the
  * gated-content section is visible, false when the course exposes no student-readable
- * gate (e.g. the 403 backend blocker) so the test can skip rather than hard-fail.
+ * gate (not enrolled, gate off, nothing gated) so the test can skip rather than hard-fail.
  */
 async function openPflichtinhalte(page) {
 	await page.goto(`/apps/learning/#/course/${COURSE_ID}`, { waitUntil: 'domcontentloaded' })
@@ -71,7 +71,7 @@ async function openPflichtinhalte(page) {
 }
 
 test.describe('VIDEO-08 / VIDEO-07 — accessible player + document gate', () => {
-	test.skip(!COURSE_ID, 'Needs E2E_VIDEO_COURSE_ID (a seeded gated course) + a student-readable registry path — see 162-04 blocker')
+	test.skip(!COURSE_ID, 'Needs E2E_VIDEO_COURSE_ID (a course with video_gate_enabled and gated items; seed-fixtures.sh does not create one)')
 
 	test.beforeEach(async ({ page }) => {
 		await maybeLoginStudent(page)
@@ -79,7 +79,7 @@ test.describe('VIDEO-08 / VIDEO-07 — accessible player + document gate', () =>
 
 	test('player exposes a WebVTT track and does not autoplay', async ({ page }) => {
 		const ready = await openPflichtinhalte(page)
-		test.skip(!ready, 'Pflichtinhalte tab not reachable (likely the instructor-gated read 403) — backend follow-up required')
+		test.skip(!ready, 'Pflichtinhalte tab not reachable — is the student enrolled and does E2E_VIDEO_COURSE_ID have video_gate_enabled with gated items?')
 
 		const media = page.locator('.video-player__media').first()
 		await expect(media).toBeVisible()
@@ -96,7 +96,7 @@ test.describe('VIDEO-08 / VIDEO-07 — accessible player + document gate', () =>
 
 	test('play control is keyboard-reachable with a visible focus ring and Space toggles play', async ({ page }) => {
 		const ready = await openPflichtinhalte(page)
-		test.skip(!ready, 'Pflichtinhalte tab not reachable (instructor-gated read 403) — backend follow-up required')
+		test.skip(!ready, 'Pflichtinhalte tab not reachable — is the student enrolled and does E2E_VIDEO_COURSE_ID have video_gate_enabled with gated items?')
 
 		const playBtn = page.locator('.video-player__btn--play').first()
 		await expect(playBtn).toBeVisible()
@@ -127,7 +127,7 @@ test.describe('VIDEO-08 / VIDEO-07 — accessible player + document gate', () =>
 
 	test('document "Gelesen" button flips the gate status to complete', async ({ page }) => {
 		const ready = await openPflichtinhalte(page)
-		test.skip(!ready, 'Pflichtinhalte tab not reachable (instructor-gated read 403) — backend follow-up required')
+		test.skip(!ready, 'Pflichtinhalte tab not reachable — is the student enrolled and does E2E_VIDEO_COURSE_ID have video_gate_enabled with gated items?')
 
 		// Find a document item (the one carrying a Gelesen button).
 		const gelesenBtn = page.getByRole('button', { name: /^Gelesen$/ }).first()

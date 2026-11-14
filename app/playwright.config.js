@@ -2,7 +2,7 @@
 const { defineConfig } = require('@playwright/test')
 const path = require('path')
 
-const defaultBaseURL = process.env.E2E_BASE_URL || 'https://devcloud.andrestiebitz.de/apps/learning'
+const defaultBaseURL = process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning'
 process.env.E2E_BASE_URL = defaultBaseURL
 
 module.exports = defineConfig({

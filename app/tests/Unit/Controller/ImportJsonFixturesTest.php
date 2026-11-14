@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * GitHub #34: the shared JSON import cases (app/tests/fixtures/import-json-cases.json) through
+ * GitHub #34: the shared JSON import cases (app/tests/Fixtures/import-json-cases.json) through
  * the real ImportController::importJson(). The import preview in the dialog runs the same file,
  * so what the preview promises and what the server writes cannot drift apart.
  *
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 class ImportJsonFixturesTest extends TestCase {
     use ImportControllerHarness;
 
-    private const FIXTURE = __DIR__ . '/../../fixtures/import-json-cases.json';
+    private const FIXTURE = __DIR__ . '/../../Fixtures/import-json-cases.json';
 
     /** @return array<string, array{0: mixed, 1: array<string, mixed>}> */
     public static function cases(): array {

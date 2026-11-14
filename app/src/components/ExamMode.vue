@@ -261,7 +261,7 @@
           <div v-if="res.explanation" class="review-explanation">
             <strong>{{ t('learning', 'Explanation:') }}</strong> {{ res.explanation }}
           </div>
-          <NcNoteCard v-if="res.noteVisible && res.instructorNote" type="info">
+          <NcNoteCard v-if="shouldShowNote(res.noteVisible, res.instructorNote)" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ res.instructorNote }}
           </NcNoteCard>
         </div>
@@ -304,6 +304,7 @@ import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 import NcModal from '@nextcloud/vue/components/NcModal';
 import Certificate from './Certificate.vue';
+import { shouldShowNote } from '../utils/instructorNoteUtils.js';
 
 // Seconds before the deadline at which the countdown submits the exam. The server accepts the
 // final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
@@ -687,6 +688,7 @@ export default {
     },
   },
   methods: {
+    shouldShowNote,
     emitVirtuProf(triggerId, context = {}) {
       useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },

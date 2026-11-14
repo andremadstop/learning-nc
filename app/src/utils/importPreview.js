@@ -7,7 +7,7 @@
  * ("Need at least 2 answers", 0 imported). This module ports the server's readers
  * (ImportController::importJson / importCsv, PoolJsonFormat) rule for rule, so the preview says
  * what the server will do and what it will store. Keep both in step: every rule here names its
- * PHP counterpart, and app/tests/fixtures/import-json-cases.json runs through both
+ * PHP counterpart, and app/tests/Fixtures/import-json-cases.json runs through both
  * (ImportJsonFixturesTest.php and importPreviewFixtures.test.js).
  *
  * The server translates its own messages (IL10N); the messages here are the preview's, built

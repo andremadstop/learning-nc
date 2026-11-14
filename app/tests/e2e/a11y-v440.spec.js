@@ -44,9 +44,12 @@
  *   - E2E_ADAEZE_PW
  *   - E2E_AZAD_PW
  *
+ * Target: E2E_BASE_URL (default http://localhost:8080/apps/learning). UI logins and the admin
+ * API calls (skin, locale, user create/delete) all use its origin.
+ *
  * Bruteforce throttle: with 6+ logins per run, IP throttling kicks in.
- * Reset before/during the run via:
- *   ssh relais 'docker exec -u www-data devcloud-app php occ security:bruteforce:reset 172.21.0.1'
+ * Reset before/during the run on the target instance via:
+ *   php occ security:bruteforce:reset <client-ip>
  *
  * Run:
  *   cd app && npx playwright test tests/e2e/a11y-v440.spec.js --project=chromium
@@ -62,6 +65,12 @@ const fs = require('fs')
 // each user fresh per scenario. Without this, every page would start as admin
 // session and login attempts would be redirected.
 test.use({ storageState: { cookies: [], origins: [] } })
+
+// One origin for UI logins and the admin API calls: E2E_BASE_URL (set by playwright.config.js),
+// default the local test instance. The admin API calls carry Basic Auth, so they must never go to
+// a different host than the one under test.
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning'
+const ORIGIN = new URL(BASE_URL).origin
 
 const SELECTABLE_SKINS = ['nova', 'prof_lern_classic', 'theoretiker', 'kosmologe', 'popularisierer']
 const ADMIN_USER = process.env.E2E_USERNAME
@@ -94,8 +103,7 @@ async function loginAs(page, user, password) {
 	if (!user || !password) {
 		throw new Error(`loginAs: missing credentials for user ${user}`)
 	}
-	const baseURL = process.env.E2E_BASE_URL || 'https://devcloud.andrestiebitz.de/apps/learning'
-	const origin = new URL(baseURL).origin
+	const origin = ORIGIN
 
 	await page.goto(`${origin}/login`, { waitUntil: 'domcontentloaded' })
 	const usernameInput = page.locator('input[name="user"], #user, input[autocomplete="username"]').first()
@@ -153,7 +161,7 @@ async function readSkin(page) {
  */
 async function apiReadSkin(user, password) {
 	const ctx = await pwRequest.newContext({
-		baseURL: 'https://devcloud.andrestiebitz.de',
+		baseURL: ORIGIN,
 		extraHTTPHeaders: {
 			'OCS-APIRequest': 'true',
 			Accept: 'application/json',
@@ -172,7 +180,7 @@ async function apiReadSkin(user, password) {
  */
 async function apiSetSkin(user, password, skinId) {
 	const ctx = await pwRequest.newContext({
-		baseURL: 'https://devcloud.andrestiebitz.de',
+		baseURL: ORIGIN,
 		extraHTTPHeaders: {
 			'OCS-APIRequest': 'true',
 			Accept: 'application/json',
@@ -194,7 +202,7 @@ async function apiSetSkin(user, password, skinId) {
  */
 async function adminSetUserLanguage(targetUser, lang) {
 	const ctx = await pwRequest.newContext({
-		baseURL: 'https://devcloud.andrestiebitz.de',
+		baseURL: ORIGIN,
 		extraHTTPHeaders: {
 			'OCS-APIRequest': 'true',
 			Accept: 'application/json',
@@ -217,7 +225,7 @@ async function adminSetUserLanguage(targetUser, lang) {
  */
 async function adminCreateUser(userid, password) {
 	const ctx = await pwRequest.newContext({
-		baseURL: 'https://devcloud.andrestiebitz.de',
+		baseURL: ORIGIN,
 		extraHTTPHeaders: {
 			'OCS-APIRequest': 'true',
 			Accept: 'application/json',
@@ -239,7 +247,7 @@ async function adminCreateUser(userid, password) {
  */
 async function adminDeleteUser(userid) {
 	const ctx = await pwRequest.newContext({
-		baseURL: 'https://devcloud.andrestiebitz.de',
+		baseURL: ORIGIN,
 		extraHTTPHeaders: {
 			'OCS-APIRequest': 'true',
 			Accept: 'application/json',
@@ -270,7 +278,7 @@ test.beforeAll(() => {
 test.afterAll(async () => {
 	// Cleanup the fresh test user (ignore failure — may not have been created
 	// if the spec aborted early). Do NOT throw — this runs even on test
-	// failure to keep relay devcloud clean.
+	// failure to keep the target instance clean.
 	try { await adminDeleteUser(FRESH_USER_ID) } catch (_) { /* ignore */ }
 	// Restore admin's locale to de in case CP3/FR-locale tests left it
 	// elsewhere.

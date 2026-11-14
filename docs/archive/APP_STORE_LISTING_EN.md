@@ -1,3 +1,7 @@
+> **Archived, outdated.** Written for the v1 launch (Nextcloud 29–31, 14 badges, GitHub releases).
+> Do not copy from here: the current store text is the `<description>` in `app/appinfo/info.xml`,
+> the current feature list is the root `README.md`. Kept for history only.
+
 # Learning — App Store Listing (English)
 
 ## Short Description (max 140 chars)

@@ -2,7 +2,10 @@
 
 Spaced Repetition Learning with Leitner System for Nextcloud.
 
-![Nextcloud](https://img.shields.io/badge/Nextcloud-29--31-blue)
+> The full documentation lives in the repository: [README](https://github.com/andremadstop/learning-nc/blob/main/README.md)
+> and the [manual](https://github.com/andremadstop/learning-nc/blob/main/docs/MANUAL.md). This file ships with the app.
+
+![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 
@@ -16,7 +19,7 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 - **Wahr/Falsch** — Touch-friendly swipe-based true/false flashcard review
 - **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, <30% accuracy)
 - **Daily Challenge** — One random question per day with bonus XP reward
-- **Simulator Practicum** — Guided step-by-step sessions for all 7 network simulators with real-world scenarios, progress tracking, and score summaries
+- **Simulator Practicum** — Guided step-by-step sessions for the interactive simulators (9 in total) with real-world scenarios, progress tracking, and score summaries
 - **Student Dashboard** — "Heute" landing page with due cards, daily challenge, streak, global course feed, and direct pool navigation
 
 ### Question Types
@@ -26,7 +29,7 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ### Gamification
 - **XP & Levels** — Experience points from sessions, reviews, accuracy bonuses
-- **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
+- **10 Badges** — Achievements for streaks, mastery, exam readiness, simulator practice, social learning and more
 - **XP Streak Multipliers** — Tier-based bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
 - **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
 - **Daily Missions** — Fresh bonus-XP objectives each day (master cards, start sessions, clear trouble spots)
@@ -54,7 +57,7 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 ### Integration
 - **Dashboard Widget** — See due questions from the Nextcloud Dashboard
 - **ICS Calendar Subscription** — Subscribe to your due cards as a calendar feed (personal token URL, works with Thunderbird, iOS, Android)
-- **AI Explanations** — 💡 button after each answer explains correct/wrong choices; uses Nextcloud AI provider; blocked during exams
+- **AI Explanations** — 💡 button after each answer explains correct/wrong choices; uses the recipient the admin connected (Google Gemini or a local Ollama server), only after the learner's consent; blocked during exams
 - **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
 - **Analytics** — Per-pool statistics with accuracy trends
 - **Mobile Friendly** — Responsive touch-optimized design
@@ -69,17 +72,13 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ### Manual Installation
 
-```bash
-cd /path/to/nextcloud/custom_apps/
-git clone https://github.com/andremadstop/learning-nc.git learning
-cd learning
-npm install
-npm run build
-```
+The Nextcloud app lives in the repository's `app/` subdirectory, so clone outside and copy `app/` in:
 
-Then enable the app:
 ```bash
-php occ app:enable learning
+git clone https://github.com/andremadstop/learning-nc.git /tmp/learning-nc
+cd /tmp/learning-nc/app && npm install && npm run build
+cp -r /tmp/learning-nc/app /path/to/nextcloud/custom_apps/learning
+php /path/to/nextcloud/occ app:enable learning
 ```
 
 ## Usage
@@ -183,13 +182,15 @@ Students see the courses an instructor enrolled them in and their progress acros
 Import Markdown files from an Obsidian vault into the RAG chunk database for AI-powered explanations.
 
 ```bash
-php occ learning:import-vault --path=/data/my-vault --course-id=20
+php occ learning:import-vault /data/my-vault --course-id=20
+php occ learning:import-vault /data/my-vault --course-id=20 --dry-run   # preview only
 ```
 
 - Recursively processes all `*.md` files
 - Cleans Obsidian syntax (frontmatter, wikilinks, callouts, image embeds)
 - Splits into ~500-token chunks with sentence-boundary awareness
-- Idempotent: re-running deletes previous vault chunks for the same course
+- Re-running skips files that were already imported for the course (matched by relative path);
+  changed files are **not** re-imported — `--pattern` and `--exclude` narrow the file set
 - Existing CourseDocument-based chunks are preserved
 
 #### `learning:uninstall` — Remove all app data from the database
@@ -229,19 +230,16 @@ php occ app:remove learning                              # then remove the app i
 
 ## Requirements
 
-- Nextcloud 29, 30, or 31
+- Nextcloud 33, 34 or 35
 - PHP 8.2 or higher
 - PostgreSQL 13+ or MySQL 8+
 
 ## Development
 
 ```bash
-# Clone into custom_apps
-cd /path/to/nextcloud/custom_apps/
-git clone https://github.com/andremadstop/learning-nc.git learning
-
-# Install dependencies
-cd learning
+# Clone anywhere; the app is the app/ subdirectory
+git clone https://github.com/andremadstop/learning-nc.git
+cd learning-nc/app
 npm install
 
 # Development build with watch
@@ -250,6 +248,9 @@ npm run dev
 # Production build
 npm run build
 ```
+
+Point Nextcloud at the app directory, e.g. by symlinking `learning-nc/app` to
+`custom_apps/learning`.
 
 ## License
 

@@ -236,7 +236,7 @@ class ImportPoolJsonCommandTest extends TestCase {
 
     /** @return array<string, mixed> */
     private static function fixtureCase(string $name): array {
-        $fixture = json_decode((string)file_get_contents(__DIR__ . '/../../fixtures/import-json-cases.json'), true, 512, JSON_THROW_ON_ERROR);
+        $fixture = json_decode((string)file_get_contents(__DIR__ . '/../../Fixtures/import-json-cases.json'), true, 512, JSON_THROW_ON_ERROR);
         foreach ($fixture['cases'] as $case) {
             if ($case['name'] === $name) {
                 return $case;

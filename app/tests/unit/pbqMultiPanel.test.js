@@ -1,67 +1,95 @@
-import { describe, it, expect } from 'vitest'
+/**
+ * multi_panel PBQs: the real PbqMultiPanel merge methods and the real PbqRenderer progress count
+ * (audit #126: this file used to test its own copies, which had drifted and ignored the dropdown
+ * panel, plus a test that compared a constant with itself).
+ */
+import { describe, it, expect, vi } from 'vitest'
 
-// Pure-function helpers mirroring PbqMultiPanel's internal merge logic.
-// These functions will be implemented in PbqMultiPanel.vue — the tests verify
-// the exact behaviour before the component exists (TDD RED phase).
+vi.mock('@nextcloud/router', () => ({ generateUrl: (url) => url }))
+vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
 
-function mergeCliUpdate(currentValue, termName, history) {
-  return { ...(currentValue.cli || {}), [termName]: history }
+globalThis.t = (app, text) => text
+
+import PbqMultiPanel from '../../src/components/PbqMultiPanel.vue'
+import PbqRenderer from '../../src/components/PbqRenderer.vue'
+
+function panel(value = {}) {
+	return { value, $emit: vi.fn() }
 }
 
-function mergePlacementUpdate(currentValue, posId, device) {
-  return { ...(currentValue.placement || {}), [posId]: device }
+// PbqRenderer with its computed properties bound to a fake instance.
+function renderer(question, localAnswer = {}) {
+	const vm = { question, localAnswer }
+	for (const [name, def] of Object.entries(PbqRenderer.computed)) {
+		const getter = typeof def === 'function' ? def : def.get
+		Object.defineProperty(vm, name, { get: () => getter.call(vm), configurable: true })
+	}
+	for (const [name, fn] of Object.entries(PbqRenderer.methods)) {
+		vm[name] = fn.bind(vm)
+	}
+	return vm
 }
 
-function multiPanelAnsweredCount(localAnswer) {
-  return Object.keys(localAnswer.cli || {}).length + Object.keys(localAnswer.placement || {}).length
-}
+describe('PbqMultiPanel merges a panel update into its own namespace', () => {
+	it('onCliUpdate emits the terminal history under cli', () => {
+		const vm = panel()
+		PbqMultiPanel.methods.onCliUpdate.call(vm, 'Router', ['Router> show version', 'Cisco IOS...'])
+		expect(vm.$emit).toHaveBeenCalledWith('update', 'cli', { Router: ['Router> show version', 'Cisco IOS...'] })
+	})
 
-function multiPanelTotalCount(config) {
-  const cliTerms = (config.cli && config.cli.terminals || []).length
-  const placementPos = (config.placement && config.placement.positions || []).length
-  return cliTerms + placementPos
-}
+	it('onCliUpdate replaces one terminal and keeps the others', () => {
+		const vm = panel({ cli: { Router: ['old line'], Switch: ['sw line'] }, placement: { n1: 'router' } })
+		PbqMultiPanel.methods.onCliUpdate.call(vm, 'Router', ['new line'])
+		expect(vm.$emit).toHaveBeenCalledWith('update', 'cli', { Router: ['new line'], Switch: ['sw line'] })
+	})
 
-describe('PbqMultiPanel merge logic', () => {
-  it('PANEL-01: mergeCliUpdate fügt terminal-history unter cli-namespace ein', () => {
-    const result = mergeCliUpdate({}, 'Router', ['Router> show version', 'Cisco IOS...'])
-    expect(result).toEqual({ Router: ['Router> show version', 'Cisco IOS...'] })
-  })
+	it('onPlacementUpdate emits the device assignment under placement and keeps earlier ones', () => {
+		const vm = panel({ placement: { n1: 'router' } })
+		PbqMultiPanel.methods.onPlacementUpdate.call(vm, 'n2', 'switch')
+		expect(vm.$emit).toHaveBeenCalledWith('update', 'placement', { n1: 'router', n2: 'switch' })
+	})
 
-  it('PANEL-01: mergePlacementUpdate fügt device-assignment unter placement-namespace ein', () => {
-    const result = mergePlacementUpdate({}, 'n1', 'router')
-    expect(result).toEqual({ n1: 'router' })
-  })
+	it('onDropdownUpdate emits the answer under dropdown and keeps earlier ones', () => {
+		const vm = panel({ dropdown: { q1: '22' } })
+		PbqMultiPanel.methods.onDropdownUpdate.call(vm, 'q2', '443')
+		expect(vm.$emit).toHaveBeenCalledWith('update', 'dropdown', { q1: '22', q2: '443' })
+	})
+})
 
-  it('PANEL-01: mergeCliUpdate überschreibt existierenden cli-Key ohne andere Keys zu verlieren', () => {
-    const currentValue = { cli: { Router: ['old line'], Switch: ['sw line'] } }
-    const result = mergeCliUpdate(currentValue, 'Router', ['new line'])
-    expect(result.Router).toEqual(['new line'])
-    expect(result.Switch).toEqual(['sw line'])
-  })
+describe('PbqRenderer progress for multi_panel', () => {
+	it('totalCount sums terminals and placement positions', () => {
+		const vm = renderer({
+			pbq_subtype: 'multi_panel',
+			pbq_config: {
+				cli: { terminals: [{ name: 'Router' }, { name: 'Switch' }] },
+				placement: { positions: [{ id: 'n1' }, { id: 'n2' }, { id: 'n3' }] },
+			},
+		})
+		expect(vm.totalCount).toBe(5)
+	})
 
-  it('PANEL-01: multiPanelAnsweredCount summiert cli + placement sub-keys', () => {
-    const localAnswer = {
-      cli: { Router: ['cmd1'], Switch: ['cmd2'] },
-      placement: { n1: 'router', n2: 'switch' },
-    }
-    expect(multiPanelAnsweredCount(localAnswer)).toBe(4)
-  })
+	it('totalCount counts scorable dropdown questions of the dropdown panel', () => {
+		const vm = renderer({
+			pbq_subtype: 'multi_panel',
+			pbq_config: {
+				cli: { terminals: [{ name: 'Router' }] },
+				dropdown: { questions: [{ id: 'q1' }, { id: 'q2', scorable: false }, { id: 'q3' }] },
+			},
+		})
+		expect(vm.totalCount).toBe(3)
+	})
 
-  it('PANEL-01: multiPanelTotalCount summiert terminals + positions', () => {
-    const config = {
-      cli: { terminals: [{ name: 'Router' }, { name: 'Switch' }] },
-      placement: { positions: [{ id: 'n1' }, { id: 'n2' }, { id: 'n3' }] },
-    }
-    expect(multiPanelTotalCount(config)).toBe(5)
-  })
+	it('answeredCount sums the cli, placement and dropdown sub-answers', () => {
+		const vm = renderer({ pbq_subtype: 'multi_panel', pbq_config: {} }, {
+			cli: { Router: ['cmd1'], Switch: ['cmd2'] },
+			placement: { n1: 'router' },
+			dropdown: { q1: '22', q2: '443' },
+		})
+		expect(vm.answeredCount).toBe(5)
+	})
 
-  it('PANEL-02: CSS-class pbq-multi-panel erwartet flex-direction row per Convention', () => {
-    // This test documents the CSS contract: root element must carry pbq-multi-panel class.
-    // The actual flex-direction is verified in the browser checkpoint (PANEL-02).
-    // Here we assert the string constant used in the template is exactly correct.
-    const expectedClass = 'pbq-multi-panel'
-    expect(expectedClass).toBe('pbq-multi-panel')
-    expect(expectedClass.startsWith('pbq-')).toBe(true)
-  })
+	it('answeredCount for other subtypes counts the top-level answers', () => {
+		const vm = renderer({ pbq_subtype: 'dropdown', pbq_config: {} }, { q1: '22', q2: '443' })
+		expect(vm.answeredCount).toBe(2)
+	})
 })
