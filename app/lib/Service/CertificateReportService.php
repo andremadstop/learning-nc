@@ -298,6 +298,29 @@ class CertificateReportService {
      * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
      */
     public function getCourseReport(int $courseId, string $userId, ?int $from, ?int $to, ?int $expiringDays): array {
+        $certs = $this->findReportCertificates($courseId, $userId, $from, $to, $expiringDays);
+
+        // The expiry window includes certificates that already expired (they still need action);
+        // each row says which ones, like the group report's 'expired' status (audit #222).
+        $now = $this->timeFactory->getTime();
+        $rows = [];
+        foreach ($certs as $cert) {
+            $rows[] = $this->projectRow($cert, $now);
+        }
+
+        return ['rows' => $rows];
+    }
+
+    /**
+     * The certificates behind the report table, as entities: the same gate and the same filters as
+     * getCourseReport(), which projects exactly this list. The "Download all (ZIP)" export
+     * (GitHub #42) packs this list, so the ZIP always holds the rows the instructor sees.
+     *
+     * @return Certificate[]
+     * @throws \OCP\AppFramework\Db\DoesNotExistException course not found (→ 404)
+     * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
+     */
+    public function findReportCertificates(int $courseId, string $userId, ?int $from, ?int $to, ?int $expiringDays): array {
         // Gate BEFORE any read — owner-scoped, IDOR-safe.
         $this->courseService->assertInstructorOfCourse($courseId, $userId);
 
@@ -309,16 +332,43 @@ class CertificateReportService {
         if ($expiresBefore !== null) {
             $certs = $this->withoutSuperseded($courseId, $certs);
         }
+        return $certs;
+    }
 
-        // The expiry window includes certificates that already expired (they still need action);
-        // each row says which ones, like the group report's 'expired' status (audit #222).
-        $now = $this->timeFactory->getTime();
-        $rows = [];
-        foreach ($certs as $cert) {
-            $rows[] = $this->projectRow($cert, $now);
+    /**
+     * One certificate of THIS course for its instructor (GitHub #42: View / Download in the report).
+     *
+     * The instructor gate runs first, so a caller who does not teach the course learns nothing about
+     * the id (403 before any certificate read). A certificate of another course, an unknown id and a
+     * DSGVO-erased tombstone (credential scrubbed, no subject) all answer "not found". A revoked
+     * certificate stays retrievable — the caller gets its revoked flag and must label it.
+     *
+     * @throws \OCP\AppFramework\Db\DoesNotExistException course or certificate not found (→ 404)
+     * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
+     */
+    public function getCourseCertificate(int $courseId, string $verificationId, string $userId): Certificate {
+        $this->courseService->assertInstructorOfCourse($courseId, $userId);
+
+        // Verification ids are RFC 4122 UUIDv4 (IssuanceService::uuidv4); checked after the gate so
+        // a malformed id tells a stranger nothing either, and before any certificate read.
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $verificationId) !== 1) {
+            throw new \OCP\AppFramework\Db\DoesNotExistException('Malformed verification id');
         }
+        $cert = $this->certificateMapper->findByVerificationId($verificationId);
+        if ((int)$cert->getCourseId() !== $courseId || $cert->getAnonymizedAt() !== null) {
+            throw new \OCP\AppFramework\Db\DoesNotExistException('Certificate not in this course');
+        }
+        return $cert;
+    }
 
-        return ['rows' => $rows];
+    /**
+     * The report row for one certificate (display name, dates, score, expired flag) — the same
+     * projection the table uses, for labelling an exported copy.
+     *
+     * @return array{display_name: string, passed_at: int, score: string, expires_at: int|null, verification_id: string, expired: bool}
+     */
+    public function describeCertificate(Certificate $cert): array {
+        return $this->projectRow($cert, $this->timeFactory->getTime());
     }
 
     /**

@@ -3498,6 +3498,12 @@
         "Die Ankündigung konnte nicht veröffentlicht werden.": "تعذّر نشر الإعلان.",
         "Die Fragen von Lernenden konnten nicht geladen werden.": "تعذّر تحميل أسئلة المتعلمين.",
         "Die Antwort konnte nicht gesendet werden.": "تعذّر إرسال الإجابة.",
-        "Genauigkeit pro Pool": "الدقة لكل مجموعة"
+        "Genauigkeit pro Pool": "الدقة لكل مجموعة",
+        "Ansehen": "عرض",
+        "Alle herunterladen (ZIP)": "تنزيل الكل (ZIP)",
+        "Zertifikat von {name} ansehen": "عرض شهادة {name}",
+        "Zertifikat von {name} herunterladen": "تنزيل شهادة {name}",
+        "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "أُلغيت هذه الشهادة ولم تعد صالحة.",
+        "Dieses Zertifikat ist abgelaufen.": "انتهت صلاحية هذه الشهادة."
     }
 }

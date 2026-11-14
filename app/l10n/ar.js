@@ -3499,5 +3499,11 @@ OC.L10N.register(
     "Die Fragen von Lernenden konnten nicht geladen werden." : "تعذّر تحميل أسئلة المتعلمين.",
     "Die Antwort konnte nicht gesendet werden." : "تعذّر إرسال الإجابة.",
     "Genauigkeit pro Pool" : "الدقة لكل مجموعة",
+    "Ansehen" : "عرض",
+    "Alle herunterladen (ZIP)" : "تنزيل الكل (ZIP)",
+    "Zertifikat von {name} ansehen" : "عرض شهادة {name}",
+    "Zertifikat von {name} herunterladen" : "تنزيل شهادة {name}",
+    "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "أُلغيت هذه الشهادة ولم تعد صالحة.",
+    "Dieses Zertifikat ist abgelaufen." : "انتهت صلاحية هذه الشهادة.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

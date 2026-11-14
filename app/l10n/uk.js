@@ -3499,5 +3499,11 @@ OC.L10N.register(
     "Die Fragen von Lernenden konnten nicht geladen werden." : "Не вдалося завантажити питання учнів.",
     "Die Antwort konnte nicht gesendet werden." : "Не вдалося надіслати відповідь.",
     "Genauigkeit pro Pool" : "Точність за пулом",
+    "Ansehen" : "Переглянути",
+    "Alle herunterladen (ZIP)" : "Завантажити все (ZIP)",
+    "Zertifikat von {name} ansehen" : "Переглянути сертифікат: {name}",
+    "Zertifikat von {name} herunterladen" : "Завантажити сертифікат: {name}",
+    "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "Цей сертифікат відкликано, він більше не дійсний.",
+    "Dieses Zertifikat ist abgelaufen." : "Термін дії цього сертифіката минув.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

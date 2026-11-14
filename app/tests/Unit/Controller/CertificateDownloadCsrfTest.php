@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Unit\Controller;
 
 use OCA\Learning\Controller\CertificateController;
 use OCA\Learning\Controller\CertificateReportController;
+use OCA\Learning\Controller\CourseCertificateController;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -24,6 +25,8 @@ class CertificateDownloadCsrfTest extends TestCase {
         return [
             'own certificate download' => [CertificateController::class, 'download'],
             'certificate report CSV' => [CertificateReportController::class, 'exportCertReportCsv'],
+            'instructor copy of a certificate (#42)' => [CourseCertificateController::class, 'download'],
+            'instructor ZIP of the report (#42)' => [CourseCertificateController::class, 'exportZip'],
         ];
     }
 
@@ -46,6 +49,7 @@ class CertificateDownloadCsrfTest extends TestCase {
             'report' => [CertificateReportController::class, 'certReport'],
             'group report' => [CertificateReportController::class, 'groupReport'],
             'remind (writes)' => [CertificateReportController::class, 'remindMember'],
+            'instructor view (#42)' => [CourseCertificateController::class, 'show'],
         ];
     }
 

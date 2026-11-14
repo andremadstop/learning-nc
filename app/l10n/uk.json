@@ -3498,6 +3498,12 @@
         "Die Ankündigung konnte nicht veröffentlicht werden.": "Не вдалося опублікувати оголошення.",
         "Die Fragen von Lernenden konnten nicht geladen werden.": "Не вдалося завантажити питання учнів.",
         "Die Antwort konnte nicht gesendet werden.": "Не вдалося надіслати відповідь.",
-        "Genauigkeit pro Pool": "Точність за пулом"
+        "Genauigkeit pro Pool": "Точність за пулом",
+        "Ansehen": "Переглянути",
+        "Alle herunterladen (ZIP)": "Завантажити все (ZIP)",
+        "Zertifikat von {name} ansehen": "Переглянути сертифікат: {name}",
+        "Zertifikat von {name} herunterladen": "Завантажити сертифікат: {name}",
+        "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "Цей сертифікат відкликано, він більше не дійсний.",
+        "Dieses Zertifikat ist abgelaufen.": "Термін дії цього сертифіката минув."
     }
 }

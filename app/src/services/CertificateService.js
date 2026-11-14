@@ -43,3 +43,41 @@ export function downloadUrl(verificationId, format = 'jsonld') {
 	const base = generateUrl(`/apps/learning/api/certificates/${encodeURIComponent(verificationId)}/download`)
 	return format === 'jwt' ? `${base}?format=jwt` : base
 }
+
+/**
+ * GitHub #42: one certificate of a course for its instructor (compliance report → View).
+ * Same row shape as getCertificate(), plus revoked / revoked_at / expired. The server lets only
+ * an instructor of THIS course through (403 otherwise, 404 for a certificate of another course).
+ * @param {number} courseId — the course whose report lists the certificate
+ * @param {string} verificationId — the certificate's public verification id
+ * @return {Promise<object>} the certificate row
+ */
+export async function getCourseCertificate(courseId, verificationId) {
+	const response = await axios.get(
+		generateUrl('/apps/learning/api/courses/{courseId}/certificates/{verificationId}', { courseId, verificationId }),
+	)
+	return response.data
+}
+
+/**
+ * GitHub #42: the learner's certificate file for the course instructor (same file as downloadUrl()).
+ * @param {number} courseId — the course whose report lists the certificate
+ * @param {string} verificationId — the certificate's public verification id
+ * @param {string} [format='jsonld'] — 'jsonld' (default) or 'jwt'
+ * @return {string} the generated download URL
+ */
+export function courseDownloadUrl(courseId, verificationId, format = 'jsonld') {
+	const base = generateUrl('/apps/learning/api/courses/{courseId}/certificates/{verificationId}/download', { courseId, verificationId })
+	return format === 'jwt' ? `${base}?format=jwt` : base
+}
+
+/**
+ * GitHub #42: every certificate of the filtered compliance report as one ZIP.
+ * @param {number} courseId — the course
+ * @param {string} [query=''] — the report's filter query (buildCertReportQuery), same as the CSV
+ * @return {string} the generated download URL
+ */
+export function certReportZipUrl(courseId, query = '') {
+	const base = generateUrl('/apps/learning/api/courses/{courseId}/cert-report/export/zip', { courseId })
+	return base + (query ? '?' + query : '')
+}

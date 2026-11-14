@@ -6,6 +6,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\CertificateArtifact;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
@@ -156,27 +157,12 @@ class CertificateController extends Controller {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
 
+        // Same file builder as the instructor copy in the compliance report (GitHub #42).
         $jwt = $cert->getCredentialJson();
-
-        if ($format === 'jwt') {
-            return new DataDownloadResponse(
-                $jwt,
-                'certificate-' . $verificationId . '.jwt',
-                'application/vc+jwt'
-            );
-        }
-
-        // Default CERT-09 artifact: OB3 JSON-LD EnvelopedVerifiableCredential wrapping the JWT.
-        $envelope = [
-            '@context' => ['https://www.w3.org/ns/credentials/v2'],
-            'type' => 'EnvelopedVerifiableCredential',
-            'id' => 'data:application/vc+jwt,' . $jwt,
-        ];
-
         return new DataDownloadResponse(
-            (string)json_encode($envelope, JSON_UNESCAPED_SLASHES),
-            'certificate-' . $verificationId . '.json',
-            'application/ld+json'
+            CertificateArtifact::content($jwt, $format),
+            CertificateArtifact::fileName($verificationId, $format),
+            CertificateArtifact::mimeType($format)
         );
     }
 

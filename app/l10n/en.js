@@ -3499,5 +3499,11 @@ OC.L10N.register(
     "Die Fragen von Lernenden konnten nicht geladen werden." : "The questions from learners could not be loaded.",
     "Die Antwort konnte nicht gesendet werden." : "The answer could not be sent.",
     "Genauigkeit pro Pool" : "Accuracy per pool",
+    "Ansehen" : "View",
+    "Alle herunterladen (ZIP)" : "Download all (ZIP)",
+    "Zertifikat von {name} ansehen" : "View certificate of {name}",
+    "Zertifikat von {name} herunterladen" : "Download certificate of {name}",
+    "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "This certificate has been revoked and is no longer valid.",
+    "Dieses Zertifikat ist abgelaufen." : "This certificate has expired.",
 },
 "nplurals=2; plural=(n != 1);");

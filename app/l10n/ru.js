@@ -3499,5 +3499,11 @@ OC.L10N.register(
     "Die Fragen von Lernenden konnten nicht geladen werden." : "Не удалось загрузить вопросы учащихся.",
     "Die Antwort konnte nicht gesendet werden." : "Не удалось отправить ответ.",
     "Genauigkeit pro Pool" : "Точность по пулам",
+    "Ansehen" : "Просмотреть",
+    "Alle herunterladen (ZIP)" : "Скачать все (ZIP)",
+    "Zertifikat von {name} ansehen" : "Просмотреть сертификат: {name}",
+    "Zertifikat von {name} herunterladen" : "Скачать сертификат: {name}",
+    "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "Этот сертификат отозван и больше не действителен.",
+    "Dieses Zertifikat ist abgelaufen." : "Срок действия этого сертификата истёк.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

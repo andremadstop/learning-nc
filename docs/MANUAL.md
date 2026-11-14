@@ -852,6 +852,12 @@ and send recertification reminders automatically. Combined with **Validity durat
 **Compliance reports** give an organisation-wide completion overview for audits — who has
 completed what, and what has expired.
 
+To keep copies for an audit, each row of the report in **Participants → Completion &
+certificate** has **View** (the learner's certificate; **Print** saves it as PDF) and
+**Download** (the learner's signed certificate file, Open Badges JSON-LD). **Download all
+(ZIP)** packs every certificate of the filtered list; expired ones carry `_expired` in the
+file name. Only instructors of the course get these copies, and each access is logged.
+
 You can verify the audit chain's integrity at any time:
 
 ```bash

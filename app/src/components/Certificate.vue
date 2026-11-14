@@ -12,6 +12,10 @@
 		<template v-else-if="fields">
 			<!-- Printable card: signed (frozen) fields render as-is; only chrome is localized. -->
 			<div ref="printable" class="certificate-printable">
+				<!-- GitHub #42: the instructor's copy says when it no longer counts, on screen and on paper. -->
+				<p v-if="statusNote" class="certificate-status-note" role="status">
+					{{ statusNote }}
+				</p>
 				<div class="certificate-card">
 					<div class="certificate-brand">
 						<img
@@ -77,7 +81,7 @@
 						{{ t('learning', 'Herunterladen') }}
 					</NcButton>
 				</a>
-				<NcButton variant="secondary" @click="openLinkedIn">
+				<NcButton v-if="courseId === null" variant="secondary" @click="openLinkedIn">
 					{{ t('learning', 'Zu LinkedIn hinzufügen (öffnet LinkedIn)') }}
 				</NcButton>
 			</div>
@@ -90,7 +94,7 @@ import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
-import { getCertificate, downloadUrl } from '../services/CertificateService.js'
+import { getCertificate, downloadUrl, getCourseCertificate, courseDownloadUrl } from '../services/CertificateService.js'
 import {
 	decodeCredential,
 	extractCertificateFields,
@@ -114,6 +118,16 @@ export default {
 			type: String,
 			required: true,
 		},
+		/**
+		 * GitHub #42: set by the compliance report. The certificate then loads and downloads
+		 * through the course-scoped instructor endpoints (same data, same file), the LinkedIn
+		 * action (the learner's own profile) is hidden, and a revoked or expired state is shown.
+		 * null (default) is the learner's own view, unchanged.
+		 */
+		courseId: {
+			type: Number,
+			default: null,
+		},
 	},
 
 	data() {
@@ -122,6 +136,8 @@ export default {
 			error: '',
 			fields: null,
 			qrDataUrl: '',
+			revoked: false,
+			expired: false,
 		}
 	},
 
@@ -135,7 +151,21 @@ export default {
 			return buildVerifyUrl(origin, generateUrl('/apps/learning/verify/' + encodeURIComponent(this.verificationId)))
 		},
 		downloadHref() {
-			return downloadUrl(this.verificationId)
+			return this.courseId !== null
+				? courseDownloadUrl(this.courseId, this.verificationId)
+				: downloadUrl(this.verificationId)
+		},
+		statusNote() {
+			if (this.courseId === null) {
+				return ''
+			}
+			if (this.revoked) {
+				return t('learning', 'Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.')
+			}
+			if (this.expired) {
+				return t('learning', 'Dieses Zertifikat ist abgelaufen.')
+			}
+			return ''
 		},
 		issuedDate() {
 			return this.formatDate(this.fields?.validFrom)
@@ -161,7 +191,11 @@ export default {
 			this.loading = true
 			this.error = ''
 			try {
-				const row = await getCertificate(this.verificationId)
+				const row = this.courseId !== null
+					? await getCourseCertificate(this.courseId, this.verificationId)
+					: await getCertificate(this.verificationId)
+				this.revoked = row?.revoked === true
+				this.expired = row?.expired === true
 				const credential = decodeCredential(row.credential_json)
 				if (!credential) {
 					this.error = t('learning', 'Zertifikat konnte nicht gelesen werden.')
@@ -240,6 +274,16 @@ export default {
 	gap: 12px;
 	padding: 40px 16px;
 	color: var(--color-text-maxcontrast);
+}
+
+.certificate-status-note {
+	margin: 0 0 12px;
+	padding: 8px 12px;
+	border-inline-start: 4px solid var(--color-element-error, var(--color-error));
+	border-radius: var(--border-radius, 4px);
+	background: var(--color-error);
+	color: var(--color-error-text, var(--color-main-text));
+	font-weight: 600;
 }
 
 .certificate-card {
@@ -435,6 +479,13 @@ export default {
 	#learning-certificate-print-root .certificate-qr {
 		width: 30mm;
 		height: 30mm;
+	}
+
+	/* The revoked / expired note keeps its meaning on white paper in every theme. */
+	#learning-certificate-print-root .certificate-status-note {
+		background: #fff;
+		color: #8b0000;
+		border: 2px solid #8b0000;
 	}
 
 	.no-print {

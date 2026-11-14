@@ -397,9 +397,19 @@
 			<div v-if="showCertReport" class="cert-report-section">
 				<div class="cert-report-header">
 					<h4 class="cert-report-title">{{ t('learning', 'Compliance-Bericht') }}</h4>
-					<NcButton variant="tertiary" size="small" @click="exportCertReportCsv">
-						{{ t('learning', 'Export CSV') }}
-					</NcButton>
+					<div class="cert-report-header-actions">
+						<NcButton variant="tertiary" size="small" @click="exportCertReportCsv">
+							{{ t('learning', 'Export CSV') }}
+						</NcButton>
+						<!-- GitHub #42: copies of every listed certificate (same filters as the table and the CSV). -->
+						<NcButton v-if="certRows.length > 0"
+							variant="tertiary"
+							size="small"
+							class="cert-report-zip"
+							@click="downloadAllCertificates">
+							{{ t('learning', 'Alle herunterladen (ZIP)') }}
+						</NcButton>
+					</div>
 				</div>
 				<NcNoteCard v-if="certSigningAvailable === false" type="error" class="cert-signing-warning">
 					{{ t('learning', 'Zertifikate können derzeit nicht ausgestellt werden: Es gibt keinen nutzbaren Signaturschlüssel. Teilnehmende, die bestehen, erhalten erst ein Zertifikat, wenn die Administration den Schlüssel eingerichtet hat (occ learning:cert:init-issuer).') }}
@@ -458,18 +468,44 @@
 								</td>
 								<td class="cert-vid">{{ row.verification_id }}</td>
 								<td>
-									<NcButton variant="tertiary"
-										size="small"
-										:disabled="revokingVid === row.verification_id"
-										@click="revokeCertificate(row)">
-										{{ t('learning', 'Widerrufen') }}
-									</NcButton>
+									<div class="cert-row-actions">
+										<!-- GitHub #42: the instructor keeps copies for audits (view = learner's certificate incl. print, download = learner's file). -->
+										<NcButton variant="tertiary"
+											size="small"
+											class="cert-view"
+											:aria-label="t('learning', 'Zertifikat von {name} ansehen', { name: row.display_name })"
+											@click="viewCertificate(row)">
+											{{ t('learning', 'Ansehen') }}
+										</NcButton>
+										<NcButton variant="tertiary"
+											size="small"
+											class="cert-download"
+											:aria-label="t('learning', 'Zertifikat von {name} herunterladen', { name: row.display_name })"
+											@click="downloadCertificate(row)">
+											{{ t('learning', 'Herunterladen') }}
+										</NcButton>
+										<NcButton variant="tertiary"
+											size="small"
+											class="cert-revoke"
+											:disabled="revokingVid === row.verification_id"
+											@click="revokeCertificate(row)">
+											{{ t('learning', 'Widerrufen') }}
+										</NcButton>
+									</div>
 								</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
 				<p v-else class="cert-report-empty">{{ t('learning', 'Noch keine Zertifikate ausgestellt') }}</p>
+				<NcModal v-if="viewingCertVid"
+					size="large"
+					:name="t('learning', 'Zertifikat')"
+					@close="viewingCertVid = null">
+					<div class="cert-view-modal">
+						<Certificate :verification-id="viewingCertVid" :course-id="courseId" />
+					</div>
+				</NcModal>
 			</div>
 			<NcNoteCard v-else type="info">
 				{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint später die Dozentenansicht für den Kursabschluss.') }}
@@ -514,6 +550,8 @@ import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
 import CourseSummary from './CourseSummary.vue'
+import Certificate from './Certificate.vue'
+import { courseDownloadUrl, certReportZipUrl } from '../services/CertificateService.js'
 import BuddyMatching from './BuddyMatching.vue'
 
 export default {
@@ -530,6 +568,7 @@ export default {
 		StudentDetail,
 		CourseSummary,
 		BuddyMatching,
+		Certificate,
 	},
 
 	props: {
@@ -579,6 +618,7 @@ export default {
 			// GitHub #35: members who passed but hold no certificate ([{display_name}]).
 			certPassedWithoutCertificate: [],
 			revokingVid: null,
+			viewingCertVid: null,
 			certFromDate: '',
 			certToDate: '',
 			certExpiringDays: '',
@@ -937,6 +977,19 @@ export default {
 			const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report/export/csv', { courseId: this.courseId })
 			window.location.href = url + (qs ? '?' + qs : '')
 		},
+		// GitHub #42: View opens the learner's certificate (course-scoped endpoint, instructor gate
+		// server-side); its Print gives the same PDF the learner prints.
+		viewCertificate(row) {
+			this.viewingCertVid = row.verification_id
+		},
+		// GitHub #42: the learner's own certificate file, by navigation like the CSV (no CSRF token needed).
+		downloadCertificate(row) {
+			window.location.href = courseDownloadUrl(this.courseId, row.verification_id)
+		},
+		// GitHub #42: every certificate of the filtered table in one ZIP — same query as table and CSV.
+		downloadAllCertificates() {
+			window.location.href = certReportZipUrl(this.courseId, buildCertReportQuery(this.certFilters()))
+		},
 		// Instructor revoke: owner-gated + idempotent server-side (VERIFY-05). The /cert-report DTO
 		// has no revoked flag, so we always allow the click and refetch — a revoked cert reflects
 		// its new status on the next report load. The backend is the single source of truth.
@@ -1277,7 +1330,10 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 
 /* Compliance report */
 .cert-report-section { margin-bottom: 24px; border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 20px; background: var(--color-main-background); }
-.cert-report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cert-report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+.cert-report-header-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.cert-row-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.cert-view-modal { padding: 16px 20px 20px; }
 .cert-report-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--color-main-text); }
 .cert-report-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 12px; }
 .cert-filter { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--color-text-maxcontrast); }
