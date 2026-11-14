@@ -103,7 +103,8 @@
 				<CourseRecentSessions
 					v-if="myUserId"
 					:course-id="courseId"
-					:student-id="myUserId" />
+					:student-id="myUserId"
+					:show-pool-accuracy="!learnerHasProgressTab" />
 			</div>
 
 			<CourseTabWettbewerb
@@ -170,7 +171,7 @@ import CourseRecentSessions from './CourseRecentSessions.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
-import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
 // falls back to the Lernraum (GitHub #36).
@@ -332,6 +333,10 @@ export default {
 			})
 		},
 		// GitHub #36: learners get the completion tab as an area of its own.
+		// GitHub #36: without "Mein Fortschritt" its accuracy per pool shows in the completion area
+		learnerHasProgressTab() {
+			return learnerHasProgressTab(this.course, this.gamificationEnabled)
+		},
 		abschlussLeafTabs() {
 			return abschlussTabIds(this.course, { actsAsInstructor: this.isInstructor })
 		},

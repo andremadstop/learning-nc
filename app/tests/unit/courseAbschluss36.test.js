@@ -77,7 +77,7 @@ async function flush() {
 
 let host, app, liveProps
 
-async function renderCourse({ props = {}, course = {}, routeTab = '', tools = { enabled_tools: null } } = {}) {
+async function renderCourse({ props = {}, course = {}, routeTab = '', tools = { enabled_tools: null }, studentPools = [] } = {}) {
 	api.routes['/apps/learning/api/courses/{courseId}'] = {
 		id: 5, title: 'Pflichtschulung', status: 'active', is_instructor: false, pools: [], members: [], ...course,
 	}
@@ -89,7 +89,7 @@ async function renderCourse({ props = {}, course = {}, routeTab = '', tools = { 
 		streak: { current_streak: 0, last_activity_date: null },
 		badges: [],
 		badge_progress: [],
-		pools: [],
+		pools: studentPools,
 		recent_sessions: [{ completed_at: 1700000000, pool_name: 'Brandschutz', mode: 'exam', score: '9/10' }],
 		leitner_enabled: course.mode_config?.leitner !== false,
 		stats: { total_sessions: 7, total_mastered: 2, enrolled_at: 1, last_activity_date: '2026-03-04' },
@@ -160,6 +160,26 @@ describe('CourseDetail — the learners\' Abschluss area (GitHub #36)', () => {
 		expect(detail.currentTab).toBe('summary')
 		expect(host.querySelector('.abschluss-mega-tab .course-summary'), 'summary rendered').not.toBeNull()
 		expect(host.querySelector('.abschluss-mega-tab .session-item')?.textContent).toContain('Brandschutz')
+	})
+
+	// Review of #36: with gamification and Leitner off "Mein Fortschritt" is gone, and with it the
+	// accuracy per pool; nobody but the instructor drill-down showed it any more.
+	it('shows the accuracy per pool in Abschluss when "Mein Fortschritt" is gone', async () => {
+		const studentPools = [{ pool_id: 3, pool_name: 'Datenschutz', accuracy: 85, total: 0, boxes: {} }]
+		const detail = await renderCourse({ props: { gamificationEnabled: false }, course: bare(), studentPools })
+		detail.selectMegaTab('abschluss')
+		await flush()
+		expect(host.querySelector('.abschluss-mega-tab .pool-accuracy-item')?.textContent).toContain('Datenschutz')
+		expect(host.querySelector('.abschluss-mega-tab .pool-accuracy-item')?.textContent).toContain('85%')
+	})
+
+	it('shows no second accuracy list in Abschluss while "Mein Fortschritt" stays', async () => {
+		const studentPools = [{ pool_id: 3, pool_name: 'Datenschutz', accuracy: 85, total: 0, boxes: {} }]
+		const detail = await renderCourse({ props: { gamificationEnabled: true }, course: certifying({ leitner: false }), studentPools })
+		detail.selectMegaTab('abschluss')
+		await flush()
+		expect(host.querySelector('.abschluss-mega-tab .session-item'), 'sessions rendered').not.toBeNull()
+		expect(host.querySelector('.abschluss-mega-tab .pool-accuracy-item')).toBeNull()
 	})
 
 	it('drops the recent sessions from "Mein Fortschritt" when the Abschluss area lists them', async () => {

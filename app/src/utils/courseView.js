@@ -97,8 +97,9 @@ export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificatio
 /**
  * Whether the learner's own course progress ("Mein Fortschritt") still has something to show.
  * With gamification and Leitner both off, XP, level, badges and the boxes are gone; what is left
- * is the list of recent sessions, and a course with a completion tab shows that list there
- * (GitHub #36). Without a completion tab the progress tab stays, it is the list's only home.
+ * is the list of recent sessions and the accuracy per pool, and a course with a completion tab
+ * shows both there (GitHub #36; CourseRecentSessions with showPoolAccuracy). Without a completion
+ * tab the progress tab stays, it is their only home.
  *
  * @param {object|null|undefined} course - the course detail (snake_case fields)
  * @param {boolean} gamificationEnabled - the admin's global switch; anything but false counts as on

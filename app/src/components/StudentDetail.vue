@@ -129,12 +129,7 @@
 			<!-- GitHub #36: without Leitner the boxes stay empty; what is left per pool is the accuracy -->
 			<div v-else-if="data.pools.length > 0" class="student-section pool-accuracy-section">
 				<p class="section-label">{{ t('learning', 'Genauigkeit pro Pool') }}</p>
-				<ul class="pool-accuracy-list">
-					<li v-for="pool in data.pools" :key="pool.pool_id" class="pool-accuracy-item">
-						<span class="pool-box-name">{{ pool.pool_name }}</span>
-						<span class="pool-accuracy-value">{{ pool.accuracy }}% {{ t('learning', 'accuracy') }}</span>
-					</li>
-				</ul>
+				<PoolAccuracyList :pools="data.pools" />
 			</div>
 
 			<!-- Recent sessions. GitHub #36: in a course with a completion tab the learner finds them there. -->
@@ -153,6 +148,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatRelativeDateString } from '../format.js'
+import PoolAccuracyList from './PoolAccuracyList.vue'
 import RecentSessionsList from './RecentSessionsList.vue'
 
 const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer', 'quick_thinker']
@@ -164,6 +160,7 @@ export default {
 		NcButton,
 		NcLoadingIcon,
 		NcNoteCard,
+		PoolAccuracyList,
 		RecentSessionsList,
 	},
 
@@ -728,30 +725,6 @@ export default {
 }
 
 /* GitHub #36: accuracy per pool when the course has no Leitner */
-.pool-accuracy-list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.pool-accuracy-item {
-	display: flex;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 8px 12px;
-	border-radius: var(--border-radius-large, 8px);
-	background: var(--color-background-hover);
-}
-
-.pool-accuracy-value {
-	font-size: 0.85em;
-	color: var(--color-text-maxcontrast);
-	white-space: nowrap;
-}
-
 /* Session list */
 .empty-hint {
 	color: var(--color-text-maxcontrast);
