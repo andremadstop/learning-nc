@@ -155,7 +155,10 @@ export const STUDENT_SLIDES = [
   },
 ]
 
-const INSTRUCTOR_SLIDES = [
+// Exported on purpose although no app module imports it: scripts/gen-virtuprof-strings.mjs
+// imports this module and walks every exported array to resolve the symbolic slide keys
+// for the VirtuProf catalogue. Un-exporting it silently drops the instructor deck there.
+export const INSTRUCTOR_SLIDES = [
   {
     id: 'dashboard',
     icon: '📋',
