@@ -61,7 +61,7 @@ async function load() {
 }
 
 function appPayload(App, state) {
-	const self = { mainView: 'dashboard', previousMainView: '', selectedCourse: null, selectedStudent: null, ...state }
+	const self = { mainView: 'dashboard', previousMainView: '', selectedCourse: null, selectedStudent: null, poolFromCourse: false, poolFromCourseObj: null, ...state }
 	for (const [name, fn] of Object.entries(App.methods)) {
 		self[name] = fn.bind(self)
 	}
@@ -127,5 +127,17 @@ describe('VirtuProf course context (GitHub #40)', () => {
 		vp.updateContext(appPayload(App, { mainView: 'courses', selectedCourse: { id: 7, title: 'Linux' } }))
 
 		expect(vp.currentContext).toMatchObject({ courseId: 7, courseTitle: 'Linux' })
+	})
+
+	it('a pool opened from a course keeps that course, a pool opened on its own has none', async () => {
+		const { App } = await load()
+
+		expect(appPayload(App, { mainView: 'pools', currentView: 'questions', mode: 'training', selectedPool: { name: 'P' },
+			poolFromCourse: true, poolFromCourseObj: { id: 42, title: 'Netzwerk' } })).toMatchObject({ courseId: 42, courseTitle: 'Netzwerk' })
+		expect(appPayload(App, { mainView: 'pools', currentView: 'questions', mode: 'training', selectedPool: { name: 'P' } }))
+			.toMatchObject({ courseId: null, courseTitle: '' })
+		// the flag outlives the pool view; the dashboard must not inherit the course
+		expect(appPayload(App, { mainView: 'dashboard', poolFromCourse: true, poolFromCourseObj: { id: 42, title: 'Netzwerk' } }))
+			.toMatchObject({ courseId: null, courseTitle: '' })
 	})
 })

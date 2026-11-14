@@ -1005,7 +1005,8 @@ export default {
           shortText: t('learning', 'Nachrichten für alle Studierenden veröffentlichen.'),
         },
         'view:course-requests': {
-          title: t('learning', 'Anfragen'),
+          // GitHub #40: the tab is named "Questions from learners"
+          title: t('learning', 'Fragen von Lernenden'),
           text: t('learning', 'Studierenden-Anfragen und Fehlermeldungen. Prüfe gemeldete Fragen, beantworte Hilfeanfragen und verbessere deine Inhalte.'),
           shortText: t('learning', 'Studierenden-Anfragen und Fehlermeldungen prüfen.'),
         },
@@ -1134,8 +1135,15 @@ export default {
       // GitHub #40: VirtuProf merges each context into the previous one, so a course left out
       // here was not cleared. A course question sent from the dashboard then still went to the
       // last course's instructor, and one sent from a course page never carried the course id
-      // and fell back to the admin inbox. Every payload states its course, null outside one.
-      return { courseId: null, courseTitle: '', ...this.virtuprofAreaPayload() };
+      // and fell back to the admin inbox. Every payload states its course, null outside one;
+      // a pool opened from a course keeps that course.
+      const mainView = this.mainView === 'virtuprof-fullscreen' ? this.previousMainView : this.mainView;
+      const fromCourse = mainView === 'pools' && this.poolFromCourse ? this.poolFromCourseObj : null;
+      return {
+        courseId: fromCourse?.id ?? null,
+        courseTitle: fromCourse?.title || '',
+        ...this.virtuprofAreaPayload(),
+      };
     },
     virtuprofAreaPayload() {
       const mainView = this.mainView === 'virtuprof-fullscreen' ? this.previousMainView : this.mainView;
