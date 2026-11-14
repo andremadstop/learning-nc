@@ -7,6 +7,8 @@
         <button class="ab-back-btn" :aria-label="t('learning', 'Zurück')" @click="$emit('back')">← {{ t('learning', 'Zurück') }}</button>
         <h2 class="ab-title">🗺 {{ t('learning', 'Abenteuer') }}</h2>
         <p class="ab-subtitle">{{ t('learning', 'Wähle eine Kampagne und löse IT-Probleme in einer spannenden Geschichte.') }}</p>
+        <!-- GitHub #52: the stories come from German-only campaign files. -->
+        <p v-if="campaignsGermanOnly" class="ab-language-note">{{ t('learning', 'Die Geschichten der Kampagnen gibt es bisher nur auf Deutsch.') }}</p>
       </div>
 
       <div v-if="loadingCampaigns" class="ab-loading">
@@ -516,7 +518,7 @@
     </div>
 
     <!-- ===== ABORT CONFIRMATION ===== -->
-    <div v-if="showAbortConfirm" class="ab-abort-overlay" role="dialog" aria-modal="true" aria-label="Abbrechen bestätigen">
+    <div v-if="showAbortConfirm" class="ab-abort-overlay" role="dialog" aria-modal="true" :aria-label="t('learning', 'Abbrechen bestätigen')">
       <div class="ab-abort-dialog">
         <h3>{{ t('learning', 'Kampagne abbrechen?') }}</h3>
         <p>{{ t('learning', 'Dein Fortschritt wird gespeichert. Du kannst später weitermachen.') }}</p>
@@ -565,6 +567,8 @@ import CoopLobby from './CoopLobby.vue'
 import CoopVoteOverlay from './CoopVoteOverlay.vue'
 import CoopWaiting from './CoopWaiting.vue'
 import { getCharacter } from '../data/characters.js'
+import { getLanguage } from '@nextcloud/l10n'
+import { buildAdventureCharacters, buildStaticCampaigns } from '../utils/abenteuerCatalog.js'
 import { computeScoreDelta, computeReputationDeltas } from '../utils/hudEngine.js'
 import {
 	createCoopSession,
@@ -575,104 +579,6 @@ import {
 	submitVote,
 } from '../utils/coopEngine.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
-
-const STATIC_CAMPAIGNS = [
-	{
-		id: 'grosser_ausfall',
-		icon: '📡',
-		title: 'Der große Ausfall (klassisch)',
-		description: 'Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.',
-		difficulty: 'intermediate',
-		focus_areas: ['Network+'],
-		duration_minutes: 60,
-		progress: 'not_started',
-		current_scene: null,
-		is_graph: true,
-	},
-	{
-		id: 'einbruch_im_netz',
-		icon: '🔐',
-		title: 'Einbruch im Netz',
-		description: 'Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag.',
-		difficulty: 'advanced',
-		focus_areas: ['Security+'],
-		duration_minutes: 60,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'der_neue_standort',
-		icon: '🏢',
-		title: 'Der neue Standort',
-		description: 'NovaTech expandiert. Neues Büro, 40 Arbeitsplätze, 4 Wochen Deadline. Kein Fehler erlaubt.',
-		difficulty: 'intermediate',
-		focus_areas: ['Network+', 'Security+'],
-		duration_minutes: 75,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'ransomware',
-		icon: '💀',
-		title: 'Ransomware',
-		description: 'Freitag 16:30 Uhr: "YOUR FILES HAVE BEEN ENCRYPTED." 48 Stunden bis zur Deadline.',
-		difficulty: 'advanced',
-		focus_areas: ['Security+'],
-		duration_minutes: 60,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'das_erbe',
-		icon: '💾',
-		title: 'Das Erbe',
-		description: 'NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123.',
-		difficulty: 'beginner',
-		focus_areas: ['A+', 'Network+', 'Linux+'],
-		duration_minutes: 75,
-		progress: 'not_started',
-		current_scene: null,
-	},
-]
-
-const CHARACTERS = [
-	{
-		id: 'architect',
-		portrait: '👨‍💻',
-		name: 'Alex "The Architect" Neumann',
-		role: 'Netzwerk-Architekt',
-		description: 'Methodisch, analytisch. Denkt in OSI-Schichten. Stark bei Routing und Topologie-Design.',
-		strength: 'Routing, VLANs, Subnetting',
-		weakness: 'Security-Fragen dauern länger',
-	},
-	{
-		id: 'security',
-		portrait: '👩‍💻',
-		name: 'Sarah "Firewall" Okonkwo',
-		role: 'Security-Analystin',
-		description: 'Paranoid im besten Sinne. Sieht überall Bedrohungen. Hat für jedes Szenario einen IR-Plan.',
-		strength: 'Firewalls, Incident Response, Threats',
-		weakness: 'Routing-Fragen brauchen mehr Zeit',
-	},
-	{
-		id: 'sysadmin',
-		portrait: '🧔',
-		name: 'Kai "Root" Lindström',
-		role: 'Sysadmin',
-		description: 'Unix-Philosophie pur. Löst alles per Terminal. Hat für jedes Problem ein Bash-Skript.',
-		strength: 'Linux, Scripting, DNS, Server',
-		weakness: 'Wireless ist "Teufelszeug"',
-	},
-	{
-		id: 'helpdesk',
-		portrait: '👩‍🦺',
-		name: 'Mia "Helpdesk" Torres',
-		role: 'First-Level-Support',
-		description: 'Troubleshooting-Talent. Kann Fachjargon in Alltagssprache übersetzen. Kennt das Drucker-Passwort.',
-		strength: 'Troubleshooting, Hardware, A+',
-		weakness: 'Tiefes Netzwerk-Wissen fehlt manchmal',
-	},
-]
 
 const FEATURED_CAMPAIGN_IDS = [
 	'der_grosse_ausfall',
@@ -745,7 +651,7 @@ export default {
 			loadingCampaigns: false,
 
 			// Character selection
-			characters: CHARACTERS,
+			characters: buildAdventureCharacters(),
 			selectedCampaign: null,
 			selectedCharacter: null,
 			forceNewCampaign: false,
@@ -851,6 +757,10 @@ export default {
 	},
 
 	computed: {
+		// GitHub #52: titles, descriptions and scenes come from German-only campaign files.
+		campaignsGermanOnly() {
+			return !String(getLanguage() || '').toLowerCase().startsWith('de')
+		},
 		filteredCampaigns() {
 			if (!Array.isArray(this.allowedCampaigns)) {
 				return this.campaigns
@@ -1011,10 +921,10 @@ export default {
 				const raw = resp.data.campaigns || resp.data || []
 				// Normalize: backend uses campaign_id, frontend expects id
 				this.campaigns = this.applyCampaignProgress(this.normalizeCampaignList(raw), progressRows)
-				if (this.campaigns.length === 0) this.campaigns = this.normalizeCampaignList(STATIC_CAMPAIGNS)
+				if (this.campaigns.length === 0) this.campaigns = this.normalizeCampaignList(buildStaticCampaigns())
 			} catch (e) {
 				// Backend not yet available — fall back to static graph campaigns only
-				this.campaigns = this.normalizeCampaignList(STATIC_CAMPAIGNS)
+				this.campaigns = this.normalizeCampaignList(buildStaticCampaigns())
 			} finally {
 				this.loadingCampaigns = false
 			}
@@ -2500,7 +2410,7 @@ export default {
 		},
 
 		characterPortrait(charId) {
-			const char = CHARACTERS.find(c => c.id === charId)
+			const char = this.characters.find(c => c.id === charId)
 			return char ? char.portrait : '👤'
 		},
 
@@ -2571,6 +2481,13 @@ export default {
   color: var(--lnc-text-secondary);
   font-size: 0.9rem;
   margin: 0;
+}
+
+.ab-language-note {
+  color: var(--lnc-text-secondary);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 6px 0 0;
 }
 
 /* ===== LOADING ===== */
