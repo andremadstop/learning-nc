@@ -285,6 +285,8 @@ export default {
       consentValid: false,
       showAiConsentDialog: false,
       pendingChatMessage: null,
+      // the file intent a chip sent with the pending message ('summary'), kept across the consent dialog
+      pendingChatIntent: null,
       // the message the server refused for lack of consent: refused twice = error text, no loop
       lastRefusedMessage: null,
       // AI global enabled flag (PRIV-02)
@@ -1202,6 +1204,7 @@ export default {
       this.chatLoading = false
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
+      this.pendingChatIntent = null
       this.telosOnboardingActive = false
       this.telosSaving = false
       this.telosError = ''
@@ -1841,14 +1844,16 @@ export default {
             courseId: ctx.courseId || null,
           },
         })
+        // `text`, not `content`: the chat renders msg.text, so these confirmations were empty
+        // bubbles; and in the user's VirtuProf language (audit #187)
         this.chatMessages.push({
           role: 'assistant',
-          content: 'Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.',
+          text: this.vt('Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.'),
         })
       } catch {
         this.chatMessages.push({
           role: 'assistant',
-          content: 'Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.',
+          text: this.vt('Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.'),
         })
       }
     },
@@ -1873,7 +1878,7 @@ export default {
       ]
       return metaPatterns.some(p => lower.includes(p))
     },
-    async handleChatSend(message) {
+    async handleChatSend(message, intent = null) {
       if (!message || this.chatLoading) {
         return
       }
@@ -1881,6 +1886,7 @@ export default {
       // 5.7.0: no valid consent for the current text and recipient -> ask first
       if (!this.consentValid) {
         this.pendingChatMessage = message
+        this.pendingChatIntent = intent
         this.showAiConsentDialog = true
         // Ensure bubble is open so the dialog is visible
         if (!this.visible || this.isMinimized) {
@@ -1916,6 +1922,10 @@ export default {
 
       // Build context payload from currentContext
       const payload = { message }
+      // A chip names its file intent; its text is a label in the user's language (audit #59).
+      if (intent) {
+        payload.intent = intent
+      }
       if (this.currentContext?.poolId) {
         payload.poolId = this.currentContext.poolId
       }
@@ -1971,6 +1981,7 @@ export default {
           this.consentValid = false
           this.lastRefusedMessage = message
           this.pendingChatMessage = message
+          this.pendingChatIntent = intent
           this.showAiConsentDialog = true
           return
         }
@@ -2008,20 +2019,28 @@ export default {
         window.localStorage.removeItem('learning:ai_chat_consent')
       } catch (e) { /* ignore */ }
       const pending = this.pendingChatMessage
+      const pendingIntent = this.pendingChatIntent
       this.pendingChatMessage = null
+      this.pendingChatIntent = null
       if (pending) {
-        this.handleChatSend(pending)
+        if (pendingIntent) {
+          this.handleChatSend(pending, pendingIntent)
+        } else {
+          this.handleChatSend(pending)
+        }
       }
     },
     handleConsentDeclined() {
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
+      this.pendingChatIntent = null
       this.lastRefusedMessage = null
     },
     // nothing to consent to: AI was switched off meanwhile, or the status was not loadable
     handleConsentUnavailable(payload = {}) {
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
+      this.pendingChatIntent = null
       this.lastRefusedMessage = null
       this.chatMessages.push({
         role: 'assistant',

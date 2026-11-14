@@ -1,15 +1,14 @@
 <template>
 	<div class="legal-page legal-page--privacy">
 		<header class="legal-page__hero">
-			<p class="legal-page__eyebrow">Lernplattform</p>
-			<h1>Datenschutzerklärung</h1>
+			<p class="legal-page__eyebrow">{{ t('learning', 'Lernplattform') }}</p>
+			<h1>{{ t('learning', 'Datenschutzerklärung') }}</h1>
 			<p class="legal-page__lead">
-				Diese Seite bündelt die Datenschutzinformationen der Learning-App direkt in Nextcloud.
-				Die Datenbasis kommt aus <code>app/data/privacy-info.json</code>.
+				{{ t('learning', 'Diese Seite bündelt die Datenschutzinformationen der Learning-App direkt in Nextcloud.') }}
 			</p>
 			<div class="legal-page__actions">
-				<a v-if="appUrl" class="legal-page__action" :href="appUrl">Zur Learning-App</a>
-				<a v-if="imprintUrl" class="legal-page__action legal-page__action--secondary" :href="imprintUrl">Zum Impressum</a>
+				<a v-if="appUrl" class="legal-page__action" :href="appUrl">{{ t('learning', 'Zur Learning-App') }}</a>
+				<a v-if="imprintUrl" class="legal-page__action legal-page__action--secondary" :href="imprintUrl">{{ t('learning', 'Zum Impressum') }}</a>
 			</div>
 		</header>
 

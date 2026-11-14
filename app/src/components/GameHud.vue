@@ -81,39 +81,33 @@ import {
 	computeHudState,
 } from '../utils/hudEngine.js'
 
-const ROLE_LABELS = {
-	architect: 'Netzwerk-Architekt',
-	security: 'Security-Analystin',
-	sysadmin: 'Sysadmin',
-	helpdesk: 'Helpdesk',
+// Role labels and item texts resolve at render time through t(); as German object literals they
+// stayed German in every language (audit #182).
+function roleLabelText(role) {
+	switch (role) {
+	case 'architect': return t('learning', 'Netzwerk-Architekt')
+	case 'security': return t('learning', 'Security-Analystin')
+	case 'sysadmin': return t('learning', 'Sysadmin')
+	case 'helpdesk': return t('learning', 'Helpdesk')
+	default: return null
+	}
 }
 
-const ITEM_META = {
-	server_logs: {
-		icon: '📋',
-		label: 'Server Logs',
-		description: 'Gesammelte Log-Dateien für die Analyse.',
-	},
-	incident_report: {
-		icon: '🧾',
-		label: 'Incident Report',
-		description: 'Kurzbericht zum aktuellen Vorfall.',
-	},
-	backup_tape: {
-		icon: '💾',
-		label: 'Backup Tape',
-		description: 'Offline-Backup für den Notfall.',
-	},
-	kaffee: {
-		icon: '☕',
-		label: 'Kaffee',
-		description: 'Verbessert die Fehlersuche vermutlich psychologisch.',
-	},
-	key_card: {
-		icon: '🪪',
-		label: 'Key Card',
-		description: 'Zugang für gesicherte Bereiche.',
-	},
+function knownItemMeta(item) {
+	switch (item) {
+	case 'server_logs':
+		return { icon: '📋', label: t('learning', 'Server Logs'), description: t('learning', 'Gesammelte Log-Dateien für die Analyse.') }
+	case 'incident_report':
+		return { icon: '🧾', label: t('learning', 'Incident Report'), description: t('learning', 'Kurzbericht zum aktuellen Vorfall.') }
+	case 'backup_tape':
+		return { icon: '💾', label: t('learning', 'Backup Tape'), description: t('learning', 'Offline-Backup für den Notfall.') }
+	case 'kaffee':
+		return { icon: '☕', label: t('learning', 'Kaffee'), description: t('learning', 'Verbessert die Fehlersuche vermutlich psychologisch.') }
+	case 'key_card':
+		return { icon: '🪪', label: t('learning', 'Key Card'), description: t('learning', 'Zugang für gesicherte Bereiche.') }
+	default:
+		return null
+	}
 }
 
 function humanizeItemName(item) {
@@ -180,7 +174,7 @@ export default {
 		},
 
 		roleLabel() {
-			return ROLE_LABELS[this.hudState.role] || this.hudState.role || t('learning', 'Unbekannt')
+			return roleLabelText(this.hudState.role) || this.hudState.role || t('learning', 'Unbekannt')
 		},
 
 		inventoryTitle() {
@@ -214,7 +208,7 @@ export default {
 		},
 
 		actLabel() {
-			return `Akt ${this.actProgress.current}/${this.actProgress.total}`
+			return t('learning', 'Akt {current}/{total}', { current: this.actProgress.current, total: this.actProgress.total })
 		},
 
 		actTitle() {
@@ -262,7 +256,7 @@ export default {
 
 	methods: {
 		itemMeta(item) {
-			const known = ITEM_META[item]
+			const known = knownItemMeta(item)
 			if (known) {
 				return known
 			}

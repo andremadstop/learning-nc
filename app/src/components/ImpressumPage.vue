@@ -1,36 +1,36 @@
 <template>
 	<div class="legal-page legal-page--imprint">
 		<header class="legal-page__hero">
-			<p class="legal-page__eyebrow">Lernplattform</p>
-			<h1>Impressum</h1>
+			<p class="legal-page__eyebrow">{{ t('learning', 'Lernplattform') }}</p>
+			<h1>{{ t('learning', 'Impressum') }}</h1>
 			<p class="legal-page__lead">
-				Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz.
+				{{ t('learning', 'Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz.') }}
 			</p>
 			<div class="legal-page__actions">
-				<a v-if="appUrl" class="legal-page__action" :href="appUrl">Zur Learning-App</a>
-				<a v-if="privacyUrl" class="legal-page__action legal-page__action--secondary" :href="privacyUrl">Zur Datenschutzerklärung</a>
+				<a v-if="appUrl" class="legal-page__action" :href="appUrl">{{ t('learning', 'Zur Learning-App') }}</a>
+				<a v-if="privacyUrl" class="legal-page__action legal-page__action--secondary" :href="privacyUrl">{{ t('learning', 'Zur Datenschutzerklärung') }}</a>
 			</div>
 		</header>
 
 		<main class="legal-page__content">
 			<template v-if="operator">
 				<section class="legal-card">
-					<h2>Anbieter</h2>
+					<h2>{{ t('learning', 'Anbieter') }}</h2>
 					<p><strong>{{ operator.name }}</strong></p>
 					<p class="legal-card__address">{{ operator.address }}</p>
 					<p v-if="operator.register">{{ operator.register }}</p>
 				</section>
 
 				<section class="legal-card">
-					<h2>Kontakt</h2>
+					<h2>{{ t('learning', 'Kontakt') }}</h2>
 					<p>
-						E-Mail:
+						{{ t('learning', 'E-Mail') }}:
 						<a :href="'mailto:' + operator.email">{{ operator.email }}</a>
 					</p>
 				</section>
 
 				<section class="legal-card">
-					<h2>Verantwortlich für Inhalte</h2>
+					<h2>{{ t('learning', 'Verantwortlich für Inhalte') }}</h2>
 					<p>{{ operator.content_responsible || operator.name }}</p>
 					<p v-if="!operator.content_responsible" class="legal-card__address">{{ operator.address }}</p>
 				</section>

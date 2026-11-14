@@ -14,7 +14,7 @@
         viewBox="0 0 60 80"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
-        aria-label="Der Theoretiker">
+        :aria-label="avatarName()">
 
         <defs>
           <radialGradient id="th-skin" cx="40%" cy="30%" r="78%">
@@ -162,13 +162,15 @@
       </svg>
     </div>
 
-    <div v-if="inviteCount > 0" class="chibi-invite-badge" :aria-label="`${inviteCount} Duel-Einladung(en)`">
+    <div v-if="inviteCount > 0" class="chibi-invite-badge" :aria-label="inviteBadgeLabel(inviteCount)">
       {{ inviteCount > 9 ? '9+' : inviteCount }}
     </div>
   </div>
 </template>
 
 <script>
+import { translate as t } from '@nextcloud/l10n'
+import { inviteBadgeLabel } from '../utils/inviteBadge.js'
 import { useA11yStore } from '../stores/a11yStore.js'
 import { playWave } from '../utils/character-animations.js'
 
@@ -214,6 +216,11 @@ export default {
 		if (this.waveTimer) clearTimeout(this.waveTimer)
 	},
 	methods: {
+		inviteBadgeLabel,
+		// screen-reader name in the reader's language (audit #187)
+		avatarName() {
+			return t('learning', 'Der Theoretiker')
+		},
 		animationsDisabled() {
 			const prefersReduced = typeof window !== 'undefined'
 				&& typeof window.matchMedia === 'function'

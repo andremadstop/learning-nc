@@ -206,7 +206,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
-		dockLabel: { kicker: 'Geschaeftsfuehrung', title: 'Dr. Hartmann' },
+		dockLabel: { kicker: 'Geschäftsführung', title: 'Dr. Hartmann' },
 	}),
 
 	frau_weber: Object.freeze({
@@ -355,9 +355,19 @@ function getCharacter(id) {
 	return CHARACTERS[id] || FALLBACK_CHARACTER
 }
 
+/**
+ * dockLabel kicker/title values that are names and stay as they are in every language.
+ * VirtuProfDock translates the labels with t('learning', <value>), a call the i18n coverage gate
+ * cannot resolve; every other kicker/title must therefore be a key in l10n/*.json, which
+ * tests/unit/characterDockLabels.test.js checks (audit #194).
+ */
+const DOCK_LABEL_NAMES = Object.freeze([
+	'VirtuProf', 'Prof. Lern', 'Linux', 'Ghostline', 'Klaus DAU', 'Dr. Hartmann', 'Frau Weber', 'Uschi', 'Tim', 'Sven Berater',
+])
+
 // Support both ESM and CJS consumption
 if (typeof module !== 'undefined' && module.exports) {
-	module.exports = { CHARACTERS, getCharacter, FALLBACK_CHARACTER }
+	module.exports = { CHARACTERS, getCharacter, FALLBACK_CHARACTER, DOCK_LABEL_NAMES }
 }
 
-export { CHARACTERS, getCharacter, FALLBACK_CHARACTER }
+export { CHARACTERS, getCharacter, FALLBACK_CHARACTER, DOCK_LABEL_NAMES }

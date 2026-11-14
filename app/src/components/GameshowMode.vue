@@ -689,7 +689,7 @@ export default {
       const my = this.botLocalState.myScore;
       const bot = this.botLocalState.botScore;
       if (my === bot) return t('learning', 'Unentschieden!');
-      return my > bot ? t('learning', 'Du hast gewonnen!') : '🤓 Klaus gewinnt!';
+      return my > bot ? t('learning', 'Du hast gewonnen!') : '🤓 ' + t('learning', 'Klaus gewinnt!');
     },
     timerExpired() {
       return this.timerValue <= 0;
@@ -1559,25 +1559,27 @@ export default {
 
     // ---------- VirtuProf helpers ----------
 
+    // Through t() (audit #182); the names are inserted unescaped because the text is rendered as text.
     buildStandingsCommentary() {
       if (!this.sortedPlayers || this.sortedPlayers.length === 0) return '';
+      const raw = { escape: false, sanitize: false };
       if (this.isEliminationMode) {
         const leader = this.sortedPlayers[0];
         const name1 = leader.display_name || leader.user_id;
         if (this.remainingPlayerCount <= 1) {
-          return name1 + ' ist der letzte Überlebende!';
+          return t('learning', '{name} ist der letzte Überlebende!', { name: name1 }, undefined, raw);
         }
         if (this.remainingPlayerCount === 2 && this.sortedPlayers.length >= 2) {
           const rival = this.sortedPlayers[1];
           const name2 = rival.display_name || rival.user_id;
-          return 'Sudden Death zwischen ' + name1 + ' und ' + name2 + '!';
+          return t('learning', 'Sudden Death zwischen {name1} und {name2}!', { name1, name2 }, undefined, raw);
         }
         if (this.recentlyEliminatedPlayers.length > 0) {
           const eliminated = this.recentlyEliminatedPlayers[0];
           const eliminatedName = eliminated.display_name || eliminated.user_id;
-          return eliminatedName + ' ist raus. Noch ' + this.remainingPlayerCount + ' Spieler im Spiel.';
+          return t('learning', '{name} ist raus. Noch im Spiel: {n}', { name: eliminatedName, n: this.remainingPlayerCount }, undefined, raw);
         }
-        return name1 + ' fuehrt mit ' + (leader.lives || 0) + ' Leben.';
+        return t('learning', '{name} führt. Verbleibende Leben: {n}', { name: name1, n: leader.lives || 0 }, undefined, raw);
       }
       const leader = this.sortedPlayers[0];
       const name1 = leader.display_name || leader.user_id;
@@ -1585,16 +1587,16 @@ export default {
         const runner = this.sortedPlayers[1];
         const name2 = runner.display_name || runner.user_id;
         const gap = leader.score - runner.score;
-        if (gap <= 50) return name2 + ' ist dicht dran an ' + name1 + '!';
-        if (gap > 200) return name1 + ' dominiert!';
-        return name1 + ' fuehrt mit ' + gap + ' Punkten Vorsprung!';
+        if (gap <= 50) return t('learning', '{name2} ist dicht dran an {name1}!', { name1, name2 }, undefined, raw);
+        if (gap > 200) return t('learning', '{name} dominiert!', { name: name1 }, undefined, raw);
+        return t('learning', '{name} führt. Vorsprung in Punkten: {n}', { name: name1, n: gap }, undefined, raw);
       }
-      return name1 + ' fuehrt!';
+      return t('learning', '{name} führt!', { name: name1 }, undefined, raw);
     },
 
     buildAnswerMessage(correct) {
-      const positives = ['Richtig! Weiter so!', 'Perfekt!', 'Genau richtig!', 'Stark!'];
-      const negatives = ['Knapp daneben!', 'Leider falsch!', 'Das war nichts!', 'Nicht ganz!'];
+      const positives = [t('learning', 'Richtig! Weiter so!'), t('learning', 'Perfekt!'), t('learning', 'Genau richtig!'), t('learning', 'Stark!')];
+      const negatives = [t('learning', 'Knapp daneben!'), t('learning', 'Leider falsch!'), t('learning', 'Das war nichts!'), t('learning', 'Nicht ganz!')];
       const arr = correct ? positives : negatives;
       return arr[Math.floor(Math.random() * arr.length)];
     },

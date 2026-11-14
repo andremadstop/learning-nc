@@ -169,6 +169,7 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { formatLocalDate } from '../utils/relativeTime.js'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import { parseDocumentsResponse } from '../utils/courseMaterials.js'
 
@@ -420,7 +421,7 @@ export default {
 
 		formatDate(timestamp) {
 			if (!timestamp) return '-'
-			return new Date(timestamp * 1000).toLocaleDateString('de-DE')
+			return formatLocalDate(timestamp)
 		},
 	},
 }

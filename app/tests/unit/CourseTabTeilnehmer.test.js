@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
 import axios from '@nextcloud/axios'
 
@@ -59,6 +59,7 @@ vi.mock('../../src/components/CourseMemberPicker.vue', () => ({
 }))
 
 import CourseTabTeilnehmer from '../../src/components/CourseTabTeilnehmer.vue'
+import { setTestLanguage, translate as catalogueTranslate } from './support/l10nCatalog.js'
 
 globalThis.t = (app, text, vars = {}) => {
 	return Object.entries(vars).reduce((acc, [key, value]) => acc.replace(`{${key}}`, String(value)), text)
@@ -346,5 +347,46 @@ describe('CourseTabTeilnehmer classbook role (GitHub #35)', () => {
 		expect(await classbookRole({
 			course: { is_instructor: true, mode_config: { course_summary: false } }, userRole: 'student', actsAsInstructor: true,
 		})).toBe('instructor')
+	})
+})
+
+// Audit #154: the at-risk reasons were German sentences, rendered as they came for every reader.
+describe('CourseTabTeilnehmer at-risk reasons', () => {
+	const passthrough = globalThis.t
+	afterEach(() => {
+		globalThis.t = passthrough
+		setTestLanguage('de')
+	})
+
+	it('translates the reason codes into the reader\'s language', () => {
+		globalThis.t = catalogueTranslate
+		setTestLanguage('en')
+		const instance = createInstance()
+		const labels = instance.riskReasonLabels({
+			risk_reasons: ['Inaktiv seit 12 Tagen', 'Nur 0 Sessions in 14 Tagen'],
+			risk_reason_codes: [
+				{ code: 'inactive_days', n: 12 },
+				{ code: 'never_active' },
+				{ code: 'low_accuracy', n: 40 },
+				{ code: 'critical_cards', n: 11 },
+				{ code: 'box_one_share', n: 70 },
+				{ code: 'streak_lost', n: 9 },
+				{ code: 'few_sessions', n: 0 },
+			],
+		})
+		expect(labels).toEqual([
+			'Inactive for 12 days',
+			'Never active',
+			'Accuracy 40%',
+			'Critical cards: 11',
+			'70% of cards in box 1',
+			'Streak lost (was 9)',
+			'Sessions in 14 days: 0',
+		])
+	})
+
+	it('falls back to the German sentences of a server without codes', () => {
+		const instance = createInstance()
+		expect(instance.riskReasonLabels({ risk_reasons: ['Inaktiv seit 9 Tagen'] })).toEqual(['Inaktiv seit 9 Tagen'])
 	})
 })

@@ -21,7 +21,9 @@ use OCA\Learning\Service\RagContextService;
 use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TelosService;
 use OCP\IConfig;
+use OCP\IL10N;
 use OCP\IRequest;
+use OCP\L10N\IFactory;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -76,6 +78,10 @@ class VirtuProfControllerTest extends TestCase {
     private $questionMock;
     /** @var LlmGateway&\PHPUnit\Framework\MockObject\MockObject */
     private $gatewayMock;
+    /** @var IFactory&\PHPUnit\Framework\MockObject\MockObject */
+    private $l10nFactoryMock;
+    /** @var list<string|null> languages the controller asked the l10n factory for */
+    private array $l10nLanguages = [];
     /** what LlmGateway::begin() throws; null = it returns a session */
     private ?\Throwable $beginError = null;
     /** @var list<LlmSession> sessions begin() handed out */
@@ -95,6 +101,16 @@ class VirtuProfControllerTest extends TestCase {
         $this->poolMock = $this->createMock(PoolService::class);
         $this->questionMock = $this->createMock(QuestionService::class);
         $this->gatewayMock = $this->createMock(LlmGateway::class);
+        // A translation that shows which language was asked for: "[fr] <source text>".
+        $this->l10nFactoryMock = $this->createMock(IFactory::class);
+        $this->l10nFactoryMock->method('get')->willReturnCallback(function (string $app, ?string $lang = null): IL10N {
+            $this->l10nLanguages[] = $lang;
+            $l = $this->createMock(IL10N::class);
+            $l->method('t')->willReturnCallback(
+                fn(string $text, $params = []): string => '[' . ($lang ?? 'user') . '] ' . vsprintf($text, (array)$params)
+            );
+            return $l;
+        });
         $this->gatewayMock->method('begin')->willReturnCallback(function (?string $uid, LlmPurpose $purpose): LlmSession {
             if ($this->beginError !== null) {
                 throw $this->beginError;
@@ -125,7 +141,8 @@ class VirtuProfControllerTest extends TestCase {
             $this->courseMock,
             $this->poolMock,
             $this->questionMock,
-            $this->gatewayMock
+            $this->gatewayMock,
+            $this->l10nFactoryMock
         );
     }
 
@@ -661,5 +678,85 @@ class VirtuProfControllerTest extends TestCase {
         $resp = $this->makeController('user-A')->interviewTurn([['question' => 'q', 'answer' => 'a']], 2);
 
         $this->assertSame(503, $resp->getStatus());
+    }
+
+    /** AI on, consent given, every context id accessible, and the given VirtuProf language. */
+    private function enableAiForFileIntents(string $virtuProfLanguage): void {
+        $this->configMock->method('getAppValue')
+            ->willReturnCallback(fn(string $app, string $key, string $default = ''): string
+                => $key === 'ai_enabled' ? 'yes' : $default);
+        $this->geminiMock->method('isAvailable')->willReturn(true);
+        $this->configMock->method('getUserValue')
+            ->willReturnCallback(fn(string $u, string $a, string $k, string $d = ''): string
+                => $k === 'virtuprof_language' ? $virtuProfLanguage : $d);
+        $this->telosMock->method('hasAiConsent')->willReturn(true);
+        $this->courseMock->method('findById')->willReturn(['id' => 7]);
+        $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
+    }
+
+    /**
+     * Audit #59: the fullscreen chip sent its label in the user's language ("Créer un résumé"),
+     * which the German/English keyword match did not know, so a French user got an LLM answer
+     * instead of the summary. The chip now names its intent, and the controller reads it.
+     */
+    public function testSummaryChipInFrenchCreatesTheSummaryThroughItsIntent(): void {
+        $this->enableAiForFileIntents('fr');
+        $this->noteGenMock->expects($this->once())->method('generateSummary')
+            ->with('user-A', 5, 7)
+            ->willReturn(['path' => '/Learning/Zusammenfassung.md']);
+        $this->geminiMock->expects($this->never())->method('chat');
+
+        $resp = $this->makeController('user-A')->chat('Créer un résumé', 5, 7, null, null, null, 'summary');
+
+        $data = $resp->getData();
+        $this->assertSame('file_created', $data['action'] ?? null);
+        $this->assertSame('/Learning/Zusammenfassung.md', $data['path'] ?? null);
+        // Audit #147: the confirmation is in the VirtuProf language, not fixed German
+        $this->assertSame('[fr] Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.', $data['answer']);
+    }
+
+    public function testAnIntentOutsideTheWhitelistIsIgnored(): void {
+        $this->enableAiForFileIntents('');
+        $this->noteGenMock->expects($this->never())->method('generateSummary');
+        $this->lernplanMock->expects($this->never())->method('generateWeeklyPlan');
+        $this->lernplanMock->expects($this->never())->method('generateFortschritt');
+        $this->ragMock->method('buildContext')->willReturn([]);
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->questionMock->method('isExamActiveOnPool')->willReturn(false);
+        $this->geminiMock->expects($this->once())->method('chat')
+            ->willReturn(['answer' => 'llm', 'fallback' => false, 'reason' => '']);
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5, 7, null, null, null, 'delete_everything');
+
+        $this->assertSame('llm', $resp->getData()['answer']);
+    }
+
+    public function testTypedGermanLearningPlanStillWorksAndAnswersInTheUserLanguage(): void {
+        $this->enableAiForFileIntents('');
+        $this->lernplanMock->expects($this->once())->method('generateWeeklyPlan')
+            ->willReturn(['path' => '/Learning/Lernplan.md']);
+
+        $resp = $this->makeController('user-A')->chat('bitte lernplan erstellen', null, 7);
+
+        // no VirtuProf language set: the user's Nextcloud language (factory gets null)
+        $this->assertSame([null], $this->l10nLanguages);
+        $this->assertSame('[user] Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.', $resp->getData()['answer']);
+    }
+
+    /** Audit #147: the ticket confirmation was fixed German with a pointer to a menu learners lack. */
+    public function testTicketConfirmationIsInTheVirtuProfLanguage(): void {
+        $this->enableAiForFileIntents('uk');
+        $ticket = new \OCA\Learning\Db\SupportTicket();
+        $ticket->setId(41);
+        $this->ticketMock->expects($this->once())->method('create')->willReturn($ticket);
+
+        $resp = $this->makeController('user-A')->chat('ich möchte einen fehler melden: der timer läuft rückwärts');
+
+        $this->assertSame(
+            '[uk] Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#41). Dein Dozent oder Admin wird sich darum kümmern.',
+            $resp->getData()['answer']
+        );
+        $this->assertSame(41, $resp->getData()['ticket_id']);
     }
 }

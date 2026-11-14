@@ -36,16 +36,21 @@
 import CharacterAvatar from './CharacterAvatar.vue'
 import { getCharacter } from '../data/characters.js'
 
-const EMOTION_LABELS = {
-	idle: 'ruhig',
-	thinking: 'nachdenklich',
-	explain: 'erklaerend',
-	alert: 'wachsam',
-	celebrate: 'begeistert',
-	confused: 'verwirrt',
-	frustrated: 'frustriert',
-	relieved: 'erleichtert',
-	impressed: 'beeindruckt',
+// Resolved at render time through t(); the German literals ('erklaerend') stayed German in every
+// language (audit #182).
+function emotionLabelText(emotion) {
+	switch (emotion) {
+	case 'idle': return t('learning', 'ruhig')
+	case 'thinking': return t('learning', 'nachdenklich')
+	case 'explain': return t('learning', 'erklärend')
+	case 'alert': return t('learning', 'wachsam')
+	case 'celebrate': return t('learning', 'begeistert')
+	case 'confused': return t('learning', 'verwirrt')
+	case 'frustrated': return t('learning', 'frustriert')
+	case 'relieved': return t('learning', 'erleichtert')
+	case 'impressed': return t('learning', 'beeindruckt')
+	default: return null
+	}
 }
 
 export default {
@@ -87,7 +92,7 @@ export default {
 		},
 
 		emotionLabel() {
-			return EMOTION_LABELS[this.emotion] || this.emotion
+			return emotionLabelText(this.emotion) || this.emotion
 		},
 
 		emotionTagStyle() {

@@ -1,8 +1,8 @@
 <template>
 	<div class="terminal-puzzle">
 		<div class="terminal-puzzle__objective">
-			<span class="terminal-puzzle__objective-label">OBJECTIVE:</span>
-			{{ effectiveScenario.objective || 'Complete the terminal challenge.' }}
+			<span class="terminal-puzzle__objective-label">{{ t('learning', 'OBJECTIVE:') }}</span>
+			{{ effectiveScenario.objective || t('learning', 'Complete the terminal challenge.') }}
 		</div>
 
 		<div ref="outputArea" class="terminal-puzzle__output">
@@ -34,7 +34,7 @@
 		</div>
 
 		<div v-if="finished" class="terminal-puzzle__status" :class="solved ? 'terminal-puzzle__status--success' : 'terminal-puzzle__status--fail'">
-			{{ solved ? (effectiveScenario.success_message || 'Puzzle solved.') : 'Max attempts reached. Mission failed.' }}
+			{{ solved ? (effectiveScenario.success_message || t('learning', 'Puzzle solved.')) : t('learning', 'Max attempts reached. Mission failed.') }}
 		</div>
 	</div>
 </template>

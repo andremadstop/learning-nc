@@ -49,15 +49,9 @@ export default {
   },
 
   computed: {
-    lang() {
-      const docLang = (typeof document !== 'undefined' && document.documentElement.lang) || 'de'
-      return docLang.slice(0, 2).toLowerCase()
-    },
+    // through the catalogue: the per-language literals left fr and uk with the German question (audit #197)
     question() {
-      if (this.lang === 'en') return 'How many bits in a byte?'
-      if (this.lang === 'ar') return '\u0643\u0645 \u0628\u062A \u0641\u064A \u0627\u0644\u0628\u0627\u064A\u062A\u061F'
-      if (this.lang === 'ru') return '\u0421\u043A\u043E\u043B\u044C\u043A\u043E \u0431\u0438\u0442 \u0432 \u0431\u0430\u0439\u0442\u0435?'
-      return 'Wie viele Bits hat ein Byte?'
+      return t('learning', 'Wie viele Bits hat ein Byte?')
     },
     options() {
       return [6, 8, 10, 16]

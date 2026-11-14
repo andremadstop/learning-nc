@@ -32,6 +32,7 @@
           <textarea
             :id="'question-scenario-' + language.key"
             v-model="questionTranslations[language.key].scenario"
+            :dir="language.dir"
             rows="3"
             :maxlength="scenarioMaxLength"
             class="nc-input"
@@ -44,6 +45,7 @@
           <textarea
             :id="'question-text-' + language.key"
             v-model="questionTranslations[language.key].text"
+            :dir="language.dir"
             rows="3"
             class="nc-input"
             :placeholder="t('learning', 'Leave empty to use original text')"
@@ -55,6 +57,7 @@
           <textarea
             :id="'question-explanation-' + language.key"
             v-model="questionTranslations[language.key].explanation"
+            :dir="language.dir"
             rows="2"
             class="nc-input"
             :placeholder="t('learning', 'Leave empty to use original explanation')"
@@ -69,6 +72,7 @@
             <input
               :id="'answer-' + answer.id + '-' + language.key"
               v-model="answerTranslations[answer.id][language.key]"
+              :dir="language.dir"
               type="text"
               class="nc-input"
               :placeholder="t('learning', 'Leave empty to use original answer')"
@@ -111,15 +115,19 @@ export default {
       loading: true,
       saving: false,
       error: '',
+      // The content languages TranslationService::ALLOWED_LANGS accepts. Arabic was missing, so
+      // its translations were loaded and skipped, and nobody could see or correct them (audit #190).
       languages: [
         { key: 'de', label: t('learning', 'German (Deutsch)') },
         { key: 'en', label: t('learning', 'English') },
         { key: 'ru', label: t('learning', 'Russian') },
+        { key: 'ar', label: t('learning', 'Arabic'), dir: 'rtl' },
       ],
       questionTranslations: {
         de: { text: '', explanation: '', scenario: '' },
         en: { text: '', explanation: '', scenario: '' },
         ru: { text: '', explanation: '', scenario: '' },
+        ar: { text: '', explanation: '', scenario: '' },
       },
       answerTranslations: {},
       existingQuestionTranslations: {},
@@ -140,7 +148,7 @@ export default {
     initializeAnswerState() {
       const answers = Array.isArray(this.question.answers) ? this.question.answers : []
       answers.forEach(answer => {
-        this.answerTranslations[answer.id] = { de: '', en: '', ru: '' }
+        this.answerTranslations[answer.id] = Object.fromEntries(this.languages.map(language => [language.key, '']))
         this.existingAnswerTranslations[answer.id] = {}
       })
     },

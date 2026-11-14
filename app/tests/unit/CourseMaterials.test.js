@@ -33,7 +33,7 @@ vi.mock('@nextcloud/axios', () => ({
 vi.mock('@nextcloud/router', () => ({
 	generateUrl: vi.fn((url, params = {}) => Object.entries(params).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(String(v)), url)),
 }))
-vi.mock('@nextcloud/l10n', () => ({ translate: (_app, text) => text }))
+vi.mock('@nextcloud/l10n', () => ({ translate: (_app, text) => text, getCanonicalLocale: () => 'de-DE', getLanguage: () => 'de' }))
 vi.mock('@nextcloud/dialogs', () => ({
 	getFilePickerBuilder: vi.fn((title) => {
 		const config = { title }
