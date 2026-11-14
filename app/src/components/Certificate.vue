@@ -11,7 +11,7 @@
 
 		<template v-else-if="fields">
 			<!-- Printable card: signed (frozen) fields render as-is; only chrome is localized. -->
-			<div class="certificate-printable">
+			<div ref="printable" class="certificate-printable">
 				<div class="certificate-card">
 					<div class="certificate-brand">
 						<img
@@ -98,6 +98,7 @@ import {
 	buildLinkedInUrl,
 } from '../utils/certificate-credential.js'
 import qrcode from '../utils/qrcode-generator.js'
+import { printCertificate, removeCertificatePrintCopy } from '../utils/certificatePrint.js'
 
 export default {
 	name: 'Certificate',
@@ -148,6 +149,10 @@ export default {
 		this.load()
 	},
 
+	unmounted() {
+		removeCertificatePrintCopy()
+	},
+
 	methods: {
 		async load() {
 			this.loading = true
@@ -180,8 +185,9 @@ export default {
 			}
 		},
 
+		// GitHub #41: print a copy outside the modal, which clipped the card to its own box.
 		print() {
-			window.print()
+			return printCertificate(this.$refs.printable || null)
 		},
 
 		download() {
@@ -330,7 +336,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	text-align: left;
+	text-align: start;
 }
 
 .certificate-verify-url {
@@ -367,43 +373,60 @@ export default {
 </style>
 
 <style>
-/* Print stylesheet (CERT-07): isolate the certificate card so window.print() yields a
-   clean certificate with no app chrome. The visibility trick works regardless of the
-   modal's DOM nesting (NcModal teleports to <body>). */
+/* Print stylesheet (CERT-07, GitHub #41). print() copies the card into
+   #learning-certificate-print-root directly under <body> and sets
+   html.learning-certificate-printing; only then does printing show the copy and nothing else.
+   Printing the card inside NcModal clipped it to the modal box (almost empty sheet), and the
+   old unscoped `body * { visibility: hidden }` also blanked every other print in the app. */
 @page {
 	size: A4;
 	margin: 18mm;
 }
 
+#learning-certificate-print-root {
+	display: none;
+}
+
 @media print {
-	body * {
-		visibility: hidden;
+	html.learning-certificate-printing,
+	html.learning-certificate-printing body {
+		height: auto !important;
+		min-height: 0 !important;
+		overflow: visible !important;
+		background: #fff !important;
 	}
 
-	.certificate-printable,
-	.certificate-printable * {
-		visibility: visible;
+	html.learning-certificate-printing body > *:not(#learning-certificate-print-root) {
+		display: none !important;
 	}
 
-	.certificate-printable {
-		position: absolute;
-		left: 0;
-		top: 0;
+	/* Paper is white in every theme: a dark-mode card would print light text on no background. */
+	html.learning-certificate-printing #learning-certificate-print-root {
+		display: block !important;
+		position: static;
 		width: 100%;
+		--color-main-background: #fff;
+		--color-main-text: #000;
+		--color-text-maxcontrast: #555;
+		--color-border: #ccc;
+		color: #000;
+		background: #fff;
 	}
 
 	/* Certificate-grade geometry: card fits the A4 printable area (210mm minus 2x18mm margin = 174mm); */
 	/* border-box keeps the 32px padding INSIDE max-width so the outer box cannot overflow the page. */
-	.certificate-card {
+	#learning-certificate-print-root .certificate-card {
 		box-sizing: border-box;
 		max-width: 165mm;
 		margin: 0 auto;
 		box-shadow: none;
 		border: 1px solid #ccc;
+		break-inside: avoid;
+		page-break-inside: avoid;
 	}
 
 	/* Guaranteed scannable QR at a fixed physical size (not pixel-dependent). */
-	.certificate-qr {
+	#learning-certificate-print-root .certificate-qr {
 		width: 30mm;
 		height: 30mm;
 	}
