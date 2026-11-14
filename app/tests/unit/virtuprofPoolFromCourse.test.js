@@ -9,7 +9,7 @@
  *
  * Runs the real App.vue payload, the modes' real question watchers and VirtuProf's merge.
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
 vi.hoisted(() => {
@@ -102,6 +102,14 @@ function modeContext(name, Mode, store, courseId) {
 const pool = { mainView: 'pools', currentView: 'questions', mode: 'training', selectedPool: { name: 'P' } }
 
 describe('VirtuProf: a pool opened from a course, with a question on screen (GitHub #40)', () => {
+	// The first dynamic import transforms App.vue with its whole component tree. That alone
+	// takes close to the 5 s test timeout and runs over it under the parallel pre-commit run, so
+	// the modules are loaded once here with room to spare.
+	beforeAll(async () => {
+		setActivePinia(createPinia())
+		await load()
+	}, 60000)
+
 	beforeEach(() => {
 		setActivePinia(createPinia())
 	})
