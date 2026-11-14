@@ -286,4 +286,96 @@ class GeminiServiceGatewayTest extends TestCase {
         $this->assertNotCount(0, $this->logRecords, 'the flag is still logged');
         $this->assertLogCarriesNoMarker();
     }
+
+    /** @return array<string, array{string}> */
+    public static function ordinaryTutorAnswers(): array {
+        $pw = 'pass' . 'word';
+        return [
+            'select in english prose' => ['Select option B because a VLAN separates broadcast domains.'],
+            'selected / selection' => ['You selected the right subnet; the selection of /26 gives 62 hosts.'],
+            'sql injection shown in a code block' => ["The input `' OR 1=1 --` turns the query into:\n```sql\nSELECT * FROM users WHERE name = '' OR 1=1 --'\n```\nUse prepared statements."],
+            'xss explained in inline code' => ['Reflected XSS injects `<script>alert(1)</script>` into the page; encode output to prevent it.'],
+            'placeholder value' => ["Change the default before go-live: {$pw}: <new value>."],
+            'short textbook value' => ["Many routers ship with {$pw} = admin123, which attackers try first."],
+            'key placeholder' => ['Put it into the config as api_key: [your key] and never commit it.'],
+        ];
+    }
+
+    /**
+     * Audit #24: the blocklist matched the word 'select' anywhere, every '<script' and every
+     * 'password:', so ordinary English answers and core Security+ explanations were discarded.
+     */
+    #[DataProvider('ordinaryTutorAnswers')]
+    public function testOrdinaryTutorAnswersAreNotBlocked(string $answer): void {
+        $this->gateway->method('begin')->willReturnCallback(static fn (string $uid, LlmPurpose $p) => self::session($uid, $p));
+        $this->gateway->method('send')->willReturn(new LlmResult($answer, 1, 1, 'm'));
+
+        $result = $this->service()->chat('Explain it', 'alice');
+
+        $this->assertNull($result['reason'] ?? null, 'blocked: ' . $answer);
+        $this->assertSame($answer, $result['answer']);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function realLeaks(): array {
+        $pw = 'pass' . 'word';
+        return [
+            'sql statement in prose' => ['Run SELECT hash FROM oc_users to see them.'],
+            'table removal in prose' => ['Then ' . 'DROP' . ' TABLE oc_learning_pools and start over.'],
+            'script tag in prose' => ['<script>fetch("/x")</script>'],
+            'php open tag' => ['<?php echo 1; ?>'],
+            'concrete value' => ["The admin login is {$pw}: " . str_repeat('Kx9!', 4)],
+            'concrete key' => ['api_key=AIza' . str_repeat('Qw7e', 9)],
+        ];
+    }
+
+    #[DataProvider('realLeaks')]
+    public function testRealLeaksAreStillBlocked(string $answer): void {
+        $this->gateway->method('begin')->willReturnCallback(static fn (string $uid, LlmPurpose $p) => self::session($uid, $p));
+        $this->gateway->method('send')->willReturn(new LlmResult($answer, 1, 1, 'm'));
+
+        $this->assertSame('output_blocked', $this->service()->chat('Explain it', 'alice')['reason'] ?? null);
+    }
+
+    /** @return \ArrayObject<int, LlmRequest> */
+    private function captureRequests(): \ArrayObject {
+        $sent = new \ArrayObject();
+        $this->gateway->method('begin')->willReturnCallback(static fn (string $uid, LlmPurpose $p) => self::session($uid, $p));
+        $this->gateway->method('send')->willReturnCallback(function (LlmSession $s, LlmRequest $r) use ($sent) {
+            $sent->append($r);
+            return new LlmResult('Hallo!', 1, 1, 'm');
+        });
+        return $sent;
+    }
+
+    /**
+     * Audit #53: the prompt carried ~27,000 characters of devcloud course paths
+     * ('Dozenten-Material > …') on every instance, although that server is gone.
+     */
+    public function testTheChatPromptCarriesNoDevcloudMaterialList(): void {
+        $sent = $this->captureRequests();
+        $this->service()->chat('Was ist ein VLAN?', 'alice');
+
+        $this->assertCount(1, $sent);
+        $this->assertStringNotContainsString('Dozenten-Material', $sent[0]->systemPrompt);
+        $this->assertStringNotContainsString('LEARNING MATERIALS', $sent[0]->systemPrompt);
+        $this->assertStringNotContainsString('automatically create a support ticket', $sent[0]->systemPrompt,
+            'audit #16: the chat no longer files tickets for problem descriptions, the prompt must not promise one');
+    }
+
+    /**
+     * Audit #161: a French user got an English prompt ('Respond in English') with the German
+     * question list. Now: the English list, and the model is asked to answer in French.
+     */
+    public function testTheFrenchInterviewUsesTheEnglishListAndAsksForFrench(): void {
+        $sent = $this->captureRequests();
+        $this->service()->generateInterviewTurn([['question' => 'Q', 'answer' => 'A']], 2, 'alice', 'fr');
+
+        $this->assertCount(1, $sent);
+        $prompt = $sent[0]->systemPrompt;
+        $this->assertStringContainsString('How long have you already been working with IT or networking?', $prompt);
+        $this->assertStringNotContainsString('Wie lange arbeitest du schon', $prompt);
+        $this->assertStringContainsString('Respond in French', $prompt);
+        $this->assertStringNotContainsString('Respond in English', $prompt);
+    }
 }
