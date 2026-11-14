@@ -40,9 +40,10 @@ function badgeLabel(badge) {
  * @param {object} [options]
  * @param {boolean} [options.gamificationEnabled] - false leaves out XP, level, streak, badges and duels (GitHub #36)
  * @param {boolean} [options.leitnerEnabled] - false leaves out the mastery (cards in Leitner box 5)
+ * @param {boolean} [options.aiEnabled] - false leaves out the swarm contributions, as the view does (GitHub #36)
  * @returns {string} Markdown content
  */
-export function summaryToMarkdown(summary, courseName, userName, { gamificationEnabled = true, leitnerEnabled = true } = {}) {
+export function summaryToMarkdown(summary, courseName, userName, { gamificationEnabled = true, leitnerEnabled = true, aiEnabled = true } = {}) {
 	const gamification = gamificationEnabled !== false
 	const lines = []
 	const date = formatDate(new Date())
@@ -96,9 +97,10 @@ export function summaryToMarkdown(summary, courseName, userName, { gamificationE
 		lines.push('')
 	}
 
-	// Swarm
+	// Swarm. GitHub #36: the swarm feeds the AI assistant; without AI the view shows no
+	// swarm counters, so the export leaves them out too.
 	const sw = summary.swarm || {}
-	if (sw.total_contributions > 0) {
+	if (aiEnabled !== false && sw.total_contributions > 0) {
 		lines.push(`## ${t('learning', 'Schwarmgedächtnis')}`)
 		lines.push(`- ${sw.approved_contributions || 0} / ${sw.total_contributions} ${t('learning', 'Beiträge freigegeben')}`)
 		lines.push('')

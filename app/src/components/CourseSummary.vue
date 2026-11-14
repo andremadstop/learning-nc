@@ -657,6 +657,7 @@ export default {
 			exportMarkdown(this.summary, this.courseName || this.course?.name || '', user?.displayName || user?.uid || '', {
 				gamificationEnabled: this.gamificationEnabled,
 				leitnerEnabled: this.leitnerEnabled,
+				aiEnabled: this.aiEnabled,
 			})
 		},
 

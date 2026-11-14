@@ -84,3 +84,18 @@ describe('edge cases', () => {
 		expect(md).not.toContain('Abzeichen')
 	})
 })
+
+// GitHub #36: the view hides the swarm counters without AI; the export must not disagree.
+describe('swarm section and the AI switch', () => {
+	it('leaves out the swarm section with AI off', () => {
+		const md = summaryToMarkdown(mockSummary, 'Security+', 'Andre', { aiEnabled: false })
+		expect(md).not.toContain('Schwarmgedächtnis')
+		expect(md).not.toContain('Beiträge freigegeben')
+	})
+
+	it('keeps the swarm section with AI on', () => {
+		const md = summaryToMarkdown(mockSummary, 'Security+', 'Andre', { aiEnabled: true })
+		expect(md).toContain('## Schwarmgedächtnis')
+		expect(md).toContain('3 / 5 Beiträge freigegeben')
+	})
+})
