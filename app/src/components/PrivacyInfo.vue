@@ -103,9 +103,10 @@
 
 		<h4>{{ t('learning', 'Deine Rechte') }}</h4>
 		<ul class="privacy-info__rights">
-			<li v-for="right in rights" :key="right.name">
+			<li v-for="right in rights" :key="right.id">
 				<strong>{{ right.name }}</strong>
-				<span v-if="right.article">({{ right.article }})</span>
+				<!-- the space lives inside the span: the compiler drops the line break between the tags (#38) -->
+				<span v-if="right.article"> ({{ right.article }})</span>
 				<span v-if="right.description"> — {{ right.description }}</span>
 			</li>
 		</ul>
@@ -132,7 +133,7 @@
 <script>
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { getLanguage } from '@nextcloud/l10n'
-import { buildAiNotice, buildPrivacyCategoryGroups, getPrivacyInfoData } from '../utils/privacyInfo.js'
+import { buildAiNotice, buildPrivacyCategoryGroups, buildRights, getPrivacyInfoData } from '../utils/privacyInfo.js'
 
 export default {
 	name: 'PrivacyInfo',
@@ -199,7 +200,7 @@ export default {
 			return buildPrivacyCategoryGroups(this.privacyData, this.aiNotice?.active ? this.aiNotice.provider : '')
 		},
 		rights() {
-			return Array.isArray(this.privacyData?.rights) ? this.privacyData.rights : []
+			return buildRights()
 		},
 		hasPageLinks() {
 			return !!(this.appUrl || this.imprintUrl || this.privacyUrl)

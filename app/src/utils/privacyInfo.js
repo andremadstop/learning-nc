@@ -1,3 +1,4 @@
+import { translate as t } from '@nextcloud/l10n'
 import privacyData from '../../data/privacy-info.json'
 import consentText from '../../data/ai-consent.json'
 
@@ -148,6 +149,54 @@ export function buildPrivacyCategoryGroups(data = privacyData, provider = '') {
 		title: group.title,
 		entries: normalizedCategories.filter((category) => matchesGroup(category, group)),
 	})).filter((group) => group.entries.length > 0)
+}
+
+/**
+ * The data-subject rights the privacy page lists, in the reader's language. They used to be German
+ * entries in privacy-info.json that the page rendered without t(), so every language showed them
+ * in German (GitHub #38). The literal t() calls keep them visible to check-i18n-coverage.py.
+ *
+ * @return {Array<{id: string, name: string, article: string, description: string}>}
+ */
+export function buildRights() {
+	return [
+		{
+			id: 'access',
+			name: t('learning', 'Auskunft'),
+			article: t('learning', 'Art. {n} DSGVO', { n: 15 }),
+			description: t('learning', 'Du kannst jederzeit erfahren, welche Daten über dich gespeichert sind.'),
+		},
+		{
+			id: 'rectification',
+			name: t('learning', 'Berichtigung'),
+			article: t('learning', 'Art. {n} DSGVO', { n: 16 }),
+			description: t('learning', 'Unrichtige Daten können korrigiert werden.'),
+		},
+		{
+			id: 'erasure',
+			name: t('learning', 'Löschung'),
+			article: t('learning', 'Art. {n} DSGVO', { n: 17 }),
+			description: t('learning', 'Du kannst die Löschung deiner Daten verlangen.'),
+		},
+		{
+			id: 'restriction',
+			name: t('learning', 'Einschränkung'),
+			article: t('learning', 'Art. {n} DSGVO', { n: 18 }),
+			description: t('learning', 'Du kannst die Verarbeitung einschränken lassen.'),
+		},
+		{
+			id: 'objection',
+			name: t('learning', 'Widerspruch'),
+			article: t('learning', 'Art. {n} DSGVO', { n: 21 }),
+			description: t('learning', 'Du kannst der Verarbeitung widersprechen.'),
+		},
+		{
+			id: 'portability',
+			name: t('learning', 'Datenportabilität'),
+			article: t('learning', 'Art. {n} DSGVO', { n: 20 }),
+			description: t('learning', 'Du kannst deine Daten in einem gängigen Format erhalten.'),
+		},
+	]
 }
 
 export function getPrivacyInfoData() {

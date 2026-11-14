@@ -77,37 +77,5 @@
   "ai_notice": {
     "_comment": "The AI notice itself comes from ai-consent.json (locales.<lang>, six languages). Only the fallback for the German category texts lives here.",
     "provider_fallback": "der eingerichtete KI-Dienst"
-  },
-  "rights": [
-    {
-      "name": "Auskunft",
-      "article": "Art. 15 DSGVO",
-      "description": "Du kannst jederzeit erfahren, welche Daten über dich gespeichert sind."
-    },
-    {
-      "name": "Berichtigung",
-      "article": "Art. 16 DSGVO",
-      "description": "Unrichtige Daten können korrigiert werden."
-    },
-    {
-      "name": "Löschung",
-      "article": "Art. 17 DSGVO",
-      "description": "Du kannst die Löschung deiner Daten verlangen."
-    },
-    {
-      "name": "Einschränkung",
-      "article": "Art. 18 DSGVO",
-      "description": "Du kannst die Verarbeitung einschränken lassen."
-    },
-    {
-      "name": "Widerspruch",
-      "article": "Art. 21 DSGVO",
-      "description": "Du kannst der Verarbeitung widersprechen."
-    },
-    {
-      "name": "Datenportabilität",
-      "article": "Art. 20 DSGVO",
-      "description": "Du kannst deine Daten in einem gängigen Format erhalten."
-    }
-  ]
+  }
 }
