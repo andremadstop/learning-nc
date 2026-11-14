@@ -25,7 +25,9 @@ use OCP\IRequest;
  * STRICT ownership: every endpoint authorizes against the authenticated user id — a student
  * may list / view / download ONLY their own certificates (no IDOR). The PUBLIC verify route
  * is Phase 157 and is deliberately NOT implemented here; all routes are @NoAdminRequired and
- * owner-scoped (CSRF stays automatic in the NC framework on these GETs).
+ * owner-scoped. index/show/revoke are called through axios and keep the framework CSRF check;
+ * download() is opened by plain browser navigation, which carries no request token, so it is
+ * the one action exempt from the CSRF check (GitHub #41).
  */
 class CertificateController extends Controller {
     /** Verification ids are RFC 4122 UUIDv4 (IssuanceService::uuidv4) — reject anything else early. */
@@ -128,7 +130,15 @@ class CertificateController extends Controller {
      *
      * OPTIONAL ?format=jwt → the raw compact JWT (application/vc+jwt, .jwt) for convenience.
      *
+     * GitHub #41: the Download button navigates the browser to this URL, and a navigation carries
+     * no request token, so the framework CSRF check answered "Access forbidden – CSRF check
+     * failed". The action is a read-only GET (no state change) and stays owner-scoped through
+     * findByVerificationIdAndUserId, so skipping the CSRF check exposes nothing a forged request
+     * could change or read cross-origin. PHPDoc form on purpose: the attribute form is not
+     * honoured in this NC build (see AuditExportController).
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     public function download(string $verificationId, string $format = 'jsonld'): Response {
         if ($this->userId === null) {

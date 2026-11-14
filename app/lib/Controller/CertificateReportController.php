@@ -97,7 +97,12 @@ class CertificateReportController extends Controller {
      * CSV download of the SAME filtered set (REPORT-03): display-name only, injection-safe. Return
      * type is the Http\Response supertype because the error branches return a DataResponse.
      *
+     * GitHub #41: the export button navigates the browser here (no request token), so without
+     * the CSRF exemption the instructor got "CSRF check failed". Read-only GET; the instructor gate
+     * in getCourseReport (ForbiddenException → 403) and the rate limit stay in force.
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportCertReportCsv(int $courseId): Http\Response {
