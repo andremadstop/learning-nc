@@ -34,12 +34,15 @@
         {{ t('learning', 'Signing key generated. Certificates are now active.') }}
       </NcNoteCard>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Daily Challenge enabled') }}</label>
+      <!-- GitHub #56: the label is the switch's own slot (Nextcloud pattern: switch and label on one
+           line, and the switch gets an accessible name); help text is its description. -->
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.dailyChallengeEnabled"
           type="switch"
-          @update:model-value="form.dailyChallengeEnabled = !!$event" />
+          @update:model-value="form.dailyChallengeEnabled = !!$event">
+          {{ t('learning', 'Daily Challenge enabled') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <div class="field-row">
@@ -61,12 +64,13 @@
           max="10" />
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Gamification enabled') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.gamificationEnabled"
           type="switch"
-          @update:model-value="form.gamificationEnabled = !!$event" />
+          @update:model-value="form.gamificationEnabled = !!$event">
+          {{ t('learning', 'Gamification enabled') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <div class="field-row">
@@ -99,15 +103,14 @@
         </small>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Allow course-based instructor fallback') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.allowCourseInstructorFallback"
           type="switch"
-          @update:model-value="form.allowCourseInstructorFallback = !!$event" />
-        <small class="field-help">
-          {{ t('learning', 'If disabled (recommended), only members of the configured instructor group get global instructor privileges.') }}
-        </small>
+          :description="t('learning', 'If disabled (recommended), only members of the configured instructor group get global instructor privileges.')"
+          @update:model-value="form.allowCourseInstructorFallback = !!$event">
+          {{ t('learning', 'Allow course-based instructor fallback') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <div class="field-row">
@@ -171,18 +174,17 @@
           {{ t('learning', 'AI is globally disabled. VirtuProf chat stays hidden for all users until you choose a provider and enable the feature again.') }}
         </NcNoteCard>
 
-        <div class="field-row">
-          <label>{{ t('learning', 'Enable AI chat (VirtuProf)') }}</label>
+        <div class="switch-row">
           <NcCheckboxRadioSwitch
             :model-value="form.aiEnabled"
             :disabled="isAiProviderDisabled"
             type="switch"
-            @update:model-value="form.aiEnabled = !!$event" />
-          <small class="field-help">
-            {{ isAiProviderDisabled
+            :description="isAiProviderDisabled
               ? t('learning', 'Select a provider first. The chat remains disabled while the provider is set to Disabled.')
-              : t('learning', 'When disabled, the AI chat input is hidden for all users. When enabled, each user must give consent before their first message is sent.') }}
-          </small>
+              : t('learning', 'When disabled, the AI chat input is hidden for all users. When enabled, each user must give consent before their first message is sent.')"
+            @update:model-value="form.aiEnabled = !!$event">
+            {{ t('learning', 'Enable AI chat (VirtuProf)') }}
+          </NcCheckboxRadioSwitch>
         </div>
 
         <NcNoteCard v-if="pdfTextExtractionAvailable === false" type="warning" class="pdf-extraction-hint">

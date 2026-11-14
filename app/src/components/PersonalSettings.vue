@@ -17,23 +17,25 @@
     </div>
 
     <div v-else class="settings-form">
-      <div v-if="userRole === 'instructor'" class="field-row student-view-override">
-        <div class="student-view-override__label">
-          <label>{{ t('learning', 'Show student view') }}</label>
-          <p class="section-desc">{{ t('learning', 'Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see.') }}</p>
-        </div>
+      <!-- GitHub #56: the label is the switch's own slot (Nextcloud pattern: switch and label on one
+           line, and the switch gets an accessible name); help text is its description. -->
+      <div v-if="userRole === 'instructor'" class="switch-row student-view-override">
         <NcCheckboxRadioSwitch
           :model-value="studentViewOverride"
           type="switch"
-          @update:model-value="$emit('student-view-override-changed', !!$event)" />
+          :description="t('learning', 'Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see.')"
+          @update:model-value="$emit('student-view-override-changed', !!$event)">
+          {{ t('learning', 'Show student view') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Daily Challenge enabled') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.dailyChallengeEnabled"
           type="switch"
-          @update:model-value="form.dailyChallengeEnabled = !!$event" />
+          @update:model-value="form.dailyChallengeEnabled = !!$event">
+          {{ t('learning', 'Daily Challenge enabled') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <div class="field-row">
@@ -47,12 +49,13 @@
         </select>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Virtual assistant') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.virtuProfEnabled"
           type="switch"
-          @update:model-value="form.virtuProfEnabled = !!$event" />
+          @update:model-value="form.virtuProfEnabled = !!$event">
+          {{ t('learning', 'Virtual assistant') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <hr class="section-divider" />
@@ -60,29 +63,32 @@
       <h3>{{ t('learning', 'VirtuProf Settings') }}</h3>
       <p class="section-desc">{{ t('learning', 'Control whether VirtuProf reads answers aloud and whether push-to-talk is available in the chat bubble.') }}</p>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Speech output') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.virtuProfTtsEnabled"
           type="switch"
-          @update:model-value="form.virtuProfTtsEnabled = !!$event" />
+          @update:model-value="form.virtuProfTtsEnabled = !!$event">
+          {{ t('learning', 'Speech output') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Voice input (push-to-talk)') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.virtuProfSttEnabled"
           type="switch"
-          @update:model-value="form.virtuProfSttEnabled = !!$event" />
+          @update:model-value="form.virtuProfSttEnabled = !!$event">
+          {{ t('learning', 'Voice input (push-to-talk)') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Bot sounds') }}</label>
-        <p class="field-desc">{{ t('learning', 'Short sound cues for bot interactions') }}</p>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.botSoundsEnabled"
           type="switch"
-          @update:model-value="onBotSoundsToggle(!!$event)" />
+          :description="t('learning', 'Short sound cues for bot interactions')"
+          @update:model-value="onBotSoundsToggle(!!$event)">
+          {{ t('learning', 'Bot sounds') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <div class="field-row">
@@ -97,21 +103,23 @@
         </select>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Notifications enabled') }}</label>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.notificationsEnabled"
           type="switch"
-          @update:model-value="form.notificationsEnabled = !!$event" />
+          @update:model-value="form.notificationsEnabled = !!$event">
+          {{ t('learning', 'Notifications enabled') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
-      <div class="field-row">
-        <label>{{ t('learning', 'Extended learning statistics') }}</label>
-        <p class="field-desc">{{ t('learning', 'Show detailed FSRS intervals, stability and recall estimates in Leitner mode.') }}</p>
+      <div class="switch-row">
         <NcCheckboxRadioSwitch
           :model-value="form.fsrsDetailedStats"
           type="switch"
-          @update:model-value="form.fsrsDetailedStats = !!$event" />
+          :description="t('learning', 'Show detailed FSRS intervals, stability and recall estimates in Leitner mode.')"
+          @update:model-value="form.fsrsDetailedStats = !!$event">
+          {{ t('learning', 'Extended learning statistics') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <div class="field-row">
@@ -139,14 +147,15 @@
         </NcSelect>
       </div>
 
-      <div class="field-row lnc-a11y-toggle">
-        <label>{{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}</label>
-        <p class="field-desc">{{ t('learning', 'Stoppt Avatar-Animationen unabhängig vom Betriebssystem. Setzt OS-Bewegungspräferenzen nie ausser Kraft.') }}</p>
+      <div class="switch-row lnc-a11y-toggle">
         <!-- The label says "calm display": ON means animations OFF, so the switch shows the inverse. -->
         <NcCheckboxRadioSwitch
           :model-value="!form.animationsEnabled"
           type="switch"
-          @update:model-value="onAnimationsEnabledChange(!$event)" />
+          :description="t('learning', 'Stoppt Avatar-Animationen unabhängig vom Betriebssystem. Setzt OS-Bewegungspräferenzen nie ausser Kraft.')"
+          @update:model-value="onAnimationsEnabledChange(!$event)">
+          {{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}
+        </NcCheckboxRadioSwitch>
       </div>
 
       <!-- NcNoteCard has no action prop or event; the retry button lives in its slot (audit #104). -->
