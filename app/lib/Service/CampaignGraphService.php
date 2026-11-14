@@ -480,6 +480,15 @@ class CampaignGraphService {
             }
         }
 
+        // The edge is open only while the flag is NOT set (zero_day_rechenzentrum: configure the
+        // WAF only while it is not configured yet).
+        if (isset($conditions['requires_not_flag'])) {
+            $flag = (string)$conditions['requires_not_flag'];
+            if (!empty($stateBag['flags'][$flag])) {
+                return false;
+            }
+        }
+
         if (isset($conditions['requires_item'])) {
             $item = (string)$conditions['requires_item'];
             if (!in_array($item, $stateBag['items'] ?? [], true)) {
@@ -720,6 +729,10 @@ class CampaignGraphService {
         $state->setGraphPosition($targetNodeId);
         $state->setStateBagFromArray($newBag);
         $state->setActNumber($targetActNumber);
+        if (!empty($targetNode['is_ending'])) {
+            // The campaign list shows it as finished (audit #88); a new start resets the row
+            $state->setStatus('completed');
+        }
         $state->setUpdatedAt(time());
         $this->stateMapper->update($state);
 
@@ -816,6 +829,25 @@ class CampaignGraphService {
         }
 
         return $this->serializeState($state);
+    }
+
+    /**
+     * The user's graph campaigns: started ('in_progress') or ended on an ending node
+     * ('completed'), for the campaign list.
+     *
+     * @return list<array{campaign_id: string, status: string, act_number: int, updated_at: int}>
+     */
+    public function listUserStates(string $userId): array {
+        $rows = [];
+        foreach ($this->stateMapper->findAllByUser($userId) as $state) {
+            $rows[] = [
+                'campaign_id' => (string)$state->getCampaignId(),
+                'status' => (string)$state->getStatus(),
+                'act_number' => (int)$state->getActNumber(),
+                'updated_at' => (int)$state->getUpdatedAt(),
+            ];
+        }
+        return $rows;
     }
 
     /**

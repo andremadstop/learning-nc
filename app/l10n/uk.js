@@ -3463,5 +3463,7 @@ OC.L10N.register(
     "Ungültig" : "Недійсно",
     "rekursiv" : "рекурсивний",
     "Der Popularisierer" : "Популяризатор",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "Не вдалося запустити кампанію. Спробуйте ще раз.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Не вдалося зберегти твоє рішення. Спробуй ще раз.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

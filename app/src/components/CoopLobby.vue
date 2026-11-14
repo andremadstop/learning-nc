@@ -199,6 +199,7 @@ export default {
 				lobby: t('learning', 'Lobby'),
 				playing: t('learning', 'Läuft'),
 				finished: t('learning', 'Beendet'),
+				aborted: t('learning', 'Beendet'),
 			}
 
 			return labels[this.status] || this.status

@@ -320,7 +320,3 @@ parameters:
 			count: 1
 			path: lib/Service/StoryEngineService.php
 
-		-
-			message: "#^Call to method getName\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Platforms\\\\AbstractPlatform\\.$#"
-			count: 1
-			path: lib/Service/StreakService.php

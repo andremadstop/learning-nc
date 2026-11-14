@@ -105,7 +105,7 @@
         <h3>{{ activeScenario.title }}</h3>
         <p>{{ activeScenario.question }}</p>
         <div class="sim-tool__matches">
-          <article v-for="route in scenarioDecision.evaluatedRoutes" :key="`${route.destination}-${route.mask}-${route.gateway}`" class="sim-tool__match" :class="{ 'sim-tool__match--active': route.matched, 'sim-tool__match--winner': scenarioDecision.bestRoute && scenarioDecision.bestRoute.destination === route.destination && scenarioDecision.bestRoute.mask === route.mask }">
+          <article v-for="route in scenarioDecision.evaluatedRoutes" :key="`${route.destination}-${route.mask}-${route.gateway}`" class="sim-tool__match" :class="routeMatchClass(route)">
             <strong>{{ route.destination }}/{{ route.prefix }}</strong>
             <span>{{ route.gateway }} via {{ route.interface }}</span>
             <small>metric {{ route.metric }}</small>
@@ -220,6 +220,20 @@ export default {
     loadScenario(entry) {
       this.activeScenario = entry
       this.feedback = null
+    },
+    /**
+     * Matching and winning route of the exercise. The question is which route wins, so the
+     * highlight appears only with the feedback; before that it gave the answer away (audit #39).
+     */
+    routeMatchClass(route) {
+      const best = this.scenarioDecision?.bestRoute
+      if (!this.feedback) {
+        return {}
+      }
+      return {
+        'sim-tool__match--active': route.matched,
+        'sim-tool__match--winner': !!best && best.destination === route.destination && best.mask === route.mask,
+      }
     },
     answerScenario(optionId) {
       const correct = optionId === this.activeScenario.answer

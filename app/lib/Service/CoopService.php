@@ -22,6 +22,8 @@ class CoopService {
     private const POLL_INTERVAL_MS = 3000;
     private const PLAYER_TIMEOUT_SECONDS = 15;
     private const SESSION_STALE_SECONDS = 300;
+    /** Ended by the host or expired before the story reached an ending; never counts toward a badge. */
+    private const STATUS_ABORTED = 'aborted';
     private const VALID_CHARACTER_IDS = ['architect', 'security', 'sysadmin', 'helpdesk'];
 
     private CoopSessionMapper $sessionMapper;
@@ -183,7 +185,12 @@ class CoopService {
                 'ended_at' => $now,
             ];
 
-            $session->setStatus('finished');
+            // Ending a running or waiting session is an abort: only a story that reached its end
+            // is 'finished', and only those count toward the simulator badge. A session that
+            // already finished keeps its status (End pressed on the epilog).
+            if (!$this->isSessionClosed($session)) {
+                $session->setStatus(self::STATUS_ABORTED);
+            }
             $session->setLastHeartbeat($now);
             $session->setStateBagFromArray($stateBag);
             $this->sessionMapper->update($session);
@@ -196,7 +203,7 @@ class CoopService {
             );
         }
 
-        if ($session->getStatus() === 'finished') {
+        if ($this->isSessionClosed($session)) {
             return $this->buildStatePayload($session, $players, $this->fetchGraphState($session));
         }
 
@@ -246,7 +253,7 @@ class CoopService {
         [$session, $player, $players] = $this->loadParticipantContext($sessionId, $userId);
         $session = $this->maybeExpireAbandonedSession($session, $players);
 
-        if ($session->getStatus() === 'finished') {
+        if ($this->isSessionClosed($session)) {
             return $this->buildStatePayload($session, $players, $this->fetchGraphState($session));
         }
 
@@ -343,16 +350,22 @@ class CoopService {
                 'resolved_at' => time(),
             ];
 
+            $finished = $this->isGraphFinished($nextGraphState);
             $session->setCurrentNodeId((string)($nextGraphState['scene']['id'] ?? $session->getCurrentNodeId()));
-            $session->setStatus($this->isGraphFinished($nextGraphState) ? 'finished' : 'playing');
+            $session->setStatus($finished ? 'finished' : 'playing');
             $session->setLastHeartbeat(time());
             $session->setStateBagFromArray($nextStateBag);
             $this->sessionMapper->update($session);
             $this->voteMapper->deleteBySessionAndNode($session->getId(), $previousNodeId);
 
+            $sessionPlayers = $this->playerMapper->findBySession($session->getId());
+            if ($finished) {
+                $this->awardSessionFinished($session, $sessionPlayers);
+            }
+
             return $this->buildStatePayload(
                 $session,
-                $this->playerMapper->findBySession($session->getId()),
+                $sessionPlayers,
                 $this->decorateGraphState($nextGraphState, $nextStateBag)
             );
         } catch (\Throwable $e) {
@@ -397,8 +410,29 @@ class CoopService {
         $this->sessionMapper->update($session);
     }
 
+    /**
+     * The simulator badge counts finished coop sessions, but was only checked when a simulator
+     * inside a running session completed, so the session that reached the threshold never
+     * counted until the next one (audit #152). Checked for every player once the story reaches
+     * its end. A badge failure must not undo the finished session: the vote has been applied.
+     *
+     * @param CoopPlayer[] $players
+     */
+    private function awardSessionFinished(CoopSession $session, array $players): void {
+        foreach ($players as $player) {
+            try {
+                $this->badgeService->checkAndAward($player->getUserId(), 'simulator_complete', []);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Coop badge check failed: ' . $e->getMessage(), [
+                    'app' => 'learning',
+                    'session_id' => $session->getId(),
+                ]);
+            }
+        }
+    }
+
     private function maybeExpireAbandonedSession(CoopSession $session, array $players): CoopSession {
-        if ($session->getStatus() === 'finished') {
+        if ($this->isSessionClosed($session)) {
             return $session;
         }
 
@@ -412,11 +446,20 @@ class CoopService {
             return $session;
         }
 
-        $session->setStatus('finished');
+        // Nobody is online any more: the story did not reach its end, so this is an abort
+        $session->setStatus(self::STATUS_ABORTED);
         $session->setLastHeartbeat($now);
         $this->sessionMapper->update($session);
 
         return $session;
+    }
+
+    /**
+     * 'finished' = the story reached an ending node (counts toward the simulator badge);
+     * 'aborted' = ended by the host or expired after everyone left (does not count).
+     */
+    private function isSessionClosed(CoopSession $session): bool {
+        return in_array($session->getStatus(), ['finished', self::STATUS_ABORTED], true);
     }
 
     private function areAllPlayersReady(array $players): bool {

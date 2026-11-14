@@ -63,6 +63,42 @@ class StreakService {
     }
 
     /**
+     * The UTC days with a completed session, newest first, at most 365.
+     *
+     * The day is formed here, not in SQL: TO_CHAR(TO_TIMESTAMP()) and FROM_UNIXTIME render in the
+     * session time zone of the database connection (PostgreSQL TimeZone, MySQL time_zone), which
+     * a distro database sets to the system zone. A session at 23:30 UTC then became the next day
+     * while today and yesterday below are UTC, and the streak broke every evening (audit #30).
+     *
+     * @return list<string> Y-m-d
+     */
+    private function activityDates(string $userId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('completed_at')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->isNotNull('completed_at'))
+           ->orderBy('completed_at', 'DESC');
+
+        $dates = [];
+        $result = $qb->executeQuery();
+        try {
+            while (($row = $result->fetch()) !== false) {
+                $day = gmdate('Y-m-d', (int)$row['completed_at']);
+                if (!isset($dates[$day])) {
+                    $dates[$day] = true;
+                    if (count($dates) >= 365) {
+                        break;
+                    }
+                }
+            }
+        } finally {
+            $result->closeCursor();
+        }
+        return array_keys($dates);
+    }
+
+    /**
      * Calculate daily learning streak from completed sessions.
      *
      * @return array{current_streak: int, longest_streak: int, last_activity_date: ?string, is_active_today: bool}
@@ -79,30 +115,8 @@ class StreakService {
             ];
         }
 
-        // Get distinct dates with completed sessions (UTC)
-        $qb = $this->db->getQueryBuilder();
-        // Portable: multiply by 1.0 ensures no int truncation; works on PG, MySQL, SQLite
-        $platform = $this->db->getDatabasePlatform()->getName();
-        if ($platform === 'postgresql') {
-            $dateFn = "TO_CHAR(TO_TIMESTAMP(completed_at), 'YYYY-MM-DD')";
-        } elseif ($platform === 'sqlite') {
-            // SQLite has no FROM_UNIXTIME: /api/v1/user/state answered 500 on every SQLite install
-            $dateFn = "strftime('%Y-%m-%d', completed_at, 'unixepoch')";
-        } else {
-            $dateFn = "FROM_UNIXTIME(completed_at, '%Y-%m-%d')";
-        }
-        $qb->selectDistinct($qb->createFunction($dateFn . ' as activity_date'))
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->isNotNull('completed_at'))
-           ->orderBy('activity_date', 'DESC')
-           ->setMaxResults(365);
-
-        $result = $qb->executeQuery();
-        $rows = $result->fetchAll();
-        $result->closeCursor();
-
-        if (empty($rows)) {
+        $dates = $this->activityDates($userId);
+        if ($dates === []) {
             $freezeState = $this->getFreezeState($userId);
             return [
                 'current_streak' => 0,
@@ -114,7 +128,6 @@ class StreakService {
             ];
         }
 
-        $dates = array_map(fn($r) => $r['activity_date'], $rows);
         $today = gmdate('Y-m-d');
         $yesterday = gmdate('Y-m-d', strtotime('-1 day', strtotime($today)));
         $twoDaysAgo = gmdate('Y-m-d', strtotime('-2 day', strtotime($today)));

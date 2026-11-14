@@ -14,6 +14,7 @@ interface QuestStateBag {
 
 interface QuestEdgeConditions {
 	requires_flag?: string
+	requires_not_flag?: string
 	requires_item?: string
 	min_reputation?: Record<string, number>
 }

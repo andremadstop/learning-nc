@@ -3462,6 +3462,8 @@
         "beeindruckt": "вражено",
         "Ungültig": "Недійсно",
         "rekursiv": "рекурсивний",
-        "Der Popularisierer": "Популяризатор"
+        "Der Popularisierer": "Популяризатор",
+        "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.": "Не вдалося запустити кампанію. Спробуйте ще раз.",
+        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "Не вдалося зберегти твоє рішення. Спробуй ще раз."
     }
 }

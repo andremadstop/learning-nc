@@ -3462,6 +3462,8 @@
         "beeindruckt": "معجب",
         "Ungültig": "غير صالح",
         "rekursiv": "تكراري",
-        "Der Popularisierer": "مبسّط العلوم"
+        "Der Popularisierer": "مبسّط العلوم",
+        "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.": "تعذّر بدء الحملة. يُرجى المحاولة مرة أخرى.",
+        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "تعذّر حفظ قرارك. يُرجى المحاولة مرة أخرى."
     }
 }

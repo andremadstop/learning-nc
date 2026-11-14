@@ -67,6 +67,8 @@
 </template>
 
 <script>
+import { campaignDifficultyLabel } from '../utils/campaignDifficulty.js'
+
 const ICON_MAP = {
 	solarwinds: 'shield',
 	equifax: 'shield',
@@ -84,13 +86,6 @@ const ICON_MAP = {
 	ransomware: 'lock',
 }
 
-const DIFFICULTY_LABELS = {
-	beginner: 'Einsteiger',
-	normal: 'Normal',
-	advanced: 'Fortgeschritten',
-	expert: 'Experte',
-}
-
 export default {
 	name: 'CampaignIntro',
 
@@ -105,7 +100,7 @@ export default {
 		},
 		difficulty: {
 			type: String,
-			default: 'normal',
+			default: 'intermediate',
 		},
 	},
 
@@ -130,7 +125,7 @@ export default {
 		},
 
 		difficultyLabel() {
-			return DIFFICULTY_LABELS[this.difficulty] || this.difficulty
+			return campaignDifficultyLabel(this.difficulty)
 		},
 	},
 
@@ -236,16 +231,13 @@ export default {
 	color: var(--lnc-bg-canvas, #0a0e17);
 }
 
-.campaign-intro__badge--normal {
-	background: var(--lnc-cyan, #06b6d4);
-	color: var(--lnc-bg-canvas, #0a0e17);
-}
-
-.campaign-intro__badge--advanced {
+/* Same levels and colour order as the campaign card: Fortgeschritten amber, Experte red */
+.campaign-intro__badge--intermediate {
 	background: var(--lnc-amber, #f59e0b);
 	color: var(--lnc-bg-canvas, #0a0e17);
 }
 
+.campaign-intro__badge--advanced,
 .campaign-intro__badge--expert {
 	background: var(--lnc-danger, #ef4444);
 	color: var(--lnc-text-primary, #e8ecf4);

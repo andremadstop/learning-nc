@@ -3463,5 +3463,7 @@ OC.L10N.register(
     "Ungültig" : "Invalid",
     "rekursiv" : "recursive",
     "Der Popularisierer" : "The Science Communicator",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "The campaign could not be started. Please try again.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Your decision could not be saved. Please try again.",
 },
 "nplurals=2; plural=(n != 1);");

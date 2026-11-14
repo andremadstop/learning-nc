@@ -3463,5 +3463,7 @@ OC.L10N.register(
     "Ungültig" : "Ungültig",
     "rekursiv" : "rekursiv",
     "Der Popularisierer" : "Der Popularisierer",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.",
 },
 "nplurals=2; plural=(n != 1);");

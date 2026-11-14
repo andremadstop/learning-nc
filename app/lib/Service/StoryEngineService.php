@@ -40,6 +40,15 @@ class StoryEngineService {
     /** @var array<string, mixed>|null */
     private ?array $campaignSchema = null;
 
+    /**
+     * readablePoolIds() per user while one scene response is built; null outside of it. Not
+     * per service instance: the instance is shared for the whole process (occ, tests), where a
+     * remembered pool list would go stale.
+     *
+     * @var array<string, list<int>>|null
+     */
+    private ?array $readablePoolIdsCache = null;
+
     private StoryProgressMapper $progressMapper;
     private IDBConnection $db;
     private LoggerInterface $logger;
@@ -103,6 +112,16 @@ class StoryEngineService {
             }
             try {
                 $data = $this->loadCampaignFile($file);
+                // loadCampaign() resolves '<campaign_id>.json'. A file whose ID differs from its
+                // name would be listed but every start would load a different file (two files
+                // with 'phishing_friday': the listed graph campaign always started the linear one).
+                if ((string)$data['campaign_id'] !== basename($file, '.json')) {
+                    $this->logger->warning('StoryEngine: skipping campaign file {file}: campaign_id {id} does not match the file name', [
+                        'file' => basename($file),
+                        'id'   => (string)$data['campaign_id'],
+                    ]);
+                    continue;
+                }
                 $campaigns[] = [
                     'campaign_id'              => $data['campaign_id'],
                     'title'                    => $data['title'],
@@ -1291,8 +1310,7 @@ class StoryEngineService {
         // negative = easier (pick from lower-index questions).
         // Implemented as a random order with an offset shift. MySQL/MariaDB call the function
         // RAND(); RANDOM() there is an SQL error and failed every campaign with a skill check.
-        $randomFn = $this->db->getDatabaseProvider() === IDBConnection::PLATFORM_MYSQL ? 'RAND()' : 'RANDOM()';
-        $qb->orderBy($qb->createFunction($randomFn))
+        $qb->orderBy($qb->createFunction($this->randomOrderFunction()))
            ->setMaxResults($count + abs($difficultyModifier) * 2);
 
         $result = $qb->executeQuery();
@@ -1328,6 +1346,19 @@ class StoryEngineService {
         }
 
         return $questions;
+    }
+
+    /**
+     * The SQL random function of the connected database: RAND() on MySQL/MariaDB,
+     * DBMS_RANDOM.VALUE on Oracle (neither knows the other's name), RANDOM() on PostgreSQL and
+     * SQLite.
+     */
+    private function randomOrderFunction(): string {
+        return match ($this->db->getDatabaseProvider()) {
+            IDBConnection::PLATFORM_MYSQL  => 'RAND()',
+            IDBConnection::PLATFORM_ORACLE => 'DBMS_RANDOM.VALUE',
+            default                        => 'RANDOM()',
+        };
     }
 
     /**
@@ -1414,6 +1445,11 @@ class StoryEngineService {
      * @return list<int>
      */
     private function readablePoolIds(string $userId): array {
+        // A scene with several skill-check choices asks once per choice; while that scene is
+        // built the answer does not change (audit #209).
+        if ($this->readablePoolIdsCache !== null && isset($this->readablePoolIdsCache[$userId])) {
+            return $this->readablePoolIdsCache[$userId];
+        }
         $ids = [];
 
         $own = $this->db->getQueryBuilder();
@@ -1461,7 +1497,11 @@ class StoryEngineService {
             $result->closeCursor();
         }
 
-        return array_keys($ids);
+        $ids = array_keys($ids);
+        if ($this->readablePoolIdsCache !== null) {
+            $this->readablePoolIdsCache[$userId] = $ids;
+        }
+        return $ids;
     }
 
     /**
@@ -1625,43 +1665,48 @@ class StoryEngineService {
 
         $choices = [];
         $offered = [];
-        foreach ($rawChoices as $choice) {
-            $safeChoice = [
-                'id'       => $choice['id'],
-                'text'     => $choice['text'],
-                'icon'     => $choice['icon'] ?? null,
-                'dynamic'  => (bool)($choice['_dynamic'] ?? false),
-            ];
+        $this->readablePoolIdsCache = [];
+        try {
+            foreach ($rawChoices as $choice) {
+                $safeChoice = [
+                    'id'       => $choice['id'],
+                    'text'     => $choice['text'],
+                    'icon'     => $choice['icon'] ?? null,
+                    'dynamic'  => (bool)($choice['_dynamic'] ?? false),
+                ];
 
-            if (!empty($choice['skill_check'])) {
-                $sc = $choice['skill_check'];
-                $diffModifier = $this->resolveCharacterDifficultyModifier(
-                    $campaign, $choice, $characterClass, $sc['pool_filter'] ?? null
-                );
-                $preloadedQuestions = $userId === null ? [] : $this->fetchFilteredQuestions(
-                    $userId,
-                    $sc['pool_filter'] ?? null,
-                    (int)($sc['question_count'] ?? 3),
-                    $diffModifier
-                );
-                $offered[(string)$choice['id']] = array_column($preloadedQuestions, 'id');
-                // If pool_filter matched no questions, treat as no skill check
-                if (empty($preloadedQuestions)) {
-                    $safeChoice['skill_check'] = null;
+                if (!empty($choice['skill_check'])) {
+                    $sc = $choice['skill_check'];
+                    $diffModifier = $this->resolveCharacterDifficultyModifier(
+                        $campaign, $choice, $characterClass, $sc['pool_filter'] ?? null
+                    );
+                    $preloadedQuestions = $userId === null ? [] : $this->fetchFilteredQuestions(
+                        $userId,
+                        $sc['pool_filter'] ?? null,
+                        (int)($sc['question_count'] ?? 3),
+                        $diffModifier
+                    );
+                    $offered[(string)$choice['id']] = array_column($preloadedQuestions, 'id');
+                    // If pool_filter matched no questions, treat as no skill check
+                    if (empty($preloadedQuestions)) {
+                        $safeChoice['skill_check'] = null;
+                    } else {
+                        $safeChoice['skill_check'] = [
+                            'pool_filter'         => $sc['pool_filter'],
+                            'question_count'      => (int)($sc['question_count'] ?? 3),
+                            'pass_threshold'      => (int)($sc['pass_threshold'] ?? 2),
+                            'difficulty_modifier' => $diffModifier,
+                            'questions'           => $preloadedQuestions,
+                        ];
+                    }
                 } else {
-                    $safeChoice['skill_check'] = [
-                        'pool_filter'         => $sc['pool_filter'],
-                        'question_count'      => (int)($sc['question_count'] ?? 3),
-                        'pass_threshold'      => (int)($sc['pass_threshold'] ?? 2),
-                        'difficulty_modifier' => $diffModifier,
-                        'questions'           => $preloadedQuestions,
-                    ];
+                    $safeChoice['skill_check'] = null;
                 }
-            } else {
-                $safeChoice['skill_check'] = null;
-            }
 
-            $choices[] = $safeChoice;
+                $choices[] = $safeChoice;
+            }
+        } finally {
+            $this->readablePoolIdsCache = null;
         }
 
         if ($progress !== null) {
@@ -1754,10 +1799,12 @@ class StoryEngineService {
     // ─── User Progress Listing ────────────────────────────────────────────────
 
     /**
-     * List all progress records for a user, enriched with campaign title.
+     * List all progress records for a user, enriched with campaign title: the linear story rows
+     * (is_graph false) and the graph campaign states (is_graph true, with act_number). The
+     * Abenteuer list lists only graph campaigns, whose progress is not in the story table
+     * (audit #88).
      *
-     * @return array<array{campaign_id: string, campaign_title: string, current_scene_id: string,
-     *                      character_class: string, score: int, status: string, updated_at: int}>
+     * @return list<array<string, mixed>>
      */
     public function listUserProgress(string $userId): array {
         $records = $this->progressMapper->findAllByUser($userId);
@@ -1772,6 +1819,19 @@ class StoryEngineService {
             }
             $result[] = array_merge($this->serializeProgress($record), [
                 'campaign_title' => $campaignTitle,
+                'is_graph'       => false,
+            ]);
+        }
+        foreach ($this->graphService->listUserStates($userId) as $state) {
+            $campaignTitle = $state['campaign_id'];
+            try {
+                $campaignTitle = $this->loadCampaign($state['campaign_id'])['title'] ?? $campaignTitle;
+            } catch (\RuntimeException $e) {
+                // Campaign file may be missing — still return the state row
+            }
+            $result[] = array_merge($state, [
+                'campaign_title' => $campaignTitle,
+                'is_graph'       => true,
             ]);
         }
         return $result;

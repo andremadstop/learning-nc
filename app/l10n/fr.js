@@ -3463,5 +3463,7 @@ OC.L10N.register(
     "Ungültig" : "Invalide",
     "rekursiv" : "récursif",
     "Der Popularisierer" : "Le Vulgarisateur",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "La campagne n’a pas pu être lancée. Réessaie.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Ta décision n’a pas pu être enregistrée. Réessaie.",
 },
 "nplurals=2; plural=(n > 1);");

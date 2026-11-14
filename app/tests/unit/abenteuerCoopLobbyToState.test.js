@@ -80,13 +80,59 @@ describe('Coop lobby -> playing transition for players who were ready first', ()
 		const vm = makeVm()
 		vm.startCoopPolling('lobby')
 		await vi.advanceTimersByTimeAsync(0)
-		// The restarted loop's immediate poll is skipped while the lobby poll is still in flight;
-		// the first /state request follows one state interval later.
-		await vi.advanceTimersByTimeAsync(1500)
 
+		// The switch polls /state at once, not one interval later: the lobby poll releases its
+		// in-flight flag before the restart (audit #89)
 		expect(vm.coopPollMode).toBe('state')
 		expect(axios.get.mock.calls.map(([u]) => u)).toContain('/apps/learning/api/v1/coop/sessions/1/state')
 		expect(vm.applyCoopStatePayload).toHaveBeenCalled()
 		vm.stopCoopPolling()
+	})
+})
+
+/**
+ * Audit #152: a session the host ended, or one that expired after everyone left, is 'aborted'
+ * (only a story that reached its end is 'finished' and counts toward the simulator badge). The
+ * client must treat 'aborted' as ended, or players stay in a lobby or scene that will never move.
+ */
+describe('Coop session aborted by the host or expired', () => {
+	// the component calls the global t() Nextcloud provides
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.stubGlobal('t', (_app, str) => str)
+	})
+	afterEach(() => {
+		vi.unstubAllGlobals()
+	})
+
+	it('the lobby payload of an aborted session ends the session', () => {
+		const vm = makeVm()
+		expect(vm.applyCoopLobbyPayload({ session: { id: 1, status: 'aborted' }, players: [] })).toBe('lobby')
+		expect(vm.handleCoopSessionEnded).toHaveBeenCalledTimes(1)
+	})
+
+	it('the state payload of an aborted session ends the session', () => {
+		const vm = {
+			...makeVm(),
+			coopSessionStatus: 'playing',
+			coopLastNodeId: 'n1',
+			currentGraphSimulator: null,
+			currentBotCorrection: null,
+			_timerExpiryTimer: null,
+			normalizeCoopScene: (scene) => ({ id: scene.id || 'n1', is_ending: Boolean(scene.is_ending) }),
+			applyCoopSharedState: vi.fn(),
+			hasCoopSimulatorProgress: () => false,
+			hasCoopBotProgress: () => false,
+		}
+		vm.applyCoopStatePayload = methods.applyCoopStatePayload.bind(vm)
+		const next = vm.applyCoopStatePayload({
+			session: { id: 1, status: 'aborted' },
+			players: [],
+			scene: { id: 'n1' },
+			available_edges: [{ id: 'e1' }],
+		})
+		expect(next).toBe('lobby')
+		expect(vm.handleCoopSessionEnded).toHaveBeenCalledTimes(1)
+		expect(vm.coopVoting).toBe(false)
 	})
 })

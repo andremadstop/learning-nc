@@ -3463,5 +3463,7 @@ OC.L10N.register(
     "Ungültig" : "غير صالح",
     "rekursiv" : "تكراري",
     "Der Popularisierer" : "مبسّط العلوم",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "تعذّر بدء الحملة. يُرجى المحاولة مرة أخرى.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "تعذّر حفظ قرارك. يُرجى المحاولة مرة أخرى.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
