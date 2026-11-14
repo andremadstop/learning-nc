@@ -134,4 +134,27 @@ class CourseModeConfigToolsTest extends TestCase {
 
         $this->assertSame(['courseId', 'modeConfig', 'talkRoomToken', 'leitnerSprint'], $names);
     }
+
+    /**
+     * Audit #63: an emptied Talk token field sends talkRoomToken ''. The controller turned it
+     * into null ("leave the token alone"), so the old token stayed although the UI said saved.
+     */
+    public function testEmptyTalkTokenClearsTheStoredToken(): void {
+        $controller = $this->controllerFor('teacher');
+        $this->course->setTalkRoomToken('abc123');
+
+        $response = $controller->updateModeConfig(7, ['training' => true], '');
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertNull($this->course->getTalkRoomToken());
+    }
+
+    public function testOmittedTalkTokenKeepsTheStoredToken(): void {
+        $controller = $this->controllerFor('teacher');
+        $this->course->setTalkRoomToken('abc123');
+
+        $controller->updateModeConfig(7, ['training' => true]);
+
+        $this->assertSame('abc123', $this->course->getTalkRoomToken());
+    }
 }

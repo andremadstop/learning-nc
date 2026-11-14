@@ -654,9 +654,8 @@ class CourseController extends Controller {
                 if ($talkRoomToken !== '' && !preg_match('/^[a-zA-Z0-9]+$/', $talkRoomToken)) {
                     return new DataResponse(['error' => 'Invalid talk room token format'], Http::STATUS_BAD_REQUEST);
                 }
-                if ($talkRoomToken === '') {
-                    $talkRoomToken = null;
-                }
+                // '' stays '': the service stores it as NULL and so clears the token. Turning it
+                // into null here meant "leave the token alone", so an emptied field never cleared it.
             }
             $config = $this->courseService->updateModeConfig($courseId, $this->userId, $modeConfig, $talkRoomToken, $leitnerSprint);
             return new DataResponse(['mode_config' => $config]);

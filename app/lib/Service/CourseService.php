@@ -2431,7 +2431,8 @@ class CourseService {
             $qb->expr()->eq('cm.user_id', 's.user_id')
         ))
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->andWhere($qb->expr()->in('cm.role', $qb->createNamedParameter(['student', 'co_instructor'], \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+        // Only learners count. 'co_instructor' was listed here but is never assigned (audit #156).
+        ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
         ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
 
@@ -2442,7 +2443,10 @@ class CourseService {
         }
         $result->closeCursor();
 
-        // Top worst questions (batched): use q.text (not q.question)
+        // Top worst questions (batched): use q.text (not q.question). Same population as the
+        // chapter query above, the students of this course: without the session and member joins
+        // it counted every answer to the pool's questions, from other courses sharing the pool
+        // and from instructors, so the two numbers contradicted each other (audit #156).
         $qb2 = $this->db->getQueryBuilder();
         $qb2->select(
             'q.id',
@@ -2452,9 +2456,15 @@ class CourseService {
             $qb2->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct')
         )
         ->from('learning_user_answers', 'ua')
+        ->innerJoin('ua', 'learning_sessions', 's', $qb2->expr()->eq('s.id', 'ua.session_id'))
         ->innerJoin('ua', 'learning_questions', 'q', $qb2->expr()->eq('ua.question_id', 'q.id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb2->expr()->eq('cp.pool_id', 'q.pool_id'))
+        ->innerJoin('cp', 'learning_course_members', 'cm', $qb2->expr()->andX(
+            $qb2->expr()->eq('cm.course_id', 'cp.course_id'),
+            $qb2->expr()->eq('cm.user_id', 's.user_id')
+        ))
         ->where($qb2->expr()->eq('cp.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+        ->andWhere($qb2->expr()->eq('cm.role', $qb2->createNamedParameter('student')))
         ->groupBy('q.id', 'q.text', 'q.chapter_key')
         ->having($qb2->createFunction('COUNT(ua.id) >= 5'))
         ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
