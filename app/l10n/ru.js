@@ -1337,6 +1337,7 @@ OC.L10N.register(
     "Persönliche Einstellungen: Lernsprache, Telos-Profil und VirtuProf-Optionen. Hier kannst du VirtuProf auch aktivieren oder deaktivieren." : "Personal settings: learning language, Telos profile and VirtuProf options. Here you can also enable or disable VirtuProf.",
     "Pflege VLAN-ID, Name, Subnetz und Gateway für dein Segment-Design." : "Укажите VLAN-ID, имя, подсеть и шлюз для вашего сегмента.",
     "Pflicht-Pools" : "Обязательные пулы",
+    "Kursbestandteile" : "Элементы курса",
     "Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition." : "Выберите пул для быстрой практики «верно/неверно». Этот режим отлично подходит для быстрого повторения и распознавания.",
     "Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often." : "Выберите пул для повторения карточек с интервальным методом. Система будет показывать сложные карточки чаще, а освоенные — реже.",
     "Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review." : "Выберите пул для симуляции экзамена. Сначала нужно пройти весь сеанс, и только потом вы увидите полный разбор.",

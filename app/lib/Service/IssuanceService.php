@@ -38,6 +38,12 @@ use Psr\Log\LoggerInterface;
  * and period close free the slot, so a re-issue stays possible.
  */
 class IssuanceService {
+    /**
+     * OB3 alignment targetType for a required pool of the course (GitHub #43). Public so the
+     * verify service reads exactly what issuance writes.
+     */
+    public const POOL_ALIGNMENT_TYPE = 'ext:LearningRequiredPool';
+
     private CertificateMapper $certificateMapper;
     private CourseMapper $courseMapper;
     private SigningService $signingService;
@@ -377,7 +383,43 @@ class IssuanceService {
             ]],
         ];
 
+        // GitHub #43: the required pools the certificate was earned on, as OB3 Alignment objects
+        // (achievement.alignment; type, targetName and targetUrl are required by OB3, targetUrl is
+        // an xsd:anyURI, targetType uses the OB3 "ext:" extension prefix). Frozen at issuance with
+        // the pool titles of that moment. Only emitted when there are such pools: a course without
+        // required pools ("any exam") keeps exactly the credential shape it had before.
+        $alignment = $this->buildPoolAlignment($result);
+        if ($alignment !== []) {
+            $credential['credentialSubject']['achievement']['alignment'] = $alignment;
+        }
+
         return $credential;
+    }
+
+    /**
+     * The required pools of a passed result as OB3 Alignment objects, in configured order.
+     * Pools without a title (deleted in the meantime) are left out.
+     *
+     * @return list<array{type: list<string>, targetType: string, targetName: string, targetUrl: string}>
+     */
+    private function buildPoolAlignment(PassResult $result): array {
+        if ($result->getRequirement() !== PassResult::REQUIREMENT_REQUIRED_POOLS) {
+            return [];
+        }
+        $alignment = [];
+        foreach ($result->getPools() as $pool) {
+            $title = trim((string)($pool['title'] ?? ''));
+            if ($title === '') {
+                continue;
+            }
+            $alignment[] = [
+                'type' => ['Alignment'],
+                'targetType' => self::POOL_ALIGNMENT_TYPE,
+                'targetName' => $title,
+                'targetUrl' => 'urn:learning:pool:' . (int)$pool['pool_id'],
+            ];
+        }
+        return $alignment;
     }
 
     /**

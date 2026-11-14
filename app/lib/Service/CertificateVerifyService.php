@@ -268,8 +268,12 @@ class CertificateVerifyService {
      * from the cert row. NEVER reads credentialSubject.name (recipient PII), and never exposes
      * user_id / key_id / credential_json / active_idem_key. Certificate::jsonSerialize() is not called.
      *
+     * course_elements (GitHub #43): the names of the required pools signed into
+     * achievement.alignment; empty for certificates issued before 5.12.0 and for courses without
+     * required pools. Course content, not recipient data.
+     *
      * @param array<string, mixed> $payload
-     * @return array{issuer_name: string, course_title: string, issued_at: int, expires_at: int|null, verification_id: string}
+     * @return array{issuer_name: string, course_title: string, course_elements: list<string>, issued_at: int, expires_at: int|null, verification_id: string}
      */
     private function projectDto(Certificate $cert, array $payload, string $vid): array {
         $issuerName = is_array($payload['issuer'] ?? null) && is_string($payload['issuer']['name'] ?? null)
@@ -286,9 +290,39 @@ class CertificateVerifyService {
         return [
             'issuer_name' => $issuerName,
             'course_title' => $courseTitle,
+            'course_elements' => self::courseElements($payload),
             'issued_at' => $cert->getIssuedAt(),
             'expires_at' => $cert->getExpiresAt(),
             'verification_id' => $vid,
         ];
+    }
+
+    /**
+     * The required-pool names signed into credentialSubject.achievement.alignment (GitHub #43),
+     * in signed order. Only alignments of IssuanceService::POOL_ALIGNMENT_TYPE count; anything
+     * malformed is skipped. A payload without the field (every certificate issued before
+     * 5.12.0) yields an empty list.
+     *
+     * @param array<string, mixed> $payload
+     * @return list<string>
+     */
+    public static function courseElements(array $payload): array {
+        $subject = $payload['credentialSubject'] ?? null;
+        $achievement = is_array($subject) ? ($subject['achievement'] ?? null) : null;
+        $alignment = is_array($achievement) ? ($achievement['alignment'] ?? null) : null;
+        if (!is_array($alignment)) {
+            return [];
+        }
+        $names = [];
+        foreach ($alignment as $entry) {
+            if (!is_array($entry)
+                || ($entry['targetType'] ?? null) !== IssuanceService::POOL_ALIGNMENT_TYPE
+                || !is_string($entry['targetName'] ?? null)
+                || trim($entry['targetName']) === '') {
+                continue;
+            }
+            $names[] = $entry['targetName'];
+        }
+        return $names;
     }
 }

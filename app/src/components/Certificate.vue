@@ -34,6 +34,18 @@
 						{{ t('learning', 'Verliehen an') }}: <strong>{{ fields.recipientName }}</strong>
 					</p>
 
+					<!-- GitHub #43: the required pools signed into the certificate; none on older ones or "any exam" courses. -->
+					<section v-if="fields.courseElements && fields.courseElements.length" class="certificate-elements">
+						<h3 class="certificate-meta-label">
+							{{ t('learning', 'Kursbestandteile') }}
+						</h3>
+						<ul class="certificate-elements-list">
+							<li v-for="(element, index) in fields.courseElements" :key="index">
+								{{ element }}
+							</li>
+						</ul>
+					</section>
+
 					<div class="certificate-meta">
 						<div v-if="fields.score !== null" class="certificate-meta-item">
 							<span class="certificate-meta-label">{{ t('learning', 'Ergebnis') }}</span>
@@ -334,6 +346,27 @@ export default {
 .certificate-recipient {
 	margin: 0;
 	color: var(--color-main-text);
+}
+
+.certificate-elements {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.certificate-elements h3 {
+	margin: 0;
+}
+
+.certificate-elements-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	color: var(--color-main-text);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .certificate-meta {

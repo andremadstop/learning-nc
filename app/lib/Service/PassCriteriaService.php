@@ -108,7 +108,9 @@ class PassCriteriaService {
                     // a crash after the cert commit but before the emit would leave a cert whose
                     // COURSE_PASSED event can NEVER be written — every later evaluate() hits the
                     // UNIQUE loser path (wasCreated=false) and skips the emit forever.
-                    $preResult = new PassResult($passed, $score, $threshold, $poolsMastered, null);
+                    // GitHub #43: the required pools travel with the result, so the certificate
+                    // names the pools it was earned on (titles as they are at issuance).
+                    $preResult = new PassResult($passed, $score, $threshold, $poolsMastered, null, true, $rule['requirement'], $rule['pools']);
                     $this->db->beginTransaction();
                     try {
                         $issueResult = $this->issuanceService->issueIfPassedResult($userId, $courseId, $preResult, $window['renewing']);

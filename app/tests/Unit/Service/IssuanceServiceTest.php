@@ -392,6 +392,42 @@ class IssuanceServiceTest extends TestCase {
         $this->assertStringContainsString('92', json_encode($payload['credentialSubject']['result']));
     }
 
+    /**
+     * GitHub #43: the required pools the certificate was earned on are signed into
+     * achievement.alignment as OB3 Alignment objects (type, targetName, targetUrl), in configured
+     * order; a pool without a title (deleted) is left out.
+     */
+    public function testRequiredPoolsAreSignedAsAchievementAlignment(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured);
+        $result = new PassResult(true, 85, 80, true, null, true, PassResult::REQUIREMENT_REQUIRED_POOLS, [
+            ['pool_id' => 12, 'title' => 'Brandschutz', 'best_score' => 90, 'passed' => true],
+            ['pool_id' => 7, 'title' => 'Erste Hilfe', 'best_score' => 85, 'passed' => true],
+            ['pool_id' => 9, 'title' => null, 'best_score' => 88, 'passed' => true],
+        ]);
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $result);
+        $this->assertNotNull($captured);
+        $payload = $this->payloadOf($captured);
+
+        $this->assertSame([
+            ['type' => ['Alignment'], 'targetType' => IssuanceService::POOL_ALIGNMENT_TYPE, 'targetName' => 'Brandschutz', 'targetUrl' => 'urn:learning:pool:12'],
+            ['type' => ['Alignment'], 'targetType' => IssuanceService::POOL_ALIGNMENT_TYPE, 'targetName' => 'Erste Hilfe', 'targetUrl' => 'urn:learning:pool:7'],
+        ], $payload['credentialSubject']['achievement']['alignment']);
+    }
+
+    /** GitHub #43: a course without required pools ("any exam") keeps the credential shape it had. */
+    public function testAnyExamCourseHasNoAlignment(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured);
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+        $this->assertNotNull($captured);
+        $payload = $this->payloadOf($captured);
+
+        $this->assertArrayNotHasKey('alignment', $payload['credentialSubject']['achievement']);
+    }
+
     public function testValidUntilOmittedWhenNoExpiry(): void {
         $captured = null;
         // 164-04: cert_validity_months=0 → computeExpiry() returns null → no validUntil.

@@ -129,6 +129,7 @@ class PublicVerifyControllerTest extends TestCase {
             'status' => 'valid',
             'issuer_name' => 'DevCloud',
             'course_title' => 'Compliance-Schulung',
+            'course_elements' => ['Brandschutz', 'Erste Hilfe'],
             'issued_at' => 1700000000,
             'expires_at' => null,
             'verification_id' => self::VID_VALID,
@@ -143,6 +144,8 @@ class PublicVerifyControllerTest extends TestCase {
         $this->assertSame('valid', $params['status']);
         $this->assertSame('DevCloud', $params['issuer_name']);
         $this->assertSame('Compliance-Schulung', $params['course_title']);
+        // GitHub #43: the signed required pools reach the public page.
+        $this->assertSame(['Brandschutz', 'Erste Hilfe'], $params['course_elements']);
         $this->assertSame(self::VID_VALID, $params['verification_id']);
         $this->assertFalse($resp->isThrottled(), 'the valid happy path must NOT be throttled');
     }
@@ -184,6 +187,7 @@ class PublicVerifyControllerTest extends TestCase {
 
         $this->assertSame('invalid', $resp->getParams()['status']);
         $this->assertArrayNotHasKey('course_title', $resp->getParams());
+        $this->assertArrayNotHasKey('course_elements', $resp->getParams());
         $this->assertArrayNotHasKey('issuer_name', $resp->getParams());
         $this->assertFalse($resp->isThrottled(), 'invalid is a rare integrity failure — not throttled');
     }

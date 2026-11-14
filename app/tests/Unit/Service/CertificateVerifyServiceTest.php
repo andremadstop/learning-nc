@@ -10,6 +10,7 @@ use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Service\AssignmentService;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\CertificateVerifyService;
+use OCA\Learning\Service\IssuanceService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\SigningService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
@@ -509,6 +510,56 @@ class CertificateVerifyServiceTest extends TestCase {
      * name, user_id, key_id, credential_json, or active_idem_key. The fixture genuinely carries
      * "Jürgen Müller" in credentialSubject.name so the assertion is not vacuous.
      */
+    /**
+     * GitHub #43: a certificate signed before 5.12.0 has no achievement.alignment. It must still
+     * verify, with no course elements.
+     */
+    public function testOldCertificateWithoutAlignmentStillValid(): void {
+        $keyService = $this->keyServiceWith();
+        $payload = $this->payload(self::VID);
+        $this->assertArrayNotHasKey('alignment', $payload['credentialSubject']['achievement']);
+        $cert = $this->certificate(self::VID, $this->signJwt($payload));
+
+        $service = $this->buildService(
+            $this->certMapperFor($cert),
+            $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
+            $keyService,
+            $this->timeAt()
+        );
+        $result = $service->verifyByVerificationId(self::VID);
+
+        $this->assertSame('valid', $result['status']);
+        $this->assertSame([], $result['course_elements']);
+    }
+
+    /**
+     * GitHub #43: a certificate with signed required pools verifies and projects their names in
+     * signed order; foreign or malformed alignments are not shown as course elements.
+     */
+    public function testSignedRequiredPoolsAreProjectedAsCourseElements(): void {
+        $keyService = $this->keyServiceWith();
+        $payload = $this->payload(self::VID);
+        $payload['credentialSubject']['achievement']['alignment'] = [
+            ['type' => ['Alignment'], 'targetType' => IssuanceService::POOL_ALIGNMENT_TYPE, 'targetName' => 'Brandschutz', 'targetUrl' => 'urn:learning:pool:12'],
+            ['type' => ['Alignment'], 'targetType' => 'CTDL', 'targetName' => 'Fremdes Framework', 'targetUrl' => 'https://example.org/x'],
+            ['type' => ['Alignment'], 'targetType' => IssuanceService::POOL_ALIGNMENT_TYPE, 'targetName' => '', 'targetUrl' => 'urn:learning:pool:3'],
+            'kaputt',
+            ['type' => ['Alignment'], 'targetType' => IssuanceService::POOL_ALIGNMENT_TYPE, 'targetName' => 'Erste Hilfe', 'targetUrl' => 'urn:learning:pool:7'],
+        ];
+        $cert = $this->certificate(self::VID, $this->signJwt($payload));
+
+        $service = $this->buildService(
+            $this->certMapperFor($cert),
+            $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
+            $keyService,
+            $this->timeAt()
+        );
+        $result = $service->verifyByVerificationId(self::VID);
+
+        $this->assertSame('valid', $result['status']);
+        $this->assertSame(['Brandschutz', 'Erste Hilfe'], $result['course_elements']);
+    }
+
     public function testDtoNoLeak(): void {
         $keyService = $this->keyServiceWith();
         $jwt = $this->signJwt($this->payload(self::VID));
@@ -535,7 +586,7 @@ class CertificateVerifyServiceTest extends TestCase {
 
         // And positively: only the allow-listed public keys are present.
         $this->assertEqualsCanonicalizing(
-            ['status', 'issuer_name', 'course_title', 'issued_at', 'expires_at', 'verification_id'],
+            ['status', 'issuer_name', 'course_title', 'course_elements', 'issued_at', 'expires_at', 'verification_id'],
             array_keys($result),
             'valid DTO exposes ONLY the allow-listed public fields'
         );

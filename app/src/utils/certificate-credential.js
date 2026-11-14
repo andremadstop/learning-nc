@@ -62,6 +62,30 @@ export function parseResult(resultDescription) {
 }
 
 /**
+ * OB3 alignment targetType the server writes for a required pool (GitHub #43); mirrors
+ * IssuanceService::POOL_ALIGNMENT_TYPE.
+ */
+export const POOL_ALIGNMENT_TYPE = 'ext:LearningRequiredPool'
+
+/**
+ * The required-pool names signed into `achievement.alignment` (GitHub #43), in signed order.
+ * Certificates issued before 5.12.0 and courses without required pools have none: [].
+ *
+ * @param {object} achievement - credentialSubject.achievement
+ * @return {string[]}
+ */
+export function extractCourseElements(achievement) {
+	const alignment = achievement?.alignment
+	if (!Array.isArray(alignment)) {
+		return []
+	}
+	return alignment
+		.filter((entry) => entry && entry.targetType === POOL_ALIGNMENT_TYPE
+			&& typeof entry.targetName === 'string' && entry.targetName.trim() !== '')
+		.map((entry) => entry.targetName)
+}
+
+/**
  * Flatten the frozen OB3 credential into the fields the view renders. Every value here
  * is read AS-IS from the signed payload — none of it is re-translated (the signed
  * fields stay frozen; only the viewer chrome is localized live).
@@ -81,6 +105,7 @@ export function extractCertificateFields(credential) {
 		courseDescription: achievement.description || '',
 		recipientName: subject.name || '',
 		narrative: achievement?.criteria?.narrative || '',
+		courseElements: extractCourseElements(achievement),
 		score,
 		threshold,
 		issuerName: issuer.name || '',

@@ -90,6 +90,9 @@ if ($status === 'valid') {
 	.lrn-verify__issuer { display: flex; align-items: center; gap: 12px; margin: 12px 0 24px; }
 	.lrn-verify__issuer img { height: 40px; width: auto; }
 	.lrn-verify__issuer-name { font-weight: 600; color: #1a3a5c; }
+	.lrn-verify__elements { margin: 0 0 16px; text-align: start; }
+	.lrn-verify__elements h3 { margin: 0 0 6px; font-size: 1em; color: #555; font-weight: 600; }
+	.lrn-verify__elements ul { margin: 0; padding-inline-start: 20px; list-style: disc; color: #1a3a5c; }
 	.lrn-verify__data { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
 	.lrn-verify__row { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; }
 	.lrn-verify__row dt { color: #555; margin: 0; }
@@ -137,6 +140,19 @@ if ($status === 'valid') {
 			<?php } ?>
 			<span class="lrn-verify__issuer-name"><?php p($_['issuer_name'] ?? ''); ?></span>
 		</div>
+
+		<?php $courseElements = is_array($_['course_elements'] ?? null) ? $_['course_elements'] : []; ?>
+		<?php if ($courseElements !== []) { ?>
+			<!-- GitHub #43: the required pools signed into the certificate (absent on older ones). -->
+			<section class="lrn-verify__elements">
+				<h3><?php p($l->t('Kursbestandteile')); ?></h3>
+				<ul>
+					<?php foreach ($courseElements as $element) { ?>
+						<li><?php p((string)$element); ?></li>
+					<?php } ?>
+				</ul>
+			</section>
+		<?php } ?>
 
 		<dl class="lrn-verify__data">
 			<div class="lrn-verify__row">

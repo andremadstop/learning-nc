@@ -292,6 +292,39 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertSame($result->getPools(), $result->toArray()['pools']);
     }
 
+    // GitHub #43: the PassResult handed to issuance carries the required pools with their
+    // titles, so the certificate can name them.
+    public function testIssuanceReceivesTheRequiredPools(): void {
+        $audit = $this->createMock(AuditService::class);
+        $received = null;
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')
+            ->willReturnCallback(static function (string $u, int $c, PassResult $r) use (&$received): IssueResult {
+                $received = $r;
+                return new IssueResult(new Certificate(), true);
+            });
+
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([2, 1])),
+            null,
+            null,
+            $this->passingBuilders(),
+            $audit,
+            $issuance,
+            bestByPool: [1 => 92, 2 => 81],
+            poolTitles: [1 => 'Brandschutz', 2 => 'Erste Hilfe'],
+        );
+        $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertInstanceOf(PassResult::class, $received);
+        $this->assertSame(PassResult::REQUIREMENT_REQUIRED_POOLS, $received->getRequirement());
+        $this->assertSame(
+            ['Erste Hilfe', 'Brandschutz'],
+            array_column($received->getPools(), 'title'),
+            'configured order is kept'
+        );
+    }
+
     // GitHub #35: one required pool below the pass mark blocks the certificate.
     public function testOneFailedRequiredPoolBlocks(): void {
         $audit = $this->createMock(AuditService::class);

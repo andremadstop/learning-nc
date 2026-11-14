@@ -122,6 +122,7 @@ class PublicVerifyController extends Controller {
         if (in_array($status, ['valid', 'withdrawn', 'expired'], true)) {
             $params['issuer_name'] = $result['issuer_name'] ?? '';
             $params['course_title'] = $result['course_title'] ?? '';
+            $params['course_elements'] = is_array($result['course_elements'] ?? null) ? $result['course_elements'] : [];
             $params['issued_at'] = $result['issued_at'] ?? null;
             $params['expires_at'] = $result['expires_at'] ?? null;
             $params['verification_id'] = $result['verification_id'] ?? '';

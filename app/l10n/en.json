@@ -1355,6 +1355,7 @@
         "Persönliche Einstellungen: Lernsprache, Telos-Profil und VirtuProf-Optionen. Hier kannst du VirtuProf auch aktivieren oder deaktivieren.": "Personal settings: learning language, Telos profile and VirtuProf options. Here you can also enable or disable VirtuProf.",
         "Pflege VLAN-ID, Name, Subnetz und Gateway für dein Segment-Design.": "Manage VLAN ID, name, subnet and gateway for your segment design.",
         "Pflicht-Pools": "Required pools",
+        "Kursbestandteile": "Course elements",
         "Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition.": "Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition.",
         "Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often.": "Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often.",
         "Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review.": "Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review.",
