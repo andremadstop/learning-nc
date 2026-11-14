@@ -50,6 +50,31 @@ final class CoursePoolPbqCountTest extends TestCase {
 		$this->assertSame(0, $byPool[$this->withoutPbq]);
 	}
 
+	/**
+	 * The count follows the set Training draws from: questions paused in the course are not
+	 * offered, so a pool whose simulations are all paused offers no "Simulators only".
+	 */
+	public function testSimulationsPausedInTheCourseAreNotCounted(): void {
+		$pbqIds = $this->db->getQueryBuilder();
+		$pbqIds->select('id')->from('learning_questions')
+			->where($pbqIds->expr()->eq('pool_id', $pbqIds->createNamedParameter($this->withPbq, IQueryBuilder::PARAM_INT)))
+			->andWhere($pbqIds->expr()->eq('question_type', $pbqIds->createNamedParameter('pbq')));
+		foreach (array_map('intval', $pbqIds->executeQuery()->fetchAll(\PDO::FETCH_COLUMN)) as $questionId) {
+			$this->insert('learning_course_question_overrides', [
+				'course_id' => $this->courseId,
+				'question_id' => $questionId,
+				'paused' => true,
+				'created_at' => time(),
+				'updated_at' => time(),
+			]);
+		}
+
+		$course = Server::get(CourseService::class)->findById($this->courseId, self::TEACHER);
+		$byPool = array_column($course['pools'], 'pbq_count', 'pool_id');
+
+		$this->assertSame(0, $byPool[$this->withPbq]);
+	}
+
 	/** @param string[] $types */
 	private function pool(array $types): int {
 		$poolId = $this->insert('learning_pools', [
@@ -91,7 +116,7 @@ final class CoursePoolPbqCountTest extends TestCase {
 			->where($courses->expr()->eq('title', $courses->createNamedParameter(self::MARK . ' course')));
 		$courseIds = array_map('intval', $courses->executeQuery()->fetchAll(\PDO::FETCH_COLUMN));
 		if ($courseIds !== []) {
-			foreach (['learning_course_pools' => 'course_id', 'learning_courses' => 'id'] as $table => $column) {
+			foreach (['learning_course_question_overrides' => 'course_id', 'learning_course_pools' => 'course_id', 'learning_courses' => 'id'] as $table => $column) {
 				$qb = $this->db->getQueryBuilder();
 				$qb->delete($table)
 					->where($qb->expr()->in($column, $qb->createNamedParameter($courseIds, IQueryBuilder::PARAM_INT_ARRAY)))

@@ -911,13 +911,21 @@ class CourseService {
 
         // Enrich pools with pool name and question count
         $poolsData = [];
+        $pausedQuestionIds = null;
         foreach ($coursePools as $cp) {
             $cpData = $cp->jsonSerialize();
             try {
                 $cpData = array_merge($cpData, $this->getPoolSnapshot($cp->getPoolId()));
                 $filteredQuestionIds = $this->getFilteredQuestionIdsForCoursePoolEntity($cp);
                 $cpData['question_count'] = count($filteredQuestionIds);
-                $cpData['pbq_count'] = $this->countPbqQuestions($filteredQuestionIds);
+                // GitHub #46: counted over the set Training draws from (resolveCoursePoolContext:
+                // curriculum scope, minus the questions paused in the course), so "Simulators
+                // only" never shows where it would start nothing.
+                $pausedQuestionIds ??= $this->getPausedQuestionIds($courseId);
+                $cpData['pbq_count'] = $this->countPbqQuestions(array_values(array_diff(
+                    $this->applyCurriculumScope($courseId, $filteredQuestionIds),
+                    $pausedQuestionIds
+                )));
                 $cpData['total_question_count'] = $this->countQuestionsInPool($cp->getPoolId());
                 $cpData['available_filters'] = $this->getFilterOptionsForPool($cp->getPoolId());
                 $cpData['available_content_languages'] = $availableContentLanguages[$cp->getPoolId()] ?? ['de'];
