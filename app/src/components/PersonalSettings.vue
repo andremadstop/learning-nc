@@ -918,8 +918,12 @@ export default {
   font-size: 0.9em;
 }
 
+/* GitHub #55: Nextcloud core gives every input and select width: 130px; without a width of
+   their own the fields stayed that narrow on the settings pages. */
 .nc-input {
+  width: 100%;
   max-width: 280px;
+  box-sizing: border-box;
 }
 
 .nc-input--wide {
