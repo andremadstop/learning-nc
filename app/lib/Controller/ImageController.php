@@ -11,23 +11,27 @@ use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class ImageController extends Controller {
     private ImageService $imageService;
     private QuestionService $questionService;
     private ?string $userId;
+    private LoggerInterface $logger;
 
     public function __construct(
         string $appName,
         IRequest $request,
         ImageService $imageService,
         QuestionService $questionService,
-        ?string $userId
+        ?string $userId,
+        LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);
         $this->imageService = $imageService;
         $this->questionService = $questionService;
         $this->userId = $userId;
+        $this->logger = $logger;
     }
 
     /**
@@ -41,12 +45,31 @@ class ImageController extends Controller {
                 return new DataResponse(['error' => 'No file uploaded'], Http::STATUS_BAD_REQUEST);
             }
 
+            // The image this upload replaces. Only upload() ever sets image_path, always to a new
+            // uniqid file, so no other question points at it (2026-11 audit #140).
+            $previousPath = $this->questionService->findEntity($questionId, $this->userId)->getImagePath();
+
             $imagePath = $this->imageService->upload($this->userId, $file);
             try {
                 $this->questionService->setImagePath($questionId, $imagePath, $this->userId);
             } catch (\Throwable $e) {
                 $this->imageService->delete($imagePath); // rollback orphan file
                 throw $e;
+            }
+
+            // Replacing an image used to leave the old file in the uploader's Learning/images,
+            // using quota with nothing pointing at it. The new image is saved already, so a failed
+            // clean-up is only logged.
+            if (is_string($previousPath) && $previousPath !== '' && $previousPath !== $imagePath) {
+                try {
+                    $this->imageService->delete($previousPath);
+                } catch (\Throwable $e) {
+                    $this->logger->warning('Old question image could not be removed: {error}', [
+                        'app' => 'learning',
+                        'questionId' => $questionId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             return new DataResponse(['image_path' => $imagePath], Http::STATUS_OK);

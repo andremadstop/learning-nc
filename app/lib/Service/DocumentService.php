@@ -480,15 +480,25 @@ class DocumentService {
             throw new \RuntimeException('Failed to create temporary file for PDF extraction');
         }
 
+        // stderr goes to its own file: pdftotext prints "Syntax Warning/Error (...)" there for many
+        // imperfect PDFs and still exits 0, and with 2>&1 those lines became part of the extracted
+        // text, the RAG chunks and the tutor's answers (2026-11 audit #72).
+        $errFile = tempnam(sys_get_temp_dir(), 'learning_pdf_err_');
+        if ($errFile === false) {
+            @unlink($tmpFile);
+            throw new \RuntimeException('Failed to create temporary file for PDF extraction');
+        }
+
         try {
             file_put_contents($tmpFile, $pdfContent);
 
             $output = [];
             $returnCode = 0;
-            exec('pdftotext ' . escapeshellarg($tmpFile) . ' - 2>&1', $output, $returnCode);
+            exec('pdftotext ' . escapeshellarg($tmpFile) . ' - 2>' . escapeshellarg($errFile), $output, $returnCode);
 
             if ($returnCode !== 0) {
-                throw new \RuntimeException('pdftotext failed with code ' . $returnCode . ': ' . implode("\n", $output));
+                $stderr = trim((string)@file_get_contents($errFile));
+                throw new \RuntimeException('pdftotext failed with code ' . $returnCode . ': ' . mb_substr($stderr, 0, 1000));
             }
 
             $text = implode("\n", $output);
@@ -500,6 +510,7 @@ class DocumentService {
             return $text;
         } finally {
             @unlink($tmpFile);
+            @unlink($errFile);
         }
     }
 

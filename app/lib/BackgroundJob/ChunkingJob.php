@@ -15,9 +15,14 @@ use Psr\Log\LoggerInterface;
  * Runs every 5 minutes for near-real-time chunking after document extraction.
  */
 class ChunkingJob extends TimedJob {
+    /** A document still in 'chunking' after this long belongs to a run that died (audit #62). */
+    public const STALE_CHUNKING_SECONDS = 3600;
+
     private CourseDocumentMapper $documentMapper;
     private ChunkingService $chunkingService;
     private LoggerInterface $logger;
+    // Own reference — the NC Job base class does not expose its time factory to subclasses.
+    private ITimeFactory $timeFactory;
 
     public function __construct(
         ITimeFactory $time,
@@ -26,6 +31,7 @@ class ChunkingJob extends TimedJob {
         LoggerInterface $logger
     ) {
         parent::__construct($time);
+        $this->timeFactory = $time;
         $this->setInterval(5 * 60); // Every 5 minutes
         $this->documentMapper = $documentMapper;
         $this->chunkingService = $chunkingService;
@@ -33,7 +39,8 @@ class ChunkingJob extends TimedJob {
     }
 
     protected function run($argument): void {
-        $documents = $this->documentMapper->findExtractedUnchunked(10);
+        $now = $this->timeFactory->getTime();
+        $documents = $this->documentMapper->findExtractedUnchunked(10, $now - self::STALE_CHUNKING_SECONDS);
 
         if (count($documents) === 0) {
             return;
@@ -44,6 +51,8 @@ class ChunkingJob extends TimedJob {
         foreach ($documents as $doc) {
             try {
                 $doc->setChunkingStatus('chunking');
+                // When the claim was made, so a run that dies here is retried after an hour.
+                $doc->setUpdatedAt($this->timeFactory->getTime());
                 $this->documentMapper->update($doc);
 
                 $chunkCount = $this->chunkingService->chunkDocument($doc);

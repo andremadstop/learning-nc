@@ -113,7 +113,8 @@ class VideoStreamController extends Controller {
             return $resp;
         }
         [$start, $end, $partial] = $range;
-        $length = $end - $start + 1;
+        // parseRange() answers [0, 0] for an empty file; that window holds no byte (audit #67).
+        $length = $size === 0 ? 0 : $end - $start + 1;
 
         // 5. Open ONLY on the success path and stream the bounded window.
         try {
