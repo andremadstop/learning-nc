@@ -49,7 +49,8 @@ class ImportUsersCommandTest extends TestCase {
 
     public function testSmallCsvSync(): void {
         $um = $this->createMock(IUserManager::class);
-        $um->expects($this->exactly(3))->method('createUser');
+        $um->expects($this->exactly(3))->method('createUser')
+            ->willReturnCallback(fn (string $uid) => new ImportedUserDouble($uid));
         $gm = $this->createMock(IGroupManager::class);
         $audit = $this->createMock(AuditService::class);
         $jobList = $this->createMock(IJobList::class);
@@ -63,11 +64,13 @@ class ImportUsersCommandTest extends TestCase {
 
         $tester = new CommandTester($cmd);
         try {
-            $tester->execute(['csv_file' => $tmpFile]);
+            $status = $tester->execute(['csv_file' => $tmpFile]);
         } finally {
             unlink($tmpFile);
             unlink($base); // tempnam() itself created this file
         }
+        $this->assertSame(0, $status);
+        $this->assertStringContainsString('Created user: user3', $tester->getDisplay());
     }
 
     /**
@@ -89,12 +92,17 @@ class ImportUsersCommandTest extends TestCase {
         );
         $cmd = new ImportUsersCommand($um, $this->createMock(IGroupManager::class),
             $this->createMock(AuditService::class), $this->createMock(IJobList::class));
-        $tmpFile = tempnam(sys_get_temp_dir(), 'test_import_') . '.csv';
+        $base = tempnam(sys_get_temp_dir(), 'test_import_');
+        $tmpFile = $base . '.csv';
         file_put_contents($tmpFile, "username,display_name,email\nuser1,User 1,not-an-email\nuser2,User 2,u2@ex.com\nuser3,User 3,u3@ex.com\n");
 
         $tester = new CommandTester($cmd);
-        $status = $tester->execute(['csv_file' => $tmpFile]);
-        unlink($tmpFile);
+        try {
+            $status = $tester->execute(['csv_file' => $tmpFile]);
+        } finally {
+            unlink($tmpFile);
+            unlink($base); // tempnam() itself created this file
+        }
         $out = $tester->getDisplay();
 
         $this->assertStringContainsString('Failed to create user: user2 (The username is already being used)', $out);

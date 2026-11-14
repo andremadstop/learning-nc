@@ -3386,8 +3386,6 @@ OC.L10N.register(
     "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut." : "تعذّر إنشاء الملف للأسف. يُرجى المحاولة مرة أخرى لاحقًا.",
     "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern." : "شكرًا على بلاغك! أنشأتُ تذكرة دعم (#%s). سيتولّى مدرّبك أو المسؤول متابعتها.",
     "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten." : "تعذّر حفظ بلاغك للأسف. يُرجى المحاولة مرة أخرى أو التواصل مع مدرّبك مباشرة.",
-    "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen." : "شكرًا على البلاغ! تم إخطار مدرّبك وسيراجع السؤال.",
-    "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut." : "تعذّر إرسال بلاغ الخطأ للأسف. يُرجى المحاولة مرة أخرى لاحقًا.",
     "Lernplattform" : "منصة التعلّم",
     "Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz." : "بيانات مشغّل تطبيق Learning على نسخة Nextcloud هذه.",
     "Zur Datenschutzerklärung" : "إلى سياسة الخصوصية",

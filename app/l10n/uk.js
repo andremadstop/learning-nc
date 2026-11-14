@@ -3386,8 +3386,6 @@ OC.L10N.register(
     "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut." : "На жаль, не вдалося створити файл. Спробуй ще раз пізніше.",
     "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern." : "Дякую за повідомлення! Я створив заявку до підтримки (#%s). Твій викладач або адміністратор займеться нею.",
     "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten." : "На жаль, не вдалося зберегти твоє повідомлення. Спробуй ще раз або звернися безпосередньо до викладача.",
-    "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen." : "Дякую за повідомлення! Викладача сповіщено, і він перевірить питання.",
-    "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut." : "На жаль, не вдалося надіслати повідомлення про помилку. Спробуй ще раз пізніше.",
     "Lernplattform" : "Навчальна платформа",
     "Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz." : "Відомості про оператора застосунку Learning у цьому екземплярі Nextcloud.",
     "Zur Datenschutzerklärung" : "До політики конфіденційності",

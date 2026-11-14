@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
-use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\DataMobilityService;

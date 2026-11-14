@@ -3386,8 +3386,6 @@
         "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.": "К сожалению, не удалось создать файл. Попробуй ещё раз позже.",
         "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern.": "Спасибо за сообщение! Я создал заявку в поддержку (#%s). Твой преподаватель или администратор займётся ею.",
         "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.": "К сожалению, не удалось сохранить твоё сообщение. Попробуй ещё раз или обратись напрямую к преподавателю.",
-        "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.": "Спасибо за сообщение! Преподаватель уведомлён и проверит вопрос.",
-        "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.": "К сожалению, не удалось отправить сообщение об ошибке. Попробуй ещё раз позже.",
         "Lernplattform": "Учебная платформа",
         "Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz.": "Сведения об операторе приложения Learning в этом экземпляре Nextcloud.",
         "Zur Datenschutzerklärung": "К политике конфиденциальности",

@@ -67,10 +67,6 @@ final class CourseArchiveConsoleMergeTest extends TestCase {
                 };
             }
 
-            public function lastInsertId(string $table): int {
-                return 3;
-            }
-
             public function executeQuery(string $sql, array $params = []) {
                 return null;
             }
@@ -205,5 +201,56 @@ final class CourseArchiveConsoleMergeTest extends TestCase {
         $this->assertSame(['snapshot', 'begin', 'archived', 'commit'], $calls);
         $this->assertSame(9, $report['snapshot_id']);
         $this->assertArrayNotHasKey('stats_merged', $report);
+    }
+
+    /** Audit #8: occ merges without a user; the safety snapshot skips every permission check. */
+    public function testOccMergeSnapshotsWithoutAUserInsideTheSameFlow(): void {
+        $source = new Course();
+        $source->setId(1);
+        $target = new Course();
+        $target->setId(2);
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturnMap([[1, $source], [2, $target]]);
+
+        $memberMapper = $this->createMock(CourseMemberMapper::class);
+        $memberMapper->method('findByCourse')->willReturn([]);
+        $pools = $this->createMock(CoursePoolMapper::class);
+        $pools->method('findByCourse')->willReturn([]);
+
+        $calls = [];
+        $archive = $this->createMock(CourseArchiveService::class);
+        $archive->expects($this->never())->method('snapshotCourse');
+        $archive->expects($this->once())->method('snapshotCourseFromConsole')
+            ->with(1, CourseArchiveService::SYSTEM_ACTOR)
+            ->willReturnCallback(function () use (&$calls) {
+                $calls[] = 'snapshot';
+                return 9;
+            });
+        $archive->method('markArchived')->willReturnCallback(function () use (&$calls) {
+            $calls[] = 'archived';
+        });
+        $roles = $this->createMock(RoleService::class);
+        $roles->expects($this->never())->method('isInstructor');
+        $db = $this->createMock(IDBConnection::class);
+        $db->method('beginTransaction')->willReturnCallback(function () use (&$calls) {
+            $calls[] = 'begin';
+        });
+        $db->method('commit')->willReturnCallback(function () use (&$calls) {
+            $calls[] = 'commit';
+        });
+
+        $report = (new CourseMergeService(
+            $courseMapper,
+            $memberMapper,
+            $pools,
+            $this->createMock(PoolMapper::class),
+            $archive,
+            $roles,
+            $db,
+            $this->createMock(LoggerInterface::class)
+        ))->mergeCourseAsSystem(1, 2);
+
+        $this->assertSame(['snapshot', 'begin', 'archived', 'commit'], $calls);
+        $this->assertSame(9, $report['snapshot_id']);
     }
 }

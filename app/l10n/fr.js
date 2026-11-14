@@ -3386,8 +3386,6 @@ OC.L10N.register(
     "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut." : "Le fichier n'a malheureusement pas pu être créé. Réessaie plus tard.",
     "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern." : "Merci pour ton signalement ! J'ai créé un ticket de support (#%s). Ton formateur ou ton administrateur va s'en occuper.",
     "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten." : "Ton signalement n'a malheureusement pas pu être enregistré. Réessaie ou contacte directement ton formateur.",
-    "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen." : "Merci pour le signalement ! Ton formateur a été prévenu et va vérifier la question.",
-    "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut." : "Le signalement d'erreur n'a malheureusement pas pu être envoyé. Réessaie plus tard.",
     "Lernplattform" : "Plateforme d'apprentissage",
     "Betreiberangaben für die Learning-App innerhalb dieser Nextcloud-Instanz." : "Informations sur l'exploitant de l'application Learning sur cette instance Nextcloud.",
     "Zur Datenschutzerklärung" : "Vers la politique de confidentialité",
