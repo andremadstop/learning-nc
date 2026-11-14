@@ -149,13 +149,12 @@
           @update:model-value="onAnimationsEnabledChange(!$event)" />
       </div>
 
-      <NcNoteCard
-        v-if="error"
-        type="error"
-        :show-action="loadFailed"
-        :action-text="t('learning', 'Retry')"
-        @click-action="load">
-        {{ error }}
+      <!-- NcNoteCard has no action prop or event; the retry button lives in its slot (audit #104). -->
+      <NcNoteCard v-if="error" type="error">
+        <p>{{ error }}</p>
+        <NcButton v-if="loadFailed" class="retry-load" @click="load">
+          {{ t('learning', 'Retry') }}
+        </NcButton>
       </NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 

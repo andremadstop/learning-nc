@@ -102,10 +102,18 @@ describe('PersonalSettings: a failed load does not overwrite the settings (audit
 		await vm.save()
 		expect(axios.put).not.toHaveBeenCalled()
 
+		// The retry button is rendered inside the error note and reloads the settings.
+		const retry = host.querySelector('.retry-load')
+		expect(retry).not.toBeNull()
+		expect(retry.textContent).toContain('Retry')
+		const getsBefore = axios.get.mock.calls.filter(([url]) => url.endsWith('/api/settings/personal')).length
 		api.failSettings = false
-		await vm.load()
+		retry.click()
 		await settle()
+		const getsAfter = axios.get.mock.calls.filter(([url]) => url.endsWith('/api/settings/personal')).length
+		expect(getsAfter).toBe(getsBefore + 1)
 		expect(saveButton().disabled).toBe(false)
+		expect(host.querySelector('.retry-load')).toBeNull()
 	})
 })
 
