@@ -24,10 +24,6 @@ use OCA\Learning\Service\ForbiddenException;
 
 class CourseService {
     /**
-     * Mode config of a course created while gamification is off (GitHub #36): the defaults the
-     * course view uses (CourseDetail normalizeModeConfig), with duel, gameshow and league off.
-     */
-    /**
      * GitHub #44: answers a question needs before the heatmap's worst questions and the weak
      * questions list it. Was 5 in both, which a group of a few learners rarely reaches, so
      * "Show worst questions" opened nothing. Shared, so the two tabs never disagree; the frontend
@@ -35,6 +31,10 @@ class CourseService {
      */
     public const MIN_ANSWERS_PER_QUESTION = 2;
 
+    /**
+     * Mode config of a course created while gamification is off (GitHub #36): the defaults the
+     * course view uses (CourseDetail normalizeModeConfig), with duel, gameshow and league off.
+     */
     private const MODE_CONFIG_WITHOUT_GAMIFICATION = [
         'training' => true,
         'leitner' => true,
