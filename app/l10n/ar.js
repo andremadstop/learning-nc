@@ -1244,7 +1244,7 @@ OC.L10N.register(
     "Noch keine Badges in diesem Überblick sichtbar." : "لا توجد شارات مرئية في هذه النظرة العامة بعد.",
     "Noch keine Fragen" : "No questions yet",
     "Noch keine Kurse" : "No courses yet",
-    "Noch keine Lernpartner-Matches. Trage in deinem Telos-Profil ein, wobei du Hilfe suchst oder anbieten kannst." : "No study partner matches yet. Add to your Telos profile what you're looking for help with or what you can offer.",
+    "Noch keine Lernpartner in diesem Kurs." : "لا يوجد شركاء تعلم في هذا المقرر بعد.",
     "Noch keine NAT-Übung" : "No NAT exercise yet",
     "Noch keine Neuigkeiten." : "No news yet.",
     "Noch keine Onboarding-Daten." : "No onboarding data yet.",
@@ -3585,5 +3585,8 @@ OC.L10N.register(
     "Ankündigung bearbeiten" : "تعديل الإعلان",
     "Nachricht" : "الرسالة",
     "Die Ankündigung konnte nicht gespeichert werden." : "تعذّر حفظ الإعلان.",
+    "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht." : "شركاء التعلم هم أعضاء آخرون في المقرر يمكنهم مساعدتك في موضوع ما، أو يبحثون عن مساعدة في موضوع تتقنه. للعثور عليهم، أدخل مواضيعك في ملفك التعليمي تحت «يمكنني المساعدة في...» و«أحتاج مساعدة في...» واضبط الظهور على «مقرر». يظهر التطابق بمجرد أن يُدخل عضو آخر في المقرر الموضوع نفسه بالكتابة نفسها، وألّا يكون ملفه مضبوطًا على «خاص».",
+    "Lernprofil öffnen" : "فتح الملف التعليمي",
+    "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben." : "في قسم التواصل يرى المتعلمون أعضاء آخرين في المقرر يمكنهم مساعدتهم في موضوع ما، أو يبحثون عن مساعدة في موضوع يتقنونه هم أنفسهم. يعتمد ذلك على مواضيع المساعدة التي أدخلها الطرفان في ملفهما التعليمي.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

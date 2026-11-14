@@ -371,7 +371,8 @@
 				</div>
 			</div>
 
-			<BuddyMatching :course-id="courseId" />
+			<!-- GitHub #40: the course switch for learning partners applies here too -->
+			<BuddyMatching v-if="buddiesOn" :course-id="courseId" />
 		</div>
 
 		<!-- My Progress (student self-view) -->
@@ -543,7 +544,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
 import { buildCertReportQuery, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
-import { abschlussTabIds, teilnehmerTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, buddiesEnabled, teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
@@ -655,6 +656,9 @@ export default {
 		},
 		isCourseSummaryReleased() {
 			return this.course?.mode_config?.course_summary === true
+		},
+		buddiesOn() {
+			return buddiesEnabled(this.course)
 		},
 		showCertReport() {
 			return shouldShowCertReport(this.isInstructor, this.course)

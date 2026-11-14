@@ -430,6 +430,7 @@ import InstructorDashboard from './components/InstructorDashboard.vue';
 import SmartQueue from './components/SmartQueue.vue';
 import AdminSettings from './components/AdminSettings.vue';
 import PersonalSettings from './components/PersonalSettings.vue';
+import { LEARNING_PROFILE_SECTION } from './utils/telosProfile.js';
 import GameshowMode from './components/GameshowMode.vue';
 import DuelMode from './components/DuelMode.vue';
 import ArenaSelector from './components/ArenaSelector.vue';
@@ -1507,6 +1508,11 @@ export default {
 
       if (route.name === 'settings') {
         this.mainView = 'settings';
+        // GitHub #40: "Lernprofil öffnen" names the learning profile; it is part of the personal
+        // settings, which an instructor or admin reaches through "Meine Einstellungen".
+        if (route.query?.section === LEARNING_PROFILE_SECTION) {
+          this.settingsSubTab = 'personal';
+        }
         return;
       }
 

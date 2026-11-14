@@ -1256,7 +1256,7 @@
         "Noch keine Badges in diesem Überblick sichtbar.": "Noch keine Badges in dieser Übersicht sichtbar.",
         "Noch keine Fragen": "Noch keine Fragen",
         "Noch keine Kurse": "Noch keine Kurse",
-        "Noch keine Lernpartner-Matches. Trage in deinem Telos-Profil ein, wobei du Hilfe suchst oder anbieten kannst.": "Noch keine Lernpartner-Matches. Trage in deinem Telos-Profil ein, wobei du Hilfe suchst oder anbieten kannst.",
+        "Noch keine Lernpartner in diesem Kurs.": "Noch keine Lernpartner in diesem Kurs.",
         "Noch keine NAT-Übung": "Noch keine NAT-Übung",
         "Noch keine Neuigkeiten.": "Noch keine Neuigkeiten.",
         "Noch keine Onboarding-Daten.": "Noch keine Onboarding-Daten.",
@@ -3584,6 +3584,9 @@
         "bearbeitet": "bearbeitet",
         "Ankündigung bearbeiten": "Ankündigung bearbeiten",
         "Nachricht": "Nachricht",
-        "Die Ankündigung konnte nicht gespeichert werden.": "Die Ankündigung konnte nicht gespeichert werden."
+        "Die Ankündigung konnte nicht gespeichert werden.": "Die Ankündigung konnte nicht gespeichert werden.",
+        "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht.": "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht.",
+        "Lernprofil öffnen": "Lernprofil öffnen",
+        "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben.": "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben."
     }
 }

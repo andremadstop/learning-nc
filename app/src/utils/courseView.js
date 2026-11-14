@@ -152,3 +152,39 @@ export function abschlussTabIds(course, { actsAsInstructor = false } = {}) {
 	if (actsAsInstructor) return []
 	return shouldShowCompletionTab(course) ? ['summary'] : []
 }
+
+/**
+ * The leaf tabs of the Kommunikation area, in display order. CourseDetail (routing, deep links)
+ * and CourseTabKommunikation (the sub-navigation) both read this list (GitHub #40).
+ *
+ * Learning partners have their own course switch (mode_config.buddies, a missing key counts as
+ * on), so a mandatory training can leave them out; a deep link to the hidden leaf then falls back
+ * to the feed. The swarm feeds the AI assistant's course knowledge and exists only while the
+ * admin has AI on (GitHub #35). Instructors keep their three leaves.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {object} options
+ * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
+ * @param {boolean} options.aiEnabled - the admin switched the AI assistant on
+ * @return {string[]}
+ */
+export function kommunikationTabIds(course, { actsAsInstructor = false, aiEnabled = false } = {}) {
+	if (actsAsInstructor) {
+		return ['announcements', 'feed', 'requests']
+	}
+	const tabs = ['feed']
+	if (buddiesEnabled(course)) tabs.push('buddies')
+	if (aiEnabled) tabs.push('schwarm')
+	return tabs
+}
+
+/**
+ * Whether the course shows learning partners (mode_config.buddies, GitHub #40). A course saved
+ * before the switch existed keeps them.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @return {boolean}
+ */
+export function buddiesEnabled(course) {
+	return course?.mode_config?.buddies !== false
+}

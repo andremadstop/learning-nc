@@ -105,6 +105,16 @@ describe('CourseTabKommunikation', () => {
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'buddies'])
 	})
 
+	// GitHub #40: the course switch mode_config.buddies hides the learning partners, and a deep
+	// link to them falls back to the feed.
+	it('leaves out the learning partners when the course switched them off', () => {
+		const instance = createInstance({ course: { is_instructor: false, mode_config: { buddies: false } }, aiEnabled: true })
+
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['feed', 'schwarm'])
+		instance.syncFromActiveTab('buddies')
+		expect(instance.currentSubTab).toBe('feed')
+	})
+
 	it('emits tab-change with correct leaf ID when selecting a sub-tab', () => {
 		const instance = createInstance({
 			currentSubTab: 'feed',

@@ -168,7 +168,7 @@
 
       <hr class="section-divider" />
 
-      <h3>{{ t('learning', 'Learning Profile') }}</h3>
+      <h3 id="learning-profile" ref="learningProfileHeading">{{ t('learning', 'Learning Profile') }}</h3>
       <p class="section-desc">{{ t('learning', 'This profile helps VirtuProf adapt explanations and lets instructors see only aggregated class-level patterns.') }}</p>
 
       <details class="data-transparency">
@@ -460,6 +460,7 @@ import {
   applyTelosToForm,
   buildTelosPayload,
   createTelosForm,
+  LEARNING_PROFILE_SECTION,
 } from '../utils/telosProfile.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { useA11yStore } from '../stores/a11yStore.js'
@@ -617,7 +618,8 @@ export default {
     },
   },
   mounted() {
-    this.load()
+    // GitHub #40: "Lernprofil öffnen" (learning partners) lands on the profile section
+    this.load().then(() => this.scrollToRequestedSection())
     this.loadCalendarToken()
     this.loadLearningProfile()
     this.loadConsent()
@@ -635,6 +637,16 @@ export default {
     }
   },
   methods: {
+    /** Scroll to the section the settings route names (?section=learning-profile). */
+    scrollToRequestedSection() {
+      if (this.$route?.query?.section !== LEARNING_PROFILE_SECTION) return
+      this.$nextTick(() => {
+        const heading = this.$refs.learningProfileHeading
+        if (heading && typeof heading.scrollIntoView === 'function') {
+          heading.scrollIntoView({ block: 'start' })
+        }
+      })
+    },
     async loadConsent() {
       try {
         const status = await fetchConsentStatus()

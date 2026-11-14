@@ -58,7 +58,7 @@
 		</div>
 
 		<!-- Buddies (student only) -->
-		<div v-if="currentSubTab === 'buddies' && !isInstructor" class="tab-content">
+		<div v-if="currentSubTab === 'buddies' && !isInstructor && buddiesOn" class="tab-content">
 			<BuddyMatching :course-id="courseId" />
 		</div>
 
@@ -77,6 +77,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import { showError } from '@nextcloud/dialogs'
 import CourseFeed from './CourseFeed.vue'
 import BuddyMatching from './BuddyMatching.vue'
+import { buddiesEnabled, kommunikationTabIds } from '../utils/courseView.js'
 import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
 
 export default {
@@ -135,22 +136,20 @@ export default {
 		isInstructor() {
 			return this.actsAsInstructor
 		},
+		buddiesOn() {
+			return buddiesEnabled(this.course)
+		},
+		// GitHub #40: the ids come from the helper CourseDetail routes with, so both agree.
 		visibleSubTabs() {
-			if (this.isInstructor) {
-				return [
-					{ id: 'announcements', label: t('learning', 'Ankuendigungen') },
-					{ id: 'feed', label: t('learning', 'Feed') },
-					{ id: 'requests', label: t('learning', 'Fragen von Lernenden') },
-				]
+			const labels = {
+				announcements: t('learning', 'Ankuendigungen'),
+				feed: t('learning', 'Feed'),
+				requests: t('learning', 'Fragen von Lernenden'),
+				buddies: t('learning', 'Lernpartner'),
+				schwarm: t('learning', 'Schwarm'),
 			}
-			const tabs = [
-				{ id: 'feed', label: t('learning', 'Feed') },
-				{ id: 'buddies', label: t('learning', 'Lernpartner') },
-			]
-			if (this.aiEnabled) {
-				tabs.push({ id: 'schwarm', label: t('learning', 'Schwarm') })
-			}
-			return tabs
+			return kommunikationTabIds(this.course, { actsAsInstructor: this.isInstructor, aiEnabled: this.aiEnabled })
+				.map((id) => ({ id, label: labels[id] }))
 		},
 	},
 

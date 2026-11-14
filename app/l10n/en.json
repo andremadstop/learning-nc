@@ -1262,7 +1262,7 @@
         "Noch keine Badges in diesem Überblick sichtbar.": "No badges visible in this overview yet.",
         "Noch keine Fragen": "No questions yet",
         "Noch keine Kurse": "No courses yet",
-        "Noch keine Lernpartner-Matches. Trage in deinem Telos-Profil ein, wobei du Hilfe suchst oder anbieten kannst.": "No study partner matches yet. Add to your Telos profile what you're looking for help with or what you can offer.",
+        "Noch keine Lernpartner in diesem Kurs.": "No learning partners in this course yet.",
         "Noch keine NAT-Übung": "No NAT exercise yet",
         "Noch keine Neuigkeiten.": "No news yet.",
         "Noch keine Onboarding-Daten.": "No onboarding data yet.",
@@ -3584,6 +3584,9 @@
         "bearbeitet": "edited",
         "Ankündigung bearbeiten": "Edit announcement",
         "Nachricht": "Message",
-        "Die Ankündigung konnte nicht gespeichert werden.": "The announcement could not be saved."
+        "Die Ankündigung konnte nicht gespeichert werden.": "The announcement could not be saved.",
+        "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht.": "Learning partners are other course members who can help you with a topic, or who are looking for help with a topic you know well. To find them, enter your topics in your learning profile under \"I can help with...\" and \"I need help with...\" and set the visibility to \"Course\". A match appears as soon as another course member has entered the same topic, spelled the same way, and their profile is not set to \"Private\".",
+        "Lernprofil öffnen": "Open learning profile",
+        "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben.": "In the Communication area, learners see other course members who can help them with a topic, or who are looking for help with a topic they know well themselves. It is based on the help topics both have entered in their learning profile."
     }
 }

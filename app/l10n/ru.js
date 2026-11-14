@@ -1244,7 +1244,7 @@ OC.L10N.register(
     "Noch keine Badges in diesem Überblick sichtbar." : "В этом обзоре значков пока нет.",
     "Noch keine Fragen" : "No questions yet",
     "Noch keine Kurse" : "No courses yet",
-    "Noch keine Lernpartner-Matches. Trage in deinem Telos-Profil ein, wobei du Hilfe suchst oder anbieten kannst." : "No study partner matches yet. Add to your Telos profile what you're looking for help with or what you can offer.",
+    "Noch keine Lernpartner in diesem Kurs." : "В этом курсе пока нет партнёров по обучению.",
     "Noch keine NAT-Übung" : "No NAT exercise yet",
     "Noch keine Neuigkeiten." : "No news yet.",
     "Noch keine Onboarding-Daten." : "No onboarding data yet.",
@@ -3585,5 +3585,8 @@ OC.L10N.register(
     "Ankündigung bearbeiten" : "Редактировать объявление",
     "Nachricht" : "Сообщение",
     "Die Ankündigung konnte nicht gespeichert werden." : "Не удалось сохранить объявление.",
+    "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht." : "Партнёры по обучению — это другие участники курса, которые могут помочь вам с темой или ищут помощь по теме, в которой вы разбираетесь. Чтобы их найти, укажите свои темы в учебном профиле в полях «Я могу помочь с...» и «Мне нужна помощь с...» и установите видимость «Курс». Совпадение появится, как только другой участник курса укажет ту же тему в том же написании, а его профиль не будет установлен как «Приватный».",
+    "Lernprofil öffnen" : "Открыть учебный профиль",
+    "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben." : "В разделе «Коммуникация» учащиеся видят других участников курса, которые могут помочь им с темой или ищут помощь по теме, в которой они сами разбираются. Основой служат темы помощи, которые оба указали в своём учебном профиле.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

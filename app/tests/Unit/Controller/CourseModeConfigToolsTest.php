@@ -112,6 +112,22 @@ class CourseModeConfigToolsTest extends TestCase {
         $this->assertFalse($stored['leitner']);
     }
 
+    /** GitHub #40: mode_config.buddies, the learning partner switch, is stored like tools. */
+    public function testBuddiesOffIsStored(): void {
+        $response = $this->controllerFor('teacher')->updateModeConfig(7, ['training' => true, 'buddies' => false]);
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertFalse($response->getData()['mode_config']['buddies']);
+        $this->assertFalse($this->storedModeConfig()['buddies']);
+    }
+
+    /** An older page that does not send the key keeps the learning partners. */
+    public function testMissingBuddiesKeyKeepsTheLearningPartners(): void {
+        $this->controllerFor('teacher')->updateModeConfig(7, ['training' => true]);
+
+        $this->assertTrue($this->storedModeConfig()['buddies']);
+    }
+
     public function testLearnerCannotSwitchTheToolsOff(): void {
         $response = $this->controllerFor('learner')->updateModeConfig(7, ['tools' => false]);
 

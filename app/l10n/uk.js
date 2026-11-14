@@ -1256,7 +1256,7 @@ OC.L10N.register(
     "Noch keine Badges in diesem Überblick sichtbar." : "У цьому огляді поки не видно жодного значка.",
     "Noch keine Fragen" : "Питань поки немає",
     "Noch keine Kurse" : "Курсів поки немає",
-    "Noch keine Lernpartner-Matches. Trage in deinem Telos-Profil ein, wobei du Hilfe suchst oder anbieten kannst." : "Поки немає збігів із партнерами для навчання. Додайте до свого профілю Telos, з чим вам потрібна допомога або що ви можете запропонувати.",
+    "Noch keine Lernpartner in diesem Kurs." : "У цьому курсі ще немає партнерів із навчання.",
     "Noch keine NAT-Übung" : "Вправи NAT поки немає",
     "Noch keine Neuigkeiten." : "Новин поки немає.",
     "Noch keine Onboarding-Daten." : "Даних онбордингу поки немає.",
@@ -3585,5 +3585,8 @@ OC.L10N.register(
     "Ankündigung bearbeiten" : "Редагувати оголошення",
     "Nachricht" : "Повідомлення",
     "Die Ankündigung konnte nicht gespeichert werden." : "Не вдалося зберегти оголошення.",
+    "Lernpartner sind andere Kursmitglieder, die dir bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das du beherrschst. Trage dazu in deinem Lernprofil unter „Ich kann helfen bei...“ und „Ich brauche Hilfe bei...“ deine Themen ein und stelle die Sichtbarkeit auf „Kurs“. Ein Treffer entsteht, sobald ein anderes Kursmitglied dasselbe Thema in derselben Schreibweise eingetragen hat und sein Profil nicht auf „Privat“ steht." : "Партнери із навчання — це інші учасники курсу, які можуть допомогти вам із темою або шукають допомоги з теми, яку ви добре знаєте. Щоб їх знайти, вкажіть свої теми в навчальному профілі в полях «Я можу допомогти з...» і «Мені потрібна допомога з...» та встановіть видимість «Курс». Збіг з’явиться, щойно інший учасник курсу вкаже ту саму тему з тим самим написанням, а його профіль не буде встановлено як «Приватний».",
+    "Lernprofil öffnen" : "Відкрити навчальний профіль",
+    "Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben." : "У розділі «Спілкування» учні бачать інших учасників курсу, які можуть допомогти їм із темою або шукають допомоги з теми, яку вони самі добре знають. Основою є теми допомоги, які обидва вказали у своєму навчальному профілі.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

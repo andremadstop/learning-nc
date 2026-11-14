@@ -51,6 +51,7 @@ const SAVED_MODE_CONFIG = {
 	course_summary: false,
 	tools: true,
 	classbook: true,
+	buddies: true,
 }
 
 async function flush() {
@@ -147,7 +148,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 		expect(host.querySelector('[data-test="game-mode-active-gameshow"]')).toBeNull()
 		// the other switches stay outside
 		const outside = Array.from(host.querySelectorAll('.mode-config-section > .mode-toggles > .mode-toggle-row--described input')).map((i) => i.getAttribute('aria-describedby'))
-		expect(outside).toEqual(['mode-desc-training', 'mode-desc-leitner', 'mode-desc-exam', 'mode-desc-classbook', 'mode-desc-course_summary'])
+		expect(outside).toEqual(['mode-desc-training', 'mode-desc-leitner', 'mode-desc-exam', 'mode-desc-classbook', 'mode-desc-buddies', 'mode-desc-course_summary'])
 
 		// the count follows an unsaved switch
 		const league = area.querySelector('input[aria-describedby="mode-desc-league"]')
@@ -168,7 +169,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 		await mountTab()
 		expect(host.querySelector('[data-test="game-modes"]')).toBeNull()
 		const order = Array.from(host.querySelectorAll('.mode-toggle-row input[aria-describedby^="mode-desc-"]')).map((i) => i.getAttribute('aria-describedby'))
-		expect(order).toEqual(['mode-desc-training', 'mode-desc-leitner', 'mode-desc-exam', 'mode-desc-duel', 'mode-desc-gameshow', 'mode-desc-league', 'mode-desc-abenteuer', 'mode-desc-classbook', 'mode-desc-course_summary'])
+		expect(order).toEqual(['mode-desc-training', 'mode-desc-leitner', 'mode-desc-exam', 'mode-desc-duel', 'mode-desc-gameshow', 'mode-desc-league', 'mode-desc-abenteuer', 'mode-desc-classbook', 'mode-desc-buddies', 'mode-desc-course_summary'])
 	})
 
 	it('shows the Leitner sprint setting only while Leitner is on', async () => {

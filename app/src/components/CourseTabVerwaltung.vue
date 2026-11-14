@@ -521,6 +521,7 @@ export default {
 				{ key: 'league', label: t('learning', 'Liga'), description: t('learning', 'Wertung der Kursmitglieder über eine ganze Saison statt über eine einzelne Runde.') },
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer'), description: t('learning', 'Story-Kampagnen, in denen die Fragen in eine Handlung eingebettet sind. Die Auswahl der Kampagnen erscheint nur, solange Abenteuer eingeschaltet ist.') },
 				{ key: 'classbook', label: t('learning', 'Klassenbuch'), description: t('learning', 'Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.') },
+				{ key: 'buddies', label: t('learning', 'Lernpartner'), description: t('learning', 'Im Bereich Kommunikation sehen Lernende andere Kursmitglieder, die ihnen bei einem Thema helfen können oder bei einem Thema Hilfe suchen, das sie selbst beherrschen. Grundlage sind die Hilfe-Themen, die beide in ihrem Lernprofil eingetragen haben.') },
 				{
 					key: 'course_summary',
 					label: t('learning', 'Abschluss-Tab'),
@@ -651,6 +652,7 @@ export default {
 				course_summary: false,
 				tools: true,
 				classbook: true,
+				buddies: true,
 			}, modeConfig || {})
 		},
 

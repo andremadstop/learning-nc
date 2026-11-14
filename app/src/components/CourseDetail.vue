@@ -170,7 +170,7 @@ import CourseRecentSessions from './CourseRecentSessions.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
-import { abschlussTabIds, actsAsCourseInstructor, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
 // falls back to the Lernraum (GitHub #36).
@@ -297,12 +297,9 @@ export default {
 		hasCourseTools() {
 			return courseToolIds(this.course, this.adminEnabledTools).length > 0
 		},
+		// Same list as the Kommunikation sub-navigation (one helper, GitHub #40).
 		kommunikationLeafTabs() {
-			if (this.isInstructor) {
-				return ['announcements', 'feed', 'requests']
-			}
-			// GitHub #35: the swarm contributes to the AI assistant's knowledge; see CourseTabKommunikation
-			return this.adminAiEnabled ? ['feed', 'buddies', 'schwarm'] : ['feed', 'buddies']
+			return kommunikationTabIds(this.course, { actsAsInstructor: this.isInstructor, aiEnabled: this.adminAiEnabled })
 		},
 		verwaltungLeafTabs() {
 			return ['mode-config', 'schedule']
@@ -762,6 +759,7 @@ export default {
 				course_summary: false,
 				tools: true,
 				classbook: true,
+				buddies: true,
 			}, modeConfig || {})
 		},
 

@@ -2,6 +2,12 @@ const TELOS_EXPERIENCE_OPTIONS = Object.freeze(['beginner', 'intermediate', 'adv
 const TELOS_LEARNING_STYLE_OPTIONS = Object.freeze(['solo', 'group', 'mixed'])
 const TELOS_VISIBILITY_OPTIONS = Object.freeze(['private', 'course', 'public'])
 
+/**
+ * Query value (?section=…) of the settings route that opens the learning profile: App.vue shows
+ * the personal settings, PersonalSettings scrolls to the section (GitHub #40).
+ */
+export const LEARNING_PROFILE_SECTION = 'learning-profile'
+
 export function createTelosForm() {
   return {
     telos: {

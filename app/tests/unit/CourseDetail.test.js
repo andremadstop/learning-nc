@@ -131,6 +131,7 @@ describe('CourseDetail navigation logic', () => {
 			course_summary: false,
 			tools: true,
 			classbook: true,
+			buddies: true,
 		})
 	})
 
@@ -406,6 +407,17 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.wettbewerbLeafTabs).toEqual(['leaderboard', 'league', 'arena'])
 		instance.adminAiEnabled = true
 		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies', 'schwarm'])
+	})
+
+	// GitHub #40: learning partners have their own course switch; a deep link to the hidden leaf
+	// no longer maps to the Kommunikation area.
+	it('leaves out the learning partners when the course switched them off', () => {
+		const instance = createInstance({ course: ownCourse({ mode_config: { buddies: false } }), userRole: 'student', studentViewActive: true })
+
+		expect(instance.kommunikationLeafTabs).toEqual(['feed'])
+		expect(instance.megaTabForLeaf('buddies')).toBe(null)
+		instance.adminAiEnabled = true
+		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'schwarm'])
 	})
 
 	it('a global student enrolled as co-instructor keeps the instructor tabs (the membership decides)', () => {
