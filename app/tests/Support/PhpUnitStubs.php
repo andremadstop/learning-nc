@@ -474,24 +474,37 @@ namespace Symfony\Component\Console\Tester {
         }
     }
 
-    // Minimal OutputInterface for CommandTester: discards all output.
+    // Minimal OutputInterface for CommandTester: buffers the output without style tags,
+    // like an undecorated Symfony output.
     if (!class_exists(StubConsoleOutput::class)) {
         class StubConsoleOutput implements \Symfony\Component\Console\Output\OutputInterface {
-            public function writeln(string|array $messages, int $options = 0): void {}
-            public function write(string|array $messages, bool $newline = false, int $options = 0): void {}
+            public string $buffer = '';
+            public function writeln(string|array $messages, int $options = 0): void {
+                $this->write($messages, true, $options);
+            }
+            public function write(string|array $messages, bool $newline = false, int $options = 0): void {
+                foreach ((array)$messages as $message) {
+                    $this->buffer .= preg_replace('#</?(info|error|comment|question)>#', '', (string)$message)
+                        . ($newline ? "\n" : '');
+                }
+            }
         }
     }
 
     if (!class_exists(CommandTester::class)) {
         class CommandTester {
+            private ?StubConsoleOutput $output = null;
+            private int $statusCode = 0;
+
             public function __construct(private \Symfony\Component\Console\Command\Command $command) {}
 
             public function execute(array $input, array $options = []): int {
-                return $this->command->run(new StubConsoleInput($input), new StubConsoleOutput());
+                $this->output = new StubConsoleOutput();
+                return $this->statusCode = $this->command->run(new StubConsoleInput($input), $this->output);
             }
 
-            public function getDisplay(): string { return ''; }
-            public function getStatusCode(): int { return 0; }
+            public function getDisplay(): string { return $this->output?->buffer ?? ''; }
+            public function getStatusCode(): int { return $this->statusCode; }
         }
     }
 }

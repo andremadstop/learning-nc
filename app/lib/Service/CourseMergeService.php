@@ -63,6 +63,26 @@ class CourseMergeService {
             throw new ForbiddenException('Only instructors/admins can merge courses');
         }
 
+        return $this->doMerge($sourceCourseId, $targetCourseId, $userId, $dryRun);
+    }
+
+    /**
+     * Merge on behalf of the system (occ): there is no acting Nextcloud user, so no permission
+     * check runs and the safety snapshot records CourseArchiveService::SYSTEM_ACTOR.
+     * Never call this from a controller — use mergeCourse() with the session user.
+     *
+     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, stats_merged: int, snapshot_id: int|null}
+     * @throws DoesNotExistException if course not found
+     */
+    public function mergeCourseAsSystem(int $sourceCourseId, int $targetCourseId, bool $dryRun = false): array {
+        return $this->doMerge($sourceCourseId, $targetCourseId, null, $dryRun);
+    }
+
+    /**
+     * @param string|null $userId acting user; null = system (occ), already authorised by the caller
+     * @return array{members_copied: int, members_skipped: int, items_copied: int, items_skipped: int, stats_merged: int, snapshot_id: int|null}
+     */
+    private function doMerge(int $sourceCourseId, int $targetCourseId, ?string $userId, bool $dryRun): array {
         // Validate both courses exist
         $sourceCourse = $this->courseMapper->findById($sourceCourseId);
         $targetCourse = $this->courseMapper->findById($targetCourseId);
@@ -99,7 +119,9 @@ class CourseMergeService {
         }
 
         // Safety: archive source course before merge
-        $archiveResult = $this->archiveService->archiveCourse($sourceCourseId, $userId);
+        $archiveResult = $userId === null
+            ? $this->archiveService->archiveCourseAsSystem($sourceCourseId)
+            : $this->archiveService->archiveCourse($sourceCourseId, $userId);
         $report['snapshot_id'] = $archiveResult['snapshot_id'];
 
         $this->db->beginTransaction();
@@ -137,7 +159,7 @@ class CourseMergeService {
         $this->logger->info('Course merge {source} -> {target} by {user}: {members_copied} members, {items_copied} items', [
             'source' => $sourceCourseId,
             'target' => $targetCourseId,
-            'user' => $userId,
+            'user' => $userId ?? CourseArchiveService::SYSTEM_ACTOR,
             'members_copied' => $report['members_copied'],
             'items_copied' => $report['items_copied'],
             'stats_merged' => $report['stats_merged'],

@@ -55,7 +55,7 @@ class MergeCourseCommand extends Command {
 
         try {
             // Always show dry-run first
-            $dryReport = $this->mergeService->mergeCourse($sourceCourseId, $targetCourseId, 'admin', true);
+            $dryReport = $this->mergeService->mergeCourseAsSystem($sourceCourseId, $targetCourseId, true);
             $this->printReport($output, $dryReport, true);
 
             if ($dryRun) {
@@ -82,7 +82,7 @@ class MergeCourseCommand extends Command {
             }
 
             // Execute merge
-            $report = $this->mergeService->mergeCourse($sourceCourseId, $targetCourseId, 'admin', false);
+            $report = $this->mergeService->mergeCourseAsSystem($sourceCourseId, $targetCourseId, false);
             $output->writeln('');
             $this->printReport($output, $report, false);
             $output->writeln('<info>Merge completed successfully.</info>');

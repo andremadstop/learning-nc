@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\DataMobilityService;
@@ -16,6 +17,9 @@ use Psr\Log\LoggerInterface;
  * Service for archiving courses and managing snapshots.
  */
 class CourseArchiveService {
+    /** Snapshot creator recorded for occ / system actions that have no Nextcloud user. */
+    public const SYSTEM_ACTOR = 'occ';
+
     private CourseMapper $courseMapper;
     private CourseMemberMapper $courseMemberMapper;
     private DataMobilityService $dataMobilityService;
@@ -52,6 +56,26 @@ class CourseArchiveService {
         // Check instructor/admin permission
         $this->assertInstructorOrAdmin($courseId, $userId);
 
+        return $this->createSnapshotAndArchive($course, $courseId, $userId);
+    }
+
+    /**
+     * Archive a course on behalf of the system (occ). There is no acting Nextcloud user, so
+     * there is no permission check; the snapshot records SYSTEM_ACTOR as its creator.
+     * Never call this from a controller — use archiveCourse() with the session user.
+     *
+     * @return array{snapshot_id: int, course_id: int}
+     * @throws DoesNotExistException if course not found
+     */
+    public function archiveCourseAsSystem(int $courseId): array {
+        $course = $this->courseMapper->findById($courseId);
+        return $this->createSnapshotAndArchive($course, $courseId, self::SYSTEM_ACTOR);
+    }
+
+    /**
+     * @return array{snapshot_id: int, course_id: int}
+     */
+    private function createSnapshotAndArchive(Course $course, int $courseId, string $userId): array {
         // Create JSON snapshot via DataMobilityService
         $snapshotData = $this->dataMobilityService->exportCourse($courseId);
         $snapshotJson = json_encode($snapshotData, JSON_UNESCAPED_UNICODE);
@@ -96,6 +120,33 @@ class CourseArchiveService {
      * @throws ForbiddenException if user lacks permission
      */
     public function getSnapshot(int $snapshotId, string $userId): ?array {
+        $row = $this->fetchSnapshotRow($snapshotId);
+
+        if ($row === null) {
+            return null;
+        }
+
+        // Check permission on the course
+        $this->assertInstructorOrAdmin((int) $row['course_id'], $userId);
+
+        return $this->formatSnapshotRow($row);
+    }
+
+    /**
+     * Read a snapshot on behalf of the system (occ), without a user permission check.
+     * Never call this from a controller — use getSnapshot() with the session user.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getSnapshotAsSystem(int $snapshotId): ?array {
+        $row = $this->fetchSnapshotRow($snapshotId);
+        return $row === null ? null : $this->formatSnapshotRow($row);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function fetchSnapshotRow(int $snapshotId): ?array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
             ->from('learning_course_snapshots')
@@ -104,14 +155,7 @@ class CourseArchiveService {
         $row = $result->fetch();
         $result->closeCursor();
 
-        if ($row === false) {
-            return null;
-        }
-
-        // Check permission on the course
-        $this->assertInstructorOrAdmin((int) $row['course_id'], $userId);
-
-        return $this->formatSnapshotRow($row);
+        return $row === false ? null : $row;
     }
 
     /**

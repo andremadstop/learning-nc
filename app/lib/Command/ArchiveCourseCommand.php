@@ -44,13 +44,14 @@ class ArchiveCourseCommand extends Command {
         $outputPath = $input->getOption('output');
 
         try {
-            // OCC runs as admin context — use 'admin' as userId
-            $result = $this->archiveService->archiveCourse($courseId, 'admin');
+            // occ has no Nextcloud user: whoever can run occ already administers the instance.
+            // (A hard-coded 'admin' failed on instances without such a user — audit #8.)
+            $result = $this->archiveService->archiveCourseAsSystem($courseId);
             $output->writeln('<info>Course ' . $courseId . ' archived. Snapshot ID: ' . $result['snapshot_id'] . '</info>');
 
             // Optionally export to file
             if (is_string($outputPath) && $outputPath !== '') {
-                $snapshotData = $this->archiveService->getSnapshot($result['snapshot_id'], 'admin');
+                $snapshotData = $this->archiveService->getSnapshotAsSystem($result['snapshot_id']);
                 if ($snapshotData !== null && isset($snapshotData['snapshot'])) {
                     $json = json_encode($snapshotData['snapshot'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                     if ($json !== false) {
