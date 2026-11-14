@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\OperatorInfo;
+use OCA\Learning\Service\ThemingLegalLinkSync;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 /**
  * Operator details for the imprint and privacy statement (audit 2026-11): entered by an admin
@@ -18,6 +20,8 @@ class LegalOperatorController extends Controller {
         string $appName,
         IRequest $request,
         private OperatorInfo $operatorInfo,
+        private ThemingLegalLinkSync $legalLinks,
+        private LoggerInterface $logger,
     ) {
         parent::__construct($appName, $request);
     }
@@ -55,6 +59,14 @@ class LegalOperatorController extends Controller {
             return new DataResponse(['error' => 'invalid_operator', 'fields' => $errors], Http::STATUS_BAD_REQUEST);
         }
         $this->operatorInfo->save($values);
+        // The Nextcloud footer links follow a complete operator entry (they used to be synced on
+        // every request, audit #206). The details are stored either way; a failing theming write
+        // only costs the footer link and is logged.
+        try {
+            $this->legalLinks->sync();
+        } catch (\Throwable $e) {
+            $this->logger->warning('Learning: legal link sync failed: ' . $e->getMessage(), ['app' => 'learning', 'exception' => $e]);
+        }
 
         return new DataResponse([
             'operator' => $this->operatorInfo->load(),

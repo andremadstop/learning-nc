@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Integration;
 
 use OCA\Learning\AppInfo\Application;
 use OCP\App\IAppManager;
+use OCP\BackgroundJob\IJobList;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
 
@@ -21,5 +22,23 @@ final class AppBootsTest extends TestCase {
 		$this->assertSame((string)$info->version, $appManager->getAppVersion(Application::APP_ID, false));
 
 		$this->assertInstanceOf(Application::class, Server::get(Application::class));
+	}
+
+	/**
+	 * Audit #206: boot() no longer registers the timed jobs on every request. Nextcloud must have
+	 * registered every job of <background-jobs> when it installed the app, or the reminders, the
+	 * audit checkpoints and the retention job would silently never run.
+	 */
+	public function testEveryDeclaredBackgroundJobIsRegistered(): void {
+		$info = simplexml_load_string((string)file_get_contents(__DIR__ . '/../../appinfo/info.xml'));
+		$this->assertNotFalse($info);
+		$jobs = Server::get(IJobList::class);
+		$declared = 0;
+		foreach ($info->{'background-jobs'}->job as $job) {
+			$class = trim((string)$job);
+			$declared++;
+			$this->assertTrue($jobs->has($class, null), "$class is not in the job list");
+		}
+		$this->assertGreaterThan(1, $declared);
 	}
 }

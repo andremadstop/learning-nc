@@ -2,14 +2,6 @@
 declare(strict_types=1);
 namespace OCA\Learning\AppInfo;
 
-use OCA\Learning\BackgroundJob\AuditCheckpointJob;
-use OCA\Learning\BackgroundJob\ChunkingJob;
-use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
-use OCA\Learning\BackgroundJob\NotificationJob;
-use OCA\Learning\BackgroundJob\RecertPeriodCloseJob;
-use OCA\Learning\BackgroundJob\RetentionJob;
-use OCA\Learning\BackgroundJob\SendRemindersJob;
-use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\AuditVerifyCommand;
 use OCA\Learning\Command\ExportCourseCommand;
@@ -24,8 +16,6 @@ use OCA\Learning\Service\CourseMergeService;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\DataMobilityService;
-use OCA\Learning\Service\OperatorInfo;
-use OCA\Learning\Service\ThemingLegalLinkSync;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Search\PoolSearchProvider;
@@ -37,9 +27,7 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\BackgroundJob\IJobList;
-use OCP\IConfig;
 use OCP\IGroupManager;
-use OCP\IURLGenerator;
 use OCP\IUserManager;
 use OCP\Settings\IManager as SettingsManager;
 use OCP\User\Events\UserDeletedEvent;
@@ -114,43 +102,16 @@ class Application extends App implements IBootstrap {
         });
     }
 
+    /**
+     * Runs on every request, so it stays free of database work (audit #206). Until 5.10 it also
+     * checked eight background jobs (eight SELECTs on oc_jobs per request) and wrote the theming
+     * legal links. The timed jobs are now declared in info.xml (<background-jobs>), which Nextcloud
+     * registers on install and upgrade; the retired NotificationJob is removed by the repair step
+     * RemoveRetiredJobs; the legal links follow the operator details when an admin saves them
+     * (LegalOperatorController).
+     */
     public function boot(IBootContext $context): void {
-        $container = $context->getServerContainer();
-        $this->registerHelpSettings($container);
-        $this->syncThemingLegalLinks($container);
-        $jobList = $container->get(IJobList::class);
-        try {
-            if ($jobList->has(NotificationJob::class, null)) {
-                $jobList->remove(NotificationJob::class, null);
-            }
-            if (!$jobList->has(SendRemindersJob::class, null)) {
-                $jobList->add(SendRemindersJob::class);
-            }
-            if (!$jobList->has(ConsistencyCheckJob::class, null)) {
-                $jobList->add(ConsistencyCheckJob::class);
-            }
-            if (!$jobList->has(WeeklyLernplanJob::class, null)) {
-                $jobList->add(WeeklyLernplanJob::class);
-            }
-            if (!$jobList->has(ChunkingJob::class, null)) {
-                $jobList->add(ChunkingJob::class);
-            }
-            if (!$jobList->has(AuditCheckpointJob::class, null)) {
-                $jobList->add(AuditCheckpointJob::class);
-            }
-            if (!$jobList->has(RecertPeriodCloseJob::class, null)) {
-                $jobList->add(RecertPeriodCloseJob::class);
-            }
-            if (!$jobList->has(RetentionJob::class, null)) {
-                $jobList->add(RetentionJob::class);
-            }
-        } catch (\Throwable $e) {
-            // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)
-            $container->get(LoggerInterface::class)->warning(
-                'Learning: job registration failed: ' . $e->getMessage(),
-                ['app' => 'learning']
-            );
-        }
+        $this->registerHelpSettings($context->getServerContainer());
     }
 
     private function registerHelpSettings(ContainerInterface $container): void {
@@ -161,26 +122,6 @@ class Application extends App implements IBootstrap {
         } catch (\Throwable $e) {
             $container->get(LoggerInterface::class)->warning(
                 'Learning: help settings registration failed: ' . $e->getMessage(),
-                ['app' => self::APP_ID]
-            );
-        }
-    }
-
-    /**
-     * Takes over the Nextcloud imprint/privacy links only once an operator is configured, never
-     * over a link set elsewhere (audit 2026-11; logic in ThemingLegalLinkSync).
-     */
-    private function syncThemingLegalLinks(ContainerInterface $container): void {
-        try {
-            $config = $container->get(IConfig::class);
-            (new ThemingLegalLinkSync(
-                $config,
-                $container->get(IURLGenerator::class),
-                new OperatorInfo($config),
-            ))->sync();
-        } catch (\Throwable $e) {
-            $container->get(LoggerInterface::class)->warning(
-                'Learning: legal link sync failed: ' . $e->getMessage(),
                 ['app' => self::APP_ID]
             );
         }
