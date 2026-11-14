@@ -333,7 +333,7 @@ export default {
 .preview-section h4 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--color-main-text); }
 .preview-item { padding: 6px 10px; background: var(--color-background-hover); border-radius: 4px; font-size: 13px; margin-bottom: 4px; color: var(--color-main-text); }
 .preview-answers { color: var(--color-text-maxcontrast); font-size: 12px; }
-.preview-item--error { border-left: 3px solid var(--color-error); }
+.preview-item--error { border-inline-start: 3px solid var(--color-error); }
 .preview-item-error { color: var(--color-error-text); font-size: 12px; }
 .preview-summary { font-size: 13px; margin-top: 8px; }
 .preview-error { margin-bottom: 16px; }

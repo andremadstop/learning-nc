@@ -27,3 +27,12 @@ describe('import dialogs keep file name and size apart in RTL (GitHub #38)', () 
 		expect(decls).not.toMatch(/margin-(left|right)\s*:/)
 	})
 })
+
+describe('the error stripe of a preview row sits at the start of the line in RTL (GitHub #38)', () => {
+	it('ImportDialog.vue .preview-item--error uses a logical border', () => {
+		const decls = ruleFor('ImportDialog.vue', '.preview-item--error')
+		expect(decls, '.preview-item--error not found').not.toBe('')
+		expect(decls).toMatch(/border-inline-start:\s*3px solid var\(--color-error\)/)
+		expect(decls).not.toMatch(/border-(left|right)\s*:/)
+	})
+})
