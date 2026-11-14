@@ -13,7 +13,11 @@ namespace OCA\Learning\Service;
  *   - pools: per required pool {pool_id, title, best_score, passed};
  *   - certificate: the newest certificate row for user+course, or null;
  *   - issuanceError: why a passed learner has no certificate ('signing_unavailable' |
- *     'issuance_failed' | 'instructor_of_course'), never the underlying exception text.
+ *     'issuance_failed' | 'instructor_of_course'), never the underlying exception text;
+ *   - renewalOpenSince: since when passing the exam(s) renews the current certificate (the
+ *     first reminder opened renewal), null while renewal is not open or does not apply;
+ *   - renewalOpensAt: when renewal will open for the current certificate, null once it is open
+ *     or when it does not apply (no expiry, revoked, no current certificate).
  * poolsMastered keeps its name for API compatibility; it now means "all required pools passed".
  */
 final class PassResult {
@@ -39,6 +43,8 @@ final class PassResult {
         private readonly array $pools = [],
         private readonly ?array $certificate = null,
         private readonly ?string $issuanceError = null,
+        private readonly ?int $renewalOpenSince = null,
+        private readonly ?int $renewalOpensAt = null,
     ) {}
 
     public static function notApplicable(): self {
@@ -57,6 +63,8 @@ final class PassResult {
     /** @return array{verification_id: string, issued_at: int, expires_at: int|null, expired: bool, revoked: bool}|null */
     public function getCertificate(): ?array { return $this->certificate; }
     public function getIssuanceError(): ?string { return $this->issuanceError; }
+    public function getRenewalOpenSince(): ?int { return $this->renewalOpenSince; }
+    public function getRenewalOpensAt(): ?int { return $this->renewalOpensAt; }
 
     /** A current certificate exists: issued, not revoked, not expired. */
     public function isCertificateIssued(): bool {
@@ -78,6 +86,8 @@ final class PassResult {
             'certificate_issued' => $this->isCertificateIssued(),
             'certificate'        => $this->certificate,
             'issuance_error'     => $this->issuanceError,
+            'renewal_open_since' => $this->renewalOpenSince,
+            'renewal_opens_at'   => $this->renewalOpensAt,
         ];
     }
 }

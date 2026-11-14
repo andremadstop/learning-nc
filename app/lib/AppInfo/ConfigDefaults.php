@@ -79,6 +79,31 @@ final class ConfigDefaults {
     }
 
     /**
+     * The renewal window in days before expiry: the first reminder opens renewal (GitHub #35).
+     *
+     * A reminder invites the learner to renew, so from the moment the earliest reminder is due
+     * (the largest threshold) a passed exam renews the certificate — PassCriteriaService opens
+     * the window, IssuanceService replaces the certificate. Derived from the same parser as the
+     * reminders, so the invitation and the window can never disagree.
+     */
+    public static function renewalWindowDays(\OCP\IConfig $config): int {
+        return max(self::reminderThresholds($config));
+    }
+
+    /**
+     * When renewal opens for a certificate expiring at $expiresAt: expiry minus
+     * renewalWindowDays() calendar days in the server timezone — the exact boundary at which
+     * RecertReminderService fires the first reminder (DST-safe, not N*86400 seconds), so a
+     * learner who follows the reminder at once never finds the window still closed.
+     */
+    public static function renewalOpensAt(\OCP\IConfig $config, int $expiresAt): int {
+        return (new \DateTimeImmutable('@' . $expiresAt))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
+            ->modify('-' . self::renewalWindowDays($config) . ' days')
+            ->getTimestamp();
+    }
+
+    /**
      * SINGLE parser for the recert grace window (164-07 review HIGH 4): a NEGATIVE
      * 'recert_grace_days' would flip the cutoff into the future — closeExpiredPeriods would
      * close still-valid certs and deriveLifecycleState would mark unexpired certs 'overdue'.

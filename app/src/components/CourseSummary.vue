@@ -32,6 +32,7 @@
 				<!-- Outcome -->
 				<div class="zeugnis-state">
 					<span v-if="hasPassed" class="zeugnis-label zeugnis-passed">✓ {{ t('learning', 'Bestanden') }}</span>
+					<span v-else-if="renewalOpen" class="zeugnis-label zeugnis-renewal-open">{{ t('learning', 'Erneuerung offen') }}</span>
 					<span v-else class="zeugnis-label zeugnis-not-passed">{{ t('learning', 'Noch nicht bestanden') }}</span>
 					<span v-if="hasPassed && passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
 				</div>
@@ -59,6 +60,11 @@
 						</span>
 					</template>
 				</div>
+				<!-- GitHub #35: the first reminder opens renewal; exams from then on renew the certificate. -->
+				<NcNoteCard v-if="renewalText" type="info" class="zeugnis-renewal">
+					{{ renewalText }}
+				</NcNoteCard>
+				<p v-else-if="renewalOpensText" class="zeugnis-meta zeugnis-renewal-opens">{{ renewalOpensText }}</p>
 				<NcButton
 					v-if="certVerificationId"
 					variant="primary"
@@ -438,6 +444,26 @@ export default {
 			}
 			return t('learning', 'Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens {limit}.', { limit: policy.limit_per_day })
 		},
+		// GitHub #35: renewal is open since the first reminder (server: renewal_open_since).
+		renewalOpen() {
+			return Number(this.passStatus?.renewal_open_since) > 0
+		},
+		// While still valid the new term continues from the old expiry (IssuanceService anchor);
+		// after expiry (period not yet closed) it starts with the new certificate.
+		renewalText() {
+			if (!this.renewalOpen || this.certificateRevoked) return ''
+			const open = t('learning', 'Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.')
+			const cert = this.certificate
+			if (cert && !cert.expired && cert.expires_at) {
+				return open + ' ' + t('learning', 'Die neue Gültigkeit schließt an den {date} an.', { date: this.formatTimestamp(cert.expires_at) })
+			}
+			return open
+		},
+		renewalOpensText() {
+			const opensAt = Number(this.passStatus?.renewal_opens_at)
+			if (!(opensAt > 0) || this.certificateRevoked) return ''
+			return t('learning', 'Die Erneuerung öffnet am {date}.', { date: this.formatTimestamp(opensAt) })
+		},
 		// Same precedence as IssuanceService::computeExpiry: months (when set) win over the legacy days.
 		validityText() {
 			if (!this.course) return ''
@@ -815,6 +841,10 @@ export default {
 
 .zeugnis-not-passed {
 	color: var(--color-warning);
+}
+
+.zeugnis-renewal-open {
+	color: var(--color-primary-element);
 }
 
 .zeugnis-na {

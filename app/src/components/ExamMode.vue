@@ -602,10 +602,11 @@ export default {
       if (c.passed && c.certificate && c.certificate.revoked) {
         return { type: 'error', text: t('learning', 'Your certificate for this course was revoked. Please contact your instructor.') }
       }
-      // GitHub #35: the certificate expired and no recertification period is open yet (the grace
-      // days after the expiry). The rule still reads the old exams as passed, but nothing can be
-      // issued, and an exam taken now does not count once the period opens (PassCriteriaService
-      // issuanceWindow). The grace days are server config, not in this block — no date is promised.
+      // GitHub #35: the certificate expired and nothing can be issued. Since renewal opens with the
+      // first reminder and stays open past the expiry until the period closes, a pass in that
+      // window is issued (certificate_issued above); this is left for an expired certificate whose
+      // period was closed with no open recertification period after it (e.g. a cancelled
+      // assignment). The rule still reads the old exams as passed, but they renew nothing.
       const expired = !!(c.certificate && c.certificate.expired && !c.certificate.revoked)
       const expiry = expired && c.certificate.expires_at
         ? t('learning', 'Your certificate for this course expired on {date}.', { date: new Date(c.certificate.expires_at * 1000).toLocaleDateString() })
@@ -614,7 +615,7 @@ export default {
         return {
           type: 'warning',
           text: expiry || t('learning', 'Your certificate for this course has expired.'),
-          retake: t('learning', 'Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.'),
+          retake: t('learning', 'Exams taken now do not renew it. A new certificate needs an open recertification period. Please contact your instructor.'),
         }
       }
       if (c.passed) {

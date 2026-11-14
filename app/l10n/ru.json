@@ -2231,7 +2231,7 @@
         "Zertifikat-ID": "ID сертификата",
         "Zu LinkedIn hinzufügen (öffnet LinkedIn)": "Добавить в LinkedIn (откроется LinkedIn)",
         "recert_reminder_subject": "Срок действия вашего сертификата «%2$s» истекает через %1$s дн.",
-        "recert_reminder_body": "Пожалуйста, продлите сертификацию по курсу «%1$s» до %2$s, чтобы ваш сертификат оставался действительным.",
+        "recert_reminder_body": "Ваш сертификат по курсу «%1$s» действителен до %2$s. Продление уже открыто: если вы сейчас сдадите экзамен(ы) курса, сертификат будет продлён, а новый срок начнётся с %2$s.",
         "cert_status_valid": "Действителен",
         "cert_status_expiring": "Скоро истекает",
         "cert_status_expired": "Истёк",
@@ -3358,6 +3358,10 @@
         "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.": "Режим обучения «Экзамен» в этом курсе отключён. Сертификаты выдаются только за экзамены, начатые здесь, в курсе, поэтому никто не может получить сертификат. Включите «Экзамен» в режимах обучения выше и сохраните.",
         "Your certificate for this course expired on {date}.": "Срок действия вашего сертификата по этому курсу истёк {date}.",
         "Your certificate for this course has expired.": "Срок действия вашего сертификата по этому курсу истёк.",
-        "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.": "Экзамены, сданные сейчас, его не продлевают. Повторная попытка засчитывается для нового сертификата, как только откроется период продления — после льготного срока, следующего за истечением."
+        "Exams taken now do not renew it. A new certificate needs an open recertification period. Please contact your instructor.": "Экзамены, сданные сейчас, его не продлевают. Для нового сертификата нужен открытый период повторной сертификации. Пожалуйста, обратитесь к преподавателю.",
+        "Erneuerung offen": "Продление открыто",
+        "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Продление открыто: если вы сейчас сдадите экзамен(ы), ваш сертификат будет продлён.",
+        "Die neue Gültigkeit schließt an den {date} an.": "Новый срок действия начнётся с {date}.",
+        "Die Erneuerung öffnet am {date}.": "Продление откроется {date}."
     }
 }

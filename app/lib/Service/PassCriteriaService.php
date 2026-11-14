@@ -3,12 +3,14 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\AppInfo\ConfigDefaults;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -34,6 +36,9 @@ use Psr\Log\LoggerInterface;
  * course's counting exam as a preview — that preview must not leave a certificate or an entry in
  * the tamper-evident compliance chain behind.
  *
+ * Renewal (GitHub #35): from the first recertification reminder on, a pass with exams taken in
+ * that window renews the current certificate (issuanceWindow(), IssuanceService `renewing`).
+ *
  * PASS-07: First qualification emits a course.passed audit event (idempotent).
  * Triggers: CertificationTrigger right after a counting exam completes, and lazily
  * GET /pass-status (the retry path). Both go through evaluate(); the union guard plus the
@@ -54,6 +59,7 @@ class PassCriteriaService {
         private readonly CertificateMapper $certificateMapper,
         private readonly AssignmentService $assignmentService,
         private readonly CourseMemberMapper $courseMemberMapper,
+        private readonly IConfig $config,
     ) {}
 
     public function evaluate(string $userId, int $courseId): PassResult {
@@ -87,6 +93,7 @@ class PassCriteriaService {
                 // RECERT-05 union guard: only attempt issuance when the student is eligible.
                 // Branch A: never issued before (ASSIGN-04: self-learner path, no assignment row).
                 // Branch B: open per-user recertification period with an issuable status.
+                // Renewal: the current certificate's renewal window is open (first reminder).
                 try {
                     // CERT-05: issue via issueIfPassedResult so the CAS winner/loser is known.
                     // Emit COURSE_PASSED and advance assignment status ONLY on the DB-insert winner
@@ -104,7 +111,7 @@ class PassCriteriaService {
                     $preResult = new PassResult($passed, $score, $threshold, $poolsMastered, null);
                     $this->db->beginTransaction();
                     try {
-                        $issueResult = $this->issuanceService->issueIfPassedResult($userId, $courseId, $preResult);
+                        $issueResult = $this->issuanceService->issueIfPassedResult($userId, $courseId, $preResult, $window['renewing']);
 
                         if ($issueResult !== null && $issueResult->wasCreated) {
                             // FIX-3: ComplianceAuditException is NOT a provisioning error — it means the
@@ -117,7 +124,8 @@ class PassCriteriaService {
                                 'passed_at' => time(),
                             ]);
                             // Advance assignment status to 'passed' for the active period (no-op for
-                            // self-enrolled learners who have no assignment row).
+                            // self-enrolled learners who have no assignment row; on a renewal the
+                            // period is usually 'passed' already and this rewrites the same value).
                             $this->assignmentService->markPassed($userId, $courseId);
                         }
                         $this->db->commit();
@@ -152,6 +160,9 @@ class PassCriteriaService {
             $passedAt = $this->getPassedAt($userId, $courseId);
         }
 
+        $renewalOpensAt = $this->renewalOpensAt($certificate);
+        $renewalOpen = $renewalOpensAt !== null && time() >= $renewalOpensAt;
+
         return new PassResult(
             $passed,
             $score,
@@ -163,7 +174,27 @@ class PassCriteriaService {
             $rule['pools'],
             $this->describeCertificate($certificate),
             $issuanceError,
+            $renewalOpen ? $renewalOpensAt : null,
+            $renewalOpen ? null : $renewalOpensAt,
         );
+    }
+
+    /**
+     * When the renewal window of $certificate opens (GitHub #35), or null when it has none:
+     * only a certificate that is not revoked, still owns its idempotency slot (the current
+     * certificate of its period — a closed or superseded one has released it) and expires.
+     * The window opens with the first reminder (ConfigDefaults::renewalOpensAt()) and stays open
+     * past expiry until the daily RecertPeriodCloseJob closes the period, so there is no gap
+     * between renewal and recertification.
+     */
+    private function renewalOpensAt(?Certificate $certificate): ?int {
+        if ($certificate === null
+            || (bool)$certificate->getRevoked()
+            || $certificate->getActiveIdemKey() === null
+            || $certificate->getExpiresAt() === null) {
+            return null;
+        }
+        return ConfigDefaults::renewalOpensAt($this->config, (int)$certificate->getExpiresAt());
     }
 
     /**
@@ -372,21 +403,42 @@ class PassCriteriaService {
      * for revoke-and-reassign: exams from before the revoke must not reissue. null = no limit
      * (Branch A, or no issuance possible at all).
      *
-     * @return array{may_issue: bool, completed_after: int|null}
+     * Renewal (GitHub #35): the reminders invite a renewal 30 and 7 days before expiry, but the
+     * next period only opens after expiry + recert_grace_days. So, independent of the assignment
+     * status (in the current period it is 'passed'), the window is also open while the newest
+     * certificate is not revoked, still owns its slot, expires, and now >= renewalOpensAt()
+     * (expiry minus the first reminder threshold) — which also covers the time after expiry until
+     * the close job runs. Only exams completed at or after max(issued_at + 1, window start) count,
+     * so the exam that earned the current certificate never renews it. The certificate is handed
+     * to IssuanceService as `renewing`; it releases the slot by CAS. Checked before Branch B:
+     * a slot-owning certificate can never be issued over by Branch B (its INSERT hits the UNIQUE
+     * slot and dedupes), so this changes nothing there; once the period is closed the slot is
+     * NULL and only Branch B applies. Outside the window Branch B behaves as before.
+     *
+     * @return array{may_issue: bool, completed_after: int|null, renewing: Certificate|null}
      */
     private function issuanceWindow(string $userId, int $courseId, ?Certificate $newestCertificate): array {
         // Branch A: student has no certificate history at all — always allow.
         // $newestCertificate is the UNFILTERED findByUserAndCourse() row read by evaluate().
         if ($newestCertificate === null) {
-            return ['may_issue' => true, 'completed_after' => null];
+            return ['may_issue' => true, 'completed_after' => null, 'renewing' => null];
+        }
+        // Renewal: the current certificate's window is open (see above).
+        $opensAt = $this->renewalOpensAt($newestCertificate);
+        if ($opensAt !== null && time() >= $opensAt) {
+            return [
+                'may_issue' => true,
+                'completed_after' => max((int)$newestCertificate->getIssuedAt() + 1, $opensAt),
+                'renewing' => $newestCertificate,
+            ];
         }
         // Branch B: cert exists, but there is an open recertification period
         $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId]);
         $state = $states[$userId] ?? null;
         if ($state === null || !in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true)) {
-            return ['may_issue' => false, 'completed_after' => null];
+            return ['may_issue' => false, 'completed_after' => null, 'renewing' => null];
         }
-        return ['may_issue' => true, 'completed_after' => (int)($state['assigned_at'] ?? 0)];
+        return ['may_issue' => true, 'completed_after' => (int)($state['assigned_at'] ?? 0), 'renewing' => null];
     }
 
     /**

@@ -431,4 +431,56 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 		expect(noCooldown.retakeText).toBe('Wiederholen ist erlaubt. Versuche pro Pool in 24 Stunden: höchstens 3.')
 		expect(noCooldown.validityText).toBe('Gültigkeit: unbegrenzt')
 	})
+
+	it('says renewal is open and that the new validity continues from the old expiry', () => {
+		const expires = 1_900_000_000
+		const instance = createLiveInstance({
+			course: certCourse(),
+			passStatus: {
+				applicable: true,
+				passed: false,
+				renewal_open_since: expires - 30 * 86400,
+				renewal_opens_at: null,
+				certificate: { verification_id: 'v1', issued_at: 1_870_000_000, expires_at: expires, expired: false, revoked: false },
+			},
+		})
+
+		expect(instance.renewalOpen).toBe(true)
+		expect(instance.renewalText).toContain('Die Erneuerung ist offen')
+		expect(instance.renewalText).toContain(instance.formatTimestamp(expires))
+		expect(instance.renewalOpensText).toBe('')
+	})
+
+	it('after expiry the renewal note does not promise a continuation', () => {
+		const instance = createLiveInstance({
+			course: certCourse(),
+			passStatus: {
+				applicable: true,
+				passed: false,
+				renewal_open_since: 1_800_000_000,
+				certificate: { verification_id: 'v1', issued_at: 1_770_000_000, expires_at: 1_802_000_000, expired: true, revoked: false },
+			},
+		})
+
+		expect(instance.renewalText).toBe('Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.')
+	})
+
+	it('names the day renewal opens while it is not open yet, and nothing without a renewal', () => {
+		const opens = 1_900_000_000
+		const instance = createLiveInstance({
+			course: certCourse(),
+			passStatus: { applicable: true, passed: true, renewal_open_since: null, renewal_opens_at: opens,
+				certificate: { verification_id: 'v1', issued_at: 1_870_000_000, expires_at: opens + 30 * 86400, expired: false, revoked: false } },
+		})
+		const none = createLiveInstance({
+			course: certCourse(),
+			passStatus: { applicable: true, passed: true, renewal_open_since: null, renewal_opens_at: null },
+		})
+
+		expect(instance.renewalOpen).toBe(false)
+		expect(instance.renewalText).toBe('')
+		expect(instance.renewalOpensText).toBe(`Die Erneuerung öffnet am ${instance.formatTimestamp(opens)}.`)
+		expect(none.renewalText).toBe('')
+		expect(none.renewalOpensText).toBe('')
+	})
 })

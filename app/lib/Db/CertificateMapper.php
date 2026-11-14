@@ -58,6 +58,9 @@ class CertificateMapper extends QBMapper {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
            ->orderBy('issued_at', 'DESC')
+           // Tie-break (GitHub #35): a renewal adds a row per term; two rows issued within one
+           // second must still resolve to the later one.
+           ->addOrderBy('id', 'DESC')
            ->setMaxResults(1);
         try {
             /** @var Certificate */
@@ -65,6 +68,24 @@ class CertificateMapper extends QBMapper {
         } catch (DoesNotExistException $e) {
             return null;
         }
+    }
+
+    /**
+     * Renewal CAS (GitHub #35): free the idempotency slot of the certificate being renewed, so
+     * its successor can take it. Pinned to the specific row AND its current slot value — a
+     * concurrent renewal that already released it (or a newer certificate owning the slot)
+     * matches 0 rows. Leaves expires_at and revoked untouched: a renewed certificate stays valid
+     * until its own expiry, it is superseded, not withdrawn.
+     *
+     * @return int affected rows: 1 = this caller won the slot, 0 = it lost
+     */
+    public function releaseSlot(int $certId, string $idemKey): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update($this->getTableName())
+           ->set('active_idem_key', $qb->createNamedParameter(null, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_NULL))
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($certId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('active_idem_key', $qb->createNamedParameter($idemKey)));
+        return $qb->executeStatement();
     }
 
     /**

@@ -2248,7 +2248,7 @@
         "← Zurück zu Pools": "← Zurück zu Pools",
         "← Zurück zum Kurs": "← Zurück zum Kurs",
         "recert_reminder_subject": "Ihr Zertifikat „%2$s\" läuft in %1$s Tagen ab",
-        "recert_reminder_body": "Bitte erneuern Sie Ihre Zertifizierung für „%1$s\" bis zum %2$s, um Ihren Nachweis gültig zu halten.",
+        "recert_reminder_body": "Ihr Zertifikat für „%1$s\" ist bis zum %2$s gültig. Die Erneuerung ist jetzt offen: Wenn Sie die Prüfung(en) des Kurses jetzt bestehen, wird es erneuert, und die neue Gültigkeit schließt an den %2$s an.",
         "cert_status_valid": "Gültig",
         "cert_status_expiring": "Läuft bald ab",
         "cert_status_expired": "Abgelaufen",
@@ -3358,6 +3358,10 @@
         "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.": "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.",
         "Your certificate for this course expired on {date}.": "Dein Zertifikat für diesen Kurs ist am {date} abgelaufen.",
         "Your certificate for this course has expired.": "Dein Zertifikat für diesen Kurs ist abgelaufen.",
-        "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.": "Prüfungen, die du jetzt ablegst, verlängern es nicht. Eine Wiederholung zählt für ein neues Zertifikat, sobald der Erneuerungszeitraum beginnt, nach der Karenzzeit im Anschluss an den Ablauf."
+        "Exams taken now do not renew it. A new certificate needs an open recertification period. Please contact your instructor.": "Prüfungen, die du jetzt ablegst, erneuern es nicht. Für ein neues Zertifikat braucht es einen offenen Rezertifizierungszeitraum. Bitte wende dich an deine Kursleitung.",
+        "Erneuerung offen": "Erneuerung offen",
+        "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.",
+        "Die neue Gültigkeit schließt an den {date} an.": "Die neue Gültigkeit schließt an den {date} an.",
+        "Die Erneuerung öffnet am {date}.": "Die Erneuerung öffnet am {date}."
     }
 }

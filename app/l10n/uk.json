@@ -2248,7 +2248,7 @@
         "← Zurück zu Pools": "← Назад до пулів",
         "← Zurück zum Kurs": "← Назад до курсу",
         "recert_reminder_subject": "Термін дії вашого сертифіката \"%2$s\" спливає через %1$s днів",
-        "recert_reminder_body": "Поновіть свою сертифікацію за \"%1$s\" до %2$s, щоб зберегти чинність документа.",
+        "recert_reminder_body": "Ваш сертифікат за курсом \"%1$s\" дійсний до %2$s. Поновлення вже відкрите: якщо ви зараз складете іспит(и) курсу, сертифікат буде поновлено, а новий строк почнеться з %2$s.",
         "cert_status_valid": "Дійсний",
         "cert_status_expiring": "Скоро спливає",
         "cert_status_expired": "Термін дії минув",
@@ -3358,6 +3358,10 @@
         "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.": "Режим навчання «Іспит» у цьому курсі вимкнено. Сертифікати видаються лише за іспити, розпочаті тут, у курсі, тож ніхто не може отримати сертифікат. Увімкніть «Іспит» у режимах навчання вище та збережіть.",
         "Your certificate for this course expired on {date}.": "Термін дії вашого сертифіката з цього курсу закінчився {date}.",
         "Your certificate for this course has expired.": "Термін дії вашого сертифіката з цього курсу закінчився.",
-        "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.": "Іспити, складені зараз, його не подовжують. Повторна спроба зараховується для нового сертифіката, щойно відкриється період поновлення — після пільгового строку, що настає після закінчення терміну дії."
+        "Exams taken now do not renew it. A new certificate needs an open recertification period. Please contact your instructor.": "Іспити, складені зараз, його не поновлюють. Для нового сертифіката потрібен відкритий період повторної сертифікації. Будь ласка, зверніться до викладача.",
+        "Erneuerung offen": "Поновлення відкрите",
+        "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Поновлення відкрите: якщо ви зараз складете іспит(и), ваш сертифікат буде поновлено.",
+        "Die neue Gültigkeit schließt an den {date} an.": "Новий строк дії почнеться з {date}.",
+        "Die Erneuerung öffnet am {date}.": "Поновлення відкриється {date}."
     }
 }

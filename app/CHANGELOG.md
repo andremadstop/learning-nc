@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- **Renewal opens with the first reminder** (GitHub #35). The reminders 30 and 7 days before
+  expiry invited an exam that did not count: in 5.10.0 a recertification only counted exams of
+  the new period, and that period opened only after the expiry plus the grace days. Now, from the
+  first reminder on (the largest of `recert_reminder_thresholds`, default 30 days before expiry)
+  and until the daily job closes the period after the grace days, passing the exam(s) renews the
+  current certificate. Only exams taken in that window count, never the one that earned the
+  current certificate.
+- **Renewing early costs no validity.** The new certificate's validity continues from the old
+  expiry (when that is still ahead), not from the day of the renewal exam; after the expiry it
+  starts on the renewal day. The old certificate is superseded, not withdrawn: it stays valid
+  until its own expiry and gets no further reminders. The new `cert.issued` audit event names the
+  certificate it renews (`renews`).
+- The reminder notification and the completion tab now say that an exam renews the certificate,
+  and the tab shows the day renewal opens.
+- The course certificate report filtered by expiry no longer lists a certificate that was
+  already renewed or replaced; the unfiltered history still lists every certificate.
+
 ## [5.10.0] - 2026-11-13 — Certification, enrollment and course materials
 
 Reported by alphalib-g in GitHub #35: a small organisation that certifies its people every year

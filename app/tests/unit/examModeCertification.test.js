@@ -148,7 +148,7 @@ describe('ExamMode — certification result (GitHub #35)', () => {
 			expect(msg).not.toBeNull()
 			expect(msg.type).toBe('warning')
 			expect(msg.text).toBe(`Your certificate for this course expired on ${expiredOn}.`)
-			expect(msg.retake).toBe('Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.')
+			expect(msg.retake).toBe('Exams taken now do not renew it. A new certificate needs an open recertification period. Please contact your instructor.')
 			expect(msg.verificationId).toBeUndefined()
 		})
 

@@ -322,6 +322,42 @@ class CertificateReportServiceTest extends TestCase {
     }
 
     /**
+     * GitHub #35: a renewed certificate stays valid until its own expiry but released its slot to
+     * the successor. The expiry list must not name a learner who already renewed; the history
+     * (no expiry filter) still lists both certificates.
+     */
+    public function testExpiringListLeavesOutSupersededCertificates(): void {
+        $old = $this->makeGroupCert('ana', 'Ana', 'score:90', 1000, self::NOW + 10 * 86400, 'vid-old');
+        $old->setId(1);
+        $old->setActiveIdemKey(null);
+        $renewed = $this->makeGroupCert('ana', 'Ana', 'score:91', 2000, self::NOW + 375 * 86400, 'vid-new');
+        $renewed->setId(2);
+        $renewed->setActiveIdemKey('ana:' . self::COURSE_ID);
+        $closed = $this->makeGroupCert('ben', 'Ben', 'score:85', 900, self::NOW - 20 * 86400, 'vid-ben');
+        $closed->setId(3);
+        $closed->setActiveIdemKey(null); // period closed, not recertified yet: still listed
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByCourseId')->willReturnCallback(
+            static fn(int $courseId, ?int $from, ?int $to, ?int $expiresBefore): array => $expiresBefore === null
+                ? [$renewed, $old, $closed]
+                : [$old, $closed]
+        );
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            ...$this->makeNewMocks()
+        );
+
+        $expiring = array_column($service->getCourseReport(self::COURSE_ID, 'alice', null, null, 30)['rows'], 'verification_id');
+        $history = array_column($service->getCourseReport(self::COURSE_ID, 'alice', null, null, null)['rows'], 'verification_id');
+
+        $this->assertSame(['vid-ben'], $expiring);
+        $this->assertSame(['vid-new', 'vid-old', 'vid-ben'], $history);
+    }
+
+    /**
      * REPORT-02: with no expiringDays the absolute cutoff is null (the mapper's IS NOT NULL / never-
      * expiring exclusion only engages when a cutoff is supplied); from/to still pass through.
      */

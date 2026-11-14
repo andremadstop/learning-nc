@@ -2231,7 +2231,7 @@
         "Zertifikat-ID": "Identifiant du certificat",
         "Zu LinkedIn hinzufügen (öffnet LinkedIn)": "Ajouter à LinkedIn (ouvre LinkedIn)",
         "recert_reminder_subject": "Votre certificat « %2$s » expire dans %1$s jours",
-        "recert_reminder_body": "Veuillez renouveler votre certification pour « %1$s » avant le %2$s afin de conserver un justificatif valide.",
+        "recert_reminder_body": "Votre certificat pour « %1$s » est valable jusqu'au %2$s. Le renouvellement est ouvert : si vous réussissez maintenant le ou les examens du cours, il est renouvelé, et la nouvelle validité prend le relais à partir du %2$s.",
         "cert_status_valid": "Valide",
         "cert_status_expiring": "Expire bientôt",
         "cert_status_expired": "Expiré",
@@ -3358,6 +3358,10 @@
         "Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.": "Le mode d'apprentissage « Examen » est désactivé dans ce cours. Les certificats ne s'obtiennent qu'avec des examens lancés ici, dans le cours : personne ne peut donc recevoir de certificat. Activez « Examen » dans les modes d'apprentissage ci-dessus et enregistrez.",
         "Your certificate for this course expired on {date}.": "Votre certificat pour ce cours a expiré le {date}.",
         "Your certificate for this course has expired.": "Votre certificat pour ce cours a expiré.",
-        "Exams taken now do not renew it. A retake counts towards a new certificate once the renewal period opens, after the grace period that follows the expiry.": "Les examens passés maintenant ne le renouvellent pas. Une nouvelle tentative compte pour un nouveau certificat dès que la période de renouvellement s'ouvre, après le délai de grâce qui suit l'expiration."
+        "Exams taken now do not renew it. A new certificate needs an open recertification period. Please contact your instructor.": "Les examens passés maintenant ne le renouvellent pas. Un nouveau certificat nécessite une période de recertification ouverte. Veuillez contacter votre formateur.",
+        "Erneuerung offen": "Renouvellement ouvert",
+        "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Le renouvellement est ouvert : si vous réussissez maintenant le ou les examens, votre certificat est renouvelé.",
+        "Die neue Gültigkeit schließt an den {date} an.": "La nouvelle validité prend le relais à partir du {date}.",
+        "Die Erneuerung öffnet am {date}.": "Le renouvellement ouvre le {date}."
     }
 }

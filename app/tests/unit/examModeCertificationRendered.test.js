@@ -64,12 +64,12 @@ describe('ExamMode certification note rendered (GitHub #35)', () => {
 		host?.remove()
 	})
 
-	it('passed earlier with an expired certificate: the note states the expiry and when a retake counts', async () => {
+	it('passed earlier with an expired certificate: the note states the expiry and that exams now renew nothing', async () => {
 		const note = await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: false, requirement: 'any_exam', certificate_issued: false, certificate: expiredCert, attempt_policy: policy })
 
 		expect(note).not.toBeNull()
 		expect(note.textContent).toContain(`expired on ${expiredOn}`)
-		expect(note.textContent).toContain('once the renewal period opens')
+		expect(note.textContent).toContain('needs an open recertification period')
 		expect(note.textContent).not.toContain('Open certificate')
 	})
 

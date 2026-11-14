@@ -305,6 +305,9 @@ class CertificateReportService {
             : null;
 
         $certs = $this->certificateMapper->findByCourseId($courseId, $from, $to, $expiresBefore);
+        if ($expiresBefore !== null) {
+            $certs = $this->withoutSuperseded($courseId, $certs);
+        }
 
         $rows = [];
         foreach ($certs as $cert) {
@@ -312,6 +315,43 @@ class CertificateReportService {
         }
 
         return ['rows' => $rows];
+    }
+
+    /**
+     * The expiry list names who still has to act. A certificate that was renewed (GitHub #35:
+     * renewal opens with the first reminder, the old certificate stays valid until its own
+     * expiry) or replaced after a recertification period is superseded: it released its slot
+     * and a newer certificate of the same learner exists. Listing it as "expiring" would name a
+     * learner who already renewed, so it is left out here; the full history (no expiry filter)
+     * still lists every certificate.
+     *
+     * @param Certificate[] $certs
+     * @return Certificate[]
+     */
+    private function withoutSuperseded(int $courseId, array $certs): array {
+        $released = array_filter($certs, static fn(Certificate $c): bool => $c->getActiveIdemKey() === null);
+        if ($released === []) {
+            return $certs;
+        }
+        // Newest certificate per learner over the whole course, not just the filtered window:
+        // the successor of an expiring certificate expires later and is outside the filter.
+        $newest = [];
+        foreach ($this->certificateMapper->findByCourseId($courseId, null, null, null) as $cert) {
+            $uid = (string)$cert->getUserId();
+            $current = $newest[$uid] ?? null;
+            if ($current === null
+                || (int)$cert->getIssuedAt() > (int)$current->getIssuedAt()
+                || ((int)$cert->getIssuedAt() === (int)$current->getIssuedAt() && (int)$cert->getId() > (int)$current->getId())) {
+                $newest[$uid] = $cert;
+            }
+        }
+        return array_values(array_filter($certs, static function (Certificate $c) use ($newest): bool {
+            if ($c->getActiveIdemKey() !== null) {
+                return true;
+            }
+            $latest = $newest[(string)$c->getUserId()] ?? null;
+            return $latest === null || (int)$latest->getId() === (int)$c->getId();
+        }));
     }
 
     /**

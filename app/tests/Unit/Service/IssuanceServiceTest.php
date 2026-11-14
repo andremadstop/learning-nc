@@ -105,7 +105,9 @@ class IssuanceServiceTest extends TestCase {
         int $issuedAt = self::ISSUED_AT,
         ?\Throwable $notifyThrows = null,
         ?\Throwable $signingThrows = null,
-        ?array &$notifySubject = null
+        ?array &$notifySubject = null,
+        ?int $releaseSlotResult = null,
+        ?array &$releaseSlotArgs = null
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
         $db = $db ?? new FakeDbConnection();
@@ -123,6 +125,17 @@ class IssuanceServiceTest extends TestCase {
 
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByUserAndCourse')->willReturn($existing);
+        // Renewal CAS: only a renewal (issueIfPassedResult with $renewing) may release a slot.
+        if ($releaseSlotResult !== null) {
+            $releaseRef = &$releaseSlotArgs;
+            $certMapper->expects($this->once())->method('releaseSlot')
+                ->willReturnCallback(function (int $id, string $key) use (&$releaseRef, $releaseSlotResult): int {
+                    $releaseRef = [$id, $key];
+                    return $releaseSlotResult;
+                });
+        } else {
+            $certMapper->expects($this->never())->method('releaseSlot');
+        }
         if ($expectInsert) {
             $captureRef = &$capture;
             $certMapper->expects($this->once())->method('insert')
@@ -707,5 +720,107 @@ class IssuanceServiceTest extends TestCase {
         $this->assertSame('certificate_issued', $subject['subject'] ?? null);
         $this->assertSame(self::COURSE_ID, $subject['params']['course_id'] ?? null);
         $this->assertSame('Security+ Kurs', $subject['params']['course_title'] ?? null);
+    }
+
+    // ---- GitHub #35: renewal from the first reminder on ------------------------------------
+
+    private function currentCert(int $expiresAt, string $vid = 'vid-current'): Certificate {
+        $cert = new Certificate();
+        $cert->setId(41);
+        $cert->setVerificationId($vid);
+        $cert->setUserId(self::USER);
+        $cert->setCourseId(self::COURSE_ID);
+        $cert->setRevoked(false);
+        $cert->setIssuedAt(self::ISSUED_AT - 340 * 86400);
+        $cert->setExpiresAt($expiresAt);
+        $cert->setActiveIdemKey(self::USER . ':' . self::COURSE_ID);
+        $cert->setCredentialJson('a.b.c');
+        return $cert;
+    }
+
+    private function plusMonths(int $ts, int $months): int {
+        return (new \DateTimeImmutable('@' . $ts))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
+            ->modify('+' . $months . ' months')
+            ->getTimestamp();
+    }
+
+    public function testRenewingEarlyContinuesFromTheOldExpiryAndReleasesTheOldSlot(): void {
+        $oldExpiry = self::ISSUED_AT + 20 * 86400; // renewing 20 days early
+        $old = $this->currentCert($oldExpiry);
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CERT_ISSUED,
+            self::USER,
+            $this->callback(fn(array $ctx): bool => ($ctx['renews'] ?? null) === 'vid-current'
+                && ($ctx['course_id'] ?? null) === self::COURSE_ID
+                && isset($ctx['verification_id']) && $ctx['verification_id'] !== 'vid-current')
+        );
+        $db = new FakeDbConnection();
+        $captured = null;
+        $releaseArgs = null;
+        $service = $this->makeService($old, $this->makeCourse(validityMonths: 12), $captured,
+            audit: $audit, db: $db, releaseSlotResult: 1, releaseSlotArgs: $releaseArgs);
+
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult(), $old);
+
+        $this->assertNotNull($result);
+        $this->assertTrue($result->wasCreated);
+        $this->assertSame([41, self::USER . ':' . self::COURSE_ID], $releaseArgs, 'the CAS is pinned to the old row and its slot');
+        $this->assertSame($this->plusMonths($oldExpiry, 12), $captured->getExpiresAt(), 'renewing early costs no validity');
+        $this->assertSame(self::ISSUED_AT, $captured->getIssuedAt());
+        $this->assertSame(self::USER . ':' . self::COURSE_ID, $captured->getActiveIdemKey(), 'the new certificate takes the slot');
+        $this->assertSame('2025-06-15T15:06:40Z', $this->payloadOf($captured)['validFrom'], 'validFrom stays the issue time');
+        $this->assertSame($oldExpiry, $old->getExpiresAt(), 'the old certificate keeps its expiry');
+        $this->assertFalse($old->getRevoked(), 'the old certificate is superseded, not withdrawn');
+        $this->assertSame(1, $db->commitCalls);
+    }
+
+    public function testRenewingAfterExpiryStartsTheNewTermNow(): void {
+        $old = $this->currentCert(self::ISSUED_AT - 3 * 86400); // expired, close job not run yet
+        $captured = null;
+        $service = $this->makeService($old, $this->makeCourse(validityMonths: 12), $captured, releaseSlotResult: 1);
+
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult(), $old);
+
+        $this->assertTrue($result->wasCreated);
+        $this->assertSame($this->plusMonths(self::ISSUED_AT, 12), $captured->getExpiresAt());
+    }
+
+    public function testRenewalCasLoserDedupesWithoutAuditOrNotification(): void {
+        $old = $this->currentCert(self::ISSUED_AT + 10 * 86400);
+        $winner = $this->currentCert(self::ISSUED_AT + 400 * 86400, 'vid-concurrent-winner');
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $db = new FakeDbConnection();
+        $captured = null;
+        $service = $this->makeService($winner, $this->makeCourse(validityMonths: 12), $captured,
+            expectInsert: false, expectNotify: false, audit: $audit, db: $db, releaseSlotResult: 0);
+
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult(), $old);
+
+        $this->assertNotNull($result);
+        $this->assertFalse($result->wasCreated, 'the loser must not count as issuing');
+        $this->assertSame($winner, $result->certificate, 'the concurrent winner is returned');
+        $this->assertSame(0, $db->commitCalls);
+        $this->assertSame(1, $db->rollBackCalls, 'only the empty savepoint is rolled back');
+    }
+
+    // Without $renewing a first issuance never touches another certificate's slot (makeService
+    // asserts releaseSlot is never called) and keeps the plain issue-time anchor.
+    public function testPlainIssuanceNeverReleasesASlot(): void {
+        $captured = null;
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CERT_ISSUED,
+            self::USER,
+            $this->callback(fn(array $ctx): bool => !array_key_exists('renews', $ctx))
+        );
+        $service = $this->makeService(null, $this->makeCourse(validityMonths: 12), $captured, audit: $audit);
+
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertTrue($result->wasCreated);
+        $this->assertSame($this->plusMonths(self::ISSUED_AT, 12), $captured->getExpiresAt());
     }
 }

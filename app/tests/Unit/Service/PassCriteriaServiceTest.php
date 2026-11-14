@@ -23,6 +23,7 @@ use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -114,7 +115,7 @@ class PassCriteriaServiceTest extends TestCase {
 
         $logger = $logger ?? $this->createMock(LoggerInterface::class);
         return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger, $certMapper, $assignmentService,
-            $members ?? $this->members([]));
+            $members ?? $this->members([]), $this->config());
     }
 
     /**
@@ -133,6 +134,15 @@ class PassCriteriaServiceTest extends TestCase {
             return $member;
         });
         return $mapper;
+    }
+
+    /** App config with every value at its shipped default (reminders 30/7 → renewal window 30 days). */
+    private function config(): IConfig {
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(
+            static fn(string $app, string $key, mixed $default = ''): string => (string)$default
+        );
+        return $config;
     }
 
     /**
@@ -386,7 +396,7 @@ class PassCriteriaServiceTest extends TestCase {
         $db = new FakeDbConnection([]);
 
         $service = new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance,
-            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
 
         // recert-valid: open period, but the current certificate is still valid → not missing one.
         // recert-expired: open period and only an expired certificate → evaluate() would issue.
@@ -418,7 +428,7 @@ class PassCriteriaServiceTest extends TestCase {
         $issuance->method('issueIfPassedResult')->willReturn(new IssueResult(new Certificate(), true));
 
         $service = new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($this->passingBuilders()),
-            $issuance, $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
+            $issuance, $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
 
         $this->assertTrue($service->evaluate(self::USER, self::COURSE_ID)->isPassed());
     }
@@ -1118,7 +1128,7 @@ class PassCriteriaServiceTest extends TestCase {
             static fn(int $courseId, array $uids): array => [$uids[0] => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => self::PERIOD_OPENED_AT]]
         );
         return new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($builders), $issuance,
-            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
     }
 
     public function testRecertificationIgnoresExamsFromBeforeThePeriod(): void {
@@ -1207,9 +1217,176 @@ class PassCriteriaServiceTest extends TestCase {
         $issuance->expects($this->once())->method('issueIfPassedResult')->willReturn(new IssueResult(new Certificate(), true));
         $service = new PassCriteriaService($courseMapper, $summary, $this->createMock(AuditService::class),
             new FakeDbConnection($this->passingBuilders()), $issuance,
-            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]));
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
 
         $this->assertTrue($service->evaluate(self::USER, self::COURSE_ID)->isPassed());
         $this->assertSame([null], $windows);
+    }
+
+    // ---- GitHub #35: the first reminder opens renewal ---------------------------------------
+
+    /** The current certificate of a passed period: owns its slot, not revoked. */
+    private function slotCert(int $issuedAt, int $expiresAt, bool $revoked = false, bool $ownsSlot = true): Certificate {
+        $cert = new Certificate();
+        $cert->setId(41);
+        $cert->setVerificationId('vid-current');
+        $cert->setRevoked($revoked);
+        $cert->setIssuedAt($issuedAt);
+        $cert->setExpiresAt($expiresAt);
+        $cert->setActiveIdemKey($ownsSlot ? self::USER . ':' . self::COURSE_ID : null);
+        return $cert;
+    }
+
+    /** Expiry minus 30 calendar days in the server timezone — the first reminder (shipped 30/7). */
+    private function windowStart(int $expiresAt): int {
+        return (new \DateTimeImmutable('@' . $expiresAt))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
+            ->modify('-30 days')
+            ->getTimestamp();
+    }
+
+    /**
+     * A learner holding $cert, with the assignment of the current period already 'passed' — the
+     * renewal must not depend on it.
+     */
+    private function renewalService(Certificate $cert, CourseSummaryService $summary, AuditService $audit, IssuanceService $issuance, array $builders): PassCriteriaService {
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse(true, 75, json_encode([1])));
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn($cert);
+        $assignment = $this->createMock(AssignmentService::class);
+        $assignment->method('getStatesForCourseAndUsers')->willReturnCallback(
+            static fn(int $courseId, array $uids): array => [$uids[0] => ['status' => 'passed', 'due_date' => null, 'assigned_at' => 1_600_000_000]]
+        );
+        return new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($builders), $issuance,
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
+    }
+
+    public function testBeforeTheRenewalWindowNothingIsIssued(): void {
+        $now = time();
+        $cert = $this->slotCert($now - 300 * 86400, $now + 40 * 86400);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $windows = [];
+        // Passed both before and after the certificate was issued — neither renews yet.
+        $summary = $this->summaryWithExams([[1, 95, $now - 301 * 86400], [1, 95, $now - 86400]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $audit, $issuance, $this->passingBuilders())->evaluate(self::USER, self::COURSE_ID);
+
+        $payload = $result->toArray();
+        $this->assertNull($payload['renewal_open_since']);
+        $this->assertSame($this->windowStart($now + 40 * 86400), $payload['renewal_opens_at']);
+        $this->assertSame('vid-current', $payload['certificate']['verification_id']);
+    }
+
+    public function testInsideTheRenewalWindowExamsOfTheWindowRenew(): void {
+        $now = time();
+        $expiresAt = $now + 20 * 86400;
+        $cert = $this->slotCert($now - 345 * 86400, $expiresAt);
+        $start = $this->windowStart($expiresAt);
+        $renewed = $this->slotCert($now, $expiresAt + 365 * 86400);
+        $renewed->setVerificationId('vid-renewed');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')
+            ->with(self::USER, self::COURSE_ID, $this->isInstanceOf(PassResult::class), $this->identicalTo($cert))
+            ->willReturn(new IssueResult($renewed, true));
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent')->with(ComplianceEventTypes::COURSE_PASSED);
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 80, $start + 3600]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $audit, $issuance, $this->passingBuilders())->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame([$start], $windows, 'the rule is read from the window start');
+        $payload = $result->toArray();
+        $this->assertSame('vid-renewed', $payload['certificate']['verification_id']);
+        $this->assertNull($payload['renewal_open_since'], 'the renewed certificate has its own, later window');
+        $this->assertSame($this->windowStart($expiresAt + 365 * 86400), $payload['renewal_opens_at']);
+    }
+
+    public function testExamsFromBeforeTheWindowDoNotRenew(): void {
+        $now = time();
+        $expiresAt = $now + 20 * 86400;
+        $start = $this->windowStart($expiresAt);
+        $cert = $this->slotCert($now - 345 * 86400, $expiresAt);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $windows = [];
+        // The exam that earned the certificate, and one a second before the window opened.
+        $summary = $this->summaryWithExams([[1, 99, $now - 345 * 86400], [1, 99, $start - 1]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $audit, $issuance, [])->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertFalse($result->isPassed());
+        $this->assertSame([$start], $windows);
+        $this->assertSame($start, $result->toArray()['renewal_open_since']);
+        $this->assertNull($result->toArray()['renewal_opens_at']);
+    }
+
+    // A certificate shorter than the window: issued inside it. Its own exam must still not count.
+    public function testTheExamThatEarnedTheCertificateNeverRenewsIt(): void {
+        $now = time();
+        $issuedAt = $now - 5 * 86400;
+        $cert = $this->slotCert($issuedAt, $now + 10 * 86400);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 99, $issuedAt]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $this->createMock(AuditService::class), $issuance, [])->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertFalse($result->isPassed());
+        $this->assertSame([$issuedAt + 1], $windows, 'completed_after = issued_at + 1 when the window opened before issuance');
+    }
+
+    public function testAfterExpiryBeforeTheCloseJobStillRenews(): void {
+        $now = time();
+        $expiresAt = $now - 3 * 86400;
+        $cert = $this->slotCert($now - 368 * 86400, $expiresAt);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')
+            ->with(self::USER, self::COURSE_ID, $this->isInstanceOf(PassResult::class), $this->identicalTo($cert))
+            ->willReturn(new IssueResult($this->slotCert($now, $now + 365 * 86400), true));
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 90, $now - 3600]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $this->createMock(AuditService::class), $issuance, $this->passingBuilders())->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame([$this->windowStart($expiresAt)], $windows);
+    }
+
+    public function testRevokedCertificateIsNeverRenewed(): void {
+        $now = time();
+        // Even with a slot value left over, a revoked certificate opens no renewal.
+        $cert = $this->slotCert($now - 345 * 86400, $now + 20 * 86400, revoked: true);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 99, $now - 3600]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $this->createMock(AuditService::class), $issuance, $this->passingBuilders())->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertNull($result->toArray()['renewal_open_since']);
+        $this->assertNull($result->toArray()['renewal_opens_at']);
+    }
+
+    // A closed period (slot released) is Branch B's: the renewal branch never takes it.
+    public function testClosedPeriodCertificateOpensNoRenewal(): void {
+        $now = time();
+        $cert = $this->slotCert($now - 345 * 86400, $now + 20 * 86400, ownsSlot: false);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 99, $now - 3600]], [1], $windows);
+
+        $result = $this->renewalService($cert, $summary, $this->createMock(AuditService::class), $issuance, $this->passingBuilders())->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertNull($result->toArray()['renewal_open_since']);
     }
 }

@@ -203,8 +203,22 @@ class IssuanceService {
      *
      * PassCriteriaService uses wasCreated in 164-04 to decide whether to emit COURSE_PASSED:
      * only the WINNER emits; the UNIQUE-loser dedupes silently so no duplicate audit row appears.
+     *
+     * Renewal (GitHub #35): $renewing is the learner's current certificate, passed ONLY by
+     * PassCriteriaService when its renewal window is open (the first reminder opened it). This
+     * method never decides on its own that a call is a renewal — without $renewing a first
+     * issuance and a closed-period (Branch B) issuance behave exactly as before. With it:
+     *   - inside the transaction, CertificateMapper::releaseSlot() first takes the slot from the
+     *     old certificate (CAS on id + slot value); 0 rows = a concurrent renewal won → loser
+     *     path: the winner is returned with wasCreated=false, no audit, no notification;
+     *   - the old certificate keeps expires_at and revoked: it is superseded, not withdrawn, and
+     *     stays valid until its own expiry;
+     *   - the new validity is anchored on max(now, old expiry), so renewing early costs no days;
+     *     validFrom in the credential stays the issue time;
+     *   - CERT_ISSUED carries `renews` => the old verification id (a verification id is already
+     *     a CERT_ISSUED fact, no PII; context_json is hashed into the chain as stored).
      */
-    public function issueIfPassedResult(string $userId, int $courseId, PassResult $result): ?IssueResult {
+    public function issueIfPassedResult(string $userId, int $courseId, PassResult $result, ?Certificate $renewing = null): ?IssueResult {
         if (!$result->isPassed()) {
             return null;
         }
@@ -213,12 +227,18 @@ class IssuanceService {
         // catches REASON_UNIQUE_CONSTRAINT_VIOLATION and returns wasCreated=false.
 
         $course = $this->courseMapper->findById($courseId);
+        $idemKey = $userId . ':' . $courseId;
 
         $issuedAt = $this->timeFactory->getTime();
         // DST-safe expiry via cert_validity_months (RECERT-01, 164-04). Override arg is null
         // here; recertification override months live in the assignment row and are wired via
         // AssignmentService when closePeriod triggers a fresh issuance.
-        $expiresAt = $this->computeExpiry($issuedAt, $course, null);
+        // Renewal: the new term continues from the old expiry when that is still ahead.
+        $anchor = $issuedAt;
+        if ($renewing !== null && $renewing->getExpiresAt() !== null) {
+            $anchor = max($issuedAt, (int)$renewing->getExpiresAt());
+        }
+        $expiresAt = $this->computeExpiry($anchor, $course, null);
         $verificationId = $this->uuidv4();
         $recipientName = $this->resolveDisplayName($userId);
 
@@ -244,15 +264,49 @@ class IssuanceService {
         $cert->setExpiresAt($expiresAt);
         // CAS slot: the UNIQUE active_idem_key means only the first concurrent INSERT wins.
         // closePeriod() nulls this field to open the slot for the next recertification period.
-        $cert->setActiveIdemKey($userId . ':' . $courseId);
+        $cert->setActiveIdemKey($idemKey);
 
+        $auditContext = [
+            'course_id'       => $courseId,
+            'verification_id' => $verificationId,
+        ];
+        if ($renewing !== null) {
+            $auditContext['renews'] = (string)$renewing->getVerificationId();
+        }
+
+        $lostRenewal = false;
         $this->db->beginTransaction();
         try {
-            $stored = $this->certificateMapper->insert($cert);
-            $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, [
-                'course_id'       => $courseId,
-                'verification_id' => $verificationId,
+            if ($renewing !== null
+                && $this->certificateMapper->releaseSlot((int)$renewing->getId(), $idemKey) === 0) {
+                // A concurrent renewal already took the slot from the old certificate. Release
+                // only our (empty) savepoint; the re-fetch runs after the try, so a failing read
+                // can never roll back the caller's outer transaction from the catch below.
+                $lostRenewal = true;
+                $this->db->rollBack();
+            }
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+        if ($lostRenewal && $renewing !== null) {
+            // Loser path: dedupe onto the winner — no audit, no notification. Usually a concurrent
+            // renewal; it can also be the daily close job closing the period in between, in which
+            // case nothing was renewed and the next period counts only its own exams — say so.
+            $winner = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+            $this->logger->info('Renewal of certificate {vid} for user {user} course {course} found its slot already released; nothing issued', [
+                'vid'    => (string)$renewing->getVerificationId(),
+                'user'   => $userId,
+                'course' => $courseId,
             ]);
+            return new IssueResult($winner ?? $renewing, false);
+        }
+
+        try {
+            $stored = $this->certificateMapper->insert($cert);
+            $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, $auditContext);
             $this->db->commit();
         } catch (\OCP\DB\Exception $e) {
             if ($this->db->inTransaction()) {

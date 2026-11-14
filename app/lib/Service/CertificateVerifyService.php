@@ -182,7 +182,7 @@ class CertificateVerifyService {
         if ($now > $exp) {
             return 'expired';
         }
-        $windowDays = max(ConfigDefaults::reminderThresholds($this->config));
+        $windowDays = ConfigDefaults::renewalWindowDays($this->config);
         if ($now >= $exp - $windowDays * 86400) {
             return 'expiring';
         }
