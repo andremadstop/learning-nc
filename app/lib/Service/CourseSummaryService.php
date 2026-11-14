@@ -300,7 +300,12 @@ class CourseSummaryService {
             . "\nWICHTIG: Falls telos_consent false ist, ignoriere persoenliche Ziele.";
 
         $troubleSpots = implode(', ', array_column($summary['trouble_spots'] ?? [], 'topic'));
-        $badges = implode(', ', array_column($summary['badges'] ?? [], 'badge_key'));
+        // audit #71: getUserBadges() has no 'badge_key' and lists unearned badges too, so the
+        // prompt always said 'Keine' — only earned badges, by name
+        $badges = implode(', ', array_column(
+            array_filter($summary['badges'] ?? [], static fn ($b): bool => is_array($b) && ($b['earned'] ?? false) === true),
+            'name'
+        ));
 
         $userPrompt = strtr(
             "Erstelle ein Narrative Portfolio basierend auf folgenden Daten:\n"

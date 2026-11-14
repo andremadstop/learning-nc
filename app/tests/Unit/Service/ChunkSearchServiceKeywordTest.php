@@ -20,11 +20,18 @@ class ChunkSearchServiceKeywordTest extends TestCase {
     /** @return array<string, array{0: string, 1: list<string>}> */
     public static function queries(): array {
         return [
-            'Ukrainian' => ['Що таке маршрутизація?', ['таке', 'маршрутизація']],
-            'Russian' => ['Что такое маршрутизация?', ['что', 'такое', 'маршрутизация']],
+            // audit #151: 'що таке' / 'что такое' / 'qu’est-ce que' are stopwords now
+            'Ukrainian' => ['Що таке маршрутизація?', ['маршрутизація']],
+            'Russian' => ['Что такое маршрутизация?', ['маршрутизация']],
             'Arabic' => ['ما هي الشبكة؟', ['الشبكة']],
-            'French accents' => ['Qu’est-ce que la sécurité réseau ?', ['qu’est-ce', 'que', 'sécurité', 'réseau']],
+            'French accents' => ['Qu’est-ce que la sécurité réseau ?', ['sécurité', 'réseau']],
             'German unchanged' => ['Wie funktioniert Subnetting?', ['funktioniert', 'subnetting']],
+            // audit #151: stopwords of fr/ru/uk/ar and the German umlaut forms
+            'French stopwords' => ['Pourquoi les VLAN sont utiles pour la sécurité dans une entreprise ?', ['vlan', 'utiles', 'sécurité', 'entreprise']],
+            'Russian stopwords' => ['Почему для маршрутизации нужен шлюз или маска?', ['маршрутизации', 'нужен', 'шлюз', 'маска']],
+            'Ukrainian stopwords' => ['Чому для маршрутизації потрібен шлюз або маска?', ['маршрутизації', 'потрібен', 'шлюз', 'маска']],
+            'Arabic stopwords' => ['لماذا نحتاج إلى بوابة في الشبكة؟', ['نحتاج', 'بوابة', 'الشبكة']],
+            'German umlaut stopwords' => ['Tipps für Subnetting über VLANs', ['tipps', 'subnetting', 'vlans']],
         ];
     }
 
