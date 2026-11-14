@@ -3376,6 +3376,16 @@
         "Kritische Karten: {n}": "Критичних карток: {n}",
         "{n} % der Karten in Box 1": "{n} % карток у скриньці 1",
         "Streak verloren (war {n})": "Серію втрачено (була {n})",
-        "Sessions in 14 Tagen: {n}": "Сесій за 14 днів: {n}"
+        "Sessions in 14 Tagen: {n}": "Сесій за 14 днів: {n}",
+        "Bitte öffne zuerst einen Pool, damit ich eine Zusammenfassung erstellen kann.": "Спершу відкрий пул, щоб я міг створити конспект.",
+        "Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.": "Я створив конспект за цією темою і зберіг його у твоєму Nextcloud.",
+        "Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.": "Я створив твій тижневий навчальний план і зберіг його у твоєму Nextcloud.",
+        "Ich habe dein Fortschritts-Dashboard aktualisiert und in deiner Nextcloud gespeichert.": "Я оновив твою панель прогресу і зберіг її у твоєму Nextcloud.",
+        "Ich konnte keinen passenden Datei-Typ für deine Anfrage bestimmen.": "Не вдалося визначити відповідний тип файлу для твого запиту.",
+        "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.": "На жаль, не вдалося створити файл. Спробуй ще раз пізніше.",
+        "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern.": "Дякую за повідомлення! Я створив заявку до підтримки (#%s). Твій викладач або адміністратор займеться нею.",
+        "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.": "На жаль, не вдалося зберегти твоє повідомлення. Спробуй ще раз або звернися безпосередньо до викладача.",
+        "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.": "Дякую за повідомлення! Викладача сповіщено, і він перевірить питання.",
+        "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.": "На жаль, не вдалося надіслати повідомлення про помилку. Спробуй ще раз пізніше."
     }
 }

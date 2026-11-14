@@ -1811,7 +1811,7 @@
         "Visual heatmap showing which questions are easy (green) and which are hard (red) across the whole class. Spot trouble areas quickly.": "خريطة حرارة مرئية تُظهر الأسئلة السهلة (خضراء) والصعبة (حمراء) عبر الفصل كله. حدد مناطق الإشكاليات بسرعة.",
         "Visuelle Heatmap, die zeigt welche Fragen leicht (grün) und welche schwer (rot) sind — klassenübergreifend. Erkenne Problemzonen schnell.": "Visual heatmap showing which questions are easy (green) and which are hard (red) — across the class. Quickly identify problem areas.",
         "Vollbild schließen": "Close fullscreen",
-        "Vollbild öffnen": "Open fullscreen",
+        "Vollbild öffnen": "فتح بملء الشاشة",
         "Volle Vorbereitung mit allen offiziellen Übungspaketen, Reflexionsbeiträgen und Bonusmaterial.": "Full preparation with all official practice packs, reflection contributions and bonus material.",
         "Vorname": "First name",
         "Waehle einen Pool zum Starten:": "Choose a pool to start:",
@@ -3376,6 +3376,16 @@
         "Kritische Karten: {n}": "بطاقات حرجة: {n}",
         "{n} % der Karten in Box 1": "{n}% من البطاقات في الصندوق 1",
         "Streak verloren (war {n})": "انقطعت السلسلة (كانت {n})",
-        "Sessions in 14 Tagen: {n}": "الجلسات خلال 14 يومًا: {n}"
+        "Sessions in 14 Tagen: {n}": "الجلسات خلال 14 يومًا: {n}",
+        "Bitte öffne zuerst einen Pool, damit ich eine Zusammenfassung erstellen kann.": "افتح مجموعة أولًا حتى أتمكّن من إنشاء ملخّص.",
+        "Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.": "أنشأتُ ملخّصًا لهذا الموضوع وحفظته في Nextcloud الخاص بك.",
+        "Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.": "أنشأتُ خطة تعلّمك الأسبوعية وحفظتها في Nextcloud الخاص بك.",
+        "Ich habe dein Fortschritts-Dashboard aktualisiert und in deiner Nextcloud gespeichert.": "حدّثتُ لوحة تقدّمك وحفظتها في Nextcloud الخاص بك.",
+        "Ich konnte keinen passenden Datei-Typ für deine Anfrage bestimmen.": "لم أتمكّن من تحديد نوع ملف مناسب لطلبك.",
+        "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.": "تعذّر إنشاء الملف للأسف. يُرجى المحاولة مرة أخرى لاحقًا.",
+        "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern.": "شكرًا على بلاغك! أنشأتُ تذكرة دعم (#%s). سيتولّى مدرّبك أو المسؤول متابعتها.",
+        "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.": "تعذّر حفظ بلاغك للأسف. يُرجى المحاولة مرة أخرى أو التواصل مع مدرّبك مباشرة.",
+        "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.": "شكرًا على البلاغ! تم إخطار مدرّبك وسيراجع السؤال.",
+        "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.": "تعذّر إرسال بلاغ الخطأ للأسف. يُرجى المحاولة مرة أخرى لاحقًا."
     }
 }

@@ -440,7 +440,7 @@
           class="chat-history"
           role="log"
           aria-live="polite"
-          aria-label="VirtuProf chat">
+          :aria-label="vt('VirtuProf chat')">
           <div
             v-for="(msg, idx) in chatMessages"
             :key="idx"
@@ -481,7 +481,7 @@
               </ul>
             </details>
           </div>
-          <div v-if="chatLoading" class="chat-typing" aria-label="VirtuProf is typing">
+          <div v-if="chatLoading" class="chat-typing" :aria-label="vt('VirtuProf is typing')">
             <span class="typing-dot" />
             <span class="typing-dot" />
             <span class="typing-dot" />
@@ -496,7 +496,7 @@
             type="button"
             class="chat-suggestion-btn"
             :disabled="chatLoading"
-            @click="sendSuggestion(suggestion.text)">
+            @click="sendSuggestion(suggestion.text, suggestion.intent)">
             {{ suggestion.label }}
           </button>
         </div>
@@ -575,7 +575,7 @@
             class="chat-clear-btn"
             :disabled="chatLoading"
             @click.stop.prevent="$emit('open-fullscreen')">
-            {{ t('learning', 'Vollbild öffnen') }}
+            {{ vt('Vollbild öffnen') }}
           </button>
           <button
             v-if="hasQuestionContext && !examBlocked"
@@ -1020,7 +1020,9 @@ export default {
       return [
         { key: 'was-ist', label: this.vt('What is...?'), text: this.vt('What is...?') },
         { key: 'erklaere', label: this.vt('Explain my last question'), text: this.vt('Explain my last question') },
-        { key: 'zusammenfassung', label: this.vt('Create summary'), text: 'zusammenfassung erstellen' },
+        // The label in the user's language plus an explicit intent; the German literal used to
+        // appear as the user's own message (audit #59).
+        { key: 'zusammenfassung', label: this.vt('Create summary'), text: this.vt('Create summary'), intent: 'summary' },
       ]
     },
   },
@@ -1117,11 +1119,15 @@ export default {
       this.$emit('chat-send', text)
       this.chatInput = ''
     },
-    sendSuggestion(text) {
+    sendSuggestion(text, intent = null) {
       if (this.chatLoading) {
         return
       }
-      this.$emit('chat-send', text)
+      if (intent) {
+        this.$emit('chat-send', text, intent)
+      } else {
+        this.$emit('chat-send', text)
+      }
     },
     resolvedVoiceLang() {
       if (this.voiceLang) {

@@ -22,7 +22,9 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
+use OCP\IL10N;
 use OCP\IRequest;
+use OCP\L10N\IFactory;
 
 class VirtuProfController extends Controller {
     // Must stay in sync with ALLOWED in src/utils/virtuprof-i18n.js and the exported
@@ -95,6 +97,10 @@ class VirtuProfController extends Controller {
     private PoolService $poolService;
     private QuestionService $questionService;
     private LlmGateway $gateway;
+    private IFactory $l10nFactory;
+
+    /** File intents a quick-suggestion chip can name directly, whatever language its text is in (audit #59). */
+    private const FILE_INTENTS = ['summary', 'plan', 'progress'];
 
     public function __construct(
         string $appName,
@@ -111,9 +117,11 @@ class VirtuProfController extends Controller {
         CourseService $courseService,
         PoolService $poolService,
         QuestionService $questionService,
-        LlmGateway $gateway
+        LlmGateway $gateway,
+        IFactory $l10nFactory
     ) {
         $this->gateway = $gateway;
+        $this->l10nFactory = $l10nFactory;
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->userId = $userId;
@@ -600,7 +608,8 @@ class VirtuProfController extends Controller {
         ?int $courseId = null,
         ?int $lastWrongQuestionId = null,
         ?array $questionContext = null,
-        ?int $hintLevel = null
+        ?int $hintLevel = null,
+        ?string $intent = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -619,10 +628,13 @@ class VirtuProfController extends Controller {
         // HIGH-02: drop learning-context ids the user cannot access before RAG/file-intent see them.
         [$poolId, $courseId, $lastWrongQuestionId] = $this->filterAccessibleContext($poolId, $courseId, $lastWrongQuestionId);
 
-        // FILE-INTENT: detect file-creation intents before the AI call
+        // FILE-INTENT: detect file-creation intents before the AI call. A chip names its intent
+        // explicitly; its text is the label in the user's language, which the keyword match below
+        // only knows in German and English (audit #59).
         $lowerMessage = mb_strtolower($message);
-        if ($this->isFileIntent($lowerMessage)) {
-            return $this->handleFileIntent($lowerMessage, $poolId, $courseId);
+        $fileIntent = in_array($intent, self::FILE_INTENTS, true) ? $intent : $this->detectFileIntent($lowerMessage);
+        if ($fileIntent !== null) {
+            return $this->handleFileIntent($fileIntent, $poolId, $courseId);
         }
 
         // TICKET-INTENT: detect bug reports, feedback, support requests
@@ -805,6 +817,40 @@ class VirtuProfController extends Controller {
     // -------------------------------------------------------------------------
 
     /**
+     * The file intent a typed message asks for ('summary', 'plan', 'progress'), or null.
+     * Matches German and English keywords; the chips send an explicit intent instead.
+     */
+    private function detectFileIntent(string $lowerMessage): ?string {
+        if (!$this->isFileIntent($lowerMessage)) {
+            return null;
+        }
+        if (str_contains($lowerMessage, 'zusammenfassung') || str_contains($lowerMessage, 'summary')) {
+            return 'summary';
+        }
+        if (
+            str_contains($lowerMessage, 'lernplan') ||
+            str_contains($lowerMessage, 'wochenplan') ||
+            str_contains($lowerMessage, 'learning plan')
+        ) {
+            return 'plan';
+        }
+        return 'progress';
+    }
+
+    /**
+     * The app's translations in the language VirtuProf speaks to this user: the VirtuProf
+     * interface language when set, otherwise the user's Nextcloud language (audit #147).
+     */
+    private function virtuProfL10n(): IL10N {
+        $language = $this->userId !== null
+            ? $this->normalizeInterfaceLanguage(
+                $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', '')
+            )
+            : '';
+        return $this->l10nFactory->get('learning', $language !== '' ? $language : null);
+    }
+
+    /**
      * Detect whether the message is a file-creation intent.
      * Matches German and English keywords for summary, plan, and progress intents.
      */
@@ -860,64 +906,58 @@ class VirtuProfController extends Controller {
     }
 
     /**
-     * Handle a file-creation intent: call the appropriate service and return
-     * a response with {answer, action: 'file_created', path: '/Learning/...'}.
+     * Handle a file-creation intent ('summary', 'plan' or 'progress'): call the appropriate
+     * service and return {answer, action: 'file_created', path: '/Learning/...'}. The answer is
+     * in the user's VirtuProf language (audit #147).
      */
-    private function handleFileIntent(string $lowerMessage, ?int $poolId, ?int $courseId): DataResponse {
+    private function handleFileIntent(string $intent, ?int $poolId, ?int $courseId): DataResponse {
+        $l = $this->virtuProfL10n();
         try {
-            // Determine which intent matched
-            if (
-                str_contains($lowerMessage, 'zusammenfassung') ||
-                str_contains($lowerMessage, 'summary')
-            ) {
+            if ($intent === 'summary') {
                 // Summary requires a pool context
                 if ($poolId === null) {
                     return new DataResponse([
-                        'answer' => 'Bitte öffne zuerst einen Pool, damit ich eine Zusammenfassung erstellen kann.',
+                        'answer' => $l->t('Bitte öffne zuerst einen Pool, damit ich eine Zusammenfassung erstellen kann.'),
                         'fallback' => false,
                     ]);
                 }
                 $result = $this->noteGeneratorService->generateSummary($this->userId, $poolId, $courseId);
                 return new DataResponse([
-                    'answer' => 'Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.',
+                    'answer' => $l->t('Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.'),
                     'action' => 'file_created',
                     'path'   => $result['path'],
                     'fallback' => false,
                 ]);
             }
 
-            if (
-                str_contains($lowerMessage, 'lernplan') ||
-                str_contains($lowerMessage, 'wochenplan') ||
-                str_contains($lowerMessage, 'learning plan')
-            ) {
+            if ($intent === 'plan') {
                 $result = $this->lernplanService->generateWeeklyPlan($this->userId, $courseId);
                 return new DataResponse([
-                    'answer' => 'Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.',
+                    'answer' => $l->t('Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.'),
                     'action' => 'file_created',
                     'path'   => $result['path'],
                     'fallback' => false,
                 ]);
             }
 
-            if (str_contains($lowerMessage, 'fortschritt')) {
+            if ($intent === 'progress') {
                 $result = $this->lernplanService->generateFortschritt($this->userId, $courseId);
                 return new DataResponse([
-                    'answer' => 'Ich habe dein Fortschritts-Dashboard aktualisiert und in deiner Nextcloud gespeichert.',
+                    'answer' => $l->t('Ich habe dein Fortschritts-Dashboard aktualisiert und in deiner Nextcloud gespeichert.'),
                     'action' => 'file_created',
                     'path'   => $result['path'],
                     'fallback' => false,
                 ]);
             }
 
-            // Fallback — should not reach here if isFileIntent() is accurate
+            // Fallback — unreachable while the callers pass one of FILE_INTENTS
             return new DataResponse([
-                'answer' => 'Ich konnte keinen passenden Datei-Typ für deine Anfrage bestimmen.',
+                'answer' => $l->t('Ich konnte keinen passenden Datei-Typ für deine Anfrage bestimmen.'),
                 'fallback' => false,
             ]);
         } catch (\Throwable $e) {
             return new DataResponse([
-                'answer' => 'Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.',
+                'answer' => $l->t('Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.'),
                 'fallback' => false,
             ]);
         }
@@ -977,9 +1017,12 @@ class VirtuProfController extends Controller {
             );
 
             $ticketId = $ticket->getId();
-            $answer = "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#{$ticketId}). "
-                . "Dein Dozent oder Admin wird sich darum kümmern. "
-                . "Du kannst den Status unter \"More options\" → \"Meine Tickets\" einsehen.";
+            // In the user's VirtuProf language (audit #147). The old text also pointed to a menu
+            // "More options → Meine Tickets" that learners do not have.
+            $answer = $this->virtuProfL10n()->t(
+                'Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern.',
+                [(string)$ticketId]
+            );
 
             return new DataResponse([
                 'answer' => $answer,
@@ -988,8 +1031,7 @@ class VirtuProfController extends Controller {
             ]);
         } catch (\Exception $e) {
             return new DataResponse([
-                'answer' => 'Deine Meldung konnte leider nicht gespeichert werden. '
-                    . 'Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.',
+                'answer' => $this->virtuProfL10n()->t('Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.'),
                 'fallback' => false,
             ]);
         }

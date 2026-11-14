@@ -92,7 +92,7 @@
               type="button"
               class="virtuprof-fullscreen__suggestion"
               :disabled="chatLoading"
-              @click="sendSuggestion(suggestion.text)">
+              @click="sendSuggestion(suggestion.text, suggestion.intent)">
               {{ suggestion.label }}
             </button>
           </div>
@@ -283,7 +283,9 @@ export default {
       return [
         { key: 'was-ist', label: this.vt('What is...?'), text: this.vt('What is...?') },
         { key: 'erklaere', label: this.vt('Explain my last question'), text: this.vt('Explain my last question') },
-        { key: 'zusammenfassung', label: this.vt('Create summary'), text: this.vt('Create summary') },
+        // intent: the text is the label in the user's language, which the server's keyword match
+        // does not know in fr/ru/ar/uk (audit #59)
+        { key: 'zusammenfassung', label: this.vt('Create summary'), text: this.vt('Create summary'), intent: 'summary' },
       ]
     },
   },
@@ -362,11 +364,15 @@ export default {
         this.autosizeComposer()
       })
     },
-    sendSuggestion(text) {
+    sendSuggestion(text, intent = null) {
       if (!text || this.chatLoading) {
         return
       }
-      this.$emit('send', text)
+      if (intent) {
+        this.$emit('send', text, intent)
+      } else {
+        this.$emit('send', text)
+      }
     },
     scrollChatToBottom() {
       const element = this.$refs.chatHistory

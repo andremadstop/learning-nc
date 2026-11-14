@@ -1811,7 +1811,7 @@
         "Visual heatmap showing which questions are easy (green) and which are hard (red) across the whole class. Spot trouble areas quickly.": "Визуальная тепловая карта, показывающая, какие вопросы лёгкие (зелёный) и какие сложные (красный) для всего класса. Быстро находите проблемные области.",
         "Visuelle Heatmap, die zeigt welche Fragen leicht (grün) und welche schwer (rot) sind — klassenübergreifend. Erkenne Problemzonen schnell.": "Visual heatmap showing which questions are easy (green) and which are hard (red) — across the class. Quickly identify problem areas.",
         "Vollbild schließen": "Close fullscreen",
-        "Vollbild öffnen": "Open fullscreen",
+        "Vollbild öffnen": "Открыть на весь экран",
         "Volle Vorbereitung mit allen offiziellen Übungspaketen, Reflexionsbeiträgen und Bonusmaterial.": "Full preparation with all official practice packs, reflection contributions and bonus material.",
         "Vorname": "First name",
         "Waehle einen Pool zum Starten:": "Choose a pool to start:",
@@ -3376,6 +3376,16 @@
         "Kritische Karten: {n}": "Критических карточек: {n}",
         "{n} % der Karten in Box 1": "{n} % карточек в ячейке 1",
         "Streak verloren (war {n})": "Серия прервана (была {n})",
-        "Sessions in 14 Tagen: {n}": "Сессий за 14 дней: {n}"
+        "Sessions in 14 Tagen: {n}": "Сессий за 14 дней: {n}",
+        "Bitte öffne zuerst einen Pool, damit ich eine Zusammenfassung erstellen kann.": "Сначала открой пул, чтобы я мог создать конспект.",
+        "Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.": "Я создал конспект по этой теме и сохранил его в твоём Nextcloud.",
+        "Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.": "Я создал твой недельный учебный план и сохранил его в твоём Nextcloud.",
+        "Ich habe dein Fortschritts-Dashboard aktualisiert und in deiner Nextcloud gespeichert.": "Я обновил твою панель прогресса и сохранил её в твоём Nextcloud.",
+        "Ich konnte keinen passenden Datei-Typ für deine Anfrage bestimmen.": "Не удалось определить подходящий тип файла для твоего запроса.",
+        "Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.": "К сожалению, не удалось создать файл. Попробуй ещё раз позже.",
+        "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#%s). Dein Dozent oder Admin wird sich darum kümmern.": "Спасибо за сообщение! Я создал заявку в поддержку (#%s). Твой преподаватель или администратор займётся ею.",
+        "Deine Meldung konnte leider nicht gespeichert werden. Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.": "К сожалению, не удалось сохранить твоё сообщение. Попробуй ещё раз или обратись напрямую к преподавателю.",
+        "Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.": "Спасибо за сообщение! Преподаватель уведомлён и проверит вопрос.",
+        "Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.": "К сожалению, не удалось отправить сообщение об ошибке. Попробуй ещё раз позже."
     }
 }
