@@ -33,8 +33,10 @@
 				heading counts the active ones, so nothing stays switched on unseen. -->
 			<details v-if="!gamificationEnabled" class="game-modes" data-test="game-modes">
 				<summary class="game-modes__summary">
-					<span class="game-modes__title">{{ t('learning', 'Spielmodi') }}</span>
-					<span class="game-modes__count" data-test="game-modes-count">{{ t('learning', '{n} aktiv', { n: activeGameModeCount }) }}</span>
+					<span class="game-modes__heading">
+						<span class="game-modes__title">{{ t('learning', 'Spielmodi') }}</span>
+						<span class="game-modes__count" data-test="game-modes-count">{{ t('learning', '{n} aktiv', { n: activeGameModeCount }) }}</span>
+					</span>
 				</summary>
 				<div class="mode-toggles game-modes__list">
 					<div v-for="mode in gameModeKeys" :key="mode.key" class="mode-toggle-row mode-toggle-row--described">
@@ -1111,7 +1113,9 @@ export default {
 .mode-toggle-label input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
 .mode-config-saved { margin-top: 12px; }
 .game-modes { margin: -8px 0 20px; border: 1px solid var(--color-border); border-radius: var(--border-radius-large, 8px); padding: 8px 12px; }
-.game-modes__summary { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; }
+/* list-item keeps the native disclosure triangle (it mirrors in RTL by itself); flex would drop it */
+.game-modes__summary { display: list-item; cursor: pointer; font-weight: 600; }
+.game-modes__heading { display: inline-flex; align-items: center; gap: 8px; }
 .game-modes__count { color: var(--color-text-maxcontrast); font-weight: 400; font-size: 0.9em; }
 .game-modes__list { margin: 12px 0 4px; }
 .game-modes__active {
