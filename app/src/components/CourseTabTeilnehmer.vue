@@ -1207,9 +1207,9 @@ export default {
 .overall-col { font-weight: 600; }
 .stat-col { min-width: 70px; text-align: center; white-space: nowrap; }
 
-td.mastery-high { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); font-weight: 700; border-inline-start: 3px solid var(--color-success); }
-td.mastery-medium { background: color-mix(in srgb, var(--color-warning) 10%, transparent); color: var(--color-warning); font-weight: 700; border-inline-start: 3px solid var(--color-warning); }
-td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transparent); color: var(--color-error); font-weight: 700; border-inline-start: 3px solid var(--color-error); }
+td.mastery-high { background: var(--color-success); color: var(--color-success-text, var(--color-success)); font-weight: 700; border-inline-start: 3px solid var(--color-element-success); }
+td.mastery-medium { background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); font-weight: 700; border-inline-start: 3px solid var(--color-element-warning); }
+td.mastery-low { background: var(--color-error); color: var(--color-error-text, var(--color-error)); font-weight: 700; border-inline-start: 3px solid var(--color-element-error); }
 .critical-cards-col { text-align: center; }
 .critical-cards-pill {
 	display: inline-flex;
@@ -1222,16 +1222,16 @@ td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transpar
 	font-variant-numeric: tabular-nums;
 }
 .critical-cards-high {
-	background: color-mix(in srgb, var(--color-error) 16%, transparent);
-	color: var(--color-error);
+	background: var(--color-error);
+	color: var(--color-error-text, var(--color-error));
 }
 .critical-cards-medium {
-	background: color-mix(in srgb, var(--color-warning) 18%, transparent);
-	color: var(--color-warning);
+	background: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 }
 .critical-cards-low {
-	background: color-mix(in srgb, var(--color-success) 14%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .level-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 700; white-space: nowrap; }
@@ -1249,21 +1249,21 @@ td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transpar
 .last-active-col { color: var(--color-text-maxcontrast); font-size: 0.85em; }
 
 /* At-Risk */
-.at-risk-section { margin-bottom: 24px; border: 2px solid var(--color-error); border-radius: 12px; padding: 16px 20px; background: color-mix(in srgb, var(--color-error) 5%, var(--color-main-background)); }
+.at-risk-section { margin-bottom: 24px; border: 2px solid var(--color-element-error); border-radius: 12px; padding: 16px 20px; background: color-mix(in srgb, var(--color-error) 5%, var(--color-main-background)); }
 .at-risk-section.collapsed { padding-bottom: 16px; }
 .at-risk-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.at-risk-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--color-error); }
+.at-risk-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--color-error-text, var(--color-error)); }
 .at-risk-toggle { background: none; border: none; font-size: 14px; color: var(--color-text-maxcontrast); cursor: pointer; padding: 4px 8px; }
 .at-risk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
 .at-risk-card { border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 16px; background: var(--color-main-background); cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; }
 .at-risk-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transform: translateY(-1px); }
-.at-risk-card.risk-high { border-inline-start: 4px solid var(--color-error); }
-.at-risk-card.risk-medium { border-inline-start: 4px solid var(--color-warning); }
+.at-risk-card.risk-high { border-inline-start: 4px solid var(--color-element-error); }
+.at-risk-card.risk-medium { border-inline-start: 4px solid var(--color-element-warning); }
 .at-risk-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .at-risk-name { font-weight: 600; font-size: 14px; color: var(--color-main-text); }
 .risk-badge { padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-.risk-badge.high { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); border: 1px solid var(--color-error); }
-.risk-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }
+.risk-badge.high { background: var(--color-error); color: var(--color-error-text, var(--color-error)); border: 1px solid var(--color-border-error); }
+.risk-badge.medium { background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); border: 1px solid var(--color-element-warning); }
 .at-risk-reasons { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .risk-reason-tag { padding: 2px 8px; border-radius: 6px; font-size: 11px; background: var(--color-background-hover); color: var(--color-text-maxcontrast); }
 .at-risk-meta { display: flex; gap: 12px; font-size: 11px; color: var(--color-text-maxcontrast); }

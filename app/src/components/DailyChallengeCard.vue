@@ -223,7 +223,7 @@ export default {
   font-size: 13px;
   font-weight: 700;
   background: var(--color-success);
-  color: #fff;
+  color: var(--color-success-text, var(--color-success));
 }
 .dc-next-time {
   font-size: 12px;

@@ -313,12 +313,12 @@ export default {
 .pbq-hotspot {
   position: absolute; transform: translate(-50%, -50%);
   width: 36px; height: 36px; border-radius: 50%;
-  background: var(--color-warning); color: #fff; font-weight: 700; font-size: 18px;
+  background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); font-weight: 700; font-size: 18px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3);
   transition: background .2s;
 }
-.pbq-hotspot--assigned { background: var(--color-success); font-size: 11px; }
+.pbq-hotspot--assigned { background: var(--color-success); color: var(--color-success-text, var(--color-success)); font-size: 11px; }
 .pbq-hotspot-label { text-align: center; line-height: 1.1; }
 .pbq-device-picker {
   margin-top: 16px; padding: 12px; background: var(--color-background-hover);

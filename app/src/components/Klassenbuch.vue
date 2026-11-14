@@ -356,8 +356,8 @@ export default {
 }
 
 .role-pill.student {
-	background: color-mix(in srgb, var(--color-success) 18%, white);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .squad-superpower {

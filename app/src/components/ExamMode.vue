@@ -1515,12 +1515,12 @@ export default {
   transition: background 0.3s, color 0.3s;
   color: var(--color-main-text);
 }
-.timer-green { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
-.timer-yellow { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
-.timer-red { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
+.timer-green { background: var(--color-success); color: var(--color-success-text, var(--color-success)); }
+.timer-yellow { background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); }
+.timer-red { background: var(--color-error); color: var(--color-error-text, var(--color-error)); }
 .exam-meta-line { text-align: center; color: var(--color-text-maxcontrast); font-size: 13px; margin: -4px 0 12px; }
 .resume-note { text-align: center; color: var(--color-primary-element); font-size: 13px; margin: -4px 0 12px; }
-.lock-note { text-align: center; color: var(--color-warning); font-size: 13px; margin: -4px 0 12px; font-weight: 600; }
+.lock-note { text-align: center; color: var(--color-warning-text, var(--color-warning)); font-size: 13px; margin: -4px 0 12px; font-weight: 600; }
 .exam-mode-banner { margin: 0 0 12px; }
 .hotkey-note {
   text-align: center;
@@ -1559,14 +1559,14 @@ export default {
   filter: drop-shadow(0 0 4px var(--color-error));
 }
 .snake-line {
-  stroke: var(--color-success);
+  stroke: var(--color-element-success);
   transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
 }
 .snake-warning .snake-line {
-  stroke: var(--color-warning);
+  stroke: var(--color-element-warning);
 }
 .snake-danger .snake-line {
-  stroke: var(--color-error);
+  stroke: var(--color-element-error);
   animation: snakePulse 1.5s ease-in-out infinite;
 }
 @keyframes snakePulse {
@@ -1705,7 +1705,7 @@ export default {
 
 /* Review */
 .review-title { font-size: 18px; font-weight: 600; margin: 28px 0 16px; color: var(--color-main-text); }
-.timeout-note { margin: 0 0 14px; text-align: center; color: var(--color-error); font-weight: 600; }
+.timeout-note { margin: 0 0 14px; text-align: center; color: var(--color-error-text, var(--color-error)); font-weight: 600; }
 .review-list { border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
 .review-item { padding: 16px; border-bottom: 1px solid var(--color-border); }
 .review-item:last-child { border-bottom: none; }
@@ -1714,16 +1714,16 @@ export default {
 .review-question { font-weight: 600; margin-bottom: 8px; color: var(--color-main-text); line-height: 1.5; }
 .review-answer { font-size: 14px; line-height: 1.5; margin-bottom: 4px; }
 .review-label { font-weight: 500; margin-inline-end: 8px; color: var(--color-text-maxcontrast); }
-.text-success { color: var(--color-success); font-weight: 600; }
-.text-error { color: var(--color-error); font-weight: 600; }
+.text-success { color: var(--color-success-text, var(--color-success)); font-weight: 600; }
+.text-error { color: var(--color-error-text, var(--color-error)); font-weight: 600; }
 
 /* Multi-select review visualization */
 .review-answers-detail { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .review-answer-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 14px; border: 1px solid var(--color-border); }
 .ra-icon { font-weight: 700; flex-shrink: 0; width: 20px; text-align: center; }
-.ra-correct-selected { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); color: var(--color-success); }
-.ra-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); color: var(--color-error); }
-.ra-correct-missed { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background)); color: var(--color-warning); }
+.ra-correct-selected { border-color: var(--color-element-success); background: var(--color-success); color: var(--color-success-text, var(--color-success)); }
+.ra-wrong-selected { border-color: var(--color-element-error); background: var(--color-error); color: var(--color-error-text, var(--color-error)); }
+.ra-correct-missed { border-color: var(--color-element-warning); background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); }
 .ra-neutral { color: var(--color-text-maxcontrast); }
 
 .open-answer-area { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-bottom: 16px; }

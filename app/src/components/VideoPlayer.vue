@@ -375,13 +375,13 @@ export default {
 }
 
 .video-player__gate--pending {
-	background: color-mix(in srgb, var(--color-warning) 18%, transparent);
-	color: var(--color-warning);
+	background: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 }
 
 .video-player__gate--complete {
-	background: color-mix(in srgb, var(--color-success) 18%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .video-player__hint {

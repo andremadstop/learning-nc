@@ -1588,19 +1588,19 @@ export default {
 	border-radius: 10px;
 	font-size: 0.75em;
 	font-weight: 600;
-	background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-	color: var(--color-warning);
+	background: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 	white-space: nowrap;
 }
 
 .required-enforced-badge {
-	background: color-mix(in srgb, var(--color-error) 12%, transparent);
-	color: var(--color-error);
+	background: var(--color-error);
+	color: var(--color-error-text, var(--color-error));
 }
 
 .exam-relevant-badge {
-	background: color-mix(in srgb, var(--color-success) 15%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .filter-badge {
@@ -1626,7 +1626,7 @@ export default {
 }
 
 .remove-pool-btn:hover {
-	color: var(--color-error);
+	color: var(--color-error-text, var(--color-error));
 }
 
 .curriculum-section {
@@ -1704,7 +1704,7 @@ export default {
 
 .curriculum-saved-hint {
 	font-size: 13px;
-	color: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 	font-weight: 600;
 }
 
@@ -1762,13 +1762,13 @@ export default {
 }
 
 .video-item__status--done {
-	background: color-mix(in srgb, var(--color-success) 18%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .video-item__status--pending {
-	background: color-mix(in srgb, var(--color-warning) 18%, transparent);
-	color: var(--color-warning);
+	background: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 }
 
 .video-item__document {

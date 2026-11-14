@@ -815,9 +815,9 @@ details[open] > .audit-summary::before {
   margin-bottom: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--color-error);
-  background: var(--color-error, #e9322d);
-  color: var(--color-primary-element-text, #fff);
+  border: 1px solid var(--color-border-error);
+  background: var(--color-error);
+  color: var(--color-error-text, var(--color-error));
   font-weight: 600;
 }
 

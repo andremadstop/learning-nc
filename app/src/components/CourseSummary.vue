@@ -734,8 +734,8 @@ export default {
 .summary-toast {
 	padding: 12px 14px;
 	border-radius: 12px;
-	background: color-mix(in srgb, var(--color-success) 16%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 	font-weight: 600;
 }
 
@@ -755,7 +755,7 @@ export default {
 .widget-card {
 	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
-	border-left: 3px solid var(--color-primary-element);
+	border-inline-start: 3px solid var(--color-primary-element);
 	border-radius: var(--border-radius-large, 12px);
 	padding: 20px;
 	box-shadow: 0 4px 14px color-mix(in srgb, var(--color-main-text) 5%, transparent);
@@ -835,7 +835,7 @@ export default {
 
 /* Zeugnisstatus / Pass status (Phase 154) */
 .zeugnisstatus-card {
-	border-left-color: var(--color-success);
+	border-inline-start-color: var(--color-element-success);
 }
 
 .zeugnis-state {
@@ -850,11 +850,11 @@ export default {
 }
 
 .zeugnis-passed {
-	color: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .zeugnis-not-passed {
-	color: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 }
 
 .zeugnis-renewal-open {
@@ -920,7 +920,8 @@ export default {
 }
 
 .zeugnis-pool--passed .zeugnis-pool-state {
-	color: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
+	font-weight: 600;
 }
 
 @media (max-width: 600px) {
@@ -1035,7 +1036,7 @@ export default {
 }
 
 .trouble-accuracy {
-	color: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 	font-weight: 700;
 }
 
@@ -1045,7 +1046,7 @@ export default {
 }
 
 .ics-card {
-	border-left-color: var(--color-primary-element);
+	border-inline-start-color: var(--color-primary-element);
 }
 
 .ics-description {
@@ -1080,7 +1081,7 @@ export default {
 }
 
 .narrative-card {
-	border-left-color: var(--color-success);
+	border-inline-start-color: var(--color-element-success);
 }
 
 .narrative-text {

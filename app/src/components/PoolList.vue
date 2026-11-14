@@ -796,12 +796,12 @@ export default {
 .pool-card-header h4 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; line-height: 1.4; color: var(--color-main-text); }
 .permission-badge { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
 .permission-badge.read { background: var(--color-background-hover); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
-.permission-badge.edit { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); border: 1px solid var(--color-success); }
+.permission-badge.edit { background: var(--color-success); color: var(--color-success-text, var(--color-success)); border: 1px solid var(--color-border-success); }
 .pool-description { color: var(--color-text-maxcontrast); font-size: 13px; margin: 6px 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .pool-chapter-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .pool-meta-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
 .pool-meta-badge.handbook { background: color-mix(in srgb, var(--color-primary-element) 10%, var(--color-main-background)); color: var(--color-primary-element); }
-.pool-meta-badge.chapter { background: color-mix(in srgb, var(--color-success) 12%, var(--color-main-background)); color: var(--color-success); }
+.pool-meta-badge.chapter { background: var(--color-success); color: var(--color-success-text, var(--color-success)); }
 .pool-meta { font-size: 12px; color: var(--color-text-maxcontrast); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--color-border); }
 .loading-center { display: block; margin: 60px auto; }
 .form-group { margin-bottom: 18px; }

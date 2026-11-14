@@ -361,23 +361,23 @@ export default {
 }
 
 .teamlead-dashboard__status-badge--overdue {
-	background: color-mix(in srgb, var(--color-error) 12%, transparent);
-	color: var(--color-error);
+	background: var(--color-error);
+	color: var(--color-error-text, var(--color-error));
 }
 
 .teamlead-dashboard__status-badge--missing {
-	background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-	color: var(--color-warning);
+	background: var(--color-warning);
+	color: var(--color-warning-text, var(--color-warning));
 }
 
 .teamlead-dashboard__status-badge--expired {
-	background: color-mix(in srgb, var(--color-error) 12%, transparent);
-	color: var(--color-error);
+	background: var(--color-error);
+	color: var(--color-error-text, var(--color-error));
 }
 
 .teamlead-dashboard__status-badge--passed {
-	background: color-mix(in srgb, var(--color-success) 12%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .teamlead-dashboard__remind-btn {
@@ -401,7 +401,7 @@ export default {
 }
 
 .teamlead-dashboard__remind-sent {
-	color: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .teamlead-dashboard__empty {
@@ -412,7 +412,7 @@ export default {
 
 .teamlead-dashboard__error {
 	margin-top: 8px;
-	color: var(--color-error);
+	color: var(--color-error-text, var(--color-error));
 	font-size: 0.875em;
 }
 </style>

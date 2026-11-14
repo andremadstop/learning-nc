@@ -288,10 +288,10 @@ export default {
 .card-courses { border-left-color: var(--color-primary-element); }
 .card-courses::after { content: '\1F4DA'; }
 
-.card-students { border-left-color: var(--color-success); }
+.card-students { border-left-color: var(--color-element-success); }
 .card-students::after { content: '\1F393'; }
 
-.card-active { border-left-color: var(--color-warning); }
+.card-active { border-left-color: var(--color-element-warning); }
 .card-active::after { content: '\26A1'; }
 
 .card-pools { border-left-color: var(--color-primary-element); }
@@ -304,8 +304,8 @@ export default {
 	line-height: 1.2;
 }
 
-.card-students .summary-value { color: var(--color-success); }
-.card-active .summary-value { color: var(--color-warning); }
+.card-students .summary-value { color: var(--color-success-text, var(--color-success)); }
+.card-active .summary-value { color: var(--color-warning-text, var(--color-warning)); }
 
 .summary-label {
 	font-size: 11px;
@@ -369,8 +369,8 @@ export default {
 }
 
 .status-badge.active {
-	background: color-mix(in srgb, var(--color-success) 40%, transparent);
-	color: var(--color-success);
+	background: var(--color-success);
+	color: var(--color-success-text, var(--color-success));
 }
 
 .status-badge.archived {
