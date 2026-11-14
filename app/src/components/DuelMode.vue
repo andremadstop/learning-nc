@@ -372,6 +372,8 @@ export default {
       botKlausEndPhrase: '',    // Endsatz am Spielende
       botHasAnswered: false,    // Klaus hat diese Frage schon beantwortet
       botGradePending: false,   // Antwort des Users wird gerade serverseitig bewertet
+      // Handles of the feedback/end pauses; cleared when the duel is left (audit #97).
+      pendingTimeouts: [],
     };
   },
 
@@ -501,6 +503,7 @@ export default {
   unmounted() {
     this.stopPolling();
     this.clearBotTimeout();
+    this.clearPendingTimeouts();
   },
 
   watch: {
@@ -779,6 +782,22 @@ export default {
       }
     },
 
+    // setTimeout whose handle is kept, so leaving the duel cancels it: a feedback pause that ran
+    // out after "Abbrechen" used to switch back to a question and schedule another bot answer.
+    later(fn, ms) {
+      const handle = setTimeout(() => {
+        this.pendingTimeouts = this.pendingTimeouts.filter((h) => h !== handle);
+        fn();
+      }, ms);
+      this.pendingTimeouts.push(handle);
+      return handle;
+    },
+
+    clearPendingTimeouts() {
+      this.pendingTimeouts.forEach((h) => clearTimeout(h));
+      this.pendingTimeouts = [];
+    },
+
     clearBotTimeout() {
       if (this.botLocalState.botAnswerTimeout) {
         clearTimeout(this.botLocalState.botAnswerTimeout);
@@ -788,6 +807,7 @@ export default {
 
     cancelDuel() {
       this.clearBotTimeout();
+      this.clearPendingTimeouts();
       this.botMode = false;
       localStorage.removeItem('learning_duel_session');
       this.stopPolling();
@@ -874,7 +894,7 @@ export default {
         } else if (r.data.current_question_index > this.lastQuestionIndex + 1) {
           // Both answered — question advanced → show feedback then next question
           this.phase = 'feedback';
-          setTimeout(() => {
+          this.later(() => {
             this.lastQuestionIndex = r.data.current_question_index - 1;
             this.resetRoundState();
             this.phase = 'question';
@@ -1075,7 +1095,7 @@ export default {
       const next = this.botLocalState.currentIndex + 1;
       if (next >= this.botLocalState.totalQuestions) {
         // Spiel vorbei
-        setTimeout(() => {
+        this.later(() => {
           const my = this.botLocalState.myScore;
           const bot = this.botLocalState.botScore;
           if (my > bot) {
@@ -1092,7 +1112,7 @@ export default {
 
       // Kurze Feedback-Pause dann nächste Frage
       this.phase = 'feedback';
-      setTimeout(() => {
+      this.later(() => {
         this.botLocalState.currentIndex = next;
         this.hasAnswered = false;
         this.botHasAnswered = false;
@@ -1164,7 +1184,7 @@ export default {
           this.lastPoints = this.myScore - this.scoreBeforeAnswer;
           this.phase = 'feedback';
           const nextIndex = state.current_question_index;
-          setTimeout(() => {
+          this.later(() => {
             this.lastQuestionIndex = nextIndex - 1;
             this.resetRoundState();
             this.phase = 'question';

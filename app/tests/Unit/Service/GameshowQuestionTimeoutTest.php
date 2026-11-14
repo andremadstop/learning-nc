@@ -160,6 +160,65 @@ final class GameshowQuestionTimeoutTest extends TestCase {
         $this->assertCount(2, $this->answers, 'no extra miss rows when everyone answered');
     }
 
+    /**
+     * Audit #160: every client plays a 5.55 s reveal before it shows the next question. The next
+     * question's clock starts after it, not at the moment of resolution (which left ~9.5 s).
+     */
+    public function testTheNextQuestionStartsAfterTheReveal(): void {
+        $this->setUpGame('sprint', 3);
+        $this->session->setQuestionStartedAt($this->nowMs() - 1000);
+
+        $before = $this->nowMs();
+        $this->service->submitAnswer('abc123', 'alice', 501, 0);
+        $state = $this->service->submitAnswer('abc123', 'bob', 501, 0);
+        $after = $this->nowMs();
+
+        $this->assertSame(1, $state['current_question_index']);
+        $this->assertGreaterThanOrEqual($before + GameshowService::REVEAL_MS, (int)$state['question_started_at']);
+        $this->assertLessThanOrEqual($after + GameshowService::REVEAL_MS, (int)$state['question_started_at']);
+        $this->assertSame((int)$state['question_started_at'], $this->claimedStartedAt, 'the claim writes the same start');
+        $this->assertGreaterThanOrEqual($before, (int)$state['server_now_ms'], 'the client gets the server clock');
+        $this->assertLessThanOrEqual($after, (int)$state['server_now_ms']);
+    }
+
+    public function testAnAnswerBeforeTheQuestionStartsCountsAsGivenAtTheStart(): void {
+        $this->setUpGame('sprint', 3);
+        $start = $this->nowMs() + 4000;
+        $this->session->setQuestionStartedAt($start);
+
+        $this->service->submitAnswer('abc123', 'alice', 501, 0);
+
+        $this->assertSame($start, $this->answerOf('alice', 0)?->getAnsweredAt(), 'no time bonus from answering during the reveal');
+    }
+
+    /** Audit #227: the board-game modes are gone; a leftover session cannot be played. */
+    public function testALeftoverBoardGameSessionIsRefused(): void {
+        $this->setUpGame('lernwuerfel', 3);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('This game mode is no longer supported');
+        $this->service->submitAnswer('abc123', 'alice', 501, 0);
+    }
+
+    /** Audit #159: elimination never scores, so the history names the last player standing. */
+    public function testEliminationHistoryNamesTheLastPlayerStanding(): void {
+        $this->setUpGame('elimination', 5);
+        $this->session->setStatus('finished');
+        $this->players['bob']->setLives(0);
+
+        $history = $this->service->getHistory('alice');
+
+        $this->assertSame('alice', $history[0]['winner']);
+    }
+
+    public function testSprintHistoryStillNamesTheHighestScore(): void {
+        $this->setUpGame('sprint', 3);
+        $this->session->setStatus('finished');
+        $this->players['bob']->setScore(700);
+        $this->players['alice']->setScore(300);
+
+        $this->assertSame('bob', $this->service->getHistory('alice')[0]['winner']);
+    }
+
     private function setUpGame(string $mode, int $numQuestions): void {
         $session = new GameshowSession();
         $session->setId(8);
@@ -189,6 +248,7 @@ final class GameshowQuestionTimeoutTest extends TestCase {
 
         $sessionMapper = $this->createMock(GameshowSessionMapper::class);
         $sessionMapper->method('findByCode')->willReturnCallback(fn (): GameshowSession => $this->session);
+        $sessionMapper->method('findFinishedByUser')->willReturnCallback(fn (): array => [$this->session]);
         // A fresh read carries what the claim wrote, like the database row would.
         $sessionMapper->method('findById')->willReturnCallback(function (): GameshowSession {
             $stored = clone $this->session;

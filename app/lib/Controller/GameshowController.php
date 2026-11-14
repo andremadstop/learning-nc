@@ -110,32 +110,4 @@ class GameshowController extends Controller {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load course lobby'], Http::STATUS_BAD_REQUEST);
         }
     }
-
-    /**
-     * BACK-03: Roll the dice for the active player (board-game modes only).
-     *
-     * @NoAdminRequired
-     */
-    #[UserRateLimit(limit: 30, period: 60)]
-    public function roll(string $code, ?string $lang = null): DataResponse {
-        try {
-            return new DataResponse($this->service->rollDice($code, $this->userId, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to roll dice'], Http::STATUS_BAD_REQUEST);
-        }
-    }
-
-    /**
-     * BACK-01: Select a category (Wissensturm mode only) before answering.
-     *
-     * @NoAdminRequired
-     */
-    #[UserRateLimit(limit: 30, period: 60)]
-    public function category(string $code, int $categoryPoolId, ?string $lang = null): DataResponse {
-        try {
-            return new DataResponse($this->service->selectCategory($code, $this->userId, $categoryPoolId, $lang));
-        } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to select category'], Http::STATUS_BAD_REQUEST);
-        }
-    }
 }
