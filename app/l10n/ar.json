@@ -3629,6 +3629,20 @@
         "NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123.": "NovaTech تستحوذ على Oldstyle GmbH. ‏Windows Server 2012، وموزّع Hub (وليس مبدّلاً!) وadmin123.",
         "Abbrechen bestätigen": "تأكيد الإلغاء",
         "Die Geschichten der Kampagnen gibt es bisher nur auf Deutsch.": "قصص الحملات متاحة حتى الآن باللغة الألمانية فقط.",
-        "Dieser Lernmodus ist in deinem Kurs ausgeschaltet.": "وضع التعلّم هذا مُعطّل في دورتك."
+        "Dieser Lernmodus ist in deinem Kurs ausgeschaltet.": "وضع التعلّم هذا مُعطّل في دورتك.",
+        "Abgelaufen (Zertifikatsstatus)": "منتهي الصلاحية",
+        "Gültig (Zertifikatsstatus)": "صالح",
+        "Risikostufe": "مستوى الخطر",
+        "Kritische Karten": "البطاقات الحرجة",
+        "Risikogründe": "أسباب الخطر",
+        "Trefferquote": "الدقة",
+        "Zuletzt aktiv": "آخر نشاط",
+        "Hohes Risiko": "خطر مرتفع",
+        "Mittleres Risiko": "خطر متوسط",
+        "Trefferquote: %s": "الدقة: %s",
+        "Karten in Box 1: %s": "البطاقات في الصندوق 1: %s",
+        "Benutzer-ID": "معرّف المستخدم",
+        "Beherrschung": "الإتقان",
+        "Gewonnene Duelle": "المبارزات الفائزة"
     }
 }

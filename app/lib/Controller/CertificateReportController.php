@@ -6,6 +6,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\KeyService;
+use OCA\Learning\Service\CsvExportL10n;
 use OCA\Learning\Service\CsvFormulaGuard;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -13,6 +14,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IL10N;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 
@@ -35,6 +37,7 @@ class CertificateReportController extends Controller {
     private KeyService $keyService;
     private LoggerInterface $logger;
     private ?string $userId;
+    private CsvExportL10n $csvL10n;
 
     public function __construct(
         string $appName,
@@ -42,13 +45,15 @@ class CertificateReportController extends Controller {
         CertificateReportService $reportService,
         KeyService $keyService,
         LoggerInterface $logger,
-        ?string $userId
+        ?string $userId,
+        ?IL10N $l10n = null
     ) {
         parent::__construct($appName, $request);
         $this->reportService = $reportService;
         $this->keyService = $keyService;
         $this->logger = $logger;
         $this->userId = $userId;
+        $this->csvL10n = new CsvExportL10n($l10n);
     }
 
     /**
@@ -127,9 +132,10 @@ class CertificateReportController extends Controller {
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
-        // DE-source header labels (i18n source convention); NO recipient-id / email column.
+        // GitHub #48: headers and status in the exporting user's language; NO recipient-id /
+        // email column.
         $lines = [];
-        $lines[] = CsvFormulaGuard::line(['Name', 'Bestanden am', 'Score (%)', 'Gültig bis', 'Verifizierungs-ID', 'Status']);
+        $lines[] = CsvFormulaGuard::line($this->csvL10n->certReportHeader());
         foreach ($result['rows'] as $r) {
             $lines[] = CsvFormulaGuard::line([
                 (string)$r['display_name'],
@@ -138,14 +144,14 @@ class CertificateReportController extends Controller {
                 $r['expires_at'] !== null ? gmdate('Y-m-d', (int)$r['expires_at']) : '',
                 (string)$r['verification_id'],
                 // An expiry filter also lists certificates that already expired (audit #222).
-                !empty($r['expired']) ? 'abgelaufen' : 'gültig',
+                $this->csvL10n->certStatus(!empty($r['expired'])),
             ]);
         }
 
         return new DataDownloadResponse(
-            implode("\n", $lines),
+            CsvExportL10n::BOM . implode("\n", $lines),
             'cert-report-course-' . $courseId . '.csv',
-            'text/csv'
+            CsvExportL10n::CONTENT_TYPE
         );
     }
 

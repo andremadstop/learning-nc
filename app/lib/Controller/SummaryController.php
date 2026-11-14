@@ -19,6 +19,7 @@ class SummaryController extends Controller {
     private CourseService $courseService;
     private TelosService $telosService;
     private ?string $userId;
+    private \OCA\Learning\Service\CsvExportL10n $csvL10n;
 
     public function __construct(
         string $appName,
@@ -26,13 +27,15 @@ class SummaryController extends Controller {
         CourseSummaryService $summaryService,
         CourseService $courseService,
         TelosService $telosService,
-        ?string $userId
+        ?string $userId,
+        ?\OCP\IL10N $l10n = null
     ) {
         parent::__construct($appName, $request);
         $this->summaryService = $summaryService;
         $this->courseService = $courseService;
         $this->telosService = $telosService;
         $this->userId = $userId;
+        $this->csvL10n = new \OCA\Learning\Service\CsvExportL10n($l10n);
     }
 
     /**
@@ -135,7 +138,8 @@ class SummaryController extends Controller {
 
             $data = $this->summaryService->getClassSummary($courseId);
             $handle = fopen('php://temp', 'r+');
-            CsvFormulaGuard::writeRow($handle, ['User', 'XP', 'Level', 'Accuracy (%)', 'Mastery (%)', 'Sessions', 'Streak', 'Badges', 'Duels Won', 'Swarm Contributions']);
+            // GitHub #48: headers in the exporting user's language
+            CsvFormulaGuard::writeRow($handle, $this->csvL10n->classSummaryHeader());
 
             foreach ($data['students'] as $uid => $s) {
                 CsvFormulaGuard::writeRow($handle, [
@@ -156,7 +160,7 @@ class SummaryController extends Controller {
             $csv = stream_get_contents($handle);
             fclose($handle);
 
-            return new DataDownloadResponse($csv, 'class-summary-course-' . $courseId . '.csv', 'text/csv');
+            return new DataDownloadResponse(\OCA\Learning\Service\CsvExportL10n::BOM . $csv, 'class-summary-course-' . $courseId . '.csv', \OCA\Learning\Service\CsvExportL10n::CONTENT_TYPE);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
         }

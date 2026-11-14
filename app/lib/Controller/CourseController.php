@@ -35,6 +35,7 @@ class CourseController extends Controller {
     private CourseEnrollmentService $enrollment;
     private LoggerInterface $logger;
     private ?string $userId;
+    private \OCA\Learning\Service\CsvExportL10n $csvL10n;
 
     public function __construct(
         string $appName,
@@ -49,7 +50,8 @@ class CourseController extends Controller {
         ExamAttemptPolicy $examAttemptPolicy,
         CourseEnrollmentService $enrollment,
         LoggerInterface $logger,
-        ?string $userId
+        ?string $userId,
+        ?\OCP\IL10N $l10n = null
     ) {
         parent::__construct($appName, $request);
         $this->courseMapper = $courseMapper;
@@ -63,6 +65,7 @@ class CourseController extends Controller {
         $this->enrollment = $enrollment;
         $this->logger = $logger;
         $this->userId = $userId;
+        $this->csvL10n = new \OCA\Learning\Service\CsvExportL10n($l10n);
     }
 
     /**
@@ -494,14 +497,16 @@ class CourseController extends Controller {
         }
 
         $handle = fopen('php://temp', 'r+');
-        CsvFormulaGuard::writeRow($handle, ['Name', 'Risk Level', 'Critical Cards', 'Risk Reasons', 'Accuracy (%)', 'Last Active']);
+        // GitHub #48: headers, risk level and reasons in the exporting user's language; the
+        // reasons come from their codes (they were German sentences).
+        CsvFormulaGuard::writeRow($handle, $this->csvL10n->atRiskHeader());
         foreach (($students['at_risk'] ?? []) as $s) {
             // the display name is chosen by the learner: never let it become a spreadsheet formula
             CsvFormulaGuard::writeRow($handle, [
                 $s['display_name'] ?? $s['user_id'] ?? '',
-                $s['risk_level'] ?? '',
+                $this->csvL10n->riskLevel((string)($s['risk_level'] ?? '')),
                 $s['critical_cards_count'] ?? 0,
-                implode('; ', $s['risk_reasons'] ?? []),
+                $this->csvL10n->riskReasons($s),
                 $s['accuracy'] ?? '',
                 $s['last_active'] ?? '',
             ]);
@@ -510,7 +515,7 @@ class CourseController extends Controller {
         $csv = stream_get_contents($handle);
         fclose($handle);
 
-        return new DataDownloadResponse($csv, 'at-risk-course-' . $courseId . '.csv', 'text/csv');
+        return new DataDownloadResponse(\OCA\Learning\Service\CsvExportL10n::BOM . $csv, 'at-risk-course-' . $courseId . '.csv', \OCA\Learning\Service\CsvExportL10n::CONTENT_TYPE);
     }
 
     /**
