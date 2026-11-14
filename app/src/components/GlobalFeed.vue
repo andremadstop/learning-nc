@@ -153,7 +153,7 @@ export default {
 }
 
 .feed-type--announcement {
-	border-left: 3px solid var(--color-primary);
+	border-inline-start: 3px solid var(--color-primary);
 }
 
 .feed-icon {
@@ -194,7 +194,7 @@ export default {
 .feed-time {
 	font-size: 0.8em;
 	color: var(--color-text-maxcontrast);
-	margin-left: auto;
+	margin-inline-start: auto;
 }
 
 /* GitHub #40: an edited announcement says so */

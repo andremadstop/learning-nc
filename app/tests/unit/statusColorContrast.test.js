@@ -161,6 +161,16 @@ describe('#37 status colours use the Nextcloud text/element pairs', () => {
 		const css = styleOf('CourseSummary.vue')
 		expect(css).not.toMatch(/border-left/)
 	})
+
+	// review of #37: the dashboard cards got the colour fix but kept a physical accent bar
+	it('InstructorDashboard summary cards and the global feed follow the reading direction (RTL)', () => {
+		const dashboard = styleOf('InstructorDashboard.vue')
+		expect(dashboard).not.toMatch(/border-left/)
+		expect(declsFor(dashboard, '.summary-card::after').right).toBeUndefined()
+		const feed = styleOf('GlobalFeed.vue')
+		expect(feed).not.toMatch(/border-left|margin-left/)
+		expect(declsFor(feed, '.feed-time')['margin-inline-start']).toBe('auto')
+	})
 })
 
 // WCAG relative luminance / contrast for the NC 33–35 theme values

@@ -257,9 +257,10 @@ export default {
 .summary-card {
 	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
-	border-left: 3px solid var(--color-primary-element);
+	border-inline-start: 3px solid var(--color-primary-element);
 	border-radius: var(--border-radius-large, 12px);
-	padding: 20px 20px 20px 18px;
+	padding-block: 20px;
+	padding-inline: 18px 20px;
 	text-align: center;
 	display: flex;
 	flex-direction: column;
@@ -277,7 +278,7 @@ export default {
 /* Emoji watermarks */
 .summary-card::after {
 	position: absolute;
-	right: 10px;
+	inset-inline-end: 10px;
 	bottom: 6px;
 	font-size: 32px;
 	opacity: 0.08;
@@ -285,16 +286,16 @@ export default {
 	line-height: 1;
 }
 
-.card-courses { border-left-color: var(--color-primary-element); }
+.card-courses { border-inline-start-color: var(--color-primary-element); }
 .card-courses::after { content: '\1F4DA'; }
 
-.card-students { border-left-color: var(--color-element-success); }
+.card-students { border-inline-start-color: var(--color-element-success); }
 .card-students::after { content: '\1F393'; }
 
-.card-active { border-left-color: var(--color-element-warning); }
+.card-active { border-inline-start-color: var(--color-element-warning); }
 .card-active::after { content: '\26A1'; }
 
-.card-pools { border-left-color: var(--color-primary-element); }
+.card-pools { border-inline-start-color: var(--color-primary-element); }
 .card-pools::after { content: '\1F4CB'; }
 
 .summary-value {
