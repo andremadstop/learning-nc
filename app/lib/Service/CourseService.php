@@ -27,6 +27,14 @@ class CourseService {
      * Mode config of a course created while gamification is off (GitHub #36): the defaults the
      * course view uses (CourseDetail normalizeModeConfig), with duel, gameshow and league off.
      */
+    /**
+     * GitHub #44: answers a question needs before the heatmap's worst questions and the weak
+     * questions list it. Was 5 in both, which a group of a few learners rarely reaches, so
+     * "Show worst questions" opened nothing. Shared, so the two tabs never disagree; the frontend
+     * names the same number (utils/courseFigures.js, pinned by a test).
+     */
+    public const MIN_ANSWERS_PER_QUESTION = 2;
+
     private const MODE_CONFIG_WITHOUT_GAMIFICATION = [
         'training' => true,
         'leitner' => true,
@@ -2709,11 +2717,16 @@ class CourseService {
 
         // user_answers has no user_id; get it via sessions.
         // Join order: ua → s (user_id) first, then ua → q → cp → cm (cm references s.user_id)
+        // GitHub #44: questions without a chapter are grouped per pool (one row per pool, named
+        // after it) instead of all pools of the course falling into one nameless row.
+        $poolGroup = self::chapterlessPoolGroupSql();
         $qb = $this->db->getQueryBuilder();
         $qb->select(
             'q.chapter_key',
             'q.chapter_title',
             'q.chapter_order',
+            $qb->createFunction($poolGroup . ' AS group_pool_id'),
+            $qb->createFunction('MAX(p.name) AS pool_name'),
             $qb->createFunction('COUNT(ua.id) AS total_answers'),
             $qb->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct_answers'),
             $qb->createFunction('COUNT(DISTINCT s.user_id) AS unique_learners')
@@ -2721,6 +2734,7 @@ class CourseService {
         ->from('learning_user_answers', 'ua')
         ->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('s.id', 'ua.session_id'))
         ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
+        ->innerJoin('q', 'learning_pools', 'p', $qb->expr()->eq('p.id', 'q.pool_id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
         ->innerJoin('cp', 'learning_course_members', 'cm', $qb->expr()->andX(
             $qb->expr()->eq('cm.course_id', 'cp.course_id'),
@@ -2731,6 +2745,7 @@ class CourseService {
         // former filter also listed a role 'co_instructor' that never exists (audit #50, #156, #226).
         ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
         ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
+        ->addGroupBy($qb->createFunction($poolGroup))
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
 
         $result = $qb->executeQuery();
@@ -2749,6 +2764,7 @@ class CourseService {
             'q.id',
             'q.text AS question_text',
             'q.chapter_key',
+            'q.pool_id',
             $qb2->createFunction('COUNT(ua.id) AS total'),
             $qb2->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct')
         )
@@ -2759,22 +2775,27 @@ class CourseService {
         // The same learners as the chapter rows above: the top questions no longer mix in
         // answers from other courses sharing the pool (audit #50)
         $this->restrictToCourseStudents($qb2, $courseId);
-        $qb2->groupBy('q.id', 'q.text', 'q.chapter_key')
-        ->having($qb2->createFunction('COUNT(ua.id) >= 5'))
-        ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
-        ->setMaxResults(50);
+        // GitHub #44: no global LIMIT 50 any more. It cut across all chapters, so chapters further
+        // down the ranking got no questions at all; each chapter keeps its five below.
+        $qb2->groupBy('q.id', 'q.text', 'q.chapter_key', 'q.pool_id')
+        ->having($qb2->createFunction('COUNT(ua.id) >= ' . self::MIN_ANSWERS_PER_QUESTION))
+        ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
 
         $result2 = $qb2->executeQuery();
         $worstByChapter = [];
         while ($row = $result2->fetch()) {
-            $chapterKey = $row['chapter_key'] ?? '';
             $total = (int)$row['total'];
             $correct = (int)$row['correct'];
-            $wrongRate = $total > 0 ? round((1 - $correct / $total) * 100, 1) : 0.0;
-            $worstByChapter[$chapterKey][] = [
+            if ($total <= $correct) {
+                continue; // never answered wrong: no "worst question"
+            }
+            $groupKey = self::heatmapGroupKey($row['chapter_key'] ?? null, (int)$row['pool_id']);
+            $worstByChapter[$groupKey][] = [
                 'id' => (int)$row['id'],
                 'text' => mb_substr((string)$row['question_text'], 0, 120),
-                'wrong_rate' => $wrongRate,
+                'wrong_rate' => round((1 - $correct / $total) * 100, 1),
+                'wrong_answers' => $total - $correct,
+                'total_answers' => $total,
             ];
         }
         $result2->closeCursor();
@@ -2784,8 +2805,9 @@ class CourseService {
             $total = (int)$row['total_answers'];
             $correct = (int)$row['correct_answers'];
             $successRate = $total > 0 ? round($correct / $total * 100, 1) : 0.0;
-            $chapterKey = $row['chapter_key'] ?? '';
-            $topWrong = array_slice($worstByChapter[$chapterKey] ?? [], 0, 5);
+            $groupKey = self::heatmapGroupKey($row['chapter_key'] ?? null, (int)($row['group_pool_id'] ?? 0));
+            $topWrong = array_slice($worstByChapter[$groupKey] ?? [], 0, 5);
+            $chapterless = ($row['chapter_key'] ?? '') === '';
             if ($successRate < 50) {
                 $severity = 'red';
             } elseif ($successRate < 70) {
@@ -2794,9 +2816,11 @@ class CourseService {
                 $severity = 'green';
             }
             $output[] = [
-                'chapter_key' => $chapterKey,
-                'chapter_title' => $row['chapter_title'] ?? $chapterKey,
+                // A chapter-less row is the pool's: a key of its own and the pool name as title.
+                'chapter_key' => $groupKey,
+                'chapter_title' => $chapterless ? (string)($row['pool_name'] ?? '') : ($row['chapter_title'] ?? $groupKey),
                 'chapter_order' => isset($row['chapter_order']) ? (int)$row['chapter_order'] : null,
+                'is_pool' => $chapterless,
                 'total_answers' => $total,
                 'correct_answers' => $correct,
                 'success_rate' => $successRate,
@@ -2807,6 +2831,18 @@ class CourseService {
         }
 
         return $output;
+    }
+
+    /**
+     * GitHub #44: the pool id a chapter-less question is grouped by in the heatmap, 0 for a
+     * question with a chapter (those stay grouped by chapter across pools, as before).
+     */
+    private static function chapterlessPoolGroupSql(): string {
+        return "(CASE WHEN q.chapter_key IS NULL OR q.chapter_key = '' THEN q.pool_id ELSE 0 END)";
+    }
+
+    private static function heatmapGroupKey(?string $chapterKey, int $poolId): string {
+        return ($chapterKey ?? '') !== '' ? $chapterKey : 'pool:' . $poolId;
     }
 
     /**
@@ -2833,7 +2869,7 @@ class CourseService {
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
         $this->restrictToCourseStudents($qb, $courseId);
         $qb->groupBy('q.id', 'q.text', 'q.chapter_key', 'q.chapter_title')
-        ->having($qb->createFunction('COUNT(ua.id) >= 5'))
+        ->having($qb->createFunction('COUNT(ua.id) >= ' . self::MIN_ANSWERS_PER_QUESTION))
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
         ->setMaxResults(max(1, min(100, $limit)));
 

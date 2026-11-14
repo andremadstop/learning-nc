@@ -379,3 +379,68 @@ describe('CourseTabTeilnehmer at-risk reasons', () => {
 		expect(instance.riskReasonLabels({ risk_reasons: ['Inaktiv seit 9 Tagen'] })).toEqual(['Inaktiv seit 9 Tagen'])
 	})
 })
+
+// GitHub #44: "Show worst questions" toggled an empty list. It now shows only with questions, and
+// a row without any says why (the threshold the server applies).
+describe('CourseTabTeilnehmer heatmap (GitHub #44)', () => {
+	async function renderHeatmap(rows) {
+		axios.get.mockImplementation((url) => Promise.resolve({ data: url.endsWith('/chapter-heatmap') ? rows : [] }))
+		const host = document.createElement('div')
+		document.body.appendChild(host)
+		const app = createApp({
+			render: () => h(CourseTabTeilnehmer, {
+				courseId: 5,
+				course: { is_instructor: true, mode_config: { course_summary: false } },
+				userRole: 'instructor',
+				actsAsInstructor: true,
+				activeTab: 'heatmap',
+			}),
+		})
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = (app, s, p, c) => (c === 1 ? s : p)
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		for (let i = 0; i < 6; i++) {
+			await Promise.resolve()
+			await nextTick()
+		}
+		return { host, app }
+	}
+
+	const row = (key, top) => ({ chapter_key: key, chapter_title: key, success_rate: 50, unique_learners: 1, severity: 'yellow', top_wrong_questions: top })
+
+	it('offers no button on a row without worst questions, and names the threshold', async () => {
+		const { host, app } = await renderHeatmap([row('pool:3', [])])
+		try {
+			expect(host.textContent).not.toContain('Show worst questions')
+			expect(host.querySelector('.heatmap-no-worst')?.textContent).toContain('2')
+		} finally {
+			app.unmount()
+			host.remove()
+		}
+	})
+
+	it('lists the worst questions with wrong and total answers', async () => {
+		const { host, app } = await renderHeatmap([row('ch1', [{ id: 7, text: 'Was ist ein Fluchtweg?', wrong_rate: 66.7, wrong_answers: 2, total_answers: 3 }])])
+		try {
+			const button = [...host.querySelectorAll('button')].find((b) => b.textContent.includes('Show worst questions'))
+			expect(button).toBeDefined()
+			button.click()
+			await nextTick()
+			expect(host.querySelector('.wrong-q-rate')?.textContent).toContain('2 von 3 Antworten falsch (66.7 %)')
+		} finally {
+			app.unmount()
+			host.remove()
+		}
+	})
+})
+
+describe('MIN_ANSWERS_PER_QUESTION (GitHub #44)', () => {
+	it('is the number the server applies', async () => {
+		const { readFileSync } = await import('node:fs')
+		const { resolve } = await import('node:path')
+		const { MIN_ANSWERS_PER_QUESTION } = await import('../../src/utils/courseFigures.js')
+		const php = readFileSync(resolve(__dirname, '../../lib/Service/CourseService.php'), 'utf8')
+		expect(php).toContain(`public const MIN_ANSWERS_PER_QUESTION = ${MIN_ANSWERS_PER_QUESTION};`)
+	})
+})

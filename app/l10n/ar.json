@@ -1230,7 +1230,6 @@
         "No shared pools": "لا توجد مجموعات مشتركة",
         "No support tickets yet.": "لا توجد تذاكر دعم بعد.",
         "No trouble spots!": "لا توجد نقاط إشكالية!",
-        "No weak questions found. Questions need at least 5 answers to appear here.": "لم يُعثر على أسئلة ضعيفة. تحتاج الأسئلة إلى 5 إجابات على الأقل للظهور هنا.",
         "Noch im Spiel": "لا يزال في اللعبة",
         "Noch in Vorbereitung": "Still in preparation",
         "Noch kein Firewall-Szenario": "No firewall scenario yet",
@@ -1682,7 +1681,6 @@
         "Subnetzname": "اسم الشبكة الفرعية",
         "Subnetzrechner": "حاسبة الشبكات الفرعية",
         "Subnetzrechner Tabs": "تبويبات حاسبة الشبكات الفرعية",
-        "Success rate per chapter across all students. Sorted by worst first.": "معدل النجاح لكل فصل عبر جميع الطلاب. مرتب بالأسوأ أولًا.",
         "Sudden Death tritt ein, wenn nur noch 2 Spieler übrig sind. Ab diesem Punkt scheidet aus, wer als Erste oder Erster eine falsche Antwort gibt — Leben spielen keine Rolle mehr. Der verbleibende Spieler gewinnt die Runde.": "يحدث الموت المفاجئ حين يتبقى لاعبان. من هذه النقطة، من يجيب خطأً أولًا يُستبعَد — الأرواح لا دور لها. اللاعب الباقي يفوز بالجولة.",
         "Support ticket answer saved": "تم حفظ رد تذكرة الدعم",
         "Support ticket sent": "تم إرسال تذكرة الدعم",
@@ -2169,7 +2167,6 @@
         "gemeistert": "مُتقَن",
         "heute": "today",
         "in {pool}": "في {pool}",
-        "learners": "المتعلمون",
         "oder": "or",
         "optional": "اختياري",
         "selected pool": "المجموعة المختارة",
@@ -3601,6 +3598,11 @@
         "Prüfung beendet": "انتهى الاختبار",
         "Prüfungsumfang (Vorgabe für alle Pools)": "نطاق الاختبار (القيمة الافتراضية لجميع المجموعات)",
         "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.": "ينطبق على كل اختبار في هذه الدورة لا تملك مجموعته قيمة خاصة بها في قواعد المجموعة. تُسحب الأسئلة عشوائيًا من المجموعة في كل محاولة. الحقول الفارغة: يتبع الاختبار حجم المجموعة كما كان من قبل.",
-        "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min.": "الأسئلة: حتى {questions} · المهلة الزمنية: {minutes} دقيقة"
+        "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min.": "الأسئلة: حتى {questions} · المهلة الزمنية: {minutes} دقيقة",
+        "Lernende: {n}": "المتعلمون: {n}",
+        "{wrong} von {total} Antworten falsch ({rate} %)": "{wrong} من {total} إجابات خاطئة ({rate} %)",
+        "Noch keine falsch beantwortete Frage mit mindestens {n} Antworten.": "لا يوجد بعد سؤال أُجيب عنه خطأً وله {n} إجابات على الأقل.",
+        "Noch keine schwachen Fragen. Eine Frage erscheint hier ab {n} Antworten.": "لا توجد أسئلة ضعيفة بعد. يظهر السؤال هنا بعد {n} إجابات.",
+        "Erfolgsquote je Kapitel über alle Lernenden, Fragen ohne Kapitel je Pool. Die schwächsten zuerst.": "نسبة النجاح لكل فصل لدى جميع المتعلمين، والأسئلة بلا فصل لكل مجموعة. الأضعف أولاً."
     }
 }

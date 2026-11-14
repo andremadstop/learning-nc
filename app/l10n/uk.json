@@ -1242,7 +1242,6 @@
         "No shared pools": "Немає спільних пулів",
         "No support tickets yet.": "Звернень до підтримки поки немає.",
         "No trouble spots!": "Проблемних місць немає!",
-        "No weak questions found. Questions need at least 5 answers to appear here.": "Слабких питань не знайдено. Щоб питання з'явилося тут, на нього має бути щонайменше 5 відповідей.",
         "Noch im Spiel": "Ще в грі",
         "Noch in Vorbereitung": "Ще в підготовці",
         "Noch kein Firewall-Szenario": "Сценарію брандмауера поки немає",
@@ -1697,7 +1696,6 @@
         "Subnetzname": "Назва підмережі",
         "Subnetzrechner": "Калькулятор підмереж",
         "Subnetzrechner Tabs": "Вкладки калькулятора підмереж",
-        "Success rate per chapter across all students. Sorted by worst first.": "Частка успішних відповідей за розділами по всіх студентах. Відсортовано від найгіршого.",
         "Sudden Death tritt ein, wenn nur noch 2 Spieler übrig sind. Ab diesem Punkt scheidet aus, wer als Erste oder Erster eine falsche Antwort gibt — Leben spielen keine Rolle mehr. Der verbleibende Spieler gewinnt die Runde.": "«Раптова смерть» настає, коли лишається лише 2 гравці. Від цього моменту той, хто першим дає неправильну відповідь, вибуває — життя більше не мають значення. Гравець, що лишився, виграє раунд.",
         "Support ticket answer saved": "Відповідь на звернення до підтримки збережено",
         "Support ticket sent": "Звернення до підтримки надіслано",
@@ -2195,7 +2193,6 @@
         "gemeistert": "опановано",
         "heute": "сьогодні",
         "in {pool}": "у пулі {pool}",
-        "learners": "учні",
         "oder": "або",
         "optional": "необов'язково",
         "selected pool": "обраний пул",
@@ -3601,6 +3598,11 @@
         "Prüfung beendet": "Іспит завершено",
         "Prüfungsumfang (Vorgabe für alle Pools)": "Обсяг іспиту (за замовчуванням для всіх пулів)",
         "Gilt für jede Prüfung in diesem Kurs, deren Pool in den Pool-Regeln keinen eigenen Wert hat. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder: Die Prüfung richtet sich wie bisher nach der Poolgröße.": "Діє для кожного іспиту в цьому курсі, якщо пул не має власного значення в правилах пулу. Під час кожної спроби питання вибираються з пулу випадково. Порожні поля: іспит, як і раніше, залежить від розміру пулу.",
-        "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min.": "Питань: до {questions} · обмеження часу: {minutes} хв"
+        "Fragen: bis zu {questions} · Zeitlimit: {minutes} Min.": "Питань: до {questions} · обмеження часу: {minutes} хв",
+        "Lernende: {n}": "Учнів: {n}",
+        "{wrong} von {total} Antworten falsch ({rate} %)": "Неправильних відповідей: {wrong} із {total} ({rate} %)",
+        "Noch keine falsch beantwortete Frage mit mindestens {n} Antworten.": "Поки немає питань із неправильними відповідями, на які відповіли щонайменше {n} рази.",
+        "Noch keine schwachen Fragen. Eine Frage erscheint hier ab {n} Antworten.": "Слабких питань поки немає. Питання з’явиться тут, щойно на нього дадуть {n} відповіді.",
+        "Erfolgsquote je Kapitel über alle Lernenden, Fragen ohne Kapitel je Pool. Die schwächsten zuerst.": "Частка правильних відповідей за розділами в усіх учнів, питання без розділу — за пулами. Спершу найслабші."
     }
 }

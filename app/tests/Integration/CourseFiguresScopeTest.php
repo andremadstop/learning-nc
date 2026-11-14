@@ -107,8 +107,9 @@ final class CourseFiguresScopeTest extends TestCase {
 		));
 		$this->assertCount(1, $chapters);
 		$this->assertSame(5, $chapters[0]['total_answers']);
-		$this->assertCount(1, $chapters[0]['top_wrong_questions']);
-		$this->assertEquals(0.0, $chapters[0]['top_wrong_questions'][0]['wrong_rate']);
+		// Only A's student counts, and they never answered wrong: no "worst question" (GitHub #44
+		// lists only questions answered wrong at least once).
+		$this->assertSame([], $chapters[0]['top_wrong_questions']);
 	}
 
 	public function testStreakDaysAreUtcWhateverTheConnectionTimeZone(): void {

@@ -236,12 +236,12 @@
 				{{ t('learning', 'No chapter data available yet. Students need to answer questions first.') }}
 			</div>
 			<div v-else>
-				<p class="section-hint">{{ t('learning', 'Success rate per chapter across all students. Sorted by worst first.') }}</p>
+				<p class="section-hint">{{ t('learning', 'Erfolgsquote je Kapitel über alle Lernenden, Fragen ohne Kapitel je Pool. Die schwächsten zuerst.') }}</p>
 				<div class="heatmap-list">
 					<div v-for="ch in heatmapChapters" :key="ch.chapter_key" class="heatmap-row">
 						<div class="heatmap-meta">
 							<span class="chapter-title-hm">{{ ch.chapter_title || ch.chapter_key }}</span>
-							<span class="heatmap-stats">{{ ch.success_rate }}% · {{ ch.unique_learners }} {{ t('learning', 'learners') }}</span>
+							<span class="heatmap-stats">{{ ch.success_rate }}% · {{ t('learning', 'Lernende: {n}', { n: ch.unique_learners }) }}</span>
 						</div>
 						<div class="heatmap-bar-bg">
 							<div
@@ -252,12 +252,16 @@
 						<div v-if="expandedChapter === ch.chapter_key && ch.top_wrong_questions && ch.top_wrong_questions.length > 0" class="wrong-questions">
 							<div v-for="q in ch.top_wrong_questions" :key="q.id" class="wrong-q-row">
 								<span class="wrong-q-text">{{ q.text }}</span>
-								<span class="wrong-q-rate">{{ q.wrong_rate }}% falsch</span>
+								<span class="wrong-q-rate">{{ t('learning', '{wrong} von {total} Antworten falsch ({rate} %)', { wrong: q.wrong_answers, total: q.total_answers, rate: q.wrong_rate }) }}</span>
 							</div>
 						</div>
-						<NcButton variant="tertiary" @click="toggleExpandChapter(ch.chapter_key)">
+						<!-- GitHub #44: the button toggled an empty list; it only shows when there is one. -->
+						<NcButton v-if="ch.top_wrong_questions && ch.top_wrong_questions.length > 0" variant="tertiary" @click="toggleExpandChapter(ch.chapter_key)">
 							{{ expandedChapter === ch.chapter_key ? t('learning', 'Hide') : t('learning', 'Show worst questions') }}
 						</NcButton>
+						<p v-else class="heatmap-no-worst">
+							{{ t('learning', 'Noch keine falsch beantwortete Frage mit mindestens {n} Antworten.', { n: minAnswersPerQuestion }) }}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -267,7 +271,7 @@
 		<div v-if="currentSubTab === 'weak-questions' && isInstructor" class="tab-content weak-questions-section">
 			<div v-if="loadingWeakQuestions" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
 			<div v-else-if="weakQuestions.length === 0" class="empty-hint">
-				{{ t('learning', 'No weak questions found. Questions need at least 5 answers to appear here.') }}
+				{{ t('learning', 'Noch keine schwachen Fragen. Eine Frage erscheint hier ab {n} Antworten.', { n: minAnswersPerQuestion }) }}
 			</div>
 			<table v-else class="weak-questions-table">
 				<thead>
@@ -551,6 +555,7 @@ import StudentDetail from './StudentDetail.vue'
 import Certificate from './Certificate.vue'
 import { courseDownloadUrl, certReportZipUrl } from '../services/CertificateService.js'
 import BuddyMatching from './BuddyMatching.vue'
+import { MIN_ANSWERS_PER_QUESTION } from '../utils/courseFigures.js'
 
 export default {
 	name: 'CourseTabTeilnehmer',
@@ -638,6 +643,7 @@ export default {
 			loadingHeatmap: false,
 			heatmapChapters: [],
 			expandedChapter: null,
+			minAnswersPerQuestion: MIN_ANSWERS_PER_QUESTION,
 
 			// Weak questions
 			loadingWeakQuestions: false,
@@ -1366,6 +1372,7 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .heatmap-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
 .chapter-title-hm { font-weight: 600; }
 .heatmap-stats { color: var(--color-text-maxcontrast); font-size: 0.9em; }
+.heatmap-no-worst { color: var(--color-text-maxcontrast); font-size: 0.9em; margin: 4px 0 0; }
 .heatmap-bar-bg { height: 12px; background: var(--color-background-dark); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
 .heatmap-bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
 .heatmap-bar-fill.red { background: var(--color-error); }
