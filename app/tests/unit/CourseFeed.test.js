@@ -33,7 +33,7 @@ import { showError } from '@nextcloud/dialogs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { setTestLanguage } from './support/l10nCatalog.js'
-import { createApp, nextTick } from 'vue'
+import { createApp, h, nextTick, reactive } from 'vue'
 import GlobalFeed from '../../src/components/GlobalFeed.vue'
 
 // Import the component definition
@@ -393,6 +393,33 @@ describe('CourseFeed announcement edit (GitHub #40)', () => {
 		expect(edits).toHaveLength(1)
 		expect(edits[0].closest('.feed-item').classList.contains('feed-type--announcement')).toBe(true)
 		instructor.unmount()
+	})
+
+	// The feed tab stays mounted when the instructor turns the student view off. The legacy
+	// row (no meta.announcement_id) is matched through the announcement list, which was only
+	// loaded in mounted(), so it stayed without buttons until a remount.
+	it('loads the announcement list when the student view is turned off on an open feed', async () => {
+		const legacy = makeFeedItem({ id: 1, created_at: 1700000000 })
+		axios.get.mockImplementation((url) => Promise.resolve({
+			data: url.endsWith('/feed')
+				? { items: [legacy] }
+				: { announcements: [{ id: 4, title: legacy.title, created_at: 1700000001 }] },
+		}))
+		const state = reactive({ canManage: false })
+		const { el, unmount } = mountFeed({ render: () => h(CourseFeed, { courseId: 5, canManage: state.canManage }) })
+		await new Promise((r) => setTimeout(r, 0))
+		await nextTick()
+		expect(axios.get).not.toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/announcements')
+		expect(el.querySelectorAll('.feed-delete')).toHaveLength(0)
+
+		state.canManage = true
+		await nextTick()
+		await new Promise((r) => setTimeout(r, 0))
+		await nextTick()
+		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/announcements')
+		expect(el.querySelectorAll('.feed-delete')).toHaveLength(1)
+		expect(el.querySelectorAll('.feed-edit')).toHaveLength(1)
+		unmount()
 	})
 
 	it('GlobalFeed shows the edited marker too', async () => {

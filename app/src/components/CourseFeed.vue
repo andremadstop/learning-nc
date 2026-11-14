@@ -140,6 +140,16 @@ export default {
 		}
 	},
 
+	watch: {
+		// The feed tab stays mounted when an instructor turns the student view off; without
+		// this, legacy rows (no meta.announcement_id) got no Edit/Delete until a remount.
+		canManage(value) {
+			if (value && !this.announcements.length) {
+				this.fetchAnnouncements()
+			}
+		},
+	},
+
 	mounted() {
 		this.fetchFeed()
 		if (this.canManage) {
