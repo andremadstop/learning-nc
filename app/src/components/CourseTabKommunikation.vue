@@ -192,7 +192,7 @@ export default {
 		},
 
 		ticketStatusLabel(status) {
-			if (status === 'open') return t('learning', 'Open')
+			if (status === 'open') return t('learning', 'Offen (Status einer Frage)')
 			if (status === 'answered') return t('learning', 'Answered')
 			return status
 		},

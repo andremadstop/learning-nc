@@ -35,6 +35,13 @@ const SOURCE = readFileSync(resolve(__dirname, '../../src/components/CourseTabKo
 const TEMPLATE = SOURCE.slice(0, SOURCE.indexOf('<script>'))
 const STYLE = SOURCE.slice(SOURCE.indexOf('<style'))
 
+const catalog = (lang, ext) => {
+	const raw = readFileSync(resolve(__dirname, `../../l10n/${lang}.${ext}`), 'utf8')
+	if (ext === 'json') return JSON.parse(raw).translations
+	const body = raw.slice(raw.indexOf('{'), raw.lastIndexOf('},') + 1)
+	return JSON.parse(body.replace(/,\s*}$/, '}'))
+}
+
 globalThis.t = (app, text, vars = {}) => {
 	return Object.entries(vars).reduce((acc, [key, value]) => acc.replace(`{${key}}`, String(value)), text)
 }
@@ -215,9 +222,24 @@ describe('CourseTabKommunikation', () => {
 		expect(requests.label).toBe('Fragen von Lernenden')
 		expect(TEMPLATE).toMatch(/Hilfe-Assistenten VirtuProf/)
 		expect(TEMPLATE).not.toMatch(/No open requests for this course/)
-		expect(instance.ticketStatusLabel('open')).toBe('Open')
+		expect(instance.ticketStatusLabel('open')).toBe('Offen (Status einer Frage)')
 		expect(instance.ticketStatusLabel('answered')).toBe('Answered')
 		expect(TEMPLATE).toMatch(/\{\{ ticketStatusLabel\(ticket\.status\) \}\}/)
 	})
-})
 
+	// GitHub #40: the badge used the key 'Open', which fr, ru and uk translate as the verb
+	// ("Ouvrir", "Открыть", "Відкрити"), so an open question read "Open it!". The status has a
+	// key of its own; this reads the real catalogues, the suite's t() is the identity.
+	it('labels an open question with the status, not the verb, in every language', () => {
+		const instance = createInstance({ actsAsInstructor: true })
+		const key = instance.ticketStatusLabel('open')
+		const verb = { fr: 'Ouvrir', ru: 'Открыть', uk: 'Відкрити' }
+		for (const ext of ['json', 'js']) {
+			for (const lang of ['de', 'en', 'fr', 'ru', 'ar', 'uk']) {
+				const value = catalog(lang, ext)[key]
+				expect(value, `${lang}.${ext}`).toBeTruthy()
+				if (verb[lang]) expect(value, `${lang}.${ext}`).not.toBe(verb[lang])
+			}
+		}
+	})
+})
