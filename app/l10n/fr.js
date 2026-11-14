@@ -3629,5 +3629,6 @@ OC.L10N.register(
     "NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123." : "NovaTech rachète Oldstyle GmbH. Windows Server 2012, un hub (pas un switch !) et admin123.",
     "Abbrechen bestätigen" : "Confirmer l’annulation",
     "Die Geschichten der Kampagnen gibt es bisher nur auf Deutsch." : "Les histoires des campagnes n’existent pour l’instant qu’en allemand.",
+    "Dieser Lernmodus ist in deinem Kurs ausgeschaltet." : "Ce mode d’apprentissage est désactivé dans ton cours.",
 },
 "nplurals=2; plural=(n > 1);");

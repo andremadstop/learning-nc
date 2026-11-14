@@ -3629,5 +3629,6 @@ OC.L10N.register(
     "NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123." : "NovaTech поглинає Oldstyle GmbH. Windows Server 2012, хаб (не комутатор!) і admin123.",
     "Abbrechen bestätigen" : "Підтвердити скасування",
     "Die Geschichten der Kampagnen gibt es bisher nur auf Deutsch." : "Сюжети кампаній поки що доступні лише німецькою.",
+    "Dieser Lernmodus ist in deinem Kurs ausgeschaltet." : "Цей режим навчання вимкнено у твоєму курсі.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

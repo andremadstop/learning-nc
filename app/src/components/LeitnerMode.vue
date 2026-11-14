@@ -285,6 +285,7 @@ import QuestionScenario from './QuestionScenario.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import { modeClosedMessage } from '../utils/modeGate.js';
 import hintMixin from '../hintMixin.js';
 import AiConsentHint from './AiConsentHint.vue';
 import { isConsentRefusal } from '../utils/aiConsent.js';
@@ -641,7 +642,7 @@ export default {
         showSuccess(t('learning', 'Leitner system initialized'))
         await this.checkInitialized()
       }
-      catch (e) { showError(e.response?.data?.error || t('learning', 'Failed to initialize')); }
+      catch (e) { showError(modeClosedMessage(e) || e.response?.data?.error || t('learning', 'Failed to initialize')); }
       finally { this.initializing = false; }
     },
     async startReview() {
@@ -662,7 +663,7 @@ export default {
           this.levelAfter = 0;
           this.clearFsrsIntervalNotice();
         }
-      } catch (e) { showError(t('learning', 'Failed to load review questions')); }
+      } catch (e) { showError(modeClosedMessage(e) || t('learning', 'Failed to load review questions')); }
     },
     buildAnswerRequest(payload, preview = false, rating = null) {
       return {

@@ -248,6 +248,7 @@ import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 import AiConsentHint from './AiConsentHint.vue';
 import { isConsentRefusal } from '../utils/aiConsent.js';
+import { modeClosedMessage } from '../utils/modeGate.js';
 
 export default {
   name: 'TrainingMode',
@@ -534,7 +535,7 @@ export default {
         const response = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(payload));
         this.session = response.data.session_id; this.questions = response.data.questions;
         this.answeredFeedback = {};
-      } catch (error) { this.loadError = error.response?.data?.error || t('learning', 'Failed to start training.'); }
+      } catch (error) { this.loadError = modeClosedMessage(error) || error.response?.data?.error || t('learning', 'Failed to start training.'); }
       finally { this.starting = false; }
     },
     toggleMultiAnswer(answerId) {
