@@ -96,6 +96,7 @@ function createInstance(overrides = {}) {
 		hasCourseTools: { get: () => CourseDetail.computed.hasCourseTools.call(instance) },
 		lernraumLeafTabs: { get: () => CourseDetail.computed.lernraumLeafTabs.call(instance) },
 		teilnehmerLeafTabs: { get: () => CourseDetail.computed.teilnehmerLeafTabs.call(instance) },
+		abschlussLeafTabs: { get: () => CourseDetail.computed.abschlussLeafTabs.call(instance) },
 		wettbewerbLeafTabs: { get: () => CourseDetail.computed.wettbewerbLeafTabs.call(instance) },
 		kommunikationLeafTabs: { get: () => CourseDetail.computed.kommunikationLeafTabs.call(instance) },
 		verwaltungLeafTabs: { get: () => CourseDetail.computed.verwaltungLeafTabs.call(instance) },
@@ -137,8 +138,9 @@ describe('CourseDetail navigation logic', () => {
 		const hiddenInstance = createInstance()
 		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).toContain('lernraum')
 		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).not.toContain('training')
-		// summary is now a leaf inside teilnehmer mega-tab, not in visibleMegaTabs directly
+		// GitHub #36: without a completion tab there is no Abschluss area
 		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook'])
+		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).not.toContain('abschluss')
 
 		const releasedInstance = createInstance({
 			course: {
@@ -157,8 +159,10 @@ describe('CourseDetail navigation logic', () => {
 			},
 		})
 
-		expect(releasedInstance.teilnehmerLeafTabs).toContain('summary')
-		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook', 'summary'])
+		// GitHub #36: for learners the summary is an area of its own, not a Teilnehmer leaf
+		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook'])
+		expect(releasedInstance.abschlussLeafTabs).toEqual(['summary'])
+		expect(releasedInstance.visibleMegaTabs.map((tab) => tab.id)).toEqual(['lernraum', 'teilnehmer', 'abschluss', 'wettbewerb', 'kommunikation'])
 	})
 
 	it('keeps the instructor mega-tabs and delegates summary to teilnehmerLeafTabs', () => {
@@ -356,10 +360,11 @@ describe('CourseDetail — completion tab in certifying courses (GitHub #35)', (
 			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
 		})
 
-		expect(instance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook', 'summary'])
+		expect(instance.abschlussLeafTabs).toEqual(['summary'])
+		expect(instance.visibleMegaTabs.find((tab) => tab.id === 'abschluss')?.label).toBe('Abschluss & Zertifikat')
 	})
 
-	it('resolves the /courses/<id>/summary deep link to the summary leaf under Teilnehmer', () => {
+	it('resolves the /courses/<id>/summary deep link (certificate notification) to the Abschluss area', () => {
 		const instance = createInstance({
 			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
 		})
@@ -367,7 +372,7 @@ describe('CourseDetail — completion tab in certifying courses (GitHub #35)', (
 		instance.syncCurrentTabFromRoute('summary')
 
 		expect(instance.currentTab).toBe('summary')
-		expect(instance.activeMegaTab).toBe('teilnehmer')
+		expect(instance.activeMegaTab).toBe('abschluss')
 	})
 })
 

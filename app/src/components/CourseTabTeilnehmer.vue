@@ -380,18 +380,11 @@
 				:courseId="courseId"
 				:studentId="myUserId"
 				:gamification-enabled="gamificationEnabled"
+				:show-recent-sessions="!hasCompletionArea"
 				@back="$emit('tab-change', 'training')" />
 		</div>
 
-		<!-- Summary (both roles) -->
-		<div v-if="currentSubTab === 'summary' && !isInstructor" class="summary-section">
-			<CourseSummary
-				:courseId="courseId"
-				:courseName="course?.title || ''"
-				:course="course"
-				:gamification-enabled="gamificationEnabled" />
-		</div>
-
+		<!-- Summary: instructors only. GitHub #36: learners have it as an area of its own (CourseDetail). -->
 		<div v-if="currentSubTab === 'summary' && isInstructor" class="summary-section">
 			<!-- Compliance report (instructor + cert_enabled only; clean DTO endpoint, no recipient-id) -->
 			<div v-if="showCertReport" class="cert-report-section">
@@ -550,11 +543,10 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
 import { buildCertReportQuery, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
-import { teilnehmerTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
-import CourseSummary from './CourseSummary.vue'
 import Certificate from './Certificate.vue'
 import { courseDownloadUrl, certReportZipUrl } from '../services/CertificateService.js'
 import BuddyMatching from './BuddyMatching.vue'
@@ -571,7 +563,6 @@ export default {
 		NcNoteCard,
 		Klassenbuch,
 		StudentDetail,
-		CourseSummary,
 		BuddyMatching,
 		Certificate,
 	},
@@ -680,8 +671,15 @@ export default {
 				'my-progress': t('learning', 'Mein Fortschritt'),
 				summary: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss'),
 			}
-			return teilnehmerTabIds(this.course, { actsAsInstructor: this.isInstructor })
-				.map((id) => ({ id, label: labels[id] }))
+			return teilnehmerTabIds(this.course, {
+				actsAsInstructor: this.isInstructor,
+				gamificationEnabled: this.gamificationEnabled,
+			}).map((id) => ({ id, label: labels[id] }))
+		},
+		// GitHub #36: the learner's completion area shows the recent sessions; "Mein Fortschritt"
+		// leaves them out then, so they are not listed twice.
+		hasCompletionArea() {
+			return abschlussTabIds(this.course, { actsAsInstructor: this.isInstructor }).length > 0
 		},
 		sortedProgressData() {
 			return this.progressData

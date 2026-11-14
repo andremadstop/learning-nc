@@ -95,28 +95,60 @@ export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificatio
 }
 
 /**
+ * Whether the learner's own course progress ("Mein Fortschritt") still has something to show.
+ * With gamification and Leitner both off, XP, level, badges and the boxes are gone; what is left
+ * is the list of recent sessions, and a course with a completion tab shows that list there
+ * (GitHub #36). Without a completion tab the progress tab stays, it is the list's only home.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {boolean} gamificationEnabled - the admin's global switch; anything but false counts as on
+ * @return {boolean}
+ */
+export function learnerHasProgressTab(course, gamificationEnabled = true) {
+	const leitnerEnabled = course?.mode_config?.leitner !== false
+	return gamificationEnabled !== false || leitnerEnabled || !shouldShowCompletionTab(course)
+}
+
+/**
  * The leaf tabs of the Teilnehmer (participants) area, in display order. CourseDetail (routing,
  * whether the mega-tab shows at all) and CourseTabTeilnehmer (the sub-navigation) both read this
  * list (GitHub #36).
  *
  * Learners land on their own progress first. The class register has its own course switch
  * (mode_config.classbook, a missing key counts as on); without visible profiles it showed an
- * empty page as the first thing a learner saw. Instructors keep every leaf.
+ * empty page as the first thing a learner saw. The completion tab is no leaf here for learners,
+ * it is an area of its own (abschlussTabIds). An empty list hides the area. Instructors keep
+ * every leaf.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {object} options
+ * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
+ * @param {boolean} options.gamificationEnabled - the admin's global switch; anything but false counts as on
+ * @return {string[]}
+ */
+export function teilnehmerTabIds(course, { actsAsInstructor = false, gamificationEnabled = true } = {}) {
+	if (actsAsInstructor) {
+		return ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
+	}
+	const modeConfig = course?.mode_config || {}
+	const tabs = []
+	if (learnerHasProgressTab(course, gamificationEnabled)) tabs.push('my-progress')
+	if (modeConfig.classbook !== false) tabs.push('classbook')
+	return tabs
+}
+
+/**
+ * The leaf tabs of the learners' Abschluss (completion) area: the course summary with the
+ * certificate and the recent sessions (GitHub #36). A certifying course always has it (the
+ * certificate lives there, GitHub #35); course_summary only releases the summary statistics
+ * inside it. Instructors reach the summary and the compliance report under Teilnehmer, as before.
  *
  * @param {object|null|undefined} course - the course detail (snake_case fields)
  * @param {object} options
  * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
  * @return {string[]}
  */
-export function teilnehmerTabIds(course, { actsAsInstructor = false } = {}) {
-	if (actsAsInstructor) {
-		return ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
-	}
-	const modeConfig = course?.mode_config || {}
-	const tabs = ['my-progress']
-	if (modeConfig.classbook !== false) tabs.push('classbook')
-	// GitHub #35: a certifying course always shows the completion tab (the certificate lives
-	// there); course_summary only releases the summary statistics inside it.
-	if (shouldShowCompletionTab(course)) tabs.push('summary')
-	return tabs
+export function abschlussTabIds(course, { actsAsInstructor = false } = {}) {
+	if (actsAsInstructor) return []
+	return shouldShowCompletionTab(course) ? ['summary'] : []
 }

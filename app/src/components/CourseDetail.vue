@@ -92,6 +92,19 @@
 				@members-changed="fetchCourseDetail"
 				@selectStudent="$emit('selectStudent', $event)" />
 
+			<!-- GitHub #36: the learners' completion area — summary with the certificate, then the recent sessions. -->
+			<div v-if="activeMegaTab === 'abschluss' && !isInstructor" class="abschluss-mega-tab">
+				<CourseSummary
+					:course-id="courseId"
+					:course-name="course.title || ''"
+					:course="course"
+					:gamification-enabled="gamificationEnabled" />
+				<CourseRecentSessions
+					v-if="myUserId"
+					:course-id="courseId"
+					:student-id="myUserId" />
+			</div>
+
 			<CourseTabWettbewerb
 				v-if="activeMegaTab === 'wettbewerb'"
 				:course-id="courseId"
@@ -150,15 +163,21 @@ import CourseTabWettbewerb from './CourseTabWettbewerb.vue'
 import CourseTabKommunikation from './CourseTabKommunikation.vue'
 import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
 import ExamReadiness from './ExamReadiness.vue'
+import CourseSummary from './CourseSummary.vue'
+import CourseRecentSessions from './CourseRecentSessions.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
-import { actsAsCourseInstructor, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, actsAsCourseInstructor, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
 // falls back to the Lernraum (GitHub #36).
 const WETTBEWERB_LEAVES = ['leaderboard', 'league', 'arena', 'abenteuer']
-const MEGA_TAB_IDS = ['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation', 'verwaltung']
+// Every leaf the Teilnehmer area can have, for both roles. A learner's bookmark on one that is
+// gone (class register switched off, progress moved to the completion area) is redirected
+// (GitHub #36) instead of opening an empty area.
+const TEILNEHMER_LEAVES = ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'my-progress', 'summary']
+const MEGA_TAB_IDS = ['lernraum', 'teilnehmer', 'abschluss', 'wettbewerb', 'kommunikation', 'verwaltung']
 
 export default {
 	name: 'CourseDetail',
@@ -168,6 +187,8 @@ export default {
 		NcLoadingIcon,
 		NcNoteCard,
 		ExamReadiness,
+		CourseSummary,
+		CourseRecentSessions,
 		CourseTabLernraum,
 		CourseTabTeilnehmer,
 		CourseTabWettbewerb,
@@ -303,7 +324,14 @@ export default {
 		},
 		// Same list as the Teilnehmer sub-navigation (one helper, GitHub #36).
 		teilnehmerLeafTabs() {
-			return teilnehmerTabIds(this.course, { actsAsInstructor: this.isInstructor })
+			return teilnehmerTabIds(this.course, {
+				actsAsInstructor: this.isInstructor,
+				gamificationEnabled: this.gamificationEnabled,
+			})
+		},
+		// GitHub #36: learners get the completion tab as an area of its own.
+		abschlussLeafTabs() {
+			return abschlussTabIds(this.course, { actsAsInstructor: this.isInstructor })
 		},
 		visibleMegaTabs() {
 			if (this.isInstructor) {
@@ -315,10 +343,18 @@ export default {
 					{ id: 'verwaltung', label: t('learning', 'Verwaltung') },
 				]
 			}
-			const tabs = [
-				{ id: 'lernraum', label: t('learning', 'Lernraum') },
-				{ id: 'teilnehmer', label: t('learning', 'Teilnehmer') },
-			]
+			const tabs = [{ id: 'lernraum', label: t('learning', 'Lernraum') }]
+			// GitHub #36: with the class register off and nothing left in "Mein Fortschritt" the
+			// participants area is empty for learners and disappears.
+			if (this.teilnehmerLeafTabs.length > 0) {
+				tabs.push({ id: 'teilnehmer', label: t('learning', 'Teilnehmer') })
+			}
+			if (this.abschlussLeafTabs.length > 0) {
+				tabs.push({
+					id: 'abschluss',
+					label: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss'),
+				})
+			}
 			// GitHub #36: without gamification the leaderboard is gone; with league, arena and
 			// adventure switched off too nothing is left, and the area disappears.
 			if (this.wettbewerbLeafTabs.length > 0) {
@@ -346,17 +382,26 @@ export default {
 			const ids = tabs.map((t) => t.id)
 			const isCoveredByMega = this.isLernraumTab(this.currentTab)
 				|| this.isTeilnehmerTab(this.currentTab)
+				|| this.isAbschlussTab(this.currentTab)
 				|| this.isWettbewerbTab(this.currentTab)
 				|| this.isKommunikationTab(this.currentTab)
 				|| this.isVerwaltungTab(this.currentTab)
 			const isVisibleMega = ids.includes('lernraum') && this.isLernraumTab(this.currentTab)
 				|| ids.includes('teilnehmer') && this.isTeilnehmerTab(this.currentTab)
+				|| ids.includes('abschluss') && this.isAbschlussTab(this.currentTab)
 				|| ids.includes('wettbewerb') && this.isWettbewerbTab(this.currentTab)
 				|| ids.includes('kommunikation') && this.isKommunikationTab(this.currentTab)
 				|| ids.includes('verwaltung') && this.isVerwaltungTab(this.currentTab)
 			if (!isVisibleMega && !isCoveredByMega) {
 				this.currentTab = this.defaultLernraumTab()
 				this.activeMegaTab = 'lernraum'
+				return
+			}
+			// GitHub #36: the same leaf can live in another area for the new viewer (summary under
+			// Teilnehmer for instructors, its own area in the student view); the area follows it.
+			const mega = this.megaTabForLeaf(this.currentTab)
+			if (mega && mega !== this.activeMegaTab && ids.includes(mega)) {
+				this.activeMegaTab = mega
 			}
 		},
 		courseId: {
@@ -416,9 +461,11 @@ export default {
 			const hiddenMega = MEGA_TAB_IDS.includes(requested)
 				&& !this.visibleMegaTabs.some((tab) => tab.id === requested)
 			const hiddenWettbewerbLeaf = WETTBEWERB_LEAVES.includes(requested) && !this.isWettbewerbTab(requested)
-			if (hiddenMega || hiddenWettbewerbLeaf) {
-				this.currentTab = this.defaultLernraumTab()
-				this.activeMegaTab = 'lernraum'
+			const hiddenTeilnehmerLeaf = TEILNEHMER_LEAVES.includes(requested)
+				&& !this.isTeilnehmerTab(requested)
+				&& !this.isAbschlussTab(requested)
+			if (hiddenMega || hiddenWettbewerbLeaf || hiddenTeilnehmerLeaf) {
+				this.redirectHiddenTab(requested)
 				return
 			}
 			const resolvedTabId = this.resolveSelectableTab(requested)
@@ -451,6 +498,27 @@ export default {
 				navigation.catch(() => {})
 			}
 		},
+		/**
+		 * GitHub #36: where a bookmark on an area or leaf this viewer does not have lands. What
+		 * moved goes to its new place — the participants area and "Mein Fortschritt" to the
+		 * completion area (the recent sessions live there), a switched-off class register to the
+		 * remaining participants leaf; everything else to the Lernraum.
+		 */
+		redirectHiddenTab(requested) {
+			const moved = requested === 'teilnehmer' || requested === 'my-progress'
+			if (moved && this.abschlussLeafTabs.length > 0) {
+				this.currentTab = this.abschlussLeafTabs[0]
+				this.activeMegaTab = 'abschluss'
+				return
+			}
+			if (TEILNEHMER_LEAVES.includes(requested) && this.teilnehmerLeafTabs.length > 0) {
+				this.currentTab = this.teilnehmerLeafTabs[0]
+				this.activeMegaTab = 'teilnehmer'
+				return
+			}
+			this.currentTab = this.defaultLernraumTab()
+			this.activeMegaTab = 'lernraum'
+		},
 		defaultLernraumTab() {
 			return this.lernraumLeafTabs[0] || (this.isInstructor ? 'pools' : 'training')
 		},
@@ -469,12 +537,16 @@ export default {
 		isTeilnehmerTab(tabId) {
 			return this.teilnehmerLeafTabs.includes(tabId)
 		},
+		isAbschlussTab(tabId) {
+			return this.abschlussLeafTabs.includes(tabId)
+		},
 		isTabActive(tabId) {
 			if (tabId === 'lernraum') return this.isLernraumTab(this.currentTab)
 			if (tabId === 'kommunikation') return this.isKommunikationTab(this.currentTab)
 			if (tabId === 'verwaltung') return this.isVerwaltungTab(this.currentTab)
 			if (tabId === 'wettbewerb') return this.isWettbewerbTab(this.currentTab)
 			if (tabId === 'teilnehmer') return this.isTeilnehmerTab(this.currentTab)
+			if (tabId === 'abschluss') return this.isAbschlussTab(this.currentTab)
 			return this.currentTab === tabId
 		},
 		resolveSelectableTab(tabId) {
@@ -492,6 +564,9 @@ export default {
 			}
 			if (tabId === 'teilnehmer') {
 				return this.isTeilnehmerTab(this.currentTab) ? this.currentTab : this.teilnehmerLeafTabs[0]
+			}
+			if (tabId === 'abschluss') {
+				return this.abschlussLeafTabs[0]
 			}
 			return tabId
 		},
@@ -602,6 +677,7 @@ export default {
 		megaTabForLeaf(leafId) {
 			if (this.lernraumLeafTabs.includes(leafId)) return 'lernraum'
 			if (this.teilnehmerLeafTabs.includes(leafId)) return 'teilnehmer'
+			if (this.abschlussLeafTabs.includes(leafId)) return 'abschluss'
 			if (this.wettbewerbLeafTabs.includes(leafId)) return 'wettbewerb'
 			if (this.kommunikationLeafTabs.includes(leafId)) return 'kommunikation'
 			if (this.verwaltungLeafTabs.includes(leafId)) return 'verwaltung'

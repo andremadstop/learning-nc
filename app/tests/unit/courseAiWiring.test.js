@@ -72,6 +72,8 @@ vi.mock('../../src/components/CourseTabWettbewerb.vue', () => recordingStub('Cou
 vi.mock('../../src/components/CourseTabKommunikation.vue', () => recordingStub('CourseTabKommunikation'))
 vi.mock('../../src/components/CourseTabVerwaltung.vue', () => recordingStub('CourseTabVerwaltung'))
 vi.mock('../../src/components/ExamReadiness.vue', () => recordingStub('ExamReadiness'))
+vi.mock('../../src/components/CourseSummary.vue', () => recordingStub('CourseSummary'))
+vi.mock('../../src/components/CourseRecentSessions.vue', () => recordingStub('CourseRecentSessions'))
 
 // CourseTabLernraum's children
 vi.mock('../../src/components/CourseMaterials.vue', () => recordingStub('CourseMaterials'))

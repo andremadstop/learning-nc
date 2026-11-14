@@ -91,6 +91,7 @@ function createInstance(overrides = {}) {
 		isInstructor: { get: () => CourseTabTeilnehmer.computed.isInstructor.call(instance) },
 		isCourseSummaryReleased: { get: () => CourseTabTeilnehmer.computed.isCourseSummaryReleased.call(instance) },
 		visibleSubTabs: { get: () => CourseTabTeilnehmer.computed.visibleSubTabs.call(instance) },
+		hasCompletionArea: { get: () => CourseTabTeilnehmer.computed.hasCompletionArea.call(instance) },
 	})
 
 	for (const [name, fn] of Object.entries(CourseTabTeilnehmer.methods || {})) {
@@ -134,7 +135,8 @@ describe('CourseTabTeilnehmer', () => {
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'classbook'])
 	})
 
-	it('shows summary pill for students when course_summary is enabled', () => {
+	// GitHub #36: learners have the completion tab as an area of its own (CourseDetail)
+	it('shows no summary pill for students even when course_summary is enabled', () => {
 		const instance = createInstance({
 			course: {
 				is_instructor: false,
@@ -144,7 +146,7 @@ describe('CourseTabTeilnehmer', () => {
 			actsAsInstructor: false,
 		})
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'classbook', 'summary'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'classbook'])
 	})
 
 	it('emits tab-change with correct leaf ID when selecting a sub-tab', () => {
@@ -200,7 +202,8 @@ describe('CourseTabTeilnehmer', () => {
 // GitHub #35: the completion tab is where the certificate lives. A certifying course shows it to
 // learners even when the summary statistics (mode_config.course_summary) are not released.
 describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #35)', () => {
-	it('shows "Abschluss & Zertifikat" to students when cert_enabled and course_summary is off', () => {
+	// GitHub #36: the learners' completion tab moved to an area of its own (CourseDetail).
+	it('leaves the completion tab out of the learner sub-tabs of a certifying course', () => {
 		const instance = createInstance({
 			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
 			userRole: 'student',
@@ -210,21 +213,8 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 		expect(instance.visibleSubTabs).toEqual([
 			{ id: 'my-progress', label: 'Mein Fortschritt' },
 			{ id: 'classbook', label: 'Klassenbuch' },
-			{ id: 'summary', label: 'Abschluss & Zertifikat' },
 		])
-	})
-
-	it('a deep link to the summary tab (certificate notification) selects it for students', () => {
-		const instance = createInstance({
-			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
-			userRole: 'student',
-			actsAsInstructor: false,
-			activeTab: 'summary',
-		})
-
-		instance.syncFromActiveTab('summary')
-
-		expect(instance.currentSubTab).toBe('summary')
+		expect(instance.hasCompletionArea).toBe(true)
 	})
 
 	it('keeps the student completion tab hidden for a non-certifying course without released summary', () => {

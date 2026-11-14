@@ -402,7 +402,7 @@ describe('CourseDetail competition area (GitHub #36)', () => {
 
 	it('hides Wettbewerb for learners when gamification is off and no competition mode is left', async () => {
 		await renderCourse({ gamificationEnabled: false }, { league: false, duel: false, gameshow: false })
-		expect(megaLabels()).toEqual(['Lernraum', 'Teilnehmer', 'Kommunikation'])
+		expect(megaLabels()).toEqual(['Lernraum', 'Teilnehmer', 'Abschluss', 'Kommunikation'])
 	})
 
 	it('keeps Wettbewerb while league or arena remain', async () => {
@@ -412,7 +412,7 @@ describe('CourseDetail competition area (GitHub #36)', () => {
 
 	it('keeps Wettbewerb in an IT course with gamification on', async () => {
 		await renderCourse({}, { league: false, duel: false, gameshow: false })
-		expect(megaLabels()).toEqual(['Lernraum', 'Teilnehmer', 'Wettbewerb', 'Kommunikation'])
+		expect(megaLabels()).toEqual(['Lernraum', 'Teilnehmer', 'Abschluss', 'Wettbewerb', 'Kommunikation'])
 	})
 
 	it('a deep link to the hidden leaderboard or the hidden area lands on the Lernraum', async () => {

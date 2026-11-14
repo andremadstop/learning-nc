@@ -137,18 +137,10 @@
 				</ul>
 			</div>
 
-			<!-- Recent sessions -->
-			<div class="student-section">
+			<!-- Recent sessions. GitHub #36: in a course with a completion tab the learner finds them there. -->
+			<div v-if="showRecentSessions" class="student-section">
 				<p class="section-label">{{ t('learning', 'Recent Sessions') }}</p>
-				<div v-if="data.recent_sessions.length > 0" class="session-list">
-					<div v-for="(sess, idx) in data.recent_sessions" :key="idx" class="session-item">
-						<span class="session-date">{{ formatDate(sess.completed_at) }}</span>
-						<span class="session-pool">{{ sess.pool_name }}</span>
-						<span class="session-mode">{{ sess.mode }}</span>
-						<span class="session-score">{{ sess.score }}</span>
-					</div>
-				</div>
-				<p v-else class="empty-hint">{{ t('learning', 'No sessions found for this student in course pools.') }}</p>
+				<RecentSessionsList :sessions="data.recent_sessions" />
 			</div>
 		</template>
 	</div>
@@ -161,6 +153,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatRelativeDateString } from '../format.js'
+import RecentSessionsList from './RecentSessionsList.vue'
 
 const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer', 'quick_thinker']
 
@@ -171,6 +164,7 @@ export default {
 		NcButton,
 		NcLoadingIcon,
 		NcNoteCard,
+		RecentSessionsList,
 	},
 
 	props: {
@@ -185,6 +179,12 @@ export default {
 		// GitHub #36: the admin's global gamification switch (App.vue). Off hides XP, level,
 		// streak and badges; default on = as before.
 		gamificationEnabled: {
+			type: Boolean,
+			default: true,
+		},
+		// GitHub #36: false in the learner's own view when the course's completion tab shows the
+		// recent sessions instead. The instructor drill-down keeps them.
+		showRecentSessions: {
 			type: Boolean,
 			default: true,
 		},
@@ -753,62 +753,6 @@ export default {
 }
 
 /* Session list */
-.session-list {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.session-item {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 12px 16px;
-	background: var(--color-main-background);
-	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius-large, 12px);
-	font-size: 0.9em;
-	transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.session-item:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 2px 8px color-mix(in srgb, var(--color-main-text) 6%, transparent);
-}
-
-.session-date {
-	width: 100px;
-	flex-shrink: 0;
-	color: var(--color-text-maxcontrast);
-	font-size: 0.85em;
-}
-
-.session-pool {
-	flex: 1;
-	font-weight: 500;
-	color: var(--color-main-text);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.session-mode {
-	font-size: 11px;
-	font-weight: 600;
-	padding: 2px 10px;
-	border-radius: 10px;
-	background: color-mix(in srgb, var(--color-primary-element) 10%, transparent);
-	color: var(--color-primary-element);
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.session-score {
-	font-weight: 700;
-	color: var(--color-main-text);
-	white-space: nowrap;
-}
-
 .empty-hint {
 	color: var(--color-text-maxcontrast);
 	font-size: 0.9em;
@@ -829,8 +773,7 @@ export default {
 	.xp-bar-fill::after { animation: none; }
 	.badge-earned:hover { transform: none; }
 	.badge-archive-toggle { transition: none; }
-	.pool-box-card:hover,
-	.session-item:hover { transform: none; }
+	.pool-box-card:hover { transform: none; }
 }
 
 @media (max-width: 768px) {
@@ -838,8 +781,6 @@ export default {
 	.student-header-top { flex-direction: column; align-items: flex-start; gap: 8px; }
 	.student-header-card { padding: 16px; }
 	.leitner-boxes { flex-wrap: wrap; }
-	.session-item { flex-wrap: wrap; gap: 8px; }
-	.session-date { width: auto; }
 	.badge-grid { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
 	.badge-progress-row { flex-direction: column; }
 	.badge-progress-copy { width: 100%; }
