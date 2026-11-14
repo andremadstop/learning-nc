@@ -21,32 +21,45 @@ class ReminderService {
     private IConfig $config;
     private StreakService $streakService;
     private LoggerInterface $logger;
+    private LeitnerService $leitnerService;
 
     public function __construct(
         IDBConnection $db,
         INotificationManager $notificationManager,
         IConfig $config,
         StreakService $streakService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        LeitnerService $leitnerService
     ) {
         $this->db = $db;
         $this->notificationManager = $notificationManager;
         $this->config = $config;
         $this->streakService = $streakService;
         $this->logger = $logger;
+        $this->leitnerService = $leitnerService;
     }
 
     public function sendDueCardReminders(): int {
         $today = $this->today();
         $sent = 0;
 
-        foreach ($this->getDueCountsByUser() as $userId => $dueCount) {
+        foreach ($this->getDueCountsByUser() as $userId => $dueByPool) {
             try {
-                if ($dueCount <= 0 || !$this->notificationsEnabled($userId)) {
+                if (!$this->notificationsEnabled($userId)) {
                     continue;
                 }
 
                 if ($this->config->getUserValue($userId, self::APP_ID, self::LAST_DUE_REMINDER_KEY, '') === $today) {
+                    continue;
+                }
+
+                // GitHub #39: cards of pools the course switches closed for Leitner are not due
+                // for the user; the Smart Queue leaves out the same pools.
+                foreach ($this->leitnerService->getLeitnerClosedPoolIds($userId) as $closedPoolId) {
+                    unset($dueByPool[$closedPoolId]);
+                }
+                $dueCount = array_sum($dueByPool);
+                if ($dueCount <= 0) {
                     continue;
                 }
 
@@ -174,17 +187,22 @@ class ReminderService {
         ) === 'yes';
     }
 
+    /**
+     * Due Leitner cards per user and pool.
+     *
+     * @return array<string, array<int, int>> user id => pool id => due cards
+     */
     private function getDueCountsByUser(): array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('user_id', $qb->createFunction('COUNT(*) as cnt'))
+        $qb->select('user_id', 'pool_id', $qb->createFunction('COUNT(*) as cnt'))
             ->from('learning_leitner_items')
             ->where($qb->expr()->lte('next_review', $qb->createNamedParameter(time())))
-            ->groupBy('user_id');
+            ->groupBy('user_id', 'pool_id');
 
         $result = $qb->executeQuery();
         $counts = [];
         while ($row = $result->fetch()) {
-            $counts[(string)$row['user_id']] = (int)$row['cnt'];
+            $counts[(string)$row['user_id']][(int)$row['pool_id']] = (int)$row['cnt'];
         }
         $result->closeCursor();
 

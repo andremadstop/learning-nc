@@ -2374,7 +2374,7 @@ class CourseService {
      * Whether a course's mode_config switches a mode on. A missing key, an empty or broken config
      * counts as on, like the frontend (normalizeModeConfig) and updateModeConfig's defaults.
      */
-    private static function isModeEnabledInConfig(mixed $raw, string $modeKey): bool {
+    public static function isModeEnabledInConfig(mixed $raw, string $modeKey): bool {
         $config = is_string($raw) && $raw !== '' ? json_decode($raw, true) : null;
         return !is_array($config) || ($config[$modeKey] ?? true) !== false;
     }

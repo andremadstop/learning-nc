@@ -307,6 +307,27 @@ class IcsServiceTest extends TestCase {
         }
     }
 
+    /**
+     * GitHub #39: the feed announced Leitner reviews for a course that switched Leitner off,
+     * titled with its name, while the queue and the review refuse them. Its instructors keep it.
+     */
+    public function testRenderCalendarForUserSkipsCoursesThatSwitchedLeitnerOff(): void {
+        $nextReview = $this->todayStart() + (2 * 86400) + 60;
+        $rows = [
+            ['course_id' => 3, 'course_title' => 'Compliance', 'mode_config' => '{"leitner":false}', 'instructor_id' => 'teacher', 'role' => 'student', 'box' => 1, 'next_review' => $nextReview],
+            ['course_id' => 4, 'course_title' => 'Led course', 'mode_config' => '{"leitner":false}', 'instructor_id' => 'teacher', 'role' => 'instructor', 'box' => 1, 'next_review' => $nextReview],
+            ['course_id' => 5, 'course_title' => 'Network+', 'mode_config' => '{"duel":false}', 'instructor_id' => 'teacher', 'role' => 'student', 'box' => 2, 'next_review' => $nextReview],
+        ];
+        $service = $this->createServiceWithRows(new FakeQueryBuilder(new FakeResult($rows)));
+
+        $calendar = $service->renderCalendarForUser('alice');
+
+        $this->assertSame(2, substr_count($calendar, 'BEGIN:VEVENT'));
+        $this->assertStringNotContainsString('Compliance', $calendar);
+        $this->assertStringContainsString('SUMMARY:Leitner-Wiederholung: Led course', $calendar);
+        $this->assertStringContainsString('SUMMARY:Leitner-Wiederholung: Network+', $calendar);
+    }
+
     public function testRenderCalendarForTokenReturnsNullForMalformedToken(): void {
         $mapper = $this->createMock(UserTelosMapper::class);
         $mapper->expects($this->never())->method('findByIcsTokenOrNull');

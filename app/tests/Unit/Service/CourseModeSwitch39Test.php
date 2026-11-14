@@ -183,6 +183,34 @@ final class CourseModeSwitch39Test extends TestCase {
         }
     }
 
+    public function testStatsAnnounceNoDueReviewsOnAPoolClosedForLeitner(): void {
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('isPoolModeClosedByCourses')->with(42, 'alice', 'leitner', null)->willReturn(true);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(['id' => 1])),                 // course access
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['box' => 1, 'count' => 12]])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['due_count' => 12])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['total_correct' => 3, 'total_answered' => 5])),
+        ]);
+
+        $stats = $this->leitner($db, $courseService, owner: false)->getStats(42, 'alice');
+
+        $this->assertSame(0, $stats['due_count']);
+        $this->assertSame(12, $stats['box_1'], 'progress stays visible');
+    }
+
+    public function testTheOwnerKeepsTheDueCountInTheStats(): void {
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->expects($this->never())->method('isPoolModeClosedByCourses');
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['box' => 1, 'count' => 12]])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['due_count' => 12])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['total_correct' => 3, 'total_answered' => 5])),
+        ]);
+
+        $this->assertSame(12, $this->leitner($db, $courseService, owner: true)->getStats(42, 'alice')['due_count']);
+    }
+
     // ─── helpers ─────────────────────────────────────────────────────────────
 
     /** @param list<array<string, mixed>> $rows rows of the pool/course/membership query */

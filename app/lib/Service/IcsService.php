@@ -150,7 +150,7 @@ class IcsService {
         // Every box, dated by next_review — the date the queue makes the card due (FSRS interval).
         // Fixed box intervals (7/14/30 days from last_reviewed, boxes 3-5 only) put cards on other
         // days than the queue and left boxes 1-2 out (audit #54).
-        $qb->select('c.id AS course_id', 'c.title AS course_title', 'l.box', 'l.next_review')
+        $qb->select('c.id AS course_id', 'c.title AS course_title', 'c.mode_config', 'c.instructor_id', 'cm.role', 'l.box', 'l.next_review')
             ->from('learning_leitner_items', 'l')
             ->innerJoin('l', 'learning_course_pools', 'cp', 'cp.pool_id = l.pool_id')
             ->innerJoin('cp', 'learning_courses', 'c', 'c.id = cp.course_id')
@@ -167,6 +167,12 @@ class IcsService {
         $groups = [];
 
         while ($row = $result->fetch()) {
+            // GitHub #39: a course that switched Leitner off announces no Leitner reviews to its
+            // learners; the queue and the review refuse them. Its instructors keep the preview.
+            $leads = ($row['instructor_id'] ?? null) === $userId || ($row['role'] ?? null) === 'instructor';
+            if (!$leads && !CourseService::isModeEnabledInConfig($row['mode_config'] ?? null, 'leitner')) {
+                continue;
+            }
             $courseId = (int)$row['course_id'];
             $box = (int)$row['box'];
             // Overdue cards are due today.

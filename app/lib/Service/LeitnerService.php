@@ -89,11 +89,12 @@ class LeitnerService {
 
     /**
      * Pools whose Leitner cards the cross-pool queues (Smart Queue, remediation) and their counts
-     * leave out (GitHub #39): closed by the course switches and not owned or shared.
+     * leave out (GitHub #39): closed by the course switches and not owned or shared. The due-card
+     * reminder (ReminderService) leaves out the same pools, so notification and queue agree.
      *
      * @return int[]
      */
-    private function getLeitnerClosedPoolIds(string $userId): array {
+    public function getLeitnerClosedPoolIds(string $userId): array {
         if (!isset($this->leitnerClosedPoolIds[$userId])) {
             $this->leitnerClosedPoolIds[$userId] = array_values(array_filter(
                 $this->courseService->getPoolIdsClosedForMode($userId, 'leitner'),
@@ -933,6 +934,13 @@ class LeitnerService {
         $result = $qb->executeQuery();
         $stats['due_count'] = (int)$result->fetch()['due_count'];
         $result->closeCursor();
+        // GitHub #39: a pool the course switches closed for Leitner announces no due reviews the
+        // review would then refuse. The box figures stay: they are progress, not an offer.
+        if ($stats['due_count'] > 0
+            && !$this->hasDirectPoolAccess($poolId, $userId)
+            && $this->courseService->isPoolModeClosedByCourses($poolId, $userId, 'leitner', $courseId)) {
+            $stats['due_count'] = 0;
+        }
 
         $qb = $this->db->getQueryBuilder();
         $qb->select(

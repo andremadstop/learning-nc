@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Service;
 
+use OCA\Learning\Service\LeitnerService;
 use OCA\Learning\Service\ReminderService;
 use OCA\Learning\Service\StreakService;
 use OCP\IConfig;
@@ -44,6 +45,7 @@ class ReminderServiceTest extends TestCase {
             $config ?? $this->createMock(IConfig::class),
             $this->createMock(StreakService::class),
             $this->createMock(LoggerInterface::class),
+            $this->createMock(LeitnerService::class),
         );
     }
 
@@ -157,8 +159,56 @@ class ReminderServiceTest extends TestCase {
             $config,
             $this->createMock(StreakService::class),
             $this->createMock(LoggerInterface::class),
+            $this->createMock(LeitnerService::class),
         );
 
         $this->assertSame(1, $service->sendExamReminders());
+    }
+    /**
+     * GitHub #39: the daily due reminder counted the Leitner cards of every pool, also of pools
+     * whose courses switched Leitner off, while the Smart Queue leaves those out. It announced
+     * "40 due cards" for a queue that then was empty.
+     */
+    public function testDueReminderLeavesOutPoolsTheCoursesClosedForLeitner(): void {
+        $rows = [
+            ['user_id' => 'alice', 'pool_id' => 43, 'cnt' => 2],
+            ['user_id' => 'alice', 'pool_id' => 42, 'cnt' => 40],
+            ['user_id' => 'bob', 'pool_id' => 42, 'cnt' => 7],
+        ];
+        $db = new \OCA\Learning\Tests\Support\FakeDbConnection([
+            new \OCA\Learning\Tests\Support\FakeQueryBuilder(new \OCA\Learning\Tests\Support\FakeResult($rows)),
+        ]);
+
+        $notification = $this->makeFluentNotification();
+        $notification->expects($this->once())->method('setSubject')
+            ->with('due_reminder', ['due_count' => 2])
+            ->willReturnSelf();
+        $notification->expects($this->once())->method('setUser')->with('alice')->willReturnSelf();
+        $manager = $this->createMock(INotificationManager::class);
+        $manager->method('createNotification')->willReturn($notification);
+        $manager->method('getCount')->willReturn(0);
+        $manager->expects($this->once())->method('notify');
+
+        $config = $this->createMock(IConfig::class);
+        $config->method('getUserValue')->willReturnCallback(
+            static fn (string $user, string $app, string $key, mixed $default = ''): mixed => $default
+        );
+
+        $leitner = $this->createMock(LeitnerService::class);
+        $leitner->method('getLeitnerClosedPoolIds')->willReturnMap([
+            ['alice', [42]],
+            ['bob', [42]],
+        ]);
+
+        $service = new ReminderService(
+            $db,
+            $manager,
+            $config,
+            $this->createMock(StreakService::class),
+            $this->createMock(LoggerInterface::class),
+            $leitner,
+        );
+
+        $this->assertSame(1, $service->sendDueCardReminders());
     }
 }
