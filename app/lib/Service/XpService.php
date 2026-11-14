@@ -217,8 +217,12 @@ class XpService {
     /**
      * GitHub #36: a learner on an instance without gamification had no stats row at all (the row
      * came with the first XP), so the at-risk signals, "Last active" and the online dot read them
-     * as never active, and the nightly reconciliation never saw them. The row starts without XP;
-     * updateUserStats() is not used here because it writes recalculated XP into a new row.
+     * as never active, and the nightly reconciliation never saw them. The row starts without XP
+     * so the session path awards none. It does not stay that way: the nightly
+     * ConsistencyCheckJob runs updateUserStats() on every row, also with gamification off, and
+     * fills in the XP and level recalculated from the sessions, exactly as for rows that existed
+     * before. No view shows them while gamification is off (learners, leaderboard, instructor
+     * tables); they are there when it is switched on again.
      */
     private function insertActivityOnlyStats(string $userId, string $today): void {
         $qb = $this->db->getQueryBuilder();
