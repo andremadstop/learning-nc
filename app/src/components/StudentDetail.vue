@@ -439,7 +439,7 @@ export default {
 
 .level-grey { background: var(--color-background-dark); color: var(--color-text-maxcontrast); }
 .level-blue { background: color-mix(in srgb, var(--color-primary-element) 15%, transparent); color: var(--color-primary-element); }
-.level-gold { background: color-mix(in srgb, var(--color-warning) 20%, transparent); color: var(--color-warning); }
+.level-gold { background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); }
 
 .streak-badge {
 	font-size: 0.9em;
@@ -680,9 +680,9 @@ export default {
 	border-radius: 10px;
 }
 
-.mastery-high-text { color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, transparent); }
-.mastery-medium-text { color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 10%, transparent); }
-.mastery-low-text { color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, transparent); }
+.mastery-high-text { color: var(--color-success-text, var(--color-success)); background: var(--color-success); }
+.mastery-medium-text { color: var(--color-warning-text, var(--color-warning)); background: var(--color-warning); }
+.mastery-low-text { color: var(--color-error-text, var(--color-error)); background: var(--color-error); }
 
 /* Leitner Boxes — Color Gradient Red → Green */
 .leitner-boxes {

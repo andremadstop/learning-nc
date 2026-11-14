@@ -119,6 +119,11 @@ const CASES = [
 	// review of #40 — learner question status in Kommunikation
 	['CourseTabKommunikation.vue', '.ticket-status-cd.status-open', 'pill'],
 	['CourseTabKommunikation.vue', '.ticket-status-cd.status-answered', 'pill'],
+	// StudentDetail (pre-existing, same pattern): level badge and per-pool mastery
+	['StudentDetail.vue', '.level-gold', 'pill'],
+	['StudentDetail.vue', '.mastery-high-text', 'pill'],
+	['StudentDetail.vue', '.mastery-medium-text', 'pill'],
+	['StudentDetail.vue', '.mastery-low-text', 'pill'],
 ]
 
 const TEXT_OK = new RegExp(`^var\\(--color-(${TINT})-text\\b`)
