@@ -97,7 +97,11 @@ class ClassbookController extends Controller {
     /**
      * Export own profile as vCard.
      *
+     * A navigation download (window.location from the Participants tab), so no request token is
+     * sent (GitHub #45). Read-only GET of the caller's own profile; course membership is checked.
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportVcard(int $courseId): Http\Response {

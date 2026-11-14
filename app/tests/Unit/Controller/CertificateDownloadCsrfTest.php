@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Controller;
 
+use OCA\Learning\Controller\ClassbookController;
 use OCA\Learning\Controller\CertificateController;
 use OCA\Learning\Controller\CertificateReportController;
 use OCA\Learning\Controller\CourseCertificateController;
@@ -29,6 +30,7 @@ class CertificateDownloadCsrfTest extends TestCase {
             'instructor copy of a certificate (#42)' => [CourseCertificateController::class, 'download'],
             'instructor ZIP of the report (#42)' => [CourseCertificateController::class, 'exportZip'],
             'at-risk CSV on the same Participants tab (#45)' => [CourseController::class, 'exportAtRiskCsv'],
+            'classbook vCard on the same Participants tab (#45)' => [ClassbookController::class, 'exportVcard'],
         ];
     }
 
