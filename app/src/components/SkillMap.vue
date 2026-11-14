@@ -13,8 +13,11 @@
 			{{ t('learning', 'Lerne ein paar Karteikarten, dann erscheint hier deine Kompetenz-Karte!') }}
 		</div>
 
-		<div v-else class="skill-map-container" ref="container">
-			<svg ref="skillMap" />
+		<div v-else class="skill-map-container">
+			<!-- Fixed-height drawing area holding only the SVG: nothing in flow can grow the observed element (#36) -->
+			<div ref="canvas" class="skill-map-canvas">
+				<svg ref="skillMap" />
+			</div>
 
 			<!-- Legend -->
 			<div class="skill-map-legend">
@@ -92,6 +95,7 @@ import { buildGraphData, getTrendIndicator } from '../utils/skillMapEngine.js';
 import {
 	createSkillMap,
 	createForceSimulation,
+	applyLayoutForces,
 	setupZoom,
 	renderNodes,
 	renderLinks,
@@ -146,6 +150,8 @@ export default {
 		this._g = null;
 		this._graphData = null;
 		this._resizeObserver = null;
+		this._lastWidth = 0;
+		this._lastHeight = 0;
 
 		this._fetchData();
 	},
@@ -191,13 +197,24 @@ export default {
 			}
 		},
 
+		_canvasSize: function() {
+			var canvas = this.$refs.canvas;
+			return {
+				width: (canvas && canvas.clientWidth) || 800,
+				height: (canvas && canvas.clientHeight) || 400,
+			};
+		},
+
 		_initGraph: function() {
 			var svgEl = this.$refs.skillMap;
-			if (!svgEl) { return; }
+			var canvas = this.$refs.canvas;
+			if (!svgEl || !canvas) { return; }
 
-			var container = this.$refs.container;
-			var width = container.clientWidth || 800;
-			var height = Math.max(container.clientHeight || 500, 400);
+			var size = this._canvasSize();
+			var width = size.width;
+			var height = size.height;
+			this._lastWidth = width;
+			this._lastHeight = height;
 
 			this._graphData = buildGraphData(this.pools);
 
@@ -219,21 +236,34 @@ export default {
 
 			updateSimulation(this._simulation, this._g);
 
-			// ResizeObserver for responsive re-render
+			// ResizeObserver for responsive re-render. It watches only the
+			// fixed-height canvas: watching the container (SVG + legend) made
+			// every resize grow the SVG, which grew the container, which fired
+			// the observer again — the nodes "fell" down an endless page (#36).
 			if (typeof ResizeObserver !== 'undefined') {
 				this._resizeObserver = new ResizeObserver(this._onResize.bind(this));
-				this._resizeObserver.observe(container);
+				this._resizeObserver.observe(canvas);
 			}
 		},
 
 		_onResize: function() {
-			if (!this._graphData || !this.$refs.container || !this.$refs.skillMap) {
+			if (!this._graphData || !this._svg || !this.$refs.canvas || !this.$refs.skillMap) {
 				return;
 			}
 
-			var container = this.$refs.container;
-			var width = container.clientWidth || 800;
-			var height = Math.max(container.clientHeight || 500, 400);
+			var canvas = this.$refs.canvas;
+			// Hidden or detached: keep the last layout instead of collapsing it.
+			if (!canvas.clientWidth || !canvas.clientHeight) { return; }
+
+			var size = this._canvasSize();
+			var width = size.width;
+			var height = size.height;
+
+			// observe() fires once right away, and layout can report the same
+			// size repeatedly: only a real change may move the graph.
+			if (width === this._lastWidth && height === this._lastHeight) { return; }
+			this._lastWidth = width;
+			this._lastHeight = height;
 
 			// Update SVG dimensions
 			this._svg
@@ -241,10 +271,9 @@ export default {
 				.attr('height', height)
 				.attr('viewBox', '0 0 ' + width + ' ' + height);
 
-			// Re-center force simulation
+			// Re-centre the simulation: centre, x bands and forceY together
 			if (this._simulation) {
-				this._simulation
-					.force('center').x(width / 2).y(height / 2);
+				applyLayoutForces(this._simulation, this._graphData.nodes, width, height);
 				this._simulation.alpha(0.3).restart();
 			}
 		},

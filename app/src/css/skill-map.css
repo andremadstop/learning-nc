@@ -2,14 +2,24 @@
 
 .skill-map-container {
 	width: 100%;
-	min-height: 500px;
 	border-radius: 8px;
 	background: var(--color-main-background, #1a1a2e);
 	position: relative;
 	overflow: hidden;
 }
 
-.skill-map-container svg {
+/* The drawing area has a fixed height and holds only the SVG. The SVG is
+   taken out of flow, so its width/height attributes can never feed back
+   into the size the ResizeObserver reads (#36). */
+.skill-map-canvas {
+	position: relative;
+	width: 100%;
+	height: clamp(400px, 60vh, 700px);
+}
+
+.skill-map-canvas svg {
+	position: absolute;
+	inset: 0;
 	display: block;
 	width: 100%;
 	height: 100%;
@@ -110,8 +120,8 @@
 
 /* Responsive: smaller viewports */
 @media (max-width: 768px) {
-	.skill-map-container {
-		min-height: 300px;
+	.skill-map-canvas {
+		height: 360px;
 	}
 
 	.skill-map-sidebar {

@@ -59,6 +59,34 @@ export function createSkillMap(svgElement, width, height) {
  * @returns {object} D3 forceSimulation instance
  */
 export function createForceSimulation(nodes, links, width, height) {
+	var simulation = forceSimulation(nodes)
+		.force('link', forceLink(links)
+			.id(function(d) { return d.id; })
+			.distance(80)
+			.strength(0.6))
+		.force('charge', forceManyBody()
+			.strength(function(d) { return -d.radius * 8; }))
+		.force('collide', forceCollide()
+			.radius(function(d) { return d.radius + 8; })
+			.strength(0.8))
+		.alphaDecay(0.02);
+
+	applyLayoutForces(simulation, nodes, width, height);
+	return simulation;
+}
+
+/**
+ * Set (or re-set) every force that depends on the canvas size: the centre,
+ * the per-course x bands and the vertical pull towards the middle. Called on
+ * creation and again on every real resize, so the bands and forceY never keep
+ * the old dimensions while forceCenter moves.
+ * @param {object} simulation - D3 forceSimulation instance
+ * @param {Array} nodes - graph nodes with courseId
+ * @param {number} width
+ * @param {number} height
+ * @returns {object} the same simulation
+ */
+export function applyLayoutForces(simulation, nodes, width, height) {
 	// Assign course-based x-band positions for clustering
 	var courseIds = [];
 	nodes.forEach(function(n) {
@@ -69,17 +97,8 @@ export function createForceSimulation(nodes, links, width, height) {
 
 	var bandWidth = width / Math.max(courseIds.length, 1);
 
-	return forceSimulation(nodes)
-		.force('link', forceLink(links)
-			.id(function(d) { return d.id; })
-			.distance(80)
-			.strength(0.6))
-		.force('charge', forceManyBody()
-			.strength(function(d) { return -d.radius * 8; }))
+	return simulation
 		.force('center', forceCenter(width / 2, height / 2))
-		.force('collide', forceCollide()
-			.radius(function(d) { return d.radius + 8; })
-			.strength(0.8))
 		.force('x', forceX()
 			.x(function(d) {
 				var idx = courseIds.indexOf(d.courseId);
@@ -89,8 +108,7 @@ export function createForceSimulation(nodes, links, width, height) {
 			.strength(0.15))
 		.force('y', forceY()
 			.y(height / 2)
-			.strength(0.05))
-		.alphaDecay(0.02);
+			.strength(0.05));
 }
 
 /**
