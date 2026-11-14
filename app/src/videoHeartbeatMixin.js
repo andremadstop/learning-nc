@@ -54,8 +54,13 @@ export default {
 			this.segmentStart = position !== null ? position : this.currentTime
 			this.segmentQueuedUpTo = null
 		},
-		closeOpenSegment() {
-			const position = this.playbackPosition()
+		/**
+		 * @param {?number} [endPosition] where playback really stopped. VideoPlayer passes its last
+		 *   played position on a seek: in the 'seeking' event currentTime is already the jump target,
+		 *   and closing there counted the skipped part as watched (audit #110).
+		 */
+		closeOpenSegment(endPosition) {
+			const position = Number.isFinite(endPosition) ? endPosition : this.playbackPosition()
 			if (this.segmentStart !== null && position !== null) {
 				this.recordSegment(this.segmentStart, position, true)
 			}
@@ -63,6 +68,15 @@ export default {
 			this.segmentQueuedUpTo = null
 		},
 		recordSegment(start, end, closing) {
+			if (!(end > start)) {
+				// A backward "segment" (a jump back) was swapped into [end, start] by addSegment and
+				// counted as watched (audit #110). Nothing was played: record nothing.
+				if (closing) {
+					this.segmentStart = null
+					this.segmentQueuedUpTo = null
+				}
+				return
+			}
 			this.intervals = addSegment(this.intervals, start, end)
 			this.coveredPct = coveredFraction(this.intervals, this.effectiveDuration)
 			// Queue only the part of the segment that is new since the last call. The server caps a
@@ -128,6 +142,11 @@ export default {
 					generateUrl('/apps/learning/api/video-progress/heartbeat'),
 					{ contentId: this.contentId, start: Math.floor(start), end: Math.floor(end) },
 				)
+				if (response.data && response.data.accepted === false) {
+					// The server discarded the ping (another tab pinged under 5 s ago): keep the seconds
+					// for the next ping instead of losing them (audit #111).
+					this.pendingSegments = addSegment(this.pendingSegments, start, end)
+				}
 				this.applyServerProgress(response.data)
 			} catch (e) {
 				// Heartbeats are best-effort; the server is the gate. Keep the seconds for the next ping.

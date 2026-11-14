@@ -195,7 +195,7 @@
 
       <div class="dialog-actions">
         <NcButton type="button" variant="tertiary" @click="$emit('close')">{{ t('learning', 'Abbrechen') }}</NcButton>
-        <NcButton type="submit" variant="primary" :disabled="saving">{{ saving ? t('learning', 'Speichern...') : t('learning', 'Speichern') }}</NcButton>
+        <NcButton type="submit" variant="primary" :disabled="saving || busy">{{ saving || busy ? t('learning', 'Speichern...') : t('learning', 'Speichern') }}</NcButton>
       </div>
     </form>
   </AccessibleDialog>
@@ -213,7 +213,12 @@ import { SCENARIO_MAX_LENGTH } from '../utils/questionScenario.js';
 export default {
   name: 'QuestionForm',
   components: { AccessibleDialog, NcButton, NcCheckboxRadioSwitch, NcNoteCard, PbqAuthorTool },
-  props: { question: { type: Object, default: null } },
+  props: {
+    question: { type: Object, default: null },
+    // The parent's save is still running. save() only emits, so its own `saving` ends at once;
+    // without this a double click sent two POSTs and created the question twice (audit #107).
+    busy: { type: Boolean, default: false },
+  },
   data() {
     return {
       saving: false,
@@ -472,6 +477,7 @@ export default {
       };
     },
     save() {
+      if (this.busy) return;
       this.saving = true;
       this.pbqConfigManualError = null;
       let filteredAnswers;

@@ -37,7 +37,7 @@ class QuestionService {
      * Type names the imports read as "a choice question" without saying single or multi
      * (lower-case): single with one correct answer, multi with several — the rule for a question
      * without a type, except that `_meta.default_question_type` never applies to it.
-     * "multiple_choice" is what app/data/subnetting_questions.json and many files from elsewhere
+     * "multiple_choice" is what app/examples/pools/subnetting-ip-adressierung-n10-009-de.json and many files from elsewhere
      * write. Mirrored in importPreview.js CHOICE_TYPE_NAMES.
      */
     public const CHOICE_TYPE_NAMES = ['multiple_choice'];
@@ -752,9 +752,24 @@ class QuestionService {
         }
     }
 
-    public function search(string $query, string $userId, int $limit = 50): array {
+    /**
+     * @param int|null $poolId search only this pool. The pool's question list used to run the
+     *                         search over all of the user's pools (50 hits) and filter afterwards,
+     *                         so hits of the open pool could be cut off; each hit then also carries
+     *                         'position', its 0-based place in the pool's paging order, so the list
+     *                         can open the page it is on (2026-11 audit #108).
+     */
+    public function search(string $query, string $userId, int $limit = 50, ?int $poolId = null): array {
         $limit = max(1, min($limit, 100));
-        $rows = $this->questionMapper->searchByText($query, $userId, $limit);
+        $rows = $this->questionMapper->searchByText($query, $userId, $limit, $poolId);
+
+        if ($poolId !== null && $rows !== []) {
+            // The search joins already limited the rows to pools the user can see.
+            $positions = array_flip($this->questionMapper->findIdsInPoolOrder($poolId));
+            foreach ($rows as $i => $row) {
+                $rows[$i]['position'] = $positions[(int)($row['id'] ?? 0)] ?? null;
+            }
+        }
 
         // The rows are learning_questions.* (no answers): withhold explanation and the PBQ solution
         // of every pool the user cannot edit, like find() does (2026-11 audit, answer key).

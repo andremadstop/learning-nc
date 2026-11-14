@@ -159,3 +159,23 @@ describe('QuestionForm: an existing two-answer question can be saved', () => {
 		expect(submits).toHaveLength(1)
 	})
 })
+
+describe('QuestionForm: the parent\'s running save locks the button (audit #107)', () => {
+	it('while busy, "Speichern" is disabled', () => {
+		mountForm({ busy: true })
+		fillRequiredFields()
+
+		const save = buttonByText('Speichern...')
+		expect(save.disabled).toBe(true)
+	})
+
+	it('save() during a running save does not emit a second "save"', () => {
+		const onSave = vi.fn()
+		mountForm({ busy: true, onSave })
+		fillRequiredFields()
+
+		app._instance.proxy.save()
+
+		expect(onSave).not.toHaveBeenCalled()
+	})
+})

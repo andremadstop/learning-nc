@@ -125,6 +125,9 @@ export default {
 			isPlaying: false,
 			currentTime: 0,
 			mediaDuration: 0,
+			// Last position reached by playing (timeupdate outside a seek): the end of the open segment
+			// when a seek starts (audit #110).
+			lastPlayedPosition: null,
 		}
 	},
 
@@ -188,6 +191,7 @@ export default {
 			this.isPlaying = true
 			this.srStatus = t('learning', 'Wiedergabe läuft')
 			this.openSegment()
+			this.lastPlayedPosition = this.segmentStart
 		},
 		onPause() {
 			this.isPlaying = false
@@ -201,6 +205,11 @@ export default {
 				return
 			}
 			this.currentTime = el.currentTime
+			if (el.seeking) {
+				// currentTime is the jump target, not a played position
+				return
+			}
+			this.lastPlayedPosition = el.currentTime
 			// extend the open segment and flush on the client throttle
 			if (this.segmentStart !== null) {
 				this.recordSegment(this.segmentStart, el.currentTime, false)
@@ -211,13 +220,16 @@ export default {
 			// Close AND flush the segment we were playing before the jump — otherwise a
 			// mid-video segment abandoned by another seek inside the throttle window would
 			// never reach the server, under-counting coverage on seek-heavy watch patterns.
-			this.closeOpenSegment()
+			// It ends where playback was, not at el.currentTime: in 'seeking' that is already the
+			// jump target, and [20, 300] was counted as watched after a jump from 0:20 (audit #110).
+			this.closeOpenSegment(this.lastPlayedPosition)
 			this.flushHeartbeat(true)
 		},
 		onSeeked() {
 			const el = this.$refs.video
 			if (el) {
 				this.currentTime = el.currentTime
+				this.lastPlayedPosition = el.currentTime
 				if (this.isPlaying) {
 					this.openSegment()
 				}

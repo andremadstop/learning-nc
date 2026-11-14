@@ -2194,6 +2194,7 @@
         "{days} days in a row. Consistency beats intensity.": "{days} Tage hintereinander. Konsistenz schlägt Intensität.",
         "{imported} of {total} questions imported": "{imported} von {total} Fragen importiert",
         "{label} — next review in {interval}": "{label} — nächste Wiederholung in {interval}",
+        "{n} / {max} Abschnitte": "{n} / {max} Abschnitte",
         "{n} / {max} Beiträge": "{n} / {max} Beiträge",
         "{n} Antworten ausstehend": "{n} Antworten ausstehend",
         "{n} Beiträge ausstehend": "{n} Beiträge ausstehend",

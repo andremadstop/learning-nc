@@ -53,7 +53,7 @@
     </NcEmptyContent>
 
     <div v-else class="question-items">
-      <div v-for="(question, index) in questions" :key="question.id" class="question-item">
+      <div v-for="(question, index) in questions" :key="question.id" class="question-item" :data-question-id="question.id">
         <div class="question-header">
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
@@ -96,7 +96,7 @@
 
     <div v-if="totalQuestions > pageSize" class="pagination-bar">
       <NcButton variant="tertiary" :disabled="currentPage === 0" @click="prevPage">{{ t('learning', '\u2190 Zurück') }}</NcButton>
-      <span class="pagination-info">{{ currentPage * pageSize + 1 }}\u2013{{ Math.min((currentPage + 1) * pageSize, totalQuestions) }} / {{ totalQuestions }}</span>
+      <span class="pagination-info">{{ currentPage * pageSize + 1 }}–{{ Math.min((currentPage + 1) * pageSize, totalQuestions) }} / {{ totalQuestions }}</span>
       <NcButton variant="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Weiter \u2192') }}</NcButton>
     </div>
 
@@ -108,7 +108,7 @@
       </template>
     </AccessibleDialog>
 
-    <QuestionForm v-if="showDialog" :question="editingQuestion" @save="saveQuestion" @close="closeDialog" />
+    <QuestionForm v-if="showDialog" :question="editingQuestion" :busy="savingQuestion" @save="saveQuestion" @close="closeDialog" />
     <TranslationDialog v-if="showTranslationDialog" :question="translationQuestion" @close="closeTranslationDialog" @saved="closeTranslationDialog" />
     <ImportDialog v-if="showImportDialog" :poolId="poolId" @close="showImportDialog = false" @imported="onImported" />
     <AIGenerator v-if="showAIGenerator" :poolId="poolId" @close="showAIGenerator = false" @imported="onImported" />
@@ -141,7 +141,7 @@ export default {
     readonly: { type: Boolean, default: false }
   },
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null, savingQuestion: false };
   },
   watch: {
     poolId() { this.currentPage = 0; this.loadQuestions(); },
@@ -195,31 +195,25 @@ export default {
     async doSearch() {
       this.searchLoading = true;
       try {
-        const response = await axios.get(generateUrl('/apps/learning/api/questions/search'), { params: { query: this.searchTerm } });
-        // Filter to only this pool's questions
-        this.searchResults = (response.data || []).filter(q => q.pool_id === this.poolId);
+        // Searched in this pool on the server: a search over all pools returned 50 hits and the
+        // ones of this pool could be cut off before the filter here (audit #108).
+        const response = await axios.get(generateUrl('/apps/learning/api/questions/search'), { params: { query: this.searchTerm, poolId: this.poolId } });
+        this.searchResults = (Array.isArray(response.data) ? response.data : []).filter(q => q.pool_id === this.poolId);
       } catch { this.searchResults = []; }
       this.searchLoading = false;
       this.searchDone = true;
     },
-    jumpToSearchResult(result) {
-      // Find which page this question is on and navigate there
-      const idx = this.questions.findIndex(q => q.id === result.id);
-      if (idx >= 0) {
-        // Already on current page — scroll to it
-        const el = this.$el.querySelectorAll('.question-item')[idx];
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        // Load the page containing this question
-        // We need to find the question's position in the pool
-        // For now, search all pages — the question's pool position tells us
-        // Question is on a different page
-        // Question is on a different page — estimate page from ID ordering
-        // Reload with search highlight
-        this.currentPage = 0;
-        this.loadQuestions();
-      }
+    async jumpToSearchResult(result) {
       this.clearSearch();
+      // Another page: the server gave the hit's place in the pool's order, so open its page.
+      // This used to reload page 1, where the question was not (audit #108).
+      if (!this.questions.some(q => q.id === result.id) && Number.isInteger(result.position)) {
+        this.currentPage = Math.floor(result.position / this.pageSize);
+        await this.loadQuestions();
+      }
+      await this.$nextTick();
+      const el = this.$el.querySelector('.question-item[data-question-id="' + result.id + '"]');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
     jumpToFirstSearchResult() {
       if (this.searchResults.length > 0) this.jumpToSearchResult(this.searchResults[0]);
@@ -232,6 +226,9 @@ export default {
     closeDialog() { this.showDialog = false; this.editingQuestion = null; },
     onImported() { this.showImportDialog = false; this.loadQuestions(); },
     async saveQuestion(questionData) {
+      // One save at a time: a second click while the POST runs would create the question twice.
+      if (this.savingQuestion) return;
+      this.savingQuestion = true;
       try {
         const { imageFile, removeImage, questionType, ...data } = questionData;
         data.questionType = questionType || 'single';
@@ -259,7 +256,11 @@ export default {
         }
 
         this.closeDialog(); this.loadQuestions();
-      } catch (error) { showError(error.response?.data?.error || t('learning', 'Frage konnte nicht gespeichert werden')); }
+      } catch (error) {
+        showError(error.response?.data?.error || t('learning', 'Frage konnte nicht gespeichert werden'));
+      } finally {
+        this.savingQuestion = false;
+      }
     },
     exportCsv() {
       window.location.href = generateUrl('/apps/learning/api/pools/' + this.poolId + '/export/csv');
