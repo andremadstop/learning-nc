@@ -49,8 +49,9 @@ export function feedTypeIcon(type) {
 export function feedItemTitle(item) {
 	const poolName = item?.meta?.pool_name
 	if (item?.type === 'pool_added' && typeof poolName === 'string' && poolName !== '') {
-		// rendered as text by Vue, so no HTML escaping here ("R&D" must not become "R&amp;D")
-		return t('learning', 'Neuer Fragenpool: {name}', { name: poolName }, undefined, { escape: false })
+		// rendered as text by Vue, so no HTML escaping or sanitizing here ("R&D" must not become
+		// "R&amp;D", "<intern>" must not vanish)
+		return t('learning', 'Neuer Fragenpool: {name}', { name: poolName }, undefined, { escape: false, sanitize: false })
 	}
 	return item?.title || ''
 }

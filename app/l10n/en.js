@@ -3462,5 +3462,6 @@ OC.L10N.register(
     "beeindruckt" : "impressed",
     "Ungültig" : "Invalid",
     "rekursiv" : "recursive",
+    "Der Popularisierer" : "The Science Communicator",
 },
 "nplurals=2; plural=(n != 1);");

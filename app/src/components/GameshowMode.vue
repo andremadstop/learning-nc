@@ -1562,7 +1562,7 @@ export default {
     // Through t() (audit #182); the names are inserted unescaped because the text is rendered as text.
     buildStandingsCommentary() {
       if (!this.sortedPlayers || this.sortedPlayers.length === 0) return '';
-      const raw = { escape: false };
+      const raw = { escape: false, sanitize: false };
       if (this.isEliminationMode) {
         const leader = this.sortedPlayers[0];
         const name1 = leader.display_name || leader.user_id;

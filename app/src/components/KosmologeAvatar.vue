@@ -14,7 +14,7 @@
         viewBox="0 0 60 80"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
-        aria-label="Der Kosmologe">
+        :aria-label="avatarName()">
 
         <defs>
           <radialGradient id="ko-galaxy" cx="50%" cy="50%" r="50%">
@@ -160,6 +160,7 @@
 </template>
 
 <script>
+import { translate as t } from '@nextcloud/l10n'
 import { inviteBadgeLabel } from '../utils/inviteBadge.js'
 import { useA11yStore } from '../stores/a11yStore.js'
 import { playWave } from '../utils/character-animations.js'
@@ -207,6 +208,10 @@ export default {
 	},
 	methods: {
 		inviteBadgeLabel,
+		// screen-reader name in the reader's language (audit #187)
+		avatarName() {
+			return t('learning', 'Der Kosmologe')
+		},
 		animationsDisabled() {
 			const prefersReduced = typeof window !== 'undefined'
 				&& typeof window.matchMedia === 'function'

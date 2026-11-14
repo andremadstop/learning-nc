@@ -3462,5 +3462,6 @@ OC.L10N.register(
     "beeindruckt" : "impressionné",
     "Ungültig" : "Invalide",
     "rekursiv" : "récursif",
+    "Der Popularisierer" : "Le Vulgarisateur",
 },
 "nplurals=2; plural=(n > 1);");
