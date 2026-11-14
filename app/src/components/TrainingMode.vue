@@ -5,7 +5,7 @@
       <p v-if="totalQuestions > 0">{{ t('learning', 'Test your knowledge with {n} questions', { n: totalQuestions }) }}</p>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
       <div v-if="totalQuestions > 0" class="training-start-controls">
-        <div class="question-type-filter">
+        <div v-if="hasSimulatorQuestions" class="question-type-filter">
           <button class="filter-pill" :class="{ active: activeQuestionType === null }" @click="activeQuestionType = null">
             <span class="filter-pill-icon">📝</span> {{ t('learning', 'All questions') }}
           </button>
@@ -260,6 +260,9 @@ export default {
     initialQuestionType: { type: String, default: null },
     // True when the viewer may add questions to this pool (instructor view, not read-only).
     canManage: { type: Boolean, default: false },
+    // GitHub #46: the pool (with the course's filters) holds interactive simulations; only then
+    // the "Simulators only" filter makes sense.
+    hasSimulatorQuestions: { type: Boolean, default: false },
   },
   data() {
     return {

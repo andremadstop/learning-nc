@@ -168,6 +168,7 @@
                 :totalQuestions="questionCount"
                 :contentLanguage="contentLanguage"
                 :can-manage="canManagePool"
+                :has-simulator-questions="pbqQuestionCount > 0"
                 @back="backToPools"
                 @manage="setMode('manage')"
               />
@@ -526,6 +527,8 @@ export default {
       mode: 'train',
       arenaSubMode: null,
       questionCount: 0,
+      // GitHub #46: interactive simulations (question_type 'pbq') in the open pool.
+      pbqQuestionCount: 0,
       poolPermission: 'owner',
       error: null,
       poolFromCourse: false,
@@ -1590,12 +1593,14 @@ export default {
         );
         if (this.isSelectedPool(pool)) {
           this.questionCount = response.data.length;
+          this.pbqQuestionCount = response.data.filter((q) => q?.question_type === 'pbq').length;
         }
         return response.data.length;
       } catch (err) {
         if (reportErrors && this.isSelectedPool(pool)) {
           this.error = t('learning', 'Fragenanzahl konnte nicht geladen werden');
           this.questionCount = 0;
+          this.pbqQuestionCount = 0;
         }
         return null;
       }

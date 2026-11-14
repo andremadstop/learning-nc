@@ -601,6 +601,27 @@ class CourseService {
         return $examMinutes;
     }
 
+    /**
+     * GitHub #46: how many of these questions are interactive simulations (question_type 'pbq'),
+     * so Training offers its "Simulators only" filter only where there are any.
+     *
+     * @param int[] $questionIds
+     */
+    private function countPbqQuestions(array $questionIds): int {
+        $count = 0;
+        foreach (array_chunk(array_values(array_map('intval', $questionIds)), 1000) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select($qb->createFunction('COUNT(*)'))
+                ->from('learning_questions')
+                ->where($qb->expr()->in('id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb->expr()->eq('question_type', $qb->createNamedParameter('pbq')));
+            $result = $qb->executeQuery();
+            $count += (int)$result->fetchOne();
+            $result->closeCursor();
+        }
+        return $count;
+    }
+
     private function countQuestionsInPool(int $poolId): int {
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*)'))
@@ -888,12 +909,14 @@ class CourseService {
                 $cpData = array_merge($cpData, $this->getPoolSnapshot($cp->getPoolId()));
                 $filteredQuestionIds = $this->getFilteredQuestionIdsForCoursePoolEntity($cp);
                 $cpData['question_count'] = count($filteredQuestionIds);
+                $cpData['pbq_count'] = $this->countPbqQuestions($filteredQuestionIds);
                 $cpData['total_question_count'] = $this->countQuestionsInPool($cp->getPoolId());
                 $cpData['available_filters'] = $this->getFilterOptionsForPool($cp->getPoolId());
                 $cpData['available_content_languages'] = $availableContentLanguages[$cp->getPoolId()] ?? ['de'];
             } catch (DoesNotExistException $e) {
                 $cpData['pool_name'] = '(deleted)';
                 $cpData['question_count'] = 0;
+                $cpData['pbq_count'] = 0;
                 $cpData['total_question_count'] = 0;
                 $cpData['handbook_key'] = null;
                 $cpData['handbook_title'] = null;
@@ -910,6 +933,7 @@ class CourseService {
                 );
                 $cpData['pool_name'] = $cpData['pool_name'] ?? '(unavailable)';
                 $cpData['question_count'] = $cpData['question_count'] ?? 0;
+                $cpData['pbq_count'] = $cpData['pbq_count'] ?? 0;
                 $cpData['total_question_count'] = $cpData['total_question_count'] ?? 0;
                 $cpData['handbook_key'] = $cpData['handbook_key'] ?? null;
                 $cpData['handbook_title'] = $cpData['handbook_title'] ?? null;

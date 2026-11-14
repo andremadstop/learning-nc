@@ -210,6 +210,7 @@
 				:courseId="courseId"
 				:totalQuestions="selectedLearningPoolQuestionCount"
 				:contentLanguage="contentLanguage"
+				:hasSimulatorQuestions="(selectedLearningPool.pbq_count || 0) > 0"
 				@back="resetLearningPoolSelection" />
 
 			<LeitnerMode
