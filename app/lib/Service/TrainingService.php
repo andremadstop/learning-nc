@@ -131,7 +131,15 @@ class TrainingService {
                 ]);
             $qb->executeStatement();
         } catch (\Throwable $e) {
-            // Keep main flow resilient even if audit storage is not available.
+            // Keep the main flow resilient if audit storage is unavailable, but never silently:
+            // a gap in the exam audit must be traceable (audit #168). No context content here.
+            $this->logger->error('learning.training.audit insert failed', [
+                'app' => 'learning',
+                'event_key' => $event,
+                'session_id' => $context['session_id'] ?? null,
+                // The class only: a driver message can quote the bound parameters (context_json).
+                'exception_class' => get_class($e),
+            ]);
         }
     }
 
@@ -708,19 +716,6 @@ class TrainingService {
             }
         }
 
-        // SECURITY: When starting an exam, auto-complete all open training sessions
-        // on the same pool to prevent using them as answer oracles
-        if ($mode === 'exam') {
-            $qb = $this->db->getQueryBuilder();
-            $qb->update('learning_sessions')
-               ->set('completed_at', $qb->createNamedParameter(time()))
-               ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
-               ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('training')))
-               ->andWhere($qb->expr()->isNull('completed_at'));
-            $qb->executeStatement();
-        }
-
         if ($courseId !== null) {
             $context = $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId);
             $questionIds = $context['question_ids'];
@@ -767,6 +762,19 @@ class TrainingService {
             $examAttemptNo = $this->getExamAttemptNo($poolId, $userId);
             $requestedLimit = $timeLimitSeconds ?? 600;
             $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
+
+            // SECURITY: auto-complete all open training sessions on the same pool, so they cannot
+            // serve as answer oracles during the exam. Only once the exam is certain to start:
+            // a start refused for an empty pool, the attempt limit or the cooldown must leave a
+            // training session in another tab untouched (audit #85).
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_sessions')
+               ->set('completed_at', $qb->createNamedParameter(time()))
+               ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+               ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('training')))
+               ->andWhere($qb->expr()->isNull('completed_at'));
+            $qb->executeStatement();
         }
 
         $questionOrder = array_map(static fn($q) => (int)$q->getId(), $questions);
@@ -2408,11 +2416,47 @@ class TrainingService {
         );
     }
 
+    /**
+     * Abort an incomplete session.
+     *
+     * Training sessions and practice attempts (exam_kind set) are deleted: they never count.
+     * A counting exam (mode 'exam', exam_kind NULL) is never deleted (audit #31): that let a
+     * learner read every question, abort, study and restart with neither the attempt limit nor
+     * the cooldown applying. It is completed instead as it stands — answers held only by the
+     * client are lost, so it usually scores 0 — and stays a counted attempt. An exam already past
+     * its grace period is closed as a timeout, exactly as any other read of it would.
+     */
     public function abortSession(int $sessionId, string $userId): void {
         $session = $this->verifySessionOwnership($sessionId, $userId);
 
         // Only incomplete sessions can be aborted
         if (!empty($session['completed_at'])) {
+            return;
+        }
+
+        if (($session['mode'] ?? 'training') === 'exam' && ($session['exam_kind'] ?? null) === null) {
+            $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'abort');
+            if ($timeoutInfo['timed_out']) {
+                return;
+            }
+            $now = time();
+            $qb = $this->db->getQueryBuilder();
+            $affected = $qb->update('learning_sessions')
+                ->set('completed_at', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT))
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+                ->andWhere($qb->expr()->isNull('completed_at'))
+                ->executeStatement();
+            if ($affected > 0) {
+                $this->logAuditEvent('exam_aborted', [
+                    'user_id' => $userId,
+                    'session_id' => $sessionId,
+                    'pool_id' => (int)$session['pool_id'],
+                    'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
+                    'past_deadline' => $timeoutInfo['past_deadline'],
+                    'now' => $now,
+                ]);
+            }
             return;
         }
 

@@ -73,10 +73,11 @@ class TrainingServiceTest extends TestCase {
 
     public function testExamStartPayloadStripsExplanationsAndPbqSolutionConfig(): void {
         $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
-        $closeTrainingBuilder = new FakeQueryBuilder(new FakeResult(), 1);
         $attemptLimitBuilder = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $attemptNoBuilder = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $closeTrainingBuilder = new FakeQueryBuilder(new FakeResult(), 1);
         $insertBuilder = new FakeQueryBuilder(new FakeResult(), 0, 99);
-        $db = new FakeDbConnection([$activeExamBuilder, $closeTrainingBuilder, $attemptLimitBuilder, $insertBuilder]);
+        $db = new FakeDbConnection([$activeExamBuilder, $attemptLimitBuilder, $attemptNoBuilder, $closeTrainingBuilder, $insertBuilder]);
 
         $question = $this->makeQuestion(10, 42, 'PBQ');
         $question->setQuestionType('pbq');
@@ -134,10 +135,11 @@ class TrainingServiceTest extends TestCase {
      */
     public function testExamStartPayloadStripsCliEvaluation(): void {
         $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
-        $closeTrainingBuilder = new FakeQueryBuilder(new FakeResult(), 1);
         $attemptLimitBuilder = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $attemptNoBuilder = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $closeTrainingBuilder = new FakeQueryBuilder(new FakeResult(), 1);
         $insertBuilder = new FakeQueryBuilder(new FakeResult(), 0, 99);
-        $db = new FakeDbConnection([$activeExamBuilder, $closeTrainingBuilder, $attemptLimitBuilder, $insertBuilder]);
+        $db = new FakeDbConnection([$activeExamBuilder, $attemptLimitBuilder, $attemptNoBuilder, $closeTrainingBuilder, $insertBuilder]);
 
         $question = $this->makeQuestion(10, 42, 'PBQ');
         $question->setQuestionType('pbq');
@@ -661,10 +663,10 @@ class TrainingServiceTest extends TestCase {
     private function buildCourseExamService(array $questions, bool $fromCourse = true): array {
         $db = new FakeDbConnection([
             new FakeQueryBuilder(FakeResult::fromFetch(false)),      // active exam lookup
-            new FakeQueryBuilder(new FakeResult(), 0),               // close open training sessions
             new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempts in the last 24 h
-            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // last start (cooldown)
+            // (no cooldown lookup: the mocked IConfig yields cooldown 0)
             new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempt number
+            new FakeQueryBuilder(new FakeResult(), 0),               // close open training sessions
             new FakeQueryBuilder(new FakeResult(), 0, 99),           // insert
         ]);
         $ids = array_map(static fn(Question $q): int => (int)$q->getId(), $questions);
@@ -1374,6 +1376,163 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame([], $reviewQuery->selects, 'the review query must never run');
     }
 
+    /**
+     * Audit #85: a refused exam start (here: the attempt limit) must not close a training session
+     * that is open on the pool in another tab — its next answer would fail with "Session already
+     * completed" although no exam ever started.
+     */
+    public function testRefusedExamStartLeavesOpenTrainingSessionsAlone(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),   // active exam lookup
+            new FakeQueryBuilder(FakeResult::fromFetchOne(1)),    // attempts in the last 24 h: limit (1 with the mocked IConfig) reached
+        ]);
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([$this->makeQuestion(10, 42, 'Q')]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $service = $this->createService(db: $db, questionMapper: $questionMapper, poolMapper: $poolMapper);
+
+        try {
+            $service->startSession(42, 'alice', null, 'exam');
+            $this->fail('the attempt limit must refuse the start');
+        } catch (\Exception $e) {
+            $this->assertSame('Exam attempt limit reached for the last 24 hours', $e->getMessage());
+        }
+
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertNotSame('update', $builder->operation, 'no session may be closed by a refused start');
+        }
+    }
+
+    public function testRefusedExamStartForAnEmptyPoolLeavesOpenTrainingSessionsAlone(): void {
+        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetch(false))]);
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $service = $this->createService(db: $db, questionMapper: $questionMapper, poolMapper: $poolMapper);
+
+        try {
+            $service->startSession(42, 'alice', null, 'exam');
+            $this->fail('an empty pool must refuse the start');
+        } catch (\Exception $e) {
+            $this->assertSame('No questions in this pool', $e->getMessage());
+        }
+
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertNotSame('update', $builder->operation, 'no session may be closed by a refused start');
+        }
+    }
+
+    /**
+     * Audit #31: aborting a counting exam used to delete it, so the attempt limit and the
+     * cooldown never saw it. It is completed as a counted attempt and audited instead.
+     */
+    public function testAbortingACountingExamCompletesItInsteadOfDeletingIt(): void {
+        $session = ['id' => 77, 'pool_id' => 42, 'user_id' => 'alice', 'mode' => 'exam', 'exam_kind' => null,
+            'started_at' => time() - 60, 'time_limit_seconds' => 3600, 'completed_at' => null, 'attempt_no' => 2];
+        $completeBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $auditBuilder = new FakeQueryBuilder();
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($session)),   // ownership
+            $completeBuilder,
+            $auditBuilder,
+        ]);
+        $service = $this->createService(db: $db);
+
+        $service->abortSession(77, 'alice');
+
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertNotSame('delete', $builder->operation, 'a counting exam must never be deleted');
+        }
+        $this->assertSame('update', $completeBuilder->operation);
+        $this->assertSame('learning_sessions', $completeBuilder->table);
+        $this->assertArrayHasKey('completed_at', $completeBuilder->setCalls);
+        $this->assertSame('insert', $auditBuilder->operation);
+        $this->assertSame('learning_audit_events', $auditBuilder->table);
+        $this->assertSame('exam_aborted', $auditBuilder->insertValues['event_key']['value']);
+    }
+
+    /** An exam past its grace period is recorded as a timeout, not as an abort, and not deleted. */
+    public function testAbortingAnExpiredCountingExamClosesItAsTimeout(): void {
+        $session = ['id' => 77, 'pool_id' => 42, 'user_id' => 'alice', 'mode' => 'exam', 'exam_kind' => null,
+            'started_at' => time() - 4000, 'time_limit_seconds' => 600, 'completed_at' => null, 'attempt_no' => 1];
+        $closeBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $auditBuilder = new FakeQueryBuilder();
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($session)),
+            $closeBuilder,
+            $auditBuilder,
+        ]);
+        $service = $this->createService(db: $db);
+
+        $service->abortSession(77, 'alice');
+
+        $this->assertCount(3, $db->issuedBuilders, 'no further write after the timeout close');
+        $this->assertSame('update', $closeBuilder->operation);
+        $this->assertSame('exam_timeout_auto_complete', $auditBuilder->insertValues['event_key']['value']);
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: ?string}>
+     */
+    public static function deletableSessionProvider(): iterable {
+        yield 'training' => ['training', null];
+        yield 'course practice exam' => ['exam', TrainingService::EXAM_KIND_PRACTICE];
+        yield 'pool practice run' => ['exam', TrainingService::EXAM_KIND_POOL_PRACTICE];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('deletableSessionProvider')]
+    public function testAbortStillDeletesSessionsThatNeverCount(string $mode, ?string $examKind): void {
+        $session = ['id' => 5, 'pool_id' => 42, 'user_id' => 'alice', 'mode' => $mode, 'exam_kind' => $examKind,
+            'started_at' => time() - 60, 'time_limit_seconds' => null, 'completed_at' => null];
+        $answersDelete = new FakeQueryBuilder();
+        $sessionDelete = new FakeQueryBuilder();
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($session)),
+            $answersDelete,
+            $sessionDelete,
+        ]);
+        $service = $this->createService(db: $db);
+
+        $service->abortSession(5, 'alice');
+
+        $this->assertSame(['delete', 'learning_user_answers'], [$answersDelete->operation, $answersDelete->table]);
+        $this->assertSame(['delete', 'learning_sessions'], [$sessionDelete->operation, $sessionDelete->table]);
+    }
+
+    /**
+     * Audit #168: a failing audit insert used to vanish without a trace. It is logged as an
+     * error — event and session only, never the context.
+     */
+    public function testFailingAuditInsertIsLogged(): void {
+        $session = ['id' => 77, 'pool_id' => 42, 'user_id' => 'alice', 'mode' => 'exam', 'exam_kind' => null,
+            'started_at' => time() - 60, 'time_limit_seconds' => 3600, 'completed_at' => null, 'attempt_no' => 2];
+        $failingAudit = new class extends FakeQueryBuilder {
+            public function executeStatement(): int {
+                throw new \RuntimeException('audit table unavailable, params: secret-context');
+            }
+        };
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($session)),
+            new FakeQueryBuilder(new FakeResult(), 1),
+            $failingAudit,
+        ]);
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error')->with(
+            $this->anything(),
+            $this->callback(function (array $context): bool {
+                $this->assertSame('exam_aborted', $context['event_key']);
+                $this->assertSame(77, $context['session_id']);
+                $this->assertStringNotContainsString('secret-context', (string)json_encode($context));
+                return true;
+            })
+        );
+        $service = $this->createService(db: $db, logger: $logger);
+
+        $service->abortSession(77, 'alice');
+    }
+
     private function createService(
         FakeDbConnection $db,
         ?QuestionMapper $questionMapper = null,
@@ -1384,7 +1543,8 @@ class TrainingServiceTest extends TestCase {
         ?XpService $xpService = null,
         ?FakeCacheFactory $cacheFactory = null,
         ?CourseService $courseService = null,
-        ?VideoProgressService $videoProgressService = null
+        ?VideoProgressService $videoProgressService = null,
+        ?LoggerInterface $logger = null
     ): TrainingService {
         $questionMapper ??= $this->createMock(QuestionMapper::class);
         $answerMapper ??= $this->createMock(AnswerMapper::class);
@@ -1396,7 +1556,7 @@ class TrainingServiceTest extends TestCase {
         $cacheFactory ??= new FakeCacheFactory();
         $translationService = $this->createMock(TranslationService::class);
         $config = $this->createMock(IConfig::class);
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger ??= $this->createMock(LoggerInterface::class);
         if ($courseService === null) {
             $courseService = $this->createMock(CourseService::class);
             // Default: the pool belongs to no gated course (the gate-bypass lookup returns empty).
