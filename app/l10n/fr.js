@@ -3411,7 +3411,7 @@ OC.L10N.register(
     "Consulting" : "Conseil",
     "Theorie" : "Théorie",
     "Systeme" : "Systèmes",
-    "Kosmos" : "Cosmos",
+    "Kosmos" : "Univers",
     "Lernassistentin" : "Assistante d'apprentissage",
     "Architect" : "Architecte",
     "Incident Responder" : "Réponse aux incidents",
