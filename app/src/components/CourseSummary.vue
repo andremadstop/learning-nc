@@ -130,8 +130,9 @@
 				{{ t('learning', 'Snapshot gespeichert.') }}
 			</div>
 
-			<div class="summary-grid">
-				<div class="widget-card mastery-card">
+			<div class="summary-grid" :class="{ 'grid--single': !leitnerEnabled }">
+				<!-- GitHub #36: box 5 only fills with Leitner -->
+				<div v-if="leitnerEnabled" class="widget-card mastery-card">
 					<p class="card-kicker">{{ t('learning', 'Meisterschaft') }}</p>
 					<div class="mastery-ring-shell">
 						<svg class="mastery-ring" viewBox="0 0 140 140" aria-hidden="true">
@@ -175,8 +176,9 @@
 				</div>
 			</div>
 
-			<div class="stats-grid">
-				<div class="widget-card stat-card">
+			<div class="stats-grid" :class="{ 'grid--single': !gamificationEnabled }">
+				<!-- GitHub #36: XP, streak and duels are gamification -->
+				<div v-if="gamificationEnabled" class="widget-card stat-card">
 					<p class="card-kicker">{{ t('learning', 'XP & Level') }}</p>
 					<div class="stat-value">{{ formatNumber(xp.total_xp) }} XP</div>
 					<div class="stat-meta">{{ t('learning', 'Level {n}', { n: xp.current_level || 1 }) }}</div>
@@ -186,20 +188,20 @@
 					<div class="stat-value">{{ formatNumber(sessions.total_sessions) }}</div>
 					<div class="stat-meta">{{ formatPercent(sessions.overall_accuracy) }} {{ t('learning', 'Genauigkeit') }}</div>
 				</div>
-				<div class="widget-card stat-card">
+				<div v-if="gamificationEnabled" class="widget-card stat-card">
 					<p class="card-kicker">{{ t('learning', 'Streak') }}</p>
 					<div class="stat-value">{{ formatNumber(streak.current_streak) }}</div>
 					<div class="stat-meta">{{ t('learning', 'Längster: {n}', { n: streak.longest_streak || 0 }) }}</div>
 				</div>
-				<div class="widget-card stat-card">
+				<div v-if="gamificationEnabled" class="widget-card stat-card">
 					<p class="card-kicker">{{ t('learning', 'Duell-Win-Rate') }}</p>
 					<div class="stat-value">{{ formatPercent(duels.win_rate) }}</div>
 					<div class="stat-meta">{{ t('learning', '{wins} von {total} gewonnen', { wins: duels.wins || 0, total: duels.total_duels || 0 }) }}</div>
 				</div>
 			</div>
 
-			<div class="detail-grid">
-				<div class="widget-card badge-card">
+			<div class="detail-grid" :class="{ 'grid--single': !gamificationEnabled }">
+				<div v-if="gamificationEnabled" class="widget-card badge-card">
 					<div class="detail-header">
 						<p class="card-kicker">{{ t('learning', 'Badge-Galerie') }}</p>
 						<span class="detail-count">{{ earnedBadges.length }}</span>
@@ -330,6 +332,12 @@ export default {
 			type: Object,
 			default: null,
 		},
+		// GitHub #36: the admin's global gamification switch. Off hides XP, level, streak,
+		// duels and badges, also in the Markdown export. Default on = as before.
+		gamificationEnabled: {
+			type: Boolean,
+			default: true,
+		},
 	},
 
 	data() {
@@ -356,6 +364,10 @@ export default {
 	},
 
 	computed: {
+		// GitHub #36: "mastered" means cards in Leitner box 5; without Leitner it stays at 0 %.
+		leitnerEnabled() {
+			return this.course?.mode_config?.leitner !== false
+		},
 		mastery() {
 			return this.summary?.mastery || {}
 		},
@@ -636,7 +648,10 @@ export default {
 				return
 			}
 			const user = getCurrentUser()
-			exportMarkdown(this.summary, this.courseName || this.course?.name || '', user?.displayName || user?.uid || '')
+			exportMarkdown(this.summary, this.courseName || this.course?.name || '', user?.displayName || user?.uid || '', {
+				gamificationEnabled: this.gamificationEnabled,
+				leitnerEnabled: this.leitnerEnabled,
+			})
 		},
 
 		badgeLabel(badge) {
@@ -747,6 +762,13 @@ export default {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 16px;
+}
+
+/* GitHub #36: a grid left with one card (gamification or Leitner off) uses the full width */
+.summary-grid.grid--single,
+.detail-grid.grid--single,
+.stats-grid.grid--single {
+	grid-template-columns: minmax(0, 1fr);
 }
 
 .widget-card {

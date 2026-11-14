@@ -50,7 +50,7 @@ class ConsentRethrowTest extends TestCase {
         $service = $this->getMockBuilder(CourseSummaryService::class)
             ->setConstructorArgs([new FakeDbConnection(), $this->createMock(CourseMemberMapper::class),
                 $this->createMock(BadgeService::class), $this->createMock(StreakService::class),
-                $this->createMock(RagChunkMapper::class), $this->gemini, $this->createMock(UserTelosMapper::class)])
+                $this->createMock(RagChunkMapper::class), $this->gemini])
             ->onlyMethods(['getSnapshot', 'getStudentSummary'])
             ->getMock();
         $service->method('getSnapshot')->willReturn(null);

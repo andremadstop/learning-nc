@@ -95,6 +95,10 @@ final class FakeExpressionBuilder {
         return ['type' => 'like', 'left' => $left, 'right' => $right];
     }
 
+    public function notLike(mixed $left, mixed $right): array {
+        return ['type' => 'notLike', 'left' => $left, 'right' => $right];
+    }
+
     public function iLike(mixed $left, mixed $right): array {
         return ['type' => 'iLike', 'left' => $left, 'right' => $right];
     }

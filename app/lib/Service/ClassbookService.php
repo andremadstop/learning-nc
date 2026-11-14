@@ -25,6 +25,7 @@ class ClassbookService {
     private KudosMapper $kudosMapper;
     private IDBConnection $db;
     private IUserManager $userManager;
+    private ?XpService $xpService;
 
     public function __construct(
         CourseService $courseService,
@@ -33,7 +34,8 @@ class ClassbookService {
         UserTelosMapper $userTelosMapper,
         KudosMapper $kudosMapper,
         IDBConnection $db,
-        IUserManager $userManager
+        IUserManager $userManager,
+        ?XpService $xpService = null
     ) {
         $this->courseService = $courseService;
         $this->courseMemberMapper = $courseMemberMapper;
@@ -42,6 +44,7 @@ class ClassbookService {
         $this->kudosMapper = $kudosMapper;
         $this->db = $db;
         $this->userManager = $userManager;
+        $this->xpService = $xpService;
     }
 
     /**
@@ -65,6 +68,10 @@ class ClassbookService {
         $topPoolProgressMap = $this->getTopPoolProgress($courseId, $memberIds);
         $kudosCounts = $this->kudosMapper->countReceivedByCourseAndUsers($courseId, $memberIds);
 
+        // GitHub #36: with gamification off the stored level and XP are frozen old values; they
+        // are not handed out at all then (the classbook shows no level).
+        $gamificationEnabled = $this->xpService === null || $this->xpService->isGamificationEnabled();
+
         $profiles = [];
         foreach ($memberIds as $uid) {
             $telos = $telosMap[$uid] ?? null;
@@ -79,7 +86,7 @@ class ClassbookService {
             $user = $this->userManager->get($uid);
             $superpower = $this->resolveSuperpower($telos, $topPoolProgressMap[$uid] ?? null);
 
-            $profiles[] = [
+            $profile = [
                 'user_id' => $uid,
                 'display_name' => $user ? $user->getDisplayName() : $uid,
                 'role' => $role,
@@ -95,6 +102,10 @@ class ClassbookService {
                 'kudos_received_count' => (int)($kudosCounts[$uid] ?? 0),
                 'is_self' => $uid === $viewerId,
             ];
+            if (!$gamificationEnabled) {
+                unset($profile['level'], $profile['xp']);
+            }
+            $profiles[] = $profile;
         }
 
         usort($profiles, static function (array $left, array $right): int {

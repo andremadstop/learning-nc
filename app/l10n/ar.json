@@ -3497,6 +3497,7 @@
         "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "تظهر هنا الأسئلة حول هذه الدورة التي يرسلها إليك المتعلمون عبر مساعد المساعدة VirtuProf.",
         "Die Ankündigung konnte nicht veröffentlicht werden.": "تعذّر نشر الإعلان.",
         "Die Fragen von Lernenden konnten nicht geladen werden.": "تعذّر تحميل أسئلة المتعلمين.",
-        "Die Antwort konnte nicht gesendet werden.": "تعذّر إرسال الإجابة."
+        "Die Antwort konnte nicht gesendet werden.": "تعذّر إرسال الإجابة.",
+        "Genauigkeit pro Pool": "الدقة لكل مجموعة"
     }
 }

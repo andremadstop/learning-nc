@@ -3497,6 +3497,7 @@
         "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "Les questions sur ce cours que les apprenants vous envoient via l’assistant d’aide VirtuProf apparaissent ici.",
         "Die Ankündigung konnte nicht veröffentlicht werden.": "L’annonce n’a pas pu être publiée.",
         "Die Fragen von Lernenden konnten nicht geladen werden.": "Les questions des apprenants n’ont pas pu être chargées.",
-        "Die Antwort konnte nicht gesendet werden.": "La réponse n’a pas pu être envoyée."
+        "Die Antwort konnte nicht gesendet werden.": "La réponse n’a pas pu être envoyée.",
+        "Genauigkeit pro Pool": "Précision par pool"
     }
 }

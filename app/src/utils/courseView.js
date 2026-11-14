@@ -62,3 +62,32 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
 	if (hasCourseTools) tabs.push('tools')
 	return tabs
 }
+
+/**
+ * The leaf tabs of the Wettbewerb (competition) area, in display order. CourseDetail (routing,
+ * whether the mega-tab shows at all) and CourseTabWettbewerb (the sub-navigation) both read
+ * this list (GitHub #36).
+ *
+ * Learners only see what the course offers. The leaderboard ranks by XP and level, so it is
+ * left out when the admin switched gamification off; the other modes have their own course
+ * switches. Instructors keep every leaf.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {object} options
+ * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
+ * @param {boolean} options.gamificationEnabled - the admin's global switch; anything but false counts as on
+ * @return {string[]}
+ */
+export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificationEnabled = true } = {}) {
+	if (actsAsInstructor) {
+		return ['leaderboard', 'league', 'arena', 'abenteuer']
+	}
+	const modeConfig = course?.mode_config || {}
+	const enabled = (key) => modeConfig[key] !== false
+	const tabs = []
+	if (gamificationEnabled !== false) tabs.push('leaderboard')
+	if (enabled('league')) tabs.push('league')
+	if (enabled('duel') || enabled('gameshow')) tabs.push('arena')
+	if (enabled('abenteuer')) tabs.push('abenteuer')
+	return tabs
+}

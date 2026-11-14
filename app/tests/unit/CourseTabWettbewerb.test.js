@@ -69,7 +69,6 @@ function createInstance(overrides = {}) {
 	Object.defineProperties(instance, {
 		isInstructor: { get: () => CourseTabWettbewerb.computed.isInstructor.call(instance) },
 		visibleSubTabs: { get: () => CourseTabWettbewerb.computed.visibleSubTabs.call(instance) },
-		hasEnabledArenaModes: { get: () => CourseTabWettbewerb.computed.hasEnabledArenaModes.call(instance) },
 	})
 
 	for (const [name, fn] of Object.entries(CourseTabWettbewerb.methods || {})) {

@@ -3497,6 +3497,7 @@
         "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "Тут з’являються питання щодо цього курсу, які учні надсилають вам через помічника VirtuProf.",
         "Die Ankündigung konnte nicht veröffentlicht werden.": "Не вдалося опублікувати оголошення.",
         "Die Fragen von Lernenden konnten nicht geladen werden.": "Не вдалося завантажити питання учнів.",
-        "Die Antwort konnte nicht gesendet werden.": "Не вдалося надіслати відповідь."
+        "Die Antwort konnte nicht gesendet werden.": "Не вдалося надіслати відповідь.",
+        "Genauigkeit pro Pool": "Точність за пулом"
     }
 }

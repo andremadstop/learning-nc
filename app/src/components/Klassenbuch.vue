@@ -66,7 +66,7 @@
 							<strong>{{ profile.display_name }}</strong>
 							<span class="role-pill" :class="profile.role">{{ roleLabel(profile.role) }}</span>
 						</div>
-						<div class="squad-level">
+						<div v-if="gamificationEnabled" class="squad-level">
 							{{ t('learning', 'Level {level}', { level: profile.level || 1 }) }}
 						</div>
 					</div>
@@ -125,6 +125,12 @@ export default {
 		userRole: {
 			type: String,
 			default: 'student',
+		},
+		// GitHub #36: the admin's global gamification switch; off hides the level (the server
+		// then sends none either). Default on = as before.
+		gamificationEnabled: {
+			type: Boolean,
+			default: true,
 		},
 	},
 

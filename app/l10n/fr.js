@@ -3498,5 +3498,6 @@ OC.L10N.register(
     "Die Ankündigung konnte nicht veröffentlicht werden." : "L’annonce n’a pas pu être publiée.",
     "Die Fragen von Lernenden konnten nicht geladen werden." : "Les questions des apprenants n’ont pas pu être chargées.",
     "Die Antwort konnte nicht gesendet werden." : "La réponse n’a pas pu être envoyée.",
+    "Genauigkeit pro Pool" : "Précision par pool",
 },
 "nplurals=2; plural=(n > 1);");

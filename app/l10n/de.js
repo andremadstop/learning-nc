@@ -3498,5 +3498,6 @@ OC.L10N.register(
     "Die Ankündigung konnte nicht veröffentlicht werden." : "Die Ankündigung konnte nicht veröffentlicht werden.",
     "Die Fragen von Lernenden konnten nicht geladen werden." : "Die Fragen von Lernenden konnten nicht geladen werden.",
     "Die Antwort konnte nicht gesendet werden." : "Die Antwort konnte nicht gesendet werden.",
+    "Genauigkeit pro Pool" : "Genauigkeit pro Pool",
 },
 "nplurals=2; plural=(n != 1);");

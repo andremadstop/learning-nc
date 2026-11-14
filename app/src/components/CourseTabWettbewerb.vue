@@ -12,7 +12,7 @@
 		</div>
 
 		<!-- Leaderboard -->
-		<div v-if="currentSubTab === 'leaderboard'" class="leaderboard-section">
+		<div v-if="currentSubTab === 'leaderboard' && hasLeaderboard" class="leaderboard-section">
 			<div class="section-header">
 				<h4>{{ t('learning', 'Rangliste') }}</h4>
 				<div class="leaderboard-header-actions">
@@ -45,13 +45,13 @@
 								{{ t('learning', 'Studierende/r') }}
 								<span v-if="leaderboardSortKey === 'user_id'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
-							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="leaderboardSortKey === 'current_level' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setLeaderboardSort('current_level')" @keydown.enter="setLeaderboardSort('current_level')" @keydown.space.prevent="setLeaderboardSort('current_level')">
 								{{ t('learning', 'Level') }}
 								<span v-if="leaderboardSortKey === 'current_level'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
-							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="leaderboardSortKey === 'total_xp' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setLeaderboardSort('total_xp')" @keydown.enter="setLeaderboardSort('total_xp')" @keydown.space.prevent="setLeaderboardSort('total_xp')">
 								{{ t('learning', 'XP') }}
@@ -64,7 +64,7 @@
 								<span v-if="leaderboardSortKey === 'total_mastered'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
 							<template v-if="isInstructor">
-								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+								<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 									:aria-sort="leaderboardSortKey === 'current_streak' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
 									@click="setLeaderboardSort('current_streak')" @keydown.enter="setLeaderboardSort('current_streak')" @keydown.space.prevent="setLeaderboardSort('current_streak')">
 									{{ t('learning', 'Streak') }}
@@ -90,15 +90,17 @@
 								<span v-else>{{ entry.rank }}</span>
 							</td>
 							<td class="student-col">{{ entry.display_name }}</td>
-							<td class="stat-col">
-								<span class="level-pill" :class="levelClass(entry.current_level)">
-									Lv.{{ entry.current_level || 1 }}
-								</span>
-							</td>
-							<td class="stat-col">{{ Number(entry.total_xp || 0).toLocaleString() }}</td>
+							<template v-if="gamificationEnabled">
+								<td class="stat-col">
+									<span class="level-pill" :class="levelClass(entry.current_level)">
+										Lv.{{ entry.current_level || 1 }}
+									</span>
+								</td>
+								<td class="stat-col">{{ Number(entry.total_xp || 0).toLocaleString() }}</td>
+							</template>
 							<td class="stat-col">{{ entry.total_mastered || 0 }}</td>
 							<template v-if="isInstructor">
-								<td class="stat-col">
+								<td v-if="gamificationEnabled" class="stat-col">
 									<span v-if="entry.current_streak > 0" class="streak-pill"><span v-for="i in Math.min(entry.current_streak, 3)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.1) + 's' }">&#x1F525;</span> {{ entry.current_streak }}d</span>
 									<span v-else>&mdash;</span>
 								</td>
@@ -201,6 +203,7 @@ import ArenaSelector from './ArenaSelector.vue'
 import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
+import { wettbewerbTabIds } from '../utils/courseView.js'
 
 export default {
 	name: 'CourseTabWettbewerb',
@@ -226,6 +229,8 @@ export default {
 		activeTab: { type: String, default: '' },
 		contentLanguage: { type: String, default: '' },
 		presetDuelCode: { type: String, default: '' },
+		// GitHub #36: the admin's global gamification switch; without it learners get no leaderboard.
+		gamificationEnabled: { type: Boolean, default: true },
 	},
 
 	data() {
@@ -236,7 +241,10 @@ export default {
 			leaderboardLoading: false,
 			leaderboardData: [],
 			myRank: null,
-			leaderboardSortKey: 'total_xp',
+			// GitHub #36: without gamification the ranking goes by mastered cards (sessions without Leitner).
+			leaderboardSortKey: this.gamificationEnabled !== false
+				? 'total_xp'
+				: (this.course?.mode_config?.leitner === false ? 'total_sessions' : 'total_mastered'),
 			leaderboardSortAsc: false,
 			leaderboardPageSize: 25,
 			leaderboardActiveOnly: false,
@@ -261,27 +269,21 @@ export default {
 			const user = getCurrentUser()
 			return user ? user.uid : null
 		},
-		hasEnabledArenaModes() {
-			const mc = this.course?.mode_config || {}
-			const enabled = (key) => mc[key] !== false
-			return enabled('duel') || enabled('gameshow')
+		hasLeaderboard() {
+			return this.visibleSubTabs.some((tab) => tab.id === 'leaderboard')
 		},
+		// GitHub #36: the same list CourseDetail routes with (utils/courseView.js).
 		visibleSubTabs() {
-			const mc = this.course?.mode_config || {}
-			const enabled = (key) => mc[key] !== false
-			const tabs = [
-				{ id: 'leaderboard', label: t('learning', 'Rangliste') },
-			]
-			if (this.isInstructor || enabled('league')) {
-				tabs.push({ id: 'league', label: t('learning', 'Liga') })
+			const labels = {
+				leaderboard: t('learning', 'Rangliste'),
+				league: t('learning', 'Liga'),
+				arena: t('learning', 'Arena'),
+				abenteuer: t('learning', 'Abenteuer'),
 			}
-			if (this.isInstructor || this.hasEnabledArenaModes) {
-				tabs.push({ id: 'arena', label: t('learning', 'Arena') })
-			}
-			if (this.isInstructor || enabled('abenteuer')) {
-				tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
-			}
-			return tabs
+			return wettbewerbTabIds(this.course, {
+				actsAsInstructor: this.isInstructor,
+				gamificationEnabled: this.gamificationEnabled,
+			}).map((id) => ({ id, label: labels[id] }))
 		},
 		sortedLeaderboardData() {
 			return this.leaderboardData
@@ -329,6 +331,10 @@ export default {
 			if (leafTabs.includes(tab)) {
 				this.currentSubTab = tab
 				this.lazyLoad(tab)
+			} else if (!leafTabs.includes(this.currentSubTab) && leafTabs.length > 0) {
+				// GitHub #36: the leaderboard default must not render when it is hidden.
+				this.currentSubTab = leafTabs[0]
+				this.lazyLoad(this.currentSubTab)
 			}
 		},
 		lazyLoad(tab) {
@@ -397,7 +403,7 @@ export default {
 					params: {
 						limit: this.leaderboardMeta.limit || this.leaderboardPageSize,
 						offset: this.leaderboardMeta.offset || 0,
-						sortKey: this.leaderboardSortKey || 'total_xp',
+						sortKey: this.leaderboardSortKey || (this.gamificationEnabled !== false ? 'total_xp' : 'total_mastered'),
 						sortDir: this.leaderboardSortAsc ? 'asc' : 'desc',
 						activeOnly: this.leaderboardActiveOnly ? 1 : 0,
 						activeWithinDays: this.leaderboardActiveDays,

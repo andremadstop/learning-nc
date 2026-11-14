@@ -316,6 +316,7 @@
               v-else-if="selectedStudent"
               :courseId="selectedStudent.courseId"
               :studentId="selectedStudent.userId"
+              :gamification-enabled="gamificationEnabled"
               @back="selectedStudent = null"
             />
 
@@ -326,6 +327,7 @@
               :student-view-active="studentViewActive"
               :contentLanguage="contentLanguage"
               :fsrsDetailedStats="fsrsDetailedStats"
+              :gamification-enabled="gamificationEnabled"
               :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
               @back="selectedCourse = null"
               @openPool="openPoolFromCourse"
@@ -531,6 +533,9 @@ export default {
       previousMainView: 'courses',
       enabledTools: [...ALL_TOOL_IDS],
       contentLanguage: '',
+      // GitHub #36: the admin's global gamification switch (GET /api/settings/personal). The one
+      // copy in the frontend, handed down as a prop. Unknown counts as on, the old behaviour.
+      gamificationEnabled: true,
       fsrsDetailedStats: false,
       virtuProfEnabled: true,
       appInitialized: false,
@@ -742,6 +747,7 @@ export default {
         this.fsrsDetailedStats = (response.data?.fsrs_detailed_stats || 'no') === 'yes';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
         this.onboardingAcknowledged = response.data?.onboarding_acknowledged === 'yes';
+        this.gamificationEnabled = response.data?.gamification_enabled !== false;
         // "Ruhige Darstellung": hydrate the a11y store on every page load. PersonalSettings.vue
         // does this too, but renders only on the settings route — without this line the avatars
         // animated again after each reload until Settings was opened.
@@ -750,6 +756,7 @@ export default {
         this.contentLanguage = '';
         this.fsrsDetailedStats = false;
         this.virtuProfEnabled = true;
+        this.gamificationEnabled = true;
         // Codeberg #5: a failed load must SUPPRESS the onboarding, never force it. Showing it
         // again is the complaint; a server hiccup is no reason to inflict it on someone.
         this.onboardingAcknowledged = true;

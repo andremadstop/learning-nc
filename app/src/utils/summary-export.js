@@ -37,9 +37,13 @@ function badgeLabel(badge) {
  * @param {object} summary - Response from GET /api/courses/{courseId}/summary
  * @param {string} courseName
  * @param {string} userName
+ * @param {object} [options]
+ * @param {boolean} [options.gamificationEnabled] - false leaves out XP, level, streak, badges and duels (GitHub #36)
+ * @param {boolean} [options.leitnerEnabled] - false leaves out the mastery (cards in Leitner box 5)
  * @returns {string} Markdown content
  */
-export function summaryToMarkdown(summary, courseName, userName) {
+export function summaryToMarkdown(summary, courseName, userName, { gamificationEnabled = true, leitnerEnabled = true } = {}) {
+	const gamification = gamificationEnabled !== false
 	const lines = []
 	const date = formatDate(new Date())
 
@@ -48,10 +52,12 @@ export function summaryToMarkdown(summary, courseName, userName) {
 	lines.push('')
 
 	// Mastery
-	const m = summary.mastery || {}
-	lines.push(`## ${t('learning', 'Wissensstand')}`)
-	lines.push(`- ${t('learning', 'Gemeistert')}: **${m.total_mastered || 0}** / ${m.total_questions || 0} (${m.mastery_rate || 0}%)`)
-	lines.push('')
+	if (leitnerEnabled !== false) {
+		const m = summary.mastery || {}
+		lines.push(`## ${t('learning', 'Wissensstand')}`)
+		lines.push(`- ${t('learning', 'Gemeistert')}: **${m.total_mastered || 0}** / ${m.total_questions || 0} (${m.mastery_rate || 0}%)`)
+		lines.push('')
+	}
 
 	// Sessions
 	const s = summary.sessions || {}
@@ -62,15 +68,17 @@ export function summaryToMarkdown(summary, courseName, userName) {
 	lines.push('')
 
 	// XP & Level
-	const x = summary.xp || {}
-	lines.push(`## ${t('learning', 'Fortschritt')}`)
-	lines.push(`- **${x.total_xp || 0} XP** — Level ${x.current_level || 1}`)
-	lines.push(`- ${t('learning', 'Streak')}: ${x.current_streak || 0} ${t('learning', 'Tage')}`)
-	lines.push('')
+	if (gamification) {
+		const x = summary.xp || {}
+		lines.push(`## ${t('learning', 'Fortschritt')}`)
+		lines.push(`- **${x.total_xp || 0} XP** — Level ${x.current_level || 1}`)
+		lines.push(`- ${t('learning', 'Streak')}: ${x.current_streak || 0} ${t('learning', 'Tage')}`)
+		lines.push('')
+	}
 
 	// Badges
 	// The summary lists every badge with an earned flag; only the earned ones belong here.
-	const badges = (summary.badges || []).filter((b) => b.earned)
+	const badges = gamification ? (summary.badges || []).filter((b) => b.earned) : []
 	if (badges.length > 0) {
 		lines.push(`## ${t('learning', 'Abzeichen')} (${badges.length})`)
 		for (const b of badges) {
@@ -82,7 +90,7 @@ export function summaryToMarkdown(summary, courseName, userName) {
 
 	// Duels
 	const d = summary.duels || {}
-	if (d.total_duels > 0) {
+	if (gamification && d.total_duels > 0) {
 		lines.push(`## ${t('learning', 'Duelle')}`)
 		lines.push(`- ${d.wins || 0} / ${d.total_duels} ${t('learning', 'gewonnen')} (${d.win_rate || 0}%)`)
 		lines.push('')
@@ -108,7 +116,7 @@ export function summaryToMarkdown(summary, courseName, userName) {
 
 	// Streak details
 	const st = summary.streak || {}
-	if (st.longest_streak > 0) {
+	if (gamification && st.longest_streak > 0) {
 		lines.push(`## ${t('learning', 'Streak-Details')}`)
 		lines.push(`- ${t('learning', 'Längster Streak')}: ${st.longest_streak} ${t('learning', 'Tage')}`)
 		if (st.freeze_tokens > 0) {
@@ -144,8 +152,8 @@ export function downloadFile(content, filename, mimeType = 'text/plain') {
 /**
  * Export summary as Markdown file.
  */
-export function exportMarkdown(summary, courseName, userName) {
-	const md = summaryToMarkdown(summary, courseName, userName)
+export function exportMarkdown(summary, courseName, userName, options = {}) {
+	const md = summaryToMarkdown(summary, courseName, userName, options)
 	const safeName = courseName.replace(/[^a-zA-Z0-9_-]/g, '_')
 	downloadFile(md, `Kursabschluss_${safeName}.md`, 'text/markdown')
 }

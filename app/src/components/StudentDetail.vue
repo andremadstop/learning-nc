@@ -21,7 +21,7 @@
 						<span class="student-avatar">{{ (data.display_name || data.user_id).charAt(0).toUpperCase() }}</span>
 						<h3 class="student-name">{{ data.display_name || data.user_id }}</h3>
 					</div>
-					<div class="student-header-badges">
+					<div v-if="gamificationEnabled" class="student-header-badges">
 						<span class="level-pill" :class="levelClass(data.xp.level)">
 							Lv.{{ data.xp.level }}
 						</span>
@@ -30,21 +30,21 @@
 						</span>
 					</div>
 				</div>
-				<div class="xp-bar-container">
+				<div v-if="gamificationEnabled" class="xp-bar-container">
 					<div class="xp-bar-fill" :style="{ width: data.xp.level_progress_pct + '%' }" />
 				</div>
 				<div class="xp-bar-labels">
-					<span>{{ Number(data.xp.total_xp).toLocaleString() }} / {{ Number(data.xp.total_xp + data.xp.xp_to_next_level - data.xp.xp_in_level).toLocaleString() }} XP</span>
-					<span>{{ data.stats.total_sessions }} {{ t('learning', 'Sessions') }} &middot; {{ data.stats.total_mastered }} {{ t('learning', 'Mastered') }}</span>
+					<span v-if="gamificationEnabled">{{ Number(data.xp.total_xp).toLocaleString() }} / {{ Number(data.xp.total_xp + data.xp.xp_to_next_level - data.xp.xp_in_level).toLocaleString() }} XP</span>
+					<span>{{ data.stats.total_sessions }} {{ t('learning', 'Sessions') }}<template v-if="leitnerEnabled"> &middot; {{ data.stats.total_mastered }} {{ t('learning', 'Mastered') }}</template></span>
 				</div>
 				<div class="student-meta">
 					{{ t('learning', 'Enrolled {date}', { date: formatDate(data.stats.enrolled_at) }) }}
-					<span v-if="data.streak.last_activity_date"> &middot; {{ t('learning', 'Last active: {date}', { date: formatLastActive(data.streak.last_activity_date) }) }}</span>
+					<span v-if="lastActiveDate"> &middot; {{ t('learning', 'Last active: {date}', { date: formatLastActive(lastActiveDate) }) }}</span>
 				</div>
 			</div>
 
-			<!-- Badges section -->
-			<div class="student-section">
+			<!-- Badges section (GitHub #36: not with gamification off, none is ever awarded then) -->
+			<div v-if="gamificationEnabled" class="student-section">
 				<div class="badge-section-head">
 					<p class="section-label">{{ t('learning', 'Badges ({earned}/{total})', { earned: earnedActiveBadgeCount, total: activeBadges.length }) }}</p>
 					<button
@@ -101,7 +101,7 @@
 			</div>
 
 			<!-- Leitner boxes per pool -->
-			<div class="student-section">
+			<div v-if="leitnerEnabled" class="student-section">
 				<p class="section-label">{{ t('learning', 'Leitner Boxes per Pool') }}</p>
 				<div v-if="data.pools.length > 0" class="pool-boxes-list">
 					<div v-for="pool in data.pools" :key="pool.pool_id" class="pool-box-card">
@@ -124,6 +124,17 @@
 					</div>
 				</div>
 				<p v-else class="empty-hint">{{ t('learning', 'No Leitner data for this student in course pools.') }}</p>
+			</div>
+
+			<!-- GitHub #36: without Leitner the boxes stay empty; what is left per pool is the accuracy -->
+			<div v-else-if="data.pools.length > 0" class="student-section pool-accuracy-section">
+				<p class="section-label">{{ t('learning', 'Genauigkeit pro Pool') }}</p>
+				<ul class="pool-accuracy-list">
+					<li v-for="pool in data.pools" :key="pool.pool_id" class="pool-accuracy-item">
+						<span class="pool-box-name">{{ pool.pool_name }}</span>
+						<span class="pool-accuracy-value">{{ pool.accuracy }}% {{ t('learning', 'accuracy') }}</span>
+					</li>
+				</ul>
 			</div>
 
 			<!-- Recent sessions -->
@@ -171,6 +182,12 @@ export default {
 			type: String,
 			required: true,
 		},
+		// GitHub #36: the admin's global gamification switch (App.vue). Off hides XP, level,
+		// streak and badges; default on = as before.
+		gamificationEnabled: {
+			type: Boolean,
+			default: true,
+		},
 	},
 
 	data() {
@@ -183,6 +200,14 @@ export default {
 	},
 
 	computed: {
+		// The course's Leitner switch, sent by the server (the instructor drill-down has no course).
+		leitnerEnabled() {
+			return this.data?.leitner_enabled !== false
+		},
+		// GitHub #36: the last completed session; the streak's date is empty with gamification off.
+		lastActiveDate() {
+			return this.data?.stats?.last_activity_date || this.data?.streak?.last_activity_date || null
+		},
 		activeBadges() {
 			return this.sortBadges((this.data?.badges || []).filter((badge) => !badge.legacy))
 		},
@@ -700,6 +725,31 @@ export default {
 .pool-box-footer {
 	font-size: 0.8em;
 	color: var(--color-text-maxcontrast);
+}
+
+/* GitHub #36: accuracy per pool when the course has no Leitner */
+.pool-accuracy-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.pool-accuracy-item {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 12px;
+	border-radius: var(--border-radius-large, 8px);
+	background: var(--color-background-hover);
+}
+
+.pool-accuracy-value {
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+	white-space: nowrap;
 }
 
 /* Session list */

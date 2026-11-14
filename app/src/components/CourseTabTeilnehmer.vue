@@ -13,7 +13,7 @@
 
 		<div v-if="currentSubTab === 'classbook'" class="classbook-section">
 			<!-- GitHub #35: the role inside this course (kudos are a student action), not the global one. -->
-			<Klassenbuch :course-id="courseId" :user-role="isInstructor ? 'instructor' : 'student'" />
+			<Klassenbuch :course-id="courseId" :user-role="isInstructor ? 'instructor' : 'student'" :gamification-enabled="gamificationEnabled" />
 		</div>
 
 		<!-- Members (instructor only) -->
@@ -128,13 +128,13 @@
 								{{ t('learning', 'Student') }}
 								<span v-if="progressSortKey === 'user_id'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
-							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="progressSortKey === 'current_level' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setProgressSort('current_level')" @keydown.enter="setProgressSort('current_level')" @keydown.space.prevent="setProgressSort('current_level')">
 								{{ t('learning', 'Level') }}
 								<span v-if="progressSortKey === 'current_level'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
-							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="progressSortKey === 'total_xp' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setProgressSort('total_xp')" @keydown.enter="setProgressSort('total_xp')" @keydown.space.prevent="setProgressSort('total_xp')">
 								{{ t('learning', 'XP') }}
@@ -171,12 +171,14 @@
 							class="clickable-row"
 							@click="$emit('selectStudent', { userId: row.user_id, courseId: courseId })">
 							<td class="student-col">{{ row.display_name || row.user_id }}</td>
-							<td class="stat-col">
-								<span class="level-pill" :class="levelClass(row.current_level)">
-									Lv.{{ row.current_level || 1 }}
-								</span>
-							</td>
-							<td class="stat-col">{{ formatXp(row.total_xp) }}</td>
+							<template v-if="gamificationEnabled">
+								<td class="stat-col">
+									<span class="level-pill" :class="levelClass(row.current_level)">
+										Lv.{{ row.current_level || 1 }}
+									</span>
+								</td>
+								<td class="stat-col">{{ formatXp(row.total_xp) }}</td>
+							</template>
 							<td class="stat-col critical-cards-col">
 								<span class="critical-cards-pill" :class="criticalCardsClass(row.critical_cards_count)">
 									{{ row.critical_cards_count || 0 }}
@@ -377,6 +379,7 @@
 			<StudentDetail
 				:courseId="courseId"
 				:studentId="myUserId"
+				:gamification-enabled="gamificationEnabled"
 				@back="$emit('tab-change', 'training')" />
 		</div>
 
@@ -385,7 +388,8 @@
 			<CourseSummary
 				:courseId="courseId"
 				:courseName="course?.title || ''"
-				:course="course" />
+				:course="course"
+				:gamification-enabled="gamificationEnabled" />
 		</div>
 
 		<div v-if="currentSubTab === 'summary' && isInstructor" class="summary-section">
@@ -537,6 +541,8 @@ export default {
 		courseMembers: { type: Array, default: () => [] },
 		coursePools: { type: Array, default: () => [] },
 		activeTab: { type: String, default: '' },
+		// GitHub #36: the admin's global gamification switch (App.vue → CourseDetail). Default on.
+		gamificationEnabled: { type: Boolean, default: true },
 	},
 
 	data() {
@@ -552,8 +558,9 @@ export default {
 			// Progress
 			progressLoading: false,
 			progressData: [],
-			progressSortKey: 'total_xp',
-			progressSortAsc: false,
+			// GitHub #36: without gamification XP and level are hidden; the table sorts by name.
+			progressSortKey: this.gamificationEnabled !== false ? 'total_xp' : 'user_id',
+			progressSortAsc: this.gamificationEnabled === false,
 			progressPageSize: 25,
 			progressMeta: {
 				total: 0,
@@ -845,7 +852,7 @@ export default {
 					params: {
 						limit: this.progressMeta.limit || this.progressPageSize,
 						offset: this.progressMeta.offset || 0,
-						sortKey: this.progressSortKey || 'total_xp',
+						sortKey: this.progressSortKey || (this.gamificationEnabled !== false ? 'total_xp' : 'user_id'),
 						sortDir: this.progressSortAsc ? 'asc' : 'desc',
 					},
 				})

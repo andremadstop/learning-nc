@@ -101,7 +101,6 @@ function createInstance(overrides = {}) {
 		verwaltungLeafTabs: { get: () => CourseDetail.computed.verwaltungLeafTabs.call(instance) },
 		visibleMegaTabs: { get: () => CourseDetail.computed.visibleMegaTabs.call(instance) },
 		visibleTabs: { get: () => CourseDetail.computed.visibleTabs.call(instance) },
-		hasEnabledArenaModes: { get: () => CourseDetail.computed.hasEnabledArenaModes.call(instance) },
 	})
 
 	for (const [name, fn] of Object.entries(CourseDetail.methods || {})) {

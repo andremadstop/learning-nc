@@ -86,6 +86,7 @@
 				:course-members="courseMembers"
 				:course-pools="coursePools"
 				:active-tab="currentTab"
+				:gamification-enabled="gamificationEnabled"
 				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@members-changed="fetchCourseDetail"
@@ -101,6 +102,7 @@
 				:active-tab="currentTab"
 				:content-language="contentLanguage"
 				:preset-duel-code="presetDuelCode"
+				:gamification-enabled="gamificationEnabled"
 				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@arena-sub-mode="arenaSubMode = $event"
@@ -152,7 +154,12 @@ import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
 import { shouldShowCompletionTab } from '../utils/cert-report.js'
-import { actsAsCourseInstructor, lernraumTabIds } from '../utils/courseView.js'
+import { actsAsCourseInstructor, lernraumTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+
+// Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
+// falls back to the Lernraum (GitHub #36).
+const WETTBEWERB_LEAVES = ['leaderboard', 'league', 'arena', 'abenteuer']
+const MEGA_TAB_IDS = ['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation', 'verwaltung']
 
 export default {
 	name: 'CourseDetail',
@@ -197,6 +204,11 @@ export default {
 		studentViewActive: {
 			type: Boolean,
 			default: false,
+		},
+		// GitHub #36: the admin's global gamification switch (App.vue). Default on = as before.
+		gamificationEnabled: {
+			type: Boolean,
+			default: true,
 		},
 	},
 
@@ -283,17 +295,12 @@ export default {
 				aiEnabled: this.adminAiEnabled,
 			})
 		},
+		// Same list as the Wettbewerb sub-navigation (one helper, GitHub #36).
 		wettbewerbLeafTabs() {
-			const mc = this.course?.mode_config || {}
-			const enabled = (key) => mc[key] !== false
-			if (this.isInstructor) {
-				return ['leaderboard', 'league', 'arena', 'abenteuer']
-			}
-			const tabs = ['leaderboard']
-			if (enabled('league')) tabs.push('league')
-			if (this.hasEnabledArenaModes) tabs.push('arena')
-			if (enabled('abenteuer')) tabs.push('abenteuer')
-			return tabs
+			return wettbewerbTabIds(this.course, {
+				actsAsInstructor: this.isInstructor,
+				gamificationEnabled: this.gamificationEnabled,
+			})
 		},
 		teilnehmerLeafTabs() {
 			if (this.isInstructor) {
@@ -305,11 +312,6 @@ export default {
 			if (shouldShowCompletionTab(this.course)) tabs.push('summary')
 			return tabs
 		},
-		hasEnabledArenaModes() {
-			const mc = this.course?.mode_config || {}
-			const enabled = (key) => mc[key] !== false
-			return enabled('duel') || enabled('gameshow')
-		},
 		visibleMegaTabs() {
 			if (this.isInstructor) {
 				return [
@@ -320,13 +322,17 @@ export default {
 					{ id: 'verwaltung', label: t('learning', 'Verwaltung') },
 				]
 			}
-			return [
+			const tabs = [
 				{ id: 'lernraum', label: t('learning', 'Lernraum') },
 				{ id: 'teilnehmer', label: t('learning', 'Teilnehmer') },
-				// Wettbewerb always visible (leaderboard is always enabled)
-				{ id: 'wettbewerb', label: t('learning', 'Wettbewerb') },
-				{ id: 'kommunikation', label: t('learning', 'Kommunikation') },
 			]
+			// GitHub #36: without gamification the leaderboard is gone; with league, arena and
+			// adventure switched off too nothing is left, and the area disappears.
+			if (this.wettbewerbLeafTabs.length > 0) {
+				tabs.push({ id: 'wettbewerb', label: t('learning', 'Wettbewerb') })
+			}
+			tabs.push({ id: 'kommunikation', label: t('learning', 'Kommunikation') })
+			return tabs
 		},
 		/**
 		 * Internal reference for the visibleTabs watcher (fallback tab logic).
@@ -411,10 +417,21 @@ export default {
 			if (!tabId) {
 				return
 			}
-			const resolvedTabId = this.resolveSelectableTab(String(tabId))
+			const requested = String(tabId)
+			// GitHub #36: a bookmark on an area or competition leaf this viewer does not have
+			// (gamification off, mode switched off) lands on the Lernraum, not on an empty area.
+			const hiddenMega = MEGA_TAB_IDS.includes(requested)
+				&& !this.visibleMegaTabs.some((tab) => tab.id === requested)
+			const hiddenWettbewerbLeaf = WETTBEWERB_LEAVES.includes(requested) && !this.isWettbewerbTab(requested)
+			if (hiddenMega || hiddenWettbewerbLeaf) {
+				this.currentTab = this.defaultLernraumTab()
+				this.activeMegaTab = 'lernraum'
+				return
+			}
+			const resolvedTabId = this.resolveSelectableTab(requested)
 			this.currentTab = resolvedTabId
-			if (['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation', 'verwaltung'].includes(String(tabId))) {
-				this.activeMegaTab = String(tabId)
+			if (MEGA_TAB_IDS.includes(requested)) {
+				this.activeMegaTab = requested
 			} else {
 				const mega = this.megaTabForLeaf(resolvedTabId)
 				if (mega) {

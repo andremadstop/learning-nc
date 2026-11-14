@@ -276,6 +276,9 @@ class SettingsController extends Controller {
             'fsrs_detailed_stats' => $this->config->getUserValue($this->userId, 'learning', 'fsrs_detailed_stats', 'no'),
             'animations_enabled' => $this->config->getUserValue($this->userId, 'learning', 'animations_enabled', 'yes'),
             'onboarding_acknowledged' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_acknowledged', 'no'),
+            // GitHub #36: the admin's global gamification switch, read-only for everyone. The
+            // frontend hides XP, level, streak and badges with it (App.vue holds the one copy).
+            'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes') === 'yes',
         ]);
     }
 

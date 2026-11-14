@@ -1438,6 +1438,12 @@ class CourseService {
         $allowedSortKeys = ['user_id', 'current_level', 'total_xp', 'critical_cards_count', 'overall_mastery', 'last_activity_date'];
         $sortKey = in_array($sortKey, $allowedSortKeys, true) ? $sortKey : 'total_xp';
         $sortDir = strtolower((string)$sortDir) === 'asc' ? 'asc' : 'desc';
+        // GitHub #36: with gamification off XP and level are frozen old values (or 0/1), so a
+        // ranking by them is meaningless; the table hides both columns and sorts by name.
+        if (in_array($sortKey, ['total_xp', 'current_level'], true) && !$this->xpService->isGamificationEnabled()) {
+            $sortKey = 'user_id';
+            $sortDir = 'asc';
+        }
 
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
         $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
@@ -1751,6 +1757,12 @@ class CourseService {
         $allowedSortKeys = ['user_id', 'total_xp', 'current_level', 'total_mastered', 'current_streak', 'total_sessions', 'last_activity_date'];
         $sortKey = in_array($sortKey, $allowedSortKeys, true) ? $sortKey : 'total_xp';
         $sortDir = strtolower((string)$sortDir) === 'asc' ? 'asc' : 'desc';
+        // GitHub #36: with gamification off XP, level and streak are frozen old values; the
+        // ranking (and its medals) goes by mastered cards, or by sessions without Leitner.
+        if (in_array($sortKey, ['total_xp', 'current_level', 'current_streak'], true) && !$this->xpService->isGamificationEnabled()) {
+            $sortKey = $this->isLeitnerEnabledFor($course) ? 'total_mastered' : 'total_sessions';
+            $sortDir = 'desc';
+        }
         $activeSince = gmdate('Y-m-d H:i:s', time() - ($activeWithinDays * 86400));
 
         // Count total with the same filter.
@@ -1965,6 +1977,7 @@ class CourseService {
 
         $atRisk = [];
         $today = new \DateTime('today', new \DateTimeZone('UTC'));
+        $gamificationEnabled = $this->xpService->isGamificationEnabled();
 
         foreach ($studentIds as $sid) {
             $stats = $userStats[$sid] ?? null;
@@ -2037,8 +2050,9 @@ class CourseService {
                 $score += 1;
             }
 
-            // Signal 4: Lost streak (was >7, now 0) (MEDIUM)
-            if ($stats && $stats['current_streak'] === 0) {
+            // Signal 4: Lost streak (was >7, now 0) (MEDIUM). GitHub #36: not with gamification
+            // off — no streak is kept then, every former streak would read as lost.
+            if ($gamificationEnabled && $stats && $stats['current_streak'] === 0) {
                 // From the batch read above, not one query per student (audit #208).
                 $longestStreak = $stats['longest_streak'];
                 if ($longestStreak > 7) {
@@ -2116,12 +2130,18 @@ class CourseService {
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
         $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
 
+        // GitHub #36: Leitner switched off in the course leaves learning_leitner_items empty, so
+        // the box rows would read five zeros per pool. The frontend shows accuracy per pool then.
+        $leitnerEnabled = $this->isLeitnerEnabledFor($course);
+        $gamificationEnabled = $this->xpService->isGamificationEnabled();
+
         // 1. XP + Level (global — intentional, shows full gamification profile)
         $xpData = $this->xpService->calculateXp($studentId);
 
-        // 2. Badges (global)
-        $badges = $this->badgeService->getUserBadges($studentId);
-        $badgeProgress = $this->badgeService->getBadgeProgress($studentId);
+        // 2. Badges (global). GitHub #36: with gamification off none is ever awarded, the list
+        // would be a grid of locked badges — not read at all.
+        $badges = $gamificationEnabled ? $this->badgeService->getUserBadges($studentId) : [];
+        $badgeProgress = $gamificationEnabled ? $this->badgeService->getBadgeProgress($studentId) : [];
 
         // 3. Streak (global)
         $streak = $this->streakService->getStreak($studentId);
@@ -2132,19 +2152,21 @@ class CourseService {
             $poolNames = $this->getPoolNames($poolIds);
             $questionCounts = $this->getQuestionCounts($poolIds);
 
-            // Batch: all boxes per pool for this student
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('pool_id', 'box', $qb->createFunction('COUNT(*) as cnt'))
-                ->from('learning_leitner_items')
-                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
-                ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-                ->groupBy('pool_id', 'box');
-            $result = $qb->executeQuery();
+            // Batch: all boxes per pool for this student (skipped without Leitner, GitHub #36)
             $boxData = [];
-            while ($row = $result->fetch()) {
-                $boxData[(int)$row['pool_id']][(int)$row['box']] = (int)$row['cnt'];
+            if ($leitnerEnabled) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->select('pool_id', 'box', $qb->createFunction('COUNT(*) as cnt'))
+                    ->from('learning_leitner_items')
+                    ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
+                    ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                    ->groupBy('pool_id', 'box');
+                $result = $qb->executeQuery();
+                while ($row = $result->fetch()) {
+                    $boxData[(int)$row['pool_id']][(int)$row['box']] = (int)$row['cnt'];
+                }
+                $result->closeCursor();
             }
-            $result->closeCursor();
 
             // Batch: accuracy per pool
             $sessionStats = $this->getBatchSessionStats([$studentId], $poolIds);
@@ -2214,12 +2236,45 @@ class CourseService {
             'badge_progress' => $badgeProgress,
             'pools' => $poolsData,
             'recent_sessions' => $recentSessions,
+            'leitner_enabled' => $leitnerEnabled,
             'stats' => [
                 'total_sessions' => $stats ? $stats['total_sessions'] : 0,
                 'total_mastered' => $stats ? $stats['total_mastered'] : 0,
                 'enrolled_at' => $member->getEnrolledAt(),
+                // GitHub #36: "Last active" came from the streak, which is empty with
+                // gamification off. The sessions are the source that is always written.
+                'last_activity_date' => $this->getLastSessionDate($studentId) ?? ($stats['last_activity_date'] ?? null),
             ],
         ];
+    }
+
+    /**
+     * Whether the course offers the Leitner mode. A missing key counts as on, like the frontend
+     * (normalizeModeConfig) and updateModeConfig's defaults (GitHub #36).
+     */
+    private function isLeitnerEnabledFor(Course $course): bool {
+        $raw = $course->getModeConfig();
+        $config = is_string($raw) && $raw !== '' ? json_decode($raw, true) : null;
+        return !is_array($config) || ($config['leitner'] ?? true) !== false;
+    }
+
+    /**
+     * The UTC day (Y-m-d) of the student's latest completed session, or null without one.
+     * Same day format as learning_user_stats.last_activity_date.
+     */
+    private function getLastSessionDate(string $userId): ?string {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('MAX(completed_at) as last_completed'))
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->isNotNull('completed_at'));
+        $result = $qb->executeQuery();
+        $value = $result->fetchOne();
+        $result->closeCursor();
+        if ($value === null || $value === false || (int)$value <= 0) {
+            return null;
+        }
+        return gmdate('Y-m-d', (int)$value);
     }
 
     // ─── Mode Config ─────────────────────────────────────────────────────────

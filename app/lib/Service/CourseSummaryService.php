@@ -26,6 +26,7 @@ class CourseSummaryService {
     private StreakService $streakService;
     private RagChunkMapper $ragChunkMapper;
     private GeminiService $geminiService;
+    private ?XpService $xpService;
 
     public function __construct(
         IDBConnection $db,
@@ -33,7 +34,8 @@ class CourseSummaryService {
         BadgeService $badgeService,
         StreakService $streakService,
         RagChunkMapper $ragChunkMapper,
-        GeminiService $geminiService
+        GeminiService $geminiService,
+        ?XpService $xpService = null
     ) {
         $this->db = $db;
         $this->courseMemberMapper = $courseMemberMapper;
@@ -41,24 +43,38 @@ class CourseSummaryService {
         $this->streakService = $streakService;
         $this->ragChunkMapper = $ragChunkMapper;
         $this->geminiService = $geminiService;
+        $this->xpService = $xpService;
+    }
+
+    /**
+     * The admin's global gamification switch (GitHub #36). Without an XpService (older callers,
+     * tests) it counts as on, the behaviour before the switch was honoured here.
+     */
+    private function isGamificationEnabled(): bool {
+        return $this->xpService === null || $this->xpService->isGamificationEnabled();
     }
 
     /**
      * Get course summary for a single student.
      *
+     * GitHub #36: with gamification off xp, badges, streak and duels are empty arrays. XP and
+     * level in learning_user_stats are frozen old values then, and the export, the snapshot and
+     * the AI reflection must not carry them.
+     *
      * @return array{mastery: array, sessions: array, xp: array, badges: array, streak: array, swarm: array, duels: array, trouble_spots: array}
      */
     public function getStudentSummary(int $courseId, string $userId): array {
         $poolIds = $this->getCoursePoolIds($courseId);
+        $gamification = $this->isGamificationEnabled();
 
         return [
             'mastery' => $this->getMasteryStats($userId, $poolIds),
             'sessions' => $this->getSessionStats($userId, $poolIds),
-            'xp' => $this->getUserStats($userId),
-            'badges' => $this->badgeService->getUserBadges($userId),
-            'streak' => $this->streakService->getStreak($userId),
+            'xp' => $gamification ? $this->getUserStats($userId) : [],
+            'badges' => $gamification ? $this->badgeService->getUserBadges($userId) : [],
+            'streak' => $gamification ? $this->streakService->getStreak($userId) : [],
             'swarm' => $this->getSwarmStats($userId, $courseId),
-            'duels' => $this->getDuelStats($userId),
+            'duels' => $gamification ? $this->getDuelStats($userId) : [],
             'trouble_spots' => $this->getTroubleSpots($userId, $poolIds),
         ];
     }
@@ -314,6 +330,9 @@ class CourseSummaryService {
             'name'
         ));
 
+        // GitHub #36: with gamification off there is no streak, XP or badge to reflect on — the
+        // lines are left out instead of telling the model "0 XP, streak 0, no badges".
+        $gamification = $this->isGamificationEnabled();
         $userPrompt = strtr(
             "Erstelle ein Narrative Portfolio basierend auf folgenden Daten:\n"
             . "- KURS: {{course_name}}\n"
@@ -321,11 +340,11 @@ class CourseSummaryService {
             . "  * Beantwortete Fragen: {{total_questions_answered}}\n"
             . "  * Gesamtgenauigkeit: {{accuracy_overall}}%\n"
             . "  * Mastered (Box 5): {{mastery_count}} Karten\n"
-            . "  * Streak (max): {{streak_max}} Tage\n"
+            . ($gamification ? "  * Streak (max): {{streak_max}} Tage\n" : '')
             . "  * Sessions (total): {{total_sessions}}\n"
-            . "  * XP: {{xp_total}}\n"
+            . ($gamification ? "  * XP: {{xp_total}}\n" : '')
             . "- SCHWACHSTELLEN: {{trouble_spots}}\n"
-            . "- VERDIENTE BADGES: {{badges_earned}}\n"
+            . ($gamification ? "- VERDIENTE BADGES: {{badges_earned}}\n" : '')
             . "- TELOS-PROFIL (Consent: {{telos_consent}}):\n"
             . "  * Ziele: {{telos_goals}}\n"
             . "  * Hilfe gesucht fuer: {{telos_help_wanted}}",
