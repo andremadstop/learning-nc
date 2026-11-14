@@ -11,33 +11,13 @@ parameters:
 			path: lib/Controller/ImportController.php
 
 		-
-			message: "#^Variable \\$warnings in empty\\(\\) always exists and is always falsy\\.$#"
-			count: 1
-			path: lib/Controller/ImportController.php
-
-		-
-			message: "#^Access to constant PARAM_INT_ARRAY on an unknown class Doctrine\\\\DBAL\\\\Connection\\.$#"
-			count: 1
-			path: lib/Dashboard/LearningWidget.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnalyticsMapper\\:\\:record\\(\\) should return OCA\\\\Learning\\\\Db\\\\Analytics but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/AnalyticsMapper.php
 
 		-
-			message: "#^Call to an undefined method OCP\\\\AppFramework\\\\Db\\\\Entity\\:\\:getQuestionId\\(\\)\\.$#"
-			count: 1
-			path: lib/Db/AnswerMapper.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnswerMapper\\:\\:createOrUpdate\\(\\) should return OCA\\\\Learning\\\\Db\\\\Answer but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 2
-			path: lib/Db/AnswerMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnswerMapper\\:\\:findByQuestions\\(\\) should return array\\<int, array\\<OCA\\\\Learning\\\\Db\\\\Answer\\>\\> but returns array\\<array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\>\\.$#"
-			count: 1
 			path: lib/Db/AnswerMapper.php
 
 		-
@@ -166,38 +146,8 @@ parameters:
 			path: lib/Db/SupportTicketMapper.php
 
 		-
-			message: "#^Access to static property \\$server on an unknown class OC\\.$#"
-			count: 2
-			path: lib/Service/AIService.php
-
-		-
-			message: "#^Class OCP\\\\TextProcessing\\\\FreePromptTaskType constructor invoked with 0 parameters, 1 required\\.$#"
-			count: 1
-			path: lib/Service/AIService.php
-
-		-
-			message: "#^Parameter \\#1 \\$type of class OCP\\\\TextProcessing\\\\Task constructor expects class\\-string\\<T of OCP\\\\TextProcessing\\\\ITaskType\\>, OCP\\\\TextProcessing\\\\FreePromptTaskType given\\.$#"
-			count: 1
-			path: lib/Service/AIService.php
-
-		-
-			message: "#^Property OCA\\\\Learning\\\\Service\\\\AIService\\:\\:\\$db is never read, only written\\.$#"
-			count: 1
-			path: lib/Service/AIService.php
-
-		-
 			message: "#^Comparison operation \"\\>\\=\" between 3\\|4 and 3 is always true\\.$#"
 			count: 1
-			path: lib/Service/CourseService.php
-
-		-
-			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
-			count: 1
-			path: lib/Service/CourseService.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Service\\\\CourseService\\:\\:addMember\\(\\) should return OCA\\\\Learning\\\\Db\\\\CourseMember but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 2
 			path: lib/Service/CourseService.php
 
 		-
@@ -212,11 +162,6 @@ parameters:
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Service\\\\CourseService\\:\\:enroll\\(\\) should return OCA\\\\Learning\\\\Db\\\\CourseMember but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/Service/CourseService.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Service\\\\CourseService\\:\\:poolExists\\(\\) is unused\\.$#"
 			count: 1
 			path: lib/Service/CourseService.php
 
@@ -356,11 +301,6 @@ parameters:
 			path: lib/Service/LeagueService.php
 
 		-
-			message: "#^Comparison operation \"\\>\" between 0 and 0 is always false\\.$#"
-			count: 1
-			path: lib/Service/LernplanService.php
-
-		-
 			message: "#^Caught class Doctrine\\\\DBAL\\\\Exception\\\\UniqueConstraintViolationException not found\\.$#"
 			count: 1
 			path: lib/Service/MissionService.php
@@ -384,28 +324,3 @@ parameters:
 			message: "#^Call to method getName\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Platforms\\\\AbstractPlatform\\.$#"
 			count: 1
 			path: lib/Service/StreakService.php
-
-		-
-			message: "#^Property OCA\\\\Learning\\\\Service\\\\TranslationService\\:\\:\\$questionMapper is never read, only written\\.$#"
-			count: 1
-			path: lib/Service/TranslationService.php
-
-		-
-			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 1
-			path: lib/Version006000Date20260330000000.php
-
-		-
-			message: "#^Call to method addIndex\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 1
-			path: lib/Version006000Date20260330000000.php
-
-		-
-			message: "#^Call to method hasColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 2
-			path: lib/Version006000Date20260330000000.php
-
-		-
-			message: "#^Call to method hasIndex\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 1
-			path: lib/Version006000Date20260330000000.php

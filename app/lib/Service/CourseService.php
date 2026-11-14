@@ -551,20 +551,6 @@ class CourseService {
         return $this->coursePoolMapper->update($coursePool);
     }
 
-    /**
-     * Check pool exists
-     */
-    private function poolExists(int $poolId): bool {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*)'))
-            ->from('learning_pools')
-            ->where($qb->expr()->eq('id', $qb->createNamedParameter($poolId)));
-        $result = $qb->executeQuery();
-        $count = (int)$result->fetchOne();
-        $result->closeCursor();
-        return $count > 0;
-    }
-
     private function countQuestionsInPool(int $poolId): int {
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*)'))
@@ -577,9 +563,10 @@ class CourseService {
     }
 
     /**
-     * Check if user owns the pool or has edit-level share access
+     * Check if user owns the pool or has edit-level share access. Named canEditPool (audit #157):
+     * it was hasPoolAccess, a read name for an edit check.
      */
-    private function hasPoolAccess(int $poolId, string $userId): bool {
+    private function canEditPool(int $poolId, string $userId): bool {
         // Check ownership
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*)'))
@@ -1031,7 +1018,7 @@ class CourseService {
         }
 
         // FIX-HI-2: Verify pool exists AND user has access (prevents IDOR)
-        if (!$this->hasPoolAccess($poolId, $userId)) {
+        if (!$this->canEditPool($poolId, $userId)) {
             throw new \Exception('Pool not found');
         }
 

@@ -6,7 +6,6 @@ use OCA\Learning\Db\QuestionTranslation;
 use OCA\Learning\Db\QuestionTranslationMapper;
 use OCA\Learning\Db\AnswerTranslation;
 use OCA\Learning\Db\AnswerTranslationMapper;
-use OCA\Learning\Db\QuestionMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -15,7 +14,6 @@ use OCP\IDBConnection;
 class TranslationService {
     private QuestionTranslationMapper $questionTransMapper;
     private AnswerTranslationMapper $answerTransMapper;
-    private QuestionMapper $questionMapper;
     private PoolMapper $poolMapper;
     private PoolShareMapper $shareMapper;
     private IDBConnection $db;
@@ -25,14 +23,12 @@ class TranslationService {
     public function __construct(
         QuestionTranslationMapper $questionTransMapper,
         AnswerTranslationMapper $answerTransMapper,
-        QuestionMapper $questionMapper,
         PoolMapper $poolMapper,
         PoolShareMapper $shareMapper,
         IDBConnection $db
     ) {
         $this->questionTransMapper = $questionTransMapper;
         $this->answerTransMapper = $answerTransMapper;
-        $this->questionMapper = $questionMapper;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
         $this->db = $db;

@@ -104,7 +104,7 @@ tarball into `custom_apps/` and enable it:
 sudo -u www-data php occ app:enable learning
 ```
 
-Requirements: PHP 8.1+, Nextcloud 33–35, PostgreSQL or MySQL/MariaDB. The database
+Requirements: PHP 8.2+, Nextcloud 33–35, PostgreSQL or MySQL/MariaDB. The database
 schema is created automatically by the migration steps on enable.
 
 ### 2.2 Global settings

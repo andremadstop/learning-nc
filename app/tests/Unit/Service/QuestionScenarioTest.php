@@ -189,7 +189,6 @@ class QuestionScenarioTest extends TestCase {
         return new TranslationService(
             $mapper,
             $answers,
-            $this->createMock(QuestionMapper::class),
             $this->createMock(PoolMapper::class),
             $this->createMock(PoolShareMapper::class),
             new FakeDbConnection()
