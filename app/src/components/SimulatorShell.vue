@@ -17,8 +17,6 @@
 <script>
 import { SIMULATOR_MAP, resolveScenario, normalizeResult } from '../utils/simulatorShellLogic'
 
-export { SIMULATOR_MAP }
-
 export default {
 	name: 'SimulatorShell',
 	props: {

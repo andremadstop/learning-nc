@@ -10,13 +10,6 @@
       <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pools') }}</NcButton>
     </div>
 
-    <div v-else-if="!started" class="sq-ready">
-      <h3>{{ mode === 'remediation' ? t('learning', 'Trouble Spots') : t('learning', 'Smart Queue') }}</h3>
-      <p>{{ mode === 'remediation' ? t('learning', '{n} problem questions to practice', { n: items.length }) : t('learning', '{n} questions due — sorted by priority: most urgent first.', { n: items.length }) }}</p>
-      <NcButton variant="primary" @click="started = true">{{ t('learning', 'Start Review') }}</NcButton>
-      <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
-    </div>
-
     <div v-else-if="!showResults" class="sq-review">
       <div class="review-header">
         <div class="review-counter">{{ currentIndex + 1 }} / {{ items.length }}</div>
@@ -350,9 +343,6 @@ export default {
 .sq-empty { text-align: center; padding: 60px 20px; }
 .sq-empty h3 { font-size: 24px; margin-bottom: 12px; color: var(--color-main-text); }
 .sq-empty p { color: var(--color-text-maxcontrast); margin-bottom: 24px; }
-.sq-ready { text-align: center; padding: 60px 20px; }
-.sq-ready h3 { font-size: 24px; margin-bottom: 12px; color: var(--color-main-text); }
-.sq-ready p { color: var(--color-text-maxcontrast); margin-bottom: 24px; }
 
 .review-header { margin-bottom: 24px; }
 .review-counter { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--color-primary-element); }

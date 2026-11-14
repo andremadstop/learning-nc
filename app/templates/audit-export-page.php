@@ -7,8 +7,8 @@
  * plus three download actions wired to /audit/export/{events,sig,report}. A small inline script appends
  * the chosen filters as query params (JSONL + .sig download; report opens in a new tab for window.print).
  *
- * The companion Options-API component src/components/AuditExport.vue provides the same UI for future SPA
- * integration; this template is the live, dependency-free surface.
+ * This template is the only auditor surface; there is no SPA counterpart (the unused AuditExport.vue
+ * was removed, audit #236).
  *
  * @var array<string, mixed> $_
  * @var \OCP\IL10N $l

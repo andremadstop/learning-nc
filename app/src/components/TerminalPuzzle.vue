@@ -54,10 +54,6 @@ export default {
 			type: Object,
 			default: () => ({}),
 		},
-		scenarioId: {
-			type: String,
-			default: '',
-		},
 	},
 
 	data() {

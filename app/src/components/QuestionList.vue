@@ -183,7 +183,6 @@ export default {
         this.loadError = t('learning', 'Fragen konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.');
       } finally { this.loading = false; }
     },
-    get totalPages() { return Math.ceil(this.totalQuestions / this.pageSize); },
     prevPage() { if (this.currentPage > 0) { this.currentPage--; this.loadQuestions(); } },
     nextPage() { if ((this.currentPage + 1) * this.pageSize < this.totalQuestions) { this.currentPage++; this.loadQuestions(); } },
     onSearch() {

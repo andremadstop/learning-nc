@@ -39,8 +39,8 @@ const CHIBI_SCHOLAR_COMPONENTS = {
  *   - 'prof_lern_classic' → ProfLernAvatar
  *   - any valid char id   → CharacterAvatar (characterId prop)
  *
- * Invalid ids are coerced upstream by skinStore.setSkin and fall through to
- * NovaAvatar via the dispatcher branch.
+ * Invalid ids are coerced upstream by skinStore.setSkin; anything else falls
+ * through to CharacterAvatar via the dispatcher's last branch.
  *
  * `:key="skinId"` triggers full remount on skin change so each avatar mounts
  * with its own prop shape.
