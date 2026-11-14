@@ -114,7 +114,7 @@ class LastActivityWithoutGamificationTest extends TestCase {
     }
 
     public function testCompletedSessionUpdatesLastActivityAndCountWithGamificationOff(): void {
-        $db = new FakeDbConnection();
+        $db = new FakeDbConnection([new FakeQueryBuilder(null, 1)]);  // the stats row exists
         $xp = new XpService($db, $this->config(false), new FakeCacheFactory());
 
         $xp->incrementSessionXp('learner', 0, 0);
@@ -127,5 +127,25 @@ class LastActivityWithoutGamificationTest extends TestCase {
         $this->assertSame('total_sessions + 1', $update->setCalls['total_sessions']);
         $this->assertArrayNotHasKey('total_xp', $update->setCalls, 'no XP with gamification off');
         $this->assertArrayNotHasKey('current_streak', $update->setCalls, 'no streak with gamification off');
+    }
+
+    public function testCompletedSessionCreatesTheStatsRowWithoutXpWhenThereIsNone(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(null, 0),                         // update: no row yet
+            new FakeQueryBuilder(new FakeResult([['cnt' => 3]])),  // completed sessions so far
+            new FakeQueryBuilder(null, 1),                         // insert
+        ]);
+        $xp = new XpService($db, $this->config(false), new FakeCacheFactory());
+
+        $xp->incrementSessionXp('learner', 0, 0);
+
+        $inserts = array_values(array_filter($db->issuedBuilders, static fn (FakeQueryBuilder $qb): bool => $qb->operation === 'insert'));
+        $this->assertCount(1, $inserts, 'a learner without a stats row gets one');
+        $values = array_map(static fn ($param) => $param['value'], $inserts[0]->insertValues);
+        $this->assertSame('learning_user_stats', $inserts[0]->table);
+        $this->assertSame(gmdate('Y-m-d'), $values['last_activity_date']);
+        $this->assertSame(3, $values['total_sessions']);
+        $this->assertSame(0, $values['total_xp'], 'no XP with gamification off');
+        $this->assertSame(1, $values['current_level']);
     }
 }

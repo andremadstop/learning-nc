@@ -162,13 +162,9 @@ class XpService {
             // GitHub #36: no XP and no streak, but the session still happened. The session count
             // and the last activity are no gamification (at-risk signals, "Last active", online
             // dot); before, they stayed frozen until the nightly reconciliation.
-            $qb = $this->db->getQueryBuilder();
-            $qb->update('learning_user_stats')
-               ->set('total_sessions', $qb->createFunction('total_sessions + 1'))
-               ->set('last_activity_date', $qb->createNamedParameter($today))
-               ->set('updated_at', $qb->createNamedParameter(time()))
-               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-            $qb->executeStatement();
+            if ($this->touchSessionActivity($userId, $today) === 0) {
+                $this->insertActivityOnlyStats($userId, $today);
+            }
             $this->invalidateUserCaches($userId);
             return;
         }
@@ -205,6 +201,58 @@ class XpService {
 
         // Re-read total_xp after atomic increment and sync level
         $this->syncLevel($userId);
+    }
+
+    /** GitHub #36: count the session and set the last activity, nothing else. */
+    private function touchSessionActivity(string $userId, string $today): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_user_stats')
+           ->set('total_sessions', $qb->createFunction('total_sessions + 1'))
+           ->set('last_activity_date', $qb->createNamedParameter($today))
+           ->set('updated_at', $qb->createNamedParameter(time()))
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        return $qb->executeStatement();
+    }
+
+    /**
+     * GitHub #36: a learner on an instance without gamification had no stats row at all (the row
+     * came with the first XP), so the at-risk signals, "Last active" and the online dot read them
+     * as never active, and the nightly reconciliation never saw them. The row starts without XP;
+     * updateUserStats() is not used here because it writes recalculated XP into a new row.
+     */
+    private function insertActivityOnlyStats(string $userId, string $today): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->isNotNull('completed_at'));
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        $totalSessions = max(1, (int)(is_array($row) ? ($row['cnt'] ?? 0) : 0));
+
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_user_stats')
+               ->values([
+                   'user_id' => $qb->createNamedParameter($userId),
+                   'total_xp' => $qb->createNamedParameter(0),
+                   'current_level' => $qb->createNamedParameter(1),
+                   'current_streak' => $qb->createNamedParameter(0),
+                   'longest_streak' => $qb->createNamedParameter(0),
+                   'last_activity_date' => $qb->createNamedParameter($today),
+                   'total_sessions' => $qb->createNamedParameter($totalSessions),
+                   'total_mastered' => $qb->createNamedParameter(0),
+                   'updated_at' => $qb->createNamedParameter(time()),
+               ]);
+            $qb->executeStatement();
+        } catch (\OCP\DB\Exception $e) {
+            if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                throw $e;
+            }
+            // Created in parallel: count this session on that row.
+            $this->touchSessionActivity($userId, $today);
+        }
     }
 
     /**
