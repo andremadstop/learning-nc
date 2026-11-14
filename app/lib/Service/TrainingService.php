@@ -143,7 +143,23 @@ class TrainingService {
         }
     }
 
-    private function getExamAttemptNo(int $poolId, string $userId): int {
+    /**
+     * GitHub #47: attempts, attempt number and cooldown belong to the context an exam runs in —
+     * the course it counts for, or the pool window (course_id NULL, never counts). Pool-wide, a
+     * try in the pool window or in another course sharing the pool used up the course's daily
+     * attempts and started its cooldown.
+     *
+     * @param IQueryBuilder $qb
+     */
+    private function whereExamContext($qb, ?int $courseId): void {
+        if ($courseId === null) {
+            $qb->andWhere($qb->expr()->isNull('course_id'));
+        } else {
+            $qb->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)));
+        }
+    }
+
+    private function getExamAttemptNo(int $poolId, string $userId, ?int $courseId): int {
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*)'))
             ->from('learning_sessions')
@@ -151,6 +167,7 @@ class TrainingService {
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
             ->andWhere($qb->expr()->isNull('exam_kind'));
+        $this->whereExamContext($qb, $courseId);
         $result = $qb->executeQuery();
         $count = (int)$result->fetchOne();
         $result->closeCursor();
@@ -236,7 +253,7 @@ class TrainingService {
         return (new ExamAttemptPolicy($this->config))->cooldownMinutes();
     }
 
-    private function enforceExamStartPolicy(int $poolId, string $userId): void {
+    private function enforceExamStartPolicy(int $poolId, string $userId, ?int $courseId): void {
         $now = time();
         $limitPerDay = $this->getExamAttemptLimitPerDay();
         $cooldownMinutes = $this->getExamAttemptCooldownMinutes();
@@ -250,6 +267,7 @@ class TrainingService {
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
             ->andWhere($qb->expr()->isNull('exam_kind'))
             ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($sinceDay)));
+        $this->whereExamContext($qb, $courseId);
         $result = $qb->executeQuery();
         $attemptsLast24h = (int)$result->fetchOne();
         $result->closeCursor();
@@ -267,6 +285,7 @@ class TrainingService {
                 ->andWhere($qb->expr()->isNull('exam_kind'))
                 ->orderBy('started_at', 'DESC')
                 ->setMaxResults(1);
+            $this->whereExamContext($qb, $courseId);
             $result = $qb->executeQuery();
             $lastStartedAt = (int)($result->fetchOne() ?: 0);
             $result->closeCursor();
@@ -766,8 +785,11 @@ class TrainingService {
         $examAttemptNo = null;
         $effectiveTimeLimit = null;
         if ($mode === 'exam') {
-            $this->enforceExamStartPolicy($poolId, $userId);
-            $examAttemptNo = $this->getExamAttemptNo($poolId, $userId);
+            // Limit, cooldown and attempt number per context (GitHub #47). The active-exam guard
+            // above and the closing of open training sessions below stay pool-wide on purpose:
+            // they keep a second session from serving as an answer oracle during the exam.
+            $this->enforceExamStartPolicy($poolId, $userId, $courseId);
+            $examAttemptNo = $this->getExamAttemptNo($poolId, $userId, $courseId);
             $requestedLimit = $timeLimitSeconds ?? 600;
             $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
 

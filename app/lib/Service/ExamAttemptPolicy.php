@@ -11,7 +11,8 @@ use OCP\IConfig;
  * TrainingService enforces them when an exam starts; the pass status shows them to learners
  * (GitHub #35), so the number a learner reads is the number that is enforced. Both limits apply
  * per pool: at most limitPerDay() attempts within a rolling 24 hours, and at least
- * cooldownMinutes() between two starts.
+ * cooldownMinutes() between two starts. "Per pool" means per pool in one context (GitHub #47):
+ * a course exam counts only the exams of that pool in that course, the pool window only its own.
  */
 class ExamAttemptPolicy {
     public const DEFAULT_LIMIT_PER_DAY = 5;

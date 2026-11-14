@@ -24,6 +24,7 @@ use OCA\Learning\Tests\Support\FakeCacheFactory;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -652,6 +653,112 @@ class TrainingServiceTest extends TestCase {
         $service->startSession(42, 'alice', 5, 'exam', 600);
 
         $this->assertSame(5, $this->findInsertBuilder($db)->insertValues['total_questions']['value']);
+    }
+
+    /**
+     * GitHub #47: the attempt limit, the cooldown and the attempt number were counted per pool over
+     * every context. A try in the pool window (no course, never counts) or in another course sharing
+     * the pool used up the course exam's daily attempts and started its cooldown, so the learner was
+     * refused the counting exam with "Exam cooldown active". Each of the three queries is now scoped
+     * to the context the exam starts in.
+     */
+    public function testCourseExamCountsAttemptsAndCooldownOnlyInItsCourse(): void {
+        [$service, $db] = $this->buildExamPolicyService(true);
+
+        $service->startSession(42, 'alice', 30, 'exam', 3600, null, 7);
+
+        $policyQueries = array_slice($db->issuedBuilders, 1, 3);
+        $this->assertCount(3, $policyQueries, '24 h count, cooldown lookup, attempt number');
+        foreach ($policyQueries as $i => $builder) {
+            $this->assertSame('learning_sessions', $builder->from['table'] ?? null, 'query ' . $i);
+            $this->assertContains(
+                ['type' => 'eq', 'left' => 'course_id', 'right' => ['value' => 7, 'type' => IQueryBuilder::PARAM_INT]],
+                $builder->andWhereCalls,
+                'policy query ' . $i . ' must count only exams of course 7'
+            );
+            $this->assertNotContains(['type' => 'isNull', 'field' => 'course_id'], $builder->andWhereCalls);
+        }
+        $this->assertSame(7, $this->findInsertBuilder($db)->insertValues['course_id']['value']);
+    }
+
+    /** The pool window counts only its own tries: a course exam never sets off its cooldown either. */
+    public function testPoolWindowExamCountsAttemptsAndCooldownOnlyInThePoolWindow(): void {
+        [$service, $db] = $this->buildExamPolicyService(false);
+
+        $service->startSession(42, 'alice', 5, 'exam', 600);
+
+        $policyQueries = array_slice($db->issuedBuilders, 1, 3);
+        $this->assertCount(3, $policyQueries);
+        foreach ($policyQueries as $i => $builder) {
+            $this->assertContains(['type' => 'isNull', 'field' => 'course_id'], $builder->andWhereCalls, 'policy query ' . $i);
+            foreach ($builder->andWhereCalls as $condition) {
+                $this->assertFalse(($condition['left'] ?? null) === 'course_id', 'no course filter in the pool window');
+            }
+        }
+    }
+
+    /**
+     * The anti-oracle guards stay pool-wide: an exam in any context still closes the open training
+     * sessions of the pool, whatever course they were started from.
+     */
+    public function testCourseExamStillClosesTrainingSessionsOfThePoolInEveryContext(): void {
+        [$service, $db] = $this->buildExamPolicyService(true);
+
+        $service->startSession(42, 'alice', 30, 'exam', 3600, null, 7);
+
+        $updates = array_values(array_filter($db->issuedBuilders, static fn($b): bool => $b->operation === 'update'));
+        $this->assertCount(1, $updates);
+        foreach ($updates[0]->andWhereCalls as $condition) {
+            $this->assertNotSame('course_id', $condition['left'] ?? ($condition['field'] ?? null));
+        }
+    }
+
+    /** @return array{0: TrainingService, 1: FakeDbConnection} */
+    private function buildExamPolicyService(bool $fromCourse): array {
+        $questions = [];
+        for ($i = 1; $i <= 30; $i++) {
+            $questions[] = $this->makeQuestion(500 + $i, 42, 'Q' . $i);
+        }
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),      // active exam lookup
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempts in the last 24 h
+            new FakeQueryBuilder(FakeResult::fromFetchOne(false)),   // cooldown: last start
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempt number
+            new FakeQueryBuilder(new FakeResult(), 0),               // close open training sessions
+            new FakeQueryBuilder(new FakeResult(), 0, 99),           // insert
+        ]);
+        $ids = array_map(static fn(Question $q): int => (int)$q->getId(), $questions);
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByIds')->willReturn($questions);
+        $questionMapper->method('findByPoolId')->willReturn($questions);
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestions')
+            ->willReturnCallback(fn(array $qids): array => array_combine($qids, array_map(fn(int $questionId): array => [$this->makeAnswer($questionId * 10, $questionId, 'Answer')], $qids)));
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        if ($fromCourse) {
+            $courseService->method('resolveCoursePoolContext')->willReturn(['question_ids' => $ids]);
+        }
+        // A real cooldown: with the default mock (cooldown 0) the cooldown query never runs.
+        $config = $this->createMock(IConfig::class);
+        $config->method('getUserValue')->willReturn('');
+        $config->method('getAppValue')->willReturnCallback(static fn(string $app, string $key, string $default = ''): string => match ($key) {
+            'exam_attempt_limit_per_day' => '5',
+            'exam_attempt_cooldown_minutes' => '10',
+            default => $default,
+        });
+
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            poolMapper: $poolMapper,
+            courseService: $courseService,
+            config: $config,
+        );
+        return [$service, $db];
     }
 
     /**
@@ -1622,7 +1729,8 @@ class TrainingServiceTest extends TestCase {
         ?FakeCacheFactory $cacheFactory = null,
         ?CourseService $courseService = null,
         ?VideoProgressService $videoProgressService = null,
-        ?LoggerInterface $logger = null
+        ?LoggerInterface $logger = null,
+        ?IConfig $config = null
     ): TrainingService {
         $questionMapper ??= $this->createMock(QuestionMapper::class);
         $answerMapper ??= $this->createMock(AnswerMapper::class);
@@ -1633,7 +1741,7 @@ class TrainingServiceTest extends TestCase {
         $xpService ??= $this->createMock(XpService::class);
         $cacheFactory ??= new FakeCacheFactory();
         $translationService = $this->createMock(TranslationService::class);
-        $config = $this->createMock(IConfig::class);
+        $config ??= $this->createMock(IConfig::class);
         $logger ??= $this->createMock(LoggerInterface::class);
         if ($courseService === null) {
             $courseService = $this->createMock(CourseService::class);
