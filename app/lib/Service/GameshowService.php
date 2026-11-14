@@ -51,6 +51,14 @@ class GameshowService {
      */
     public const REVEAL_MS = 5550;
 
+    /**
+     * How early (by the server clock) the next question may be read and answered. Covers the
+     * client's clock-offset estimate and the SSE tick (1 s), so a client that shows the question
+     * at its start already has it. Earlier the question is hidden and an answer is refused; an
+     * answer inside the window counts as given at the start (audit #160).
+     */
+    public const EARLY_START_TOLERANCE_MS = 1000;
+
     public function __construct(
         GameshowSessionMapper $sessionMapper,
         GameshowPlayerMapper $playerMapper,
@@ -352,6 +360,13 @@ class GameshowService {
 
         $questionId = (int)$questionIds[$questionIndex];
 
+        // During the reveal the session already points at the next question. An answer sent
+        // then (a modified client, a raw POST) would be stored at the start: elapsed 0, rank 1
+        // and the full time bonus after seconds of extra reading time (audit #160).
+        if (!$this->hasQuestionStarted($session)) {
+            throw new \RuntimeException('Question has not started yet');
+        }
+
         // Check if player already answered this question
         $existingAnswers = $this->answerMapper->findBySessionAndQuestion($session->getId(), $questionIndex);
         foreach ($existingAnswers as $existing) {
@@ -392,8 +407,8 @@ class GameshowService {
         $answer->setPlayerUid($userId);
         $answer->setAnswerId($answerId);
         $answer->setIsCorrect($isCorrect);
-        // The next question starts only after the reveal (REVEAL_MS); an answer that arrives
-        // earlier (a client that rendered it before its reveal ended) counts as given at the start.
+        // The next question starts only after the reveal (REVEAL_MS); an answer inside the
+        // tolerance before that (clock-offset jitter) counts as given at the start.
         $answer->setAnsweredAt(max(intval(microtime(true) * 1000), (int)($session->getQuestionStartedAt() ?? 0)));
         $answer->setPointsEarned(0); // Scoring handled by mode-specific logic in Phase 9/10
         $this->answerMapper->insert($answer);
@@ -412,6 +427,15 @@ class GameshowService {
 
     private function isTimedQuestionMode(GameshowSession $session): bool {
         return in_array($session->getMode(), ['sprint', 'elimination'], true);
+    }
+
+    /** True once the current question may be read and answered (see EARLY_START_TOLERANCE_MS). */
+    private function hasQuestionStarted(GameshowSession $session): bool {
+        $startedAt = $session->getQuestionStartedAt();
+        if ($startedAt === null) {
+            return true;
+        }
+        return intval(microtime(true) * 1000) >= (int)$startedAt - self::EARLY_START_TOLERANCE_MS;
     }
 
     private function isQuestionDeadlinePassed(GameshowSession $session): bool {
@@ -659,9 +683,12 @@ class GameshowService {
             ];
         }
 
-        // Load current question (only when active)
+        // Load current question (only when active, and not before it starts: during the reveal
+        // the index already points at the next question, which nobody may read yet — audit #160).
+        // The client waits for question_started_at by server_now_ms and gets the question with
+        // the state that is pushed shortly before the start.
         $currentQuestion = null;
-        if ($status === 'active' && $currentIndex < count($questionIds)) {
+        if ($status === 'active' && $currentIndex < count($questionIds) && $this->hasQuestionStarted($session)) {
             $questionId = (int)$questionIds[$currentIndex];
             $currentQuestion = $this->questionService->loadQuestionForGame($questionId, $contentLanguage);
         }

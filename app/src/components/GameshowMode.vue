@@ -1205,6 +1205,7 @@ export default {
         this.phase = 'question';
         this.spotlightActive = true;
         this.startTimer();
+        this.fetchQuestionIfMissing();
         return;
       }
       this.stopTimer();
@@ -1218,7 +1219,17 @@ export default {
         this.phase = 'question';
         this.spotlightActive = true;
         this.startTimer();
+        this.fetchQuestionIfMissing();
       }, wait);
+    },
+
+    // The server hides the next question until shortly before its start (audit #160). The state
+    // pushed by SSE (every second) or the poll (500 ms) normally brings it in time; if the last
+    // state still lacks it when the question phase begins, fetch it once.
+    fetchQuestionIfMissing() {
+      if (this.botMode || !this.gameshowCode || !this.state) return;
+      if (this.state.status !== 'active' || this.state.current_question) return;
+      this.pollState();
     },
 
     // Seconds left on the current question by the server clock. The server starts the next
@@ -1572,6 +1583,7 @@ export default {
             this.phase = 'question';
             this.spotlightActive = true;
             this.startTimer();
+            this.fetchQuestionIfMissing();
             // VIRT-01: Round announcement for next question
             this.emitVirtuProf('gameshow-round-announce', {
               round: this.questionDisplay,

@@ -27,9 +27,10 @@ class GameshowController extends Controller {
     public function create(int $poolId, string $mode, int $maxPlayers = 5, ?int $courseId = null): DataResponse {
         try {
             $maxPlayers = max(2, min(5, $maxPlayers));
-            $validModes = ['sprint', 'elimination', 'lernwuerfel', 'wissensturm'];
+            // The board-game modes (lernwuerfel, wissensturm) were removed (audit #227).
+            $validModes = ['sprint', 'elimination'];
             if (!in_array($mode, $validModes, true)) {
-                return new DataResponse(['error' => 'Invalid mode: must be sprint, elimination, lernwuerfel, or wissensturm'], Http::STATUS_BAD_REQUEST);
+                return new DataResponse(['error' => 'Invalid mode: must be sprint or elimination'], Http::STATUS_BAD_REQUEST);
             }
             return new DataResponse(
                 $this->service->createSession($poolId, $this->userId, $mode, $maxPlayers, $courseId),
