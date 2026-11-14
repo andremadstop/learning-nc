@@ -179,6 +179,9 @@ const WETTBEWERB_LEAVES = ['leaderboard', 'league', 'arena', 'abenteuer']
 // gone (class register switched off, progress moved to the completion area) is redirected
 // (GitHub #36) instead of opening an empty area.
 const TEILNEHMER_LEAVES = ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'my-progress', 'summary']
+// Every leaf the Kommunikation area can have, for both roles. A bookmark on one this viewer does
+// not have (learning partners off, AI off, an instructor leaf) falls back to the feed (GitHub #40).
+const KOMMUNIKATION_LEAVES = ['announcements', 'feed', 'buddies', 'schwarm', 'requests']
 const MEGA_TAB_IDS = ['lernraum', 'teilnehmer', 'abschluss', 'wettbewerb', 'kommunikation', 'verwaltung']
 
 export default {
@@ -463,7 +466,8 @@ export default {
 			const hiddenTeilnehmerLeaf = TEILNEHMER_LEAVES.includes(requested)
 				&& !this.isTeilnehmerTab(requested)
 				&& !this.isAbschlussTab(requested)
-			if (hiddenMega || hiddenWettbewerbLeaf || hiddenTeilnehmerLeaf) {
+			const hiddenKommunikationLeaf = KOMMUNIKATION_LEAVES.includes(requested) && !this.isKommunikationTab(requested)
+			if (hiddenMega || hiddenWettbewerbLeaf || hiddenTeilnehmerLeaf || hiddenKommunikationLeaf) {
 				this.redirectHiddenTab(requested)
 				return
 			}
@@ -501,7 +505,8 @@ export default {
 		 * GitHub #36: where a bookmark on an area or leaf this viewer does not have lands. What
 		 * moved goes to its new place — the participants area and "Mein Fortschritt" to the
 		 * completion area (the recent sessions live there), a switched-off class register to the
-		 * remaining participants leaf; everything else to the Lernraum.
+		 * remaining participants leaf, a hidden communication leaf to the feed (GitHub #40);
+		 * everything else to the Lernraum.
 		 */
 		redirectHiddenTab(requested) {
 			const moved = requested === 'teilnehmer' || requested === 'my-progress'
@@ -513,6 +518,11 @@ export default {
 			if (TEILNEHMER_LEAVES.includes(requested) && this.teilnehmerLeafTabs.length > 0) {
 				this.currentTab = this.teilnehmerLeafTabs[0]
 				this.activeMegaTab = 'teilnehmer'
+				return
+			}
+			if (KOMMUNIKATION_LEAVES.includes(requested) && this.kommunikationLeafTabs.length > 0) {
+				this.currentTab = this.kommunikationLeafTabs[0]
+				this.activeMegaTab = 'kommunikation'
 				return
 			}
 			this.currentTab = this.defaultLernraumTab()

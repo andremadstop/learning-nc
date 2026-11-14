@@ -453,6 +453,28 @@ describe('CourseDetail competition area (GitHub #36)', () => {
 		}
 	})
 
+	// Review of #40: a bookmark on a Kommunikation leaf the learner does not have stayed the
+	// current tab with no area around it; it now opens the feed.
+	it('a deep link to hidden learning partners, swarm or an instructor leaf opens the feed', async () => {
+		const detail = await renderCourse({}, { buddies: false })
+		for (const tab of ['buddies', 'schwarm', 'announcements', 'requests']) {
+			detail.activeMegaTab = 'lernraum'
+			detail.currentTab = detail.defaultLernraumTab()
+			detail.syncCurrentTabFromRoute(tab)
+			await flush()
+			expect(detail.activeMegaTab, tab).toBe('kommunikation')
+			expect(detail.currentTab, tab).toBe('feed')
+		}
+	})
+
+	it('a deep link to learning partners still opens them while the switch is on', async () => {
+		const detail = await renderCourse({}, {})
+		detail.syncCurrentTabFromRoute('buddies')
+		await flush()
+		expect(detail.activeMegaTab).toBe('kommunikation')
+		expect(detail.currentTab).toBe('buddies')
+	})
+
 	it('a deep link to the leaderboard still opens it with gamification on', async () => {
 		const detail = await renderCourse({}, {})
 		detail.syncCurrentTabFromRoute('leaderboard')
