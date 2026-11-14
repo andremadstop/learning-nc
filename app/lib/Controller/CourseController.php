@@ -10,6 +10,7 @@ use OCA\Learning\Service\CourseEnrollmentService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CsvFormulaGuard;
 use OCA\Learning\Service\ExamAttemptPolicy;
+use OCA\Learning\Service\ExamScope;
 use OCA\Learning\Service\GroupUnavailableException;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
@@ -291,7 +292,9 @@ class CourseController extends Controller {
         ?string $filterExamKey = null,
         ?string $filterChapterKey = null,
         ?array $filterQuestionIds = null,
-        ?bool $examRelevant = null
+        ?bool $examRelevant = null,
+        ?int $examQuestions = null,
+        ?int $examMinutes = null
     ): DataResponse {
         try {
             $cp = $this->courseService->updatePoolRules(
@@ -303,7 +306,9 @@ class CourseController extends Controller {
                 $filterChapterKey,
                 $filterQuestionIds,
                 $this->userId,
-                $examRelevant
+                $examRelevant,
+                $examQuestions,
+                $examMinutes
             );
             return new DataResponse($cp);
         } catch (\InvalidArgumentException $e) {
@@ -745,6 +750,8 @@ class CourseController extends Controller {
         ?array $certRequiredPoolIds = null,
         ?int $certValidityDays = null,
         ?int $certValidityMonths = null,
+        ?int $examQuestions = null,
+        ?int $examMinutes = null,
     ): DataResponse {
         try {
             if ($this->userId === null) {
@@ -816,6 +823,20 @@ class CourseController extends Controller {
                 }
                 $course->setCertValidityMonths($certValidityMonths);
             }
+            // GitHub #47: course default of the exam scope, used by every pool without its own
+            // value. Omitted = unchanged, 0 = no course default (stored as NULL).
+            if ($examQuestions !== null) {
+                if ($examQuestions !== 0 && ($examQuestions < ExamScope::MIN_QUESTIONS || $examQuestions > ExamScope::MAX_QUESTIONS)) {
+                    return new DataResponse(['error' => sprintf('exam_questions must be %d–%d (0 = no course default)', ExamScope::MIN_QUESTIONS, ExamScope::MAX_QUESTIONS)], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setExamQuestions($examQuestions === 0 ? null : $examQuestions);
+            }
+            if ($examMinutes !== null) {
+                if ($examMinutes !== 0 && ($examMinutes < ExamScope::MIN_MINUTES || $examMinutes > ExamScope::MAX_MINUTES)) {
+                    return new DataResponse(['error' => sprintf('exam_minutes must be %d–%d (0 = no course default)', ExamScope::MIN_MINUTES, ExamScope::MAX_MINUTES)], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setExamMinutes($examMinutes === 0 ? null : $examMinutes);
+            }
 
             $course->setUpdatedAt(time());
             $this->courseMapper->update($course);
@@ -828,6 +849,8 @@ class CourseController extends Controller {
                     : [],
                 'certValidityDays'    => $course->getCertValidityDays() ?? 0,
                 'certValidityMonths'  => $course->getCertValidityMonths(),
+                'examQuestions'       => $course->getExamQuestions(),
+                'examMinutes'         => $course->getExamMinutes(),
             ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

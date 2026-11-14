@@ -467,6 +467,8 @@ class CourseService {
             'course_pool' => $coursePool,
             'is_instructor' => $isInstructor,
             'question_ids' => $questionIds,
+            // GitHub #47: question count and time limit of a counting exam, or null (legacy).
+            'exam_scope' => ExamScope::resolve($coursePool, $course),
         ];
     }
 
@@ -549,7 +551,9 @@ class CourseService {
         ?string $filterChapterKey,
         ?array $filterQuestionIds,
         string $userId,
-        ?bool $examRelevant = null
+        ?bool $examRelevant = null,
+        ?int $examQuestions = null,
+        ?int $examMinutes = null
     ): CoursePool {
         $course = $this->courseMapper->findById($courseId);
         if (!$this->isInstructorOfCourse($course, $userId)) {
@@ -565,8 +569,36 @@ class CourseService {
         if ($examRelevant !== null) {
             $coursePool->setExamRelevant($examRelevant);
         }
+        // GitHub #47: the dialog always sends both values; null = use the course default.
+        $coursePool->setExamQuestions($this->validateExamQuestions($examQuestions, $poolId));
+        $coursePool->setExamMinutes($this->validateExamMinutes($examMinutes));
 
         return $this->coursePoolMapper->update($coursePool);
+    }
+
+    /**
+     * GitHub #47: a pool's exam question count is 1 up to the pool's size. Filters or deleted
+     * questions can shrink the pool later; the exam start then uses every eligible question.
+     */
+    private function validateExamQuestions(?int $examQuestions, int $poolId): ?int {
+        if ($examQuestions === null) {
+            return null;
+        }
+        $max = max(ExamScope::MIN_QUESTIONS, $this->countQuestionsInPool($poolId));
+        if ($examQuestions < ExamScope::MIN_QUESTIONS || $examQuestions > $max) {
+            throw new \InvalidArgumentException(sprintf('exam_questions must be %d–%d', ExamScope::MIN_QUESTIONS, $max));
+        }
+        return $examQuestions;
+    }
+
+    private function validateExamMinutes(?int $examMinutes): ?int {
+        if ($examMinutes === null) {
+            return null;
+        }
+        if ($examMinutes < ExamScope::MIN_MINUTES || $examMinutes > ExamScope::MAX_MINUTES) {
+            throw new \InvalidArgumentException(sprintf('exam_minutes must be %d–%d', ExamScope::MIN_MINUTES, ExamScope::MAX_MINUTES));
+        }
+        return $examMinutes;
     }
 
     private function countQuestionsInPool(int $poolId): int {
@@ -887,6 +919,9 @@ class CourseService {
                 $cpData['available_filters'] = $cpData['available_filters'] ?? ['exam_keys' => [], 'chapters' => []];
                 $cpData['available_content_languages'] = $cpData['available_content_languages'] ?? ['de'];
             }
+
+            // GitHub #47: the exam scope the server enforces at the start, for the exam card.
+            $cpData['exam_scope'] = ExamScope::resolve($cp, $course);
 
             if (!$isInstructor) {
                 $poolProgress = $requiredProgressMap[$cp->getPoolId()] ?? [

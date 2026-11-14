@@ -488,7 +488,11 @@ class TrainingService {
         return 'medium';
     }
 
-    private function pickExamQuestionsByBlueprint(array $questions, ?int $limit): array {
+    /**
+     * @param bool $strictLimit the limit is the course's configured question count (GitHub #47):
+     *                          never exceeded, also not by PBQs, which are otherwise always all in
+     */
+    private function pickExamQuestionsByBlueprint(array $questions, ?int $limit, bool $strictLimit = false): array {
         if (empty($questions)) {
             return $questions;
         }
@@ -502,6 +506,11 @@ class TrainingService {
 
         if ($limit === null || $limit <= 0 || $limit >= count($questions)) {
             $limit = count($questions);
+        }
+
+        if ($strictLimit && $pbqCount > $limit) {
+            shuffle($pbqs);
+            return array_slice($pbqs, 0, $limit);
         }
 
         // After reserving slots for all PBQs, fill remaining with blueprint MCQs
@@ -743,13 +752,21 @@ class TrainingService {
             }
         }
 
+        // GitHub #47: question count and time limit the course sets for its counting exam on this
+        // pool (pool rule, else course default). null = not set, the exam keeps the old rules.
+        $examScope = null;
         if ($courseId !== null) {
             $context = $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId);
             $questionIds = $context['question_ids'];
             $questions = $this->questionMapper->findByIds($questionIds);
+            if ($mode === 'exam') {
+                $examScope = $context['exam_scope'] ?? null;
+            }
         } else {
             $questions = $this->questionMapper->findByPoolId($poolId);
         }
+        $configuredQuestions = $examScope['questions'] ?? null;
+        $configuredMinutes = $examScope['minutes'] ?? null;
 
         // GitHub #35: an exam started from a course is a counting exam — it can issue the course
         // certificate. Its composition is the server's decision, not the client's: no question-type
@@ -758,7 +775,11 @@ class TrainingService {
         $isCourseExam = $mode === 'exam' && $courseId !== null;
         if ($isCourseExam) {
             $questionType = null;
-            if ($limit !== null && $limit > 0) {
+            if ($configuredQuestions !== null) {
+                // The course's own count replaces the client's limit and the minimum: it is the
+                // instructor's decision, not the client's (GitHub #47).
+                $limit = (int)$configuredQuestions;
+            } elseif ($limit !== null && $limit > 0) {
                 $limit = max($limit, min(self::COURSE_EXAM_MIN_QUESTIONS, count($questions)));
             }
         }
@@ -773,7 +794,7 @@ class TrainingService {
         }
 
         if ($mode === 'exam') {
-            $questions = $this->pickExamQuestionsByBlueprint($questions, $limit);
+            $questions = $this->pickExamQuestionsByBlueprint($questions, $limit, $configuredQuestions !== null);
         } else {
             shuffle($questions);
             if ($limit !== null && $limit > 0 && $limit < count($questions)) {
@@ -790,8 +811,13 @@ class TrainingService {
             // they keep a second session from serving as an answer oracle during the exam.
             $this->enforceExamStartPolicy($poolId, $userId, $courseId);
             $examAttemptNo = $this->getExamAttemptNo($poolId, $userId, $courseId);
-            $requestedLimit = $timeLimitSeconds ?? 600;
-            $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
+            if ($configuredMinutes !== null) {
+                // GitHub #47: the course's time limit; the client's value is ignored.
+                $effectiveTimeLimit = (int)$configuredMinutes * 60;
+            } else {
+                $requestedLimit = $timeLimitSeconds ?? 600;
+                $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
+            }
 
             // SECURITY: auto-complete all open training sessions on the same pool, so they cannot
             // serve as answer oracles during the exam. Only once the exam is certain to start:

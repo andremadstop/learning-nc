@@ -22,6 +22,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setFilterQuestionIds(?string $filterQuestionIds)
  * @method bool getExamRelevant()
  * @method void setExamRelevant(bool $examRelevant)
+ * @method int|null getExamQuestions()
+ * @method void setExamQuestions(?int $examQuestions)
+ * @method int|null getExamMinutes()
+ * @method void setExamMinutes(?int $examMinutes)
  */
 class CoursePool extends Entity {
     protected $courseId;
@@ -33,6 +37,10 @@ class CoursePool extends Entity {
     protected $filterChapterKey;
     protected $filterQuestionIds;
     protected $examRelevant;
+    /** GitHub #47: questions per counting exam in this pool; NULL = course default. */
+    protected $examQuestions;
+    /** GitHub #47: time limit of a counting exam in minutes; NULL = course default. */
+    protected $examMinutes;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -45,6 +53,8 @@ class CoursePool extends Entity {
         $this->addType('filterChapterKey', 'string');
         $this->addType('filterQuestionIds', 'string');
         $this->addType('examRelevant', 'integer');
+        $this->addType('examQuestions', 'integer');
+        $this->addType('examMinutes', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -59,6 +69,8 @@ class CoursePool extends Entity {
             'filter_chapter_key' => $this->filterChapterKey,
             'filter_question_ids' => $this->filterQuestionIds ? (json_decode($this->filterQuestionIds, true) ?: []) : [],
             'exam_relevant' => (bool)($this->examRelevant ?? false),
+            'exam_questions' => $this->examQuestions !== null ? (int)$this->examQuestions : null,
+            'exam_minutes' => $this->examMinutes !== null ? (int)$this->examMinutes : null,
         ];
     }
 }

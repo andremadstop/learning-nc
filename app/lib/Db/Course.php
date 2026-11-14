@@ -64,6 +64,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setPracticePassPercent(int $practicePassPercent)
  * @method bool|null getPracticeRequiredOnly()
  * @method void setPracticeRequiredOnly(bool $practiceRequiredOnly)
+ * @method int|null getExamQuestions()
+ * @method void setExamQuestions(?int $examQuestions)
+ * @method int|null getExamMinutes()
+ * @method void setExamMinutes(?int $examMinutes)
  */
 class Course extends Entity {
     protected $title;
@@ -95,6 +99,10 @@ class Course extends Entity {
     protected $practiceMinutes;
     protected $practicePassPercent;
     protected $practiceRequiredOnly;
+    /** GitHub #47: course default for the question count of a counting exam; NULL = none. */
+    protected $examQuestions;
+    /** GitHub #47: course default for the time limit of a counting exam in minutes; NULL = none. */
+    protected $examMinutes;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -116,6 +124,8 @@ class Course extends Entity {
         $this->addType('practiceMinutes', 'integer');
         $this->addType('practicePassPercent', 'integer');
         $this->addType('practiceRequiredOnly', 'boolean');
+        $this->addType('examQuestions', 'integer');
+        $this->addType('examMinutes', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -154,6 +164,9 @@ class Course extends Entity {
             'practice_minutes' => $this->getPracticeMinutes() ?? 0,
             'practice_pass_percent' => $this->getPracticePassPercent() ?? 75,
             'practice_required_only' => $this->getPracticeRequiredOnly() ?? false,
+            // GitHub #47: course default of the exam scope; NULL = each pool decides (or legacy).
+            'exam_questions' => $this->examQuestions !== null ? (int)$this->examQuestions : null,
+            'exam_minutes' => $this->examMinutes !== null ? (int)$this->examMinutes : null,
         ];
     }
 }

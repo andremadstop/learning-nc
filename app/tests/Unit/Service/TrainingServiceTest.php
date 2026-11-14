@@ -642,6 +642,76 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame(90, $this->findInsertBuilder($db)->insertValues['total_questions']['value']);
     }
 
+    /**
+     * GitHub #47: the course sets the exam's question count and time limit (pool rule, else course
+     * default). The server uses them and ignores the client's limit and time, including the
+     * minimum of 45, which only guards against a client-chosen size.
+     */
+    public function testCourseExamUsesConfiguredScopeAndIgnoresClientValues(): void {
+        $questions = [];
+        for ($i = 1; $i <= 60; $i++) {
+            $questions[] = $this->makeQuestion(500 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => 12, 'minutes' => 25]);
+
+        $payload = $service->startSession(42, 'alice', 1, 'exam', 60, null, 7);
+
+        $insert = $this->findInsertBuilder($db);
+        $this->assertSame(12, $insert->insertValues['total_questions']['value'], 'the configured 12, not the client 1 and not the minimum 45');
+        $this->assertSame(25 * 60, $insert->insertValues['time_limit_seconds']['value'], 'the configured 25 minutes, not the client 60 seconds');
+        $this->assertSame(12, $payload['total_questions']);
+        $order = json_decode($insert->insertValues['question_order_json']['value'], true);
+        $this->assertCount(12, array_unique($order), 'twelve different questions');
+    }
+
+    /** A configured time limit above the 120 minutes the server grants a client is kept. */
+    public function testCourseExamKeepsConfiguredTimeAboveClientMaximum(): void {
+        $questions = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $questions[] = $this->makeQuestion(600 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => null, 'minutes' => 180]);
+
+        $service->startSession(42, 'alice', 10, 'exam', 600, null, 7);
+
+        $insert = $this->findInsertBuilder($db);
+        $this->assertSame(180 * 60, $insert->insertValues['time_limit_seconds']['value']);
+        $this->assertSame(10, $insert->insertValues['total_questions']['value'], 'no configured count: the old rule applies');
+    }
+
+    /** A configured count larger than the eligible questions uses every eligible one. */
+    public function testCourseExamConfiguredCountAboveEligibleUsesAll(): void {
+        $questions = [];
+        for ($i = 1; $i <= 8; $i++) {
+            $questions[] = $this->makeQuestion(700 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => 20, 'minutes' => null]);
+
+        $service->startSession(42, 'alice', null, 'exam', 900, null, 7);
+
+        $insert = $this->findInsertBuilder($db);
+        $this->assertSame(8, $insert->insertValues['total_questions']['value']);
+        $this->assertSame(900, $insert->insertValues['time_limit_seconds']['value'], 'no configured time: the client value within the old bounds');
+    }
+
+    /** PBQs are otherwise always all included; a configured count is never exceeded by them. */
+    public function testCourseExamConfiguredCountCapsPbqs(): void {
+        $questions = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $q = $this->makeQuestion(800 + $i, 42, 'P' . $i);
+            $q->setQuestionType('pbq');
+            $questions[] = $q;
+        }
+        for ($i = 1; $i <= 6; $i++) {
+            $questions[] = $this->makeQuestion(900 + $i, 42, 'Q' . $i);
+        }
+        [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => 4, 'minutes' => 10]);
+
+        $service->startSession(42, 'alice', null, 'exam', null, null, 7);
+
+        $this->assertSame(4, $this->findInsertBuilder($db)->insertValues['total_questions']['value']);
+    }
+
     /** Exams outside a course never count towards a certificate; their size stays the client's. */
     public function testPoolExamWithoutCourseKeepsClientLimit(): void {
         $questions = [];
@@ -765,7 +835,7 @@ class TrainingServiceTest extends TestCase {
      * @param Question[] $questions
      * @return array{0: TrainingService, 1: FakeDbConnection}
      */
-    private function buildCourseExamService(array $questions, bool $fromCourse = true): array {
+    private function buildCourseExamService(array $questions, bool $fromCourse = true, ?array $examScope = null): array {
         $db = new FakeDbConnection([
             new FakeQueryBuilder(FakeResult::fromFetch(false)),      // active exam lookup
             new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempts in the last 24 h
@@ -792,9 +862,13 @@ class TrainingServiceTest extends TestCase {
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
         if ($fromCourse) {
+            $context = ['question_ids' => $ids];
+            if ($examScope !== null) {
+                $context['exam_scope'] = $examScope;
+            }
             $courseService->expects($this->once())->method('resolveCoursePoolContext')
                 ->with(7, 42, 'alice')
-                ->willReturn(['question_ids' => $ids]);
+                ->willReturn($context);
         }
 
         $service = $this->createService(
