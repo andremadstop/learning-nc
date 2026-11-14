@@ -3511,6 +3511,14 @@
         "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen.": "Ваша панель показує картки до повторення, прогрес за сьогодні та ваш розклад. VirtuProf допомагає вам із питаннями.",
         "slide:student:progress:text:without-gamification": "Навчальна статистика, прогрес за сьогодні та завершення курсу — ви завжди бачите, де перебуваєте.\n\nВаш викладач бачить лише агреговані дані курсу, а не ваш індивідуальний профіль.",
         "Spielmodi": "Ігрові режими",
-        "{n} aktiv": "активно: {n}"
+        "{n} aktiv": "активно: {n}",
+        "Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen.": "Цей розділ підсумовує ваш прогрес у курсі в огляді із сесіями, точністю та відкритими питаннями.",
+        "Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.": "Відкриває учням підсумковий огляд (сесії, точність, проблемні місця). Якщо сертифікацію увімкнено, вони бачать вкладку завершення зі своїм сертифікатом і без цього перемикача.",
+        "Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier.": "Ваш щоденний навчальний огляд: картки до повторення, прогрес за сьогодні, розклад і швидкий доступ. Розпочинайте навчальну сесію звідси.",
+        "Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan.": "Огляд дня: картки до повторення, прогрес за сьогодні та розклад.",
+        "Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist.": "Тут ви бачите свій особистий навчальний прогрес у цьому курсі: сесії, ваш рівень у кожному пулі та останні сесії. Стежте, як далеко ви просунулися.",
+        "Deine persönliche Statistik: Sessions und Stand pro Pool.": "Ваша особиста статистика: сесії та рівень у кожному пулі.",
+        "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen.": "Ваше завершення курсу підсумовує сесії, точність і проблемні місця в одному огляді.",
+        "Kursübersicht mit Sessions, Genauigkeit und Problemstellen.": "Огляд курсу із сесіями, точністю та проблемними місцями."
     }
 }

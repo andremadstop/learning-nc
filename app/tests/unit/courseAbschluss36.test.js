@@ -77,11 +77,11 @@ async function flush() {
 
 let host, app, liveProps
 
-async function renderCourse({ props = {}, course = {}, routeTab = '' } = {}) {
+async function renderCourse({ props = {}, course = {}, routeTab = '', tools = { enabled_tools: null } } = {}) {
 	api.routes['/apps/learning/api/courses/{courseId}'] = {
 		id: 5, title: 'Pflichtschulung', status: 'active', is_instructor: false, pools: [], members: [], ...course,
 	}
-	api.routes['/apps/learning/api/settings/tools'] = { enabled_tools: null }
+	api.routes['/apps/learning/api/settings/tools'] = tools
 	api.routes['/apps/learning/api/courses/{courseId}/students/{studentId}'] = {
 		user_id: 'learner',
 		display_name: 'Lena',
@@ -237,4 +237,32 @@ describe('CourseDetail hands the gamification switch to the course rules (GitHub
 			expect(host.querySelector('.stub-verwaltung')?.dataset.gamification).toBe(String(enabled))
 		})
 	}
+})
+
+describe('texts without XP, streaks and badges with gamification off (GitHub #36)', () => {
+	it('the summary guide and the course_summary description name no streaks, XP or badges', async () => {
+		const detail = await renderCourse({ props: { gamificationEnabled: false }, course: certifying() })
+		expect(detail.learningGuidePayload('summary').text).not.toMatch(/Streak|Badge|XP/)
+		app.unmount()
+		host.remove()
+		const on = await renderCourse({ course: certifying() })
+		expect(on.learningGuidePayload('summary').text).toMatch(/Streaks, Badges/)
+	})
+
+	it('the learner Abschluss area hands the AI switch to the summary (swarm counters)', async () => {
+		for (const ai of [false, true]) {
+			api.routes['/apps/learning/api/courses/{courseId}/summary'] = {
+				mastery: {}, sessions: {}, xp: {}, streak: {}, duels: {}, badges: [], swarm: { total_contributions: 2 }, trouble_spots: [],
+			}
+			api.routes['/apps/learning/api/courses/5/pass-status'] = { applicable: false }
+			const detail = await renderCourse({ course: certifying({ course_summary: true }), tools: { enabled_tools: null, ai_enabled: ai } })
+			detail.selectMegaTab('abschluss')
+			await flush()
+			expect(host.querySelector('.abschluss-mega-tab .snapshot-card'), 'summary statistics rendered').not.toBeNull()
+			expect(host.querySelector('.abschluss-mega-tab .snapshot-inline-stats') !== null).toBe(ai)
+			app.unmount()
+			host.remove()
+			app = null
+		}
+	})
 })

@@ -3512,5 +3512,13 @@ OC.L10N.register(
     "slide:student:progress:text:without-gamification" : "Lernstatistiken, Tagesfortschritt und dein Kursabschluss — du siehst immer wo du stehst.\n\nDein Dozent sieht nur aggregierte Kurs-Daten, nicht dein individuelles Profil.",
     "Spielmodi" : "Spielmodi",
     "{n} aktiv" : "{n} aktiv",
+    "Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen." : "Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen.",
+    "Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter." : "Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.",
+    "Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier." : "Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier.",
+    "Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan." : "Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan.",
+    "Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist." : "Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist.",
+    "Deine persönliche Statistik: Sessions und Stand pro Pool." : "Deine persönliche Statistik: Sessions und Stand pro Pool.",
+    "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen." : "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen.",
+    "Kursübersicht mit Sessions, Genauigkeit und Problemstellen." : "Kursübersicht mit Sessions, Genauigkeit und Problemstellen.",
 },
 "nplurals=2; plural=(n != 1);");

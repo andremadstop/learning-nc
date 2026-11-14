@@ -3511,6 +3511,14 @@
         "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen.": "Your dashboard shows due cards, today's progress and your schedule. VirtuProf helps you with questions.",
         "slide:student:progress:text:without-gamification": "Learning stats, today's progress and your course completion — you always see where you stand.\n\nYour instructor sees only aggregated course data, not your individual profile.",
         "Spielmodi": "Game modes",
-        "{n} aktiv": "{n} active"
+        "{n} aktiv": "{n} active",
+        "Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen.": "This area summarizes your course progress in an overview with sessions, accuracy and open questions.",
+        "Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.": "Releases the completion overview to learners (sessions, accuracy, trouble spots). With certification switched on, they see the completion tab with their certificate even without this switch.",
+        "Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier.": "Your daily learning overview: due cards, today's progress, schedule and quick access. Start your learning session from here.",
+        "Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan.": "Daily overview with due cards, today's progress and schedule.",
+        "Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist.": "Here you see your personal learning progress in this course: sessions, where you stand per pool and your recent sessions. Track how far you've come.",
+        "Deine persönliche Statistik: Sessions und Stand pro Pool.": "Your personal stats: sessions and where you stand per pool.",
+        "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen.": "Your course completion summarizes sessions, accuracy and trouble spots in one overview.",
+        "Kursübersicht mit Sessions, Genauigkeit und Problemstellen.": "Course overview with sessions, accuracy and trouble spots."
     }
 }

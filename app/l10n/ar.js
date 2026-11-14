@@ -3512,5 +3512,13 @@ OC.L10N.register(
     "slide:student:progress:text:without-gamification" : "إحصاءات التعلم وتقدم اليوم وإتمام الدورة — ترى دائمًا أين أنت.\n\nمدربك يرى بيانات الدورة المُجمَّعة فقط، لا ملفك الشخصي.",
     "Spielmodi" : "أوضاع اللعب",
     "{n} aktiv" : "النشطة: {n}",
+    "Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen." : "يلخّص هذا القسم تقدّمك في الدورة في نظرة عامة تضم الجلسات والدقة والأسئلة المفتوحة.",
+    "Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter." : "يتيح للمتعلّمين ملخص الإتمام (الجلسات والدقة والنقاط الإشكالية). عند تفعيل الشهادات يرون تبويب الإتمام مع شهادتهم حتى من دون هذا المفتاح.",
+    "Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier." : "نظرتك اليومية على التعلم: البطاقات المستحقة وتقدم اليوم والجدول والوصول السريع. ابدأ جلسة التعلم من هنا.",
+    "Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan." : "نظرة يومية تضم البطاقات المستحقة وتقدم اليوم والجدول.",
+    "Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist." : "هنا ترى تقدّمك الشخصي في هذه الدورة: الجلسات ومستواك في كل مجموعة أسئلة وآخر جلساتك. تابع إلى أي مدى وصلت.",
+    "Deine persönliche Statistik: Sessions und Stand pro Pool." : "إحصاءاتك الشخصية: الجلسات ومستواك في كل مجموعة أسئلة.",
+    "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen." : "يلخّص إتمام دورتك الجلسات والدقة والنقاط الإشكالية في نظرة عامة واحدة.",
+    "Kursübersicht mit Sessions, Genauigkeit und Problemstellen." : "نظرة عامة على الدورة تضم الجلسات والدقة والنقاط الإشكالية.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

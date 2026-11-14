@@ -155,6 +155,15 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 		expect(host.querySelector('[data-test="game-modes-count"]').textContent).toBe('1 aktiv')
 	})
 
+	it('describes the completion tab without XP and badges when gamification is off', async () => {
+		await mountTab({ props: { gamificationEnabled: false } })
+		expect(host.querySelector('[data-test="mode-desc-course_summary"]').textContent).not.toMatch(/XP|Abzeichen/)
+		app.unmount()
+		host.remove()
+		await mountTab()
+		expect(host.querySelector('[data-test="mode-desc-course_summary"]').textContent).toContain('XP, Abzeichen')
+	})
+
 	it('keeps the mode list unchanged with gamification on', async () => {
 		await mountTab()
 		expect(host.querySelector('[data-test="game-modes"]')).toBeNull()

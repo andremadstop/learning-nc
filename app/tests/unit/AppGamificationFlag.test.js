@@ -105,4 +105,22 @@ describe('App.vue: the global gamification switch (GitHub #36)', () => {
 		const vm = await mountApp('/dashboard')
 		expect(vm.gamificationEnabled).toBe(true)
 	})
+
+	// GitHub #36: the VirtuProf view guides must not promise what the views no longer show
+	it('the view guides of Heute, My progress and the course summary name no streak, XP or badges with gamification off', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		api.personal = { gamification_enabled: false, onboarding_acknowledged: 'yes' }
+		const off = await mountApp('/dashboard')
+		for (const key of ['view:dashboard', 'view:course-my-progress', 'view:course-summary']) {
+			const guide = off.viewGuidePayload(key)
+			expect(`${guide.text} ${guide.shortText}`, key).not.toMatch(/Streak|XP|Level|Badge|Challenge/)
+		}
+		app.unmount()
+		host.remove()
+
+		api.personal = { onboarding_acknowledged: 'yes' }
+		const on = await mountApp('/dashboard')
+		expect(on.viewGuidePayload('view:dashboard').text).toMatch(/Daily Challenge, Streak/)
+		expect(on.viewGuidePayload('view:course-summary').text).toMatch(/Streaks, Badges/)
+	})
 })

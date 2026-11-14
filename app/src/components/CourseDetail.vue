@@ -98,7 +98,8 @@
 					:course-id="courseId"
 					:course-name="course.title || ''"
 					:course="course"
-					:gamification-enabled="gamificationEnabled" />
+					:gamification-enabled="gamificationEnabled"
+					:ai-enabled="adminAiEnabled" />
 				<CourseRecentSessions
 					v-if="myUserId"
 					:course-id="courseId"
@@ -669,7 +670,10 @@ export default {
 				summary: {
 					key: 'mode:course-summary',
 					title: t('learning', 'Kursabschluss'),
-					text: t('learning', 'Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Meisterschaft, Streaks, Badges und offenen Fragen zusammen.'),
+					// GitHub #36: without gamification there are no streaks and badges to name
+					text: this.gamificationEnabled
+						? t('learning', 'Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Meisterschaft, Streaks, Badges und offenen Fragen zusammen.')
+						: t('learning', 'Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen.'),
 					shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand für den Kurs.'),
 				},
 			}

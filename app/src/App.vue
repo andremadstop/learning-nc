@@ -1073,6 +1073,23 @@ export default {
         },
       };
 
+      // GitHub #36: without gamification these views show no daily challenge, streak, XP,
+      // level or badges; the guide must not promise them.
+      if (!this.gamificationEnabled) {
+        Object.assign(guides['view:dashboard'], {
+          text: t('learning', 'Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier.'),
+          shortText: t('learning', 'Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan.'),
+        });
+        Object.assign(guides['view:course-my-progress'], {
+          text: t('learning', 'Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist.'),
+          shortText: t('learning', 'Deine persönliche Statistik: Sessions und Stand pro Pool.'),
+        });
+        Object.assign(guides['view:course-summary'], {
+          text: t('learning', 'Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen.'),
+          shortText: t('learning', 'Kursübersicht mit Sessions, Genauigkeit und Problemstellen.'),
+        });
+      }
+
       const guide = guides[viewKey];
       if (!guide) {
         return null;

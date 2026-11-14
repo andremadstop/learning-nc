@@ -521,7 +521,14 @@ export default {
 				{ key: 'league', label: t('learning', 'Liga'), description: t('learning', 'Wertung der Kursmitglieder über eine ganze Saison statt über eine einzelne Runde.') },
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer'), description: t('learning', 'Story-Kampagnen, in denen die Fragen in eine Handlung eingebettet sind. Die Auswahl der Kampagnen erscheint nur, solange Abenteuer eingeschaltet ist.') },
 				{ key: 'classbook', label: t('learning', 'Klassenbuch'), description: t('learning', 'Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.') },
-				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab'), description: t('learning', 'Gibt den Lernenden ihre Abschluss-Übersicht frei (Beherrschung, XP, Abzeichen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.') },
+				{
+					key: 'course_summary',
+					label: t('learning', 'Abschluss-Tab'),
+					// GitHub #36: without gamification the overview has no XP and no badges
+					description: this.gamificationEnabled
+						? t('learning', 'Gibt den Lernenden ihre Abschluss-Übersicht frei (Beherrschung, XP, Abzeichen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.')
+						: t('learning', 'Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.'),
+				},
 			]
 		},
 		// GitHub #36: with gamification off duel, gameshow, league and adventure are "Spielmodi" in

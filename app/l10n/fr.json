@@ -3511,6 +3511,14 @@
         "Dein Dashboard zeigt fällige Karten, deinen Tagesfortschritt und deinen Zeitplan. VirtuProf hilft dir bei Fragen.": "Votre tableau de bord affiche les cartes dues, la progression du jour et votre planning. VirtuProf vous aide pour vos questions.",
         "slide:student:progress:text:without-gamification": "Statistiques d’apprentissage, progression du jour et bilan de cours — vous voyez toujours où vous en êtes.\n\nVotre formateur ne voit que des données de cours agrégées, pas votre profil individuel.",
         "Spielmodi": "Modes de jeu",
-        "{n} aktiv": "{n} actif(s)"
+        "{n} aktiv": "{n} actif(s)",
+        "Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Sessions, Genauigkeit und offenen Fragen zusammen.": "Cet espace résume votre progression dans le cours : sessions, précision et questions ouvertes.",
+        "Gibt den Lernenden ihre Abschluss-Übersicht frei (Sessions, Genauigkeit, Problemstellen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.": "Rend le bilan de fin de cours visible pour les apprenants (sessions, précision, points problématiques). Si la certification est activée, ils voient l'onglet de fin de cours avec leur certificat même sans cet interrupteur.",
+        "Deine tägliche Lernübersicht: fällige Karten, Tagesfortschritt, Zeitplan und Schnellzugriffe. Starte deine Lernsession von hier.": "Votre aperçu d’apprentissage du jour : cartes dues, progression du jour, planning et accès rapides. Commencez votre session d’apprentissage ici.",
+        "Tagesübersicht mit fälligen Karten, Tagesfortschritt und Zeitplan.": "Aperçu du jour avec les cartes dues, la progression du jour et le planning.",
+        "Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: Sessions, deinen Stand pro Pool und deine letzten Sessions. Verfolge, wie weit du gekommen bist.": "Ici, vous voyez votre progression personnelle dans ce cours : sessions, votre niveau par pool et vos dernières sessions. Suivez le chemin parcouru.",
+        "Deine persönliche Statistik: Sessions und Stand pro Pool.": "Vos statistiques personnelles : sessions et niveau par pool.",
+        "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen.": "Votre bilan de cours résume les sessions, la précision et les points problématiques en une vue d’ensemble.",
+        "Kursübersicht mit Sessions, Genauigkeit und Problemstellen.": "Vue d’ensemble du cours avec sessions, précision et points problématiques."
     }
 }

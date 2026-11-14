@@ -163,7 +163,7 @@
 						<span v-if="snapshot">{{ t('learning', 'Zuletzt gesichert: {date}', { date: formatTimestamp(snapshot.created_at) }) }}</span>
 						<span v-else>{{ t('learning', 'Sichere deinen aktuellen Stand dauerhaft für später.') }}</span>
 					</div>
-					<div class="snapshot-inline-stats">
+					<div v-if="aiEnabled" class="snapshot-inline-stats">
 						<div class="snapshot-inline-stat">
 							<span class="snapshot-inline-value">{{ formatNumber(swarm.total_contributions) }}</span>
 							<span class="snapshot-inline-label">{{ t('learning', 'Schwarm-Beiträge') }}</span>
@@ -337,6 +337,12 @@ export default {
 		gamificationEnabled: {
 			type: Boolean,
 			default: true,
+		},
+		// GitHub #36: the admin's AI switch (GET /api/settings/tools via CourseDetail). The swarm
+		// feeds the AI assistant's knowledge; without AI its counters are left out. Unknown = off.
+		aiEnabled: {
+			type: Boolean,
+			default: false,
 		},
 	},
 

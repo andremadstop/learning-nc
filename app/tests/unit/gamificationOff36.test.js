@@ -231,6 +231,18 @@ describe('CourseSummary (GitHub #36)', () => {
 		expect(cards()).toEqual(expect.arrayContaining(['Meisterschaft', 'XP & Level', 'Streak', 'Duell-Win-Rate', 'Badge-Galerie']))
 		expect(host.querySelector('.stats-grid').classList.contains('grid--single')).toBe(false)
 	})
+
+	// GitHub #36: the swarm feeds the AI assistant's knowledge
+	it('shows the swarm counters in the snapshot card only with AI on', async () => {
+		await renderSummary({ aiEnabled: false })
+		expect(host.querySelector('.snapshot-card')).not.toBeNull()
+		expect(host.querySelector('.snapshot-inline-stats')).toBeNull()
+		app.unmount()
+		host.remove()
+
+		await renderSummary({ aiEnabled: true })
+		expect(host.querySelector('.snapshot-inline-stats')?.textContent).toContain('Schwarm-Beiträge')
+	})
 })
 
 describe('summaryToMarkdown (GitHub #36)', () => {
