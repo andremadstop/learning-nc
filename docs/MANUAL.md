@@ -854,9 +854,14 @@ completed what, and what has expired.
 
 To keep copies for an audit, each row of the report in **Participants → Completion &
 certificate** has **View** (the learner's certificate; **Print** saves it as PDF) and
-**Download** (the learner's signed certificate file, Open Badges JSON-LD). **Download all
-(ZIP)** packs every certificate of the filtered list; expired ones carry `_expired` in the
-file name. Only instructors of the course get these copies, and each access is logged.
+**Download (JSON)** (the learner's signed certificate file, Open Badges JSON-LD, which a
+verifier can check by machine). **Download all as JSON (ZIP)** packs the signed files of every
+certificate in the filtered list; expired ones carry `_expired` in the file name. The ZIP holds
+no PDFs: the PDF is the learner's own certificate page printed by the browser, and Learning
+has no second, server-side PDF renderer that could drift from it. For a PDF copy, use
+**View → Print** per certificate. Only instructors of the course (its creator and
+co-instructors) get these copies, the same people who see the report, and each access is
+logged.
 
 You can verify the audit chain's integrity at any time:
 

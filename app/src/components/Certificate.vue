@@ -78,7 +78,8 @@
 					class="certificate-download-link"
 					download>
 					<NcButton variant="primary" @click.prevent="download">
-						{{ t('learning', 'Herunterladen') }}
+						<!-- GitHub #42: in the instructor copy the label says what the file is; the learner view is unchanged. -->
+						{{ courseId === null ? t('learning', 'Herunterladen') : t('learning', 'Herunterladen (JSON)') }}
 					</NcButton>
 				</a>
 				<NcButton v-if="courseId === null" variant="secondary" @click="openLinkedIn">

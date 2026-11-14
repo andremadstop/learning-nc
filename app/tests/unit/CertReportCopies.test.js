@@ -114,9 +114,17 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 	it('offers View and Download next to Revoke on every row, with a name for screen readers', () => {
 		const row = view.host.querySelector('.cert-report-table tbody tr')
 		const labels = Array.from(row.querySelectorAll('button')).map((b) => b.textContent.trim())
-		expect(labels).toEqual(['Ansehen', 'Herunterladen', 'Widerrufen'])
+		expect(labels).toEqual(['Ansehen', 'Herunterladen (JSON)', 'Widerrufen'])
 		expect(row.querySelector('.cert-view').getAttribute('aria-label')).toBe('Zertifikat von Jürgen Müller ansehen')
-		expect(row.querySelector('.cert-download').getAttribute('aria-label')).toBe('Zertifikat von Jürgen Müller herunterladen')
+		expect(row.querySelector('.cert-download').getAttribute('aria-label')).toBe('Signierte Zertifikatsdatei (JSON) von Jürgen Müller herunterladen')
+	})
+
+	it('says what the copies are: the downloads are the signed JSON files, the PDF is View -> Print', () => {
+		expect(view.host.querySelector('.cert-report-zip').textContent.trim()).toBe('Alle als JSON herunterladen (ZIP)')
+		const hint = view.host.querySelector('.cert-report-copies-hint')
+		expect(hint).not.toBeNull()
+		expect(hint.textContent).toContain('PDF')
+		expect(hint.textContent).toContain('JSON')
 	})
 
 	it('Download fetches the learner file through the course-scoped instructor endpoint', async () => {
@@ -142,7 +150,7 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		input.dispatchEvent(new Event('input'))
 		await nextTick()
 
-		buttonByText(view.host, 'Alle herunterladen (ZIP)').click()
+		buttonByText(view.host, 'Alle als JSON herunterladen (ZIP)').click()
 		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/zip?' + applied)
 	})
 
@@ -157,6 +165,8 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		expect(axios.get).not.toHaveBeenCalledWith(`/apps/learning/api/certificates/${VID}`)
 		expect(modal.querySelector('.certificate-title').textContent).toContain('Compliance')
 		expect(buttonByText(modal, 'Drucken')).toBeTruthy()
+		// The instructor copy names the file type; the learner view below keeps the plain label.
+		expect(buttonByText(modal, 'Herunterladen (JSON)')).toBeTruthy()
 		expect(modal.textContent).not.toContain('LinkedIn')
 	})
 })
@@ -196,5 +206,17 @@ describe('Certificate.vue in instructor mode labels a certificate that no longer
 	it('learner view is unchanged: own endpoint, LinkedIn offered, no note', async () => {
 		expect(await note({ revoked: true }, {})).toBeNull()
 		expect(axios.get).toHaveBeenCalledWith(`/apps/learning/api/certificates/${VID}`)
+	})
+
+	it('learner view keeps the plain Download label', async () => {
+		axios.get.mockResolvedValue({ data: { verification_id: VID, credential_json: makeJwt(CREDENTIAL) } })
+		const view = mount(Certificate, { verificationId: VID })
+		await flush()
+		try {
+			expect(buttonByText(view.host, 'Herunterladen')).toBeTruthy()
+			expect(buttonByText(view.host, 'Herunterladen (JSON)')).toBeUndefined()
+		} finally {
+			view.unmount()
+		}
 	})
 })

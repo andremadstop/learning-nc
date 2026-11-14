@@ -3500,9 +3500,11 @@
         "Die Antwort konnte nicht gesendet werden.": "La réponse n’a pas pu être envoyée.",
         "Genauigkeit pro Pool": "Précision par pool",
         "Ansehen": "Afficher",
-        "Alle herunterladen (ZIP)": "Tout télécharger (ZIP)",
+        "Alle als JSON herunterladen (ZIP)": "Tout télécharger en JSON (ZIP)",
         "Zertifikat von {name} ansehen": "Afficher le certificat de {name}",
-        "Zertifikat von {name} herunterladen": "Télécharger le certificat de {name}",
+        "Signierte Zertifikatsdatei (JSON) von {name} herunterladen": "Télécharger le fichier de certificat signé (JSON) de {name}",
+        "Herunterladen (JSON)": "Télécharger (JSON)",
+        "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).": "PDF : « Afficher », puis « Imprimer » (enregistrer en PDF). « Télécharger » fournit le fichier de certificat signé et vérifiable par machine (Open Badges, JSON).",
         "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "Ce certificat a été révoqué et n’est plus valable.",
         "Dieses Zertifikat ist abgelaufen.": "Ce certificat a expiré."
     }

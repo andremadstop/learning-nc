@@ -407,10 +407,14 @@
 							size="small"
 							class="cert-report-zip"
 							@click="downloadAllCertificates">
-							{{ t('learning', 'Alle herunterladen (ZIP)') }}
+							{{ t('learning', 'Alle als JSON herunterladen (ZIP)') }}
 						</NcButton>
 					</div>
 				</div>
+				<!-- GitHub #42: the copies are the signed certificate files, not PDFs; the PDF is View → Print. -->
+				<p v-if="certRows.length > 0" class="cert-report-copies-hint">
+					{{ t('learning', 'PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).') }}
+				</p>
 				<NcNoteCard v-if="certSigningAvailable === false" type="error" class="cert-signing-warning">
 					{{ t('learning', 'Zertifikate können derzeit nicht ausgestellt werden: Es gibt keinen nutzbaren Signaturschlüssel. Teilnehmende, die bestehen, erhalten erst ein Zertifikat, wenn die Administration den Schlüssel eingerichtet hat (occ learning:cert:init-issuer).') }}
 				</NcNoteCard>
@@ -480,9 +484,9 @@
 										<NcButton variant="tertiary"
 											size="small"
 											class="cert-download"
-											:aria-label="t('learning', 'Zertifikat von {name} herunterladen', { name: row.display_name })"
+											:aria-label="t('learning', 'Signierte Zertifikatsdatei (JSON) von {name} herunterladen', { name: row.display_name })"
 											@click="downloadCertificate(row)">
-											{{ t('learning', 'Herunterladen') }}
+											{{ t('learning', 'Herunterladen (JSON)') }}
 										</NcButton>
 										<NcButton variant="tertiary"
 											size="small"
@@ -1350,6 +1354,7 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .cert-report-table .cert-vid { font-family: monospace; font-size: 11px; color: var(--color-text-maxcontrast); }
 .cert-report-table .cert-expired-tag { color: var(--color-error-text, var(--color-error)); font-weight: 600; }
 .cert-report-empty { margin-top: 12px; color: var(--color-text-maxcontrast); font-size: 13px; }
+.cert-report-copies-hint { margin-block: 8px 0; color: var(--color-text-maxcontrast); font-size: 13px; }
 
 /* Modal */
 .modal-content { padding: 24px; min-width: 320px; }
