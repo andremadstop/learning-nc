@@ -95,7 +95,7 @@ import VirtuProfFullscreen from './VirtuProfFullscreen.vue'
 import { novaReactions } from '../utils/nova-reaction-engine.js'
 import { novaAudio } from '../utils/nova-audio-manager.js'
 import OnboardingIntro from './OnboardingIntro.vue'
-import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
+import { faqCatalogue, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import {
   detectVirtuProfLanguage,
   translateVirtuProf,
@@ -232,7 +232,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    // GitHub #36: the admin's gamification switch (App.vue), for the onboarding slides.
+    // GitHub #36: the admin's gamification switch (App.vue), for the onboarding slides and the FAQ.
     gamificationEnabled: {
       type: Boolean,
       default: true,
@@ -401,7 +401,18 @@ export default {
       }
       return this.vt('Help, hints and learning profile')
     },
+    // GitHub #36: without gamification no XP/streak/badge/leaderboard entries, neutral texts.
+    activeFaqCatalogue() {
+      return faqCatalogue(this.gamificationEnabled)
+    },
+    faqs() {
+      return this.activeFaqCatalogue.faqs
+    },
+    faqCategories() {
+      return this.activeFaqCatalogue.categories
+    },
     orderedFaqIds() {
+      const FAQS = this.faqs
       const ids = Object.keys(FAQS).filter(id => {
         if (!this.activeFaqCategoryId) {
           return true
@@ -411,6 +422,7 @@ export default {
       return ids.sort((left, right) => this.vt(FAQS[left].label).localeCompare(this.vt(FAQS[right].label)))
     },
     orderedFaqCategoryIds() {
+      const FAQ_CATEGORIES = this.faqCategories
       const ids = Object.keys(FAQ_CATEGORIES)
       const recommendedId = this.recommendedFaqCategoryId()
       if (!recommendedId || !FAQ_CATEGORIES[recommendedId]) {
@@ -1298,7 +1310,7 @@ export default {
       this.currentAnimation = 'talk'
     },
     openFaqCategory(categoryId) {
-      if (!FAQ_CATEGORIES[categoryId]) {
+      if (!this.faqCategories[categoryId]) {
         return
       }
       this.resetTicketFeedback()
@@ -1310,13 +1322,14 @@ export default {
       this.currentAnimation = 'talk'
     },
     openFaq(faqId) {
-      if (!FAQS[faqId]) {
+      const faq = this.faqs[faqId]
+      if (!faq) {
         return
       }
       this.resetTicketFeedback()
       this.helpView = 'faq-answer'
       this.activeFaqId = faqId
-      this.activeFaqCategoryId = FAQS[faqId].category || null
+      this.activeFaqCategoryId = faq.category || null
       this.visible = true
       this.isMinimized = false
       this.currentAnimation = 'talk'
@@ -1579,7 +1592,7 @@ export default {
         actionLayout: 'stacked',
         actions: [
           ...this.orderedFaqCategoryIds.map(categoryId => ({
-            label: this.vt(FAQ_CATEGORIES[categoryId].label),
+            label: this.vt(this.faqCategories[categoryId].label),
             type: 'open-faq-category',
             categoryId,
           })),
@@ -1588,7 +1601,7 @@ export default {
       }
     },
     buildFaqCategoryStep() {
-      const category = FAQ_CATEGORIES[this.activeFaqCategoryId]
+      const category = this.faqCategories[this.activeFaqCategoryId]
       if (!category) {
         return this.buildFaqListStep()
       }
@@ -1598,7 +1611,7 @@ export default {
         actionLayout: 'stacked',
         actions: [
           ...this.orderedFaqIds.map(faqId => ({
-            label: this.vt(FAQS[faqId].label),
+            label: this.vt(this.faqs[faqId].label),
             type: 'open-faq',
             faqId,
           })),
@@ -1608,7 +1621,7 @@ export default {
       }
     },
     buildFaqAnswerStep() {
-      const faq = FAQS[this.activeFaqId]
+      const faq = this.faqs[this.activeFaqId]
       if (!faq) {
         return this.buildFaqListStep()
       }
@@ -2221,7 +2234,7 @@ export default {
       }
     },
     defaultTicketSubject() {
-      const faq = this.activeFaqId && FAQS[this.activeFaqId] ? FAQS[this.activeFaqId] : null
+      const faq = this.activeFaqId && this.faqs[this.activeFaqId] ? this.faqs[this.activeFaqId] : null
       if (faq?.title) {
         return this.vt(faq.title)
       }

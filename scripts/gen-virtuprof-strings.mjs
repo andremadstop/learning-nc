@@ -141,7 +141,9 @@ async function collectKeys() {
     }
   }
 
-  const { SCRIPTS, FAQS, FAQ_CATEGORIES } = await import(pathToFileURL(SCRIPTS_MODULE).href)
+  const {
+    SCRIPTS, FAQS, FAQ_CATEGORIES, FAQS_WITHOUT_GAMIFICATION = {}, FAQ_CATEGORIES_WITHOUT_GAMIFICATION = {},
+  } = await import(pathToFileURL(SCRIPTS_MODULE).href)
   for (const script of Object.values(SCRIPTS)) {
     for (const step of script.steps || []) {
       add(step.text, SCRIPTS_MODULE)
@@ -152,6 +154,13 @@ async function collectKeys() {
     for (const field of ['label', 'title', 'description']) add(category[field], SCRIPTS_MODULE)
   }
   for (const faq of Object.values(FAQS)) {
+    for (const field of ['label', 'title', 'text']) add(faq[field], SCRIPTS_MODULE)
+  }
+  // GitHub #36: the neutral texts VirtuProf shows instead with gamification off (faqCatalogue)
+  for (const category of Object.values(FAQ_CATEGORIES_WITHOUT_GAMIFICATION)) {
+    for (const field of ['label', 'title', 'description']) add(category[field], SCRIPTS_MODULE)
+  }
+  for (const faq of Object.values(FAQS_WITHOUT_GAMIFICATION)) {
     for (const field of ['label', 'title', 'text']) add(faq[field], SCRIPTS_MODULE)
   }
 

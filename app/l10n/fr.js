@@ -3520,5 +3520,8 @@ OC.L10N.register(
     "Deine persönliche Statistik: Sessions und Stand pro Pool." : "Vos statistiques personnelles : sessions et niveau par pool.",
     "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen." : "Votre bilan de cours résume les sessions, la précision et les points problématiques en une vue d’ensemble.",
     "Kursübersicht mit Sessions, Genauigkeit und Problemstellen." : "Vue d’ensemble du cours avec sessions, précision et points problématiques.",
+    "Fortschritt im Kurs" : "Progression dans le cours",
+    "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Votre niveau dans le cours : questions maîtrisées et répondues, et vos points faibles.",
+    "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "À la fin, vous voyez votre score et le nombre de bonnes réponses. L'entraînement compare aussi votre résultat à votre moyenne et peut signaler un record personnel.",
 },
 "nplurals=2; plural=(n > 1);");

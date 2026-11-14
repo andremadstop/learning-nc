@@ -3520,5 +3520,8 @@ OC.L10N.register(
     "Deine persönliche Statistik: Sessions und Stand pro Pool." : "Твоя личная статистика: сессии и уровень по пулам.",
     "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen." : "Итог курса сводит сессии, точность и проблемные места в один обзор.",
     "Kursübersicht mit Sessions, Genauigkeit und Problemstellen." : "Обзор курса: сессии, точность и проблемные места.",
+    "Fortschritt im Kurs" : "Прогресс в курсе",
+    "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Ваше положение в курсе: освоенные и отвеченные вопросы и ваши слабые места.",
+    "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "В конце вы увидите свой счёт и число правильных ответов. Тренировка также сравнивает результат со средним и может отметить личный рекорд.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

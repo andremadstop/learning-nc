@@ -619,3 +619,51 @@ export const FAQS = {
     text: 'Tägliche Herausforderung, Benachrichtigungen und verwandte Toggles steuern, wie viel zusätzliche Orientierungshilfe oder Erinnerungsverhalten du bekommst. Sie schreiben deine eigentlichen Fragendaten nicht um, können aber ändern, wie die App dich hinweist und informiert.',
   },
 }
+
+/**
+ * GitHub #36: FAQ entries about things that do not exist with the admin's gamification switch
+ * off (XP, level, streaks, badges, the learners' leaderboard). They are left out then.
+ */
+export const GAMIFICATION_FAQ_IDS = ['xp-levels', 'streaks', 'badges', 'leaderboard']
+
+/** GitHub #36: categories that name XP/streaks/badges get a neutral text with gamification off. */
+export const FAQ_CATEGORIES_WITHOUT_GAMIFICATION = {
+  progress: {
+    label: 'Fortschritt im Kurs',
+    title: 'Fortschritt im Kurs',
+    description: 'Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen.',
+  },
+}
+
+/** GitHub #36: FAQ answers that promise XP/streaks/badges get a neutral text with gamification off. */
+export const FAQS_WITHOUT_GAMIFICATION = {
+  'training-results': {
+    text: 'Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren.',
+  },
+}
+
+/**
+ * The FAQ categories and entries VirtuProf offers. With gamification on (or unknown) this is
+ * FAQ_CATEGORIES/FAQS unchanged; with it off the gamification entries are left out and the
+ * affected texts are replaced by their neutral variants.
+ *
+ * @param {boolean} gamificationEnabled
+ * @returns {{ categories: object, faqs: object }}
+ */
+export function faqCatalogue(gamificationEnabled = true) {
+  if (gamificationEnabled !== false) {
+    return { categories: FAQ_CATEGORIES, faqs: FAQS }
+  }
+  const categories = {}
+  for (const [id, category] of Object.entries(FAQ_CATEGORIES)) {
+    categories[id] = { ...category, ...(FAQ_CATEGORIES_WITHOUT_GAMIFICATION[id] || {}) }
+  }
+  const faqs = {}
+  for (const [id, faq] of Object.entries(FAQS)) {
+    if (GAMIFICATION_FAQ_IDS.includes(id)) {
+      continue
+    }
+    faqs[id] = { ...faq, ...(FAQS_WITHOUT_GAMIFICATION[id] || {}) }
+  }
+  return { categories, faqs }
+}

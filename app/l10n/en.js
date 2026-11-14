@@ -3520,5 +3520,8 @@ OC.L10N.register(
     "Deine persönliche Statistik: Sessions und Stand pro Pool." : "Your personal stats: sessions and where you stand per pool.",
     "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen." : "Your course completion summarizes sessions, accuracy and trouble spots in one overview.",
     "Kursübersicht mit Sessions, Genauigkeit und Problemstellen." : "Course overview with sessions, accuracy and trouble spots.",
+    "Fortschritt im Kurs" : "Progress in the course",
+    "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Your standing in the course: mastered and answered questions and your weak spots.",
+    "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "At the end you see your score and the number of correct answers. Training also compares your result with your average and can mark a personal best.",
 },
 "nplurals=2; plural=(n != 1);");

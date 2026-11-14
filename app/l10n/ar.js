@@ -3520,5 +3520,8 @@ OC.L10N.register(
     "Deine persönliche Statistik: Sessions und Stand pro Pool." : "إحصاءاتك الشخصية: الجلسات ومستواك في كل مجموعة أسئلة.",
     "Dein Kursabschluss fasst Sessions, Genauigkeit und Problemstellen in einer Gesamtübersicht zusammen." : "يلخّص إتمام دورتك الجلسات والدقة والنقاط الإشكالية في نظرة عامة واحدة.",
     "Kursübersicht mit Sessions, Genauigkeit und Problemstellen." : "نظرة عامة على الدورة تضم الجلسات والدقة والنقاط الإشكالية.",
+    "Fortschritt im Kurs" : "التقدم في الدورة",
+    "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "مستواك في الدورة: الأسئلة المتقنة والأسئلة المُجاب عنها ونقاط ضعفك.",
+    "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "في النهاية ترى نتيجتك وعدد الإجابات الصحيحة. كما يقارن التدريب نتيجتك بمتوسطك وقد يسجّل رقمًا شخصيًا قياسيًا.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
