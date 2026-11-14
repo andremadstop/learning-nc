@@ -3363,6 +3363,8 @@
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Продление открыто: если вы сейчас сдадите экзамен(ы), ваш сертификат будет продлён.",
         "Die neue Gültigkeit schließt an den {date} an.": "Новый срок действия начнётся с {date}.",
         "Die Erneuerung öffnet am {date}.": "Продление откроется {date}.",
-        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют."
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют.",
+        "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.": "Не удалось запустить кампанию. Попробуйте ещё раз.",
+        "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.": "Не удалось сохранить твоё решение. Попробуй ещё раз."
     }
 }

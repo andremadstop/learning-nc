@@ -3364,5 +3364,7 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "La nouvelle validité prend le relais à partir du {date}.",
     "Die Erneuerung öffnet am {date}." : "Le renouvellement ouvre le {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Seule la sélection « Pools obligatoires » sous Administration → Règles du cours → Certification décide du certificat. Ces options n'y changent rien.",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "La campagne n’a pas pu être lancée. Réessaie.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Ta décision n’a pas pu être enregistrée. Réessaie.",
 },
 "nplurals=2; plural=(n > 1);");

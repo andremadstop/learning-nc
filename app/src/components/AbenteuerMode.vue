@@ -51,7 +51,7 @@
                   ✓ {{ t('learning', 'Abgeschlossen') }}
                 </div>
                 <div v-else class="ab-prog-badge ab-prog-active">
-                  {{ t('learning', 'Szene {n}', { n: campaign.current_scene || 1 }) }}
+                  {{ t('learning', 'In Arbeit') }}
                 </div>
               </div>
             </div>
@@ -95,7 +95,7 @@
                   ✓ {{ t('learning', 'Abgeschlossen') }}
                 </div>
                 <div v-else class="ab-prog-badge ab-prog-active">
-                  {{ t('learning', 'Szene {n}', { n: campaign.current_scene || 1 }) }}
+                  {{ t('learning', 'In Arbeit') }}
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@
       <CampaignIntro
         :campaignId="selectedCampaign.id"
         :title="selectedCampaign.title"
-        :difficulty="selectedCampaign.difficulty || 'normal'"
+        :difficulty="selectedCampaign.difficulty || 'intermediate'"
         @done="phase = 'character-select'"
       />
     </div>
@@ -170,6 +170,7 @@
           {{ t('learning', 'Coop starten') }}
         </button>
       </div>
+      <p v-if="storyError" class="ab-story-error" role="alert">{{ storyError }}</p>
     </div>
 
     <!-- ===== SCENE PHASE ===== -->
@@ -258,6 +259,10 @@
               :text="currentScene.npc_dialog.text"
               :isNarrator="false"
             />
+
+            <p v-if="storyError" class="ab-story-error" role="alert">{{ storyError }}</p>
+            <!-- A 'KI' choice refused for missing consent; with free text on, the hint sits there -->
+            <AiConsentHint v-if="aiConsentRequired && !currentScene.freetext_enabled" @granted="aiConsentRequired = false" />
 
             <!-- Decision cards (linear mode) -->
             <div v-if="currentScene.choices && !narrativeTyping && !choiceMade && !isGraphMode && !currentBotCorrection" class="ab-choices">
@@ -351,11 +356,7 @@
             v-for="answer in currentSkillQuestion.answers"
             :key="answer.id"
             class="ab-answer-btn"
-            :class="{
-              'ab-answer-selected': selectedAnswer === answer.id,
-              'ab-answer-correct': skillAnswered && answer.is_correct,
-              'ab-answer-wrong': skillAnswered && selectedAnswer === answer.id && !answer.is_correct,
-            }"
+            :class="{ 'ab-answer-selected': selectedAnswer === answer.id }"
             :disabled="skillAnswered"
             @click="submitSkillAnswer(answer)"
           >
@@ -366,7 +367,7 @@
 
       <!-- Result overlay -->
       <transition name="rpg-result">
-        <div v-if="skillAnswered" class="ab-result-overlay">
+        <div v-if="skillResultShown" class="ab-result-overlay">
           <div class="ab-result-box" :class="lastAnswerCorrect ? 'ab-result-success' : 'ab-result-fail'">
             <div class="ab-result-icon">{{ lastAnswerCorrect ? '✅' : '❌' }}</div>
             <p class="ab-result-label">
@@ -374,7 +375,7 @@
                 ? t('learning', 'SKILL CHECK BESTANDEN')
                 : t('learning', 'SKILL CHECK FEHLGESCHLAGEN — Aber du lernst daraus!') }}
             </p>
-            <p v-if="!lastAnswerCorrect && currentSkillQuestion.explanation" class="ab-result-explanation">
+            <p v-if="!lastAnswerCorrect && currentSkillQuestion && currentSkillQuestion.explanation" class="ab-result-explanation">
               {{ currentSkillQuestion.explanation }}
             </p>
           </div>
@@ -548,6 +549,7 @@
 import axios from '@nextcloud/axios'
 import AiConsentHint from './AiConsentHint.vue'
 import { isConsentRefusal } from '../utils/aiConsent.js'
+import { campaignDifficultyLabel } from '../utils/campaignDifficulty.js'
 import { generateUrl } from '@nextcloud/router'
 import PbqRenderer from './PbqRenderer.vue'
 import QuestionScenario from './QuestionScenario.vue'
@@ -630,18 +632,6 @@ const STATIC_CAMPAIGNS = [
 		duration_minutes: 75,
 		progress: 'not_started',
 		current_scene: null,
-	},
-	{
-		id: 'test_graph_campaign',
-		icon: '🧪',
-		title: 'Test Graph Kampagne',
-		description: 'Interne Test-Kampagne für den Graph-Modus mit Simulator-Challenges.',
-		difficulty: 'intermediate',
-		focus_areas: ['Network+'],
-		duration_minutes: 30,
-		progress: 'not_started',
-		current_scene: null,
-		is_graph: true,
 	},
 ]
 
@@ -780,6 +770,8 @@ export default {
 			skillAnswered: false,
 			selectedAnswer: null,
 			lastAnswerCorrect: false,
+			// The batch verdict is on screen before the next scene opens
+			skillResultShown: false,
 			advanceTimer: null,
 
 			// Epilog
@@ -846,6 +838,8 @@ export default {
 			freetextInput: '',
 			freetextLoading: false,
 			freetextError: '',
+			// A start or a choice the server refused; the player stays where they were
+			storyError: '',
 			aiConsentRequired: false,
 
 			// Accessibility
@@ -974,6 +968,15 @@ export default {
 		},
 	},
 
+	watch: {
+		// Back on the list after playing: the badges show the state the server has now
+		async phase(next, previous) {
+			if (next === 'campaign-select' && previous && previous !== 'campaign-select' && this.campaigns.length > 0) {
+				this.campaigns = this.applyCampaignProgress(this.campaigns, await this.fetchCampaignProgress())
+			}
+		},
+	},
+
 	mounted() {
 		this._pendingBotResponse = null
 		this._hudDeltaTimer = null
@@ -1003,12 +1006,11 @@ export default {
 			this.loadingCampaigns = true
 			try {
 				const url = generateUrl('/apps/learning/api/story/campaigns')
-				const resp = await axios.get(url, {
-					params: this.courseId ? { courseId: this.courseId } : {},
-				})
+				// Campaigns are not course-bound: the server reads no courseId (audit #143)
+				const [resp, progressRows] = await Promise.all([axios.get(url), this.fetchCampaignProgress()])
 				const raw = resp.data.campaigns || resp.data || []
 				// Normalize: backend uses campaign_id, frontend expects id
-				this.campaigns = this.normalizeCampaignList(raw)
+				this.campaigns = this.applyCampaignProgress(this.normalizeCampaignList(raw), progressRows)
 				if (this.campaigns.length === 0) this.campaigns = this.normalizeCampaignList(STATIC_CAMPAIGNS)
 			} catch (e) {
 				// Backend not yet available — fall back to static graph campaigns only
@@ -1016,6 +1018,36 @@ export default {
 			} finally {
 				this.loadingCampaigns = false
 			}
+		},
+
+		/**
+		 * The player's started and finished campaigns. Without them the list cannot tell new from
+		 * finished, so a failed request leaves every campaign 'Neu' instead of breaking the list.
+		 */
+		async fetchCampaignProgress() {
+			try {
+				const resp = await axios.get(generateUrl('/apps/learning/api/story/progress'))
+				return Array.isArray(resp.data) ? resp.data : []
+			} catch (e) {
+				return []
+			}
+		},
+
+		/**
+		 * Badge state per campaign (audit #88). The list never carried progress, so every card
+		 * showed 'Szene 1'. A graph campaign reads only its graph state row: an old linear row under
+		 * the same ID belongs to a different story.
+		 */
+		applyCampaignProgress(campaigns, progressRows = []) {
+			const rows = Array.isArray(progressRows) ? progressRows : []
+			return campaigns.map((campaign) => {
+				const row = rows.find(r => r && r.campaign_id === campaign.id && !!r.is_graph === !!campaign.is_graph)
+				let progress = 'not_started'
+				if (row) {
+					progress = row.status === 'completed' ? 'completed' : 'in_progress'
+				}
+				return { ...campaign, progress }
+			})
 		},
 
 		normalizeCampaignList(rawCampaigns = []) {
@@ -1041,16 +1073,12 @@ export default {
 
 		selectCampaign(campaign) {
 			this.selectedCampaign = campaign
+			this.storyError = ''
 			this.phase = 'intro'
 		},
 
 		difficultyLabel(d) {
-			const map = {
-				beginner: t('learning', 'Einsteiger'),
-				intermediate: t('learning', 'Fortgeschritten'),
-				advanced: t('learning', 'Experte'),
-			}
-			return map[d] || d
+			return campaignDifficultyLabel(d)
 		},
 
 		// ===== CHARACTER SELECTION =====
@@ -1260,6 +1288,7 @@ export default {
 		async startCampaign() {
 			if (!this.selectedCharacter) return
 			const cid = this.selectedCampaign.id
+			this.storyError = ''
 
 			// Graph-mode: use /graph-start instead of /start
 			if (this.selectedCampaign.is_graph) {
@@ -1269,17 +1298,16 @@ export default {
 				try {
 					const resp = await axios.post(
 						generateUrl(`/apps/learning/api/story/campaigns/${cid}/graph-start`),
-						{
-							characterClass: this.selectedCharacter.id,
-							courseId: this.courseId || null,
-						},
+						{ characterClass: this.selectedCharacter.id },
 					)
 					this.applyGraphResponse(resp.data, { computeDeltas: false })
 				} catch (e) {
-					// Fallback: disable graph mode and try linear start
+					// No silent switch to the linear story: a graph campaign that cannot start
+					// says so and stays on the character selection (audit #32).
 					this.isGraphMode = false
 					this.resetGraphUiState()
-					this.beginScene()
+					this.phase = 'character-select'
+					this.storyError = t('learning', 'Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.')
 				}
 				return
 			}
@@ -1287,10 +1315,7 @@ export default {
 			// Linear mode: Always start fresh — POST /start deletes old progress and creates new session
 			try {
 				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/start`)
-				const resp = await axios.post(url, {
-					characterClass: this.selectedCharacter.id,
-					courseId: this.courseId || null,
-				})
+				const resp = await axios.post(url, { characterClass: this.selectedCharacter.id })
 				if (resp.data?.scene) {
 					this.phase = 'scene'
 					this.choiceMade = false
@@ -1306,7 +1331,7 @@ export default {
 
 		// ===== SCENE RENDERING =====
 
-		async beginScene(sceneId) {
+		async beginScene() {
 			this.phase = 'scene'
 			this.choiceMade = false
 			this.loadingScene = true
@@ -1315,13 +1340,10 @@ export default {
 
 			try {
 				const cid = this.selectedCampaign.id
+				// The server always answers with the progress' current scene; it reads no
+				// sceneId, characterClass or courseId (audit #175)
 				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/scene`)
-				const params = {
-					characterClass: this.selectedCharacter.id,
-				}
-				if (sceneId) params.sceneId = sceneId
-				if (this.courseId) params.courseId = this.courseId
-				const resp = await axios.get(url, { params })
+				const resp = await axios.get(url)
 				// Backend returns {progress, scene} wrapper
 				this.currentScene = resp.data.scene || resp.data
 				this.loadingScene = false
@@ -1391,8 +1413,18 @@ export default {
 		async makeChoice(choice) {
 			this.makingChoice = true
 			this.choiceMade = true
+			this.storyError = ''
 
 			if (this.coopMode) {
+				this.makingChoice = false
+				return
+			}
+
+			// An AI-generated ('KI') choice is not part of the campaign file, so /choice cannot
+			// route it; it goes the free-text way, which lets the narrator pick the next scene
+			// (audit #28).
+			if (choice.dynamic) {
+				await this.submitDynamicChoice(choice)
 				this.makingChoice = false
 				return
 			}
@@ -1422,35 +1454,46 @@ export default {
 							if (scene.simulation) this.scheduleSimulation(scene.simulation)
 						}
 					} else {
-						// Fallback: local advance
-						await this.advanceToScene(choice.success_scene || choice.next_scene)
+						this.failChoice()
 					}
 				} catch (e) {
-					// Fallback: local advance
-					await this.advanceToScene(choice.success_scene || choice.next_scene)
+					this.failChoice()
 				}
 			}
 			this.makingChoice = false
 		},
 
-		async advanceToScene(sceneId) {
-			if (!sceneId) {
-				this.showEpilog()
-				return
-			}
-			this.sessionStats.scenesCompleted++
-			await this.beginScene(sceneId)
+		/**
+		 * A choice the server did not take. The progress is unchanged, so the scene stays and the
+		 * choice can be made again. The old fallback guessed the next scene from routing fields
+		 * the API never sends and showed the epilogue (audit #28, #175).
+		 */
+		failChoice() {
+			this.choiceMade = false
+			this.storyError = t('learning', 'Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.')
+		},
 
-			// If the scene is an epilog scene, trigger epilog phase
-			if (this.currentScene && this.currentScene.is_epilog) {
-				this.showEpilog(this.currentScene.epilog_type || 'success')
-				return
-			}
-
-			// If the newly loaded scene has a simulation, enter simulation phase after narrative
-			if (this.currentScene && this.currentScene.simulation) {
-				// Delay to let typewriter finish — simulation starts when narrative is done
-				this.scheduleSimulation(this.currentScene.simulation)
+		async submitDynamicChoice(choice) {
+			try {
+				const { data } = await axios.post(
+					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/freetext`),
+					{ text: choice.text },
+				)
+				if (data.valid && data.next_scene) {
+					this.sessionStats.scenesCompleted++
+					this.showFreetextNarrative(data.narrative)
+				} else {
+					this.choiceMade = false
+					this.storyError = data.narrative || t('learning', 'Aktion nicht möglich')
+				}
+			} catch (e) {
+				if (isConsentRefusal(e)) {
+					// Same as the free-text field: the consent notice, not a generic error
+					this.choiceMade = false
+					this.aiConsentRequired = true
+				} else {
+					this.failChoice()
+				}
 			}
 		},
 
@@ -1510,38 +1553,29 @@ export default {
 			if (this.skillAnswered) return
 			this.selectedAnswer = answer.id
 			this.skillAnswered = true
-			this.lastAnswerCorrect = answer.is_correct
 			this.sessionStats.skillChecksTotal++
 
-			// Collect answer for batch submission
+			// Collect answer for batch submission. The API sends answers without is_correct (it
+			// would hand out the solution), so right or wrong is known only from the batch
+			// verdict; judging here marked every real answer wrong (audit #90).
 			if (!this.skillAnswersBatch) this.skillAnswersBatch = []
 			this.skillAnswersBatch.push({
 				question_id: this.currentSkillQuestion.id,
 				answer_id: answer.id,
 			})
 
-			if (answer.is_correct) {
-				this.sessionStats.skillChecksPassed++
-				this.skillChecksPassedThisRound++
-				this.skillCheckNpcState = 'celebrate'
-				useOptionalVirtuProfStore()?.trigger('gameshow-answer-correct', { poolId: this.currentPoolId })
-			} else {
-				this.skillCheckNpcState = 'alert'
-				useOptionalVirtuProfStore()?.trigger('gameshow-answer-wrong', { poolId: this.currentPoolId })
-			}
-			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
-
-			// Auto-advance after showing result
+			// Auto-advance after showing the selection
 			this.advanceTimer = setTimeout(() => {
-				this.skillAnswered = false
 				this.skillCheckIndex++
 				if (this.skillCheckIndex < this.skillCheckTotal) {
+					this.skillAnswered = false
 					this.fetchNextSkillQuestion()
 				} else {
-					// All questions answered — submit batch to backend
+					// All questions answered — submit batch to backend; the buttons stay locked
+					// until its verdict arrives
 					this.submitSkillBatch()
 				}
-			}, 2000)
+			}, 800)
 		},
 
 		fetchNextSkillQuestion() {
@@ -1567,24 +1601,61 @@ export default {
 					}
 				)
 				const scene = resp.data?.scene
-				if (scene && scene.id) {
-					this.sessionStats.scenesCompleted++
-					this.currentScene = scene
-					this.phase = 'scene'
-					this.choiceMade = false
-					this.loadingScene = false
-					this.skillAnswersBatch = []
-					if (scene.is_epilog) {
-						this.showEpilog(scene.epilog_type || 'success')
-					} else {
-						this.startTypewriter(scene.narrative)
-						if (scene.simulation) this.scheduleSimulation(scene.simulation)
-					}
+				if (!scene || !scene.id) {
+					this.failSkillBatch()
+					return
 				}
+				this.skillAnswersBatch = []
+				this.showSkillVerdict(resp.data?.skill_result)
+				this.advanceTimer = setTimeout(() => this.openSceneAfterSkillCheck(scene), 2000)
 			} catch (e) {
-				// Fallback: show epilog (we can't determine next scene locally)
-				this.showEpilog('partial')
+				this.failSkillBatch()
 			}
+		},
+
+		/**
+		 * The server's verdict on the whole check: correct = threshold passed, correct_count =
+		 * right answers.
+		 */
+		showSkillVerdict(skillResult) {
+			const passed = !!skillResult?.correct
+			const correctCount = Number(skillResult?.correct_count) || 0
+			this.sessionStats.skillChecksPassed += correctCount
+			this.skillChecksPassedThisRound = correctCount
+			this.lastAnswerCorrect = passed
+			this.skillResultShown = true
+			this.skillCheckNpcState = passed ? 'celebrate' : 'alert'
+			useOptionalVirtuProfStore()?.trigger(passed ? 'gameshow-answer-correct' : 'gameshow-answer-wrong', { poolId: this.currentPoolId })
+			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
+		},
+
+		openSceneAfterSkillCheck(scene) {
+			this.skillResultShown = false
+			this.skillAnswered = false
+			this.sessionStats.scenesCompleted++
+			this.currentScene = scene
+			this.phase = 'scene'
+			this.choiceMade = false
+			this.loadingScene = false
+			if (scene.is_epilog) {
+				this.showEpilog(scene.epilog_type || 'success')
+			} else {
+				this.startTypewriter(scene.narrative)
+				if (scene.simulation) this.scheduleSimulation(scene.simulation)
+			}
+		},
+
+		/**
+		 * The batch was refused or got lost: the progress did not move, so the scene stays and
+		 * the check can be taken again. The old fallback showed the epilogue (audit #175).
+		 */
+		failSkillBatch() {
+			this.skillAnswersBatch = []
+			this.skillResultShown = false
+			this.skillAnswered = false
+			this.phase = 'scene'
+			this.choiceMade = false
+			this.storyError = t('learning', 'Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.')
 		},
 
 		// ===== SIMULATION =====
@@ -2150,19 +2221,27 @@ export default {
 					return
 				}
 				this.coopPollInFlight = true
+				let ownsInFlight = true
 				try {
 					const payload = mode === 'lobby'
 						? await pollCoopLobby(this.coopSessionId)
 						: await pollCoopState(this.coopSessionId)
 					const nextMode = this.applyCoopPayload(payload)
 					if (nextMode && nextMode !== this.coopPollMode && !this.coopAdvancing) {
+						// Release the flag before switching: the new mode polls at once, and with
+						// the flag still set that first poll was dropped until the next interval
+						// (audit #89). The new poll owns the flag from here on.
+						this.coopPollInFlight = false
+						ownsInFlight = false
 						this.startCoopPolling(nextMode)
 						return
 					}
 				} catch (error) {
 					this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Coop-Synchronisierung fehlgeschlagen.'))
 				} finally {
-					this.coopPollInFlight = false
+					if (ownsInFlight) {
+						this.coopPollInFlight = false
+					}
 				}
 			}
 
@@ -3042,16 +3121,6 @@ export default {
   border-color: var(--lnc-cyan);
   background: #1c2535;
 }
-.ab-answer-correct {
-  border-color: var(--lnc-green) !important;
-  background: #1c3a1c !important;
-  color: var(--lnc-green) !important;
-}
-.ab-answer-wrong {
-  border-color: var(--lnc-danger) !important;
-  background: #3a1c1c !important;
-  color: var(--lnc-danger) !important;
-}
 
 /* ===== RESULT OVERLAY ===== */
 .ab-result-overlay {
@@ -3457,6 +3526,12 @@ export default {
   color: var(--lnc-danger);
   font-size: 13px;
   margin: 8px 0 0 0;
+}
+
+.ab-story-error {
+  color: var(--lnc-danger);
+  font-size: 14px;
+  margin: 12px 0 0 0;
 }
 
 /* ===== DYNAMIC CHOICE BADGE ===== */

@@ -3364,5 +3364,7 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "تبدأ مدة الصلاحية الجديدة من {date}.",
     "Die Erneuerung öffnet am {date}." : "يُتاح التجديد في {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "وحده اختيار «المجمعات الإلزامية» في الإدارة ← قواعد المقرر ← إصدار الشهادات يحدد الحصول على الشهادة. هذه الخيارات لا تغيّر ذلك.",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "تعذّر بدء الحملة. يُرجى المحاولة مرة أخرى.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "تعذّر حفظ قرارك. يُرجى المحاولة مرة أخرى.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

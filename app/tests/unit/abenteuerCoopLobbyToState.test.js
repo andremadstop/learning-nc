@@ -80,10 +80,9 @@ describe('Coop lobby -> playing transition for players who were ready first', ()
 		const vm = makeVm()
 		vm.startCoopPolling('lobby')
 		await vi.advanceTimersByTimeAsync(0)
-		// The restarted loop's immediate poll is skipped while the lobby poll is still in flight;
-		// the first /state request follows one state interval later.
-		await vi.advanceTimersByTimeAsync(1500)
 
+		// The switch polls /state at once, not one interval later: the lobby poll releases its
+		// in-flight flag before the restart (audit #89)
 		expect(vm.coopPollMode).toBe('state')
 		expect(axios.get.mock.calls.map(([u]) => u)).toContain('/apps/learning/api/v1/coop/sessions/1/state')
 		expect(vm.applyCoopStatePayload).toHaveBeenCalled()

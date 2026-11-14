@@ -3364,5 +3364,7 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "Die neue Gültigkeit schließt an den {date} an.",
     "Die Erneuerung öffnet am {date}." : "Die Erneuerung öffnet am {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Über das Zertifikat entscheidet nur die Auswahl „Pflicht-Pools“ unter Verwaltung → Kursregeln → Zertifizierung. Diese Schalter ändern daran nichts.",
+    "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut." : "Die Kampagne konnte nicht gestartet werden. Bitte versuche es erneut.",
+    "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut." : "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut.",
 },
 "nplurals=2; plural=(n != 1);");
