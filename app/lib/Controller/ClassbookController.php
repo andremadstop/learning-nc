@@ -68,12 +68,19 @@ class ClassbookController extends Controller {
     }
 
     /**
-     * Toggle own classbook visibility.
+     * Set (or, without a target, toggle) own classbook visibility.
+     *
+     * GitHub #50: the visibility is global, so a toggle relative to the server value flipped
+     * the wrong way when another tab had changed it. The register sends the state the learner
+     * asked for ('course' or 'private'), which is set idempotently.
      *
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 5, period: 60)]
-    public function toggleVisibility(int $courseId): DataResponse {
+    public function toggleVisibility(int $courseId, ?string $visibility = null): DataResponse {
+        if ($visibility !== null && !in_array($visibility, ['course', 'private'], true)) {
+            return new DataResponse(['error' => 'Invalid visibility'], Http::STATUS_BAD_REQUEST);
+        }
         try {
             $allowed = $this->classbookService->canToggleVisibility($courseId, (string)$this->userId);
         } catch (\Exception $e) {
@@ -91,10 +98,12 @@ class ClassbookController extends Controller {
         }
 
         $current = $telos->getVisibility();
-        $new = $current === 'private' ? 'course' : 'private';
-        $telos->setVisibility($new);
-        $telos->setUpdatedAt(time());
-        $this->telosMapper->update($telos);
+        $new = $visibility ?? ($current === 'private' ? 'course' : 'private');
+        if ($new !== $current) {
+            $telos->setVisibility($new);
+            $telos->setUpdatedAt(time());
+            $this->telosMapper->update($telos);
+        }
 
         return new DataResponse(['visibility' => $new]);
     }

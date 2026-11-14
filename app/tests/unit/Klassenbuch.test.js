@@ -85,8 +85,8 @@ describe('Klassenbuch', () => {
 	})
 
 	// GitHub #50: a success note only when the server reports a real change
-	it('shows no success note when the visibility did not change', async () => {
-		axios.post.mockResolvedValueOnce({ data: { visibility: 'private' } })
+	it('shows no success note when the server reports no visibility', async () => {
+		axios.post.mockResolvedValueOnce({ data: {} })
 		const instance = createInstance({ myVisibility: 'private', canToggleVisibility: true })
 		instance.loadClassbook = vi.fn()
 
@@ -95,6 +95,40 @@ describe('Klassenbuch', () => {
 		expect(instance.success).toBe('')
 		expect(instance.error).not.toBe('')
 		expect(instance.loadClassbook).not.toHaveBeenCalled()
+	})
+
+	// GitHub #50: the visibility is global; the button asks for the state it names
+	it('sends the requested visibility, not a relative toggle', async () => {
+		axios.post.mockResolvedValueOnce({ data: { visibility: 'course' } })
+		const instance = createInstance({ myVisibility: 'private', canToggleVisibility: true })
+		instance.loadClassbook = vi.fn()
+
+		await instance.toggleVisibility()
+
+		expect(axios.post.mock.calls.at(-1)[1]).toEqual({ visibility: 'course' })
+	})
+
+	it('reports the server state when another tab had already changed it', async () => {
+		// stale client "visible", the learner is already private on the server
+		axios.post.mockResolvedValueOnce({ data: { visibility: 'private' } })
+		const instance = createInstance({ myVisibility: 'course', canToggleVisibility: true })
+		instance.loadClassbook = vi.fn()
+
+		await instance.toggleVisibility()
+
+		expect(instance.error).toBe('')
+		expect(instance.myVisibility).toBe('private')
+		expect(instance.success).toBe('Dein Klassenbuch-Profil ist wieder privat.')
+		expect(instance.loadClassbook).toHaveBeenCalled()
+	})
+
+	it('never shows the untranslated server error text', async () => {
+		axios.post.mockRejectedValueOnce({ response: { status: 403, data: { error: 'Only learners of this course can change their visibility here' } } })
+		const instance = createInstance({ myVisibility: 'private', canToggleVisibility: true })
+
+		await instance.toggleVisibility()
+
+		expect(instance.error).toBe('Sichtbarkeit konnte nicht geändert werden.')
 	})
 
 	it('shows no success note when the server refuses the switch', async () => {

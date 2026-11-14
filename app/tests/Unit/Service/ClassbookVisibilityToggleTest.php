@@ -117,4 +117,38 @@ class ClassbookVisibilityToggleTest extends TestCase {
         $this->assertSame(Http::STATUS_OK, $response->getStatus());
         $this->assertSame(['visibility' => 'course'], $response->getData());
     }
+
+    /**
+     * GitHub #50: the visibility is global. When another tab already made the learner visible,
+     * "Make visible in course" must leave them visible; a relative toggle made them private.
+     */
+    public function testTheRequestedVisibilityIsSetIdempotently(): void {
+        $classbook = $this->createMock(ClassbookService::class);
+        $classbook->method('canToggleVisibility')->willReturn(true);
+        $telos = new UserTelos();
+        $telos->setUserId('learner');
+        $telos->setVisibility('course');
+        $telosMapper = $this->createMock(UserTelosMapper::class);
+        $telosMapper->method('findByUserIdOrNull')->willReturn($telos);
+        $telosMapper->expects($this->never())->method('update');
+
+        $controller = new ClassbookController('learning', $this->createMock(IRequest::class), 'learner',
+            $this->createMock(CourseService::class), $classbook, $telosMapper, $this->createMock(IUserManager::class));
+
+        $response = $controller->toggleVisibility(7, 'course');
+        $this->assertSame(['visibility' => 'course'], $response->getData());
+        $this->assertSame('course', $telos->getVisibility());
+    }
+
+    public function testAnUnknownVisibilityIsRefused(): void {
+        $classbook = $this->createMock(ClassbookService::class);
+        $classbook->method('canToggleVisibility')->willReturn(true);
+        $telosMapper = $this->createMock(UserTelosMapper::class);
+        $telosMapper->expects($this->never())->method('update');
+
+        $controller = new ClassbookController('learning', $this->createMock(IRequest::class), 'learner',
+            $this->createMock(CourseService::class), $classbook, $telosMapper, $this->createMock(IUserManager::class));
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $controller->toggleVisibility(7, 'public')->getStatus());
+    }
 }

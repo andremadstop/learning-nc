@@ -211,15 +211,17 @@ export default {
 			this.togglingVisibility = true
 			this.error = ''
 			this.success = ''
-			const before = this.myVisibility
+			// GitHub #50: the visibility is global (another tab may have changed it), so the
+			// register asks for the state the button names instead of a relative toggle.
+			const target = this.myVisibility === 'private' ? 'course' : 'private'
 			try {
 				const response = await axios.post(generateUrl('/apps/learning/api/courses/{courseId}/classbook/visibility', {
 					courseId: this.courseId,
-				}))
+				}), { visibility: target })
 				const after = response.data?.visibility
-				// GitHub #50: a success note only for a change the server reports. A missing or
-				// unchanged value used to read as "now visible" / "private again" all the same.
-				if (!after || after === before) {
+				// A success note only for the state the server reports. A missing value used to
+				// read as "now visible" / "private again" all the same.
+				if (!after) {
 					this.error = t('learning', 'Sichtbarkeit konnte nicht geändert werden.')
 					return
 				}
@@ -229,7 +231,8 @@ export default {
 					: t('learning', 'Dein Klassenbuch-Profil ist jetzt sichtbar.')
 				await this.loadClassbook()
 			} catch (e) {
-				this.error = e?.response?.data?.error || t('learning', 'Sichtbarkeit konnte nicht geändert werden.')
+				// Server texts are English and untranslated; the learner gets the translated note.
+				this.error = t('learning', 'Sichtbarkeit konnte nicht geändert werden.')
 			} finally {
 				this.togglingVisibility = false
 			}
