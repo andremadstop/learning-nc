@@ -65,7 +65,11 @@ class ClassbookService {
         }
 
         $statsMap = $this->getUserStats($memberIds);
-        $topPoolProgressMap = $this->getTopPoolProgress($courseId, $memberIds);
+        // GitHub #36: the superpower fallback counts cards in Leitner box 5; a course without
+        // Leitner never fills it, so there is no fallback then (a missing key counts as on).
+        $modeConfig = is_array($course['mode_config'] ?? null) ? $course['mode_config'] : [];
+        $leitnerEnabled = ($modeConfig['leitner'] ?? true) !== false;
+        $topPoolProgressMap = $leitnerEnabled ? $this->getTopPoolProgress($courseId, $memberIds) : [];
         $kudosCounts = $this->kudosMapper->countReceivedByCourseAndUsers($courseId, $memberIds);
 
         // GitHub #36: with gamification off the stored level and XP are frozen old values; they

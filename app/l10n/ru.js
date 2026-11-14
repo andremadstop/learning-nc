@@ -3507,5 +3507,6 @@ OC.L10N.register(
     "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON)." : "PDF: «Просмотреть», затем «Печать» (сохранить как PDF). «Скачать» даёт подписанный, машинно проверяемый файл сертификата (Open Badges, JSON).",
     "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "Этот сертификат отозван и больше не действителен.",
     "Dieses Zertifikat ist abgelaufen." : "Срок действия этого сертификата истёк.",
+    "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "Справочник участников курса в разделе «Участники»: учащиеся могут сделать свой профиль видимым в курсе, предложить помощь и выражать друг другу «Респект».",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

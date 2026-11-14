@@ -3507,5 +3507,6 @@ OC.L10N.register(
     "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON)." : "PDF: “View”, then “Print” (save as PDF). “Download” gives the signed, machine-verifiable certificate file (Open Badges, JSON).",
     "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "This certificate has been revoked and is no longer valid.",
     "Dieses Zertifikat ist abgelaufen." : "This certificate has expired.",
+    "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "Directory of the course members in the Participants area: learners can make their profile visible in the course, offer help and give each other kudos.",
 },
 "nplurals=2; plural=(n != 1);");

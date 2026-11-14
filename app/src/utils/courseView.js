@@ -8,6 +8,8 @@
  * (PassCriteriaService), so the preview leaves no certificate or compliance record behind.
  */
 
+import { shouldShowCompletionTab } from './cert-report.js'
+
 /**
  * Whether the viewer gets the instructor tabs of a course.
  *
@@ -89,5 +91,32 @@ export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificatio
 	if (enabled('league')) tabs.push('league')
 	if (enabled('duel') || enabled('gameshow')) tabs.push('arena')
 	if (enabled('abenteuer')) tabs.push('abenteuer')
+	return tabs
+}
+
+/**
+ * The leaf tabs of the Teilnehmer (participants) area, in display order. CourseDetail (routing,
+ * whether the mega-tab shows at all) and CourseTabTeilnehmer (the sub-navigation) both read this
+ * list (GitHub #36).
+ *
+ * Learners land on their own progress first. The class register has its own course switch
+ * (mode_config.classbook, a missing key counts as on); without visible profiles it showed an
+ * empty page as the first thing a learner saw. Instructors keep every leaf.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {object} options
+ * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
+ * @return {string[]}
+ */
+export function teilnehmerTabIds(course, { actsAsInstructor = false } = {}) {
+	if (actsAsInstructor) {
+		return ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
+	}
+	const modeConfig = course?.mode_config || {}
+	const tabs = ['my-progress']
+	if (modeConfig.classbook !== false) tabs.push('classbook')
+	// GitHub #35: a certifying course always shows the completion tab (the certificate lives
+	// there); course_summary only releases the summary statistics inside it.
+	if (shouldShowCompletionTab(course)) tabs.push('summary')
 	return tabs
 }

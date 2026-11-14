@@ -153,8 +153,7 @@ import ExamReadiness from './ExamReadiness.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
-import { shouldShowCompletionTab } from '../utils/cert-report.js'
-import { actsAsCourseInstructor, lernraumTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+import { actsAsCourseInstructor, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
 // falls back to the Lernraum (GitHub #36).
@@ -302,15 +301,9 @@ export default {
 				gamificationEnabled: this.gamificationEnabled,
 			})
 		},
+		// Same list as the Teilnehmer sub-navigation (one helper, GitHub #36).
 		teilnehmerLeafTabs() {
-			if (this.isInstructor) {
-				return ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
-			}
-			const tabs = ['classbook', 'my-progress']
-			// GitHub #35: a certifying course always shows the completion tab (the certificate
-			// lives there); course_summary only releases the summary statistics inside it.
-			if (shouldShowCompletionTab(this.course)) tabs.push('summary')
-			return tabs
+			return teilnehmerTabIds(this.course, { actsAsInstructor: this.isInstructor })
 		},
 		visibleMegaTabs() {
 			if (this.isInstructor) {
@@ -687,6 +680,7 @@ export default {
 				abenteuer: false,
 				course_summary: false,
 				tools: true,
+				classbook: true,
 			}, modeConfig || {})
 		},
 

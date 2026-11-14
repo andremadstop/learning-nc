@@ -118,10 +118,10 @@ describe('CourseTabTeilnehmer', () => {
 		const instance = createInstance({ userRole: 'student', actsAsInstructor: false })
 
 		expect(instance.isInstructor).toBe(false)
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'classbook'])
 	})
 
-	it('builds student sub-tabs with classbook + my-progress (no summary when disabled)', () => {
+	it('builds student sub-tabs with my-progress + classbook (no summary when disabled)', () => {
 		const instance = createInstance({
 			course: {
 				is_instructor: false,
@@ -131,7 +131,7 @@ describe('CourseTabTeilnehmer', () => {
 			actsAsInstructor: false,
 		})
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'classbook'])
 	})
 
 	it('shows summary pill for students when course_summary is enabled', () => {
@@ -144,7 +144,7 @@ describe('CourseTabTeilnehmer', () => {
 			actsAsInstructor: false,
 		})
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress', 'summary'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'classbook', 'summary'])
 	})
 
 	it('emits tab-change with correct leaf ID when selecting a sub-tab', () => {
@@ -208,8 +208,8 @@ describe('CourseTabTeilnehmer — completion tab in certifying courses (GitHub #
 		})
 
 		expect(instance.visibleSubTabs).toEqual([
-			{ id: 'classbook', label: 'Klassenbuch' },
 			{ id: 'my-progress', label: 'Mein Fortschritt' },
+			{ id: 'classbook', label: 'Klassenbuch' },
 			{ id: 'summary', label: 'Abschluss & Zertifikat' },
 		])
 	})

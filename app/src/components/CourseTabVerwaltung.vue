@@ -493,6 +493,7 @@ export default {
 				{ key: 'gameshow', label: t('learning', 'Gameshow'), description: t('learning', 'Quizrunde für mehrere Kursmitglieder gleichzeitig, in verschiedenen Spielformen (Bereich Arena).') },
 				{ key: 'league', label: t('learning', 'Liga'), description: t('learning', 'Wertung der Kursmitglieder über eine ganze Saison statt über eine einzelne Runde.') },
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer'), description: t('learning', 'Story-Kampagnen, in denen die Fragen in eine Handlung eingebettet sind. Die Auswahl der Kampagnen erscheint nur, solange Abenteuer eingeschaltet ist.') },
+				{ key: 'classbook', label: t('learning', 'Klassenbuch'), description: t('learning', 'Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben.') },
 				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab'), description: t('learning', 'Gibt den Lernenden ihre Abschluss-Übersicht frei (Beherrschung, XP, Abzeichen). Bei aktiver Zertifizierung sehen sie den Abschluss-Tab mit ihrem Zertifikat auch ohne diesen Schalter.') },
 			]
 		},
@@ -602,6 +603,7 @@ export default {
 				abenteuer: false,
 				course_summary: false,
 				tools: true,
+				classbook: true,
 			}, modeConfig || {})
 		},
 

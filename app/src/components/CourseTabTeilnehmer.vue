@@ -549,7 +549,8 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
-import { buildCertReportQuery, shouldShowCertReport, shouldShowCompletionTab, formatDate, formatScore } from '../utils/cert-report.js'
+import { buildCertReportQuery, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
+import { teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
@@ -667,31 +668,20 @@ export default {
 		showCertReport() {
 			return shouldShowCertReport(this.isInstructor, this.course)
 		},
+		// GitHub #36: the ids come from the helper CourseDetail routes with, so both agree.
 		visibleSubTabs() {
-			if (this.isInstructor) {
-				return [
-					{ id: 'members', label: t('learning', 'Mitglieder') },
-					{ id: 'classbook', label: t('learning', 'Klassenbuch') },
-					{ id: 'progress', label: t('learning', 'Fortschritt') },
-					{ id: 'heatmap', label: t('learning', 'Heatmap') },
-					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
-					{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
-					{ id: 'summary', label: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss') },
-				]
+			const labels = {
+				members: t('learning', 'Mitglieder'),
+				classbook: t('learning', 'Klassenbuch'),
+				progress: t('learning', 'Fortschritt'),
+				heatmap: t('learning', 'Heatmap'),
+				'weak-questions': t('learning', 'Schwache Fragen'),
+				'class-profile': t('learning', 'Klassen-Profil'),
+				'my-progress': t('learning', 'Mein Fortschritt'),
+				summary: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss'),
 			}
-			const tabs = [
-				{ id: 'classbook', label: t('learning', 'Klassenbuch') },
-				{ id: 'my-progress', label: t('learning', 'Mein Fortschritt') },
-			]
-			// GitHub #35: a certifying course always shows the completion tab — the certificate lives
-			// there. course_summary only releases the summary statistics inside it.
-			if (shouldShowCompletionTab(this.course)) {
-				tabs.push({
-					id: 'summary',
-					label: this.course?.cert_enabled ? t('learning', 'Abschluss & Zertifikat') : t('learning', 'Abschluss'),
-				})
-			}
-			return tabs
+			return teilnehmerTabIds(this.course, { actsAsInstructor: this.isInstructor })
+				.map((id) => ({ id, label: labels[id] }))
 		},
 		sortedProgressData() {
 			return this.progressData

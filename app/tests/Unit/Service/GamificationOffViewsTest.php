@@ -279,6 +279,53 @@ class GamificationOffViewsTest extends TestCase {
         $this->assertSame(900, $on['xp']);
     }
 
+    // ── Classbook: superpower fallback only with Leitner ───────────────────────
+
+    /** @return list<?string> the tables the classbook read */
+    private function classbookTables(?array $modeConfig): array {
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('findById')->willReturn(['id' => 7, 'is_instructor' => true, 'mode_config' => $modeConfig]);
+        $db = new FakeDbConnection([$this->statsRow(['user_id' => 'teacher'])]);
+        $teacher = new CourseMember();
+        $teacher->setUserId('teacher');
+        $teacher->setRole('instructor');
+        $members = $this->createMock(CourseMemberMapper::class);
+        $members->method('findByCourse')->willReturn([$teacher]);
+        $telos = $this->createMock(UserTelosMapper::class);
+        $telos->method('findByUserIds')->willReturn([]);
+        $kudos = $this->createMock(KudosMapper::class);
+        $kudos->method('countReceivedByCourseAndUsers')->willReturn([]);
+        $pool = new CoursePool();
+        $pool->setCourseId(7);
+        $pool->setPoolId(3);
+        $pools = $this->createMock(CoursePoolMapper::class);
+        $pools->method('findByCourse')->willReturn([$pool]);
+
+        $service = new ClassbookService($courseService, $members, $pools, $telos, $kudos, $db, $this->createMock(IUserManager::class), $this->xp(true));
+        $profile = $service->getClassbook(7, 'teacher')['profiles'][0];
+        $this->assertArrayHasKey('superpower', $profile);
+        return array_map(static fn (FakeQueryBuilder $qb): ?string => $qb->from['table'] ?? null, $db->issuedBuilders);
+    }
+
+    public function testClassbookSuperpowerFallbackReadsNoLeitnerBoxesWithoutLeitner(): void {
+        $this->assertNotContains('learning_leitner_items', $this->classbookTables(['leitner' => false]));
+        $this->assertContains('learning_leitner_items', $this->classbookTables(['leitner' => true]), 'unchanged with Leitner on');
+        $this->assertContains('learning_leitner_items', $this->classbookTables(null), 'a missing mode config counts as Leitner on');
+    }
+
+    // ── Mode config: the classbook switch is stored ─────────────────────────────
+
+    public function testModeConfigStoresTheClassbookSwitchDefaultOn(): void {
+        $members = $this->createMock(CourseMemberMapper::class);
+        $service = $this->courseService(new FakeDbConnection(), true, $members, $this->noPools());
+
+        $off = $service->updateModeConfig(7, 'teacher', ['classbook' => false]);
+        $this->assertFalse($off['classbook'], 'a switched-off classbook is not dropped on save');
+
+        $default = $service->updateModeConfig(7, 'teacher', []);
+        $this->assertTrue($default['classbook'], 'a course saved without the key keeps the classbook');
+    }
+
     // ── Course summary + AI reflection ──────────────────────────────────────────
 
     private function summaryService(bool $gamification, GeminiService $gemini, ?StreakService $streak = null): CourseSummaryService {

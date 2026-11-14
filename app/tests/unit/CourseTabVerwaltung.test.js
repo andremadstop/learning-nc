@@ -91,9 +91,11 @@ describe('CourseTabVerwaltung', () => {
 		expect(keys).toContain('exam')
 		expect(keys).toContain('duel')
 		expect(keys).toContain('abenteuer')
+		// GitHub #36: the class register has its own course switch
+		expect(keys).toContain('classbook')
 		expect(keys).not.toContain('swipe')
 		expect(keys).not.toContain('oldschool')
-		expect(keys.length).toBe(8)
+		expect(keys.length).toBe(9)
 	})
 
 	it('emits tab-change when selecting the schedule pill', () => {

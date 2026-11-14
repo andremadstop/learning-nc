@@ -2305,7 +2305,10 @@ class CourseService {
     /**
      * Update the mode configuration for a course (instructor only).
      * $modeConfig keys: training, leitner, swipe, exam, duel, gameshow, league, oldschool,
-     * abenteuer, course_summary, tools (bool each). A missing key gets its default.
+     * abenteuer, course_summary, tools, classbook (bool each). A missing key gets its default.
+     *
+     * classbook (GitHub #36) shows learners the class register in the participants area.
+     * Default true, so a course saved before the switch existed keeps it.
      *
      * tools (GitHub #35) is the course's master switch for the simulator tools: false hides the
      * Werkzeuge tab and the tool hints, whatever enabled_tools says. Default true, so a course
@@ -2317,7 +2320,7 @@ class CourseService {
             throw new ForbiddenException('Only instructors can update course mode config');
         }
 
-        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools'];
+        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools', 'classbook'];
         $clean = [];
         foreach ($allowed as $key) {
             $defaultValue = $key === 'course_summary' ? false : true;

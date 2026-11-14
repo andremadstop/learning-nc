@@ -3507,5 +3507,6 @@ OC.L10N.register(
     "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON)." : "PDF: «عرض» ثم «طباعة» (الحفظ بصيغة PDF). يوفّر «تنزيل» ملف الشهادة الموقّع والقابل للتحقق آليًا (Open Badges، JSON).",
     "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig." : "أُلغيت هذه الشهادة ولم تعد صالحة.",
     "Dieses Zertifikat ist abgelaufen." : "انتهت صلاحية هذه الشهادة.",
+    "Verzeichnis der Kursmitglieder im Bereich Teilnehmer: Lernende können ihr Profil im Kurs sichtbar machen, Hilfe anbieten und sich gegenseitig Kudos geben." : "دليل أعضاء الدورة في قسم المشاركين: يمكن للمتعلمين إظهار ملفهم الشخصي في الدورة وعرض المساعدة وتبادل الإشادة فيما بينهم.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -129,6 +129,7 @@ describe('CourseDetail navigation logic', () => {
 			abenteuer: false,
 			course_summary: false,
 			tools: true,
+			classbook: true,
 		})
 	})
 
@@ -137,7 +138,7 @@ describe('CourseDetail navigation logic', () => {
 		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).toContain('lernraum')
 		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).not.toContain('training')
 		// summary is now a leaf inside teilnehmer mega-tab, not in visibleMegaTabs directly
-		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress'])
+		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook'])
 
 		const releasedInstance = createInstance({
 			course: {
@@ -157,7 +158,7 @@ describe('CourseDetail navigation logic', () => {
 		})
 
 		expect(releasedInstance.teilnehmerLeafTabs).toContain('summary')
-		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress', 'summary'])
+		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook', 'summary'])
 	})
 
 	it('keeps the instructor mega-tabs and delegates summary to teilnehmerLeafTabs', () => {
@@ -355,7 +356,7 @@ describe('CourseDetail — completion tab in certifying courses (GitHub #35)', (
 			course: { is_instructor: false, cert_enabled: true, mode_config: { course_summary: false } },
 		})
 
-		expect(instance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress', 'summary'])
+		expect(instance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook', 'summary'])
 	})
 
 	it('resolves the /courses/<id>/summary deep link to the summary leaf under Teilnehmer', () => {
@@ -395,7 +396,7 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.actsAsInstructor).toBe(false)
 		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toEqual(['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation'])
 		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam'])
-		expect(instance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress'])
+		expect(instance.teilnehmerLeafTabs).toEqual(['my-progress', 'classbook'])
 		expect(instance.kommunikationLeafTabs).toEqual(['feed', 'buddies'])
 		expect(instance.wettbewerbLeafTabs).toEqual(['leaderboard', 'league', 'arena'])
 		instance.adminAiEnabled = true

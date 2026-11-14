@@ -50,6 +50,7 @@ const SAVED_MODE_CONFIG = {
 	abenteuer: false,
 	course_summary: false,
 	tools: true,
+	classbook: true,
 }
 
 async function flush() {
