@@ -70,9 +70,11 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
  * whether the mega-tab shows at all) and CourseTabWettbewerb (the sub-navigation) both read
  * this list (GitHub #36).
  *
- * Learners only see what the course offers. The leaderboard ranks by XP and level, so it is
- * left out when the admin switched gamification off; the other modes have their own course
- * switches. Instructors keep every leaf.
+ * League, Arena (Duel and Gameshow) and Adventure are game modes: each needs its course switch on
+ * and the admin's gamification on, for instructors too (GitHub #51/#53: an instructor saw Arena as
+ * an empty page and League and Adventure despite their switches being off). Arena has no switch of
+ * its own, it is the home of Duel and Gameshow. The leaderboard ranks learners by XP; with
+ * gamification off learners lose it, instructors keep it ranked by mastered cards (GitHub #36).
  *
  * @param {object|null|undefined} course - the course detail (snake_case fields)
  * @param {object} options
@@ -81,13 +83,11 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
  * @return {string[]}
  */
 export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificationEnabled = true } = {}) {
-	if (actsAsInstructor) {
-		return ['leaderboard', 'league', 'arena', 'abenteuer']
-	}
 	const modeConfig = course?.mode_config || {}
-	const enabled = (key) => modeConfig[key] !== false
+	const gameOn = gamificationEnabled !== false
+	const enabled = (key) => gameOn && modeConfig[key] !== false
 	const tabs = []
-	if (gamificationEnabled !== false) tabs.push('leaderboard')
+	if (gameOn || actsAsInstructor) tabs.push('leaderboard')
 	if (enabled('league')) tabs.push('league')
 	if (enabled('duel') || enabled('gameshow')) tabs.push('arena')
 	if (enabled('abenteuer')) tabs.push('abenteuer')

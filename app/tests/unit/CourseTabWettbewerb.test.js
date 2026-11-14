@@ -83,10 +83,11 @@ describe('CourseTabWettbewerb', () => {
 		vi.clearAllMocks()
 	})
 
-	it('builds instructor sub-tabs: leaderboard, league, arena, abenteuer', () => {
+	// GitHub #53: instructors no longer see a switched-off Adventure (abenteuer is off here).
+	it('builds instructor sub-tabs from the course switches', () => {
 		const instance = createInstance()
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['leaderboard', 'league', 'arena', 'abenteuer'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['leaderboard', 'league', 'arena'])
 	})
 
 	// GitHub #35: the student view must win over the course membership in every mega-tab.
@@ -94,7 +95,7 @@ describe('CourseTabWettbewerb', () => {
 		const instance = createInstance({ userRole: 'student', actsAsInstructor: false })
 
 		expect(instance.isInstructor).toBe(false)
-		// abenteuer is switched off in this course; an instructor would still see it.
+		// abenteuer is switched off in this course.
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['leaderboard', 'league', 'arena'])
 	})
 

@@ -325,30 +325,41 @@ describe('CourseTabTeilnehmer progress table (GitHub #36)', () => {
 describe('wettbewerbTabIds (GitHub #36)', () => {
 	const course = (overrides) => ({ mode_config: modeConfig(overrides) })
 
-	it('drops the leaderboard for learners with gamification off', () => {
-		expect(wettbewerbTabIds(course(), { gamificationEnabled: false })).toEqual(['league', 'arena'])
+	// GitHub #51/#53: League, Arena and Adventure are game modes, gone with gamification off.
+	it('leaves learners nothing with gamification off, whatever the mode switches say', () => {
+		expect(wettbewerbTabIds(course({ abenteuer: true }), { gamificationEnabled: false })).toEqual([])
 		expect(wettbewerbTabIds(course({ league: false, duel: false, gameshow: false }), { gamificationEnabled: false })).toEqual([])
 	})
 
-	it('is unchanged with gamification on and for instructors', () => {
+	it('is unchanged for learners with gamification on', () => {
 		expect(wettbewerbTabIds(course(), {})).toEqual(['leaderboard', 'league', 'arena'])
-		expect(wettbewerbTabIds(course(), { actsAsInstructor: true, gamificationEnabled: false })).toEqual(['leaderboard', 'league', 'arena', 'abenteuer'])
+		expect(wettbewerbTabIds(course({ abenteuer: true }), {})).toEqual(['leaderboard', 'league', 'arena', 'abenteuer'])
+	})
+
+	it('gives instructors only the switched-on modes, and the leaderboard', () => {
+		// GitHub #51: Arena with Duel and Gameshow off was an empty page for the instructor.
+		expect(wettbewerbTabIds(course({ duel: false, gameshow: false, league: false }), { actsAsInstructor: true })).toEqual(['leaderboard'])
+		// GitHub #53: League and Adventure respected their switches only for learners.
+		expect(wettbewerbTabIds(course({ league: false, abenteuer: false }), { actsAsInstructor: true })).toEqual(['leaderboard', 'arena'])
+		// With gamification off the instructor keeps the leaderboard ranked by mastered cards (#36).
+		expect(wettbewerbTabIds(course({ abenteuer: true }), { actsAsInstructor: true, gamificationEnabled: false })).toEqual(['leaderboard'])
+		// An IT course with every mode on looks as before.
+		expect(wettbewerbTabIds(course({ abenteuer: true }), { actsAsInstructor: true })).toEqual(['leaderboard', 'league', 'arena', 'abenteuer'])
 	})
 })
 
 describe('CourseTabWettbewerb (GitHub #36)', () => {
-	it('opens the first remaining sub-tab instead of the hidden leaderboard', async () => {
+	it('opens the first remaining sub-tab instead of a switched-off one', async () => {
 		await render(CourseTabWettbewerb, {
 			courseId: 5,
-			course: { id: 5, mode_config: modeConfig() },
-			userRole: 'student',
-			actsAsInstructor: false,
+			course: { id: 5, is_instructor: true, mode_config: modeConfig({ league: false }) },
+			userRole: 'instructor',
+			actsAsInstructor: true,
 			activeTab: 'league',
-			gamificationEnabled: false,
 		})
 		const pills = Array.from(host.querySelectorAll('.wettbewerb-pill')).map((b) => b.textContent.trim())
-		expect(pills).toEqual(['Liga', 'Arena'])
-		expect(host.querySelector('.leaderboard-section')).toBeNull()
+		expect(pills).toEqual(['Rangliste', 'Arena'])
+		expect(host.querySelector('.league-section')).toBeNull()
 	})
 })
 
@@ -417,9 +428,9 @@ describe('CourseDetail competition area (GitHub #36)', () => {
 		expect(megaLabels()).toEqual(['Lernraum', 'Teilnehmer', 'Abschluss', 'Kommunikation'])
 	})
 
-	it('keeps Wettbewerb while league or arena remain', async () => {
+	it('hides Wettbewerb for learners with gamification off even with league and arena switched on (#51)', async () => {
 		await renderCourse({ gamificationEnabled: false }, {})
-		expect(megaLabels()).toContain('Wettbewerb')
+		expect(megaLabels()).not.toContain('Wettbewerb')
 	})
 
 	it('keeps Wettbewerb in an IT course with gamification on', async () => {

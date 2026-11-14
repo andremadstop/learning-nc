@@ -342,10 +342,11 @@ export default {
 		},
 		visibleMegaTabs() {
 			if (this.isInstructor) {
+				// GitHub #51/#53: Wettbewerb follows the same leaf list as for learners.
 				return [
 					{ id: 'lernraum', label: t('learning', 'Lernraum') },
 					{ id: 'teilnehmer', label: t('learning', 'Teilnehmer') },
-					{ id: 'wettbewerb', label: t('learning', 'Wettbewerb') },
+					...(this.wettbewerbLeafTabs.length > 0 ? [{ id: 'wettbewerb', label: t('learning', 'Wettbewerb') }] : []),
 					{ id: 'kommunikation', label: t('learning', 'Kommunikation') },
 					{ id: 'verwaltung', label: t('learning', 'Verwaltung') },
 				]
