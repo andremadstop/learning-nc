@@ -11,6 +11,10 @@
  * and the print stylesheet in Certificate.vue shows only that node while the flag is set. The
  * copy keeps the scoped-style attributes, so the card looks the same. It is removed on
  * `afterprint`, on the next print and when the component goes away.
+ *
+ * Ctrl+P and the browser's print menu never go through the Print button, so while the
+ * certificate is open a `beforeprint` listener builds the same copy synchronously (there is no
+ * time to wait for images there; they are data URLs and already decoded on screen).
  */
 
 export const PRINT_ROOT_ID = 'learning-certificate-print-root'
@@ -29,6 +33,22 @@ export function removeCertificatePrintCopy(doc = document) {
 		root.remove()
 	}
 	doc.documentElement.classList.remove(PRINTING_CLASS)
+}
+
+/**
+ * Copy the card under <body> and flag the document, replacing any earlier copy.
+ * @param {HTMLElement} source the printable certificate element
+ * @param {Document} doc the document
+ * @return {HTMLElement} the print root
+ */
+function buildCertificatePrintCopy(source, doc) {
+	removeCertificatePrintCopy(doc)
+	const root = doc.createElement('div')
+	root.id = PRINT_ROOT_ID
+	root.appendChild(source.cloneNode(true))
+	doc.body.appendChild(root)
+	doc.documentElement.classList.add(PRINTING_CLASS)
+	return root
 }
 
 function waitForImages(root) {
@@ -55,11 +75,7 @@ export async function printCertificate(source, win = window) {
 		return false
 	}
 
-	const root = doc.createElement('div')
-	root.id = PRINT_ROOT_ID
-	root.appendChild(source.cloneNode(true))
-	doc.body.appendChild(root)
-	doc.documentElement.classList.add(PRINTING_CLASS)
+	const root = buildCertificatePrintCopy(source, doc)
 
 	await waitForImages(root)
 
@@ -70,4 +86,32 @@ export async function printCertificate(source, win = window) {
 	win.addEventListener('afterprint', cleanup)
 	win.print()
 	return true
+}
+
+/**
+ * Make printing from the browser itself (Ctrl+P, print menu) print the certificate too.
+ * When the Print button already built the copy, `beforeprint` leaves it alone.
+ * @param {function(): (HTMLElement|null)} getSource returns the printable element, or null
+ *   while the certificate is not shown (then the page prints as usual)
+ * @param {Window} win the window
+ * @return {function(): void} removes the listeners
+ */
+export function installCertificatePrintHook(getSource, win = window) {
+	const doc = win.document
+	const before = () => {
+		if (doc.getElementById(PRINT_ROOT_ID)) {
+			return
+		}
+		const source = getSource()
+		if (source) {
+			buildCertificatePrintCopy(source, doc)
+		}
+	}
+	const after = () => removeCertificatePrintCopy(doc)
+	win.addEventListener('beforeprint', before)
+	win.addEventListener('afterprint', after)
+	return () => {
+		win.removeEventListener('beforeprint', before)
+		win.removeEventListener('afterprint', after)
+	}
 }

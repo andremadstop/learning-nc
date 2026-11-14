@@ -120,4 +120,27 @@ describe('Certificate print (GitHub #41)', () => {
 		expect(document.getElementById(PRINT_ROOT_ID)).toBeNull()
 		expect(document.documentElement.classList.contains(PRINTING_CLASS)).toBe(false)
 	})
+
+	it('Ctrl+P / the browser print menu also prints only the card (beforeprint)', () => {
+		window.dispatchEvent(new Event('beforeprint'))
+
+		const root = document.getElementById(PRINT_ROOT_ID)
+		expect(root).not.toBeNull()
+		expect(root.parentElement).toBe(document.body)
+		expect(root.querySelector('.certificate-printable .certificate-card')).not.toBeNull()
+		expect(root.querySelector('.certificate-actions')).toBeNull()
+		expect(document.documentElement.classList.contains(PRINTING_CLASS)).toBe(true)
+
+		window.dispatchEvent(new Event('afterprint'))
+		expect(document.getElementById(PRINT_ROOT_ID)).toBeNull()
+		expect(document.documentElement.classList.contains(PRINTING_CLASS)).toBe(false)
+	})
+
+	it('after the certificate is closed, a browser print no longer copies anything', () => {
+		app.unmount()
+		app = null
+		window.dispatchEvent(new Event('beforeprint'))
+		expect(document.getElementById(PRINT_ROOT_ID)).toBeNull()
+		expect(document.documentElement.classList.contains(PRINTING_CLASS)).toBe(false)
+	})
 })

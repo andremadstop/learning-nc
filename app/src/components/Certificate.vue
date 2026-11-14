@@ -98,7 +98,7 @@ import {
 	buildLinkedInUrl,
 } from '../utils/certificate-credential.js'
 import qrcode from '../utils/qrcode-generator.js'
-import { printCertificate, removeCertificatePrintCopy } from '../utils/certificatePrint.js'
+import { installCertificatePrintHook, printCertificate, removeCertificatePrintCopy } from '../utils/certificatePrint.js'
 
 export default {
 	name: 'Certificate',
@@ -147,9 +147,12 @@ export default {
 
 	mounted() {
 		this.load()
+		// GitHub #41: Ctrl+P / the browser's print menu print the card as well, not the clipped modal.
+		this.disposePrintHook = installCertificatePrintHook(() => this.$refs.printable || null)
 	},
 
 	unmounted() {
+		this.disposePrintHook?.()
 		removeCertificatePrintCopy()
 	},
 
