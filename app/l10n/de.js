@@ -3549,7 +3549,7 @@ OC.L10N.register(
     "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed." : "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed.",
     "Nicht löschen" : "Nicht löschen",
     "Die Ankündigung konnte nicht gelöscht werden." : "Die Ankündigung konnte nicht gelöscht werden.",
-    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen." : "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen.",
+    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen." : "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen.",
     "Fragen von Lernenden" : "Fragen von Lernenden",
     "Noch keine Fragen von Lernenden zu diesem Kurs." : "Noch keine Fragen von Lernenden zu diesem Kurs.",
     "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken." : "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.",
@@ -3581,5 +3581,9 @@ OC.L10N.register(
     "Fortschritt im Kurs" : "Fortschritt im Kurs",
     "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen.",
     "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren.",
+    "bearbeitet" : "bearbeitet",
+    "Ankündigung bearbeiten" : "Ankündigung bearbeiten",
+    "Nachricht" : "Nachricht",
+    "Die Ankündigung konnte nicht gespeichert werden." : "Die Ankündigung konnte nicht gespeichert werden.",
 },
 "nplurals=2; plural=(n != 1);");

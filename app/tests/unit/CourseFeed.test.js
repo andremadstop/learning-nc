@@ -11,6 +11,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn(),
+		put: vi.fn(),
 		delete: vi.fn(),
 	},
 }))
@@ -32,6 +33,8 @@ import { showError } from '@nextcloud/dialogs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { setTestLanguage } from './support/l10nCatalog.js'
+import { createApp, nextTick } from 'vue'
+import GlobalFeed from '../../src/components/GlobalFeed.vue'
 
 // Import the component definition
 import CourseFeed from '../../src/components/CourseFeed.vue'
@@ -347,4 +350,139 @@ describe('feed body keeps line breaks (GitHub #40)', () => {
 			expect(source.split('</template>')[0]).not.toMatch(/v-html=/)
 		})
 	}
+})
+
+// GitHub #40: announcements could only be deleted. Edit sits next to Delete, saves through the
+// PUT route, and the feed row changes in place with an "edited" marker.
+describe('CourseFeed announcement edit (GitHub #40)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	function mountFeed(component, props) {
+		const el = document.createElement('div')
+		document.body.appendChild(el)
+		const app = createApp(component, props)
+		const vm = app.mount(el)
+		return { vm, el, unmount: () => { app.unmount(); el.remove() } }
+	}
+
+	it('renders Edit only for instructors and only on announcements, and marks edited items', async () => {
+		axios.get.mockImplementation((url) => Promise.resolve({
+			data: url.endsWith('/feed')
+				? {
+					items: [
+						makeFeedItem({ id: 1, meta: { announcement_id: 9, edited_at: 1700005000 } }),
+						makeFeedItem({ id: 2, type: 'pool_added', title: 'Pool', meta: { pool_id: 3 } }),
+					],
+				}
+				: { announcements: [] },
+		}))
+
+		const learner = mountFeed(CourseFeed, { courseId: 5, canManage: false })
+		await new Promise((r) => setTimeout(r, 0))
+		await nextTick()
+		expect(learner.el.querySelectorAll('.feed-edit')).toHaveLength(0)
+		expect(learner.el.querySelectorAll('.feed-edited')).toHaveLength(1)
+		learner.unmount()
+
+		const instructor = mountFeed(CourseFeed, { courseId: 5, canManage: true })
+		await new Promise((r) => setTimeout(r, 0))
+		await nextTick()
+		const edits = instructor.el.querySelectorAll('.feed-edit')
+		expect(edits).toHaveLength(1)
+		expect(edits[0].closest('.feed-item').classList.contains('feed-type--announcement')).toBe(true)
+		instructor.unmount()
+	})
+
+	it('GlobalFeed shows the edited marker too', async () => {
+		axios.get.mockResolvedValue({ data: { items: [makeFeedItem({ id: 1, meta: { announcement_id: 9, edited_at: 1700005000 } }), makeFeedItem({ id: 2 })] } })
+		const { el, unmount } = mountFeed(GlobalFeed, {})
+		await new Promise((r) => setTimeout(r, 0))
+		await nextTick()
+		expect(el.querySelectorAll('.feed-edited')).toHaveLength(1)
+		unmount()
+	})
+
+	it('opens the dialog with the stored text and PUTs title and body', async () => {
+		axios.put.mockResolvedValue({ data: { announcement: { id: 9, title: 'Neu', body: 'Zeile 1\nZeile 2', edited_at: 1700005000 } } })
+		const instance = createInstance(5, true)
+		const item = makeFeedItem({ id: 31, title: 'Alt', body: 'alt', meta: { announcement_id: 9 } })
+		const other = makeFeedItem({ id: 32, title: 'Andere', meta: { announcement_id: 10 } })
+		instance.items = [item, other]
+
+		instance.requestEdit(item)
+		expect(instance.editItem).toBe(item)
+		expect(instance.editTitle).toBe('Alt')
+		expect(instance.editBody).toBe('alt')
+
+		instance.editTitle = 'Neu'
+		instance.editBody = 'Zeile 1\nZeile 2'
+		await instance.saveEdit()
+
+		expect(axios.put).toHaveBeenCalledWith(
+			'/apps/learning/api/courses/{courseId}/announcements/{announcementId}',
+			{ title: 'Neu', body: 'Zeile 1\nZeile 2' },
+		)
+		expect(instance.items[0]).toMatchObject({ id: 31, title: 'Neu', body: 'Zeile 1\nZeile 2', meta: { announcement_id: 9, edited_at: 1700005000 } })
+		expect(instance.items[1]).toBe(other)
+		expect(instance.editItem).toBe(null)
+		expect(instance.isEdited(instance.items[0])).toBe(true)
+		expect(showError).not.toHaveBeenCalled()
+	})
+
+	it('a legacy row keeps its buttons after the edit (the announcement list follows the new title)', async () => {
+		axios.put.mockResolvedValue({ data: { announcement: { id: 4, title: 'Neuer Titel', body: '', edited_at: 1700005000 } } })
+		const instance = createInstance(5, true)
+		instance.announcements = [{ id: 4, title: 'Willkommen im Kurs', created_at: 1700000000 }]
+		const legacy = makeFeedItem({ id: 40, created_at: 1700000001, meta: null })
+		instance.items = [legacy]
+
+		instance.requestEdit(legacy)
+		instance.editTitle = 'Neuer Titel'
+		await instance.saveEdit()
+
+		expect(instance.announcementIdFor(instance.items[0])).toBe(4)
+		expect(instance.canDelete(instance.items[0])).toBe(true)
+		expect(instance.announcements[0].title).toBe('Neuer Titel')
+	})
+
+	it('an empty title is not sent', async () => {
+		const instance = createInstance(5, true)
+		instance.requestEdit(makeFeedItem({ meta: { announcement_id: 9 } }))
+		instance.editTitle = '   '
+		await instance.saveEdit()
+		expect(axios.put).not.toHaveBeenCalled()
+	})
+
+	it('a refused edit is shown, keeps the dialog open with the typed text and changes nothing', async () => {
+		axios.put.mockRejectedValue({ response: { status: 403 } })
+		const instance = createInstance(5, true)
+		const item = makeFeedItem({ id: 31, title: 'Alt', meta: { announcement_id: 9 } })
+		instance.items = [item]
+		instance.requestEdit(item)
+		instance.editTitle = 'Neu'
+
+		await instance.saveEdit()
+
+		expect(showError).toHaveBeenCalledTimes(1)
+		expect(instance.items).toEqual([item])
+		expect(instance.editItem).toBe(item)
+		expect(instance.editTitle).toBe('Neu')
+		expect(instance.saving).toBe(false)
+	})
+
+	it('cancelling the dialog saves nothing', () => {
+		const instance = createInstance(5, true)
+		instance.requestEdit(makeFeedItem({ meta: { announcement_id: 9 } }))
+		instance.cancelEdit()
+		expect(instance.editItem).toBe(null)
+		expect(axios.put).not.toHaveBeenCalled()
+	})
+
+	it('the dialog fields take the full width (core fixes textareas at 130px)', () => {
+		const source = readFileSync(resolve(__dirname, '../../src/components/CourseFeed.vue'), 'utf8')
+		const style = source.slice(source.indexOf('<style'))
+		expect(style).toMatch(/\.feed-edit-textarea\s*\{[^}]*width:\s*100%/)
+	})
 })

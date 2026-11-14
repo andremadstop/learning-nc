@@ -625,6 +625,28 @@ class CourseController extends Controller {
     }
 
     /**
+     * GitHub #40: edit an announcement; the feed copy changes with it.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function updateAnnouncement(int $courseId, int $announcementId, string $title = '', string $body = ''): DataResponse {
+        try {
+            $announcement = $this->courseService->updateAnnouncement($courseId, $announcementId, $this->userId, $title, $body);
+            return new DataResponse(['announcement' => $announcement]);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Announcement not found'], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => 'Title is required'], Http::STATUS_BAD_REQUEST);
+        } catch (\Exception $e) {
+            $this->logger->error('updateAnnouncement error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]

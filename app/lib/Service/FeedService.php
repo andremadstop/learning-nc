@@ -90,6 +90,44 @@ class FeedService {
     }
 
     /**
+     * Give the feed copy of an edited announcement the new title and text (GitHub #40).
+     *
+     * The rows are found the same way as on delete, with the title and creation time the
+     * announcement had before the edit. Each matched row keeps its other meta and gets
+     * announcement_id (a legacy row gets its link this way) and edited_at.
+     *
+     * @return int Number of updated feed rows
+     */
+    public function updateAnnouncementItems(
+        int $courseId,
+        int $announcementId,
+        ?string $oldTitle,
+        ?int $createdAt,
+        string $title,
+        string $body,
+        int $editedAt
+    ): int {
+        $updated = 0;
+        foreach ($this->feedItemMapper->findByCourseAndType($courseId, 'announcement') as $item) {
+            if (!self::belongsToAnnouncement($item, $announcementId, $oldTitle, $createdAt)) {
+                continue;
+            }
+            $meta = $item->getMeta();
+            $decoded = $meta !== null && $meta !== '' ? json_decode($meta, true) : null;
+            $decoded = is_array($decoded) ? $decoded : [];
+            $decoded['announcement_id'] = $announcementId;
+            $decoded['edited_at'] = $editedAt;
+
+            $item->setTitle(mb_substr($title, 0, 255));
+            $item->setBody($body);
+            $item->setMeta(json_encode($decoded));
+            $this->feedItemMapper->update($item);
+            $updated++;
+        }
+        return $updated;
+    }
+
+    /**
      * Whether a feed row is the copy of the given announcement.
      */
     public static function belongsToAnnouncement(FeedItem $item, int $announcementId, ?string $title, ?int $createdAt): bool {

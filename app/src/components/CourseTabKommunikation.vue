@@ -18,7 +18,7 @@
 				<h3>{{ t('learning', 'New announcement') }}</h3>
 				<input v-model="newAnnouncementTitle" type="text" :placeholder="t('learning', 'Title')" class="nc-input announcement-input" />
 				<textarea v-model="newAnnouncementBody" :placeholder="t('learning', 'Message...')" class="nc-textarea announcement-textarea" rows="6" />
-				<p class="announcement-hint">{{ t('learning', 'Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen.') }}</p>
+				<p class="announcement-hint">{{ t('learning', 'Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen.') }}</p>
 				<NcButton variant="primary" :disabled="savingAnnouncement || !newAnnouncementTitle.trim()" @click="createAnnouncement">
 					{{ t('learning', 'Publish') }}
 				</NcButton>

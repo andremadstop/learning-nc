@@ -3549,7 +3549,7 @@ OC.L10N.register(
     "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed." : "Вы действительно хотите удалить объявление «{title}»? Оно исчезнет из ленты у всех участников курса.",
     "Nicht löschen" : "Не удалять",
     "Die Ankündigung konnte nicht gelöscht werden." : "Не удалось удалить объявление.",
-    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen." : "Опубликованные объявления появляются в ленте. Там же их можно удалить.",
+    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen." : "Опубликованные объявления появляются в ленте. Там же их можно изменить или удалить.",
     "Fragen von Lernenden" : "Вопросы учащихся",
     "Noch keine Fragen von Lernenden zu diesem Kurs." : "Вопросов от учащихся по этому курсу пока нет.",
     "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken." : "Здесь появляются вопросы по этому курсу, которые учащиеся отправляют вам через помощника VirtuProf.",
@@ -3581,5 +3581,9 @@ OC.L10N.register(
     "Fortschritt im Kurs" : "Прогресс в курсе",
     "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Ваше положение в курсе: освоенные и отвеченные вопросы и ваши слабые места.",
     "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "В конце вы увидите свой счёт и число правильных ответов. Тренировка также сравнивает результат со средним и может отметить личный рекорд.",
+    "bearbeitet" : "изменено",
+    "Ankündigung bearbeiten" : "Редактировать объявление",
+    "Nachricht" : "Сообщение",
+    "Die Ankündigung konnte nicht gespeichert werden." : "Не удалось сохранить объявление.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

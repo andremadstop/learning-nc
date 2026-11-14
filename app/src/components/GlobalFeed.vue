@@ -20,6 +20,7 @@
 						<span class="feed-type-badge">{{ typeLabel(item.type) }}</span>
 						<span v-if="item.course_name" class="feed-course-badge">{{ item.course_name }}</span>
 						<span class="feed-time">{{ formatRelativeTime(item.created_at) }}</span>
+						<span v-if="isEdited(item)" class="feed-edited">{{ t('learning', 'bearbeitet') }}</span>
 					</div>
 					<strong class="feed-title">{{ itemTitle(item) }}</strong>
 					<p v-if="item.body" class="feed-body">{{ item.body }}</p>
@@ -40,7 +41,7 @@ import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import { translate as t } from '@nextcloud/l10n'
 import { formatRelativeTime as relativeTime } from '../utils/relativeTime.js'
-import { feedItemTitle, feedTypeIcon, feedTypeLabel } from '../utils/feedItem.js'
+import { feedItemEdited, feedItemTitle, feedTypeIcon, feedTypeLabel } from '../utils/feedItem.js'
 
 export default {
 	name: 'GlobalFeed',
@@ -101,6 +102,10 @@ export default {
 
 		itemTitle(item) {
 			return feedItemTitle(item)
+		},
+
+		isEdited(item) {
+			return feedItemEdited(item)
 		},
 	},
 }
@@ -190,6 +195,13 @@ export default {
 	font-size: 0.8em;
 	color: var(--color-text-maxcontrast);
 	margin-left: auto;
+}
+
+/* GitHub #40: an edited announcement says so */
+.feed-edited {
+	font-size: 0.8em;
+	font-style: italic;
+	color: var(--color-text-maxcontrast);
 }
 
 .feed-title {

@@ -3549,7 +3549,7 @@
         "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed.": "Do you really want to delete the announcement “{title}”? It disappears from the feed for all course members.",
         "Nicht löschen": "Keep it",
         "Die Ankündigung konnte nicht gelöscht werden.": "The announcement could not be deleted.",
-        "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen.": "Published announcements appear in the feed. You can also delete them there.",
+        "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen.": "Published announcements appear in the feed. You can also edit or delete them there.",
         "Fragen von Lernenden": "Questions from learners",
         "Noch keine Fragen von Lernenden zu diesem Kurs.": "No questions from learners for this course yet.",
         "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "Questions about this course that learners send you through the VirtuProf help assistant appear here.",
@@ -3580,6 +3580,10 @@
         "Kursübersicht mit Sessions, Genauigkeit und Problemstellen.": "Course overview with sessions, accuracy and trouble spots.",
         "Fortschritt im Kurs": "Progress in the course",
         "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen.": "Your standing in the course: mastered and answered questions and your weak spots.",
-        "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren.": "At the end you see your score and the number of correct answers. Training also compares your result with your average and can mark a personal best."
+        "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren.": "At the end you see your score and the number of correct answers. Training also compares your result with your average and can mark a personal best.",
+        "bearbeitet": "edited",
+        "Ankündigung bearbeiten": "Edit announcement",
+        "Nachricht": "Message",
+        "Die Ankündigung konnte nicht gespeichert werden.": "The announcement could not be saved."
     }
 }

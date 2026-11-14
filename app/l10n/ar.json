@@ -3549,7 +3549,7 @@
         "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed.": "هل تريد حقًا حذف الإعلان «{title}»؟ سيختفي من التغذية لدى جميع أعضاء الدورة.",
         "Nicht löschen": "لا تحذف",
         "Die Ankündigung konnte nicht gelöscht werden.": "تعذّر حذف الإعلان.",
-        "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen.": "تظهر الإعلانات المنشورة في التغذية، ويمكنك حذفها من هناك أيضًا.",
+        "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen.": "تظهر الإعلانات المنشورة في التغذية، ويمكنك تعديلها أو حذفها من هناك أيضًا.",
         "Fragen von Lernenden": "أسئلة المتعلمين",
         "Noch keine Fragen von Lernenden zu diesem Kurs.": "لا توجد أسئلة من المتعلمين حول هذه الدورة بعد.",
         "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken.": "تظهر هنا الأسئلة حول هذه الدورة التي يرسلها إليك المتعلمون عبر مساعد المساعدة VirtuProf.",
@@ -3580,6 +3580,10 @@
         "Kursübersicht mit Sessions, Genauigkeit und Problemstellen.": "نظرة عامة على الدورة تضم الجلسات والدقة والنقاط الإشكالية.",
         "Fortschritt im Kurs": "التقدم في الدورة",
         "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen.": "مستواك في الدورة: الأسئلة المتقنة والأسئلة المُجاب عنها ونقاط ضعفك.",
-        "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren.": "في النهاية ترى نتيجتك وعدد الإجابات الصحيحة. كما يقارن التدريب نتيجتك بمتوسطك وقد يسجّل رقمًا شخصيًا قياسيًا."
+        "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren.": "في النهاية ترى نتيجتك وعدد الإجابات الصحيحة. كما يقارن التدريب نتيجتك بمتوسطك وقد يسجّل رقمًا شخصيًا قياسيًا.",
+        "bearbeitet": "معدَّل",
+        "Ankündigung bearbeiten": "تعديل الإعلان",
+        "Nachricht": "الرسالة",
+        "Die Ankündigung konnte nicht gespeichert werden.": "تعذّر حفظ الإعلان."
     }
 }

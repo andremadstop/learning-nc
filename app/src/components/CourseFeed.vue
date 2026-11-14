@@ -15,8 +15,17 @@
 						<span class="feed-type-badge">{{ typeLabel(item.type) }}</span>
 						<span class="feed-header-end">
 							<span class="feed-time">{{ formatRelativeTime(item.created_at) }}</span>
-							<!-- GitHub #40: instructors delete an announcement right here; the separate
-								list under "New announcement" duplicated the feed. -->
+							<span v-if="isEdited(item)" class="feed-edited">{{ t('learning', 'bearbeitet') }}</span>
+							<!-- GitHub #40: instructors edit and delete an announcement right here; the
+								separate list under "New announcement" duplicated the feed. -->
+							<NcButton v-if="canDelete(item)"
+								variant="tertiary"
+								size="small"
+								class="feed-edit"
+								:aria-label="t('learning', 'Ankündigung bearbeiten')"
+								@click="requestEdit(item)">
+								{{ t('learning', 'Bearbeiten') }}
+							</NcButton>
 							<NcButton v-if="canDelete(item)"
 								variant="tertiary"
 								size="small"
@@ -37,6 +46,32 @@
 			@click="loadMore">
 			{{ t('learning', 'Mehr laden...') }}
 		</button>
+
+		<AccessibleDialog v-if="editItem"
+			:name="t('learning', 'Ankündigung bearbeiten')"
+			@closing="cancelEdit">
+			<div class="feed-edit-form">
+				<label for="feed-edit-title">{{ t('learning', 'Titel') }}</label>
+				<input id="feed-edit-title"
+					v-model="editTitle"
+					type="text"
+					maxlength="255"
+					class="feed-edit-input">
+				<label for="feed-edit-body">{{ t('learning', 'Nachricht') }}</label>
+				<textarea id="feed-edit-body"
+					v-model="editBody"
+					class="feed-edit-textarea"
+					rows="6" />
+			</div>
+			<template #actions>
+				<NcButton variant="tertiary" :disabled="saving" @click="cancelEdit">
+					{{ t('learning', 'Abbrechen') }}
+				</NcButton>
+				<NcButton variant="primary" :disabled="saving || !editTitle.trim()" @click="saveEdit">
+					{{ t('learning', 'Speichern') }}
+				</NcButton>
+			</template>
+		</AccessibleDialog>
 
 		<AccessibleDialog v-if="confirmItem"
 			:name="t('learning', 'Ankündigung löschen')"
@@ -63,7 +98,7 @@ import { showError } from '@nextcloud/dialogs'
 import AccessibleDialog from './AccessibleDialog.vue'
 import { translate as t } from '@nextcloud/l10n'
 import { formatRelativeTime as relativeTime } from '../utils/relativeTime.js'
-import { feedItemTitle, feedTypeIcon, feedTypeLabel } from '../utils/feedItem.js'
+import { feedItemEdited, feedItemTitle, feedTypeIcon, feedTypeLabel } from '../utils/feedItem.js'
 
 export default {
 	name: 'CourseFeed',
@@ -98,6 +133,10 @@ export default {
 			announcements: [],
 			confirmItem: null,
 			deleting: false,
+			editItem: null,
+			editTitle: '',
+			editBody: '',
+			saving: false,
 		}
 	},
 
@@ -196,6 +235,58 @@ export default {
 			}
 		},
 
+		requestEdit(item) {
+			this.editItem = item
+			this.editTitle = item.title || ''
+			this.editBody = item.body || ''
+		},
+
+		cancelEdit() {
+			if (!this.saving) {
+				this.editItem = null
+			}
+		},
+
+		/**
+		 * GitHub #40: PUT the new text; the server changes the announcement and every feed copy of
+		 * it. The feed row and the announcement list entry change in place, so a legacy row is
+		 * still matched by its (new) title afterwards and keeps its buttons.
+		 */
+		async saveEdit() {
+			const item = this.editItem
+			const announcementId = this.announcementIdFor(item)
+			const title = this.editTitle
+			if (!item || announcementId === null || !title.trim()) return
+			this.saving = true
+			try {
+				const response = await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/announcements/{announcementId}', {
+					courseId: this.courseId,
+					announcementId,
+				}), { title, body: this.editBody })
+				const saved = response?.data?.announcement || {}
+				const editedAt = Number(saved.edited_at) || Math.floor(Date.now() / 1000)
+				const newTitle = typeof saved.title === 'string' ? saved.title : title
+				const newBody = typeof saved.body === 'string' ? saved.body : this.editBody
+				this.items = this.items.map((i) => (this.announcementIdFor(i) === announcementId
+					? { ...i, title: newTitle, body: newBody, meta: { ...(i.meta || {}), announcement_id: announcementId, edited_at: editedAt } }
+					: i))
+				this.announcements = this.announcements.map((a) => (Number(a.id) === announcementId
+					? { ...a, title: newTitle, body: newBody }
+					: a))
+				this.editItem = null
+			} catch (error) {
+				// the dialog stays open with the typed text
+				console.error('Failed to update announcement:', error)
+				showError(t('learning', 'Die Ankündigung konnte nicht gespeichert werden.'))
+			} finally {
+				this.saving = false
+			}
+		},
+
+		isEdited(item) {
+			return feedItemEdited(item)
+		},
+
 		async loadMore() {
 			this.offset += 50
 			await this.fetchFeed()
@@ -282,6 +373,30 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+
+.feed-edited {
+	font-size: 0.85em;
+	font-style: italic;
+	color: var(--color-text-maxcontrast);
+}
+
+.feed-edit-form {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+/* Nextcloud core fixes every textarea at 130px; the dialog field takes the full width. */
+.feed-edit-input,
+.feed-edit-textarea {
+	width: 100%;
+	margin-inline: 0;
+}
+
+.feed-edit-textarea {
+	min-height: 8em;
+	resize: vertical;
 }
 
 /* GitHub #40: an announcement keeps the line breaks its author typed. Text, never v-html. */

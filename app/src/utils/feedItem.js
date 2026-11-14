@@ -55,3 +55,14 @@ export function feedItemTitle(item) {
 	}
 	return item?.title || ''
 }
+
+/**
+ * Whether an announcement was edited after it was published (GitHub #40: the edit stores
+ * meta.edited_at on the feed copy).
+ *
+ * @param {object} item feed item from the API
+ * @return {boolean}
+ */
+export function feedItemEdited(item) {
+	return Number(item?.meta?.edited_at) > 0
+}

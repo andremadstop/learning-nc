@@ -3549,7 +3549,7 @@ OC.L10N.register(
     "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed." : "Ви справді хочете видалити оголошення «{title}»? Воно зникне зі стрічки для всіх учасників курсу.",
     "Nicht löschen" : "Не видаляти",
     "Die Ankündigung konnte nicht gelöscht werden." : "Не вдалося видалити оголошення.",
-    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen." : "Опубліковані оголошення з’являються у стрічці. Там їх також можна видалити.",
+    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen." : "Опубліковані оголошення з’являються у стрічці. Там їх також можна змінити або видалити.",
     "Fragen von Lernenden" : "Питання учнів",
     "Noch keine Fragen von Lernenden zu diesem Kurs." : "Питань від учнів щодо цього курсу поки немає.",
     "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken." : "Тут з’являються питання щодо цього курсу, які учні надсилають вам через помічника VirtuProf.",
@@ -3581,5 +3581,9 @@ OC.L10N.register(
     "Fortschritt im Kurs" : "Прогрес у курсі",
     "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Ваш стан у курсі: опановані й відповідені питання та ваші слабкі місця.",
     "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "Наприкінці ви побачите свій рахунок і кількість правильних відповідей. Тренування також порівнює результат із вашим середнім і може позначити особистий рекорд.",
+    "bearbeitet" : "змінено",
+    "Ankündigung bearbeiten" : "Редагувати оголошення",
+    "Nachricht" : "Повідомлення",
+    "Die Ankündigung konnte nicht gespeichert werden." : "Не вдалося зберегти оголошення.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

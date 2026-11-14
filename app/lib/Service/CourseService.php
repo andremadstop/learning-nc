@@ -2986,6 +2986,80 @@ class CourseService {
     }
 
     /**
+     * Edit a course announcement (instructor only, GitHub #40).
+     *
+     * Same rights as the delete: only an instructor of the course. The row is looked up by id AND
+     * course id before it is changed; a missing row is a DoesNotExistException and is never
+     * inferred from the affected-row count (MySQL reports 0 for an UPDATE that changes nothing).
+     * created_at stays, so the feed order does not move. The feed copy gets the new text and
+     * meta.edited_at in the same transaction; a legacy copy without meta.announcement_id is found
+     * by the old title and gets the link.
+     *
+     * @throws ForbiddenException
+     * @throws \OCP\AppFramework\Db\DoesNotExistException
+     * @throws \InvalidArgumentException empty title
+     */
+    public function updateAnnouncement(int $courseId, int $announcementId, string $userId, string $title, string $body): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+        if (trim($title) === '') {
+            throw new \InvalidArgumentException('Title is required');
+        }
+        $title = mb_substr($title, 0, 255);
+        $editedAt = time();
+
+        $this->db->beginTransaction();
+        try {
+            $find = $this->db->getQueryBuilder();
+            $find->select('id', 'instructor_id', 'title', 'created_at', 'expires_at')
+                ->from('learning_course_announcements')
+                ->where($find->expr()->eq('id', $find->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($find->expr()->eq('course_id', $find->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $result = $find->executeQuery();
+            $row = $result->fetch();
+            $result->closeCursor();
+            if (!is_array($row)) {
+                throw new \OCP\AppFramework\Db\DoesNotExistException('Announcement not found');
+            }
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_course_announcements')
+                ->set('title', $qb->createNamedParameter($title))
+                ->set('body', $qb->createNamedParameter($body))
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $qb->executeStatement();
+
+            $this->feedService->updateAnnouncementItems(
+                $courseId,
+                $announcementId,
+                (string)$row['title'],
+                (int)$row['created_at'],
+                $title,
+                $body,
+                $editedAt
+            );
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+
+        return [
+            'id' => $announcementId,
+            'course_id' => $courseId,
+            'instructor_id' => (string)$row['instructor_id'],
+            'title' => $title,
+            'body' => $body,
+            'created_at' => (int)$row['created_at'],
+            'expires_at' => $row['expires_at'] !== null ? (int)$row['expires_at'] : null,
+            'edited_at' => $editedAt,
+        ];
+    }
+
+    /**
      * Delete a course announcement (instructor only).
      */
     public function deleteAnnouncement(int $courseId, int $announcementId, string $userId): void {

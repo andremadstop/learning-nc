@@ -3549,7 +3549,7 @@ OC.L10N.register(
     "Möchtest du die Ankündigung „{title}“ wirklich löschen? Sie verschwindet für alle Kursmitglieder aus dem Feed." : "Voulez-vous vraiment supprimer l’annonce « {title} » ? Elle disparaîtra du flux pour tous les membres du cours.",
     "Nicht löschen" : "Ne pas supprimer",
     "Die Ankündigung konnte nicht gelöscht werden." : "L’annonce n’a pas pu être supprimée.",
-    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch löschen." : "Les annonces publiées apparaissent dans le flux. Vous pouvez aussi les y supprimer.",
+    "Veröffentlichte Ankündigungen erscheinen im Feed. Dort kannst du sie auch bearbeiten oder löschen." : "Les annonces publiées apparaissent dans le flux. Vous pouvez aussi les y modifier ou les supprimer.",
     "Fragen von Lernenden" : "Questions des apprenants",
     "Noch keine Fragen von Lernenden zu diesem Kurs." : "Aucune question des apprenants pour ce cours pour le moment.",
     "Hier erscheinen Fragen zu diesem Kurs, die Lernende dir über den Hilfe-Assistenten VirtuProf schicken." : "Les questions sur ce cours que les apprenants vous envoient via l’assistant d’aide VirtuProf apparaissent ici.",
@@ -3581,5 +3581,9 @@ OC.L10N.register(
     "Fortschritt im Kurs" : "Progression dans le cours",
     "Dein Stand im Kurs: gemeisterte und beantwortete Fragen und deine Schwachstellen." : "Votre niveau dans le cours : questions maîtrisées et répondues, et vos points faibles.",
     "Am Ende siehst du deine Punktzahl und die Anzahl richtiger Antworten. Das Training vergleicht dein Ergebnis auch mit deinem Durchschnitt und kann eine persönliche Bestleistung markieren." : "À la fin, vous voyez votre score et le nombre de bonnes réponses. L'entraînement compare aussi votre résultat à votre moyenne et peut signaler un record personnel.",
+    "bearbeitet" : "modifié",
+    "Ankündigung bearbeiten" : "Modifier l’annonce",
+    "Nachricht" : "Message",
+    "Die Ankündigung konnte nicht gespeichert werden." : "L’annonce n’a pas pu être enregistrée.",
 },
 "nplurals=2; plural=(n > 1);");
