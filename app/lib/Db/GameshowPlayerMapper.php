@@ -36,15 +36,4 @@ class GameshowPlayerMapper extends QBMapper {
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
         return $this->findEntity($qb);
     }
-
-    /**
-     * Count players currently in a session.
-     */
-    public function countBySession(int $sessionId): int {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*)'))
-           ->from($this->getTableName())
-           ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)));
-        return (int) $qb->executeQuery()->fetchOne();
-    }
 }

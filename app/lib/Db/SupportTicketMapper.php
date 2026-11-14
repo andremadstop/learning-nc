@@ -49,20 +49,6 @@ class SupportTicketMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
-    /**
-     * Find tickets marked as needs_review (Bug/Feature tickets awaiting admin triage).
-     * Sorted by creation date descending.
-     */
-    public function findNeedsReview(int $limit = 100): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('needs_review', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
-            ->orderBy('created_at', 'DESC')
-            ->setMaxResults($limit);
-        return $this->findEntities($qb);
-    }
-
     public function findByInstructorCourse(int $courseId, int $limit = 100): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')

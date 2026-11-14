@@ -189,14 +189,6 @@ class TelosService {
     }
 
     /**
-     * The consent version the current consent text carries (`data/ai-consent.json`). One source for
-     * client and server: a consent given for an older text no longer counts.
-     */
-    public function currentAiConsentVersion(): string {
-        return $this->consentService->currentVersion();
-    }
-
-    /**
      * True when the user has a valid AI consent for the recipient of the current connection
      * snapshot. Every LLM path must confirm this before any data reaches the model — the admin
      * switch alone is not sufficient under GDPR (AUDIT v5.2.1 HIGH-03).

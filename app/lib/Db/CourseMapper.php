@@ -28,15 +28,6 @@ class CourseMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
-    public function findByNcGroup(string $groupId): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('nc_group_id', $qb->createNamedParameter($groupId)))
-            ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter('active')));
-        return $this->findEntities($qb);
-    }
-
     public function findStudentExamCourses(string $userId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('c.id', 'c.title', 'c.exam_date')

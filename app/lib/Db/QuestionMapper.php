@@ -116,15 +116,6 @@ class QuestionMapper extends QBMapper {
         }
     }
 
-    public function deleteById(int $id, string $userId): void {
-        try {
-            $question = $this->find($id, $userId);
-            $this->delete($question);
-        } catch (DoesNotExistException $e) {
-            // Already deleted or doesn't exist
-        }
-    }
-
     public function searchByText(string $query, string $userId, int $limit = 50): array {
         $qb = $this->db->getQueryBuilder();
         $expr = $qb->expr();

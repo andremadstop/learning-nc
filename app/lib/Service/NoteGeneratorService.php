@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  * NOTE-01: generateSummary() — Gemini generates a topic summary on trigger
  * NOTE-02: Summary includes: key points, common mistake, practice recommendation
  * NOTE-03: Wiki-links to related questions/simulations embedded in summary
- * NOTE-04: updateExistingNote() — filename = topic slug → overwrites, no duplicates
+ * NOTE-04: generateSummary() names the file after the topic slug → overwrites, no duplicates
  *
  * Privacy: No PII sent to Gemini — only pool_name, question texts, error_rate.
  */
@@ -149,21 +149,6 @@ class NoteGeneratorService {
             'updated' => $noteExisted,
             'content' => $fullContent,
         ];
-    }
-
-    /**
-     * Update an existing note (alias for generateSummary — overwrites via same filename).
-     *
-     * NOTE-04: filename = topic slug → update instead of duplicate.
-     *
-     * @param string   $userId    NC user ID
-     * @param int      $poolId    Pool to update summary for
-     * @param int|null $courseId  Optional course context
-     *
-     * @return array{path: string, updated: bool, content: string}
-     */
-    public function updateExistingNote(string $userId, int $poolId, ?int $courseId = null): array {
-        return $this->generateSummary($userId, $poolId, $courseId);
     }
 
     // -------------------------------------------------------------------------

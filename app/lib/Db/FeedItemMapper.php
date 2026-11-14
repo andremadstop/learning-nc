@@ -64,19 +64,4 @@ class FeedItemMapper extends QBMapper {
 
         return $qb->executeStatement();
     }
-
-    /**
-     * Count feed items for a course.
-     */
-    public function countByCourse(int $courseId): int {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*)'))
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
-
-        $result = $qb->executeQuery();
-        $count = (int)$result->fetchOne();
-        $result->closeCursor();
-        return $count;
-    }
 }

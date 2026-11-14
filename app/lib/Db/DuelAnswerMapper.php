@@ -22,17 +22,4 @@ class DuelAnswerMapper extends QBMapper {
            ->andWhere($qb->expr()->eq('question_index', $qb->createNamedParameter($questionIndex, IQueryBuilder::PARAM_INT)));
         return $this->findEntities($qb);
     }
-
-    /**
-     * Returns all answers for a duel, ordered by question_index.
-     */
-    public function findByDuel(int $duelId): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-           ->from($this->getTableName())
-           ->where($qb->expr()->eq('duel_id', $qb->createNamedParameter($duelId, IQueryBuilder::PARAM_INT)))
-           ->orderBy('question_index', 'ASC')
-           ->addOrderBy('answered_at', 'ASC');
-        return $this->findEntities($qb);
-    }
 }

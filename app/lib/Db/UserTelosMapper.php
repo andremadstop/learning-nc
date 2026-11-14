@@ -104,21 +104,4 @@ class UserTelosMapper extends QBMapper {
            )));
         return $this->findEntities($qb);
     }
-
-    /**
-     * Find all telos with course-visible or public visibility (for peer discovery).
-     *
-     * @return UserTelos[]
-     */
-    public function findVisible(): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-           ->from($this->getTableName())
-           ->where($qb->expr()->in('visibility', $qb->createNamedParameter(
-               ['course', 'public'],
-               \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY
-           )))
-           ->andWhere($qb->expr()->eq('onboarding_completed', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
-        return $this->findEntities($qb);
-    }
 }

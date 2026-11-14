@@ -191,12 +191,6 @@ class TelosServiceTest extends TestCase {
         $this->assertFalse($this->service->hasAiConsent('alice'));
     }
 
-    public function testCurrentAiConsentVersionComesFromConsentService(): void {
-        $this->consent->method('currentVersion')->willReturn('3.0');
-
-        $this->assertSame('3.0', $this->service->currentAiConsentVersion());
-    }
-
     private function profile(string $uid, string $visibility, string $cert): UserTelos {
         $entity = new UserTelos();
         $entity->setUserId($uid);

@@ -20,17 +20,6 @@ class DuelInviteMapper extends QBMapper {
         return $this->findEntity($qb);
     }
 
-    public function findBySessionId(int $sessionId): ?DuelInvite {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('duel_session_id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
-            ->setMaxResults(1);
-
-        $entities = $this->findEntities($qb);
-        return $entities[0] ?? null;
-    }
-
     public function findActiveForUser(string $userId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')

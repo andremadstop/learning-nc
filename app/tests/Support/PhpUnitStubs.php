@@ -1079,31 +1079,6 @@ namespace Psr\Log {
 }
 
 namespace OCA\Learning\Db {
-    if (!class_exists(Analytics::class)) {
-        class Analytics {
-        }
-    }
-
-    if (!class_exists(AnalyticsMapper::class)) {
-        class AnalyticsMapper {
-            public function record(string $userId, ?int $poolId, string $metricType, string $metricValueJson): Analytics {
-                return new Analytics();
-            }
-
-            public function findByUser(string $userId): array {
-                return [];
-            }
-
-            public function findByUserAndPool(string $userId, int $poolId): array {
-                return [];
-            }
-
-            public function findByType(string $metricType, ?string $userId = null): array {
-                return [];
-            }
-        }
-    }
-
     if (!class_exists(PoolMapper::class)) {
         class PoolMapper {
             public function find(int $poolId, string $userId) {
