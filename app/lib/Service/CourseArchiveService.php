@@ -16,6 +16,9 @@ use Psr\Log\LoggerInterface;
  * Service for archiving courses and managing snapshots.
  */
 class CourseArchiveService {
+    /** learning_course_snapshots.snapshot_kind of a course archive (summaries: CourseSummaryService). */
+    public const SNAPSHOT_KIND = 'archive';
+
     private CourseMapper $courseMapper;
     private CourseMemberMapper $courseMemberMapper;
     private DataMobilityService $dataMobilityService;
@@ -68,9 +71,11 @@ class CourseArchiveService {
                 'user_id' => $qb->createNamedParameter($userId),
                 'snapshot_data' => $qb->createNamedParameter($snapshotJson),
                 'created_at' => $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT),
+                // The table also holds learners' course summaries (audit #51).
+                'snapshot_kind' => $qb->createNamedParameter(self::SNAPSHOT_KIND),
             ]);
         $qb->executeStatement();
-        $snapshotId = (int) $this->db->lastInsertId('learning_course_snapshots');
+        $snapshotId = (int) $qb->getLastInsertId();
 
         // Set course status to archived
         $course->setStatus('archived');
@@ -99,7 +104,9 @@ class CourseArchiveService {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
             ->from('learning_course_snapshots')
-            ->where($qb->expr()->eq('id', $qb->createNamedParameter($snapshotId, IQueryBuilder::PARAM_INT)));
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($snapshotId, IQueryBuilder::PARAM_INT)))
+            // A learner's personal summary is no archive and never readable here (audit #51).
+            ->andWhere($qb->expr()->eq('snapshot_kind', $qb->createNamedParameter(self::SNAPSHOT_KIND)));
         $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
@@ -127,6 +134,7 @@ class CourseArchiveService {
         $qb->select('id', 'course_id', 'created_at', 'user_id')
             ->from('learning_course_snapshots')
             ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('snapshot_kind', $qb->createNamedParameter(self::SNAPSHOT_KIND)))
             ->orderBy('created_at', 'DESC');
         $result = $qb->executeQuery();
 
