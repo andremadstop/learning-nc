@@ -478,7 +478,7 @@
 										<NcButton variant="tertiary"
 											size="small"
 											class="cert-download"
-											:aria-label="t('learning', 'Signierte Zertifikatsdatei (JSON) von {name} herunterladen', { name: row.display_name })"
+											:aria-label="t('learning', 'Herunterladen (JSON): signierte Zertifikatsdatei von {name}', { name: row.display_name })"
 											@click="downloadCertificate(row)">
 											{{ t('learning', 'Herunterladen (JSON)') }}
 										</NcButton>

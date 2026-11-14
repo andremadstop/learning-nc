@@ -3557,7 +3557,7 @@
         "Ansehen": "Переглянути",
         "Alle als JSON herunterladen (ZIP)": "Завантажити все у форматі JSON (ZIP)",
         "Zertifikat von {name} ansehen": "Переглянути сертифікат: {name}",
-        "Signierte Zertifikatsdatei (JSON) von {name} herunterladen": "Завантажити підписаний файл сертифіката (JSON) для {name}",
+        "Herunterladen (JSON): signierte Zertifikatsdatei von {name}": "Завантажити (JSON): підписаний файл сертифіката для {name}",
         "Herunterladen (JSON)": "Завантажити (JSON)",
         "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).": "PDF: «Переглянути», потім «Друк» (зберегти як PDF). «Завантажити» дає підписаний, машинно перевірюваний файл сертифіката (Open Badges, JSON).",
         "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "Цей сертифікат відкликано, він більше не дійсний.",

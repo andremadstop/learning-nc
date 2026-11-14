@@ -3557,7 +3557,7 @@
         "Ansehen": "عرض",
         "Alle als JSON herunterladen (ZIP)": "تنزيل الكل بصيغة JSON (ZIP)",
         "Zertifikat von {name} ansehen": "عرض شهادة {name}",
-        "Signierte Zertifikatsdatei (JSON) von {name} herunterladen": "تنزيل ملف الشهادة الموقّع (JSON) الخاص بـ {name}",
+        "Herunterladen (JSON): signierte Zertifikatsdatei von {name}": "تنزيل (JSON): ملف الشهادة الموقّع الخاص بـ {name}",
         "Herunterladen (JSON)": "تنزيل (JSON)",
         "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).": "PDF: «عرض» ثم «طباعة» (الحفظ بصيغة PDF). يوفّر «تنزيل» ملف الشهادة الموقّع والقابل للتحقق آليًا (Open Badges، JSON).",
         "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "أُلغيت هذه الشهادة ولم تعد صالحة.",

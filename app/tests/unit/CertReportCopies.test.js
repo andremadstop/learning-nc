@@ -116,7 +116,7 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		const labels = Array.from(row.querySelectorAll('button')).map((b) => b.textContent.trim())
 		expect(labels).toEqual(['Ansehen', 'Herunterladen (JSON)', 'Widerrufen'])
 		expect(row.querySelector('.cert-view').getAttribute('aria-label')).toBe('Zertifikat von Jürgen Müller ansehen')
-		expect(row.querySelector('.cert-download').getAttribute('aria-label')).toBe('Signierte Zertifikatsdatei (JSON) von Jürgen Müller herunterladen')
+		expect(row.querySelector('.cert-download').getAttribute('aria-label')).toBe('Herunterladen (JSON): signierte Zertifikatsdatei von Jürgen Müller')
 	})
 
 	it('says what the copies are: the downloads are the signed JSON files, the PDF is View -> Print', () => {
@@ -219,4 +219,27 @@ describe('Certificate.vue in instructor mode labels a certificate that no longer
 			view.unmount()
 		}
 	})
+})
+
+// Review of #42, WCAG 2.5.3 Label in Name: the accessible name of each certificate action must
+// contain its visible text, in every language, so speech input ("click Download JSON") matches.
+describe('certificate actions: the visible label is part of the accessible name (GitHub #42)', () => {
+	const pairs = [
+		['Ansehen', 'Zertifikat von {name} ansehen'],
+		['Herunterladen (JSON)', 'Herunterladen (JSON): signierte Zertifikatsdatei von {name}'],
+	]
+	for (const lang of ['de', 'en', 'fr', 'ru', 'ar', 'uk']) {
+		it(lang, async () => {
+			const { readFileSync } = await import('node:fs')
+			const { resolve } = await import('node:path')
+			const catalogue = JSON.parse(readFileSync(resolve(__dirname, `../../l10n/${lang}.json`), 'utf8')).translations
+			for (const [visible, aria] of pairs) {
+				const shown = catalogue[visible]
+				const name = catalogue[aria]
+				expect(shown, `${lang}: ${visible}`).toBeTruthy()
+				expect(name, `${lang}: ${aria}`).toBeTruthy()
+				expect(name.toLocaleLowerCase(lang), `${lang}: "${name}" contains "${shown}"`).toContain(shown.toLocaleLowerCase(lang))
+			}
+		})
+	}
 })

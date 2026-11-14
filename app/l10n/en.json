@@ -3557,7 +3557,7 @@
         "Ansehen": "View",
         "Alle als JSON herunterladen (ZIP)": "Download all as JSON (ZIP)",
         "Zertifikat von {name} ansehen": "View certificate of {name}",
-        "Signierte Zertifikatsdatei (JSON) von {name} herunterladen": "Download the signed certificate file (JSON) of {name}",
+        "Herunterladen (JSON): signierte Zertifikatsdatei von {name}": "Download (JSON): signed certificate file of {name}",
         "Herunterladen (JSON)": "Download (JSON)",
         "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).": "PDF: “View”, then “Print” (save as PDF). “Download” gives the signed, machine-verifiable certificate file (Open Badges, JSON).",
         "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "This certificate has been revoked and is no longer valid.",

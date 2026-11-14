@@ -3557,7 +3557,7 @@
         "Ansehen": "Ansehen",
         "Alle als JSON herunterladen (ZIP)": "Alle als JSON herunterladen (ZIP)",
         "Zertifikat von {name} ansehen": "Zertifikat von {name} ansehen",
-        "Signierte Zertifikatsdatei (JSON) von {name} herunterladen": "Signierte Zertifikatsdatei (JSON) von {name} herunterladen",
+        "Herunterladen (JSON): signierte Zertifikatsdatei von {name}": "Herunterladen (JSON): signierte Zertifikatsdatei von {name}",
         "Herunterladen (JSON)": "Herunterladen (JSON)",
         "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).": "PDF: „Ansehen“ und dort „Drucken“ (als PDF speichern). „Herunterladen“ liefert die signierte, maschinell prüfbare Zertifikatsdatei (Open Badges, JSON).",
         "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.": "Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.",
