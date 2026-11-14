@@ -1302,6 +1302,22 @@ class CourseService {
     }
 
     /**
+     * GitHub #49: the name a leaderboard row shows. The whole display name when the viewer may
+     * see it, otherwise the initials of its words ("Doe Jane" -> "D. J."). The leaderboard used
+     * to show the first word as the first name, which read "Doe" for "Doe Jane"; initials need
+     * no guess about the word order and show less than that first word did.
+     */
+    private function leaderboardName(string $userId, bool $wholeName): string {
+        $full = trim($this->getDisplayName($userId));
+        if ($wholeName) {
+            return $full !== '' ? $full : $userId;
+        }
+        $words = preg_split('/\s+/u', $full, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $initials = array_map(static fn(string $word): string => mb_strtoupper(mb_substr($word, 0, 1)) . '.', $words);
+        return $initials !== [] ? implode(' ', $initials) : '?';
+    }
+
+    /**
      * Batch-load pool names for a set of pool IDs.
      */
     private function getPoolNames(array $poolIds): array {
@@ -1897,8 +1913,12 @@ class CourseService {
             ->addSelect($qb->createFunction('COALESCE(us.current_streak, 0) AS current_streak'))
             ->addSelect($qb->createFunction('COALESCE(us.total_sessions, 0) AS total_sessions'))
             ->addSelect('us.last_activity_date')
+            // GitHub #49: the class register visibility decides whether fellow learners see the
+            // whole name (user_id is unique in learning_user_telos, so the join adds no rows).
+            ->addSelect('ut.visibility')
             ->from('learning_course_members', 'cm')
             ->leftJoin('cm', 'learning_user_stats', 'us', $qb->expr()->eq('cm.user_id', 'us.user_id'))
+            ->leftJoin('cm', 'learning_user_telos', 'ut', $qb->expr()->eq('cm.user_id', 'ut.user_id'))
             ->where($qb->expr()->eq('cm.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
             ->andWhere($qb->expr()->notLike('cm.user_id', $qb->createNamedParameter('demo-%')));
@@ -1916,9 +1936,13 @@ class CourseService {
             $rank++;
             $entries[] = [
                 'user_id' => $row['user_id'],
-                // GitHub #49: the whole display name, as in the class register and the progress
-                // table. The first word was taken as the first name, so "Doe Jane" read "Doe".
-                'display_name' => $this->getDisplayName($row['user_id']),
+                // GitHub #49: the whole display name. Learners only get it for themselves and for
+                // fellow learners who made their class register profile visible; for everyone
+                // else they get initials (see leaderboardName()).
+                'display_name' => $this->leaderboardName(
+                    $row['user_id'],
+                    $isInstructor || $row['user_id'] === $userId || (($row['visibility'] ?? null) ?: 'private') !== 'private'
+                ),
                 'total_xp' => (int)$row['total_xp'],
                 'current_level' => (int)$row['current_level'],
                 'total_mastered' => (int)$row['total_mastered'],

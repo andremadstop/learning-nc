@@ -26,13 +26,17 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * GitHub #49: the leaderboard took the first word of the display name as the first name, so a
- * learner whose display name is "Doe Jane" was listed as "Doe". It shows the whole display
- * name now, as the class register and the progress table do.
+ * learner whose display name is "Doe Jane" was listed as "Doe". It shows the whole display name
+ * to instructors, to the learner themselves and for fellow learners with a visible class register
+ * profile; for private peers learners see initials only.
  */
 #[AllowMockObjectsWithoutExpectations]
 class LeaderboardDisplayNameTest extends TestCase {
-    /** @param array<string, string> $names user id => display name */
-    private function board(string $viewer, array $names): array {
+    /**
+     * @param array<string, string> $names user id => display name
+     * @param array<string, ?string> $visibility user id => class register visibility (null: no profile)
+     */
+    private function board(string $viewer, array $names, array $visibility = ['learner' => null]): array {
         $course = new Course();
         $course->setId(7);
         $course->setInstructorId('teacher');
@@ -60,10 +64,11 @@ class LeaderboardDisplayNameTest extends TestCase {
         $xp = $this->createMock(XpService::class);
         $xp->method('isGamificationEnabled')->willReturn(true);
 
-        $rows = new FakeQueryBuilder(new FakeResult([
-            ['user_id' => 'learner', 'total_xp' => 10, 'current_level' => 1, 'total_mastered' => 0, 'current_streak' => 0, 'total_sessions' => 1, 'last_activity_date' => null],
-        ]));
-        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchOne(1)), $rows]);
+        $rows = [];
+        foreach ($visibility as $uid => $vis) {
+            $rows[] = ['user_id' => $uid, 'total_xp' => 10, 'current_level' => 1, 'total_mastered' => 0, 'current_streak' => 0, 'total_sessions' => 1, 'last_activity_date' => null, 'visibility' => $vis];
+        }
+        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchOne(count($rows))), new FakeQueryBuilder(new FakeResult($rows))]);
 
         $service = new CourseService(
             $courses,
@@ -96,5 +101,28 @@ class LeaderboardDisplayNameTest extends TestCase {
     public function testAOneWordNameAndAMissingUserStayReadable(): void {
         $this->assertSame('Jane', $this->board('learner', ['learner' => 'Jane'])[0]['display_name']);
         $this->assertSame('learner', $this->board('learner', [])[0]['display_name'], 'a deleted account falls back to its id');
+    }
+
+    /**
+     * The whole name is not handed to fellow learners who kept their class register profile
+     * private (or have none): the class register does not list them for other learners either.
+     */
+    public function testALearnerSeesOnlyTheInitialsOfAPrivatePeer(): void {
+        $names = ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau', 'otto' => 'Otto Normal'];
+        $board = $this->board('learner', $names, ['learner' => null, 'maria' => 'private', 'otto' => null]);
+        $this->assertSame('Doe Jane', $board[0]['display_name'], 'the learner sees their own name');
+        $this->assertSame('M. M.', $board[1]['display_name']);
+        $this->assertSame('O. N.', $board[2]['display_name'], 'no profile counts as private');
+    }
+
+    public function testALearnerSeesTheWholeNameOfAVisiblePeer(): void {
+        $board = $this->board('learner', ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau'], ['learner' => null, 'maria' => 'course']);
+        $this->assertSame('Maria Musterfrau', $board[1]['display_name']);
+    }
+
+    public function testTheInstructorSeesTheWholeNameOfAPrivateLearner(): void {
+        $board = $this->board('teacher', ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau'], ['learner' => null, 'maria' => 'private']);
+        $this->assertSame('Doe Jane', $board[0]['display_name']);
+        $this->assertSame('Maria Musterfrau', $board[1]['display_name']);
     }
 }
