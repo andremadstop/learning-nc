@@ -3363,6 +3363,11 @@
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.",
         "Die neue Gültigkeit schließt an den {date} an.": "Die neue Gültigkeit schließt an den {date} an.",
         "Die Erneuerung öffnet am {date}.": "Die Erneuerung öffnet am {date}.",
-        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Über das Zertifikat entscheidet nur die Auswahl „Pflicht-Pools“ unter Verwaltung → Kursregeln → Zertifizierung. Diese Schalter ändern daran nichts."
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "Über das Zertifikat entscheidet nur die Auswahl „Pflicht-Pools“ unter Verwaltung → Kursregeln → Zertifizierung. Diese Schalter ändern daran nichts.",
+        "Failed to load pending contributions.": "Ausstehende Beiträge konnten nicht geladen werden.",
+        "Moderation failed.": "Moderation fehlgeschlagen.",
+        "Answered": "Beantwortet",
+        "Thanks for the report! The question has been passed on for review.": "Danke für die Meldung! Die Frage wurde zur Prüfung weitergegeben.",
+        "The report could not be sent. Please try again later.": "Die Meldung konnte nicht gesendet werden. Bitte versuche es später erneut."
     }
 }

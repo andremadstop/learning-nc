@@ -3364,5 +3364,10 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "تبدأ مدة الصلاحية الجديدة من {date}.",
     "Die Erneuerung öffnet am {date}." : "يُتاح التجديد في {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "وحده اختيار «المجمعات الإلزامية» في الإدارة ← قواعد المقرر ← إصدار الشهادات يحدد الحصول على الشهادة. هذه الخيارات لا تغيّر ذلك.",
+    "Failed to load pending contributions." : "تعذّر تحميل المساهمات المعلّقة.",
+    "Moderation failed." : "فشلت عملية المراجعة.",
+    "Answered" : "تمت الإجابة",
+    "Thanks for the report! The question has been passed on for review." : "شكرًا على البلاغ! تم تمرير السؤال للمراجعة.",
+    "The report could not be sent. Please try again later." : "تعذّر إرسال البلاغ. يرجى المحاولة لاحقًا.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

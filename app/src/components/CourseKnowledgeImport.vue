@@ -237,11 +237,12 @@ export default {
 			this.error = null
 			this.deleting[title] = true
 			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/{title}', {
+				// audit #93: the title goes as query parameter — as a path segment a '/' in it
+				// ('Kapitel 3 / Netzwerktopologien') never reached the server
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge', {
 					courseId: this.courseId,
-					title,
 				})
-				await axios.delete(url)
+				await axios.delete(url, { params: { title } })
 				this.imports = this.imports.filter(i => i.source_file !== title)
 			} catch (e) {
 				this.error = e.response?.data?.error || t('learning', 'Löschen fehlgeschlagen')

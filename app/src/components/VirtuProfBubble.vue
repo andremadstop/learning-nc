@@ -889,6 +889,7 @@
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import { translateVirtuProf } from '../utils/virtuprof-i18n.js'
+import { ncFileUrl } from '../utils/ncFileUrl.js'
 
 export default {
   name: 'VirtuProfBubble',
@@ -1082,32 +1083,28 @@ export default {
         return ''
       }
       try {
-        const locale = this.effectiveLanguage === 'ar'
-          ? 'ar'
-          : this.effectiveLanguage === 'ru'
-            ? 'ru'
-            : this.effectiveLanguage === 'de'
-              ? 'de'
-              : 'en'
-        return new Date(Number(value) * 1000).toLocaleString(locale)
+        // audit #193: all six interface languages (fr/uk used to fall back to 'en')
+        return new Date(Number(value) * 1000).toLocaleString(this.effectiveLanguage || 'en')
       } catch (e) {
         return String(value)
       }
     },
     statusLabel(status) {
       const normalized = String(status || '').toLowerCase()
+      // Literal vt() calls, so gen-virtuprof-strings.mjs sees every label (audit #192:
+      // 'Answered' was missing from the catalogue and showed in English everywhere).
       const labels = {
-        open: 'Open',
-        answered: 'Answered',
-        closed: 'Closed',
-        accepted: 'Accepted',
-        declined: 'Declined',
-        canceled: 'Canceled',
-        invited: 'Invited',
-        ready: 'Ready',
-        active: 'Active',
+        open: () => this.vt('Open'),
+        answered: () => this.vt('Answered'),
+        closed: () => this.vt('Closed'),
+        accepted: () => this.vt('Accepted'),
+        declined: () => this.vt('Declined'),
+        canceled: () => this.vt('Canceled'),
+        invited: () => this.vt('Invited'),
+        ready: () => this.vt('Ready'),
+        active: () => this.vt('Active'),
       }
-      return this.vt(labels[normalized] || status)
+      return labels[normalized] ? labels[normalized]() : this.vt(status)
     },
     sendChat() {
       const text = this.chatInput.trim()
@@ -1234,10 +1231,7 @@ export default {
         el.scrollTop = el.scrollHeight
       }
     },
-    ncFileUrl(path) {
-      // Build a Nextcloud Files URL for a path like /Learning/Lernplan.md
-      return '/apps/files/?dir=' + encodeURIComponent(path.substring(0, path.lastIndexOf('/'))) + '&scrollto=' + encodeURIComponent(path.split('/').pop())
-    },
+    ncFileUrl,
   },
 }
 </script>

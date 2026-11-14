@@ -174,8 +174,8 @@
 </template>
 
 <script>
-import { generateUrl } from '@nextcloud/router'
 import { translateVirtuProf } from '../utils/virtuprof-i18n.js'
+import { ncFileUrl } from '../utils/ncFileUrl.js'
 
 export default {
   name: 'VirtuProfFullscreen',
@@ -249,9 +249,10 @@ export default {
       return Boolean(this.step && (this.step.title || this.step.text) && this.chatMessages.length === 0)
     },
     latestSources() {
-      const assistantMessages = [...this.chatMessages].reverse()
-      const latestWithSources = assistantMessages.find((message) => Array.isArray(message.sources) && message.sources.length > 0)
-      return latestWithSources?.sources || []
+      // Audit #195: the panel says 'last answer', so it shows the sources of the latest
+      // assistant message only — no longer those of an older answer when the latest has none.
+      const latestAnswer = [...this.chatMessages].reverse().find((message) => message?.role === 'assistant')
+      return Array.isArray(latestAnswer?.sources) ? latestAnswer.sources : []
     },
     contextEntries() {
       const entries = []
@@ -388,13 +389,7 @@ export default {
       element.style.height = 'auto'
       element.style.height = `${Math.min(element.scrollHeight, 120)}px`
     },
-    ncFileUrl(path) {
-      const normalizedPath = String(path || '')
-      const lastSlashIndex = normalizedPath.lastIndexOf('/')
-      const directory = lastSlashIndex > 0 ? normalizedPath.slice(0, lastSlashIndex) : '/'
-      const fileName = lastSlashIndex >= 0 ? normalizedPath.slice(lastSlashIndex + 1) : normalizedPath
-      return generateUrl('/apps/files/') + '?dir=' + encodeURIComponent(directory) + '&scrollto=' + encodeURIComponent(fileName)
-    },
+    ncFileUrl,
   },
 }
 </script>

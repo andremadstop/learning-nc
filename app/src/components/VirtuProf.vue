@@ -93,6 +93,7 @@ import NovaPanel from './nova/NovaPanel.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import VirtuProfFullscreen from './VirtuProfFullscreen.vue'
 import { novaReactions } from '../utils/nova-reaction-engine.js'
+import { novaAudio } from '../utils/nova-audio-manager.js'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import {
@@ -619,6 +620,11 @@ export default {
       this.aiEnabled = data.ai_enabled === true
       this.ttsEnabled = data.tts_enabled === true
       this.sttEnabled = data.stt_enabled === true
+      // audit #17: the saved 'Bot sounds' choice applies on every page, not only after a
+      // visit to the personal settings (the manager starts disabled)
+      if (typeof data.bot_sounds_enabled === 'boolean') {
+        novaAudio.setEnabled(data.bot_sounds_enabled)
+      }
       this.voiceLang = VOICE_LANGUAGE_OPTIONS.some(option => option.value === data.voice_lang)
         ? data.voice_lang
         : this.getBrowserVoiceLanguage()
@@ -873,10 +879,24 @@ export default {
       this.isExamMode = !!active
     },
     updateContext(context = {}) {
-      this.currentContext = {
-        ...this.currentContext,
-        ...(context || {}),
+      const incoming = context || {}
+      const previous = this.currentContext || {}
+      const next = { ...previous, ...incoming }
+      // Audit #112: questionId (the question last explained via "Explain via VirtuProf") was
+      // never cleared, so every later chat — even in another course — sent it as
+      // lastWrongQuestionId and pulled that old question's context. It now ends when the
+      // learner leaves the question, moves to another one, or switches pool or course.
+      if (previous.questionId) {
+        const has = (key) => Object.prototype.hasOwnProperty.call(incoming, key)
+        const leftQuestion = has('questionContext')
+          && (!incoming.questionContext || String(incoming.questionContext.questionId) !== String(previous.questionId))
+        const movedPool = has('poolId') && incoming.poolId !== previous.poolId
+        const movedCourse = has('courseId') && incoming.courseId !== previous.courseId
+        if (leftQuestion || movedPool || movedCourse) {
+          delete next.questionId
+        }
       }
+      this.currentContext = next
       // HINT-03: Reset hint counter when question changes
       const newQuestionId = this.currentContext?.questionContext?.questionId
         || this.currentContext?.questionId || null
@@ -1841,14 +1861,15 @@ export default {
             courseId: ctx.courseId || null,
           },
         })
+        // audit #113: the renderers read `text`; with `content` the bubble stayed empty
         this.chatMessages.push({
           role: 'assistant',
-          content: 'Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.',
+          text: this.vt('Thanks for the report! The question has been passed on for review.'),
         })
       } catch {
         this.chatMessages.push({
           role: 'assistant',
-          content: 'Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.',
+          text: this.vt('The report could not be sent. Please try again later.'),
         })
       }
     },

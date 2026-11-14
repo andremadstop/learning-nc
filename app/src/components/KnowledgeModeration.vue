@@ -7,6 +7,14 @@
 			<p>{{ t('learning', 'Lade...') }}</p>
 		</div>
 
+		<!-- audit #100: a failed load used to look like an empty queue -->
+		<NcNoteCard v-else-if="loadError" type="error" class="load-error">
+			<p>{{ loadError }}</p>
+			<NcButton variant="secondary" @click="loadPending">
+				{{ t('learning', 'Retry') }}
+			</NcButton>
+		</NcNoteCard>
+
 		<div v-else-if="pending.length === 0" class="empty-state">
 			<p>{{ t('learning', 'Keine ausstehenden Beiträge.') }}</p>
 		</div>
@@ -50,9 +58,14 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { showError } from '@nextcloud/dialogs'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 
 export default {
 	name: 'KnowledgeModeration',
+
+	components: { NcButton, NcNoteCard },
 
 	props: {
 		courseId: {
@@ -65,6 +78,7 @@ export default {
 		return {
 			pending: [],
 			loading: false,
+			loadError: '',
 			moderating: {},
 		}
 	},
@@ -90,6 +104,7 @@ export default {
 
 		async loadPending() {
 			this.loading = true
+			this.loadError = ''
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/pending', {
 					courseId: this.courseId,
@@ -99,6 +114,7 @@ export default {
 				this.$emit('pending-count', this.pending.length)
 			} catch (e) {
 				console.error('Failed to load pending contributions', e)
+				this.loadError = t('learning', 'Failed to load pending contributions.')
 			} finally {
 				this.loading = false
 			}
@@ -116,6 +132,7 @@ export default {
 				this.$emit('pending-count', this.pending.length)
 			} catch (e) {
 				console.error('Failed to moderate contribution', e)
+				showError(e?.response?.data?.error || t('learning', 'Moderation failed.'))
 			} finally {
 				this.moderating[chunkId] = false
 			}

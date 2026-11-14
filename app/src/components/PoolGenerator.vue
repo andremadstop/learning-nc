@@ -1,5 +1,5 @@
 <template>
-  <div class="pool-generator-overlay" @click.self="$emit('close')">
+  <div class="pool-generator-overlay" @click.self="onBackdropClick">
     <div class="pool-generator" role="dialog" :aria-label="t('learning', 'Pool Generator')">
       <div class="pg-header">
         <h3>{{ t('learning', 'Generate Question Pool') }}</h3>
@@ -258,6 +258,15 @@ export default {
     this.loadProviderInfo();
   },
   methods: {
+    // Audit #105: a stray click next to the dialog closed it in every step and threw away
+    // AI-generated (and possibly edited) drafts. While generating or reviewing, only the
+    // close button closes it.
+    onBackdropClick() {
+      if (this.step === 'generating' || this.step === 'review') {
+        return;
+      }
+      this.$emit('close');
+    },
     async loadProviderInfo() {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/pool-generator/provider-info'));
