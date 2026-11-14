@@ -469,6 +469,8 @@ export default {
     },
     async startTraining() {
       this.starting = true; this.loadError = null;
+      // The overlay now reacts on mount (audit #102): a new session must not show the last level-up again.
+      this.levelBefore = 0; this.levelAfter = 0;
       try {
         const payload = { poolId: this.poolId };
         if (this.activeQuestionType) { payload.questionType = this.activeQuestionType; }

@@ -497,6 +497,8 @@ export default {
     },
   },
   beforeUnmount() {
+    // A running explanation poll would otherwise go on after leaving the view (audit #101).
+    clearInterval(this.explainPollTimer);
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
     window.removeEventListener('keydown', this.handleFsrsKeydown);
     this.clearFsrsIntervalNotice();
@@ -654,6 +656,8 @@ export default {
           this.lastSubmittedRating = null;
           this.sessionCorrect = 0;
           this.sessionIncorrect = 0;
+          this.levelBefore = 0;
+          this.levelAfter = 0;
           this.clearFsrsIntervalNotice();
         }
       } catch (e) { showError(t('learning', 'Failed to load review questions')); }
@@ -708,7 +712,9 @@ export default {
       }
       this.appendNewBadges(data.newly_earned_badges)
       if (data.level_before && data.level_after) {
-        this.levelBefore = data.level_before
+        // Session-wide: the level at the first answer against the latest one, so a level-up
+        // in the middle of the review is not overwritten by later answers (audit #102).
+        if (!this.levelBefore) this.levelBefore = data.level_before
         this.levelAfter = data.level_after
       }
       if (data.first_fsrs_review) {
@@ -845,14 +851,21 @@ export default {
             this.explainText = r.data.output || (questions.length > 0 ? JSON.stringify(questions[0]) : t('learning', 'No explanation available'));
             this.explainLoading = false;
           } else if (r.data.status === 'failed') {
-            clearInterval(this.explainPollTimer);
-            this.explainLoading = false;
+            this.explainFailed();
           }
         } catch (e) {
-          clearInterval(this.explainPollTimer);
-          this.explainLoading = false;
+          this.explainFailed();
         }
       }, 1500);
+    },
+    explainFailed() {
+      // Without resetting the task the button stayed hidden and there was no way to retry, and
+      // no message said why the explanation never came (audit #101).
+      clearInterval(this.explainPollTimer);
+      this.explainPollTimer = null;
+      this.explainTaskId = null;
+      this.explainLoading = false;
+      showError(t('learning', 'The AI explanation could not be generated. Please try again.'));
     },
     async nextQuestion() {
       clearInterval(this.explainPollTimer);
@@ -881,7 +894,7 @@ export default {
       } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
+    finishReview() { this.levelBefore = 0; this.levelAfter = 0; this.started = false; this.currentIndex = 0; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
     continueLearning() { this.finishReview(); this.$emit('back'); }
   }
 };

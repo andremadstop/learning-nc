@@ -370,7 +370,8 @@ export default {
         this.newBadges = [...this.newBadges, ...data.newly_earned_badges];
       }
       if (data.level_before && data.level_after) {
-        this.levelBefore = data.level_before;
+        // Session-wide: first level against the latest, so a mid-session level-up is kept (audit #102).
+        if (!this.levelBefore) this.levelBefore = data.level_before;
         this.levelAfter = data.level_after;
       }
 

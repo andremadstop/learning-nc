@@ -3366,5 +3366,6 @@ OC.L10N.register(
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Seule la sélection « Pools obligatoires » sous Administration → Règles du cours → Certification décide du certificat. Ces options n'y changent rien.",
     "The daily challenge has changed. Please answer the new question." : "Le défi du jour a changé. Réponds à la nouvelle question.",
     "VLAN {id} ist das Native VLAN des Trunks: Seine Frames bleiben auch auf dem Trunk untagged." : "Le VLAN {id} est le VLAN natif du trunk : ses trames restent non étiquetées, même sur le trunk.",
+    "The AI explanation could not be generated. Please try again." : "L’explication par l’IA n’a pas pu être générée. Veuillez réessayer.",
 },
 "nplurals=2; plural=(n > 1);");

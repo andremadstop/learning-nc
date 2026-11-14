@@ -40,7 +40,9 @@ export default {
           this.timer = setTimeout(() => this.dismiss(), 2500);
         }
       },
-      immediate: false,
+      // The Leitner and Smart Queue result screens mount the overlay after the review set the
+      // levels, so a non-immediate watcher never saw a change there (audit #102).
+      immediate: true,
     },
   },
   methods: {
