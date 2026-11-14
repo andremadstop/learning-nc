@@ -278,7 +278,7 @@ describe('texts without XP, streaks and badges with gamification off (GitHub #36
 			const detail = await renderCourse({ course: certifying({ course_summary: true }), tools: { enabled_tools: null, ai_enabled: ai } })
 			detail.selectMegaTab('abschluss')
 			await flush()
-			expect(host.querySelector('.abschluss-mega-tab .snapshot-card'), 'summary statistics rendered').not.toBeNull()
+			expect(host.querySelector('.abschluss-mega-tab .summary-grid'), 'summary statistics rendered').not.toBeNull()
 			expect(host.querySelector('.abschluss-mega-tab .snapshot-inline-stats') !== null).toBe(ai)
 			app.unmount()
 			host.remove()

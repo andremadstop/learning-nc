@@ -13,8 +13,12 @@
 					@click="exportSummaryMarkdown">
 					{{ t('learning', 'Als Markdown exportieren') }}
 				</NcButton>
+				<!-- GitHub #54: the snapshot is the record of a certifying course; elsewhere its
+					"save certificate" label promised a certificate the course does not issue. -->
 				<NcButton
+					v-if="certApplicable"
 					variant="primary"
+					class="save-snapshot-button"
 					:disabled="loading || savingSnapshot || !summary"
 					@click="saveSnapshot">
 					{{ savingSnapshot ? t('learning', 'Sichere...') : t('learning', 'Zeugnis sichern') }}
@@ -23,7 +27,7 @@
 		</div>
 
 		<!-- Certification (Phase 154). GitHub #35: shown whenever the course certifies, independent of the released summary statistics below. -->
-		<div v-if="zeugnisVisible" class="widget-card zeugnisstatus-card">
+		<div v-if="zeugnisCardVisible" class="widget-card zeugnisstatus-card">
 			<p class="card-kicker">{{ t('learning', 'Zertifizierung') }}</p>
 			<div v-if="!certApplicable" class="zeugnis-state">
 				<span class="zeugnis-label zeugnis-na">{{ t('learning', 'Kein Zertifikat für diesen Kurs') }}</span>
@@ -130,7 +134,7 @@
 				{{ t('learning', 'Snapshot gespeichert.') }}
 			</div>
 
-			<div class="summary-grid" :class="{ 'grid--single': !leitnerEnabled }">
+			<div class="summary-grid" :class="{ 'grid--single': !leitnerEnabled || !snapshotCardVisible }">
 				<!-- GitHub #36: box 5 only fills with Leitner -->
 				<div v-if="leitnerEnabled" class="widget-card mastery-card">
 					<p class="card-kicker">{{ t('learning', 'Meisterschaft') }}</p>
@@ -156,9 +160,9 @@
 					</div>
 				</div>
 
-				<div class="widget-card snapshot-card">
-					<p class="card-kicker">{{ t('learning', 'Zeugnisstatus') }}</p>
-					<div class="snapshot-state">
+				<div v-if="snapshotCardVisible" class="widget-card snapshot-card">
+					<p class="card-kicker">{{ certApplicable ? t('learning', 'Zeugnisstatus') : t('learning', 'Schwarm') }}</p>
+					<div v-if="certApplicable" class="snapshot-state">
 						<strong>{{ snapshot ? t('learning', 'Snapshot vorhanden') : t('learning', 'Noch nicht gesichert') }}</strong>
 						<span v-if="snapshot">{{ t('learning', 'Zuletzt gesichert: {date}', { date: formatTimestamp(snapshot.created_at) }) }}</span>
 						<span v-else>{{ t('learning', 'Sichere deinen aktuellen Stand dauerhaft für später.') }}</span>
@@ -408,6 +412,16 @@ export default {
 		// Show the Zeugnis card only once pass status has loaded.
 		zeugnisVisible() {
 			return this.passStatus !== null && !this.passStatusLoading
+		},
+		// GitHub #54: "no certificate for this course" only where it is the whole tab (statistics
+		// not released); next to the statistics it only raised the question of a certificate.
+		zeugnisCardVisible() {
+			return this.zeugnisVisible && (this.certApplicable || !this.statsReleased)
+		},
+		// GitHub #54: the snapshot state belongs to a certifying course; the swarm figures (AI on)
+		// keep the card elsewhere.
+		snapshotCardVisible() {
+			return this.certApplicable || this.aiEnabled
 		},
 		// Cert applies to this course (cert_enabled=true server-side).
 		certApplicable() {

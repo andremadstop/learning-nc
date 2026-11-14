@@ -235,7 +235,8 @@ describe('CourseSummary (GitHub #36)', () => {
 	// GitHub #36: the swarm feeds the AI assistant's knowledge
 	it('shows the swarm counters in the snapshot card only with AI on', async () => {
 		await renderSummary({ aiEnabled: false })
-		expect(host.querySelector('.snapshot-card')).not.toBeNull()
+		// GitHub #54: without a certificate and without AI the snapshot card has nothing left.
+		expect(host.querySelector('.snapshot-card')).toBeNull()
 		expect(host.querySelector('.snapshot-inline-stats')).toBeNull()
 		app.unmount()
 		host.remove()
