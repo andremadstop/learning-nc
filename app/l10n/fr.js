@@ -1510,7 +1510,7 @@ OC.L10N.register(
     "Schritt {current} von {total}" : "Step {current} of {total}",
     "Schwache Fragen" : "Questions faibles",
     "Schwarm" : "Essaim",
-    "Schwarm-Beiträge" : "Swarm Contributions",
+    "Schwarm-Beiträge" : "Contributions à l’essaim",
     "Schwarmgedächtnis" : "Mémoire collective",
     "Schwarmgedächtnis — Beiträge moderieren" : "Swarm Memory — Moderate Contributions",
     "Schwarmgedächtnis — Gut zu wissen" : "Swarm memory — good to know",
