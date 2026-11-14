@@ -371,8 +371,11 @@ export default {
 				const payload = {
 					title: this.formData.title.trim(),
 				}
-				if (this.formData.description.trim()) {
-					payload.description = this.formData.description.trim()
+				// On edit the description is always sent: an omitted field keeps the old text on the
+				// server, so an emptied description was never saved (audit #94).
+				const description = this.formData.description.trim()
+				if (description || this.editingCourse) {
+					payload.description = description
 				}
 				// GitHub #35: on edit the group is always sent ('' removes it); the server enrols
 				// the group's current members when the group is new or changed.

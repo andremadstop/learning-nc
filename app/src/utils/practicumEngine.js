@@ -135,7 +135,13 @@ export class PracticumEngine {
 			startedAt: this._startedAt,
 			completedAt: this._completedAt,
 		}
-		localStorage.setItem(STORAGE_PREFIX + this._sessionData.id, JSON.stringify(state))
+		// Storage can be blocked (private window, site data off) or full: losing the resume
+		// point must not stop the step from advancing (audit #106).
+		try {
+			localStorage.setItem(STORAGE_PREFIX + this._sessionData.id, JSON.stringify(state))
+		} catch (e) {
+			// resume is a convenience; keep going without it
+		}
 	}
 
 	/**
@@ -145,17 +151,27 @@ export class PracticumEngine {
 	 * @returns {PracticumEngine|null} Restored engine or null if no saved state
 	 */
 	static restore(sessionId, sessionData) {
-		const raw = localStorage.getItem(STORAGE_PREFIX + sessionId)
-		if (!raw) {
+		let saved
+		try {
+			const raw = localStorage.getItem(STORAGE_PREFIX + sessionId)
+			if (!raw) {
+				return null
+			}
+			saved = JSON.parse(raw)
+		} catch (e) {
+			// blocked storage or a corrupt entry: nothing to resume
 			return null
 		}
-		const saved = JSON.parse(raw)
 		return new PracticumEngine(sessionData, saved)
 	}
 
 	/** Clear saved state and reset to step 0 */
 	reset() {
-		localStorage.removeItem(STORAGE_PREFIX + this._sessionData.id)
+		try {
+			localStorage.removeItem(STORAGE_PREFIX + this._sessionData.id)
+		} catch (e) {
+			// blocked storage: there is nothing stored to clear
+		}
 		this._stepIndex = 0
 		this._results = []
 		this._startedAt = Date.now()

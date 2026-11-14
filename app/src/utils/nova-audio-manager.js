@@ -41,15 +41,19 @@ function playTone(freq, duration, type, opts = {}) {
 		osc.connect(gain)
 		gain.connect(_masterGain)
 
-		const now = _audioCtx.currentTime
+		// The whole envelope starts with the tone. It used to run from now while a delayed
+		// oscillator started later, so the gain was already back at 0 and only the first tone
+		// of a cue was audible (audit #116).
+		const t0 = _audioCtx.currentTime + (opts.delay || 0)
 		const attack = opts.attack || 0.01
 		const release = opts.release || 0.01
-		gain.gain.linearRampToValueAtTime(_volume, now + attack)
-		gain.gain.setValueAtTime(_volume, now + duration - release)
-		gain.gain.linearRampToValueAtTime(0, now + duration)
+		gain.gain.setValueAtTime(0, t0)
+		gain.gain.linearRampToValueAtTime(_volume, t0 + attack)
+		gain.gain.setValueAtTime(_volume, t0 + duration - release)
+		gain.gain.linearRampToValueAtTime(0, t0 + duration)
 
-		osc.start(now + (opts.delay || 0))
-		osc.stop(now + duration + (opts.delay || 0))
+		osc.start(t0)
+		osc.stop(t0 + duration)
 	} catch {
 		// Never crash for audio errors
 	}

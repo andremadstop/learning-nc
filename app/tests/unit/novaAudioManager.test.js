@@ -172,3 +172,69 @@ describe('novaAudio.play() — mit AudioContext-Mock', () => {
 		}
 	})
 })
+
+// ---------------------------------------------------------------------------
+// Audit #116: the envelope of a delayed tone must follow its delay
+// ---------------------------------------------------------------------------
+
+describe('novaAudio — envelope of delayed tones (audit #116)', () => {
+	it('every tone of the success arpeggio is loud while its oscillator runs', async () => {
+		vi.resetModules()
+		const tones = []
+		class FakeAudioContext {
+			constructor() {
+				this.state = 'running'
+				this.currentTime = 10
+				this.destination = {}
+			}
+
+			createGain() {
+				const events = []
+				return {
+					events,
+					gain: {
+						value: 0,
+						setValueAtTime: (v, t) => events.push({ v, t }),
+						linearRampToValueAtTime: (v, t) => events.push({ v, t }),
+					},
+					connect: () => {},
+				}
+			}
+
+			createOscillator() {
+				const osc = {
+					type: '',
+					frequency: { value: 0 },
+					detune: { value: 0 },
+					connect: (gain) => { osc.gainNode = gain },
+					start: (t) => { osc.startAt = t },
+					stop: (t) => { osc.stopAt = t },
+				}
+				tones.push(osc)
+				return osc
+			}
+
+		}
+		globalThis.AudioContext = FakeAudioContext
+		try {
+			const { novaAudio } = await import('../../src/utils/nova-audio-manager.js')
+			novaAudio.setEnabled(true)
+			novaAudio.play('success')
+		} finally {
+			delete globalThis.AudioContext
+		}
+
+		expect(tones).toHaveLength(3)
+		for (const osc of tones) {
+			const events = osc.gainNode.events
+			// every envelope point lies inside [start, stop]
+			for (const e of events) {
+				expect(e.t).toBeGreaterThanOrEqual(osc.startAt - 1e-9)
+				expect(e.t).toBeLessThanOrEqual(osc.stopAt + 1e-9)
+			}
+			// and the gain reaches a non-zero level after the oscillator started
+			expect(events.some((e) => e.v > 0 && e.t > osc.startAt)).toBe(true)
+		}
+		expect(tones.map((o) => +(o.startAt - 10).toFixed(2))).toEqual([0, 0.08, 0.16])
+	})
+})
