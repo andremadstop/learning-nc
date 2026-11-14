@@ -1,8 +1,9 @@
-# CI-only stack for E2E tests.
+# Local Gate-3 stack for the Playwright E2E tests (app/tests/e2e/README.md).
 # Keeps Nextcloud bootstrap isolated from the learning app source tree.
+# Images pinned to the same digests as scripts/gate-container.sh and scripts/lifecycle-probe.sh.
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     container_name: learning-db
     restart: unless-stopped
     volumes:
@@ -15,13 +16,15 @@ services:
       - learning-net
 
   app:
-    image: nextcloud:35
+    image: nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5
     container_name: learning-app
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
       - nextcloud_data:/var/www/html
+      # disables the App Store during bootstrap (see the file and app/tests/e2e/README.md)
+      - ./scripts/e2e/nextcloud-config/zz-e2e.config.php:/var/www/html/config/zz-e2e.config.php:ro
     environment:
       POSTGRES_HOST: db
       POSTGRES_DB: nextcloud

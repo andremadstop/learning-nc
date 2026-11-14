@@ -11,7 +11,7 @@
 # HARD-FAILS. A skip would falsely read as a pass for the headline "anyone can verify" claim.
 #
 # Steps:
-#   (a) obtain a REAL issued credential JWT from the live devcloud (GET /api/certificates, authenticated)
+#   (a) obtain a REAL issued credential JWT from the instance at BASE_URL (GET /api/certificates, authenticated)
 #   (b) resolve the signer's public key: read the JWT header `kid`, fetch did.json, pull the matching
 #       verificationMethod.publicKeyJwk.x
 #   (c) run python3 scripts/verify-credential.py <jwt> <x>
@@ -26,21 +26,28 @@
 #   Until that provisioning happens (gated behind a multi-AI review — HARD PROD BOUNDARY), this gate has
 #   no real credential to verify and is DEFERRED. It is intentionally strict, not skip-on-missing.
 #
+# Target (no defaults — devcloud is gone and a default host could point at someone else's instance):
+#   BASE_URL=https://cloud.example.org             # required
+#   REMOTE_HOST=<ssh-alias> CONTAINER_NAME=<nc-container> BRUTEFORCE_RESET_IP=<ip>
+#                                                  # optional, all three: reset bruteforce first
+#
 # Exit: 0 = PASS (real credential independently verified, tampered copy rejected); non-zero = FAIL.
 #
 set -uo pipefail
 
-BASE_URL="${BASE_URL:-https://devcloud.andrestiebitz.de}"
-REMOTE_HOST="${REMOTE_HOST:-relais}"
-CONTAINER_NAME="${CONTAINER_NAME:-devcloud-app}"
+BASE_URL="${BASE_URL:-}"
+REMOTE_HOST="${REMOTE_HOST:-}"
+CONTAINER_NAME="${CONTAINER_NAME:-}"
 CONTAINER_USER="${CONTAINER_USER:-www-data}"
-BRUTEFORCE_RESET_IP="${BRUTEFORCE_RESET_IP:-172.21.0.1}"
+BRUTEFORCE_RESET_IP="${BRUTEFORCE_RESET_IP:-}"
 VERIFY_PY="${VERIFY_PY:-$(cd "$(dirname "$0")" && pwd)/verify-credential.py}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 die()  { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
+[[ -n "$BASE_URL" ]] || { printf 'usage: BASE_URL=https://<instance> %s (see header)\n' "$0" >&2; exit 2; }
+BASE_URL="${BASE_URL%/}"
 b64u_pad() { local s="$1" m=$(( ${#1} % 4 )); [[ $m -eq 2 ]] && s="${s}=="; [[ $m -eq 3 ]] && s="${s}="; printf '%s' "$s"; }
 
 # ── (d) HARD guard: the independent verifier MUST be available — fail, never skip ──────────────
@@ -49,7 +56,7 @@ python3 -c "import cryptography" 2>/dev/null || die "python3 'cryptography' modu
 [[ -f "$VERIFY_PY" ]] || die "verify-credential.py not found at $VERIFY_PY"
 
 # ── bruteforce reset before any authenticated API call (courtesy; needs ssh to the host) ───────
-if command -v ssh >/dev/null 2>&1; then
+if [[ -n "$REMOTE_HOST" && -n "$CONTAINER_NAME" && -n "$BRUTEFORCE_RESET_IP" ]] && command -v ssh >/dev/null 2>&1; then
     ssh "$REMOTE_HOST" "docker exec -u $CONTAINER_USER $CONTAINER_NAME php occ security:bruteforce:reset $BRUTEFORCE_RESET_IP" >/dev/null 2>&1 || true
 fi
 
