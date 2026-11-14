@@ -1,5 +1,5 @@
 /**
- * GitHub #34: the shared JSON import cases (app/tests/fixtures/import-json-cases.json) through
+ * GitHub #34: the shared JSON import cases (app/tests/Fixtures/import-json-cases.json) through
  * the import preview. PHPUnit runs the same file through the real ImportController::importJson()
  * (ImportJsonFixturesTest.php), so what the preview promises and what the server stores cannot
  * drift apart. Counting rules are those of the fixture's `_doc`; error texts are never compared.
@@ -16,7 +16,7 @@ vi.mock('@nextcloud/l10n', () => ({
 import { analyzeJsonImport, CHOICE_TYPE_NAMES, QUESTION_TYPES, TYPE_ALIASES } from '../../src/utils/importPreview.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const fixture = JSON.parse(readFileSync(resolve(here, '../fixtures/import-json-cases.json'), 'utf-8'))
+const fixture = JSON.parse(readFileSync(resolve(here, '../Fixtures/import-json-cases.json'), 'utf-8'))
 const OPTIONAL = ['difficulty', 'chapter_key', 'chapter_title', 'chapter_order', 'exam_key', 'subtype']
 
 /** Same counting as ImportJsonFixturesTest::counts(): a shape error is 0 importable, 1 error. */
