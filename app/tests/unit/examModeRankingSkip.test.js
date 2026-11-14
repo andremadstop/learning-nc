@@ -71,7 +71,18 @@ afterEach(() => {
 	host?.remove()
 })
 
-async function openRanking() {
+const ranking2 = {
+	...ranking,
+	id: 7,
+	text: 'Order the layers',
+	pbq_config: { items: [
+		{ id: 'x', text: 'Top', correct_position: 1 },
+		{ id: 'y', text: 'Middle', correct_position: 2 },
+		{ id: 'z', text: 'Bottom', correct_position: 3 },
+	] },
+}
+
+async function openRanking(questions = [ranking, single]) {
 	host = document.createElement('div')
 	document.body.appendChild(host)
 	const exam = ref(null)
@@ -82,7 +93,7 @@ async function openRanking() {
 	await nextTick()
 	const vm = exam.value
 	vm.session = 11
-	vm.questions = [ranking, single]
+	vm.questions = questions
 	vm.currentQuestionIndex = 0
 	vm.screen = 'exam'
 	await nextTick()
@@ -122,5 +133,27 @@ describe('ExamMode with a ranking PBQ (audit #58)', () => {
 		await vm.finishExam()
 
 		expect(batchBody().answers).toContainEqual({ questionId: 5, pbqAnswers: { a: 1, b: 2 } })
+	})
+
+	it('two rankings in a row: skip one, then both submit their own full order untouched', async () => {
+		const vm = await openRanking([ranking, ranking2])
+
+		button('Überspringen').click()
+		await nextTick()
+		await nextTick()
+		expect(vm.currentQuestionIndex).toBe(1)
+		button('PBQ abschicken').click()
+		await nextTick()
+		await nextTick()
+		// Back to the skipped ranking (the only unanswered one), still untouched
+		expect(vm.currentQuestionIndex).toBe(0)
+		button('PBQ abschicken').click()
+		await nextTick()
+		if (vm.screen !== 'results') await vm.finishExam()
+		await nextTick()
+
+		const answers = batchBody().answers
+		expect(answers).toContainEqual({ questionId: 7, pbqAnswers: { x: 1, y: 2, z: 3 } })
+		expect(answers).toContainEqual({ questionId: 5, pbqAnswers: { a: 1, b: 2 } })
 	})
 })
