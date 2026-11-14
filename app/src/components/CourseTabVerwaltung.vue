@@ -746,7 +746,9 @@ export default {
 				this.savedModeConfig = this.normalizeModeConfig(res.data?.mode_config || sent)
 				this.$emit('refresh-course-detail')
 			} catch (e) {
-				console.error('Failed to save leitner sprint', e)
+				// The checkbox flipped before the request; put it back and say so (audit #180).
+				this.leitnerSprint = !this.leitnerSprint
+				this.$emit('error', t('learning', 'Failed to save mode config'))
 			}
 		},
 
@@ -764,7 +766,10 @@ export default {
 				this.talkTokenSaved = true
 				setTimeout(() => { this.talkTokenSaved = false }, 3000)
 			} catch (e) {
-				console.error('Failed to save talk room token', e)
+				// An invalid token is a 400 the user can fix; it used to fail without a word (audit #180).
+				this.$emit('error', e?.response?.status === 400
+					? t('learning', 'Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt.')
+					: t('learning', 'Talk-Token konnte nicht gespeichert werden.'))
 			} finally {
 				this.savingTalkToken = false
 			}

@@ -286,3 +286,42 @@ describe('CourseTabVerwaltung practice exam config', () => {
 		expect(instance.practicePassPercent).toBe(90)
 	})
 })
+
+describe('CourseTabVerwaltung: Sprint and Talk saves report failures (audit #180)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it('a failed Sprint save resets the checkbox and emits an error', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.put.mockRejectedValueOnce(new Error('500'))
+		const instance = createInstance({ leitnerSprint: true }) // v-model already flipped it on
+
+		await instance.saveLeitnerSprint()
+
+		expect(instance.leitnerSprint).toBe(false)
+		expect(instance.$emit).toHaveBeenCalledWith('error', 'Failed to save mode config')
+	})
+
+	it('an invalid Talk token is reported as such', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.put.mockRejectedValueOnce({ response: { status: 400, data: { error: 'Invalid talk room token format' } } })
+		const instance = createInstance({ talkRoomToken: 'abc-123' })
+
+		await instance.saveTalkRoomToken()
+
+		expect(instance.$emit).toHaveBeenCalledWith('error', 'Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt.')
+		expect(instance.talkTokenSaved).toBe(false)
+		expect(instance.savingTalkToken).toBe(false)
+	})
+
+	it('any other Talk save failure is reported too', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.put.mockRejectedValueOnce({ response: { status: 500 } })
+		const instance = createInstance({ talkRoomToken: 'abc123' })
+
+		await instance.saveTalkRoomToken()
+
+		expect(instance.$emit).toHaveBeenCalledWith('error', 'Talk-Token konnte nicht gespeichert werden.')
+	})
+})

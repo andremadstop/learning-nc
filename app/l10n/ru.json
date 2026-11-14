@@ -3363,6 +3363,9 @@
         "Die Erneuerung ist offen: Wenn du die Prüfung(en) jetzt bestehst, wird dein Zertifikat erneuert.": "Продление открыто: если вы сейчас сдадите экзамен(ы), ваш сертификат будет продлён.",
         "Die neue Gültigkeit schließt an den {date} an.": "Новый срок действия начнётся с {date}.",
         "Die Erneuerung öffnet am {date}.": "Продление откроется {date}.",
-        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют."
+        "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.": "О сертификате решает только выбор «Обязательные пулы» в разделе Управление → Правила курса → Сертификация. Эти переключатели на это не влияют.",
+        "Die Kapitelauswahl konnte nicht gespeichert werden.": "Не удалось сохранить выбор глав.",
+        "Talk-Token konnte nicht gespeichert werden.": "Не удалось сохранить токен Talk.",
+        "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt.": "Недопустимый токен Talk: разрешены только буквы и цифры."
     }
 }

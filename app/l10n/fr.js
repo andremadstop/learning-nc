@@ -3364,5 +3364,8 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "La nouvelle validité prend le relais à partir du {date}.",
     "Die Erneuerung öffnet am {date}." : "Le renouvellement ouvre le {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Seule la sélection « Pools obligatoires » sous Administration → Règles du cours → Certification décide du certificat. Ces options n'y changent rien.",
+    "Die Kapitelauswahl konnte nicht gespeichert werden." : "La sélection des chapitres n'a pas pu être enregistrée.",
+    "Talk-Token konnte nicht gespeichert werden." : "Le jeton Talk n'a pas pu être enregistré.",
+    "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt." : "Jeton Talk invalide : seules les lettres et les chiffres sont autorisés.",
 },
 "nplurals=2; plural=(n > 1);");

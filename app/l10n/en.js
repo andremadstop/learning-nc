@@ -3364,5 +3364,8 @@ OC.L10N.register(
     "Die neue Gültigkeit schließt an den {date} an." : "The new validity continues from {date}.",
     "Die Erneuerung öffnet am {date}." : "Renewal opens on {date}.",
     "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that." : "Only the \"Required pools\" selection under Administration → Course rules → Certification decides about the certificate. These switches do not change that.",
+    "Die Kapitelauswahl konnte nicht gespeichert werden." : "The chapter selection could not be saved.",
+    "Talk-Token konnte nicht gespeichert werden." : "The Talk token could not be saved.",
+    "Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt." : "Invalid Talk token: only letters and digits are allowed.",
 },
 "nplurals=2; plural=(n != 1);");
