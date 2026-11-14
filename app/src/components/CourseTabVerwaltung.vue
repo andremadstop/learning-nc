@@ -767,7 +767,7 @@ export default {
 				setTimeout(() => { this.talkTokenSaved = false }, 3000)
 			} catch (e) {
 				// An invalid token is a 400 the user can fix; it used to fail without a word (audit #180).
-				this.$emit('error', e?.response?.status === 400
+				this.$emit('error', e?.response?.data?.error === 'Invalid talk room token format'
 					? t('learning', 'Ungültiges Talk-Token: Nur Buchstaben und Ziffern sind erlaubt.')
 					: t('learning', 'Talk-Token konnte nicht gespeichert werden.'))
 			} finally {

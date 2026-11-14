@@ -119,6 +119,62 @@ describe('GameshowMode timer uses the server clock (audit #160)', () => {
 	})
 })
 
+function activeState(index, startedAt, serverNow = Date.now()) {
+	return {
+		code: 'abc123',
+		status: 'active',
+		mode: 'sprint',
+		current_question_index: index,
+		total_questions: 3,
+		question_started_at: startedAt,
+		server_now_ms: serverNow,
+		my_slot: 1,
+		players: [
+			{ user_id: 'alice', display_name: 'alice', slot: 0, score: 700, lives: 3, is_removed: false, answered: false },
+			{ user_id: 'bob', display_name: 'bob', slot: 1, score: 0, lives: 3, is_removed: false, answered: false },
+		],
+		current_question: { id: 10 + index, text: 'Q' + index, answers: [{ id: 1, text: 'A' }, { id: 2, text: 'B' }] },
+	}
+}
+
+describe('GameshowMode shows a question only once the server started it (audit #160)', () => {
+	it('a player who did not answer waits out the reveal instead of getting a head start', () => {
+		const now = Date.now()
+		const vm = createInstance(GameshowMode, {
+			phase: 'question',
+			hasAnswered: false,
+			lastQuestionIndex: -1,
+			timerValue: 0,
+			state: activeState(0, now - 19000),
+		})
+
+		vm.applyStateTransitions(activeState(1, now + 5550))
+		expect(vm.phase).not.toBe('question')
+		vi.advanceTimersByTime(5000)
+		expect(vm.phase).not.toBe('question')
+
+		vi.advanceTimersByTime(600)
+		expect(vm.phase).toBe('question')
+		expect(vm.currentQuestion.id).toBe(11)
+		expect(vm.timerValue).toBe(15)
+		vm.stopTimer()
+	})
+
+	it('a reload during the reveal also waits for the start', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockResolvedValueOnce({ data: activeState(1, Date.now() + 3000) })
+		const vm = createInstance(GameshowMode)
+		vm.startPolling = vi.fn()
+
+		await vm.recoverSession('abc123')
+		expect(vm.phase).toBe('leaderboard')
+
+		vi.advanceTimersByTime(3100)
+		expect(vm.phase).toBe('question')
+		vm.stopTimer()
+	})
+})
+
 describe('GameshowMode confetti (audit #99)', () => {
 	it('fires through the ESM confetti helper', () => {
 		const vm = createInstance(GameshowMode)

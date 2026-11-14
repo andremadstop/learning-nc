@@ -804,11 +804,7 @@ export default {
       this.pulseBorder = val <= 5 && val > 0 && this.phase === 'question';
     },
     state(newState) {
-      // question_started_at is server time; a device clock that runs behind used to show more
-      // time than the server allows and lost answers as "too late" (audit #160).
-      if (newState && typeof newState.server_now_ms === 'number') {
-        this.clockOffsetMs = newState.server_now_ms - Date.now();
-      }
+      this.updateClockOffset(newState);
     },
   },
 
@@ -1123,10 +1119,11 @@ export default {
           this.finishedCelebrated = false;
           this.readyClicked = false;
           this.resetRoundState();
-          this.phase = r.data.status === 'active' ? 'question' : 'lobby';
+          this.updateClockOffset(r.data);
           if (r.data.status === 'active') {
-            this.spotlightActive = true;
-            this.startTimer();
+            this.enterQuestionWhenStarted();
+          } else {
+            this.phase = 'lobby';
           }
           this.emitVirtuProf('arena-session-restored', {
             mode: r.data.mode || this.mode,
@@ -1183,6 +1180,46 @@ export default {
     },
 
     // ---------- Timer ----------
+
+    // question_started_at is server time; a device clock that runs behind used to show more
+    // time than the server allows and lost answers as "too late" (audit #160).
+    updateClockOffset(state) {
+      if (state && typeof state.server_now_ms === 'number') {
+        this.clockOffsetMs = state.server_now_ms - Date.now();
+      }
+    },
+
+    // Milliseconds until the current question starts by the server clock (0 once it runs).
+    msUntilQuestionStart() {
+      if (!this.state || !this.state.question_started_at) return 0;
+      return Math.max(0, this.state.question_started_at - (Date.now() + (this.clockOffsetMs || 0)));
+    },
+
+    // Shows the current question once the server has started it. The next question starts only
+    // after the reveal (REVEAL_MS); a player who skipped the reveal (no answer, or a reload in
+    // the middle of it) would otherwise see it seconds early — with an answer that counts as
+    // given at the start (audit #160). Meanwhile the standings are shown.
+    enterQuestionWhenStarted() {
+      const wait = this.msUntilQuestionStart();
+      if (wait <= 0) {
+        this.phase = 'question';
+        this.spotlightActive = true;
+        this.startTimer();
+        return;
+      }
+      this.stopTimer();
+      this.enterLeaderboard();
+      const index = this.state.current_question_index;
+      this.later(() => {
+        if (this.phase !== 'leaderboard' || !this.state || this.state.status !== 'active'
+          || this.state.current_question_index !== index) {
+          return;
+        }
+        this.phase = 'question';
+        this.spotlightActive = true;
+        this.startTimer();
+      }, wait);
+    },
 
     // Seconds left on the current question by the server clock. The server starts the next
     // question only after the reveal (GameshowService::REVEAL_MS), so a client that is a bit
@@ -1732,6 +1769,7 @@ export default {
       const prevState = this.state;
       const prevIndex = prevState ? prevState.current_question_index : -1;
       this.state = newState;
+      this.updateClockOffset(newState);
 
       if (newState.status === 'finished') {
         localStorage.removeItem('learning_gameshow_session');
@@ -1768,7 +1806,7 @@ export default {
         if (this.phase === 'question' && !this.hasAnswered && indexAdvanced) {
           this.lastQuestionIndex = newState.current_question_index - 1;
           this.resetRoundState();
-          this.startTimer();
+          this.enterQuestionWhenStarted();
           return;
         }
 
