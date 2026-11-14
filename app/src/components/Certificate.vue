@@ -380,8 +380,10 @@ export default {
    #learning-certificate-print-root directly under <body> and sets
    html.learning-certificate-printing; only then does printing show the copy and nothing else.
    Printing the card inside NcModal clipped it to the modal box (almost empty sheet), and the
-   old unscoped `body * { visibility: hidden }` also blanked every other print in the app. */
-@page {
+   old unscoped `body * { visibility: hidden }` also blanked every other print in the app.
+   The A4 page is a named page used only by the print root: an unnamed @page in this global
+   stylesheet forced A4 with 18mm margins onto every print in the app (reports, Klassenbuch). */
+@page learning-cert {
 	size: A4;
 	margin: 18mm;
 }
@@ -406,6 +408,7 @@ export default {
 	/* Paper is white in every theme: a dark-mode card would print light text on no background. */
 	html.learning-certificate-printing #learning-certificate-print-root {
 		display: block !important;
+		page: learning-cert;
 		position: static;
 		width: 100%;
 		--color-main-background: #fff;

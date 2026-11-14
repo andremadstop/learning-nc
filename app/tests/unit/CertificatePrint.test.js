@@ -144,3 +144,15 @@ describe('Certificate print (GitHub #41)', () => {
 		expect(document.documentElement.classList.contains(PRINTING_CLASS)).toBe(false)
 	})
 })
+
+describe('Certificate print page setup (GitHub #41)', () => {
+	it('the A4 page rule is a named page, so it does not apply to other prints in the app', async () => {
+		const { readFileSync } = await import('node:fs')
+		const { join } = await import('node:path')
+		const source = readFileSync(join(__dirname, '../../src/components/Certificate.vue'), 'utf8')
+		// Any unnamed @page in the (global) certificate stylesheet would set every print's paper.
+		expect(source).not.toMatch(/@page\s*\{/)
+		expect(source).toMatch(/@page\s+learning-cert\s*\{[^}]*size:\s*A4/)
+		expect(source).toMatch(/#learning-certificate-print-root\s*\{[^}]*page:\s*learning-cert/)
+	})
+})
