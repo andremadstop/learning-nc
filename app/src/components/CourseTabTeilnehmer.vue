@@ -448,7 +448,10 @@
 								<td>{{ row.display_name }}</td>
 								<td>{{ formatCertDate(row.passed_at) }}</td>
 								<td>{{ formatCertScore(row.score) }}</td>
-								<td>{{ row.expires_at ? formatCertDate(row.expires_at) : t('learning', 'unbegrenzt') }}</td>
+								<td>
+									{{ row.expires_at ? formatCertDate(row.expires_at) : t('learning', 'unbegrenzt') }}
+									<span v-if="row.expired" class="cert-expired-tag">({{ t('learning', 'Expired') }})</span>
+								</td>
 								<td class="cert-vid">{{ row.verification_id }}</td>
 								<td>
 									<NcButton variant="tertiary"
@@ -1253,6 +1256,7 @@ td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transpar
 .cert-report-table th, .cert-report-table td { text-align: start; padding: 8px 10px; border-bottom: 1px solid var(--color-border); }
 .cert-report-table th { color: var(--color-text-maxcontrast); font-weight: 600; }
 .cert-report-table .cert-vid { font-family: monospace; font-size: 11px; color: var(--color-text-maxcontrast); }
+.cert-report-table .cert-expired-tag { color: var(--color-error-text, var(--color-error)); font-weight: 600; }
 .cert-report-empty { margin-top: 12px; color: var(--color-text-maxcontrast); font-size: 13px; }
 
 /* Modal */

@@ -37,23 +37,9 @@ class CertificateMapperTest extends TestCase {
         $db->expects($this->never())->method('getQueryBuilder');
 
         $mapper = new CertificateMapper($db);
-        $result = $mapper->findByCourseIdForUsers(1, [], null);
+        $result = $mapper->findByCourseIdForUsers(1, []);
 
         $this->assertSame([], $result, 'Empty member list must return [] without issuing any query');
-    }
-
-    /**
-     * RBAC-02 (GREEN + LOCKED): same invariant, with an explicit $expiresBefore cutoff.
-     * Even with a filter, an empty $userIds must short-circuit before hitting DB.
-     */
-    public function testFindByCourseIdForUsersEmptyWithExpiry(): void {
-        $db = $this->createMock(IDBConnection::class);
-        $db->expects($this->never())->method('getQueryBuilder');
-
-        $mapper = new CertificateMapper($db);
-        $result = $mapper->findByCourseIdForUsers(7, [], 1_750_000_000);
-
-        $this->assertSame([], $result, 'Empty member list + expiry cutoff must still short-circuit to [] without a query');
     }
 
     // ── populated members (RED until 163-05) ────────────────────────────────
@@ -99,7 +85,7 @@ class CertificateMapperTest extends TestCase {
         $db->expects($this->atLeastOnce())->method('getQueryBuilder')->willReturn($qb);
 
         $mapper = new CertificateMapper($db);
-        $mapper->findByCourseIdForUsers(7, ['alice', 'bob'], null);
+        $mapper->findByCourseIdForUsers(7, ['alice', 'bob']);
 
         $this->assertSame(
             IQueryBuilder::PARAM_STR_ARRAY,
@@ -109,15 +95,15 @@ class CertificateMapperTest extends TestCase {
     }
 
     /**
-     * RBAC-02 (DB-level IN filter + expiry): with an $expiresBefore cutoff and non-empty
-     * $userIds, the IN(user_id) filter is still built AND the expiry predicates are added.
+     * Audit #222: the group report classifies expiry itself, so the query carries no expiry
+     * predicate — only the course, revoked and IN(user_id) filters.
      */
-    public function testFindByCourseIdForUsersWithExpiryAndUsers(): void {
+    public function testFindByCourseIdForUsersHasNoExpiryPredicate(): void {
         $expr = $this->createMock(IExpressionBuilder::class);
         $expr->expects($this->once())->method('in')->with('user_id', $this->anything())->willReturn('in_expr');
         $expr->method('eq')->willReturn('eq_expr');
-        $expr->expects($this->once())->method('isNotNull')->with('expires_at')->willReturn('nn_expr');
-        $expr->expects($this->once())->method('lte')->with('expires_at', $this->anything())->willReturn('lte_expr');
+        $expr->expects($this->never())->method('isNotNull');
+        $expr->expects($this->never())->method('lte');
 
         $qb = $this->createMock(IQueryBuilder::class);
         $qb->method('expr')->willReturn($expr);
@@ -132,7 +118,6 @@ class CertificateMapperTest extends TestCase {
         $db->expects($this->atLeastOnce())->method('getQueryBuilder')->willReturn($qb);
 
         $mapper = new CertificateMapper($db);
-        // Expectations above assert the IN-filter + expiry predicates are built.
-        $mapper->findByCourseIdForUsers(7, ['carol'], 1_760_000_000);
+        $mapper->findByCourseIdForUsers(7, ['carol']);
     }
 }

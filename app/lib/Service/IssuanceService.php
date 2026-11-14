@@ -20,23 +20,22 @@ use Psr\Log\LoggerInterface;
  * IssuanceService — turns a "passed" PassResult into a signed, stored, self-contained
  * OB3/VC credential plus a single student notification (Phase 155, CERT-05/06/11/12).
  *
- * Flow (issueIfPassed):
+ * Flow (issueIfPassedResult, called only by PassCriteriaService::evaluate() after mayIssue()):
  *   1. Bail if the result is not a pass.
- *   2. OWN idempotency guard — findByUserAndCourse(); a non-revoked existing cert is returned
- *      verbatim (NO re-issue). This is independent of the 154 audit-event guard.
- *   3. Build the OB3/VC JSON-LD with EVERY field frozen at signing time (CERT-06): course
- *      title/description, score, threshold, validFrom, validUntil (from cert_validity_days),
- *      issuer identity + theming branding (CERT-11), and the verification-id.
- *   4. Sign it via SigningService with the active key (KeyService::getActiveSigningMaterial()).
- *   5. Persist the Certificate (credential_json = the compact VC-JWT).
- *   6. Fire exactly one NC notification (deduped via getCount).
+ *   2. Build the OB3/VC JSON-LD with EVERY field frozen at signing time (CERT-06): course
+ *      title/description, score, threshold, validFrom, validUntil (computeExpiry), issuer
+ *      identity + theming branding (CERT-11), and the verification-id.
+ *   3. Sign it via SigningService with the active key (KeyService::getActiveSigningMaterial()).
+ *   4. Persist the Certificate (credential_json = the compact VC-JWT) together with its
+ *      CERT_ISSUED compliance event, in one transaction.
+ *   5. Fire exactly one NC notification (deduped via getCount).
  *
  * DSGVO: the subject identifier is the issuer's display branding only — NO plaintext email is
  * ever embedded. The student's identity in the credential is intentionally minimal.
  *
- * Concurrency: the SELECT-then-INSERT idempotency guard is NOT atomic (no UNIQUE constraint —
- * revoke + re-issue must stay possible). A rare concurrent double-issue is deduped ON READ by
- * callers (the earliest non-revoked cert wins). This consciously inherits the accepted 154 race.
+ * Concurrency: the UNIQUE index on active_idem_key is the idempotency guard — of two concurrent
+ * passes only one INSERT wins; the loser dedupes onto the winner (wasCreated=false). Revocation
+ * and period close free the slot, so a re-issue stays possible.
  */
 class IssuanceService {
     private CertificateMapper $certificateMapper;
@@ -81,121 +80,12 @@ class IssuanceService {
     }
 
     /**
-     * Issue (once) a signed credential for a passing student, or return the existing one.
+     * Issue a signed credential for a passing student. Returns an IssueResult that exposes WHETHER
+     * this call created the certificate row (wasCreated=true) or deduped onto a concurrent winner
+     * (wasCreated=false). The only issuance path: PassCriteriaService::evaluate() calls it after
+     * mayIssue() (RECERT-05 union guard). The deprecated issueIfPassed(), which had no such guard
+     * and could re-issue over a punitive revocation, is gone (audit #228).
      *
-     * @deprecated 164-04 post-impl review (MED 7): this legacy path has NO RECERT-05 union
-     *   guard — called directly with a punitively-revoked cert it would happily re-issue
-     *   (the !revoked pre-check lets a revoked newest cert fall through). ALL issuance must
-     *   route through PassCriteriaService::evaluate() → issueIfPassedResult(), where
-     *   mayIssue() enforces the guard. No production caller remains (tests only); kept for
-     *   one release for API stability, remove in 164-07 cleanup or v5.3.
-     *
-     * @return Certificate|null The issued/existing certificate, or null when not passed.
-     */
-    public function issueIfPassed(string $userId, int $courseId, PassResult $result): ?Certificate {
-        if (!$result->isPassed()) {
-            return null;
-        }
-
-        // OWN idempotency guard (not the 154 audit guard): a non-revoked cert already exists →
-        // return it, never re-issue. A revoked newest cert falls through so re-issue stays possible.
-        $existing = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
-        if ($existing !== null && !$existing->getRevoked()) {
-            return $existing;
-        }
-
-        $course = $this->courseMapper->findById($courseId);
-
-        $issuedAt = $this->timeFactory->getTime();
-        // DST-safe expiry via cert_validity_months (RECERT-01, 164-04). Replaces the old
-        // +validityDays*86400 formula. Override arg is null here (override is per-assignment;
-        // issueIfPassed is the self-enrolled / direct path).
-        $expiresAt = $this->computeExpiry($issuedAt, $course, null);
-        $verificationId = $this->uuidv4();
-        $recipientName = $this->resolveDisplayName($userId);
-
-        $credential = $this->buildCredential($verificationId, $courseId, $course, $result, $recipientName, $issuedAt, $expiresAt);
-
-        $material = $this->activeSigningMaterial();
-        /** @var CertKey $key */
-        $key = $material['key'];
-        // Secret zeroing must survive a sign() throw → try/finally. Pass the secret straight from
-        // $material so there is no second live copy to forget; sodium_memzero clears it in place.
-        try {
-            $jwt = $this->signingService->sign($credential, $key, $material['secret']);
-        } finally {
-            sodium_memzero($material['secret']);
-        }
-
-        $cert = new Certificate();
-        $cert->setVerificationId($verificationId);
-        $cert->setUserId($userId);
-        $cert->setCourseId($courseId);
-        $cert->setKeyId($key->getKeyId());
-        $cert->setCredentialJson($jwt);
-        $cert->setRevoked(false);
-        $cert->setIssuedAt($issuedAt);
-        $cert->setExpiresAt($expiresAt);
-        // Atomic idempotency slot: the UNIQUE index on active_idem_key turns the racy
-        // SELECT-then-INSERT guard above into a hard DB-level guarantee — two concurrent passes for
-        // the same (user,course) can no longer both produce a valid cert.
-        // NOTE: revocation (Phase 156/157) MUST set active_idem_key = NULL to free this slot for re-issue.
-        $cert->setActiveIdemKey($userId . ':' . $courseId);
-
-        // FIX-2 (atomicity, fail-closed): the cert INSERT and its CERT_ISSUED compliance-audit append
-        // commit or roll back TOGETHER. If the audit append throws (ComplianceAuditException), the
-        // whole transaction rolls back so no orphan cert (one without a chained audit event) can ever
-        // exist, and the error propagates (HTTP 500). logComplianceEvent opens its own CAS transaction —
-        // NC nests it via a savepoint (Connection::setNestTransactionsWithSavepoints(true)), so this is safe.
-        $this->db->beginTransaction();
-        try {
-            $stored = $this->certificateMapper->insert($cert);
-
-            // AUDIT-03 compliance event — inside the SAME transaction as the INSERT. On the
-            // unique-constraint loser path the INSERT throws first, so this never runs for the loser.
-            $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, [
-                'course_id'       => $courseId,
-                'verification_id' => $verificationId,
-            ]);
-
-            $this->db->commit();
-        } catch (\OCP\DB\Exception $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                // A concurrent request won the race and already inserted the active cert. Return the
-                // winner verbatim (no re-issue, no notification) — the loser dedupes onto it.
-                $winner = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
-                if ($winner !== null) {
-                    return $winner;
-                }
-            }
-            throw $e;
-        } catch (\Throwable $e) {
-            if ($this->db->inTransaction()) {
-                $this->db->rollBack();
-            }
-            throw $e; // audit failure or other — roll back so no orphan cert survives (fail-closed)
-        }
-
-        // Side effects AFTER the atomic commit only — a rolled-back issuance must never notify/log success.
-        $this->notify($userId, $verificationId, (string)$course->getTitle(), $courseId);
-
-        $this->logger->info('Issued certificate {vid} for user {user} course {course}', [
-            'vid' => $verificationId,
-            'user' => $userId,
-            'course' => $courseId,
-        ]);
-
-        return $stored;
-    }
-
-    /**
-     * Like issueIfPassed() but returns an IssueResult that exposes WHETHER this call created
-     * the certificate row (wasCreated=true) or deduped onto a concurrent winner (wasCreated=false).
-     *
-     * Key differences from issueIfPassed():
      *   1. NO !revoked pre-check: closePeriod() nulls active_idem_key to free the slot for a
      *      new period. The UNIQUE constraint (active_idem_key) is the ONLY idempotency guard.
      *   2. UNIQUE-constraint loser path returns wasCreated=false — the caller (PassCriteriaService)
@@ -230,15 +120,14 @@ class IssuanceService {
         $idemKey = $userId . ':' . $courseId;
 
         $issuedAt = $this->timeFactory->getTime();
-        // DST-safe expiry via cert_validity_months (RECERT-01, 164-04). Override arg is null
-        // here; recertification override months live in the assignment row and are wired via
-        // AssignmentService when closePeriod triggers a fresh issuance.
+        // DST-safe expiry from the course's validity (RECERT-01, 164-04); there is no
+        // per-assignment override (audit #162).
         // Renewal: the new term continues from the old expiry when that is still ahead.
         $anchor = $issuedAt;
         if ($renewing !== null && $renewing->getExpiresAt() !== null) {
             $anchor = max($issuedAt, (int)$renewing->getExpiresAt());
         }
-        $expiresAt = $this->computeExpiry($anchor, $course, null);
+        $expiresAt = $this->computeExpiry($anchor, $course);
         $verificationId = $this->uuidv4();
         $recipientName = $this->resolveDisplayName($userId);
 
@@ -362,15 +251,14 @@ class IssuanceService {
      * DST-safe expiry computation (RECERT-01/02) — implemented in Wave 4 (164-04),
      * hardened in the post-impl review (HIGH 4 + MED 6).
      *
-     * Precedence:
-     *   1. per-assignment override months (recertification path)
-     *   2. course.cert_validity_months — EXPLICIT config: > 0 → that many calendar months,
+     * Precedence (the course alone decides; there is no per-assignment override — audit #162):
+     *   1. course.cert_validity_months — EXPLICIT config: > 0 → that many calendar months,
      *      <= 0 → null (no expiry)
-     *   3. LEGACY fallback when cert_validity_months is NULL (unset): honor the pre-164
+     *   2. LEGACY fallback when cert_validity_months is NULL (unset): honor the pre-164
      *      cert_validity_days contract — days > 0 → calendar days, days 0/NULL → no expiry.
      *      HIGH 4: without this fallback every legacy course (months=NULL, days=0 = "no
      *      expiry") silently became a 12-month expiring cert. There is NO implicit 12-month
-     *      default — expiring validity is always an explicit per-course/per-assignment choice.
+     *      default — expiring validity is always an explicit per-course choice.
      *
      * MUST use DateTimeImmutable::modify() — NEVER +N*86400. The naive seconds formula
      * diverges by 3600s across a DST boundary (e.g. issuing on 2026-03-29 in Europe/Berlin).
@@ -382,8 +270,8 @@ class IssuanceService {
      * Uses the server's configured timezone (date_default_timezone_get()) so that the expiry
      * wall-clock time is stable across DST transitions for the server locale.
      */
-    private function computeExpiry(int $issuedAt, Course $course, ?int $assignmentOverrideMonths): ?int {
-        $months = $assignmentOverrideMonths ?? $course->getCertValidityMonths();
+    private function computeExpiry(int $issuedAt, Course $course): ?int {
+        $months = $course->getCertValidityMonths();
         if ($months !== null) {
             if ($months <= 0) {
                 return null; // explicit "no expiry"
@@ -597,12 +485,8 @@ class IssuanceService {
  * wasCreated  — true when THIS call was the row creator; false when the DB UNIQUE constraint
  *               (active_idem_key) fired and this call deduped onto a concurrent winner.
  *
- * PassCriteriaService inspects wasCreated in 164-04 to decide whether to emit COURSE_PASSED.
+ * PassCriteriaService inspects wasCreated to decide whether to emit COURSE_PASSED.
  * Only the WINNER (wasCreated=true) emits; the loser path dedupes silently.
- *
- * SKELETON note (164-02): IssuanceService::issueIfPassedResult() always sets wasCreated=true
- * at this wave. The concurrency test (testConcurrentPassSingleEventAndCert) is genuinely RED
- * against this skeleton and will stay RED until 164-04 wires the winner/loser distinction.
  *
  * Placement: defined in IssuanceService.php so it is always loaded when IssuanceService is
  * referenced, without requiring a separate PSR-4 file at Wave 2.

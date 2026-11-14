@@ -21,8 +21,11 @@ use Psr\Log\LoggerInterface;
  *        verifiability — accepted: the DSGVO-03 semantics explicitly allow this, and the public
  *        verify route reads anonymized_at IS NOT NULL as a "data erased" terminal state).
  *     3. Set anonymized_at = now (tombstone, non-null) ← 164-01 migration column.
- *     4. Linked learning_audit_events rows: null user_id ONLY — chain_hash is NOT recomputed
- *        (hash inputs do NOT include user_id → chain stays verifiable; see DSGVO-01 pattern).
+ *     4. EVERY learning_audit_events row older than the cutoff (not only the ones linked to the
+ *        erased certs): null user_id ONLY — chain_hash is NOT recomputed (hash inputs do NOT
+ *        include user_id → chain stays verifiable; see DSGVO-01 pattern). This also unlinks the
+ *        course.passed event of a learner who still holds an active certificate; pass-status then
+ *        falls back to that certificate's issue time (PassCriteriaService::getPassedAt, audit #166).
  *     5. Linked learning_assignments rows: null subject_id (best-effort, non-cascading).
  *
  * ⚠ RETENTION_YEARS_DEFAULT = '3' is FLAGGED for AWO/DSGVO confirmation before prod rollout.
@@ -93,9 +96,10 @@ class RetentionService {
             }
         }
 
-        // 2. Audit rows: null user_id ONLY (DSGVO-01 UserDeletedListener pattern). chain_hash /
-        //    context_json are NEVER touched — the canonical hash input excludes user_id, so the
-        //    tamper-evident chain stays verifiable by construction.
+        // 2. Audit rows: null user_id ONLY (DSGVO-01 UserDeletedListener pattern), on every row
+        //    older than the cutoff — not only those linked to the certificates erased above.
+        //    chain_hash / context_json are NEVER touched — the canonical hash input excludes
+        //    user_id, so the tamper-evident chain stays verifiable by construction.
         $qb = $this->db->getQueryBuilder();
         $qb->update('learning_audit_events')
             ->set('user_id', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))

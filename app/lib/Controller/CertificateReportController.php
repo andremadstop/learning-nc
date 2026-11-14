@@ -124,7 +124,7 @@ class CertificateReportController extends Controller {
 
         // DE-source header labels (i18n source convention); NO recipient-id / email column.
         $lines = [];
-        $lines[] = CsvFormulaGuard::line(['Name', 'Bestanden am', 'Score (%)', 'Gültig bis', 'Verifizierungs-ID']);
+        $lines[] = CsvFormulaGuard::line(['Name', 'Bestanden am', 'Score (%)', 'Gültig bis', 'Verifizierungs-ID', 'Status']);
         foreach ($result['rows'] as $r) {
             $lines[] = CsvFormulaGuard::line([
                 (string)$r['display_name'],
@@ -132,6 +132,8 @@ class CertificateReportController extends Controller {
                 $r['score'] !== '' ? (string)$r['score'] : '—',
                 $r['expires_at'] !== null ? gmdate('Y-m-d', (int)$r['expires_at']) : '',
                 (string)$r['verification_id'],
+                // An expiry filter also lists certificates that already expired (audit #222).
+                !empty($r['expired']) ? 'abgelaufen' : 'gültig',
             ]);
         }
 

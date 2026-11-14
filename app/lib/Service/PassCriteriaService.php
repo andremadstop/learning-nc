@@ -157,7 +157,7 @@ class PassCriteriaService {
             }
             // PASS-07: read the first-qualification timestamp from the audit log, independent of
             // whether issuance ran this call (idempotent — always returns the earliest event).
-            $passedAt = $this->getPassedAt($userId, $courseId);
+            $passedAt = $this->getPassedAt($userId, $courseId, $certificate);
         }
 
         $renewalOpensAt = $this->renewalOpensAt($certificate);
@@ -371,15 +371,23 @@ class PassCriteriaService {
     }
 
     /**
-     * Returns the unix timestamp of the first course.passed event for this user+course,
-     * or null if no such event exists.
+     * Returns the unix timestamp of the first course.passed event for this user+course.
+     *
+     * Retention (RetentionService::anonymizeExpired) nulls user_id on every audit row older than
+     * retention_years, so after that the event can no longer be found by user (audit #166). A
+     * learner still holding a valid certificate then reads the issue time of that certificate —
+     * the newest pass the system can still attribute to them — instead of no date at all. A
+     * revoked certificate gives none: it no longer stands for a pass.
      */
-    private function getPassedAt(string $userId, int $courseId): ?int {
+    private function getPassedAt(string $userId, int $courseId, ?Certificate $certificate): ?int {
         $ctx = $this->findPassEvent($userId, $courseId);
-        if ($ctx === null) {
-            return null;
+        if ($ctx !== null && isset($ctx['passed_at'])) {
+            return (int)$ctx['passed_at'];
         }
-        return isset($ctx['passed_at']) ? (int)$ctx['passed_at'] : null;
+        if ($certificate !== null && !$certificate->getRevoked() && (int)$certificate->getIssuedAt() > 0) {
+            return (int)$certificate->getIssuedAt();
+        }
+        return null;
     }
 
     /**

@@ -224,7 +224,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured);
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
 
         $this->assertInstanceOf(Certificate::class, $cert);
         $this->assertSame(self::USER, $cert->getUserId());
@@ -235,25 +235,8 @@ class IssuanceServiceTest extends TestCase {
         $this->assertNotNull($captured);
     }
 
-    public function testIdempotentWhenNonRevokedCertExists(): void {
-        $existing = new Certificate();
-        $existing->setVerificationId('existing-vid');
-        $existing->setUserId(self::USER);
-        $existing->setCourseId(self::COURSE_ID);
-        $existing->setRevoked(false);
-        $existing->setCredentialJson('a.b.c');
-
-        $captured = null;
-        $service = $this->makeService($existing, null, $captured, expectInsert: false, expectNotify: false);
-
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
-
-        $this->assertSame($existing, $cert, 'an existing non-revoked cert is returned, not re-issued');
-    }
-
     /**
-     * Behaviour 6 (atomic dedup, FIX R2-2): the fast-path read sees no cert (null), but a concurrent
-     * request wins the race → insert() hits the active_idem_key UNIQUE index and throws a
+     * Behaviour 6 (atomic dedup, FIX R2-2): a concurrent request wins the race → insert() hits the active_idem_key UNIQUE index and throws a
      * REASON_UNIQUE_CONSTRAINT_VIOLATION. The service must re-fetch findByUserAndCourse() and return
      * the concurrent WINNER verbatim — no duplicate cert, no notification.
      */
@@ -274,8 +257,8 @@ class IssuanceServiceTest extends TestCase {
         $signingService = new SigningService($keyService);
 
         $certMapper = $this->createMock(CertificateMapper::class);
-        // null on the fast-path read, the winner on the post-collision re-fetch.
-        $certMapper->method('findByUserAndCourse')->willReturnOnConsecutiveCalls(null, $winner);
+        // issueIfPassedResult has no fast-path read: the only lookup is the post-collision re-fetch.
+        $certMapper->method('findByUserAndCourse')->willReturn($winner);
         $certMapper->expects($this->once())->method('insert')
             ->willThrowException(new \OCP\DB\Exception(\OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION));
 
@@ -318,9 +301,11 @@ class IssuanceServiceTest extends TestCase {
             $auditLoser, new FakeDbConnection(),
         );
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
 
-        $this->assertSame($winner, $cert, 'the concurrent winner is returned, no duplicate issued');
+        $this->assertNotNull($result);
+        $this->assertSame($winner, $result->certificate, 'the concurrent winner is returned, no duplicate issued');
+        $this->assertFalse($result->wasCreated, 'the loser did not create the row');
     }
 
     /**
@@ -339,7 +324,7 @@ class IssuanceServiceTest extends TestCase {
         $service = $this->makeService(null, $this->makeCourse(), $captured, expectNotify: false, audit: $audit, db: $db);
 
         try {
-            $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+            $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
             $this->fail('expected ComplianceAuditException to propagate (fail-closed)');
         } catch (ComplianceAuditException $e) {
             // expected
@@ -363,7 +348,7 @@ class IssuanceServiceTest extends TestCase {
 
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured, audit: $audit);
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
 
         $this->assertInstanceOf(Certificate::class, $cert);
     }
@@ -372,7 +357,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, null, $captured, expectInsert: false, expectNotify: false);
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult(passed: false, score: 40));
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult(passed: false, score: 40))?->certificate;
 
         $this->assertNull($cert);
     }
@@ -383,7 +368,7 @@ class IssuanceServiceTest extends TestCase {
         // a +12 months expiry; cert_validity_days is no longer the expiry driver.
         $service = $this->makeService(null, $this->makeCourse(validityDays: 0, validityMonths: 12), $captured);
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult(score: 92, threshold: 80));
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult(score: 92, threshold: 80))?->certificate;
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
@@ -413,7 +398,7 @@ class IssuanceServiceTest extends TestCase {
         // cert_validity_days is no longer the no-expiry signal.
         $service = $this->makeService(null, $this->makeCourse(validityDays: 0, validityMonths: 0), $captured);
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
@@ -429,7 +414,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: '');
 
-        $service->issueIfPassed('a.weber@example.com', self::COURSE_ID, $this->passResult());
+        $service->issueIfPassedResult('a.weber@example.com', self::COURSE_ID, $this->passResult());
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
@@ -445,7 +430,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: 'b.mueller@firma.de');
 
-        $service->issueIfPassed('bob', self::COURSE_ID, $this->passResult());
+        $service->issueIfPassedResult('bob', self::COURSE_ID, $this->passResult());
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
@@ -464,7 +449,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: $displayName);
 
-        $service->issueIfPassed('carol', self::COURSE_ID, $this->passResult());
+        $service->issueIfPassedResult('carol', self::COURSE_ID, $this->passResult());
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
@@ -491,7 +476,7 @@ class IssuanceServiceTest extends TestCase {
             issuerName: 'AWO Akademie',
         );
 
-        $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
@@ -550,7 +535,7 @@ class IssuanceServiceTest extends TestCase {
                 $captured,
                 issuedAt: $springFwdAt, // pin clock to spring-forward day
             );
-            $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+            $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
 
             $this->assertNotNull($cert, 'cert must be issued');
             // RED: current code uses cert_validity_days (=0) → expiresAt=null → assertSame fails.
@@ -604,7 +589,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(validityDays: 365, validityMonths: null), $captured);
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
 
         $expected = (new \DateTimeImmutable('@' . self::ISSUED_AT))
             ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
@@ -623,7 +608,7 @@ class IssuanceServiceTest extends TestCase {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(validityDays: 0, validityMonths: null), $captured);
 
-        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
 
         $this->assertNull($cert->getExpiresAt(),
             'months=null + days=0 must remain a no-expiry cert — NO implicit 12-month default');
@@ -651,7 +636,7 @@ class IssuanceServiceTest extends TestCase {
                 $captured,
                 issuedAt: $issuedAt,
             );
-            $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+            $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
 
             $expected = (new \DateTimeImmutable('2026-02-28 10:00:00', new \DateTimeZone('Europe/Berlin')))
                 ->getTimestamp();

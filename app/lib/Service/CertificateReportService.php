@@ -102,7 +102,7 @@ class CertificateReportService {
 
         $members = $this->assignmentService->expandGroup($groupId);
         // No expiry cutoff here: the status needs every non-revoked certificate.
-        $certs   = $this->certificateMapper->findByCourseIdForUsers($courseId, $members, null);
+        $certs   = $this->certificateMapper->findByCourseIdForUsers($courseId, $members);
         $states  = $this->assignmentService->getStatesForCourseAndUsers($courseId, $members);
 
         // Newest certificate per member (re-certification leaves several rows). The mapper result is
@@ -291,7 +291,7 @@ class CertificateReportService {
      * @param int|null $to           issued_at <= to (inclusive)
      * @param int|null $expiringDays only certificates expiring within this many days (never-expiring
      *                               excluded); null = no expiry filter
-     * @return array{rows: list<array{display_name: string, passed_at: int, score: string, expires_at: int|null, verification_id: string}>}
+     * @return array{rows: list<array{display_name: string, passed_at: int, score: string, expires_at: int|null, verification_id: string, expired: bool}>}
      *
      * @throws \OCP\AppFramework\Db\DoesNotExistException course not found (→ 404)
      * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
@@ -309,9 +309,12 @@ class CertificateReportService {
             $certs = $this->withoutSuperseded($courseId, $certs);
         }
 
+        // The expiry window includes certificates that already expired (they still need action);
+        // each row says which ones, like the group report's 'expired' status (audit #222).
+        $now = $this->timeFactory->getTime();
         $rows = [];
         foreach ($certs as $cert) {
-            $rows[] = $this->projectRow($cert);
+            $rows[] = $this->projectRow($cert, $now);
         }
 
         return ['rows' => $rows];
@@ -382,13 +385,13 @@ class CertificateReportService {
     }
 
     /**
-     * Project one certificate to the strict 5-field DTO. The frozen name and score are recovered from
+     * Project one certificate to the strict DTO: five display fields plus the `expired` flag. The frozen name and score are recovered from
      * the signed VC-JWT payload; a malformed/undecodable credential degrades gracefully to the neutral
      * pseudonym + empty score and never aborts the surrounding report.
      *
-     * @return array{display_name: string, passed_at: int, score: string, expires_at: int|null, verification_id: string}
+     * @return array{display_name: string, passed_at: int, score: string, expires_at: int|null, verification_id: string, expired: bool}
      */
-    private function projectRow(Certificate $cert): array {
+    private function projectRow(Certificate $cert, int $now): array {
         [$frozenName, $score] = $this->decodePayload($cert->getCredentialJson());
 
         // Same guard as the group report: a frozen name equal to (or empty/email-shaped relative to)
@@ -401,6 +404,7 @@ class CertificateReportService {
             'score' => $score,
             'expires_at' => $cert->getExpiresAt(),
             'verification_id' => $cert->getVerificationId(),
+            'expired' => $cert->getExpiresAt() !== null && (int)$cert->getExpiresAt() < $now,
         ];
     }
 

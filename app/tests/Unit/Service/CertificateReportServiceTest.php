@@ -216,9 +216,9 @@ class CertificateReportServiceTest extends TestCase {
 
         $leakRow = $rows[0];
         $this->assertSame(
-            ['display_name', 'passed_at', 'score', 'expires_at', 'verification_id'],
+            ['display_name', 'passed_at', 'score', 'expires_at', 'verification_id', 'expired'],
             array_keys($leakRow),
-            'DTO must expose exactly the 5 safe fields, in order'
+            'DTO must expose exactly the 5 safe fields plus the expired flag, in order'
         );
         $this->assertArrayNotHasKey('user_id', $leakRow);
         $this->assertArrayNotHasKey('email', $leakRow);
@@ -231,6 +231,32 @@ class CertificateReportServiceTest extends TestCase {
 
         $this->assertSame('Jürgen Müller', $rows[1]['display_name'], 'clean UTF-8 name passes through unchanged');
         $this->assertNull($rows[1]['expires_at']);
+        $this->assertTrue($leakRow['expired'], 'expires_at before now');
+        $this->assertFalse($rows[1]['expired'], 'a certificate without expiry never expires');
+    }
+
+    /**
+     * Audit #222: the "expiring within N days" list also contains certificates that already
+     * expired (the mapper cutoff has no lower bound, by design). Each row says which is which,
+     * as the group report does with its 'expired' status.
+     */
+    public function testExpiryFilteredReportMarksAlreadyExpiredCertificates(): void {
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByCourseId')->willReturn([
+            $this->makeCert('Past Expiry', 'score:90; threshold:80', 1000, self::NOW - 86400, 'vid-past'),
+            $this->makeCert('Soon Expiry', 'score:90; threshold:80', 1000, self::NOW + 86400, 'vid-soon'),
+        ]);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            ...$this->makeNewMocks()
+        );
+
+        $rows = array_column($service->getCourseReport(self::COURSE_ID, 'alice', null, null, 30)['rows'], null, 'verification_id');
+        $this->assertTrue($rows['vid-past']['expired']);
+        $this->assertFalse($rows['vid-soon']['expired']);
     }
 
     /**
@@ -763,7 +789,7 @@ class CertificateReportServiceTest extends TestCase {
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->expects($this->once())
             ->method('findByCourseIdForUsers')
-            ->with(10, $members, null)
+            ->with(10, $members)
             ->willReturn($certs);
 
         $assignmentService = $this->createMock(AssignmentService::class);
