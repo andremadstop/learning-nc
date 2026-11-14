@@ -38,13 +38,25 @@ class SkillMapLeitnerFlagTest extends TestCase {
         $this->assertTrue($byPool[4], 'a pool outside any course has Leitner');
     }
 
-    public function testThePoolTakesTheFlagOfTheSameCourseItIsLabelledWith(): void {
+    public function testAPoolInSeveralCoursesHasLeitnerAsSoonAsOneOfThemOffersIt(): void {
+        // Course 7 (lowest id) is a compliance course without Leitner, course 8 an IT course
+        // with Leitner. The learner reaches both; the boxes from course 8 must stay visible.
         $enriched = $this->enrich([
             ['pool_id' => 1, 'course_id' => 7, 'course_name' => 'First', 'mode_config' => json_encode(['leitner' => false])],
             ['pool_id' => 1, 'course_id' => 8, 'course_name' => 'Second', 'mode_config' => json_encode(['leitner' => true])],
         ], [['pool_id' => 1]]);
 
-        $this->assertSame('First', $enriched[0]['course_name']);
+        $this->assertSame('First', $enriched[0]['course_name'], 'the label stays with the first course');
+        $this->assertSame(7, $enriched[0]['course_id']);
+        $this->assertTrue($enriched[0]['leitner_enabled']);
+    }
+
+    public function testAPoolWhoseCoursesAllSwitchedLeitnerOffHasNone(): void {
+        $enriched = $this->enrich([
+            ['pool_id' => 1, 'course_id' => 7, 'course_name' => 'First', 'mode_config' => json_encode(['leitner' => false])],
+            ['pool_id' => 1, 'course_id' => 8, 'course_name' => 'Second', 'mode_config' => json_encode(['leitner' => false])],
+        ], [['pool_id' => 1]]);
+
         $this->assertFalse($enriched[0]['leitner_enabled']);
     }
 }

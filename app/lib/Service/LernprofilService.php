@@ -311,16 +311,21 @@ class LernprofilService {
         $rows = $result->fetchAll();
         $result->closeCursor();
 
-        // Build pool_id -> course mapping (use first course if pool is in multiple)
+        // Build pool_id -> course mapping. The label (id, name) comes from the first course, the
+        // Leitner flag from all of them: a pool that one reachable course offers in Leitner has
+        // Leitner boxes, even if the course with the lowest id switched Leitner off.
         $courseMap = [];
         foreach ($rows as $row) {
             $pid = (int)$row['pool_id'];
+            $leitner = self::leitnerEnabledIn($row['mode_config'] ?? null);
             if (!isset($courseMap[$pid])) {
                 $courseMap[$pid] = [
                     'course_id' => (int)$row['course_id'],
                     'course_name' => $row['course_name'],
-                    'leitner_enabled' => self::leitnerEnabledIn($row['mode_config'] ?? null),
+                    'leitner_enabled' => $leitner,
                 ];
+            } elseif ($leitner) {
+                $courseMap[$pid]['leitner_enabled'] = true;
             }
         }
 
