@@ -587,7 +587,8 @@ export default {
         { id: 'train', label: t('learning', 'Training') },
         { id: 'leitner', label: t('learning', 'Leitner') },
         { id: 'exam', label: t('learning', 'Prüfung') },
-        { id: 'gameshow', label: t('learning', 'Arena') },
+        // GitHub #46: Arena (Duel, Gameshow) is a game mode, gone with gamification off.
+        ...(this.gamificationEnabled !== false ? [{ id: 'gameshow', label: t('learning', 'Arena') }] : []),
         { id: 'stats', label: t('learning', 'Statistik') },
         { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'Fragen ansehen') : t('learning', 'Verwalten') }
       ];

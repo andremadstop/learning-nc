@@ -377,3 +377,28 @@ describe('App.vue: the tools tabs follow the course master switch (GitHub #35)',
 		expect(await tabsFor({ id: 5, title: 'Netz', mode_config: { training: true }, enabled_tools: null })).toEqual(['subnet', 'dns', 'firewall'])
 	})
 })
+
+// GitHub #46: Arena (Duel, Gameshow) is a game mode. With gamification off the pool window still
+// offered it, for learners and editors alike.
+describe('App.vue: no Arena in the pool window with gamification off (GitHub #46)', () => {
+	const modeIds = () => vm.filteredModes.map((m) => m.id)
+
+	it('drops Arena for every role and leaves an open Arena for Training', async () => {
+		for (const role of ['instructor', 'student']) {
+			api.role = { role, group: 'learning-instructors' }
+			api.questions = [{ id: 1 }]
+			await mountApp('/pools')
+			host.querySelector('.open-own').click()
+			await settle()
+			expect(modeIds(), role).toContain('gameshow')
+			vm.setMode('gameshow')
+			vm.gamificationEnabled = false
+			await settle()
+			expect(modeIds(), role).not.toContain('gameshow')
+			expect(vm.mode, role).toBe('train')
+			app.unmount()
+			host.remove()
+			app = null
+		}
+	})
+})
