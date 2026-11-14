@@ -1,6 +1,6 @@
-export const TELOS_EXPERIENCE_OPTIONS = Object.freeze(['beginner', 'intermediate', 'advanced'])
-export const TELOS_LEARNING_STYLE_OPTIONS = Object.freeze(['solo', 'group', 'mixed'])
-export const TELOS_VISIBILITY_OPTIONS = Object.freeze(['private', 'course', 'public'])
+const TELOS_EXPERIENCE_OPTIONS = Object.freeze(['beginner', 'intermediate', 'advanced'])
+const TELOS_LEARNING_STYLE_OPTIONS = Object.freeze(['solo', 'group', 'mixed'])
+const TELOS_VISIBILITY_OPTIONS = Object.freeze(['private', 'course', 'public'])
 
 export function createTelosForm() {
   return {
@@ -74,14 +74,14 @@ export function buildTelosPayload(form) {
   }
 }
 
-export function splitListValue(value) {
+function splitListValue(value) {
   return String(value || '')
     .split(/[\n,;]+/)
     .map((entry) => entry.trim())
     .filter(Boolean)
 }
 
-export function joinListValue(value) {
+function joinListValue(value) {
   if (!Array.isArray(value)) {
     return ''
   }

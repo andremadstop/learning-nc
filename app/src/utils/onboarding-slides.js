@@ -155,7 +155,7 @@ export const STUDENT_SLIDES = [
   },
 ]
 
-export const INSTRUCTOR_SLIDES = [
+const INSTRUCTOR_SLIDES = [
   {
     id: 'dashboard',
     icon: '📋',

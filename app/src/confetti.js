@@ -59,7 +59,7 @@ export function celebrateStreak(days) {
 }
 
 /** Streak milestone thresholds */
-export const STREAK_MILESTONES = [7, 14, 30, 100]
+const STREAK_MILESTONES = [7, 14, 30, 100]
 
 /**
  * Check if a streak day count hits a milestone.

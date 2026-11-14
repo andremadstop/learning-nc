@@ -1,4 +1,4 @@
-import { defineStore, getActivePinia } from 'pinia'
+import { defineStore } from 'pinia'
 
 const STEPS = ['splash', 'role', 'tour', 'privacy', 'profile', 'jumpstart', 'hook', 'done']
 
@@ -108,7 +108,3 @@ export const useOnboardingStore = defineStore('onboarding', {
   },
 })
 
-export function useOptionalOnboardingStore() {
-  const pinia = getActivePinia()
-  return pinia ? useOnboardingStore(pinia) : null
-}

@@ -484,3 +484,36 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 		expect(none.renewalOpensText).toBe('')
 	})
 })
+
+// Audit #244: the Markdown export existed in utils, the button was disabled as "coming soon".
+describe('CourseSummary Markdown export (audit #244)', () => {
+	it('downloads the summary as a Markdown file', () => {
+		const created = []
+		const origCreate = document.createElement.bind(document)
+		const createSpy = vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+			const el = origCreate(tag)
+			if (tag === 'a') {
+				el.click = vi.fn()
+				created.push(el)
+			}
+			return el
+		})
+		URL.createObjectURL = vi.fn(() => 'blob:x')
+		URL.revokeObjectURL = vi.fn()
+		const instance = createInstance({ summary: { mastery: { total_mastered: 3 }, badges: [] } })
+
+		instance.exportSummaryMarkdown()
+
+		expect(created).toHaveLength(1)
+		expect(created[0].download).toBe('Kursabschluss_Network__Bootcamp.md')
+		expect(created[0].click).toHaveBeenCalledTimes(1)
+		createSpy.mockRestore()
+	})
+
+	it('does nothing without a summary', () => {
+		URL.createObjectURL = vi.fn()
+		const instance = createInstance({ summary: null })
+		instance.exportSummaryMarkdown()
+		expect(URL.createObjectURL).not.toHaveBeenCalled()
+	})
+})

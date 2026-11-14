@@ -9,8 +9,8 @@
 			<div v-if="statsReleased" class="summary-actions">
 				<NcButton
 					variant="tertiary"
-					disabled
-					:title="t('learning', 'Kommt bald')">
+					:disabled="loading || !summary"
+					@click="exportSummaryMarkdown">
 					{{ t('learning', 'Als Markdown exportieren') }}
 				</NcButton>
 				<NcButton
@@ -295,12 +295,14 @@ import axios from '@nextcloud/axios'
 import AiConsentHint from './AiConsentHint.vue'
 import { isConsentRefusal } from '../utils/aiConsent.js'
 import { generateUrl } from '@nextcloud/router'
+import { getCurrentUser } from '@nextcloud/auth'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { getPassStatus } from '../services/CourseService.js'
 import Certificate from './Certificate.vue'
+import { exportMarkdown } from '../utils/summary-export.js'
 
 const MASTERY_RING_RADIUS = 54
 
@@ -626,6 +628,15 @@ export default {
 				maximumFractionDigits: 1,
 				minimumFractionDigits: Number(value || 0) % 1 === 0 ? 0 : 1,
 			})}%`
+		},
+
+		// Audit #244: the export existed in utils but the button said "coming soon".
+		exportSummaryMarkdown() {
+			if (!this.summary) {
+				return
+			}
+			const user = getCurrentUser()
+			exportMarkdown(this.summary, this.courseName || this.course?.name || '', user?.displayName || user?.uid || '')
 		},
 
 		badgeLabel(badge) {

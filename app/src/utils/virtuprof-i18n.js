@@ -11,7 +11,7 @@ const DICTS = {
   uk,
 }
 
-export function normalizeVirtuProfLanguage(lang) {
+function normalizeVirtuProfLanguage(lang) {
   return ALLOWED.includes(String(lang || '').toLowerCase()) ? String(lang).toLowerCase() : ''
 }
 
