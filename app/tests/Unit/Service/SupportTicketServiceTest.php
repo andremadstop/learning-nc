@@ -133,4 +133,60 @@ class SupportTicketServiceTest extends TestCase {
         $this->assertSame('user-A', $ticket->getUserId());
         $this->assertNull($ticket->getAiLabel());
     }
+
+    /**
+     * Audit #84/#145: category=course_content with the id of a course the author is not in
+     * routed the ticket into that course's instructor inbox.
+     */
+    public function testACourseTheAuthorCannotSeeIsDroppedAndTheTicketGoesToTheAdmin(): void {
+        $this->stubAiAvailable(false);
+        $this->courseServiceMock->method('findById')->with(77, 'user-A')
+            ->willThrowException(new \OCP\AppFramework\Db\DoesNotExistException('Course not found'));
+        $this->ticketMapperMock->method('insert')->willReturnArgument(0);
+
+        $ticket = $this->makeService()->create('user-A', 'Spam', 'Hello instructors', ['courseId' => 77], 'course_content');
+
+        $this->assertSame('admin', $ticket->getRoutingTargetType());
+        $this->assertNull($ticket->getRoutingCourseId());
+        $this->assertNull($ticket->getCourseId());
+        $this->assertArrayNotHasKey('courseId', json_decode((string)$ticket->getContextJson(), true));
+    }
+
+    public function testACourseTheAuthorIsInStillRoutesToItsInstructors(): void {
+        $this->stubAiAvailable(false);
+        $this->courseServiceMock->method('findById')->with(12, 'user-A')->willReturn(['id' => 12]);
+        $this->ticketMapperMock->method('insert')->willReturnArgument(0);
+
+        $ticket = $this->makeService()->create('user-A', 'Q3 wrong', 'Answer B is right', ['courseId' => 12], 'course_content');
+
+        $this->assertSame('course_instructor', $ticket->getRoutingTargetType());
+        $this->assertSame(12, $ticket->getRoutingCourseId());
+        $this->assertSame(12, $ticket->getCourseId());
+    }
+
+    /** Audit #84: any category string reached the 32-character column, a longer one was a 500. */
+    public function testAnUnknownCategoryIsFiledAsTechnical(): void {
+        $this->stubAiAvailable(false);
+        $this->ticketMapperMock->method('insert')->willReturnArgument(0);
+
+        $ticket = $this->makeService()->create('user-A', 'S', 'M', [], str_repeat('x', 40));
+
+        $this->assertSame('technical', $ticket->getCategory());
+        $this->assertSame('admin', $ticket->getRoutingTargetType());
+    }
+
+    /** Audit #84: a long course title plus pool name answered 'Subject too long' for a subject nobody typed. */
+    public function testALongFallbackSubjectIsShortenedInsteadOfRejected(): void {
+        $this->stubAiAvailable(false);
+        $this->ticketMapperMock->method('insert')->willReturnArgument(0);
+
+        $ticket = $this->makeService()->create('user-A', '', 'Help', [
+            'area' => 'training',
+            'courseTitle' => str_repeat('Kurs ', 40),
+            'poolName' => str_repeat('Pool ', 40),
+        ]);
+
+        $this->assertSame(255, mb_strlen($ticket->getSubject()));
+        $this->assertStringStartsWith('training | Kurs', $ticket->getSubject());
+    }
 }
