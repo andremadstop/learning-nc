@@ -620,7 +620,8 @@ export default {
 				width: '100%',
 				height: '100%',
 				borderRadius: '50%',
-				background: `radial-gradient(circle, ${color}33 0%, transparent 70%)`,
+				// color is a var(...): an appended hex alpha ("var(--x)33") is invalid CSS, the glow never showed (audit #91).
+				background: `radial-gradient(circle, color-mix(in srgb, ${color} 20%, transparent) 0%, transparent 70%)`,
 				pointerEvents: 'none',
 			}
 		},

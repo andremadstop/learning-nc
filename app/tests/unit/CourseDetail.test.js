@@ -413,7 +413,7 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.lernraumLeafTabs).toEqual(['pools', 'curriculum', 'materials', 'knowledge'])
 	})
 
-	it('loading an own course in the student view opens the learner default tab and the learner progress', async () => {
+	it('loading an own course in the student view opens the learner default tab without a discarded progress request', async () => {
 		const axios = (await import('@nextcloud/axios')).default
 		axios.get.mockImplementation((url) => {
 			if (url === '/apps/learning/api/courses/{courseId}') {
@@ -427,7 +427,9 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 
 		expect(instance.currentTab).toBe('training')
 		expect(instance.activeMegaTab).toBe('lernraum')
-		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/my-progress')
+		// Audit #238: CourseDetail fetched /my-progress and never read the result; the
+		// my-progress tab (StudentDetail) loads its own data.
+		expect(axios.get).not.toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/my-progress')
 	})
 
 	// GitHub #35: the knowledge tab follows the admin's AI switch from GET /api/settings/tools;
@@ -482,5 +484,25 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 
 		expect(instance.lernraumLeafTabs[0]).toBe('videos')
 		expect(instance.megaTabForLeaf('videos')).toBe('lernraum')
+	})
+})
+
+// Audit #92: the Talk link was '/apps/spreed/#/call/<token>' from the domain root, a 404 under a
+// webroot subpath or without pretty URLs. It goes through generateUrl to Talk's /call/{token}.
+describe('CourseDetail — Talk room link (audit #92)', () => {
+	it('builds the link with generateUrl and the Talk call route', async () => {
+		const { generateUrl } = await import('@nextcloud/router')
+		const instance = createInstance({ course: { talk_room_token: ' abc123 ' } })
+
+		const url = CourseDetail.computed.talkRoomUrl.call(instance)
+
+		expect(generateUrl).toHaveBeenCalledWith('/call/{token}', { token: 'abc123' })
+		expect(url).toBe('/call/{token}')
+		expect(url).not.toContain('/apps/spreed/')
+	})
+
+	it('gives no link without a token', () => {
+		const instance = createInstance({ course: { talk_room_token: '  ' } })
+		expect(CourseDetail.computed.talkRoomUrl.call(instance)).toBe('')
 	})
 })

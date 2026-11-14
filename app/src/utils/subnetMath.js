@@ -144,7 +144,7 @@ export function prefixToMask(prefix) {
 	return intToOctets(maskIntFromPrefix(prefix))
 }
 
-export function maskToPrefix(mask) {
+function maskToPrefix(mask) {
 	const normalized = normalizeOctets(mask)
 	if (!normalized) return null
 
@@ -238,28 +238,6 @@ export function calculateSubnet(ip, prefix) {
 		ipClass: ipClassFromOctets(normalizedIp),
 		isPrivate: isPrivateRange(normalizedIp),
 	}
-}
-
-export function splitSubnet(network, prefix, count) {
-	const base = calculateSubnet(network, prefix)
-	if (!base || !isInteger(count) || count <= 0) return []
-
-	const bitsNeeded = Math.log(count) / Math.log(2)
-	if (!Number.isInteger(bitsNeeded)) return []
-
-	const nextPrefix = prefix + bitsNeeded
-	if (nextPrefix > TOTAL_BITS) return []
-
-	const blockSize = Math.pow(2, TOTAL_BITS - nextPrefix)
-	const start = octetsToInt(base.network)
-	const subnets = []
-
-	for (let index = 0; index < count; index++) {
-		const subnetAddress = intToOctets((start + index * blockSize) >>> 0)
-		subnets.push(calculateSubnet(subnetAddress, nextPrefix))
-	}
-
-	return subnets.filter(Boolean)
 }
 
 export function vlsmAllocate(network, prefix, requirements) {

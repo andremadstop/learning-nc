@@ -20,7 +20,7 @@
       <div v-for="share in shares" :key="share.id" class="share-item">
         <span class="share-avatar">{{ share.shared_with.charAt(0).toUpperCase() }}</span>
         <span class="share-user">{{ share.shared_with }}</span>
-        <select :value="share.permission" @change="updatePermission(share, $event.target.value)" class="permission-select permission-select-sm">
+        <select :value="share.permission" @change="updatePermission(share, $event.target.value, $event.target)" class="permission-select permission-select-sm">
           <option value="read">{{ t('learning', 'Can view') }}</option>
           <option value="edit">{{ t('learning', 'Can edit') }}</option>
         </select>
@@ -78,11 +78,16 @@ export default {
       } catch (error) { showError(error.response?.data?.error || t('learning', 'Failed to share pool')); }
       finally { this.sharing = false; }
     },
-    async updatePermission(share, permission) {
+    async updatePermission(share, permission, select = null) {
       try {
         await axios.put(generateUrl('/apps/learning/api/pools/' + this.poolId + '/shares/' + share.shared_with), { permission });
         share.permission = permission; showSuccess(t('learning', 'Permission updated'));
-      } catch (error) { showError(t('learning', 'Failed to update permission')); }
+      } catch (error) {
+        // share.permission is unchanged, so nothing re-renders: the select kept showing the
+        // refused value as if it had been saved (audit #106). Put it back.
+        if (select) select.value = share.permission;
+        showError(t('learning', 'Failed to update permission'));
+      }
     },
     async removeShare(share) {
       try {

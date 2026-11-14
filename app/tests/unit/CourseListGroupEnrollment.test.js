@@ -69,7 +69,18 @@ describe('CourseList group field (GitHub #35)', () => {
 
 		await vm.saveCourse()
 
-		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/4', { title: 'Kurs', ncGroupId: '' })
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/4', { title: 'Kurs', description: '', ncGroupId: '' })
+	})
+
+	// Audit #94: an emptied description was left out of the PUT, and the server keeps the old
+	// text for an omitted field.
+	it('edit sends an emptied description so the server clears it', async () => {
+		axios.put.mockResolvedValue({ data: { id: 4 } })
+		const vm = instance({ editingCourse: { id: 4 }, formData: { title: 'A', description: '   ', ncGroupId: '' } })
+
+		await vm.saveCourse()
+
+		expect(axios.put.mock.calls[0][1]).toHaveProperty('description', '')
 	})
 
 	it('a failed group enrolment is shown as an error, not as success', async () => {

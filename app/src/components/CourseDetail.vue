@@ -218,10 +218,6 @@ export default {
 			// GitHub #35: the admin's AI switch (GET /api/settings/tools); unknown counts as off
 			adminAiEnabled: false,
 
-			// Student progress (for student own progress bars — kept for fetchStudentProgress)
-			studentProgress: [],
-			myProgressMode: 'mastery',
-
 			// Arena sub-mode (received from Wettbewerb child for VirtuProf context)
 			arenaSubMode: null,
 
@@ -246,7 +242,10 @@ export default {
 		talkRoomUrl() {
 			const token = String(this.course?.talk_room_token || '').trim()
 			if (!token) return ''
-			return '/apps/spreed/#/call/' + token
+			// Talk's route is /call/{token} at the server root; generateUrl adds the webroot and
+			// index.php where the instance needs them (audit #92). '/apps/spreed/#/call/' was
+			// absolute from the domain root and 404'd under a subpath.
+			return generateUrl('/call/{token}', { token })
 		},
 		hasTalkRoomLink() {
 			return this.talkRoomUrl.length > 0
@@ -710,7 +709,6 @@ export default {
 					this.arenaSubMode = this.presetDuelCode ? 'duel' : null
 					this.activeLearningMode = 'training'
 					this.selectedLearningPool = null
-					this.fetchStudentProgress()
 				} else if (this.presetDuelCode) {
 					this.currentTab = 'arena'
 					this.activeMegaTab = 'wettbewerb'
@@ -731,26 +729,6 @@ export default {
 				}
 			} finally {
 				this.loading = false
-			}
-		},
-
-		async fetchStudentProgress() {
-			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/my-progress', { courseId: this.courseId })
-				const response = await axios.get(url)
-				const data = response.data
-				let pools = []
-				if (Array.isArray(data)) {
-					pools = data
-				} else if (data && data.pools) {
-					pools = data.pools
-				}
-				this.studentProgress = pools.map(p => ({
-					...p,
-					mastery: p.total_questions > 0 ? Math.round((p.mastered || 0) / p.total_questions * 100) : 0,
-				}))
-			} catch (err) {
-				console.error('Failed to fetch student progress:', err)
 			}
 		},
 	},

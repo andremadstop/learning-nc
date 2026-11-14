@@ -43,17 +43,6 @@ export function computeVisibleItems(items, maxVisible = DEFAULT_VISIBLE_ITEMS) {
 }
 
 /**
- * Backwards-compatible alias used in some Phase 82 notes.
- *
- * @param {Array<string>} items
- * @param {number} maxVisible
- * @returns {{visible: Array<string>, overflow: number, all: Array<string>}}
- */
-export function computeItemDisplay(items, maxVisible = DEFAULT_VISIBLE_ITEMS) {
-	return computeVisibleItems(items, maxVisible)
-}
-
-/**
  * Normalize reputation values into a fixed set of mini-bar descriptors.
  *
  * @param {Record<string, number>} reputation

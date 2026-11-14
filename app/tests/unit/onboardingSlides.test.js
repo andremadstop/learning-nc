@@ -12,6 +12,7 @@ import {
 	getSlidesForRole,
 	getSlidesForRoleFull,
 } from '../../src/utils/onboarding-slides.js'
+import * as slidesModule from '../../src/utils/onboarding-slides.js'
 
 describe('onboarding slides', () => {
 	it('includes the FSRS slide directly after the Leitner slide for students (full)', () => {
@@ -68,5 +69,17 @@ describe('instructor tour depth after the single-gate change', () => {
 
 	it('leaves the student tour short on purpose', () => {
 		expect(slidesForWizard('student')).toBe(STUDENT_SLIDES)
+	})
+
+	// scripts/gen-virtuprof-strings.mjs resolves the symbolic slide keys by walking the
+	// module's exported arrays. A deck that a role can see but that is not exported never
+	// reaches the VirtuProf catalogue (audit #244 regression: INSTRUCTOR_SLIDES lost its export).
+	it('exports every deck a role can be shown, so the catalogue generator sees its keys', () => {
+		const exportedDecks = Object.values(slidesModule).filter(Array.isArray)
+		for (const role of ['student', 'instructor', 'dozent', 'admin']) {
+			for (const deck of [getSlidesForRole(role), getSlidesForRoleFull(role), slidesForWizard(role)]) {
+				expect(exportedDecks).toContain(deck)
+			}
+		}
 	})
 })

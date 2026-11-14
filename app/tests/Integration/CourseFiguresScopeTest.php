@@ -15,6 +15,9 @@ use PHPUnit\Framework\TestCase;
  * questions of course A counted the answers of course B's learners, and recent_activity handed
  * their user IDs to A's instructor.
  *
+ * Audit #156: an instructor of the course (role 'instructor', co-instructors included) answering
+ * wrong must not show up in the heatmap's top questions either, the same population as the rows.
+ *
  * Audit #30: streak days came from SQL date functions that render in the connection's time zone
  * and were then compared with UTC days.
  *
@@ -24,6 +27,7 @@ final class CourseFiguresScopeTest extends TestCase {
 	private const TEACHER = 'scope-teacher';
 	private const STUDENT_A = 'scope-student-a';
 	private const STUDENT_B = 'scope-student-b';
+	private const CO_INSTRUCTOR = 'scope-co-instructor';
 	private const MARK = 'Scope audit 50';
 
 	private IDBConnection $db;
@@ -61,6 +65,15 @@ final class CourseFiguresScopeTest extends TestCase {
 		// A's student answers right five times, B's student wrong five times
 		$this->sessionWithAnswers($poolId, self::STUDENT_A, $right, true);
 		$this->sessionWithAnswers($poolId, self::STUDENT_B, $wrong, false);
+
+		// A co-instructor of course A answers wrong five times: never counted (audit #156)
+		$this->insert('learning_course_members', [
+			'course_id' => $this->courseA,
+			'user_id' => self::CO_INSTRUCTOR,
+			'role' => 'instructor',
+			'enrolled_at' => time(),
+		]);
+		$this->sessionWithAnswers($poolId, self::CO_INSTRUCTOR, $wrong, false);
 	}
 
 	protected function tearDown(): void {
@@ -195,7 +208,7 @@ final class CourseFiguresScopeTest extends TestCase {
 	}
 
 	private function cleanUp(): void {
-		$users = [self::STUDENT_A, self::STUDENT_B, self::STUDENT_A . '-streak'];
+		$users = [self::STUDENT_A, self::STUDENT_B, self::CO_INSTRUCTOR, self::STUDENT_A . '-streak'];
 
 		$sessions = $this->db->getQueryBuilder();
 		$sessions->select('id')->from('learning_sessions')

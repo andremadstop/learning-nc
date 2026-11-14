@@ -31,6 +31,8 @@ class ScheduleServiceTest extends TestCase {
     private CourseScheduleMapper $scheduleMapper;
     private int $deleteCalls = 0;
     private int $insertCalls = 0;
+    /** Audit #81: the insert with this 1-based number throws. */
+    private ?int $failInsertNo = null;
 
     /**
      * @param array<string, string> $memberRoles uid => role of the course members
@@ -74,6 +76,9 @@ class ScheduleServiceTest extends TestCase {
         });
         $this->scheduleMapper->method('insert')->willReturnCallback(function (CourseSchedule $e): CourseSchedule {
             $this->insertCalls++;
+            if ($this->failInsertNo === $this->insertCalls) {
+                throw new \RuntimeException('insert failed');
+            }
             return $e;
         });
 
@@ -162,5 +167,52 @@ class ScheduleServiceTest extends TestCase {
     public function testChapterRefOver255CharactersIsStillRefused(): void {
         $this->expectException(\InvalidArgumentException::class);
         $this->makeService(['co' => 'instructor'])->setSchedule(self::COURSE_ID, [['chapter_ref' => str_repeat('ü', 256)]], 'co');
+    }
+
+    /**
+     * Audit #81: substr() cut the title at byte 255 and could split a UTF-8 character, which
+     * PostgreSQL refuses ("invalid byte sequence"). The title is cut at 255 characters.
+     */
+    public function testLongMultibyteTitleIsCutAtCharactersAndStaysValidUtf8(): void {
+        $result = $this->makeService(['co' => 'instructor'])->setSchedule(
+            self::COURSE_ID,
+            [['chapter_ref' => 'c1', 'chapter_title' => str_repeat('ü', 300)]],
+            'co'
+        );
+
+        $title = $result['schedule'][0]['chapter_title'];
+        $this->assertTrue(mb_check_encoding($title, 'UTF-8'));
+        $this->assertSame(255, mb_strlen($title));
+    }
+
+    /**
+     * Audit #81: the old schedule was deleted before the inserts and nothing wrapped them, so a
+     * failing insert left the course with an empty or half-written schedule.
+     */
+    public function testFailingInsertRollsBackTheDeleteAndTheEarlierInserts(): void {
+        $db = new FakeDbConnection();
+        $service = $this->makeService(['co' => 'instructor'], $db);
+        $this->failInsertNo = 2;
+
+        try {
+            $service->setSchedule(self::COURSE_ID, [['chapter_ref' => 'c1'], ['chapter_ref' => 'c2']], 'co');
+            $this->fail('the failing insert was swallowed');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('insert failed', $e->getMessage());
+        }
+
+        $this->assertSame(1, $this->deleteCalls);
+        $this->assertSame(1, $db->beginTransactionCalls);
+        $this->assertSame(1, $db->rollBackCalls);
+        $this->assertSame(0, $db->commitCalls);
+    }
+
+    public function testSuccessfulSaveCommitsOnce(): void {
+        $db = new FakeDbConnection();
+        $this->makeService(['co' => 'instructor'], $db)->setSchedule(self::COURSE_ID, [['chapter_ref' => 'c1']], 'co');
+
+        $this->assertSame(1, $db->beginTransactionCalls);
+        $this->assertSame(1, $db->commitCalls);
+        $this->assertSame(0, $db->rollBackCalls);
     }
 }

@@ -95,7 +95,8 @@ class ScheduleService {
             }
             $seenRefs[$chapterRef] = true;
 
-            $chapterTitle = isset($entry['chapter_title']) ? substr(trim((string)$entry['chapter_title']), 0, 255) : null;
+            // Characters, not bytes: substr() could split a UTF-8 character, which PostgreSQL refuses.
+            $chapterTitle = isset($entry['chapter_title']) ? mb_substr(trim((string)$entry['chapter_title']), 0, 255) : null;
             $startDate = $this->normalizeDate($entry['start_date'] ?? null, "Entry $i: start_date");
             $targetDate = $this->normalizeDate($entry['target_date'] ?? null, "Entry $i: target_date");
             $sortOrder = (int)($entry['sort_order'] ?? $i);
@@ -109,24 +110,31 @@ class ScheduleService {
             ];
         }
 
-        // Delete old entries and insert new ones
-        $this->scheduleMapper->deleteByCourse($courseId);
-
+        // Delete old entries and insert new ones in one transaction: a failing insert must not
+        // leave the course with an empty or half-written schedule.
         $result = [];
-        foreach ($prepared as $data) {
-            $entity = new CourseSchedule();
-            $entity->setCourseId($courseId);
-            $entity->setChapterRef($data['chapter_ref']);
-            $entity->setChapterTitle($data['chapter_title']);
-            $entity->setStartDate($data['start_date']);
-            $entity->setTargetDate($data['target_date']);
-            $entity->setSortOrder($data['sort_order']);
-            $entity->setCreatedAt($now);
-            $entity->setUpdatedAt($now);
+        $this->db->beginTransaction();
+        try {
+            $this->scheduleMapper->deleteByCourse($courseId);
+            foreach ($prepared as $data) {
+                $entity = new CourseSchedule();
+                $entity->setCourseId($courseId);
+                $entity->setChapterRef($data['chapter_ref']);
+                $entity->setChapterTitle($data['chapter_title']);
+                $entity->setStartDate($data['start_date']);
+                $entity->setTargetDate($data['target_date']);
+                $entity->setSortOrder($data['sort_order']);
+                $entity->setCreatedAt($now);
+                $entity->setUpdatedAt($now);
 
-            /** @var CourseSchedule $saved */
-            $saved = $this->scheduleMapper->insert($entity);
-            $result[] = $saved->jsonSerialize();
+                /** @var CourseSchedule $saved */
+                $saved = $this->scheduleMapper->insert($entity);
+                $result[] = $saved->jsonSerialize();
+            }
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
         }
 
         return ['schedule' => $result];

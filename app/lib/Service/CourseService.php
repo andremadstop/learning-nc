@@ -2433,7 +2433,7 @@ class CourseService {
         ))
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
         // Learners only. Members are 'student' or 'instructor' (co-instructors included); the
-        // former filter also listed a role 'co_instructor' that never exists (audit #50, #226).
+        // former filter also listed a role 'co_instructor' that never exists (audit #50, #156, #226).
         ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
         ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
         ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
@@ -2445,7 +2445,10 @@ class CourseService {
         }
         $result->closeCursor();
 
-        // Top worst questions (batched): use q.text (not q.question)
+        // Top worst questions (batched): use q.text (not q.question). Same population as the
+        // chapter query above, the students of this course: without the session and member joins
+        // it counted every answer to the pool's questions, from other courses sharing the pool
+        // and from instructors, so the two numbers contradicted each other (audit #156).
         $qb2 = $this->db->getQueryBuilder();
         $qb2->select(
             'q.id',

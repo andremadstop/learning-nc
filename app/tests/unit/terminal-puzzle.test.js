@@ -26,7 +26,6 @@ function createTerminalInstance(scenario = mockScenario) {
 	const instance = {
 		...data,
 		scenario,
-		scenarioId: scenario.id,
 		$emit: vi.fn(),
 		$nextTick: vi.fn(cb => {
 			if (typeof cb === 'function') cb()

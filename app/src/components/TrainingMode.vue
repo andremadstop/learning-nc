@@ -364,6 +364,9 @@ export default {
     },
   },
   beforeUnmount() {
+    // Leaving the training during an AI explanation kept polling every 1.5 s (audit #106).
+    clearInterval(this.explainPollTimer);
+    this.explainPollTimer = null;
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
   },
   methods: {
@@ -595,10 +598,13 @@ export default {
             this.explainLoading = false;
           } else if (r.data.status === 'failed') {
             clearInterval(this.explainPollTimer);
+            // A kept task id hid the explain button for good; clearing it allows a retry.
+            this.explainTaskId = null;
             this.explainLoading = false;
           }
         } catch (e) {
           clearInterval(this.explainPollTimer);
+          this.explainTaskId = null;
           this.explainLoading = false;
         }
       }, 1500);

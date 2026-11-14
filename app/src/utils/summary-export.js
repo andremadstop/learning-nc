@@ -1,11 +1,37 @@
 /**
  * Phase 106: Export utilities for course summary data.
  *
- * Generates Markdown (Obsidian-compatible), JSON, or triggers print dialog for PDF.
- * Works entirely client-side — no backend endpoint needed.
+ * Generates Markdown (Obsidian-compatible). Works entirely client-side — no backend endpoint needed.
  */
 
-import { translate as t } from '@nextcloud/l10n'
+import { getCanonicalLocale, translate as t } from '@nextcloud/l10n'
+
+/**
+ * A date in the user's Nextcloud locale (was fixed to de-DE, audit #244).
+ *
+ * @param {Date} date
+ * @returns {string}
+ */
+function formatDate(date) {
+	let locale
+	try {
+		locale = getCanonicalLocale()
+	} catch {
+		locale = undefined
+	}
+	return date.toLocaleDateString(locale)
+}
+
+/**
+ * The translated badge name; the raw badge_id only when the badge has no name.
+ *
+ * @param {object} badge
+ * @returns {string}
+ */
+function badgeLabel(badge) {
+	const key = badge?.name_key || badge?.name || ''
+	return key ? t('learning', key) : String(badge?.badge_id || '')
+}
 
 /**
  * @param {object} summary - Response from GET /api/courses/{courseId}/summary
@@ -15,7 +41,7 @@ import { translate as t } from '@nextcloud/l10n'
  */
 export function summaryToMarkdown(summary, courseName, userName) {
 	const lines = []
-	const date = new Date().toLocaleDateString('de-DE')
+	const date = formatDate(new Date())
 
 	lines.push(`# ${t('learning', 'Kursabschluss')}: ${courseName}`)
 	lines.push(`**${userName}** — ${date}`)
@@ -43,12 +69,13 @@ export function summaryToMarkdown(summary, courseName, userName) {
 	lines.push('')
 
 	// Badges
-	const badges = summary.badges || []
+	// The summary lists every badge with an earned flag; only the earned ones belong here.
+	const badges = (summary.badges || []).filter((b) => b.earned)
 	if (badges.length > 0) {
 		lines.push(`## ${t('learning', 'Abzeichen')} (${badges.length})`)
 		for (const b of badges) {
-			const earned = b.earned_at ? new Date(b.earned_at * 1000).toLocaleDateString('de-DE') : '-'
-			lines.push(`- ${b.badge_id} (${earned})`)
+			const earned = b.earned_at ? formatDate(new Date(b.earned_at * 1000)) : '-'
+			lines.push(`- ${badgeLabel(b)} (${earned})`)
 		}
 		lines.push('')
 	}
@@ -97,21 +124,6 @@ export function summaryToMarkdown(summary, courseName, userName) {
 }
 
 /**
- * @param {object} summary
- * @param {string} courseName
- * @param {string} userName
- * @returns {string} JSON string (pretty-printed)
- */
-export function summaryToJson(summary, courseName, userName) {
-	return JSON.stringify({
-		course: courseName,
-		user: userName,
-		exported_at: new Date().toISOString(),
-		...summary,
-	}, null, 2)
-}
-
-/**
  * Trigger file download in browser.
  * @param {string} content
  * @param {string} filename
@@ -139,22 +151,6 @@ export function exportMarkdown(summary, courseName, userName) {
 }
 
 /**
- * Export summary as JSON file.
- */
-export function exportJson(summary, courseName, userName) {
-	const json = summaryToJson(summary, courseName, userName)
-	const safeName = courseName.replace(/[^a-zA-Z0-9_-]/g, '_')
-	downloadFile(json, `Kursabschluss_${safeName}.json`, 'application/json')
-}
-
-/**
- * Trigger print dialog (browser handles PDF generation).
- */
-export function exportPrint() {
-	window.print()
-}
-
-/**
  * Convert cheat-sheet data to Markdown.
  *
  * @param {object} cheatSheet - Response from GET /api/profile/cheat-sheet
@@ -163,7 +159,7 @@ export function exportPrint() {
  */
 export function cheatSheetToMarkdown(cheatSheet, userName) {
 	const lines = []
-	const date = new Date().toLocaleDateString('de-DE')
+	const date = formatDate(new Date())
 	const spots = cheatSheet.spots || []
 
 	lines.push(`# ${t('learning', 'Spickzettel — Schwachstellen')}`)

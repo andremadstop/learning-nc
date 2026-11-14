@@ -97,3 +97,18 @@ describe('CharacterAvatar SVG structure (Phase 150 Plan 05)', () => {
 		},
 	)
 })
+
+describe('CharacterAvatar glow (audit #91)', () => {
+	// The glow colours are var(...) values. "var(--lnc-cyan)33" is invalid CSS after the
+	// variable is substituted, so the whole background declaration was dropped.
+	for (const state of ['thinking', 'explain', 'celebrate', 'relieved']) {
+		it(`builds a valid background for ${state}`, () => {
+			const style = CharacterAvatar.computed.glowStyle.call({
+				state,
+				character: { palette: { accent: 'var(--lnc-violet)' } },
+			})
+			expect(style.background).not.toMatch(/var\([^)]*\)[0-9a-f]{2}/i)
+			expect(style.background).toMatch(/color-mix\(in srgb, var\(--lnc-[a-z]+\) 20%, transparent\)/)
+		})
+	}
+})
