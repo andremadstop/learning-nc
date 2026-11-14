@@ -142,8 +142,9 @@ class QuestionMapper extends QBMapper {
                $expr->eq("cm.course_id", "c.id"),
                $expr->eq("cm.user_id", $qb->createNamedParameter($userId))
            ))
+           // Pool owner, not question author (audit #150, same rule as QuestionSearchProvider).
            ->where($expr->orX(
-               $expr->eq("q.user_id", $qb->createNamedParameter($userId)),
+               $expr->eq("p.user_id", $qb->createNamedParameter($userId)),
                $expr->isNotNull("s.id"),
                $expr->eq("c.instructor_id", $qb->createNamedParameter($userId)),
                $expr->isNotNull("cm.id")

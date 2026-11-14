@@ -358,7 +358,8 @@ class TelosService {
     // =========================================================================
 
     /**
-     * Aggregate telos data for a list of users (course members).
+     * Aggregate telos data for a list of users (course members). Private profiles count only as
+     * onboarded; their content stays out of every figure.
      *
      * @param string[] $userIds
      * @return array{
@@ -383,6 +384,12 @@ class TelosService {
         foreach ($entities as $entity) {
             if ($entity->getOnboardingCompleted()) {
                 $onboarded++;
+            }
+
+            // 'private' promises "only VirtuProf uses your profile" (PersonalSettings): such a
+            // profile feeds neither the per-person exam list nor the class totals (audit #57).
+            if ($entity->getVisibility() === 'private') {
+                continue;
             }
 
             $decryptedJson = $this->encryptionService->decrypt($entity->getTelosJson());

@@ -138,6 +138,24 @@ class QuestionService {
     }
 
     /**
+     * The instructor note is for the pool's editors unless the instructor marked it visible
+     * (note_visible). Readers who get the question without the solution (mustWithholdSolution)
+     * lose a hidden note too; until the 2026-11 audit only the browser hid it (#18, #26, #55).
+     * Works on jsonSerialize() output and on raw learning_questions rows: PostgreSQL returns the
+     * boolean column as bool, MariaDB as '0'/'1'.
+     *
+     * @param array<string, mixed> $question
+     * @return array<string, mixed>
+     */
+    private static function withholdHiddenNote(array $question): array {
+        $visible = $question['note_visible'] ?? false;
+        if (!in_array($visible, [true, 1, '1', 't', 'true'], true)) {
+            unset($question['instructor_note']);
+        }
+        return $question;
+    }
+
+    /**
      * Check if user has an active (uncompleted) exam session on a given pool.
      * Used to suppress is_correct, explanation and the PBQ solution in question read APIs to
      * prevent exam oracle attacks.
@@ -342,6 +360,7 @@ class QuestionService {
             if ($stripCorrect) {
                 unset($questionData['explanation']);
                 $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
+                $questionData = self::withholdHiddenNote($questionData);
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
@@ -377,6 +396,7 @@ class QuestionService {
             if ($stripCorrect) {
                 unset($questionData['explanation']);
                 $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
+                $questionData = self::withholdHiddenNote($questionData);
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
@@ -407,6 +427,7 @@ class QuestionService {
             if ($stripCorrect) {
                 unset($questionData['explanation']);
                 $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
+                $questionData = self::withholdHiddenNote($questionData);
             }
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
                 $row = $a->jsonSerialize();
@@ -766,6 +787,7 @@ class QuestionService {
                 continue;
             }
             unset($row['explanation']);
+            $row = self::withholdHiddenNote($row);
             if (isset($row['pbq_config']) && is_string($row['pbq_config']) && $row['pbq_config'] !== '') {
                 $config = json_decode($row['pbq_config'], true);
                 $row['pbq_config'] = is_array($config)
