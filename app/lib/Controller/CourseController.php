@@ -577,6 +577,24 @@ class CourseController extends Controller {
     }
 
     /**
+     * GitHub #68: answer statistics of a pool (owner or edit share) and whether a course holding
+     * it offers Leitner.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function poolAnswerStats(int $poolId): DataResponse {
+        try {
+            return new DataResponse($this->courseService->getPoolAnswerStats($poolId, (string)$this->userId));
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('poolAnswerStats error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]

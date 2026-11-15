@@ -132,6 +132,7 @@ class FakeQueryBuilder {
     public array $andWhereCalls = [];
     public array $orWhereCalls = [];
     public array $groupBys = [];
+    public array $havings = [];
     public array $orderBys = [];
     public ?int $maxResults = null;
     public ?int $firstResult = null;
@@ -227,6 +228,11 @@ class FakeQueryBuilder {
 
     public function addGroupBy(string $field): self {
         $this->groupBys[] = $field;
+        return $this;
+    }
+
+    public function having(mixed $condition): self {
+        $this->havings[] = $condition;
         return $this;
     }
 

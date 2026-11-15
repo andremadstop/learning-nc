@@ -189,7 +189,6 @@
         "Avatar-Vorschau": "Попередній перегляд аватара",
         "Back": "Назад",
         "Back to Dashboard": "Назад до панелі",
-        "Back to Mode Selector": "Назад до вибору режиму",
         "Back to Pool": "Назад до пулу",
         "Back to Pools": "Назад до пулів",
         "Back to Questions": "Назад до питань",
@@ -3798,6 +3797,14 @@
         "Bestes Prüfungsergebnis": "Найкращий результат іспиту",
         "Noch keine Prüfung abgelegt": "Іспит ще не складався",
         "Noch keine Antwort": "Відповідей поки немає",
-        "Trefferquote beim Üben und in Prüfungen": "Частка правильних відповідей у тренуваннях та іспитах"
+        "Trefferquote beim Üben und in Prüfungen": "Частка правильних відповідей у тренуваннях та іспитах",
+        "Zurück zu „{mode}“": "Назад до «{mode}»",
+        "Fragen im Pool": "Питань у пулі",
+        "Lernende mit Antworten": "Слухачів із відповідями",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "Цей пул не входить до жодного курсу з Лейтнером. Тому тут показано відповіді слухачів із курсів із цим пулом, без імен: {answers} відповідей, із них {correct} правильних.",
+        "Schwierigste Fragen": "Найскладніші питання",
+        "{rate} % falsch · {n} Antworten": "{rate} % неправильно · {n} відповідей",
+        "Noch zu wenige falsche Antworten für eine Auswertung.": "Поки замало неправильних відповідей для оцінки.",
+        "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Статистика відповідей слухачів і найскладніші питання цього пулу."
     }
 }

@@ -242,7 +242,9 @@
                 v-else-if="mode === 'stats'"
                 :poolId="selectedPool.id"
                 :gamification-enabled="gamificationEnabled"
+                :back-label="defaultPoolModeLabel"
                 @back="setMode(defaultPoolMode)"
+                @basis="poolStatsBasis = $event"
               />
 
               <QuestionList
@@ -598,6 +600,8 @@ export default {
       showOnboarding: false,
       onboardingAcknowledged: false,
       showInstructorOnboarding: false,
+      // GitHub #68: what the open pool's statistics show ('leitner' | 'answers').
+      poolStatsBasis: 'leitner',
     };
   },
   computed: {
@@ -640,6 +644,10 @@ export default {
     // GitHub #46: the tab an open pool starts on, and where a closed or hidden tab falls back to.
     defaultPoolMode() {
       return this.canManagePool ? 'manage' : 'train';
+    },
+    // GitHub #68: the statistics' back button names where it leads.
+    defaultPoolModeLabel() {
+      return this.modes.find((m) => m.id === this.defaultPoolMode)?.label || '';
     },
     filteredModes() {
       if (this.canManagePool) {
@@ -694,7 +702,10 @@ export default {
         leitner: t('learning', 'Spaced Repetition — schwierige Fragen kommen häufiger. 5 Boxen, Schritt für Schritt.'),
         exam: t('learning', 'Prüfungsmodus — kein Feedback bis zum Ende.'),
         gameshow: t('learning', 'Arena mit Duell, Sprint oder Elimination.'),
-        stats: t('learning', 'Lernstatistiken und Box-Verteilung für diesen Pool.'),
+        // GitHub #68: a pool only in courses without Leitner shows answers, not boxes.
+        stats: this.poolStatsBasis === 'answers'
+          ? t('learning', 'Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.')
+          : t('learning', 'Lernstatistiken und Box-Verteilung für diesen Pool.'),
         manage: t('learning', 'Fragen hinzufügen, bearbeiten, löschen und importieren.'),
       };
     },
@@ -775,6 +786,8 @@ export default {
       this.emitToolGuide();
     },
     selectedPool() {
+      // GitHub #68: the next pool's statistics report their own basis.
+      this.poolStatsBasis = 'leitner';
       this.emitVirtuProfContext();
       this.emitViewGuide();
     },

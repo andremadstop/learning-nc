@@ -195,7 +195,6 @@
         "Avatar-Vorschau": "Avatar preview",
         "Back": "Back",
         "Back to Dashboard": "Back to Dashboard",
-        "Back to Mode Selector": "Back to Mode Selector",
         "Back to Pool": "Back to Pool",
         "Back to Pools": "Back to Pools",
         "Back to Questions": "Back to Questions",
@@ -3798,6 +3797,14 @@
         "Bestes Prüfungsergebnis": "Best exam result",
         "Noch keine Prüfung abgelegt": "No exam taken yet",
         "Noch keine Antwort": "No answer yet",
-        "Trefferquote beim Üben und in Prüfungen": "Hit rate in practice and exams"
+        "Trefferquote beim Üben und in Prüfungen": "Hit rate in practice and exams",
+        "Zurück zu „{mode}“": "Back to \"{mode}\"",
+        "Fragen im Pool": "Questions in the pool",
+        "Lernende mit Antworten": "Learners with answers",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "This pool is not part of any course that uses Leitner. So this shows the answers of the learners in the courses with this pool, without names: {answers} answers, {correct} of them right.",
+        "Schwierigste Fragen": "Hardest questions",
+        "{rate} % falsch · {n} Antworten": "{rate} % wrong · {n} answers",
+        "Noch zu wenige falsche Antworten für eine Auswertung.": "Not enough wrong answers yet for an evaluation.",
+        "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Answer statistics of the learners and the hardest questions of this pool."
     }
 }

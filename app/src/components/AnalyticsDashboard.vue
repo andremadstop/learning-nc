@@ -1,8 +1,9 @@
 <template>
   <div class="analytics-dashboard">
     <div class="header">
+      <!-- GitHub #68: "Back to Mode Selector" named no place; the button goes to the pool's first tab. -->
       <NcButton @click="goBack" variant="tertiary">
-        {{ t('learning', 'Back to Mode Selector') }}
+        {{ backLabel ? t('learning', 'Zurück zu „{mode}“', { mode: backLabel }) : t('learning', 'Zurück') }}
       </NcButton>
       <NcButton @click="fetchStats" variant="tertiary" :disabled="loading">
         {{ t('learning', 'Refresh Stats') }}
@@ -46,6 +47,30 @@
           </p>
           <p class="card-sub">{{ t('learning', 'Freeze Tokens: {n}', { n: streak.freeze_tokens || 0 }) }}</p>
         </div>
+        <template v-if="answerView">
+          <!-- GitHub #68: no course holding this pool uses Leitner — answers instead of boxes. -->
+          <div class="summary-card card-questions">
+            <span class="card-watermark">&#x1F4DA;</span>
+            <p class="card-label">{{ t('learning', 'Fragen im Pool') }}</p>
+            <p class="card-value">{{ answerStats.question_count }}</p>
+          </div>
+          <div class="summary-card card-mastered">
+            <span class="card-watermark">&#x1F465;</span>
+            <p class="card-label">{{ t('learning', 'Lernende mit Antworten') }}</p>
+            <p class="card-value">{{ answerStats.learners }}</p>
+          </div>
+          <div class="summary-card card-due">
+            <span class="card-watermark">&#x1F501;</span>
+            <p class="card-label">{{ t('learning', 'Versuche') }}</p>
+            <p class="card-value">{{ answerStats.attempts }}</p>
+          </div>
+          <div class="summary-card card-accuracy">
+            <span class="card-watermark">&#x1F3AF;</span>
+            <p class="card-label">{{ t('learning', 'Accuracy') }}</p>
+            <p class="card-value">{{ answerStats.accuracy !== null && answerStats.accuracy !== undefined ? answerStats.accuracy + '%' : '–' }}</p>
+          </div>
+        </template>
+        <template v-else>
         <div class="summary-card card-questions">
           <span class="card-watermark">&#x1F4DA;</span>
           <!-- Fresh-eyes review (GitHub #36): the figure counts the cards in your own Leitner boxes,
@@ -68,6 +93,21 @@
           <p class="card-label">{{ t('learning', 'Accuracy') }}</p>
           <p class="card-value">{{ stats.accuracy }}%</p>
         </div>
+        </template>
+      </div>
+
+      <div v-if="answerView" class="answer-stats">
+        <p class="answer-stats-note">
+          {{ t('learning', 'Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.', { answers: answerStats.answers, correct: answerStats.correct }) }}
+        </p>
+        <h3 class="section-heading">{{ t('learning', 'Schwierigste Fragen') }}</h3>
+        <ol v-if="answerStats.hardest && answerStats.hardest.length > 0" class="hardest-list">
+          <li v-for="q in answerStats.hardest" :key="q.question_id" class="hardest-item">
+            <span class="hardest-text">{{ q.question_text }}</span>
+            <span class="hardest-meta">{{ t('learning', '{rate} % falsch · {n} Antworten', { rate: q.wrong_rate, n: q.total_answers }) }}</span>
+          </li>
+        </ol>
+        <p v-else class="hardest-empty">{{ t('learning', 'Noch zu wenige falsche Antworten für eine Auswertung.') }}</p>
       </div>
 
       <div class="missions-section" v-if="gamificationEnabled && missionsData.missions && missionsData.missions.length > 0">
@@ -90,6 +130,7 @@
         </div>
       </div>
 
+      <template v-if="!answerView">
       <!-- Leitner Tower — Signature Visual -->
       <h3 class="section-heading">{{ t('learning', 'Leitner Box Distribution') }}</h3>
       <div class="leitner-tower-desktop">
@@ -155,6 +196,7 @@
           <p class="data-panel-sub">{{ totalCorrectFormatted }}</p>
         </div>
       </div>
+      </template>
 
       <!-- Achievements Section — Enhanced -->
       <div v-if="gamificationEnabled && badges.length > 0" class="achievements-section">
@@ -242,6 +284,11 @@ export default {
       type: Boolean,
       default: true,
     },
+    // GitHub #68: the name of the tab the back button leads to (Manage or Training).
+    backLabel: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
@@ -268,9 +315,15 @@ export default {
       missionsData: { date: null, missions: [] },
       claimingMissionKey: null,
       legacyArchiveOpen: false,
+      // GitHub #68: GET /api/pools/{poolId}/answer-stats; null when not readable (no edit right).
+      answerStats: null,
     };
   },
   computed: {
+    // GitHub #68: the pool hangs only in courses without Leitner — the boxes would stay empty.
+    answerView() {
+      return this.answerStats !== null && this.answerStats.leitner_in_use === false;
+    },
     totalCorrectFormatted() {
       if (this.stats.total_answered === 0) {
         return '0/0 (0%)';
@@ -303,17 +356,22 @@ export default {
     async fetchStats() {
       this.loading = true;
       this.error = null;
-      try {
-        const response = await axios.get(generateUrl('/apps/learning/api/leitner/stats'), {
-          params: { poolId: this.poolId },
-        });
-        this.stats = { ...this.stats, ...response.data };
-      } catch (e) {
-        console.error('Failed to fetch stats:', e);
+      // GitHub #68: both in parallel; the answer statistics decide which view is shown, and a
+      // viewer who may not read them (403) keeps the box view as before.
+      const [leitner, answers] = await Promise.allSettled([
+        axios.get(generateUrl('/apps/learning/api/leitner/stats'), { params: { poolId: this.poolId } }),
+        axios.get(generateUrl('/apps/learning/api/pools/{poolId}/answer-stats', { poolId: this.poolId })),
+      ]);
+      const answerData = answers.status === 'fulfilled' ? answers.value?.data : null;
+      this.answerStats = answerData && typeof answerData === 'object' && typeof answerData.leitner_in_use === 'boolean' ? answerData : null;
+      if (leitner.status === 'fulfilled') {
+        this.stats = { ...this.stats, ...leitner.value.data };
+      } else if (!this.answerView) {
+        console.error('Failed to fetch stats:', leitner.reason);
         this.error = t('learning', 'Failed to load statistics. Please try again.');
-      } finally {
-        this.loading = false;
       }
+      this.$emit('basis', this.answerView ? 'answers' : 'leitner');
+      this.loading = false;
     },
     goBack() {
       this.$emit('back');
@@ -459,6 +517,36 @@ export default {
 
 .error {
   color: var(--color-error);
+}
+
+/* ── Answer statistics (GitHub #68) ── */
+.answer-stats-note {
+  color: var(--color-text-maxcontrast);
+  margin: 0 0 16px;
+}
+
+.hardest-list {
+  margin: 0 0 24px;
+  padding-inline-start: 20px;
+}
+
+.hardest-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hardest-meta {
+  color: var(--color-text-maxcontrast);
+  white-space: nowrap;
+}
+
+.hardest-empty {
+  color: var(--color-text-maxcontrast);
+  margin-bottom: 24px;
 }
 
 /* ── Section Headings ── */

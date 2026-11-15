@@ -238,6 +238,7 @@ return [
         ['name' => 'course#dashboard', 'url' => '/api/instructor/dashboard', 'verb' => 'GET'],
         ['name' => 'course#chapterHeatmap', 'url' => '/api/courses/{courseId}/chapter-heatmap', 'verb' => 'GET'],
         ['name' => 'course#weakQuestions', 'url' => '/api/courses/{courseId}/weak-questions', 'verb' => 'GET'],
+        ['name' => 'course#poolAnswerStats', 'url' => '/api/pools/{poolId}/answer-stats', 'verb' => 'GET'],
         ['name' => 'course#setQuestionOverride', 'url' => '/api/courses/{courseId}/questions/{questionId}/override', 'verb' => 'POST'],
         ['name' => 'course#courseDashboard', 'url' => '/api/courses/{courseId}/dashboard', 'verb' => 'GET'],
         ['name' => 'course#getAnnouncements', 'url' => '/api/courses/{courseId}/announcements', 'verb' => 'GET'],

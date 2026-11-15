@@ -199,7 +199,6 @@
         "Avatar-Vorschau": "Предпросмотр аватара",
         "Back": "Назад",
         "Back to Dashboard": "Вернуться к панели управления",
-        "Back to Mode Selector": "Вернуться к выбору режима",
         "Back to Pool": "Вернуться к пулу",
         "Back to Pools": "Вернуться к пулам",
         "Back to Questions": "Вернуться к вопросам",
@@ -3798,6 +3797,14 @@
         "Bestes Prüfungsergebnis": "Лучший результат экзамена",
         "Noch keine Prüfung abgelegt": "Экзамен ещё не сдавался",
         "Noch keine Antwort": "Ответов пока нет",
-        "Trefferquote beim Üben und in Prüfungen": "Доля верных ответов в тренировках и экзаменах"
+        "Trefferquote beim Üben und in Prüfungen": "Доля верных ответов в тренировках и экзаменах",
+        "Zurück zu „{mode}“": "Назад к «{mode}»",
+        "Fragen im Pool": "Вопросов в пуле",
+        "Lernende mit Antworten": "Учащихся с ответами",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "Этот пул не входит ни в один курс с Лейтнером. Поэтому здесь показаны ответы учащихся из курсов с этим пулом, без имён: {answers} ответов, из них {correct} верных.",
+        "Schwierigste Fragen": "Самые трудные вопросы",
+        "{rate} % falsch · {n} Antworten": "{rate} % неверно · {n} ответов",
+        "Noch zu wenige falsche Antworten für eine Auswertung.": "Пока слишком мало неверных ответов для оценки.",
+        "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Статистика ответов учащихся и самые трудные вопросы этого пула."
     }
 }

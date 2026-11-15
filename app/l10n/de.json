@@ -189,7 +189,6 @@
         "Avatar-Vorschau": "Avatar-Vorschau",
         "Back": "Zurück",
         "Back to Dashboard": "Zurück zum Dashboard",
-        "Back to Mode Selector": "Zurück zur Moduswahl",
         "Back to Pool": "Zurück zum Pool",
         "Back to Pools": "Zurück zu den Pools",
         "Back to Questions": "Zurück zu den Fragen",
@@ -3798,6 +3797,14 @@
         "Bestes Prüfungsergebnis": "Bestes Prüfungsergebnis",
         "Noch keine Prüfung abgelegt": "Noch keine Prüfung abgelegt",
         "Noch keine Antwort": "Noch keine Antwort",
-        "Trefferquote beim Üben und in Prüfungen": "Trefferquote beim Üben und in Prüfungen"
+        "Trefferquote beim Üben und in Prüfungen": "Trefferquote beim Üben und in Prüfungen",
+        "Zurück zu „{mode}“": "Zurück zu „{mode}“",
+        "Fragen im Pool": "Fragen im Pool",
+        "Lernende mit Antworten": "Lernende mit Antworten",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.",
+        "Schwierigste Fragen": "Schwierigste Fragen",
+        "{rate} % falsch · {n} Antworten": "{rate} % falsch · {n} Antworten",
+        "Noch zu wenige falsche Antworten für eine Auswertung.": "Noch zu wenige falsche Antworten für eine Auswertung.",
+        "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools."
     }
 }

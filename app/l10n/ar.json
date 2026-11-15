@@ -199,7 +199,6 @@
         "Avatar-Vorschau": "معاينة الأفاتار",
         "Back": "رجوع",
         "Back to Dashboard": "العودة إلى لوحة التحكم",
-        "Back to Mode Selector": "العودة إلى اختيار الوضع",
         "Back to Pool": "العودة إلى المجموعة",
         "Back to Pools": "العودة إلى المجموعات",
         "Back to Questions": "العودة إلى الأسئلة",
@@ -3798,6 +3797,14 @@
         "Bestes Prüfungsergebnis": "أفضل نتيجة امتحان",
         "Noch keine Prüfung abgelegt": "لم يُؤدَّ أي امتحان بعد",
         "Noch keine Antwort": "لا توجد إجابة بعد",
-        "Trefferquote beim Üben und in Prüfungen": "نسبة الإجابات الصحيحة في التدريب والامتحانات"
+        "Trefferquote beim Üben und in Prüfungen": "نسبة الإجابات الصحيحة في التدريب والامتحانات",
+        "Zurück zu „{mode}“": "العودة إلى «{mode}»",
+        "Fragen im Pool": "الأسئلة في المجموعة",
+        "Lernende mit Antworten": "متعلمون لديهم إجابات",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "هذه المجموعة ليست جزءًا من أي مقرر يستخدم لايتنر. لذلك تُعرض هنا إجابات المتعلمين في المقررات التي تضم هذه المجموعة، دون أسماء: {answers} إجابة، منها {correct} صحيحة.",
+        "Schwierigste Fragen": "أصعب الأسئلة",
+        "{rate} % falsch · {n} Antworten": "{rate} % خطأ · {n} إجابة",
+        "Noch zu wenige falsche Antworten für eine Auswertung.": "لا توجد بعد إجابات خاطئة كافية للتقييم.",
+        "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "إحصاءات إجابات المتعلمين وأصعب أسئلة هذه المجموعة."
     }
 }

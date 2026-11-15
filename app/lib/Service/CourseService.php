@@ -3223,6 +3223,141 @@ class CourseService {
         return ($chapterKey ?? '') !== '' ? $chapterKey : 'pool:' . $poolId;
     }
 
+    /** GitHub #68: how many of the hardest questions the pool statistics list. */
+    private const POOL_HARDEST_QUESTIONS = 5;
+
+    /**
+     * GitHub #68: answer statistics of a pool for its statistics tab, for a pool that hangs in
+     * courses without Leitner — there the box distribution of the viewer's own Leitner items stays
+     * empty forever ("0 questions" next to a pool of eight).
+     *
+     * leitner_in_use: some course holding the pool offers Leitner, or no course holds it
+     * (self-study keeps Leitner); the tab then keeps the box distribution.
+     *
+     * Aggregates only, over the answers of the learners (role student) of the courses that hold
+     * the pool, like the weak questions of a course: attempts (completed sessions with an answer
+     * on the pool), answers, hit rate and the hardest questions (at least
+     * MIN_ANSWERS_PER_QUESTION answers, highest wrong rate first). No learner is named. Only the
+     * pool's owner or an edit share may read them — the people who maintain the questions.
+     *
+     * @return array{leitner_in_use: bool, question_count: int, learners: int, attempts: int, answers: int, correct: int, accuracy: int|null, hardest: list<array{question_id: int, question_text: string, total_answers: int, wrong_rate: float}>}
+     * @throws ForbiddenException neither owner nor edit share of the pool
+     */
+    public function getPoolAnswerStats(int $poolId, string $userId): array {
+        if (!$this->canEditPool($poolId, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('c.id', 'c.mode_config')
+            ->from('learning_course_pools', 'cp')
+            ->innerJoin('cp', 'learning_courses', 'c', $qb->expr()->eq('cp.course_id', 'c.id'))
+            ->where($qb->expr()->eq('cp.pool_id', $qb->createNamedParameter($poolId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        $result = $qb->executeQuery();
+        $courseIds = [];
+        $leitnerInUse = false;
+        while ($row = $result->fetch()) {
+            $courseIds[] = (int)$row['id'];
+            if (self::isModeEnabledInConfig($row['mode_config'] ?? null, 'leitner')) {
+                $leitnerInUse = true;
+            }
+        }
+        $result->closeCursor();
+        if ($courseIds === []) {
+            $leitnerInUse = true;
+        }
+
+        $stats = [
+            'leitner_in_use' => $leitnerInUse,
+            'question_count' => $this->countQuestionsInPool($poolId),
+            'learners' => 0,
+            'attempts' => 0,
+            'answers' => 0,
+            'correct' => 0,
+            'accuracy' => null,
+            'hardest' => [],
+        ];
+        if ($courseIds === []) {
+            return $stats;
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectDistinct('user_id')
+            ->from('learning_course_members')
+            ->where($qb->expr()->in('course_id', $qb->createNamedParameter(array_values(array_unique($courseIds)), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->eq('role', $qb->createNamedParameter('student')));
+        $result = $qb->executeQuery();
+        $learnerIds = [];
+        while ($row = $result->fetch()) {
+            $learnerIds[] = (string)$row['user_id'];
+        }
+        $result->closeCursor();
+        if ($learnerIds === []) {
+            return $stats;
+        }
+
+        // From, joins and filter of both reads below: the pool's questions, answered by the learners.
+        $answersOfLearners = function () use ($poolId, $learnerIds) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->from('learning_user_answers', 'ua')
+                ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
+                ->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('s.id', 'ua.session_id'))
+                ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->in('s.user_id', $qb->createNamedParameter($learnerIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
+            return $qb;
+        };
+
+        $qb = $answersOfLearners();
+        $qb->select(
+            $qb->createFunction('COUNT(ua.id) AS total_answers'),
+            $qb->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct_answers'),
+            $qb->createFunction('COUNT(DISTINCT s.user_id) AS learners'),
+            $qb->createFunction('COUNT(DISTINCT s.id) AS attempts')
+        );
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        $answers = is_array($row) ? (int)$row['total_answers'] : 0;
+        $correct = is_array($row) ? (int)$row['correct_answers'] : 0;
+        $stats['answers'] = $answers;
+        $stats['correct'] = $correct;
+        $stats['learners'] = is_array($row) ? (int)$row['learners'] : 0;
+        $stats['attempts'] = is_array($row) ? (int)$row['attempts'] : 0;
+        $stats['accuracy'] = $answers > 0 ? (int)round($correct / $answers * 100) : null;
+        if ($answers === 0) {
+            return $stats;
+        }
+
+        $qb = $answersOfLearners();
+        $qb->select(
+            'q.id AS question_id',
+            'q.text AS question_text',
+            $qb->createFunction('COUNT(ua.id) AS total_answers'),
+            $qb->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct_answers')
+        )
+            ->groupBy('q.id', 'q.text')
+            ->having($qb->createFunction('COUNT(ua.id) >= ' . self::MIN_ANSWERS_PER_QUESTION))
+            ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
+            ->setMaxResults(self::POOL_HARDEST_QUESTIONS);
+        $result = $qb->executeQuery();
+        while ($row = $result->fetch()) {
+            $total = (int)$row['total_answers'];
+            $right = (int)$row['correct_answers'];
+            if ($total < self::MIN_ANSWERS_PER_QUESTION || $right >= $total) {
+                continue; // never answered wrong: not hard
+            }
+            $stats['hardest'][] = [
+                'question_id' => (int)$row['question_id'],
+                'question_text' => mb_substr((string)$row['question_text'], 0, 120),
+                'total_answers' => $total,
+                'wrong_rate' => round((1 - $right / $total) * 100, 1),
+            ];
+        }
+        $result->closeCursor();
+
+        return $stats;
+    }
+
     /**
      * Get weakest questions for a course (instructor only).
      */
