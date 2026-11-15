@@ -128,6 +128,7 @@ scripts/*
 !scripts/lifecycle-fixtures/
 !scripts/lifecycle-probe.sh
 !scripts/nc-integration.sh
+!scripts/persona-sweep/
 !scripts/schema-dump.sh
 !scripts/test-api.sh
 !scripts/verify-credential.py
@@ -204,3 +205,4 @@ CODEX_DAUERAUFTRAG.md
 CODEX_HOTFIX*.md
 CODEX_5PERSPEKTIVEN*.md
 CODEX_SELF_REVIEW.md
+scripts/persona-sweep/out/

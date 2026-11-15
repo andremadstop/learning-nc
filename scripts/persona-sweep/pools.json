@@ -1,0 +1,96 @@
+{
+  "pools": [
+    {
+      "name": "Fire safety",
+      "description": "Annual fire safety training",
+      "questions": [
+        {"text": "What do you do first when you discover a fire?", "answers": [
+          {"text": "Raise the alarm", "is_correct": true},
+          {"text": "Finish your current task", "is_correct": false},
+          {"text": "Open all windows", "is_correct": false},
+          {"text": "Take the lift", "is_correct": false}]},
+        {"text": "Which extinguisher is suitable for an electrical fire?", "answers": [
+          {"text": "Carbon dioxide (CO2)", "is_correct": true},
+          {"text": "Water", "is_correct": false},
+          {"text": "Wet chemical", "is_correct": false},
+          {"text": "A wet towel", "is_correct": false}]},
+        {"text": "During an evacuation, you should…", "answers": [
+          {"text": "use the stairs, never the lift", "is_correct": true},
+          {"text": "collect your belongings first", "is_correct": false},
+          {"text": "wait at your desk for instructions", "is_correct": false},
+          {"text": "use the lift to be faster", "is_correct": false}]},
+        {"text": "Where do you go after leaving the building?", "answers": [
+          {"text": "To the assembly point", "is_correct": true},
+          {"text": "Home", "is_correct": false},
+          {"text": "Back to the entrance", "is_correct": false},
+          {"text": "To the car park exit", "is_correct": false}]},
+        {"text": "Fire doors must be kept…", "answers": [
+          {"text": "closed and unobstructed", "is_correct": true},
+          {"text": "wedged open for air", "is_correct": false},
+          {"text": "locked at all times", "is_correct": false},
+          {"text": "covered with posters", "is_correct": false}]},
+        {"text": "How often is the fire alarm tested in this building?", "answers": [
+          {"text": "Every week", "is_correct": true},
+          {"text": "Never", "is_correct": false},
+          {"text": "Once every five years", "is_correct": false},
+          {"text": "Only after a fire", "is_correct": false}]},
+        {"text": "A colleague's clothes catch fire. What do you tell them?", "answers": [
+          {"text": "Stop, drop and roll", "is_correct": true},
+          {"text": "Run outside", "is_correct": false},
+          {"text": "Stand still and wait", "is_correct": false},
+          {"text": "Wave your arms", "is_correct": false}]},
+        {"text": "Who may re-enter the building after an alarm?", "answers": [
+          {"text": "Only people the fire warden allows", "is_correct": true},
+          {"text": "Anyone who left a bag inside", "is_correct": false},
+          {"text": "Everyone after five minutes", "is_correct": false},
+          {"text": "Managers only", "is_correct": false}]}
+      ]
+    },
+    {
+      "name": "Data protection",
+      "description": "Annual data protection training",
+      "questions": [
+        {"text": "What is personal data?", "answers": [
+          {"text": "Any information about an identifiable person", "is_correct": true},
+          {"text": "Only a person's passport number", "is_correct": false},
+          {"text": "Only data stored on paper", "is_correct": false},
+          {"text": "Only medical records", "is_correct": false}]},
+        {"text": "You receive an unexpected email asking for your password. You…", "answers": [
+          {"text": "report it as phishing", "is_correct": true},
+          {"text": "reply with your password", "is_correct": false},
+          {"text": "forward it to colleagues", "is_correct": false},
+          {"text": "click the link to check", "is_correct": false}]},
+        {"text": "A customer file is sent to the wrong address. This is…", "answers": [
+          {"text": "a data breach that must be reported internally", "is_correct": true},
+          {"text": "not a problem if nobody complains", "is_correct": false},
+          {"text": "only a problem on paper", "is_correct": false},
+          {"text": "the customer's fault", "is_correct": false}]},
+        {"text": "How should you leave your screen when you step away?", "answers": [
+          {"text": "Locked", "is_correct": true},
+          {"text": "Unlocked, so colleagues can help", "is_correct": false},
+          {"text": "Switched off at the wall", "is_correct": false},
+          {"text": "With the password on a sticky note", "is_correct": false}]},
+        {"text": "Which is the strongest password?", "answers": [
+          {"text": "A long passphrase of unrelated words", "is_correct": true},
+          {"text": "Your birthday", "is_correct": false},
+          {"text": "password123", "is_correct": false},
+          {"text": "Your pet's name", "is_correct": false}]},
+        {"text": "Data you no longer need should be…", "answers": [
+          {"text": "deleted according to the retention rules", "is_correct": true},
+          {"text": "kept forever, just in case", "is_correct": false},
+          {"text": "copied to a private USB stick", "is_correct": false},
+          {"text": "printed and filed", "is_correct": false}]},
+        {"text": "Who may see a colleague's personnel file?", "answers": [
+          {"text": "Only people who need it for their job", "is_correct": true},
+          {"text": "Every employee", "is_correct": false},
+          {"text": "Anyone who asks politely", "is_correct": false},
+          {"text": "Customers", "is_correct": false}]},
+        {"text": "You find a USB stick in the car park. You…", "answers": [
+          {"text": "hand it to IT without plugging it in", "is_correct": true},
+          {"text": "plug it in to find the owner", "is_correct": false},
+          {"text": "keep it", "is_correct": false},
+          {"text": "format it on your work laptop", "is_correct": false}]}
+      ]
+    }
+  ]
+}
