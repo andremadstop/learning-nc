@@ -3591,7 +3591,7 @@ OC.L10N.register(
     "Lernende: {n}" : "Учащихся: {n}",
     "{wrong} von {total} Antworten falsch ({rate} %)" : "Неверных ответов: {wrong} из {total} ({rate} %)",
     "Noch keine falsch beantwortete Frage mit mindestens {n} Antworten." : "Пока нет вопросов с неверными ответами, на которые ответили не менее {n} раз.",
-    "Noch keine schwachen Fragen. Eine Frage erscheint hier ab {n} Antworten." : "Слабых вопросов пока нет. Вопрос появится здесь, когда на него ответят {n} раз.",
+    "Noch keine schwachen Fragen. Eine Frage erscheint hier ab {n} Antworten." : "Слабых вопросов пока нет. Вопрос появится здесь, когда число ответов на него достигнет {n}.",
     "Erfolgsquote je Kapitel über alle Lernenden, Fragen ohne Kapitel je Pool. Die schwächsten zuerst." : "Доля правильных ответов по главам у всех учащихся, вопросы без главы — по пулам. Сначала самые слабые.",
     "Methodisch, analytisch. Denkt in OSI-Schichten. Stark bei Routing und Topologie-Design." : "Методичный, аналитичный. Мыслит уровнями OSI. Силён в маршрутизации и проектировании топологий.",
     "Routing, VLANs, Subnetting" : "Маршрутизация, VLAN, подсети",
