@@ -1,0 +1,73 @@
+# Gate 1 on every push and pull request: the same checks the local pre-commit/pre-push hooks run.
+# No secrets: signing, releases and the App Store stay on the maintainer's machine.
+name: CI
+
+on:
+  push:
+    branches: ['**']   # branches only: the Forgejo push mirror also pushes tags
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash   # explicit bash = -eo pipefail
+
+jobs:
+  frontend:
+    name: Frontend (ESLint, Vitest, build, i18n)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No .nvmrc / engines in app/package.json: this is the Node the maintainer gates with locally.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: npm ci
+        working-directory: app
+        run: npm ci --no-audit --no-fund
+
+      # Same command as the hook (gate_eslint): errors fail, warnings are allowed.
+      - name: ESLint (0 errors)
+        working-directory: app
+        run: npx eslint --ext .js,.vue src/ --quiet
+
+      - name: Vitest
+        working-directory: app
+        run: npm run test
+
+      - name: Build
+        working-directory: app
+        run: npm run build
+
+      # Six gates: key parity, .js==.json, placeholders, source coverage, VirtuProf catalogue,
+      # consent locales. Needs python3 (stdlib only) and node — both on the runner.
+      - name: i18n gates
+        run: ./scripts/check-i18n-parity.sh
+
+  php:
+    name: PHP (PHPStan L5, PHPUnit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Throwaway nextcloud:33 container (pinned digest), composer.lock install, PHPStan +
+      # PHPUnit with --fail-on-skipped; the snapshot is `git archive HEAD`, i.e. exactly the
+      # commit under test (on a pull request: the merge commit).
+      - name: gate-container.sh all --ref HEAD
+        run: ./scripts/gate-container.sh all --ref HEAD
