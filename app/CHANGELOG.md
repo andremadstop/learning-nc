@@ -2,6 +2,125 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.12.0] - 2026-11-15 — Mandatory training: certificates, exam scope and a cleaner UI without gamification
+
+Reported by alphalib-g in GitHub #36–#61: an organisation running an annual mandatory training
+with certificates, without gamification and without AI, walked the whole path from course to
+certificate to audit evidence. Thanks to @alphalib-g for 26 detailed reports.
+
+> **Administrators, please read:**
+> - **Instructors are several Nextcloud groups and individual people** (#60). Administration →
+>   Learning → "Instructors (groups and people)" replaces the single group field and picks from
+>   the instance's own groups and accounts. The existing group stays in force and is preselected;
+>   with nothing selected, `learning-instructors` applies; Nextcloud admins always count. A
+>   deleted account leaves the list, so a new account reusing the user name (LDAP, SSO) does not
+>   become an instructor. A client that still sends `instructor_group` replaces all instructor
+>   groups with that one group (the people stay).
+> - **Exam attempts count per course** (#47). The daily attempt limit and the cooldown count per
+>   user, pool **and course** ("Exam attempts per 24h (per user, pool and course)"). A try in the
+>   pool window or in another course sharing the pool no longer blocks the counting exam. A
+>   running exam still locks the pool's other sessions.
+> - **Exam scope per pool and course** (#47). Pool rules have "Exam in this course" (Questions per
+>   exam, Time limit (minutes)), Course rules a default "Exam scope (default for all pools)". The
+>   server enforces both and draws the questions at random on every attempt; a question count
+>   without a time limit gets 90 s per drawn question. A configured question count may be below
+>   the old minimum of 45. Leave everything empty and the exam behaves as before. A course exam
+>   without a pass mark shows a percentage, not the 720/900 scale.
+> - **Course tabs look different, in every course** (#46): the main tabs use the app's filled tab
+>   look, and every tab bar is only as wide as its labels. This also applies with gamification on.
+> - **Game modes follow gamification** (#36, #51, #53). With gamification off, League, Arena and
+>   Adventure are hidden for everyone, instructors included, learners get no leaderboard (also not
+>   from the API), and the pool window has no Arena. New courses created while gamification is
+>   off start with Duel, Gameshow and League off; existing courses are not changed. Instructors
+>   keep a leaderboard sorted by mastered cards.
+> - **Course switches are enforced by the server** (#39). With Training, Leitner or the exam off
+>   in Course rules, the server refuses that mode to a learner who reaches the pool only through
+>   such courses. With Leitner off, the pool also leaves the Smart Queue, the due reminders and the
+>   calendar feed. Instructors, pool owners and people the pool is shared with are not affected.
+> - **New course switches: Class register and Learning partner** (#36, #40), both on by default.
+>   Participants opens on My Progress and disappears for learners when nothing is left in it.
+> - **Privacy information 1.3** (#38): the rights and data categories are translated, and the
+>   withdrawal of consent and the complaint right are listed. Only the version badge changes;
+>   nobody is asked to confirm again.
+> - **CSV exports use the exporter's language** (#45, #48): the certificate report, at-risk and
+>   class summary CSVs translate their column names, statuses and reasons and are UTF-8 with a
+>   byte-order mark. Anything that parses them by column name needs adjusting. The pool CSV keeps
+>   its column names.
+
+### Added
+- **Course elements on the certificate** (#43): new certificates list the course's required pools
+  under "Course elements", signed into the credential as Open Badges alignments, on screen, in
+  print, in the instructor copies and on the public verification page. Earlier certificates stay
+  unchanged.
+- **Certificate copies for instructors** (#42): the compliance report has View and Download (JSON)
+  per certificate and "Download all as JSON (ZIP)" for the filtered list; every access is written
+  to the audit log. The PDF is View → Print.
+- **"Ask a question"** in the course's Communication area (#59): learners reach the course's
+  instructors without VirtuProf. Instructors are notified of new questions, learners of answers
+  and changed answers.
+- **Exam scope** per pool rule with a course default (#47), see above.
+- **Instructor picker** with groups and people (#60), see above.
+- Instructors edit announcements in the feed; an edited announcement is marked "edited" (#40).
+- **Completion & certificate** is a top-level tab for learners in courses with a certificate or a
+  released summary, with the recent sessions and, where My Progress is gone, the accuracy per pool
+  (#36).
+- Course switches for the Class register and Learning partner (#36, #40); Learning partner has an
+  empty state that leads to the learning profile.
+
+### Changed
+- **Gamification off means no game parts for learners** (#36): no XP, levels, streaks, badges or
+  daily challenge in My Progress, Completion, Class register, Today, the onboarding, the VirtuProf
+  help, the personal settings and the guides; the server no longer sends XP and level to learners.
+  My Progress is hidden when gamification and Leitner are off and the Completion tab exists. Game
+  modes sit in a collapsed "Game modes" area in Course rules. "Last active" and the at-risk
+  warnings work with gamification off.
+- **Leaderboard names** (#49): no more guessed first names. Instructors and the learner see the
+  full display name; other learners see it only for a visible Class register profile in a course
+  with the Class register on, otherwise initials. Greetings use the whole display name.
+- **Exam tab** (#39): shows the pass mark and, per required pool, the best result and whether it
+  is passed; no Smart Queue inside a course and no "Required" badge on the Exam tab.
+- **Communication** (#40): Announcements holds only the form, published announcements live in the
+  Feed; "Requests" is now "Questions from learners" and course questions reach the course's
+  instructors, also from a pool opened from the course.
+- **Pool window** (#46): Arena only with gamification on; the exam names questions and minutes and
+  shows a percentage; "Simulators only" only for pools that hold simulations.
+- **Settings pages** (#55–#58): Nextcloud's page margin, full-width inputs, switches next to their
+  labels with accessible names; the "Virtual assistant" switch heads the VirtuProf section and
+  hides its settings while off; the learning profile texts say who sees what; the new-skins hint
+  shows only with the assistant on, leads to the character selection and can be closed.
+- **Privacy information** (#38, #61): "Your rights" and the data categories in all six languages,
+  the categories in one column with compact facts, collapsed in the personal settings, without the
+  unexplained count badge.
+- **"Show worst questions"** (#44) lists, per chapter or per pool, the five questions answered
+  wrong most often from 2 answers on, and says why a row is empty.
+- **Adventure** (#52): characters, fallback campaigns and the abort dialog are translated; outside
+  German the tab says that the campaign stories are German-only.
+- "Save certificate" and the certificate card are gone in courses without certification (#54).
+
+### Fixed
+- **"CSRF check failed"** on the certificate download, the compliance report and at-risk CSVs, the
+  class register vCard, "Download my data" and the pool CSV/JSON export (#41, #45). The report CSV
+  follows the applied filter, like the table and the ZIP.
+- **Certificate print** puts the whole certificate on one A4 page, also with Ctrl+P and in dark
+  mode; the print style no longer blanks other prints (#41).
+- **Contrast**: status badges in the compliance flow, the learner progress, the question list and
+  learner questions reach WCAG AA in light and dark mode; the Instructor pill in the class register
+  is readable in dark mode (#37, #40).
+- Old "new pool" feed entries show in the reader's language (#48).
+- "Make visible in course" is offered only to enrolled learners and sets the state it names (#50).
+- An empty Arena tab no longer shows for admins and instructors (#51, #53).
+- The Skill Map no longer lets its circles fall out of view (#36).
+- Instructors who are not administrators no longer land on the admin settings; "Back to courses"
+  leaves the course's address; celebrations no longer start a Web Worker that the CSP forbids (#36).
+- Right-to-left layouts: dashboard bars, feed times, import rows and the tab arrow keys follow the
+  reading direction (#37, #38, #46).
+- Translations in the class register, communication, progress, summary, leaderboard, exam scope
+  and CSV texts in French, Russian, Arabic and Ukrainian (#40, #44, #47, #48, #50).
+- Screen readers no longer read the category triangle aloud, and the pool, import and generator
+  tab lists have a name (#46, #61).
+- A deleted announcement leaves the feed; an upgrade removes entries left by earlier deletions
+  (repair step) (#40).
+
 ## [5.11.0] - 2026-11-14 — Renewal window and audit follow-up
 
 ### Changed
