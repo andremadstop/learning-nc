@@ -33,6 +33,8 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **[User & Administrator Manual](docs/MANUAL.md)** — the complete workflow end to end:
   course → learning materials → pool → questions → students → test attempt → results →
   completion, plus admin setup, `occ` commands, compliance features and translations.
+- [Guide: annual mandatory training with certificates](docs/guides/annual-mandatory-training.md)
+  — one course, a yearly exam, certificates with renewal and audit evidence; no AI, no gamification.
 - [Bulk question import from PDF](docs/import-pool-workflow.md) — get an existing question
   catalogue into the app without typing it.
 
