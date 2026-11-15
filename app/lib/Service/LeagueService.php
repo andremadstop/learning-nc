@@ -34,13 +34,26 @@ class LeagueService {
         private CourseMemberMapper $courseMemberMapper,
         private DuelSessionMapper $duelSessionMapper,
         private IDBConnection $db,
-        private IUserManager $userManager
+        private IUserManager $userManager,
+        // GitHub #70: the admin's gamification switch. Optional so older callers keep working;
+        // without it the league counts as on, as before.
+        private ?XpService $xpService = null
     ) {
+    }
+
+    /**
+     * GitHub #70: with gamification off the competition area is gone for every role, and the
+     * league reads hand out no standings either (as getLeaderboard() does). The access check runs
+     * first, so a non-member still gets its error.
+     */
+    private function gamificationOff(): bool {
+        return $this->xpService !== null && !$this->xpService->isGamificationEnabled();
     }
 
     public function getOverview(int $courseId, string $userId): array {
         $courseContext = $this->courseService->findById($courseId, $userId);
-        $season = $this->getLatestSeason($courseId);
+        $gamificationOff = $this->gamificationOff();
+        $season = $gamificationOff ? null : $this->getLatestSeason($courseId);
 
         $overview = [
             'season' => null,
@@ -48,8 +61,8 @@ class LeagueService {
             'incoming_challenges' => [],
             'outgoing_challenges' => [],
             'cl' => null,
-            'can_manage' => (bool)($courseContext['is_instructor'] ?? false),
-            'can_create_season' => (bool)($courseContext['is_instructor'] ?? false),
+            'can_manage' => !$gamificationOff && (bool)($courseContext['is_instructor'] ?? false),
+            'can_create_season' => !$gamificationOff && (bool)($courseContext['is_instructor'] ?? false),
             'config' => [
                 'season_days' => self::SEASON_DURATION_DAYS,
                 'challenge_days' => self::CHALLENGE_TIMEOUT_DAYS,
@@ -251,6 +264,9 @@ class LeagueService {
 
     public function getTable(int $courseId, int $seasonId, string $userId): array {
         $this->courseService->findById($courseId, $userId);
+        if ($this->gamificationOff()) {
+            return [];
+        }
         $season = $this->getSeasonForCourse($courseId, $seasonId);
         $this->applyForfeits($season);
         return $this->buildStandings($season, $userId);
@@ -258,6 +274,9 @@ class LeagueService {
 
     public function getChampionsLeague(int $courseId, int $seasonId, string $userId): array {
         $this->courseService->findById($courseId, $userId);
+        if ($this->gamificationOff()) {
+            return ['status' => 'not_available'];
+        }
         $season = $this->getSeasonForCourse($courseId, $seasonId);
         $this->applyForfeits($season);
         return $this->buildChampionsLeague($season, $userId) ?? ['status' => 'not_available'];
