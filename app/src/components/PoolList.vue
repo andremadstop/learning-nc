@@ -1090,9 +1090,12 @@ export default {
 
 .sq-icon { font-size: 20px; }
 .sq-count {
-  padding: 2px 10px;
+  padding: 1px 9px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
+  /* GitHub #64: a white veil lightened the button colour under the count (4.09:1); an outline
+     keeps the button's own text/background pair in light and dark */
+  border: 1px solid currentColor;
+  background: transparent;
   font-size: 13px;
 }
 

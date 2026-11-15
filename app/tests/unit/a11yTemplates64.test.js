@@ -167,6 +167,13 @@ describe('#64 template accessibility', () => {
 		expect(offenders).toEqual([])
 	})
 
+	it('the due-cards count on the Smart Queue button lays no white veil over the button colour', () => {
+		const style = FILES.find((f) => f.rel === 'components/PoolList.vue').descriptor.styles.map((st) => st.content).join('\n')
+		const rule = style.match(/\.sq-count\s*\{[^}]*\}/)
+		expect(rule).not.toBeNull()
+		expect(rule[0]).not.toMatch(/background:\s*rgba\(255,\s*255,\s*255/)
+	})
+
 	it('the VirtuProf panel and dock kickers use a text colour with enough contrast', () => {
 		const offenders = []
 		for (const file of FILES) {
