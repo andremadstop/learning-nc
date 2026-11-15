@@ -431,7 +431,9 @@ async function sweepPersona(browser, persona, opts = {}) {
 	const setPractise = async (on) => {
 		const input = page.locator('.pool-practise-switch input').first()
 		if (!(await input.count()) || (await input.isChecked()) === on) return false
-		await page.locator('.pool-practise-switch label').first().click()
+		// @nextcloud/vue 9 renders the switch as <span><input> + <span class="…__content"></span>,
+		// without a <label>: click the visible text, as a person would.
+		await page.locator('.pool-practise-switch .checkbox-radio-switch__content').first().click()
 		await settle(page)
 		return true
 	}
