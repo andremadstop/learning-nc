@@ -335,7 +335,7 @@
               :fsrsDetailedStats="fsrsDetailedStats"
               :gamification-enabled="gamificationEnabled"
               :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
-              @back="selectedCourse = null"
+              @back="backToCourseList"
               @openPool="openPoolFromCourse"
               @open-tool="openCourseTool"
               @clearPresetDuel="clearVirtuProfDuel"
@@ -1401,6 +1401,12 @@ export default {
         return { name: 'virtuprof' };
       }
       return null;
+    },
+    // Persona sweep (#36): "Back to courses" only cleared selectedCourse, so the address bar kept
+    // /courses/<id>/<tab>: a reload or a bookmark reopened the course that was just left. The
+    // route is the one source; its watcher (applyRouteState) clears the course.
+    backToCourseList() {
+      this.pushAppRoute({ name: 'courses' });
     },
     pushAppRoute(location, replace = false) {
       if (!this.$router || !location) {
