@@ -40,6 +40,7 @@ function showHint(state = {}) {
 		loading: false,
 		skinHintClosed: false,
 		form: { virtuProfEnabled: true },
+		virtuProfAiEnabled: true,
 		...state,
 	})
 }
@@ -92,6 +93,12 @@ describe('skin-picker hint v440 — PersonalSettings.showSkinPickerHint', () => 
 	// GitHub #57: the skins belong to VirtuProf; with the assistant off the hint pointed at nothing
 	it('stays hidden while the virtual assistant is off and does not start its window', () => {
 		expect(showHint({ form: { virtuProfEnabled: false } })).toBe(false)
+		expect(localStorage.getItem(SHOWN_KEY)).toBeNull()
+	})
+
+	// GitHub #70: with AI off the character picker is hidden, the hint would point at nothing
+	it('stays hidden while the admin has AI off and does not start its window', () => {
+		expect(showHint({ virtuProfAiEnabled: false })).toBe(false)
 		expect(localStorage.getItem(SHOWN_KEY)).toBeNull()
 	})
 

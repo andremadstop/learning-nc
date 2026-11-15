@@ -6,7 +6,9 @@
         <NcButton type="button" variant="secondary" @click="openStarterDialog">
           {{ t('learning', 'Starter-Pool hinzufügen') }}
         </NcButton>
-        <NcButton type="button" variant="secondary" @click="showPoolGenerator = true">
+        <!-- GitHub #70: the generator writes questions with AI; with AI off it only said that no
+             provider is set up. Its CSV/JSON tab is the same as "Pools importieren" and Manage. -->
+        <NcButton v-if="aiAvailable" type="button" variant="secondary" class="pool-list-generate" @click="showPoolGenerator = true">
           {{ t('learning', 'Fragen generieren') }}
         </NcButton>
         <NcButton type="button" variant="secondary" class="pool-list-import-pools" @click="openPoolImport">
@@ -456,6 +458,9 @@ export default {
       poolSearchResults: [], // Client-side filtered pools
       questionSearchResults: [], // API results for questions
       showPoolGenerator: false,
+      // Whether AI can generate questions (GET /api/ai/available, as QuestionList asks). Off until
+      // the server says so: a failed read hides the generator rather than offering it (#70).
+      aiAvailable: false,
       showPoolImport: false,
       showDeleteConfirm: false,
       poolToDelete: null,
@@ -529,6 +534,12 @@ export default {
     studentViewActive() {
       this.loadCoursePools();
     },
+    userRole: {
+      immediate: true,
+      handler(role) {
+        if (role === 'instructor') this.loadAiAvailable();
+      },
+    },
   },
   mounted() {
     this.loadPools();
@@ -546,6 +557,14 @@ export default {
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
+    async loadAiAvailable() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/ai/available'));
+        this.aiAvailable = r.data?.available === true;
+      } catch (e) {
+        this.aiAvailable = false;
+      }
+    },
     moveTablistFocus,
     emptyForm() {
       return {

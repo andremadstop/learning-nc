@@ -38,8 +38,10 @@
       </div>
 
       <!-- AI consent: the tile only opens the consent dialog; the choice becomes "yes" once the
-           server has stored the consent (AiConsentPrompt is the only write path) -->
-      <div class="onb-tile-group">
+           server has stored the consent (AiConsentPrompt is the only write path).
+           GitHub #70: with AI off (no recipient) and no consent on record there is nothing to choose;
+           mounted() already chose "no", so the question is left out. -->
+      <div v-if="showAiQuestion" class="onb-tile-group">
         <h3 class="onb-tile-group__label">{{ t('learning', 'NOVA KI-Erklaerungen?') }}</h3>
         <div class="onb-tile-group__grid onb-tile-group__grid--two">
           <template v-for="tile in aiConsentTiles" :key="tile.id">
@@ -136,6 +138,7 @@ export default {
 
   computed: {
     aiAvailable() { return !this.statusLoaded || !!this.providerName },
+    showAiQuestion() { return this.aiAvailable || this.consentStored || !!this.error },
     isStudent() { return this.store.role === 'student' },
     goalTiles() { return GOAL_TILES },
     intensityTiles() { return INTENSITY_TILES },

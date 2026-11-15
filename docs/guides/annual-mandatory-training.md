@@ -33,7 +33,7 @@ Open **Administration settings → Learning**.
    ```
    When it worked, the page says "Signing key generated. Certificates are now active."
 2. **Gamification enabled:** switch it **off**, and do it **before you create the course**. A course created while gamification is off starts with Duel, Gameshow, League and Adventure switched off. Courses that already exist are not changed. With gamification off, learners see no XP, levels, streaks or badges, and the whole competition area (leaderboard, League, Arena, Adventure) is hidden for everyone, instructors included.
-3. **AI provider:** choose **Disabled**. This hides the AI chat, the "Knowledge" tab and the "Extract" buttons.
+3. **AI provider:** choose **Disabled**. This hides the AI chat (the "ExplainBot" tab), the "Knowledge" tab, the "Extract" buttons and "Generate questions". In the personal settings the voice and character options and the AI consent section are left out too; a consent someone gave earlier can still be revoked there.
 4. **Daily Challenge enabled:** switch it off if you don't want it.
 5. **Instructors (groups and people):** if the person who runs the training is not a Nextcloud administrator, add that person, or a group they belong to. You can pick several groups and individual people. They can then create courses and question pools. Nextcloud administrators always count as instructors. If nothing is selected, the group `learning-instructors` applies. Leave **Allow course-based instructor fallback** switched off (the page recommends this).
 6. **Exam attempts per 24h (per user, pool and course)** (default 5) and **Exam cooldown (minutes)** (default 10): change these if you want a stricter or looser retake rule. Learners see these numbers.

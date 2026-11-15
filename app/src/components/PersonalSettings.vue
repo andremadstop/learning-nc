@@ -102,6 +102,10 @@
       </div>
 
       <template v-if="form.virtuProfEnabled">
+        <!-- GitHub #70: speech output, push-to-talk, voice language and the character belong to
+             the AI assistant; with AI off they set nothing anyone hears or sees in a chat. They stay
+             stored (save() sends them unchanged) and come back when the admin switches AI on. -->
+        <template v-if="virtuProfAiEnabled">
         <p class="section-desc">{{ t('learning', 'Control whether VirtuProf reads answers aloud and whether push-to-talk is available in the chat bubble.') }}</p>
 
         <div class="switch-row">
@@ -121,6 +125,7 @@
             {{ t('learning', 'Voice input (push-to-talk)') }}
           </NcCheckboxRadioSwitch>
         </div>
+        </template>
 
         <div class="switch-row">
           <NcCheckboxRadioSwitch
@@ -132,6 +137,7 @@
           </NcCheckboxRadioSwitch>
         </div>
 
+        <template v-if="virtuProfAiEnabled">
         <div class="field-row">
           <label for="virtuprof-voice-lang">{{ t('learning', 'Voice language') }}</label>
           <select id="virtuprof-voice-lang" v-model="form.virtuProfVoiceLang" class="nc-input">
@@ -168,6 +174,7 @@
             </template>
           </NcSelect>
         </div>
+        </template>
       </template>
 
       <!-- NcNoteCard has no action prop or event; the retry button lives in its slot (audit #104). -->
@@ -400,6 +407,10 @@
         </div>
       </template>
 
+      <!-- GitHub #70: with AI off and no consent on record there is nothing to agree to and nothing
+           to revoke, so the section is left out. A stored consent (or an unreadable status) keeps it:
+           revoking must stay possible whatever the AI switch says. -->
+      <template v-if="showConsentSection">
       <hr class="section-divider" />
 
       <h3>{{ t('learning', 'KI-Einwilligung') }}</h3>
@@ -433,6 +444,7 @@
             {{ t('learning', 'KI-Einwilligung widerrufen') }}
           </NcButton>
         </div>
+      </template>
       </template>
 
       <hr class="section-divider" />
@@ -566,6 +578,9 @@ export default {
       consentProvider: '',
       // The status says ai_enabled: false when the admin switched AI off (GitHub #36).
       consentAiOff: false,
+      // VirtuProf's state (GET /api/virtuprof/state ai_enabled): whether the admin's AI is
+      // available. Default on, so a failed read leaves the settings as they were (GitHub #70).
+      virtuProfAiEnabled: true,
       consentRecipient: null,
       consentLoaded: false,
       consentRevoking: false,
@@ -608,6 +623,12 @@ export default {
     consentCanRevoke() {
       return this.consentState !== 'none'
     },
+    // GitHub #70: hidden only when the status says AI is off and there is no consent to revoke;
+    // the answer to a revocation just made stays visible.
+    showConsentSection() {
+      if (this.consentRevoked || this.consentError) return true
+      return !(this.consentAiOff && !this.consentCanRevoke)
+    },
     // Who receives AI data right now, for the privacy section. Null until the status is read (no
     // guess), {active: false} when AI is switched off.
     privacyAiNotice() {
@@ -620,7 +641,7 @@ export default {
       // GitHub #57: the skins are VirtuProf's; with the assistant off the hint points at nothing.
       // Checked before the 7-day window starts, so it starts when the hint can actually be seen.
       // A failed load leaves virtuProfEnabled at its default (true), not the user's value.
-      if (this.skinHintClosed || this.loading || this.loadFailed || !this.form.virtuProfEnabled) return false
+      if (this.skinHintClosed || this.loading || this.loadFailed || !this.form.virtuProfEnabled || !this.virtuProfAiEnabled) return false
       if (this.hintDismissed(HINT_ID)) return false
 
       const SHOWN_KEY = `learning-hint-${HINT_ID}-shown-at`
@@ -805,6 +826,7 @@ export default {
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
         this.form.contentLanguage = ['de', 'en', 'ru', 'ar', ''].includes(data.content_language) ? data.content_language : ''
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
+        this.virtuProfAiEnabled = virtuProfData.ai_enabled !== false
         this.form.virtuProfTtsEnabled = virtuProfData.tts_enabled === true
         this.form.virtuProfSttEnabled = virtuProfData.stt_enabled === true
         this.form.botSoundsEnabled = virtuProfData.bot_sounds_enabled === true

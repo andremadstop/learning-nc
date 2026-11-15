@@ -106,7 +106,10 @@ describe('OnbProfileTiles consent tile', () => {
 		app.mount(host)
 	}
 
-	const consentTiles = () => [...host.querySelectorAll('.onb-tile-group')].at(-1).querySelectorAll('button.onb-tile')
+	const consentTiles = () => {
+		const group = [...host.querySelectorAll('.onb-tile-group')].find((g) => g.textContent.includes('NOVA KI-Erklaerungen?'))
+		return group ? group.querySelectorAll('button.onb-tile') : []
+	}
 	const acceptButton = () => host.querySelector('.actions button:last-child')
 
 	beforeEach(() => {
@@ -300,11 +303,19 @@ describe('OnbProfileTiles consent tile', () => {
 		expect(store.profileChoices.aiConsent).toBe('yes')
 	})
 
-	it('AI switched off: no consent tile, the choice is "without AI"', async () => {
+	it('AI switched off: no AI question at all, the choice is "without AI" (GitHub #70)', async () => {
 		axios.get.mockResolvedValue({ data: status({ recipient: null, ai_enabled: false }) })
 		mountTiles()
 		await flush()
-		expect(consentTiles()).toHaveLength(1)
+		expect(consentTiles()).toHaveLength(0)
+		expect(host.textContent).not.toContain('NOVA KI-Erklaerungen?')
 		expect(store.profileChoices.aiConsent).toBe('no')
+	})
+
+	it('AI switched off with a consent still on record: the "without AI" tile stays to revoke it (GitHub #70)', async () => {
+		axios.get.mockResolvedValue({ data: status({ recipient: null, ai_enabled: false, ai_consent_version: '3.0' }) })
+		mountTiles()
+		await flush()
+		expect(consentTiles()).toHaveLength(1)
 	})
 })
