@@ -36,7 +36,9 @@ let md = `# Persona sweep — ${new Date().toISOString().slice(0, 16).replace('T
 md += `- App snapshot: \`${state.COMMIT || '?'}\` (${state.REF || 'HEAD'}), Nextcloud 33 + PostgreSQL 16, English UI\n`
 md += `- Gamification: **${state.GAMIFICATION || 'off'}**, AI: off, Leitner: off in the course, certification 75 % with two required pools\n`
 md += `- Personas: ${personas.join(', ')}\n`
+const toasts = stations.flatMap((s) => (s.toasts || []).map((t) => `${s.persona}: ${s.station} — ${t}`))
 md += `- Stations: ${stations.length}, with findings: ${withFindings.length}, buttons clicked: ${stations.reduce((n, s) => n + (s.clicked || 0), 0)}\n`
+md += `- Toasts seen (all kinds): ${toasts.length}${toasts.length ? '' : ' — **the toast check saw none, so "success toast without a write request" is unproven for this run**'}\n`
 md += '- Contrast (axe-core): **not checked** — axe-core is not in app/node_modules and the sweep installs nothing.\n'
 md += '- The seed enrols the administrator as co-instructor of the course (a Nextcloud admin who is not a member does not see it).\n'
 md += '- Destructive buttons (delete, remove, revoke, unenrol, archive, reset, generate/rotate key) and exam starts are never clicked by the generic sweep.\n\n'
@@ -66,6 +68,7 @@ for (const kind of Object.keys(KINDS).concat(Object.keys(counts).filter((k) => !
 	md += '\n'
 }
 
+if (toasts.length) md += `## Toasts seen\n\n${toasts.map((t) => `- ${esc(t)}`).join('\n')}\n\n`
 md += '## Stations\n\n| Persona | Station | URL | Clicked | Findings | Screenshot |\n|---|---|---|---|---|---|\n'
 for (const s of stations) {
 	md += `| ${esc(s.persona)} | ${esc(s.station)} | \`${esc(s.url)}\` | ${s.clicked || 0} | ${s.findings.length ? s.findings.map((f) => f.kind).join(', ') : '—'} | ${s.screenshot ? `shots/${s.screenshot}` : ''} |\n`

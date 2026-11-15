@@ -12,7 +12,8 @@ const OUT = path.join(__dirname, 'out')
 const SHOTS = path.join(OUT, 'shots')
 const DOWNLOADS = path.join(OUT, 'downloads')
 const AUTH = path.join(OUT, 'auth')
-const FINDINGS = path.join(OUT, 'findings.json')
+// A filtered run (PERSONA_STATIONS) writes its own file and leaves the full run's findings alone.
+const FINDINGS = path.join(OUT, process.env.PERSONA_STATIONS ? 'findings-filtered.json' : 'findings.json')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
@@ -137,6 +138,9 @@ async function checkToasts(page, rec, since, action) {
 		const key = `${t.text}|${t.success}|${t.error}`
 		if (rec.toastsSeen.has(key)) continue
 		rec.toastsSeen.add(key)
+		// Every toast is recorded, not only the suspicious ones: a detector that never sees a toast
+		// would otherwise look like an app without problems.
+		;(rec.current.toasts ||= []).push(`${t.success ? 'success' : t.error ? 'error' : 'other'}: ${t.text.slice(0, 100)}`)
 		const reqs = rec.requests.filter((r) => r.t >= since - 300)
 		if (t.error) rec.add('error-toast', `after "${action}": ${t.text.slice(0, 160)}`)
 		if (t.success) {
