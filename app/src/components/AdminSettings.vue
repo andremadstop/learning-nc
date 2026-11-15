@@ -92,6 +92,9 @@
       <!-- GitHub #60: several groups and individual people, picked from Nextcloud -->
       <div class="field-row">
         <InstructorPicker v-model="form.instructors" :disabled="!instructorsLoaded" />
+        <p v-if="instructorsError" class="field-help" role="alert">
+          {{ instructorsError }}
+        </p>
         <small class="field-help">
           {{ t('learning', 'Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.') }}
         </small>
@@ -403,6 +406,7 @@ export default {
       // GitHub #60: the instructor list is only saved after it was loaded; saving an unloaded
       // (empty) list would replace the configured groups with the default group.
       instructorsLoaded: false,
+      instructorsError: '',
       // GitHub #35: null = not reported by the server; false shows the pdftotext hint
       pdfTextExtractionAvailable: null,
       certIssuerInitializing: false,
@@ -492,10 +496,11 @@ export default {
       this.loading = true
       this.error = ''
       try {
-        const [adminResponse, toolsResponse, instructorsResponse] = await Promise.all([
+        // GitHub #60: the instructor list loads on its own; failing, it costs the picker, not the page
+        const instructorsRequest = this.loadInstructors()
+        const [adminResponse, toolsResponse] = await Promise.all([
           axios.get(generateUrl('/apps/learning/api/settings/admin')),
           axios.get(generateUrl('/apps/learning/api/settings/tools')),
-          axios.get(generateUrl('/apps/learning/api/settings/admin/instructors')),
         ])
         const data = adminResponse.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge_enabled || 'yes') === 'yes'
@@ -503,8 +508,7 @@ export default {
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
         this.form.enabledTools = this.normalizeEnabledTools(toolsResponse.data?.enabled_tools)
-        this.form.instructors = toOptions(instructorsResponse.data)
-        this.instructorsLoaded = true
+        await instructorsRequest
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
         this.form.examAttemptCooldownMinutes = this.normalizeCooldownMinutes(data.exam_attempt_cooldown_minutes)
@@ -531,6 +535,18 @@ export default {
         this.error = t('learning', 'Failed to load settings')
       } finally {
         this.loading = false
+      }
+    },
+    /** GitHub #60: never throws; instructorsLoaded stays false (picker disabled, list not saved) on failure. */
+    async loadInstructors() {
+      this.instructorsError = ''
+      try {
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/instructors'))
+        this.form.instructors = toOptions(res.data)
+        this.instructorsLoaded = true
+      } catch (e) {
+        this.instructorsLoaded = false
+        this.instructorsError = t('learning', 'Die Kursleitenden konnten nicht geladen werden.')
       }
     },
     async initCertIssuer() {

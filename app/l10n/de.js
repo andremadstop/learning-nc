@@ -3662,5 +3662,6 @@ OC.L10N.register(
     "Gruppe oder Person suchen …" : "Gruppe oder Person suchen …",
     "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“." : "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.",
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.",
+    "Die Kursleitenden konnten nicht geladen werden." : "Die Kursleitenden konnten nicht geladen werden.",
 },
 "nplurals=2; plural=(n != 1);");

@@ -112,6 +112,27 @@ describe('#60 admin page: instructor groups and people', () => {
 		expect(putBody('/apps/learning/api/settings/admin/instructors')).toBeNull()
 	})
 
+	it('a failing instructor list costs the picker, not the rest of the admin page', async () => {
+		mockGets({ instructorsFail: true })
+		axios.get.mockImplementation((url) => {
+			if (url.includes('/settings/tools')) {
+				return Promise.resolve({ data: { enabled_tools: [] } })
+			}
+			if (url.endsWith('/settings/admin/instructors')) {
+				return Promise.reject(new Error('500'))
+			}
+			return Promise.resolve({ data: { exam_attempt_cooldown_minutes: 0, exam_attempt_limit_per_day: 7 } })
+		})
+		const instance = createInstance()
+		await instance.load()
+		expect(instance.error).toBe('')
+		expect(instance.form.examAttemptLimitPerDay).toBe(7)
+		expect(instance.form.examAttemptCooldownMinutes).toBe(0)
+		expect(instance.instructorsLoaded).toBe(false)
+		expect(instance.instructorsError).toBe('Die Kursleitenden konnten nicht geladen werden.')
+		expect(instance.loading).toBe(false)
+	})
+
 	it('toInstructorPayload splits the picker options by type', () => {
 		const options = toOptions({ users: [{ id: 'g1', label: 'A user called g1' }], groups: [{ id: 'g1', label: 'Group g1' }] })
 		expect(toInstructorPayload(options)).toEqual({ groupIds: ['g1'], userIds: ['g1'] })

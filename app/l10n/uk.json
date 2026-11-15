@@ -3661,6 +3661,7 @@
         "Kursleitende (Gruppen und Personen)": "Викладачі (групи й люди)",
         "Gruppe oder Person suchen …": "Знайти групу або людину …",
         "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.": "Учасники цих груп і ці люди можуть створювати курси та пули запитань. Права адміністратора Nextcloud їм для цього не потрібні. Адміністратори Nextcloud завжди вважаються викладачами. Якщо нічого не вибрано, діє група «learning-instructors».",
-        "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.": "Якщо вимкнено (рекомендовано), глобальні права викладача мають лише вибрані вище групи й люди."
+        "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.": "Якщо вимкнено (рекомендовано), глобальні права викладача мають лише вибрані вище групи й люди.",
+        "Die Kursleitenden konnten nicht geladen werden.": "Не вдалося завантажити викладачів."
     }
 }
