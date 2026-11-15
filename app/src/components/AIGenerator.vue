@@ -324,7 +324,7 @@ export default {
 .preview-answers { display: grid; gap: 4px; }
 .preview-answer { font-size: 13px; padding: 4px 8px; border-radius: 4px; color: var(--color-text-maxcontrast); }
 .preview-answer.correct { color: var(--color-success); font-weight: 600; }
-.preview-explanation { font-size: 12px; color: var(--color-text-maxcontrast); margin-top: 6px; font-style: italic; }
+.preview-explanation { white-space: pre-line; font-size: 12px; color: var(--color-text-maxcontrast); margin-top: 6px; font-style: italic; }
 
 .preview-edit-input { margin-bottom: 6px; font-size: 13px; }
 .preview-edit-answer { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }

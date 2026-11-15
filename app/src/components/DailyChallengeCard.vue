@@ -281,6 +281,7 @@ export default {
   font-weight: 600;
 }
 .dc-explanation {
+  white-space: pre-line;
   padding: 10px 12px;
   background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background));
   border-radius: var(--border-radius);

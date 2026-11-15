@@ -41,7 +41,7 @@
             {{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
             — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
           </NcNoteCard>
-          <NcNoteCard v-if="currentItem.explanation" type="info">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -82,7 +82,7 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
           </div>
-          <NcNoteCard v-if="currentItem.explanation" type="info">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -107,7 +107,7 @@
               {{ displayCorrectAnswerTexts.join(', ') }}
             </template>
           </div>
-          <NcNoteCard v-if="currentItem.explanation" type="info">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -394,6 +394,8 @@ export default {
 </script>
 
 <style scoped>
+/* #66: explanations are authored with paragraphs (\n); keep them. */
+.question-explanation { white-space: pre-line; }
 .smart-queue { max-width: 700px; margin: 0 auto; }
 .sq-loading { text-align: center; padding: 60px 20px; }
 .sq-empty { text-align: center; padding: 60px 20px; }

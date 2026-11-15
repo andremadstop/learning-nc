@@ -294,6 +294,10 @@ export default {
   white-space: pre-wrap;
 }
 
+.original-explanation {
+  white-space: pre-line;
+}
+
 .original-scenario,
 .original-explanation {
   font-size: 14px;

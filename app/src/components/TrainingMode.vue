@@ -87,7 +87,7 @@
             — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
           </NcNoteCard>
           <NcNoteCard v-if="currentQuestion.explanation" type="info">
-            <strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}
+            <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span>
           </NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
@@ -136,7 +136,7 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts[0] || '' }}</div>
           </div>
-          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
@@ -171,7 +171,7 @@
             <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
             {{ displayCorrectAnswerTexts.join(', ') }}
           </div>
-          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
@@ -766,6 +766,8 @@ export default {
 </script>
 
 <style scoped>
+/* #66: explanations are authored with paragraphs (\n); keep them. */
+.question-explanation { white-space: pre-line; }
 .training-mode { max-width: 900px; margin: 0 auto; }
 .training-start { text-align: center; padding: 80px 20px; }
 .training-start h3 { font-size: 28px; margin-bottom: 12px; font-weight: 700; color: var(--color-main-text); }

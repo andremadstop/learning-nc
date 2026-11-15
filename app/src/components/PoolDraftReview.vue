@@ -245,6 +245,7 @@ export default {
   font-weight: 600;
 }
 .draft-card__explanation {
+  white-space: pre-line;
   font-size: 12px;
   color: var(--color-text-maxcontrast);
   margin-top: 6px;

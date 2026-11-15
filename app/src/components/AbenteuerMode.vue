@@ -3082,6 +3082,7 @@ export default {
 .ab-result-fail .ab-result-label { color: var(--lnc-danger); }
 
 .ab-result-explanation {
+  white-space: pre-line;
   margin: 8px 0 0;
   font-size: 0.85rem;
   color: var(--lnc-text-secondary);

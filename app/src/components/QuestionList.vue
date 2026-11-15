@@ -89,7 +89,7 @@
           </div>
         </div>
         <NcNoteCard v-if="question.explanation" type="info" class="explanation-card">
-          <strong>{{ t('learning', 'Erklärung:') }}</strong> {{ question.explanation }}
+          <strong>{{ t('learning', 'Erklärung:') }}</strong> <span class="question-explanation">{{ question.explanation }}</span>
         </NcNoteCard>
       </div>
     </div>
@@ -286,6 +286,8 @@ export default {
 </script>
 
 <style scoped>
+/* #66: explanations are authored with paragraphs (\n); keep them. */
+.question-explanation { white-space: pre-line; }
 .question-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; }
 .question-list-header h3 { flex: 1; margin: 0; font-size: 20px; color: var(--color-main-text); }
 .header-actions { display: flex; gap: 10px; }
