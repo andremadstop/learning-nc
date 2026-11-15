@@ -122,6 +122,7 @@
               :instructor-group="roleGroup"
               :student-view-active="studentViewActive"
               :role-load-failed="roleLoadFailed"
+              :gamification-enabled="gamificationEnabled"
               @selectPool="selectPool"
               @openSmartQueue="openSmartQueue"
               @openRemediation="openRemediation"
@@ -198,6 +199,7 @@
                 :poolId="selectedPool.id"
                 :totalQuestions="questionCount"
                 :contentLanguage="contentLanguage"
+                :gamification-enabled="gamificationEnabled"
                 @back="setMode(defaultPoolMode)"
               />
 
@@ -482,6 +484,7 @@ import { useOptionalCourseStore } from './stores/courseStore.js';
 import { defineAsyncComponent } from 'vue';
 import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
 import { useOptionalA11yStore } from './stores/a11yStore.js';
+import { setCelebrationGate } from './confetti.js';
 import { moveTablistFocus } from './utils/tablistKeydown.js';
 
 // GitHub #46: the pool window's learner modes, hidden for editors behind the practise switch.
@@ -690,6 +693,9 @@ export default {
     },
   },
   async created() {
+    // Fresh-eyes review (GitHub #36): no confetti with gamification off or "Ruhige Darstellung" on.
+    setCelebrationGate(() => this.gamificationEnabled !== false
+      && useOptionalA11yStore()?.animationsEnabled !== false);
     // Issue #10: hydrate student-view override before role fetch so the initial
     // render is consistent with the user's last choice (admins/instructors only).
     try {

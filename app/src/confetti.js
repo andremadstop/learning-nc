@@ -5,7 +5,20 @@ import confettiLib from 'canvas-confetti'
 // the console (found by the persona sweep, GitHub #36); the library then fell back to the main
 // thread anyway. One instance of our own, without the worker, created on first use.
 let instance = null
+// Fresh-eyes review (GitHub #36): confetti covered the result of a mandatory exam although the
+// admin had switched gamification off, and it ignored "Ruhige Darstellung" as well. App.vue sets
+// the gate from both switches; until it does, celebrations are allowed as before.
+let celebrationsAllowed = () => true
+
+/**
+ * @param {() => boolean} getter - true when celebrations may play (gamification on, animations on)
+ */
+export function setCelebrationGate(getter) {
+	celebrationsAllowed = typeof getter === 'function' ? getter : () => true
+}
+
 function confetti(options) {
+	if (!celebrationsAllowed()) return undefined
 	if (!instance) instance = confettiLib.create(null, { resize: true, useWorker: false })
 	return instance(options)
 }

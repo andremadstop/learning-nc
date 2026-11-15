@@ -3768,6 +3768,17 @@
         "Pflichtinhalte gesamt": "Required content total",
         "Dieses Video übernehmen": "Use this video",
         "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.": "This is not a valid video ID. Paste the address of the video or just its ID.",
-        "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.": "Student view: learners see their own progress here. You are an instructor of this course, so you have no progress of your own."
+        "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.": "Student view: learners see their own progress here. You are an instructor of this course, so you have no progress of your own.",
+        "Prüfung: {pool}": "Exam: {pool}",
+        "Quellen der Antwort": "Sources of the answer",
+        "KI-Funktionen sind auf dieser Installation ausgeschaltet. Es gibt nichts, dem du zustimmen musst.": "AI features are switched off on this installation. There is nothing you need to agree to.",
+        "Wer ist im Kurs und wer hilft bei welchen Themen?": "Who is in the course and who helps with which topics?",
+        "Diese Werkzeuge sind für deinen Kurs freigeschaltet und öffnen direkt den passenden Simulator.": "These tools are enabled for your course and open the matching simulator directly.",
+        "Karten in deinen Leitner-Boxen": "Cards in your Leitner boxes",
+        "Ausgestellte Zertifikate als CSV": "Issued certificates as CSV",
+        "Abdeckung aller Lernenden als CSV": "Coverage of all learners as CSV",
+        "Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.": "The percentages show cards mastered in Leitner learning. This course does not use Leitner, so they stay at 0 %. Exam results and certificates are under \"Completion & certificate\".",
+        "Lernende, die beim Üben auffallen, zum Beispiel lange nicht aktiv, niedrige Trefferquote oder viele kritische Karten (Fragen, die oft falsch beantwortet werden). Die Gründe stehen auf jeder Karte.": "Learners who stand out while practising, for example inactive for a long time, a low hit rate or many critical cards (questions that are often answered wrongly). The reasons are on each card.",
+        "Eingeschaltet erhalten auch alle, die in irgendeinem Kurs als Kursleitung eingetragen sind, globale Kursleitungsrechte, zum Beispiel neue Kurse anlegen und Fragenpools importieren. Ausgeschaltet (empfohlen) haben diese Rechte nur die oben gewählten Gruppen und Personen.": "When on, everyone who is entered as an instructor in any course also gets global instructor privileges, for example creating new courses and importing question pools. When off (recommended), only the groups and people chosen above have these privileges."
     }
 }

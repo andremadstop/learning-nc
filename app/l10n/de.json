@@ -3768,6 +3768,17 @@
         "Pflichtinhalte gesamt": "Pflichtinhalte gesamt",
         "Dieses Video übernehmen": "Dieses Video übernehmen",
         "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.": "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.",
-        "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.": "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen."
+        "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.": "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.",
+        "Prüfung: {pool}": "Prüfung: {pool}",
+        "Quellen der Antwort": "Quellen der Antwort",
+        "KI-Funktionen sind auf dieser Installation ausgeschaltet. Es gibt nichts, dem du zustimmen musst.": "KI-Funktionen sind auf dieser Installation ausgeschaltet. Es gibt nichts, dem du zustimmen musst.",
+        "Wer ist im Kurs und wer hilft bei welchen Themen?": "Wer ist im Kurs und wer hilft bei welchen Themen?",
+        "Diese Werkzeuge sind für deinen Kurs freigeschaltet und öffnen direkt den passenden Simulator.": "Diese Werkzeuge sind für deinen Kurs freigeschaltet und öffnen direkt den passenden Simulator.",
+        "Karten in deinen Leitner-Boxen": "Karten in deinen Leitner-Boxen",
+        "Ausgestellte Zertifikate als CSV": "Ausgestellte Zertifikate als CSV",
+        "Abdeckung aller Lernenden als CSV": "Abdeckung aller Lernenden als CSV",
+        "Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.": "Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.",
+        "Lernende, die beim Üben auffallen, zum Beispiel lange nicht aktiv, niedrige Trefferquote oder viele kritische Karten (Fragen, die oft falsch beantwortet werden). Die Gründe stehen auf jeder Karte.": "Lernende, die beim Üben auffallen, zum Beispiel lange nicht aktiv, niedrige Trefferquote oder viele kritische Karten (Fragen, die oft falsch beantwortet werden). Die Gründe stehen auf jeder Karte.",
+        "Eingeschaltet erhalten auch alle, die in irgendeinem Kurs als Kursleitung eingetragen sind, globale Kursleitungsrechte, zum Beispiel neue Kurse anlegen und Fragenpools importieren. Ausgeschaltet (empfohlen) haben diese Rechte nur die oben gewählten Gruppen und Personen.": "Eingeschaltet erhalten auch alle, die in irgendeinem Kurs als Kursleitung eingetragen sind, globale Kursleitungsrechte, zum Beispiel neue Kurse anlegen und Fragenpools importieren. Ausgeschaltet (empfohlen) haben diese Rechte nur die oben gewählten Gruppen und Personen."
     }
 }

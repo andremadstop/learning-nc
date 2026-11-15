@@ -37,7 +37,7 @@
     </NcNoteCard>
 
     <!-- XP Multiplier Badge -->
-    <div v-if="xpMultiplier > 1" class="xp-multiplier-badge">
+    <div v-if="gamificationEnabled && xpMultiplier > 1" class="xp-multiplier-badge">
       <span class="xp-mult-value">{{ xpMultiplier }}x</span>
       <span class="xp-mult-label">{{ t('learning', 'XP Multiplier') }}</span>
     </div>
@@ -64,17 +64,18 @@
       <NcButton type="button" variant="tertiary" @click="dismissHint('smart-queue')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
-    <!-- Daily Challenge (only for students) -->
-    <DailyChallengeCard v-if="userRole !== 'instructor'" />
+    <!-- Daily Challenge, daily goal and its bonus XP (only for students). Fresh-eyes review
+      (GitHub #36): game parts, gone with gamification off as on "Heute". -->
+    <DailyChallengeCard v-if="userRole !== 'instructor' && gamificationEnabled" />
 
     <!-- Daily Goal hint (only for students) -->
-    <NcNoteCard v-if="userRole !== 'instructor' && dailyProgress && !hintDismissed('daily-goal')" type="info" class="onboarding-hint">
+    <NcNoteCard v-if="userRole !== 'instructor' && gamificationEnabled && dailyProgress && !hintDismissed('daily-goal')" type="info" class="onboarding-hint">
       {{ t('learning', 'Set a daily goal. When you reach it, you get +10 bonus XP!') }}
       <NcButton type="button" variant="tertiary" @click="dismissHint('daily-goal')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
     <!-- Daily Goal (only for students) -->
-    <div v-if="userRole !== 'instructor'" class="smart-queue-section">
+    <div v-if="userRole !== 'instructor' && gamificationEnabled" class="smart-queue-section daily-goal-section">
       <div v-if="dailyProgress" class="daily-goal-widget" :class="{ 'goal-reached': dailyProgress.goal_reached }">
         <svg class="goal-ring" viewBox="0 0 60 60" width="56" height="56" role="img" :aria-label="t('learning', 'Daily goal progress: {pct}%', { pct: goalPercent })">
           <circle cx="30" cy="30" r="26" fill="none" stroke="var(--color-border)" stroke-width="4" />
@@ -388,6 +389,8 @@ export default {
     // own banner then, and the "ask your admin" note would be wrong or redundant.
     studentViewActive: { type: Boolean, default: false },
     roleLoadFailed: { type: Boolean, default: false },
+    // GitHub #36: the admin's global gamification switch (App.vue). Default on.
+    gamificationEnabled: { type: Boolean, default: true },
   },
   data() {
     return {

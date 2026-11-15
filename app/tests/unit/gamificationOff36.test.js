@@ -495,3 +495,71 @@ describe('CourseDetail competition area (GitHub #36)', () => {
 		expect(detail.currentTab).toBe('leaderboard')
 	})
 })
+
+// ── Fresh-eyes review of the persona run "off" (GitHub #36) ──────────────────
+
+describe('Fresh-eyes review: Klassenbuch kudos (GitHub #36)', () => {
+	const url = '/apps/learning/api/courses/{courseId}/classbook'
+	const payload = {
+		profiles: [{ user_id: 'colleague', display_name: 'Cleo', role: 'student', level: 2, kudos_received_count: 1, is_self: false }],
+		current_user_id: 'learner',
+		kudos_remaining: 3,
+	}
+
+	it('shows no kudos counter, kudos button or kudos question with gamification off', async () => {
+		api.routes[url] = payload
+		await render(Klassenbuch, { courseId: 5, gamificationEnabled: false })
+		expect(host.textContent).toContain('Cleo')
+		expect(host.querySelector('.kudos-remaining')).toBeNull()
+		expect(host.querySelector('.squad-footer')).toBeNull()
+		expect(host.textContent).not.toContain('Kudos')
+	})
+
+	it('keeps kudos with gamification on', async () => {
+		api.routes[url] = payload
+		await render(Klassenbuch, { courseId: 5 })
+		expect(host.querySelector('.kudos-remaining').textContent).toContain('3 Kudos')
+		expect(host.querySelector('.squad-footer').textContent).toContain('1 Kudos')
+	})
+})
+
+describe('Fresh-eyes review: medals follow the ranking, not the sort direction (GitHub #36)', () => {
+	const url = '/apps/learning/api/courses/{courseId}/leaderboard'
+	const rows = [
+		{ user_id: 'b', display_name: 'Bea', rank: 1, total_mastered: 0, total_sessions: 0 },
+		{ user_id: 'a', display_name: 'Ada', rank: 2, total_mastered: 5, total_sessions: 4 },
+	]
+
+	async function renderBoard() {
+		api.routes[url] = { leaderboard: rows, meta: { total: 2 } }
+		const view = await render(CourseTabWettbewerb, {
+			courseId: 5,
+			course: { id: 5, is_instructor: true, mode_config: modeConfig() },
+			userRole: 'instructor',
+			actsAsInstructor: true,
+			activeTab: 'leaderboard',
+		})
+		return view
+	}
+
+	it('gives medals when sorted best-first', async () => {
+		await renderBoard()
+		expect(host.querySelectorAll('.rank-medal').length).toBe(2)
+	})
+
+	it('gives no gold medal to the last place of an ascending sort', async () => {
+		const view = await renderBoard()
+		view.leaderboardSortKey = 'total_sessions'
+		view.leaderboardSortAsc = true
+		await flush()
+		expect(host.querySelectorAll('.rank-medal').length).toBe(0)
+	})
+
+	it('gives no medals when sorted by name', async () => {
+		const view = await renderBoard()
+		view.leaderboardSortKey = 'user_id'
+		view.leaderboardSortAsc = false
+		await flush()
+		expect(host.querySelectorAll('.rank-medal').length).toBe(0)
+	})
+})

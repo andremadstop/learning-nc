@@ -4,11 +4,14 @@
 			<div>
 				<h4>{{ t('learning', 'Klassenbuch') }}</h4>
 				<p class="klassenbuch-subtitle">
-					{{ t('learning', 'Wer ist im Kurs, wer hilft bei welchen Themen und wem kannst du heute Kudos geben?') }}
+					{{ gamificationEnabled
+						? t('learning', 'Wer ist im Kurs, wer hilft bei welchen Themen und wem kannst du heute Kudos geben?')
+						: t('learning', 'Wer ist im Kurs und wer hilft bei welchen Themen?') }}
 				</p>
 			</div>
 			<div class="klassenbuch-actions">
-				<span class="kudos-remaining">
+				<!-- Fresh-eyes review (GitHub #36): kudos are a game element, gone with gamification off. -->
+				<span v-if="gamificationEnabled" class="kudos-remaining">
 					{{ t('learning', '{n} Kudos übrig heute', { n: kudosRemaining }) }}
 				</span>
 				<NcButton variant="secondary" @click="exportVcard">
@@ -81,7 +84,7 @@
 
 				<p v-if="profile.bio" class="squad-bio">{{ profile.bio }}</p>
 
-				<div class="squad-footer">
+				<div v-if="gamificationEnabled" class="squad-footer">
 					<span class="kudos-count">
 						{{ t('learning', '{n} Kudos', { n: profile.kudos_received_count || 0 }) }}
 					</span>

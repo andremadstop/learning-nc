@@ -111,6 +111,7 @@
 				:practiceConfig="practiceConfig"
 				:totalQuestions="practiceConfig.questions"
 				:contentLanguage="contentLanguage"
+				:gamification-enabled="gamificationEnabled"
 				@back="selectSubTab(defaultSubTab())" />
 		</div>
 
@@ -230,6 +231,7 @@
 				:courseCertification="examCertification"
 				:poolPractice="poolPracticeConfig"
 				:examScope="selectedLearningPool.exam_scope || null"
+				:gamification-enabled="gamificationEnabled"
 				@back="onExamBack" />
 		</div>
 
@@ -713,6 +715,11 @@ export default {
 		aiEnabled: {
 			type: Boolean,
 			default: false,
+		},
+		// GitHub #36: the admin's global gamification switch (App.vue → CourseDetail). Default on.
+		gamificationEnabled: {
+			type: Boolean,
+			default: true,
 		},
 	},
 

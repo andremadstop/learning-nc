@@ -78,6 +78,7 @@
 					:fsrs-detailed-stats="fsrsDetailedStats"
 					:admin-enabled-tools="adminEnabledTools"
 					:ai-enabled="adminAiEnabled"
+					:gamification-enabled="gamificationEnabled"
 					@all-pools-loaded="allPools = $event"
 					@error="error = $event"
 					@knowledge-pending-count="knowledgePendingCount = $event"

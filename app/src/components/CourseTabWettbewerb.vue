@@ -84,9 +84,9 @@
 							:class="{ 'my-row': entry.is_me || entry.user_id === myUserId, 'clickable-row': isInstructor }"
 							@click="isInstructor && entry.user_id ? $emit('selectStudent', { userId: entry.user_id, courseId: courseId }) : null">
 							<td class="rank-col">
-								<span v-if="entry.rank === 1" class="rank-medal">&#129351;</span>
-								<span v-else-if="entry.rank === 2" class="rank-medal">&#129352;</span>
-								<span v-else-if="entry.rank === 3" class="rank-medal">&#129353;</span>
+								<span v-if="showMedals && entry.rank === 1" class="rank-medal">&#129351;</span>
+								<span v-else-if="showMedals && entry.rank === 2" class="rank-medal">&#129352;</span>
+								<span v-else-if="showMedals && entry.rank === 3" class="rank-medal">&#129353;</span>
 								<span v-else>{{ entry.rank }}</span>
 							</td>
 							<td class="student-col">{{ entry.display_name }}</td>
@@ -287,6 +287,12 @@ export default {
 		},
 		sortedLeaderboardData() {
 			return this.leaderboardData
+		},
+		// Fresh-eyes review (GitHub #36): the rank is the row's place in the current sort, so an
+		// ascending sort (or one by name) handed the gold medal to whoever had the least. Medals
+		// only where rank 1 means "most": a figure, sorted descending.
+		showMedals() {
+			return !this.leaderboardSortAsc && this.leaderboardSortKey !== 'user_id'
 		},
 		canLeaderboardPagePrev() {
 			return (this.leaderboardMeta.offset || 0) > 0

@@ -208,7 +208,7 @@
             <div class="stat-value">{{ timeTaken }}</div>
             <div class="stat-label">{{ t('learning', 'Time') }}</div>
           </div>
-          <div class="stat-item">
+          <div v-if="gamificationEnabled" class="stat-item">
             <div class="stat-value">{{ questionsPerMinute }}</div>
             <div class="stat-label">{{ t('learning', 'Q/min') }}</div>
           </div>
@@ -355,6 +355,8 @@ export default {
     // GitHub #47: { questions, minutes } the course sets for this pool's exam (pool rule, else
     // course default), as the server computed and enforces it; null = the pool-sized card.
     examScope: { type: Object, default: null },
+    // GitHub #36: the admin's global gamification switch. Off: no speed score (questions/minute).
+    gamificationEnabled: { type: Boolean, default: true },
   },
   data() {
     return {
