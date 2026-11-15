@@ -56,15 +56,18 @@
 		</div>
 
 		<h4>{{ t('learning', 'Datenkategorien') }}</h4>
+		<!-- GitHub #61: one column, no unexplained entry-count badge; in the personal settings each
+		category is a closed <details>, like "What happens with my data?" -->
 		<div class="privacy-info__category-grid">
-			<section
+			<component
+				:is="collapsible ? 'details' : 'section'"
 				v-for="group in namedCategories"
 				:key="group.id"
-				class="privacy-info__category-card">
-				<div class="privacy-info__category-header">
+				class="privacy-info__category-card"
+				:class="{ 'privacy-info__category-card--collapsible': collapsible }">
+				<component :is="collapsible ? 'summary' : 'div'" class="privacy-info__category-header">
 					<h5>{{ group.title }}</h5>
-					<span v-if="group.entries.length > 1" class="privacy-info__category-count">{{ group.entries.length }}</span>
-				</div>
+				</component>
 
 				<div
 					v-for="entry in group.entries"
@@ -96,7 +99,7 @@
 						</div>
 					</dl>
 				</div>
-			</section>
+			</component>
 		</div>
 
 		<hr class="section-divider">
@@ -156,6 +159,14 @@ export default {
 		showHeading: {
 			type: Boolean,
 			default: true,
+		},
+		/**
+		 * Each data category as a closed <details> (GitHub #61): the personal settings page carries
+		 * the whole Art. 13 text below the settings; the public privacy page keeps it open.
+		 */
+		collapsible: {
+			type: Boolean,
+			default: false,
 		},
 		showPageLinks: {
 			type: Boolean,
@@ -289,23 +300,23 @@ export default {
 }
 
 .privacy-info__category-grid {
-	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	/* one column: two ~350px columns made every paragraph a narrow, tall block (#61) */
+	grid-template-columns: minmax(0, 1fr);
+	gap: 10px;
 }
 
 .privacy-info__category-card {
 	border: 1px solid var(--color-border);
-	border-radius: 18px;
-	padding: 18px;
+	border-radius: var(--border-radius-large, 12px);
+	padding: 14px 16px;
 	background: var(--color-main-background);
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .privacy-info__category-header {
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	gap: 12px;
-	margin-bottom: 14px;
+	gap: 8px;
+	margin-bottom: 10px;
 }
 
 .privacy-info__category-header h5 {
@@ -313,18 +324,47 @@ export default {
 	font-size: 16px;
 }
 
-.privacy-info__category-count {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 28px;
-	height: 28px;
-	padding: 0 8px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--color-primary-element) 10%, transparent);
+.privacy-info__category-card--collapsible {
+	padding: 0;
+}
+
+.privacy-info__category-card--collapsible > .privacy-info__category-header {
+	margin: 0;
+	padding: 12px 16px;
+	cursor: pointer;
+	list-style: none;
+	border-radius: var(--border-radius-large, 12px);
+}
+
+.privacy-info__category-card--collapsible > .privacy-info__category-header::-webkit-details-marker {
+	display: none;
+}
+
+.privacy-info__category-card--collapsible > .privacy-info__category-header::before {
+	content: '▸';
 	color: var(--color-primary-element);
-	font-size: 12px;
-	font-weight: 700;
+	transition: transform 0.2s;
+}
+
+.privacy-info__category-card--collapsible[open] > .privacy-info__category-header::before {
+	transform: rotate(90deg);
+}
+
+[dir="rtl"] .privacy-info__category-card--collapsible:not([open]) > .privacy-info__category-header::before {
+	transform: scaleX(-1);
+}
+
+.privacy-info__category-card--collapsible > .privacy-info__category-header:hover,
+.privacy-info__category-card--collapsible > .privacy-info__category-header:focus-visible {
+	background: var(--color-background-hover);
+}
+
+.privacy-info__category-card--collapsible > .privacy-info__entry {
+	margin-inline: 16px;
+}
+
+.privacy-info__category-card--collapsible > .privacy-info__entry:last-child {
+	margin-bottom: 14px;
 }
 
 .privacy-info__entry + .privacy-info__entry {
@@ -348,27 +388,30 @@ export default {
 }
 
 .privacy-info__facts {
+	/* label | text side by side instead of stacked kickers (#61); margins explicit, the core's
+	dt/dd margins must not add up */
 	display: grid;
-	gap: 10px;
+	grid-template-columns: max-content minmax(0, 1fr);
+	column-gap: 16px;
+	row-gap: 6px;
 	margin: 0;
 }
 
 .privacy-info__facts div {
-	display: grid;
-	gap: 4px;
+	display: contents;
 }
 
 .privacy-info__facts dt {
-	font-size: 12px;
+	margin: 0;
+	font-size: 13px;
 	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
+	line-height: 1.5;
 	color: var(--color-text-maxcontrast);
 }
 
 .privacy-info__facts dd {
 	margin: 0;
-	line-height: 1.55;
+	line-height: 1.5;
 	color: var(--color-main-text);
 }
 
@@ -398,6 +441,15 @@ export default {
 @media (max-width: 640px) {
 	.privacy-info__intro {
 		flex-direction: column;
+	}
+
+	.privacy-info__facts {
+		grid-template-columns: minmax(0, 1fr);
+		row-gap: 2px;
+	}
+
+	.privacy-info__facts div + div dt {
+		margin-top: 8px;
 	}
 }
 </style>

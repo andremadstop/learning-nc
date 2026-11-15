@@ -464,7 +464,7 @@
       </template>
 
       <hr class="section-divider" />
-      <PrivacyInfo :ai-notice="privacyAiNotice" :operator="operator" />
+      <PrivacyInfo :ai-notice="privacyAiNotice" :operator="operator" collapsible />
     </div>
   </div>
 </template>
