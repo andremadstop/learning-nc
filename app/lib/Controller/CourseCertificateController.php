@@ -91,6 +91,11 @@ class CourseCertificateController extends Controller {
      * resolve() still decides. PHPDoc form on purpose: the attribute form is not honoured in this NC
      * build (see AuditExportController).
      *
+     * Accepted side effect: the cert.instructor_access audit row is written on every call, so a
+     * cross-site navigation by another page can add one. The file then really did reach the
+     * instructor's browser (the other page cannot read it), so the entry is not false; it may just
+     * not have been triggered knowingly. Same for exportZip().
+     *
      * @NoAdminRequired
      * @NoCSRFRequired
      */
@@ -119,6 +124,7 @@ class CourseCertificateController extends Controller {
      * expiringDays) and therefore the same rows as the table and the CSV. Each entry is the
      * learner's JSON-LD file, named <name>_<verification id>.json; an expired certificate carries
      * "_expired" in its name. Revoked certificates are not in the report and so not in the ZIP.
+     * CSRF-exempt like download(), with the same accepted audit side effect (see there).
      *
      * @NoAdminRequired
      * @NoCSRFRequired
