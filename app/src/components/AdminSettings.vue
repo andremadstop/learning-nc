@@ -34,6 +34,70 @@
         {{ t('learning', 'Signing key generated. Certificates are now active.') }}
       </NcNoteCard>
 
+      <!-- GitHub #59: the inbox sat at the very bottom of this page, below the audit trail. It holds
+           the technical requests without a course, which only an administrator can answer, so it
+           stays here, at the top. Questions about a course go to that course's instructors. -->
+      <div class="ticket-section">
+        <div class="audit-header">
+          <h3>
+            {{ t('learning', 'Support tickets') }}
+            <span v-if="openSupportTicketCount > 0" class="ticket-open-count">
+              <span aria-hidden="true">{{ openSupportTicketCount }}</span>
+              <span class="hidden-visually">{{ t('learning', 'Unbeantwortete Anfragen: {count}', { count: openSupportTicketCount }) }}</span>
+            </span>
+          </h3>
+          <NcButton variant="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
+        </div>
+        <p class="field-help ticket-filter-note">
+          {{ t('learning', 'Hier stehen nur technische Anfragen ohne Kursbezug. Fragen zu einem Kurs gehen an dessen Lehrende und stehen im Kurs im Bereich „Kommunikation“ unter „Fragen von Lernenden“.') }}
+          <a :href="coursesUrl" class="ticket-courses-link">{{ t('learning', 'Zu den Kursen') }}</a>
+        </p>
+        <div v-if="ticketLoading" class="loading">
+          <NcLoadingIcon :size="24" />
+          <span>{{ t('learning', 'Loading...') }}</span>
+        </div>
+        <NcNoteCard v-else-if="ticketError" type="error">{{ ticketError }}</NcNoteCard>
+        <div v-else-if="supportTickets.length === 0" class="field-help">
+          {{ t('learning', 'No support tickets yet.') }}
+        </div>
+        <div v-else class="ticket-list">
+          <div v-for="ticket in supportTickets" :key="ticket.id" class="ticket-card">
+            <div class="ticket-card-header">
+              <div>
+                <strong>{{ ticket.subject }}</strong>
+                <div class="ticket-meta">
+                  {{ ticket.user_id }} · {{ formatTime(ticket.updated_at || ticket.created_at) }}
+                </div>
+              </div>
+              <span class="ticket-status" :class="'status-' + ticket.status">{{ ticketStatusLabel(ticket.status) }}</span>
+            </div>
+            <div class="ticket-context">{{ formatTicketContext(ticket) }}</div>
+            <p class="ticket-message">{{ ticket.message }}</p>
+            <div v-if="ticket.answer_text" class="ticket-existing-answer">
+              <strong>{{ t('learning', 'Current answer') }}:</strong> {{ ticket.answer_text }}
+            </div>
+            <label class="field-row">
+              <span>{{ t('learning', 'Answer') }}</span>
+              <textarea
+                class="ticket-answer-input"
+                rows="4"
+                :value="ticketAnswers[ticket.id] || ''"
+                :placeholder="t('learning', 'Write the admin reply here...')"
+                @input="setTicketAnswer(ticket.id, $event.target.value)" />
+            </label>
+            <div class="ticket-actions">
+              <NcButton
+                variant="primary"
+                :disabled="answeringId === ticket.id"
+                @click="submitTicketAnswer(ticket.id)">
+                {{ answeringId === ticket.id ? t('learning', 'Saving...') : t('learning', 'Save answer') }}
+              </NcButton>
+            </div>
+          </div>
+        </div>
+        <NcNoteCard v-if="ticketSuccess" type="success">{{ ticketSuccess }}</NcNoteCard>
+      </div>
+
       <!-- GitHub #56: the label is the switch's own slot (Nextcloud pattern: switch and label on one
            line, and the switch gets an accessible name); help text is its description. -->
       <div class="switch-row">
@@ -326,57 +390,6 @@
         </p>
       </div>
 
-      <div class="ticket-section">
-        <div class="audit-header">
-          <h3>{{ t('learning', 'Support tickets') }}</h3>
-          <NcButton variant="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
-        </div>
-        <p class="field-help ticket-filter-note">{{ t('learning', 'Zeigt nur technische Anfragen (Admin-Tickets)') }}</p>
-        <div v-if="ticketLoading" class="loading">
-          <NcLoadingIcon :size="24" />
-          <span>{{ t('learning', 'Loading...') }}</span>
-        </div>
-        <NcNoteCard v-else-if="ticketError" type="error">{{ ticketError }}</NcNoteCard>
-        <div v-else-if="supportTickets.length === 0" class="field-help">
-          {{ t('learning', 'No support tickets yet.') }}
-        </div>
-        <div v-else class="ticket-list">
-          <div v-for="ticket in supportTickets" :key="ticket.id" class="ticket-card">
-            <div class="ticket-card-header">
-              <div>
-                <strong>{{ ticket.subject }}</strong>
-                <div class="ticket-meta">
-                  {{ ticket.user_id }} · {{ formatTime(ticket.updated_at || ticket.created_at) }}
-                </div>
-              </div>
-              <span class="ticket-status" :class="'status-' + ticket.status">{{ ticket.status }}</span>
-            </div>
-            <div class="ticket-context">{{ formatTicketContext(ticket) }}</div>
-            <p class="ticket-message">{{ ticket.message }}</p>
-            <div v-if="ticket.answer_text" class="ticket-existing-answer">
-              <strong>{{ t('learning', 'Current answer') }}:</strong> {{ ticket.answer_text }}
-            </div>
-            <label class="field-row">
-              <span>{{ t('learning', 'Answer') }}</span>
-              <textarea
-                class="ticket-answer-input"
-                rows="4"
-                :value="ticketAnswers[ticket.id] || ''"
-                :placeholder="t('learning', 'Write the admin reply here...')"
-                @input="setTicketAnswer(ticket.id, $event.target.value)" />
-            </label>
-            <div class="ticket-actions">
-              <NcButton
-                variant="primary"
-                :disabled="answeringId === ticket.id"
-                @click="submitTicketAnswer(ticket.id)">
-                {{ answeringId === ticket.id ? t('learning', 'Saving...') : t('learning', 'Save answer') }}
-              </NcButton>
-            </div>
-          </div>
-        </div>
-        <NcNoteCard v-if="ticketSuccess" type="success">{{ ticketSuccess }}</NcNoteCard>
-      </div>
     </div>
   </div>
 </template>
@@ -452,6 +465,14 @@ export default {
     this.loadSupportTickets()
   },
   computed: {
+    // GitHub #59: unanswered technical requests, next to the heading
+    openSupportTicketCount() {
+      return this.supportTickets.filter((ticket) => ticket.status === 'open').length
+    },
+    // a full URL: this component is mounted in the app and on Nextcloud's admin settings page
+    coursesUrl() {
+      return generateUrl('/apps/learning/courses')
+    },
     toolOptions() {
       return TOOL_CATALOG.map((tool) => ({
         id: tool.id,
@@ -664,6 +685,12 @@ export default {
         this.answeringId = null
       }
     },
+    ticketStatusLabel(status) {
+      if (status === 'open') return t('learning', 'Offen (Status einer Frage)')
+      if (status === 'answered') return t('learning', 'Answered')
+      return status
+    },
+
     formatTicketContext(ticket) {
       const parts = []
       const context = ticket.context || {}
@@ -871,6 +898,26 @@ details[open] > .audit-summary::before {
 
 .ticket-section {
   margin-top: 20px;
+}
+
+.ticket-open-count {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-inline-start: 6px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--color-primary-element, var(--color-primary));
+  color: var(--color-primary-element-text, var(--color-primary-text));
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ticket-courses-link {
+  color: var(--color-primary-element, var(--color-primary));
+  text-decoration: underline;
 }
 
 .audit-header {

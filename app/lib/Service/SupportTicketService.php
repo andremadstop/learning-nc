@@ -187,7 +187,12 @@ class SupportTicketService {
     }
 
     public function listMine(string $userId, int $limit = 50): array {
-        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByUser($userId, max(1, min(100, $limit))));
+        // GitHub #59: VirtuProf's "My tickets" is the learner's view too; an archive is the staff's
+        return array_map(function (SupportTicket $ticket): array {
+            $data = $this->serializeTicket($ticket);
+            $data['status'] = $this->learnerStatus($ticket);
+            return $data;
+        }, $this->ticketMapper->findByUser($userId, max(1, min(100, $limit))));
     }
 
     public function answer(int $ticketId, string $answerText, string $answeredBy, bool $isAdmin = false, ?int $instructorCourseId = null): array {
@@ -253,8 +258,104 @@ class SupportTicketService {
         return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByRoutingTarget('admin', max(1, min(200, $limit))));
     }
 
-    public function listInstructorForCourse(int $courseId, int $limit = 100): array {
-        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByInstructorCourse($courseId, max(1, min(200, $limit))));
+    /**
+     * GitHub #59: the inbox leaves archived questions out; $archived = true lists only those.
+     */
+    public function listInstructorForCourse(int $courseId, int $limit = 100, bool $archived = false): array {
+        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByInstructorCourse($courseId, max(1, min(200, $limit)), $archived));
+    }
+
+    /**
+     * GitHub #59: unanswered, not archived questions of a course (the badge at its tab).
+     */
+    public function countOpenForCourse(int $courseId): int {
+        return $this->ticketMapper->countOpenByInstructorCourse($courseId);
+    }
+
+    /**
+     * GitHub #59: an instructor of the course hides a question from the inbox (true) or brings it
+     * back (false). A restored question is open or answered again, as before.
+     *
+     * @throws ForbiddenException when the user is no instructor of the course
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when the question is not one of this course
+     */
+    public function setCourseTicketArchived(int $courseId, int $ticketId, string $userId, bool $archived): array {
+        $ticket = $this->managedCourseTicket($courseId, $ticketId, $userId);
+        $ticket->setStatus($archived ? 'archived' : $this->learnerStatus($ticket, true));
+        $ticket->setUpdatedAt(time());
+        /** @var SupportTicket $u */
+        $u = $this->ticketMapper->update($ticket);
+        if ($archived) {
+            $this->notifier?->questionSettled($u);
+        }
+        return $this->serializeTicket($u);
+    }
+
+    /**
+     * GitHub #59: an instructor of the course deletes a question for good, with its answer and
+     * every notification about it.
+     *
+     * @throws ForbiddenException when the user is no instructor of the course
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when the question is not one of this course
+     */
+    public function deleteCourseTicket(int $courseId, int $ticketId, string $userId): void {
+        $ticket = $this->managedCourseTicket($courseId, $ticketId, $userId);
+        $this->ticketMapper->delete($ticket);
+        $this->notifier?->ticketRemoved($ticket);
+    }
+
+    /**
+     * GitHub #59: a learner withdraws their own question to the instructors of a course while it
+     * has no answer yet. Someone else's question is reported as not found.
+     *
+     * @throws ForbiddenException when the user cannot see the course
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when the question is not the user's in this course
+     * @throws \InvalidArgumentException when the question already has an answer
+     */
+    public function withdrawCourseQuestion(int $courseId, int $ticketId, string $userId): void {
+        $this->learnerCourse($courseId, $userId);
+        $ticket = $this->ticketMapper->findById($ticketId);
+        if ($ticket->getUserId() !== $userId || !$this->belongsToCourse($ticket, $courseId)) {
+            throw new \OCP\AppFramework\Db\DoesNotExistException('Question not found');
+        }
+        if (!$this->ticketMapper->deleteOpenOwnQuestion($ticketId, $userId, $courseId)) {
+            throw new \InvalidArgumentException('An answered question cannot be withdrawn');
+        }
+        $this->notifier?->ticketRemoved($ticket);
+    }
+
+    /**
+     * @throws ForbiddenException when the user is no instructor of the course
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when the ticket is not routed to this course
+     */
+    private function managedCourseTicket(int $courseId, int $ticketId, string $userId): SupportTicket {
+        if (!$this->courseService->canManageCourse($courseId, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+        $ticket = $this->ticketMapper->findById($ticketId);
+        // the course in the URL is no authority: the ticket itself must be routed to it
+        if (!$this->belongsToCourse($ticket, $courseId)) {
+            throw new \OCP\AppFramework\Db\DoesNotExistException('Ticket not found');
+        }
+        return $ticket;
+    }
+
+    private function belongsToCourse(SupportTicket $ticket, int $courseId): bool {
+        return $ticket->getRoutingTargetType() === 'course_instructor'
+            && $ticket->getRoutingCourseId() !== null
+            && (int)$ticket->getRoutingCourseId() === $courseId;
+    }
+
+    /**
+     * GitHub #59: the status as the author sees it. Archiving is the instructors' inbox filter,
+     * so an archived question reads as open or answered, whichever it was.
+     */
+    private function learnerStatus(SupportTicket $ticket, bool $ignoreStored = false): string {
+        $status = (string)$ticket->getStatus();
+        if ($status !== 'archived' && !$ignoreStored) {
+            return $status;
+        }
+        return trim((string)$ticket->getAnswerText()) !== '' ? 'answered' : 'open';
     }
 
     /**
@@ -315,7 +416,7 @@ class SupportTicketService {
             'id' => (int)$ticket->getId(),
             'subject' => (string)$ticket->getSubject(),
             'message' => (string)$ticket->getMessage(),
-            'status' => (string)$ticket->getStatus(),
+            'status' => $this->learnerStatus($ticket),
             'answer_text' => $ticket->getAnswerText(),
             'answered_at' => $ticket->getAnsweredAt() !== null ? (int)$ticket->getAnsweredAt() : null,
             'created_at' => (int)$ticket->getCreatedAt(),

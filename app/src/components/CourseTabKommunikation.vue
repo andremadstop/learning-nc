@@ -8,6 +8,11 @@
 				:class="{ active: currentSubTab === tab.id }"
 				@click="selectSubTab(tab.id)">
 				{{ tab.label }}
+				<!-- GitHub #59: how many questions wait for an answer -->
+				<span v-if="tab.id === 'requests' && openQuestionsCount > 0" class="kommunikation-pill-count">
+					<span aria-hidden="true">{{ openQuestionsCount }}</span>
+					<span class="hidden-visually">{{ openQuestionsLabel }}</span>
+				</span>
 			</button>
 		</div>
 
@@ -34,7 +39,19 @@
 			"Frage stellen" tab (#59) or through the help assistant. GitHub #40: named for what it
 			holds, and the empty state says where the questions come from. -->
 		<div v-if="currentSubTab === 'requests' && isInstructor" class="tab-content requests-section">
+			<!-- GitHub #59: archived questions are hidden from the list and can be brought back -->
+			<div class="requests-toolbar">
+				<NcButton variant="tertiary" class="requests-archive-toggle" @click="toggleArchive">
+					{{ showArchived ? t('learning', 'Aktuelle Fragen anzeigen') : t('learning', 'Archivierte Fragen anzeigen') }}
+				</NcButton>
+			</div>
+			<p v-if="showArchived" class="requests-archive-hint">
+				{{ t('learning', 'Archivierte Fragen sind aus der Liste ausgeblendet. Die lernende Person sieht ihre Frage und die Antwort weiterhin.') }}
+			</p>
 			<div v-if="loadingRequests" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+			<p v-else-if="showArchived && courseTickets.length === 0" class="empty-hint">
+				{{ t('learning', 'Keine archivierten Fragen.') }}
+			</p>
 			<div v-else-if="courseTickets.length === 0" class="empty-hint requests-empty">
 				<p>{{ t('learning', 'Noch keine Fragen von Lernenden zu diesem Kurs.') }}</p>
 				<p>{{ t('learning', 'Hier erscheinen Fragen zu diesem Kurs, die Lernende dir unter „Frage stellen“ im Bereich Kommunikation oder über den Hilfe-Assistenten VirtuProf schicken.') }}</p>
@@ -53,9 +70,42 @@
 					<div v-if="ticket.answer_text" class="ticket-answer-cd">
 						<strong>{{ t('learning', 'Answer:') }}</strong> {{ ticket.answer_text }}
 					</div>
+					<div class="ticket-manage-cd">
+						<NcButton v-if="ticket.status === 'archived'"
+							variant="secondary"
+							:disabled="!!managingTickets[ticket.id]"
+							@click="setArchived(ticket, false)">
+							{{ t('learning', 'Wiederherstellen') }}
+						</NcButton>
+						<NcButton v-else
+							variant="secondary"
+							:disabled="!!managingTickets[ticket.id]"
+							@click="setArchived(ticket, true)">
+							{{ t('learning', 'Archivieren') }}
+						</NcButton>
+						<NcButton variant="tertiary"
+							:disabled="!!managingTickets[ticket.id]"
+							@click="confirmTicket = ticket">
+							{{ t('learning', 'Löschen') }}
+						</NcButton>
+					</div>
 				</div>
 			</div>
 		</div>
+
+		<AccessibleDialog v-if="confirmTicket"
+			:name="t('learning', 'Frage löschen')"
+			@closing="cancelDeleteTicket">
+			<p>{{ t('learning', 'Möchtest du die Frage „{subject}“ wirklich löschen? Frage und Antwort sind danach auch für die lernende Person weg. Das lässt sich nicht rückgängig machen.', { subject: confirmTicket.subject }, undefined, { escape: false, sanitize: false }) }}</p>
+			<template #actions>
+				<NcButton variant="tertiary" :disabled="deletingTicket" @click="cancelDeleteTicket">
+					{{ t('learning', 'Nicht löschen') }}
+				</NcButton>
+				<NcButton variant="error" :disabled="deletingTicket" @click="deleteTicket">
+					{{ t('learning', 'Löschen') }}
+				</NcButton>
+			</template>
+		</AccessibleDialog>
 
 		<!-- GitHub #59: questions to the instructors (learners, also without VirtuProf) -->
 		<div v-if="currentSubTab === 'my-questions' && !isInstructor" class="tab-content">
@@ -80,6 +130,7 @@ import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { showError } from '@nextcloud/dialogs'
+import AccessibleDialog from './AccessibleDialog.vue'
 import CourseFeed from './CourseFeed.vue'
 import CourseLearnerQuestions from './CourseLearnerQuestions.vue'
 import BuddyMatching from './BuddyMatching.vue'
@@ -91,6 +142,7 @@ export default {
 
 	components: {
 		NcButton,
+		AccessibleDialog,
 		CourseFeed,
 		CourseLearnerQuestions,
 		BuddyMatching,
@@ -123,7 +175,14 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		// GitHub #59: unanswered questions of the course (CourseDetail loads it for the badge)
+		openQuestionsCount: {
+			type: Number,
+			default: 0,
+		},
 	},
+
+	emits: ['tab-change', 'open-questions-count'],
 
 	data() {
 		return {
@@ -135,6 +194,10 @@ export default {
 			courseTickets: [],
 			ticketReplies: {},
 			answeringTickets: {},
+			showArchived: false,
+			managingTickets: {},
+			confirmTicket: null,
+			deletingTicket: false,
 		}
 	},
 
@@ -142,6 +205,9 @@ export default {
 		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
 		isInstructor() {
 			return this.actsAsInstructor
+		},
+		openQuestionsLabel() {
+			return t('learning', 'Unbeantwortete Fragen: {count}', { count: this.openQuestionsCount })
 		},
 		buddiesOn() {
 			return buddiesEnabled(this.course)
@@ -202,7 +268,72 @@ export default {
 		ticketStatusLabel(status) {
 			if (status === 'open') return t('learning', 'Offen (Status einer Frage)')
 			if (status === 'answered') return t('learning', 'Answered')
+			if (status === 'archived') return t('learning', 'Archiviert')
 			return status
+		},
+
+		toggleArchive() {
+			this.showArchived = !this.showArchived
+			this.fetchCourseTickets()
+		},
+
+		// GitHub #59: the server's count, after every change that can move it
+		reportOpenCount(count) {
+			if (Number.isInteger(count)) {
+				this.$emit('open-questions-count', count)
+			}
+		},
+
+		async refreshOpenCount() {
+			try {
+				const res = await axios.get(generateUrl('/apps/learning/api/courses/{courseId}/support-tickets/open-count', { courseId: this.courseId }))
+				this.reportOpenCount(res.data?.open_count)
+			} catch (e) {
+				// the badge is a hint; the list itself is correct
+				console.error('Failed to refresh the open question count', e)
+			}
+		},
+
+		async setArchived(ticket, archived) {
+			if (this.managingTickets[ticket.id]) return
+			this.managingTickets[ticket.id] = true
+			try {
+				const action = archived ? 'archive' : 'restore'
+				await axios.post(generateUrl('/apps/learning/api/courses/{courseId}/support-tickets/{ticketId}/' + action, { courseId: this.courseId, ticketId: ticket.id }))
+				// it leaves the list it was in: the inbox when archived, the archive when restored
+				this.courseTickets = this.courseTickets.filter((x) => x.id !== ticket.id)
+				this.refreshOpenCount()
+			} catch (e) {
+				console.error('Failed to change the archive state of a question', e)
+				showError(archived
+					? t('learning', 'Die Frage konnte nicht archiviert werden.')
+					: t('learning', 'Die Frage konnte nicht wiederhergestellt werden.'))
+			} finally {
+				delete this.managingTickets[ticket.id]
+			}
+		},
+
+		cancelDeleteTicket() {
+			if (!this.deletingTicket) {
+				this.confirmTicket = null
+			}
+		},
+
+		async deleteTicket() {
+			const ticket = this.confirmTicket
+			if (!ticket || this.deletingTicket) return
+			this.deletingTicket = true
+			try {
+				await axios.delete(generateUrl('/apps/learning/api/courses/{courseId}/support-tickets/{ticketId}', { courseId: this.courseId, ticketId: ticket.id }))
+				this.courseTickets = this.courseTickets.filter((x) => x.id !== ticket.id)
+				this.confirmTicket = null
+				this.refreshOpenCount()
+			} catch (e) {
+				console.error('Failed to delete a question', e)
+				showError(t('learning', 'Die Frage konnte nicht gelöscht werden.'))
+			} finally {
+				this.deletingTicket = false
+			}
 		},
 
 		async createAnnouncement() {
@@ -230,8 +361,14 @@ export default {
 			if (!this.course) return
 			this.loadingRequests = true
 			try {
-				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/support-tickets`))
+				const archived = this.showArchived
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/support-tickets`), {
+					params: archived ? { archived: 1 } : {},
+				})
+				// a late answer for the other list must not replace the one now shown
+				if (archived !== this.showArchived) return
 				this.courseTickets = res.data.tickets || res.data || []
+				this.reportOpenCount(res.data?.open_count)
 			} catch (e) {
 				console.error('Failed to load course tickets', e)
 				showError(t('learning', 'Die Fragen von Lernenden konnten nicht geladen werden.'))
@@ -254,6 +391,7 @@ export default {
 					ticket.answer_text = answer
 				}
 				delete this.ticketReplies[ticketId]
+				this.refreshOpenCount()
 			} catch (e) {
 				// GitHub #40: the typed answer stays in the field, and the instructor learns it was not sent
 				console.error('Failed to answer ticket', e)
@@ -292,6 +430,24 @@ export default {
 	color: var(--color-primary-text);
 	border-color: var(--color-primary);
 }
+/* GitHub #59: unanswered questions; inverted on the active pill so it stays readable */
+.kommunikation-pill-count {
+	display: inline-block;
+	min-width: 1.5em;
+	margin-inline-start: 6px;
+	padding: 0 6px;
+	border-radius: 10px;
+	background: var(--color-primary-element, var(--color-primary));
+	color: var(--color-primary-element-text, var(--color-primary-text));
+	font-size: 0.85em;
+	font-weight: 600;
+	line-height: 1.5;
+	text-align: center;
+}
+.kommunikation-pill.active .kommunikation-pill-count {
+	background: var(--color-primary-text);
+	color: var(--color-primary);
+}
 
 /* Announcements */
 .announcements-section {}
@@ -326,5 +482,9 @@ export default {
 .ticket-message-cd { color: var(--color-text-maxcontrast); margin-bottom: 8px; }
 .ticket-reply-cd { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
 .requests-empty p { margin: 0 0 4px; }
+.requests-toolbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.requests-archive-hint { color: var(--color-text-maxcontrast); font-size: 0.9em; margin: 0 0 12px; }
+.ticket-manage-cd { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+.ticket-status-cd.status-archived { background: var(--color-background-darker); color: var(--color-main-text); }
 .ticket-answer-cd { margin-top: 8px; padding: 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 0.9em; }
 </style>

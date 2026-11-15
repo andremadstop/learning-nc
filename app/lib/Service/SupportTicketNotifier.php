@@ -102,6 +102,22 @@ class SupportTicketNotifier {
         ]);
     }
 
+    /**
+     * GitHub #59: an archived question needs no instructor's attention any more; the "new
+     * question" notice goes.
+     */
+    public function questionSettled(SupportTicket $ticket): void {
+        $this->dismiss(null, 'ticket_created', (string)$ticket->getId());
+    }
+
+    /**
+     * GitHub #59: a deleted or withdrawn question takes every notice about it along, the
+     * instructors' and the learner's, so no bell entry links to a question that is gone.
+     */
+    public function ticketRemoved(SupportTicket $ticket): void {
+        $this->dismiss(null, null, (string)$ticket->getId());
+    }
+
     /** @param array<string, int|string> $params */
     private function send(string $uid, string $subject, SupportTicket $ticket, array $params): void {
         try {

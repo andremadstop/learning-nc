@@ -143,13 +143,102 @@ class SupportTicketController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function instructorList(int $courseId, int $limit = 50): DataResponse {
+    public function instructorList(int $courseId, int $limit = 50, bool $archived = false): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         if (!$this->courseService->canManageCourse($courseId, $this->userId)) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         }
-        return new DataResponse(['tickets' => $this->service->listInstructorForCourse($courseId, $limit)]);
+        // GitHub #59: archived questions are listed apart; open_count feeds the tab's badge
+        return new DataResponse([
+            'tickets' => $this->service->listInstructorForCourse($courseId, $limit, $archived),
+            'open_count' => $this->service->countOpenForCourse($courseId),
+        ]);
+    }
+
+    /**
+     * GitHub #59: how many questions of the course wait for an answer (badge at the tab).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function openCount(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if (!$this->courseService->canManageCourse($courseId, $this->userId)) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        return new DataResponse(['open_count' => $this->service->countOpenForCourse($courseId)]);
+    }
+
+    /**
+     * GitHub #59: an instructor of the course hides a question from the inbox.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function archiveCourseTicket(int $courseId, int $ticketId): DataResponse {
+        return $this->manageCourseTicket(fn (string $uid) => ['ticket' => $this->service->setCourseTicketArchived($courseId, $ticketId, $uid, true)]);
+    }
+
+    /**
+     * GitHub #59: an instructor of the course brings an archived question back.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function restoreCourseTicket(int $courseId, int $ticketId): DataResponse {
+        return $this->manageCourseTicket(fn (string $uid) => ['ticket' => $this->service->setCourseTicketArchived($courseId, $ticketId, $uid, false)]);
+    }
+
+    /**
+     * GitHub #59: an instructor of the course deletes a question for good.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function deleteCourseTicket(int $courseId, int $ticketId): DataResponse {
+        return $this->manageCourseTicket(function (string $uid) use ($courseId, $ticketId): array {
+            $this->service->deleteCourseTicket($courseId, $ticketId, $uid);
+            return ['deleted' => true];
+        });
+    }
+
+    /**
+     * GitHub #59: a learner withdraws their own question while it has no answer.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function withdrawCourseQuestion(int $courseId, int $ticketId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $this->service->withdrawCourseQuestion($courseId, $ticketId, $this->userId);
+            return new DataResponse(['deleted' => true]);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Question not found'], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
+        }
+    }
+
+    /** @param callable(string): array<string, mixed> $action */
+    private function manageCourseTicket(callable $action): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            return new DataResponse($action($this->userId));
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
+        }
     }
 }

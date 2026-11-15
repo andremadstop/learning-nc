@@ -44,9 +44,29 @@
 					<div v-if="question.answer_text" class="question-answer">
 						<strong>{{ t('learning', 'Answer:') }}</strong> {{ question.answer_text }}
 					</div>
+					<!-- GitHub #59: a question sent by mistake can be taken back until it is answered -->
+					<div v-else-if="question.status === 'open'" class="question-actions">
+						<NcButton variant="tertiary" :disabled="withdrawing" @click="confirmQuestion = question">
+							{{ t('learning', 'Frage zurückziehen') }}
+						</NcButton>
+					</div>
 				</li>
 			</ul>
 		</section>
+
+		<AccessibleDialog v-if="confirmQuestion"
+			:name="t('learning', 'Frage zurückziehen')"
+			@closing="cancelWithdraw">
+			<p>{{ t('learning', 'Möchtest du deine Frage „{subject}“ zurückziehen? Sie wird gelöscht, und die Lehrenden sehen sie nicht mehr.', { subject: confirmQuestion.subject }, undefined, { escape: false, sanitize: false }) }}</p>
+			<template #actions>
+				<NcButton variant="tertiary" :disabled="withdrawing" @click="cancelWithdraw">
+					{{ t('learning', 'Nicht zurückziehen') }}
+				</NcButton>
+				<NcButton variant="error" :disabled="withdrawing" @click="withdraw">
+					{{ t('learning', 'Zurückziehen') }}
+				</NcButton>
+			</template>
+		</AccessibleDialog>
 	</div>
 </template>
 
@@ -57,6 +77,7 @@ import { translate as t } from '@nextcloud/l10n'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import AccessibleDialog from './AccessibleDialog.vue'
 
 export default {
 	name: 'CourseLearnerQuestions',
@@ -64,6 +85,7 @@ export default {
 	components: {
 		NcButton,
 		NcNoteCard,
+		AccessibleDialog,
 	},
 
 	props: {
@@ -82,6 +104,8 @@ export default {
 			loaded: false,
 			canAsk: false,
 			questions: [],
+			confirmQuestion: null,
+			withdrawing: false,
 		}
 	},
 
@@ -110,6 +134,36 @@ export default {
 				showError(t('learning', 'Deine Fragen konnten nicht geladen werden.'))
 			} finally {
 				this.loading = false
+			}
+		},
+
+		cancelWithdraw() {
+			if (!this.withdrawing) {
+				this.confirmQuestion = null
+			}
+		},
+
+		async withdraw() {
+			const question = this.confirmQuestion
+			if (!question || this.withdrawing) return
+			this.withdrawing = true
+			try {
+				await axios.delete(generateUrl('/apps/learning/api/courses/{courseId}/questions/mine/{ticketId}', { courseId: this.courseId, ticketId: question.id }))
+				this.questions = this.questions.filter((q) => q.id !== question.id)
+				this.confirmQuestion = null
+				showSuccess(t('learning', 'Deine Frage wurde zurückgezogen.'))
+			} catch (e) {
+				console.error('Failed to withdraw a course question', e)
+				if (e?.response?.status === 409) {
+					// answered in the meantime: show the answer instead
+					this.confirmQuestion = null
+					showError(t('learning', 'Die Frage wurde inzwischen beantwortet und kann nicht mehr zurückgezogen werden.'))
+					this.load()
+				} else {
+					showError(t('learning', 'Die Frage konnte nicht zurückgezogen werden.'))
+				}
+			} finally {
+				this.withdrawing = false
 			}
 		},
 
@@ -164,5 +218,6 @@ export default {
 .question-status.status-answered { background: var(--color-success); color: var(--color-success-text, var(--color-success)); }
 .question-message-text { color: var(--color-text-maxcontrast); margin: 0 0 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .question-answer { padding: 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 0.9em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.question-actions { display: flex; justify-content: flex-end; }
 .empty-hint, .loading-hint { color: var(--color-text-maxcontrast); margin: 0; }
 </style>

@@ -247,6 +247,12 @@ return [
         // GitHub #59: learner questions to the course's instructors, without VirtuProf
         ['name' => 'supportTicket#askCourse', 'url' => '/api/courses/{courseId}/questions', 'verb' => 'POST'],
         ['name' => 'supportTicket#myCourseQuestions', 'url' => '/api/courses/{courseId}/questions/mine', 'verb' => 'GET'],
+        // GitHub #59: instructors archive, restore and delete; a learner withdraws an unanswered question
+        ['name' => 'supportTicket#openCount', 'url' => '/api/courses/{courseId}/support-tickets/open-count', 'verb' => 'GET'],
+        ['name' => 'supportTicket#archiveCourseTicket', 'url' => '/api/courses/{courseId}/support-tickets/{ticketId}/archive', 'verb' => 'POST'],
+        ['name' => 'supportTicket#restoreCourseTicket', 'url' => '/api/courses/{courseId}/support-tickets/{ticketId}/restore', 'verb' => 'POST'],
+        ['name' => 'supportTicket#deleteCourseTicket', 'url' => '/api/courses/{courseId}/support-tickets/{ticketId}', 'verb' => 'DELETE'],
+        ['name' => 'supportTicket#withdrawCourseQuestion', 'url' => '/api/courses/{courseId}/questions/mine/{ticketId}', 'verb' => 'DELETE'],
 
         // Lernprofil
         ['name' => 'lernprofil#profile', 'url' => '/api/profile', 'verb' => 'GET'],

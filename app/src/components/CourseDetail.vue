@@ -50,6 +50,11 @@
 						:aria-selected="activeMegaTab === tab.id ? 'true' : 'false'"
 						@click="selectMegaTab(tab.id)">
 						{{ tab.label }}
+						<!-- GitHub #59: instructors see at the tab that questions wait for an answer -->
+						<span v-if="tab.id === 'kommunikation' && isInstructor && openQuestionsCount > 0" class="mega-tab-count">
+							<span aria-hidden="true">{{ openQuestionsCount }}</span>
+							<span class="hidden-visually">{{ t('learning', 'Unbeantwortete Fragen: {count}', { count: openQuestionsCount }) }}</span>
+						</span>
 					</button>
 				</div>
 				<ExamReadiness
@@ -140,7 +145,9 @@
 				:acts-as-instructor="actsAsInstructor"
 				:active-tab="currentTab"
 				:ai-enabled="adminAiEnabled"
+				:open-questions-count="openQuestionsCount"
 				@tab-change="onLeafTabChange"
+				@open-questions-count="openQuestionsCount = $event"
 				@error="error = $event"
 				@refresh-course-detail="fetchCourseDetail" />
 
@@ -257,6 +264,8 @@ export default {
 			activeMegaTab: 'lernraum',
 			currentTab: 'pools',
 			knowledgePendingCount: 0,
+			// GitHub #59: unanswered learner questions (instructors only)
+			openQuestionsCount: 0,
 			selectedLearningPool: null,
 			activeLearningMode: null,
 			allPools: [],
@@ -390,6 +399,12 @@ export default {
 	},
 
 	watch: {
+		// GitHub #59: leaving the student view shows the badge again
+		actsAsInstructor(on) {
+			if (on) {
+				this.fetchOpenQuestionsCount()
+			}
+		},
 		$route(route) {
 			if (route && Number(route.params?.id || 0) === Number(this.courseId || 0)) {
 				this.syncCurrentTabFromRoute(route.params?.tab || '')
@@ -804,12 +819,31 @@ export default {
 				this.adminAiEnabled = false
 			}
 		},
+		// GitHub #59: the badge at "Kommunikation"; learners and the student view never ask
+		async fetchOpenQuestionsCount() {
+			if (!this.isInstructor || !this.courseId) {
+				return
+			}
+			const courseId = this.courseId
+			try {
+				const res = await axios.get(generateUrl('/apps/learning/api/courses/{courseId}/support-tickets/open-count', { courseId }))
+				const count = res.data?.open_count
+				if (courseId === this.courseId && Number.isInteger(count)) {
+					this.openQuestionsCount = count
+				}
+			} catch (e) {
+				// only a hint at the tab; the tab itself loads its list
+				console.error('Failed to load the open question count', e)
+			}
+		},
+
 		async fetchCourseDetail() {
 			this.loading = true
 			this.error = ''
 			// The Lernraum unmounts while loading and reports its required content again after the
 			// remount; a stale flag would route learners to a videos leaf it does not show yet.
 			this.hasCourseVideos = false
+			this.openQuestionsCount = 0
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}', { courseId: this.courseId })
 				const [response] = await Promise.all([axios.get(url), this.fetchAdminEnabledTools()])
@@ -833,6 +867,7 @@ export default {
 					this.arenaSubMode = 'duel'
 				}
 				this.syncCurrentTabFromRoute(this.currentRouteTab())
+				this.fetchOpenQuestionsCount()
 				this.$nextTick(() => {
 					this.emitVirtuProfContext()
 				})
@@ -884,6 +919,26 @@ export default {
 	color: var(--color-text-maxcontrast);
 	font-size: 0.95em;
 	line-height: 1.5;
+}
+
+/* GitHub #59: unanswered learner questions at the Kommunikation tab */
+.mega-tab-count {
+	display: inline-block;
+	min-width: 1.5em;
+	margin-inline-start: 6px;
+	padding: 0 6px;
+	border-radius: 10px;
+	background: var(--color-primary-element, var(--color-primary));
+	color: var(--color-primary-element-text, var(--color-primary-text));
+	font-size: 0.8em;
+	font-weight: 600;
+	line-height: 1.5;
+	text-align: center;
+}
+/* on the active tab (primary background) the bubble is inverted so it stays readable */
+.mega-tab-button.active .mega-tab-count {
+	background: var(--color-primary-element-text, var(--color-main-background));
+	color: var(--color-primary-element, var(--color-primary));
 }
 
 .status-badge {
