@@ -8,6 +8,12 @@
  *
  * Global on purpose (imported in main.js): scoped styles in App.vue cannot reach CourseDetail or
  * PoolList. Components keep their own class names for layout (margins) and tests.
+ *
+ * Specificity: Nextcloud core styles every plain <button> with
+ * `button:not(.button-vue,[class^=vs__])` (0,1,1: width 130px, border, padding, background) and
+ * `…:hover, …:focus` (0,2,1: background primary-light-hover). A bare `.lnc-tab` (0,1,0) would lose
+ * both — fixed-width bordered tabs, and a focused active tab with white text on a light
+ * background. Hence the tab rules hang off `.lnc-tablist` (0,2,0 / 0,3,0 / 0,4,0).
  */
 .lnc-tablist {
 	display: flex;
@@ -22,8 +28,9 @@
 	box-sizing: border-box;
 }
 
-.lnc-tab {
+.lnc-tablist .lnc-tab {
 	flex: 0 1 auto;
+	width: auto;
 	min-width: 0;
 	min-height: 40px;
 	padding: 10px 18px;
@@ -40,24 +47,24 @@
 	transition: background-color 0.2s, color 0.2s;
 }
 
-.lnc-tab:hover:not(.active) {
+.lnc-tablist .lnc-tab:hover:not(.active) {
 	background: var(--color-background-dark);
 }
 
-.lnc-tab.active {
+.lnc-tablist .lnc-tab.active {
 	background: var(--color-primary-element);
 	color: var(--color-primary-element-text);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.lnc-tab:focus-visible {
+.lnc-tablist .lnc-tab:focus-visible {
 	outline: 2px solid var(--color-main-text);
 	outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
 	/* phone: the bar may use the whole row, each tab still only as wide as it needs */
-	.lnc-tab {
+	.lnc-tablist .lnc-tab {
 		padding: 8px 14px;
 	}
 }

@@ -56,14 +56,37 @@ describe('#46 shared tab style', () => {
 	})
 
 	it('a tab is not stretched and the active one is the filled primary segment', () => {
-		const [tab] = declsFor(tabs, '.lnc-tab')
+		const [tab] = declsFor(tabs, '.lnc-tablist .lnc-tab')
 		expect(tab.flex).toBe('0 1 auto')
-		const [active] = declsFor(tabs, '.lnc-tab.active')
+		// Nextcloud core gives every plain button width: 130px
+		expect(tab.width).toBe('auto')
+		const [active] = declsFor(tabs, '.lnc-tablist .lnc-tab.active')
 		expect(active.background).toBe('var(--color-primary-element)')
 		expect(active.color).toBe('var(--color-primary-element-text)')
 		// hover never repaints the active tab
-		expect(declsFor(tabs, '.lnc-tab:hover')).toEqual([])
-		expect(declsFor(tabs, '.lnc-tab:hover:not(.active)').length).toBe(1)
+		expect(declsFor(tabs, '.lnc-tablist .lnc-tab:hover')).toEqual([])
+		expect(declsFor(tabs, '.lnc-tablist .lnc-tab:hover:not(.active)').length).toBe(1)
+	})
+
+	// Nextcloud core (server.css, NC 33): `button:not(.button-vue,[class^=vs__])` is (0,1,1) with
+	// width 130px/border/background, and its :hover/:focus variant is (0,2,1) with a light primary
+	// background. A tab rule must beat both, or a focused active tab shows white text on light blue.
+	it('every tab rule outranks the Nextcloud core button rules', () => {
+		const spec = (sel) => {
+			const classes = (sel.match(/\.[\w-]+|:(?!not\()[\w-]+(?:\([^)]*\))?|\[[^\]]+\]/g) || []).length
+			const types = (sel.replace(/\([^)]*\)/g, '').match(/(^|[\s>+~])[a-z]+/gi) || []).length
+			return classes * 100 + types
+		}
+		const core = { base: 101, hoverFocus: 201 }
+		const rules = [...tabs.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}@]+)\{[^{}]*\}/g)]
+			.map((m) => m[1].trim())
+			.filter((sel) => sel.includes('.lnc-tab') && !sel.endsWith('.lnc-tablist'))
+		expect(rules.length).toBeGreaterThanOrEqual(4)
+		for (const sel of rules) {
+			expect(spec(sel), sel).toBeGreaterThan(core.base)
+		}
+		expect(spec('.lnc-tablist .lnc-tab.active')).toBeGreaterThan(core.hoverFocus)
+		expect(rules).toContain('.lnc-tablist .lnc-tab.active')
 	})
 
 	it.each([
