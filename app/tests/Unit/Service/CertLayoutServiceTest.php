@@ -161,38 +161,80 @@ class CertLayoutServiceTest extends TestCase {
         $this->service()->importImage($this->course(), 'logo', 'teacher', '/x.png');
     }
 
-    public function testReplacingKeepsAnImageAnIssuedCertificateStillUses(): void {
+    /**
+     * An issuance reads the course layout at its start and inserts the certificate later: an
+     * image deleted on the change could be the one that certificate is inserted with.
+     */
+    public function testReplacingNeverDeletesTheOldImageInline(): void {
         $old = str_repeat('b', 64);
         $layout = CertLayout::defaults();
         $layout['stamp_sha'] = $old;
-        $bytes = self::png();
         $db = new FakeDbConnection([
-            new FakeQueryBuilder(new FakeResult()),               // assetExists(new) → none
-            new FakeQueryBuilder(),                                // insert new
-            new FakeQueryBuilder(FakeResult::fromFetchOne(12)),    // a certificate still uses the old one
+            new FakeQueryBuilder(new FakeResult()),   // assetExists(new) → none
+            new FakeQueryBuilder(),                    // insert new
         ]);
-        $service = $this->service($this->rootWith('teacher', '/neu.png', $this->file($bytes)), $db);
+        $service = $this->service($this->rootWith('teacher', '/neu.png', $this->file(self::png())), $db);
 
         $service->importImage($this->course(CertLayout::encode($layout)), 'stamp', 'teacher', '/neu.png');
 
-        $this->assertCount(3, $db->issuedBuilders, 'no delete of the old image');
-        $this->assertStringContainsString($old, (string)$db->issuedBuilders[2]->namedParameters[1]['value']);
+        $this->assertCount(2, $db->issuedBuilders, 'nothing after the insert of the new image');
+        $this->assertSame('insert', $db->issuedBuilders[1]->operation);
     }
 
-    public function testRemovingDeletesAnImageNobodyUses(): void {
+    public function testRemovingNeverDeletesTheImageInline(): void {
         $old = str_repeat('c', 64);
         $layout = CertLayout::defaults();
         $layout['signature_sha'] = $old;
-        $db = new FakeDbConnection([
-            new FakeQueryBuilder(new FakeResult()),   // no certificate uses it
-            new FakeQueryBuilder(),                   // delete
-        ]);
+        $db = new FakeDbConnection();
 
         $course = $this->service(null, $db)->removeImage($this->course(CertLayout::encode($layout)), 'signature');
 
         $this->assertNull($course->getCertLayout(), 'back to the standard layout');
-        $this->assertSame('delete', $db->issuedBuilders[1]->operation);
-        $this->assertSame('learning_cert_assets', $db->issuedBuilders[1]->table);
+        $this->assertCount(0, $db->issuedBuilders, 'no query on the image table');
+        $this->assertSame(1760000000, $course->getUpdatedAt(), 'the change starts the grace period');
+    }
+
+    public function testSweepLooksOnlyAtCoursesUnchangedForTheGracePeriod(): void {
+        $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchAll([]))]);
+
+        $this->assertSame(0, $this->service(null, $db)->sweepUnreferencedAssets());
+
+        $candidates = $db->issuedBuilders[0];
+        $this->assertSame([['type' => 'lt', 'left' => 'c.updated_at', 'right' => ['value' => 1760000000 - 3600, 'type' => \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT]]], $candidates->whereCalls);
+        $this->assertSame('learning_courses', $candidates->joins[0]['join']);
+    }
+
+    public function testSweepDeletesAnImageNobodyUses(): void {
+        $sha = str_repeat('c', 64);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 5, 'course_id' => 7, 'sha256' => $sha, 'cert_layout' => null]])),
+            new FakeQueryBuilder(new FakeResult()),   // no certificate uses it
+            new FakeQueryBuilder(null, 1),            // delete
+        ]);
+
+        $this->assertSame(1, $this->service(null, $db)->sweepUnreferencedAssets());
+
+        $this->assertStringContainsString($sha, (string)$db->issuedBuilders[1]->namedParameters[1]['value']);
+        $this->assertSame('delete', $db->issuedBuilders[2]->operation);
+        $this->assertSame('learning_cert_assets', $db->issuedBuilders[2]->table);
+        $this->assertSame(5, $db->issuedBuilders[2]->namedParameters[0]['value']);
+    }
+
+    public function testSweepKeepsTheCoursesOwnImageAndOneACertificateUses(): void {
+        $own = str_repeat('a', 64);
+        $issued = str_repeat('b', 64);
+        $layout = CertLayout::defaults();
+        $layout['stamp_sha'] = $own;
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([
+                ['id' => 1, 'course_id' => 7, 'sha256' => $own, 'cert_layout' => CertLayout::encode($layout)],
+                ['id' => 2, 'course_id' => 7, 'sha256' => $issued, 'cert_layout' => CertLayout::encode($layout)],
+            ])),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(12)),   // a certificate still uses $issued
+        ]);
+
+        $this->assertSame(0, $this->service(null, $db)->sweepUnreferencedAssets());
+        $this->assertCount(2, $db->issuedBuilders, 'no delete');
     }
 
     public function testCertificateWithoutSnapshotHasNoPresentation(): void {

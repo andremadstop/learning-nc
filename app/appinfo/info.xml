@@ -123,6 +123,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
         <job>OCA\Learning\BackgroundJob\AuditCheckpointJob</job>
         <job>OCA\Learning\BackgroundJob\RecertPeriodCloseJob</job>
         <job>OCA\Learning\BackgroundJob\RetentionJob</job>
+        <job>OCA\Learning\BackgroundJob\CertAssetCleanupJob</job>
     </background-jobs>
 
     <repair-steps>

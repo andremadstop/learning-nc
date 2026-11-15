@@ -22,7 +22,8 @@ use PHPUnit\Framework\TestCase;
  * GitHub #43 against a real Nextcloud on both engines (scripts/nc-integration.sh): the new columns
  * and learning_cert_assets exist after install, a PNG is read from the instructor's own files and
  * stored, the certificate issued afterwards keeps that stamp after the course switches to another
- * one, and an image no certificate uses is removed.
+ * one, and an image no certificate uses is removed by the cleanup sweep once the course has been
+ * unchanged for the grace period.
  */
 final class CertLayoutAssetsTest extends TestCase {
     private const TEACHER = 'gh43-teacher';
@@ -128,10 +129,20 @@ final class CertLayoutAssetsTest extends TestCase {
         $this->assertSame('Maria Muster', $presentation['signer_name']);
         $this->assertSame('data:image/png;base64,' . base64_encode($stampB), $this->layouts->presentationForCourse($this->course())['stamp']);
 
-        // Removing B (used by no certificate) deletes it; A stays with its certificate.
+        // Removing B (used by no certificate) keeps its bytes for the grace period: an issuance
+        // that read the layout with B just before could still be inserting its certificate.
         $this->layouts->removeImage($this->course(), 'stamp');
+        $this->assertSame(2, $this->assetCount());
+        $this->assertSame(0, $this->layouts->sweepUnreferencedAssets(), 'the course changed just now');
+        $this->assertSame(2, $this->assetCount());
+
+        // An hour later the cleanup job deletes B; A stays with its certificate.
+        $course = $this->course();
+        $course->setUpdatedAt(time() - 7200);
+        $this->courses->update($course);
+        $this->assertSame(1, $this->layouts->sweepUnreferencedAssets());
         $this->assertSame(1, $this->assetCount());
-        $this->assertNotNull($this->layouts->presentationForCertificate($cert)['stamp']);
+        $this->assertSame('data:image/png;base64,' . base64_encode($stampA), $this->layouts->presentationForCertificate($cert)['stamp']);
     }
 
     /**

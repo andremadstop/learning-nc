@@ -86,10 +86,7 @@ class CertLayoutService {
         $course->setUpdatedAt($this->timeFactory->getTime());
         /** @var Course $course */
         $course = $this->courseMapper->update($course);
-
-        if ($previous !== null && $previous !== $sha) {
-            $this->deleteIfUnreferenced($course, $previous);
-        }
+        // The replaced image is not deleted here: see sweepUnreferencedAssets().
         return $course;
     }
 
@@ -112,7 +109,7 @@ class CertLayoutService {
         $course->setUpdatedAt($this->timeFactory->getTime());
         /** @var Course $course */
         $course = $this->courseMapper->update($course);
-        $this->deleteIfUnreferenced($course, $previous);
+        // The removed image is not deleted here: see sweepUnreferencedAssets().
         return $course;
     }
 
@@ -232,32 +229,55 @@ class CertLayoutService {
     }
 
     /**
-     * Delete an image nobody uses any more: not the course's stamp or signature, and in no
-     * certificate of the course. The sha256 is 64 hex characters, so a LIKE on it cannot match
-     * anything else in the JSON.
+     * Delete the images nobody uses any more: not the course's stamp or signature, and in no
+     * certificate of the course. Run by CertAssetCleanupJob, never inline on a change.
+     *
+     * Grace period: only courses whose last change (importImage/removeImage set updated_at) is at
+     * least $graceSeconds old. An issuance reads the course layout at its start and inserts the
+     * certificate with that layout's sha later in the same request; deleting the image the moment
+     * the instructor swaps or removes it could drop the bytes of a certificate being inserted at
+     * that moment, which would then show without its stamp for good. No request lives an hour.
+     *
+     * The sha256 is 64 hex characters, so a LIKE on it cannot match anything else in the JSON.
+     *
+     * @return int number of images deleted
      */
-    private function deleteIfUnreferenced(Course $course, string $sha): void {
-        $layout = CertLayout::decode($course->getCertLayout());
-        if ($layout['stamp_sha'] === $sha || $layout['signature_sha'] === $sha) {
-            return;
-        }
-        $courseId = (int)$course->getId();
+    public function sweepUnreferencedAssets(int $graceSeconds = 3600): int {
+        $cutoff = $this->timeFactory->getTime() - $graceSeconds;
         $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
-            ->from('learning_certificates')
-            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->like('layout_json', $qb->createNamedParameter('%' . $this->db->escapeLikeParameter($sha) . '%')))
-            ->setMaxResults(1);
+        $qb->select('a.id', 'a.course_id', 'a.sha256', 'c.cert_layout')
+            ->from('learning_cert_assets', 'a')
+            ->innerJoin('a', 'learning_courses', 'c', $qb->expr()->eq('c.id', 'a.course_id'))
+            ->where($qb->expr()->lt('c.updated_at', $qb->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)));
         $result = $qb->executeQuery();
-        $used = $result->fetchOne() !== false;
+        $rows = $result->fetchAll();
         $result->closeCursor();
-        if ($used) {
-            return;
+
+        $deleted = 0;
+        foreach ($rows as $row) {
+            $sha = (string)$row['sha256'];
+            $courseId = (int)$row['course_id'];
+            $layout = CertLayout::decode(is_string($row['cert_layout'] ?? null) ? $row['cert_layout'] : null);
+            if ($layout['stamp_sha'] === $sha || $layout['signature_sha'] === $sha) {
+                continue;
+            }
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')
+                ->from('learning_certificates')
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->like('layout_json', $qb->createNamedParameter('%' . $this->db->escapeLikeParameter($sha) . '%')))
+                ->setMaxResults(1);
+            $used = $qb->executeQuery();
+            $inUse = $used->fetchOne() !== false;
+            $used->closeCursor();
+            if ($inUse) {
+                continue;
+            }
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete('learning_cert_assets')
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$row['id'], IQueryBuilder::PARAM_INT)));
+            $deleted += $qb->executeStatement();
         }
-        $qb = $this->db->getQueryBuilder();
-        $qb->delete('learning_cert_assets')
-            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('sha256', $qb->createNamedParameter($sha)));
-        $qb->executeStatement();
+        return $deleted;
     }
 }

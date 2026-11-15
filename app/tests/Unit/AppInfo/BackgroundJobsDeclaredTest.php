@@ -44,7 +44,7 @@ class BackgroundJobsDeclaredTest extends TestCase {
         $declared = array_map('strval', $info->xpath('/info/background-jobs/job') ?: []);
         sort($declared);
 
-        $this->assertCount(7, $expected, 'the TimedJob scan found an unexpected number of classes');
+        $this->assertCount(8, $expected, 'the TimedJob scan found an unexpected number of classes');
         $this->assertSame($expected, $declared);
     }
 

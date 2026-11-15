@@ -161,6 +161,7 @@ class UninstallCommand extends Command {
      */
     public const APP_JOBS = [
         'OCA\Learning\BackgroundJob\AuditCheckpointJob',
+        'OCA\Learning\BackgroundJob\CertAssetCleanupJob',
         'OCA\Learning\BackgroundJob\ChunkingJob',
         'OCA\Learning\BackgroundJob\ConsistencyCheckJob',
         'OCA\Learning\BackgroundJob\ImportUsersJob',
