@@ -48,7 +48,10 @@ vi.mock('@nextcloud/vue/components/NcNoteCard', () => plain('NcNoteCard'))
 vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button type="button" class="nc-btn"><slot /></button>' } }))
 vi.mock('../../src/components/CourseDetail.vue', () => ({ default: { name: 'CourseDetail', props: ['courseId'],
 	template: '<div class="course-detail-stub"><button class="open-pool" @click="$emit(\'openPool\', 5)">pool</button></div>' } }))
-for (const name of ['PersonalSettings', 'PoolList', 'TrainingMode', 'QuestionList', 'LeitnerMode', 'ExamMode',
+// GitHub #69: Training's own "Back" buttons (empty states) emit 'back'.
+vi.mock('../../src/components/TrainingMode.vue', () => ({ default: { name: 'TrainingMode',
+	template: '<div class="training-stub"><button class="training-back" @click="$emit(\'back\')">back</button></div>' } }))
+for (const name of ['PersonalSettings', 'PoolList', 'QuestionList', 'LeitnerMode', 'ExamMode',
 	'AnalyticsDashboard', 'CourseList', 'StudentDetail', 'InstructorDashboard', 'SmartQueue',
 	'AdminSettings', 'GameshowMode', 'DuelMode', 'ArenaSelector', 'AbenteuerMode', 'SubnetCalculator', 'DnsResolver',
 	'FirewallBuilder', 'PortScanner', 'RoutingTable', 'NatTable', 'WiresharkLite', 'AuthFlowSimulator',
@@ -128,5 +131,21 @@ describe('App.vue: a pool opened from a course keeps the course', () => {
 		await settle()
 		expect(vm.selectedPool).toBeNull()
 		expect(vm.poolFromCourse).toBe(false)
+	})
+
+	// GitHub #69: Training's "Back" called backToPools() and left a pool opened from the course
+	// on the pool list, empty for a co-instructor whose course pools belong to a colleague.
+	it('the back button inside the pool window returns to the course, too', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		await mountApp('/courses/12/lernraum')
+		host.querySelector('.course-detail-stub .open-pool').click()
+		await settle()
+		const back = host.querySelector('.training-stub .training-back')
+		expect(back).not.toBeNull()
+		back.click()
+		await settle()
+		expect(router.currentRoute.value.name).toBe('course-tab')
+		expect(Number(router.currentRoute.value.params.id)).toBe(12)
+		expect(vm.selectedPool).toBeNull()
 	})
 })

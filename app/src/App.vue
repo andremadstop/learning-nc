@@ -132,7 +132,7 @@
 
             <div v-else-if="currentView === 'questions'" class="pool-view">
               <div class="pool-view-header">
-                <NcButton variant="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', 'Zurück zu Pools')">
+                <NcButton variant="tertiary" @click="leavePool" :aria-label="poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', 'Zurück zu Pools')">
                   {{ poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', '← Zurück zu Pools') }}
                 </NcButton>
                 <h3 class="pool-title">{{ selectedPool.name }}</h3>
@@ -184,7 +184,7 @@
                 :contentLanguage="contentLanguage"
                 :can-manage="canManagePool"
                 :has-simulator-questions="pbqQuestionCount > 0"
-                @back="backToPools"
+                @back="leavePool"
                 @manage="setMode('manage')"
               />
 
@@ -252,7 +252,7 @@
                 :poolId="selectedPool.id"
                 :poolName="selectedPool.name"
                 :readonly="poolPermission === 'read'"
-                @back="backToPools"
+                @back="leavePool"
               />
             </div>
           </template>
@@ -1705,6 +1705,16 @@ export default {
         coop: false,
         code: '',
       };
+    },
+    // GitHub #69: every "back" inside the pool window (header, Training's empty states, the
+    // question list) returns where the pool was opened from. From a course, backToPools() landed
+    // on the pool list, empty for a co-instructor whose course pools belong to a colleague.
+    leavePool() {
+      if (this.poolFromCourse) {
+        this.backToCourse();
+      } else {
+        this.backToPools();
+      }
     },
     backToCourse() {
       const course = this.poolFromCourseObj;
