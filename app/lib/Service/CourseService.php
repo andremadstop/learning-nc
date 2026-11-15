@@ -1812,6 +1812,11 @@ class CourseService {
                 $student['overall_metric'] = 'exam';
                 $student['overall_passed'] = (bool)$standing['passed'];
                 $student['overall_mastery'] = $standing['score'];
+                // In the renewal window only the new exams count, so a learner whose certificate
+                // is still valid is "not passed" until renewed; the row says so instead of
+                // reading like someone who never passed (the coverage report: renewal_open).
+                $student['certificate_valid'] = (bool)$standing['certificate_valid'];
+                $student['renewal_open'] = (bool)$standing['renewal_open'];
             } else {
                 $student['overall_metric'] = 'accuracy';
                 $student['overall_passed'] = null;

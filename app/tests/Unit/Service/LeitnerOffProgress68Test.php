@@ -151,6 +151,19 @@ class LeitnerOffProgress68Test extends TestCase {
         $this->assertSame(90, $row['overall_mastery']);
     }
 
+    public function testAValidCertificateInItsRenewalWindowTravelsWithTheRow(): void {
+        $standing = $this->passedStanding([
+            'passed' => false, 'score' => null, 'pools' => [self::REQUIRED => ['best_score' => null, 'passed' => false]],
+            'certificate_valid' => true, 'renewal_open' => true,
+        ]);
+        $row = $this->service($this->progressDb(), json_encode(['leitner' => false]), $standing)
+            ->getCourseProgress(7, 'teacher')['students'][0];
+        $this->assertFalse($row['overall_passed']);
+        $this->assertTrue($row['certificate_valid'], 'the table shows "valid, renewal open", not "not passed"');
+        $this->assertTrue($row['renewal_open']);
+        $this->assertNull($this->poolsOf($row)[self::REQUIRED]['value']);
+    }
+
     public function testWithoutCertificatesTheOverallIsTheHitRate(): void {
         $pass = $this->createMock(PassCriteriaService::class);
         $pass->method('examStandings')->willReturn(['applicable' => false, 'threshold' => 80, 'requirement' => 'any_exam', 'required_pool_ids' => [], 'users' => []]);

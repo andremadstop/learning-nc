@@ -972,7 +972,11 @@ export default {
 			const value = pool?.value ?? null
 			if (pool?.metric === 'exam') {
 				if (value === null) {
-					return { text: '-', cls: '', title: t('learning', 'Noch keine Prüfung abgelegt'), passed: false }
+					// In the renewal window only new exams count; the old pass is still on the certificate.
+					const title = row?.certificate_valid && row?.renewal_open
+						? t('learning', 'Erneuerung offen: noch keine neue Prüfung abgelegt')
+						: t('learning', 'Noch keine Prüfung abgelegt')
+					return { text: '-', cls: '', title, passed: false }
 				}
 				return {
 					text: value + '%',
@@ -989,6 +993,12 @@ export default {
 		overallExamCell(row) {
 			const score = row?.overall_mastery ?? null
 			if (row?.overall_metric === 'exam') {
+				// A valid certificate in its renewal window is not "not passed" (coverage: renewal_open).
+				if (!row.overall_passed && row.certificate_valid) {
+					return row.renewal_open
+						? { text: t('learning', 'Zertifikat gültig · Erneuerung offen'), cls: 'mastery-medium' }
+						: { text: t('learning', 'Zertifikat gültig'), cls: 'mastery-high' }
+				}
 				const label = row.overall_passed ? t('learning', 'Bestanden') : t('learning', 'Nicht bestanden')
 				return {
 					text: score !== null ? label + ' (' + score + '%)' : label,

@@ -3806,5 +3806,8 @@ OC.L10N.register(
     "{rate} % falsch · {n} Antworten" : "{rate} % неверно · {n} ответов",
     "Noch zu wenige falsche Antworten für eine Auswertung." : "Пока слишком мало неверных ответов для оценки.",
     "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools." : "Статистика ответов учащихся и самые трудные вопросы этого пула.",
+    "Zertifikat gültig · Erneuerung offen" : "Сертификат действителен · продление открыто",
+    "Zertifikat gültig" : "Сертификат действителен",
+    "Erneuerung offen: noch keine neue Prüfung abgelegt" : "Продление открыто: новый экзамен ещё не сдавался",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

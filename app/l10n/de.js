@@ -3806,5 +3806,8 @@ OC.L10N.register(
     "{rate} % falsch · {n} Antworten" : "{rate} % falsch · {n} Antworten",
     "Noch zu wenige falsche Antworten für eine Auswertung." : "Noch zu wenige falsche Antworten für eine Auswertung.",
     "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools." : "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.",
+    "Zertifikat gültig · Erneuerung offen" : "Zertifikat gültig · Erneuerung offen",
+    "Zertifikat gültig" : "Zertifikat gültig",
+    "Erneuerung offen: noch keine neue Prüfung abgelegt" : "Erneuerung offen: noch keine neue Prüfung abgelegt",
 },
 "nplurals=2; plural=(n != 1);");

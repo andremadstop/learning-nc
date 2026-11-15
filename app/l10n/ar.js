@@ -3806,5 +3806,8 @@ OC.L10N.register(
     "{rate} % falsch · {n} Antworten" : "{rate} % خطأ · {n} إجابة",
     "Noch zu wenige falsche Antworten für eine Auswertung." : "لا توجد بعد إجابات خاطئة كافية للتقييم.",
     "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools." : "إحصاءات إجابات المتعلمين وأصعب أسئلة هذه المجموعة.",
+    "Zertifikat gültig · Erneuerung offen" : "الشهادة سارية · التجديد مفتوح",
+    "Zertifikat gültig" : "الشهادة سارية",
+    "Erneuerung offen: noch keine neue Prüfung abgelegt" : "التجديد مفتوح: لم يُؤدَّ امتحان جديد بعد",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

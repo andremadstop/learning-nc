@@ -591,6 +591,22 @@ describe('Fresh-eyes review: progress table and compliance exports (GitHub #36, 
 		expect(host.querySelector('tbody').textContent).not.toMatch(/(^|[^0-9])0%/)
 	})
 
+	it('shows a valid certificate in its renewal window as valid, not as "not passed" (#68)', async () => {
+		const renewing = {
+			...examRow,
+			overall_passed: false,
+			overall_mastery: null,
+			certificate_valid: true,
+			renewal_open: true,
+			pools: [{ ...examRow.pools[0], value: null, exam_passed: false }, examRow.pools[1]],
+		}
+		await renderTab('progress', { leitner: false }, {}, { progress: { students: [renewing], meta: { total: 1, progress_basis: 'exams', cert_applicable: true } } })
+		const overall = host.querySelector('td.overall-col')
+		expect(overall.textContent).toContain('Zertifikat gültig · Erneuerung offen')
+		expect(overall.textContent).not.toContain('Nicht bestanden')
+		expect(host.querySelector('td.pool-col').getAttribute('title')).toBe('Erneuerung offen: noch keine neue Prüfung abgelegt')
+	})
+
 	it('drops the critical-cards column and names the overall column after the exam (#68)', async () => {
 		await renderTab('progress', { leitner: false }, {}, examPayload())
 		expect(host.querySelector('.critical-cards-col')).toBeNull()
