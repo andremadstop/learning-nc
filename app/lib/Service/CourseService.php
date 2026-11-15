@@ -922,10 +922,14 @@ class CourseService {
                 // curriculum scope, minus the questions paused in the course), so "Simulators
                 // only" never shows where it would start nothing.
                 $pausedQuestionIds ??= $this->getPausedQuestionIds($courseId);
-                $cpData['pbq_count'] = $this->countPbqQuestions(array_values(array_diff(
+                $eligibleQuestionIds = array_values(array_diff(
                     $this->applyCurriculumScope($courseId, $filteredQuestionIds),
                     $pausedQuestionIds
-                )));
+                ));
+                $cpData['pbq_count'] = $this->countPbqQuestions($eligibleQuestionIds);
+                // GitHub #47: the course exam draws from this same set, so the exam card names a
+                // count it can keep (question_count still counts paused and out-of-scope ones).
+                $cpData['exam_question_count'] = count($eligibleQuestionIds);
                 $cpData['total_question_count'] = $this->countQuestionsInPool($cp->getPoolId());
                 $cpData['available_filters'] = $this->getFilterOptionsForPool($cp->getPoolId());
                 $cpData['available_content_languages'] = $availableContentLanguages[$cp->getPoolId()] ?? ['de'];
@@ -933,6 +937,7 @@ class CourseService {
                 $cpData['pool_name'] = '(deleted)';
                 $cpData['question_count'] = 0;
                 $cpData['pbq_count'] = 0;
+                $cpData['exam_question_count'] = 0;
                 $cpData['total_question_count'] = 0;
                 $cpData['handbook_key'] = null;
                 $cpData['handbook_title'] = null;
@@ -950,6 +955,7 @@ class CourseService {
                 $cpData['pool_name'] = $cpData['pool_name'] ?? '(unavailable)';
                 $cpData['question_count'] = $cpData['question_count'] ?? 0;
                 $cpData['pbq_count'] = $cpData['pbq_count'] ?? 0;
+                $cpData['exam_question_count'] = $cpData['exam_question_count'] ?? 0;
                 $cpData['total_question_count'] = $cpData['total_question_count'] ?? 0;
                 $cpData['handbook_key'] = $cpData['handbook_key'] ?? null;
                 $cpData['handbook_title'] = $cpData['handbook_title'] ?? null;

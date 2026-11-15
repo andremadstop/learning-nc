@@ -225,7 +225,7 @@
 				v-else-if="currentSubTab === 'exam'"
 				:poolId="selectedLearningPool.pool_id"
 				:courseId="courseId"
-				:totalQuestions="selectedLearningPoolQuestionCount"
+				:totalQuestions="selectedLearningPoolExamQuestionCount"
 				:contentLanguage="contentLanguage"
 				:courseCertification="examCertification"
 				:poolPractice="poolPracticeConfig"
@@ -790,6 +790,13 @@ export default {
 			return this.poolQuestionCounts[this.selectedLearningPool.pool_id]
 				?? this.selectedLearningPool.question_count
 				?? 0
+		},
+		// GitHub #47: the questions the course exam really draws from (no paused or out-of-scope
+		// ones), so the card never names more than the exam asks. Older servers send no count.
+		selectedLearningPoolExamQuestionCount() {
+			const all = this.selectedLearningPoolQuestionCount
+			const eligible = this.selectedLearningPool?.exam_question_count
+			return eligible == null ? all : Math.min(all, Number(eligible) || 0)
 		},
 		currentRequiredBlockers() {
 			return this.sortedPools

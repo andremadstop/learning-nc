@@ -178,6 +178,18 @@ describe('Pool rules dialog (#47)', () => {
 		expect(axios.put).not.toHaveBeenCalled()
 	})
 
+	it('gives the exam card the questions the exam draws from, without paused ones', () => {
+		const count = CourseTabLernraum.computed.selectedLearningPoolExamQuestionCount
+		expect(count.call({ selectedLearningPoolQuestionCount: 40, selectedLearningPool: { exam_question_count: 30 } })).toBe(30)
+		expect(count.call({ selectedLearningPoolQuestionCount: 40, selectedLearningPool: { exam_question_count: 0 } })).toBe(0)
+		expect(count.call({ selectedLearningPoolQuestionCount: 40, selectedLearningPool: {} })).toBe(40)
+		const source = fs.readFileSync(path.resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
+		expect(source).toMatch(/:courseId="courseId"\s+:totalQuestions="selectedLearningPoolExamQuestionCount"\s+:contentLanguage="contentLanguage"\s+:courseCertification="examCertification"/)
+		// pool rule 35, 30 eligible: the card says 30, not 35
+		const vm = instanceOf(ExamMode, { ...examProps, totalQuestions: 30, examScope: { questions: 35, minutes: null } })
+		expect(vm.examPresets[0].meta).toBe('Fragen: 30 · Zeitlimit: 45 Min.')
+	})
+
 	it('passes the server-computed scope of the selected pool to the exam card', () => {
 		const source = fs.readFileSync(path.resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
 		expect(source).toContain(':examScope="selectedLearningPool.exam_scope || null"')

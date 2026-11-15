@@ -73,6 +73,13 @@ final class CoursePoolPbqCountTest extends TestCase {
 		$byPool = array_column($course['pools'], 'pbq_count', 'pool_id');
 
 		$this->assertSame(0, $byPool[$this->withPbq]);
+
+		// Review of #47: the exam draws from the same set, so the exam card's count leaves the
+		// paused questions out too, while question_count still names the whole filtered pool.
+		$examCount = array_column($course['pools'], 'exam_question_count', 'pool_id');
+		$this->assertSame(1, $examCount[$this->withPbq]);
+		$this->assertSame(3, array_column($course['pools'], 'question_count', 'pool_id')[$this->withPbq]);
+		$this->assertSame(2, $examCount[$this->withoutPbq]);
 	}
 
 	/** @param string[] $types */
