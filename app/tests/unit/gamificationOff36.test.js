@@ -545,12 +545,12 @@ describe('Fresh-eyes review: certification card frame (GitHub #36)', () => {
 })
 
 describe('Fresh-eyes review: progress table and compliance exports (GitHub #36)', () => {
-	async function renderTab(activeTab, courseOverrides = {}) {
+	async function renderTab(activeTab, courseOverrides = {}, courseFields = {}) {
 		api.routes['/apps/learning/api/courses/{courseId}/progress'] = { students: [{ user_id: 'learner', display_name: 'Lena', critical_cards_count: 0, overall_mastery: 0, pools: [] }], meta: { total: 1 } }
 		api.routes['/apps/learning/api/courses/{courseId}/at-risk'] = { at_risk: [{ user_id: 'learner', display_name: 'Lena', risk_level: 'medium', risk_reason_codes: [{ code: 'never_active' }], critical_cards_count: 0, accuracy: null }] }
 		return render(CourseTabTeilnehmer, {
 			courseId: 5,
-			course: { id: 5, is_instructor: true, cert_enabled: true, mode_config: modeConfig(courseOverrides) },
+			course: { id: 5, is_instructor: true, cert_enabled: true, mode_config: modeConfig(courseOverrides), ...courseFields },
 			userRole: 'instructor',
 			actsAsInstructor: true,
 			activeTab,
@@ -564,6 +564,14 @@ describe('Fresh-eyes review: progress table and compliance exports (GitHub #36)'
 		expect(note).not.toBeNull()
 		expect(note.textContent).toContain('Dieser Kurs nutzt Leitner nicht')
 		expect(note.textContent).toContain('Abschluss & Zertifikat')
+	})
+
+	it('names the area "Abschluss" when the course has no certificate', async () => {
+		await renderTab('progress', { leitner: false }, { cert_enabled: false })
+		const note = host.querySelector('.progress-leitner-note')
+		expect(note).not.toBeNull()
+		expect(note.textContent).toContain('„Abschluss“')
+		expect(note.textContent).not.toContain('Zertifikat“')
 	})
 
 	it('shows no such note in a course with Leitner', async () => {

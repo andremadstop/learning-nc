@@ -81,7 +81,10 @@
 			<!-- Fresh-eyes review (GitHub #36): the percentages are Leitner mastery. In a course without
 				Leitner they stay at 0 % for a learner who passed both exams, which read as "did nothing". -->
 			<NcNoteCard v-if="courseWithoutLeitner" type="info" class="progress-leitner-note">
-				{{ t('learning', 'Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.') }}
+				<!-- The area is only called „Abschluss & Zertifikat“ with the certificate on (CourseDetail.vue). -->
+				{{ course?.cert_enabled
+					? t('learning', 'Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.')
+					: t('learning', 'Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse stehen unter „Abschluss“.') }}
 			</NcNoteCard>
 
 			<!-- At-Risk Section -->
