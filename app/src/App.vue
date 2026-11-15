@@ -486,7 +486,9 @@ import { moveTablistFocus } from './utils/tablistKeydown.js';
 
 // GitHub #46: the pool window's learner modes, hidden for editors behind the practise switch.
 const LEARNER_POOL_MODES = ['train', 'leitner', 'exam', 'gameshow'];
-const POOL_PRACTISE_KEY = 'learning:pool-practise';
+// Per Nextcloud account, like the onboarding keys: a shared browser must not hand one account's
+// switch to the next.
+const poolPractiseKey = () => `learning:pool-practise:${currentOnboardingUid()}`;
 
 const VirtuProf = defineAsyncComponent(() => import('./components/VirtuProf.vue'));
 
@@ -698,7 +700,7 @@ export default {
     }
     try {
       this.poolPractise = typeof window !== 'undefined'
-        && window.localStorage?.getItem(POOL_PRACTISE_KEY) === 'yes';
+        && window.localStorage?.getItem(poolPractiseKey()) === 'yes';
     } catch (_e) {
       this.poolPractise = false;
     }
@@ -1713,9 +1715,9 @@ export default {
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
           if (next) {
-            window.localStorage.setItem(POOL_PRACTISE_KEY, 'yes');
+            window.localStorage.setItem(poolPractiseKey(), 'yes');
           } else {
-            window.localStorage.removeItem(POOL_PRACTISE_KEY);
+            window.localStorage.removeItem(poolPractiseKey());
           }
         }
       } catch (_e) {

@@ -426,6 +426,10 @@ describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
 	const modeIds = () => vm.filteredModes.map((m) => m.id)
 	const tabLabels = () => [...host.querySelectorAll('.mode-selector .mode-btn')].map((b) => b.textContent.trim())
 	const practiseSwitch = () => host.querySelector('.pool-practise-switch input')
+	const KEY = 'learning:pool-practise:instructor-a'
+	const signInAs = (uid) => { globalThis.OC = { getCurrentUser: () => ({ uid }) } }
+	beforeEach(() => signInAs('instructor-a'))
+	afterEach(() => { delete globalThis.OC })
 
 	it('an instructor opens an own pool with questions in Manage, the first tab, next to Statistics only', async () => {
 		api.questions = [{ id: 1 }, { id: 2 }]
@@ -459,7 +463,7 @@ describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
 		practiseSwitch().dispatchEvent(new Event('change'))
 		await settle()
 		expect(modeIds()).toEqual(['manage', 'stats', 'train', 'leitner', 'exam', 'gameshow'])
-		expect(localStorage.getItem('learning:pool-practise')).toBe('yes')
+		expect(localStorage.getItem(KEY)).toBe('yes')
 
 		vm.setMode('leitner')
 		await settle()
@@ -469,11 +473,11 @@ describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
 		expect(modeIds()).toEqual(['manage', 'stats'])
 		// The open Leitner tab is gone: back to Manage, not to a hidden Training.
 		expect(vm.mode).toBe('manage')
-		expect(localStorage.getItem('learning:pool-practise')).toBeNull()
+		expect(localStorage.getItem(KEY)).toBeNull()
 	})
 
 	it('the switch is remembered across visits', async () => {
-		localStorage.setItem('learning:pool-practise', 'yes')
+		localStorage.setItem(KEY, 'yes')
 		api.questions = [{ id: 1 }]
 		await mountApp('/pools')
 		host.querySelector('.open-own').click()
@@ -482,6 +486,28 @@ describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
 		expect(modeIds()).toContain('train')
 		// Still opens in Manage: the switch adds tabs, it does not change the start tab.
 		expect(vm.mode).toBe('manage')
+	})
+
+	it('the switch is remembered per account: another account in the same browser does not inherit it', async () => {
+		localStorage.setItem(KEY, 'yes')
+		signInAs('instructor-b')
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		expect(practiseSwitch().checked).toBe(false)
+		expect(modeIds()).toEqual(['manage', 'stats'])
+
+		practiseSwitch().checked = true
+		practiseSwitch().dispatchEvent(new Event('change'))
+		await settle()
+		expect(localStorage.getItem('learning:pool-practise:instructor-b')).toBe('yes')
+		practiseSwitch().checked = false
+		practiseSwitch().dispatchEvent(new Event('change'))
+		await settle()
+		// Turning it off for B leaves A's choice alone.
+		expect(localStorage.getItem('learning:pool-practise:instructor-b')).toBeNull()
+		expect(localStorage.getItem(KEY)).toBe('yes')
 	})
 
 	it('a throwing localStorage leaves the switch working for the visit', async () => {
@@ -535,7 +561,7 @@ describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
 	it('a learner without edit rights keeps the old window, in Training, without the switch', async () => {
 		api.role = { role: 'student', group: 'learning-instructors' }
 		api.questions = [{ id: 1 }]
-		localStorage.setItem('learning:pool-practise', 'yes')
+		localStorage.setItem(KEY, 'yes')
 		await mountApp('/pools')
 		host.querySelector('.open-readonly').click()
 		await settle()
