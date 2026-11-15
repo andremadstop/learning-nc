@@ -1071,7 +1071,7 @@ OC.L10N.register(
     "Lernmodi" : "Modes d'apprentissage",
     "Lernmodi für Studierende aktivieren/deaktivieren." : "Enable/disable learning modes for students.",
     "Lernraum" : "Espace d'apprentissage",
-    "Lernraum Bereiche" : "Lernraum Bereiche",
+    "Lernraum Bereiche" : "Sections de l'espace d'apprentissage",
     "Lernstatistiken und Box-Verteilung für diesen Pool." : "Learning statistics and box distribution for this pool.",
     "Letzter Host" : "Last Host",
     "Level" : "Niveau",
