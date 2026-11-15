@@ -8,6 +8,8 @@ use OCA\Learning\Controller\CertificateController;
 use OCA\Learning\Controller\CertificateReportController;
 use OCA\Learning\Controller\CourseCertificateController;
 use OCA\Learning\Controller\CourseController;
+use OCA\Learning\Controller\DataExportController;
+use OCA\Learning\Controller\ExportController;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -31,6 +33,10 @@ class CertificateDownloadCsrfTest extends TestCase {
             'instructor ZIP of the report (#42)' => [CourseCertificateController::class, 'exportZip'],
             'at-risk CSV on the same Participants tab (#45)' => [CourseController::class, 'exportAtRiskCsv'],
             'classbook vCard on the same Participants tab (#45)' => [ClassbookController::class, 'exportVcard'],
+            // Persona sweep (#36): the same 412 on "Download my data" and on the pool exports.
+            'own data export, personal settings (#36)' => [DataExportController::class, 'myData'],
+            'pool CSV export, pool window (#36)' => [ExportController::class, 'exportCsv'],
+            'pool JSON export, pool window (#36)' => [ExportController::class, 'exportJson'],
         ];
     }
 

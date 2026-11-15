@@ -37,7 +37,11 @@ class ExportController extends Controller {
     }
 
     /**
+     * Opened by browser navigation from the pool window (no request token): read-only GET, access
+     * checked by verifyExportAccess(). Without the exemption it answered 412 (persona sweep, #36).
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportCsv(int $poolId): Http\Response {
@@ -52,7 +56,11 @@ class ExportController extends Controller {
     }
 
     /**
+     * Opened by browser navigation from the pool window (no request token): read-only GET, access
+     * checked by verifyExportAccess(). Without the exemption it answered 412 (persona sweep, #36).
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportJson(int $poolId): Http\Response {

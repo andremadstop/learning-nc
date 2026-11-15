@@ -27,7 +27,12 @@ class DataExportController extends Controller {
     }
 
     /**
+     * Opened by browser navigation (window.location.href), which carries no request token: without
+     * the exemption "Download my data" answered 412 "CSRF check failed" (persona sweep, #36).
+     * Read-only GET of the caller's own data.
+     *
      * @NoAdminRequired
+     * @NoCSRFRequired
      */
     #[UserRateLimit(limit: 3, period: 60)]
     public function myData(): Http\Response {
