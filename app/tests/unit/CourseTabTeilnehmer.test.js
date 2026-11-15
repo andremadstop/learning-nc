@@ -444,3 +444,56 @@ describe('MIN_ANSWERS_PER_QUESTION (GitHub #44)', () => {
 		expect(php).toContain(`public const MIN_ANSWERS_PER_QUESTION = ${MIN_ANSWERS_PER_QUESTION};`)
 	})
 })
+
+// Lückencheck B2 review: a slower answer to an earlier status choice must not overwrite the table
+// under the select's newer status.
+describe('CourseTabTeilnehmer coverage request order (#42)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		axios.get.mockReset()
+	})
+
+	it('keeps the rows of the newest filter choice when an older answer arrives last', async () => {
+		const instance = createInstance()
+		let resolveOverdue
+		let resolveNever
+		axios.get
+			.mockImplementationOnce(() => new Promise((resolve) => { resolveOverdue = resolve }))
+			.mockImplementationOnce(() => new Promise((resolve) => { resolveNever = resolve }))
+
+		instance.onCoverageStatusChange('overdue')
+		instance.onCoverageStatusChange('never_passed')
+		expect(axios.get).toHaveBeenCalledTimes(2)
+
+		resolveNever({ data: { rows: [{ member_ref: 'n', status: 'never_passed' }] } })
+		await Promise.resolve()
+		await Promise.resolve()
+		resolveOverdue({ data: { rows: [{ member_ref: 'o', status: 'overdue' }] } })
+		await Promise.resolve()
+		await Promise.resolve()
+
+		expect(instance.coverageStatusFilter).toBe('never_passed')
+		expect(instance.coverageAppliedStatus).toBe('never_passed')
+		expect(instance.coverageRows.map((row) => row.member_ref)).toEqual(['n'])
+	})
+
+	it('a failed older request stays silent once a newer one was sent', async () => {
+		const instance = createInstance()
+		let rejectOld
+		axios.get
+			.mockImplementationOnce(() => new Promise((resolve, reject) => { rejectOld = reject }))
+			.mockResolvedValueOnce({ data: { rows: [] } })
+		const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+		instance.onCoverageStatusChange('overdue')
+		instance.coverageStatusFilter = 'expired'
+		await instance.fetchCoverage()
+		rejectOld(new Error('slow and failed'))
+		await Promise.resolve()
+		await Promise.resolve()
+
+		expect(instance.$emit).not.toHaveBeenCalledWith('error', expect.anything())
+		expect(instance.coverageAppliedStatus).toBe('expired')
+		errSpy.mockRestore()
+	})
+})

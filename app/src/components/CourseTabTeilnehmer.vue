@@ -693,6 +693,7 @@ export default {
 			coverageLoaded: false,
 			coverageStatusFilter: '',
 			coverageAppliedStatus: '',
+			coverageRequestSeq: 0,
 
 			// Telos aggregate
 			telosAggregateLoading: false,
@@ -1065,16 +1066,25 @@ export default {
 			this.fetchCoverage()
 		},
 		// Lückencheck B2: the table keeps the status it was loaded with; the CSV exports that one.
+		// Only the newest request may fill the table: a slower answer to an earlier filter choice
+		// would otherwise show its rows under the select's newer status.
 		async fetchCoverage() {
 			const status = this.coverageStatusFilter
+			const seq = ++this.coverageRequestSeq
 			try {
 				const qs = buildCoverageQuery(status)
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-coverage', { courseId: this.courseId })
 				const response = await axios.get(url + (qs ? '?' + qs : ''))
+				if (seq !== this.coverageRequestSeq) {
+					return
+				}
 				this.coverageRows = Array.isArray(response.data.rows) ? response.data.rows : []
 				this.coverageAppliedStatus = qs ? status : ''
 				this.coverageLoaded = true
 			} catch (err) {
+				if (seq !== this.coverageRequestSeq) {
+					return
+				}
 				console.error('Failed to fetch coverage report:', err)
 				this.$emit('error', t('learning', 'Abdeckungsbericht konnte nicht geladen werden.'))
 			}
