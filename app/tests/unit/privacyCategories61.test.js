@@ -78,4 +78,9 @@ describe('#61 data categories', () => {
 		expect(rule).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\);/)
 		expect(rule).not.toMatch(/auto-fit/)
 	})
+	it('the disclosure triangle is decorative: empty CSS alt text, so it is not read aloud', () => {
+		const sfc = fs.readFileSync(resolve(__dirname, '../../src/components/PrivacyInfo.vue'), 'utf8')
+		const rule = [...sfc.matchAll(/\.privacy-info__category-header::before \{([^}]*)\}/g)].map((m) => m[1]).find((r) => r.includes('content'))
+		expect(rule).toMatch(/content:\s*'▸'\s*\/\s*'';/)
+	})
 })

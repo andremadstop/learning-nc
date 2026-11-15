@@ -340,8 +340,11 @@ export default {
 	display: none;
 }
 
+/* Decorative: the empty alt text keeps screen readers from reading "triangle" before every
+   category; the first line is the fallback for browsers without CSS alt text. */
 .privacy-info__category-card--collapsible > .privacy-info__category-header::before {
 	content: '▸';
+	content: '▸' / '';
 	color: var(--color-primary-element);
 	transition: transform 0.2s;
 }
