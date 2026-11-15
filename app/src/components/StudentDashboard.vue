@@ -110,9 +110,10 @@
       <div v-if="showTimeline" class="dashboard-timeline-section">
         <div class="widget-card widget-timeline">
           <div class="timeline-header">
-            <p class="section-label">{{ t('learning', 'Zeitplan') }}</p>
+            <p id="dashboard-timeline-label" class="section-label">{{ t('learning', 'Zeitplan') }}</p>
             <select
               v-if="enrolledCourses.length > 1"
+              aria-labelledby="dashboard-timeline-label"
               v-model="selectedTimelineCourse"
               class="timeline-course-select">
               <option v-for="c in enrolledCourses" :key="c.id" :value="c.id">

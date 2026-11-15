@@ -3812,5 +3812,9 @@ OC.L10N.register(
     "Erneuerung offen: noch keine neue Prüfung abgelegt" : "Renouvellement ouvert : aucun nouvel examen passé pour l'instant",
     "Pools meiner Kurse ({n})" : "Pools de mes cours ({n})",
     "Kurse: {courses}" : "Cours : {courses}",
+    "Tagesziel (Karten pro Tag)" : "Objectif quotidien (cartes par jour)",
+    "Berechtigung" : "Autorisation",
+    "Berechtigung für {user}" : "Autorisation pour {user}",
+    "Terminal" : "Terminal",
 },
 "nplurals=2; plural=(n > 1);");

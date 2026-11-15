@@ -92,7 +92,7 @@
           <button class="daily-goal-edit-btn" @click="showGoalEdit = !showGoalEdit">{{ t('learning', 'Change goal') }}</button>
         </div>
         <div v-if="showGoalEdit" class="daily-goal-editor">
-          <input type="number" v-model.number="editGoalValue" min="5" max="200" class="nc-input goal-input" />
+          <input type="number" v-model.number="editGoalValue" min="5" max="200" class="nc-input goal-input" :aria-label="t('learning', 'Tagesziel (Karten pro Tag)')" />
           <NcButton type="button" variant="primary" :disabled="savingGoal" @click="saveGoal">{{ t('learning', 'Save') }}</NcButton>
         </div>
       </div>
@@ -191,12 +191,9 @@
       <NcEmptyContent v-if="filteredPools.length === 0 && !searchTerm" :name="t('learning', 'No pools yet')" :description="userRole === 'instructor' ? t('learning', 'Create a pool, add questions (or import CSV/JSON) and assign it to a course.') : t('learning', 'The question pools of your courses open from the Courses tab. Only instructors can create pools; pools shared with you for editing are listed under Shared with me.')" />
       <NcEmptyContent v-else-if="filteredPools.length === 0 && searchTerm" :name="t('learning', 'No pools matching \'{searchTerm}\'', { searchTerm: searchTerm })" :description="t('learning', 'Try a different search term')" />
       <div v-else class="pool-grid">
-        <div v-for="pool in filteredPools" :key="pool.id" class="pool-card" @click="selectPool(pool)"
-             tabindex="0" role="button"
-             @keydown.enter="selectPool(pool)"
-             @keydown.space.prevent="selectPool(pool)">
+        <div v-for="pool in filteredPools" :key="pool.id" class="pool-card" @click="selectPool(pool)">
           <div class="pool-card-header">
-            <h4>{{ pool.name }}</h4>
+            <h4><button type="button" class="pool-card-open" @click.stop="selectPool(pool)">{{ pool.name }}</button></h4>
             <NcActions v-if="userRole === 'instructor'" @click.stop>
               <NcActionButton @click="sharePool(pool)" close-after-click>{{ t('learning', 'Share') }}</NcActionButton>
               <NcActionButton @click="editPool(pool)" close-after-click>{{ t('learning', 'Edit') }}</NcActionButton>
@@ -219,12 +216,9 @@
     <div v-else-if="activeTab === 'shared'">
       <NcEmptyContent v-if="sharedPools.length === 0" :name="t('learning', 'No shared pools')" :description="t('learning', 'When someone shares a pool with you, it will appear here')" />
         <div v-else class="pool-grid">
-          <div v-for="pool in sharedPools" :key="'s-' + pool.id" class="pool-card shared" @click="selectPool(pool)"
-             tabindex="0" role="button"
-             @keydown.enter="selectPool(pool)"
-             @keydown.space.prevent="selectPool(pool)">
+          <div v-for="pool in sharedPools" :key="'s-' + pool.id" class="pool-card shared" @click="selectPool(pool)">
           <div class="pool-card-header">
-            <h4>{{ pool.name }}</h4>
+            <h4><button type="button" class="pool-card-open" @click.stop="selectPool(pool)">{{ pool.name }}</button></h4>
             <span class="permission-badge" :class="pool.permission">
               {{ pool.permission === 'edit' ? t('learning', 'Can edit') : t('learning', 'View only') }}
             </span>
@@ -245,12 +239,9 @@
          edited from the permission the server named. -->
     <div v-else-if="activeTab === 'course' && showCoursePoolsTab" class="course-pools">
       <div class="pool-grid">
-        <div v-for="pool in coursePools" :key="'c-' + pool.id" class="pool-card course-pool-card" @click="selectPool(pool)"
-             tabindex="0" role="button"
-             @keydown.enter="selectPool(pool)"
-             @keydown.space.prevent="selectPool(pool)">
+        <div v-for="pool in coursePools" :key="'c-' + pool.id" class="pool-card course-pool-card" @click="selectPool(pool)">
           <div class="pool-card-header">
-            <h4>{{ pool.name }}</h4>
+            <h4><button type="button" class="pool-card-open" @click.stop="selectPool(pool)">{{ pool.name }}</button></h4>
             <span class="permission-badge" :class="pool.permission === 'read' ? 'read' : 'edit'">
               {{ pool.permission === 'read' ? t('learning', 'View only') : t('learning', 'Can edit') }}
             </span>
@@ -882,6 +873,9 @@ export default {
 .pool-card.shared { border-left: 4px solid var(--color-primary-element); }
 .pool-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .pool-card-header h4 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; line-height: 1.4; color: var(--color-main-text); }
+/* GitHub #64: the pool name is the card's button (the card holds the action menu); it looks like the heading text. */
+.pool-card-open { min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.pool-card:has(.pool-card-open:focus-visible) { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
 .permission-badge { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
 .permission-badge.read { background: var(--color-background-hover); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
 .permission-badge.edit { background: var(--color-success); color: var(--color-success-text, var(--color-success)); border: 1px solid var(--color-border-success); }

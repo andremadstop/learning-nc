@@ -50,12 +50,10 @@
 					<div v-for="course in courses"
 						:key="course.id"
 						class="dashboard-course-card"
-						tabindex="0" role="button"
-						@click="$emit('selectCourse', course)"
-						@keydown.enter="$emit('selectCourse', course)"
-						@keydown.space.prevent="$emit('selectCourse', course)">
+						@click="$emit('selectCourse', course)">
 						<div class="card-header">
-							<h4>{{ course.title }}</h4>
+							<!-- GitHub #64: the title opens the course; the card holds the export button, so it is no button itself. -->
+							<h4><button type="button" class="card-open" @click.stop="$emit('selectCourse', course)">{{ course.title }}</button></h4>
 							<span class="status-badge" :class="course.status">
 								{{ course.status === 'active' ? t('learning', 'Aktiv') : t('learning', 'Archiviert') }}
 							</span>
@@ -75,7 +73,7 @@
 						</div>
 						<div class="card-footer">
 							<span>{{ t('learning', 'Erstellt {date}', { date: formatDate(course.created_at) }) }}</span>
-							<NcButton variant="tertiary" :aria-label="t('learning', 'Statistiken exportieren')" class="export-btn" @click.stop="exportCourseCsv(course)">
+							<NcButton variant="tertiary" :title="t('learning', 'Statistiken exportieren')" class="export-btn" @click.stop="exportCourseCsv(course)">
 								{{ t('learning', 'CSV Export') }}
 							</NcButton>
 						</div>
@@ -346,6 +344,25 @@ export default {
 	justify-content: space-between;
 	align-items: flex-start;
 	gap: 8px;
+}
+
+/* GitHub #64: the title button looks like the heading text; while it has the focus the card is outlined too. */
+.card-open {
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.dashboard-course-card:has(.card-open:focus-visible) {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
 }
 
 .card-header h4 {

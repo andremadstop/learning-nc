@@ -8,16 +8,16 @@
       <NcNoteCard v-if="error" type="error" class="duel-error">{{ error }}</NcNoteCard>
 
       <div class="pool-picker">
-        <label class="pool-picker-label">{{ t('learning', 'Pool') }}</label>
-        <select v-model="selectedPoolId" class="pool-select">
+        <label for="duel-pool" class="pool-picker-label">{{ t('learning', 'Pool') }}</label>
+        <select id="duel-pool" v-model="selectedPoolId" class="pool-select">
           <option :value="0" disabled>{{ t('learning', '— Pool auswählen —') }}</option>
           <option v-for="p in pools" :key="p.id" :value="p.id">{{ p.name }}</option>
         </select>
       </div>
 
       <div class="pool-picker">
-        <label class="pool-picker-label">{{ t('learning', 'Fragen') }}</label>
-        <select v-model="numQuestions" class="pool-select">
+        <label for="duel-question-count" class="pool-picker-label">{{ t('learning', 'Fragen') }}</label>
+        <select id="duel-question-count" v-model="numQuestions" class="pool-select">
           <option :value="5">5</option>
           <option :value="10">10</option>
           <option :value="15">15</option>
@@ -26,8 +26,8 @@
       </div>
 
       <div v-if="courseId" class="pool-picker">
-        <label class="pool-picker-label">{{ t('learning', 'Directly challenge an opponent') }}</label>
-        <select v-model="selectedOpponentUid" class="pool-select">
+        <label for="duel-opponent" class="pool-picker-label">{{ t('learning', 'Directly challenge an opponent') }}</label>
+        <select id="duel-opponent" v-model="selectedOpponentUid" class="pool-select">
           <option value="">{{ t('learning', 'Create duel code only') }}</option>
           <option v-for="opponent in opponents" :key="opponent.user_id" :value="opponent.user_id">
             {{ opponent.display_name || opponent.user_id }}

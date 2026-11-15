@@ -3811,6 +3811,10 @@
         "Zertifikat gültig": "Сертифікат чинний",
         "Erneuerung offen: noch keine neue Prüfung abgelegt": "Поновлення відкрито: новий іспит ще не складався",
         "Pools meiner Kurse ({n})": "Пули моїх курсів ({n})",
-        "Kurse: {courses}": "Курси: {courses}"
+        "Kurse: {courses}": "Курси: {courses}",
+        "Tagesziel (Karten pro Tag)": "Денна ціль (карток на день)",
+        "Berechtigung": "Право доступу",
+        "Berechtigung für {user}": "Право доступу для {user}",
+        "Terminal": "Термінал"
     }
 }

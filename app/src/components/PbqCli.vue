@@ -20,6 +20,7 @@
           <input
             v-if="!disabled"
             v-model="inputBuffers[term.name]"
+            :aria-label="currentPrompt(term)"
             @keydown.enter.prevent="submitCommand(term)"
             @keydown.escape.prevent="clearInput(term)"
             class="pbq-terminal-input"

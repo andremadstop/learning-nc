@@ -5,7 +5,7 @@
     <form @submit.prevent="addShare" class="share-form">
       <div class="share-input-row">
         <input v-model="newShareUser" type="text" :placeholder="t('learning', 'Username...')" required class="nc-input share-input" />
-        <select v-model="newSharePermission" class="permission-select">
+        <select v-model="newSharePermission" class="permission-select" :aria-label="t('learning', 'Berechtigung')">
           <option value="read">{{ t('learning', 'Can view') }}</option>
           <option value="edit">{{ t('learning', 'Can edit') }}</option>
         </select>
@@ -20,7 +20,7 @@
       <div v-for="share in shares" :key="share.id" class="share-item">
         <span class="share-avatar">{{ share.shared_with.charAt(0).toUpperCase() }}</span>
         <span class="share-user">{{ share.shared_with }}</span>
-        <select :value="share.permission" @change="updatePermission(share, $event.target.value, $event.target)" class="permission-select permission-select-sm">
+        <select :value="share.permission" class="permission-select permission-select-sm" :aria-label="t('learning', 'Berechtigung für {user}', { user: share.shared_with })" @change="updatePermission(share, $event.target.value, $event.target)">
           <option value="read">{{ t('learning', 'Can view') }}</option>
           <option value="edit">{{ t('learning', 'Can edit') }}</option>
         </select>

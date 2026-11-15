@@ -1,11 +1,14 @@
 <template>
 	<div class="course-tab-lernraum">
-		<div class="lernraum-subnav" role="tablist" :aria-label="t('learning', 'Lernraum Bereiche')">
+		<div class="lernraum-subnav" role="tablist" @keydown="moveTablistFocus" :aria-label="t('learning', 'Lernraum Bereiche')">
 			<button
 				v-for="tab in visibleSubTabs"
 				:key="tab.id"
+				type="button"
 				class="lernraum-pill"
 				:class="{ active: currentSubTab === tab.id }"
+				role="tab"
+				:aria-selected="currentSubTab === tab.id ? 'true' : 'false'"
 				@click="selectSubTab(tab.id)">
 				{{ tab.label }}
 			</button>
@@ -47,14 +50,11 @@
 					v-for="pool in sortedPools"
 					:key="pool.pool_id"
 					class="pool-item"
-					tabindex="0"
-					role="button"
-					@click="$emit('openPool', pool.pool_id)"
-					@keydown.enter="$emit('openPool', pool.pool_id)"
-					@keydown.space.prevent="$emit('openPool', pool.pool_id)">
+					@click="$emit('openPool', pool.pool_id)">
 					<span class="pool-sort-order">{{ (pool.sort_order || 0) + 1 }}.</span>
 					<div class="pool-info">
-						<span class="pool-name">{{ pool.pool_name }}</span>
+						<!-- GitHub #64: the pool name opens the pool; the row holds the Rules and remove buttons, so it is no button itself. -->
+						<button type="button" class="pool-name pool-item-open" @click.stop="$emit('openPool', pool.pool_id)">{{ pool.pool_name }}</button>
 						<div class="pool-meta-row">
 							<span class="pool-questions">
 								{{ t('learning', '{n} questions', { n: pool.question_count || 0 }) }}
@@ -322,13 +322,14 @@
 			</NcEmptyContent>
 
 			<template v-else>
-				<div class="sim-nav" role="tablist" :aria-label="t('learning', 'Werkzeuge im Kurs')">
+				<div class="sim-nav" role="tablist" :aria-label="t('learning', 'Werkzeuge im Kurs')" @keydown="moveTablistFocus">
 					<button
 						v-for="tool in courseToolTabs"
 						:key="'course-tool-tab-' + tool.id"
 						type="button"
 						class="sim-nav__item"
 						:class="{ 'sim-nav__item--active': activeToolId === tool.id }"
+						role="tab"
 						:aria-selected="activeToolId === tool.id ? 'true' : 'false'"
 						@click="activeToolId = tool.id">
 						<span class="sim-nav__icon" aria-hidden="true">{{ tool.icon }}</span>
@@ -634,6 +635,7 @@ import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { lernraumTabIds } from '../utils/courseView.js'
 import { getPassStatus } from '../services/CourseService.js'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 export default {
 	name: 'CourseTabLernraum',
@@ -998,6 +1000,7 @@ export default {
 	},
 
 	methods: {
+		moveTablistFocus,
 		/**
 		 * GitHub #39: GET pass-status evaluates (audit event, possibly issuance) and is rate-limited,
 		 * so it is read only on entering the Exam tab and after returning from an exam — never per
@@ -1720,6 +1723,28 @@ export default {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+/* GitHub #64: the instructor's pool name is a button that looks like the name; while it has the
+   focus the whole row is outlined too. */
+.pool-item-open {
+	display: block;
+	max-width: 100%;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	font: inherit;
+	font-weight: 600;
+	text-align: start;
+	cursor: pointer;
+}
+
+.pool-item:has(.pool-item-open:focus-visible) {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
 }
 
 .pool-questions {

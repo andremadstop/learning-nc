@@ -153,8 +153,10 @@
         <div ref="skinPickerRow" class="field-row">
           <label for="virtuprof-skin">{{ t('learning', 'Charakter-Auswahl') }}</label>
           <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Änderungen wirken sofort.') }}</p>
+          <!-- GitHub #64: input-id puts the id on the combobox input the label points at; a plain
+               id lands on the wrapper and leaves the input unnamed. -->
           <NcSelect
-            id="virtuprof-skin"
+            input-id="virtuprof-skin"
             :model-value="selectedSkinOption"
             :options="skinOptions"
             :clearable="false"
@@ -449,7 +451,7 @@
 
       <hr class="section-divider" />
 
-      <h3>{{ t('learning', 'Calendar Sync') }}</h3>
+      <h3 id="calendar-sync-heading">{{ t('learning', 'Calendar Sync') }}</h3>
       <p class="section-desc">{{ t('learning', 'Subscribe to your due cards in any calendar app (Google Calendar, Thunderbird, iOS, etc.).') }}</p>
 
       <div v-if="calTokenLoading" class="loading">
@@ -463,6 +465,7 @@
             ref="icsUrlInput"
             class="nc-input ics-url-input"
             type="text"
+            aria-labelledby="calendar-sync-heading"
             readonly
             :value="icsUrl"
             @click="copyIcsUrl" />

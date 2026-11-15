@@ -1,11 +1,14 @@
 <template>
 	<div class="course-tab-verwaltung">
-		<div class="verwaltung-subnav" role="tablist" :aria-label="t('learning', 'Verwaltung Bereiche')">
+		<div class="verwaltung-subnav" role="tablist" @keydown="moveTablistFocus" :aria-label="t('learning', 'Verwaltung Bereiche')">
 			<button
 				v-for="tab in visibleSubTabs"
 				:key="tab.id"
+				type="button"
 				class="verwaltung-pill"
 				:class="{ active: currentSubTab === tab.id }"
+				role="tab"
+				:aria-selected="currentSubTab === tab.id ? 'true' : 'false'"
 				@click="selectSubTab(tab.id)">
 				{{ tab.label }}
 			</button>
@@ -115,10 +118,10 @@
 			</div>
 
 			<div class="exam-date-config tool-config-section">
-				<h3>{{ t('learning', 'Prüfungstermin') }}</h3>
+				<h3 id="exam-date-heading">{{ t('learning', 'Prüfungstermin') }}</h3>
 				<p class="mode-config-hint">{{ t('learning', 'Nur für den Countdown und die Erinnerungen der Lernenden. Der Termin öffnet oder schließt keine Prüfung.') }}</p>
 				<div class="exam-date-row">
-					<input v-model="examDateLocal" type="datetime-local" class="exam-date-input" />
+					<input v-model="examDateLocal" type="datetime-local" class="exam-date-input" aria-labelledby="exam-date-heading" />
 					<NcButton variant="primary" :disabled="savingExamDate" @click="saveExamDate">
 						{{ savingExamDate ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
@@ -179,8 +182,8 @@
 						{{ t('learning', 'Der Lernmodus „Prüfung“ ist in diesem Kurs ausgeschaltet. Zertifikate gibt es nur für Prüfungen, die hier im Kurs gestartet werden. So kann niemand ein Zertifikat erhalten. Schalte oben unter den Lernmodi „Prüfung“ ein und speichere.') }}
 					</NcNoteCard>
 					<div class="cert-config-field">
-						<label>{{ t('learning', 'Mindest-Score (%)') }}</label>
-						<input
+						<label for="cert-pass-percent">{{ t('learning', 'Mindest-Score (%)') }}</label>
+						<input id="cert-pass-percent"
 							type="number"
 							:value="certPassPercent"
 							min="1"
@@ -205,8 +208,8 @@
 					</div>
 
 					<div class="cert-config-field">
-						<label>{{ t('learning', 'Gültigkeitsdauer (Tage, 0 = unbegrenzt)') }}</label>
-						<input
+						<label for="cert-validity-days">{{ t('learning', 'Gültigkeitsdauer (Tage, 0 = unbegrenzt)') }}</label>
+						<input id="cert-validity-days"
 							type="number"
 							:value="certValidityDays"
 							min="0"
@@ -401,13 +404,15 @@
 								<input
 									v-model="item.start_date"
 									type="date"
-									class="schedule-input" />
+									class="schedule-input"
+									:aria-label="t('learning', 'Startdatum')" />
 							</td>
 							<td>
 								<input
 									v-model="item.target_date"
 									type="date"
-									class="schedule-input" />
+									class="schedule-input"
+									:aria-label="t('learning', 'Zieldatum')" />
 							</td>
 							<td>
 								<button class="schedule-remove-btn" :title="t('learning', 'Entfernen')" @click="removeScheduleRow(idx)">
@@ -450,6 +455,7 @@ import CertLayoutSettings from './CertLayoutSettings.vue'
 import RequiredContentSettings from './RequiredContentSettings.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 /**
  * The rows the schedule PUT sends. A row without a chapter ID gets one from its title, so two
@@ -736,6 +742,7 @@ export default {
 	},
 
 	methods: {
+		moveTablistFocus,
 		t,
 
 		defaultSubTab() {

@@ -65,8 +65,8 @@
           </div>
           <div class="pg-options">
             <div class="form-group">
-              <label>{{ t('learning', 'Number of Questions') }}</label>
-              <input type="range" v-model.number="questionCount" min="5" max="30" step="1" class="pg-slider" />
+              <label for="pool-generator-count-text">{{ t('learning', 'Number of Questions') }}</label>
+              <input id="pool-generator-count-text" type="range" v-model.number="questionCount" min="5" max="30" step="1" class="pg-slider" />
               <span class="slider-value">{{ questionCount }}</span>
             </div>
           </div>
@@ -96,8 +96,8 @@
           </div>
           <div class="pg-options">
             <div class="form-group">
-              <label>{{ t('learning', 'Number of Questions') }}</label>
-              <input type="range" v-model.number="questionCount" min="5" max="30" step="1" class="pg-slider" />
+              <label for="pool-generator-count-file">{{ t('learning', 'Number of Questions') }}</label>
+              <input id="pool-generator-count-file" type="range" v-model.number="questionCount" min="5" max="30" step="1" class="pg-slider" />
               <span class="slider-value">{{ questionCount }}</span>
             </div>
           </div>

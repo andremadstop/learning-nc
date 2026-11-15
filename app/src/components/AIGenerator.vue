@@ -17,13 +17,13 @@
         </div>
         <div class="ai-options">
           <div class="form-group">
-            <label>{{ t('learning', 'Number of Questions') }}</label>
-            <input type="range" v-model.number="questionCount" min="5" max="30" step="1" class="ai-slider" />
+            <label for="ai-generator-question-count">{{ t('learning', 'Number of Questions') }}</label>
+            <input id="ai-generator-question-count" type="range" v-model.number="questionCount" min="5" max="30" step="1" class="ai-slider" />
             <span class="slider-value">{{ questionCount }}</span>
           </div>
           <div class="form-group">
-            <label>{{ t('learning', 'Language') }}</label>
-            <select v-model="language" class="nc-input ai-select">
+            <label for="ai-generator-language">{{ t('learning', 'Language') }}</label>
+            <select id="ai-generator-language" v-model="language" class="nc-input ai-select">
               <option value="de">Deutsch</option>
               <option value="en">English</option>
               <option value="fr">Français</option>
@@ -71,11 +71,11 @@
             </div>
 
             <template v-if="editingIndex === idx">
-              <textarea v-model="q.text" rows="2" class="nc-input preview-edit-input" />
+              <textarea v-model="q.text" rows="2" class="nc-input preview-edit-input" :aria-label="t('learning', 'Question')" />
               <div v-for="(a, aidx) in q.answers" :key="aidx" class="preview-edit-answer">
                 <input type="radio" :name="'correct-' + idx" :checked="a.is_correct"
                   @change="setCorrectAnswer(idx, aidx)" />
-                <input v-model="a.text" class="nc-input preview-edit-answer-input" />
+                <input v-model="a.text" class="nc-input preview-edit-answer-input" :aria-label="t('learning', 'Answer')" />
               </div>
               <textarea v-model="q.explanation" rows="1" class="nc-input preview-edit-input"
                 :placeholder="t('learning', 'Explanation...')" />

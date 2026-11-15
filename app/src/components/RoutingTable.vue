@@ -8,10 +8,10 @@
       </div>
     </header>
 
-    <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" @click="view = 'practicum'">{{ t('learning', 'Praxis') }}</button>
+    <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist" @keydown="moveTablistFocus">
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" role="tab" :aria-selected="currentView === 'simulator' ? 'true' : 'false'" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" role="tab" :aria-selected="currentView === 'exercise' ? 'true' : 'false'" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" role="tab" :aria-selected="currentView === 'practicum' ? 'true' : 'false'" @click="view = 'practicum'">{{ t('learning', 'Praxis') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -38,13 +38,13 @@
               :key="`route-${index}`"
               :class="{ 'sim-tool__row--matched': decision && decision.bestRoute && decision.bestRoute.destination === route.destination && decision.bestRoute.mask === route.mask }"
             >
-              <td><input v-model.trim="route.destination" class="sim-tool__input" type="text"></td>
-              <td><input v-model.trim="route.mask" class="sim-tool__input" type="text"></td>
-              <td><input v-model.trim="route.gateway" class="sim-tool__input" type="text"></td>
-              <td><input v-model.trim="route.interface" class="sim-tool__input" type="text"></td>
-              <td><input v-model.number="route.metric" class="sim-tool__input" type="number" min="0"></td>
+              <td><input v-model.trim="route.destination" class="sim-tool__input" type="text" :aria-label="t('learning', 'Destination')"></td>
+              <td><input v-model.trim="route.mask" class="sim-tool__input" type="text" :aria-label="t('learning', 'Mask')"></td>
+              <td><input v-model.trim="route.gateway" class="sim-tool__input" type="text" :aria-label="t('learning', 'Gateway')"></td>
+              <td><input v-model.trim="route.interface" class="sim-tool__input" type="text" :aria-label="t('learning', 'Interface')"></td>
+              <td><input v-model.number="route.metric" class="sim-tool__input" type="number" min="0" :aria-label="t('learning', 'Metric')"></td>
               <td>
-                <select v-model="route.type" class="sim-tool__input">
+                <select v-model="route.type" class="sim-tool__input" :aria-label="t('learning', 'Type')">
                   <option value="connected">Connected</option>
                   <option value="static">Static</option>
                   <option value="default">Default</option>
@@ -134,6 +134,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PracticumRunner from './PracticumRunner.vue'
 import routingScenarios from '../../data/routing_scenarios.json'
 import { buildRoutingDecision, createDefaultRoute } from '../utils/routingEngine.js'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 export default {
   name: 'RoutingTable',
@@ -200,6 +201,7 @@ export default {
     // Hook vorhanden für sauberes Embedded-Rendering in SimulatorShell.
   },
   methods: {
+    moveTablistFocus,
     addRoute() {
       this.routes.push({
         destination: '10.0.0.0',

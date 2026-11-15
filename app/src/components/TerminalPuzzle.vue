@@ -28,6 +28,7 @@
 				v-model="currentInput"
 				class="terminal-puzzle__input"
 				type="text"
+				:aria-label="promptText"
 				autocomplete="off"
 				spellcheck="false"
 				@keydown.enter.prevent="submitCommand">

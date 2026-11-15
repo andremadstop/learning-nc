@@ -1,11 +1,14 @@
 <template>
 	<div class="course-tab-wettbewerb">
-		<div class="wettbewerb-subnav" role="tablist" :aria-label="t('learning', 'Wettbewerb Bereiche')">
+		<div class="wettbewerb-subnav" role="tablist" @keydown="moveTablistFocus" :aria-label="t('learning', 'Wettbewerb Bereiche')">
 			<button
 				v-for="tab in visibleSubTabs"
 				:key="tab.id"
+				type="button"
 				class="wettbewerb-pill"
 				:class="{ active: currentSubTab === tab.id }"
+				role="tab"
+				:aria-selected="currentSubTab === tab.id ? 'true' : 'false'"
 				@click="selectSubTab(tab.id)">
 				{{ tab.label }}
 			</button>
@@ -39,42 +42,48 @@
 					<thead>
 						<tr>
 							<th class="rank-col" scope="col">#</th>
-							<th class="student-col sortable-col" scope="col" role="button" tabindex="0"
-								:aria-sort="leaderboardSortKey === 'user_id' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-								@click="setLeaderboardSort('user_id')" @keydown.enter="setLeaderboardSort('user_id')" @keydown.space.prevent="setLeaderboardSort('user_id')">
-								{{ t('learning', 'Studierende/r') }}
-								<span v-if="leaderboardSortKey === 'user_id'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+							<th class="student-col sortable-col" scope="col"
+								:aria-sort="leaderboardSortKey === 'user_id' ? (leaderboardSortAsc ? 'ascending' : 'descending') : undefined">
+								<button type="button" class="sort-btn" @click="setLeaderboardSort('user_id')">
+									{{ t('learning', 'Studierende/r') }}
+									<span v-if="leaderboardSortKey === 'user_id'" class="sort-arrow" aria-hidden="true">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</button>
 							</th>
-							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
-								:aria-sort="leaderboardSortKey === 'current_level' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-								@click="setLeaderboardSort('current_level')" @keydown.enter="setLeaderboardSort('current_level')" @keydown.space.prevent="setLeaderboardSort('current_level')">
-								{{ t('learning', 'Level') }}
-								<span v-if="leaderboardSortKey === 'current_level'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col"
+								:aria-sort="leaderboardSortKey === 'current_level' ? (leaderboardSortAsc ? 'ascending' : 'descending') : undefined">
+								<button type="button" class="sort-btn" @click="setLeaderboardSort('current_level')">
+									{{ t('learning', 'Level') }}
+									<span v-if="leaderboardSortKey === 'current_level'" class="sort-arrow" aria-hidden="true">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</button>
 							</th>
-							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
-								:aria-sort="leaderboardSortKey === 'total_xp' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-								@click="setLeaderboardSort('total_xp')" @keydown.enter="setLeaderboardSort('total_xp')" @keydown.space.prevent="setLeaderboardSort('total_xp')">
-								{{ t('learning', 'XP') }}
-								<span v-if="leaderboardSortKey === 'total_xp'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col"
+								:aria-sort="leaderboardSortKey === 'total_xp' ? (leaderboardSortAsc ? 'ascending' : 'descending') : undefined">
+								<button type="button" class="sort-btn" @click="setLeaderboardSort('total_xp')">
+									{{ t('learning', 'XP') }}
+									<span v-if="leaderboardSortKey === 'total_xp'" class="sort-arrow" aria-hidden="true">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</button>
 							</th>
-							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
-								:aria-sort="leaderboardSortKey === 'total_mastered' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-								@click="setLeaderboardSort('total_mastered')" @keydown.enter="setLeaderboardSort('total_mastered')" @keydown.space.prevent="setLeaderboardSort('total_mastered')">
-								{{ t('learning', 'Gemeistert') }}
-								<span v-if="leaderboardSortKey === 'total_mastered'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+							<th class="stat-col sortable-col" scope="col"
+								:aria-sort="leaderboardSortKey === 'total_mastered' ? (leaderboardSortAsc ? 'ascending' : 'descending') : undefined">
+								<button type="button" class="sort-btn" @click="setLeaderboardSort('total_mastered')">
+									{{ t('learning', 'Gemeistert') }}
+									<span v-if="leaderboardSortKey === 'total_mastered'" class="sort-arrow" aria-hidden="true">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</button>
 							</th>
 							<template v-if="isInstructor">
-								<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
-									:aria-sort="leaderboardSortKey === 'current_streak' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-									@click="setLeaderboardSort('current_streak')" @keydown.enter="setLeaderboardSort('current_streak')" @keydown.space.prevent="setLeaderboardSort('current_streak')">
-									{{ t('learning', 'Streak') }}
-									<span v-if="leaderboardSortKey === 'current_streak'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col"
+									:aria-sort="leaderboardSortKey === 'current_streak' ? (leaderboardSortAsc ? 'ascending' : 'descending') : undefined">
+									<button type="button" class="sort-btn" @click="setLeaderboardSort('current_streak')">
+										{{ t('learning', 'Streak') }}
+										<span v-if="leaderboardSortKey === 'current_streak'" class="sort-arrow" aria-hidden="true">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+									</button>
 								</th>
-								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
-									:aria-sort="leaderboardSortKey === 'total_sessions' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-									@click="setLeaderboardSort('total_sessions')" @keydown.enter="setLeaderboardSort('total_sessions')" @keydown.space.prevent="setLeaderboardSort('total_sessions')">
-									{{ t('learning', 'Sessions') }}
-									<span v-if="leaderboardSortKey === 'total_sessions'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								<th class="stat-col sortable-col" scope="col"
+									:aria-sort="leaderboardSortKey === 'total_sessions' ? (leaderboardSortAsc ? 'ascending' : 'descending') : undefined">
+									<button type="button" class="sort-btn" @click="setLeaderboardSort('total_sessions')">
+										{{ t('learning', 'Sessions') }}
+										<span v-if="leaderboardSortKey === 'total_sessions'" class="sort-arrow" aria-hidden="true">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+									</button>
 								</th>
 							</template>
 						</tr>
@@ -204,6 +213,7 @@ import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
 import { wettbewerbTabIds } from '../utils/courseView.js'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 export default {
 	name: 'CourseTabWettbewerb',
@@ -332,6 +342,7 @@ export default {
 	},
 
 	methods: {
+		moveTablistFocus,
 		syncFromActiveTab(tab) {
 			const leafTabs = this.visibleSubTabs.map((t) => t.id)
 			if (leafTabs.includes(tab)) {
@@ -639,7 +650,29 @@ export default {
 
 .sort-arrow {
 	font-size: 0.7em;
-	margin-left: 4px;
+	margin-inline-start: 4px;
+}
+
+/* GitHub #64: the header stays a column header (aria-sort); the button inside it sorts. */
+.sortable-col .sort-btn {
+	display: inline-flex;
+	align-items: center;
+	width: 100%;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.sortable-col .sort-btn:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
 }
 
 .clickable-row {

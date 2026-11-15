@@ -51,7 +51,7 @@
 
         <!-- Edit mode -->
         <template v-if="editingIndex === idx">
-          <textarea v-model="q.text" rows="2" class="nc-input draft-edit-input" />
+          <textarea v-model="q.text" rows="2" class="nc-input draft-edit-input" :aria-label="t('learning', 'Question')" />
           <div v-for="(a, aidx) in q.answers" :key="aidx" class="draft-edit-answer">
             <input
               type="radio"
@@ -59,7 +59,7 @@
               :checked="a.is_correct"
               @change="setCorrectAnswer(idx, aidx)"
             />
-            <input v-model="a.text" class="nc-input draft-edit-answer-input" />
+            <input v-model="a.text" class="nc-input draft-edit-answer-input" :aria-label="t('learning', 'Answer')" />
           </div>
           <textarea
             v-model="q.explanation"

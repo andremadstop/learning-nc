@@ -1,8 +1,8 @@
 <template>
   <div class="pbq-author-tool">
     <div class="author-section">
-      <label class="author-label">PBQ-Typ</label>
-      <select v-model="selectedSubtype" class="author-select">
+      <label class="author-label" for="pbq-author-selectedsubtype">PBQ-Typ</label>
+      <select id="pbq-author-selectedsubtype" v-model="selectedSubtype" class="author-select">
         <option value="cli">CLI Terminal</option>
         <option value="placement">Placement (Topologie)</option>
         <option value="dropdown">Dropdown-Auswahl</option>
@@ -20,8 +20,8 @@
     <div v-if="selectedSubtype === 'multi_panel'" class="author-section">
       <h3 class="author-heading">Multi-Panel-Aufbau</h3>
       <div class="author-field">
-        <label class="author-label">Rechte Seite</label>
-        <select v-model="multiPanelMode" class="author-select">
+        <label class="author-label" for="pbq-author-multipanelmode">Rechte Seite</label>
+        <select id="pbq-author-multipanelmode" v-model="multiPanelMode" class="author-select">
           <option value="placement">Placement / Topologie</option>
           <option value="dropdown">Dropdown / Worksheet</option>
         </select>
@@ -33,15 +33,15 @@
 
       <div class="author-field-grid">
         <div class="author-field">
-          <label class="author-label">Domain</label>
-          <select v-model="cliForm.domain" class="author-select">
+          <label class="author-label" for="pbq-author-cliform-domain">Domain</label>
+          <select id="pbq-author-cliform-domain" v-model="cliForm.domain" class="author-select">
             <option v-for="d in validDomains" :key="d" :value="d">{{ d }}</option>
           </select>
         </div>
 
         <div class="author-field">
-          <label class="author-label">Output-Zuordnung</label>
-          <select v-model="cliForm.outputScope" class="author-select">
+          <label class="author-label" for="pbq-author-cliform-outputscope">Output-Zuordnung</label>
+          <select id="pbq-author-cliform-outputscope" v-model="cliForm.outputScope" class="author-select">
             <option value="shared">Shared für alle Terminals</option>
             <option value="per_terminal">Terminal-spezifisch</option>
           </select>
@@ -86,6 +86,7 @@
             v-if="cliForm.outputScope === 'per_terminal'"
             v-model="cliForm.commandOutputs[i].terminal"
             class="author-select author-select-terminal"
+            :aria-label="t('learning', 'Terminal')"
           >
             <option v-for="term in cliTerminalNames" :key="term" :value="term">{{ term }}</option>
           </select>
@@ -111,8 +112,8 @@
       <h3 class="author-heading">Placement-Konfiguration</h3>
 
       <div class="author-field">
-        <label class="author-label">Bewertungsmodus</label>
-        <select v-model="placementForm.scoringMode" class="author-select">
+        <label class="author-label" for="pbq-author-placementform-scoringmode">Bewertungsmodus</label>
+        <select id="pbq-author-placementform-scoringmode" v-model="placementForm.scoringMode" class="author-select">
           <option value="strict">Strict (jede Position muss stimmen)</option>
           <option value="partial">Partial (Teilpunkte)</option>
         </select>
@@ -178,7 +179,7 @@
         <h4 class="author-subheading">Topologie-Knoten</h4>
         <div v-for="(node, i) in topologyForm.nodes" :key="i" class="author-array-row">
           <input v-model="topologyForm.nodes[i].id" type="text" class="author-input author-input-sm" placeholder="ID" />
-          <select v-model="topologyForm.nodes[i].type" class="author-select author-select-sm">
+          <select v-model="topologyForm.nodes[i].type" class="author-select author-select-sm" :aria-label="t('learning', 'Type')">
             <option v-for="dt in validDeviceTypes" :key="dt" :value="dt">{{ dt }}</option>
           </select>
           <input v-model="topologyForm.nodes[i].label" type="text" class="author-input" placeholder="Label" />
@@ -203,8 +204,8 @@
 
       <div class="author-field-grid">
         <div class="author-field">
-          <label class="author-label">Layout</label>
-          <select v-model="dropdownForm.layout" class="author-select">
+          <label class="author-label" for="pbq-author-dropdownform-layout">Layout</label>
+          <select id="pbq-author-dropdownform-layout" v-model="dropdownForm.layout" class="author-select">
             <option value="default">Default</option>
             <option value="cards">Cards</option>
           </select>
@@ -232,8 +233,8 @@
             <input v-model="dropdownForm.questions[qi].id" type="text" class="author-input" placeholder="z.B. q1" />
           </div>
           <div class="author-field" v-if="dropdownForm.sections.length">
-            <label class="author-label">Section</label>
-            <select v-model="dropdownForm.questions[qi].section" class="author-select">
+            <label class="author-label" :for="'pbq-author-dd-section-' + qi">Section</label>
+            <select :id="'pbq-author-dd-section-' + qi" v-model="dropdownForm.questions[qi].section" class="author-select">
               <option value="">Default</option>
               <option v-for="section in dropdownForm.sections" :key="section.id" :value="section.id">{{ section.id }}</option>
             </select>
@@ -347,7 +348,7 @@
         <NcButton @click="copyJson">{{ copySuccess ? 'Kopiert!' : 'Config kopieren' }}</NcButton>
         <NcButton variant="primary" @click="applyConfig">Ins Formular übernehmen</NcButton>
       </div>
-      <textarea v-if="showJsonFallback" :value="generatedJson" readonly class="author-json-fallback" rows="10" />
+      <textarea v-if="showJsonFallback" :value="generatedJson" readonly class="author-json-fallback" rows="10" :aria-label="t('learning', 'JSON')" />
     </div>
   </div>
 </template>

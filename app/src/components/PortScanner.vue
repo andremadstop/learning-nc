@@ -8,10 +8,10 @@
       </div>
     </header>
 
-    <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" @click="view = 'practicum'">{{ t('learning', 'Praxis') }}</button>
+    <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist" @keydown="moveTablistFocus">
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" role="tab" :aria-selected="currentView === 'simulator' ? 'true' : 'false'" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" role="tab" :aria-selected="currentView === 'exercise' ? 'true' : 'false'" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" role="tab" :aria-selected="currentView === 'practicum' ? 'true' : 'false'" @click="view = 'practicum'">{{ t('learning', 'Praxis') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -131,6 +131,7 @@ import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PracticumRunner from './PracticumRunner.vue'
 import portscanScenarios from '../../data/portscan_scenarios.json'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 import {
   buildScanResults,
   buildScanTimeline,
@@ -210,6 +211,7 @@ export default {
     window.clearInterval(this.intervalId)
   },
   methods: {
+    moveTablistFocus,
     startScan() {
       const result = buildScanResults(this.profileId, { scanType: this.scanType })
       const timeline = buildScanTimeline(result)

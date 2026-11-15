@@ -244,10 +244,10 @@
 						</thead>
 						<tbody>
 							<tr v-for="(entry, index) in vlanEntries" :key="'vlan-entry-' + index">
-								<td><input v-model.number="entry.vlanId" class="subnet-input" type="number" min="1" max="4094"></td>
-								<td><input v-model.trim="entry.name" class="subnet-input" type="text"></td>
-								<td><input v-model.trim="entry.subnet" class="subnet-input" type="text"></td>
-								<td><input v-model.trim="entry.gateway" class="subnet-input" type="text"></td>
+								<td><input v-model.number="entry.vlanId" class="subnet-input" type="number" min="1" max="4094" :aria-label="t('learning', 'VLAN-ID')"></td>
+								<td><input v-model.trim="entry.name" class="subnet-input" type="text" :aria-label="t('learning', 'Name')"></td>
+								<td><input v-model.trim="entry.subnet" class="subnet-input" type="text" :aria-label="t('learning', 'Subnetz')"></td>
+								<td><input v-model.trim="entry.gateway" class="subnet-input" type="text" :aria-label="t('learning', 'Gateway')"></td>
 								<td>
 									<button
 										class="subnet-button subnet-button--ghost"
@@ -303,11 +303,12 @@
 					</div>
 
 					<div class="vlan-frame-controls">
-						<div class="vlan-frame-toggle" role="tablist">
+						<div class="vlan-frame-toggle" role="group" :aria-label="t('learning', '802.1Q Frame')">
 							<button
 								class="subnet-button"
 								:class="framePreviewMode === 'access' ? 'subnet-button--primary' : 'subnet-button--secondary'"
 								type="button"
+								:aria-pressed="framePreviewMode === 'access' ? 'true' : 'false'"
 								@click="framePreviewMode = 'access'">
 								{{ t('learning', 'Access') }}
 							</button>
@@ -315,6 +316,7 @@
 								class="subnet-button"
 								:class="framePreviewMode === 'trunk' ? 'subnet-button--primary' : 'subnet-button--secondary'"
 								type="button"
+								:aria-pressed="framePreviewMode === 'trunk' ? 'true' : 'false'"
 								@click="framePreviewMode = 'trunk'">
 								{{ t('learning', 'Trunk') }}
 							</button>

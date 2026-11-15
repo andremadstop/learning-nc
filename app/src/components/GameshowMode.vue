@@ -8,16 +8,16 @@
       <NcNoteCard v-if="error" type="error" class="gs-error">{{ error }}</NcNoteCard>
 
       <div class="pool-picker">
-        <label class="pool-picker-label">{{ t('learning', 'Pool') }}</label>
-        <select v-model="selectedPoolId" class="pool-select">
+        <label for="gameshow-pool" class="pool-picker-label">{{ t('learning', 'Pool') }}</label>
+        <select id="gameshow-pool" v-model="selectedPoolId" class="pool-select">
           <option :value="0" disabled>{{ t('learning', '-- Pool auswählen --') }}</option>
           <option v-for="p in pools" :key="p.id" :value="p.id">{{ p.name }}</option>
         </select>
       </div>
 
       <div class="pool-picker">
-        <label class="pool-picker-label">{{ t('learning', 'Max. Spieler') }}</label>
-        <select v-model="maxPlayers" class="pool-select">
+        <label for="gameshow-max-players" class="pool-picker-label">{{ t('learning', 'Max. Spieler') }}</label>
+        <select id="gameshow-max-players" v-model="maxPlayers" class="pool-select">
           <option :value="2">2</option>
           <option :value="3">3</option>
           <option :value="4">4</option>

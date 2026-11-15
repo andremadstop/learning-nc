@@ -35,12 +35,10 @@
 					<div v-for="course in ownCourses"
 						:key="'own-' + course.id"
 						class="course-card"
-						tabindex="0" role="button"
-						@click="$emit('selectCourse', course)"
-						@keydown.enter="$emit('selectCourse', course)"
-						@keydown.space.prevent="$emit('selectCourse', course)">
+						@click="$emit('selectCourse', course)">
 						<div class="course-card-header">
-							<span class="course-title">{{ course.title }}</span>
+							<!-- GitHub #64: the title is the card's button; the card itself stays clickable for the mouse but holds the action menu, so it is no button itself. -->
+							<button type="button" class="course-title course-card-open" @click.stop="$emit('selectCourse', course)">{{ course.title }}</button>
 							<div class="course-card-actions" @click.stop>
 								<span class="status-badge" :class="course.status">
 									{{ course.status === 'active' ? t('learning', 'Active') : t('learning', 'Archived') }}
@@ -80,12 +78,10 @@
 					<div v-for="course in enrolledCourses"
 						:key="'enrolled-' + course.id"
 						class="course-card"
-						tabindex="0" role="button"
-						@click="$emit('selectCourse', course)"
-						@keydown.enter="$emit('selectCourse', course)"
-						@keydown.space.prevent="$emit('selectCourse', course)">
+						@click="$emit('selectCourse', course)">
 						<div class="course-card-header">
-							<span class="course-title">{{ course.title }}</span>
+							<!-- GitHub #64: the title is the card's button; the card itself stays clickable for the mouse but holds the action menu, so it is no button itself. -->
+							<button type="button" class="course-title course-card-open" @click.stop="$emit('selectCourse', course)">{{ course.title }}</button>
 							<span v-if="course.member_role" class="role-badge">
 								{{ course.member_role }}
 							</span>
@@ -603,6 +599,26 @@ export default {
 	color: var(--color-main-text);
 	word-break: break-word;
 	flex: 1;
+}
+
+/* GitHub #64: the title button looks like the title it replaced; while it has the focus the whole card is outlined too. */
+.course-card-open {
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	font: inherit;
+	font-size: 1.1em;
+	font-weight: 600;
+	text-align: start;
+	cursor: pointer;
+}
+
+.course-card:has(.course-card-open:focus-visible) {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
 }
 
 .course-card-actions {

@@ -3812,5 +3812,9 @@ OC.L10N.register(
     "Erneuerung offen: noch keine neue Prüfung abgelegt" : "التجديد مفتوح: لم يُؤدَّ امتحان جديد بعد",
     "Pools meiner Kurse ({n})" : "مجموعات مقرراتي ({n})",
     "Kurse: {courses}" : "المقررات: {courses}",
+    "Tagesziel (Karten pro Tag)" : "الهدف اليومي (بطاقات في اليوم)",
+    "Berechtigung" : "الصلاحية",
+    "Berechtigung für {user}" : "صلاحية {user}",
+    "Terminal" : "الطرفية",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -8,14 +8,14 @@
       </div>
     </header>
 
-    <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist" :aria-label="t('learning', 'Firewall Tabs')">
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">
+    <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist" @keydown="moveTablistFocus" :aria-label="t('learning', 'Firewall Tabs')">
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" role="tab" :aria-selected="currentView === 'simulator' ? 'true' : 'false'" @click="view = 'simulator'">
         {{ t('learning', 'Simulator') }}
       </button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" role="tab" :aria-selected="currentView === 'exercise' ? 'true' : 'false'" @click="view = 'exercise'">
         {{ t('learning', 'Übung') }}
       </button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" @click="view = 'practicum'">
+      <button type="button" class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" role="tab" :aria-selected="currentView === 'practicum' ? 'true' : 'false'" @click="view = 'practicum'">
         {{ t('learning', 'Praxis') }}
       </button>
     </nav>
@@ -63,24 +63,24 @@
               </td>
               <td>{{ index + 1 }}</td>
               <td>
-                <select v-model="rule.action" class="sim-tool__input">
+                <select v-model="rule.action" class="sim-tool__input" :aria-label="t('learning', 'Action')">
                   <option value="allow">Allow</option>
                   <option value="deny">Deny</option>
                 </select>
               </td>
               <td>
-                <select v-model="rule.protocol" class="sim-tool__input">
+                <select v-model="rule.protocol" class="sim-tool__input" :aria-label="t('learning', 'Protocol')">
                   <option value="any">Any</option>
                   <option value="tcp">TCP</option>
                   <option value="udp">UDP</option>
                   <option value="icmp">ICMP</option>
                 </select>
               </td>
-              <td><input v-model.trim="rule.srcIp" class="sim-tool__input" type="text"></td>
-              <td><input v-model.trim="rule.srcPort" class="sim-tool__input" type="text"></td>
-              <td><input v-model.trim="rule.dstIp" class="sim-tool__input" type="text"></td>
-              <td><input v-model.trim="rule.dstPort" class="sim-tool__input" type="text"></td>
-              <td><input v-model="rule.log" class="sim-tool__checkbox" type="checkbox"></td>
+              <td><input v-model.trim="rule.srcIp" class="sim-tool__input" type="text" :aria-label="t('learning', 'Src IP')"></td>
+              <td><input v-model.trim="rule.srcPort" class="sim-tool__input" type="text" :aria-label="t('learning', 'Src Port')"></td>
+              <td><input v-model.trim="rule.dstIp" class="sim-tool__input" type="text" :aria-label="t('learning', 'Dst IP')"></td>
+              <td><input v-model.trim="rule.dstPort" class="sim-tool__input" type="text" :aria-label="t('learning', 'Dst Port')"></td>
+              <td><input v-model="rule.log" class="sim-tool__checkbox" type="checkbox" :aria-label="t('learning', 'Log')"></td>
               <td>
                 <button class="sim-tool__btn sim-tool__btn--secondary" type="button" :disabled="rules.length === 1" @click="removeRule(index)">
                   {{ t('learning', 'Entfernen') }}
@@ -195,6 +195,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PracticumRunner from './PracticumRunner.vue'
 import firewallScenarios from '../../data/firewall_scenarios.json'
 import { createRule, evaluatePacket, reorderRules } from '../utils/firewallEngine.js'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 export default {
   name: 'FirewallBuilder',
@@ -260,6 +261,7 @@ export default {
     // Hook vorhanden für sauberes Embedded-Rendering in SimulatorShell.
   },
   methods: {
+    moveTablistFocus,
     addRule() {
       this.rules.push(createRule({
         id: this.nextRuleId(),

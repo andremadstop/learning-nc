@@ -59,8 +59,9 @@
       <!-- Remediation panel -->
       <div v-if="questionForCable" class="pbq-remediation">
         <div class="pbq-remediation-row">
-          <label>Problem:</label>
+          <label :for="'pbq-cable-problem-' + currentCable.id">Problem:</label>
           <select
+            :id="'pbq-cable-problem-' + currentCable.id"
             :value="value[currentCable.id + '_problem'] || ''"
             :disabled="disabled"
             @change="$emit('update', currentCable.id + '_problem', $event.target.value)"
@@ -70,8 +71,9 @@
           </select>
         </div>
         <div class="pbq-remediation-row">
-          <label>Solution:</label>
+          <label :for="'pbq-cable-solution-' + currentCable.id">Solution:</label>
           <select
+            :id="'pbq-cable-solution-' + currentCable.id"
             :value="value[currentCable.id + '_solution'] || ''"
             :disabled="disabled"
             @change="$emit('update', currentCable.id + '_solution', $event.target.value)"

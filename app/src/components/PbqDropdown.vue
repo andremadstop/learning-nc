@@ -14,7 +14,7 @@
       <div v-if="section.questions.length" class="pbq-section__body">
         <div v-for="q in section.questions" :key="q.id" class="pbq-dd-row" :class="rowClasses(q)">
           <div class="pbq-dd-copy">
-            <label class="pbq-dd-label">{{ q.label }}</label>
+            <label class="pbq-dd-label" :for="'pbq-dd-' + q.id">{{ q.label }}</label>
             <p v-if="q.help_text" class="pbq-dd-help">{{ q.help_text }}</p>
             <p v-if="q.current_value !== undefined" class="pbq-dd-current">Current: {{ q.current_value }}</p>
           </div>
@@ -23,6 +23,7 @@
             <span v-if="q.readonly_value !== undefined" class="pbq-dd-readonly">{{ q.readonly_value }}</span>
             <select
               v-else
+              :id="'pbq-dd-' + q.id"
               :value="currentValue(q)"
               :disabled="disabled"
               @change="$emit('update', String(q.id), $event.target.value)"

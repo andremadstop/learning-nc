@@ -1,11 +1,14 @@
 <template>
 	<div class="course-tab-kommunikation">
-		<div class="kommunikation-subnav" role="tablist" :aria-label="t('learning', 'Kommunikation Bereiche')">
+		<div class="kommunikation-subnav" role="tablist" @keydown="moveTablistFocus" :aria-label="t('learning', 'Kommunikation Bereiche')">
 			<button
 				v-for="tab in visibleSubTabs"
 				:key="tab.id"
+				type="button"
 				class="kommunikation-pill"
 				:class="{ active: currentSubTab === tab.id }"
+				role="tab"
+				:aria-selected="currentSubTab === tab.id ? 'true' : 'false'"
 				@click="selectSubTab(tab.id)">
 				{{ tab.label }}
 				<!-- GitHub #59: how many questions wait for an answer -->
@@ -137,6 +140,7 @@ import CourseLearnerQuestions from './CourseLearnerQuestions.vue'
 import BuddyMatching from './BuddyMatching.vue'
 import { buddiesEnabled, kommunikationTabIds } from '../utils/courseView.js'
 import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 export default {
 	name: 'CourseTabKommunikation',
@@ -238,6 +242,7 @@ export default {
 	},
 
 	methods: {
+		moveTablistFocus,
 		t,
 
 		defaultSubTab() {

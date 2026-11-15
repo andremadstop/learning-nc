@@ -3811,6 +3811,10 @@
         "Zertifikat gültig": "الشهادة سارية",
         "Erneuerung offen: noch keine neue Prüfung abgelegt": "التجديد مفتوح: لم يُؤدَّ امتحان جديد بعد",
         "Pools meiner Kurse ({n})": "مجموعات مقرراتي ({n})",
-        "Kurse: {courses}": "المقررات: {courses}"
+        "Kurse: {courses}": "المقررات: {courses}",
+        "Tagesziel (Karten pro Tag)": "الهدف اليومي (بطاقات في اليوم)",
+        "Berechtigung": "الصلاحية",
+        "Berechtigung für {user}": "صلاحية {user}",
+        "Terminal": "الطرفية"
     }
 }

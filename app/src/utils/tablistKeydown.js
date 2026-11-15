@@ -7,6 +7,8 @@
  * tab and ArrowRight the previous one; Up/Down keep their meaning.
  *
  * Shared by App.vue, CourseDetail.vue, PoolList.vue, PoolGenerator.vue and ImportDialog.vue (#46)
+ * and by the sub-tab bars of the course areas (CourseTabLernraum incl. its tool bar,
+ * CourseTabTeilnehmer, CourseTabVerwaltung, CourseTabKommunikation, CourseTabWettbewerb; #64)
  * so every tab bar behaves the same.
  */
 export function moveTablistFocus(event) {

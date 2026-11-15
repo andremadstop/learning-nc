@@ -56,7 +56,7 @@ const { stub } = vi.hoisted(() => ({
 vi.mock('@nextcloud/vue/components/NcButton', () => stub('NcButton', '<button type="button"><slot /></button>'))
 vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => stub('NcLoadingIcon', '<span />'))
 vi.mock('@nextcloud/vue/components/NcNoteCard', () => stub('NcNoteCard', '<div><slot /></div>'))
-vi.mock('@nextcloud/vue/components/NcSelect', () => stub('NcSelect', '<div class="select-stub" :id="id" />', { props: ['id'] }))
+vi.mock('@nextcloud/vue/components/NcSelect', () => stub('NcSelect', '<input class="select-stub" :id="inputId" />', { props: ['inputId'] }))
 vi.mock('@nextcloud/vue/components/NcCheckboxRadioSwitch', () => stub('NcCheckboxRadioSwitch',
 	'<span class="switch-stub"><input type="checkbox" :checked="modelValue"><span class="switch-stub__label"><slot /></span></span>',
 	{ props: ['modelValue', 'type', 'description', 'disabled'], emits: ['update:modelValue'] }))

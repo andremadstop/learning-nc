@@ -29,8 +29,8 @@
         <input v-model.trim="seasonName" class="league-input" :placeholder="t('learning', 'Season name')" />
         <div class="league-grid">
           <div>
-            <label class="league-label">{{ t('learning', 'Liga Pool') }}</label>
-            <select v-model.number="selectedPoolId" class="league-select">
+            <label for="league-pool-first" class="league-label">{{ t('learning', 'Liga Pool') }}</label>
+            <select id="league-pool-first" v-model.number="selectedPoolId" class="league-select">
               <option :value="0" disabled>{{ t('learning', 'Choose pool') }}</option>
               <option v-for="pool in normalizedPools" :key="'league-' + pool.id" :value="pool.id">{{ pool.name }}</option>
             </select>
@@ -47,8 +47,8 @@
             </div>
           </div>
           <div>
-            <label class="league-label">{{ t('learning', 'CL Pool') }}</label>
-            <select v-model.number="selectedClPoolId" class="league-select">
+            <label for="league-cl-pool-first" class="league-label">{{ t('learning', 'CL Pool') }}</label>
+            <select id="league-cl-pool-first" v-model.number="selectedClPoolId" class="league-select">
               <option :value="0" disabled>{{ t('learning', 'Choose pool') }}</option>
               <option v-for="pool in normalizedPools" :key="'cl-' + pool.id" :value="pool.id">{{ pool.name }}</option>
             </select>
@@ -118,8 +118,8 @@
           <input v-model.trim="seasonName" class="league-input" :placeholder="t('learning', 'Season name')" />
           <div class="league-grid">
             <div>
-              <label class="league-label">{{ t('learning', 'Liga Pool') }}</label>
-              <select v-model.number="selectedPoolId" class="league-select">
+              <label for="league-pool-next" class="league-label">{{ t('learning', 'Liga Pool') }}</label>
+              <select id="league-pool-next" v-model.number="selectedPoolId" class="league-select">
                 <option :value="0" disabled>{{ t('learning', 'Choose pool') }}</option>
                 <option v-for="pool in normalizedPools" :key="'next-league-' + pool.id" :value="pool.id">{{ pool.name }}</option>
               </select>
@@ -133,8 +133,8 @@
               </div>
             </div>
             <div>
-              <label class="league-label">{{ t('learning', 'CL Pool') }}</label>
-              <select v-model.number="selectedClPoolId" class="league-select">
+              <label for="league-cl-pool-next" class="league-label">{{ t('learning', 'CL Pool') }}</label>
+              <select id="league-cl-pool-next" v-model.number="selectedClPoolId" class="league-select">
                 <option :value="0" disabled>{{ t('learning', 'Choose pool') }}</option>
                 <option v-for="pool in normalizedPools" :key="'next-cl-' + pool.id" :value="pool.id">{{ pool.name }}</option>
               </select>
