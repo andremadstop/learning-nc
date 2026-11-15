@@ -425,9 +425,32 @@ async function sweepPersona(browser, persona, opts = {}) {
 			rec.add('pool-missing', 'the pool "Fire safety" is not in this persona\'s pool list')
 		})
 	})
-	for (const sub of poolReachable ? await subTabLabels(page).catch(() => []) : []) {
-		const enterSub = async () => { await enterPool(); await clickSubTab(page, sub) }
+	// GitHub #46: a pool editor's window starts as Manage + Statistics; the learner modes sit
+	// behind the "practise as learner" switch. Sweep the editor tabs with the switch off, then
+	// switch it on and sweep the tabs it adds, so the gate still visits Training, Leitner, Exam.
+	const setPractise = async (on) => {
+		const input = page.locator('.pool-practise-switch input').first()
+		if (!(await input.count()) || (await input.isChecked()) === on) return false
+		await page.locator('.pool-practise-switch label').first().click()
+		await settle(page)
+		return true
+	}
+	const enterPoolAs = async (practise) => { await enterPool(); await setPractise(practise) }
+	if (poolReachable) await enterPoolAs(false).catch(() => {})
+	const plainTabs = poolReachable ? await subTabLabels(page).catch(() => []) : []
+	for (const sub of plainTabs) {
+		const enterSub = async () => { await enterPoolAs(false); await clickSubTab(page, sub) }
 		await station(page, rec, `Pool window › ${sub.label}`, async () => { await enterSub(); await clickAll(page, rec, enterSub) })
+	}
+	const hasSwitch = poolReachable && await enterPoolAs(false).then(() => page.locator('.pool-practise-switch').count(), () => 0)
+	if (hasSwitch) {
+		await station(page, rec, 'Pool window › Practise as learner', async () => { await enterPoolAs(true) })
+		const seen = new Set(plainTabs.map((t) => t.list + '|' + t.label))
+		for (const sub of (await subTabLabels(page).catch(() => [])).filter((t) => !seen.has(t.list + '|' + t.label))) {
+			const enterSub = async () => { await enterPoolAs(true); await clickSubTab(page, sub) }
+			await station(page, rec, `Pool window (practising) › ${sub.label}`, async () => { await enterSub(); await clickAll(page, rec, enterSub) })
+		}
+		await enterPoolAs(false).catch(() => {})
 	}
 
 	// Settings pages.
