@@ -125,6 +125,10 @@ return [
         ['name' => 'settings#getAdminAudit', 'url' => '/api/settings/admin/audit', 'verb' => 'GET'],
         ['name' => 'settings#initCertIssuer', 'url' => '/api/settings/admin/cert-issuer', 'verb' => 'POST'],
         ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
+        // GitHub #60: instructor groups and people (admin-only, checked again in the controller)
+        ['name' => 'instructorAccess#get', 'url' => '/api/settings/admin/instructors', 'verb' => 'GET'],
+        ['name' => 'instructorAccess#save', 'url' => '/api/settings/admin/instructors', 'verb' => 'PUT'],
+        ['name' => 'instructorAccess#search', 'url' => '/api/settings/admin/instructor-search', 'verb' => 'GET'],
         // 5.7.0: admin connection test — fixed test message, Gemini/Ollama only (AdminAiController)
         ['name' => 'adminAi#test', 'url' => '/api/admin/ai/test', 'verb' => 'POST'],
         // audit 2026-11: operator details for imprint/privacy (admin form; public fields for signed-in users)

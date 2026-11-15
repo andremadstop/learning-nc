@@ -120,12 +120,13 @@ These settings apply to all users of Learning:
   Disabled tools disappear for all users and cannot be re-enabled by an instructor.
 - **Default language** — German or English. This is the fallback for new users only; each
   user can still choose their own Nextcloud interface language.
-- **Instructor group** — the Nextcloud group whose members may create courses and pools.
-  Defaults to `learning-instructors`. See
+- **Instructors (groups and people)** — the Nextcloud groups whose members, and the
+  individual people, who may create courses and pools. Picked by searching Nextcloud's own
+  groups and accounts. Defaults to the group `learning-instructors`. See
   [2.3](#23-letting-teachers-create-courses-and-pools).
 - **Allow course-based instructor fallback** — off by default and best left off. When on,
   anyone who is already an instructor *of some course* also gets the global right to
-  create new ones, which quietly widens the group you curated.
+  create new ones, which quietly widens the list you curated.
 - **Daily Challenge enabled** / **Gamification enabled** — switch off the game elements
   (XP, levels, badges, streaks) if they do not fit your company culture. Worth considering
   for mandatory compliance training.
@@ -148,8 +149,15 @@ If certificates have not been set up yet, this page shows a warning banner. Clic
 ### 2.3 Letting teachers create courses and pools
 
 A teacher who should build their own content needs the **global instructor right**. It
-comes from exactly one place: membership in the group configured as **Instructor group**
-in the admin settings, `learning-instructors` unless you changed it.
+comes from the list **Instructors (groups and people)** in the admin settings: membership in
+any of the groups listed there, or being listed there by name. Until you change it, the
+list holds the group `learning-instructors`.
+
+Several groups are useful when an existing group such as a training department should
+count, and a few people from other departments should too: add the department's group and
+those people individually, without creating or reorganising groups. Listing a whole group
+gives every current and future member the right to create courses, so prefer small groups
+or individual people.
 
 This deliberately does *not* require Nextcloud administrator rights. Giving a teacher
 full admin rights just to let them create a course would hand them every other Nextcloud
@@ -159,8 +167,8 @@ The group is **not created automatically** — Learning never touches your user 
 Create it once:
 
 1. **Settings → Administration → Users**, then **+ Add group** in the left sidebar.
-2. Name it `learning-instructors` (or any name you prefer, then enter that name in
-   **Settings → Administration → Learning → Instructor group**).
+2. Name it `learning-instructors` (or any name you prefer, then pick that group in
+   **Settings → Administration → Learning → Instructors (groups and people)**).
 3. Add your teachers to the group.
 
 Or from the command line:
@@ -174,8 +182,12 @@ The change takes effect on the teacher's next page load. They will then see
 **+ Create Course** in the **Courses** tab, **+ Create pool** in the **Pools** tab, and a
 **Manage** tab inside every pool they may edit.
 
+> Up to 5.11 this setting was a single typed group name (**Instructor group**). That group
+> stays in force after the update and appears in the new list; nothing changes until you
+> save a different selection.
+
 > Nextcloud administrators always count as instructors, whether or not they are in the
-> group. That is why an admin account sees every creation button from the start — and why
+> list. That is why an admin account sees every creation button from the start — and why
 > testing the setup with an admin account tells you nothing about what a teacher sees.
 
 ### 2.4 Creating user accounts

@@ -187,7 +187,7 @@ class SettingsController extends Controller {
         string $default_language,
         int $max_import_size_mb,
         string $gamification_enabled,
-        string $instructor_group = 'learning-instructors',
+        ?string $instructor_group = null,
         string $allow_course_instructor_fallback = 'no',
         int $exam_attempt_limit_per_day = 5,
         int $exam_attempt_cooldown_minutes = 10,
@@ -238,12 +238,17 @@ class SettingsController extends Controller {
         // page referred to "the configured instructor group" without ever naming it, and
         // the manual did not mention it at all. An empty submission means "keep the
         // default"; deleting the setting entirely would silently promote nobody.
-        $instructorGroup = trim($instructor_group);
-        $this->config->setAppValue(
-            'learning',
-            'instructor_group',
-            $instructorGroup !== '' ? mb_substr($instructorGroup, 0, 64) : 'learning-instructors'
-        );
+        // GitHub #60: the admin page now saves groups and people through
+        // InstructorAccessController; only a client that still sends the single 5.11 field
+        // writes it here. Not sending it leaves the instructors untouched.
+        if ($instructor_group !== null) {
+            $instructorGroup = trim($instructor_group);
+            $this->config->setAppValue(
+                'learning',
+                'instructor_group',
+                $instructorGroup !== '' ? mb_substr($instructorGroup, 0, 64) : 'learning-instructors'
+            );
+        }
         $this->config->setAppValue('learning', 'allow_course_instructor_fallback', $allow_course_instructor_fallback === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'exam_attempt_limit_per_day', (string)max(1, min(50, $exam_attempt_limit_per_day)));
         $this->config->setAppValue('learning', 'exam_attempt_cooldown_minutes', (string)max(0, min(1440, $exam_attempt_cooldown_minutes)));

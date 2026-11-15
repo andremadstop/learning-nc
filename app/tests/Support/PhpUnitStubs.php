@@ -275,6 +275,8 @@ namespace OCP {
             public function hideFromCollaboration(): bool;
             // Bounded group expansion (NC 33 lib/public/IGroup.php).
             public function searchUsers(string $search, ?int $limit = null, ?int $offset = null): array;
+            // GitHub #60: the instructor picker labels groups (NC 33 lib/public/IGroup.php)
+            public function getDisplayName();
         }
     }
 
@@ -293,6 +295,8 @@ namespace OCP {
             public function isAdmin($userId);
             // GitHub #35: "share with group members only" check (NC 33 lib/public/IGroupManager.php).
             public function getUserGroupIds(IUser $user): array;
+            // GitHub #60: the instructor picker (NC 33 lib/public/IGroupManager.php)
+            public function search(string $search, ?int $limit = null, ?int $offset = 0);
         }
     }
 
@@ -305,6 +309,8 @@ namespace OCP {
             // 5.7.0 C1: MigrateLlmConfiguration walks all users for legacy TaskProcessing tasks.
             // Signature copied from NC 33's lib/public/IUserManager.php (no types there).
             public function callForAllUsers(\Closure $callback, $search = '');
+            // GitHub #60: the instructor picker (NC 33 lib/public/IUserManager.php)
+            public function searchDisplayName($pattern, $limit = null, $offset = null);
         }
     }
 

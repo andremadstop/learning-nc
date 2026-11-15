@@ -89,17 +89,11 @@
         </div>
       </div>
 
+      <!-- GitHub #60: several groups and individual people, picked from Nextcloud -->
       <div class="field-row">
-        <label for="instructor-group">{{ t('learning', 'Instructor group') }}</label>
-        <input
-          id="instructor-group"
-          v-model.trim="form.instructorGroup"
-          class="nc-input"
-          type="text"
-          maxlength="64"
-          placeholder="learning-instructors" />
+        <InstructorPicker v-model="form.instructors" :disabled="!instructorsLoaded" />
         <small class="field-help">
-          {{ t('learning', 'Members of this Nextcloud group may create courses and question pools. Create the group under Settings → Administration → Users and add your teachers to it — they do not need Nextcloud administrator rights. Nextcloud administrators always count as instructors.') }}
+          {{ t('learning', 'Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.') }}
         </small>
       </div>
 
@@ -107,7 +101,7 @@
         <NcCheckboxRadioSwitch
           :model-value="form.allowCourseInstructorFallback"
           type="switch"
-          :description="t('learning', 'If disabled (recommended), only members of the configured instructor group get global instructor privileges.')"
+          :description="t('learning', 'Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.')"
           @update:model-value="form.allowCourseInstructorFallback = !!$event">
           {{ t('learning', 'Allow course-based instructor fallback') }}
         </NcCheckboxRadioSwitch>
@@ -387,16 +381,18 @@
 <script>
 import axios from '@nextcloud/axios'
 import OperatorSettings from './OperatorSettings.vue'
+import InstructorPicker from './InstructorPicker.vue'
 import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
+import { toInstructorPayload, toOptions } from '../utils/member-picker.js'
 
 export default {
   name: 'AdminSettings',
-  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
+  components: { InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
   data() {
     return {
       loading: true,
@@ -404,6 +400,9 @@ export default {
       error: '',
       saved: false,
       certIssuerReady: true,
+      // GitHub #60: the instructor list is only saved after it was loaded; saving an unloaded
+      // (empty) list would replace the configured groups with the default group.
+      instructorsLoaded: false,
       // GitHub #35: null = not reported by the server; false shows the pdftotext hint
       pdfTextExtractionAvailable: null,
       certIssuerInitializing: false,
@@ -429,7 +428,8 @@ export default {
         maxImportSizeMb: 2,
         gamificationEnabled: true,
         enabledTools: [...ALL_TOOL_IDS],
-        instructorGroup: 'learning-instructors',
+        // GitHub #60: picker options ('group:<gid>' / 'user:<uid>')
+        instructors: [],
         allowCourseInstructorFallback: false,
         examAttemptLimitPerDay: 5,
         examAttemptCooldownMinutes: 10,
@@ -492,9 +492,10 @@ export default {
       this.loading = true
       this.error = ''
       try {
-        const [adminResponse, toolsResponse] = await Promise.all([
+        const [adminResponse, toolsResponse, instructorsResponse] = await Promise.all([
           axios.get(generateUrl('/apps/learning/api/settings/admin')),
           axios.get(generateUrl('/apps/learning/api/settings/tools')),
+          axios.get(generateUrl('/apps/learning/api/settings/admin/instructors')),
         ])
         const data = adminResponse.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge_enabled || 'yes') === 'yes'
@@ -502,7 +503,8 @@ export default {
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
         this.form.enabledTools = this.normalizeEnabledTools(toolsResponse.data?.enabled_tools)
-        this.form.instructorGroup = data.instructor_group || 'learning-instructors'
+        this.form.instructors = toOptions(instructorsResponse.data)
+        this.instructorsLoaded = true
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
         this.form.examAttemptCooldownMinutes = this.normalizeCooldownMinutes(data.exam_attempt_cooldown_minutes)
@@ -563,7 +565,6 @@ export default {
             default_language: this.form.defaultLanguage === 'en' ? 'en' : 'de',
             max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
             gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
-            instructor_group: this.form.instructorGroup || 'learning-instructors',
             allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
             exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
             exam_attempt_cooldown_minutes: this.normalizeCooldownMinutes(this.form.examAttemptCooldownMinutes),
@@ -577,6 +578,10 @@ export default {
           axios.put(generateUrl('/apps/learning/api/settings/tools'), {
             enabledTools: this.normalizeEnabledTools(this.form.enabledTools),
           }),
+          ...(this.instructorsLoaded
+            ? [axios.put(generateUrl('/apps/learning/api/settings/admin/instructors'), toInstructorPayload(this.form.instructors))
+              .then((res) => { this.form.instructors = toOptions(res.data) })]
+            : []),
         ])
         this.saved = true
       } catch (e) {

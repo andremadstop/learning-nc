@@ -48,3 +48,14 @@ export function toOptions(data) {
 	}))
 	return [...users, ...groups]
 }
+
+/**
+ * GitHub #60: the body of PUT /api/settings/admin/instructors for the admin page's picker.
+ *
+ * @param {Array<{type: string, value: string}>} selected picker options
+ * @return {{groupIds: string[], userIds: string[]}}
+ */
+export function toInstructorPayload(selected) {
+	const { groupIds, userIds } = buildBulkPayload(selected || [], '')
+	return { groupIds, userIds }
+}
