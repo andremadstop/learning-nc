@@ -1312,7 +1312,8 @@ class CourseService {
         if ($wholeName) {
             return $full !== '' ? $full : $userId;
         }
-        $words = preg_split('/\s+/u', $full, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        // Without a display name the initial of the uid, never the uid itself (it often is the name).
+        $words = preg_split('/\s+/u', $full !== '' ? $full : $userId, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $initials = array_map(static fn(string $word): string => mb_strtoupper(mb_substr($word, 0, 1)) . '.', $words);
         return $initials !== [] ? implode(' ', $initials) : '?';
     }
@@ -1930,6 +1931,9 @@ class CourseService {
         $qb->setFirstResult($offset)->setMaxResults($limit);
         $result = $qb->executeQuery();
 
+        // GitHub #49: a visible class register profile counts only where the course has its class
+        // register switched on; with it off, fellow learners see nobody's profile in this course.
+        $classbookOn = self::isModeEnabledInConfig($course->getModeConfig(), 'classbook');
         $entries = [];
         $rank = $offset;
         while ($row = $result->fetch()) {
@@ -1937,11 +1941,12 @@ class CourseService {
             $entries[] = [
                 'user_id' => $row['user_id'],
                 // GitHub #49: the whole display name. Learners only get it for themselves and for
-                // fellow learners who made their class register profile visible; for everyone
-                // else they get initials (see leaderboardName()).
+                // fellow learners who made their class register profile visible in a course with
+                // the class register on; for everyone else they get initials (leaderboardName()).
                 'display_name' => $this->leaderboardName(
                     $row['user_id'],
-                    $isInstructor || $row['user_id'] === $userId || (($row['visibility'] ?? null) ?: 'private') !== 'private'
+                    $isInstructor || $row['user_id'] === $userId
+                        || ($classbookOn && (($row['visibility'] ?? null) ?: 'private') !== 'private')
                 ),
                 'total_xp' => (int)$row['total_xp'],
                 'current_level' => (int)$row['current_level'],

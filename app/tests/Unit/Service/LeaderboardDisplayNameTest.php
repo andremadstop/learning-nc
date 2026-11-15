@@ -36,9 +36,12 @@ class LeaderboardDisplayNameTest extends TestCase {
      * @param array<string, string> $names user id => display name
      * @param array<string, ?string> $visibility user id => class register visibility (null: no profile)
      */
-    private function board(string $viewer, array $names, array $visibility = ['learner' => null]): array {
+    private function board(string $viewer, array $names, array $visibility = ['learner' => null], ?string $modeConfig = null): array {
         $course = new Course();
         $course->setId(7);
+        if ($modeConfig !== null) {
+            $course->setModeConfig($modeConfig);
+        }
         $course->setInstructorId('teacher');
         $courses = $this->createMock(CourseMapper::class);
         $courses->method('findById')->willReturn($course);
@@ -124,5 +127,26 @@ class LeaderboardDisplayNameTest extends TestCase {
         $board = $this->board('teacher', ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau'], ['learner' => null, 'maria' => 'private']);
         $this->assertSame('Doe Jane', $board[0]['display_name']);
         $this->assertSame('Maria Musterfrau', $board[1]['display_name']);
+    }
+    /**
+     * The visibility is global, the class register is switched per course: where it is off,
+     * fellow learners see nobody's profile in this course, so the leaderboard keeps initials too.
+     */
+    public function testAVisiblePeerShowsAsInitialsWhereTheCourseHasNoClassRegister(): void {
+        $off = $this->board('learner', ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau'], ['learner' => null, 'maria' => 'course'], '{"classbook":false}');
+        $this->assertSame('M. M.', $off[1]['display_name']);
+        $this->assertSame('Doe Jane', $off[0]['display_name'], 'the learner still sees their own name');
+
+        $on = $this->board('learner', ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau'], ['learner' => null, 'maria' => 'course'], '{"classbook":true}');
+        $this->assertSame('Maria Musterfrau', $on[1]['display_name']);
+
+        $teacher = $this->board('teacher', ['learner' => 'Doe Jane', 'maria' => 'Maria Musterfrau'], ['learner' => null, 'maria' => 'course'], '{"classbook":false}');
+        $this->assertSame('Maria Musterfrau', $teacher[1]['display_name'], 'instructors keep the whole name');
+    }
+
+    /** No display name: the initial of the uid, not "?" and not the uid itself. */
+    public function testAPrivatePeerWithoutDisplayNameShowsTheInitialOfTheUid(): void {
+        $board = $this->board('learner', ['learner' => 'Doe Jane', 'maria' => ''], ['learner' => null, 'maria' => null]);
+        $this->assertSame('M.', $board[1]['display_name']);
     }
 }
