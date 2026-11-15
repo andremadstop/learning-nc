@@ -141,7 +141,8 @@ class PoolAnswerStats68Test extends TestCase {
             ]),
             $totals,
         ]);
-        $this->service($db)->getPoolAnswerStats(self::POOL, 'teacher');
+        $stats = $this->service($db)->getPoolAnswerStats(self::POOL, 'teacher');
+        $this->assertSame(2, $stats['led_courses'], 'course 7 as owner, course 9 as co-instructor');
 
         $learnerParams = array_values(array_filter(
             array_column($totals->namedParameters, 'value'),
@@ -161,6 +162,7 @@ class PoolAnswerStats68Test extends TestCase {
         $this->assertFalse($stats['leitner_in_use']);
         $this->assertSame(0, $stats['answers']);
         $this->assertSame(0, $stats['learners']);
+        $this->assertSame(0, $stats['led_courses'], 'the tab tells the viewer they lead none of the courses instead of "0 answers"');
         $this->assertCount(4, $db->issuedBuilders, 'no answer query without a learner of an own course');
     }
 

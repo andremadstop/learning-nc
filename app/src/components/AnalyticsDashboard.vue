@@ -54,6 +54,9 @@
             <p class="card-label">{{ t('learning', 'Fragen im Pool') }}</p>
             <p class="card-value">{{ answerStats.question_count }}</p>
           </div>
+          <!-- Reviewer finding (GitHub #68): a viewer who leads none of the courses with this pool
+            gets no counts at all, not "0 learners" for a pool that others' learners do answer. -->
+          <template v-if="!answerStatsOfNoOwnCourse">
           <div class="summary-card card-mastered">
             <span class="card-watermark">&#x1F465;</span>
             <p class="card-label">{{ t('learning', 'Lernende mit Antworten') }}</p>
@@ -69,6 +72,7 @@
             <p class="card-label">{{ t('learning', 'Accuracy') }}</p>
             <p class="card-value">{{ answerStats.accuracy !== null && answerStats.accuracy !== undefined ? answerStats.accuracy + '%' : '–' }}</p>
           </div>
+          </template>
         </template>
         <template v-else>
         <div class="summary-card card-questions">
@@ -97,17 +101,25 @@
       </div>
 
       <div v-if="answerView" class="answer-stats">
+        <p v-if="answerStatsOfNoOwnCourse" class="answer-stats-note answer-stats-none">
+          {{ t('learning', 'Dieser Pool hängt in keinem Kurs mit Leitner. Du leitest keinen der Kurse mit diesem Pool, deshalb stehen hier keine Antworten: Die Antworten aus Kursen anderer Lehrender siehst du nicht.') }}
+        </p>
+        <template v-else>
         <p class="answer-stats-note">
-          {{ t('learning', 'Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus den Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.', { answers: answerStats.answers, correct: answerStats.correct }) }}
+          {{ t('learning', 'Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.', { answers: answerStats.answers, correct: answerStats.correct }) }}
         </p>
         <h3 class="section-heading">{{ t('learning', 'Schwierigste Fragen') }}</h3>
         <ol v-if="answerStats.hardest && answerStats.hardest.length > 0" class="hardest-list">
-          <li v-for="q in answerStats.hardest" :key="q.question_id" class="hardest-item">
+          <!-- Reviewer finding (GitHub #68): the rank is written out — a flex <li> loses its list
+            marker, and the order is the point of the list. -->
+          <li v-for="(q, index) in answerStats.hardest" :key="q.question_id" class="hardest-item">
+            <span class="hardest-rank">{{ index + 1 }}.</span>
             <span class="hardest-text">{{ q.question_text }}</span>
             <span class="hardest-meta">{{ t('learning', '{rate} % falsch · {n} Antworten', { rate: q.wrong_rate, n: q.total_answers }) }}</span>
           </li>
         </ol>
         <p v-else class="hardest-empty">{{ t('learning', 'Noch zu wenige falsche Antworten für eine Auswertung.') }}</p>
+        </template>
       </div>
 
       <div class="missions-section" v-if="gamificationEnabled && missionsData.missions && missionsData.missions.length > 0">
@@ -324,6 +336,11 @@ export default {
     answerView() {
       return this.answerStats !== null && this.answerStats.leitner_in_use === false;
     },
+    // The server counts only learners of courses the viewer leads; with none of them the zeros
+    // would read as "nobody answered". An older server without led_courses keeps the counts.
+    answerStatsOfNoOwnCourse() {
+      return this.answerView && this.answerStats.led_courses === 0;
+    },
     totalCorrectFormatted() {
       if (this.stats.total_answered === 0) {
         return '0/0 (0%)';
@@ -527,16 +544,25 @@ export default {
 
 .hardest-list {
   margin: 0 0 24px;
-  padding-inline-start: 20px;
+  padding: 0;
+  list-style: none;
 }
 
 .hardest-item {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   gap: 4px 12px;
   padding: 8px 0;
   border-bottom: 1px solid var(--color-border);
+}
+
+.hardest-rank {
+  font-weight: 700;
+  min-width: 2ch;
+}
+
+.hardest-text {
+  flex: 1 1 12em;
 }
 
 .hardest-meta {

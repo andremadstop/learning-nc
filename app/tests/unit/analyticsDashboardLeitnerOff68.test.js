@@ -91,6 +91,34 @@ describe('Pool statistics without Leitner (GitHub #68)', () => {
 		expect(emitted).toEqual(['answers'])
 	})
 
+	it('numbers the hardest questions in their order (a flex <li> has no list marker)', async () => {
+		api.answerStats = answers({ hardest: [
+			{ question_id: 3, question_text: 'Welcher Feuerlöscher?', total_answers: 4, wrong_rate: 75 },
+			{ question_id: 5, question_text: 'Fluchtweg?', total_answers: 6, wrong_rate: 50 },
+		] })
+		await mount()
+		const ranks = [...host.querySelectorAll('.hardest-item .hardest-rank')].map((el) => el.textContent.trim())
+		expect(ranks).toEqual(['1.', '2.'])
+	})
+
+	it('names the viewer\'s own courses as the source of the answers', async () => {
+		api.answerStats = answers({ led_courses: 1 })
+		await mount()
+		expect(host.querySelector('.answer-stats-note').textContent).toContain('aus deinen Kursen mit diesem Pool')
+	})
+
+	it('says the viewer leads none of the courses instead of showing "0 answers"', async () => {
+		api.answerStats = answers({ led_courses: 0, learners: 0, attempts: 0, answers: 0, correct: 0, accuracy: null, hardest: [] })
+		await mount()
+		expect(host.querySelector('.answer-stats-none').textContent).toContain('Du leitest keinen der Kurse mit diesem Pool')
+		expect(host.textContent).not.toContain('0 Antworten, davon 0 richtig')
+		expect(host.textContent).not.toContain('Lernende mit Antworten')
+		expect(host.textContent).not.toContain('Versuche')
+		expect(host.querySelector('.hardest-empty')).toBeNull()
+		expect(host.querySelector('.card-questions .card-value').textContent).toBe('8')
+		expect(emitted).toEqual(['answers'])
+	})
+
 	it('says so when no question was answered wrong often enough yet', async () => {
 		api.answerStats = answers({ hardest: [], answers: 0, correct: 0, accuracy: null })
 		await mount()

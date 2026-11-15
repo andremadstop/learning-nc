@@ -2313,8 +2313,12 @@ class CourseService {
             $accuracy = $totalQ > 0 ? round($totalCorrect / $totalQ * 100) : null;
 
             if ($certBasis) {
-                $reasons[] = 'Noch nicht bestanden';
-                $reasonCodes[] = ['code' => 'not_passed'];
+                // A valid certificate in its renewal window is no "not passed": the progress table
+                // says "valid, renewal open", the card names only the open renewal.
+                if ($standing === null || !$standing['certificate_valid']) {
+                    $reasons[] = 'Noch nicht bestanden';
+                    $reasonCodes[] = ['code' => 'not_passed'];
+                }
                 $state = $states[$sid] ?? null;
                 $due = $state !== null && $state['due_date'] !== null && $state['status'] !== 'passed' ? (int)$state['due_date'] : null;
                 if ($due !== null && $due < $now) {
@@ -3247,7 +3251,10 @@ class CourseService {
      * "aggregate" would be that person's results. Only the pool's owner or an edit share may
      * read them — the people who maintain the questions.
      *
-     * @return array{leitner_in_use: bool, question_count: int, learners: int, attempts: int, answers: int, correct: int, accuracy: int|null, hardest: list<array{question_id: int, question_text: string, total_answers: int, wrong_rate: float}>}
+     * led_courses: how many of the courses holding the pool the viewer leads. With 0 the counts
+     * stay 0 although other courses may have answers — the tab says so instead of "0 answers".
+     *
+     * @return array{leitner_in_use: bool, question_count: int, led_courses: int, learners: int, attempts: int, answers: int, correct: int, accuracy: int|null, hardest: list<array{question_id: int, question_text: string, total_answers: int, wrong_rate: float}>}
      * @throws ForbiddenException neither owner nor edit share of the pool
      */
     public function getPoolAnswerStats(int $poolId, string $userId): array {
@@ -3281,6 +3288,7 @@ class CourseService {
         $stats = [
             'leitner_in_use' => $leitnerInUse,
             'question_count' => $this->countQuestionsInPool($poolId),
+            'led_courses' => 0,
             'learners' => 0,
             'attempts' => 0,
             'answers' => 0,
@@ -3309,6 +3317,7 @@ class CourseService {
             }
         }
         $result->closeCursor();
+        $stats['led_courses'] = count($ledCourseIds);
         $learnerIds = [];
         foreach (array_keys($ledCourseIds) as $cid) {
             foreach ($studentsByCourse[$cid] ?? [] as $uid) {

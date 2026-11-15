@@ -771,10 +771,6 @@ export default {
 		isInstructor() {
 			return this.actsAsInstructor
 		},
-		// GitHub #36: the course switched Leitner off, so the mastery columns cannot move.
-		courseWithoutLeitner() {
-			return this.course?.mode_config?.leitner === false
-		},
 		// GitHub #68: the server says which figures the progress rows carry. An older server
 		// without the field keeps the Leitner table.
 		progressExamBasis() {
@@ -786,7 +782,7 @@ export default {
 		},
 		atRiskHint() {
 			if (this.atRiskBasis === 'exams') {
-				return t('learning', 'Lernende, die noch nicht bestanden haben und bei denen es eilt: Die Frist ist nah oder vorbei, die Erneuerung ist offen oder sie waren länger nicht aktiv. Die Gründe stehen auf jeder Karte.')
+				return t('learning', 'Lernende ohne gültigen Abschluss oder mit offener Erneuerung, bei denen es eilt: Die Frist ist nah oder vorbei, die Erneuerung ist offen oder sie waren länger nicht aktiv. Die Gründe stehen auf jeder Karte.')
 			}
 			if (this.atRiskBasis === 'practice') {
 				return t('learning', 'Lernende, die länger nicht aktiv waren oder eine niedrige Trefferquote haben. Die Gründe stehen auf jeder Karte.')

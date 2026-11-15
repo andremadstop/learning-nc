@@ -257,8 +257,23 @@ class LeitnerOffProgress68Test extends TestCase {
         $standing = $this->passedStanding(['passed' => false, 'renewal_open' => true]);
         $result = $this->service($this->atRiskDb(null), json_encode(['leitner' => false]), $standing, $this->assignments(time() - 86400))
             ->getAtRiskStudents(7, 'teacher');
-        $this->assertSame(['not_passed', 'deadline_overdue', 'renewal_open', 'never_active'], $this->codes($result));
+        $this->assertSame(['deadline_overdue', 'renewal_open', 'never_active'], $this->codes($result), 'a valid certificate is no "not passed"');
         $this->assertSame('high', $result['at_risk'][0]['risk_level']);
+    }
+
+    public function testAValidCertificateInItsRenewalWindowIsNotCalledNotPassed(): void {
+        $standing = $this->passedStanding(['passed' => false, 'certificate_valid' => true, 'renewal_open' => true]);
+        $result = $this->service($this->atRiskDb(time()), json_encode(['leitner' => false]), $standing, $this->assignments(null))
+            ->getAtRiskStudents(7, 'teacher');
+        $this->assertSame(['renewal_open'], $this->codes($result), 'the table says "valid, renewal open", the card must not say "not passed"');
+        $this->assertSame(['Erneuerung offen'], $result['at_risk'][0]['risk_reasons'] ?? null);
+    }
+
+    public function testAnExpiredCertificateStillReadsAsNotPassed(): void {
+        $standing = $this->passedStanding(['passed' => false, 'certificate_valid' => false, 'certificate_expired' => true]);
+        $result = $this->service($this->atRiskDb(time()), json_encode(['leitner' => false]), $standing, $this->assignments(null))
+            ->getAtRiskStudents(7, 'teacher');
+        $this->assertSame(['not_passed', 'certificate_expired'], $this->codes($result));
     }
 
     public function testNoLeitnerSignalIsReadWithoutLeitner(): void {

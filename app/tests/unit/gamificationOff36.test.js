@@ -648,7 +648,7 @@ describe('Fresh-eyes review: progress table and compliance exports (GitHub #36, 
 		})
 		const hint = host.querySelector('.at-risk-hint')
 		expect(hint.textContent).not.toContain('kritische Karten')
-		expect(hint.textContent).toContain('noch nicht bestanden')
+		expect(hint.textContent).toContain('ohne gültigen Abschluss oder mit offener Erneuerung')
 		const tags = [...host.querySelectorAll('.risk-reason-tag')].map(el => el.textContent.trim())
 		expect(tags).toEqual(['Noch nicht bestanden', 'Frist endet in 5 Tagen', 'Erneuerung offen'])
 	})
