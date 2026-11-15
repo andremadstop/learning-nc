@@ -363,3 +363,13 @@ describe('course settings: stamp and signature stay visible without saving (GitH
 		expect(host.querySelector('.cert-layout-image-thumb')).toBeNull()
 	})
 })
+
+describe('course settings: a view-only share is named as such (GitHub #43 review)', () => {
+	it('says the file may only be viewed instead of a generic failure', async () => {
+		const { imageErrorMessage } = await import('../../src/components/CertLayoutSettings.vue')
+		const message = imageErrorMessage({ response: { data: { error: 'not_downloadable' } } })
+
+		expect(message).toBe('Die Datei ist nur zum Ansehen freigegeben (Herunterladen gesperrt) und kann deshalb nicht übernommen werden.')
+		expect(imageErrorMessage({ response: { data: { error: 'something_else' } } })).toBe('Das Bild konnte nicht übernommen werden.')
+	})
+})

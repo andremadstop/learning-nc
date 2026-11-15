@@ -3673,6 +3673,7 @@
         "Die Datei ist kein gültiges PNG-Bild.": "Le fichier n’est pas une image PNG valide.",
         "Die Datei ist zu groß (höchstens 1 MB und 3000 × 3000 Pixel).": "Le fichier est trop volumineux (1 Mo et 3000 × 3000 pixels au maximum).",
         "Die Datei wurde nicht gefunden.": "Le fichier est introuvable.",
+        "Die Datei ist nur zum Ansehen freigegeben (Herunterladen gesperrt) und kann deshalb nicht übernommen werden.": "Le fichier est partagé en lecture seule (téléchargement désactivé) et ne peut donc pas être utilisé.",
         "Diese Datei übernehmen": "Utiliser ce fichier",
         "Einleitungstext": "Texte d’introduction",
         "Elemente auf dem Zertifikat": "Éléments sur le certificat",

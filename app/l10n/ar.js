@@ -3673,6 +3673,7 @@ OC.L10N.register(
     "Die Datei ist kein gültiges PNG-Bild." : "الملف ليس صورة PNG صالحة.",
     "Die Datei ist zu groß (höchstens 1 MB und 3000 × 3000 Pixel)." : "الملف كبير جدًا (بحد أقصى 1 ميغابايت و3000 × 3000 بكسل).",
     "Die Datei wurde nicht gefunden." : "لم يُعثر على الملف.",
+    "Die Datei ist nur zum Ansehen freigegeben (Herunterladen gesperrt) und kann deshalb nicht übernommen werden." : "الملف مُشارك للعرض فقط (التنزيل معطّل)، لذا لا يمكن استخدامه.",
     "Diese Datei übernehmen" : "استخدام هذا الملف",
     "Einleitungstext" : "نص المقدمة",
     "Elemente auf dem Zertifikat" : "العناصر على الشهادة",

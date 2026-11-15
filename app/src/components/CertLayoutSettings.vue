@@ -135,6 +135,9 @@ export function imageErrorMessage(error) {
 	if (code === 'too_large') {
 		return t('learning', 'Die Datei ist zu groß (höchstens 1 MB und 3000 × 3000 Pixel).')
 	}
+	if (code === 'not_downloadable') {
+		return t('learning', 'Die Datei ist nur zum Ansehen freigegeben (Herunterladen gesperrt) und kann deshalb nicht übernommen werden.')
+	}
 	if (code === 'file_not_found') {
 		return t('learning', 'Die Datei wurde nicht gefunden.')
 	}

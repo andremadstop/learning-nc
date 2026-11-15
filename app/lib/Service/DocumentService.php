@@ -370,8 +370,10 @@ class DocumentService {
      * themselves, and neither may the course members. Mirrors
      * OCA\Files_Sharing\ViewOnly::checkFileInfo (NC 33) through the OCP interface: a file inside
      * a shared folder lives on that share's storage, so the file's own storage decides.
+     *
+     * Also used by CertLayoutService: a certificate stamp or signature is handed out the same way.
      */
-    private static function mayBeDownloaded(File $file): bool {
+    public static function mayBeDownloaded(File $file): bool {
         try {
             if (!$file->isReadable()) {
                 return false;

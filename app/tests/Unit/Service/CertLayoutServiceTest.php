@@ -16,6 +16,10 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
+use OCP\Files\Storage\IStorage;
+use OCP\Files\Storage\ISharedStorage;
+use OCP\Share\IAttributes;
+use OCP\Share\IShare;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
@@ -77,9 +81,14 @@ class CertLayoutServiceTest extends TestCase {
         return $root;
     }
 
-    private function file(string $bytes, ?int $size = null): File {
+    private function file(string $bytes, ?int $size = null, ?IStorage $storage = null): File {
+        if ($storage === null) {
+            $storage = $this->createMock(IStorage::class);
+            $storage->method('instanceOfStorage')->willReturn(false);
+        }
         $file = $this->createMock(File::class);
         $file->method('isReadable')->willReturn(true);
+        $file->method('getStorage')->willReturn($storage);
         $file->method('getSize')->willReturn($size ?? strlen($bytes));
         $file->method('getContent')->willReturn($bytes);
         return $file;
@@ -102,6 +111,60 @@ class CertLayoutServiceTest extends TestCase {
         $this->assertSame(base64_encode($bytes), $insert->insertValues['data_b64']['value']);
         $this->assertSame('image/png', $insert->insertValues['mime']['value']);
         $this->assertCount(1, $this->updated);
+    }
+
+    /** The storage of a share given to the instructor; $download null = no attributes (allowed). */
+    private function sharedStorage(?bool $download): ISharedStorage {
+        $attributes = null;
+        if ($download !== null) {
+            $attributes = $this->createMock(IAttributes::class);
+            $attributes->method('getAttribute')->willReturnCallback(
+                static fn (string $scope, string $key) => ($scope === 'permissions' && $key === 'download') ? $download : null);
+        }
+        $share = $this->createMock(IShare::class);
+        $share->method('getAttributes')->willReturn($attributes);
+        $storage = $this->createMock(ISharedStorage::class);
+        $storage->method('instanceOfStorage')->willReturnCallback(static fn (string $class) => $class === ISharedStorage::class);
+        $storage->method('getShare')->willReturn($share);
+        return $storage;
+    }
+
+    /**
+     * A file shared with the instructor as "view only" must not become a stamp or signature:
+     * its bytes would go to every learner of the course inside the certificate.
+     */
+    public function testViewOnlyShareIsRefusedBeforeReading(): void {
+        $file = $this->createMock(File::class);
+        $file->method('isReadable')->willReturn(true);
+        $file->method('getSize')->willReturn(100);
+        $file->method('getStorage')->willReturn($this->sharedStorage(false));
+        $file->expects($this->never())->method('getContent');
+        $db = new FakeDbConnection();
+        $service = $this->service($this->rootWith('teacher', '/Geteilt/Unterschrift.png', $file), $db);
+
+        try {
+            $service->importImage($this->course(), 'signature', 'teacher', '/Geteilt/Unterschrift.png');
+            $this->fail('a view-only share must not be imported');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('not_downloadable', $e->getMessage());
+        }
+        $this->assertSame([], $this->updated, 'the course layout is unchanged');
+        $this->assertCount(0, $db->issuedBuilders, 'nothing stored');
+    }
+
+    public function testShareWithDownloadAllowedIsImported(): void {
+        foreach ([true, null] as $download) {
+            $this->updated = [];
+            $bytes = self::png();
+            $db = new FakeDbConnection([new FakeQueryBuilder(new FakeResult()), new FakeQueryBuilder()]);
+            $file = $this->file($bytes, null, $this->sharedStorage($download));
+            $service = $this->service($this->rootWith('teacher', '/Geteilt/Stempel.png', $file), $db);
+
+            $course = $service->importImage($this->course(), 'stamp', 'teacher', '/Geteilt/Stempel.png');
+
+            $this->assertSame(hash('sha256', $bytes), CertLayout::decode($course->getCertLayout())['stamp_sha']);
+            $this->assertCount(1, $this->updated);
+        }
     }
 
     public function testFileOutsideTheUsersFolderIsNotFound(): void {
@@ -142,6 +205,7 @@ class CertLayoutServiceTest extends TestCase {
         $file = $this->createMock(File::class);
         $file->method('isReadable')->willReturn(true);
         $file->method('getSize')->willReturn(CertLayoutService::MAX_BYTES + 1);
+        $file->method('getStorage')->willReturn($this->createMock(IStorage::class));
         $file->expects($this->never())->method('getContent');
         $service = $this->service($this->rootWith('teacher', '/big.png', $file));
 

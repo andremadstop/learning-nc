@@ -48,7 +48,7 @@ class CertLayoutService {
      * The caller has checked that $userId manages the course.
      *
      * @throws NotFoundException          the path is not a file the user can read
-     * @throws \InvalidArgumentException  wrong kind, not a PNG, too large (code in the message)
+     * @throws \InvalidArgumentException  wrong kind, view-only share, not a PNG, too large (code in the message)
      */
     public function importImage(Course $course, string $kind, string $userId, string $path): Course {
         if (!in_array($kind, CertLayout::IMAGE_KINDS, true)) {
@@ -65,6 +65,12 @@ class CertLayoutService {
         }
         if (!($node instanceof File) || !$node->isReadable()) {
             throw new NotFoundException('not a readable file');
+        }
+        // A file shared with the instructor as "view only" (download disabled) is not theirs to
+        // hand out: its bytes would reach every learner of the course inside the certificate,
+        // and stay in issued certificates after the share is revoked.
+        if (!DocumentService::mayBeDownloaded($node)) {
+            throw new \InvalidArgumentException('not_downloadable');
         }
         if ($node->getSize() > self::MAX_BYTES) {
             throw new \InvalidArgumentException('too_large');

@@ -3673,6 +3673,7 @@ OC.L10N.register(
     "Die Datei ist kein gültiges PNG-Bild." : "Файл не является корректным изображением PNG.",
     "Die Datei ist zu groß (höchstens 1 MB und 3000 × 3000 Pixel)." : "Файл слишком большой (не более 1 МБ и 3000 × 3000 пикселей).",
     "Die Datei wurde nicht gefunden." : "Файл не найден.",
+    "Die Datei ist nur zum Ansehen freigegeben (Herunterladen gesperrt) und kann deshalb nicht übernommen werden." : "Файл предоставлен только для просмотра (скачивание запрещено), поэтому его нельзя использовать.",
     "Diese Datei übernehmen" : "Использовать этот файл",
     "Einleitungstext" : "Вводный текст",
     "Elemente auf dem Zertifikat" : "Элементы на сертификате",
