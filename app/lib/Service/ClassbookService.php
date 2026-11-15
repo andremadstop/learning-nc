@@ -189,6 +189,11 @@ class ClassbookService {
         if (!($course['is_instructor'] ?? false) && !self::classbookEnabledIn($modeConfig)) {
             throw new ForbiddenException('The class register is switched off in this course');
         }
+        // Review of f9501fdf (#36): kudos are a game element. The class register hides them with
+        // gamification off, and the server refuses them then too, for every role.
+        if ($this->xpService !== null && !$this->xpService->isGamificationEnabled()) {
+            throw new ForbiddenException('Kudos are switched off while gamification is off');
+        }
 
         if ($fromUser === $toUser) {
             throw new \RuntimeException('You cannot give kudos to yourself');

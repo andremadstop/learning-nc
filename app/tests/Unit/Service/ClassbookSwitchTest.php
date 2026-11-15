@@ -12,6 +12,7 @@ use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\ClassbookService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\XpService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
@@ -29,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 class ClassbookSwitchTest extends TestCase {
     private KudosMapper $kudos;
 
-    private function service(?array $modeConfig, bool $viewerIsInstructor): ClassbookService {
+    private function service(?array $modeConfig, bool $viewerIsInstructor, ?XpService $xpService = null): ClassbookService {
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('findById')->willReturn(['id' => 7, 'is_instructor' => $viewerIsInstructor, 'mode_config' => $modeConfig]);
 
@@ -58,7 +59,7 @@ class ClassbookSwitchTest extends TestCase {
         $this->kudos->method('countGivenSince')->willReturn(0);
 
         $db = new FakeDbConnection([new FakeQueryBuilder(new FakeResult([], []))]);
-        return new ClassbookService($courseService, $memberMapper, $pools, $telosMapper, $this->kudos, $db, $this->createMock(IUserManager::class));
+        return new ClassbookService($courseService, $memberMapper, $pools, $telosMapper, $this->kudos, $db, $this->createMock(IUserManager::class), $xpService);
     }
 
     /** @return list<string> */
@@ -97,5 +98,39 @@ class ClassbookSwitchTest extends TestCase {
 
         $result = $service->giveKudos(7, 'learner', 'classmate', 'Danke');
         $this->assertSame('ok', $result['status']);
+    }
+
+    private function xp(bool $gamificationEnabled): XpService {
+        $xp = $this->createMock(XpService::class);
+        $xp->method('isGamificationEnabled')->willReturn($gamificationEnabled);
+        return $xp;
+    }
+
+    /**
+     * Review of f9501fdf (#36): with gamification off the class register hides the kudos, but
+     * POST .../kudos was still accepted and raised the counters. Kudos are a game element, so the
+     * server refuses them for everyone while the admin has gamification switched off.
+     */
+    public function testNoKudosWhileGamificationIsOff(): void {
+        $service = $this->service(null, false, $this->xp(false));
+        $this->kudos->expects($this->never())->method('insert');
+
+        $this->expectException(ForbiddenException::class);
+        $service->giveKudos(7, 'learner', 'classmate', 'Danke');
+    }
+
+    public function testAnInstructorCannotSendKudosWhileGamificationIsOffEither(): void {
+        $service = $this->service(null, true, $this->xp(false));
+        $this->kudos->expects($this->never())->method('insert');
+
+        $this->expectException(ForbiddenException::class);
+        $service->giveKudos(7, 'teacher', 'learner', 'Gut gemacht');
+    }
+
+    public function testKudosWorkWithGamificationOn(): void {
+        $service = $this->service(null, false, $this->xp(true));
+        $this->kudos->expects($this->once())->method('insert')->willReturnArgument(0);
+
+        $this->assertSame('ok', $service->giveKudos(7, 'learner', 'classmate', 'Danke')['status']);
     }
 }
