@@ -3810,5 +3810,7 @@ OC.L10N.register(
     "Zertifikat gültig · Erneuerung offen" : "Сертифікат чинний · поновлення відкрито",
     "Zertifikat gültig" : "Сертифікат чинний",
     "Erneuerung offen: noch keine neue Prüfung abgelegt" : "Поновлення відкрито: новий іспит ще не складався",
+    "Pools meiner Kurse ({n})" : "Пули моїх курсів ({n})",
+    "Kurse: {courses}" : "Курси: {courses}",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

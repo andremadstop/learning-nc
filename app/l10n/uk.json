@@ -3809,6 +3809,8 @@
         "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Статистика відповідей слухачів і найскладніші питання цього пулу.",
         "Zertifikat gültig · Erneuerung offen": "Сертифікат чинний · поновлення відкрито",
         "Zertifikat gültig": "Сертифікат чинний",
-        "Erneuerung offen: noch keine neue Prüfung abgelegt": "Поновлення відкрито: новий іспит ще не складався"
+        "Erneuerung offen: noch keine neue Prüfung abgelegt": "Поновлення відкрито: новий іспит ще не складався",
+        "Pools meiner Kurse ({n})": "Пули моїх курсів ({n})",
+        "Kurse: {courses}": "Курси: {courses}"
     }
 }

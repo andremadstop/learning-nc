@@ -3810,5 +3810,7 @@ OC.L10N.register(
     "Zertifikat gültig · Erneuerung offen" : "Certificate valid · renewal open",
     "Zertifikat gültig" : "Certificate valid",
     "Erneuerung offen: noch keine neue Prüfung abgelegt" : "Renewal open: no new exam taken yet",
+    "Pools meiner Kurse ({n})" : "Pools in my courses ({n})",
+    "Kurse: {courses}" : "Courses: {courses}",
 },
 "nplurals=2; plural=(n != 1);");

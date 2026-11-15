@@ -33,6 +33,16 @@ class PoolController extends Controller {
     }
 
     /**
+     * GitHub #69: the pools of the courses the user leads (owner or co-instructor), with their
+     * course titles and the user's permission per pool. Empty for anyone without such a course.
+     *
+     * @NoAdminRequired
+     */
+    public function inMyCourses(): DataResponse {
+        return new DataResponse(['pools' => $this->service->findInMyCourses((string)$this->userId)]);
+    }
+
+    /**
      * @NoAdminRequired
      */
     public function show(int $id): DataResponse {

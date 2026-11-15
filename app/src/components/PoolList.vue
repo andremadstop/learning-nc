@@ -176,6 +176,10 @@
       <button @click="activeTab = 'shared'" :class="['tab-btn', 'lnc-tab', { active: activeTab === 'shared' }]" role="tab" :aria-selected="activeTab === 'shared' ? 'true' : 'false'">
         {{ t('learning', 'Shared with me ({n})', { n: sharedPools.length }) }}
       </button>
+      <!-- GitHub #69: the pools of the courses the viewer leads (owner or co-instructor). -->
+      <button v-if="showCoursePoolsTab" @click="activeTab = 'course'" :class="['tab-btn', 'lnc-tab', 'course-pools-tab', { active: activeTab === 'course' }]" role="tab" :aria-selected="activeTab === 'course' ? 'true' : 'false'">
+        {{ t('learning', 'Pools meiner Kurse ({n})', { n: coursePools.length }) }}
+      </button>
     </div>
 
     <NcLoadingIcon v-if="loading" :size="44" class="loading-center" />
@@ -231,6 +235,32 @@
           </div>
           <p v-if="pool.description" class="pool-description">{{ pool.description }}</p>
           <div class="pool-meta">{{ t('learning', 'Shared by {name}', { name: pool.shared_by }) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pools of my courses (GitHub #69): read-only cards; the pool window decides what may be
+         edited from the permission the server named. -->
+    <div v-else-if="activeTab === 'course' && showCoursePoolsTab" class="course-pools">
+      <div class="pool-grid">
+        <div v-for="pool in coursePools" :key="'c-' + pool.id" class="pool-card course-pool-card" @click="selectPool(pool)"
+             tabindex="0" role="button"
+             @keydown.enter="selectPool(pool)"
+             @keydown.space.prevent="selectPool(pool)">
+          <div class="pool-card-header">
+            <h4>{{ pool.name }}</h4>
+            <span class="permission-badge" :class="pool.permission === 'read' ? 'read' : 'edit'">
+              {{ pool.permission === 'read' ? t('learning', 'View only') : t('learning', 'Can edit') }}
+            </span>
+          </div>
+          <div v-if="pool.chapter_title || pool.handbook_title" class="pool-chapter-meta">
+            <span v-if="pool.handbook_title" class="pool-meta-badge handbook">{{ pool.handbook_title }}</span>
+            <span v-if="pool.chapter_title" class="pool-meta-badge chapter">
+              {{ formatChapterLabel(pool) }}
+            </span>
+          </div>
+          <p v-if="pool.description" class="pool-description">{{ pool.description }}</p>
+          <div class="pool-meta course-pool-courses">{{ t('learning', 'Kurse: {courses}', { courses: courseTitles(pool) }) }}</div>
         </div>
       </div>
     </div>
@@ -396,6 +426,8 @@ export default {
     return {
       pools: [],
       sharedPools: [],
+      // GitHub #69: GET /api/my-course-pools, the pools of the courses the viewer leads.
+      coursePools: [],
       activeTab: 'own',
       loading: false,
       showDialog: false,
@@ -441,6 +473,11 @@ export default {
   computed: {
     // hintDismissed() reads localStorage and is not reactive, so it stays in the template,
     // which dismissHint() re-renders with $forceUpdate().
+    // GitHub #69: whoever leads a course with pools gets the tab, whatever their app role (a
+    // co-instructor need not be in the instructor group). Not in the student view.
+    showCoursePoolsTab() {
+      return !this.studentViewActive && this.coursePools.length > 0;
+    },
     showInstructorOnlyNote() {
       return this.userRole !== 'instructor'
         && !this.studentViewActive
@@ -486,6 +523,12 @@ export default {
       }
       return list;
     }
+  },
+  watch: {
+    // Entering or leaving the student view while the list is open: the course pools tab follows.
+    studentViewActive() {
+      this.loadCoursePools();
+    },
   },
   mounted() {
     this.loadPools();
@@ -549,9 +592,32 @@ export default {
         }
       } catch (error) {
         showError(t('learning', 'Failed to load pools'));
-      } finally {
-        this.loading = false;
       }
+      await this.loadCoursePools();
+      this.loading = false;
+    },
+    // GitHub #69: an admin or co-instructor whose course pools belong to a colleague saw "My Pools
+    // (0) — No pools yet". With nothing of their own, the list opens on their course pools.
+    async loadCoursePools() {
+      if (this.studentViewActive) {
+        this.coursePools = [];
+        return;
+      }
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/my-course-pools'));
+        this.coursePools = Array.isArray(response.data?.pools) ? response.data.pools : [];
+      } catch (error) {
+        // An optional list: without it the page keeps the own and shared pools.
+        this.coursePools = [];
+      }
+      if (this.activeTab === 'course' && this.coursePools.length === 0) {
+        this.activeTab = 'own';
+      } else if (this.activeTab === 'own' && this.pools.length === 0 && this.coursePools.length > 0) {
+        this.activeTab = 'course';
+      }
+    },
+    courseTitles(pool) {
+      return (Array.isArray(pool.courses) ? pool.courses : []).map((c) => c.title).filter(Boolean).join(', ');
     },
     // GitHub #34: a pool created in the generator's import tab opens right away; App opens an
     // empty pool its owner can edit in Manage, where the import is.

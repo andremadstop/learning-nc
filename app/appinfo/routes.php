@@ -21,6 +21,8 @@ return [
 
         // Pools
         ['name' => 'pool#index', 'url' => '/api/pools', 'verb' => 'GET'],
+        // GitHub #69: outside /api/pools/ so pool#show's {id} never swallows it
+        ['name' => 'pool#inMyCourses', 'url' => '/api/my-course-pools', 'verb' => 'GET'],
         ['name' => 'pool#show', 'url' => '/api/pools/{id}', 'verb' => 'GET'],
         ['name' => 'pool#create', 'url' => '/api/pools', 'verb' => 'POST'],
         ['name' => 'pool#update', 'url' => '/api/pools/{id}', 'verb' => 'PUT'],

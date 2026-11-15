@@ -3809,6 +3809,8 @@
         "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Answer statistics of the learners and the hardest questions of this pool.",
         "Zertifikat gültig · Erneuerung offen": "Certificate valid · renewal open",
         "Zertifikat gültig": "Certificate valid",
-        "Erneuerung offen: noch keine neue Prüfung abgelegt": "Renewal open: no new exam taken yet"
+        "Erneuerung offen: noch keine neue Prüfung abgelegt": "Renewal open: no new exam taken yet",
+        "Pools meiner Kurse ({n})": "Pools in my courses ({n})",
+        "Kurse: {courses}": "Courses: {courses}"
     }
 }

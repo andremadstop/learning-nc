@@ -3809,6 +3809,8 @@
         "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "إحصاءات إجابات المتعلمين وأصعب أسئلة هذه المجموعة.",
         "Zertifikat gültig · Erneuerung offen": "الشهادة سارية · التجديد مفتوح",
         "Zertifikat gültig": "الشهادة سارية",
-        "Erneuerung offen: noch keine neue Prüfung abgelegt": "التجديد مفتوح: لم يُؤدَّ امتحان جديد بعد"
+        "Erneuerung offen: noch keine neue Prüfung abgelegt": "التجديد مفتوح: لم يُؤدَّ امتحان جديد بعد",
+        "Pools meiner Kurse ({n})": "مجموعات مقرراتي ({n})",
+        "Kurse: {courses}": "المقررات: {courses}"
     }
 }

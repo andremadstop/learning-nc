@@ -7,6 +7,7 @@ use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
 class PoolService {
@@ -44,6 +45,81 @@ class PoolService {
                 'is_shared' => true,
             ]);
         }, $rows);
+    }
+
+    /**
+     * GitHub #69: the pools of every course the user leads, each pool once with the titles of
+     * those courses. "Leads" is the rule of CourseService::findInstructedCourses() and
+     * isInstructorOfCourse(): the course's owner (courses.instructor_id) or a member with role
+     * 'instructor' (co-instructor). A learner of a course gets nothing here, and neither does a
+     * pool of a course the user does not lead, also when the pool owner is a colleague.
+     *
+     * The permission per pool follows findByIdWithShareAccess(): owner, else the user's share,
+     * else 'read' (course instructors may read the pools of their courses). is_shared is true
+     * for every pool the user does not own, so the pool window offers Manage only to editors.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function findInMyCourses(string $userId): array {
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('p.*')
+           ->selectAlias('c.id', 'lnc_course_id')
+           ->selectAlias('c.title', 'lnc_course_title')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->innerJoin('cp', 'learning_pools', 'p', $expr->eq('cp.pool_id', 'p.id'))
+           ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+               $expr->eq('cm.course_id', 'c.id'),
+               $expr->eq('cm.user_id', $qb->createNamedParameter($userId)),
+               $expr->eq('cm.role', $qb->createNamedParameter('instructor'))
+           ))
+           ->where($expr->orX(
+               $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
+               $expr->isNotNull('cm.id')
+           ))
+           ->orderBy('p.name', 'ASC')
+           ->addOrderBy('p.id', 'ASC')
+           ->addOrderBy('c.title', 'ASC');
+        $result = $qb->executeQuery();
+        $byPool = [];
+        while ($row = $result->fetch()) {
+            $poolId = (int)$row['id'];
+            if (!isset($byPool[$poolId])) {
+                $byPool[$poolId] = ['row' => $row, 'courses' => []];
+            }
+            $courseId = (int)$row['lnc_course_id'];
+            $byPool[$poolId]['courses'][$courseId] = ['id' => $courseId, 'title' => (string)$row['lnc_course_title']];
+        }
+        $result->closeCursor();
+        if ($byPool === []) {
+            return [];
+        }
+
+        $shares = [];
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('pool_id', 'permission')
+           ->from('learning_pool_shares')
+           ->where($qb->expr()->eq('shared_with', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('share_type', $qb->createNamedParameter('user')))
+           ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter(array_keys($byPool), IQueryBuilder::PARAM_INT_ARRAY)));
+        $result = $qb->executeQuery();
+        while ($row = $result->fetch()) {
+            $shares[(int)$row['pool_id']] = (string)$row['permission'];
+        }
+        $result->closeCursor();
+
+        $pools = [];
+        foreach ($byPool as $poolId => $entry) {
+            $owned = (string)$entry['row']['user_id'] === $userId;
+            $permission = $owned ? 'owner' : (($shares[$poolId] ?? '') === 'edit' ? 'edit' : 'read');
+            $pools[] = array_merge($this->serializePoolRow($entry['row']), [
+                'permission' => $permission,
+                'is_shared' => !$owned,
+                'courses' => array_values($entry['courses']),
+            ]);
+        }
+        return $pools;
     }
 
     private function serializePoolRow(array $row): array {
