@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/andremadstop/learning-nc/blob/main/SECURITY.md
+    about: Please do not report security problems in a public issue. Follow the steps in SECURITY.md.
+  - name: Guides
+    url: https://github.com/andremadstop/learning-nc/tree/main/docs/guides
+    about: Step-by-step guides, e.g. setting up an annual mandatory training with certificates.
+  - name: User & Administrator Manual
+    url: https://github.com/andremadstop/learning-nc/blob/main/docs/MANUAL.md
+    about: The complete workflow from course to certificate, admin setup and occ commands.

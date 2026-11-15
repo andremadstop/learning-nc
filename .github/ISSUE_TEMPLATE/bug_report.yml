@@ -1,0 +1,119 @@
+name: Bug report
+description: Something in Learning does not work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! One problem per issue, please.
+        **Security problems:** do not report them here, see [SECURITY.md](https://github.com/andremadstop/learning-nc/blob/main/SECURITY.md).
+        Please remove names and e-mail addresses of real people from text and screenshots.
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Learning version
+      description: Apps → Learning, or the version shown in the App Store.
+      placeholder: "5.12.0"
+    validations:
+      required: true
+
+  - type: input
+    id: nextcloud-version
+    attributes:
+      label: Nextcloud version
+      description: Administration settings → Overview.
+      placeholder: "33.0.9"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options:
+        - PostgreSQL
+        - MySQL / MariaDB
+        - SQLite
+        - I don't know
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Your role when it happened
+      description: Many tabs and buttons depend on the role. Select all that apply.
+      multiple: true
+      options:
+        - Nextcloud administrator
+        - Instructor
+        - Learner
+        - Instructor/administrator in "student view"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: gamification
+    attributes:
+      label: Gamification
+      description: Administration settings → Learning.
+      options:
+        - "Off"
+        - "On"
+        - I don't know
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai
+    attributes:
+      label: AI features
+      description: Administration settings → Learning.
+      options:
+        - "Off"
+        - On (Google Gemini)
+        - On (Ollama)
+        - I don't know
+    validations:
+      required: true
+
+  - type: input
+    id: language
+    attributes:
+      label: Interface language
+      description: Optional. Helpful if text looks wrong or untranslated.
+      placeholder: "English"
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Start from a page you can name. Mention course settings that matter (Leitner, training or exam mode on/off, certification).
+      placeholder: |
+        1. Log in as an instructor
+        2. Open the course "…" → tab "…"
+        3. Click "…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: Include error messages from the page, the browser console or the Nextcloud log if you have them.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images in here. Remove personal data first.

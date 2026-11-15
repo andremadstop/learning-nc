@@ -1,0 +1,45 @@
+name: Feature request
+description: Describe a problem the app does not solve for you yet.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the **problem** first, before any solution.
+        A proposed solution sometimes solves a different problem than the one you have (the "XY problem").
+        If the problem is clear, the best solution can be found together, and it may already exist.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is the problem?
+      description: What are you trying to do, and what stops you today?
+      placeholder: "As an instructor I cannot see which learners have not started the mandatory course yet, so I have to …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Your use case
+      description: Who uses the app, roughly how many learners, what the course is for (e.g. annual mandatory training, IT certification, school class), and whether gamification and AI are on or off.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-workaround
+    attributes:
+      label: How do you handle it today?
+      description: Optional. A workaround, another tool, or "not at all".
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Ideas for a solution
+      description: Optional. If you have one in mind, describe it here.
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Learning version
+      placeholder: "5.12.0"
