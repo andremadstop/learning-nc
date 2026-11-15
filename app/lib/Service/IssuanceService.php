@@ -160,6 +160,14 @@ class IssuanceService {
         // CAS slot: the UNIQUE active_idem_key means only the first concurrent INSERT wins.
         // closePeriod() nulls this field to open the slot for the next recertification period.
         $cert->setActiveIdemKey($idemKey);
+        // GitHub #43: the course's certificate layout of this moment, so a later change of text,
+        // signer or stamp never redraws a certificate already issued. Presentation only, outside the
+        // signed credential. Set only when the course has its own layout: a course with the standard
+        // layout writes exactly the row it wrote before.
+        $layoutSnapshot = CertLayout::snapshot($course->getCertLayout());
+        if ($layoutSnapshot !== null) {
+            $cert->setLayoutJson($layoutSnapshot);
+        }
 
         $auditContext = [
             'course_id'       => $courseId,

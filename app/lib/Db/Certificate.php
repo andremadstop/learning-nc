@@ -33,6 +33,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setRevokedAt(?int $revokedAt)
  * @method int|null getAnonymizedAt()
  * @method void setAnonymizedAt(?int $anonymizedAt)
+ * @method string|null getLayoutJson()
+ * @method void setLayoutJson(?string $layoutJson)
  */
 class Certificate extends Entity implements \JsonSerializable {
     protected $verificationId;
@@ -63,6 +65,12 @@ class Certificate extends Entity implements \JsonSerializable {
      * credential must never 500 the public route. Not exposed in jsonSerialize().
      */
     protected $anonymizedAt;
+    /**
+     * GitHub #43: the course's certificate layout at issuance (CertLayout JSON), NULL = the standard
+     * card. Presentation only, never part of the signed credential. Not exposed in jsonSerialize();
+     * the show endpoints add the resolved presentation.
+     */
+    protected $layoutJson;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -77,6 +85,7 @@ class Certificate extends Entity implements \JsonSerializable {
         $this->addType('activeIdemKey', 'string');
         $this->addType('revokedAt', 'integer');
         $this->addType('anonymizedAt', 'integer');
+        $this->addType('layoutJson', 'string');
     }
 
     /**

@@ -6,6 +6,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\CertLayoutService;
 use OCA\Learning\Service\CertificateArtifact;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseService;
@@ -40,6 +41,7 @@ class CertificateController extends Controller {
     private ?string $userId;
     private AuditService $auditService;
     private IDBConnection $db;
+    private ?CertLayoutService $layoutService;
 
     public function __construct(
         string $appName,
@@ -49,7 +51,8 @@ class CertificateController extends Controller {
         ITimeFactory $timeFactory,
         ?string $userId,
         AuditService $auditService,
-        IDBConnection $db
+        IDBConnection $db,
+        ?CertLayoutService $layoutService = null
     ) {
         parent::__construct($appName, $request);
         $this->certificateMapper = $certificateMapper;
@@ -58,6 +61,7 @@ class CertificateController extends Controller {
         $this->userId = $userId;
         $this->auditService = $auditService;
         $this->db = $db;
+        $this->layoutService = $layoutService;
     }
 
     /**
@@ -115,7 +119,11 @@ class CertificateController extends Controller {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
 
-        return new JSONResponse($this->projectOwnedCert($cert));
+        $data = $this->projectOwnedCert($cert);
+        // GitHub #43: how this certificate is drawn (frozen at issuance; null = the standard card),
+        // with its stamp / signature as data URLs: only whoever may see the certificate gets them.
+        $data['presentation'] = $this->layoutService?->presentationForCertificate($cert);
+        return new JSONResponse($data);
     }
 
     /**

@@ -220,6 +220,41 @@ class IssuanceServiceTest extends TestCase {
         return $this->b64uDecode($parts[1] ?? '');
     }
 
+    /** GitHub #43: a course with the standard layout writes exactly the row it wrote before. */
+    public function testStandardLayoutLeavesNoSnapshot(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured);
+
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
+
+        $this->assertNotNull($cert);
+        $this->assertNull($cert->getLayoutJson());
+        $this->assertArrayNotHasKey('layoutJson', $cert->getUpdatedFields());
+    }
+
+    /**
+     * GitHub #43: the course's layout is frozen into the certificate row, and stays out of the
+     * signed credential (a presentation, not a claim).
+     */
+    public function testCourseLayoutIsFrozenIntoTheRowNotTheCredential(): void {
+        $layout = \OCA\Learning\Service\CertLayout::defaults();
+        $layout['intro'] = 'Hiermit wird bestätigt, dass {student.name}';
+        $layout['signer_name'] = 'Maria Muster';
+        $layout['stamp_sha'] = str_repeat('e', 64);
+        $course = $this->makeCourse();
+        $course->setCertLayout(\OCA\Learning\Service\CertLayout::encode($layout));
+        $captured = null;
+        $service = $this->makeService(null, $course, $captured);
+
+        $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
+
+        $this->assertNotNull($cert);
+        $this->assertSame($layout, \OCA\Learning\Service\CertLayout::decode($cert->getLayoutJson()));
+        $payload = json_encode($this->payloadOf($cert));
+        $this->assertStringNotContainsString('Maria Muster', (string)$payload);
+        $this->assertStringNotContainsString(str_repeat('e', 64), (string)$payload);
+    }
+
     public function testIssuesExactlyOnceOnFirstPass(): void {
         $captured = null;
         $service = $this->makeService(null, $this->makeCourse(), $captured);

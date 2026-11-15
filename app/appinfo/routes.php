@@ -278,6 +278,10 @@ return [
 
         // Certification config + pass status (Phase 154)
         ['name' => 'course#updateCertConfig', 'url' => '/api/courses/{courseId}/cert-config', 'verb' => 'PATCH'],
+        // GitHub #43: certificate layout preview + stamp / signature from the instructor's files
+        ['name' => 'certLayout#show', 'url' => '/api/courses/{courseId}/cert-layout', 'verb' => 'GET'],
+        ['name' => 'certLayout#importImage', 'url' => '/api/courses/{courseId}/cert-layout/images/{kind}', 'verb' => 'POST'],
+        ['name' => 'certLayout#removeImage', 'url' => '/api/courses/{courseId}/cert-layout/images/{kind}', 'verb' => 'DELETE'],
         ['name' => 'course#updatePracticeConfig', 'url' => '/api/courses/{courseId}/practice-exam-config', 'verb' => 'PATCH'],
         ['name' => 'training#startPractice', 'url' => '/api/courses/{courseId}/practice-exam/start', 'verb' => 'POST'],
         ['name' => 'course#getPassStatus',    'url' => '/api/courses/{courseId}/pass-status',  'verb' => 'GET'],

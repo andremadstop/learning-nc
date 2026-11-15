@@ -68,6 +68,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setExamQuestions(?int $examQuestions)
  * @method int|null getExamMinutes()
  * @method void setExamMinutes(?int $examMinutes)
+ * @method string|null getCertLayout()
+ * @method void setCertLayout(?string $certLayout)
  */
 class Course extends Entity {
     protected $title;
@@ -103,6 +105,8 @@ class Course extends Entity {
     protected $examQuestions;
     /** GitHub #47: course default for the time limit of a counting exam in minutes; NULL = none. */
     protected $examMinutes;
+    /** GitHub #43: how the course's certificates look (CertLayout JSON); NULL = the standard card. */
+    protected $certLayout;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -126,6 +130,7 @@ class Course extends Entity {
         $this->addType('practiceRequiredOnly', 'boolean');
         $this->addType('examQuestions', 'integer');
         $this->addType('examMinutes', 'integer');
+        $this->addType('certLayout', 'string');
     }
 
     public function jsonSerialize(): array {
@@ -167,6 +172,8 @@ class Course extends Entity {
             // GitHub #47: course default of the exam scope; NULL = each pool decides (or legacy).
             'exam_questions' => $this->examQuestions !== null ? (int)$this->examQuestions : null,
             'exam_minutes' => $this->examMinutes !== null ? (int)$this->examMinutes : null,
+            // GitHub #43: the certificate layout without image bytes (has_stamp / has_signature only).
+            'cert_layout' => \OCA\Learning\Service\CertLayout::forSettings($this->certLayout),
         ];
     }
 }

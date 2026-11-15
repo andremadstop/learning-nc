@@ -757,6 +757,7 @@ class CourseController extends Controller {
         ?int $certValidityMonths = null,
         ?int $examQuestions = null,
         ?int $examMinutes = null,
+        ?array $certLayout = null,
     ): DataResponse {
         try {
             if ($this->userId === null) {
@@ -765,6 +766,21 @@ class CourseController extends Controller {
             $course = $this->courseMapper->findById($courseId);
             if (!$this->canManageCourse($course, $this->userId)) {
                 return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+
+            // GitHub #43: introduction text, element switches and signer of the certificate.
+            // Validated before anything changes, so a rejected layout saves nothing. The images are
+            // not settable here (CertLayoutController checks the file); the standard layout is NULL.
+            if ($certLayout !== null) {
+                try {
+                    $layout = \OCA\Learning\Service\CertLayout::apply(
+                        $certLayout,
+                        \OCA\Learning\Service\CertLayout::decode($course->getCertLayout())
+                    );
+                } catch (\InvalidArgumentException $e) {
+                    return new DataResponse(['error' => 'cert_layout: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setCertLayout(\OCA\Learning\Service\CertLayout::encode($layout));
             }
 
             if ($certEnabled !== null) {
@@ -856,6 +872,7 @@ class CourseController extends Controller {
                 'certValidityMonths'  => $course->getCertValidityMonths(),
                 'examQuestions'       => $course->getExamQuestions(),
                 'examMinutes'         => $course->getExamMinutes(),
+                'certLayout'          => \OCA\Learning\Service\CertLayout::forSettings($course->getCertLayout()),
             ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

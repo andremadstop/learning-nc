@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\CertLayoutService;
 use OCA\Learning\Service\CertificateArtifact;
 use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\ForbiddenException;
@@ -41,6 +42,7 @@ class CourseCertificateController extends Controller {
     private AuditService $auditService;
     private LoggerInterface $logger;
     private ?string $userId;
+    private ?CertLayoutService $layoutService;
 
     public function __construct(
         string $appName,
@@ -48,13 +50,15 @@ class CourseCertificateController extends Controller {
         CertificateReportService $reportService,
         AuditService $auditService,
         LoggerInterface $logger,
-        ?string $userId
+        ?string $userId,
+        ?CertLayoutService $layoutService = null
     ) {
         parent::__construct($appName, $request);
         $this->reportService = $reportService;
         $this->auditService = $auditService;
         $this->logger = $logger;
         $this->userId = $userId;
+        $this->layoutService = $layoutService;
     }
 
     /**
@@ -82,6 +86,8 @@ class CourseCertificateController extends Controller {
         $data['revoked'] = (bool)$cert->getRevoked();
         $data['revoked_at'] = $cert->getRevokedAt();
         $data['expired'] = $row['expired'];
+        // GitHub #43: the instructor's copy is drawn like the learner's (same frozen layout).
+        $data['presentation'] = $this->layoutService?->presentationForCertificate($cert);
         return new JSONResponse($data);
     }
 

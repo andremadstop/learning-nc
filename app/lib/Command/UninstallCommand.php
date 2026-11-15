@@ -70,6 +70,7 @@ class UninstallCommand extends Command {
         'learning_audit_checkpoints',
         'learning_audit_events',
         'learning_campaign_state',
+        'learning_cert_assets',
         'learning_cert_keys',
         'learning_certificates',
         'learning_coop_players',
@@ -141,6 +142,8 @@ class UninstallCommand extends Command {
      * @var list<string>
      */
     public const CERT_TABLES = [
+        // GitHub #43: the stamp and signature images the kept certificates are drawn with.
+        'learning_cert_assets',
         'learning_cert_keys',
         'learning_certificates',
     ];

@@ -1086,6 +1086,8 @@ class CourseService {
      * Deliberately kept, with their course_id:
      *   - learning_certificates, learning_audit_events: compliance evidence (DSGVO-01, Art.17(3)(b));
      *     the retention job ages them out.
+     *   - learning_cert_assets (GitHub #43): the stamp and signature those certificates are drawn
+     *     with; they stay as long as the certificates do.
      *   - learning_assignments: evidence of the obligation; only the active period is closed
      *     (active_period_key = NULL), as RetentionService expects of a finished period.
      *   - learning_course_snapshots: a student's summary is "permanent" and stays readable for the
