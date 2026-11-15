@@ -63,6 +63,10 @@
         <p v-if="error" class="onb-tile-group__error" role="alert">{{ error }}</p>
       </div>
 
+      <!-- Instructors have no goal or intensity tiles: without the AI question the step would be a
+           bare "Weiter" button, so it keeps the one line saying why there is nothing to choose. -->
+      <p v-if="!showAiQuestion && !isStudent" class="onb-tile-group__note onb-no-ai-note">{{ t('learning', 'Auf diesem Server ist keine KI eingerichtet.') }}</p>
+
       <AiConsentPrompt
         v-if="showConsent"
         source="onboarding"

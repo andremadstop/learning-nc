@@ -312,6 +312,15 @@ describe('OnbProfileTiles consent tile', () => {
 		expect(store.profileChoices.aiConsent).toBe('no')
 	})
 
+	it('AI switched off, instructor: the step is not a bare button, it says why there is nothing to choose (GitHub #70)', async () => {
+		axios.get.mockResolvedValue({ data: status({ recipient: null, ai_enabled: false }) })
+		mountTiles()
+		store.role = 'instructor'
+		await flush()
+		expect(consentTiles()).toHaveLength(0)
+		expect(host.querySelector('.onb-no-ai-note')?.textContent).toContain('keine KI')
+	})
+
 	it('AI switched off with a consent still on record: the "without AI" tile stays to revoke it (GitHub #70)', async () => {
 		axios.get.mockResolvedValue({ data: status({ recipient: null, ai_enabled: false, ai_consent_version: '3.0' }) })
 		mountTiles()
