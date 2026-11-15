@@ -8,18 +8,20 @@
  * Each rule is as narrow as the case it covers: persona, method, status and path together.
  *
  * @param {{kind: string, detail: string}} finding
- * @param {{user: string, studentView?: boolean, poolOwner?: string}} ctx
+ * @param {{user: string, studentView?: boolean, poolOwner?: string, station?: string}} ctx
  * @return {string|null} the reason it is expected, or null when it counts
  */
 function expectedReason(finding, ctx) {
 	if (!finding || !ctx) return null
-	if (finding.kind === 'http' && ctx.studentView) {
+	if (finding.kind === 'http' && ctx.studentView && /^Course › Completion & certificate\b/.test(ctx.station || '')) {
 		// An instructor previewing the course as a student is no student of it: the completion tab
 		// asks for his own learner record and gets 404, which CourseRecentSessions.vue treats as
-		// "nothing to list" (persona report, unclear finding 5).
+		// "nothing to list" (persona report, unclear finding 5). Only there: the same request from
+		// StudentDetail.vue (Participants › My Progress) ends in "Student not found in this course."
+		// on screen, which is a finding.
 		const m = /^GET 404 \/(?:index\.php\/)?apps\/learning\/api\/courses\/\d+\/students\/([^/?\s]+)$/.exec(finding.detail)
 		if (m && decodeURIComponent(m[1]) === ctx.user) {
-			return 'student view: the previewing instructor has no learner record in the course (404 handled by the page)'
+			return 'student view: the previewing instructor has no learner record in the course (404 handled by the completion tab)'
 		}
 	}
 	if (finding.kind === 'pool-missing' && ctx.poolOwner && ctx.user !== ctx.poolOwner) {

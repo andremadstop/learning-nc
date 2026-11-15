@@ -2,10 +2,10 @@
  * GitHub #36 — the persona sweep (scripts/persona-sweep) as a gate: its pure helpers.
  *
  * expectedReason: the first runs reported two findings at every run that were the app working as
- * intended (an instructor's student view asks for his own learner record → 404; a persona who does
- * not own the pool does not see it). A gate that always shows the same false alarms is read past.
- * The rules must stay narrow: the same 404 for another user, another status or another persona
- * still counts.
+ * intended (an instructor's student view asks for his own learner record on the completion tab →
+ * 404; a persona who does not own the pool does not see it). A gate that always shows the same false
+ * alarms is read past. The rules must stay narrow: the same 404 for another user, status, persona or
+ * station still counts — at Participants › My Progress it ends in "Student not found in this course".
  *
  * axeFindings: axe-core violations → findings; contrast at any impact, other rules only when
  * critical or serious.
@@ -19,17 +19,28 @@ const { expectedReason, axeFindings, stationText } = require('../../../scripts/p
 describe('persona sweep: expectedReason', () => {
 	const http = (detail) => ({ kind: 'http', detail })
 
-	it('the student view\'s own learner record (404) is expected', () => {
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { user: 'admin', studentView: true })).toMatch(/student view/)
-		expect(expectedReason(http('GET 404 /index.php/apps/learning/api/courses/7/students/admin'), { user: 'admin', studentView: true })).toBeTruthy()
+	const sv = { user: 'admin', studentView: true, station: 'Course › Completion & certificate' }
+
+	it('the student view\'s own learner record (404) is expected on the completion tab', () => {
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), sv)).toMatch(/student view/)
+		expect(expectedReason(http('GET 404 /index.php/apps/learning/api/courses/7/students/admin'), sv)).toBeTruthy()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { ...sv, station: 'Course › Completion & certificate (buttons)' })).toBeTruthy()
+	})
+
+	it('the same 404 at a Participants station counts: StudentDetail shows "Student not found in this course."', () => {
+		for (const station of ['Course › Participants', 'Course › Participants › My Progress', 'Course › Participants › Class register']) {
+			expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { ...sv, station })).toBeNull()
+		}
+		// without a known station nothing is waved through
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { user: 'admin', studentView: true })).toBeNull()
 	})
 
 	it('the same 404 still counts outside the student view, for another user, status or method', () => {
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { user: 'admin', studentView: false })).toBeNull()
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/learner1'), { user: 'admin', studentView: true })).toBeNull()
-		expect(expectedReason(http('GET 500 /apps/learning/api/courses/1/students/admin'), { user: 'admin', studentView: true })).toBeNull()
-		expect(expectedReason(http('POST 404 /apps/learning/api/courses/1/students/admin'), { user: 'admin', studentView: true })).toBeNull()
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin/sessions'), { user: 'admin', studentView: true })).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { ...sv, studentView: false })).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/learner1'), sv)).toBeNull()
+		expect(expectedReason(http('GET 500 /apps/learning/api/courses/1/students/admin'), sv)).toBeNull()
+		expect(expectedReason(http('POST 404 /apps/learning/api/courses/1/students/admin'), sv)).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin/sessions'), sv)).toBeNull()
 	})
 
 	it('a missing pool is expected only for someone who does not own it', () => {
@@ -42,7 +53,7 @@ describe('persona sweep: expectedReason', () => {
 	})
 
 	it('other kinds always count', () => {
-		expect(expectedReason({ kind: 'console', detail: 'GET 404 /apps/learning/api/courses/1/students/admin' }, { user: 'admin', studentView: true })).toBeNull()
+		expect(expectedReason({ kind: 'console', detail: 'GET 404 /apps/learning/api/courses/1/students/admin' }, sv)).toBeNull()
 		expect(expectedReason({ kind: 'a11y', detail: 'x' }, { user: 'admin', studentView: true, poolOwner: 'instructor' })).toBeNull()
 	})
 })

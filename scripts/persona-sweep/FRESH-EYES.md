@@ -10,6 +10,7 @@ Nicht „bitte schau nicht in den Code“, sondern ein Verzeichnis, in dem es ke
 RUN=scripts/persona-sweep/out/gamification-off      # bzw. gamification-on
 FE="$(mktemp -d /tmp/fresh-eyes.XXXXXX)"
 cp "$RUN/stations.json" "$FE/" && cp -r "$RUN/shots" "$FE/"
+# Teillauf (PERSONA_STATIONS): stations-filtered.json und shots-filtered/ statt stations.json und shots/
 sed -n '/^## Prompt/,$p' scripts/persona-sweep/FRESH-EYES.md | tail -n +3 > "$FE/PROMPT.md"
 cd "$FE"
 ```

@@ -16,10 +16,12 @@ for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n'
 }
 const OUT = path.join(__dirname, 'out')
 const RUN = path.join(OUT, `gamification-${state.GAMIFICATION === 'on' ? 'on' : 'off'}`)
-const SHOTS = path.join(RUN, 'shots')
 const DOWNLOADS = path.join(RUN, 'downloads')
 const AUTH = path.join(OUT, 'auth')
-// A filtered run (PERSONA_STATIONS) writes its own file and leaves the full run's findings alone.
+// A filtered run (PERSONA_STATIONS) writes its own findings and screenshots and leaves the full
+// run's alone: its screenshot numbers count from its own findings file, so in shots/ they would
+// overwrite images that stations.json names.
+const SHOTS = path.join(RUN, process.env.PERSONA_STATIONS ? 'shots-filtered' : 'shots')
 const FINDINGS = path.join(RUN, process.env.PERSONA_STATIONS ? 'findings-filtered.json' : 'findings.json')
 const seed = JSON.parse(fs.readFileSync(path.join(OUT, 'seed.json'), 'utf8'))
 // axe-core from app/node_modules (devDependency, pinned). Injected with page.evaluate: that runs
@@ -87,7 +89,7 @@ class Recorder {
 	add(kind, detail) {
 		if (!this.current) this.begin('(before first station)')
 		// The app working as intended: kept, but in its own list (report: "Expected, not counted").
-		const reason = expectedReason({ kind, detail }, this.ctx)
+		const reason = expectedReason({ kind, detail }, { ...this.ctx, station: this.current.station })
 		const list = reason ? (this.current.expected ||= []) : this.current.findings
 		if (list.some((f) => f.kind === kind && f.detail === detail)) return
 		list.push(reason ? { kind, detail, reason } : { kind, detail })

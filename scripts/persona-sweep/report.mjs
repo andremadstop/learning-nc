@@ -1,6 +1,7 @@
 // persona-sweep/report.mjs — out/gamification-<mode>/findings.json → report.md + stations.json
 // (stations.json: what the fresh-eyes reviewer gets, see FRESH-EYES.md).
-// PERSONA_STATIONS set: the filtered run's findings-filtered.json → report-filtered.md + stations-filtered.json.
+// PERSONA_STATIONS set: the filtered run's findings-filtered.json → report-filtered.md + stations-filtered.json
+// (screenshots in shots-filtered/).
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -99,7 +100,7 @@ if (expected.size) {
 if (toasts.length) md += `## Toasts seen\n\n${toasts.map((t) => `- ${esc(t)}`).join('\n')}\n\n`
 md += '## Stations\n\n| Persona | Station | URL | Clicked | Findings | Screenshot |\n|---|---|---|---|---|---|\n'
 for (const s of stations) {
-	md += `| ${esc(s.persona)} | ${esc(s.station)} | \`${esc(s.url)}\` | ${s.clicked || 0} | ${s.findings.length ? s.findings.map((f) => f.kind).join(', ') : '—'} | ${s.screenshot ? `shots/${s.screenshot}` : ''} |\n`
+	md += `| ${esc(s.persona)} | ${esc(s.station)} | \`${esc(s.url)}\` | ${s.clicked || 0} | ${s.findings.length ? s.findings.map((f) => f.kind).join(', ') : '—'} | ${s.screenshot ? `shots${suffix}/${s.screenshot}` : ''} |\n`
 }
 writeFileSync(join(RUN, `report${suffix}.md`), md)
 
@@ -111,7 +112,7 @@ const freshEyes = {
 	},
 	stations: stations
 		.filter((s) => s.screenshot && !/^Detector self-test/.test(s.station))
-		.map((s) => ({ persona: s.persona, station: s.station, url: s.url, screenshot: `shots/${s.screenshot}`, text: s.text || '' })),
+		.map((s) => ({ persona: s.persona, station: s.station, url: s.url, screenshot: `shots${suffix}/${s.screenshot}`, text: s.text || '' })),
 }
 writeFileSync(join(RUN, `stations${suffix}.json`), JSON.stringify(freshEyes, null, 2))
 console.log(`report: ${stations.length} stations, ${withFindings.length} with findings → ${join(RUN, `report${suffix}.md`)}`)

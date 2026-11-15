@@ -14,7 +14,7 @@
 #                     REF=<git-ref>     app snapshot to test (default: HEAD)
 #                     KEEP=1            with `all`: leave the instance running afterwards
 #                     PERSONA_STATIONS=<regex>  `sweep`: only these stations (findings-filtered.json,
-#                                       report-filtered.md, stations-filtered.json)
+#                                       report-filtered.md, stations-filtered.json, shots-filtered/)
 #                     PERSONA_DEBUG=1   `sweep`: log every button the click-through finds
 #        Both modes against each other: GAMIFICATION=off …/run.sh, then GAMIFICATION=on …/run.sh;
 #        the results land in separate folders.
@@ -163,7 +163,7 @@ up() {
 		occ user:setting "$u" learning onboarding_declined yes >/dev/null
 	done
 
-	echo "==> Learning settings: signing key, gamification $GAMIFICATION, AI off"
+	echo "==> Learning settings: signing key, gamification $GAMIFICATION, AI $([ "$GAMIFICATION" = on ] && echo 'on (seed: Ollama, nothing answers)' || echo off)"
 	occ learning:cert:init-issuer
 	occ config:app:set learning gamification_enabled --value="$([ "$GAMIFICATION" = on ] && echo yes || echo no)" >/dev/null
 
@@ -193,12 +193,14 @@ sweep() {
 	mode="$(sed -n "s/^GAMIFICATION='\(.*\)'$/\1/p" "$STATE")"
 	run="$OUT/gamification-${mode:-off}"
 	if [ -n "${PERSONA_STATIONS:-}" ]; then
-		rm -f -- "$run/findings-filtered.json" "$run/report-filtered.md" "$run/stations-filtered.json"
+		rm -rf -- "$run/shots-filtered" "$run/findings-filtered.json" "$run/report-filtered.md" "$run/stations-filtered.json"
+		mkdir -p "$run/shots-filtered"
 	else
 		rm -rf -- "$run/shots" "$run/downloads" "$run/findings.json" "$run/report.md" "$run/stations.json"
+		mkdir -p "$run/shots"
 	fi
 	rm -rf -- "$OUT/auth" "$OUT/pw-results"
-	mkdir -p "$run/shots" "$OUT/auth" "$run/downloads"
+	mkdir -p "$OUT/auth" "$run/downloads"
 	local rc=0
 	# Playwright and its test runner come from app/node_modules (no second install); NODE_PATH lets
 	# the files here resolve @playwright/test from there.
