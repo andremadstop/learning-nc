@@ -3766,5 +3766,6 @@ OC.L10N.register(
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“." : "Іспит відкриється, коли ти пройдеш усі обов’язкові матеріали. Ти знайдеш їх у навчальному розділі в пункті «Обов'язкові матеріали».",
     "Pflichtinhalte gesamt" : "Усього обов’язкових матеріалів",
     "Dieses Video übernehmen" : "Вибрати це відео",
+    "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "Це не дійсний ідентифікатор відео. Вставте адресу відео або лише його ідентифікатор.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

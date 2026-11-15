@@ -119,10 +119,19 @@
 					id="required-video-id"
 					v-model="videoForm.ref"
 					type="text"
-					maxlength="64"
+					maxlength="300"
 					dir="ltr"
 					class="required-content-input"
+					:aria-invalid="embedIdInvalid ? 'true' : null"
+					:aria-describedby="embedIdInvalid ? 'required-video-id-hint' : null"
 					data-test="required-video-id">
+				<p
+					v-if="embedIdInvalid"
+					id="required-video-id-hint"
+					class="required-content-hint"
+					data-test="required-video-id-invalid">
+					{{ t('learning', 'Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.') }}
+				</p>
 			</template>
 
 			<label for="required-video-title">{{ t('learning', 'Titel (optional)') }}</label>
@@ -182,6 +191,7 @@ import {
 	addableDocuments,
 	documentIdFromRef,
 	documentPayload,
+	providerVideoId,
 	videoFormComplete,
 	videoPayload,
 } from '../utils/requiredContent.js'
@@ -231,6 +241,11 @@ export default {
 		},
 		videoReady() {
 			return videoFormComplete(this.videoForm)
+		},
+		embedIdInvalid() {
+			return this.videoForm.sourceType !== 'nc-files'
+				&& String(this.videoForm.ref || '').trim() !== ''
+				&& providerVideoId(this.videoForm.sourceType, this.videoForm.ref) === null
 		},
 		documentsById() {
 			const map = {}

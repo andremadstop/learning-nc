@@ -52,6 +52,15 @@ use Psr\Log\LoggerInterface;
 class CourseVideoController extends Controller {
     public const SOURCE_TYPES = [NcFilesVideoAdapter::SOURCE_TYPE, 'vimeo', 'youtube-nocookie', 'document'];
     public const DOCUMENT_SOURCE_TYPE = 'document';
+    /**
+     * The id formats the embeds accept (GitHub #35, B4). The players insert the ref into
+     * youtube-nocookie.com/embed/{id} and player.vimeo.com/video/{id}; anything else (a whole URL
+     * above all) loads no player, sends no progress and would lock a gated exam for good.
+     */
+    public const EMBED_ID_PATTERNS = [
+        'youtube-nocookie' => '/^[A-Za-z0-9_-]{11}$/D',
+        'vimeo' => '/^\\d{1,12}$/D',
+    ];
 
     public function __construct(
         string $appName,
@@ -114,6 +123,10 @@ class CourseVideoController extends Controller {
         $durationError = $this->rejectInvalidGateDuration($sourceType, $durationSeconds);
         if ($durationError !== null) {
             return $durationError;
+        }
+        $embedError = $this->rejectInvalidEmbedId($sourceType, $videoRef);
+        if ($embedError !== null) {
+            return $embedError;
         }
         try {
             $course = $this->courseService->assertInstructorOfCourse($courseId, $this->userId);
@@ -195,6 +208,12 @@ class CourseVideoController extends Controller {
                 $fileError = $this->rejectOwnerFile($course->getInstructorId(), $videoRef ?? $video->getVideoRef());
                 if ($fileError !== null) {
                     return $fileError;
+                }
+            }
+            if ($pointsAtNewFile) {
+                $embedError = $this->rejectInvalidEmbedId($effectiveSourceType, $videoRef ?? $video->getVideoRef());
+                if ($embedError !== null) {
+                    return $embedError;
                 }
             }
             if ($effectiveSourceType === self::DOCUMENT_SOURCE_TYPE && $pointsAtNewFile) {
@@ -285,6 +304,20 @@ class CourseVideoController extends Controller {
             return new DataResponse(['error' => 'The file must be a video in your files'], Http::STATUS_BAD_REQUEST);
         }
         return null;
+    }
+
+    /**
+     * An embed row must carry the provider's video id, not a URL (see EMBED_ID_PATTERNS). Other
+     * source types pass; they are checked by rejectOwnerFile / rejectForeignDocument.
+     *
+     * @return DataResponse|null the refusal, null when acceptable
+     */
+    private function rejectInvalidEmbedId(string $sourceType, string $videoRef): ?DataResponse {
+        $pattern = self::EMBED_ID_PATTERNS[$sourceType] ?? null;
+        if ($pattern === null || preg_match($pattern, $videoRef) === 1) {
+            return null;
+        }
+        return new DataResponse(['error' => 'The video id of the provider is not valid'], Http::STATUS_BAD_REQUEST);
     }
 
     /**

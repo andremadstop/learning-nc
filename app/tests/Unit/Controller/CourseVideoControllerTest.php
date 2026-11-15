@@ -321,6 +321,74 @@ class CourseVideoControllerTest extends TestCase {
         $this->assertSame(Http::STATUS_CREATED, $resp->getStatus());
     }
 
+    /** @return array<string, array{string, string}> */
+    public static function invalidEmbedIds(): array {
+        return [
+            'youtube short url' => ['youtube-nocookie', 'https://youtu.be/dQw4w9WgXcQ'],
+            'youtube watch url' => ['youtube-nocookie', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+            'youtube path' => ['youtube-nocookie', 'dQw4w9WgXc/'],
+            'youtube query' => ['youtube-nocookie', 'dQw4w9W?gXc'],
+            'youtube trailing newline' => ['youtube-nocookie', "dQw4w9WgXcQ\n"],
+            'youtube too short' => ['youtube-nocookie', 'dQw4w9WgXc'],
+            'vimeo url' => ['vimeo', 'https://vimeo.com/76979871'],
+            'vimeo letters' => ['vimeo', '7697a871'],
+            'vimeo too long' => ['vimeo', '1234567890123'],
+            'empty' => ['vimeo', ''],
+        ];
+    }
+
+    /**
+     * GitHub #35 (B4): the players put the ref into /embed/{id} and /video/{id}. A whole URL loads
+     * no player, the video never completes and a gated exam stays locked for every learner.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidEmbedIds')]
+    public function testCreateRefusesAnEmbedRefThatIsNoProviderId(string $type, string $ref): void {
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController()->create(5, $type, $ref, 'Embed', 300);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testCreateAcceptsValidProviderIds(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->exactly(2))->method('insert')->willReturnArgument(0);
+
+        $this->assertSame(Http::STATUS_CREATED, $this->makeController()->create(5, 'youtube-nocookie', 'a-B_c1D2e3F', 'Embed', 300)->getStatus());
+        $this->assertSame(Http::STATUS_CREATED, $this->makeController()->create(5, 'vimeo', '76979871', 'Embed', 300)->getStatus());
+    }
+
+    public function testUpdateRefusesRepointingAnEmbedToAUrl(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('youtube-nocookie', 'dQw4w9WgXcQ'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, null, 'https://youtu.be/dQw4w9WgXcQ');
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testUpdateRefusesTurningAnNcFilesRowIntoAnEmbedWithItsPath(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('nc-files', 'Videos/intro.mp4'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, 'vimeo');
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    /** An existing row with an old, non-conforming ref can still be renamed: only a new target is checked. */
+    public function testUpdateKeepsRenamingAnOldEmbedRow(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('vimeo', 'https://vimeo.com/76979871'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->once())->method('update')->willReturnArgument(0);
+
+        $resp = $this->makeController()->update(9, null, null, 'Neuer Titel');
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+    }
+
     private function existingRow(string $sourceType, string $ref): CourseVideo {
         $existing = new CourseVideo();
         $existing->setCourseId(5);

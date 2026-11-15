@@ -3766,5 +3766,6 @@ OC.L10N.register(
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“." : "يُفتح الاختبار عندما تُكمل كل المحتوى الإلزامي. تجده في مساحة التعلّم ضمن «المحتوى الإلزامي».",
     "Pflichtinhalte gesamt" : "إجمالي المحتوى الإلزامي",
     "Dieses Video übernehmen" : "استخدام هذا الفيديو",
+    "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "هذا ليس معرّف فيديو صالحًا. الصق عنوان الفيديو أو معرّفه فقط.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

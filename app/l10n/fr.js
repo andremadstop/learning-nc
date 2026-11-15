@@ -3766,5 +3766,6 @@ OC.L10N.register(
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“." : "L’examen s’ouvre lorsque tu as terminé tous les contenus obligatoires. Tu les trouves dans l’espace d’apprentissage sous « Contenu obligatoire ».",
     "Pflichtinhalte gesamt" : "Total des contenus obligatoires",
     "Dieses Video übernehmen" : "Utiliser cette vidéo",
+    "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "Ceci n’est pas un identifiant de vidéo valide. Collez l’adresse de la vidéo ou seulement son identifiant.",
 },
 "nplurals=2; plural=(n > 1);");

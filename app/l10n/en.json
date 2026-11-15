@@ -3765,6 +3765,7 @@
         "Pflichtinhalte bestätigt": "Required content confirmed",
         "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“.": "The exam opens once you have completed all required content. You find it in the learning area under \"Required content\".",
         "Pflichtinhalte gesamt": "Required content total",
-        "Dieses Video übernehmen": "Use this video"
+        "Dieses Video übernehmen": "Use this video",
+        "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.": "This is not a valid video ID. Paste the address of the video or just its ID."
     }
 }

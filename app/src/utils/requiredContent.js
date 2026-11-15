@@ -57,6 +57,56 @@ export function durationFromFields(minutes, seconds) {
 	return total > 0 ? total : null
 }
 
+/** The id formats the server accepts (CourseVideoController::EMBED_ID_PATTERNS). */
+export const EMBED_ID_PATTERNS = {
+	'youtube-nocookie': /^[A-Za-z0-9_-]{11}$/,
+	vimeo: /^\d{1,12}$/,
+}
+
+/**
+ * The provider's video id from what the instructor entered: the id itself or a pasted address
+ * (youtu.be/ID, youtube.com/watch?v=ID, /embed/ID, /shorts/ID, vimeo.com/ID, player.vimeo.com/video/ID).
+ * The players insert the id into the embed address, a whole URL would load no player.
+ * Other source types keep their reference unchanged.
+ *
+ * @param {string} sourceType - source type of the row
+ * @param {*} input - the entered reference
+ * @return {string|null} the id, or null when an embed reference holds no valid id
+ */
+export function providerVideoId(sourceType, input) {
+	const ref = String(input ?? '').trim()
+	const pattern = EMBED_ID_PATTERNS[sourceType]
+	if (!pattern) {
+		return ref
+	}
+	if (pattern.test(ref)) {
+		return ref
+	}
+	let url
+	try {
+		url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(ref) ? ref : `https://${ref}`)
+	} catch (e) {
+		return null
+	}
+	const host = url.hostname.toLowerCase().replace(/^(www\.|m\.)/, '')
+	const parts = url.pathname.split('/').filter(Boolean)
+	let candidate = null
+	if (sourceType === 'youtube-nocookie') {
+		if (host === 'youtu.be') {
+			candidate = parts[0]
+		} else if (['youtube.com', 'youtube-nocookie.com'].includes(host)) {
+			candidate = parts[0] === 'watch'
+				? url.searchParams.get('v')
+				: (['embed', 'shorts', 'live', 'v'].includes(parts[0]) ? parts[1] : null)
+		}
+	} else if (host === 'vimeo.com') {
+		candidate = parts.find((part) => pattern.test(part))
+	} else if (host === 'player.vimeo.com' && parts[0] === 'video') {
+		candidate = parts[1]
+	}
+	return candidate && pattern.test(candidate) ? candidate : null
+}
+
 /**
  * The request body of POST /api/courses/{id}/videos for a video.
  *
@@ -66,7 +116,7 @@ export function durationFromFields(minutes, seconds) {
 export function videoPayload(form, sortOrder = 0) {
 	return {
 		sourceType: form.sourceType,
-		videoRef: String(form.ref || '').trim(),
+		videoRef: providerVideoId(form.sourceType, form.ref) ?? '',
 		title: String(form.title || '').trim(),
 		durationSeconds: durationFromFields(form.minutes, form.seconds),
 		sortOrder,
@@ -74,7 +124,8 @@ export function videoPayload(form, sortOrder = 0) {
 }
 
 /**
- * Whether the video form can be sent: a known video type, a reference and a positive duration
+ * Whether the video form can be sent: a known video type, a reference (for an embed one that holds
+ * a valid provider id) and a positive duration
  * (the server refuses a gated video without one, it could never be completed).
  *
  * @param {object} form - {sourceType, ref, minutes, seconds}
@@ -83,6 +134,7 @@ export function videoPayload(form, sortOrder = 0) {
 export function videoFormComplete(form) {
 	return VIDEO_SOURCE_TYPES.includes(form?.sourceType)
 		&& String(form?.ref || '').trim() !== ''
+		&& providerVideoId(form?.sourceType, form?.ref) !== null
 		&& durationFromFields(form?.minutes, form?.seconds) !== null
 }
 

@@ -48,7 +48,9 @@ import {
 	addableDocuments,
 	documentIdFromRef,
 	documentPayload,
+	EMBED_ID_PATTERNS,
 	formatContentProgress,
+	providerVideoId,
 	REQUIRED_CONTENT_SOURCE_TYPES,
 	requiredDocumentUrl,
 	videoFormComplete,
@@ -68,6 +70,51 @@ describe('required content helpers', () => {
 		const php = readFileSync(resolve(__dirname, '../../lib/Controller/CourseVideoController.php'), 'utf8')
 		expect(php).toMatch(/SOURCE_TYPES = \[NcFilesVideoAdapter::SOURCE_TYPE, 'vimeo', 'youtube-nocookie', 'document'\]/)
 		expect(REQUIRED_CONTENT_SOURCE_TYPES).toEqual(['nc-files', 'vimeo', 'youtube-nocookie', 'document'])
+	})
+
+	it('uses the same embed id formats as the server', () => {
+		const php = readFileSync(resolve(__dirname, '../../lib/Controller/CourseVideoController.php'), 'utf8')
+		expect(php).toContain("'youtube-nocookie' => '/^[A-Za-z0-9_-]{11}$/D'")
+		expect(php).toContain("'vimeo' => '/^\\\\d{1,12}$/D'")
+		expect(EMBED_ID_PATTERNS['youtube-nocookie'].source).toBe('^[A-Za-z0-9_-]{11}$')
+		expect(EMBED_ID_PATTERNS.vimeo.source).toBe('^\\d{1,12}$')
+	})
+
+	it('takes the provider id out of a pasted address', () => {
+		for (const ref of [
+			'dQw4w9WgXcQ',
+			' dQw4w9WgXcQ ',
+			'https://youtu.be/dQw4w9WgXcQ',
+			'https://youtu.be/dQw4w9WgXcQ?t=42',
+			'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PL1',
+			'youtube.com/watch?v=dQw4w9WgXcQ',
+			'https://m.youtube.com/watch?v=dQw4w9WgXcQ',
+			'https://www.youtube.com/embed/dQw4w9WgXcQ',
+			'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0',
+			'https://www.youtube.com/shorts/dQw4w9WgXcQ',
+		]) {
+			expect(providerVideoId('youtube-nocookie', ref)).toBe('dQw4w9WgXcQ')
+		}
+		for (const ref of ['76979871', 'https://vimeo.com/76979871', 'vimeo.com/channels/staffpicks/76979871', 'https://player.vimeo.com/video/76979871?h=abc']) {
+			expect(providerVideoId('vimeo', ref)).toBe('76979871')
+		}
+	})
+
+	it('finds no id in anything else, and leaves other source types alone', () => {
+		for (const ref of ['', 'https://example.com/watch?v=dQw4w9WgXcQ', 'dQw4w9WgXc', 'dQw4w9WgXcQ/x', 'https://youtu.be/', 'https://www.youtube.com/watch?v=short']) {
+			expect(providerVideoId('youtube-nocookie', ref)).toBeNull()
+		}
+		for (const ref of ['abc', 'https://vimeo.com/', 'https://example.com/76979871', '1234567890123']) {
+			expect(providerVideoId('vimeo', ref)).toBeNull()
+		}
+		expect(providerVideoId('nc-files', ' /Videos/intro.mp4 ')).toBe('/Videos/intro.mp4')
+	})
+
+	it('sends the id, not the pasted address, and only a form with a valid id', () => {
+		const form = { sourceType: 'youtube-nocookie', ref: 'https://youtu.be/dQw4w9WgXcQ', title: '', minutes: '5', seconds: '' }
+		expect(videoFormComplete(form)).toBe(true)
+		expect(videoPayload(form).videoRef).toBe('dQw4w9WgXcQ')
+		expect(videoFormComplete({ ...form, ref: 'https://example.com/x' })).toBe(false)
 	})
 
 	it('reads a document id only from a plain positive number', () => {
@@ -270,6 +317,33 @@ describe('RequiredContentSettings rendered', () => {
 		await flush()
 		expect(host.querySelector('.required-content-picked').textContent).toContain('Kein Video gewählt')
 		expect(host.querySelector('[data-test="required-video-add"]').disabled).toBe(true)
+	})
+
+	it('warns about an embed reference without a valid id and keeps the add button off', async () => {
+		await mountSettings()
+		const source = host.querySelector('[data-test="required-video-source"]')
+		source.value = 'youtube-nocookie'
+		source.dispatchEvent(new Event('change'))
+		await flush()
+		const id = host.querySelector('[data-test="required-video-id"]')
+		const minutes = host.querySelector('[data-test="required-video-minutes"]')
+		minutes.value = '5'
+		minutes.dispatchEvent(new Event('input'))
+		id.value = 'https://example.com/video'
+		id.dispatchEvent(new Event('input'))
+		await flush()
+		expect(host.querySelector('[data-test="required-video-id-invalid"]')).not.toBeNull()
+		expect(host.querySelector('[data-test="required-video-add"]').disabled).toBe(true)
+
+		id.value = 'https://youtu.be/dQw4w9WgXcQ'
+		id.dispatchEvent(new Event('input'))
+		await flush()
+		expect(host.querySelector('[data-test="required-video-id-invalid"]')).toBeNull()
+		host.querySelector('[data-test="required-video-add"]').click()
+		await flush()
+		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/courses/5/videos', expect.objectContaining({
+			sourceType: 'youtube-nocookie', videoRef: 'dQw4w9WgXcQ', durationSeconds: 300,
+		}))
 	})
 
 	it('removes a required content row', async () => {

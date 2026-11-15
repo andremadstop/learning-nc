@@ -3766,5 +3766,6 @@ OC.L10N.register(
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“." : "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“.",
     "Pflichtinhalte gesamt" : "Pflichtinhalte gesamt",
     "Dieses Video übernehmen" : "Dieses Video übernehmen",
+    "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.",
 },
 "nplurals=2; plural=(n != 1);");
