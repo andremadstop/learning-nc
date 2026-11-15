@@ -166,11 +166,61 @@ class PoolAnswerStats68Test extends TestCase {
         $this->assertCount(4, $db->issuedBuilders, 'no answer query without a learner of an own course');
     }
 
-    public function testOnlyTheOwnerOrAnEditShareReadsTheStatistics(): void {
-        // not the owner (0), no edit share (0)
-        $db = new FakeDbConnection([self::one(0), self::one(0)]);
+    public function testAReaderOfAPoolInNoCourseIsRefused(): void {
+        // not the owner (0), no edit share (0), the pool hangs in no course
+        $db = new FakeDbConnection([self::one(0), self::one(0), self::rows([])]);
         $this->expectException(ForbiddenException::class);
         $this->service($db)->getPoolAnswerStats(self::POOL, 'reader');
+    }
+
+    /**
+     * GitHub #69: without an edit right, being a learner of the course, or instructor only of an
+     * unrelated course, reads nothing.
+     */
+    public function testALearnerOfTheCourseWithoutEditRightIsRefused(): void {
+        $db = new FakeDbConnection([
+            self::one(0),
+            self::one(0),
+            self::rows([['id' => 7, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'teacher']]),
+            self::one(8),
+            self::rows([
+                ['user_id' => 'reader', 'course_id' => 7, 'role' => 'student'],
+                ['user_id' => 'lena', 'course_id' => 7, 'role' => 'student'],
+            ]),
+        ]);
+        $this->expectException(ForbiddenException::class);
+        $this->service($db)->getPoolAnswerStats(self::POOL, 'reader');
+    }
+
+    /**
+     * GitHub #69: a co-instructor of a course holding the pool, without an edit right, reads the
+     * answer statistics of that course's learners, and only of them.
+     */
+    public function testACoInstructorWithoutEditRightReadsTheLearnersOfTheirCourse(): void {
+        $totals = self::rows([['total_answers' => 6, 'correct_answers' => 3, 'learners' => 1, 'attempts' => 1]]);
+        $db = new FakeDbConnection([
+            self::one(0),
+            self::one(0),
+            self::rows([
+                ['id' => 7, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'teacher'],
+                ['id' => 8, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'someone-else'],
+            ]),
+            self::one(8),
+            self::rows([
+                ['user_id' => 'admin', 'course_id' => 7, 'role' => 'instructor'],
+                ['user_id' => 'lena', 'course_id' => 7, 'role' => 'student'],
+                ['user_id' => 'other', 'course_id' => 8, 'role' => 'student'],
+            ]),
+            $totals,
+        ]);
+        $stats = $this->service($db)->getPoolAnswerStats(self::POOL, 'admin');
+        $this->assertSame(1, $stats['led_courses']);
+        $this->assertSame(6, $stats['answers']);
+        $learnerParams = array_values(array_filter(
+            array_column($totals->namedParameters, 'value'),
+            static fn ($v): bool => is_array($v)
+        ));
+        $this->assertSame([['lena']], $learnerParams);
     }
 
     public function testTheEndpointAnswers403ForAReader(): void {

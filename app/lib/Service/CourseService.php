@@ -3248,19 +3248,22 @@ class CourseService {
      * course: attempts (sessions with an answer on the pool), answers, hit rate and the hardest
      * questions (at least MIN_ANSWERS_PER_QUESTION answers, highest wrong rate first). No learner
      * is named, and the learners of another instructor's course never count: with one learner the
-     * "aggregate" would be that person's results. Only the pool's owner or an edit share may
-     * read them — the people who maintain the questions.
+     * "aggregate" would be that person's results. The pool's owner or an edit share may read
+     * them (the people who maintain the questions), and since GitHub #69 also an instructor of a
+     * course holding the pool (owner or co-instructor) without an edit right.
      *
      * led_courses: how many of the courses holding the pool the viewer leads. With 0 the counts
      * stay 0 although other courses may have answers — the tab says so instead of "0 answers".
      *
      * @return array{leitner_in_use: bool, question_count: int, led_courses: int, learners: int, attempts: int, answers: int, correct: int, accuracy: int|null, hardest: list<array{question_id: int, question_text: string, total_answers: int, wrong_rate: float}>}
-     * @throws ForbiddenException neither owner nor edit share of the pool
+     * @throws ForbiddenException neither owner nor edit share of the pool, nor instructor of a course holding it
      */
     public function getPoolAnswerStats(int $poolId, string $userId): array {
-        if (!$this->canEditPool($poolId, $userId)) {
-            throw new ForbiddenException('No permission');
-        }
+        // GitHub #69: an instructor of a course holding the pool reads them too, without an edit
+        // right: "Pools meiner Kurse" opens such a pool read-only, and its statistics tab fell
+        // back to the viewer's own, empty Leitner boxes. The counts below are the learners of
+        // the courses the viewer leads either way, so nobody sees another course's learners.
+        $mayEdit = $this->canEditPool($poolId, $userId);
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('c.id', 'c.mode_config', 'c.instructor_id')
@@ -3281,6 +3284,9 @@ class CourseService {
             }
         }
         $result->closeCursor();
+        if ($courseIds === [] && !$mayEdit) {
+            throw new ForbiddenException('No permission');
+        }
         if ($courseIds === []) {
             $leitnerInUse = true;
         }
@@ -3317,6 +3323,9 @@ class CourseService {
             }
         }
         $result->closeCursor();
+        if (!$mayEdit && $ledCourseIds === []) {
+            throw new ForbiddenException('No permission');
+        }
         $stats['led_courses'] = count($ledCourseIds);
         $learnerIds = [];
         foreach (array_keys($ledCourseIds) as $cid) {
