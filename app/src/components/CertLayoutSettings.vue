@@ -1,0 +1,412 @@
+<template>
+	<!-- GitHub #43: how the course's certificates look. Text, switches and signer are saved with the
+		certification settings (parent's Save); stamp and signature are taken over immediately. -->
+	<div class="cert-layout" data-test="cert-layout">
+		<h4>{{ t('learning', 'Gestaltung des Zertifikats') }}</h4>
+		<p class="mode-config-hint">
+			{{ t('learning', 'Bereits ausgestellte Zertifikate behalten ihre Gestaltung. Änderungen gelten für Zertifikate, die nach dem Speichern ausgestellt werden.') }}
+		</p>
+
+		<div class="cert-config-field">
+			<label :for="introId">{{ t('learning', 'Einleitungstext') }}</label>
+			<textarea
+				:id="introId"
+				ref="intro"
+				:value="modelValue.intro"
+				rows="5"
+				:maxlength="introMax"
+				class="cert-layout-intro"
+				data-test="cert-layout-intro"
+				:placeholder="t('learning', 'Leer lassen für den Standardtext „Verliehen an: Name“.')"
+				:aria-describedby="introHintId"
+				@input="update({ intro: $event.target.value })" />
+			<p :id="introHintId" class="mode-config-hint">
+				{{ t('learning', 'Platzhalter werden beim Anzeigen durch die Angaben aus dem signierten Zertifikat ersetzt. Eine Zeile, die nur {placeholder} enthält, wird zur Liste der Kursbestandteile.', { placeholder: '{course.elements}' }) }}
+			</p>
+			<div class="cert-layout-placeholders" role="group" :aria-label="t('learning', 'Platzhalter einfügen')">
+				<NcButton
+					v-for="placeholder in placeholders"
+					:key="placeholder"
+					variant="tertiary"
+					size="small"
+					class="cert-layout-placeholder"
+					@click="insertPlaceholder(placeholder)">
+					<span dir="ltr">{{ placeholder }}</span>
+				</NcButton>
+			</div>
+		</div>
+
+		<fieldset class="cert-config-field cert-layout-switches">
+			<legend>{{ t('learning', 'Elemente auf dem Zertifikat') }}</legend>
+			<NcCheckboxRadioSwitch
+				v-for="item in switches"
+				:key="item.key"
+				:model-value="modelValue.show[item.key] !== false"
+				:data-test="'cert-layout-show-' + item.key"
+				@update:model-value="toggle(item.key, $event)">
+				{{ item.label }}
+			</NcCheckboxRadioSwitch>
+			<p class="mode-config-hint">
+				{{ t('learning', 'QR-Code und Prüf-Link werden immer gedruckt: Ohne sie kann niemand prüfen, ob das Zertifikat echt ist.') }}
+			</p>
+		</fieldset>
+
+		<fieldset class="cert-config-field cert-layout-signoff">
+			<legend>{{ t('learning', 'Stempel und Unterschrift') }}</legend>
+			<p class="mode-config-hint">
+				{{ t('learning', 'PNG-Datei aus deinen Dateien, höchstens 1 MB und 3000 × 3000 Pixel. Ein transparenter Hintergrund sieht auf dem Zertifikat am besten aus.') }}
+			</p>
+			<div v-for="kind in imageKinds" :key="kind.key" class="cert-layout-image-row">
+				<span class="cert-layout-image-label">{{ kind.label }}</span>
+				<img
+					v-if="images[kind.key]"
+					:src="images[kind.key]"
+					:alt="kind.label"
+					class="cert-layout-image-thumb">
+				<NcButton
+					variant="secondary"
+					:disabled="imageBusy !== ''"
+					:data-test="'cert-layout-pick-' + kind.key"
+					@click="pickImage(kind.key)">
+					{{ t('learning', 'PNG aus Dateien wählen') }}
+				</NcButton>
+				<NcButton
+					v-if="images[kind.key]"
+					variant="tertiary"
+					:disabled="imageBusy !== ''"
+					:data-test="'cert-layout-remove-' + kind.key"
+					@click="removeImage(kind.key)">
+					{{ t('learning', 'Entfernen') }}
+				</NcButton>
+			</div>
+			<label :for="signerNameId">{{ t('learning', 'Name der unterschreibenden Person') }}</label>
+			<input
+				:id="signerNameId"
+				:value="modelValue.signer_name"
+				type="text"
+				:maxlength="signerMax"
+				class="cert-layout-text"
+				data-test="cert-layout-signer-name"
+				@input="update({ signer_name: $event.target.value })">
+			<label :for="signerRoleId">{{ t('learning', 'Funktion (z. B. Leitung Weiterbildung)') }}</label>
+			<input
+				:id="signerRoleId"
+				:value="modelValue.signer_role"
+				type="text"
+				:maxlength="signerMax"
+				class="cert-layout-text"
+				data-test="cert-layout-signer-role"
+				@input="update({ signer_role: $event.target.value })">
+		</fieldset>
+
+		<details class="cert-layout-preview" data-test="cert-layout-preview">
+			<summary>{{ t('learning', 'Vorschau (Beispielwerte)') }}</summary>
+			<CertificateCard
+				:fields="previewFields"
+				:presentation="previewPresentation"
+				verify-url="https://…/apps/learning/verify/…"
+				verification-id="00000000-0000-4000-8000-000000000000"
+				:issued-date="previewIssued"
+				:expiry-date="previewExpiry" />
+		</details>
+	</div>
+</template>
+
+<script>
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import CertificateCard from './CertificateCard.vue'
+import { PLACEHOLDERS } from '../utils/certificateLayout.js'
+import { getCertLayout, importCertLayoutImage, removeCertLayoutImage } from '../services/CertificateService.js'
+
+const INTRO_MAX = 2000
+const SIGNER_MAX = 120
+
+/**
+ * The message for a refused image (CertLayoutController error codes).
+ * @param {object} error - axios error
+ * @return {string}
+ */
+export function imageErrorMessage(error) {
+	const code = error?.response?.data?.error
+	if (code === 'not_png') {
+		return t('learning', 'Die Datei ist kein gültiges PNG-Bild.')
+	}
+	if (code === 'too_large') {
+		return t('learning', 'Die Datei ist zu groß (höchstens 1 MB und 3000 × 3000 Pixel).')
+	}
+	if (code === 'file_not_found') {
+		return t('learning', 'Die Datei wurde nicht gefunden.')
+	}
+	return t('learning', 'Das Bild konnte nicht übernommen werden.')
+}
+
+export default {
+	name: 'CertLayoutSettings',
+
+	components: {
+		CertificateCard,
+		NcButton,
+		NcCheckboxRadioSwitch,
+	},
+
+	props: {
+		courseId: { type: Number, required: true },
+		/** { intro, show, signer_name, signer_role } as saved with the certification settings */
+		modelValue: { type: Object, required: true },
+		courseTitle: { type: String, default: '' },
+		requiredPoolNames: { type: Array, default: () => [] },
+		passPercent: { type: Number, default: 80 },
+		validityDays: { type: Number, default: 0 },
+	},
+
+	emits: ['update:modelValue', 'error'],
+
+	data() {
+		return {
+			images: { stamp: '', signature: '' },
+			imageBusy: '',
+			introMax: INTRO_MAX,
+			signerMax: SIGNER_MAX,
+			placeholders: PLACEHOLDERS,
+			introId: `cert-layout-intro-${this.courseId}`,
+			introHintId: `cert-layout-intro-hint-${this.courseId}`,
+			signerNameId: `cert-layout-signer-name-${this.courseId}`,
+			signerRoleId: `cert-layout-signer-role-${this.courseId}`,
+		}
+	},
+
+	computed: {
+		switches() {
+			return [
+				{ key: 'logo', label: t('learning', 'Logo') },
+				{ key: 'score', label: t('learning', 'Ergebnis') },
+				{ key: 'threshold', label: t('learning', 'Mindestscore') },
+				{ key: 'elements', label: t('learning', 'Kursbestandteile') },
+				{ key: 'validity', label: t('learning', 'Gültig bis') },
+			]
+		},
+		imageKinds() {
+			return [
+				{ key: 'stamp', label: t('learning', 'Stempel') },
+				{ key: 'signature', label: t('learning', 'Unterschrift') },
+			]
+		},
+		previewFields() {
+			return {
+				courseTitle: this.courseTitle,
+				recipientName: t('learning', 'Alex Beispiel'),
+				courseElements: [...this.requiredPoolNames],
+				score: 92,
+				threshold: this.passPercent,
+				issuerName: (typeof window !== 'undefined' && window.OC?.theme?.name) || 'Nextcloud',
+				// sample only: the real card shows the instance's themed logo
+				issuerLogo: `${(typeof window !== 'undefined' && window.OC?.webroot) || ''}/core/img/logo/logo.svg`,
+				validFrom: '',
+				validUntil: '',
+			}
+		},
+		previewPresentation() {
+			return {
+				intro: this.modelValue.intro || '',
+				show: this.modelValue.show || {},
+				signer_name: this.modelValue.signer_name || '',
+				signer_role: this.modelValue.signer_role || '',
+				stamp: this.images.stamp || null,
+				signature: this.images.signature || null,
+			}
+		},
+		previewIssued() {
+			return this.formatDate(new Date())
+		},
+		previewExpiry() {
+			if (!(this.validityDays > 0)) {
+				return ''
+			}
+			const date = new Date()
+			date.setDate(date.getDate() + this.validityDays)
+			return this.formatDate(date)
+		},
+	},
+
+	mounted() {
+		this.loadImages()
+	},
+
+	methods: {
+		update(change) {
+			this.$emit('update:modelValue', { ...this.modelValue, ...change })
+		},
+
+		toggle(key, value) {
+			this.update({ show: { ...(this.modelValue.show || {}), [key]: !!value } })
+		},
+
+		insertPlaceholder(placeholder) {
+			const area = this.$refs.intro
+			const text = this.modelValue.intro || ''
+			const start = area && typeof area.selectionStart === 'number' ? area.selectionStart : text.length
+			const end = area && typeof area.selectionEnd === 'number' ? area.selectionEnd : text.length
+			const next = (text.slice(0, start) + placeholder + text.slice(end)).slice(0, INTRO_MAX)
+			this.update({ intro: next })
+			this.$nextTick(() => {
+				if (area) {
+					area.focus()
+					const caret = Math.min(start + placeholder.length, next.length)
+					area.setSelectionRange?.(caret, caret)
+				}
+			})
+		},
+
+		applyImages(layout) {
+			this.images = {
+				stamp: typeof layout?.stamp === 'string' ? layout.stamp : '',
+				signature: typeof layout?.signature === 'string' ? layout.signature : '',
+			}
+		},
+
+		async loadImages() {
+			if (!this.modelValue.has_stamp && !this.modelValue.has_signature) {
+				return
+			}
+			try {
+				this.applyImages(await getCertLayout(this.courseId))
+			} catch (e) {
+				// the preview stays without images; saving is not affected
+			}
+		},
+
+		async pickImage(kind) {
+			let chosen = ''
+			try {
+				// Loaded on use: the settings tab (and every test mounting it) does not need the dialogs.
+				const { getFilePickerBuilder } = await import('@nextcloud/dialogs')
+				const picker = getFilePickerBuilder(kind === 'stamp'
+					? t('learning', 'Stempel auswählen')
+					: t('learning', 'Unterschrift auswählen'))
+					.setMultiSelect(false)
+					.setMimeTypeFilter(['image/png'])
+					.setButtonFactory((selected) => [{
+						label: t('learning', 'Diese Datei übernehmen'),
+						variant: 'primary',
+						disabled: !selected[0]?.path,
+						callback: (nodes) => {
+							chosen = nodes[0]?.path || ''
+						},
+					}])
+					.build()
+				await picker.pickNodes()
+			} catch (e) {
+				// closed without choosing
+				return
+			}
+			if (!chosen) {
+				return
+			}
+			this.imageBusy = kind
+			try {
+				this.applyImages(await importCertLayoutImage(this.courseId, kind, chosen))
+			} catch (e) {
+				this.$emit('error', imageErrorMessage(e))
+			} finally {
+				this.imageBusy = ''
+			}
+		},
+
+		async removeImage(kind) {
+			this.imageBusy = kind
+			try {
+				this.applyImages(await removeCertLayoutImage(this.courseId, kind))
+			} catch (e) {
+				this.$emit('error', t('learning', 'Das Bild konnte nicht entfernt werden.'))
+			} finally {
+				this.imageBusy = ''
+			}
+		},
+
+		formatDate(date) {
+			return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+		},
+	},
+}
+</script>
+
+<style scoped>
+.cert-layout {
+	margin: 18px 0;
+	padding-top: 12px;
+	border-top: 1px solid var(--color-border);
+}
+
+.cert-layout h4 {
+	margin: 0 0 6px;
+}
+
+.cert-layout-intro {
+	width: 100%;
+	max-width: 640px;
+	min-height: 110px;
+	box-sizing: border-box;
+	resize: vertical;
+}
+
+.cert-layout-placeholders {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.cert-layout-switches,
+.cert-layout-signoff {
+	border: none;
+	padding: 0;
+	margin-inline: 0;
+}
+
+.cert-layout-switches legend,
+.cert-layout-signoff legend {
+	font-weight: 600;
+	font-size: 0.9em;
+	padding: 0;
+	margin-bottom: 6px;
+}
+
+.cert-layout-image-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.cert-layout-image-label {
+	min-width: 110px;
+	font-weight: 600;
+}
+
+.cert-layout-image-thumb {
+	max-height: 48px;
+	max-width: 120px;
+	object-fit: contain;
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius, 4px);
+}
+
+.cert-layout-text {
+	width: 100%;
+	max-width: 400px;
+	box-sizing: border-box;
+}
+
+.cert-layout-preview {
+	margin-top: 12px;
+	max-width: 640px;
+}
+
+.cert-layout-preview summary {
+	cursor: pointer;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+</style>

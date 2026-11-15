@@ -213,6 +213,16 @@
 							class="cert-config-input"
 							@change="certValidityDays = Math.max(0, parseInt($event.target.value) || 0)" />
 					</div>
+
+					<!-- GitHub #43: text, elements, stamp and signature of the course's certificates. -->
+					<CertLayoutSettings
+						v-model="certLayout"
+						:course-id="courseId"
+						:course-title="course?.title || ''"
+						:required-pool-names="certRequiredPoolNames"
+						:pass-percent="certPassPercent"
+						:validity-days="certValidityDays"
+						@error="$emit('error', $event)" />
 				</template>
 
 				<!-- GitHub #47: course default of the exam scope. Outside the certification switch:
@@ -246,7 +256,11 @@
 						:placeholder="t('learning', 'Nach Fragenzahl')" />
 				</div>
 
-				<NcButton variant="primary" :disabled="certSaving" @click="saveCertConfig">
+				<NcButton
+					variant="primary"
+					:disabled="certSaving"
+					data-test="cert-save"
+					@click="saveCertConfig">
 					{{ certSaving ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
 				</NcButton>
 				<NcNoteCard v-if="certSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
@@ -408,6 +422,7 @@ import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import CertLayoutSettings from './CertLayoutSettings.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
 
@@ -440,6 +455,43 @@ function firstDuplicateChapterRef(payload) {
 	return null
 }
 
+/**
+ * GitHub #43: the layout fields of Course::jsonSerialize()['cert_layout'] (or the cert-config
+ * response's certLayout), with the standard layout for a missing value.
+ * @param {object|null} value - server layout
+ * @return {{intro: string, show: object, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean}}
+ */
+export function certLayoutFromServer(value) {
+	const v = value && typeof value === 'object' ? value : {}
+	const show = {}
+	for (const key of ['logo', 'score', 'threshold', 'elements', 'validity']) {
+		show[key] = v.show?.[key] !== false
+	}
+	return {
+		intro: typeof v.intro === 'string' ? v.intro : '',
+		show,
+		signer_name: typeof v.signer_name === 'string' ? v.signer_name : '',
+		signer_role: typeof v.signer_role === 'string' ? v.signer_role : '',
+		has_stamp: v.has_stamp === true,
+		has_signature: v.has_signature === true,
+	}
+}
+
+/**
+ * GitHub #43: what updateCertConfig reads from the request (CertLayout::apply): intro, show,
+ * signer_name, signer_role. The images are not part of it (own endpoint).
+ * @param {object} layout - certLayoutFromServer() shape
+ * @return {{intro: string, show: object, signer_name: string, signer_role: string}}
+ */
+export function certLayoutPayload(layout) {
+	return {
+		intro: layout.intro,
+		show: { ...layout.show },
+		signer_name: layout.signer_name,
+		signer_role: layout.signer_role,
+	}
+}
+
 // GitHub #36: the competition modes, grouped as "Spielmodi" when gamification is off.
 const GAME_MODE_KEYS = ['duel', 'gameshow', 'league', 'abenteuer']
 
@@ -447,6 +499,7 @@ export default {
 	name: 'CourseTabVerwaltung',
 
 	components: {
+		CertLayoutSettings,
 		NcButton,
 		NcNoteCard,
 		NcCheckboxRadioSwitch,
@@ -519,6 +572,8 @@ export default {
 			certPassPercent: 80,
 			certRequiredPoolIds: [],
 			certValidityDays: 0,
+			// GitHub #43: the certificate layout as Course::jsonSerialize gives it (cert_layout).
+			certLayout: certLayoutFromServer(null),
 			// GitHub #47: course default of the exam scope; '' = none.
 			examScopeQuestions: '',
 			examScopeMinutes: '',
@@ -594,6 +649,12 @@ export default {
 		// CoursePool serialises `required` as an integer (0/1), hence the Number().
 		// GitHub #35: judged on the stored mode config, which is what learners get — an unsaved
 		// switch above changes nothing for them yet.
+		certRequiredPoolNames() {
+			return (this.coursePools || [])
+				.filter((pool) => this.certRequiredPoolIds.includes(Number(pool.pool_id)))
+				.map((pool) => pool.pool_name)
+				.filter(Boolean)
+		},
 		certWithoutExamMode() {
 			return this.certEnabled && this.savedModeConfig?.exam === false
 		},
@@ -630,6 +691,7 @@ export default {
 						? c.cert_required_pool_ids.map((id) => Number(id))
 						: []
 					this.certValidityDays = c.cert_validity_days ?? 0
+					this.certLayout = certLayoutFromServer(c.cert_layout)
 					this.examScopeQuestions = c.exam_questions ? String(c.exam_questions) : ''
 					this.examScopeMinutes = c.exam_minutes ? String(c.exam_minutes) : ''
 					this.practiceEnabled = !!c.practice_enabled
@@ -1085,6 +1147,7 @@ export default {
 					certValidityDays: this.certValidityDays,
 					examQuestions,
 					examMinutes,
+					certLayout: certLayoutPayload(this.certLayout),
 				})
 				// Server response is camelCase (CourseController::updateCertConfig)
 				this.certEnabled = result.certEnabled ?? false
@@ -1093,6 +1156,9 @@ export default {
 					? result.certRequiredPoolIds.map((id) => Number(id))
 					: []
 				this.certValidityDays = result.certValidityDays ?? 0
+				if (result.certLayout) {
+					this.certLayout = certLayoutFromServer(result.certLayout)
+				}
 				this.examScopeQuestions = result.examQuestions ? String(result.examQuestions) : ''
 				this.examScopeMinutes = result.examMinutes ? String(result.examMinutes) : ''
 				this.certSaved = true

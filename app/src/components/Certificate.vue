@@ -16,69 +16,14 @@
 				<p v-if="statusNote" class="certificate-status-note" role="status">
 					{{ statusNote }}
 				</p>
-				<div class="certificate-card">
-					<div class="certificate-brand">
-						<img
-							v-if="fields.issuerLogo"
-							:src="fields.issuerLogo"
-							alt=""
-							aria-hidden="true"
-							class="certificate-logo">
-						<span class="certificate-issuer">{{ fields.issuerName }}</span>
-					</div>
-
-					<p class="certificate-kicker">{{ t('learning', 'Zertifikat') }}</p>
-					<h2 class="certificate-title">{{ fields.courseTitle }}</h2>
-
-					<p v-if="fields.recipientName" class="certificate-recipient">
-						{{ t('learning', 'Verliehen an') }}: <strong>{{ fields.recipientName }}</strong>
-					</p>
-
-					<!-- GitHub #43: the required pools signed into the certificate; none on older ones or "any exam" courses. -->
-					<section v-if="fields.courseElements && fields.courseElements.length" class="certificate-elements">
-						<h3 class="certificate-meta-label">
-							{{ t('learning', 'Kursbestandteile') }}
-						</h3>
-						<ul class="certificate-elements-list">
-							<li v-for="(element, index) in fields.courseElements" :key="index">
-								{{ element }}
-							</li>
-						</ul>
-					</section>
-
-					<div class="certificate-meta">
-						<div v-if="fields.score !== null" class="certificate-meta-item">
-							<span class="certificate-meta-label">{{ t('learning', 'Ergebnis') }}</span>
-							<span class="certificate-meta-value">{{ fields.score }}%</span>
-						</div>
-						<div v-if="fields.threshold !== null" class="certificate-meta-item">
-							<span class="certificate-meta-label">{{ t('learning', 'Mindestscore') }}</span>
-							<span class="certificate-meta-value">{{ fields.threshold }}%</span>
-						</div>
-						<div v-if="issuedDate" class="certificate-meta-item">
-							<span class="certificate-meta-label">{{ t('learning', 'Ausgestellt am') }}</span>
-							<span class="certificate-meta-value">{{ issuedDate }}</span>
-						</div>
-						<div v-if="expiryDate" class="certificate-meta-item">
-							<span class="certificate-meta-label">{{ t('learning', 'Gültig bis') }}</span>
-							<span class="certificate-meta-value">{{ expiryDate }}</span>
-						</div>
-					</div>
-
-					<div class="certificate-verify">
-						<img
-							v-if="qrDataUrl"
-							:src="qrDataUrl"
-							:alt="t('learning', 'QR-Code zur Verifizierung')"
-							class="certificate-qr">
-						<div class="certificate-verify-copy">
-							<span class="certificate-meta-label">{{ t('learning', 'Scannen oder ID prüfen unter') }}</span>
-							<span class="certificate-verify-url">{{ verifyUrl }}</span>
-							<span class="certificate-verify-id-label">{{ t('learning', 'Zertifikat-ID') }}</span>
-							<span class="certificate-verify-id">{{ verificationId }}</span>
-						</div>
-					</div>
-				</div>
+				<CertificateCard
+					:fields="fields"
+					:presentation="presentation"
+					:verify-url="verifyUrl"
+					:verification-id="verificationId"
+					:qr-data-url="qrDataUrl"
+					:issued-date="issuedDate"
+					:expiry-date="expiryDate" />
 			</div>
 
 			<div class="certificate-actions no-print">
@@ -107,6 +52,7 @@ import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import CertificateCard from './CertificateCard.vue'
 import { getCertificate, downloadUrl, getCourseCertificate, courseDownloadUrl } from '../services/CertificateService.js'
 import {
 	decodeCredential,
@@ -121,6 +67,7 @@ export default {
 	name: 'Certificate',
 
 	components: {
+		CertificateCard,
 		NcButton,
 		NcLoadingIcon,
 		NcNoteCard,
@@ -148,6 +95,8 @@ export default {
 			loading: true,
 			error: '',
 			fields: null,
+			// GitHub #43: the layout frozen at issuance; null = the standard card.
+			presentation: null,
 			qrDataUrl: '',
 			revoked: false,
 			expired: false,
@@ -215,6 +164,7 @@ export default {
 					return
 				}
 				this.fields = extractCertificateFields(credential)
+				this.presentation = row?.presentation && typeof row.presentation === 'object' ? row.presentation : null
 				this.renderQr()
 			} catch (e) {
 				this.error = e?.response?.data?.error
@@ -297,148 +247,6 @@ export default {
 	background: var(--color-error);
 	color: var(--color-error-text, var(--color-main-text));
 	font-weight: 600;
-}
-
-.certificate-card {
-	border: 2px solid var(--color-primary-element);
-	border-radius: var(--border-radius-large, 12px);
-	padding: 32px;
-	background: var(--color-main-background);
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-}
-
-.certificate-brand {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 12px;
-}
-
-.certificate-logo {
-	max-height: 48px;
-	max-width: 160px;
-	object-fit: contain;
-}
-
-.certificate-issuer {
-	font-weight: 700;
-	color: var(--color-main-text);
-}
-
-.certificate-kicker {
-	margin: 0;
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 2px;
-	text-transform: uppercase;
-	color: var(--color-text-maxcontrast);
-}
-
-.certificate-title {
-	margin: 0;
-	font-size: 1.8em;
-	color: var(--color-main-text);
-}
-
-.certificate-recipient {
-	margin: 0;
-	color: var(--color-main-text);
-}
-
-.certificate-elements {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 6px;
-}
-
-.certificate-elements h3 {
-	margin: 0;
-}
-
-.certificate-elements-list {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	color: var(--color-main-text);
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.certificate-meta {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 24px;
-	margin-top: 8px;
-}
-
-.certificate-meta-item {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.certificate-meta-label {
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 1px;
-	text-transform: uppercase;
-	color: var(--color-text-maxcontrast);
-}
-
-.certificate-meta-value {
-	font-size: 1.2em;
-	font-weight: 700;
-	color: var(--color-main-text);
-}
-
-.certificate-verify {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 16px;
-	margin-top: 12px;
-	padding-top: 16px;
-	border-top: 1px solid var(--color-border);
-}
-
-.certificate-qr {
-	width: 120px;
-	height: 120px;
-	image-rendering: pixelated;
-}
-
-.certificate-verify-copy {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	text-align: start;
-}
-
-.certificate-verify-url {
-	font-family: monospace;
-	font-size: 0.85em;
-	color: var(--color-text-maxcontrast);
-	word-break: break-all;
-}
-
-.certificate-verify-id-label {
-	margin-top: 6px;
-	font-size: 0.8em;
-	color: var(--color-text-maxcontrast);
-}
-
-.certificate-verify-id {
-	font-family: monospace;
-	font-size: 0.95em;
-	font-weight: 600;
-	letter-spacing: 0.5px;
-	word-break: break-all;
 }
 
 .certificate-actions {

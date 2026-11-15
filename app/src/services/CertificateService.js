@@ -81,3 +81,43 @@ export function certReportZipUrl(courseId, query = '') {
 	const base = generateUrl('/apps/learning/api/courses/{courseId}/cert-report/export/zip', { courseId })
 	return base + (query ? '?' + query : '')
 }
+
+/**
+ * GitHub #43: the course's certificate layout with its stamp / signature as data URLs, for the
+ * preview in the course settings (instructors of the course only).
+ * @param {number} courseId — the course
+ * @return {Promise<{intro: string, show: object, signer_name: string, signer_role: string, stamp: (string|null), signature: (string|null)}>}
+ */
+export async function getCertLayout(courseId) {
+	const response = await axios.get(generateUrl(`/apps/learning/api/courses/${courseId}/cert-layout`))
+	return response.data
+}
+
+/**
+ * GitHub #43: take a PNG from the instructor's Nextcloud files as stamp or signature.
+ * The server reads it through the instructor's own folder and checks type and size.
+ * @param {number} courseId — the course
+ * @param {'stamp'|'signature'} kind — which image
+ * @param {string} path — path in the user's files, as the file picker returns it
+ * @return {Promise<object>} the course's layout with images (same shape as getCertLayout)
+ */
+export async function importCertLayoutImage(courseId, kind, path) {
+	const response = await axios.post(
+		generateUrl(`/apps/learning/api/courses/${courseId}/cert-layout/images/${encodeURIComponent(kind)}`),
+		{ path },
+	)
+	return response.data
+}
+
+/**
+ * GitHub #43: remove the course's stamp or signature. Certificates already issued keep theirs.
+ * @param {number} courseId — the course
+ * @param {'stamp'|'signature'} kind — which image
+ * @return {Promise<object>} the course's layout with images
+ */
+export async function removeCertLayoutImage(courseId, kind) {
+	const response = await axios.delete(
+		generateUrl(`/apps/learning/api/courses/${courseId}/cert-layout/images/${encodeURIComponent(kind)}`),
+	)
+	return response.data
+}

@@ -287,7 +287,8 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 		it('refuses nothing: the certificate settings still save with the exam mode off', async () => {
 			await mountTab({ modeConfig: { exam: false }, courseExtra: CERT_ON })
 
-			host.querySelector('.cert-config button').click()
+			// GitHub #43: the certificate layout added buttons above Save; click Save itself.
+			host.querySelector('.cert-config [data-test="cert-save"]').click()
 			await flush()
 
 			expect(axios.patch).toHaveBeenCalledWith('/apps/learning/api/courses/5/cert-config', expect.objectContaining({ certEnabled: true }))
