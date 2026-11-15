@@ -381,7 +381,12 @@
 
 		<!-- My Progress (student self-view) -->
 		<div v-if="currentSubTab === 'my-progress' && !isInstructor" class="my-progress-section">
+			<!-- GitHub #63: an instructor in the student view has no learner record (404). -->
+			<NcNoteCard v-if="previewsAsStudent" type="info" class="student-preview-note">
+				{{ t('learning', 'Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.') }}
+			</NcNoteCard>
 			<StudentDetail
+				v-else
 				:courseId="courseId"
 				:studentId="myUserId"
 				:gamification-enabled="gamificationEnabled"
@@ -617,7 +622,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
 import { buildCertReportQuery, buildCoverageQuery, COVERAGE_STATUSES, formatPoolProgress, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
 import { formatContentProgress } from '../utils/requiredContent.js'
-import { abschlussTabIds, buddiesEnabled, teilnehmerTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, buddiesEnabled, previewsCourseAsStudent, teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
@@ -735,6 +740,10 @@ export default {
 		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
 		isInstructor() {
 			return this.actsAsInstructor
+		},
+		// GitHub #63: see previewsCourseAsStudent()
+		previewsAsStudent() {
+			return previewsCourseAsStudent(this.course, this.actsAsInstructor)
 		},
 		myUserId() {
 			const user = getCurrentUser()

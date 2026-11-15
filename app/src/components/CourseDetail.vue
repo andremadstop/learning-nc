@@ -113,8 +113,12 @@
 					:course="course"
 					:gamification-enabled="gamificationEnabled"
 					:ai-enabled="adminAiEnabled" />
+				<!-- GitHub #63: an instructor in the student view has no learner record (404). -->
+				<NcNoteCard v-if="previewsAsStudent" type="info" class="student-preview-note">
+					{{ t('learning', 'Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.') }}
+				</NcNoteCard>
 				<CourseRecentSessions
-					v-if="myUserId"
+					v-else-if="myUserId"
 					:course-id="courseId"
 					:student-id="myUserId"
 					:show-pool-accuracy="!learnerHasProgressTab" />
@@ -187,7 +191,7 @@ import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
-import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, previewsCourseAsStudent, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
 // falls back to the Lernraum (GitHub #36).
@@ -294,6 +298,10 @@ export default {
 		},
 		isInstructor() {
 			return this.actsAsInstructor
+		},
+		// GitHub #63: see previewsCourseAsStudent()
+		previewsAsStudent() {
+			return previewsCourseAsStudent(this.course, this.actsAsInstructor)
 		},
 		talkRoomUrl() {
 			const token = String(this.course?.talk_room_token || '').trim()

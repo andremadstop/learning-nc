@@ -27,6 +27,19 @@ export function actsAsCourseInstructor(course, studentViewActive) {
 }
 
 /**
+ * GitHub #63: an instructor of the course who previews it in the student view. He is no learner
+ * of it (the server answers his own learner record with 404, CourseService::getStudentDetail), so
+ * the learner's own progress views show a note instead of asking for a record that cannot exist.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {boolean} actsAsInstructor - see actsAsCourseInstructor()
+ * @return {boolean}
+ */
+export function previewsCourseAsStudent(course, actsAsInstructor) {
+	return course?.is_instructor === true && actsAsInstructor !== true
+}
+
+/**
  * The leaf tabs of the Lernraum, in display order. CourseDetail (routing, default tab) and
  * CourseTabLernraum (the sub-navigation) both read this list, so they cannot drift apart:
  * CourseDetail used to always list Training and never the required content.

@@ -1,11 +1,10 @@
 /**
  * GitHub #36 — the persona sweep (scripts/persona-sweep) as a gate: its pure helpers.
  *
- * expectedReason: the first runs reported two findings at every run that were the app working as
- * intended (an instructor's student view asks for his own learner record on the completion tab →
- * 404; a persona who does not own the pool does not see it). A gate that always shows the same false
- * alarms is read past. The rules must stay narrow: the same 404 for another user, status, persona or
- * station still counts — at Participants › My Progress it ends in "Student not found in this course".
+ * expectedReason: findings that are the app working as intended (a persona who does not own the
+ * pool does not see it). A gate that always shows the same false alarms is read past, so the rules
+ * stay narrow. GitHub #63: the student view's own learner record (404) was such a rule; the app no
+ * longer asks for it, and the rule is gone, so that 404 counts again wherever it shows up.
  *
  * axeFindings: axe-core violations → findings; contrast at any impact, other rules only when
  * critical or serious.
@@ -21,26 +20,13 @@ describe('persona sweep: expectedReason', () => {
 
 	const sv = { user: 'admin', studentView: true, station: 'Course › Completion & certificate' }
 
-	it('the student view\'s own learner record (404) is expected on the completion tab', () => {
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), sv)).toMatch(/student view/)
-		expect(expectedReason(http('GET 404 /index.php/apps/learning/api/courses/7/students/admin'), sv)).toBeTruthy()
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { ...sv, station: 'Course › Completion & certificate (buttons)' })).toBeTruthy()
-	})
-
-	it('the same 404 at a Participants station counts: StudentDetail shows "Student not found in this course."', () => {
-		for (const station of ['Course › Participants', 'Course › Participants › My Progress', 'Course › Participants › Class register']) {
+	// GitHub #63: the completion tab no longer asks for the previewer's learner record, so a 404
+	// there is a finding again, at every station.
+	it('the student view\'s own learner record (404) counts at every station', () => {
+		for (const station of ['Course › Completion & certificate', 'Course › Completion & certificate (buttons)', 'Course › Participants › My Progress']) {
 			expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { ...sv, station })).toBeNull()
 		}
-		// without a known station nothing is waved through
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { user: 'admin', studentView: true })).toBeNull()
-	})
-
-	it('the same 404 still counts outside the student view, for another user, status or method', () => {
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin'), { ...sv, studentView: false })).toBeNull()
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/learner1'), sv)).toBeNull()
-		expect(expectedReason(http('GET 500 /apps/learning/api/courses/1/students/admin'), sv)).toBeNull()
-		expect(expectedReason(http('POST 404 /apps/learning/api/courses/1/students/admin'), sv)).toBeNull()
-		expect(expectedReason(http('GET 404 /apps/learning/api/courses/1/students/admin/sessions'), sv)).toBeNull()
+		expect(expectedReason(http('GET 404 /index.php/apps/learning/api/courses/7/students/admin'), sv)).toBeNull()
 	})
 
 	it('a missing pool is expected only for someone who does not own it', () => {

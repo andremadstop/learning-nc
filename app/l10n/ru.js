@@ -3767,5 +3767,6 @@ OC.L10N.register(
     "Pflichtinhalte gesamt" : "Всего обязательных материалов",
     "Dieses Video übernehmen" : "Выбрать это видео",
     "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "Это не действительный идентификатор видео. Вставьте адрес видео или только его идентификатор.",
+    "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen." : "Вид студента: здесь учащиеся видят свой собственный прогресс. Вы преподаватель этого курса, поэтому собственного прогресса у вас нет.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

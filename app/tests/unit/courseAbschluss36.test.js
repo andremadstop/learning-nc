@@ -304,3 +304,50 @@ describe('CourseRecentSessions in the student view (GitHub #36)', () => {
 	})
 })
 
+
+// GitHub #63: an instructor previewing the course in the student view is no learner of it. The
+// server answers his own learner record with 404 (CourseService::getStudentDetail checks the
+// member role), which "Mein Fortschritt" showed as "Student not found in this course." plus a
+// console error, and the completion area asked for in vain on every visit.
+describe('CourseDetail — an instructor in the student view (GitHub #63)', () => {
+	const PREVIEW_NOTE = 'Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.'
+
+	async function studentDetailRequests() {
+		const axios = (await import('@nextcloud/axios')).default
+		return axios.get.mock.calls.filter(([url]) => url === '/apps/learning/api/courses/{courseId}/students/{studentId}')
+	}
+
+	beforeEach(async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockClear()
+	})
+
+	it('shows a note in "Mein Fortschritt" instead of asking for a learner record that cannot exist', async () => {
+		const detail = await renderCourse({ props: { studentViewActive: true }, course: { is_instructor: true, mode_config: { course_summary: false } } })
+		detail.selectMegaTab('teilnehmer')
+		await flush()
+		expect(detail.currentTab).toBe('my-progress')
+		expect(host.querySelector('.my-progress-section .student-preview-note')?.textContent).toContain(PREVIEW_NOTE)
+		expect(host.querySelector('.student-header-card')).toBeNull()
+		expect(await studentDetailRequests()).toEqual([])
+	})
+
+	it('shows the note in the completion area instead of the recent sessions', async () => {
+		const detail = await renderCourse({ props: { studentViewActive: true }, course: { is_instructor: true, ...certifying() } })
+		detail.selectMegaTab('abschluss')
+		await flush()
+		expect(host.querySelector('.abschluss-mega-tab .course-summary'), 'summary still rendered').not.toBeNull()
+		expect(host.querySelector('.abschluss-mega-tab .student-preview-note')?.textContent).toContain(PREVIEW_NOTE)
+		expect(host.querySelector('.abschluss-mega-tab .session-item')).toBeNull()
+		expect(await studentDetailRequests()).toEqual([])
+	})
+
+	it('leaves a real learner as before: his own record is loaded and no note is shown', async () => {
+		const detail = await renderCourse({ course: { mode_config: { course_summary: false } } })
+		detail.selectMegaTab('teilnehmer')
+		await flush()
+		expect(host.querySelector('.student-header-card'), 'My progress rendered').not.toBeNull()
+		expect(host.querySelector('.student-preview-note')).toBeNull()
+		expect((await studentDetailRequests()).length).toBeGreaterThan(0)
+	})
+})

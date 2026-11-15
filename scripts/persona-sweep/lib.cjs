@@ -13,17 +13,8 @@
  */
 function expectedReason(finding, ctx) {
 	if (!finding || !ctx) return null
-	if (finding.kind === 'http' && ctx.studentView && /^Course › Completion & certificate\b/.test(ctx.station || '')) {
-		// An instructor previewing the course as a student is no student of it: the completion tab
-		// asks for his own learner record and gets 404, which CourseRecentSessions.vue treats as
-		// "nothing to list" (persona report, unclear finding 5). Only there: the same request from
-		// StudentDetail.vue (Participants › My Progress) ends in "Student not found in this course."
-		// on screen, which is a finding.
-		const m = /^GET 404 \/(?:index\.php\/)?apps\/learning\/api\/courses\/\d+\/students\/([^/?\s]+)$/.exec(finding.detail)
-		if (m && decodeURIComponent(m[1]) === ctx.user) {
-			return 'student view: the previewing instructor has no learner record in the course (404 handled by the completion tab)'
-		}
-	}
+	// GitHub #63: the student view's own learner record (GET …/students/<previewer> → 404) used to be
+	// waved through on the completion tab. The app no longer asks for it, so that 404 counts again.
 	if (finding.kind === 'pool-missing' && ctx.poolOwner && ctx.user !== ctx.poolOwner) {
 		// The Pools tab lists one's own pools and pools shared with one; the seed shares nothing.
 		return `not the pool owner (${ctx.poolOwner}): the pool is not shared with this persona`

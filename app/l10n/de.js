@@ -3767,5 +3767,6 @@ OC.L10N.register(
     "Pflichtinhalte gesamt" : "Pflichtinhalte gesamt",
     "Dieses Video übernehmen" : "Dieses Video übernehmen",
     "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein.",
+    "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen." : "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen.",
 },
 "nplurals=2; plural=(n != 1);");

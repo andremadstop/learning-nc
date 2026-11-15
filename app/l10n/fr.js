@@ -3767,5 +3767,6 @@ OC.L10N.register(
     "Pflichtinhalte gesamt" : "Total des contenus obligatoires",
     "Dieses Video übernehmen" : "Utiliser cette vidéo",
     "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "Ceci n’est pas un identifiant de vidéo valide. Collez l’adresse de la vidéo ou seulement son identifiant.",
+    "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen." : "Vue étudiant : les apprenants voient ici leur propre progression. Vous êtes formateur de ce cours et n'avez donc pas de progression propre.",
 },
 "nplurals=2; plural=(n > 1);");

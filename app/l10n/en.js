@@ -3767,5 +3767,6 @@ OC.L10N.register(
     "Pflichtinhalte gesamt" : "Required content total",
     "Dieses Video übernehmen" : "Use this video",
     "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "This is not a valid video ID. Paste the address of the video or just its ID.",
+    "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen." : "Student view: learners see their own progress here. You are an instructor of this course, so you have no progress of your own.",
 },
 "nplurals=2; plural=(n != 1);");

@@ -3767,5 +3767,6 @@ OC.L10N.register(
     "Pflichtinhalte gesamt" : "إجمالي المحتوى الإلزامي",
     "Dieses Video übernehmen" : "استخدام هذا الفيديو",
     "Darin steht keine gültige Video-ID. Füge die Adresse des Videos oder nur seine ID ein." : "هذا ليس معرّف فيديو صالحًا. الصق عنوان الفيديو أو معرّفه فقط.",
+    "Schüler-Ansicht: Lernende sehen hier ihren eigenen Lernfortschritt. Du bist in diesem Kurs Lehrkraft und hast deshalb keinen eigenen." : "واجهة الطالب: يرى المتعلمون هنا تقدمهم الخاص. أنت مدرّس في هذه الدورة، لذلك ليس لديك تقدم خاص بك.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
