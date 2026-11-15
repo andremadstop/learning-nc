@@ -523,6 +523,62 @@ describe('Fresh-eyes review: Klassenbuch kudos (GitHub #36)', () => {
 	})
 })
 
+describe('Fresh-eyes review: certification card frame (GitHub #36)', () => {
+	async function renderCert(passStatus) {
+		api.routes['/apps/learning/api/courses/{courseId}/summary'] = { sessions: {}, mastery: {}, badges: [], trouble_spots: [] }
+		api.routes['/apps/learning/api/courses/5/pass-status'] = passStatus
+		await render(CourseSummary, { courseId: 5, courseName: 'Pflichtschulung', course: { id: 5, mode_config: modeConfig({ course_summary: false }) }, gamificationEnabled: false })
+		return host.querySelector('.zeugnisstatus-card')
+	}
+
+	it('is not green while the learner has not passed', async () => {
+		const card = await renderCert({ applicable: true, passed: false })
+		expect(card).not.toBeNull()
+		expect(card.textContent).toContain('Noch nicht bestanden')
+		expect(card.classList.contains('zeugnisstatus-card--passed')).toBe(false)
+	})
+
+	it('is green once passed', async () => {
+		const card = await renderCert({ applicable: true, passed: true })
+		expect(card.classList.contains('zeugnisstatus-card--passed')).toBe(true)
+	})
+})
+
+describe('Fresh-eyes review: progress table and compliance exports (GitHub #36)', () => {
+	async function renderTab(activeTab, courseOverrides = {}) {
+		api.routes['/apps/learning/api/courses/{courseId}/progress'] = { students: [{ user_id: 'learner', display_name: 'Lena', critical_cards_count: 0, overall_mastery: 0, pools: [] }], meta: { total: 1 } }
+		api.routes['/apps/learning/api/courses/{courseId}/at-risk'] = { at_risk: [{ user_id: 'learner', display_name: 'Lena', risk_level: 'medium', risk_reason_codes: [{ code: 'never_active' }], critical_cards_count: 0, accuracy: null }] }
+		return render(CourseTabTeilnehmer, {
+			courseId: 5,
+			course: { id: 5, is_instructor: true, cert_enabled: true, mode_config: modeConfig(courseOverrides) },
+			userRole: 'instructor',
+			actsAsInstructor: true,
+			activeTab,
+			gamificationEnabled: false,
+		})
+	}
+
+	it('says that the percentages are Leitner mastery in a course without Leitner', async () => {
+		await renderTab('progress', { leitner: false })
+		const note = host.querySelector('.progress-leitner-note')
+		expect(note).not.toBeNull()
+		expect(note.textContent).toContain('Dieser Kurs nutzt Leitner nicht')
+		expect(note.textContent).toContain('Abschluss & Zertifikat')
+	})
+
+	it('shows no such note in a course with Leitner', async () => {
+		await renderTab('progress')
+		expect(host.querySelector('.progress-leitner-note')).toBeNull()
+	})
+
+	it('explains what puts a learner on the at-risk list', async () => {
+		await renderTab('progress', { leitner: false })
+		const hint = host.querySelector('.at-risk-hint')
+		expect(hint).not.toBeNull()
+		expect(hint.textContent).toContain('kritische Karten')
+	})
+})
+
 describe('Fresh-eyes review: medals follow the ranking, not the sort direction (GitHub #36)', () => {
 	const url = '/apps/learning/api/courses/{courseId}/leaderboard'
 	const rows = [

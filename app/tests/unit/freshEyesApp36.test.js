@@ -104,6 +104,9 @@ afterEach(() => {
 })
 
 
+function navLabels() {
+	return Array.from(host.querySelectorAll('.main-nav-btn')).map((b) => b.textContent.trim())
+}
 
 describe('App.vue: celebrations follow gamification and calm display (GitHub #36)', () => {
 	it('fires no confetti with gamification off', async () => {
@@ -136,5 +139,24 @@ describe('App.vue: celebrations follow gamification and calm display (GitHub #36
 		fire.mockClear()
 		celebrateBadge()
 		expect(fire).toHaveBeenCalled()
+	})
+})
+
+describe('App.vue: the ExplainBot tab needs AI (GitHub #36)', () => {
+	it('is not offered when the admin switched AI off', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		api.personal = { onboarding_acknowledged: 'yes' }
+		api.ai = false
+		await mountApp('/dashboard')
+		expect(navLabels()).toContain('Heute')
+		expect(navLabels()).not.toContain('Erklärbot')
+	})
+
+	it('is offered with AI on', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		api.personal = { onboarding_acknowledged: 'yes' }
+		api.ai = true
+		await mountApp('/dashboard')
+		expect(navLabels()).toContain('Erklärbot')
 	})
 })

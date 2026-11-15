@@ -168,7 +168,7 @@
         <NcCheckboxRadioSwitch
           :model-value="form.allowCourseInstructorFallback"
           type="switch"
-          :description="t('learning', 'Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.')"
+          :description="t('learning', 'Eingeschaltet erhalten auch alle, die in irgendeinem Kurs als Kursleitung eingetragen sind, globale Kursleitungsrechte, zum Beispiel neue Kurse anlegen und Fragenpools importieren. Ausgeschaltet (empfohlen) haben diese Rechte nur die oben gewählten Gruppen und Personen.')"
           @update:model-value="form.allowCourseInstructorFallback = !!$event">
           {{ t('learning', 'Allow course-based instructor fallback') }}
         </NcCheckboxRadioSwitch>

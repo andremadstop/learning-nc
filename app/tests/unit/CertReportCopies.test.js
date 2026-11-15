@@ -169,12 +169,12 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		input.dispatchEvent(new Event('input'))
 		await nextTick()
 
-		buttonByText(view.host, 'Export CSV').click()
+		buttonByText(view.host, 'Ausgestellte Zertifikate als CSV').click()
 		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/csv?' + applied)
 	})
 
 	it('Export CSV without a filter carries no query string', () => {
-		buttonByText(view.host, 'Export CSV').click()
+		buttonByText(view.host, 'Ausgestellte Zertifikate als CSV').click()
 		expect(window.location.href).toBe('/apps/learning/api/courses/5/cert-report/export/csv')
 	})
 

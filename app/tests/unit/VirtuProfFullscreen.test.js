@@ -106,3 +106,17 @@ describe('VirtuProfFullscreen', () => {
 		expect(instance.$emit).not.toHaveBeenCalled()
 	})
 })
+
+// GitHub #36, fresh-eyes review: the context panel showed the internal area key ("dashboard").
+describe('VirtuProfFullscreen context panel: area names, not keys', () => {
+	const entries = (area) => createInstance({ currentContext: { area }, areaLabel: VirtuProfFullscreen.methods.areaLabel }).contextEntries
+
+	it('names a known area', () => {
+		expect(entries('dashboard')).toEqual([{ key: 'area', label: 'Bereich', value: 'Heute' }])
+		expect(entries('course-detail')[0].value).toBe('Kurse')
+	})
+
+	it('leaves an unknown key out instead of showing it', () => {
+		expect(entries('some-internal-key')).toEqual([{ key: 'default', label: 'Status', value: 'Kein zusätzlicher Kontext aktiv' }])
+	})
+})

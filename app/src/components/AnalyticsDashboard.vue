@@ -48,7 +48,9 @@
         </div>
         <div class="summary-card card-questions">
           <span class="card-watermark">&#x1F4DA;</span>
-          <p class="card-label">{{ t('learning', 'Total Questions') }}</p>
+          <!-- Fresh-eyes review (GitHub #36): the figure counts the cards in your own Leitner boxes,
+            not the pool's questions; "Total Questions 0" stood next to a pool of eight. -->
+          <p class="card-label">{{ t('learning', 'Karten in deinen Leitner-Boxen') }}</p>
           <p class="card-value">{{ stats.total }}</p>
         </div>
         <div class="summary-card card-mastered">

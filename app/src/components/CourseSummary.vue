@@ -27,7 +27,9 @@
 		</div>
 
 		<!-- Certification (Phase 154). GitHub #35: shown whenever the course certifies, independent of the released summary statistics below. -->
-		<div v-if="zeugnisCardVisible" class="widget-card zeugnisstatus-card">
+		<!-- Fresh-eyes review (GitHub #36): the green frame stood around "Noch nicht bestanden". -->
+		<div v-if="zeugnisCardVisible" class="widget-card zeugnisstatus-card"
+			:class="{ 'zeugnisstatus-card--passed': certApplicable && hasPassed, 'zeugnisstatus-card--renewal': certApplicable && !hasPassed && renewalOpen }">
 			<p class="card-kicker">{{ t('learning', 'Zertifizierung') }}</p>
 			<div v-if="!certApplicable" class="zeugnis-state">
 				<span class="zeugnis-label zeugnis-na">{{ t('learning', 'Kein Zertifikat für diesen Kurs') }}</span>
@@ -875,7 +877,15 @@ export default {
 
 /* Zeugnisstatus / Pass status (Phase 154) */
 .zeugnisstatus-card {
+	border-inline-start-color: var(--color-border-maxcontrast);
+}
+
+.zeugnisstatus-card--passed {
 	border-inline-start-color: var(--color-element-success);
+}
+
+.zeugnisstatus-card--renewal {
+	border-inline-start-color: var(--color-warning);
 }
 
 .zeugnis-state {

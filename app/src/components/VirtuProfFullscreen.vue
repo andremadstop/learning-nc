@@ -138,7 +138,7 @@
 
           <div class="virtuprof-fullscreen__context-section">
             <div class="virtuprof-fullscreen__context-heading">
-              <h3>{{ t('learning', 'RAG-Quellen') }}</h3>
+              <h3>{{ t('learning', 'Quellen der Antwort') }}</h3>
               <button
                 v-if="hasQuestionContext"
                 type="button"
@@ -267,8 +267,11 @@ export default {
       if (poolName) {
         entries.push({ key: 'pool', label: t('learning', 'Pool'), value: poolName })
       }
-      if (area) {
-        entries.push({ key: 'area', label: t('learning', 'Bereich'), value: area })
+      // Fresh-eyes review (GitHub #36): the area is an internal key ("dashboard"); show its name,
+      // and nothing for a key without one.
+      const areaName = this.areaLabel(area)
+      if (areaName) {
+        entries.push({ key: 'area', label: t('learning', 'Bereich'), value: areaName })
       }
       if (questionId) {
         entries.push({ key: 'question', label: t('learning', 'Frage'), value: `#${questionId}` })
@@ -324,6 +327,19 @@ export default {
     },
   },
   methods: {
+    areaLabel(area) {
+      switch (area) {
+      case 'dashboard': return t('learning', 'Heute')
+      case 'courses':
+      case 'course-detail': return t('learning', 'Kurse')
+      case 'course-my-progress': return t('learning', 'Mein Fortschritt')
+      case 'pools': return t('learning', 'Pools')
+      case 'smartqueue': return t('learning', 'Smart Queue')
+      case 'skillmap': return t('learning', 'Skill-Map')
+      case 'settings': return t('learning', 'Einstellungen')
+      default: return ''
+      }
+    },
     t,
     vt(key, params = {}) {
       return translateVirtuProf(this.effectiveLanguage, key, params)

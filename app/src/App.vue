@@ -55,8 +55,10 @@
           >
             {{ t('learning', 'Pools') }}
           </button>
+          <!-- Fresh-eyes review (GitHub #36): with AI off the ExplainBot page only said that the chat
+            is off. The tab waits for VirtuProf's state, which carries whether AI is available. -->
           <button
-            v-if="effectiveUserRole === 'student' && showVirtuProfDock"
+            v-if="effectiveUserRole === 'student' && showVirtuProfDock && virtuProfAiEnabled"
             :class="['main-nav-btn', { active: mainView === 'virtuprof-fullscreen' }]"
             role="tab"
             :aria-selected="mainView === 'virtuprof-fullscreen' ? 'true' : 'false'"
@@ -199,6 +201,7 @@
                 :poolId="selectedPool.id"
                 :totalQuestions="questionCount"
                 :contentLanguage="contentLanguage"
+                :pool-name="selectedPool.name || ''"
                 :gamification-enabled="gamificationEnabled"
                 @back="setMode(defaultPoolMode)"
               />
@@ -418,7 +421,8 @@
           @open-fullscreen="openVirtuProfFullscreen"
           @close-fullscreen="closeVirtuProfFullscreen"
           @ready="triggerInitialVirtuProfHints"
-          @enabled-change="handleVirtuProfEnabledChange" />
+          @enabled-change="handleVirtuProfEnabledChange"
+          @ai-enabled-change="handleVirtuProfAiChange" />
       </aside>
 
       <OnboardingRedesign
@@ -578,6 +582,9 @@ export default {
       gamificationEnabled: true,
       fsrsDetailedStats: false,
       virtuProfEnabled: true,
+      // Whether the admin's AI is available (VirtuProf's GET /api/virtuprof/state). Until VirtuProf
+      // has said so the ExplainBot tab stays hidden: off is the safe side for a chat (GitHub #36).
+      virtuProfAiEnabled: false,
       appInitialized: false,
       initialVirtuProfHintsTriggered: false,
       pendingVirtuProfDuel: {
@@ -848,6 +855,12 @@ export default {
     },
     updateFsrsDetailedStats(enabled) {
       this.fsrsDetailedStats = enabled === true;
+    },
+    handleVirtuProfAiChange(enabled) {
+      this.virtuProfAiEnabled = enabled === true;
+      if (!this.virtuProfAiEnabled && this.mainView === 'virtuprof-fullscreen') {
+        this.closeVirtuProfFullscreen();
+      }
     },
     handleVirtuProfEnabledChange(enabled) {
       this.virtuProfEnabled = enabled !== false;

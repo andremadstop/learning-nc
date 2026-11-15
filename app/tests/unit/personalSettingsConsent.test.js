@@ -208,3 +208,26 @@ describe('PersonalSettings: data table and privacy notice follow the recipient',
 		expect(PersonalSettings.computed.privacyAiNotice.call(c)).toBeNull()
 	})
 })
+
+// GitHub #36, fresh-eyes review: with AI off the section said "AI features stay off until you
+// agree in the dialog", pointing to a dialog that never comes.
+describe('PersonalSettings: AI switched off, nothing on record', () => {
+	beforeEach(() => {
+		axios.get.mockReset()
+	})
+
+	it('marks the AI as off, so the section says there is nothing to agree to', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'none', ai_enabled: false, ai_consent_version: null, current_version: '3.0', recipient: null } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(c.consentAiOff).toBe(true)
+		expect(PersonalSettings.computed.consentState.call(c)).toBe('none')
+	})
+
+	it('with AI on the dialog text stays', async () => {
+		axios.get.mockResolvedValueOnce({ data: { valid: false, reason: 'never', ai_enabled: true, ai_consent_version: null, current_version: '3.0', recipient: { name: 'Google Gemini' } } })
+		const c = ctx()
+		await PersonalSettings.methods.loadConsent.call(c)
+		expect(c.consentAiOff).toBe(false)
+	})
+})

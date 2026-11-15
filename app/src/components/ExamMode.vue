@@ -4,7 +4,7 @@
 
     <!-- Setup Screen -->
     <div v-if="screen === 'setup'" class="setup-screen">
-      <h3 class="exam-title">{{ practice ? t('learning', 'Course practice exam') : t('learning', 'Exam Mode') }}</h3>
+      <h3 class="exam-title">{{ examTitle }}</h3>
       <p v-if="practice && practiceConfig?.requiredOnly" class="exam-description">{{ t('learning', 'Questions are drawn at random from the required pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
       <p v-else-if="practice" class="exam-description">{{ t('learning', 'Questions are drawn at random from all pools of this course, a new selection on every attempt. No feedback until the end, then a review with explanations. Practice exams do not count towards a certificate.') }}</p>
       <p v-else class="exam-description">{{ setupDescription }}</p>
@@ -355,6 +355,9 @@ export default {
     // GitHub #47: { questions, minutes } the course sets for this pool's exam (pool rule, else
     // course default), as the server computed and enforces it; null = the pool-sized card.
     examScope: { type: Object, default: null },
+    // Fresh-eyes review (GitHub #36): the pool the exam is for, named in the heading. A course
+    // with two required pools showed "Exam Mode" for both.
+    poolName: { type: String, default: '' },
     // GitHub #36: the admin's global gamification switch. Off: no speed score (questions/minute).
     gamificationEnabled: { type: Boolean, default: true },
   },
@@ -408,6 +411,13 @@ export default {
     };
   },
   computed: {
+    examTitle() {
+      if (this.practice) {
+        return t('learning', 'Course practice exam');
+      }
+      const pool = String(this.poolName || '').trim();
+      return pool ? t('learning', 'Prüfung: {pool}', { pool }) : t('learning', 'Exam Mode');
+    },
     formattedTimeLeft() {
       if (this.timeLeftSeconds === null || this.timeLeftSeconds < 0) return '00:00';
       const m = Math.floor(this.timeLeftSeconds / 60);

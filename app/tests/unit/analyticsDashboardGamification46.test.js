@@ -92,3 +92,13 @@ describe('AnalyticsDashboard and the gamification switch (GitHub #46)', () => {
 		expect(host.querySelector('.achievements-section')).not.toBeNull()
 	})
 })
+
+// GitHub #36, fresh-eyes review: "Total Questions 0" stood next to a pool of eight questions.
+// The figure is the viewer's own Leitner cards; the label says so.
+describe('AnalyticsDashboard card label (GitHub #36)', () => {
+	it('names the count as the cards in your Leitner boxes, not the pool size', async () => {
+		await mount({ gamificationEnabled: false })
+		const label = host.querySelector('.card-questions .card-label')
+		expect(label.textContent).toBe('Karten in deinen Leitner-Boxen')
+	})
+})

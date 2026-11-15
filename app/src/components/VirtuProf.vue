@@ -596,6 +596,7 @@ export default {
         this.language = detectVirtuProfLanguage()
         this.visitedGuideKeys = []
         this.aiEnabled = false
+        this.$emit('ai-enabled-change', false)
         this.ttsEnabled = false
         this.sttEnabled = false
         this.voiceLang = this.getBrowserVoiceLanguage()
@@ -638,6 +639,7 @@ export default {
       }
       this.visitedGuideKeys = Array.isArray(data.visited_tools) ? data.visited_tools : []
       this.aiEnabled = data.ai_enabled === true
+      this.$emit('ai-enabled-change', this.aiEnabled)
       this.ttsEnabled = data.tts_enabled === true
       this.sttEnabled = data.stt_enabled === true
       // audit #17: the saved 'Bot sounds' choice applies on every page, not only after a

@@ -119,7 +119,7 @@
 			<div v-if="!selectedLearningPool && courseToolTabs.length" class="course-tools-callout">
 				<div class="course-tools-callout__header">
 					<h5>{{ t('learning', 'Simulatoren im Kurs') }}</h5>
-					<p>{{ t('learning', 'Diese Werkzeuge passen zu deinem Kurs und öffnen direkt den passenden Simulator.') }}</p>
+					<p>{{ t('learning', 'Diese Werkzeuge sind für deinen Kurs freigeschaltet und öffnen direkt den passenden Simulator.') }}</p>
 				</div>
 				<div class="course-tools-grid">
 					<button
@@ -231,6 +231,7 @@
 				:courseCertification="examCertification"
 				:poolPractice="poolPracticeConfig"
 				:examScope="selectedLearningPool.exam_scope || null"
+				:pool-name="selectedLearningPool.pool_name || ''"
 				:gamification-enabled="gamificationEnabled"
 				@back="onExamBack" />
 		</div>

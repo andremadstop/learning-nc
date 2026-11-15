@@ -104,7 +104,7 @@ describe('#56 settings switches carry their own label', () => {
 	it('AdminSettings: the help text of a switch is its description, not a loose line', async () => {
 		await mount(AdminSettings)
 		const fallback = switches().find((el) => el.textContent.includes('Allow course-based instructor fallback'))
-		expect(fallback.querySelector('.switch-stub__desc').textContent).toContain('haben nur die oben gewählten Gruppen und Personen')
+		expect(fallback.querySelector('.switch-stub__desc').textContent).toContain('haben diese Rechte nur die oben gewählten Gruppen und Personen')
 	})
 
 	it('PersonalSettings (instructor): every switch has a name in its slot', async () => {

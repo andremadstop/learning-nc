@@ -78,6 +78,12 @@
 				</NcButton>
 			</div>
 
+			<!-- Fresh-eyes review (GitHub #36): the percentages are Leitner mastery. In a course without
+				Leitner they stay at 0 % for a learner who passed both exams, which read as "did nothing". -->
+			<NcNoteCard v-if="courseWithoutLeitner" type="info" class="progress-leitner-note">
+				{{ t('learning', 'Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.') }}
+			</NcNoteCard>
+
 			<!-- At-Risk Section -->
 			<div v-if="atRiskStudents.length > 0" class="at-risk-section" :class="{ collapsed: atRiskCollapsed }">
 				<div class="at-risk-header" @click="atRiskCollapsed = !atRiskCollapsed">
@@ -89,6 +95,9 @@
 					</NcButton>
 					<button class="at-risk-toggle">{{ atRiskCollapsed ? '\u25BC' : '\u25B2' }}</button>
 				</div>
+				<p v-if="!atRiskCollapsed" class="at-risk-hint">
+					{{ t('learning', 'Lernende, die beim Üben auffallen, zum Beispiel lange nicht aktiv, niedrige Trefferquote oder viele kritische Karten (Fragen, die oft falsch beantwortet werden). Die Gründe stehen auf jeder Karte.') }}
+				</p>
 				<div v-if="!atRiskCollapsed" class="at-risk-cards">
 					<div v-for="student in atRiskStudents" :key="'risk-' + student.user_id"
 						class="at-risk-card" :class="'risk-' + student.risk_level"
@@ -402,7 +411,7 @@
 					<h4 class="cert-report-title">{{ t('learning', 'Compliance-Bericht') }}</h4>
 					<div class="cert-report-header-actions">
 						<NcButton variant="tertiary" size="small" @click="exportCertReportCsv">
-							{{ t('learning', 'Export CSV') }}
+							{{ t('learning', 'Ausgestellte Zertifikate als CSV') }}
 						</NcButton>
 						<!-- GitHub #42: copies of every listed certificate (same filters as the table and the CSV). -->
 						<NcButton v-if="certRows.length > 0"
@@ -519,7 +528,7 @@
 					<div class="cert-report-header">
 						<h5 class="cert-coverage-title">{{ t('learning', 'Abdeckung: alle eingeschriebenen Lernenden') }}</h5>
 						<NcButton variant="tertiary" size="small" class="cert-coverage-csv" @click="exportCoverageCsv">
-							{{ t('learning', 'Export CSV') }}
+							{{ t('learning', 'Abdeckung aller Lernenden als CSV') }}
 						</NcButton>
 					</div>
 					<p class="cert-report-hint">
@@ -740,6 +749,10 @@ export default {
 		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
 		isInstructor() {
 			return this.actsAsInstructor
+		},
+		// GitHub #36: the course switched Leitner off, so the mastery columns cannot move.
+		courseWithoutLeitner() {
+			return this.course?.mode_config?.leitner === false
 		},
 		// GitHub #63: see previewsCourseAsStudent()
 		previewsAsStudent() {
@@ -1465,6 +1478,8 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .at-risk-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .at-risk-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--color-error-text, var(--color-error)); }
 .at-risk-toggle { background: none; border: none; font-size: 14px; color: var(--color-text-maxcontrast); cursor: pointer; padding: 4px 8px; }
+.at-risk-hint { margin: 8px 0 0; color: var(--color-text-maxcontrast); }
+.progress-leitner-note { margin-bottom: 12px; }
 .at-risk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
 .at-risk-card { border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 16px; background: var(--color-main-background); cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; }
 .at-risk-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transform: translateY(-1px); }

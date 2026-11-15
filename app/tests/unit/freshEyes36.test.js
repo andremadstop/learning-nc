@@ -87,7 +87,21 @@ afterEach(() => {
 	host = null
 })
 
-describe('ExamMode: no speed score with gamification off (GitHub #36)', () => {
+describe('ExamMode: which exam, and no speed score with gamification off (GitHub #36)', () => {
+	it('names the pool in the heading', async () => {
+		await render(ExamMode, { poolId: 3, courseId: 7, totalQuestions: 8, poolName: 'Brandschutz' })
+		expect(host.querySelector('.exam-title').textContent).toBe('Prüfung: Brandschutz')
+	})
+
+	it('keeps the old heading without a pool name, and the practice exam its own', async () => {
+		await render(ExamMode, { poolId: 3, totalQuestions: 8 })
+		expect(host.querySelector('.exam-title').textContent).toBe('Exam Mode')
+		app.unmount()
+		host.remove()
+		await render(ExamMode, { courseId: 7, totalQuestions: 8, practice: true, practiceConfig: { questions: 8, minutes: 10, passPercent: 70 }, poolName: 'Brandschutz' })
+		expect(host.querySelector('.exam-title').textContent).toBe('Course practice exam')
+	})
+
 	async function results(props) {
 		const exam = await render(ExamMode, { poolId: 3, courseId: 7, totalQuestions: 8, ...props })
 		exam.resultsData = { total_questions: 8, correct_answers: 8, score_percentage: 100 }

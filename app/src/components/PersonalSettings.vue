@@ -418,6 +418,10 @@
           <template v-else-if="consentState === 'unknown'">
             {{ t('learning', 'Der Stand deiner KI-Einwilligung konnte nicht geladen werden. Du kannst sie trotzdem widerrufen.') }}
           </template>
+          <!-- Fresh-eyes review (GitHub #36): with AI off no dialog ever asks; the text pointed to one. -->
+          <template v-else-if="consentAiOff">
+            {{ t('learning', 'KI-Funktionen sind auf dieser Installation ausgeschaltet. Es gibt nichts, dem du zustimmen musst.') }}
+          </template>
           <template v-else>
             {{ t('learning', 'Du hast der KI-Nutzung nicht zugestimmt. KI-Funktionen bleiben aus, bis du im Dialog zustimmst.') }}
           </template>
@@ -560,6 +564,8 @@ export default {
       // the status could not be read: nothing is claimed, the revocation stays available
       consentStatusFailed: false,
       consentProvider: '',
+      // The status says ai_enabled: false when the admin switched AI off (GitHub #36).
+      consentAiOff: false,
       consentRecipient: null,
       consentLoaded: false,
       consentRevoking: false,
@@ -712,6 +718,7 @@ export default {
         this.consentStored = !!status?.ai_consent_version && status.ai_consent_version === status.current_version
         this.consentStatusFailed = false
         this.consentProvider = status?.recipient?.name || ''
+        this.consentAiOff = status?.ai_enabled === false
         this.consentRecipient = status?.recipient || null
         this.consentLoaded = true
       } catch (e) {
