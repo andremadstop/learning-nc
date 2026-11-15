@@ -149,4 +149,41 @@ describe('Pool statistics without Leitner (GitHub #68)', () => {
 		expect(back.textContent).toContain('Zurück zu „Verwalten“')
 		expect(host.textContent).not.toContain('Mode Selector')
 	})
+
+	// Reviewer finding (GitHub #69): the student view is the learner's preview. The course figures
+	// of a co-instructor (or an editor) stay out of it, and leaving the view brings them back.
+	it('shows the learner\'s boxes instead of the course figures in the student view', async () => {
+		api.answerStats = answers({ led_courses: 1 })
+		await mount({ studentViewActive: true })
+		expect(host.textContent).toContain('Karten in deinen Leitner-Boxen')
+		expect(host.querySelector('.answer-stats')).toBeNull()
+		expect(host.textContent).not.toContain('Lernende mit Antworten')
+		expect(host.textContent).not.toContain('Welcher Feuerlöscher?')
+		expect(emitted).toEqual(['leitner'])
+	})
+
+	it('reloads the course figures when the student view is left with the tab open', async () => {
+		api.answerStats = answers({ led_courses: 1 })
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		emitted = []
+		const { ref } = await import('vue')
+		const studentView = ref(true)
+		app = createApp({ render: () => h(AnalyticsDashboard, { poolId: 7, gamificationEnabled: false, studentViewActive: studentView.value, onBasis: (b) => emitted.push(b) }) })
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = globalThis.n
+		app.mount(host)
+		const settle = async () => {
+			for (let i = 0; i < 5; i++) {
+				await new Promise((r) => setTimeout(r, 0))
+				await nextTick()
+			}
+		}
+		await settle()
+		expect(host.querySelector('.answer-stats')).toBeNull()
+		studentView.value = false
+		await settle()
+		expect(host.querySelector('.answer-stats-note').textContent).toContain('aus deinen Kursen mit diesem Pool')
+		expect(emitted).toEqual(['leitner', 'answers'])
+	})
 })

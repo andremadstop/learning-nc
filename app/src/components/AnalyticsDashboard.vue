@@ -301,6 +301,13 @@ export default {
       type: String,
       default: '',
     },
+    // Reviewer finding (GitHub #69): the student view previews the pool as a learner sees it. A
+    // learner gets no answer statistics (403), so the instructor in the student view does not
+    // either: the course figures (learners, hit rate, hardest questions) stay out of the preview.
+    studentViewActive: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -377,7 +384,9 @@ export default {
       // viewer who may not read them (403) keeps the box view as before.
       const [leitner, answers] = await Promise.allSettled([
         axios.get(generateUrl('/apps/learning/api/leitner/stats'), { params: { poolId: this.poolId } }),
-        axios.get(generateUrl('/apps/learning/api/pools/{poolId}/answer-stats', { poolId: this.poolId })),
+        this.studentViewActive
+          ? Promise.resolve({ data: null })
+          : axios.get(generateUrl('/apps/learning/api/pools/{poolId}/answer-stats', { poolId: this.poolId })),
       ]);
       const answerData = answers.status === 'fulfilled' ? answers.value?.data : null;
       this.answerStats = answerData && typeof answerData === 'object' && typeof answerData.leitner_in_use === 'boolean' ? answerData : null;
@@ -499,6 +508,12 @@ export default {
     },
     toggleLegacyArchive() {
       this.legacyArchiveOpen = !this.legacyArchiveOpen;
+    },
+  },
+  watch: {
+    // The student view can be switched on and off (banner) while the statistics tab is open.
+    studentViewActive() {
+      this.fetchStats();
     },
   },
   created() {

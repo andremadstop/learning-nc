@@ -243,6 +243,7 @@
                 :poolId="selectedPool.id"
                 :gamification-enabled="gamificationEnabled"
                 :back-label="defaultPoolModeLabel"
+                :student-view-active="studentViewActive"
                 @back="setMode(defaultPoolMode)"
                 @basis="poolStatsBasis = $event"
               />

@@ -56,8 +56,8 @@ vi.mock('../../src/components/PoolList.vue', () => withProps('PoolList', ['userR
 	+ '<button class="open-edit" @click="$emit(\'selectPool\', { id: 9, name: \'Edit share\', is_shared: true, permission: \'edit\' })">edit</button></div>'))
 vi.mock('../../src/components/TrainingMode.vue', () => withProps('TrainingMode', ['poolId', 'totalQuestions', 'canManage', 'contentLanguage'],
 	'<div class="training-stub" :data-can-manage="String(canManage)" :data-total="totalQuestions"><button class="add-q" @click="$emit(\'manage\')">add</button></div>'))
-vi.mock('../../src/components/AnalyticsDashboard.vue', () => withProps('AnalyticsDashboard', ['poolId', 'gamificationEnabled'],
-	'<div class="stats-stub" :data-gamification="String(gamificationEnabled)"><button class="stats-back" @click="$emit(\'back\')">back</button></div>'))
+vi.mock('../../src/components/AnalyticsDashboard.vue', () => withProps('AnalyticsDashboard', ['poolId', 'gamificationEnabled', 'studentViewActive'],
+	'<div class="stats-stub" :data-gamification="String(gamificationEnabled)" :data-preview="String(studentViewActive)"><button class="stats-back" @click="$emit(\'back\')">back</button></div>'))
 vi.mock('../../src/components/QuestionList.vue', () => withProps('QuestionList', ['poolId', 'poolName', 'readonly'], '<div class="question-list-stub" />'))
 // GitHub #35: the course views get the effective role and the student-view flag.
 vi.mock('../../src/components/CourseList.vue', () => withProps('CourseList', ['userRole', 'studentViewActive'],
@@ -556,6 +556,23 @@ describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
 		vm.setMode('stats')
 		await settle()
 		expect(host.querySelector('.stats-stub').dataset.gamification).toBe('false')
+	})
+
+	// Reviewer finding (GitHub #69): the statistics leave out the course figures in the student view.
+	it('Statistics gets the student-view flag', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		vm.setMode('stats')
+		await settle()
+		expect(host.querySelector('.stats-stub').dataset.preview).toBe('false')
+		vm.setStudentViewOverride(true)
+		await settle()
+		vm.setMode('stats')
+		await settle()
+		expect(vm.mode).toBe('stats')
+		expect(host.querySelector('.stats-stub').dataset.preview).toBe('true')
 	})
 
 	it('a learner without edit rights keeps the old window, in Training, without the switch', async () => {
