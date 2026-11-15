@@ -1,0 +1,158 @@
+# Gate 4 + Persona-Gate every night: real Nextcloud 33/34/35 on PostgreSQL and MariaDB.
+# Scheduled runs only fire from the default branch (main); workflow_dispatch runs any branch.
+# No secrets: everything runs in throwaway containers with throwaway passwords.
+name: Nightly
+
+on:
+  schedule:
+    - cron: '17 2 * * *'   # 02:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash   # explicit bash = -eo pipefail, so `| tee` cannot hide a failure
+
+jobs:
+  integration:
+    name: Integration NC ${{ matrix.nc }} / ${{ matrix.engine }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        nc: ['33', '34', '35']
+        engine: [pgsql, mysql]
+        include:
+          # 33 = the default pinned in the scripts (same image as the local Gate 4).
+          # Multi-arch index digests from Docker Hub, checked 2026-11-15.
+          - nc: '33'
+            image: nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5
+          - nc: '34'
+            image: nextcloud:34@sha256:25d07d3091844c87c5f812037f5281b5d61fbb47f2c3f125274baabfe6f3ed1b
+          - nc: '35'
+            image: nextcloud:35@sha256:8041f24690c5631da46d2391e1fd7efcde95c6cf08695047f3dd7ce7783934b4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: nc-integration.sh --ref HEAD
+        env:
+          ENGINE: ${{ matrix.engine }}
+          INTEG_NC_IMAGE: ${{ matrix.image }}
+        run: |
+          mkdir -p ci-logs
+          ./scripts/nc-integration.sh --ref HEAD 2>&1 | tee "ci-logs/integration-nc${{ matrix.nc }}-${{ matrix.engine }}.log"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: integration-nc${{ matrix.nc }}-${{ matrix.engine }}
+          path: ci-logs/
+          retention-days: 14
+          if-no-files-found: warn
+
+  lifecycle:
+    name: Lifecycle NC ${{ matrix.nc }} / ${{ matrix.engine }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        nc: ['33', '34', '35']
+        engine: [pgsql, mysql]
+        include:
+          - nc: '33'
+            image: nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5
+          - nc: '34'
+            image: nextcloud:34@sha256:25d07d3091844c87c5f812037f5281b5d61fbb47f2c3f125274baabfe6f3ed1b
+          - nc: '35'
+            image: nextcloud:35@sha256:8041f24690c5631da46d2391e1fd7efcde95c6cf08695047f3dd7ce7783934b4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # fresh install, 5.5.1 -> HEAD upgrade (seeded), bare 5.5.1 -> HEAD upgrade.
+      # The app and the fixtures come from the git index, which after checkout is HEAD.
+      - name: lifecycle-probe.sh
+        env:
+          ENGINE: ${{ matrix.engine }}
+          LIFECYCLE_NC_IMAGE: ${{ matrix.image }}
+        run: |
+          mkdir -p ci-logs
+          ./scripts/lifecycle-probe.sh 2>&1 | tee "ci-logs/lifecycle-nc${{ matrix.nc }}-${{ matrix.engine }}.log"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lifecycle-nc${{ matrix.nc }}-${{ matrix.engine }}
+          path: ci-logs/
+          retention-days: 14
+          if-no-files-found: warn
+
+  persona:
+    name: Persona sweep (NC 33 / pgsql, Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90   # 27 min end to end on the maintainer's machine (2026-11-15)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # run.sh takes Playwright from app/node_modules (no second install).
+      - name: npm ci
+        working-directory: app
+        run: npm ci --no-audit --no-fund
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('app/package-lock.json') }}
+
+      # --with-deps installs the system libraries even on a cache hit (they are not cached).
+      - name: Install Chromium for Playwright
+        working-directory: app
+        run: |
+          npx playwright install --with-deps chromium
+          # sweep.config.cjs defaults to /usr/bin/chromium (the maintainer's machine); point it
+          # at the browser that matches the Playwright version from the lockfile.
+          echo "PERSONA_CHROMIUM=$(node -p "require('@playwright/test').chromium.executablePath()")" >> "$GITHUB_ENV"
+
+      # up (throwaway NC + seed) -> sweep -> report -> down; REF defaults to HEAD.
+      - name: persona-sweep/run.sh
+        run: |
+          test -x "$PERSONA_CHROMIUM"
+          mkdir -p ci-logs
+          ./scripts/persona-sweep/run.sh all 2>&1 | tee ci-logs/persona-sweep.log
+
+      # The report, findings and screenshots. Excluded: auth/ (session storage states) and
+      # instance.env (throwaway passwords; `down` removes it, excluded in case it did not).
+      - name: Upload report and screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: persona-sweep
+          path: |
+            ci-logs/
+            scripts/persona-sweep/out/
+            !scripts/persona-sweep/out/auth/
+            !scripts/persona-sweep/out/instance.env
+          retention-days: 14
+          if-no-files-found: warn
