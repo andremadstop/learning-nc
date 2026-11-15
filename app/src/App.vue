@@ -140,12 +140,12 @@
                 {{ t('learning', 'Dieser Pool wurde mit dir geteilt (nur Ansicht)') }}
               </NcNoteCard>
 
-              <div class="mode-selector" role="tablist" @keydown="handleTablistKeydown">
+              <div class="mode-selector lnc-tablist" role="tablist" @keydown="handleTablistKeydown">
                 <button
                   v-for="m in filteredModes"
                   :key="m.id"
                   @click="setMode(m.id)"
-                  :class="['mode-btn', { active: mode === m.id }]"
+                  :class="['mode-btn', 'lnc-tab', { active: mode === m.id }]"
                   role="tab"
                   :aria-selected="mode === m.id ? 'true' : 'false'"
                 >
@@ -241,9 +241,9 @@
           <template v-else-if="route && route.name === 'settings'">
             <!-- Instructor: sub-tabs for Kurs-Verwaltung + Meine Einstellungen -->
             <template v-if="effectiveUserRole !== 'student'">
-              <div class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
+              <div class="course-sub-nav lnc-tablist" role="tablist" @keydown="handleTablistKeydown">
                 <button
-                  :class="['mode-btn', { active: settingsSubTab === 'admin' }]"
+                  :class="['mode-btn', 'lnc-tab', { active: settingsSubTab === 'admin' }]"
                   role="tab"
                   :aria-selected="settingsSubTab === 'admin' ? 'true' : 'false'"
                   @click="settingsSubTab = 'admin'"
@@ -251,7 +251,7 @@
                   {{ t('learning', 'Kurs-Verwaltung') }}
                 </button>
                 <button
-                  :class="['mode-btn', { active: settingsSubTab === 'personal' }]"
+                  :class="['mode-btn', 'lnc-tab', { active: settingsSubTab === 'personal' }]"
                   role="tab"
                   :aria-selected="settingsSubTab === 'personal' ? 'true' : 'false'"
                   @click="settingsSubTab = 'personal'"
@@ -285,9 +285,9 @@
           <!-- ==================== COURSES VIEW ==================== -->
           <template v-else-if="route && (route.name === 'courses' || route.name === 'course-tab')">
             <!-- Instructor sub-navigation: List | Dashboard -->
-            <div v-if="effectiveUserRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
+            <div v-if="effectiveUserRole === 'instructor' && !selectedCourse" class="course-sub-nav lnc-tablist" role="tablist" @keydown="handleTablistKeydown">
               <button
-                :class="['mode-btn', { active: courseView === 'list' }]"
+                :class="['mode-btn', 'lnc-tab', { active: courseView === 'list' }]"
                 role="tab"
                 :aria-selected="courseView === 'list' ? 'true' : 'false'"
                 @click="courseView = 'list'"
@@ -295,7 +295,7 @@
                 {{ t('learning', 'Kursliste') }}
               </button>
               <button
-                :class="['mode-btn', { active: courseView === 'dashboard' }]"
+                :class="['mode-btn', 'lnc-tab', { active: courseView === 'dashboard' }]"
                 role="tab"
                 :aria-selected="courseView === 'dashboard' ? 'true' : 'false'"
                 @click="courseView = 'dashboard'"
@@ -466,6 +466,7 @@ import { useOptionalCourseStore } from './stores/courseStore.js';
 import { defineAsyncComponent } from 'vue';
 import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
 import { useOptionalA11yStore } from './stores/a11yStore.js';
+import { moveTablistFocus } from './utils/tablistKeydown.js';
 
 const VirtuProf = defineAsyncComponent(() => import('./components/VirtuProf.vue'));
 
@@ -1298,23 +1299,7 @@ export default {
     },
 
     handleTablistKeydown(event) {
-      const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')];
-      const currentIndex = tabs.indexOf(document.activeElement);
-      if (currentIndex === -1) {
-        return;
-      }
-
-      let nextIndex;
-      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-        nextIndex = (currentIndex + 1) % tabs.length;
-      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-      } else {
-        return;
-      }
-
-      event.preventDefault();
-      tabs[nextIndex].focus();
+      moveTablistFocus(event);
     },
 
     async fetchRole() {
@@ -1832,15 +1817,9 @@ export default {
   background: color-mix(in srgb, var(--color-primary-element) 10%, transparent);
 }
 
-/* Course sub-navigation */
+/* Course sub-navigation — look and width: .lnc-tablist in styles/tabs.css (#46) */
 .course-sub-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
   margin-bottom: 20px;
-  padding: 5px;
-  background: var(--color-background-hover);
-  border-radius: 10px;
 }
 
 /* Pool view styles */
@@ -1858,38 +1837,9 @@ export default {
   color: var(--color-main-text);
 }
 
+/* Pool window tabs — look and width: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
 .mode-selector {
-  display: flex;
-  gap: 6px;
   margin-bottom: 28px;
-  padding: 5px;
-  background: var(--color-background-hover);
-  border-radius: 10px;
-  max-width: 900px;
-}
-
-.mode-btn {
-  flex: 1;
-  padding: 12px 16px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  font-size: 14px;
-  text-align: center;
-  color: var(--color-main-text);
-}
-
-.mode-btn:hover {
-  background: var(--color-background-dark);
-}
-
-.mode-btn.active {
-  background: var(--color-primary-element);
-  color: var(--color-primary-element-text);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .mode-description {
@@ -1915,7 +1865,6 @@ export default {
   #app-learning { padding: 16px; }
   .app-shell { gap: 16px; }
   .pool-view-header { flex-direction: column; align-items: flex-start; }
-  .mode-selector { flex-direction: column; max-width: 100%; }
   .main-nav-btn { padding: 9px 14px; font-size: 14px; }
 }
 </style>

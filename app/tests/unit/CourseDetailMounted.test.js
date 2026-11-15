@@ -224,4 +224,45 @@ describe('CourseDetail rendered (GitHub #35)', () => {
 		expect(subTabLabels()).not.toContain('Werkzeuge')
 		expect(host.querySelector('.course-tools-callout')).toBeNull()
 	})
+
+	// GitHub #46: the course mega-tabs are tabs like everywhere else in the app — the shared
+	// filled look (.lnc-tab), the tab roles and arrow keys; the exam countdown is no tab.
+	it('the mega-tabs are a real tablist with the shared tab look', async () => {
+		api.course = course({ is_instructor: true, exam_date: '2026-12-01' })
+		await mountDetail({ userRole: 'instructor', studentViewActive: false })
+
+		const list = host.querySelector('.mega-tab-selector')
+		expect(list.getAttribute('role')).toBe('tablist')
+		expect(list.classList.contains('lnc-tablist')).toBe(true)
+		expect(list.getAttribute('aria-label')).toBe('Kursbereiche')
+		expect(list.querySelector('.mega-tab-countdown'), 'countdown outside the tablist').toBeNull()
+		expect(host.querySelector('.mega-tab-row .mega-tab-countdown')).not.toBeNull()
+
+		const buttons = megaButtons()
+		expect(buttons.length).toBe(5)
+		for (const b of buttons) {
+			expect(b.classList.contains('lnc-tab')).toBe(true)
+			expect(b.getAttribute('role')).toBe('tab')
+		}
+		expect(buttons.filter((b) => b.getAttribute('aria-selected') === 'true').map((b) => b.textContent.trim())).toEqual(['Lernraum'])
+
+		await clickMega('Teilnehmer')
+		const selected = megaButtons().filter((b) => b.getAttribute('aria-selected') === 'true')
+		expect(selected.map((b) => b.textContent.trim())).toEqual(['Teilnehmer'])
+		expect(selected[0].classList.contains('active')).toBe(true)
+	})
+
+	it('arrow keys move the focus between the mega-tabs', async () => {
+		api.course = course({ is_instructor: true })
+		await mountDetail({ userRole: 'instructor', studentViewActive: false })
+
+		const buttons = megaButtons()
+		const list = host.querySelector('.mega-tab-selector')
+		buttons[0].focus()
+		list.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+		expect(document.activeElement).toBe(buttons[1])
+		buttons[0].focus()
+		list.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }))
+		expect(document.activeElement).toBe(buttons[buttons.length - 1])
+	})
 })

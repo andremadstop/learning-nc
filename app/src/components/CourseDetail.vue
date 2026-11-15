@@ -35,15 +35,23 @@
 		</NcNoteCard>
 
 		<template v-if="!loading && course">
-			<!-- Mega-tab selector -->
-			<div class="mega-tab-selector">
-				<button v-for="tab in visibleMegaTabs"
-					:key="tab.id"
-					class="mega-tab-button"
-					:class="{ active: activeMegaTab === tab.id }"
-					@click="selectMegaTab(tab.id)">
-					{{ tab.label }}
-				</button>
+			<!-- Mega-tab selector: the app-wide tab look (#46), the countdown beside it, not in the tablist -->
+			<div class="mega-tab-row">
+				<div class="mega-tab-selector lnc-tablist"
+					role="tablist"
+					:aria-label="t('learning', 'Kursbereiche')"
+					@keydown="moveTablistFocus">
+					<button v-for="tab in visibleMegaTabs"
+						:key="tab.id"
+						type="button"
+						class="mega-tab-button lnc-tab"
+						:class="{ active: activeMegaTab === tab.id }"
+						role="tab"
+						:aria-selected="activeMegaTab === tab.id ? 'true' : 'false'"
+						@click="selectMegaTab(tab.id)">
+						{{ tab.label }}
+					</button>
+				</div>
 				<ExamReadiness
 					v-if="course.exam_date"
 					:course-id="courseId"
@@ -171,6 +179,7 @@ import CourseRecentSessions from './CourseRecentSessions.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
@@ -453,6 +462,7 @@ export default {
 	},
 
 	methods: {
+		moveTablistFocus,
 		currentRouteTab() {
 			if (!this.$route || Number(this.$route.params?.id || 0) !== Number(this.courseId || 0)) {
 				return ''
@@ -913,39 +923,13 @@ export default {
 	margin-bottom: 16px;
 }
 
-/* Mega-tab selector */
-.mega-tab-selector {
+/* Mega-tab selector — look and width: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
+.mega-tab-row {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
+	align-items: center;
+	gap: 12px;
 	margin-bottom: 24px;
-	border-bottom: 2px solid var(--color-border);
-	padding-bottom: 0;
-}
-
-.mega-tab-button {
-	padding: 12px 24px;
-	border: none;
-	background: none;
-	cursor: pointer;
-	font-size: 1em;
-	font-weight: 500;
-	color: var(--color-text-maxcontrast);
-	border-bottom: 3px solid transparent;
-	margin-bottom: -2px;
-	transition: color 0.15s, border-color 0.15s;
-	white-space: nowrap;
-}
-
-.mega-tab-button:hover {
-	color: var(--color-main-text);
-	background: var(--color-background-hover);
-}
-
-.mega-tab-button.active {
-	color: var(--color-primary-element);
-	border-bottom-color: var(--color-primary-element);
-	font-weight: 600;
 }
 
 .mega-tab-countdown {
@@ -968,15 +952,6 @@ export default {
 @media (max-width: 768px) {
 	.course-detail {
 		padding: 12px;
-	}
-
-	.mega-tab-selector {
-		gap: 2px;
-	}
-
-	.mega-tab-button {
-		padding: 8px 14px;
-		font-size: 0.9em;
 	}
 }
 </style>

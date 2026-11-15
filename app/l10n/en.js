@@ -3663,5 +3663,6 @@ OC.L10N.register(
     "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“." : "Members of these groups and these people may create courses and question pools. They do not need Nextcloud administrator rights. Nextcloud administrators always count as instructors. If nothing is selected, the group \"learning-instructors\" applies.",
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "If disabled (recommended), only the groups and people selected above get global instructor privileges.",
     "Die Kursleitenden konnten nicht geladen werden." : "The instructors could not be loaded.",
+    "Kursbereiche" : "Course sections",
 },
 "nplurals=2; plural=(n != 1);");

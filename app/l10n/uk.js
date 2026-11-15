@@ -3663,5 +3663,6 @@ OC.L10N.register(
     "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“." : "Учасники цих груп і ці люди можуть створювати курси та пули запитань. Права адміністратора Nextcloud їм для цього не потрібні. Адміністратори Nextcloud завжди вважаються викладачами. Якщо нічого не вибрано, діє група «learning-instructors».",
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "Якщо вимкнено (рекомендовано), глобальні права викладача мають лише вибрані вище групи й люди.",
     "Die Kursleitenden konnten nicht geladen werden." : "Не вдалося завантажити викладачів.",
+    "Kursbereiche" : "Розділи курсу",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -3662,6 +3662,7 @@
         "Gruppe oder Person suchen …": "Rechercher un groupe ou une personne …",
         "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.": "Les membres de ces groupes et ces personnes peuvent créer des cours et des pools de questions. Ils n’ont pas besoin des droits d’administrateur Nextcloud. Les administrateurs Nextcloud comptent toujours comme enseignants. Si rien n’est sélectionné, le groupe « learning-instructors » s’applique.",
         "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.": "Si cette option est désactivée (recommandé), seuls les groupes et les personnes sélectionnés ci-dessus disposent des droits d’enseignant globaux.",
-        "Die Kursleitenden konnten nicht geladen werden.": "Impossible de charger les enseignants."
+        "Die Kursleitenden konnten nicht geladen werden.": "Impossible de charger les enseignants.",
+        "Kursbereiche": "Sections du cours"
     }
 }

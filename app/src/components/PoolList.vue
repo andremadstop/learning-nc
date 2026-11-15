@@ -168,11 +168,11 @@
     </div>
 
     <!-- Tabs -->
-    <div class="pool-tabs" role="tablist">
-      <button @click="activeTab = 'own'" :class="['tab-btn', { active: activeTab === 'own' }]" role="tab" :aria-selected="activeTab === 'own' ? 'true' : 'false'">
+    <div class="pool-tabs lnc-tablist" role="tablist" @keydown="moveTablistFocus">
+      <button @click="activeTab = 'own'" :class="['tab-btn', 'lnc-tab', { active: activeTab === 'own' }]" role="tab" :aria-selected="activeTab === 'own' ? 'true' : 'false'">
         {{ t('learning', 'My Pools ({n})', { n: filteredPools.length }) }}
       </button>
-      <button @click="activeTab = 'shared'" :class="['tab-btn', { active: activeTab === 'shared' }]" role="tab" :aria-selected="activeTab === 'shared' ? 'true' : 'false'">
+      <button @click="activeTab = 'shared'" :class="['tab-btn', 'lnc-tab', { active: activeTab === 'shared' }]" role="tab" :aria-selected="activeTab === 'shared' ? 'true' : 'false'">
         {{ t('learning', 'Shared with me ({n})', { n: sharedPools.length }) }}
       </button>
     </div>
@@ -364,6 +364,7 @@ import AccessibleDialog from './AccessibleDialog.vue';
 import PoolGenerator from './PoolGenerator.vue';
 import PoolBulkImportDialog from './PoolBulkImportDialog.vue';
 import hintMixin from '../hintMixin.js';
+import { moveTablistFocus } from '../utils/tablistKeydown.js';
 
 // Simple debounce utility
 const debounce = (func, delay) => {
@@ -499,6 +500,7 @@ export default {
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
+    moveTablistFocus,
     emptyForm() {
       return {
         name: '',
@@ -784,10 +786,8 @@ export default {
 .pool-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .pool-list-header h3 { font-size: 22px; font-weight: 600; margin: 0; color: var(--color-main-text); }
 .pool-list-header__actions { display: flex; gap: 8px; align-items: center; }
-.pool-tabs { display: flex; gap: 4px; margin-bottom: 24px; padding: 5px; background: var(--color-background-hover); border-radius: 10px; max-width: 440px; }
-.tab-btn { flex: 1; padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; color: var(--color-main-text); }
-.tab-btn:hover { background: var(--color-background-dark); }
-.tab-btn.active { background: var(--color-primary-element); color: var(--color-primary-element-text); }
+/* look and width of the tabs: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
+.pool-tabs { margin-bottom: 24px; }
 .pool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
 .pool-card { border: 1px solid var(--color-border); border-radius: 12px; padding: 20px 24px; background: var(--color-main-background); transition: box-shadow 0.2s, transform 0.15s; cursor: pointer; }
 .pool-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }

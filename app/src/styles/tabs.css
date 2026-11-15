@@ -1,0 +1,63 @@
+/*
+ * GitHub #46: one tab look for the whole app.
+ *
+ * The course mega-tabs (Learning space, Participants, …) used an underline while the pool
+ * window, the settings and the course list used a filled segment, and every place had its own
+ * width rule (flex: 1 → half the screen per tab with two tabs; 440 px; 900 px). This is the one
+ * rule: a filled, rounded segment, as wide as its labels, wrapping instead of scrolling.
+ *
+ * Global on purpose (imported in main.js): scoped styles in App.vue cannot reach CourseDetail or
+ * PoolList. Components keep their own class names for layout (margins) and tests.
+ */
+.lnc-tablist {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	width: fit-content;
+	max-width: 100%;
+	padding: 5px;
+	background: var(--color-background-hover);
+	border-radius: 10px;
+	box-sizing: border-box;
+}
+
+.lnc-tab {
+	flex: 0 1 auto;
+	min-width: 0;
+	min-height: 40px;
+	padding: 10px 18px;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--color-main-text);
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.2;
+	text-align: center;
+	overflow-wrap: anywhere;
+	transition: background-color 0.2s, color 0.2s;
+}
+
+.lnc-tab:hover:not(.active) {
+	background: var(--color-background-dark);
+}
+
+.lnc-tab.active {
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.lnc-tab:focus-visible {
+	outline: 2px solid var(--color-main-text);
+	outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+	/* phone: the bar may use the whole row, each tab still only as wide as it needs */
+	.lnc-tab {
+		padding: 8px 14px;
+	}
+}

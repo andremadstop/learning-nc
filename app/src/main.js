@@ -15,6 +15,8 @@ import './css/skill-map.css';
 import './css/practicum.css';
 // Shared character avatar animation primitives
 import './styles/character-animations.css';
+// One tab look for the whole app (#46)
+import './styles/tabs.css';
 
 const pinia = createPinia();
 const app = createApp(App);
