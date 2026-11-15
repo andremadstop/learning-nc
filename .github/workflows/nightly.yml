@@ -22,7 +22,7 @@ defaults:
 jobs:
   integration:
     name: Integration NC ${{ matrix.nc }} / ${{ matrix.engine }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -62,7 +62,7 @@ jobs:
 
   lifecycle:
     name: Lifecycle NC ${{ matrix.nc }} / ${{ matrix.engine }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -102,7 +102,7 @@ jobs:
 
   persona:
     name: Persona sweep (NC 33 / pgsql, Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90   # 27 min end to end on the maintainer's machine (2026-11-15)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
