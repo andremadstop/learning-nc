@@ -1175,7 +1175,6 @@ OC.L10N.register(
     "Netzadresse" : "عنوان الشبكة",
     "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen." : "احسب عنوان الشبكة والبث والتمثيل الثنائي وVLSM مباشرةً في المتصفح.",
     "Netzanteil" : "جزء الشبكة",
-    "Neue Skins verfügbar in den Einstellungen" : "جلود جديدة متاحة في الإعدادات",
     "Neuigkeiten aus deinen Kursen" : "News from your courses",
     "New / Reset" : "جديد / إعادة تعيين",
     "New announcement" : "إعلان جديد",
@@ -3660,5 +3659,7 @@ OC.L10N.register(
     "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum." : "يرى أعضاء مقرراتك في سجل الفصل نبذتك المختصرة ومواضيع المساعدة. ويرى المدرّسون هدف اختبارك مع تاريخه.",
     "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum." : "مثل «مقرر»: لا يعرض Learning الملفات إلا داخل مقرراتك. يرى الأعضاء نبذتك المختصرة ومواضيع المساعدة، ويرى المدرّسون هدف اختبارك مع تاريخه.",
     "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst." : "أنت + VirtuProf. مع الظهور «مقرر» أو «عام»: يرى المشاركون في المقرر مواضيع المساعدة + النبذة، ويرى المدرّسون هدف اختبارك مع تاريخه، إضافة إلى مستوى خبرتك وساعات دراستك مجمّعة مع الآخرين. إذا وافقت على استخدام الذكاء الاصطناعي، تُرسَل أجزاء من الملف (الأهداف، الدافع، نقاط القوة والضعف المكتشفة) إلى خدمة الذكاء الاصطناعي.",
+    "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“." : "جديد: يمكن لـ VirtuProf أن يرافقك أيضًا بشخصية أخرى. اخترها أدناه في «اختيار الشخصية».",
+    "Zur Charakter-Auswahl" : "الانتقال إلى اختيار الشخصية",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

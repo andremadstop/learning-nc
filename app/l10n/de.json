@@ -1187,7 +1187,6 @@
         "Netzadresse": "Netzadresse",
         "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.": "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.",
         "Netzanteil": "Netzanteil",
-        "Neue Skins verfügbar in den Einstellungen": "Neue Skins verfügbar in den Einstellungen",
         "Neuigkeiten aus deinen Kursen": "Neuigkeiten aus deinen Kursen",
         "New / Reset": "Neu / Zurückgesetzt",
         "New announcement": "Neue Ankündigung",
@@ -3659,6 +3658,8 @@
         "Nur VirtuProf nutzt dein Profil, niemand sonst sieht es. Du erscheinst dann nicht im Klassenbuch deiner Kurse.": "Nur VirtuProf nutzt dein Profil, niemand sonst sieht es. Du erscheinst dann nicht im Klassenbuch deiner Kurse.",
         "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum.": "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum.",
         "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum.": "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum.",
-        "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst.": "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst."
+        "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst.": "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst.",
+        "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“.": "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“.",
+        "Zur Charakter-Auswahl": "Zur Charakter-Auswahl"
     }
 }

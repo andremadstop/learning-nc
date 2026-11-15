@@ -1187,7 +1187,6 @@ OC.L10N.register(
     "Netzadresse" : "Адреса мережі",
     "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen." : "Обчислюйте адресу мережі, широкомовну адресу, двійкове подання та VLSM прямо в браузері.",
     "Netzanteil" : "Мережева частина",
-    "Neue Skins verfügbar in den Einstellungen" : "У налаштуваннях доступні нові скіни",
     "Neuigkeiten aus deinen Kursen" : "Новини з ваших курсів",
     "New / Reset" : "Нове / скинуто",
     "New announcement" : "Нове оголошення",
@@ -3660,5 +3659,7 @@ OC.L10N.register(
     "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum." : "Учасники ваших курсів бачать у класному журналі вашу коротку біографію й теми допомоги. Викладачі бачать вашу ціль іспиту з датою.",
     "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum." : "Як «Курс»: Learning показує профілі лише всередині ваших курсів. Учасники бачать вашу коротку біографію й теми допомоги, викладачі — вашу ціль іспиту з датою.",
     "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst." : "Ви + VirtuProf. За видимості «Курс» або «Публічний»: учасники курсу бачать теми допомоги + біографію, викладачі бачать вашу ціль іспиту з датою, а також рівень досвіду й години навчання у зведенні разом з іншими. Якщо ви погодилися на використання ШІ, частина профілю (цілі, мотивація, виявлені сильні та слабкі сторони) передається сервісу ШІ.",
+    "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“." : "Нове: VirtuProf може супроводжувати вас і в образі іншого персонажа. Оберіть його нижче в розділі «Вибір персонажа».",
+    "Zur Charakter-Auswahl" : "До вибору персонажа",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -34,8 +34,14 @@ const SHOWN_KEY = `learning-hint-${HINT_ID}-shown-at`
 const DAY_MS = 24 * 60 * 60 * 1000
 const T0 = new Date('2026-11-01T10:00:00Z').getTime()
 
-function showHint() {
-	return PersonalSettings.computed.showSkinPickerHint.call({ hintDismissed: hintMixin.methods.hintDismissed })
+function showHint(state = {}) {
+	return PersonalSettings.computed.showSkinPickerHint.call({
+		hintDismissed: hintMixin.methods.hintDismissed,
+		loading: false,
+		skinHintClosed: false,
+		form: { virtuProfEnabled: true },
+		...state,
+	})
 }
 
 describe('skin-picker hint v440 — PersonalSettings.showSkinPickerHint', () => {
@@ -81,5 +87,37 @@ describe('skin-picker hint v440 — PersonalSettings.showSkinPickerHint', () => 
 	it('ignores the dismissal of a different hint id', () => {
 		localStorage.setItem('learning-hint-some-other-hint-dismissed', '1')
 		expect(showHint()).toBe(true)
+	})
+
+	// GitHub #57: the skins belong to VirtuProf; with the assistant off the hint pointed at nothing
+	it('stays hidden while the virtual assistant is off and does not start its window', () => {
+		expect(showHint({ form: { virtuProfEnabled: false } })).toBe(false)
+		expect(localStorage.getItem(SHOWN_KEY)).toBeNull()
+	})
+
+	it('stays hidden while the settings are still loading', () => {
+		expect(showHint({ loading: true })).toBe(false)
+		expect(localStorage.getItem(SHOWN_KEY)).toBeNull()
+	})
+
+	it('hides once closed in this page, without waiting for a reload', () => {
+		expect(showHint({ skinHintClosed: true })).toBe(false)
+	})
+
+	it('does not throw when the browser blocks storage reads', () => {
+		// jsdom's localStorage does not go through Storage.prototype, so the getter itself is replaced
+		const real = globalThis.localStorage
+		Object.defineProperty(globalThis, 'localStorage', {
+			configurable: true,
+			value: {
+				getItem() { throw new DOMException('blocked', 'SecurityError') },
+				setItem() { throw new DOMException('blocked', 'SecurityError') },
+			},
+		})
+		try {
+			expect(() => showHint()).not.toThrow()
+		} finally {
+			Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: real })
+		}
 	})
 })

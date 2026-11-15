@@ -1175,7 +1175,6 @@ OC.L10N.register(
     "Netzadresse" : "Network Address",
     "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen." : "Calculate network address, broadcast, binary representation and VLSM directly in the browser.",
     "Netzanteil" : "Network Portion",
-    "Neue Skins verfügbar in den Einstellungen" : "Nouvelles apparences disponibles dans les paramètres",
     "Neuigkeiten aus deinen Kursen" : "News from your courses",
     "New / Reset" : "New / Reset",
     "New announcement" : "Nouvelle annonce",
@@ -3660,5 +3659,7 @@ OC.L10N.register(
     "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum." : "Les membres de vos cours voient votre bio et vos sujets d’aide dans le registre de classe. Les enseignants voient votre objectif d’examen avec sa date.",
     "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum." : "Comme « Cours » : Learning n’affiche les profils qu’à l’intérieur de vos cours. Les membres voient votre bio et vos sujets d’aide, les enseignants votre objectif d’examen avec sa date.",
     "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst." : "Vous + VirtuProf. Avec la visibilité « Cours » ou « Public » : les participants du cours voient vos sujets d’aide + votre bio, les enseignants voient votre objectif d’examen avec sa date, ainsi que votre niveau d’expérience et vos heures d’étude regroupés avec ceux des autres. Si vous avez accepté l’utilisation de l’IA, une partie du profil (objectifs, motivation, points forts et points faibles repérés) est transmise au service d’IA.",
+    "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“." : "Nouveau : VirtuProf peut aussi vous accompagner sous les traits d’un autre personnage. Choisissez-le ci-dessous sous « Sélection du personnage ».",
+    "Zur Charakter-Auswahl" : "Aller à la sélection du personnage",
 },
 "nplurals=2; plural=(n > 1);");

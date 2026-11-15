@@ -1175,7 +1175,6 @@ OC.L10N.register(
     "Netzadresse" : "Адрес сети",
     "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen." : "Вычисляйте адрес сети, широковещательный адрес, двоичное представление и VLSM прямо в браузере.",
     "Netzanteil" : "Часть сети",
-    "Neue Skins verfügbar in den Einstellungen" : "Новые скины доступны в настройках",
     "Neuigkeiten aus deinen Kursen" : "News from your courses",
     "New / Reset" : "Новый / Сброс",
     "New announcement" : "Новое объявление",
@@ -3660,5 +3659,7 @@ OC.L10N.register(
     "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum." : "Участники ваших курсов видят в классном журнале вашу краткую биографию и темы помощи. Преподаватели видят вашу цель экзамена с датой.",
     "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum." : "Как «Курс»: Learning показывает профили только внутри ваших курсов. Участники видят вашу краткую биографию и темы помощи, преподаватели — вашу цель экзамена с датой.",
     "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst." : "Вы + VirtuProf. При видимости «Курс» или «Публичный»: участники курса видят темы помощи + биографию, преподаватели видят вашу цель экзамена с датой, а также уровень опыта и часы занятий в сводке вместе с остальными. Если вы согласились на использование ИИ, часть профиля (цели, мотивация, выявленные сильные и слабые стороны) передаётся сервису ИИ.",
+    "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“." : "Новое: VirtuProf может сопровождать вас и в образе другого персонажа. Выберите его ниже в разделе «Выбор персонажа».",
+    "Zur Charakter-Auswahl" : "К выбору персонажа",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

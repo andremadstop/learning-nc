@@ -1193,7 +1193,6 @@ OC.L10N.register(
     "Netzadresse" : "Network Address",
     "Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen." : "Calculate network address, broadcast, binary representation and VLSM directly in the browser.",
     "Netzanteil" : "Network Portion",
-    "Neue Skins verfügbar in den Einstellungen" : "New skins available in settings",
     "Neuigkeiten aus deinen Kursen" : "News from your courses",
     "New / Reset" : "New / Reset",
     "New announcement" : "New announcement",
@@ -3660,5 +3659,7 @@ OC.L10N.register(
     "Mitglieder deiner Kurse sehen im Klassenbuch deine Kurzbio und Hilfe-Themen. Die Kursleitung sieht dein Prüfungsziel mit Datum." : "Members of your courses see your short bio and help topics in the class register. The instructors see your exam target with its date.",
     "Wie „Kurs“: Learning zeigt Profile nur innerhalb deiner Kurse. Mitglieder sehen deine Kurzbio und Hilfe-Themen, die Kursleitung dein Prüfungsziel mit Datum." : "Same as \"Course\": Learning shows profiles only within your courses. Members see your short bio and help topics, the instructors your exam target with its date.",
     "Du + VirtuProf. Bei Sichtbarkeit „Kurs“ oder „Öffentlich“: Kursteilnehmer sehen Hilfe-Themen + Bio, die Kursleitung sieht dein Prüfungsziel mit Datum und Erfahrungsstufe und Lernstunden zusammengefasst. Wenn du der KI-Nutzung zugestimmt hast, gehen Teile des Profils (Ziele, Motivation, erkannte Stärken und Schwächen) an den KI-Dienst." : "You + VirtuProf. With visibility \"Course\" or \"Public\": course participants see your help topics + bio, the instructors see your exam target with its date, and your experience level and study hours combined with others. If you have agreed to the use of AI, parts of the profile (goals, motivation, recognised strengths and weaknesses) go to the AI service.",
+    "Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“." : "New: VirtuProf can also accompany you as a different character. Choose it below under \"Character selection\".",
+    "Zur Charakter-Auswahl" : "Go to character selection",
 },
 "nplurals=2; plural=(n != 1);");

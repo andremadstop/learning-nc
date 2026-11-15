@@ -1,12 +1,17 @@
 <template>
   <div class="learning-settings-wrap">
-    <NcNoteCard
-      v-if="showSkinPickerHint"
-      type="info"
-      :show-action="true"
-      :action-text="t('learning', 'Hinweis schließen')"
-      @click-action="dismissHint('skin-picker-v440')">
-      {{ t('learning', 'Neue Skins verfügbar in den Einstellungen') }}
+    <!-- GitHub #57: only while the assistant is on, and it leads to the picker. NcNoteCard has no
+         action props (show-action/action-text were ignored), so the buttons live in its slot. -->
+    <NcNoteCard v-if="showSkinPickerHint" type="info" class="skin-picker-hint">
+      <p>{{ t('learning', 'Neu: VirtuProf kann dich auch als anderer Charakter begleiten. Du wählst ihn unten unter „Charakter-Auswahl“.') }}</p>
+      <div class="skin-picker-hint__actions">
+        <NcButton variant="secondary" class="skin-picker-hint__go" @click="goToSkinPicker">
+          {{ t('learning', 'Zur Charakter-Auswahl') }}
+        </NcButton>
+        <NcButton variant="tertiary" class="skin-picker-hint__close" @click="closeSkinPickerHint">
+          {{ t('learning', 'Hinweis schließen') }}
+        </NcButton>
+      </div>
     </NcNoteCard>
 
     <h2>{{ t('learning', 'Personal Settings') }}</h2>
@@ -139,7 +144,7 @@
           </select>
         </div>
 
-        <div class="field-row">
+        <div ref="skinPickerRow" class="field-row">
           <label for="virtuprof-skin">{{ t('learning', 'Charakter-Auswahl') }}</label>
           <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Änderungen wirken sofort.') }}</p>
           <NcSelect
@@ -528,6 +533,8 @@ export default {
       error: '',
       saved: false,
       loadFailed: false,
+      // GitHub #57: closing the skin hint must re-render it; localStorage alone is not reactive
+      skinHintClosed: false,
       // GitHub #36/#58: the admin's global gamification switch, from the same /settings/personal
       // answer App.vue reads; with it off there is no level, XP, streak, badge or daily challenge.
       gamificationEnabled: true,
@@ -604,10 +611,15 @@ export default {
     },
     showSkinPickerHint() {
       const HINT_ID = 'skin-picker-v440'
+      // GitHub #57: the skins are VirtuProf's; with the assistant off the hint points at nothing.
+      // Checked before the 7-day window starts, so it starts when the hint can actually be seen.
+      if (this.skinHintClosed || this.loading || !this.form.virtuProfEnabled) return false
       if (this.hintDismissed(HINT_ID)) return false
 
       const SHOWN_KEY = `learning-hint-${HINT_ID}-shown-at`
-      let shownAt = parseInt(localStorage.getItem(SHOWN_KEY) || '0', 10)
+      let shownAt = 0
+      // a blocked storage throws on read too; it must not take the whole page down (#57)
+      try { shownAt = parseInt(localStorage.getItem(SHOWN_KEY) || '0', 10) } catch (e) { shownAt = 0 }
       if (!shownAt) {
         shownAt = Date.now()
         try { localStorage.setItem(SHOWN_KEY, String(shownAt)) } catch (e) { /* ignore — private mode */ }
@@ -663,6 +675,23 @@ export default {
     }
   },
   methods: {
+    closeSkinPickerHint() {
+      this.dismissHint('skin-picker-v440')
+      this.skinHintClosed = true
+    },
+    /** GitHub #57: the hint leads straight to the character picker and counts as seen. */
+    goToSkinPicker() {
+      const row = this.$refs.skinPickerRow
+      this.closeSkinPickerHint()
+      if (!row) return
+      if (typeof row.scrollIntoView === 'function') {
+        row.scrollIntoView({ block: 'center' })
+      }
+      const input = row.querySelector('input')
+      if (input && typeof input.focus === 'function') {
+        input.focus({ preventScroll: true })
+      }
+    },
     /** Scroll to the section the settings route names (?section=learning-profile). */
     scrollToRequestedSection() {
       if (this.$route?.query?.section !== LEARNING_PROFILE_SECTION) return
@@ -922,6 +951,13 @@ export default {
   align-items: center;
   gap: 8px;
   color: var(--color-text-maxcontrast);
+}
+
+.skin-picker-hint__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .settings-form {
