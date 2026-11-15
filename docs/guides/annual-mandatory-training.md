@@ -57,8 +57,9 @@ Outside the Learning page:
 
 1. In Learning, open **Courses** and click **+ Create Course**.
 2. Enter a **Title**, for example "Annual safety training", and optionally a **Description**.
-3. Leave **Nextcloud group** empty for now. You will enrol people in step 7.
-4. Click **Create**.
+3. Under **Course profile**, choose **Mandatory training with certificate**. This switches off Leitner, the simulator tools, the Class register, Learning partner, the game modes and "Add to LinkedIn", and switches on the certification. It is only a preset: you can change each switch later (steps 5 and 6).
+4. Leave **Nextcloud group** empty for now. You will enrol people in step 7.
+5. Click **Create**.
 
 ![The "Create Course" dialog with a title filled in and the Nextcloud group left empty](img/mandatory-training-create-course.png)
 
@@ -101,12 +102,13 @@ Each pool in the course has a **Rules** button. In step 5 you can use it to set 
 
 Go to **Administration → Course rules** and scroll to **Certification**.
 
-1. Switch on **Enable certification**.
+1. Switch on **Enable certification** (with the profile **Mandatory training with certificate** it is already on).
 2. **Minimum score (%)**: your pass mark, for example 75.
 3. **Required pools**: tick every pool a person must pass. Each required pool needs its **own** passed exam at the pass mark. If you tick none, any passed exam in the course is enough.
 4. **Validity duration (days, 0 = no expiry)**: `365` for a yearly training.
-5. Optional: **Exam scope (default for all pools)**, see below.
-6. Click **Save** in this section. Each section on this page has its own Save button.
+5. **Offer learners "Add to LinkedIn"**: leave it off for an internal training (the profile switches it off). It is saved as soon as you click it.
+6. Optional: **Exam scope (default for all pools)**, see below.
+7. Click **Save** in this section. Each section on this page has its own Save button.
 
 ![The Certification section: Enable certification on, minimum score 75 %, two required pools ticked, validity 365 days](img/mandatory-training-certification-settings.png)
 
@@ -122,6 +124,8 @@ The questions are drawn at random from the pool on every attempt, so each attemp
 ---
 
 ## Step 6 — Switch off what you don't need
+
+If you created the course with the profile **Mandatory training with certificate** (step 2), these switches are already set as recommended below. Check them and go on.
 
 Still under **Administration → Course rules**, in **Course rules — Learning modes**:
 
