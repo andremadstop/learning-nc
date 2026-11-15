@@ -368,9 +368,11 @@ export default {
 	font-weight: 700;
 }
 
+/* #37: Nextcloud's light primary pair — the old mix with white stayed a light pill in dark mode,
+   with the light dark-mode primary as text on it */
 .role-pill.instructor {
-	background: color-mix(in srgb, var(--color-primary-element) 18%, white);
-	color: var(--color-primary-element);
+	background: var(--color-primary-element-light);
+	color: var(--color-primary-element-light-text);
 }
 
 .role-pill.student {

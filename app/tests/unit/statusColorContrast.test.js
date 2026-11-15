@@ -160,6 +160,16 @@ describe('#37 status colours use the Nextcloud text/element pairs', () => {
 		}
 	})
 
+	// #37 follow-up: the instructor pill next to the student pill in the class register mixed the
+	// primary colour with a literal white — in dark mode a light pill with light primary text.
+	it('Klassenbuch instructor pill uses the Nextcloud primary light/light-text pair', () => {
+		const d = declsFor(styleOf('Klassenbuch.vue'), '.role-pill.instructor')
+		expect(d).not.toBeNull()
+		expect(d.background).toBe('var(--color-primary-element-light)')
+		expect(d.color).toBe('var(--color-primary-element-light-text)')
+		expect(JSON.stringify(d)).not.toMatch(/white|#fff/i)
+	})
+
 	it('CourseSummary card accents follow the reading direction (RTL)', () => {
 		const css = styleOf('CourseSummary.vue')
 		expect(css).not.toMatch(/border-left/)
