@@ -110,7 +110,7 @@ class CertificateCoverageReportTest extends TestCase {
      * @param array<string, array{passed: int, total: int}> $pools
      * @param array<string, string> $names uid => account display name
      */
-    private function service(array $members, array $certs = [], array $states = [], array $pools = [], array $names = [], int $now = self::NOW): CertificateReportService {
+    private function service(array $members, array $certs = [], array $states = [], array $pools = [], array $names = [], int $now = self::NOW, ?PassCriteriaService $pass = null): CertificateReportService {
         $memberMapper = $this->createMock(CourseMemberMapper::class);
         $memberMapper->method('findByCourse')->willReturn($members);
         $certMapper = $this->createMock(CertificateMapper::class);
@@ -119,8 +119,10 @@ class CertificateCoverageReportTest extends TestCase {
         );
         $assignment = $this->createMock(AssignmentService::class);
         $assignment->method('getStatesForCourseAndUsers')->willReturn($states);
-        $pass = $this->createMock(PassCriteriaService::class);
-        $pass->method('requiredPoolProgress')->willReturn($pools);
+        if ($pass === null) {
+            $pass = $this->createMock(PassCriteriaService::class);
+            $pass->method('requiredPoolProgress')->willReturn($pools);
+        }
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(function (string $uid) use ($names): ?IUser {
             if (!isset($names[$uid])) {
@@ -267,6 +269,38 @@ class CertificateCoverageReportTest extends TestCase {
         $this->assertSame(['Ben'], array_column($make()->getCoverageReport(self::COURSE_ID, self::OWNER, 'overdue')['rows'], 'display_name'));
         $this->assertSame(['Cleo'], array_column($make()->getCoverageReport(self::COURSE_ID, self::OWNER, 'never_passed')['rows'], 'display_name'));
         $this->assertSame(['Anna', 'Ben', 'Cleo'], array_column($make()->getCoverageReport(self::COURSE_ID, self::OWNER, 'bogus')['rows'], 'display_name'));
+    }
+
+    /**
+     * requiredPoolProgress() reads per learner (certificate, window, best scores). A filtered view
+     * must only pay for the rows it shows, and a filter nobody matches reads no progress at all.
+     */
+    public function testThePoolProgressIsReadOnlyForTheRowsThatPassTheFilter(): void {
+        $now = self::NOW;
+        $members = [$this->member('a', 'student'), $this->member('b', 'student'), $this->member('c', 'student')];
+        $certs = [$this->cert('a', 'Anna', $now - self::DAY, null)];
+        $states = ['b' => ['status' => 'assigned', 'due_date' => $now - self::DAY, 'assigned_at' => 0]];
+        $names = ['b' => 'Ben', 'c' => 'Cleo'];
+
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->expects($this->once())->method('requiredPoolProgress')
+            ->with(self::COURSE_ID, ['b'])
+            ->willReturn(['b' => ['passed' => 1, 'total' => 2]]);
+        $rows = $this->service($members, $certs, $states, [], $names, $now, $pass)
+            ->getCoverageReport(self::COURSE_ID, self::OWNER, 'overdue')['rows'];
+        $this->assertSame(['Ben'], array_column($rows, 'display_name'));
+        $this->assertSame([1, 2], [$rows[0]['required_pools_passed'], $rows[0]['required_pools_total']]);
+
+        $none = $this->createMock(PassCriteriaService::class);
+        $none->expects($this->never())->method('requiredPoolProgress');
+        $this->assertSame(
+            ['rows' => []],
+            $this->service($members, $certs, $states, [], $names, $now, $none)->getCoverageReport(self::COURSE_ID, self::OWNER, 'expired')
+        );
+
+        $all = $this->createMock(PassCriteriaService::class);
+        $all->expects($this->once())->method('requiredPoolProgress')->with(self::COURSE_ID, ['a', 'b', 'c'])->willReturn([]);
+        $this->assertCount(3, $this->service($members, $certs, $states, [], $names, $now, $all)->getCoverageReport(self::COURSE_ID, self::OWNER, null)['rows']);
     }
 
     public function testNoRowCarriesTheAccountIdOrAnEmail(): void {

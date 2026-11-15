@@ -278,15 +278,25 @@ class CertificateReportService {
         $now = $this->timeFactory->getTime();
         $certsByUserId = $this->newestByUser($this->certificateMapper->findByCourseIdForUsers($courseId, $learnerIds));
         $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, $learnerIds);
-        $pools = $this->passCriteriaService->requiredPoolProgress($courseId, $learnerIds);
+
+        // Status first, then the pool progress only for the rows that pass the filter:
+        // requiredPoolProgress() reads per learner, so a filtered view must not pay for everyone.
+        $statusByUserId = [];
+        foreach ($learnerIds as $uid) {
+            $rowStatus = $this->coverageStatus($certsByUserId[$uid] ?? null, $states[$uid] ?? null, $now);
+            if ($filter === null || $rowStatus === $filter) {
+                $statusByUserId[$uid] = $rowStatus;
+            }
+        }
+        if ($statusByUserId === []) {
+            return ['rows' => []];
+        }
+        $pools = $this->passCriteriaService->requiredPoolProgress($courseId, array_map('strval', array_keys($statusByUserId)));
 
         $rows = [];
-        foreach ($learnerIds as $uid) {
+        foreach ($statusByUserId as $uid => $rowStatus) {
+            $uid = (string)$uid;
             $cert = $certsByUserId[$uid] ?? null;
-            $rowStatus = $this->coverageStatus($cert, $states[$uid] ?? null, $now);
-            if ($filter !== null && $rowStatus !== $filter) {
-                continue;
-            }
             if ($cert !== null) {
                 [$frozenName, ] = $this->decodePayload($cert->getCredentialJson());
                 $displayName = $this->safeDisplayName($frozenName, $uid);
