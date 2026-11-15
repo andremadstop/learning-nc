@@ -2061,10 +2061,11 @@ class CourseService {
             $sortKey = $this->isLeitnerEnabledFor($course) ? 'total_mastered' : 'total_sessions';
             $sortDir = 'desc';
         }
-        // GitHub #36: with gamification off learners have no leaderboard (the competition tab is
-        // gone for them, utils/courseView.js wettbewerbTabIds); the API hands out nothing either,
-        // as the class register and buddy endpoints do once their area is switched off.
-        if (!$isInstructor && !$gamificationEnabled) {
+        // GitHub #36/#70: with gamification off nobody has a leaderboard, instructors included
+        // (the competition tab is gone, utils/courseView.js wettbewerbTabIds); the API hands out
+        // nothing either, as the class register and buddy endpoints do once their area is off.
+        // Access is still checked first: a non-member gets 403, not an empty list.
+        if (!$gamificationEnabled) {
             return [
                 'leaderboard' => [],
                 'my_rank' => null,
@@ -2216,8 +2217,10 @@ class CourseService {
 
         // Privacy: students see limited fields (no user_id, no streak, no sessions)
         if (!$isInstructor) {
-            $entries = array_map(function ($entry) use ($userId, $gamificationEnabled) {
-                $visible = [
+            // With gamification off nobody reaches this point (early return above, #70), so the
+            // frozen XP and level are never handed out here.
+            $entries = array_map(function ($entry) use ($userId) {
+                return [
                     'rank' => $entry['rank'],
                     'display_name' => $entry['display_name'],
                     'is_me' => $entry['user_id'] === $userId,
@@ -2225,12 +2228,6 @@ class CourseService {
                     'current_level' => $entry['current_level'],
                     'total_mastered' => $entry['total_mastered'],
                 ];
-                // GitHub #36: with gamification off XP and level are frozen old values; learners
-                // do not get them for their fellow learners.
-                if (!$gamificationEnabled) {
-                    unset($visible['total_xp'], $visible['current_level']);
-                }
-                return $visible;
             }, $entries);
         }
 

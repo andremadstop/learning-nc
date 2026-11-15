@@ -87,7 +87,8 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
  * and the admin's gamification on, for instructors too (GitHub #51/#53: an instructor saw Arena as
  * an empty page and League and Adventure despite their switches being off). Arena has no switch of
  * its own, it is the home of Duel and Gameshow. The leaderboard ranks learners by XP; with
- * gamification off learners lose it, instructors keep it ranked by mastered cards (GitHub #36).
+ * gamification off it is gone for everyone, instructors included (GitHub #70, overrides the #36
+ * rule that kept it for instructors): ranking colleagues is the competition the switch removes.
  *
  * @param {object|null|undefined} course - the course detail (snake_case fields)
  * @param {object} options
@@ -100,7 +101,7 @@ export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificatio
 	const gameOn = gamificationEnabled !== false
 	const enabled = (key) => gameOn && modeConfig[key] !== false
 	const tabs = []
-	if (gameOn || actsAsInstructor) tabs.push('leaderboard')
+	if (gameOn) tabs.push('leaderboard')
 	if (enabled('league')) tabs.push('league')
 	if (enabled('duel') || enabled('gameshow')) tabs.push('arena')
 	if (enabled('abenteuer')) tabs.push('abenteuer')

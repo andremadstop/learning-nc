@@ -342,8 +342,10 @@ describe('wettbewerbTabIds (GitHub #36)', () => {
 		expect(wettbewerbTabIds(course({ duel: false, gameshow: false, league: false }), { actsAsInstructor: true })).toEqual(['leaderboard'])
 		// GitHub #53: League and Adventure respected their switches only for learners.
 		expect(wettbewerbTabIds(course({ league: false, abenteuer: false }), { actsAsInstructor: true })).toEqual(['leaderboard', 'arena'])
-		// With gamification off the instructor keeps the leaderboard ranked by mastered cards (#36).
-		expect(wettbewerbTabIds(course({ abenteuer: true }), { actsAsInstructor: true, gamificationEnabled: false })).toEqual(['leaderboard'])
+		// GitHub #70 (overrides #36): with gamification off the instructor has no competition area
+		// either, not even the leaderboard.
+		expect(wettbewerbTabIds(course({ abenteuer: true }), { actsAsInstructor: true, gamificationEnabled: false })).toEqual([])
+		expect(wettbewerbTabIds(course(), { actsAsInstructor: true, gamificationEnabled: false })).toEqual([])
 		// An IT course with every mode on looks as before.
 		expect(wettbewerbTabIds(course({ abenteuer: true }), { actsAsInstructor: true })).toEqual(['leaderboard', 'league', 'arena', 'abenteuer'])
 	})
@@ -364,7 +366,7 @@ describe('CourseTabWettbewerb (GitHub #36)', () => {
 	})
 })
 
-describe('CourseTabWettbewerb instructor leaderboard (GitHub #36)', () => {
+describe('CourseTabWettbewerb instructor leaderboard (GitHub #36, #70)', () => {
 	const url = '/apps/learning/api/courses/{courseId}/leaderboard'
 
 	async function renderLeaderboard(props, modeOverrides = {}) {
@@ -388,20 +390,13 @@ describe('CourseTabWettbewerb instructor leaderboard (GitHub #36)', () => {
 		return axios.get.mock.calls.filter(([u]) => u === url).pop()?.[1]?.params
 	}
 
-	it('hides Level, XP and Streak and ranks by mastered cards with gamification off', async () => {
+	it('shows no leaderboard and asks for none with gamification off (GitHub #70)', async () => {
 		await renderLeaderboard({ gamificationEnabled: false })
-		const shown = headers()
-		expect(shown.some((h) => h.startsWith('Level'))).toBe(false)
-		expect(shown.some((h) => h.startsWith('XP'))).toBe(false)
-		expect(shown.some((h) => h.startsWith('Streak'))).toBe(false)
-		expect(shown.some((h) => h.startsWith('Gemeistert'))).toBe(true)
-		expect(host.querySelector('.level-pill')).toBeNull()
-		expect(await requestedParams()).toMatchObject({ sortKey: 'total_mastered', sortDir: 'desc' })
-	})
-
-	it('ranks by sessions when the course has no Leitner either', async () => {
+		expect(host.querySelector('.leaderboard-table')).toBeNull()
+		expect(await requestedParams()).toBeUndefined()
 		await renderLeaderboard({ gamificationEnabled: false }, { leitner: false })
-		expect(await requestedParams()).toMatchObject({ sortKey: 'total_sessions' })
+		expect(host.querySelector('.leaderboard-table')).toBeNull()
+		expect(await requestedParams()).toBeUndefined()
 	})
 
 	it('is unchanged with gamification on', async () => {
@@ -432,6 +427,21 @@ describe('CourseDetail competition area (GitHub #36)', () => {
 	it('hides Wettbewerb for learners with gamification off even with league and arena switched on (#51)', async () => {
 		await renderCourse({ gamificationEnabled: false }, {})
 		expect(megaLabels()).not.toContain('Wettbewerb')
+	})
+
+	it('hides Wettbewerb for the course instructor too with gamification off (#70)', async () => {
+		api.routes['/apps/learning/api/courses/{courseId}'] = { id: 5, title: 'Kurs', status: 'active', is_instructor: true, mode_config: modeConfig({}), pools: [], members: [] }
+		api.routes['/apps/learning/api/settings/tools'] = { enabled_tools: null }
+		await render(CourseDetail, { courseId: 5, userRole: 'instructor', gamificationEnabled: false })
+		expect(megaLabels()).toContain('Verwaltung')
+		expect(megaLabels()).not.toContain('Wettbewerb')
+	})
+
+	it('keeps Wettbewerb for the course instructor in an IT course with gamification on (#70)', async () => {
+		api.routes['/apps/learning/api/courses/{courseId}'] = { id: 5, title: 'Kurs', status: 'active', is_instructor: true, mode_config: modeConfig({}), pools: [], members: [] }
+		api.routes['/apps/learning/api/settings/tools'] = { enabled_tools: null }
+		await render(CourseDetail, { courseId: 5, userRole: 'instructor' })
+		expect(megaLabels()).toContain('Wettbewerb')
 	})
 
 	it('keeps Wettbewerb in an IT course with gamification on', async () => {
