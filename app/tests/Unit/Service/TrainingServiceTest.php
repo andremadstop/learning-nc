@@ -742,30 +742,31 @@ class TrainingServiceTest extends TestCase {
 
         $insert = $this->findInsertBuilder($db);
         $this->assertSame(8, $insert->insertValues['total_questions']['value']);
-        $this->assertSame(900, $insert->insertValues['time_limit_seconds']['value'], 'no configured time: the client value within the old bounds');
+        $this->assertSame(12 * 60, $insert->insertValues['time_limit_seconds']['value'], 'no configured time: 90 s per drawn question, not the client value');
     }
 
     /**
-     * Review of #47: a configured count without configured minutes takes the card's time (90 s
-     * per question) beyond the 120 minutes of a self-chosen exam, up to ExamScope::MAX_MINUTES.
-     * Before, 200 questions silently got 7200 s, 36 s each.
+     * Review of #47: with a configured count and no configured minutes the server computes the time
+     * from the questions drawn by the card's rule (90 s each, whole minutes, at most
+     * ExamScope::MAX_MINUTES) and ignores the client: before, 200 questions got the client's value
+     * capped at 7200 s (36 s each), and the client could pick any time up to that cap.
      */
-    public function testCourseExamWithConfiguredCountGrantsTheCardTimeAbove120Minutes(): void {
+    public function testCourseExamWithConfiguredCountComputesTheTimeFromTheDrawnQuestions(): void {
         $questions = [];
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 300; $i++) {
             $questions[] = $this->makeQuestion(800 + $i, 42, 'Q' . $i);
         }
         [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => 200, 'minutes' => null]);
-        $service->startSession(42, 'alice', null, 'exam', 18000, null, 7);
-        $this->assertSame(18000, $this->findInsertBuilder($db)->insertValues['time_limit_seconds']['value']);
+        $service->startSession(42, 'alice', null, 'exam', 60, null, 7);
+        $this->assertSame(200 * 90, $this->findInsertBuilder($db)->insertValues['time_limit_seconds']['value'], '300 min, not the client 60 s and not 7200');
 
-        [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => 200, 'minutes' => null]);
-        $service->startSession(42, 'alice', null, 'exam', 999999, null, 7);
-        $this->assertSame(600 * 60, $this->findInsertBuilder($db)->insertValues['time_limit_seconds']['value'], 'capped at ExamScope::MAX_MINUTES');
+        [$service, $db] = $this->buildCourseExamService(array_slice($questions, 0, 12), true, ['questions' => 12, 'minutes' => null]);
+        $service->startSession(42, 'alice', null, 'exam', 36000, null, 7);
+        $this->assertSame(18 * 60, $this->findInsertBuilder($db)->insertValues['time_limit_seconds']['value'], 'a learner cannot stretch the exam');
 
-        [$service, $db] = $this->buildCourseExamService($questions, true, ['questions' => null, 'minutes' => null]);
+        [$service, $db] = $this->buildCourseExamService(array_slice($questions, 0, 10), true, ['questions' => null, 'minutes' => null]);
         $service->startSession(42, 'alice', null, 'exam', 18000, null, 7);
-        $this->assertSame(7200, $this->findInsertBuilder($db)->insertValues['time_limit_seconds']['value'], 'nothing configured: the old 120-minute cap');
+        $this->assertSame(7200, $this->findInsertBuilder($db)->insertValues['time_limit_seconds']['value'], 'nothing configured: the client value within the old 120-minute cap');
     }
 
     /** PBQs are otherwise always all included; a configured count is never exceeded by them. */

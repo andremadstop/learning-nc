@@ -38,6 +38,9 @@ class TrainingService {
     private VideoProgressService $videoProgressService;
     private TelosService $telosService;
 
+    /** GitHub #47: exam time per question when the course sets the count but no minutes (= ExamMode.vue). */
+    public const EXAM_SECONDS_PER_QUESTION = 90;
+
     /**
      * exam_kind of a course practice exam (Codeberg #9). Every non-NULL exam_kind is a practice
      * attempt: certificate, attempt-limit and anti-oracle queries all filter exam_kind IS NULL.
@@ -820,13 +823,17 @@ class TrainingService {
             if ($configuredMinutes !== null) {
                 // GitHub #47: the course's time limit; the client's value is ignored.
                 $effectiveTimeLimit = (int)$configuredMinutes * 60;
+            } elseif ($configuredQuestions !== null) {
+                // GitHub #47: the course set the count but no minutes. The time follows from the
+                // questions drawn, by the card's rule (ExamMode.examTimeLimitSeconds: 90 s per
+                // question, whole minutes, at most ExamScope::MAX_MINUTES); the client's value is
+                // ignored like its limit, so a 500-question exam is not squeezed into 120 minutes
+                // and a learner cannot stretch a certificate exam by editing the request.
+                $minutes = max(1, (int)round(count($questions) * self::EXAM_SECONDS_PER_QUESTION / 60));
+                $effectiveTimeLimit = min($minutes, ExamScope::MAX_MINUTES) * 60;
             } else {
                 $requestedLimit = $timeLimitSeconds ?? 600;
-                // A course-configured count (up to ExamScope::MAX_QUESTIONS) may need more than the
-                // 120 minutes a self-chosen exam gets; the card sizes it at 90 s per question up to
-                // ExamScope::MAX_MINUTES (ExamMode.examTimeLimitSeconds), so the server grants it.
-                $maxSeconds = $configuredQuestions !== null ? ExamScope::MAX_MINUTES * 60 : 7200;
-                $effectiveTimeLimit = max(60, min($maxSeconds, (int)$requestedLimit));
+                $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
             }
 
             // SECURITY: auto-complete all open training sessions on the same pool, so they cannot
