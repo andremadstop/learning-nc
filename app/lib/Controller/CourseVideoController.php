@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Db\CourseDocumentMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
+use OCA\Learning\Db\Course;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\NcFilesVideoAdapter;
 use OCA\Learning\Service\VideoProgressService;
@@ -36,10 +39,20 @@ use Psr\Log\LoggerInterface;
  *     otherwise the 95%-coverage gate can never be satisfied and would silently stay open. We reject
  *     such saves with 400 (advisor must-have — no silently-open gate). Documents are exempt.
  *
+ *   - A document row names a document of the course's MATERIAL FOLDER by its course_documents id
+ *     (GitHub #35, Lückencheck B4/X2), never a free path. The id must belong to this course and lie
+ *     in the current material folder; members open it through document#download, which checks the
+ *     same. A path, a traversal string, another course's document or a file outside the folder is
+ *     refused with 400. Unknown source types are refused as well: a type the gate does not know
+ *     would neither be validated here nor count as a video in VideoProgressController::documentRead.
+ *
  * The video_gate_enabled activation toggle lives in CourseController::setVideoGate (162-01), NOT here.
  * Routes are pre-registered by 162-01 (courseVideo#index/create/update/destroy).
  */
 class CourseVideoController extends Controller {
+    public const SOURCE_TYPES = [NcFilesVideoAdapter::SOURCE_TYPE, 'vimeo', 'youtube-nocookie', 'document'];
+    public const DOCUMENT_SOURCE_TYPE = 'document';
+
     public function __construct(
         string $appName,
         IRequest $request,
@@ -49,6 +62,7 @@ class CourseVideoController extends Controller {
         private IRootFolder $rootFolder,
         private LoggerInterface $logger,
         private ?string $userId,
+        private CourseDocumentMapper $documentMapper,
     ) {
         parent::__construct($appName, $request);
     }
@@ -93,6 +107,10 @@ class CourseVideoController extends Controller {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
+        $typeError = $this->rejectUnknownSourceType($sourceType);
+        if ($typeError !== null) {
+            return $typeError;
+        }
         $durationError = $this->rejectInvalidGateDuration($sourceType, $durationSeconds);
         if ($durationError !== null) {
             return $durationError;
@@ -104,6 +122,14 @@ class CourseVideoController extends Controller {
                 if ($fileError !== null) {
                     return $fileError;
                 }
+            }
+            if ($sourceType === self::DOCUMENT_SOURCE_TYPE) {
+                $documentError = $this->rejectForeignDocument($course, $videoRef);
+                if ($documentError !== null) {
+                    return $documentError;
+                }
+                $videoRef = trim($videoRef);
+                $durationSeconds = null;
             }
 
             $video = new CourseVideo();
@@ -151,6 +177,12 @@ class CourseVideoController extends Controller {
             $course = $this->courseService->assertInstructorOfCourse($video->getCourseId(), $this->userId);
 
             $effectiveSourceType = $sourceType ?? $video->getSourceType();
+            if ($sourceType !== null) {
+                $typeError = $this->rejectUnknownSourceType($sourceType);
+                if ($typeError !== null) {
+                    return $typeError;
+                }
+            }
             // duration_seconds semantics: null = "leave unchanged"; validate the RESULTING state.
             $effectiveDuration = $durationSeconds ?? $video->getDurationSeconds();
             $durationError = $this->rejectInvalidGateDuration($effectiveSourceType, $effectiveDuration);
@@ -163,6 +195,15 @@ class CourseVideoController extends Controller {
                 $fileError = $this->rejectOwnerFile($course->getInstructorId(), $videoRef ?? $video->getVideoRef());
                 if ($fileError !== null) {
                     return $fileError;
+                }
+            }
+            if ($effectiveSourceType === self::DOCUMENT_SOURCE_TYPE && $pointsAtNewFile) {
+                $documentError = $this->rejectForeignDocument($course, $videoRef ?? $video->getVideoRef());
+                if ($documentError !== null) {
+                    return $documentError;
+                }
+                if ($videoRef !== null) {
+                    $videoRef = trim($videoRef);
                 }
             }
 
@@ -244,6 +285,57 @@ class CourseVideoController extends Controller {
             return new DataResponse(['error' => 'The file must be a video in your files'], Http::STATUS_BAD_REQUEST);
         }
         return null;
+    }
+
+    /**
+     * Only the four source types the gate and the players know (see the class comment).
+     */
+    private function rejectUnknownSourceType(string $sourceType): ?DataResponse {
+        if (in_array($sourceType, self::SOURCE_TYPES, true)) {
+            return null;
+        }
+        return new DataResponse(['error' => 'Unknown source type'], Http::STATUS_BAD_REQUEST);
+    }
+
+    /**
+     * A document row must name a document of THIS course's material folder by its id (GitHub #35,
+     * B4). Anything else, a path above all, is refused: members could not open a file outside the
+     * material folder, and the free path was stored unchecked before.
+     *
+     * @return DataResponse|null the refusal, null when acceptable
+     */
+    private function rejectForeignDocument(Course $course, string $videoRef): ?DataResponse {
+        $documentId = self::documentIdFromRef($videoRef);
+        $doc = null;
+        if ($documentId !== null) {
+            try {
+                $doc = $this->documentMapper->findById($documentId);
+            } catch (DoesNotExistException $e) {
+                $doc = null;
+            }
+        }
+        if ($doc === null
+            || (int)$doc->getCourseId() !== (int)$course->getId()
+            || !DocumentService::isInMaterialFolder($doc, $course->getMaterialFolder())) {
+            return new DataResponse(
+                ['error' => 'The document must be a file of this course\'s material folder'],
+                Http::STATUS_BAD_REQUEST
+            );
+        }
+        return null;
+    }
+
+    /**
+     * The course_documents id a document row stores, or null when the ref is no plain positive
+     * integer (a path, a legacy row, anything else).
+     */
+    public static function documentIdFromRef(?string $videoRef): ?int {
+        $ref = trim((string)$videoRef);
+        if ($ref === '' || !ctype_digit($ref) || strlen($ref) > 18) {
+            return null;
+        }
+        $id = (int)$ref;
+        return $id > 0 ? $id : null;
     }
 
     /**

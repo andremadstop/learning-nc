@@ -2,9 +2,13 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseDocumentMapper;
+use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\VideoProgressService;
 use OCP\AppFramework\Controller;
@@ -38,6 +42,7 @@ class VideoProgressController extends Controller {
     private CourseVideoMapper $videoMapper;
     private CourseService $courseService;
     private ?string $userId;
+    private CourseDocumentMapper $documentMapper;
 
     public function __construct(
         string $appName,
@@ -46,7 +51,8 @@ class VideoProgressController extends Controller {
         VideoProgressMapper $progressMapper,
         CourseVideoMapper $videoMapper,
         CourseService $courseService,
-        ?string $userId
+        ?string $userId,
+        CourseDocumentMapper $documentMapper
     ) {
         parent::__construct($appName, $request);
         $this->service = $service;
@@ -54,6 +60,7 @@ class VideoProgressController extends Controller {
         $this->videoMapper = $videoMapper;
         $this->courseService = $courseService;
         $this->userId = $userId;
+        $this->documentMapper = $documentMapper;
     }
 
     /**
@@ -178,6 +185,27 @@ class VideoProgressController extends Controller {
         return null;
     }
 
+    /**
+     * The course_documents id of a document row when document#download would serve it to a
+     * member of $course (same course, in the current material folder), else null.
+     */
+    private function servableDocumentId(Course $course, CourseVideo $video): ?int {
+        $documentId = CourseVideoController::documentIdFromRef($video->getVideoRef());
+        if ($documentId === null) {
+            return null;
+        }
+        try {
+            $doc = $this->documentMapper->findById($documentId);
+        } catch (DoesNotExistException $e) {
+            return null;
+        }
+        if ((int)$doc->getCourseId() !== (int)$course->getId()
+            || !DocumentService::isInMaterialFolder($doc, $course->getMaterialFolder())) {
+            return null;
+        }
+        return $documentId;
+    }
+
     private function progressState(int $contentId): array {
         $row = $this->progressMapper->findByUserAndContent((string)$this->userId, $contentId);
         if ($row === null) {
@@ -211,7 +239,7 @@ class VideoProgressController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         try {
-            $this->courseService->assertEnrolledInCourse($courseId, $this->userId);
+            $course = $this->courseService->assertEnrolledInCourse($courseId, $this->userId);
         } catch (ForbiddenException $e) {
             return new DataResponse(['error' => 'Not enrolled in this course'], Http::STATUS_FORBIDDEN);
         } catch (DoesNotExistException $e) {
@@ -234,6 +262,12 @@ class VideoProgressController extends Controller {
             // nc-files path or a document path stays on the server (audit 2026-11, H6).
             if (in_array($video->getSourceType(), self::THIRD_PARTY_SOURCES, true)) {
                 $row['embed_id'] = (string)$video->getVideoRef();
+            }
+            // GitHub #35 (B4): a required document is opened through document#download. Only its
+            // material-folder document id is sent, and only while that download would serve it;
+            // a path never leaves the server.
+            if ($video->getSourceType() === CourseVideoController::DOCUMENT_SOURCE_TYPE) {
+                $row['document_id'] = $this->servableDocumentId($course, $video);
             }
             $videos[] = $row;
         }

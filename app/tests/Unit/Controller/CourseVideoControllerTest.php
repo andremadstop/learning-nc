@@ -5,12 +5,15 @@ namespace OCA\Learning\Tests\Unit\Controller;
 
 use OCA\Learning\Controller\CourseVideoController;
 use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseDocument;
+use OCA\Learning\Db\CourseDocumentMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\VideoProgressService;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -49,6 +52,10 @@ class CourseVideoControllerTest extends TestCase {
     private array $ownerFiles = ['Videos/intro.mp4' => 'video/mp4', 'Documents/payslip.pdf' => 'application/pdf'];
     /** owners whose home was opened */
     private array $openedHomes = [];
+    /** @var CourseDocumentMapper&\PHPUnit\Framework\MockObject\MockObject */
+    private $documentMapper;
+    /** @var array<int, CourseDocument> material documents by id */
+    private array $documents = [];
 
     protected function setUp(): void {
         $this->rootFolder = $this->createMock(IRootFolder::class);
@@ -64,6 +71,20 @@ class CourseVideoControllerTest extends TestCase {
                 return $file;
             });
             return $folder;
+        });
+        $this->documents = [
+            31 => $this->document(31, 5, '/Kurs/policy.pdf', 'policy.pdf'),
+            // another course's material
+            32 => $this->document(32, 6, '/Kurs/policy.pdf', 'policy.pdf'),
+            // registered from an earlier material folder: no longer in the current one
+            33 => $this->document(33, 5, '/Alt/old.pdf', 'old.pdf'),
+        ];
+        $this->documentMapper = $this->createMock(CourseDocumentMapper::class);
+        $this->documentMapper->method('findById')->willReturnCallback(function (int $id): CourseDocument {
+            if (!isset($this->documents[$id])) {
+                throw new DoesNotExistException('no document');
+            }
+            return $this->documents[$id];
         });
         $this->videoMapper = $this->createMock(CourseVideoMapper::class);
         $this->courseService = $this->createMock(CourseService::class);
@@ -81,7 +102,17 @@ class CourseVideoControllerTest extends TestCase {
         $course = new Course();
         $course->setId(5);
         $course->setInstructorId($owner);
+        $course->setMaterialFolder('/Kurs');
         return $course;
+    }
+
+    private function document(int $id, int $courseId, string $path, string $name): CourseDocument {
+        $doc = new CourseDocument();
+        $doc->setId($id);
+        $doc->setCourseId($courseId);
+        $doc->setFilePath($path);
+        $doc->setFileName($name);
+        return $doc;
     }
 
     private function makeController(string $uid = 'instructor-uid'): CourseVideoController {
@@ -94,6 +125,7 @@ class CourseVideoControllerTest extends TestCase {
             $this->rootFolder,
             $this->createMock(LoggerInterface::class),
             $uid,
+            $this->documentMapper,
         );
     }
 
@@ -114,13 +146,110 @@ class CourseVideoControllerTest extends TestCase {
     }
 
     public function testCreateAllowsDocumentWithNullDuration(): void {
-        // Documents are exempt: validation passes, authz runs, insert persists.
-        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->createMock(Course::class));
+        // Documents are exempt from the duration: validation passes, authz runs, insert persists.
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
         $this->videoMapper->expects($this->once())->method('insert')->willReturnArgument(0);
 
-        $resp = $this->makeController()->create(5, 'document', 'Docs/policy.pdf', 'Policy', null);
+        $resp = $this->makeController()->create(5, 'document', '31', 'Policy', null);
 
         $this->assertSame(Http::STATUS_CREATED, $resp->getStatus());
+        $this->assertSame('31', $resp->getData()->getVideoRef());
+    }
+
+    // ---- GitHub #35 (B4): a document row names a document of this course's material folder ----
+
+    /** @return array<string, array{0: string}> */
+    public static function refusedDocumentRefs(): array {
+        return [
+            'a free path in the home' => ['Documents/payslip.pdf'],
+            'an absolute path' => ['/Documents/payslip.pdf'],
+            'path traversal out of the material folder' => ['/Kurs/../Documents/payslip.pdf'],
+            'traversal only' => ['../../etc/passwd'],
+            'another course\'s document' => ['32'],
+            'a document of an earlier material folder' => ['33'],
+            'an unknown document id' => ['999'],
+            'zero' => ['0'],
+            'a negative id' => ['-31'],
+            'an id with a path tail' => ['31/../32'],
+            'empty' => [''],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('refusedDocumentRefs')]
+    public function testCreateRefusesADocumentOutsideTheMaterialFolder(string $ref): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController()->create(5, 'document', $ref, 'Policy', null);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+        $this->assertSame([], $this->openedHomes, 'no home is opened for a document row');
+    }
+
+    public function testACoInstructorCanAddAMaterialDocument(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course('owner-uid'));
+        $this->videoMapper->expects($this->once())->method('insert')->willReturnArgument(0);
+
+        $resp = $this->makeController('co-instructor')->create(5, 'document', ' 31 ', 'Policy', null);
+
+        $this->assertSame(Http::STATUS_CREATED, $resp->getStatus());
+        $this->assertSame('31', $resp->getData()->getVideoRef());
+    }
+
+    /** @return array<string, array{0: string}> */
+    public static function unknownSourceTypes(): array {
+        return [['Document'], ['pdf'], ['nc-file'], ['']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('unknownSourceTypes')]
+    public function testCreateRefusesAnUnknownSourceType(string $type): void {
+        $this->courseService->expects($this->never())->method('assertInstructorOfCourse');
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController()->create(5, $type, 'Documents/payslip.pdf', 'x', null);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testUpdateRefusesRepointingADocumentToAPath(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('document', '31'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, null, '/Kurs/../Documents/payslip.pdf');
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testUpdateRefusesTurningAnEmbedIntoADocumentWithItsOldRef(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('vimeo', '76979871'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, 'document');
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testUpdateRefusesAnUnknownSourceType(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('document', '31'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, 'pdf');
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testUpdateCanPointADocumentRowAtAnotherMaterialDocument(): void {
+        $this->documents[34] = $this->document(34, 5, '/Kurs/rules.md', 'rules.md');
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('document', '31'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->once())->method('update')->willReturnArgument(0);
+
+        $resp = $this->makeController()->update(9, null, '34');
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
     }
 
     public function testCreateAllowsNcFilesVideoWithPositiveDuration(): void {
@@ -254,6 +383,7 @@ class CourseVideoControllerTest extends TestCase {
             $this->rootFolder,
             $this->createMock(LoggerInterface::class),
             null,
+            $this->documentMapper,
         );
         $resp = $controller->create(5, 'nc-files', 'Videos/intro.mp4', 'Intro', 120);
         $this->assertSame(Http::STATUS_UNAUTHORIZED, $resp->getStatus());
