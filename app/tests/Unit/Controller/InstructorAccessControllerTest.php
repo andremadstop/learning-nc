@@ -171,9 +171,45 @@ class InstructorAccessControllerTest extends TestCase {
             $this->createMock(AuditCheckpointService::class),
             $store,
             $this->createMock(\OCA\Learning\Service\Llm\ApiKeyStore::class),
+            $this->roles(),
             'root'
         );
         $settings->saveAdmin('yes', 'de', 2, 'yes');
         $this->assertSame('training', $this->appValues[RoleService::LEGACY_GROUP_KEY]);
+    }
+
+    private function roles(): RoleService {
+        return new RoleService($this->createMock(IGroupManager::class), $this->config, $this->createMock(IDBConnection::class), 'learning', $this->createMock(OversightMapper::class));
+    }
+
+    private function settings(): SettingsController {
+        return new SettingsController(
+            'learning',
+            $this->createMock(IRequest::class),
+            $this->config,
+            $this->createMock(IDBConnection::class),
+            $this->createMock(KeyService::class),
+            $this->createMock(AuditCheckpointService::class),
+            $this->createMock(\OCA\Learning\Service\Llm\ConnectionStore::class),
+            $this->createMock(\OCA\Learning\Service\Llm\ApiKeyStore::class),
+            $this->roles(),
+            'root'
+        );
+    }
+
+    /**
+     * Review finding on #60: a client that still sends the 5.11 field got 200 while only the
+     * legacy key changed, which RoleService no longer reads once the lists exist. The field now
+     * replaces the groups (people stay) and keeps the 5.11 key equal to the first group.
+     */
+    public function testTheOldFieldStillTakesEffectAfterTheListsWereSaved(): void {
+        $this->roles()->saveInstructors(['training', 'ops'], ['carla']);
+
+        $this->settings()->saveAdmin('yes', 'de', 2, 'yes', 'teachers');
+
+        $roles = $this->roles();
+        $this->assertSame(['teachers'], $roles->getInstructorGroups());
+        $this->assertSame(['carla'], $roles->getInstructorUsers());
+        $this->assertSame('teachers', $this->appValues[RoleService::LEGACY_GROUP_KEY]);
     }
 }

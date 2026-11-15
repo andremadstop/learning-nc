@@ -8,6 +8,7 @@ use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -35,9 +36,11 @@ class SettingsController extends Controller {
     private AuditCheckpointService $auditCheckpointService;
     private ConnectionStore $connectionStore;
     private ApiKeyStore $apiKeyStore;
+    private RoleService $roleService;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ConnectionStore $connectionStore, ApiKeyStore $apiKeyStore, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ConnectionStore $connectionStore, ApiKeyStore $apiKeyStore, RoleService $roleService, ?string $userId) {
         parent::__construct($appName, $request);
+        $this->roleService = $roleService;
         $this->connectionStore = $connectionStore;
         $this->apiKeyStore = $apiKeyStore;
         $this->config = $config;
@@ -73,7 +76,10 @@ class SettingsController extends Controller {
             'default_language' => $this->config->getAppValue('learning', 'default_language', 'de'),
             'max_import_size_mb' => (int)$this->config->getAppValue('learning', 'max_import_size_mb', '2'),
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes'),
-            'instructor_group' => $this->config->getAppValue('learning', 'instructor_group', 'learning-instructors'),
+            // GitHub #60: the first group in force (the lists once saved, the 5.11 key before),
+            // '' when only people are instructors — never the raw legacy key, which no longer
+            // decides anything once the lists exist.
+            'instructor_group' => $this->roleService->getInstructorGroup(),
             'allow_course_instructor_fallback' => $this->config->getAppValue('learning', 'allow_course_instructor_fallback', 'no'),
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
@@ -239,15 +245,18 @@ class SettingsController extends Controller {
         // the manual did not mention it at all. An empty submission means "keep the
         // default"; deleting the setting entirely would silently promote nobody.
         // GitHub #60: the admin page now saves groups and people through
-        // InstructorAccessController; only a client that still sends the single 5.11 field
-        // writes it here. Not sending it leaves the instructors untouched.
+        // InstructorAccessController. A client that still sends the single 5.11 field means
+        // "this is the instructor group": it replaces the groups and keeps the individual people,
+        // through RoleService, so the lists and the 5.11 key stay in step. Writing only the 5.11
+        // key answered 200 and changed nothing once the lists existed. Not sending it leaves the
+        // instructors untouched.
         if ($instructor_group !== null) {
             $instructorGroup = trim($instructor_group);
-            $this->config->setAppValue(
-                'learning',
-                'instructor_group',
-                $instructorGroup !== '' ? mb_substr($instructorGroup, 0, 64) : 'learning-instructors'
-            );
+            if ($instructorGroup === '' || mb_strlen($instructorGroup) > RoleService::MAX_ID_LENGTH) {
+                // no gid is longer than 64 characters; a cut name would name another group
+                $instructorGroup = RoleService::DEFAULT_GROUP;
+            }
+            $this->roleService->saveInstructors([$instructorGroup], $this->roleService->getInstructorUsers());
         }
         $this->config->setAppValue('learning', 'allow_course_instructor_fallback', $allow_course_instructor_fallback === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'exam_attempt_limit_per_day', (string)max(1, min(50, $exam_attempt_limit_per_day)));

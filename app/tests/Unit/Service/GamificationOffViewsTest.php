@@ -124,6 +124,7 @@ class GamificationOffViewsTest extends TestCase {
             $this->createMock(AuditCheckpointService::class),
             $this->createMock(ConnectionStore::class),
             $this->createMock(ApiKeyStore::class),
+            $this->createMock(\OCA\Learning\Service\RoleService::class),
             'alice'
         );
     }

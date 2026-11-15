@@ -77,7 +77,7 @@ class SettingsControllerAiConnectionTest extends TestCase {
     private function controller(): SettingsController {
         return new SettingsController('learning', $this->createMock(IRequest::class), $this->config,
             $this->createMock(IDBConnection::class), $this->createMock(KeyService::class),
-            $this->createMock(AuditCheckpointService::class), $this->store(), $this->keys(), 'admin');
+            $this->createMock(AuditCheckpointService::class), $this->store(), $this->keys(), $this->createMock(\OCA\Learning\Service\RoleService::class), 'admin');
     }
 
     private function saveAi(string $provider, string $url = 'http://localhost:11434', string $model = 'llama3', string $enabled = 'yes', ?string $key = null): int {
@@ -246,7 +246,7 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $checkpoints = $this->createMock(AuditCheckpointService::class);
         $checkpoints->method('getLivenessStatus')->willThrowException(new \RuntimeException('not migrated'));
         $controller = new SettingsController('learning', $this->createMock(IRequest::class), $this->config,
-            $this->createMock(IDBConnection::class), $this->createMock(KeyService::class), $checkpoints, $this->store(), $this->keys(), 'admin');
+            $this->createMock(IDBConnection::class), $this->createMock(KeyService::class), $checkpoints, $this->store(), $this->keys(), $this->createMock(\OCA\Learning\Service\RoleService::class), 'admin');
         return $controller->getAdmin()->getData();
     }
 

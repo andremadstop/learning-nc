@@ -59,6 +59,13 @@ class AdminInstructorGroupTest extends TestCase {
             $this->livenessStub(),
             $this->connectionStore(),
             $this->createMock(\OCA\Learning\Service\Llm\ApiKeyStore::class),
+            new RoleService(
+                $this->createMock(IGroupManager::class),
+                $config,
+                $this->createMock(IDBConnection::class),
+                'learning',
+                $this->createMock(OversightMapper::class)
+            ),
             'admin'
         );
     }
@@ -95,6 +102,16 @@ class AdminInstructorGroupTest extends TestCase {
         $this->assertSame('teachers', $controller->getAdmin()->getData()['instructor_group']);
     }
 
+    /** GitHub #60 review: getAdmin() reports the first group in force, not a stale 5.11 key. */
+    public function testGetAdminReportsTheFirstGroupOfTheSavedLists(): void {
+        $this->appValues = [
+            RoleService::GROUPS_KEY => '["training","ops"]',
+            RoleService::LEGACY_GROUP_KEY => 'stale',
+        ];
+
+        $this->assertSame('training', $this->makeController()->getAdmin()->getData()['instructor_group']);
+    }
+
     public function testGetAdminFallsBackToTheDocumentedDefault(): void {
         $this->appValues = [];
 
@@ -110,8 +127,9 @@ class AdminInstructorGroupTest extends TestCase {
         $this->assertSame('learning-instructors', $this->saveWithGroup('   '));
     }
 
-    public function testTheGroupNameIsLengthCapped(): void {
-        $this->assertSame(64, mb_strlen($this->saveWithGroup(str_repeat('x', 200))));
+    public function testATooLongGroupNameKeepsTheDefaultInsteadOfACutName(): void {
+        // No Nextcloud gid exceeds 64 characters; cutting the name would name another group (#60).
+        $this->assertSame('learning-instructors', $this->saveWithGroup(str_repeat('x', 200)));
     }
 
     /**
