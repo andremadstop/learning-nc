@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # lifecycle-probe.sh — fresh install and 5.5.1 -> working-state upgrade in throwaway containers.
 #
-# Usage: ENGINE=pgsql|mysql [PROBE_REF=<git-ref>] [PROBE_FAIL_AFTER=key_write] scripts/lifecycle-probe.sh
+# Usage: ENGINE=pgsql|mysql [PROBE_REF=<git-ref>] [PROBE_FAIL_AFTER=key_write] [LIFECYCLE_NC_IMAGE=<image>]
+#          scripts/lifecycle-probe.sh
 #
-# Per engine, three scenarios, each on its own Nextcloud 33 + database pair:
+# Per engine, three scenarios, each on its own Nextcloud + database pair. Nextcloud is 33 (pinned
+# digest) unless LIFECYCLE_NC_IMAGE names another image (the nightly CI matrix runs 33/34/35);
+# like INTEG_NC_IMAGE in nc-integration.sh, unset means exactly the pinned default:
 #   fresh    install the working state (git index, release file set) and enable it
 #   upgrade  install the 5.5.1 release tarball, seed legacy AI fixtures
 #            (scripts/lifecycle-fixtures/seed-5.5.1.sql.php), replace the app with the working
@@ -50,7 +53,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENGINE="${ENGINE:-pgsql}"
-NC_IMAGE="nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5"
+NC_IMAGE="${LIFECYCLE_NC_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 PG_IMAGE="postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
 MY_IMAGE="mariadb:10.11@sha256:7f22313fc130a377a44999965bcb0a08dd5b21e8502824c1b864f792f9bc66ab"
 OLD_URL="https://github.com/andremadstop/learning-nc/releases/download/v5.5.1/learning-5.5.1.tar.gz"
