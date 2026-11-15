@@ -31,6 +31,34 @@ export function buildCertReportQuery(filters = {}) {
 }
 
 /**
+ * Lückencheck B2: the coverage statuses, in the order the filter lists them. Mirrors
+ * CertificateReportService::COVERAGE_STATUSES (the server ignores anything else).
+ */
+export const COVERAGE_STATUSES = ['current', 'renewal_open', 'expired', 'overdue', 'never_passed']
+
+/**
+ * Query string of the coverage report: only a known status filters, '' lists everyone.
+ *
+ * @param {string|null|undefined} status - one of COVERAGE_STATUSES, or empty for all
+ * @return {string} '' | 'status=overdue'
+ */
+export function buildCoverageQuery(status) {
+	return COVERAGE_STATUSES.includes(status) ? 'status=' + encodeURIComponent(status) : ''
+}
+
+/**
+ * "passed/total" of the required pools; '—' when the course has no required pools.
+ *
+ * @param {number} passed - required pools passed
+ * @param {number} total - required pools of the course
+ * @return {string}
+ */
+export function formatPoolProgress(passed, total) {
+	const all = Number(total) || 0
+	return all > 0 ? `${Number(passed) || 0}/${all}` : '—'
+}
+
+/**
  * The compliance section is instructor-only AND certifying-course-only.
  * course.cert_enabled is snake_case (the entity's jsonSerialize emits snake_case).
  *

@@ -221,6 +221,8 @@ return [
         ['name' => 'course#exportAtRiskCsv', 'url' => '/api/courses/{courseId}/at-risk/export/csv', 'verb' => 'GET'],
         ['name' => 'certificateReport#certReport', 'url' => '/api/courses/{courseId}/cert-report', 'verb' => 'GET'],
         ['name' => 'certificateReport#exportCertReportCsv', 'url' => '/api/courses/{courseId}/cert-report/export/csv', 'verb' => 'GET'],
+        ['name' => 'certificateReport#coverageReport', 'url' => '/api/courses/{courseId}/cert-coverage', 'verb' => 'GET'],
+        ['name' => 'certificateReport#exportCoverageCsv', 'url' => '/api/courses/{courseId}/cert-coverage/export/csv', 'verb' => 'GET'],
         // GitHub #42: instructor copies of this course's certificates (view / learner file / filtered ZIP)
         ['name' => 'courseCertificate#exportZip', 'url' => '/api/courses/{courseId}/cert-report/export/zip', 'verb' => 'GET'],
         ['name' => 'courseCertificate#show', 'url' => '/api/courses/{courseId}/certificates/{verificationId}', 'verb' => 'GET'],

@@ -334,6 +334,42 @@ class PassCriteriaService {
     }
 
     /**
+     * Read-only (Lückencheck B2, coverage report): how many required pools each learner has passed,
+     * out of how many. The same sequence evaluate() runs before it issues anything — the issuance
+     * window first, then the pass rule — so the count matches the pools the learner sees on the
+     * completion tab, including a renewal window in which only the new exams count.
+     *
+     * Never issues, emits or writes. A course without certificates or without (still linked)
+     * required pools gives total 0 for everyone.
+     *
+     * @param string[] $userIds
+     * @return array<string, array{passed: int, total: int}> keyed by user id
+     */
+    public function requiredPoolProgress(int $courseId, array $userIds): array {
+        $course = $this->courseMapper->findById($courseId);
+        $requiredPoolIds = ($course->getCertEnabled() ?? false)
+            ? $this->resolveRequiredPoolIds($courseId, $course->getCertRequiredPoolIds())
+            : [];
+        $threshold = $course->getCertPassPercent() ?? 80;
+
+        $progress = [];
+        foreach (array_values(array_unique($userIds)) as $userId) {
+            if ($requiredPoolIds === []) {
+                $progress[$userId] = ['passed' => 0, 'total' => 0];
+                continue;
+            }
+            $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+            $window = $this->issuanceWindow($userId, $courseId, $certificate);
+            $rule = $this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, [], $window['completed_after']);
+            $progress[$userId] = [
+                'passed' => count(array_filter($rule['pools'], static fn(array $p): bool => $p['passed'])),
+                'total' => count($requiredPoolIds),
+            ];
+        }
+        return $progress;
+    }
+
+    /**
      * Owner or co-instructor member of the course — the same rule as
      * CourseService::isInstructorOfCourse(), which is private there.
      */

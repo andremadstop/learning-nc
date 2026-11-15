@@ -55,6 +55,12 @@ class CsvExportLanguageTest extends TestCase {
         'Benutzer-ID' => 'User ID',
         'Beherrschung' => 'Mastery',
         'Gewonnene Duelle' => 'Duels won',
+        'Letztes Zertifikat' => 'Last certificate',
+        'Pflicht-Pools bestanden' => 'Required pools passed',
+        'Pflicht-Pools gesamt' => 'Required pools total',
+        'Aktuell (Abdeckungsstatus)' => 'Current',
+        'Nie bestanden (Abdeckungsstatus)' => 'Never passed',
+        'Abgelaufen, in Kulanzzeit (Abdeckungsstatus)' => 'Expired, in grace period',
     ];
 
     private function english(): IL10N {
@@ -89,6 +95,32 @@ class CsvExportLanguageTest extends TestCase {
         $this->assertSame(['Name', 'Passed on', 'Result (%)', 'Valid until', 'Verification ID', 'Status'], $rows[0]);
         $this->assertSame('Valid', $rows[1][5]);
         $this->assertSame('Expired', $rows[2][5]);
+        $this->assertStringContainsString('charset=utf-8', $response->getHeaders()['Content-Type']);
+    }
+
+    /**
+     * Lückencheck B2: the coverage CSV is the list the table shows (same service call, the status
+     * filter forwarded) in the exporter's language; the required pools are two numeric columns.
+     */
+    public function testTheCoverageReportIsInTheExportersLanguage(): void {
+        $report = $this->createMock(CertificateReportService::class);
+        $report->expects($this->once())->method('getCoverageReport')->with(7, 'teacher', 'expired')->willReturn(['rows' => [
+            ['member_ref' => 'r1', 'display_name' => 'Anna', 'status' => 'current', 'last_certificate_at' => 1700000000, 'expires_at' => null, 'required_pools_passed' => 2, 'required_pools_total' => 2],
+            ['member_ref' => 'r2', 'display_name' => 'Ben', 'status' => 'never_passed', 'last_certificate_at' => null, 'expires_at' => null, 'required_pools_passed' => 1, 'required_pools_total' => 2],
+            ['member_ref' => 'r3', 'display_name' => 'Cleo', 'status' => 'expired', 'last_certificate_at' => 1600000000, 'expires_at' => 1650000000, 'required_pools_passed' => 0, 'required_pools_total' => 0],
+        ]]);
+        $request = $this->createMock(IRequest::class);
+        $request->method('getParam')->willReturnCallback(static fn (string $key) => $key === 'status' ? 'expired' : null);
+        $controller = new CertificateReportController('learning', $request, $report,
+            $this->createMock(KeyService::class), $this->createMock(LoggerInterface::class), 'teacher', $this->english());
+
+        $response = $controller->exportCoverageCsv(7);
+        $rows = $this->rows($response->render());
+
+        $this->assertSame(['Name', 'Status', 'Last certificate', 'Valid until', 'Required pools passed', 'Required pools total'], $rows[0]);
+        $this->assertSame(['Anna', 'Current', '2023-11-14', '', '2', '2'], $rows[1]);
+        $this->assertSame(['Ben', 'Never passed', '', '', '1', '2'], $rows[2]);
+        $this->assertSame(['Cleo', 'Expired, in grace period', '2020-09-13', '2022-04-15', '', ''], $rows[3]);
         $this->assertStringContainsString('charset=utf-8', $response->getHeaders()['Content-Type']);
     }
 

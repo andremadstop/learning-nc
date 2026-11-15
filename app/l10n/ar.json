@@ -3714,6 +3714,19 @@
         "Die Frage konnte nicht zurückgezogen werden.": "تعذّر سحب السؤال.",
         "Unbeantwortete Anfragen: {count}": "طلبات بلا إجابة: {count}",
         "Hier stehen nur technische Anfragen ohne Kursbezug. Fragen zu einem Kurs gehen an dessen Lehrende und stehen im Kurs im Bereich „Kommunikation“ unter „Fragen von Lernenden“.": "تضم هذه القائمة الطلبات التقنية غير المرتبطة بمقرر فقط. أما الأسئلة المتعلقة بمقرر فتذهب إلى معلّميه، وتجدها داخل المقرر في قسم «التواصل» تحت «أسئلة المتعلمين».",
-        "Zu den Kursen": "الانتقال إلى المقررات"
+        "Zu den Kursen": "الانتقال إلى المقررات",
+        "Letztes Zertifikat": "آخر شهادة",
+        "Pflicht-Pools bestanden": "المجموعات الإلزامية المجتازة",
+        "Pflicht-Pools gesamt": "إجمالي المجموعات الإلزامية",
+        "Aktuell (Abdeckungsstatus)": "ساري",
+        "Erneuerung offen (Abdeckungsstatus)": "التجديد متاح",
+        "Abgelaufen, in Kulanzzeit (Abdeckungsstatus)": "منتهي، ضمن فترة السماح",
+        "Überfällig (Abdeckungsstatus)": "متأخر",
+        "Nie bestanden (Abdeckungsstatus)": "لم يجتز أبدًا",
+        "Abdeckung: alle eingeschriebenen Lernenden": "التغطية: جميع المتعلمين المسجلين",
+        "Eine Zeile pro Person, mit oder ohne Zertifikat. Dozierende sind nicht enthalten.": "صف واحد لكل شخص، مع شهادة أو بدونها. المدرّسون غير مشمولين.",
+        "Niemand mit diesem Status.": "لا أحد بهذه الحالة.",
+        "Keine Lernenden eingeschrieben.": "لا يوجد متعلمون مسجلون.",
+        "Abdeckungsbericht konnte nicht geladen werden.": "تعذّر تحميل تقرير التغطية."
     }
 }

@@ -508,6 +508,67 @@
 						<Certificate :verification-id="viewingCertVid" :course-id="courseId" />
 					</div>
 				</NcModal>
+
+				<!-- Lückencheck B2: every enrolled learner, also those who never passed (members, not certificates). -->
+				<div class="cert-coverage">
+					<div class="cert-report-header">
+						<h5 class="cert-coverage-title">{{ t('learning', 'Abdeckung: alle eingeschriebenen Lernenden') }}</h5>
+						<NcButton variant="tertiary" size="small" class="cert-coverage-csv" @click="exportCoverageCsv">
+							{{ t('learning', 'Export CSV') }}
+						</NcButton>
+					</div>
+					<p class="cert-report-hint">
+						{{ t('learning', 'Eine Zeile pro Person, mit oder ohne Zertifikat. Dozierende sind nicht enthalten.') }}
+					</p>
+					<div class="cert-report-filters">
+						<label class="cert-filter">
+							<span>{{ t('learning', 'Status') }}</span>
+							<select class="cert-coverage-filter" :value="coverageStatusFilter" @change="onCoverageStatusChange($event.target.value)">
+								<option value="">{{ t('learning', 'Alle') }}</option>
+								<option v-for="status in coverageStatuses" :key="status" :value="status">
+									{{ coverageStatusLabel(status) }}
+								</option>
+							</select>
+						</label>
+					</div>
+					<div v-if="coverageRows.length > 0" class="cert-report-table-container" role="region"
+						:aria-label="t('learning', 'Abdeckung: alle eingeschriebenen Lernenden')">
+						<table class="cert-report-table cert-coverage-table">
+							<thead>
+								<tr>
+									<th scope="col">{{ t('learning', 'Name (Person)') }}</th>
+									<th scope="col">{{ t('learning', 'Status') }}</th>
+									<th scope="col">{{ t('learning', 'Letztes Zertifikat') }}</th>
+									<th scope="col">{{ t('learning', 'Gültig bis') }}</th>
+									<th scope="col">{{ t('learning', 'Pflicht-Pools bestanden') }}</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="row in coverageRows" :key="row.member_ref">
+									<td>{{ row.display_name }}</td>
+									<td>
+										<span class="cert-coverage-status" :class="'cert-coverage-status--' + row.status">
+											{{ coverageStatusLabel(row.status) }}
+										</span>
+									</td>
+									<td>{{ row.last_certificate_at ? formatCertDate(row.last_certificate_at) : '—' }}</td>
+									<td>
+										<template v-if="row.last_certificate_at">
+											{{ row.expires_at ? formatCertDate(row.expires_at) : t('learning', 'unbegrenzt') }}
+										</template>
+										<template v-else>
+											—
+										</template>
+									</td>
+									<td>{{ formatPoolProgress(row.required_pools_passed, row.required_pools_total) }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<p v-else-if="coverageLoaded" class="cert-report-empty">
+						{{ coverageAppliedStatus ? t('learning', 'Niemand mit diesem Status.') : t('learning', 'Keine Lernenden eingeschrieben.') }}
+					</p>
+				</div>
 			</div>
 			<NcNoteCard v-else type="info">
 				{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint später die Dozentenansicht für den Kursabschluss.') }}
@@ -547,7 +608,7 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
-import { buildCertReportQuery, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
+import { buildCertReportQuery, buildCoverageQuery, COVERAGE_STATUSES, formatPoolProgress, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
 import { abschlussTabIds, buddiesEnabled, teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
@@ -626,6 +687,12 @@ export default {
 			certFromDate: '',
 			certToDate: '',
 			certExpiringDays: '',
+			// Lückencheck B2: coverage list (every enrolled learner). The CSV uses the applied status.
+			coverageStatuses: COVERAGE_STATUSES,
+			coverageRows: [],
+			coverageLoaded: false,
+			coverageStatusFilter: '',
+			coverageAppliedStatus: '',
 
 			// Telos aggregate
 			telosAggregateLoading: false,
@@ -743,6 +810,9 @@ export default {
 			}
 			if (tab === 'summary' && this.showCertReport && this.certRows.length === 0) {
 				this.fetchCertReport()
+			}
+			if (tab === 'summary' && this.showCertReport && !this.coverageLoaded) {
+				this.fetchCoverage()
 			}
 		},
 		selectSubTab(tabId) {
@@ -977,6 +1047,43 @@ export default {
 				this.$emit('error', t('learning', 'Compliance-Bericht konnte nicht geladen werden.'))
 			}
 		},
+		coverageStatusLabel(status) {
+			switch (status) {
+			case 'current': return t('learning', 'Aktuell (Abdeckungsstatus)')
+			case 'renewal_open': return t('learning', 'Erneuerung offen (Abdeckungsstatus)')
+			case 'expired': return t('learning', 'Abgelaufen, in Kulanzzeit (Abdeckungsstatus)')
+			case 'overdue': return t('learning', 'Überfällig (Abdeckungsstatus)')
+			case 'never_passed': return t('learning', 'Nie bestanden (Abdeckungsstatus)')
+			default: return status
+			}
+		},
+		formatPoolProgress(passed, total) {
+			return formatPoolProgress(passed, total)
+		},
+		onCoverageStatusChange(status) {
+			this.coverageStatusFilter = status
+			this.fetchCoverage()
+		},
+		// Lückencheck B2: the table keeps the status it was loaded with; the CSV exports that one.
+		async fetchCoverage() {
+			const status = this.coverageStatusFilter
+			try {
+				const qs = buildCoverageQuery(status)
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-coverage', { courseId: this.courseId })
+				const response = await axios.get(url + (qs ? '?' + qs : ''))
+				this.coverageRows = Array.isArray(response.data.rows) ? response.data.rows : []
+				this.coverageAppliedStatus = qs ? status : ''
+				this.coverageLoaded = true
+			} catch (err) {
+				console.error('Failed to fetch coverage report:', err)
+				this.$emit('error', t('learning', 'Abdeckungsbericht konnte nicht geladen werden.'))
+			}
+		},
+		exportCoverageCsv() {
+			const qs = buildCoverageQuery(this.coverageAppliedStatus)
+			const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-coverage/export/csv', { courseId: this.courseId })
+			window.location.href = url + (qs ? '?' + qs : '')
+		},
 		// GitHub #45: the CSV is the list the table shows — the query the rows were loaded with, not
 		// filter inputs that were edited but not applied yet (same rule as the ZIP, #42).
 		exportCertReportCsv() {
@@ -1011,6 +1118,8 @@ export default {
 				await axios.post(url)
 				showSuccess(t('learning', 'Zertifikat wurde widerrufen'))
 				await this.fetchCertReport()
+				// A revoked certificate changes the learner's coverage status too.
+				await this.fetchCoverage()
 			} catch (err) {
 				console.error('Failed to revoke certificate:', err)
 				showError(t('learning', 'Widerruf fehlgeschlagen'))
@@ -1354,6 +1463,13 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .cert-report-table .cert-vid { font-family: monospace; font-size: 11px; color: var(--color-text-maxcontrast); }
 .cert-report-table .cert-expired-tag { color: var(--color-error-text, var(--color-error)); font-weight: 600; }
 .cert-report-empty { margin-top: 12px; color: var(--color-text-maxcontrast); font-size: 13px; }
+.cert-coverage { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--color-border); }
+.cert-coverage-title { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-main-text); }
+.cert-filter select { padding: 6px 8px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-main-background); color: var(--color-main-text); }
+.cert-coverage-status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid var(--color-border-dark, var(--color-border)); color: var(--color-main-text); background: transparent; }
+.cert-coverage-status--current { color: var(--color-success-text, var(--color-main-text)); border-color: var(--color-success); }
+.cert-coverage-status--renewal_open, .cert-coverage-status--expired { color: var(--color-warning-text, var(--color-main-text)); border-color: var(--color-warning); }
+.cert-coverage-status--overdue { color: var(--color-error-text, var(--color-error)); border-color: var(--color-error); }
 .cert-report-copies-hint { margin-block: 8px 0; color: var(--color-text-maxcontrast); font-size: 13px; }
 
 /* Modal */

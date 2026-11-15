@@ -3714,6 +3714,19 @@
         "Die Frage konnte nicht zurückgezogen werden.": "Не вдалося відкликати запитання.",
         "Unbeantwortete Anfragen: {count}": "Звернення без відповіді: {count}",
         "Hier stehen nur technische Anfragen ohne Kursbezug. Fragen zu einem Kurs gehen an dessen Lehrende und stehen im Kurs im Bereich „Kommunikation“ unter „Fragen von Lernenden“.": "Тут лише технічні звернення, не пов’язані з курсом. Запитання щодо курсу отримують його викладачі; вони містяться в курсі в розділі «Спілкування», вкладка «Питання учнів».",
-        "Zu den Kursen": "До курсів"
+        "Zu den Kursen": "До курсів",
+        "Letztes Zertifikat": "Останній сертифікат",
+        "Pflicht-Pools bestanden": "Складено обов'язкових пулів",
+        "Pflicht-Pools gesamt": "Усього обов'язкових пулів",
+        "Aktuell (Abdeckungsstatus)": "Чинний",
+        "Erneuerung offen (Abdeckungsstatus)": "Відкрито поновлення",
+        "Abgelaufen, in Kulanzzeit (Abdeckungsstatus)": "Минув, пільговий період",
+        "Überfällig (Abdeckungsstatus)": "Прострочено",
+        "Nie bestanden (Abdeckungsstatus)": "Жодного разу не складено",
+        "Abdeckung: alle eingeschriebenen Lernenden": "Охоплення: усі зараховані слухачі",
+        "Eine Zeile pro Person, mit oder ohne Zertifikat. Dozierende sind nicht enthalten.": "Один рядок на особу, із сертифікатом чи без. Викладачів не включено.",
+        "Niemand mit diesem Status.": "Немає нікого з цим статусом.",
+        "Keine Lernenden eingeschrieben.": "Немає зарахованих слухачів.",
+        "Abdeckungsbericht konnte nicht geladen werden.": "Не вдалося завантажити звіт про охоплення."
     }
 }

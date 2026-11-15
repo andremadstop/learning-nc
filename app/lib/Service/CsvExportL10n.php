@@ -50,6 +50,30 @@ class CsvExportL10n {
     }
 
     /** @return list<string> */
+    public function coverageHeader(): array {
+        return [
+            $this->t('Name (Person)'),
+            $this->t('Status'),
+            $this->t('Letztes Zertifikat'),
+            $this->t('Gültig bis'),
+            $this->t('Pflicht-Pools bestanden'),
+            $this->t('Pflicht-Pools gesamt'),
+        ];
+    }
+
+    /** One coverage status code (CertificateReportService::COVERAGE_STATUSES) as a label. */
+    public function coverageStatus(string $status): string {
+        return match ($status) {
+            'current' => $this->t('Aktuell (Abdeckungsstatus)'),
+            'renewal_open' => $this->t('Erneuerung offen (Abdeckungsstatus)'),
+            'expired' => $this->t('Abgelaufen, in Kulanzzeit (Abdeckungsstatus)'),
+            'overdue' => $this->t('Überfällig (Abdeckungsstatus)'),
+            'never_passed' => $this->t('Nie bestanden (Abdeckungsstatus)'),
+            default => $status,
+        };
+    }
+
+    /** @return list<string> */
     public function atRiskHeader(): array {
         return [
             // The person's name: the generic 'Name' is a thing's name (ru "Название").

@@ -156,6 +156,80 @@ class CertificateReportController extends Controller {
     }
 
     /**
+     * Coverage report (Lückencheck B2): every enrolled learner with a coverage status, the last
+     * certificate, its expiry and the required pools passed. Optional ?status= keeps one status.
+     *
+     * @NoAdminRequired
+     */
+    public function coverageReport(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            return new DataResponse($this->reportService->getCoverageReport($courseId, $this->userId, $this->statusParam()));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('coverageReport error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * CSV of the SAME coverage list (same service call, same status filter), in the exporting
+     * user's language. Navigation download like the certificate report CSV (GitHub #41): no
+     * request token, so CSRF-exempt; read-only GET, instructor gate and rate limit stay in force.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function exportCoverageCsv(int $courseId): Http\Response {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $result = $this->reportService->getCoverageReport($courseId, $this->userId, $this->statusParam());
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('exportCoverageCsv error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        $lines = [];
+        $lines[] = CsvFormulaGuard::line($this->csvL10n->coverageHeader());
+        foreach ($result['rows'] as $r) {
+            $hasPools = (int)$r['required_pools_total'] > 0;
+            $lines[] = CsvFormulaGuard::line([
+                (string)$r['display_name'],
+                $this->csvL10n->coverageStatus((string)$r['status']),
+                $r['last_certificate_at'] !== null ? gmdate('Y-m-d', (int)$r['last_certificate_at']) : '',
+                $r['expires_at'] !== null ? gmdate('Y-m-d', (int)$r['expires_at']) : '',
+                // Two numeric columns, not "1/2": a spreadsheet reads that as a date.
+                $hasPools ? (string)(int)$r['required_pools_passed'] : '',
+                $hasPools ? (string)(int)$r['required_pools_total'] : '',
+            ]);
+        }
+
+        return new DataDownloadResponse(
+            CsvExportL10n::BOM . implode("\n", $lines),
+            'coverage-course-' . $courseId . '.csv',
+            CsvExportL10n::CONTENT_TYPE
+        );
+    }
+
+    /** The ?status= filter of the coverage report as a string, or null when absent. */
+    private function statusParam(): ?string {
+        $status = $this->request->getParam('status');
+        return is_string($status) && $status !== '' ? $status : null;
+    }
+
+    /**
      * Group compliance report for a team lead (RBAC-02): all members of the group for a course,
      * with status 'passed' | 'expired' | 'overdue' | 'missing' and an 'expiring' flag (expiringDays
      * only sets that flag, it never filters the members). The groupId is read from the request so

@@ -1466,4 +1466,46 @@ class PassCriteriaServiceTest extends TestCase {
 
         $this->assertNull($result->toArray()['renewal_open_since']);
     }
+
+    // ---- Lückencheck B2: required pools passed x/y for the coverage report -------------------
+
+    public function testRequiredPoolProgressCountsPassedPoolsWithoutAnySideEffect(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([1, 2, 3])), null, null, [], $audit, $issuance,
+            null, null, null, [1 => 90, 2 => 79]
+        );
+
+        $this->assertSame(
+            ['anna' => ['passed' => 1, 'total' => 3], 'ben' => ['passed' => 1, 'total' => 3]],
+            $service->requiredPoolProgress(self::COURSE_ID, ['anna', 'ben', 'anna'])
+        );
+    }
+
+    public function testRequiredPoolProgressIsZeroOfZeroWithoutRequiredPools(): void {
+        $audit = $this->createMock(AuditService::class);
+        $withoutPools = $this->makeService($this->makeCourse(true, 80, null), 95, null, [], $audit);
+        $this->assertSame(['anna' => ['passed' => 0, 'total' => 0]], $withoutPools->requiredPoolProgress(self::COURSE_ID, ['anna']));
+
+        // Certificates off: the configured pools do not apply.
+        $off = $this->makeService($this->makeCourse(false, 80, json_encode([1])), null, null, [], $audit, null, null, null, null, [1 => 90]);
+        $this->assertSame(['anna' => ['passed' => 0, 'total' => 0]], $off->requiredPoolProgress(self::COURSE_ID, ['anna']));
+    }
+
+    // In an open renewal window only the exams of that window count, as on the completion tab.
+    public function testRequiredPoolProgressInTheRenewalWindowCountsOnlyTheNewExams(): void {
+        $now = time();
+        $cert = $this->slotCert($now - 340 * 86400, $now + 10 * 86400);
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 95, $now - 340 * 86400]], [1], $windows);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $service = $this->renewalService($cert, $summary, $this->createMock(AuditService::class), $issuance, []);
+
+        $this->assertSame(['alice' => ['passed' => 0, 'total' => 1]], $service->requiredPoolProgress(self::COURSE_ID, ['alice']));
+        $this->assertSame([max($now - 340 * 86400 + 1, $this->windowStart($now + 10 * 86400))], $windows);
+    }
 }

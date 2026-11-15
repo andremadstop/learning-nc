@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\AppInfo\ConfigDefaults;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 
@@ -32,6 +34,12 @@ class CertificateReportService {
 
     private const SECONDS_PER_DAY = 86400;
 
+    /**
+     * Coverage statuses (Lückencheck B2), one per enrolled learner. Also the allow-list of the
+     * status filter; anything else is ignored.
+     */
+    public const COVERAGE_STATUSES = ['current', 'renewal_open', 'expired', 'overdue', 'never_passed'];
+
     private CourseService $courseService;
     private CertificateMapper $certificateMapper;
     private ITimeFactory $timeFactory;
@@ -42,6 +50,7 @@ class CertificateReportService {
     private PassCriteriaService $passCriteriaService;
     private CourseMemberMapper $courseMemberMapper;
     private IUserManager $userManager;
+    private ?IConfig $config;
 
     public function __construct(
         CourseService $courseService,
@@ -53,7 +62,8 @@ class CertificateReportService {
         IGroupManager $groupManager,
         PassCriteriaService $passCriteriaService,
         CourseMemberMapper $courseMemberMapper,
-        IUserManager $userManager
+        IUserManager $userManager,
+        ?IConfig $config = null
     ) {
         $this->courseService = $courseService;
         $this->certificateMapper = $certificateMapper;
@@ -65,6 +75,7 @@ class CertificateReportService {
         $this->passCriteriaService = $passCriteriaService;
         $this->courseMemberMapper = $courseMemberMapper;
         $this->userManager = $userManager;
+        $this->config = $config;
     }
 
     /**
@@ -106,18 +117,7 @@ class CertificateReportService {
         $certs   = $this->certificateMapper->findByCourseIdForUsers($courseId, $members);
         $states  = $this->assignmentService->getStatesForCourseAndUsers($courseId, $members);
 
-        // Newest certificate per member (re-certification leaves several rows). The mapper result is
-        // unordered across chunks, so pick explicitly: higher issued_at wins, then higher id.
-        $certsByUserId = [];
-        foreach ($certs as $cert) {
-            $uid = $cert->getUserId();
-            $current = $certsByUserId[$uid] ?? null;
-            if ($current === null
-                || $cert->getIssuedAt() > $current->getIssuedAt()
-                || ($cert->getIssuedAt() === $current->getIssuedAt() && (int)$cert->getId() > (int)$current->getId())) {
-                $certsByUserId[$uid] = $cert;
-            }
-        }
+        $certsByUserId = $this->newestByUser($certs);
 
         // Build uid→IUser map from the group for non-cert member display names (one call, lazy)
         $groupUsers = [];
@@ -136,11 +136,12 @@ class CertificateReportService {
                 [$frozenName, ] = $this->decodePayload($cert->getCredentialJson());
                 $displayName = $this->safeDisplayName($frozenName, $memberUid);
                 $expiresAt = $cert->getExpiresAt();
-                $isExpired = $expiresAt !== null && $expiresAt < $now;
+                $status = $this->baseStatus($cert, null, $now);
+                $isExpired = $status === 'expired';
                 $rows[] = [
                     'member_ref'   => $this->memberRef($memberUid),
                     'display_name' => $displayName,
-                    'status'       => $isExpired ? 'expired' : 'passed',
+                    'status'       => $status,
                     'passed_at'    => $cert->getIssuedAt(),
                     'expires_at'   => $expiresAt,
                     'due_date'     => $states[$memberUid]['due_date'] ?? null,
@@ -150,11 +151,7 @@ class CertificateReportService {
             } else {
                 // No cert — overdue when due_date is in the past and not already passed
                 $state     = $states[$memberUid] ?? null;
-                $isOverdue = $state !== null
-                    && $state['due_date'] !== null
-                    && $state['due_date'] < $now
-                    && $state['status'] !== 'passed';
-                $status    = $isOverdue ? 'overdue' : 'missing';
+                $status    = $this->baseStatus(null, $state, $now);
 
                 $user       = $groupUsers[$memberUid] ?? null;
                 $rawName    = $user !== null ? $user->getDisplayName() : null;
@@ -172,6 +169,143 @@ class CertificateReportService {
             }
         }
         return $rows;
+    }
+
+    /**
+     * Newest certificate per user (re-certification leaves several rows). Mapper results are
+     * unordered across chunks, so pick explicitly: higher issued_at wins, then higher id. Shared by
+     * the group report, the coverage report and the expiry list.
+     *
+     * @param Certificate[] $certs
+     * @return array<string, Certificate> keyed by user id
+     */
+    private function newestByUser(array $certs): array {
+        $newest = [];
+        foreach ($certs as $cert) {
+            $uid = (string)$cert->getUserId();
+            $current = $newest[$uid] ?? null;
+            if ($current === null
+                || (int)$cert->getIssuedAt() > (int)$current->getIssuedAt()
+                || ((int)$cert->getIssuedAt() === (int)$current->getIssuedAt() && (int)$cert->getId() > (int)$current->getId())) {
+                $newest[$uid] = $cert;
+            }
+        }
+        return $newest;
+    }
+
+    /**
+     * The member status of the group report: 'passed' | 'expired' | 'overdue' | 'missing'.
+     * $cert is the member's newest non-revoked certificate (or null), $state the open assignment
+     * period (or null). The coverage report refines exactly this result (coverageStatus()).
+     *
+     * @param array{status: string, due_date: int|null}|null $state
+     */
+    private function baseStatus(?Certificate $cert, ?array $state, int $now): string {
+        if ($cert !== null) {
+            $expiresAt = $cert->getExpiresAt();
+            return $expiresAt !== null && $expiresAt < $now ? 'expired' : 'passed';
+        }
+        $isOverdue = $state !== null
+            && $state['due_date'] !== null
+            && $state['due_date'] < $now
+            && $state['status'] !== 'passed';
+        return $isOverdue ? 'overdue' : 'missing';
+    }
+
+    /**
+     * Coverage status (Lückencheck B2): the group report's status with the renewal and grace
+     * windows the rest of the recertification uses (ConfigDefaults, the single parsers).
+     *   current      — valid certificate, renewal not open yet (or never expires)
+     *   renewal_open — valid, and renewal is open (from the first reminder, renewalOpensAt())
+     *   expired      — expired, still inside recert_grace_days
+     *   overdue      — expired and past the grace window, or no certificate and the assignment's
+     *                  due date has passed
+     *   never_passed — no (non-revoked) certificate and nothing overdue
+     *
+     * @param array{status: string, due_date: int|null}|null $state
+     */
+    private function coverageStatus(?Certificate $cert, ?array $state, int $now): string {
+        $base = $this->baseStatus($cert, $state, $now);
+        if ($this->config === null) {
+            throw new \LogicException('CertificateReportService needs IConfig for the coverage status');
+        }
+        if ($cert === null) {
+            return $base === 'overdue' ? 'overdue' : 'never_passed';
+        }
+        $expiresAt = $cert->getExpiresAt();
+        if ($expiresAt === null) {
+            return 'current';
+        }
+        if ($base === 'expired') {
+            return $now > (int)$expiresAt + ConfigDefaults::graceDays($this->config) * self::SECONDS_PER_DAY
+                ? 'overdue'
+                : 'expired';
+        }
+        return $now >= ConfigDefaults::renewalOpensAt($this->config, (int)$expiresAt) ? 'renewal_open' : 'current';
+    }
+
+    /**
+     * Coverage report (Lückencheck B2): EVERY learner enrolled in the course (role student; the
+     * owner and co-instructors are left out), with or without a certificate. The issued-certificates
+     * report cannot show who never passed; this list can. One read path for the table and the CSV.
+     *
+     * Same output rules as the other report rows: display name only (frozen certificate name, else
+     * the account's display name, both guarded), an opaque member_ref, never the account id or an
+     * email.
+     *
+     * @param string|null $status one of COVERAGE_STATUSES to keep only those rows; anything else = all
+     * @return array{rows: list<array{member_ref: string, display_name: string, status: string, last_certificate_at: int|null, expires_at: int|null, required_pools_passed: int, required_pools_total: int}>}
+     * @throws \OCP\AppFramework\Db\DoesNotExistException course not found (→ 404)
+     * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
+     */
+    public function getCoverageReport(int $courseId, string $userId, ?string $status): array {
+        // Gate BEFORE any read — owner-scoped, IDOR-safe.
+        $course = $this->courseService->assertInstructorOfCourse($courseId, $userId);
+
+        $ownerId = (string)$course->getInstructorId();
+        $learnerIds = [];
+        foreach ($this->courseMemberMapper->findByCourse($courseId) as $member) {
+            $uid = (string)$member->getUserId();
+            if ($member->getRole() === 'student' && $uid !== '' && $uid !== $ownerId && !in_array($uid, $learnerIds, true)) {
+                $learnerIds[] = $uid;
+            }
+        }
+        $filter = in_array($status, self::COVERAGE_STATUSES, true) ? $status : null;
+        if ($learnerIds === []) {
+            return ['rows' => []];
+        }
+
+        $now = $this->timeFactory->getTime();
+        $certsByUserId = $this->newestByUser($this->certificateMapper->findByCourseIdForUsers($courseId, $learnerIds));
+        $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, $learnerIds);
+        $pools = $this->passCriteriaService->requiredPoolProgress($courseId, $learnerIds);
+
+        $rows = [];
+        foreach ($learnerIds as $uid) {
+            $cert = $certsByUserId[$uid] ?? null;
+            $rowStatus = $this->coverageStatus($cert, $states[$uid] ?? null, $now);
+            if ($filter !== null && $rowStatus !== $filter) {
+                continue;
+            }
+            if ($cert !== null) {
+                [$frozenName, ] = $this->decodePayload($cert->getCredentialJson());
+                $displayName = $this->safeDisplayName($frozenName, $uid);
+            } else {
+                $user = $this->userManager->get($uid);
+                $displayName = $this->safeDisplayName($user !== null ? $user->getDisplayName() : null, $uid);
+            }
+            $rows[] = [
+                'member_ref' => $this->memberRef($uid),
+                'display_name' => $displayName,
+                'status' => $rowStatus,
+                'last_certificate_at' => $cert !== null ? (int)$cert->getIssuedAt() : null,
+                'expires_at' => $cert !== null && $cert->getExpiresAt() !== null ? (int)$cert->getExpiresAt() : null,
+                'required_pools_passed' => (int)($pools[$uid]['passed'] ?? 0),
+                'required_pools_total' => (int)($pools[$uid]['total'] ?? 0),
+            ];
+        }
+        usort($rows, static fn(array $a, array $b): int => strnatcasecmp($a['display_name'], $b['display_name']));
+        return ['rows' => $rows];
     }
 
     /**
@@ -389,16 +523,7 @@ class CertificateReportService {
         }
         // Newest certificate per learner over the whole course, not just the filtered window:
         // the successor of an expiring certificate expires later and is outside the filter.
-        $newest = [];
-        foreach ($this->certificateMapper->findByCourseId($courseId, null, null, null) as $cert) {
-            $uid = (string)$cert->getUserId();
-            $current = $newest[$uid] ?? null;
-            if ($current === null
-                || (int)$cert->getIssuedAt() > (int)$current->getIssuedAt()
-                || ((int)$cert->getIssuedAt() === (int)$current->getIssuedAt() && (int)$cert->getId() > (int)$current->getId())) {
-                $newest[$uid] = $cert;
-            }
-        }
+        $newest = $this->newestByUser($this->certificateMapper->findByCourseId($courseId, null, null, null));
         return array_values(array_filter($certs, static function (Certificate $c) use ($newest): bool {
             if ($c->getActiveIdemKey() !== null) {
                 return true;

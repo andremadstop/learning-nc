@@ -3714,6 +3714,19 @@
         "Die Frage konnte nicht zurückgezogen werden.": "Не удалось отозвать вопрос.",
         "Unbeantwortete Anfragen: {count}": "Заявки без ответа: {count}",
         "Hier stehen nur technische Anfragen ohne Kursbezug. Fragen zu einem Kurs gehen an dessen Lehrende und stehen im Kurs im Bereich „Kommunikation“ unter „Fragen von Lernenden“.": "Здесь только технические заявки, не связанные с курсом. Вопросы по курсу получают его преподаватели; они находятся в курсе в разделе «Коммуникация», вкладка «Вопросы учащихся».",
-        "Zu den Kursen": "К курсам"
+        "Zu den Kursen": "К курсам",
+        "Letztes Zertifikat": "Последний сертификат",
+        "Pflicht-Pools bestanden": "Сдано обязательных пулов",
+        "Pflicht-Pools gesamt": "Всего обязательных пулов",
+        "Aktuell (Abdeckungsstatus)": "Действует",
+        "Erneuerung offen (Abdeckungsstatus)": "Открыто продление",
+        "Abgelaufen, in Kulanzzeit (Abdeckungsstatus)": "Истёк, льготный период",
+        "Überfällig (Abdeckungsstatus)": "Просрочено",
+        "Nie bestanden (Abdeckungsstatus)": "Ни разу не сдано",
+        "Abdeckung: alle eingeschriebenen Lernenden": "Охват: все записанные учащиеся",
+        "Eine Zeile pro Person, mit oder ohne Zertifikat. Dozierende sind nicht enthalten.": "Одна строка на человека, с сертификатом или без. Преподаватели не включены.",
+        "Niemand mit diesem Status.": "Нет никого с этим статусом.",
+        "Keine Lernenden eingeschrieben.": "Нет записанных учащихся.",
+        "Abdeckungsbericht konnte nicht geladen werden.": "Не удалось загрузить отчёт об охвате."
     }
 }

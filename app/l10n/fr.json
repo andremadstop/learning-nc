@@ -3714,6 +3714,19 @@
         "Die Frage konnte nicht zurückgezogen werden.": "La question n’a pas pu être retirée.",
         "Unbeantwortete Anfragen: {count}": "Demandes sans réponse : {count}",
         "Hier stehen nur technische Anfragen ohne Kursbezug. Fragen zu einem Kurs gehen an dessen Lehrende und stehen im Kurs im Bereich „Kommunikation“ unter „Fragen von Lernenden“.": "Cette liste ne contient que les demandes techniques sans lien avec un cours. Les questions sur un cours sont adressées à ses enseignants et se trouvent dans le cours, rubrique « Communication », sous « Questions des apprenants ».",
-        "Zu den Kursen": "Aller aux cours"
+        "Zu den Kursen": "Aller aux cours",
+        "Letztes Zertifikat": "Dernier certificat",
+        "Pflicht-Pools bestanden": "Pools obligatoires réussis",
+        "Pflicht-Pools gesamt": "Total des pools obligatoires",
+        "Aktuell (Abdeckungsstatus)": "À jour",
+        "Erneuerung offen (Abdeckungsstatus)": "Renouvellement ouvert",
+        "Abgelaufen, in Kulanzzeit (Abdeckungsstatus)": "Expiré, en période de grâce",
+        "Überfällig (Abdeckungsstatus)": "En retard",
+        "Nie bestanden (Abdeckungsstatus)": "Jamais réussi",
+        "Abdeckung: alle eingeschriebenen Lernenden": "Couverture : tous les apprenants inscrits",
+        "Eine Zeile pro Person, mit oder ohne Zertifikat. Dozierende sind nicht enthalten.": "Une ligne par personne, avec ou sans certificat. Les formateurs ne sont pas inclus.",
+        "Niemand mit diesem Status.": "Personne n'a ce statut.",
+        "Keine Lernenden eingeschrieben.": "Aucun apprenant inscrit.",
+        "Abdeckungsbericht konnte nicht geladen werden.": "Le rapport de couverture n'a pas pu être chargé."
     }
 }
