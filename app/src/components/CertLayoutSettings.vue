@@ -166,6 +166,7 @@ export default {
 		return {
 			images: { stamp: '', signature: '' },
 			imageBusy: '',
+			imageSeq: 0,
 			introMax: INTRO_MAX,
 			signerMax: SIGNER_MAX,
 			placeholders: PLACEHOLDERS,
@@ -265,15 +266,28 @@ export default {
 			}
 		},
 
+		/**
+		 * The stored images, whatever the course prop says: an image picked or removed without
+		 * saving the settings is stored at once, but the course the settings were mounted from
+		 * still has the old has_stamp/has_signature until the next course reload (GitHub #43).
+		 */
 		async loadImages() {
-			if (!this.modelValue.has_stamp && !this.modelValue.has_signature) {
-				return
-			}
+			const seq = this.imageSeq
 			try {
-				this.applyImages(await getCertLayout(this.courseId))
+				const layout = await getCertLayout(this.courseId)
+				// a pick or remove started meanwhile: its answer is newer than this one
+				if (seq === this.imageSeq) {
+					this.applyImages(layout)
+				}
 			} catch (e) {
 				// the preview stays without images; saving is not affected
 			}
+		},
+
+		/** Answer of an import/remove: show it and tell the parent what is stored now. */
+		imagesChanged(layout) {
+			this.applyImages(layout)
+			this.update({ has_stamp: !!this.images.stamp, has_signature: !!this.images.signature })
 		},
 
 		async pickImage(kind) {
@@ -304,10 +318,13 @@ export default {
 				return
 			}
 			this.imageBusy = kind
+			this.imageSeq++
 			try {
-				this.applyImages(await importCertLayoutImage(this.courseId, kind, chosen))
+				this.imagesChanged(await importCertLayoutImage(this.courseId, kind, chosen))
 			} catch (e) {
 				this.$emit('error', imageErrorMessage(e))
+				// the load this call overtook is void: fetch what is stored now
+				this.loadImages()
 			} finally {
 				this.imageBusy = ''
 			}
@@ -315,10 +332,12 @@ export default {
 
 		async removeImage(kind) {
 			this.imageBusy = kind
+			this.imageSeq++
 			try {
-				this.applyImages(await removeCertLayoutImage(this.courseId, kind))
+				this.imagesChanged(await removeCertLayoutImage(this.courseId, kind))
 			} catch (e) {
 				this.$emit('error', t('learning', 'Das Bild konnte nicht entfernt werden.'))
+				this.loadImages()
 			} finally {
 				this.imageBusy = ''
 			}

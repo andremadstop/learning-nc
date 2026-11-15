@@ -281,3 +281,85 @@ describe('course settings: request body of the layout (GitHub #43)', () => {
 		expect(ctx.certLayout.has_stamp).toBe(true)
 	})
 })
+
+describe('course settings: stamp and signature stay visible without saving (GitHub #43)', () => {
+	let host, app
+
+	afterEach(() => {
+		app?.unmount()
+		host?.remove()
+	})
+
+	async function flush() {
+		for (let i = 0; i < 5; i++) {
+			await new Promise((r) => setTimeout(r, 0))
+			await nextTick()
+		}
+	}
+
+	async function mountSettings(modelValue, updates = []) {
+		const { default: CertLayoutSettings } = await import('../../src/components/CertLayoutSettings.vue')
+		const { certLayoutFromServer } = await import('../../src/components/CourseTabVerwaltung.vue')
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({
+			render: () => h(CertLayoutSettings, {
+				courseId: 7,
+				modelValue: certLayoutFromServer(modelValue),
+				'onUpdate:modelValue': (v) => updates.push(v),
+			}),
+		})
+		app.config.globalProperties.t = globalThis.t
+		app.mount(host)
+		await flush()
+		return updates
+	}
+
+	it('a remount from a stale course (has_stamp false) still shows the stored stamp and its remove button', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockResolvedValueOnce({ data: { stamp: STAMP, signature: null } })
+
+		await mountSettings({ has_stamp: false })
+
+		expect(axios.get.mock.calls.at(-1)[0]).toBe('/apps/learning/api/courses/7/cert-layout')
+		expect(host.querySelector('.cert-layout-image-thumb')?.getAttribute('src')).toBe(STAMP)
+		expect(host.querySelector('[data-test="cert-layout-remove-stamp"]')).not.toBeNull()
+	})
+
+	it('removing the stamp tells the parent it is gone', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockResolvedValueOnce({ data: { stamp: STAMP, signature: null } })
+		axios.delete.mockResolvedValueOnce({ data: { stamp: null, signature: null } })
+		const updates = await mountSettings({ has_stamp: true })
+
+		host.querySelector('[data-test="cert-layout-remove-stamp"]').click()
+		await flush()
+
+		expect(axios.delete.mock.calls.at(-1)[0]).toBe('/apps/learning/api/courses/7/cert-layout/images/stamp')
+		expect(updates.at(-1)).toMatchObject({ has_stamp: false, has_signature: false })
+		expect(host.querySelector('.cert-layout-image-thumb')).toBeNull()
+	})
+
+	it('a mount-time load answering after a remove does not bring the removed stamp back', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		let answerLoad
+		axios.get.mockImplementationOnce(() => new Promise((resolve) => { answerLoad = resolve }))
+		axios.delete.mockResolvedValueOnce({ data: { stamp: null, signature: null } })
+		const { default: CertLayoutSettings } = await import('../../src/components/CertLayoutSettings.vue')
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		let vm
+		app = createApp({
+			render: () => h(CertLayoutSettings, { courseId: 7, modelValue: { show: {}, has_stamp: true }, ref: (r) => { vm = r } }),
+		})
+		app.config.globalProperties.t = globalThis.t
+		app.mount(host)
+		await nextTick()
+
+		await vm.removeImage('stamp')
+		answerLoad({ data: { stamp: STAMP, signature: null } })
+		await flush()
+
+		expect(host.querySelector('.cert-layout-image-thumb')).toBeNull()
+	})
+})
