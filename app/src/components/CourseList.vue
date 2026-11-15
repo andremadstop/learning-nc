@@ -311,11 +311,6 @@ export default {
 			}
 			return t('learning', 'You are not enrolled in any courses yet. Your instructor will add you to a course — check back soon!')
 		},
-		/**
-		 * GitHub #35: courses can carry a group from before the field enrolled anyone (it used to
-		 * restrict self-enrolment only), or from a save whose enrolment failed. Saving it again
-		 * enrols nobody, so the form says so instead of implying it happened.
-		 */
 		// GitHub #67: the two course profiles offered when a course is created.
 		profileOptions() {
 			return [
@@ -331,6 +326,11 @@ export default {
 				},
 			]
 		},
+		/**
+		 * GitHub #35: courses can carry a group from before the field enrolled anyone (it used to
+		 * restrict self-enrolment only), or from a save whose enrolment failed. Saving it again
+		 * enrols nobody, so the form says so instead of implying it happened.
+		 */
 		groupAlreadySet() {
 			const current = (this.editingCourse?.nc_group_id || '').trim()
 			return current !== '' && this.formData.ncGroupId.trim() === current
