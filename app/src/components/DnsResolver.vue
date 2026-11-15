@@ -15,8 +15,10 @@
       class="sim-tool__tabs"
       role="tablist"
       :aria-label="t('learning', 'DNS-Resolver Tabs')"
+      @keydown="moveTablistFocus"
     >
       <button
+        type="button"
         class="sim-tool__tab"
         :class="{ 'sim-tool__tab--active': currentView === 'simulator' }"
         role="tab"
@@ -26,6 +28,7 @@
         {{ t('learning', 'Simulator') }}
       </button>
       <button
+        type="button"
         class="sim-tool__tab"
         :class="{ 'sim-tool__tab--active': currentView === 'exercise' }"
         role="tab"
@@ -35,6 +38,7 @@
         {{ t('learning', 'Übung') }}
       </button>
       <button
+        type="button"
         class="sim-tool__tab"
         :class="{ 'sim-tool__tab--active': currentView === 'practicum' }"
         role="tab"
@@ -250,6 +254,7 @@
 
 <script>
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent';
+import { moveTablistFocus } from '../utils/tablistKeydown.js';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import PracticumRunner from './PracticumRunner.vue';
 import dnsScenarios from '../../data/dns_scenarios.json';
@@ -374,6 +379,7 @@ export default {
     this.clearTimer();
   },
   methods: {
+    moveTablistFocus,
     actorClass(actorId) {
       const step = this.lookupResult?.steps?.[this.currentStepIndex];
       if (!step) return '';

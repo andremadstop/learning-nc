@@ -14,7 +14,7 @@
       <div v-if="section.questions.length" class="pbq-section__body">
         <div v-for="q in section.questions" :key="q.id" class="pbq-dd-row" :class="rowClasses(q)">
           <div class="pbq-dd-copy">
-            <label class="pbq-dd-label" :for="'pbq-dd-' + q.id">{{ q.label }}</label>
+            <label class="pbq-dd-label" :for="q.readonly_value === undefined ? selectId(q) : undefined">{{ q.label }}</label>
             <p v-if="q.help_text" class="pbq-dd-help">{{ q.help_text }}</p>
             <p v-if="q.current_value !== undefined" class="pbq-dd-current">Current: {{ q.current_value }}</p>
           </div>
@@ -23,7 +23,7 @@
             <span v-if="q.readonly_value !== undefined" class="pbq-dd-readonly">{{ q.readonly_value }}</span>
             <select
               v-else
-              :id="'pbq-dd-' + q.id"
+              :id="selectId(q)"
               :value="currentValue(q)"
               :disabled="disabled"
               @change="$emit('update', String(q.id), $event.target.value)"
@@ -47,6 +47,10 @@ export default {
     value: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
   },
+  data() {
+    // GitHub #64: label/select ids per instance (two PBQs on one page may share question ids)
+    return { idPrefix: 'pbq-dd-' + Math.random().toString(36).slice(2, 8) }
+  },
   computed: {
     sections() {
       const questions = this.config.questions || []
@@ -63,6 +67,9 @@ export default {
     },
   },
   methods: {
+    selectId(question) {
+      return this.idPrefix + '-' + String(question.id).replace(/[^A-Za-z0-9_-]/g, '_')
+    },
     currentValue(question) {
       return this.value[question.id] || question.initial_value || ''
     },

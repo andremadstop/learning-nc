@@ -25,10 +25,11 @@
 			</div>
 		</header>
 
-		<nav v-if="!isEmbedded" class="subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')">
+		<nav v-if="!isEmbedded" class="subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')" @keydown="moveTablistFocus">
 			<button
 				v-for="tab in tabs"
 				:key="tab.id"
+				type="button"
 				class="subnet-tool__tab"
 				:class="{ 'subnet-tool__tab--active': activeTab === tab.id }"
 				role="tab"
@@ -572,6 +573,7 @@ import {
 } from '../utils/subnetMath.js'
 import { ROW_KEYS, getVisibleRows } from '../utils/togglePresets.js'
 import { generateIPv4Steps, generateIPv6Steps, generateWhyExplanation } from '../utils/subnetExplainer'
+import { moveTablistFocus } from '../utils/tablistKeydown.js'
 import {
 	createPracticeSession,
 	nextScenario,
@@ -994,6 +996,7 @@ export default {
 	},
 
 	methods: {
+		moveTablistFocus,
 		switchTab(id) {
 			this.activeTab = id
 		},

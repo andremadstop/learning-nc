@@ -104,6 +104,16 @@ describe('#64 template accessibility', () => {
 		expect(offenders).toEqual([])
 	})
 
+	it('every role="tablist" moves the focus with the arrow keys (a keydown handler)', () => {
+		const offenders = []
+		eachTemplateNode((file, node) => {
+			if (attr(node, 'role') !== 'tablist') return
+			const keydown = (node.props || []).some((p) => p.type === 7 && p.name === 'on' && p.arg && p.arg.content === 'keydown')
+			if (!keydown) offenders.push(line(file, node))
+		})
+		expect(offenders).toEqual([])
+	})
+
 	it('aria-sort sits on a plain column header, never on role="button"', () => {
 		const offenders = []
 		eachTemplateNode((file, node) => {

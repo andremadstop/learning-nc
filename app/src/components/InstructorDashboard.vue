@@ -53,7 +53,7 @@
 						@click="$emit('selectCourse', course)">
 						<div class="card-header">
 							<!-- GitHub #64: the title opens the course; the card holds the export button, so it is no button itself. -->
-							<h4><button type="button" class="card-open" @click.stop="$emit('selectCourse', course)">{{ course.title }}</button></h4>
+							<h4><button :id="'dashboard-course-title-' + course.id" type="button" class="card-open" @click.stop="$emit('selectCourse', course)">{{ course.title }}</button></h4>
 							<span class="status-badge" :class="course.status">
 								{{ course.status === 'active' ? t('learning', 'Aktiv') : t('learning', 'Archiviert') }}
 							</span>
@@ -73,7 +73,7 @@
 						</div>
 						<div class="card-footer">
 							<span>{{ t('learning', 'Erstellt {date}', { date: formatDate(course.created_at) }) }}</span>
-							<NcButton variant="tertiary" :title="t('learning', 'Statistiken exportieren')" class="export-btn" @click.stop="exportCourseCsv(course)">
+							<NcButton variant="tertiary" :title="t('learning', 'Statistiken exportieren')" :aria-describedby="'dashboard-course-title-' + course.id" class="export-btn" @click.stop="exportCourseCsv(course)">
 								{{ t('learning', 'CSV Export') }}
 							</NcButton>
 						</div>

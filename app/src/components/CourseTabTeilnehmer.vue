@@ -137,29 +137,33 @@
 					<thead>
 						<tr>
 							<th class="student-col sortable-col" scope="col"
-								:aria-sort="progressSortKey === 'user_id' ? (progressSortAsc ? 'ascending' : 'descending') : undefined">
-								<button type="button" class="sort-btn" @click="setProgressSort('user_id')">
+								:aria-sort="progressSortKey === 'user_id' ? (progressSortAsc ? 'ascending' : 'descending') : undefined"
+								@click="setProgressSort('user_id')">
+								<button type="button" class="sort-btn" @click.stop="setProgressSort('user_id')">
 									{{ t('learning', 'Student') }}
 									<span v-if="progressSortKey === 'user_id'" class="sort-arrow" aria-hidden="true">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</button>
 							</th>
 							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col"
-								:aria-sort="progressSortKey === 'current_level' ? (progressSortAsc ? 'ascending' : 'descending') : undefined">
-								<button type="button" class="sort-btn" @click="setProgressSort('current_level')">
+								:aria-sort="progressSortKey === 'current_level' ? (progressSortAsc ? 'ascending' : 'descending') : undefined"
+								@click="setProgressSort('current_level')">
+								<button type="button" class="sort-btn" @click.stop="setProgressSort('current_level')">
 									{{ t('learning', 'Level') }}
 									<span v-if="progressSortKey === 'current_level'" class="sort-arrow" aria-hidden="true">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</button>
 							</th>
 							<th v-if="gamificationEnabled" class="stat-col sortable-col" scope="col"
-								:aria-sort="progressSortKey === 'total_xp' ? (progressSortAsc ? 'ascending' : 'descending') : undefined">
-								<button type="button" class="sort-btn" @click="setProgressSort('total_xp')">
+								:aria-sort="progressSortKey === 'total_xp' ? (progressSortAsc ? 'ascending' : 'descending') : undefined"
+								@click="setProgressSort('total_xp')">
+								<button type="button" class="sort-btn" @click.stop="setProgressSort('total_xp')">
 									{{ t('learning', 'XP') }}
 									<span v-if="progressSortKey === 'total_xp'" class="sort-arrow" aria-hidden="true">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</button>
 							</th>
 							<th v-if="!progressExamBasis" class="stat-col sortable-col" scope="col"
-								:aria-sort="progressSortKey === 'critical_cards_count' ? (progressSortAsc ? 'ascending' : 'descending') : undefined">
-								<button type="button" class="sort-btn" @click="setProgressSort('critical_cards_count')">
+								:aria-sort="progressSortKey === 'critical_cards_count' ? (progressSortAsc ? 'ascending' : 'descending') : undefined"
+								@click="setProgressSort('critical_cards_count')">
+								<button type="button" class="sort-btn" @click.stop="setProgressSort('critical_cards_count')">
 									{{ t('learning', 'Critical Cards') }}
 									<span v-if="progressSortKey === 'critical_cards_count'" class="sort-arrow" aria-hidden="true">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</button>
@@ -171,15 +175,17 @@
 								{{ pool.pool_name }}
 							</th>
 							<th class="overall-col sortable-col" scope="col"
-								:aria-sort="progressSortKey === 'overall_mastery' ? (progressSortAsc ? 'ascending' : 'descending') : undefined">
-								<button type="button" class="sort-btn" @click="setProgressSort('overall_mastery')">
+								:aria-sort="progressSortKey === 'overall_mastery' ? (progressSortAsc ? 'ascending' : 'descending') : undefined"
+								@click="setProgressSort('overall_mastery')">
+								<button type="button" class="sort-btn" @click.stop="setProgressSort('overall_mastery')">
 									{{ overallColumnLabel }}
 									<span v-if="progressSortKey === 'overall_mastery'" class="sort-arrow" aria-hidden="true">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</button>
 							</th>
 							<th class="stat-col sortable-col" scope="col"
-								:aria-sort="progressSortKey === 'last_activity_date' ? (progressSortAsc ? 'ascending' : 'descending') : undefined">
-								<button type="button" class="sort-btn" @click="setProgressSort('last_activity_date')">
+								:aria-sort="progressSortKey === 'last_activity_date' ? (progressSortAsc ? 'ascending' : 'descending') : undefined"
+								@click="setProgressSort('last_activity_date')">
+								<button type="button" class="sort-btn" @click.stop="setProgressSort('last_activity_date')">
 									{{ t('learning', 'Last Active') }}
 									<span v-if="progressSortKey === 'last_activity_date'" class="sort-arrow" aria-hidden="true">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</button>
@@ -1572,11 +1578,12 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .sortable-col:hover { background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-background-dark)); }
 .sort-arrow { font-size: 0.7em; margin-inline-start: 4px; }
 
-/* GitHub #64: the header stays a column header (aria-sort); the button inside it sorts. */
+/* GitHub #64: the header stays a column header (aria-sort); the button inside it sorts for the
+   keyboard, a click anywhere on the cell still sorts for the mouse. Inline, so the cell's
+   text-align places it like the label before. */
 .sortable-col .sort-btn {
 	display: inline-flex;
 	align-items: center;
-	width: 100%;
 	min-height: 0;
 	margin: 0;
 	padding: 0;
@@ -1585,7 +1592,6 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 	background: none;
 	color: inherit;
 	font: inherit;
-	text-align: start;
 	cursor: pointer;
 }
 
