@@ -78,13 +78,12 @@
 				</NcButton>
 			</div>
 
-			<!-- Fresh-eyes review (GitHub #36): the percentages are Leitner mastery. In a course without
-				Leitner they stay at 0 % for a learner who passed both exams, which read as "did nothing". -->
-			<NcNoteCard v-if="courseWithoutLeitner" type="info" class="progress-leitner-note">
-				<!-- The area is only called „Abschluss & Zertifikat“ with the certificate on (CourseDetail.vue). -->
-				{{ course?.cert_enabled
-					? t('learning', 'Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse und Zertifikate stehen unter „Abschluss & Zertifikat“.')
-					: t('learning', 'Die Prozentwerte zeigen gemeisterte Karten aus dem Leitner-Lernen. Dieser Kurs nutzt Leitner nicht, deshalb bleiben sie bei 0 %. Prüfungsergebnisse stehen unter „Abschluss“.') }}
+			<!-- GitHub #68: without Leitner the server fills the table from exams and hit rates
+				(progress_basis 'exams'); the note says what the figures are. -->
+			<NcNoteCard v-if="progressExamBasis" type="info" class="progress-leitner-note">
+				{{ progressMeta.cert_applicable
+					? t('learning', 'Dieser Kurs nutzt Leitner nicht. Bei Pflicht-Pools steht deshalb das beste Prüfungsergebnis (✓ = bestanden), bei den übrigen Pools die Trefferquote beim Üben und in Prüfungen.')
+					: t('learning', 'Dieser Kurs nutzt Leitner nicht. Die Prozentwerte zeigen deshalb die Trefferquote je Pool beim Üben und in Prüfungen.') }}
 			</NcNoteCard>
 
 			<!-- At-Risk Section -->
@@ -99,7 +98,7 @@
 					<button class="at-risk-toggle">{{ atRiskCollapsed ? '\u25BC' : '\u25B2' }}</button>
 				</div>
 				<p v-if="!atRiskCollapsed" class="at-risk-hint">
-					{{ t('learning', 'Lernende, die beim Üben auffallen, zum Beispiel lange nicht aktiv, niedrige Trefferquote oder viele kritische Karten (Fragen, die oft falsch beantwortet werden). Die Gründe stehen auf jeder Karte.') }}
+					{{ atRiskHint }}
 				</p>
 				<div v-if="!atRiskCollapsed" class="at-risk-cards">
 					<div v-for="student in atRiskStudents" :key="'risk-' + student.user_id"
@@ -152,7 +151,7 @@
 								{{ t('learning', 'XP') }}
 								<span v-if="progressSortKey === 'total_xp'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
-							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+							<th v-if="!progressExamBasis" class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="progressSortKey === 'critical_cards_count' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setProgressSort('critical_cards_count')" @keydown.enter="setProgressSort('critical_cards_count')" @keydown.space.prevent="setProgressSort('critical_cards_count')">
 								{{ t('learning', 'Critical Cards') }}
@@ -167,7 +166,7 @@
 							<th class="overall-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="progressSortKey === 'overall_mastery' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setProgressSort('overall_mastery')" @keydown.enter="setProgressSort('overall_mastery')" @keydown.space.prevent="setProgressSort('overall_mastery')">
-								{{ t('learning', 'Overall') }}
+								{{ overallColumnLabel }}
 								<span v-if="progressSortKey === 'overall_mastery'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
 							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
@@ -191,25 +190,43 @@
 								</td>
 								<td class="stat-col">{{ formatXp(row.total_xp) }}</td>
 							</template>
-							<td class="stat-col critical-cards-col">
+							<td v-if="!progressExamBasis" class="stat-col critical-cards-col">
 								<span class="critical-cards-pill" :class="criticalCardsClass(row.critical_cards_count)">
 									{{ row.critical_cards_count || 0 }}
 								</span>
 							</td>
-							<td v-for="pool in coursePools"
-								:key="'td-' + pool.id"
-								class="pool-col"
-								:class="masteryClass(getPoolMastery(row, pool.pool_id))">
-								{{ getPoolMastery(row, pool.pool_id) !== null
-									? getPoolMastery(row, pool.pool_id) + '%'
-									: '-' }}
-							</td>
-							<td class="overall-col"
-								:class="masteryClass(row.overall_mastery)">
-								{{ row.overall_mastery !== null && row.overall_mastery !== undefined
-									? row.overall_mastery + '%'
-									: '-' }}
-							</td>
+							<template v-if="progressExamBasis">
+								<td v-for="pool in coursePools"
+									:key="'td-' + pool.id"
+									class="pool-col"
+									:class="examCell(row, pool.pool_id).cls"
+									:title="examCell(row, pool.pool_id).title">
+									{{ examCell(row, pool.pool_id).text }}
+									<template v-if="examCell(row, pool.pool_id).passed">
+										<span class="exam-passed-mark" aria-hidden="true">✓</span>
+										<span class="hidden-visually">{{ t('learning', 'Bestanden') }}</span>
+									</template>
+								</td>
+								<td class="overall-col" :class="overallExamCell(row).cls">
+									{{ overallExamCell(row).text }}
+								</td>
+							</template>
+							<template v-else>
+								<td v-for="pool in coursePools"
+									:key="'td-' + pool.id"
+									class="pool-col"
+									:class="masteryClass(getPoolMastery(row, pool.pool_id))">
+									{{ getPoolMastery(row, pool.pool_id) !== null
+										? getPoolMastery(row, pool.pool_id) + '%'
+										: '-' }}
+								</td>
+								<td class="overall-col"
+									:class="masteryClass(row.overall_mastery)">
+									{{ row.overall_mastery !== null && row.overall_mastery !== undefined
+										? row.overall_mastery + '%'
+										: '-' }}
+								</td>
+							</template>
 							<td class="stat-col last-active-col">{{ formatLastActive(row.last_activity_date) }}</td>
 						</tr>
 					</tbody>
@@ -697,6 +714,7 @@ export default {
 
 			// At-Risk
 			atRiskStudents: [],
+			atRiskBasis: 'leitner',
 			atRiskCollapsed: false,
 
 			// Compliance report (cert)
@@ -756,6 +774,24 @@ export default {
 		// GitHub #36: the course switched Leitner off, so the mastery columns cannot move.
 		courseWithoutLeitner() {
 			return this.course?.mode_config?.leitner === false
+		},
+		// GitHub #68: the server says which figures the progress rows carry. An older server
+		// without the field keeps the Leitner table.
+		progressExamBasis() {
+			return this.progressMeta?.progress_basis === 'exams'
+		},
+		overallColumnLabel() {
+			if (!this.progressExamBasis) return t('learning', 'Overall')
+			return this.progressMeta.cert_applicable ? t('learning', 'Ergebnis') : t('learning', 'Trefferquote gesamt')
+		},
+		atRiskHint() {
+			if (this.atRiskBasis === 'exams') {
+				return t('learning', 'Lernende, die noch nicht bestanden haben und bei denen es eilt: Die Frist ist nah oder vorbei, die Erneuerung ist offen oder sie waren länger nicht aktiv. Die Gründe stehen auf jeder Karte.')
+			}
+			if (this.atRiskBasis === 'practice') {
+				return t('learning', 'Lernende, die länger nicht aktiv waren oder eine niedrige Trefferquote haben. Die Gründe stehen auf jeder Karte.')
+			}
+			return t('learning', 'Lernende, die beim Üben auffallen, zum Beispiel lange nicht aktiv, niedrige Trefferquote oder viele kritische Karten (Fragen, die oft falsch beantwortet werden). Die Gründe stehen auf jeder Karte.')
 		},
 		// GitHub #63: see previewsCourseAsStudent()
 		previewsAsStudent() {
@@ -890,6 +926,12 @@ export default {
 				case 'box_one_share': return t('learning', '{n} % der Karten in Box 1', { n })
 				case 'streak_lost': return t('learning', 'Streak verloren (war {n})', { n })
 				case 'few_sessions': return t('learning', 'Sessions in 14 Tagen: {n}', { n })
+				// GitHub #68: a course without Leitner judges by the exams.
+				case 'not_passed': return t('learning', 'Noch nicht bestanden')
+				case 'deadline_overdue': return t('learning', 'Frist überschritten')
+				case 'deadline_days': return t('learning', 'Frist endet in {n} Tagen', { n })
+				case 'certificate_expired': return t('learning', 'Zertifikat abgelaufen')
+				case 'renewal_open': return t('learning', 'Erneuerung offen')
 				default: return code
 				}
 			})
@@ -916,6 +958,44 @@ export default {
 				return Math.round((pool.mastered || 0) / pool.total_questions * 100)
 			}
 			return 0
+		},
+		/**
+		 * GitHub #68: one pool cell of a course without Leitner: the best exam of a required pool
+		 * (with its pass), otherwise the hit rate of the learner's sessions on the pool.
+		 *
+		 * @param {object} row progress row
+		 * @param {number} poolId pool id
+		 * @return {{text: string, cls: string, title: string, passed: boolean}}
+		 */
+		examCell(row, poolId) {
+			const pool = (Array.isArray(row?.pools) ? row.pools : []).find(p => p.pool_id === poolId)
+			const value = pool?.value ?? null
+			if (pool?.metric === 'exam') {
+				if (value === null) {
+					return { text: '-', cls: '', title: t('learning', 'Noch keine Prüfung abgelegt'), passed: false }
+				}
+				return {
+					text: value + '%',
+					cls: pool.exam_passed ? 'mastery-high' : 'mastery-low',
+					title: t('learning', 'Bestes Prüfungsergebnis'),
+					passed: pool.exam_passed === true,
+				}
+			}
+			if (value === null) {
+				return { text: '-', cls: '', title: t('learning', 'Noch keine Antwort'), passed: false }
+			}
+			return { text: value + '%', cls: this.masteryClass(value), title: t('learning', 'Trefferquote beim Üben und in Prüfungen'), passed: false }
+		},
+		overallExamCell(row) {
+			const score = row?.overall_mastery ?? null
+			if (row?.overall_metric === 'exam') {
+				const label = row.overall_passed ? t('learning', 'Bestanden') : t('learning', 'Nicht bestanden')
+				return {
+					text: score !== null ? label + ' (' + score + '%)' : label,
+					cls: row.overall_passed ? 'mastery-high' : (score !== null ? 'mastery-low' : ''),
+				}
+			}
+			return { text: score !== null ? score + '%' : '-', cls: this.masteryClass(score) }
 		},
 		masteryClass(mastery) {
 			if (mastery === null || mastery === undefined) return ''
@@ -1018,6 +1098,9 @@ export default {
 						total: Number(data.meta?.total || data.students.length || 0),
 						limit: Number(data.meta?.limit || this.progressPageSize),
 						offset: Number(data.meta?.offset || 0),
+						// GitHub #68: which figures the rows carry, and whether the course certifies.
+						progress_basis: data.meta?.progress_basis || 'leitner',
+						cert_applicable: data.meta?.cert_applicable === true,
 					}
 				} else {
 					this.progressData = []
@@ -1039,6 +1122,7 @@ export default {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/at-risk', { courseId: this.courseId })
 				const response = await axios.get(url)
 				this.atRiskStudents = response.data.at_risk || []
+				this.atRiskBasis = response.data.basis || 'leitner'
 			} catch (err) {
 				console.error('Failed to fetch at-risk students:', err)
 			}
@@ -1435,6 +1519,7 @@ export default {
 .stat-col { min-width: 70px; text-align: center; white-space: nowrap; }
 
 td.mastery-high { background: var(--color-success); color: var(--color-success-text, var(--color-success)); font-weight: 700; border-inline-start: 3px solid var(--color-element-success); }
+.exam-passed-mark { margin-inline-start: 4px; font-weight: 700; }
 td.mastery-medium { background: var(--color-warning); color: var(--color-warning-text, var(--color-warning)); font-weight: 700; border-inline-start: 3px solid var(--color-element-warning); }
 td.mastery-low { background: var(--color-error); color: var(--color-error-text, var(--color-error)); font-weight: 700; border-inline-start: 3px solid var(--color-element-error); }
 .critical-cards-col { text-align: center; }

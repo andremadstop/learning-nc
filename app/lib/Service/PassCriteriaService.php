@@ -370,6 +370,59 @@ class PassCriteriaService {
     }
 
     /**
+     * Read-only (GitHub #68): the exam standing of each learner, for the instructor's progress tab
+     * and at-risk list of a course without Leitner. The same sequence as requiredPoolProgress() —
+     * issuance window first, then the pass rule — so "passed" and the best score per required pool
+     * match the completion tab, including a renewal window in which only the new exams count.
+     *
+     * Never issues, emits or writes (evaluate() is the only path that does). A course without
+     * certificates has no pass rule: applicable=false and no users.
+     *
+     * renewal_open: the current certificate's renewal window is open (from the first reminder on),
+     * the same rule as evaluate() and the coverage report (ConfigDefaults::renewalOpensAt()).
+     *
+     * @param string[] $userIds
+     * @return array{applicable: bool, threshold: int, requirement: string, required_pool_ids: list<int>, users: array<string, array{passed: bool, score: int|null, pools: array<int, array{best_score: int|null, passed: bool}>, certificate_valid: bool, certificate_expired: bool, renewal_open: bool}>}
+     */
+    public function examStandings(int $courseId, array $userIds): array {
+        $course = $this->courseMapper->findById($courseId);
+        $threshold = $course->getCertPassPercent() ?? 80;
+        if (!($course->getCertEnabled() ?? false)) {
+            return ['applicable' => false, 'threshold' => $threshold, 'requirement' => PassResult::REQUIREMENT_ANY_EXAM, 'required_pool_ids' => [], 'users' => []];
+        }
+        $requiredPoolIds = $this->resolveRequiredPoolIds($courseId, $course->getCertRequiredPoolIds());
+
+        $users = [];
+        foreach (array_values(array_unique(array_map('strval', $userIds))) as $userId) {
+            $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+            $window = $this->issuanceWindow($userId, $courseId, $certificate);
+            $rule = $this->assessRule($userId, $courseId, $requiredPoolIds, $threshold, [], $window['completed_after']);
+            $pools = [];
+            foreach ($rule['pools'] as $pool) {
+                $pools[(int)$pool['pool_id']] = ['best_score' => $pool['best_score'], 'passed' => $pool['passed']];
+            }
+            $described = $this->describeCertificate($certificate);
+            $opensAt = $this->renewalOpensAt($certificate);
+            $users[$userId] = [
+                'passed' => $rule['passed'],
+                'score' => $rule['score'],
+                'pools' => $pools,
+                'certificate_valid' => $described !== null && !$described['revoked'] && !$described['expired'],
+                'certificate_expired' => $described !== null && !$described['revoked'] && $described['expired'],
+                'renewal_open' => $opensAt !== null && time() >= $opensAt,
+            ];
+        }
+
+        return [
+            'applicable' => true,
+            'threshold' => $threshold,
+            'requirement' => $requiredPoolIds === [] ? PassResult::REQUIREMENT_ANY_EXAM : PassResult::REQUIREMENT_REQUIRED_POOLS,
+            'required_pool_ids' => $requiredPoolIds,
+            'users' => $users,
+        ];
+    }
+
+    /**
      * Owner or co-instructor member of the course — the same rule as
      * CourseService::isInstructorOfCourse(), which is private there.
      */

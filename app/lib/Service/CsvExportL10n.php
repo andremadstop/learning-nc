@@ -119,6 +119,12 @@ class CsvExportL10n {
                 'box_one_share' => $this->t('Karten in Box 1: %s', [$n . ' %']),
                 'streak_lost' => str_replace('{n}', $n, $this->t('Streak verloren (war {n})')),
                 'few_sessions' => str_replace('{n}', $n, $this->t('Sessions in 14 Tagen: {n}')),
+                // GitHub #68: the reasons of a course without Leitner.
+                'not_passed' => $this->t('Noch nicht bestanden'),
+                'deadline_overdue' => $this->t('Frist überschritten'),
+                'deadline_days' => str_replace('{n}', $n, $this->t('Frist endet in {n} Tagen')),
+                'certificate_expired' => $this->t('Zertifikat abgelaufen'),
+                'renewal_open' => $this->t('Erneuerung offen'),
                 default => $code,
             };
         }

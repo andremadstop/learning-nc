@@ -1508,4 +1508,54 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertSame(['alice' => ['passed' => 0, 'total' => 1]], $service->requiredPoolProgress(self::COURSE_ID, ['alice']));
         $this->assertSame([max($now - 340 * 86400 + 1, $this->windowStart($now + 10 * 86400))], $windows);
     }
+
+    // ---- GitHub #68: exam standings for the progress tab of a course without Leitner ---------
+
+    public function testExamStandingsGiveTheBestScorePerRequiredPoolWithoutAnySideEffect(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $service = $this->makeService(
+            $this->makeCourse(true, 80, json_encode([1, 2])), null, null, [], $audit, $issuance,
+            null, null, null, [1 => 90, 2 => 85]
+        );
+
+        $standings = $service->examStandings(self::COURSE_ID, ['anna', 'anna']);
+
+        $this->assertTrue($standings['applicable']);
+        $this->assertSame(80, $standings['threshold']);
+        $this->assertSame([1, 2], $standings['required_pool_ids']);
+        $this->assertSame(['anna'], array_keys($standings['users']));
+        $anna = $standings['users']['anna'];
+        $this->assertTrue($anna['passed']);
+        $this->assertSame(85, $anna['score'], 'the lowest best score over the required pools');
+        $this->assertSame([1 => ['best_score' => 90, 'passed' => true], 2 => ['best_score' => 85, 'passed' => true]], $anna['pools']);
+        $this->assertFalse($anna['certificate_valid']);
+        $this->assertFalse($anna['renewal_open']);
+    }
+
+    public function testExamStandingsAreNotApplicableWithoutCertificates(): void {
+        $service = $this->makeService($this->makeCourse(false, 80, json_encode([1])), null, null, [], $this->createMock(AuditService::class), null, null, null, null, [1 => 90]);
+        $standings = $service->examStandings(self::COURSE_ID, ['anna']);
+        $this->assertFalse($standings['applicable']);
+        $this->assertSame([], $standings['users']);
+    }
+
+    // In an open renewal window only the new exams count, and the window is reported as open.
+    public function testExamStandingsInTheRenewalWindowAreNotPassedUntilRenewed(): void {
+        $now = time();
+        $cert = $this->slotCert($now - 340 * 86400, $now + 10 * 86400);
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 95, $now - 340 * 86400]], [1], $windows);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $service = $this->renewalService($cert, $summary, $this->createMock(AuditService::class), $issuance, []);
+
+        $alice = $service->examStandings(self::COURSE_ID, ['alice'])['users']['alice'];
+        $this->assertFalse($alice['passed']);
+        $this->assertTrue($alice['renewal_open']);
+        $this->assertTrue($alice['certificate_valid']);
+        $this->assertFalse($alice['certificate_expired']);
+    }
 }

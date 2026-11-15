@@ -99,6 +99,9 @@ class CourseService {
     private StreakService $streakService;
     private CurriculumScopeMapper $curriculumScopeMapper;
     private FeedService $feedService;
+    /** GitHub #68: exam standings for courses without Leitner; optional so older tests keep building the service. */
+    private ?PassCriteriaService $passCriteria;
+    private ?AssignmentService $assignmentService;
 
     public function __construct(
         CourseMapper $courseMapper,
@@ -112,7 +115,9 @@ class CourseService {
         BadgeService $badgeService,
         StreakService $streakService,
         CurriculumScopeMapper $curriculumScopeMapper,
-        FeedService $feedService
+        FeedService $feedService,
+        ?PassCriteriaService $passCriteria = null,
+        ?AssignmentService $assignmentService = null
     ) {
         $this->courseMapper = $courseMapper;
         $this->coursePoolMapper = $coursePoolMapper;
@@ -126,6 +131,8 @@ class CourseService {
         $this->streakService = $streakService;
         $this->curriculumScopeMapper = $curriculumScopeMapper;
         $this->feedService = $feedService;
+        $this->passCriteria = $passCriteria;
+        $this->assignmentService = $assignmentService;
     }
 
     /**
@@ -1601,6 +1608,13 @@ class CourseService {
             $sortKey = 'user_id';
             $sortDir = 'asc';
         }
+        // GitHub #68: without Leitner the table shows exam results and hit rates; critical cards
+        // are a Leitner/FSRS figure and their column is gone, so it cannot be the sort order.
+        $examBasis = $isInstructor && !$this->isLeitnerEnabledFor($course);
+        if ($examBasis && $sortKey === 'critical_cards_count') {
+            $sortKey = 'user_id';
+            $sortDir = 'asc';
+        }
 
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
         $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
@@ -1661,13 +1675,13 @@ class CourseService {
             $students = array_slice($students, $offset, $limit);
             return [
                 'students' => $students,
-                'meta' => [
+                'meta' => array_merge([
                     'total' => $total,
                     'limit' => $limit,
                     'offset' => $offset,
                     'sort_key' => $sortKey,
                     'sort_dir' => $sortDir,
-                ],
+                ], $examBasis ? ['progress_basis' => 'exams'] : []),
             ];
         }
 
@@ -1726,20 +1740,91 @@ class CourseService {
             ];
         }
 
+        $examMeta = [];
+        if ($examBasis) {
+            [$students, $examMeta] = $this->applyExamBasis($courseId, $students, $sessionData);
+        }
+
         $students = $this->sortCourseProgressStudents($students, $sortKey, $sortDir);
         $total = count($students);
         $students = array_slice($students, $offset, $limit);
 
         return [
             'students' => $students,
-            'meta' => [
+            'meta' => array_merge([
                 'total' => $total,
                 'limit' => $limit,
                 'offset' => $offset,
                 'sort_key' => $sortKey,
                 'sort_dir' => $sortDir,
-            ],
+            ], $examMeta),
         ];
+    }
+
+    /**
+     * GitHub #68: a course without Leitner never fills the Leitner boxes, so the mastery figures
+     * stayed at 0 % for a learner who had passed every exam. Here the progress row is rebuilt from
+     * what such a course does record:
+     *   - a required pool of a certifying course: the best counting exam on that pool and whether
+     *     it passed, from PassCriteriaService::examStandings() (the pass rule of the completion
+     *     tab, read-only, renewal window included);
+     *   - every other pool: the hit rate of the learner's sessions on it (practice and exams),
+     *     null without an answer;
+     *   - overall: in a certifying course passed / not passed with the score the pass is based on
+     *     (the lowest best score over the required pools, or the best counting exam of the
+     *     course); without certificates the hit rate over all course pools.
+     * overall_mastery carries that number, so the "Overall" column keeps sorting.
+     *
+     * @param list<array<string, mixed>> $students rows built by getCourseProgress()
+     * @param array<string, array<int, array{total_q: int, correct: int, last_active: int|null}>> $sessionData
+     * @return array{0: list<array<string, mixed>>, 1: array<string, mixed>}
+     */
+    private function applyExamBasis(int $courseId, array $students, array $sessionData): array {
+        $standings = $this->passCriteria !== null
+            ? $this->passCriteria->examStandings($courseId, array_map(static fn(array $s): string => (string)$s['user_id'], $students))
+            : ['applicable' => false, 'threshold' => 80, 'requirement' => 'any_exam', 'required_pool_ids' => [], 'users' => []];
+        $requiredPoolIds = array_map('intval', $standings['required_pool_ids']);
+
+        foreach ($students as &$student) {
+            $uid = (string)$student['user_id'];
+            $standing = $standings['applicable'] ? ($standings['users'][$uid] ?? null) : null;
+            $answered = 0;
+            $correct = 0;
+            foreach ($student['pools'] as &$pool) {
+                $pid = (int)$pool['pool_id'];
+                $sess = $sessionData[$uid][$pid] ?? null;
+                $answered += $sess ? $sess['total_q'] : 0;
+                $correct += $sess ? $sess['correct'] : 0;
+                if ($standing !== null && in_array($pid, $requiredPoolIds, true)) {
+                    $pool['metric'] = 'exam';
+                    $pool['value'] = $standing['pools'][$pid]['best_score'] ?? null;
+                    $pool['exam_passed'] = (bool)($standing['pools'][$pid]['passed'] ?? false);
+                    $pool['required'] = true;
+                } else {
+                    $pool['metric'] = 'accuracy';
+                    $pool['value'] = ($pool['answered'] ?? 0) > 0 ? (int)$pool['accuracy'] : null;
+                    $pool['exam_passed'] = null;
+                    $pool['required'] = false;
+                }
+            }
+            unset($pool);
+            if ($standing !== null) {
+                $student['overall_metric'] = 'exam';
+                $student['overall_passed'] = (bool)$standing['passed'];
+                $student['overall_mastery'] = $standing['score'];
+            } else {
+                $student['overall_metric'] = 'accuracy';
+                $student['overall_passed'] = null;
+                $student['overall_mastery'] = $answered > 0 ? (int)round($correct / $answered * 100) : null;
+            }
+        }
+        unset($student);
+
+        return [$students, [
+            'progress_basis' => 'exams',
+            'cert_applicable' => (bool)$standings['applicable'],
+            'pass_threshold' => (int)$standings['threshold'],
+        ]];
     }
 
     /**
@@ -2159,6 +2244,143 @@ class CourseService {
         ];
     }
 
+    /** GitHub #68: an assignment deadline this close (in days) counts as near. */
+    private const AT_RISK_DEADLINE_NEAR_DAYS = 14;
+
+    /**
+     * GitHub #68: the at-risk list of a course without Leitner. No Leitner signal (critical cards,
+     * box-1 share) and no "few sessions" — a mandatory training is done in a few sittings, so a
+     * quiet fortnight is normal, not a warning.
+     *
+     * Certifying course ('exams'): a learner who passed (the pass rule of the completion tab,
+     * read-only via PassCriteriaService::examStandings(), renewal window included) is never at
+     * risk; everyone else is at risk as soon as something makes it urgent:
+     *   - the assignment deadline has passed (+3) or ends within AT_RISK_DEADLINE_NEAR_DAYS (+2),
+     *   - the certificate has expired (+3) or its renewal is open and not done yet (+2),
+     *   - no activity for more than 7 days or never active (+2).
+     * Not passed alone is not enough: a learner who started this week without a deadline is fine.
+     *
+     * Course without certificates ('practice'): there is no pass, so inactivity (+2) and a hit
+     * rate below 50 % (+2) decide.
+     *
+     * At risk from score 2, high from 4. Rows have the shape of getAtRiskStudents().
+     *
+     * @param list<string> $studentIds
+     * @param list<int> $poolIds
+     * @return array{at_risk: list<array<string, mixed>>, basis: string}
+     */
+    private function getAtRiskWithoutLeitner(int $courseId, array $studentIds, array $poolIds): array {
+        $userStats = $this->getBatchUserStats($studentIds);
+        $sessionStats = $poolIds !== [] ? $this->getBatchSessionStats($studentIds, $poolIds) : [];
+        $standings = $this->passCriteria !== null
+            ? $this->passCriteria->examStandings($courseId, $studentIds)
+            : ['applicable' => false, 'users' => []];
+        $certBasis = (bool)$standings['applicable'];
+        $states = $certBasis && $this->assignmentService !== null
+            ? $this->assignmentService->getStatesForCourseAndUsers($courseId, $studentIds)
+            : [];
+
+        $now = time();
+        $today = new \DateTime('today', new \DateTimeZone('UTC'));
+        $atRisk = [];
+        foreach ($studentIds as $sid) {
+            $standing = $standings['users'][$sid] ?? null;
+            if ($certBasis && $standing !== null && $standing['passed']) {
+                continue;
+            }
+            $reasons = [];
+            $reasonCodes = [];
+            $score = 0;
+
+            // Last activity: the newest session on the course pools (always written, also with
+            // gamification off), else the stats row.
+            $lastTs = null;
+            $totalQ = 0;
+            $totalCorrect = 0;
+            foreach ($sessionStats[$sid] ?? [] as $poolStat) {
+                $totalQ += $poolStat['total_q'];
+                $totalCorrect += $poolStat['correct'];
+                if ($poolStat['last_active'] !== null && ($lastTs === null || $poolStat['last_active'] > $lastTs)) {
+                    $lastTs = $poolStat['last_active'];
+                }
+            }
+            $lastActive = $lastTs !== null ? gmdate('Y-m-d', $lastTs) : ($userStats[$sid]['last_activity_date'] ?? null);
+            $accuracy = $totalQ > 0 ? round($totalCorrect / $totalQ * 100) : null;
+
+            if ($certBasis) {
+                $reasons[] = 'Noch nicht bestanden';
+                $reasonCodes[] = ['code' => 'not_passed'];
+                $state = $states[$sid] ?? null;
+                $due = $state !== null && $state['due_date'] !== null && $state['status'] !== 'passed' ? (int)$state['due_date'] : null;
+                if ($due !== null && $due < $now) {
+                    $reasons[] = 'Frist überschritten';
+                    $reasonCodes[] = ['code' => 'deadline_overdue'];
+                    $score += 3;
+                } elseif ($due !== null && $due - $now <= self::AT_RISK_DEADLINE_NEAR_DAYS * 86400) {
+                    $days = max(0, (int)ceil(($due - $now) / 86400));
+                    $reasons[] = "Frist endet in {$days} Tagen";
+                    $reasonCodes[] = ['code' => 'deadline_days', 'n' => $days];
+                    $score += 2;
+                }
+                if ($standing !== null && $standing['certificate_expired']) {
+                    $reasons[] = 'Zertifikat abgelaufen';
+                    $reasonCodes[] = ['code' => 'certificate_expired'];
+                    $score += 3;
+                } elseif ($standing !== null && $standing['renewal_open']) {
+                    $reasons[] = 'Erneuerung offen';
+                    $reasonCodes[] = ['code' => 'renewal_open'];
+                    $score += 2;
+                }
+            }
+
+            $daysSinceActive = null;
+            if ($lastActive) {
+                try {
+                    $daysSinceActive = (int)$today->diff(new \DateTime($lastActive, new \DateTimeZone('UTC')))->days;
+                } catch (\Exception $e) {
+                    $daysSinceActive = null;
+                }
+            }
+            if ($lastActive === null || ($daysSinceActive !== null && $daysSinceActive > 7)) {
+                if ($daysSinceActive !== null) {
+                    $reasons[] = "Inaktiv seit {$daysSinceActive} Tagen";
+                    $reasonCodes[] = ['code' => 'inactive_days', 'n' => $daysSinceActive];
+                } else {
+                    $reasons[] = 'Noch nie aktiv gewesen';
+                    $reasonCodes[] = ['code' => 'never_active'];
+                }
+                $score += 2;
+            }
+
+            if (!$certBasis && $accuracy !== null && $accuracy < 50) {
+                $reasons[] = "Accuracy {$accuracy}%";
+                $reasonCodes[] = ['code' => 'low_accuracy', 'n' => (int)$accuracy];
+                $score += 2;
+            }
+
+            if ($score >= 2) {
+                $atRisk[] = [
+                    'user_id' => $sid,
+                    'display_name' => $this->getDisplayName($sid),
+                    'risk_level' => $score >= 4 ? 'high' : 'medium',
+                    'risk_score' => $score,
+                    'risk_reasons' => $reasons,
+                    'risk_reason_codes' => $reasonCodes,
+                    'last_active' => $lastActive,
+                    'accuracy' => $accuracy,
+                    'critical_cards_count' => 0,
+                ];
+            }
+        }
+
+        usort($atRisk, static function (array $a, array $b): int {
+            $scoreCmp = (int)$b['risk_score'] <=> (int)$a['risk_score'];
+            return $scoreCmp !== 0 ? $scoreCmp : strcmp((string)$a['user_id'], (string)$b['user_id']);
+        });
+
+        return ['at_risk' => $atRisk, 'basis' => $certBasis ? 'exams' : 'practice'];
+    }
+
     /**
      * Get at-risk students for a course (instructor only).
      * Uses rule-based signals: inactivity, low accuracy, FSRS critical cards, lost streak, few sessions.
@@ -2180,6 +2402,12 @@ class CourseService {
 
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
         $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
+
+        // GitHub #68: critical cards and the box-1 share are Leitner signals; a course without
+        // Leitner never produces them, and its learners are judged by their exams instead.
+        if (!$this->isLeitnerEnabledFor($course)) {
+            return $this->getAtRiskWithoutLeitner($courseId, array_values($studentIds), $poolIds);
+        }
 
         // Batch data
         $userStats = $this->getBatchUserStats($studentIds);

@@ -544,13 +544,30 @@ describe('Fresh-eyes review: certification card frame (GitHub #36)', () => {
 	})
 })
 
-describe('Fresh-eyes review: progress table and compliance exports (GitHub #36)', () => {
-	async function renderTab(activeTab, courseOverrides = {}, courseFields = {}) {
-		api.routes['/apps/learning/api/courses/{courseId}/progress'] = { students: [{ user_id: 'learner', display_name: 'Lena', critical_cards_count: 0, overall_mastery: 0, pools: [] }], meta: { total: 1 } }
-		api.routes['/apps/learning/api/courses/{courseId}/at-risk'] = { at_risk: [{ user_id: 'learner', display_name: 'Lena', risk_level: 'medium', risk_reason_codes: [{ code: 'never_active' }], critical_cards_count: 0, accuracy: null }] }
+describe('Fresh-eyes review: progress table and compliance exports (GitHub #36, #68)', () => {
+	const leitnerRow = { user_id: 'learner', display_name: 'Lena', critical_cards_count: 4, overall_mastery: 0, pools: [{ pool_id: 11, total_questions: 8, mastered: 0, answered: 16, accuracy: 94 }] }
+	// GitHub #68: what the server sends for a course without Leitner (applyExamBasis).
+	const examRow = {
+		user_id: 'learner',
+		display_name: 'Lena',
+		critical_cards_count: 0,
+		overall_metric: 'exam',
+		overall_passed: true,
+		overall_mastery: 90,
+		pools: [
+			{ pool_id: 11, total_questions: 8, mastered: 0, answered: 16, accuracy: 94, metric: 'exam', value: 90, exam_passed: true, required: true },
+			{ pool_id: 12, total_questions: 5, mastered: 0, answered: 10, accuracy: 60, metric: 'accuracy', value: 60, exam_passed: null, required: false },
+		],
+	}
+	const pools = [{ id: 1, pool_id: 11, pool_name: 'Brandschutz' }, { id: 2, pool_id: 12, pool_name: 'Erste Hilfe' }]
+
+	async function renderTab(activeTab, courseOverrides = {}, courseFields = {}, payload = {}) {
+		api.routes['/apps/learning/api/courses/{courseId}/progress'] = payload.progress ?? { students: [leitnerRow], meta: { total: 1 } }
+		api.routes['/apps/learning/api/courses/{courseId}/at-risk'] = payload.atRisk ?? { at_risk: [{ user_id: 'learner', display_name: 'Lena', risk_level: 'medium', risk_reason_codes: [{ code: 'never_active' }], critical_cards_count: 0, accuracy: null }] }
 		return render(CourseTabTeilnehmer, {
 			courseId: 5,
 			course: { id: 5, is_instructor: true, cert_enabled: true, mode_config: modeConfig(courseOverrides), ...courseFields },
+			coursePools: pools,
 			userRole: 'instructor',
 			actsAsInstructor: true,
 			activeTab,
@@ -558,32 +575,66 @@ describe('Fresh-eyes review: progress table and compliance exports (GitHub #36)'
 		})
 	}
 
-	it('says that the percentages are Leitner mastery in a course without Leitner', async () => {
-		await renderTab('progress', { leitner: false })
-		const note = host.querySelector('.progress-leitner-note')
-		expect(note).not.toBeNull()
-		expect(note.textContent).toContain('Dieser Kurs nutzt Leitner nicht')
-		expect(note.textContent).toContain('Abschluss & Zertifikat')
+	const examPayload = (meta = {}) => ({ progress: { students: [examRow], meta: { total: 1, progress_basis: 'exams', cert_applicable: true, ...meta } } })
+
+	it('shows the best exam of a required pool, not 0 %, for a learner who passed (#68)', async () => {
+		await renderTab('progress', { leitner: false }, {}, examPayload())
+		const cells = [...host.querySelectorAll('td.pool-col')]
+		expect(cells[0].textContent).toContain('90%')
+		expect(cells[0].textContent).toContain('✓')
+		expect(cells[0].classList.contains('mastery-high')).toBe(true)
+		expect(cells[1].textContent).toContain('60%')
+		expect(cells[1].textContent).not.toContain('✓')
+		const overall = host.querySelector('td.overall-col')
+		expect(overall.textContent).toContain('Bestanden')
+		expect(overall.textContent).toContain('90%')
+		expect(host.querySelector('tbody').textContent).not.toMatch(/(^|[^0-9])0%/)
 	})
 
-	it('names the area "Abschluss" when the course has no certificate', async () => {
-		await renderTab('progress', { leitner: false }, { cert_enabled: false })
-		const note = host.querySelector('.progress-leitner-note')
-		expect(note).not.toBeNull()
-		expect(note.textContent).toContain('„Abschluss“')
-		expect(note.textContent).not.toContain('Zertifikat“')
+	it('drops the critical-cards column and names the overall column after the exam (#68)', async () => {
+		await renderTab('progress', { leitner: false }, {}, examPayload())
+		expect(host.querySelector('.critical-cards-col')).toBeNull()
+		expect(host.textContent).not.toContain('Critical Cards')
+		expect(host.textContent).toContain('Ergebnis')
 	})
 
-	it('shows no such note in a course with Leitner', async () => {
+	it('says what the figures are instead of "they stay at 0 %" (#68)', async () => {
+		await renderTab('progress', { leitner: false }, {}, examPayload())
+		const note = host.querySelector('.progress-leitner-note')
+		expect(note).not.toBeNull()
+		expect(note.textContent).toContain('beste Prüfungsergebnis')
+		expect(note.textContent).not.toContain('0 %')
+	})
+
+	it('names the hit rate when the course has no certificate (#68)', async () => {
+		await renderTab('progress', { leitner: false }, { cert_enabled: false }, examPayload({ cert_applicable: false }))
+		expect(host.querySelector('.progress-leitner-note').textContent).toContain('Trefferquote je Pool')
+		expect(host.textContent).toContain('Trefferquote gesamt')
+	})
+
+	it('keeps the Leitner table, critical cards and no note in a course with Leitner', async () => {
 		await renderTab('progress')
 		expect(host.querySelector('.progress-leitner-note')).toBeNull()
+		expect(host.querySelector('.critical-cards-col')).not.toBeNull()
+		expect(host.querySelector('td.pool-col').textContent).toContain('0%')
+		expect(host.textContent).toContain('Overall')
 	})
 
-	it('explains what puts a learner on the at-risk list', async () => {
-		await renderTab('progress', { leitner: false })
+	it('explains the Leitner at-risk rule in a course with Leitner', async () => {
+		await renderTab('progress')
+		expect(host.querySelector('.at-risk-hint').textContent).toContain('kritische Karten')
+	})
+
+	it('explains the exam at-risk rule and labels its reasons without Leitner (#68)', async () => {
+		await renderTab('progress', { leitner: false }, {}, {
+			...examPayload(),
+			atRisk: { basis: 'exams', at_risk: [{ user_id: 'learner', display_name: 'Lena', risk_level: 'high', risk_reason_codes: [{ code: 'not_passed' }, { code: 'deadline_days', n: 5 }, { code: 'renewal_open' }], critical_cards_count: 0, accuracy: null }] },
+		})
 		const hint = host.querySelector('.at-risk-hint')
-		expect(hint).not.toBeNull()
-		expect(hint.textContent).toContain('kritische Karten')
+		expect(hint.textContent).not.toContain('kritische Karten')
+		expect(hint.textContent).toContain('noch nicht bestanden')
+		const tags = [...host.querySelectorAll('.risk-reason-tag')].map(el => el.textContent.trim())
+		expect(tags).toEqual(['Noch nicht bestanden', 'Frist endet in 5 Tagen', 'Erneuerung offen'])
 	})
 })
 
