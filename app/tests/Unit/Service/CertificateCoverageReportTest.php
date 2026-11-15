@@ -11,6 +11,9 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\CoursePoolMapper;
+use OCA\Learning\Db\CourseVideo;
+use OCA\Learning\Db\CourseVideoMapper;
+use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Db\CurriculumScopeMapper;
 use OCA\Learning\Service\AssignmentService;
 use OCA\Learning\Service\BadgeService;
@@ -110,7 +113,7 @@ class CertificateCoverageReportTest extends TestCase {
      * @param array<string, array{passed: int, total: int}> $pools
      * @param array<string, string> $names uid => account display name
      */
-    private function service(array $members, array $certs = [], array $states = [], array $pools = [], array $names = [], int $now = self::NOW, ?PassCriteriaService $pass = null): CertificateReportService {
+    private function service(array $members, array $certs = [], array $states = [], array $pools = [], array $names = [], int $now = self::NOW, ?PassCriteriaService $pass = null, ?CourseVideoMapper $videos = null, ?VideoProgressMapper $progress = null): CertificateReportService {
         $memberMapper = $this->createMock(CourseMemberMapper::class);
         $memberMapper->method('findByCourse')->willReturn($members);
         $certMapper = $this->createMock(CertificateMapper::class);
@@ -138,7 +141,8 @@ class CertificateCoverageReportTest extends TestCase {
         return new CertificateReportService(
             $this->courseService(), $certMapper, $time,
             $this->createMock(RoleService::class), $assignment, $this->createMock(ReminderService::class),
-            $this->createMock(IGroupManager::class), $pass, $memberMapper, $users, $this->config()
+            $this->createMock(IGroupManager::class), $pass, $memberMapper, $users, $this->config(),
+            $videos, $progress
         );
     }
 
@@ -316,7 +320,7 @@ class CertificateCoverageReportTest extends TestCase {
         $this->assertCount(3, $result['rows']);
         foreach ($result['rows'] as $row) {
             $this->assertSame(
-                ['member_ref', 'display_name', 'status', 'last_certificate_at', 'expires_at', 'required_pools_passed', 'required_pools_total'],
+                ['member_ref', 'display_name', 'status', 'last_certificate_at', 'expires_at', 'required_pools_passed', 'required_pools_total', 'required_content_confirmed', 'required_content_total'],
                 array_keys($row)
             );
             $this->assertSame('Teilnehmer:in', $row['display_name']);
@@ -338,5 +342,47 @@ class CertificateCoverageReportTest extends TestCase {
             $this->createMock(IUserManager::class), $this->config()
         );
         $this->assertSame(['rows' => []], $service->getCoverageReport(self::COURSE_ID, self::OWNER, null));
+    }
+
+    /**
+     * GitHub #35 (B4): the coverage list says how many of the course's required contents each
+     * learner has completed (documents confirmed as read, videos watched), read in one batch for
+     * the rows the filter keeps.
+     */
+    public function testTheRequiredContentConfirmedCountIsPerLearner(): void {
+        $now = self::NOW;
+        $members = [$this->member('a', 'student'), $this->member('b', 'student')];
+        $names = ['a' => 'Anna', 'b' => 'Ben'];
+        $rows = [];
+        foreach ([11, 12, 13] as $id) {
+            $v = new CourseVideo();
+            $v->setId($id);
+            $v->setCourseId(self::COURSE_ID);
+            $rows[] = $v;
+        }
+        $videos = $this->createMock(CourseVideoMapper::class);
+        $videos->method('findByCourse')->with(self::COURSE_ID)->willReturn($rows);
+        $progress = $this->createMock(VideoProgressMapper::class);
+        $progress->expects($this->once())->method('countCompletedByUsers')
+            ->with(['a', 'b'], [11, 12, 13])
+            ->willReturn(['a' => 3]);
+
+        $result = $this->byName($this->service($members, [], [], [], $names, $now, null, $videos, $progress)
+            ->getCoverageReport(self::COURSE_ID, self::OWNER, null));
+
+        $this->assertSame([3, 3], [$result['Anna']['required_content_confirmed'], $result['Anna']['required_content_total']]);
+        $this->assertSame([0, 3], [$result['Ben']['required_content_confirmed'], $result['Ben']['required_content_total']]);
+    }
+
+    public function testACourseWithoutRequiredContentReadsNoProgress(): void {
+        $videos = $this->createMock(CourseVideoMapper::class);
+        $videos->method('findByCourse')->willReturn([]);
+        $progress = $this->createMock(VideoProgressMapper::class);
+        $progress->expects($this->never())->method('countCompletedByUsers');
+
+        $rows = $this->service([$this->member('a', 'student')], [], [], [], ['a' => 'Anna'], self::NOW, null, $videos, $progress)
+            ->getCoverageReport(self::COURSE_ID, self::OWNER, null)['rows'];
+
+        $this->assertSame([0, 0], [$rows[0]['required_content_confirmed'], $rows[0]['required_content_total']]);
     }
 }

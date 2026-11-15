@@ -325,6 +325,15 @@
 			</div>
 		</div>
 
+		<!-- GitHub #35 (B4): required content and the exam gate -->
+		<div v-if="currentSubTab === 'required-content'" class="tab-content required-content-section">
+			<RequiredContentSettings
+				:course-id="courseId"
+				:course="course"
+				@error="$emit('error', $event)"
+				@refresh-course-detail="$emit('refresh-course-detail')" />
+		</div>
+
 		<!-- Schedule -->
 		<div v-if="currentSubTab === 'schedule'" class="tab-content schedule-section">
 			<h3>{{ t('learning', 'Kurs-Zeitplan') }}</h3>
@@ -423,6 +432,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import CertLayoutSettings from './CertLayoutSettings.vue'
+import RequiredContentSettings from './RequiredContentSettings.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
 
@@ -500,6 +510,7 @@ export default {
 
 	components: {
 		CertLayoutSettings,
+		RequiredContentSettings,
 		NcButton,
 		NcNoteCard,
 		NcCheckboxRadioSwitch,
@@ -597,6 +608,7 @@ export default {
 		visibleSubTabs() {
 			return [
 				{ id: 'mode-config', label: t('learning', 'Kursregeln') },
+				{ id: 'required-content', label: t('learning', 'Pflichtinhalte') },
 				{ id: 'schedule', label: t('learning', 'Zeitplan') },
 			]
 		},
@@ -1299,6 +1311,7 @@ export default {
 
 /* Schedule */
 .schedule-section { padding: 16px 0; }
+.required-content-section { padding: 16px 0; }
 
 .schedule-table {
 	width: 100%;

@@ -236,11 +236,16 @@
 		<div v-else-if="currentSubTab === 'videos' && !isInstructor" class="student-videos-section">
 			<TrainingPrivacyNotice />
 
-			<NcNoteCard v-if="!allVideoGatesComplete" type="warning" class="video-gate-note">
-				{{ t('learning', 'Der Kurs-Quiz bleibt gesperrt, bis alle Pflicht-Videos und -Dokumente abgeschlossen sind. Die Sperre wird serverseitig erzwungen — diese Übersicht spiegelt nur deinen Fortschritt.') }}
+			<!-- GitHub #35 (B4): the lock is named only when the course switched it on, and it locks
+				the exam only. -->
+			<NcNoteCard v-if="examGated && !allVideoGatesComplete" type="warning" class="video-gate-note" data-test="required-content-locked">
+				{{ t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training und Leitner stehen dir schon offen.') }}
 			</NcNoteCard>
-			<NcNoteCard v-else type="success" class="video-gate-note">
-				{{ t('learning', 'Alle Pflichtinhalte abgeschlossen. Der Kurs-Quiz ist freigeschaltet.') }}
+			<NcNoteCard v-else-if="examGated" type="success" class="video-gate-note" data-test="required-content-unlocked">
+				{{ t('learning', 'Alle Pflichtinhalte abgeschlossen. Die Prüfung ist freigeschaltet.') }}
+			</NcNoteCard>
+			<NcNoteCard v-else-if="allVideoGatesComplete" type="success" class="video-gate-note">
+				{{ t('learning', 'Alle Pflichtinhalte abgeschlossen.') }}
 			</NcNoteCard>
 
 			<ul class="video-item-list">
@@ -277,7 +282,7 @@
 
 					<div v-else-if="item.sourceType === 'document'" class="video-item__document">
 						<a
-							v-if="item.ref"
+							v-if="documentUrl(item)"
 							:href="documentUrl(item)"
 							target="_blank"
 							rel="noopener noreferrer"
@@ -290,7 +295,7 @@
 							@click="markDocumentRead(item)">
 							{{ isItemComplete(item.id)
 								? t('learning', 'Als gelesen bestätigt')
-								: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Gelesen')) }}
+								: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Lesen bestätigen')) }}
 						</NcButton>
 					</div>
 				</li>
@@ -621,6 +626,7 @@ import TrainingMode from './TrainingMode.vue'
 import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
 import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
+import { requiredDocumentUrl } from '../utils/requiredContent.js'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { lernraumTabIds } from '../utils/courseView.js'
@@ -907,6 +913,9 @@ export default {
 				.filter((item) => item.id !== null)
 				.sort((a, b) => a.sortOrder - b.sortOrder)
 		},
+		examGated() {
+			return this.course?.video_gate_enabled === true
+		},
 		allVideoGatesComplete() {
 			if (this.normalizedCourseVideos.length === 0) {
 				return true
@@ -1062,6 +1071,7 @@ export default {
 				sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0) || 0,
 				completed: row.completed === true,
 				coveredPct: Number(row.covered_pct ?? row.coveredPct ?? 0) || 0,
+				documentId: row.document_id ?? null,
 			}
 		},
 		defaultVideoTitle(item) {
@@ -1071,14 +1081,10 @@ export default {
 			return t('learning', 'Pflichtvideo')
 		},
 		documentUrl(item) {
-			// Documents reference a Nextcloud Files path; open it in the Files app.
-			if (!item.ref) {
-				return '#'
-			}
-			if (/^https?:\/\//.test(item.ref)) {
-				return item.ref
-			}
-			return generateUrl('/apps/files/?dir=/&openfile={ref}', { ref: item.ref })
+			// GitHub #35 (B4): a required document is a file of the material folder, opened through
+			// its download (the server sends its id only while that download serves it). The old
+			// Files-app link pointed into the learner's own home, where the file is not.
+			return requiredDocumentUrl(this.courseId, item.documentId)
 		},
 		isItemComplete(id) {
 			return this.videoStatus[id]?.completed === true

@@ -324,7 +324,7 @@ export default {
 			return kommunikationTabIds(this.course, { actsAsInstructor: this.isInstructor, aiEnabled: this.adminAiEnabled })
 		},
 		verwaltungLeafTabs() {
-			return ['mode-config', 'schedule']
+			return ['mode-config', 'required-content', 'schedule']
 		},
 		// Same list as the Lernraum sub-navigation (one helper), so a disabled Training is not
 		// routed to and the required content (videos) has a leaf of its own.

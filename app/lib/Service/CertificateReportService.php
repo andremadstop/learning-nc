@@ -7,6 +7,8 @@ use OCA\Learning\AppInfo\ConfigDefaults;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\CourseMemberMapper;
+use OCA\Learning\Db\CourseVideoMapper;
+use OCA\Learning\Db\VideoProgressMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
 use OCP\IGroupManager;
@@ -51,6 +53,8 @@ class CertificateReportService {
     private CourseMemberMapper $courseMemberMapper;
     private IUserManager $userManager;
     private ?IConfig $config;
+    private ?CourseVideoMapper $videoMapper;
+    private ?VideoProgressMapper $progressMapper;
 
     public function __construct(
         CourseService $courseService,
@@ -63,7 +67,9 @@ class CertificateReportService {
         PassCriteriaService $passCriteriaService,
         CourseMemberMapper $courseMemberMapper,
         IUserManager $userManager,
-        ?IConfig $config = null
+        ?IConfig $config = null,
+        ?CourseVideoMapper $videoMapper = null,
+        ?VideoProgressMapper $progressMapper = null
     ) {
         $this->courseService = $courseService;
         $this->certificateMapper = $certificateMapper;
@@ -76,6 +82,8 @@ class CertificateReportService {
         $this->courseMemberMapper = $courseMemberMapper;
         $this->userManager = $userManager;
         $this->config = $config;
+        $this->videoMapper = $videoMapper;
+        $this->progressMapper = $progressMapper;
     }
 
     /**
@@ -254,7 +262,10 @@ class CertificateReportService {
      * email.
      *
      * @param string|null $status one of COVERAGE_STATUSES to keep only those rows; anything else = all
-     * @return array{rows: list<array{member_ref: string, display_name: string, status: string, last_certificate_at: int|null, expires_at: int|null, required_pools_passed: int, required_pools_total: int}>}
+     * GitHub #35 (B4): required_content_confirmed / required_content_total = how many of the course's
+     * required contents (documents confirmed as read, videos watched) the learner has completed.
+     *
+     * @return array{rows: list<array{member_ref: string, display_name: string, status: string, last_certificate_at: int|null, expires_at: int|null, required_pools_passed: int, required_pools_total: int, required_content_confirmed: int, required_content_total: int}>}
      * @throws \OCP\AppFramework\Db\DoesNotExistException course not found (→ 404)
      * @throws ForbiddenException                         caller is not an instructor of the course (→ 403)
      */
@@ -291,7 +302,9 @@ class CertificateReportService {
         if ($statusByUserId === []) {
             return ['rows' => []];
         }
-        $pools = $this->passCriteriaService->requiredPoolProgress($courseId, array_map('strval', array_keys($statusByUserId)));
+        $keptIds = array_map('strval', array_keys($statusByUserId));
+        $pools = $this->passCriteriaService->requiredPoolProgress($courseId, $keptIds);
+        [$contentTotal, $contentDone] = $this->requiredContentProgress($courseId, $keptIds);
 
         $rows = [];
         foreach ($statusByUserId as $uid => $rowStatus) {
@@ -312,10 +325,33 @@ class CertificateReportService {
                 'expires_at' => $cert !== null && $cert->getExpiresAt() !== null ? (int)$cert->getExpiresAt() : null,
                 'required_pools_passed' => (int)($pools[$uid]['passed'] ?? 0),
                 'required_pools_total' => (int)($pools[$uid]['total'] ?? 0),
+                'required_content_confirmed' => min($contentTotal, (int)($contentDone[$uid] ?? 0)),
+                'required_content_total' => $contentTotal,
             ];
         }
         usort($rows, static fn(array $a, array $b): int => strnatcasecmp($a['display_name'], $b['display_name']));
         return ['rows' => $rows];
+    }
+
+    /**
+     * GitHub #35 (B4): number of required contents of the course and, per learner, how many of them
+     * are completed. Read-only, one query for the registry and one per 999 learners.
+     *
+     * @param list<string> $userIds
+     * @return array{0: int, 1: array<string, int>}
+     */
+    private function requiredContentProgress(int $courseId, array $userIds): array {
+        if ($this->videoMapper === null || $this->progressMapper === null) {
+            return [0, []];
+        }
+        $contentIds = [];
+        foreach ($this->videoMapper->findByCourse($courseId) as $video) {
+            $contentIds[] = (int)$video->getId();
+        }
+        if ($contentIds === []) {
+            return [0, []];
+        }
+        return [count($contentIds), $this->progressMapper->countCompletedByUsers($userIds, $contentIds)];
     }
 
     /**

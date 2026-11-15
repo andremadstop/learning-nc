@@ -58,6 +58,8 @@ class CsvExportLanguageTest extends TestCase {
         'Letztes Zertifikat' => 'Last certificate',
         'Pflicht-Pools bestanden' => 'Required pools passed',
         'Pflicht-Pools gesamt' => 'Required pools total',
+        'Pflichtinhalte bestätigt' => 'Required content confirmed',
+        'Pflichtinhalte gesamt' => 'Required content total',
         'Aktuell (Abdeckungsstatus)' => 'Current',
         'Nie bestanden (Abdeckungsstatus)' => 'Never passed',
         'Abgelaufen, in Kulanzzeit (Abdeckungsstatus)' => 'Expired, in grace period',
@@ -105,9 +107,9 @@ class CsvExportLanguageTest extends TestCase {
     public function testTheCoverageReportIsInTheExportersLanguage(): void {
         $report = $this->createMock(CertificateReportService::class);
         $report->expects($this->once())->method('getCoverageReport')->with(7, 'teacher', 'expired')->willReturn(['rows' => [
-            ['member_ref' => 'r1', 'display_name' => 'Anna', 'status' => 'current', 'last_certificate_at' => 1700000000, 'expires_at' => null, 'required_pools_passed' => 2, 'required_pools_total' => 2],
-            ['member_ref' => 'r2', 'display_name' => 'Ben', 'status' => 'never_passed', 'last_certificate_at' => null, 'expires_at' => null, 'required_pools_passed' => 1, 'required_pools_total' => 2],
-            ['member_ref' => 'r3', 'display_name' => 'Cleo', 'status' => 'expired', 'last_certificate_at' => 1600000000, 'expires_at' => 1650000000, 'required_pools_passed' => 0, 'required_pools_total' => 0],
+            ['member_ref' => 'r1', 'display_name' => 'Anna', 'status' => 'current', 'last_certificate_at' => 1700000000, 'expires_at' => null, 'required_pools_passed' => 2, 'required_pools_total' => 2, 'required_content_confirmed' => 3, 'required_content_total' => 3],
+            ['member_ref' => 'r2', 'display_name' => 'Ben', 'status' => 'never_passed', 'last_certificate_at' => null, 'expires_at' => null, 'required_pools_passed' => 1, 'required_pools_total' => 2, 'required_content_confirmed' => 1, 'required_content_total' => 3],
+            ['member_ref' => 'r3', 'display_name' => 'Cleo', 'status' => 'expired', 'last_certificate_at' => 1600000000, 'expires_at' => 1650000000, 'required_pools_passed' => 0, 'required_pools_total' => 0, 'required_content_confirmed' => 0, 'required_content_total' => 0],
         ]]);
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(static fn (string $key) => $key === 'status' ? 'expired' : null);
@@ -117,10 +119,10 @@ class CsvExportLanguageTest extends TestCase {
         $response = $controller->exportCoverageCsv(7);
         $rows = $this->rows($response->render());
 
-        $this->assertSame(['Name', 'Status', 'Last certificate', 'Valid until', 'Required pools passed', 'Required pools total'], $rows[0]);
-        $this->assertSame(['Anna', 'Current', '2023-11-14', '', '2', '2'], $rows[1]);
-        $this->assertSame(['Ben', 'Never passed', '', '', '1', '2'], $rows[2]);
-        $this->assertSame(['Cleo', 'Expired, in grace period', '2020-09-13', '2022-04-15', '', ''], $rows[3]);
+        $this->assertSame(['Name', 'Status', 'Last certificate', 'Valid until', 'Required pools passed', 'Required pools total', 'Required content confirmed', 'Required content total'], $rows[0]);
+        $this->assertSame(['Anna', 'Current', '2023-11-14', '', '2', '2', '3', '3'], $rows[1]);
+        $this->assertSame(['Ben', 'Never passed', '', '', '1', '2', '1', '3'], $rows[2]);
+        $this->assertSame(['Cleo', 'Expired, in grace period', '2020-09-13', '2022-04-15', '', '', '', ''], $rows[3]);
         $this->assertStringContainsString('charset=utf-8', $response->getHeaders()['Content-Type']);
     }
 

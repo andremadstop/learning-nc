@@ -58,6 +58,8 @@ class CsvExportL10n {
             $this->t('Gültig bis'),
             $this->t('Pflicht-Pools bestanden'),
             $this->t('Pflicht-Pools gesamt'),
+            $this->t('Pflichtinhalte bestätigt'),
+            $this->t('Pflichtinhalte gesamt'),
         ];
     }
 

@@ -68,10 +68,11 @@ describe('CourseTabVerwaltung', () => {
 	})
 
 	// GitHub #35: the exam slot is gone — nothing on the learner side ever read it.
-	it('has mode-config and schedule sub-tabs, no exam slot', () => {
+	it('has mode-config, required-content and schedule sub-tabs, no exam slot', () => {
 		const instance = createInstance()
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['mode-config', 'schedule'])
+		// GitHub #35 (B4): the required content got a page of its own
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['mode-config', 'required-content', 'schedule'])
 	})
 
 	it('a stale exam-slot link falls back to the course rules', () => {

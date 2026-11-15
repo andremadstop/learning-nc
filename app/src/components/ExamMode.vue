@@ -299,7 +299,7 @@
 </template>
 
 <script>
-import { modeClosedMessage } from '../utils/modeGate.js';
+import { modeClosedMessage, requiredContentMessage } from '../utils/modeGate.js';
 import NcButton from '@nextcloud/vue/components/NcButton';
 import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
@@ -979,7 +979,7 @@ export default {
           // resumes it only there.
           showError(t('learning', 'An exam on this pool is already running in another course or outside a course. Finish it where you started it, or wait until its time is up.'));
         } else {
-          showError(modeClosedMessage(e) || serverError || t('learning', 'Failed to start exam'));
+          showError(modeClosedMessage(e) || requiredContentMessage(e) || serverError || t('learning', 'Failed to start exam'));
         }
       } finally {
         this.isLoading = false;

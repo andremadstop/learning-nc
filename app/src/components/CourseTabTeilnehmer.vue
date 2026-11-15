@@ -541,6 +541,10 @@
 									<th scope="col">{{ t('learning', 'Letztes Zertifikat') }}</th>
 									<th scope="col">{{ t('learning', 'Gültig bis') }}</th>
 									<th scope="col">{{ t('learning', 'Pflicht-Pools bestanden') }}</th>
+									<!-- GitHub #35 (B4): only for a course with required content -->
+									<th v-if="coverageHasRequiredContent" scope="col" data-test="coverage-content-col">
+										{{ t('learning', 'Pflichtinhalte bestätigt') }}
+									</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -561,6 +565,9 @@
 										</template>
 									</td>
 									<td>{{ formatPoolProgress(row.required_pools_passed, row.required_pools_total) }}</td>
+									<td v-if="coverageHasRequiredContent">
+										{{ formatContentProgress(row.required_content_confirmed, row.required_content_total) }}
+									</td>
 								</tr>
 							</tbody>
 						</table>
@@ -609,6 +616,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
 import { buildCertReportQuery, buildCoverageQuery, COVERAGE_STATUSES, formatPoolProgress, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
+import { formatContentProgress } from '../utils/requiredContent.js'
 import { abschlussTabIds, buddiesEnabled, teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
@@ -720,6 +728,10 @@ export default {
 	},
 
 	computed: {
+		// GitHub #35 (B4): the column only for a course with required content, IT courses keep the table.
+		coverageHasRequiredContent() {
+			return this.coverageRows.some((row) => Number(row.required_content_total) > 0)
+		},
 		// GitHub #35: course membership minus the student view, computed once in CourseDetail.
 		isInstructor() {
 			return this.actsAsInstructor
@@ -1060,6 +1072,9 @@ export default {
 		},
 		formatPoolProgress(passed, total) {
 			return formatPoolProgress(passed, total)
+		},
+		formatContentProgress(confirmed, total) {
+			return formatContentProgress(confirmed, total)
 		},
 		onCoverageStatusChange(status) {
 			this.coverageStatusFilter = status

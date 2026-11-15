@@ -491,4 +491,24 @@ describe('CourseTabLernraum: saving the chapter selection (audit #179)', () => {
 		expect(instance.savingCurriculum).toBe(false)
 		expect(instance.selectedChapterKeys).toEqual(['k1'])
 	})
+
+	// GitHub #35 (B4): required documents open through the material download; the lock note
+	// appears only when the course gates its exam.
+	it('opens a required document by its material document id, never a path', () => {
+		const instance = createInstance()
+		const doc = instance.normalizeVideo({ id: 4, source_type: 'document', document_id: 31, title: 'Policy' })
+		expect(instance.documentUrl(doc)).toBe('/apps/learning/api/courses/{courseId}/documents/{documentId}/download')
+		const legacy = instance.normalizeVideo({ id: 5, source_type: 'document', document_id: null })
+		expect(instance.documentUrl(legacy)).toBeNull()
+	})
+
+	it('names the exam lock only when the course switched it on', () => {
+		const examGated = (course) => CourseTabLernraum.computed.examGated.call({ course })
+		expect(examGated({ video_gate_enabled: true })).toBe(true)
+		expect(examGated({ video_gate_enabled: false })).toBe(false)
+		expect(examGated({})).toBe(false)
+		const template = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
+		expect(template).toMatch(/v-if="examGated && !allVideoGatesComplete"/)
+		expect(template).not.toContain('Der Kurs-Quiz bleibt gesperrt')
+	})
 })

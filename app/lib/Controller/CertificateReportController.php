@@ -205,6 +205,7 @@ class CertificateReportController extends Controller {
         $lines[] = CsvFormulaGuard::line($this->csvL10n->coverageHeader());
         foreach ($result['rows'] as $r) {
             $hasPools = (int)$r['required_pools_total'] > 0;
+            $hasContent = (int)($r['required_content_total'] ?? 0) > 0;
             $lines[] = CsvFormulaGuard::line([
                 (string)$r['display_name'],
                 $this->csvL10n->coverageStatus((string)$r['status']),
@@ -213,6 +214,8 @@ class CertificateReportController extends Controller {
                 // Two numeric columns, not "1/2": a spreadsheet reads that as a date.
                 $hasPools ? (string)(int)$r['required_pools_passed'] : '',
                 $hasPools ? (string)(int)$r['required_pools_total'] : '',
+                $hasContent ? (string)(int)$r['required_content_confirmed'] : '',
+                $hasContent ? (string)(int)$r['required_content_total'] : '',
             ]);
         }
 
