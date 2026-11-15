@@ -367,20 +367,31 @@ export default {
 		},
 
 		async pickVideo() {
+			let chosen = ''
 			try {
 				// loaded on use: the settings page needs the picker only for this button
 				const { getFilePickerBuilder } = await import('@nextcloud/dialogs')
+				// The picker hands back a choice only through one of its buttons; without a button
+				// factory it has none and can only be closed, which picks nothing (@nextcloud/dialogs 8).
 				const picker = getFilePickerBuilder(t('learning', 'Video auswählen'))
 					.setMultiSelect(false)
 					.setMimeTypeFilter(['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-matroska', 'video/mpeg', 'video/x-msvideo'])
+					.setButtonFactory((selected) => [{
+						label: t('learning', 'Dieses Video übernehmen'),
+						variant: 'primary',
+						disabled: !selected[0]?.path,
+						callback: (nodes) => {
+							chosen = nodes[0]?.path || ''
+						},
+					}])
 					.build()
-				const picked = await picker.pick()
-				const path = Array.isArray(picked) ? picked[0] : picked
-				if (typeof path === 'string' && path !== '') {
-					this.videoForm = { ...this.videoForm, ref: path }
-				}
+				await picker.pickNodes()
 			} catch (e) {
 				// closed without a choice
+				return
+			}
+			if (chosen !== '') {
+				this.videoForm = { ...this.videoForm, ref: chosen }
 			}
 		},
 	},

@@ -3765,5 +3765,6 @@ OC.L10N.register(
     "Pflichtinhalte bestätigt" : "Contenus obligatoires confirmés",
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“." : "L’examen s’ouvre lorsque tu as terminé tous les contenus obligatoires. Tu les trouves dans l’espace d’apprentissage sous « Contenu obligatoire ».",
     "Pflichtinhalte gesamt" : "Total des contenus obligatoires",
+    "Dieses Video übernehmen" : "Utiliser cette vidéo",
 },
 "nplurals=2; plural=(n > 1);");

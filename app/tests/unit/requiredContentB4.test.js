@@ -42,6 +42,7 @@ vi.mock('@nextcloud/vue/components/NcCheckboxRadioSwitch', () => ({
 }))
 
 import axios from '@nextcloud/axios'
+import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import RequiredContentSettings from '../../src/components/RequiredContentSettings.vue'
 import {
 	addableDocuments,
@@ -202,6 +203,73 @@ describe('RequiredContentSettings rendered', () => {
 		await mountSettings()
 		const coTypes = [...host.querySelectorAll('[data-test="required-video-source"] option')].map((o) => o.value)
 		expect(coTypes).toEqual(['youtube-nocookie', 'vimeo'])
+	})
+
+	/**
+	 * A fake of the @nextcloud/dialogs 8 picker: like the real dialog it hands back a choice only
+	 * through a button callback. Without a button factory there is no button, closing picks nothing
+	 * and pickNodes() rejects (FilePickerClosed).
+	 */
+	function fakePicker(node) {
+		const state = { factory: null }
+		const builder = {
+			setMultiSelect: () => builder,
+			setMimeTypeFilter: () => builder,
+			setButtonFactory: (factory) => {
+				state.factory = factory
+				return builder
+			},
+			build: () => ({
+				pickNodes: async () => {
+					const buttons = state.factory ? state.factory([node]) : []
+					const button = buttons.find((b) => !b.disabled)
+					if (!button) {
+						throw new Error('FilePicker: No nodes selected')
+					}
+					await button.callback([node])
+					return [node]
+				},
+				pick: async () => {
+					throw new Error('FilePicker: No nodes selected')
+				},
+			}),
+		}
+		getFilePickerBuilder.mockImplementation(() => builder)
+		return state
+	}
+
+	it('takes the video the owner picks in the file picker and sends it', async () => {
+		const picker = fakePicker({ path: '/Videos/intro.mp4' })
+		await mountSettings()
+		const source = host.querySelector('[data-test="required-video-source"]')
+		expect(source.value).toBe('nc-files')
+		const choose = [...host.querySelectorAll('button')].find((b) => b.textContent.includes('Video auswählen'))
+		choose.click()
+		await flush()
+		expect(picker.factory).not.toBeNull()
+		expect(host.querySelector('.required-content-picked').textContent).toContain('/Videos/intro.mp4')
+
+		const minutes = host.querySelector('[data-test="required-video-minutes"]')
+		minutes.value = '5'
+		minutes.dispatchEvent(new Event('input'))
+		await flush()
+		const add = host.querySelector('[data-test="required-video-add"]')
+		expect(add.disabled).toBe(false)
+		add.click()
+		await flush()
+		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/courses/5/videos', {
+			sourceType: 'nc-files', videoRef: '/Videos/intro.mp4', title: '', durationSeconds: 300, sortOrder: 1,
+		})
+	})
+
+	it('keeps the form empty when the picker is closed without a choice', async () => {
+		fakePicker({ path: '' })
+		await mountSettings()
+		const choose = [...host.querySelectorAll('button')].find((b) => b.textContent.includes('Video auswählen'))
+		choose.click()
+		await flush()
+		expect(host.querySelector('.required-content-picked').textContent).toContain('Kein Video gewählt')
+		expect(host.querySelector('[data-test="required-video-add"]').disabled).toBe(true)
 	})
 
 	it('removes a required content row', async () => {

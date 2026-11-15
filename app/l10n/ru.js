@@ -3765,5 +3765,6 @@ OC.L10N.register(
     "Pflichtinhalte bestätigt" : "Обязательные материалы подтверждены",
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“." : "Экзамен откроется, когда ты пройдёшь все обязательные материалы. Ты найдёшь их в учебном разделе в пункте «Обязательные материалы».",
     "Pflichtinhalte gesamt" : "Всего обязательных материалов",
+    "Dieses Video übernehmen" : "Выбрать это видео",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
