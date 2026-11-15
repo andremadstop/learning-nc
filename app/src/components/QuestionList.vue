@@ -310,17 +310,17 @@ export default {
 .question-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .question-number { font-weight: 700; color: var(--color-primary-element); font-size: 13px; background: var(--color-primary-element-light); padding: 2px 8px; border-radius: 4px; }
 .multi-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-primary-element) 15%, transparent); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
-.open-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }
+.open-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning-text); border: 1px solid var(--color-warning); }
 .meta-badge { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
 .meta-badge.exam { background: color-mix(in srgb, var(--color-primary-element) 14%, transparent); color: var(--color-primary-element); }
-.meta-badge.handbook { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); }
-.meta-badge.chapter { background: color-mix(in srgb, var(--color-warning) 14%, transparent); color: var(--color-warning); }
+.meta-badge.handbook { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success-text); }
+.meta-badge.chapter { background: color-mix(in srgb, var(--color-warning) 14%, transparent); color: var(--color-warning-text); }
 .model-answer-display { padding: 10px 14px; border-radius: 8px; background: color-mix(in srgb, var(--color-warning) 8%, var(--color-main-background)); font-size: 13px; line-height: 1.5; margin-bottom: 12px; border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent); color: var(--color-main-text); }
-.model-answer-label { font-weight: 600; color: var(--color-warning); }
+.model-answer-label { font-weight: 600; color: var(--color-warning-text); }
 .difficulty-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-.difficulty-badge.easy { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); border: 1px solid var(--color-success); }
-.difficulty-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }
-.difficulty-badge.hard { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); border: 1px solid var(--color-error); }
+.difficulty-badge.easy { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success-text); border: 1px solid var(--color-success); }
+.difficulty-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning-text); border: 1px solid var(--color-warning); }
+.difficulty-badge.hard { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error-text); border: 1px solid var(--color-error); }
 .question-actions { margin-left: auto; }
 .question-image { max-width: 100%; max-height: 200px; border-radius: var(--border-radius-large); border: 1px solid var(--color-border); margin-bottom: 12px; object-fit: contain; }
 .question-text { font-size: 15px; line-height: 1.6; margin-bottom: 14px; font-weight: 500; color: var(--color-main-text); }

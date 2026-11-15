@@ -433,8 +433,8 @@ export default {
 .session-stat { text-align: center; }
 .session-stat-value { font-size: 36px; font-weight: 700; }
 .session-stat-label { font-size: 13px; color: var(--color-text-maxcontrast); margin-top: 4px; }
-.session-stat.correct .session-stat-value { color: var(--color-success); }
-.session-stat.incorrect .session-stat-value { color: var(--color-error); }
+.session-stat.correct .session-stat-value { color: var(--color-success-text); }
+.session-stat.incorrect .session-stat-value { color: var(--color-error-text); }
 .session-stat.accuracy .session-stat-value { color: var(--color-primary-element); }
 
 .pool-breakdown { margin-bottom: 24px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto; }

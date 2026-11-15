@@ -94,7 +94,8 @@ export default {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--nova-accent-cyan, #06b6d4);
+  /* GitHub #64: the cyan accent had 2.42:1 on white; the theme's muted text colour keeps 4.5:1 in light and dark */
+  color: var(--color-text-maxcontrast);
 }
 
 .virtuprof-panel-title {

@@ -548,7 +548,7 @@ export default {
 }
 
 .error {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 /* ── Answer statistics (GitHub #68) ── */
@@ -819,7 +819,7 @@ export default {
 }
 
 .streak-value {
-  color: var(--color-warning) !important;
+  color: var(--color-warning-text) !important;
   font-size: 2.8em !important;
   text-shadow: 0 0 20px color-mix(in srgb, var(--color-warning) 30%, transparent);
 }

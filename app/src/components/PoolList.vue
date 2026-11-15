@@ -1051,7 +1051,7 @@ export default {
   border: 2px solid var(--color-warning);
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background));
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -1160,11 +1160,11 @@ export default {
 .xp-mult-value {
   font-size: 18px;
   font-weight: 800;
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 .xp-mult-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 </style>

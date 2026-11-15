@@ -1319,7 +1319,7 @@ export default {
 
 .author-error {
   margin: 8px 0 0;
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 12px;
   font-weight: 600;
 }

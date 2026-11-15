@@ -1407,7 +1407,7 @@ export default {
 }
 
 .player-ready.ready {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .lobby-vs {
@@ -1541,13 +1541,13 @@ export default {
 .btn-selected-correct {
   border-color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 16%, var(--color-main-background));
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .btn-selected-incorrect {
   border-color: var(--color-error);
   background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background));
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .btn-correct-answer {
@@ -1605,16 +1605,16 @@ export default {
   line-height: 1;
 }
 
-.feedback-correct .feedback-icon { color: var(--color-success); }
-.feedback-incorrect .feedback-icon { color: var(--color-error); }
+.feedback-correct .feedback-icon { color: var(--color-success-text); }
+.feedback-incorrect .feedback-icon { color: var(--color-error-text); }
 
 .feedback-label {
   font-size: 22px;
   font-weight: 700;
 }
 
-.feedback-correct .feedback-label { color: var(--color-success); }
-.feedback-incorrect .feedback-label { color: var(--color-error); }
+.feedback-correct .feedback-label { color: var(--color-success-text); }
+.feedback-incorrect .feedback-label { color: var(--color-error-text); }
 
 .feedback-points {
   font-size: 28px;
@@ -1622,8 +1622,8 @@ export default {
   margin-top: 4px;
 }
 
-.points-positive { color: var(--color-success); }
-.points-negative { color: var(--color-error); }
+.points-positive { color: var(--color-success-text); }
+.points-negative { color: var(--color-error-text); }
 
 .correct-answer-box {
   display: flex;
@@ -1642,7 +1642,7 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .correct-answer-text {

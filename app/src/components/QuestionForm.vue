@@ -576,7 +576,7 @@ export default {
 
 .answer-actions { margin-top: 8px; }
 .remove-answer-btn { background: none; border: none; color: var(--color-text-maxcontrast); font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 4px; flex-shrink: 0; }
-.remove-answer-btn:hover { color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, transparent); }
+.remove-answer-btn:hover { color: var(--color-error-text); background: color-mix(in srgb, var(--color-error) 10%, transparent); }
 .image-error { margin-top: 8px; }
 .multi-warning { margin-top: 8px; }
 .pbq-config-actions { margin-bottom: 8px; }

@@ -496,7 +496,6 @@ export default {
   margin: 8px 0 0;
   font-size: 0.95rem;
   color: var(--color-text-maxcontrast);
-  opacity: 0.78;
 }
 
 .virtuprof-fullscreen__header-actions {
@@ -566,7 +565,6 @@ export default {
 .virtuprof-fullscreen__intro-text {
   margin: 0;
   color: var(--color-text-maxcontrast);
-  opacity: 0.88;
 }
 
 .virtuprof-fullscreen__history {
@@ -596,7 +594,6 @@ export default {
   margin: 0;
   line-height: 1.55;
   color: var(--color-text-maxcontrast);
-  opacity: 0.82;
 }
 
 .virtuprof-fullscreen__message {
@@ -619,7 +616,6 @@ export default {
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--color-text-maxcontrast);
-  opacity: 0.68;
 }
 
 .virtuprof-fullscreen__message-body {
@@ -792,7 +788,6 @@ export default {
 .virtuprof-fullscreen__context-list dt {
   font-weight: 700;
   color: var(--color-text-maxcontrast);
-  opacity: 0.78;
 }
 
 .virtuprof-fullscreen__context-list dd {
@@ -804,7 +799,6 @@ export default {
 
 .virtuprof-fullscreen__sources-empty {
   color: var(--color-text-maxcontrast);
-  opacity: 0.78;
 }
 
 .virtuprof-fullscreen__sources-list {
@@ -833,7 +827,6 @@ export default {
 .virtuprof-fullscreen__source-meta {
   font-size: 0.82rem;
   color: var(--color-text-maxcontrast);
-  opacity: 0.78;
 }
 
 .virtuprof-fullscreen__mobile-backdrop {

@@ -1566,7 +1566,7 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .level-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 700; white-space: nowrap; }
 .level-grey { background: var(--color-background-dark); color: var(--color-text-maxcontrast); }
 .level-blue { background: color-mix(in srgb, var(--color-primary-element) 15%, transparent); color: var(--color-primary-element); }
-.level-gold { background: color-mix(in srgb, var(--color-warning) 20%, transparent); color: var(--color-warning); }
+.level-gold { background: color-mix(in srgb, var(--color-warning) 20%, transparent); color: var(--color-warning-text); }
 
 .sortable-col { cursor: pointer; user-select: none; }
 .sortable-col:hover { background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-background-dark)); }
@@ -1672,7 +1672,7 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .heatmap-bar-fill.green { background: var(--color-success); }
 .wrong-questions { background: var(--color-background-dark); padding: 8px 12px; border-radius: 4px; margin-bottom: 6px; }
 .wrong-q-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em; }
-.wrong-q-rate { color: var(--color-error); font-weight: 600; }
+.wrong-q-rate { color: var(--color-error-text); font-weight: 600; }
 
 /* Weak questions */
 .weak-questions-table { width: 100%; border-collapse: collapse; }
@@ -1680,7 +1680,7 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .weak-questions-table th { font-weight: 600; background: var(--color-background-dark); }
 .q-text { max-width: 300px; }
 .paused-row { opacity: 0.5; }
-.rate-red { color: var(--color-error); font-weight: 700; }
+.rate-red { color: var(--color-error-text); font-weight: 700; }
 .rate-yellow { color: #e6a817; font-weight: 600; }
 
 /* Class profile */

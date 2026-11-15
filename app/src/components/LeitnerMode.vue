@@ -956,8 +956,8 @@ export default {
 .session-stat { text-align: center; }
 .session-stat-value { font-size: 36px; font-weight: 700; }
 .session-stat-label { font-size: 13px; color: var(--color-text-maxcontrast); margin-top: 4px; }
-.session-stat.correct .session-stat-value { color: var(--color-success); }
-.session-stat.incorrect .session-stat-value { color: var(--color-error); }
+.session-stat.correct .session-stat-value { color: var(--color-success-text); }
+.session-stat.incorrect .session-stat-value { color: var(--color-error-text); }
 .session-stat.accuracy .session-stat-value { color: var(--color-primary-element); }
 @media (max-width: 768px) {
   .box-grid { grid-template-columns: repeat(3, 1fr); }
@@ -974,12 +974,12 @@ export default {
 }
 .due-start-btn { margin-top: 8px; }
 .streak-card { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-main-background)); }
-.streak-value { color: var(--color-warning); font-size: 2em; text-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 25%, transparent); }
+.streak-value { color: var(--color-warning-text); font-size: 2em; text-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 25%, transparent); }
 .streak-flames { display: inline-flex; gap: 1px; }
 .streak-flame { display: inline-block; animation: flame-dance 0.8s ease-in-out infinite alternate; }
 @keyframes flame-dance { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-2px) scale(1.15); } }
 @media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }
-.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; }
+.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning-text); margin-bottom: 16px; }
 .answer-buttons-review { display: grid; gap: 8px; margin-bottom: 12px; }
 .answer-btn-review { padding: 10px 14px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; color: var(--color-main-text); background: var(--color-main-background); }
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }

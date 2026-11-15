@@ -441,7 +441,7 @@ export default {
 .streak-badge {
 	font-size: 0.9em;
 	font-weight: 600;
-	color: var(--color-warning);
+	color: var(--color-warning-text);
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
@@ -562,9 +562,14 @@ export default {
 	box-shadow: 0 4px 10px color-mix(in srgb, var(--color-main-text) 8%, transparent);
 }
 
-.badge-locked {
+/* GitHub #64: only the emoji fades; at 0.28 opacity the badge name and its trigger text had 1.8:1. */
+.badge-locked .badge-item-emoji {
 	opacity: 0.28;
 	filter: grayscale(100%);
+}
+
+.badge-locked .badge-item-name {
+	color: var(--color-text-maxcontrast);
 }
 
 .badge-item--legacy {

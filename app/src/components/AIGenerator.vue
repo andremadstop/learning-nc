@@ -323,7 +323,7 @@ export default {
 .preview-q-text { font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--color-main-text); }
 .preview-answers { display: grid; gap: 4px; }
 .preview-answer { font-size: 13px; padding: 4px 8px; border-radius: 4px; color: var(--color-text-maxcontrast); }
-.preview-answer.correct { color: var(--color-success); font-weight: 600; }
+.preview-answer.correct { color: var(--color-success-text); font-weight: 600; }
 .preview-explanation { white-space: pre-line; font-size: 12px; color: var(--color-text-maxcontrast); margin-top: 6px; font-style: italic; }
 
 .preview-edit-input { margin-bottom: 6px; font-size: 13px; }
@@ -334,9 +334,9 @@ export default {
 .nc-input:focus { border-color: var(--color-primary-element); outline: none; }
 
 .difficulty-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-.difficulty-badge.easy { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
-.difficulty-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
-.difficulty-badge.hard { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
+.difficulty-badge.easy { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success-text); }
+.difficulty-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning-text); }
+.difficulty-badge.hard { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error-text); }
 
 .ai-error { margin-top: 16px; }
 

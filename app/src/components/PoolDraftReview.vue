@@ -217,7 +217,7 @@ export default {
   color: var(--color-primary-element-text);
 }
 .draft-action-btn.delete {
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 16px;
   font-weight: 700;
   padding: 0 8px;
@@ -241,7 +241,7 @@ export default {
   color: var(--color-text-maxcontrast);
 }
 .draft-answer.correct {
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-weight: 600;
 }
 .draft-card__explanation {
@@ -308,14 +308,14 @@ export default {
 }
 .difficulty-badge.easy {
   background: color-mix(in srgb, var(--color-success) 15%, transparent);
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 .difficulty-badge.medium {
   background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 .difficulty-badge.hard {
   background: color-mix(in srgb, var(--color-error) 15%, transparent);
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 </style>

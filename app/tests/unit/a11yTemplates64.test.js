@@ -10,6 +10,9 @@
  *  - nested-interactive: a role="button" container holds no button, link, input or menu.
  *  - label: no text field (<input>, <select>, <textarea>) without a name; an NcSelect takes
  *    input-id (a plain id lands on its wrapper and leaves the combobox input unnamed).
+ *  - color-contrast: since Nextcloud 31 --color-warning/-success/-error/-info are background
+ *    tints (#FFEEC5 … in light, #3D3010 … in dark); text on them or on the page needs the
+ *    --color-<status>-text variant. Plus the VirtuProf kicker cyan (#06b6d4, 2.42:1 on white).
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
@@ -144,6 +147,34 @@ describe('#64 template accessibility', () => {
 		eachTemplateNode((file, node) => {
 			if (node.tag === 'NcSelect' && attr(node, 'id') !== undefined) offenders.push(line(file, node))
 		})
+		expect(offenders).toEqual([])
+	})
+
+	it('text colours use the --color-<status>-text variants, not the background tints', () => {
+		const tint = /(^|[\s;{])color:\s*var\(--color-(warning|success|error|info)\)/
+		const offenders = []
+		for (const file of FILES) {
+			for (const style of file.descriptor.styles) {
+				style.content.split('\n').forEach((text, i) => {
+					if (tint.test(text)) offenders.push(`${file.rel}:${style.loc.start.line + i} ${text.trim()}`)
+				})
+			}
+		}
+		// the hand-written stylesheet next to the bundles (templates/index.php: style('learning', 'style'))
+		readFileSync(join(SRC, '../css/style.css'), 'utf8').split('\n').forEach((text, i) => {
+			if (tint.test(text)) offenders.push(`css/style.css:${i + 1} ${text.trim()}`)
+		})
+		expect(offenders).toEqual([])
+	})
+
+	it('the VirtuProf panel and dock kickers use a text colour with enough contrast', () => {
+		const offenders = []
+		for (const file of FILES) {
+			for (const style of file.descriptor.styles) {
+				const rule = style.content.match(/\.virtuprof-(panel|dock)-kicker\s*\{[^}]*\}/)
+				if (rule && /#06b6d4|--nova-accent-cyan/i.test(rule[0])) offenders.push(file.rel)
+			}
+		}
 		expect(offenders).toEqual([])
 	})
 })

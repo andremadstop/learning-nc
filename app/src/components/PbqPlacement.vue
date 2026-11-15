@@ -307,9 +307,9 @@ export default {
 .pbq-topology-node:hover { border-color: var(--color-primary-element); background: var(--color-background-hover); }
 .pbq-topology-node--assigned { border-style: solid; border-color: var(--color-success); }
 .pbq-topology-icon { font-size: 22px; font-weight: 700; color: var(--color-text-maxcontrast); }
-.pbq-topology-node--assigned .pbq-topology-icon { color: var(--color-success); }
+.pbq-topology-node--assigned .pbq-topology-icon { color: var(--color-success-text); }
 .pbq-topology-label { font-size: 12px; font-weight: 600; text-align: center; color: var(--color-main-text); }
-.pbq-topology-assigned { font-size: 11px; color: var(--color-success); font-weight: 500; text-align: center; }
+.pbq-topology-assigned { font-size: 11px; color: var(--color-success-text); font-weight: 500; text-align: center; }
 .pbq-hotspot {
   position: absolute; transform: translate(-50%, -50%);
   width: 36px; height: 36px; border-radius: 50%;
@@ -337,8 +337,8 @@ export default {
 .pbq-summary-item { background: var(--color-background-hover); padding: 4px 10px; border-radius: 12px; font-size: 13px; }
 .pbq-summary-label { font-weight: 500; margin-right: 4px; }
 .pbq-unset { color: var(--color-text-maxcontrast); font-style: italic; }
-.pbq-summary-value--correct { color: var(--color-success); font-weight: 600; }
-.pbq-summary-value--wrong { color: var(--color-error); text-decoration: line-through; }
+.pbq-summary-value--correct { color: var(--color-success-text); font-weight: 600; }
+.pbq-summary-value--wrong { color: var(--color-error-text); text-decoration: line-through; }
 .pbq-scoring-summary {
   width: 100%;
   margin-top: 8px;

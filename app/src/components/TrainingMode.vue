@@ -824,8 +824,8 @@ export default {
 .score-display p { font-size: 16px; color: var(--color-text-maxcontrast); }
 .result-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
 .summary-actions { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.summary-success { font-size: 14px; color: var(--color-success); padding: 8px 14px; background: color-mix(in srgb, var(--color-success) 10%, transparent); border-radius: 8px; }
-.summary-error { font-size: 13px; color: var(--color-error); }
+.summary-success { font-size: 14px; color: var(--color-success-text); padding: 8px 14px; background: color-mix(in srgb, var(--color-success) 10%, transparent); border-radius: 8px; }
+.summary-error { font-size: 13px; color: var(--color-error-text); }
 @media (max-width: 768px) {
   .training-start { padding: 40px 16px; }
   .question-card { padding: 56px 20px 20px; border-radius: 12px; }
@@ -839,15 +839,15 @@ export default {
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }
 .answer-btn-review.answer-user-selected { border-color: var(--color-primary-element); }
 .answer-btn-review.answer-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); }
-.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; text-align: center; text-shadow: 0 0 16px color-mix(in srgb, var(--color-warning) 25%, transparent); }
+.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning-text); margin-bottom: 16px; text-align: center; text-shadow: 0 0 16px color-mix(in srgb, var(--color-warning) 25%, transparent); }
 .streak-flames { display: inline-flex; gap: 1px; }
 .streak-flame { display: inline-block; animation: flame-dance 0.8s ease-in-out infinite alternate; }
 @keyframes flame-dance { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-2px) scale(1.15); } }
 @media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }
-.personal-best-banner { font-size: 20px; font-weight: 700; color: var(--color-success); margin-bottom: 12px; text-align: center; animation: pbPulse 1s ease-in-out 2; }
+.personal-best-banner { font-size: 20px; font-weight: 700; color: var(--color-success-text); margin-bottom: 12px; text-align: center; animation: pbPulse 1s ease-in-out 2; }
 @keyframes pbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 .improvement-label { font-size: 14px; font-weight: 600; margin-top: 8px; }
-.improvement-up { color: var(--color-success); }
+.improvement-up { color: var(--color-success-text); }
 .improvement-down { color: var(--color-text-maxcontrast); }
 .xp-earned { font-size: 22px; font-weight: 700; color: var(--color-primary-element); margin-bottom: 24px; text-align: center; animation: xpFadeIn 0.5s ease-out 0.5s both; }
 @keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

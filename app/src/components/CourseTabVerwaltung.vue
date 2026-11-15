@@ -1404,7 +1404,7 @@ export default {
 	background: none;
 	border: none;
 	font-size: 1.3em;
-	color: var(--color-error);
+	color: var(--color-error-text);
 	cursor: pointer;
 	padding: 4px 8px;
 	border-radius: var(--border-radius);

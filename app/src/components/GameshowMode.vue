@@ -2059,7 +2059,7 @@ export default {
 }
 
 .player-ready.ready {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .lobby-status {
@@ -2099,11 +2099,11 @@ export default {
 }
 
 .timer-warning {
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 
 .timer-critical {
-  color: var(--color-error);
+  color: var(--color-error-text);
   animation: timer-pulse 0.5s ease-in-out infinite;
 }
 
@@ -2226,7 +2226,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 18px;
   line-height: 1;
 }
@@ -2243,7 +2243,7 @@ export default {
 }
 
 .heart-full {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .heart-empty {
@@ -2286,7 +2286,7 @@ export default {
   border-radius: 999px;
   border: 2px solid color-mix(in srgb, var(--color-error) 55%, transparent);
   background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background));
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -2390,13 +2390,13 @@ export default {
 .btn-selected-correct {
   border-color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 16%, var(--color-main-background));
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .btn-selected-incorrect {
   border-color: var(--color-error);
   background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background));
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .btn-correct-answer {
@@ -2458,16 +2458,16 @@ export default {
   line-height: 1;
 }
 
-.feedback-correct .feedback-icon { color: var(--color-success); }
-.feedback-incorrect .feedback-icon { color: var(--color-error); }
+.feedback-correct .feedback-icon { color: var(--color-success-text); }
+.feedback-incorrect .feedback-icon { color: var(--color-error-text); }
 
 .feedback-label {
   font-size: 22px;
   font-weight: 700;
 }
 
-.feedback-correct .feedback-label { color: var(--color-success); }
-.feedback-incorrect .feedback-label { color: var(--color-error); }
+.feedback-correct .feedback-label { color: var(--color-success-text); }
+.feedback-incorrect .feedback-label { color: var(--color-error-text); }
 
 .feedback-points {
   font-size: 28px;
@@ -2475,7 +2475,7 @@ export default {
   margin-top: 4px;
 }
 
-.points-positive { color: var(--color-success); }
+.points-positive { color: var(--color-success-text); }
 
 .elimination-overlay {
   display: flex;
@@ -2520,7 +2520,7 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .correct-answer-text {
@@ -2973,7 +2973,7 @@ export default {
 .answer-btn.reveal-correct {
   border-color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 20%, var(--color-main-background));
-  color: var(--color-success);
+  color: var(--color-success-text);
   transform: scale(1.03);
   transition: all 0.3s ease;
 }
@@ -2981,7 +2981,7 @@ export default {
 .answer-btn.reveal-wrong {
   border-color: var(--color-error);
   background: color-mix(in srgb, var(--color-error) 15%, var(--color-main-background));
-  color: var(--color-error);
+  color: var(--color-error-text);
   transition: all 0.3s ease;
 }
 
@@ -3111,7 +3111,7 @@ export default {
   font-weight: 600;
 }
 .history-winner {
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-weight: 500;
 }
 .history-players {

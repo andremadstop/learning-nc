@@ -333,7 +333,8 @@ select:focus-visible,
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--sim-text-muted);
+  /* GitHub #64: the muted grey had 3.97:1 on the tab bar (--sim-border); the normal text 7.9:1 */
+  color: var(--sim-text);
   font-family: var(--sim-text-mono);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -347,7 +348,8 @@ select:focus-visible,
 
 .sim-tool__tab--active {
   background: var(--sim-accent-dim);
-  color: var(--sim-accent);
+  /* GitHub #64: a lighter blue than --sim-accent (3.77:1 on the tinted tab), 4.89:1 */
+  color: #79c0ff;
   box-shadow: var(--sim-glow-accent);
 }
 
@@ -1513,7 +1515,7 @@ select:focus-visible,
 
 .coop-lobby__error {
   margin: 0;
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 0.95rem;
 }
 
@@ -1650,7 +1652,7 @@ select:focus-visible,
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(255, 184, 0, 0.16);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   font-size: 11px;
   font-weight: 700;
 }
@@ -1774,7 +1776,7 @@ select:focus-visible,
   padding: 4px 8px;
   border-radius: 999px;
   background: rgba(0, 230, 118, 0.14);
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-size: 11px;
   font-weight: 800;
 }
@@ -1872,7 +1874,7 @@ select:focus-visible,
 
 .coop-waiting__progress-state--done {
   background: rgba(0, 230, 118, 0.14);
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 @media (max-width: 768px) {

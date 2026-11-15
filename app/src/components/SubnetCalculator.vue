@@ -1205,6 +1205,8 @@ export default {
 }
 
 .subnet-tool__title {
+	/* GitHub #64: without its own colour the heading took the page text colour (#222 on the dark panel, 1.08:1) */
+	color: var(--subnet-text);
 	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 1.75rem;
 	line-height: 1.15;
@@ -1232,7 +1234,8 @@ export default {
 	background: transparent;
 	border: none;
 	border-radius: 6px;
-	color: var(--subnet-text-muted);
+	/* GitHub #64: the muted grey had 3.97:1 on the tab bar; the normal text 7.9:1 */
+	color: var(--subnet-text);
 	cursor: pointer;
 	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 0.8125rem;
@@ -1247,7 +1250,8 @@ export default {
 
 .subnet-tool__tab--active {
 	background: var(--subnet-accent-dim);
-	color: var(--subnet-accent);
+	/* GitHub #64: a lighter blue than the accent (3.77:1 on the tinted tab), 4.89:1 */
+	color: #79c0ff;
 	box-shadow: var(--subnet-accent-glow);
 }
 

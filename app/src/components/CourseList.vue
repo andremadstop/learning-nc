@@ -737,7 +737,7 @@ export default {
 }
 
 .field-error {
-	color: var(--color-error);
+	color: var(--color-error-text);
 	font-size: 0.8em;
 	margin: 4px 0 0 0;
 }

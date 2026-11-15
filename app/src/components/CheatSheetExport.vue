@@ -307,12 +307,12 @@ export default {
 
 .accuracy-critical {
   background: color-mix(in srgb, var(--color-error) 15%, transparent);
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .accuracy-low {
   background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 
 .accuracy-medium {
@@ -335,7 +335,7 @@ export default {
 
 .spot-answer {
   margin-bottom: 6px;
-  color: var(--color-success);
+  color: var(--color-success-text);
   line-height: 1.5;
 }
 

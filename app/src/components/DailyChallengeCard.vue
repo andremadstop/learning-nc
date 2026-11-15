@@ -277,7 +277,7 @@ export default {
 .dc-answer-review.correct {
   border-color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background));
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-weight: 600;
 }
 .dc-explanation {
@@ -293,7 +293,7 @@ export default {
   text-align: center;
   font-size: 18px;
   font-weight: 700;
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 .dc-open-textarea {
   width: 100%;

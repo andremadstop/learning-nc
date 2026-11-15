@@ -681,7 +681,7 @@ export default {
 
 .league-champion {
   font-weight: 700;
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 @media (max-width: 768px) {

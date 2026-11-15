@@ -636,7 +636,7 @@ export default {
 
 .level-gold {
 	background: color-mix(in srgb, var(--color-warning) 20%, transparent);
-	color: var(--color-warning);
+	color: var(--color-warning-text);
 }
 
 .sortable-col {
@@ -688,7 +688,7 @@ export default {
 	display: inline-flex;
 	align-items: center;
 	gap: 1px;
-	color: var(--color-warning);
+	color: var(--color-warning-text);
 	font-weight: 600;
 }
 

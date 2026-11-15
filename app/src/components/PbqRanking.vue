@@ -250,11 +250,11 @@ export default {
 }
 
 .pbq-ranking__item--correct .pbq-ranking__result {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .pbq-ranking__item--wrong .pbq-ranking__result {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .pbq-ranking__controls {

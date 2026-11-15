@@ -1533,13 +1533,13 @@ export default {
 .ticket-error {
   margin: 0;
   font-size: 12px;
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .ticket-success {
   margin: 0;
   font-size: 12px;
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .ticket-empty {
@@ -1577,7 +1577,7 @@ export default {
 }
 
 .ticket-status.status-answered {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .ticket-meta {
@@ -1612,7 +1612,7 @@ export default {
 
 .invite-dismiss-btn:hover {
   background: var(--color-background-hover);
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .invite-item-actions {
@@ -1808,7 +1808,7 @@ export default {
 
 .chat-mic-btn.active {
   border-color: var(--color-error);
-  color: var(--color-error);
+  color: var(--color-error-text);
   background: color-mix(in srgb, var(--color-error) 16%, transparent);
   animation: virtuprof-pulse 0.9s ease-in-out infinite;
 }
@@ -1983,7 +1983,7 @@ export default {
 }
 
 .chat-clear-btn:hover {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 @keyframes virtuprof-pulse {

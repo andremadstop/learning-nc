@@ -444,7 +444,7 @@ export default {
   border: 2px solid var(--color-warning);
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background));
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -524,7 +524,7 @@ export default {
 .streak-number {
   font-size: 2em;
   font-weight: 700;
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   line-height: 1;
 }
 
@@ -543,7 +543,7 @@ export default {
   font-size: 12px;
   font-weight: 600;
   background: color-mix(in srgb, var(--color-success) 15%, transparent);
-  color: var(--color-success);
+  color: var(--color-success-text);
   margin-left: auto;
 }
 

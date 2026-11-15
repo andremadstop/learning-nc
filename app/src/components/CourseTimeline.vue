@@ -407,7 +407,7 @@ export default {
 }
 
 .exam-countdown--today {
-	color: var(--color-error);
+	color: var(--color-error-text);
 }
 
 /* Legend */

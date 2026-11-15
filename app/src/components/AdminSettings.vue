@@ -975,7 +975,7 @@ details[open] > .audit-summary::before {
 }
 
 .ticket-status.status-answered {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .ticket-message,

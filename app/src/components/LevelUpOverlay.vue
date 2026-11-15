@@ -119,7 +119,7 @@ export default {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   margin-bottom: 6px;
 }
 
