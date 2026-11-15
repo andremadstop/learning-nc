@@ -1,4 +1,14 @@
-import confetti from 'canvas-confetti'
+import confettiLib from 'canvas-confetti'
+
+// canvas-confetti's default instance draws in a Web Worker created from a blob: URL. Nextcloud's
+// Content-Security-Policy forbids such workers, so every celebration logged a CSP violation in
+// the console (found by the persona sweep, GitHub #36); the library then fell back to the main
+// thread anyway. One instance of our own, without the worker, created on first use.
+let instance = null
+function confetti(options) {
+	if (!instance) instance = confettiLib.create(null, { resize: true, useWorker: false })
+	return instance(options)
+}
 
 const prefersReducedMotion = () =>
 	typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
