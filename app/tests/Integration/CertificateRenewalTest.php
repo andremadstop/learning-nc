@@ -33,7 +33,12 @@ final class CertificateRenewalTest extends TestCase {
         $this->db = Server::get(IDBConnection::class);
         $this->issuance = Server::get(IssuanceService::class);
         $this->certificates = Server::get(CertificateMapper::class);
-        Server::get(KeyService::class)->init();
+        // One issuer key per instance: the first test that needs it creates it (GitHub #43 added a
+        // second certificate test to the same run, so init() must not run twice).
+        $keys = Server::get(KeyService::class);
+        if (!$keys->hasActiveKey()) {
+            $keys->init();
+        }
 
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_courses')->values([
