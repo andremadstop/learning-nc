@@ -221,8 +221,9 @@ class SupportTicketService {
         $ticket->setAnsweredAt(time());
         $ticket->setUpdatedAt(time());
 
-        /** @var SupportTicket $u */
-        $u = $this->ticketMapper->update($ticket);
+        // GitHub #59: answering an archived question brings it back to the inbox as answered, on
+        // purpose: whoever answers it treats it as not settled
+        $u = $this->updateAndReread($ticket);
         // GitHub #59: the learner learns of an answer, and of a changed one
         $this->notifier?->answerGiven($u, $previousAnswer, $answeredBy);
         return $this->serializeTicket($u);
@@ -248,10 +249,20 @@ class SupportTicketService {
         $ticket->setAnsweredAt(time());
         $ticket->setUpdatedAt(time());
 
-        /** @var SupportTicket $u */
-        $u = $this->ticketMapper->update($ticket);
+        $u = $this->updateAndReread($ticket);
         $this->notifier?->answerGiven($u, $previousAnswer, $answeredBy);
         return $this->serializeTicket($u);
+    }
+
+    /**
+     * GitHub #59: QBMapper::update() reports success for a row that is gone. A question withdrawn
+     * or deleted between the read and the UPDATE is not found, and nobody is notified about it.
+     *
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when the row no longer exists
+     */
+    private function updateAndReread(SupportTicket $ticket): SupportTicket {
+        $this->ticketMapper->update($ticket);
+        return $this->ticketMapper->findById((int)$ticket->getId());
     }
 
     public function listAdmin(int $limit = 100): array {
@@ -281,12 +292,16 @@ class SupportTicketService {
      */
     public function setCourseTicketArchived(int $courseId, int $ticketId, string $userId, bool $archived): array {
         $ticket = $this->managedCourseTicket($courseId, $ticketId, $userId);
-        $ticket->setStatus($archived ? 'archived' : $this->learnerStatus($ticket, true));
-        $ticket->setUpdatedAt(time());
-        /** @var SupportTicket $u */
-        $u = $this->ticketMapper->update($ticket);
         if ($archived) {
+            $ticket->setStatus('archived');
+            $ticket->setUpdatedAt(time());
+            $u = $this->updateAndReread($ticket);
             $this->notifier?->questionSettled($u);
+        } else {
+            // open or answered is decided by the row as it is now, not by the read above: an
+            // answer saved in between makes it answered
+            $this->ticketMapper->restoreArchived($ticketId, time());
+            $u = $this->ticketMapper->findById($ticketId);
         }
         return $this->serializeTicket($u);
     }
@@ -350,9 +365,9 @@ class SupportTicketService {
      * GitHub #59: the status as the author sees it. Archiving is the instructors' inbox filter,
      * so an archived question reads as open or answered, whichever it was.
      */
-    private function learnerStatus(SupportTicket $ticket, bool $ignoreStored = false): string {
+    private function learnerStatus(SupportTicket $ticket): string {
         $status = (string)$ticket->getStatus();
-        if ($status !== 'archived' && !$ignoreStored) {
+        if ($status !== 'archived') {
             return $status;
         }
         return trim((string)$ticket->getAnswerText()) !== '' ? 'answered' : 'open';

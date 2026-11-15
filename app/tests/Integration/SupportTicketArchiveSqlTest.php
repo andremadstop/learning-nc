@@ -62,6 +62,22 @@ final class SupportTicketArchiveSqlTest extends TestCase {
 		$this->assertSame([$answered, $foreign], $left);
 	}
 
+	public function testRestoreDerivesOpenOrAnsweredFromTheStoredAnswer(): void {
+		$unanswered = $this->insert('learner', 'archived');
+		$answered = $this->insert('learner', 'archived', 'Bis Freitag.');
+		$notArchived = $this->insert('learner', 'open');
+
+		$this->mapper->restoreArchived($unanswered, 12345);
+		$this->mapper->restoreArchived($answered, 12345);
+		// only an archived question is touched
+		$this->mapper->restoreArchived($notArchived, 12345);
+
+		$this->assertSame('open', $this->mapper->findById($unanswered)->getStatus());
+		$this->assertSame(12345, (int)$this->mapper->findById($unanswered)->getUpdatedAt());
+		$this->assertSame('answered', $this->mapper->findById($answered)->getStatus());
+		$this->assertNotSame(12345, (int)$this->mapper->findById($notArchived)->getUpdatedAt());
+	}
+
 	private function insert(string $userId, string $status, ?string $answer = null, int $courseId = self::COURSE_ID): int {
 		$ticket = new SupportTicket();
 		$ticket->setUserId($userId);

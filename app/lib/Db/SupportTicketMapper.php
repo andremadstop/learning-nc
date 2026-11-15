@@ -120,6 +120,24 @@ class SupportTicketMapper extends QBMapper {
         return $qb->executeStatement() > 0;
     }
 
+    /**
+     * GitHub #59: an archived question becomes open or answered again. The status is derived in
+     * the same UPDATE from the stored answer, so an answer saved after the instructor's read
+     * still counts.
+     */
+    public function restoreArchived(int $id, int $updatedAt): void {
+        $qb = $this->db->getQueryBuilder();
+        $col = $qb->getColumnName('answer_text');
+        $qb->update($this->getTableName())
+            ->set('status', $qb->createFunction(
+                "CASE WHEN " . $col . " IS NULL OR " . $col . " = '' THEN 'open' ELSE 'answered' END"
+            ))
+            ->set('updated_at', $qb->createNamedParameter($updatedAt, IQueryBuilder::PARAM_INT))
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter('archived')));
+        $qb->executeStatement();
+    }
+
     private function archiveFilter(IQueryBuilder $qb, bool $archived): string {
         return $archived
             ? $qb->expr()->eq('status', $qb->createNamedParameter('archived'))

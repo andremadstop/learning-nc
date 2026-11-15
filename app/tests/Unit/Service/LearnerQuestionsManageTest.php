@@ -75,6 +75,13 @@ class LearnerQuestionsManageTest extends TestCase {
             return $deleteHits;
         });
         $mapper->method('countOpenByInstructorCourse')->willReturn(3);
+        // the status is derived from the stored answer in the UPDATE itself
+        $mapper->method('restoreArchived')->willReturnCallback(function (int $id): void {
+            $t = $this->tickets[$id] ?? null;
+            if ($t !== null && $t->getStatus() === 'archived') {
+                $t->setStatus($t->getAnswerText() === null ? 'open' : 'answered');
+            }
+        });
 
         $courses = $this->createMock(CourseService::class);
         $courses->method('canManageCourse')->willReturnCallback(fn (int $courseId): bool => $manages[$courseId] ?? false);
