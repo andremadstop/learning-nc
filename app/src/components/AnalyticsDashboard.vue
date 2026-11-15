@@ -14,7 +14,7 @@
     <div v-else>
 
       <!-- XP Hero Banner -->
-      <div v-if="xp.total_xp > 0" class="xp-hero">
+      <div v-if="gamificationEnabled && xp.total_xp > 0" class="xp-hero">
         <div class="xp-hero-badge">
           <span class="xp-hero-level">{{ xp.level }}</span>
         </div>
@@ -33,7 +33,7 @@
       <!-- Summary Cards — Asymmetric Grid -->
       <h3 class="section-heading">{{ t('learning', 'Overview') }}</h3>
       <div class="summary-grid">
-        <div v-if="streak.current_streak > 0" class="summary-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })">
+        <div v-if="gamificationEnabled && streak.current_streak > 0" class="summary-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })">
           <span class="card-watermark">&#x1F525;</span>
           <p class="card-label">{{ t('learning', 'Streak') }}</p>
           <p class="card-value streak-value">{{ streak.current_streak }}</p>
@@ -68,7 +68,7 @@
         </div>
       </div>
 
-      <div class="missions-section" v-if="missionsData.missions && missionsData.missions.length > 0">
+      <div class="missions-section" v-if="gamificationEnabled && missionsData.missions && missionsData.missions.length > 0">
         <h3 class="section-heading">{{ t('learning', 'Daily Missions') }}</h3>
         <div class="missions-grid">
           <div v-for="m in missionsData.missions" :key="m.key" class="mission-card" :class="{ done: m.completed, claimed: m.claimed }">
@@ -155,7 +155,7 @@
       </div>
 
       <!-- Achievements Section — Enhanced -->
-      <div v-if="badges.length > 0" class="achievements-section">
+      <div v-if="gamificationEnabled && badges.length > 0" class="achievements-section">
         <div class="achievements-header">
           <h3 class="section-heading">{{ t('learning', 'Achievements') }}</h3>
           <button
@@ -233,6 +233,12 @@ export default {
     poolId: {
       type: Number,
       required: true,
+    },
+    // GitHub #46: the admin's gamification switch. Off, the XP level, streak, daily missions and
+    // achievements are gone; box distribution, mastery and accuracy stay.
+    gamificationEnabled: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {
@@ -420,7 +426,9 @@ export default {
   },
   created() {
     this.fetchStats();
-    this.fetchUserState();
+    if (this.gamificationEnabled) {
+      this.fetchUserState();
+    }
   },
 };
 </script>
