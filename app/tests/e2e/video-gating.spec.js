@@ -5,7 +5,7 @@
  *   - the WCAG player controls are keyboard-reachable with a visible focus ring,
  *   - Space toggles play/pause,
  *   - a WebVTT <track> is always present and the media never autoplays,
- *   - the document "Gelesen" button flips that item's gate status to complete.
+ *   - the document "Lesen bestätigen" button flips that item's gate status to complete.
  *
  * The screen-reader announcement, AA-contrast, no-third-party-request-before-consent
  * and Art.13 wording checks stay MANUAL (human-only) — see 162-04-PLAN.md how-to-verify.
@@ -125,12 +125,12 @@ test.describe('VIDEO-08 / VIDEO-07 — accessible player + document gate', () =>
 		await expect.poll(async () => media.evaluate((el) => el.paused), { timeout: 5_000 }).toBe(true)
 	})
 
-	test('document "Gelesen" button flips the gate status to complete', async ({ page }) => {
+	test('document "Lesen bestätigen" button flips the gate status to complete', async ({ page }) => {
 		const ready = await openPflichtinhalte(page)
 		test.skip(!ready, 'Pflichtinhalte tab not reachable — is the student enrolled and does E2E_VIDEO_COURSE_ID have video_gate_enabled with gated items?')
 
-		// Find a document item (the one carrying a Gelesen button).
-		const gelesenBtn = page.getByRole('button', { name: /^Gelesen$/ }).first()
+		// Find a document item (the one carrying a "Lesen bestätigen" button).
+		const gelesenBtn = page.getByRole('button', { name: /^Lesen bestätigen$/ }).first()
 		test.skip(!(await gelesenBtn.isVisible({ timeout: 5_000 }).catch(() => false)), 'No un-read document item seeded in this course')
 
 		const item = page.locator('.video-item', { has: gelesenBtn })
