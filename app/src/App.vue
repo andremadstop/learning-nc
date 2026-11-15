@@ -239,8 +239,9 @@
 
           <!-- ==================== SETTINGS VIEW ==================== -->
           <template v-else-if="route && route.name === 'settings'">
-            <!-- Instructor: sub-tabs for Kurs-Verwaltung + Meine Einstellungen -->
-            <template v-if="effectiveUserRole !== 'student'">
+            <!-- Nextcloud administrator: sub-tabs for Kurs-Verwaltung (the admin settings) + Meine Einstellungen.
+                 Persona sweep (#36): an instructor who is not an admin got the admin page, every request 403. -->
+            <template v-if="effectiveUserRole !== 'student' && isNextcloudAdmin">
               <div class="course-sub-nav lnc-tablist" role="tablist" @keydown="handleTablistKeydown">
                 <button
                   :class="['mode-btn', 'lnc-tab', { active: settingsSubTab === 'admin' }]"
@@ -269,7 +270,7 @@
                 @fsrs-detailed-stats-changed="updateFsrsDetailedStats"
                 @student-view-override-changed="setStudentViewOverride" />
             </template>
-            <!-- Student: only PersonalSettings, no sub-tabs -->
+            <!-- Student and non-admin instructor: only PersonalSettings, no sub-tabs -->
             <!-- GitHub #34: this branch also renders for an instructor in the student view; without
                  the role and the override the switch to leave that view was not shown at all. -->
             <PersonalSettings
@@ -433,6 +434,7 @@ import CourseDetail from './components/CourseDetail.vue';
 import StudentDetail from './components/StudentDetail.vue';
 import InstructorDashboard from './components/InstructorDashboard.vue';
 import SmartQueue from './components/SmartQueue.vue';
+import { getCurrentUser } from '@nextcloud/auth';
 import AdminSettings from './components/AdminSettings.vue';
 import PersonalSettings from './components/PersonalSettings.vue';
 import { LEARNING_PROFILE_SECTION } from './utils/telosProfile.js';
@@ -570,6 +572,11 @@ export default {
       return this.studentViewOverride && this.userRole === 'instructor' ? 'student' : this.userRole;
     },
     // An instructor who switched to the student view (a real student never is in it).
+    // The administration settings are admin-only on the server (SettingsController); the
+    // session's own flag decides whether their tab is offered.
+    isNextcloudAdmin() {
+      return getCurrentUser()?.isAdmin === true;
+    },
     studentViewActive() {
       return this.studentViewOverride && this.userRole === 'instructor';
     },
