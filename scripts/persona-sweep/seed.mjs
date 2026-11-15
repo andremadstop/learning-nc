@@ -3,6 +3,9 @@
 // The instructor (not the admin) creates everything, as in the guide: two pools of eight
 // questions (pools.json), the course "Annual safety training" with the group safety-staff
 // enrolled, both pools added and required for certification at 75 % for 365 days, Leitner off.
+// GAMIFICATION=on (an IT course as before #36): gamification on, the course keeps every mode
+// (Leitner included), and AI is switched on with an Ollama connection that nothing answers —
+// the AI parts of the interface show, every AI call fails (no external provider, no key).
 // Basic auth plus `OCS-APIRequest: true` passes Nextcloud's CSRF check for app routes.
 // Writes out/seed.json (course and pool ids) for the sweep.
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -42,11 +45,32 @@ async function call(user, pass, method, path, body) {
 const asInstructor = (m, p, b) => call('instructor', state.INSTRUCTOR_PASS, m, p, b)
 const asAdmin = (m, p, b) => call('admin', state.ADMIN_PASS, m, p, b)
 
-const admin = await asAdmin('GET', '/settings/admin')
-const wantGamification = state.GAMIFICATION === 'on' ? 'yes' : 'no'
+const itCourse = state.GAMIFICATION === 'on'
+let admin = await asAdmin('GET', '/settings/admin')
+const wantGamification = itCourse ? 'yes' : 'no'
 if (admin.gamification_enabled !== wantGamification) throw new Error(`gamification_enabled is ${admin.gamification_enabled}, expected ${wantGamification}`)
 if (admin.ai_provider !== 'disabled' && admin.ai_enabled !== false && admin.ai_enabled !== 'no') {
 	throw new Error(`AI is not off on a fresh instance: provider=${admin.ai_provider} enabled=${admin.ai_enabled}`)
+}
+if (itCourse) {
+	// Through the admin form's own endpoint, not occ: saveAdmin also moves the change into the
+	// connection snapshot that consent and transport read. Port 9 (discard) on loopback: no answer.
+	const form = {
+		daily_challenge_enabled: admin.daily_challenge_enabled ?? 'no',
+		default_language: admin.default_language ?? 'en',
+		max_import_size_mb: Number(admin.max_import_size_mb ?? 5),
+		gamification_enabled: 'yes',
+		allow_course_instructor_fallback: admin.allow_course_instructor_fallback ?? 'no',
+		exam_attempt_limit_per_day: Number(admin.exam_attempt_limit_per_day ?? 5),
+		exam_attempt_cooldown_minutes: Number(admin.exam_attempt_cooldown_minutes ?? 10),
+		ai_provider: 'ollama',
+		ai_ollama_url: 'http://127.0.0.1:9',
+		ai_ollama_model: 'llama3',
+		ai_enabled: 'yes',
+	}
+	await asAdmin('PUT', '/settings/admin', form)
+	admin = await asAdmin('GET', '/settings/admin')
+	if (admin.ai_enabled !== 'yes' || admin.ai_provider !== 'ollama') throw new Error(`AI did not switch on: provider=${admin.ai_provider} enabled=${admin.ai_enabled}`)
 }
 
 const poolsDoc = readFileSync(join(HERE, 'pools.json'), 'utf8')
@@ -68,9 +92,13 @@ await asInstructor('PATCH', `/courses/${course.id}/cert-config`, {
 	certEnabled: true, certPassPercent: 75, certRequiredPoolIds: poolIds, certValidityDays: 365,
 })
 // updateModeConfig turns every omitted key back on: send the full current map, Leitner off.
+// The IT course keeps the defaults (every mode on).
 const detail = await asInstructor('GET', `/courses/${course.id}`)
-const modeConfig = { ...(detail.mode_config || {}), leitner: false }
-await asInstructor('PUT', `/courses/${course.id}/mode-config`, { modeConfig })
+let modeConfig = detail.mode_config || {}
+if (!itCourse) {
+	modeConfig = { ...modeConfig, leitner: false }
+	await asInstructor('PUT', `/courses/${course.id}/mode-config`, { modeConfig })
+}
 
 // The administrator runs the course with the instructor (co-instructor). A Nextcloud admin who
 // is not a member does not see the course in the list, and the student view is only meaningful
@@ -87,5 +115,10 @@ const answers = {}
 for (const pool of JSON.parse(poolsDoc).pools) {
 	for (const q of pool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
 }
-writeFileSync(join(HERE, 'out', 'seed.json'), JSON.stringify({ courseId: course.id, poolIds, modeConfig, answers }, null, 2))
-console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, mode_config ${JSON.stringify(modeConfig)}`)
+// poolOwner: the only persona whose pool list must show the pools (nothing is shared).
+writeFileSync(join(HERE, 'out', 'seed.json'), JSON.stringify({
+	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig,
+	gamification: itCourse, ai: admin.ai_enabled === 'yes' ? `${admin.ai_provider} (no backend answers)` : 'off',
+	answers,
+}, null, 2))
+console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)

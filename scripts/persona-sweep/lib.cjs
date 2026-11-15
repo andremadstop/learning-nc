@@ -1,0 +1,79 @@
+// persona-sweep/lib.cjs — the pure parts of the sweep (no browser), so that Gate 1 can test them:
+// app/tests/unit/personaSweepLib.test.js.
+'use strict'
+
+/**
+ * Findings that are the app working as intended. They are not counted, but the report lists them
+ * in their own section, so that a rule that matches too much stays visible.
+ * Each rule is as narrow as the case it covers: persona, method, status and path together.
+ *
+ * @param {{kind: string, detail: string}} finding
+ * @param {{user: string, studentView?: boolean, poolOwner?: string}} ctx
+ * @return {string|null} the reason it is expected, or null when it counts
+ */
+function expectedReason(finding, ctx) {
+	if (!finding || !ctx) return null
+	if (finding.kind === 'http' && ctx.studentView) {
+		// An instructor previewing the course as a student is no student of it: the completion tab
+		// asks for his own learner record and gets 404, which CourseRecentSessions.vue treats as
+		// "nothing to list" (persona report, unclear finding 5).
+		const m = /^GET 404 \/(?:index\.php\/)?apps\/learning\/api\/courses\/\d+\/students\/([^/?\s]+)$/.exec(finding.detail)
+		if (m && decodeURIComponent(m[1]) === ctx.user) {
+			return 'student view: the previewing instructor has no learner record in the course (404 handled by the page)'
+		}
+	}
+	if (finding.kind === 'pool-missing' && ctx.poolOwner && ctx.user !== ctx.poolOwner) {
+		// The Pools tab lists one's own pools and pools shared with one; the seed shares nothing.
+		return `not the pool owner (${ctx.poolOwner}): the pool is not shared with this persona`
+	}
+	return null
+}
+
+/** axe impacts that count, besides every colour-contrast violation. */
+const AXE_IMPACTS = ['critical', 'serious']
+const AXE_MAX_NODES = 8
+
+/**
+ * axe-core violations → findings of kind "a11y", one per rule and element.
+ * Contrast counts at any impact; other rules only when critical or serious.
+ *
+ * @param {Array} violations axe.run(...).violations
+ * @param {{impacts?: string[], maxNodes?: number}} [opts]
+ * @return {Array<{kind: string, detail: string}>}
+ */
+function axeFindings(violations, opts = {}) {
+	const impacts = opts.impacts || AXE_IMPACTS
+	const maxNodes = opts.maxNodes || AXE_MAX_NODES
+	const out = []
+	for (const v of violations || []) {
+		const contrast = v.id === 'color-contrast' || v.id === 'color-contrast-enhanced'
+		if (!contrast && !impacts.includes(v.impact)) continue
+		const nodes = v.nodes || []
+		for (const node of nodes.slice(0, maxNodes)) {
+			const target = (node.target || []).flat().join(' ').slice(0, 160)
+			let extra = ''
+			if (contrast) {
+				const data = (node.any || []).find((c) => c.data && c.data.contrastRatio)?.data
+				if (data) extra = ` — ${data.contrastRatio}:1, needs ${data.expectedContrastRatio} (${data.fgColor} on ${data.bgColor})`
+			} else {
+				extra = ` — ${v.help}`
+			}
+			out.push({ kind: 'a11y', detail: `${v.id} (${node.impact || v.impact || '?'}): ${target}${extra}`.slice(0, 300) })
+		}
+		if (nodes.length > maxNodes) out.push({ kind: 'a11y', detail: `${v.id}: ${nodes.length - maxNodes} more elements on this station` })
+	}
+	return out
+}
+
+/** Visible text of a station for the fresh-eyes reviewer: blank lines collapsed, cut at max. */
+function stationText(raw, max = 1500) {
+	const text = String(raw || '')
+		.replace(/\r/g, '')
+		.split('\n')
+		.map((l) => l.replace(/[ \t ]+/g, ' ').trim())
+		.filter(Boolean)
+		.join('\n')
+	return text.length > max ? `${text.slice(0, max)} […]` : text
+}
+
+module.exports = { expectedReason, axeFindings, stationText, AXE_IMPACTS }

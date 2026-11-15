@@ -2,25 +2,30 @@
 //
 // Order matters: the learner passes both exams BEFORE any generic sweep (a sweep that touched an
 // exam would burn attempts and start the cooldown); exam-start buttons are on the deny list.
-// Findings go to out/findings.json, screenshots to out/shots/, downloads to out/downloads/.
-// report.mjs turns findings.json into out/report.md.
+// Results go to out/gamification-<off|on>/ (the mode of the running instance): findings.json,
+// shots/, downloads/. report.mjs turns findings.json into report.md and stations.json there.
 const { test, expect } = require('@playwright/test')
 const fs = require('fs')
 const path = require('path')
-
-const OUT = path.join(__dirname, 'out')
-const SHOTS = path.join(OUT, 'shots')
-const DOWNLOADS = path.join(OUT, 'downloads')
-const AUTH = path.join(OUT, 'auth')
-// A filtered run (PERSONA_STATIONS) writes its own file and leaves the full run's findings alone.
-const FINDINGS = path.join(OUT, process.env.PERSONA_STATIONS ? 'findings-filtered.json' : 'findings.json')
+const { expectedReason, axeFindings, stationText } = require('./lib.cjs')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
 	const m = line.match(/^([A-Z_]+)='(.*)'$/)
 	if (m) state[m[1]] = m[2]
 }
+const OUT = path.join(__dirname, 'out')
+const RUN = path.join(OUT, `gamification-${state.GAMIFICATION === 'on' ? 'on' : 'off'}`)
+const SHOTS = path.join(RUN, 'shots')
+const DOWNLOADS = path.join(RUN, 'downloads')
+const AUTH = path.join(OUT, 'auth')
+// A filtered run (PERSONA_STATIONS) writes its own file and leaves the full run's findings alone.
+const FINDINGS = path.join(RUN, process.env.PERSONA_STATIONS ? 'findings-filtered.json' : 'findings.json')
 const seed = JSON.parse(fs.readFileSync(path.join(OUT, 'seed.json'), 'utf8'))
+// axe-core from app/node_modules (devDependency, pinned). Injected with page.evaluate: that runs
+// over the DevTools protocol, outside the page's CSP. A <script> tag would be blocked by
+// Nextcloud's nonce CSP, and bypassCSP would hide the CSP violations this sweep has caught before.
+const AXE_SOURCE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8')
 const BASE = state.URL
 const APP = `${BASE}/index.php/apps/learning`
 const COURSE_TITLE = 'Annual safety training'
@@ -45,8 +50,9 @@ try { allFindings = JSON.parse(fs.readFileSync(FINDINGS, 'utf8')) } catch { /* f
 function flush() { fs.writeFileSync(FINDINGS, JSON.stringify(allFindings, null, 2)) }
 
 class Recorder {
-	constructor(persona) {
+	constructor(persona, { studentView = false } = {}) {
 		this.persona = persona
+		this.ctx = { user: persona.replace(/-.*/, ''), studentView, poolOwner: seed.poolOwner }
 		this.current = null
 		this.requests = []
 		this.toastsSeen = new Set()
@@ -80,8 +86,11 @@ class Recorder {
 
 	add(kind, detail) {
 		if (!this.current) this.begin('(before first station)')
-		if (this.current.findings.some((f) => f.kind === kind && f.detail === detail)) return
-		this.current.findings.push({ kind, detail })
+		// The app working as intended: kept, but in its own list (report: "Expected, not counted").
+		const reason = expectedReason({ kind, detail }, this.ctx)
+		const list = reason ? (this.current.expected ||= []) : this.current.findings
+		if (list.some((f) => f.kind === kind && f.detail === detail)) return
+		list.push(reason ? { kind, detail, reason } : { kind, detail })
 	}
 }
 
@@ -122,10 +131,33 @@ async function checkPage(page, rec) {
 		const fullscreenBot = /\/virtuprof$/.test(location.pathname)
 		for (const n of clone.querySelectorAll(fullscreenBot ? '[role=tablist], .main-nav' : '[role=tablist], .app-virtuprof-dock, .virtuprof-container, .main-nav')) n.remove()
 		const mainText = clone.textContent.replace(/\s+/g, ' ').trim()
-		return { german: [...hits].slice(0, 25), mainTextLength: mainText.length, mainText: mainText.slice(0, 80) }
+		// What a reader sees (fresh-eyes review): innerText of the live area, tabs and VirtuProf
+		// included — innerText of the detached clone above has no layout and would include hidden text.
+		const visibleText = main.innerText || ''
+		return { german: [...hits].slice(0, 25), mainTextLength: mainText.length, mainText: mainText.slice(0, 80), visibleText }
 	}, GERMAN.source)
 	for (const h of res.german) rec.add('german', h)
 	if (res.mainTextLength < 40) rec.add('empty', `main area has only ${res.mainTextLength} characters: "${res.mainText}"`)
+	rec.current.text = stationText(res.visibleText)
+	for (const f of await runAxe(page)) rec.add(f.kind, f.detail)
+}
+
+/** axe-core on the app's area: WCAG 2.x A/AA rules, violations only (see lib.cjs: axeFindings). */
+async function runAxe(page) {
+	const hasAxe = await page.evaluate(() => typeof window.axe === 'object').catch(() => false)
+	if (!hasAxe) await page.evaluate(AXE_SOURCE)
+	const violations = await page.evaluate(async () => {
+		const root = document.querySelector('#app-content') || document.querySelector('#content') || document.body
+		const res = await window.axe.run(root, {
+			runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+			resultTypes: ['violations'],
+		})
+		return res.violations.map((v) => ({
+			id: v.id, impact: v.impact, help: v.help,
+			nodes: v.nodes.map((n) => ({ impact: n.impact, target: n.target, any: n.any.map((c) => ({ data: c.data })) })),
+		}))
+	})
+	return axeFindings(violations)
 }
 
 async function checkToasts(page, rec, since, action) {
@@ -332,7 +364,7 @@ async function download(page, trigger, name) {
 
 // ---------------------------------------------------------------- the generic sweep
 async function sweepPersona(browser, persona, opts = {}) {
-	const rec = new Recorder(persona)
+	const rec = new Recorder(persona, opts)
 	const { context, page } = await login(browser, persona, opts)
 	rec.attach(page)
 
@@ -435,6 +467,21 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		if (hit >= 0) rec.current.findings.splice(hit, 1)
 		else rec.add('detector', rec.current.selfTest)
 		await page.evaluate(() => document.querySelectorAll('.toastify').forEach((t) => t.remove()))
+	})
+	// Same for the contrast check: grey on grey in the app's area must come out as a finding.
+	await station(page, rec, 'Detector self-test: low contrast', async () => {
+		await openApp(page)
+		await page.evaluate(() => {
+			const el = document.createElement('p')
+			el.id = 'persona-axe-selftest'
+			el.textContent = 'persona self-test: grey on grey'
+			el.style.cssText = 'color:#777;background:#888;font-size:14px;padding:4px'
+			;(document.querySelector('#app-content') || document.body).prepend(el)
+		})
+		const hits = (await runAxe(page)).filter((f) => f.detail.startsWith('color-contrast') && f.detail.includes('#persona-axe-selftest'))
+		await page.evaluate(() => document.getElementById('persona-axe-selftest')?.remove())
+		rec.current.axeSelfTest = hits.length ? 'contrast check works' : 'CONTRAST CHECK BROKEN: the self-test element was not reported'
+		if (!hits.length) rec.add('detector', rec.current.axeSelfTest)
 	})
 	const enterExamTab = async () => {
 		await openMegaTab(page, 'Learning space')

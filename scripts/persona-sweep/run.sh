@@ -6,19 +6,39 @@
 #          up     start a throwaway Nextcloud with the app from HEAD and seed it; stays running
 #          sweep  run the Playwright persona sweep against the running instance, write the report
 #          down   remove the instance
-#        Environment: GAMIFICATION=on   seed with gamification switched on (default: off)
+#        Environment: GAMIFICATION=on   `up`/`all`: seed an IT course as before #36 — gamification on,
+#                                       every course mode on (Leitner included), AI on with an Ollama
+#                                       connection nothing answers (no external provider). Default
+#                                       off: the mandatory-training scenario (gamification, AI and
+#                                       Leitner off). `sweep` takes the mode of the running instance.
 #                     REF=<git-ref>     app snapshot to test (default: HEAD)
 #                     KEEP=1            with `all`: leave the instance running afterwards
+#                     PERSONA_STATIONS=<regex>  `sweep`: only these stations (findings-filtered.json,
+#                                       report-filtered.md, stations-filtered.json)
+#                     PERSONA_DEBUG=1   `sweep`: log every button the click-through finds
+#        Both modes against each other: GAMIFICATION=off …/run.sh, then GAMIFICATION=on …/run.sh;
+#        the results land in separate folders.
 #
 # Why: our gates read code; none of them clicks from the outside. 24 external issues in a row
 # (GitHub #35–#61) were found by one operator who clicked through the app with gamification, AI
 # and Leitner off. This sweep plays his scenario on a fresh instance: an administrator, an
 # instructor, three learners, a mandatory-training course with two required pools, certification
 # at 75 %, English UI. Every station is screenshotted and checked for failed app requests, console
-# errors, empty main areas, success toasts without a successful request, and German words.
+# errors, empty main areas, success toasts without a successful request, German words, and
+# accessibility with axe-core (app/node_modules, pinned devDependency): every contrast violation and
+# every critical or serious WCAG 2.1 A/AA violation in #app-content. The toast and the contrast check
+# each prove themselves at the start (self-test stations). Findings that are the app working as
+# intended (lib.cjs: expectedReason) are listed separately and not counted.
 #
-# Output: scripts/persona-sweep/out/ (gitignored): report.md, findings.json, shots/*.png,
-#         instance.env (chmod 600; URL, container names and the throwaway passwords).
+# Output: scripts/persona-sweep/out/ (gitignored)
+#           instance.env   chmod 600; URL, container names and the throwaway passwords
+#           seed.json      course/pool ids, pool owner, mode config, AI
+#           gamification-<off|on>/
+#             report.md      findings, deduplicated, plus every station with its screenshot
+#             findings.json  raw findings per station
+#             stations.json  per station: persona, URL, screenshot, visible text (≤ 1500 chars) —
+#                            the input for the fresh-eyes review without code (FRESH-EYES.md)
+#             shots/*.png, downloads/
 #
 # Nextcloud 33 + PostgreSQL 16, pinned by digest (same images as nc-integration.sh). The app comes
 # from `git archive $REF`, so the committed bundle in app/js is what gets clicked — what ships.
@@ -169,15 +189,23 @@ up() {
 
 sweep() {
 	[ -f "$STATE" ] || { echo "persona-sweep: no instance — run '$0 up' first" >&2; exit 2; }
-	rm -rf -- "$OUT/shots" "$OUT/auth" "$OUT/downloads" "$OUT/findings.json" "$OUT/report.md" "$OUT/pw-results"
-	mkdir -p "$OUT/shots" "$OUT/auth" "$OUT/downloads"
+	local mode run
+	mode="$(sed -n "s/^GAMIFICATION='\(.*\)'$/\1/p" "$STATE")"
+	run="$OUT/gamification-${mode:-off}"
+	if [ -n "${PERSONA_STATIONS:-}" ]; then
+		rm -f -- "$run/findings-filtered.json" "$run/report-filtered.md" "$run/stations-filtered.json"
+	else
+		rm -rf -- "$run/shots" "$run/downloads" "$run/findings.json" "$run/report.md" "$run/stations.json"
+	fi
+	rm -rf -- "$OUT/auth" "$OUT/pw-results"
+	mkdir -p "$run/shots" "$OUT/auth" "$run/downloads"
 	local rc=0
 	# Playwright and its test runner come from app/node_modules (no second install); NODE_PATH lets
 	# the files here resolve @playwright/test from there.
 	(cd "$REPO_ROOT/app" && PERSONA_STATE="$STATE" NODE_PATH="$REPO_ROOT/app/node_modules" \
 		npx playwright test -c "$HERE/sweep.config.cjs") || rc=$?
 	PERSONA_STATE="$STATE" node "$HERE/report.mjs" || rc=$?
-	echo "persona-sweep: report in $OUT/report.md"
+	echo "persona-sweep: report in $run/report.md, fresh-eyes input in $run/stations.json (see $HERE/FRESH-EYES.md)"
 	return "$rc"
 }
 
