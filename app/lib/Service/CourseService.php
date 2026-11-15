@@ -3239,11 +3239,13 @@ class CourseService {
      * leitner_in_use: some course holding the pool offers Leitner, or no course holds it
      * (self-study keeps Leitner); the tab then keeps the box distribution.
      *
-     * Aggregates only, over the answers of the learners (role student) of the courses that hold
-     * the pool, like the weak questions of a course: attempts (completed sessions with an answer
-     * on the pool), answers, hit rate and the hardest questions (at least
-     * MIN_ANSWERS_PER_QUESTION answers, highest wrong rate first). No learner is named. Only the
-     * pool's owner or an edit share may read them — the people who maintain the questions.
+     * Aggregates only, over the answers of the learners (role student) of those courses holding
+     * the pool that the viewer leads (owner or co-instructor), like the weak questions of a
+     * course: attempts (sessions with an answer on the pool), answers, hit rate and the hardest
+     * questions (at least MIN_ANSWERS_PER_QUESTION answers, highest wrong rate first). No learner
+     * is named, and the learners of another instructor's course never count: with one learner the
+     * "aggregate" would be that person's results. Only the pool's owner or an edit share may
+     * read them — the people who maintain the questions.
      *
      * @return array{leitner_in_use: bool, question_count: int, learners: int, attempts: int, answers: int, correct: int, accuracy: int|null, hardest: list<array{question_id: int, question_text: string, total_answers: int, wrong_rate: float}>}
      * @throws ForbiddenException neither owner nor edit share of the pool
@@ -3254,15 +3256,19 @@ class CourseService {
         }
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('c.id', 'c.mode_config')
+        $qb->select('c.id', 'c.mode_config', 'c.instructor_id')
             ->from('learning_course_pools', 'cp')
             ->innerJoin('cp', 'learning_courses', 'c', $qb->expr()->eq('cp.course_id', 'c.id'))
             ->where($qb->expr()->eq('cp.pool_id', $qb->createNamedParameter($poolId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
         $result = $qb->executeQuery();
         $courseIds = [];
+        $ledCourseIds = [];
         $leitnerInUse = false;
         while ($row = $result->fetch()) {
             $courseIds[] = (int)$row['id'];
+            if ((string)($row['instructor_id'] ?? '') === $userId) {
+                $ledCourseIds[(int)$row['id']] = true;
+            }
             if (self::isModeEnabledInConfig($row['mode_config'] ?? null, 'leitner')) {
                 $leitnerInUse = true;
             }
@@ -3286,17 +3292,30 @@ class CourseService {
             return $stats;
         }
 
+        // Members of the courses holding the pool: the viewer's co-instructor rows decide which of
+        // them they lead, the students of those courses are the learners counted.
         $qb = $this->db->getQueryBuilder();
-        $qb->selectDistinct('user_id')
+        $qb->select('user_id', 'course_id', 'role')
             ->from('learning_course_members')
-            ->where($qb->expr()->in('course_id', $qb->createNamedParameter(array_values(array_unique($courseIds)), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-            ->andWhere($qb->expr()->eq('role', $qb->createNamedParameter('student')));
+            ->where($qb->expr()->in('course_id', $qb->createNamedParameter(array_values(array_unique($courseIds)), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         $result = $qb->executeQuery();
-        $learnerIds = [];
+        $studentsByCourse = [];
         while ($row = $result->fetch()) {
-            $learnerIds[] = (string)$row['user_id'];
+            $cid = (int)$row['course_id'];
+            if ($row['role'] === 'instructor' && (string)$row['user_id'] === $userId) {
+                $ledCourseIds[$cid] = true;
+            } elseif ($row['role'] === 'student') {
+                $studentsByCourse[$cid][] = (string)$row['user_id'];
+            }
         }
         $result->closeCursor();
+        $learnerIds = [];
+        foreach (array_keys($ledCourseIds) as $cid) {
+            foreach ($studentsByCourse[$cid] ?? [] as $uid) {
+                $learnerIds[$uid] = true;
+            }
+        }
+        $learnerIds = array_map('strval', array_keys($learnerIds));
         if ($learnerIds === []) {
             return $stats;
         }

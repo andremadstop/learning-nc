@@ -73,13 +73,13 @@ class PoolAnswerStats68Test extends TestCase {
     private function db(array $modeConfigs, ?FakeQueryBuilder $hardest = null): FakeDbConnection {
         $courses = [];
         foreach ($modeConfigs as $i => $config) {
-            $courses[] = ['id' => 7 + $i, 'mode_config' => $config];
+            $courses[] = ['id' => 7 + $i, 'mode_config' => $config, 'instructor_id' => 'teacher'];
         }
         return new FakeDbConnection([
             self::one(1),
             self::rows($courses),
             self::one(8),
-            self::rows([['user_id' => 'lena'], ['user_id' => 'max']]),
+            self::rows([['user_id' => 'lena', 'course_id' => 7, 'role' => 'student'], ['user_id' => 'max', 'course_id' => 7, 'role' => 'student']]),
             self::rows([['total_answers' => 20, 'correct_answers' => 15, 'learners' => 2, 'attempts' => 4]]),
             $hardest ?? self::rows([
                 ['question_id' => 3, 'question_text' => 'Welcher Feuerlöscher?', 'total_answers' => 4, 'correct_answers' => 1],
@@ -117,6 +117,51 @@ class PoolAnswerStats68Test extends TestCase {
         $this->assertTrue($stats['leitner_in_use']);
         $this->assertSame(0, $stats['answers']);
         $this->assertCount(3, $db->issuedBuilders, 'no answer query without a course');
+    }
+
+    /**
+     * The pool hangs in the viewer's course 7 and in course 8 of another instructor; only the
+     * learners of course 7 count, and a co-instructor row makes course 9 the viewer's too.
+     */
+    public function testOnlyTheLearnersOfCoursesTheViewerLeadsCount(): void {
+        $totals = self::rows([['total_answers' => 6, 'correct_answers' => 3, 'learners' => 1, 'attempts' => 1]]);
+        $db = new FakeDbConnection([
+            self::one(1),
+            self::rows([
+                ['id' => 7, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'teacher'],
+                ['id' => 8, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'someone-else'],
+                ['id' => 9, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'someone-else'],
+            ]),
+            self::one(8),
+            self::rows([
+                ['user_id' => 'lena', 'course_id' => 7, 'role' => 'student'],
+                ['user_id' => 'other', 'course_id' => 8, 'role' => 'student'],
+                ['user_id' => 'teacher', 'course_id' => 9, 'role' => 'instructor'],
+                ['user_id' => 'cleo', 'course_id' => 9, 'role' => 'student'],
+            ]),
+            $totals,
+        ]);
+        $this->service($db)->getPoolAnswerStats(self::POOL, 'teacher');
+
+        $learnerParams = array_values(array_filter(
+            array_column($totals->namedParameters, 'value'),
+            static fn ($v): bool => is_array($v)
+        ));
+        $this->assertSame([['lena', 'cleo']], $learnerParams);
+    }
+
+    public function testCoursesOfOtherInstructorsAloneGiveNoAnswers(): void {
+        $db = new FakeDbConnection([
+            self::one(1),
+            self::rows([['id' => 8, 'mode_config' => json_encode(['leitner' => false]), 'instructor_id' => 'someone-else']]),
+            self::one(8),
+            self::rows([['user_id' => 'other', 'course_id' => 8, 'role' => 'student']]),
+        ]);
+        $stats = $this->service($db)->getPoolAnswerStats(self::POOL, 'owner');
+        $this->assertFalse($stats['leitner_in_use']);
+        $this->assertSame(0, $stats['answers']);
+        $this->assertSame(0, $stats['learners']);
+        $this->assertCount(4, $db->issuedBuilders, 'no answer query without a learner of an own course');
     }
 
     public function testOnlyTheOwnerOrAnEditShareReadsTheStatistics(): void {
