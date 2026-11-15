@@ -1795,13 +1795,19 @@ class CourseService {
             throw new \Exception('Not an instructor');
         }
 
-        $courses = $this->courseMapper->findByInstructor($userId);
+        $courses = $this->findInstructedCourses($userId);
         $result = [];
+        $students = [];
 
         foreach ($courses as $course) {
             $courseId = $course->getId();
             $poolCount = count($this->coursePoolMapper->findByCourse($courseId));
             $memberCount = $this->courseMemberMapper->countStudentsByCourse($courseId);
+            foreach ($this->courseMemberMapper->findByCourse($courseId) as $member) {
+                if ($member->getRole() === 'student') {
+                    $students[$member->getUserId()] = true;
+                }
+            }
 
             $data = $course->jsonSerialize();
             $data['pool_count'] = $poolCount;
@@ -1809,8 +1815,36 @@ class CourseService {
             $result[] = $data;
         }
 
-        $uniqueStudents = $this->courseMemberMapper->countUniqueStudentsByInstructor($userId);
-        return ['courses' => $result, 'unique_student_count' => $uniqueStudents];
+        return ['courses' => $result, 'unique_student_count' => count($students)];
+    }
+
+    /**
+     * Courses the user teaches: owned (courses.instructor_id) and co-instructed (a course_members
+     * row with role instructor), each once, newest first. Fresh-eyes review (GitHub #36): the
+     * dashboard read only the owner column, so a co-instructor (there: the Nextcloud admin) saw
+     * "0 courses" next to a course list that showed the course.
+     *
+     * @return list<Course>
+     */
+    private function findInstructedCourses(string $userId): array {
+        $byId = [];
+        foreach ($this->courseMapper->findByInstructor($userId) as $course) {
+            $byId[$course->getId()] = $course;
+        }
+        foreach ($this->courseMemberMapper->findByUser($userId) as $member) {
+            $courseId = $member->getCourseId();
+            if ($member->getRole() !== 'instructor' || isset($byId[$courseId])) {
+                continue;
+            }
+            try {
+                $byId[$courseId] = $this->courseMapper->findById($courseId);
+            } catch (DoesNotExistException $e) {
+                // orphaned membership, skip
+            }
+        }
+        $courses = array_values($byId);
+        usort($courses, static fn (Course $a, Course $b): int => [(int)$b->getCreatedAt(), (int)$b->getId()] <=> [(int)$a->getCreatedAt(), (int)$a->getId()]);
+        return $courses;
     }
 
     /**
