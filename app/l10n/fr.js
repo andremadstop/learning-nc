@@ -1671,7 +1671,7 @@ OC.L10N.register(
     "Submitting..." : "Submitting...",
     "Subnet Calculator" : "Subnet Calculator",
     "Subnet-Stats: Hosts, Broadcast und Range automatisch berechnet" : "Subnet stats: hosts, broadcast and range calculated automatically",
-    "Subnetz" : "Subnet",
+    "Subnetz" : "Sous-réseau",
     "Subnetz hinzufügen" : "Add Subnet",
     "Subnetzmaske" : "Subnet Mask",
     "Subnetzname" : "Subnet Name",
