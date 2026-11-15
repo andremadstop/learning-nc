@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service\Llm;
 
+use OCP\DB\Exception;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
@@ -30,9 +31,24 @@ use OCP\IDBConnection;
  *
  * Expressions use getColumnName() for quoting; never hand-written double quotes (string
  * literals on MariaDB).
+ *
+ * Deadlocks (#62): under parallel load MariaDB can report 1213 and PostgreSQL 40P01/40001 for a
+ * single one of these statements (gap and row locks of INSERT IGNORE, UPDATE and DELETE on the
+ * same bucket). The engine has then rolled back exactly that statement, because it ran on its
+ * own in autocommit, so running it again is a clean restart. Every statement therefore runs
+ * through retryOnDeadlock(): at most MAX_ATTEMPTS attempts with a short random pause, after that
+ * the original exception goes up as before. Inside a transaction someone else opened nothing is
+ * retried: that transaction is already rolled back (MariaDB) or poisoned (PostgreSQL 25P02), and
+ * only its owner can start it again. Lock-wait timeouts (MariaDB 1205) are not retried.
  */
 class LlmBudgetStore {
     public const TABLE = 'learning_llm_budget';
+
+    /** Attempts per statement when the database reports a deadlock (#62). */
+    public const MAX_ATTEMPTS = 3;
+
+    /** SQLSTATEs of a deadlock or serialization failure (40001 also carries MariaDB 1213). */
+    private const RETRY_SQLSTATES = ['40001', '40P01'];
 
     public function __construct(
         private IDBConnection $db,
@@ -65,7 +81,7 @@ class LlmBudgetStore {
             ->where($qb->expr()->eq('bucket', $qb->createNamedParameter($bucket)))
             ->andWhere($qb->expr()->eq('window_start', $qb->createNamedParameter($windowStart, IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->gt('count', $qb->createNamedParameter(0, IQueryBuilder::PARAM_INT)));
-        $qb->executeStatement();
+        $this->retryOnDeadlock(fn (): int => $qb->executeStatement());
     }
 
     /**
@@ -94,7 +110,7 @@ class LlmBudgetStore {
             ->where($qb->expr()->eq('bucket', $qb->createNamedParameter($bucket)))
             ->andWhere($qb->expr()->eq('window_start', $qb->createNamedParameter($index, IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('inflight', $qb->createNamedParameter($token, IQueryBuilder::PARAM_INT)));
-        $qb->executeStatement();
+        $this->retryOnDeadlock(fn (): int => $qb->executeStatement());
     }
 
     private function incrementIfBelow(string $bucket, int $windowStart, int $limit, int $now): bool {
@@ -105,7 +121,7 @@ class LlmBudgetStore {
             ->where($qb->expr()->eq('bucket', $qb->createNamedParameter($bucket)))
             ->andWhere($qb->expr()->eq('window_start', $qb->createNamedParameter($windowStart, IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->lt('count', $qb->createNamedParameter($limit, IQueryBuilder::PARAM_INT)));
-        return $qb->executeStatement() === 1;
+        return $this->retryOnDeadlock(fn (): int => $qb->executeStatement()) === 1;
     }
 
     /** @phpstan-impure the outcome depends on the row, which another request may change in between */
@@ -120,18 +136,18 @@ class LlmBudgetStore {
                 $qb->expr()->eq('inflight', $qb->createNamedParameter(0, IQueryBuilder::PARAM_INT)),
                 $qb->expr()->lt('updated_at', $qb->createNamedParameter($now - $ttl, IQueryBuilder::PARAM_INT)),
             ));
-        return $qb->executeStatement() === 1;
+        return $this->retryOnDeadlock(fn (): int => $qb->executeStatement()) === 1;
     }
 
     /** True if this call created the row (false: it already existed). */
     private function createRow(string $bucket, int $windowStart, int $now): bool {
-        return $this->db->insertIgnoreConflict(self::TABLE, [
+        return $this->retryOnDeadlock(fn (): int => $this->db->insertIgnoreConflict(self::TABLE, [
             'bucket' => $bucket,
             'window_start' => $windowStart,
             'count' => 0,
             'inflight' => 0,
             'updated_at' => $now,
-        ]) === 1;
+        ])) === 1;
     }
 
     private function hasWindowAfter(string $bucket, int $windowStart): bool {
@@ -140,10 +156,12 @@ class LlmBudgetStore {
             ->where($qb->expr()->eq('bucket', $qb->createNamedParameter($bucket)))
             ->andWhere($qb->expr()->gt('window_start', $qb->createNamedParameter($windowStart, IQueryBuilder::PARAM_INT)))
             ->setMaxResults(1);
-        $result = $qb->executeQuery();
-        $found = $result->fetchOne() !== false;
-        $result->closeCursor();
-        return $found;
+        return $this->retryOnDeadlock(function () use ($qb): bool {
+            $result = $qb->executeQuery();
+            $found = $result->fetchOne() !== false;
+            $result->closeCursor();
+            return $found;
+        });
     }
 
     /** Keeps the table bounded: a new window drops every window before the previous one. */
@@ -152,6 +170,45 @@ class LlmBudgetStore {
         $qb->delete(self::TABLE)
             ->where($qb->expr()->eq('bucket', $qb->createNamedParameter($bucket)))
             ->andWhere($qb->expr()->lt('window_start', $qb->createNamedParameter($windowStart, IQueryBuilder::PARAM_INT)));
-        $qb->executeStatement();
+        $this->retryOnDeadlock(fn (): int => $qb->executeStatement());
+    }
+
+    /**
+     * Runs one autocommit statement, again after a deadlock, at most MAX_ATTEMPTS times.
+     *
+     * @template T
+     * @param callable(): T $statement
+     * @return T
+     */
+    private function retryOnDeadlock(callable $statement): mixed {
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return $statement();
+            } catch (\Throwable $e) {
+                if ($attempt >= self::MAX_ATTEMPTS || !self::isDeadlock($e) || $this->db->inTransaction()) {
+                    throw $e;
+                }
+                $this->pause($attempt);
+            }
+        }
+    }
+
+    /** Deadlock or serialization failure: MariaDB/MySQL 1213, PostgreSQL 40P01 and 40001. */
+    private static function isDeadlock(\Throwable $e): bool {
+        for ($t = $e; $t !== null; $t = $t->getPrevious()) {
+            if ($t instanceof Exception && $t->getReason() === Exception::REASON_DEADLOCK) {
+                return true;
+            }
+            // the driver exception below the wrapper (Doctrine), in case a wrapper lost the reason
+            if (method_exists($t, 'getSQLState') && in_array($t->getSQLState(), self::RETRY_SQLSTATES, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Short random backoff before the next attempt, so the competing requests drift apart. */
+    protected function pause(int $attempt): void {
+        usleep(random_int(5_000, 20_000) * $attempt);
     }
 }

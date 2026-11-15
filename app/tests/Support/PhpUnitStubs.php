@@ -7,6 +7,7 @@ namespace OCP\DB\QueryBuilder {
         interface IExpressionBuilder {
             public function eq(mixed $left, mixed $right): mixed;
             public function neq(mixed $left, mixed $right): mixed;
+            public function lt(mixed $left, mixed $right): mixed;
             public function lte(mixed $left, mixed $right): mixed;
             public function gte(mixed $left, mixed $right): mixed;
             public function gt(mixed $left, mixed $right): mixed;
@@ -70,6 +71,7 @@ namespace OCP\DB\QueryBuilder {
             public function executeQuery(): mixed;
             public function executeStatement(): int;
             public function getLastInsertId(): int;
+            public function getColumnName(string $column, string $tableAlias = ''): string;
         }
     }
 }
@@ -93,10 +95,12 @@ namespace OCP\DB {
         // the real NC 33 ones (audit #199: UNIQUE was 7 here, which is FOREIGN_KEY in Nextcloud).
         class Exception extends \Exception {
             public const REASON_DATABASE_OBJECT_NOT_FOUND = 4;
+            public const REASON_DEADLOCK = 5;
             public const REASON_UNIQUE_CONSTRAINT_VIOLATION = 14;
+            public const REASON_LOCK_WAIT_TIMEOUT = 15;
             private int $reason;
-            public function __construct(int $reason = 0, string $message = '') {
-                parent::__construct($message);
+            public function __construct(int $reason = 0, string $message = '', ?\Throwable $previous = null) {
+                parent::__construct($message, 0, $previous);
                 $this->reason = $reason;
             }
             public function getReason(): int {
