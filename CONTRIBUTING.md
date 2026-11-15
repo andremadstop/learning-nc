@@ -56,7 +56,7 @@ Both hooks need Docker, including for commits that only change documentation: pr
 - **Built bundle**: `app/js/` is committed, because it is what the App Store tarball ships. After changing anything under `app/src/` (including `app/src/l10n/`), run `npm run build` and commit the result together with the source change.
 - **Backend**: PHP 8.2+, Nextcloud App Framework, `QBMapper` for database access, dependency injection via `Application.php`. PHPStan level 5 must pass.
 - **Database**: support PostgreSQL and MySQL/MariaDB. Changes to raw SQL or transactions are tested on both (see Gate 4 in TESTING.md). Tables belong in `changeSchema()`. Data seeds belong in a repair step registered for both `<install>` and `<post-migration>`, because a fresh install never runs `postSchemaChange()`.
-- **Strings**: source strings are written in **German** and wrapped in `t('learning', '…')`. Every new string needs an entry in all six languages, in both `app/l10n/<lang>.json` and `app/l10n/<lang>.js`. `./scripts/check-i18n-parity.sh` must pass.
+- **Strings**: source strings are written in **German** and wrapped in `t('learning', '…')`. Every new string needs an entry in all six `app/l10n/<lang>.json` files. The `.json` file is the source; regenerate the matching `.js` files with `python3 scripts/l10n_js_sync.py` instead of editing them by hand. `./scripts/check-i18n-parity.sh` must pass.
 - **No secrets** in code, tests or commits.
 
 ## Pull requests

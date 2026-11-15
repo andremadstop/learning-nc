@@ -82,7 +82,7 @@ Gate 2 was an API test suite (`scripts/test-api.sh`, plus a smoke test). It ran 
 
 ### Persona-Gate
 
-The gates above read code. None of them clicks through the app from the outside. Most externally reported issues came from an operator who did exactly that, with gamification, AI and Leitner switched off. The Persona-Gate plays that scenario on a fresh instance.
+The gates above read code. None of them clicks through the app from the outside. One operator did exactly that, with gamification, AI and Leitner switched off, and reported 24 issues in a row (#35–#61). The Persona-Gate plays that scenario on a fresh instance.
 
 **Run it:**
 
@@ -98,11 +98,11 @@ It needs Docker and Chromium. `PERSONA_CHROMIUM` points at the browser binary. T
 **The scenario:**
 
 - Nextcloud 33 and PostgreSQL 16, pinned by digest, with an English interface and AI off.
-- Gamification is off by default and on with `GAMIFICATION=on`. A course's needs differ between the two. With gamification off (a mandatory training), the questions are whether something belongs there at all: points, leaderboards and network simulators in a fire-safety course should not be visible. With gamification on (an IT course), the run looks for regressions: what an IT course needs must still be there and work.
+- Gamification is off by default. `GAMIFICATION=on` seeds it switched on and runs the same stations and detectors.
 - The app comes from `git archive $REF`, so the committed bundle is what gets clicked, the same as what ships.
 - A signing key is created. One mandatory-training course has two required pools of 8 questions each, certification at 75 %, Leitner off in the course, and a group of three learners enrolled.
 
-**Roles (personas):** administrator, instructor, two learners, and the administrator in student view. Each persona opens every main tab and sub-tab of the course, the course list, the pool window, and the admin and personal settings, and clicks every visible button. Destructive or irreversible actions are never clicked: delete, remove, revoke, unenrol, archive, reset, generate or rotate keys, start an exam. A learner passes both exams first and opens, prints and downloads the certificate.
+**Roles (personas):** administrator, instructor, two learners, and the administrator in student view. Each persona opens every main tab and sub-tab of the course, the course list, the pool window, and the admin and personal settings. At each station it clicks up to 30 visible buttons. Destructive or irreversible actions are never clicked: delete, remove, revoke, unenrol, archive, reset, generate or rotate keys, start an exam. A learner passes both exams first and opens, prints and downloads the certificate.
 
 **What each station records:**
 
@@ -118,7 +118,7 @@ Contrast is not checked yet. The output goes to `scripts/persona-sweep/out/` (gi
 **Fresh-eyes review (by hand).** A sweep finds what can be measured. It does not find "what is this for?" or "nobody without an IT background understands this". For that, a language model gets only the screenshots and the visible text of each station. It sees no code, no documentation and no issue list, and it answers as the person the course is built for. That person is an administrator of a small organisation with no IT background, who has to set up an annual mandatory training with certificates. For every station it answers:
 
 1. Do I understand what this is for?
-2. Does it belong here, given the settings (gamification, AI, Leitner) and the current role?
+2. Does it belong here, given the settings (gamification, AI, Leitner) and the current role? With gamification off, as in a mandatory training, points, leaderboards and network simulators in a fire-safety course should not be visible. With gamification on, as in an IT course, the question is about regressions: is something missing, broken or unreadable?
 3. Is it readable? This covers contrast, cut-off text, unexplained jargon, internal identifiers or placeholders, and German words in the English interface.
 4. What would I report as an issue?
 
@@ -153,7 +153,7 @@ A bug fix is only done when it includes a test that **fails on the code before t
 How to show it:
 
 - **Unit tests**: run the new test with the fix reverted (`git stash` the fix, or check out the parent commit), and record that it fails.
-- **PHP gates**: `./scripts/gate-container.sh phpunit --ref <commit-before-the-fix>` together with the new test.
+- **PHP tests**: stage only the new test, not the fix, and run `./scripts/gate-container.sh phpunit`. It tests the git index, so it runs the new test against the old code. Alternatively, make a throwaway commit that keeps the test and reverts the fix, and pass it with `--ref`.
 - **Lifecycle**: `PROBE_REF=<release-without-the-fix> ./scripts/lifecycle-probe.sh` must fail, and the working state must pass.
 
 State in the commit message or pull request what the test does on the old code. Tests that accept a 500 as "OK" or skip silently are not allowed. PHPUnit already fails on skipped tests.
