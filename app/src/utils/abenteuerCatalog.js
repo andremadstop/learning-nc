@@ -69,7 +69,7 @@ export function buildStaticCampaigns() {
 	})
 	return [
 		campaign('grosser_ausfall', '📡', t('learning', 'Der große Ausfall (klassisch)'),
-			t('learning', 'Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.'),
+			t('learning', 'Montagmorgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.'),
 			'intermediate', ['Network+'], 60, { is_graph: true }),
 		campaign('einbruch_im_netz', '🔐', t('learning', 'Einbruch im Netz'),
 			t('learning', 'Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag.'),

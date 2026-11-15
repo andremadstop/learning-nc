@@ -39,6 +39,11 @@ describe('Adventure characters and fallback campaigns (GitHub #52)', () => {
 		expect(buildStaticCampaigns().find((c) => c.id === 'grosser_ausfall').is_graph).toBe(true)
 	})
 
+	it('spell "Montagmorgen" as one word in German', () => {
+		setTestLanguage('de')
+		expect(buildStaticCampaigns().find((c) => c.id === 'grosser_ausfall').description).toMatch(/^Montagmorgen: /)
+	})
+
 	it('are no longer German constants in the component', () => {
 		expect(source).not.toContain('const CHARACTERS')
 		expect(source).not.toContain('const STATIC_CAMPAIGNS')

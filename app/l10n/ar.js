@@ -3607,7 +3607,7 @@ OC.L10N.register(
     "Troubleshooting, Hardware, A+" : "استكشاف الأعطال، العتاد، A+",
     "Tiefes Netzwerk-Wissen fehlt manchmal" : "تنقصها أحياناً معرفة متعمقة بالشبكات",
     "Der große Ausfall (klassisch)" : "الانقطاع الكبير (كلاسيكي)",
-    "Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team." : "صباح الاثنين: لا شيء يعمل. جميع أنظمة NovaTech متوقفة. أنت فريق الطوارئ.",
+    "Montagmorgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team." : "صباح الاثنين: لا شيء يعمل. جميع أنظمة NovaTech متوقفة. أنت فريق الطوارئ.",
     "Einbruch im Netz" : "اختراق في الشبكة",
     "Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag." : "الثلاثاء، الساعة 03:47. ‏847 محاولة دخول فاشلة في 12 دقيقة. هذا ليس ثلاثاءً عادياً.",
     "Der neue Standort" : "الموقع الجديد",

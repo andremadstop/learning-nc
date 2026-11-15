@@ -3607,7 +3607,7 @@ OC.L10N.register(
     "Troubleshooting, Hardware, A+" : "Поиск неисправностей, оборудование, A+",
     "Tiefes Netzwerk-Wissen fehlt manchmal" : "Иногда не хватает глубоких знаний сетей",
     "Der große Ausfall (klassisch)" : "Большой сбой (классика)",
-    "Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team." : "Утро понедельника: ничего не работает. Все системы NovaTech лежат. Ты — аварийная команда.",
+    "Montagmorgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team." : "Утро понедельника: ничего не работает. Все системы NovaTech лежат. Ты — аварийная команда.",
     "Einbruch im Netz" : "Вторжение в сеть",
     "Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag." : "Вторник, 03:47. 847 неудачных входов за 12 минут. Это не обычный вторник.",
     "Der neue Standort" : "Новый филиал",
