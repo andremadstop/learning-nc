@@ -529,7 +529,7 @@ class TrainingServiceTest extends TestCase {
         );
 
         $this->expectException(ForbiddenException::class);
-        $service->startSession(42, 'alice', null, 'training', null, null, 7);
+        $service->startSession(42, 'alice', null, 'exam', null, null, 7);
     }
 
     /**
@@ -562,7 +562,7 @@ class TrainingServiceTest extends TestCase {
         );
 
         $this->expectException(ForbiddenException::class);
-        $service->startSession(42, 'alice', null, 'training'); // NOTE: courseId omitted → still gated
+        $service->startSession(42, 'alice', null, 'exam'); // NOTE: courseId omitted → still gated
     }
 
     /**
@@ -573,7 +573,8 @@ class TrainingServiceTest extends TestCase {
         $service = $this->buildGatedCourseService(
             gateEnabled: false,
             expectAssertion: false,
-            insertBuilder: $insertBuilder
+            insertBuilder: $insertBuilder,
+            expectGateLookup: false
         );
 
         $payload = $service->startSession(42, 'alice', null, 'training', null, null, 7);
@@ -583,14 +584,16 @@ class TrainingServiceTest extends TestCase {
     }
 
     /**
-     * VIDEO-03: when the gate is enabled AND completion is satisfied (assertCourseVideosComplete does
-     * not throw), startSession proceeds and writes the session row.
+     * GitHub #35 (B4): the required-content gate locks the counting exam only ("Exam only after all
+     * required content is completed"). Training on a gated course starts although the content is
+     * not completed: the gate is not even consulted. It used to lock every session start.
      */
-    public function testStartSessionProceedsWhenGateSatisfied(): void {
+    public function testTrainingOnAGatedCourseIsNotLocked(): void {
         $service = $this->buildGatedCourseService(
             gateEnabled: true,
-            expectAssertion: true,
-            insertBuilder: $insertBuilder
+            expectAssertion: false,
+            insertBuilder: $insertBuilder,
+            expectGateLookup: false
         );
 
         $payload = $service->startSession(42, 'alice', null, 'training', null, null, 7);
@@ -603,7 +606,7 @@ class TrainingServiceTest extends TestCase {
      * Shared harness for the gate-disabled and gate-satisfied course paths: a course (id 7) on pool 42
      * that resolves to two questions and inserts a session with generated id 99.
      */
-    private function buildGatedCourseService(bool $gateEnabled, bool $expectAssertion, &$insertBuilder): TrainingService {
+    private function buildGatedCourseService(bool $gateEnabled, bool $expectAssertion, &$insertBuilder, bool $expectGateLookup = true): TrainingService {
         $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
         $insertBuilder = new FakeQueryBuilder(new FakeResult(), 0, 99);
         $db = new FakeDbConnection([$activeExamBuilder, $insertBuilder]);
@@ -627,7 +630,7 @@ class TrainingServiceTest extends TestCase {
         $courseService = $this->createMock(CourseService::class);
         // The gate is derived purely from the pool→enrolled-gated-course lookup (unified after Codex
         // re-review): a gated pool returns [7], an ungated one returns [].
-        $courseService->expects($this->atLeastOnce())->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn($gateEnabled ? [7] : []);
+        $courseService->expects($expectGateLookup ? $this->atLeastOnce() : $this->never())->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn($gateEnabled ? [7] : []);
         $courseService->expects($this->atLeastOnce())->method('resolveCoursePoolContext')
             ->with(7, 42, 'alice')
             ->willReturn(['question_ids' => [10, 11]]);

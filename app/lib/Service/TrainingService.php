@@ -701,8 +701,15 @@ class TrainingService {
         // state before access is checked (getGatedCourseIdsForPool asserts enrolment; closes the LOW
         // pre-access leak). Throws ForbiddenException (→ 403) when any required content is
         // incomplete/misconfigured.
-        foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
-            $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
+        //
+        // GitHub #35 (B4): the gate locks the counting EXAM only ("Exam only after all required
+        // content is completed"). Training, Leitner and the practice runs never count towards a
+        // certificate; they stay open, so learners can practise while they work through the
+        // required content. It used to lock every session start on the pool, Training included.
+        if ($mode === 'exam') {
+            foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
+                $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
+            }
         }
 
         // GitHub #39 (B1): the course switches for Training and the exam are enforced here, not
@@ -907,7 +914,6 @@ class TrainingService {
      * towards a certificate and never locks a pool for the anti-oracle guards.
      *
      * @throws DoesNotExistException if the course does not exist or the user has no access
-     * @throws ForbiddenException    if the video/material gate of a course is not satisfied
      * @throws \Exception            if practice exams are off, a certificate-relevant exam is running
      *                               on one of the pools, the attempt policy blocks, or no questions exist
      */
@@ -925,11 +931,8 @@ class TrainingService {
             throw new \Exception(self::PRACTICE_NO_REQUIRED_POOLS);
         }
 
-        foreach ($context['pool_ids'] as $poolId) {
-            foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
-                $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
-            }
-        }
+        // GitHub #35 (B4): no required-content gate here. A practice exam never counts towards a
+        // certificate; the gate locks the counting exam only (see startSession()).
 
         // A practice review reveals correct answers and explanations. While a certificate-relevant
         // exam runs on any of these pools, that would be an answer oracle for it — so no practice
@@ -1002,7 +1005,6 @@ class TrainingService {
      *
      * @throws DoesNotExistException if the course does not exist, the user has no access, or the
      *                               pool is not part of the course
-     * @throws ForbiddenException    if the video/material gate of a course is not satisfied
      * @throws \Exception            if practice exams are off, a counting exam runs on the pool,
      *                               the attempt policy blocks, or the pool has no eligible questions
      */
@@ -1015,9 +1017,7 @@ class TrainingService {
             throw new \Exception('Practice exams are not enabled for this course');
         }
 
-        foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
-            $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
-        }
+        // GitHub #35 (B4): no required-content gate for a practice run (see startPracticeExam()).
 
         // A practice review reveals correct answers and explanations — while a counting exam runs
         // on this pool, that is an answer oracle for it. Checked before the resume as well: no
