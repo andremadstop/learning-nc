@@ -14,8 +14,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * Review of GitHub #60: a person named as instructor (app value instructor_users) loses the right
  * with the account. Nextcloud removes the group memberships of a deleted account, not this list,
- * so a new account reusing the uid would have been an instructor at once. Resolved from the real
- * container, so the listener's wiring is covered too.
+ * so a new account reusing the uid would have been an instructor at once. The listener is
+ * resolved from the real container (its dependencies); the event registration itself is the
+ * one line in Application::register().
  */
 final class InstructorUserDeletedTest extends TestCase {
     private const KEYS = [RoleService::GROUPS_KEY, RoleService::USERS_KEY, RoleService::LEGACY_GROUP_KEY];
