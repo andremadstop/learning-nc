@@ -152,7 +152,7 @@ jobs:
           path: |
             ci-logs/
             scripts/persona-sweep/out/
-            !scripts/persona-sweep/out/auth/
+            !scripts/persona-sweep/out/auth/**
             !scripts/persona-sweep/out/instance.env
           retention-days: 14
           if-no-files-found: warn
