@@ -179,35 +179,45 @@ class GamificationOffViewsTest extends TestCase {
         $this->assertSame(['total_xp', 'desc'], $this->leaderboardSort(true, null));
     }
 
-    /** @return array{0: array, 1: FakeQueryBuilder} the learner's leaderboard rows and the row query */
-    private function learnerLeaderboard(bool $gamification): array {
+    /** @return array{0: array, 1: FakeQueryBuilder, 2: array} leaderboard rows, the row query, the whole answer */
+    private function leaderboardAs(string $viewer, bool $gamification): array {
         $rows = new FakeQueryBuilder(new FakeResult([
             ['user_id' => 'learner', 'total_xp' => 900, 'current_level' => 6, 'total_mastered' => 4, 'current_streak' => 2, 'total_sessions' => 9, 'last_activity_date' => '2026-03-04'],
         ]));
         $db = new FakeDbConnection([new FakeQueryBuilder(FakeResult::fromFetchOne(1)), $rows]);
         $board = $this->courseService($db, $gamification, $this->membersWith($this->student()), $this->noPools())
-            ->getLeaderboard(7, 'learner', 25, 0, 'total_mastered', 'desc');
-        return [$board['leaderboard'], $rows];
+            ->getLeaderboard(7, $viewer, 25, 0, 'total_mastered', 'desc');
+        return [$board['leaderboard'], $rows, $board];
     }
 
-    public function testLeaderboardGivesLearnersNoXpOrLevelWithGamificationOff(): void {
-        [$off] = $this->learnerLeaderboard(false);
-        $this->assertCount(1, $off);
-        $this->assertArrayNotHasKey('total_xp', $off[0]);
-        $this->assertArrayNotHasKey('current_level', $off[0]);
-        $this->assertSame(4, $off[0]['total_mastered']);
+    /**
+     * With gamification off the competition tab is gone for learners (wettbewerbTabIds), and the
+     * API hands them nothing either: before, a direct call still returned every fellow learner's
+     * rank, name and mastered cards. Instructors keep the ranking.
+     */
+    public function testLeaderboardGivesLearnersNothingWithGamificationOff(): void {
+        [$off, $rows, $board] = $this->leaderboardAs('learner', false);
+        $this->assertSame([], $off);
+        $this->assertNull($board['my_rank']);
+        $this->assertSame(0, $board['meta']['total']);
+        $this->assertSame([], $rows->orderBys, 'no ranking query is run');
 
-        [$on] = $this->learnerLeaderboard(true);
-        $this->assertSame(900, $on[0]['total_xp'], 'with gamification on learners keep XP and level');
+        [$on] = $this->leaderboardAs('learner', true);
+        $this->assertCount(1, $on, 'with gamification on learners keep the leaderboard');
+        $this->assertSame(900, $on[0]['total_xp']);
         $this->assertSame(6, $on[0]['current_level']);
+
+        [$teacher] = $this->leaderboardAs('teacher', false);
+        $this->assertCount(1, $teacher, 'instructors keep the ranking with gamification off');
+        $this->assertSame(4, $teacher[0]['total_mastered']);
     }
 
     public function testLeaderboardTieBreakIgnoresFrozenXpWithGamificationOff(): void {
-        [, $off] = $this->learnerLeaderboard(false);
+        [, $off] = $this->leaderboardAs('teacher', false);
         $columns = array_map(static fn (array $order): string => $order['field'], $off->orderBys);
         $this->assertSame(['total_mastered', 'cm.user_id'], $columns);
 
-        [, $on] = $this->learnerLeaderboard(true);
+        [, $on] = $this->leaderboardAs('teacher', true);
         $columns = array_map(static fn (array $order): string => $order['field'], $on->orderBys);
         $this->assertSame(['total_mastered', 'total_xp', 'cm.user_id'], $columns, 'unchanged with gamification on');
     }

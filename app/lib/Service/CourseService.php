@@ -1887,6 +1887,24 @@ class CourseService {
             $sortKey = $this->isLeitnerEnabledFor($course) ? 'total_mastered' : 'total_sessions';
             $sortDir = 'desc';
         }
+        // GitHub #36: with gamification off learners have no leaderboard (the competition tab is
+        // gone for them, utils/courseView.js wettbewerbTabIds); the API hands out nothing either,
+        // as the class register and buddy endpoints do once their area is switched off.
+        if (!$isInstructor && !$gamificationEnabled) {
+            return [
+                'leaderboard' => [],
+                'my_rank' => null,
+                'meta' => [
+                    'total' => 0,
+                    'limit' => $limit,
+                    'offset' => $offset,
+                    'sort_key' => $sortKey,
+                    'sort_dir' => $sortDir,
+                    'active_only' => $activeOnly,
+                    'active_within_days' => $activeWithinDays,
+                ],
+            ];
+        }
         $activeSince = gmdate('Y-m-d H:i:s', time() - ($activeWithinDays * 86400));
 
         // Count total with the same filter.
