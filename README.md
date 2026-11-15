@@ -204,6 +204,10 @@ Evaluating it for an organisation? [Open a GitHub issue](https://github.com/andr
 
 Contributions are welcome! Whether it's bug reports, feature ideas, translations, or code — feel free to open an issue or PR.
 
+- [CONTRIBUTING.md](CONTRIBUTING.md) — what makes a good bug report, development setup (Node and Docker, no local PHP), conventions, how releases are made
+- [TESTING.md](TESTING.md) — the test pyramid, what CI runs and when, how to run each gate locally
+- [SECURITY.md](SECURITY.md) — how to report a vulnerability privately; please not as a public issue
+
 The interface ships in six languages — German (source), English, French, Russian, Arabic and
 Ukrainian. The codebase and documentation are in English.
 
