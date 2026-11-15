@@ -49,7 +49,7 @@ export default {
 }
 
 .simulator-shell__error {
-	color: var(--color-error, #e53935);
+	color: var(--color-error-text);
 	padding: 16px;
 	text-align: center;
 }

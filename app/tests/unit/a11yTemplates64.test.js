@@ -161,7 +161,7 @@ describe('#64 template accessibility', () => {
 	})
 
 	it('text colours use the --color-<status>-text variants, not the background tints', () => {
-		const tint = /(^|[\s;{])color:\s*var\(--color-(warning|success|error|info)\)/
+		const tint = /(^|[\s;{])color:\s*var\(--color-(warning|success|error|info)\s*[,)]/
 		const offenders = []
 		for (const file of FILES) {
 			for (const style of file.descriptor.styles) {
