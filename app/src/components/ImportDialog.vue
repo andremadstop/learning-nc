@@ -1,8 +1,8 @@
 <template>
   <AccessibleDialog :name="t('learning', 'Import Questions')" @closing="$emit('close')" size="normal">
-    <div class="format-tabs" role="tablist">
-      <button @click="chooseFormat('csv')" :class="['tab-btn', { active: format === 'csv' }]" role="tab" :aria-selected="format === 'csv' ? 'true' : 'false'">{{ t('learning', 'CSV') }}</button>
-      <button @click="chooseFormat('json')" :class="['tab-btn', { active: format === 'json' }]" role="tab" :aria-selected="format === 'json' ? 'true' : 'false'">{{ t('learning', 'JSON') }}</button>
+    <div class="format-tabs lnc-tablist" role="tablist" @keydown="moveTablistFocus">
+      <button @click="chooseFormat('csv')" :class="['tab-btn', 'lnc-tab', { active: format === 'csv' }]" role="tab" :aria-selected="format === 'csv' ? 'true' : 'false'">{{ t('learning', 'CSV') }}</button>
+      <button @click="chooseFormat('json')" :class="['tab-btn', 'lnc-tab', { active: format === 'json' }]" role="tab" :aria-selected="format === 'json' ? 'true' : 'false'">{{ t('learning', 'JSON') }}</button>
     </div>
 
     <NcNoteCard type="info" class="format-help">
@@ -119,6 +119,7 @@ import { generateUrl } from '@nextcloud/router';
 import { showSuccess } from '@nextcloud/dialogs';
 import AccessibleDialog from './AccessibleDialog.vue';
 import { analyzeCsvImport, analyzeJsonImport, importMessages } from '../utils/importPreview.js';
+import { moveTablistFocus } from '../utils/tablistKeydown.js';
 
 const CSV_EXAMPLE = `What is the capital of France?,Berlin,Paris,London,Madrid,2,Paris has been the capital since the 10th century
 What color is the sky?,Green,Blue,Red,Yellow,2
@@ -199,6 +200,7 @@ export default {
     format() { this.updatePreview(); this.result = null; }
   },
   methods: {
+    moveTablistFocus,
     chooseFormat(format) {
       // Clicking the tab that is already active is no choice: automatic detection stays on.
       if (format === this.format) return;
@@ -309,10 +311,8 @@ export default {
 </script>
 
 <style scoped>
-.format-tabs { display: flex; gap: 4px; margin-bottom: 16px; padding: 4px; background: var(--color-background-hover); border-radius: 8px; max-width: 200px; }
-.tab-btn { flex: 1; padding: 8px 16px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; min-height: 40px; color: var(--color-main-text); }
-.tab-btn:hover { background: var(--color-background-dark); }
-.tab-btn.active { background: var(--color-primary-element); color: var(--color-primary-element-text); }
+.format-tabs { margin-bottom: 16px; }
+/* look and width of the tabs: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
 .format-help { margin-bottom: 16px; }
 .format-help code { display: inline-block; padding: 4px 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 12px; word-break: break-all; margin: 4px 0; }
 .input-section { margin-bottom: 16px; }

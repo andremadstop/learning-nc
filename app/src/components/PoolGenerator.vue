@@ -21,10 +21,10 @@
       </div>
 
       <!-- Tabs -->
-      <div class="pg-tabs" role="tablist">
+      <div class="pg-tabs lnc-tablist" role="tablist" @keydown="moveTablistFocus">
         <button
           @click="activeTab = 'text'"
-          :class="['pg-tab', { active: activeTab === 'text' }]"
+          :class="['pg-tab', 'lnc-tab', { active: activeTab === 'text' }]"
           role="tab"
           :aria-selected="activeTab === 'text' ? 'true' : 'false'"
         >
@@ -32,7 +32,7 @@
         </button>
         <button
           @click="activeTab = 'file'"
-          :class="['pg-tab', { active: activeTab === 'file' }]"
+          :class="['pg-tab', 'lnc-tab', { active: activeTab === 'file' }]"
           role="tab"
           :aria-selected="activeTab === 'file' ? 'true' : 'false'"
         >
@@ -40,7 +40,7 @@
         </button>
         <button
           @click="activeTab = 'import'"
-          :class="['pg-tab', { active: activeTab === 'import' }]"
+          :class="['pg-tab', 'lnc-tab', { active: activeTab === 'import' }]"
           role="tab"
           :aria-selected="activeTab === 'import' ? 'true' : 'false'"
         >
@@ -205,6 +205,7 @@ import NcButton from '@nextcloud/vue/components/NcButton';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import PoolDraftReview from './PoolDraftReview.vue';
+import { moveTablistFocus } from '../utils/tablistKeydown.js';
 import axios from '@nextcloud/axios';
 import AiConsentHint from './AiConsentHint.vue';
 import { isConsentRefusal } from '../utils/aiConsent.js';
@@ -258,6 +259,7 @@ export default {
     this.loadProviderInfo();
   },
   methods: {
+    moveTablistFocus,
     // Audit #105: a stray click next to the dialog closed it in every step and threw away
     // AI-generated (and possibly edited) drafts. While generating or reviewing, only the
     // close button closes it.
@@ -459,30 +461,9 @@ export default {
 }
 
 .pg-tabs {
-  display: flex;
-  gap: 2px;
   margin-bottom: 20px;
-  border-bottom: 2px solid var(--color-border);
 }
-.pg-tab {
-  background: none;
-  border: none;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  color: var(--color-text-maxcontrast);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.15s, border-color 0.15s;
-}
-.pg-tab:hover {
-  color: var(--color-main-text);
-}
-.pg-tab.active {
-  color: var(--color-primary-element);
-  border-bottom-color: var(--color-primary-element);
-}
+/* look and width of the tabs: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
 
 .pg-tab-content {
   padding-top: 4px;

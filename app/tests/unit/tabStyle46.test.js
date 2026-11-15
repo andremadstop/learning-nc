@@ -93,6 +93,8 @@ describe('#46 shared tab style', () => {
 		['components/CourseDetail.vue', ['.mega-tab-selector', '.mega-tab-button', '.mega-tab-button.active', '.mega-tab-button:hover']],
 		['App.vue', ['.mode-selector', '.mode-btn', '.mode-btn.active', '.mode-btn:hover', '.course-sub-nav']],
 		['components/PoolList.vue', ['.pool-tabs', '.tab-btn', '.tab-btn.active', '.tab-btn:hover']],
+		['components/PoolGenerator.vue', ['.pg-tabs', '.pg-tab', '.pg-tab.active', '.pg-tab:hover']],
+		['components/ImportDialog.vue', ['.format-tabs', '.tab-btn', '.tab-btn.active', '.tab-btn:hover']],
 	])('%s keeps no own tab look or width', (file, selectors) => {
 		const css = styleOf(file)
 		for (const selector of selectors) {
@@ -108,6 +110,8 @@ describe('#46 shared tab style', () => {
 		['components/CourseDetail.vue', 'mega-tab-selector', 'mega-tab-button'],
 		['App.vue', 'mode-selector', 'mode-btn'],
 		['components/PoolList.vue', 'pool-tabs', 'tab-btn'],
+		['components/PoolGenerator.vue', 'pg-tabs', 'pg-tab'],
+		['components/ImportDialog.vue', 'format-tabs', 'tab-btn'],
 	])('%s uses the shared classes', (file, bar, tab) => {
 		const sfc = read(file)
 		expect(sfc).toMatch(new RegExp(`class="${bar} lnc-tablist"`))
@@ -118,4 +122,13 @@ describe('#46 shared tab style', () => {
 		const sfc = read('App.vue')
 		expect(sfc.match(/class="course-sub-nav lnc-tablist"/g)?.length).toBe(2)
 	})
+
+	it.each(['components/CourseDetail.vue', 'components/PoolList.vue', 'components/PoolGenerator.vue', 'components/ImportDialog.vue'])(
+		'%s binds the shared arrow-key handler on its tab bar',
+		(file) => {
+			const sfc = read(file)
+			expect(sfc).toMatch(/class="[\w-]+ lnc-tablist"[^>]*@keydown="moveTablistFocus"|@keydown="moveTablistFocus"[^>]*class="[\w-]+ lnc-tablist"/s)
+			expect(sfc).toMatch(/import \{ moveTablistFocus \} from '\.\.\/utils\/tablistKeydown\.js'/)
+		},
+	)
 })
