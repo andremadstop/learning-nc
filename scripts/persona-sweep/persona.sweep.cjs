@@ -303,8 +303,11 @@ async function login(browser, persona, { studentView = false } = {}) {
 	await page.goto(`${BASE}/index.php/login`)
 	await page.fill('#user', user)
 	await page.fill('#password', PASSWORDS[user])
-	await page.click('button[type=submit]')
-	await page.waitForURL((u) => !u.pathname.includes('/login'), { timeout: 30000 })
+	// A user's first login copies the skeleton files and fills the app caches; on a fresh instance
+	// that can take longer than the 10 s action timeout, which also covers the navigation the
+	// click starts. The login gets 60 s, the stations keep their 10 s.
+	await page.click('button[type=submit]', { timeout: 60000 })
+	await page.waitForURL((u) => !u.pathname.includes('/login'), { timeout: 60000 })
 	return { context, page }
 }
 
