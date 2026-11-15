@@ -27,7 +27,7 @@ const COURSE_TITLE = 'Annual safety training'
 const PASSWORDS = { admin: state.ADMIN_PASS, instructor: state.INSTRUCTOR_PASS, learner1: state.LEARNER_PASS, learner2: state.LEARNER_PASS }
 
 // Buttons the sweep never clicks: destructive, irreversible, or they use up an exam attempt.
-const DENY = /delet|remov|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
+const DENY = /make (instructor|student|learner)|promot|demot|delet|remov|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
 const MAX_BUTTONS_PER_STATION = 30
 // Nextcloud core noise in a bare container (no user_status backend data); not the app's.
 const CORE_NOISE = /user_status|Failed to load user status/
@@ -179,6 +179,7 @@ async function station(page, rec, name, fn) {
 	if (ONLY && !ONLY.test(name)) {
 		// Filtered out: still navigate (later stations build on it), but no clicks, no record.
 		skipClicks = true
+		rec.current = { persona: rec.persona, station: '(filtered)', findings: [] } // not saved
 		try { await fn() } catch { /* not recorded */ }
 		skipClicks = false
 		return
@@ -420,6 +421,21 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 	const rec = new Recorder('learner1')
 	const { context, page } = await login(browser, 'learner1')
 	rec.attach(page)
+	// The toast check must be able to fail: Nextcloud's own toast without any app request has to
+	// come out as "success toast without a write request". The finding is moved to the station's
+	// selfTest field so that it does not count as an app finding.
+	await station(page, rec, 'Detector self-test: toast without a request', async () => {
+		await openApp(page)
+		const since = Date.now()
+		await page.evaluate(() => window.OCP?.Toast?.success('persona self-test'))
+		await page.waitForTimeout(500)
+		await checkToasts(page, rec, since, 'self-test')
+		const hit = rec.current.findings.findIndex((f) => f.kind === 'toast-without-write' && f.detail.includes('persona self-test'))
+		rec.current.selfTest = hit >= 0 ? 'toast check works' : 'TOAST CHECK BROKEN: the self-test toast was not reported'
+		if (hit >= 0) rec.current.findings.splice(hit, 1)
+		else rec.add('detector', rec.current.selfTest)
+		await page.evaluate(() => document.querySelectorAll('.toastify').forEach((t) => t.remove()))
+	})
 	const enterExamTab = async () => {
 		await openMegaTab(page, 'Learning space')
 		await page.locator('.lernraum-subnav button').filter({ hasText: 'Exam' }).first().click()

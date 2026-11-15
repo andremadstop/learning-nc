@@ -19,6 +19,7 @@ module.exports = defineConfig({
 		acceptDownloads: true,
 		actionTimeout: 10_000,
 		navigationTimeout: 30_000,
-		launchOptions: { executablePath: process.env.PERSONA_CHROMIUM || '/usr/bin/chromium' },
+		// --lang: native widgets (date inputs) follow the browser UI language, not the page locale.
+		launchOptions: { executablePath: process.env.PERSONA_CHROMIUM || '/usr/bin/chromium', args: ['--lang=en-GB'] },
 	},
 })

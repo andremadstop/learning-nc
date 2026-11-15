@@ -21,7 +21,7 @@ const KINDS = {
 	'toast-despite-error': 'Success toast although a request failed',
 	'error-toast': 'Error toast',
 	'station-error': 'Station could not be completed',
-	'deep-link': 'Deep link',
+	'deep-link': 'Deep link', detector: 'Detector self-test',
 	'course-missing': 'Course not in the course list', 'pool-missing': 'Pool not in the pool list',
 	exam: 'Exam', certificate: 'Certificate', print: 'Print', download: 'Download', compliance: 'Compliance report',
 }
@@ -38,6 +38,8 @@ md += `- Gamification: **${state.GAMIFICATION || 'off'}**, AI: off, Leitner: off
 md += `- Personas: ${personas.join(', ')}\n`
 const toasts = stations.flatMap((s) => (s.toasts || []).map((t) => `${s.persona}: ${s.station} — ${t}`))
 md += `- Stations: ${stations.length}, with findings: ${withFindings.length}, buttons clicked: ${stations.reduce((n, s) => n + (s.clicked || 0), 0)}\n`
+const selfTest = stations.find((s) => s.selfTest)?.selfTest || 'not run'
+md += `- Toast detector self-test: **${selfTest}**\n`
 md += `- Toasts seen (all kinds): ${toasts.length}${toasts.length ? '' : ' — **the toast check saw none, so "success toast without a write request" is unproven for this run**'}\n`
 md += '- Contrast (axe-core): **not checked** — axe-core is not in app/node_modules and the sweep installs nothing.\n'
 md += '- The seed enrols the administrator as co-instructor of the course (a Nextcloud admin who is not a member does not see it).\n'
