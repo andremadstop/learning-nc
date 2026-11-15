@@ -328,6 +328,9 @@ const EXAM_AUTO_SUBMIT_LEAD_SECONDS = 5;
 const EXAM_MAX_QUESTIONS = 90;
 const EXAM_SECONDS_PER_QUESTION = 90;
 const EXAM_MAX_SECONDS = 7200;
+// GitHub #47: a course-configured count (up to 500) is sized by the same rule up to
+// ExamScope::MAX_MINUTES; TrainingService grants that much when the course set the count.
+const EXAM_SCOPE_MAX_SECONDS = 600 * 60;
 
 export default {
   name: 'ExamMode',
@@ -495,7 +498,8 @@ export default {
         return this.configuredExamMinutes * 60
       }
       const minutes = Math.max(1, Math.round(this.examQuestionCount * EXAM_SECONDS_PER_QUESTION / 60))
-      return Math.min(minutes * 60, EXAM_MAX_SECONDS)
+      const cap = this.configuredExamQuestions !== null ? EXAM_SCOPE_MAX_SECONDS : EXAM_MAX_SECONDS
+      return Math.min(minutes * 60, cap)
     },
     examPresets() {
       const count = this.examQuestionCount

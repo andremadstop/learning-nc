@@ -822,7 +822,11 @@ class TrainingService {
                 $effectiveTimeLimit = (int)$configuredMinutes * 60;
             } else {
                 $requestedLimit = $timeLimitSeconds ?? 600;
-                $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
+                // A course-configured count (up to ExamScope::MAX_QUESTIONS) may need more than the
+                // 120 minutes a self-chosen exam gets; the card sizes it at 90 s per question up to
+                // ExamScope::MAX_MINUTES (ExamMode.examTimeLimitSeconds), so the server grants it.
+                $maxSeconds = $configuredQuestions !== null ? ExamScope::MAX_MINUTES * 60 : 7200;
+                $effectiveTimeLimit = max(60, min($maxSeconds, (int)$requestedLimit));
             }
 
             // SECURITY: auto-complete all open training sessions on the same pool, so they cannot

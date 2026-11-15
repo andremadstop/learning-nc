@@ -82,6 +82,16 @@ describe('ExamMode exam card (#47)', () => {
 		expect(vm.examPresets[0].meta).toBe('Questions: up to 30 · time limit: 45 min · pass mark: 80%')
 	})
 
+	it('sizes a large configured exam by 90 s per question beyond 120 minutes, up to 600', () => {
+		const big = instanceOf(ExamMode, { ...examProps, totalQuestions: 300, examScope: { questions: 200, minutes: null } })
+		expect(big.examTimeLimitSeconds).toBe(200 * 90)
+		expect(big.examPresets[0].meta).toBe('Fragen: 200 · Zeitlimit: 300 Min.')
+		const huge = instanceOf(ExamMode, { ...examProps, totalQuestions: 500, examScope: { questions: 500, minutes: null } })
+		expect(huge.examTimeLimitSeconds).toBe(600 * 60)
+		const unconfigured = instanceOf(ExamMode, { ...examProps, totalQuestions: 300 })
+		expect(unconfigured.examTimeLimitSeconds).toBe(7200)
+	})
+
 	it('ignores a scope outside a course, where the server does not apply it', () => {
 		const vm = instanceOf(ExamMode, { ...examProps, courseId: null, examScope: { questions: 5, minutes: 5 } })
 		expect(vm.examQuestionCount).toBe(30)
