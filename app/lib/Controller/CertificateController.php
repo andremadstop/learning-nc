@@ -123,6 +123,8 @@ class CertificateController extends Controller {
         // GitHub #43: how this certificate is drawn (frozen at issuance; null = the standard card),
         // with its stamp / signature as data URLs: only whoever may see the certificate gets them.
         $data['presentation'] = $this->layoutService->presentationForCertificate($cert);
+        // GitHub #67: the course can switch "Add to LinkedIn" off (e.g. internal mandatory training).
+        $data['linkedin_allowed'] = $this->courseService->isLinkedInShareEnabled((int)$cert->getCourseId());
         return new JSONResponse($data);
     }
 

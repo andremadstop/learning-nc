@@ -39,7 +39,7 @@
 						{{ courseId === null ? t('learning', 'Herunterladen') : t('learning', 'Herunterladen (JSON)') }}
 					</NcButton>
 				</a>
-				<NcButton v-if="courseId === null" variant="secondary" @click="openLinkedIn">
+				<NcButton v-if="courseId === null && linkedinAllowed" variant="secondary" @click="openLinkedIn">
 					{{ t('learning', 'Zu LinkedIn hinzufügen (öffnet LinkedIn)') }}
 				</NcButton>
 			</div>
@@ -100,6 +100,8 @@ export default {
 			qrDataUrl: '',
 			revoked: false,
 			expired: false,
+			// GitHub #67: the course can switch "Add to LinkedIn" off; a missing field keeps it.
+			linkedinAllowed: true,
 		}
 	},
 
@@ -158,6 +160,7 @@ export default {
 					: await getCertificate(this.verificationId)
 				this.revoked = row?.revoked === true
 				this.expired = row?.expired === true
+				this.linkedinAllowed = row?.linkedin_allowed !== false
 				const credential = decodeCredential(row.credential_json)
 				if (!credential) {
 					this.error = t('learning', 'Zertifikat konnte nicht gelesen werden.')

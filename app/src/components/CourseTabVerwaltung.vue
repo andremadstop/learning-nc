@@ -214,6 +214,21 @@
 							@change="certValidityDays = Math.max(0, parseInt($event.target.value) || 0)" />
 					</div>
 
+					<!-- GitHub #67: "Add to LinkedIn" on the learners' certificates of this course. Saved
+						at once, on the last saved mode config (like the Leitner sprint). -->
+					<div class="cert-config-field" data-test="cert-linkedin">
+						<label class="mode-toggle-label">
+							<input
+								type="checkbox"
+								:checked="linkedinOn"
+								:disabled="savingLinkedin"
+								aria-describedby="cert-linkedin-desc"
+								@change="saveLinkedin($event.target.checked, $event.target)" />
+							{{ t('learning', 'Lernenden „Zu LinkedIn hinzufügen“ anbieten') }}
+						</label>
+						<small id="cert-linkedin-desc" class="mode-config-note mode-description">{{ t('learning', 'Zeigt beim Zertifikat einen Knopf, mit dem Lernende es in ihrem LinkedIn-Profil eintragen. Bei internen Pflichtschulungen meist nicht gewünscht.') }}</small>
+					</div>
+
 					<!-- GitHub #43: text, elements, stamp and signature of the course's certificates. -->
 					<CertLayoutSettings
 						v-model="certLayout"
@@ -551,6 +566,7 @@ export default {
 			// this instead of modeConfigLocal, so switches changed elsewhere on the page without
 			// pressing their own Save are not stored with them (GitHub #35).
 			savedModeConfig: {},
+			savingLinkedin: false,
 			savingModeConfig: false,
 			modeConfigSaved: false,
 			adminEnabledTools: [...ALL_TOOL_IDS],
@@ -657,6 +673,9 @@ export default {
 		},
 		toolsSwitchedOn() {
 			return this.modeConfigLocal.tools !== false
+		},
+		linkedinOn() {
+			return this.savedModeConfig?.linkedin !== false
 		},
 		// CoursePool serialises `required` as an integer (0/1), hence the Number().
 		// GitHub #35: judged on the stored mode config, which is what learners get — an unsaved
@@ -765,6 +784,7 @@ export default {
 				tools: true,
 				classbook: true,
 				buddies: true,
+				linkedin: true,
 			}, modeConfig || {})
 		},
 
@@ -895,6 +915,27 @@ export default {
 			} catch (e) {
 				console.error('Failed to save maintenance mode', e)
 				this.$emit('error', t('learning', 'Failed to save maintenance mode'))
+			}
+		},
+
+		// GitHub #67: only the LinkedIn switch is saved here; the mode switches go as last stored,
+		// so unsaved changes above are not saved along with it.
+		async saveLinkedin(value, input = null) {
+			this.savingLinkedin = true
+			const sent = { ...this.normalizeModeConfig(this.savedModeConfig), linkedin: value }
+			try {
+				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
+					modeConfig: sent,
+				})
+				this.savedModeConfig = this.normalizeModeConfig(res.data?.mode_config || sent)
+				this.modeConfigLocal.linkedin = this.savedModeConfig.linkedin
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				// The checkbox flipped before the request; put it back to the stored state.
+				if (input) input.checked = this.linkedinOn
+				this.$emit('error', t('learning', 'Failed to save mode config'))
+			} finally {
+				this.savingLinkedin = false
 			}
 		},
 

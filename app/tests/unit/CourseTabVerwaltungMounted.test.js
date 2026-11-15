@@ -52,6 +52,7 @@ const SAVED_MODE_CONFIG = {
 	tools: true,
 	classbook: true,
 	buddies: true,
+	linkedin: true,
 }
 
 async function flush() {
@@ -479,6 +480,44 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 
 			const call = axios.put.mock.calls.find(([url]) => url === '/apps/learning/api/courses/5/schedule')
 			expect(call[1].entries[0].chapter_ref).toBe('Wiederholung')
+		})
+	})
+	// GitHub #67: "Add to LinkedIn" can be switched off per course, in the certification section.
+	describe('LinkedIn switch (GitHub #67)', () => {
+		function linkedinInput() {
+			return host.querySelector('[data-test="cert-linkedin"] input[type="checkbox"]')
+		}
+
+		it('is shown only while the certification is on, and reflects the stored switch', async () => {
+			await mountTab()
+			expect(linkedinInput()).toBeNull()
+			app.unmount()
+			host.remove()
+
+			await mountTab({ courseExtra: { cert_enabled: true }, modeConfig: { linkedin: false } })
+			expect(linkedinInput().checked).toBe(false)
+			expect(host.querySelector('#cert-linkedin-desc').textContent).toContain('LinkedIn')
+		})
+
+		it('saves only the switch, on the stored modes, not unsaved mode changes above', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true } })
+			await toggle(modeCheckbox('Leitner'), false)
+
+			await toggle(linkedinInput(), false)
+
+			const modeCalls = axios.put.mock.calls.filter(([url]) => url === '/apps/learning/api/courses/5/mode-config')
+			expect(modeCalls).toHaveLength(1)
+			expect(modeCalls[0][1]).toEqual({ modeConfig: { ...SAVED_MODE_CONFIG, linkedin: false } })
+			expect(linkedinInput().checked).toBe(false)
+		})
+
+		it('puts the checkbox back when the save fails', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true } })
+			axios.put.mockImplementationOnce(() => Promise.reject(new Error('500')))
+
+			await toggle(linkedinInput(), false)
+
+			expect(linkedinInput().checked).toBe(true)
 		})
 	})
 })

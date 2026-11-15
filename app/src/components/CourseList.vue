@@ -145,6 +145,31 @@
 						rows="4" />
 				</div>
 
+				<!-- GitHub #67: the course profile presets the course switches once, on create. It
+					is not stored; every switch stays changeable under Administration → Course rules. -->
+				<fieldset v-if="!editingCourse" class="form-group course-profile" data-test="course-profile">
+					<legend class="course-profile__legend">{{ t('learning', 'Kursprofil') }}</legend>
+					<label v-for="option in profileOptions"
+						:key="option.value"
+						class="course-profile__option"
+						:class="{ 'course-profile__option--selected': formData.profile === option.value }">
+						<input v-model="formData.profile"
+							type="radio"
+							name="course-profile"
+							:value="option.value"
+							:disabled="saving"
+							:aria-describedby="'course-profile-desc-' + option.value"
+							:data-test="'course-profile-' + option.value" />
+						<span class="course-profile__text">
+							<span class="course-profile__title">{{ option.label }}</span>
+							<span :id="'course-profile-desc-' + option.value" class="course-profile__desc">{{ option.description }}</span>
+						</span>
+					</label>
+					<p class="field-hint">
+						{{ t('learning', 'Das Profil ist nur eine Vorauswahl. Jeden Schalter kannst du danach unter Verwaltung → Kursregeln einzeln ändern.') }}
+					</p>
+				</fieldset>
+
 				<div v-if="userRole === 'instructor'" class="form-group">
 					<label for="course-group">{{ t('learning', 'Nextcloud-Gruppe') }}</label>
 					<NcTextField id="course-group"
@@ -268,6 +293,7 @@ export default {
 				title: '',
 				description: '',
 				ncGroupId: '',
+				profile: 'it',
 			},
 		}
 	},
@@ -290,6 +316,21 @@ export default {
 		 * restrict self-enrolment only), or from a save whose enrolment failed. Saving it again
 		 * enrols nobody, so the form says so instead of implying it happened.
 		 */
+		// GitHub #67: the two course profiles offered when a course is created.
+		profileOptions() {
+			return [
+				{
+					value: 'it',
+					label: t('learning', 'IT-Prüfungsvorbereitung'),
+					description: t('learning', 'Die bisherigen Standardwerte: Training, Leitner, Prüfung, Simulator-Werkzeuge, Klassenbuch und Lernpartner sind eingeschaltet.'),
+				},
+				{
+					value: 'mandatory',
+					label: t('learning', 'Pflichtschulung mit Zertifikat'),
+					description: t('learning', 'Training, Prüfung und Zertifizierung sind eingeschaltet. Leitner, Simulator-Werkzeuge, Klassenbuch, Lernpartner, Spielmodi und „Zu LinkedIn hinzufügen“ sind aus.'),
+				},
+			]
+		},
 		groupAlreadySet() {
 			const current = (this.editingCourse?.nc_group_id || '').trim()
 			return current !== '' && this.formData.ncGroupId.trim() === current
@@ -330,7 +371,7 @@ export default {
 
 		openCreateModal() {
 			this.editingCourse = null
-			this.formData = { title: '', description: '', ncGroupId: '' }
+			this.formData = { title: '', description: '', ncGroupId: '', profile: 'it' }
 			this.formSubmitted = false
 			this.modalError = ''
 			this.showCreateModal = true
@@ -342,6 +383,7 @@ export default {
 				title: course.title || '',
 				description: course.description || '',
 				ncGroupId: course.nc_group_id || '',
+				profile: 'it',
 			}
 			this.formSubmitted = false
 			this.modalError = ''
@@ -355,7 +397,7 @@ export default {
 			this.editingCourse = null
 			this.formSubmitted = false
 			this.modalError = ''
-			this.formData = { title: '', description: '', ncGroupId: '' }
+			this.formData = { title: '', description: '', ncGroupId: '', profile: 'it' }
 		},
 
 		async saveCourse() {
@@ -382,6 +424,10 @@ export default {
 				const groupId = this.formData.ncGroupId.trim()
 				if (groupId || this.editingCourse) {
 					payload.ncGroupId = groupId
+				}
+				// GitHub #67: only a new course gets a profile; the IT profile is the server default.
+				if (!this.editingCourse && this.formData.profile === 'mandatory') {
+					payload.profile = 'mandatory'
 				}
 
 				let data
@@ -684,6 +730,62 @@ export default {
 	color: var(--color-text-maxcontrast);
 	font-size: 0.8em;
 	margin: 4px 0 0 0;
+}
+
+/* GitHub #67: course profile choice (create only). Logical properties keep RTL right. */
+.course-profile {
+	border: none;
+	padding: 0;
+	margin-inline: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.course-profile__legend {
+	font-weight: 600;
+	margin-bottom: 6px;
+	padding: 0;
+	font-size: 0.9em;
+	color: var(--color-main-text);
+}
+
+.form-group .course-profile__option {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	padding: 10px 12px;
+	border: 2px solid var(--color-border);
+	border-radius: var(--border-radius-large, 12px);
+	font-weight: normal;
+	cursor: pointer;
+	background: var(--color-main-background);
+}
+
+.form-group .course-profile__option--selected {
+	border-color: var(--color-primary-element);
+}
+
+.course-profile__option input {
+	margin-block-start: 3px;
+	flex-shrink: 0;
+}
+
+.course-profile__text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.course-profile__title {
+	font-weight: 600;
+	color: var(--color-main-text);
+}
+
+.course-profile__desc {
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
 }
 
 .modal-actions {

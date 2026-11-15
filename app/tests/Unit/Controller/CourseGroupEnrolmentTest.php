@@ -217,7 +217,7 @@ class CourseGroupEnrolmentTest extends TestCase {
             (new \ReflectionMethod($class, $method))->getParameters()
         );
 
-        $this->assertSame(['title', 'description', 'ncGroupId'], $names(CourseController::class, 'create'));
+        $this->assertSame(['title', 'description', 'ncGroupId', 'profile'], $names(CourseController::class, 'create'));
         $this->assertSame(['courseId', 'title', 'description', 'status', 'ncGroupId'], $names(CourseController::class, 'update'));
         $this->assertSame(['courseId', 'userId', 'role'], $names(\OCA\Learning\Controller\CourseMemberController::class, 'add'));
         $this->assertSame(['courseId', 'userIds', 'groupIds', 'role'], $names(\OCA\Learning\Controller\CourseMemberController::class, 'bulk'));

@@ -47,6 +47,33 @@ class CourseService {
         'tools' => true,
         'classbook' => true,
         'buddies' => true,
+        'linkedin' => true,
+    ];
+
+    /** GitHub #67: the course profiles offered when a course is created. */
+    public const PROFILE_IT = 'it';
+    public const PROFILE_MANDATORY = 'mandatory';
+    public const COURSE_PROFILES = [self::PROFILE_IT, self::PROFILE_MANDATORY];
+
+    /**
+     * GitHub #67: mode config of a course created with the profile "mandatory training with
+     * certificate". Training and exam stay on (only exams started in the course certify); Leitner,
+     * the simulator tools, the class register (and with it the kudos), the learning partners, the
+     * game modes and the LinkedIn button are off. Each switch can be changed afterwards.
+     */
+    private const MODE_CONFIG_MANDATORY = [
+        'training' => true,
+        'leitner' => false,
+        'exam' => true,
+        'duel' => false,
+        'gameshow' => false,
+        'league' => false,
+        'abenteuer' => false,
+        'course_summary' => false,
+        'tools' => false,
+        'classbook' => false,
+        'buddies' => false,
+        'linkedin' => false,
     ];
 
     private const AVAILABLE_TOOL_IDS = [
@@ -1000,9 +1027,19 @@ class CourseService {
     /**
      * Create a new course (instructor only)
      */
-    public function create(string $title, ?string $description, ?string $ncGroupId, string $userId): Course {
+    /**
+     * @param ?string $profile GitHub #67: 'it' (or null) = the defaults as before, 'mandatory' =
+     *                         mandatory training with certificate (MODE_CONFIG_MANDATORY, certification
+     *                         switched on). Only a preselection: the profile itself is not stored.
+     * @throws \InvalidArgumentException for an unknown profile
+     */
+    public function create(string $title, ?string $description, ?string $ncGroupId, string $userId, ?string $profile = null): Course {
         if (!$this->roleService->isInstructor($userId)) {
             throw new \Exception('Only instructors can create courses');
+        }
+        $profile = $profile ?? self::PROFILE_IT;
+        if (!in_array($profile, self::COURSE_PROFILES, true)) {
+            throw new \InvalidArgumentException('Unknown course profile');
         }
 
         $title = trim($title);
@@ -1030,7 +1067,12 @@ class CourseService {
         // GitHub #36: on an instance without gamification a new course starts without the
         // competition modes; the instructor can still switch them on. With gamification on the
         // mode config stays empty (= the defaults), as before. Existing courses are not touched.
-        if (!$this->xpService->isGamificationEnabled()) {
+        if ($profile === self::PROFILE_MANDATORY) {
+            // GitHub #67: the certification is prepared (switched on, default pass mark, no
+            // required pools = any passed exam of the course counts), so its settings are open.
+            $course->setModeConfig(json_encode(self::MODE_CONFIG_MANDATORY));
+            $course->setCertEnabled(true);
+        } elseif (!$this->xpService->isGamificationEnabled()) {
             $course->setModeConfig(json_encode(self::MODE_CONFIG_WITHOUT_GAMIFICATION));
         }
 
@@ -2461,6 +2503,21 @@ class CourseService {
     }
 
     /**
+     * GitHub #67: whether certificates of this course offer "Add to LinkedIn". Read for the owner
+     * of a certificate, who may have left the course since, so there is no membership check here;
+     * it reveals one switch of the course the certificate names. A deleted course or an unreadable
+     * config keeps the button (the behaviour before the switch existed).
+     */
+    public function isLinkedInShareEnabled(int $courseId): bool {
+        try {
+            $course = $this->courseMapper->findById($courseId);
+        } catch (\Throwable $e) {
+            return true;
+        }
+        return self::isModeEnabledInConfig($course->getModeConfig(), 'linkedin');
+    }
+
+    /**
      * Whether a course's mode_config switches a mode on. A missing key, an empty or broken config
      * counts as on, like the frontend (normalizeModeConfig) and updateModeConfig's defaults.
      */
@@ -2566,7 +2623,7 @@ class CourseService {
     /**
      * Update the mode configuration for a course (instructor only).
      * $modeConfig keys: training, leitner, swipe, exam, duel, gameshow, league, oldschool,
-     * abenteuer, course_summary, tools, classbook, buddies (bool each). A missing key gets its default.
+     * abenteuer, course_summary, tools, classbook, buddies, linkedin (bool each). A missing key gets its default.
      *
      * classbook (GitHub #36) shows learners the class register in the participants area.
      * Default true, so a course saved before the switch existed keeps it.
@@ -2577,6 +2634,9 @@ class CourseService {
      * tools (GitHub #35) is the course's master switch for the simulator tools: false hides the
      * Werkzeuge tab and the tool hints, whatever enabled_tools says. Default true, so a course
      * saved before the switch existed keeps its tools.
+     *
+     * linkedin (GitHub #67) offers learners "Add to LinkedIn" on their certificates of this course.
+     * Default true, so a course saved before the switch existed keeps the button.
      */
     public function updateModeConfig(int $courseId, string $userId, array $modeConfig, ?string $talkRoomToken = null, ?bool $leitnerSprint = null): array {
         $course = $this->courseMapper->findById($courseId);
@@ -2584,7 +2644,7 @@ class CourseService {
             throw new ForbiddenException('Only instructors can update course mode config');
         }
 
-        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools', 'classbook', 'buddies'];
+        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools', 'classbook', 'buddies', 'linkedin'];
         $clean = [];
         foreach ($allowed as $key) {
             $defaultValue = $key === 'course_summary' ? false : true;

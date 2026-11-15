@@ -232,6 +232,21 @@ describe('Certificate.vue in instructor mode labels a certificate that no longer
 		expect(axios.get).toHaveBeenCalledWith(`/apps/learning/api/certificates/${VID}`)
 	})
 
+	// GitHub #67: the course can switch "Add to LinkedIn" off; a missing field keeps it.
+	it('learner view hides LinkedIn when the course switched it off, and keeps it otherwise', async () => {
+		for (const [row, shown] of [[{ linkedin_allowed: false }, false], [{ linkedin_allowed: true }, true], [{}, true]]) {
+			axios.get.mockResolvedValue({ data: { verification_id: VID, credential_json: makeJwt(CREDENTIAL), ...row } })
+			const view = mount(Certificate, { verificationId: VID })
+			await flush()
+			try {
+				expect(view.host.textContent.includes('LinkedIn'), JSON.stringify(row)).toBe(shown)
+				expect(buttonByText(view.host, 'Drucken')).toBeTruthy()
+			} finally {
+				view.unmount()
+			}
+		}
+	})
+
 	it('learner view keeps the plain Download label', async () => {
 		axios.get.mockResolvedValue({ data: { verification_id: VID, credential_json: makeJwt(CREDENTIAL) } })
 		const view = mount(Certificate, { verificationId: VID })

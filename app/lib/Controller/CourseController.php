@@ -109,7 +109,12 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function create(string $title, ?string $description = null, ?string $ncGroupId = null): DataResponse {
+    public function create(string $title, ?string $description = null, ?string $ncGroupId = null, ?string $profile = null): DataResponse {
+        // GitHub #67: the course profile is a preselection of the course switches. An unknown
+        // value is refused before anything is saved, instead of quietly creating an IT course.
+        if ($profile !== null && !in_array($profile, CourseService::COURSE_PROFILES, true)) {
+            return new DataResponse(['error' => 'Unknown course profile', 'code' => 'unknown_profile'], Http::STATUS_BAD_REQUEST);
+        }
         // GitHub #35: the group field promised auto-enrolment and did nothing. Now the group's
         // current members are enrolled when the course is saved. The group is checked BEFORE the
         // course exists, so a mistyped or invisible group does not leave a half-made course behind.
@@ -125,7 +130,7 @@ class CourseController extends Controller {
             }
         }
         try {
-            $course = $this->courseService->create($title, $description, $groupId !== '' ? $groupId : null, $this->userId);
+            $course = $this->courseService->create($title, $description, $groupId !== '' ? $groupId : null, $this->userId, $profile);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to create course'], Http::STATUS_BAD_REQUEST);
         }
