@@ -1,3 +1,21 @@
+import { getRequestToken } from '@nextcloud/auth'
+
+/**
+ * GitHub #63: an EventSource cannot send the `requesttoken` header, so Nextcloud's CSRF check
+ * answered every stream with 412 and each duel and gameshow fell back to polling after three
+ * retries. Nextcloud also accepts the token as a GET parameter (Request::passesCSRFCheck), the
+ * way its own OC.EventSource sends it. It is read on every connect, so a reconnect after a token
+ * refresh carries the current one.
+ */
+export function withRequestToken(url) {
+  const token = getRequestToken()
+  if (!token) {
+    return url
+  }
+  const separator = url.includes('?') ? '&' : '?'
+  return url + separator + 'requesttoken=' + encodeURIComponent(token)
+}
+
 export function createSseClient(url, { onState, onClose, onFallback } = {}) {
   let source = null
   let reconnectTimer = null
@@ -95,7 +113,7 @@ export function createSseClient(url, { onState, onClose, onFallback } = {}) {
     cleanupSource()
 
     try {
-      source = new window.EventSource(url, { withCredentials: true })
+      source = new window.EventSource(withRequestToken(url), { withCredentials: true })
     } catch (error) {
       scheduleReconnect()
       return

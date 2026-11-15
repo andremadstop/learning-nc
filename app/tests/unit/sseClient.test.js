@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createSseClient } from '../../src/utils/sse-client.js';
+import { createSseClient, withRequestToken } from '../../src/utils/sse-client.js';
 
 class FakeEventSource {
 	static instances = [];
@@ -149,5 +149,30 @@ describe('createSseClient', () => {
 		globalThis.window.dispatchEvent(new Event('online'));
 
 		expect(FakeEventSource.instances).toHaveLength(2);
+	});
+
+	// GitHub #63: without the token every stream answered 412 (CSRF check) and fell back to polling.
+	it('sends the CSRF request token as a GET parameter, which an EventSource cannot send as a header', () => {
+		globalThis._nc_auth_requestToken = 'tok/en+1';
+		try {
+			createSseClient('/apps/learning/api/sse/duel/TOKEN?lang=en');
+			expect(FakeEventSource.instances[0].url).toBe('/apps/learning/api/sse/duel/TOKEN?lang=en&requesttoken=tok%2Fen%2B1');
+			expect(withRequestToken('/apps/learning/api/sse/gameshow/G1')).toBe('/apps/learning/api/sse/gameshow/G1?requesttoken=tok%2Fen%2B1');
+		} finally {
+			delete globalThis._nc_auth_requestToken;
+		}
+	});
+
+	it('reads the token again on a reconnect, so a refreshed token is used', () => {
+		globalThis._nc_auth_requestToken = 'first';
+		try {
+			createSseClient('/apps/learning/api/sse/duel/RENEW');
+			globalThis._nc_auth_requestToken = 'second';
+			FakeEventSource.instances[0].emit('error');
+			vi.advanceTimersByTime(1000);
+			expect(FakeEventSource.instances[1].url).toBe('/apps/learning/api/sse/duel/RENEW?requesttoken=second');
+		} finally {
+			delete globalThis._nc_auth_requestToken;
+		}
 	});
 });
