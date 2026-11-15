@@ -16,6 +16,8 @@ A learning platform that runs inside your own Nextcloud: flashcards with spaced 
 
 Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souverain Systems UG, a small IT company in Potsdam for teams that want to own their data, and teaches IT security. The app began as his own exam preparation for IT certifications and grew with the course groups that used it on his Nextcloud; the simulators, exam presets and certificates are what those courses needed and what hosted platforms only offer in exchange for the data. Written with AI, used in real courses, checked by 1,830 automated tests and pre-push gates (PHPStan, ESLint, Vitest, PHPUnit). What it stands on: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md).
 
+[![CI](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml)
+[![Nightly](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml/badge.svg?branch=main)](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml)
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
@@ -181,6 +183,10 @@ fine-grained watch log) as the data-minimizing mitigation.
 - **Tests:** 1,830 automated tests (1,329 Vitest, 501 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
 - **Real-time:** Server-Sent Events for multiplayer modes
 - **Caching:** Redis support for leaderboard and session data
+
+## Quality
+
+Every push and pull request runs [CI](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml): ESLint, Vitest, the production build, the i18n gates, and PHPStan (level 5) plus PHPUnit in a throwaway Nextcloud 33 container. Every night, [Nightly](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml) installs the app on real Nextcloud 33, 34 and 35 with PostgreSQL and MariaDB: integration tests, fresh install and upgrade from 5.5.1, and a Playwright sweep that clicks through the app as an administrator, an instructor and three learners. The CI gates also run locally as git hooks before every commit and push. How to run each gate yourself: [TESTING.md](TESTING.md).
 
 ## Requirements
 
