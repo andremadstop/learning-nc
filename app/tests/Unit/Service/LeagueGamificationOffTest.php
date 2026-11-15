@@ -99,4 +99,58 @@ final class LeagueGamificationOffTest extends TestCase {
         $this->expectException(ForbiddenException::class);
         $service->getTable(7, 3, 'stranger');
     }
+
+    /**
+     * Each league write, with gamification off, refuses before it reads a season or writes
+     * anything — before the fix a direct call created, started or finished a season and set up
+     * challenges and duels while the competition area was hidden.
+     *
+     * @return array<string, array{0: callable(LeagueService): mixed}>
+     */
+    public static function leagueWrites(): array {
+        return [
+            'create season' => [static fn (LeagueService $s) => $s->createSeason(7, 'teacher', 1, 2, 'S')],
+            'start season' => [static fn (LeagueService $s) => $s->startSeason(7, 3, 'teacher')],
+            'finish season' => [static fn (LeagueService $s) => $s->finishSeason(7, 3, 'teacher')],
+            'challenge' => [static fn (LeagueService $s) => $s->challengeOpponent(7, 3, 'bob', 'alice')],
+            'accept challenge' => [static fn (LeagueService $s) => $s->acceptChallenge(7, 3, 9, 'bob')],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('leagueWrites')]
+    public function testLeagueWritesAreRefusedWithGamificationOff(callable $write): void {
+        $service = $this->league(false);
+        $this->seasons->expects($this->never())->method('findById');
+        $this->seasons->expects($this->never())->method('findByCourse');
+        $this->seasons->expects($this->never())->method('insert');
+        $this->seasons->expects($this->never())->method('update');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('League is not available');
+        $write($service);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('leagueWrites')]
+    public function testLeagueWritesStillCheckAccessFirstWithGamificationOff(callable $write): void {
+        $service = $this->league(false, false);
+        $this->expectException(ForbiddenException::class);
+        $write($service);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('leagueWrites')]
+    public function testLeagueWritesGoOnWithGamificationOn(callable $write): void {
+        $service = $this->league(true);
+        $season = new LeagueSeason();
+        $season->setId(3);
+        $season->setCourseId(8);
+        $season->setStatus('open');
+        $this->seasons->method('findById')->willReturn($season);
+        $this->seasons->method('findByCourse')->willReturn([]);
+        try {
+            $write($service);
+        } catch (\Throwable $e) {
+            $this->assertNotSame('League is not available', $e->getMessage());
+            return;
+        }
+        $this->addToAssertionCount(1);
+    }
 }

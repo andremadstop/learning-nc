@@ -50,6 +50,17 @@ class LeagueService {
         return $this->xpService !== null && !$this->xpService->isGamificationEnabled();
     }
 
+    /**
+     * GitHub #70: the league writes (create, start and finish a season, challenge, accept) are
+     * closed too while gamification is off, so a direct API call sets up no season and no duel.
+     * Called after the access check, so a non-member still gets its error.
+     */
+    private function assertGamificationOn(): void {
+        if ($this->gamificationOff()) {
+            throw new \RuntimeException('League is not available');
+        }
+    }
+
     public function getOverview(int $courseId, string $userId): array {
         $courseContext = $this->courseService->findById($courseId, $userId);
         $gamificationOff = $this->gamificationOff();
@@ -91,6 +102,7 @@ class LeagueService {
 
     public function createSeason(int $courseId, string $userId, int $poolId, int $clPoolId, ?string $name = null): array {
         $courseContext = $this->courseService->findById($courseId, $userId);
+        $this->assertGamificationOn();
         $this->assertInstructor($courseContext);
 
         if ($this->hasOpenSeasonWork($courseId)) {
@@ -138,6 +150,7 @@ class LeagueService {
 
     public function startSeason(int $courseId, int $seasonId, string $userId): array {
         $courseContext = $this->courseService->findById($courseId, $userId);
+        $this->assertGamificationOn();
         $this->assertInstructor($courseContext);
 
         $season = $this->getSeasonForCourse($courseId, $seasonId);
@@ -161,6 +174,7 @@ class LeagueService {
 
     public function finishSeason(int $courseId, int $seasonId, string $userId): array {
         $courseContext = $this->courseService->findById($courseId, $userId);
+        $this->assertGamificationOn();
         $this->assertInstructor($courseContext);
 
         $season = $this->getSeasonForCourse($courseId, $seasonId);
@@ -196,6 +210,7 @@ class LeagueService {
 
     public function challengeOpponent(int $courseId, int $seasonId, string $opponentUid, string $userId): array {
         $this->courseService->findById($courseId, $userId);
+        $this->assertGamificationOn();
         $season = $this->getSeasonForCourse($courseId, $seasonId);
         $this->applyForfeits($season);
 
@@ -236,6 +251,7 @@ class LeagueService {
 
     public function acceptChallenge(int $courseId, int $seasonId, int $challengeId, string $userId): array {
         $this->courseService->findById($courseId, $userId);
+        $this->assertGamificationOn();
         $season = $this->getSeasonForCourse($courseId, $seasonId);
         $this->applyForfeits($season);
 
