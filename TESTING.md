@@ -3,8 +3,9 @@
 Learning is tested in four layers. The lower layers are fast and run on every commit. The upper layers start a real Nextcloud and run every night, and before every release.
 
 ```
-            Gate 4  Integration, lifecycle, SQL columns       real Nextcloud 33/34/35,
+            Gate 4  Integration, lifecycle                    real Nextcloud 33/34/35,
                     (PostgreSQL and MariaDB)                  nightly + before release
+                    SQL columns                               Nextcloud 33 + PostgreSQL, pre-push
           Gate 3  Browser: Playwright E2E, Persona-Gate       real Nextcloud, nightly / by hand
         Gate 2  (retired, replaced by Gate 4)
       Gate 1  Static analysis + unit tests                   every commit, push, pull request
@@ -48,9 +49,9 @@ CI and the workflows use no secrets. Signing, releases and the App Store upload 
 From the repository root, after `npm --prefix app ci`:
 
 ```bash
-cd app && npx eslint --ext .js,.vue src/ --quiet   # ESLint, errors only
-cd app && npm run test                             # Vitest
-cd app && npm run build                            # production bundle
+(cd app && npx eslint --ext .js,.vue src/ --quiet) # ESLint, errors only
+npm --prefix app run test                          # Vitest
+npm --prefix app run build                         # production bundle
 ./scripts/check-i18n-parity.sh                     # i18n gates
 ./scripts/gate-container.sh all                    # PHPStan L5 + PHPUnit on the git index
 ./scripts/gate-container.sh all --ref HEAD         # ... or on a commit

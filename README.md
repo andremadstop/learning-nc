@@ -186,7 +186,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 ## Quality
 
-Every push and pull request runs [CI](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml): ESLint, Vitest, the production build, the i18n gates, and PHPStan (level 5) plus PHPUnit in a throwaway Nextcloud 33 container. Every night, [Nightly](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml) installs the app on real Nextcloud 33, 34 and 35 with PostgreSQL and MariaDB: integration tests, fresh install and upgrade from 5.5.1, and a Playwright sweep that clicks through the app as an administrator, an instructor and three learners. The CI gates also run locally as git hooks before every commit and push. How to run each gate yourself: [TESTING.md](TESTING.md).
+Every push and pull request runs [CI](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml): ESLint, Vitest, the production build, the i18n gates, and PHPStan (level 5) plus PHPUnit in a throwaway Nextcloud 33 container. Every night, [Nightly](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml) installs the app on real Nextcloud 33, 34 and 35 with PostgreSQL and MariaDB: integration tests, fresh install and upgrade from 5.5.1, and a Playwright sweep that clicks through the app as an administrator, an instructor and two learners (and the administrator in student view). The CI gates also run locally as git hooks before every commit and push. How to run each gate yourself: [TESTING.md](TESTING.md).
 
 ## Requirements
 

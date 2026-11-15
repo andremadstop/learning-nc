@@ -1,4 +1,5 @@
-# Gate 1 on every push and pull request: the same checks the local pre-commit/pre-push hooks run.
+# Gate 1 on every push and pull request: the same checks the local pre-commit hook runs, plus the
+# production build (pre-push adds more, see TESTING.md).
 # No secrets: signing, releases and the App Store stay on the maintainer's machine.
 name: CI
 
