@@ -92,11 +92,11 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
  *
  * @param {object|null|undefined} course - the course detail (snake_case fields)
  * @param {object} options
- * @param {boolean} options.actsAsInstructor - see actsAsCourseInstructor()
  * @param {boolean} options.gamificationEnabled - the admin's global switch; anything but false counts as on
- * @return {string[]}
+ * @return {string[]} the same list for every role; callers may still pass actsAsInstructor, it no
+ *   longer changes anything (GitHub #70)
  */
-export function wettbewerbTabIds(course, { actsAsInstructor = false, gamificationEnabled = true } = {}) {
+export function wettbewerbTabIds(course, { gamificationEnabled = true } = {}) {
 	const modeConfig = course?.mode_config || {}
 	const gameOn = gamificationEnabled !== false
 	const enabled = (key) => gameOn && modeConfig[key] !== false
