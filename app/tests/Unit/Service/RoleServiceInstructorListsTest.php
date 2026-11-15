@@ -210,4 +210,47 @@ class RoleServiceInstructorListsTest extends TestCase {
         $saved = $this->service()->saveInstructors($many, []);
         $this->assertCount(RoleService::MAX_ENTRIES, $saved['groups']);
     }
+    // ── Account deletion (review of #60) ────────────────────────────────────────
+
+    /** What InstructorUserDeletedListener does on UserDeletedEvent (wired in tests/Integration). */
+    private function deleteAccount(string $uid): void {
+        $this->service()->removeInstructorUser($uid);
+    }
+
+    /**
+     * Nextcloud drops a deleted account's group memberships, not this list. Before the fix a new
+     * account that reused the uid was an instructor at once, granted by nobody.
+     */
+    public function testADeletedPersonIsNoInstructorWhenTheUidIsReused(): void {
+        $this->service()->saveInstructors(['training'], ['mueller', 'carla']);
+        $this->assertTrue($this->service()->isInstructor('mueller'), 'setup');
+
+        $this->deleteAccount('mueller');
+
+        $this->assertFalse($this->service()->isInstructor('mueller'));
+        $this->assertSame('["carla"]', $this->appValues[RoleService::USERS_KEY]);
+        $this->assertSame('["training"]', $this->appValues[RoleService::GROUPS_KEY], 'the groups stay as they were');
+        $this->assertTrue($this->service()->isInstructor('carla'));
+    }
+
+    /** saveInstructors() turns "nobody" into the default group; the cleanup must not. */
+    public function testRemovingTheLastPersonLeavesAdminsOnlyNotTheDefaultGroup(): void {
+        $this->service()->saveInstructors([], ['mueller']);
+
+        $this->deleteAccount('mueller');
+
+        $this->assertSame('[]', $this->appValues[RoleService::USERS_KEY]);
+        $this->assertSame('[]', $this->appValues[RoleService::GROUPS_KEY]);
+        $this->assertFalse($this->service()->isInstructor('dora'), 'members of learning-instructors gain nothing');
+        $this->assertFalse($this->service()->isInstructor('mueller'));
+    }
+
+    public function testDeletingSomeoneNotOnTheListWritesNothing(): void {
+        $this->deleteAccount('mueller');
+        $this->assertSame([], $this->appValues, 'no list is created');
+
+        $this->appValues[RoleService::USERS_KEY] = '["carla"]';
+        $this->assertFalse($this->service()->removeInstructorUser('mueller'));
+        $this->assertSame('["carla"]', $this->appValues[RoleService::USERS_KEY]);
+    }
 }

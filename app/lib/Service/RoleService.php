@@ -97,6 +97,24 @@ class RoleService {
     }
 
     /**
+     * Takes a deleted account off the person list, so a new account that reuses the uid does not
+     * inherit the instructor right (Nextcloud reuses uids; LDAP/SSO setups do so routinely).
+     * Writes only the person list: saveInstructors() would turn "nobody left" into the default
+     * group, and a cleanup must never grant a group rights. Nothing stored, nothing written.
+     *
+     * @return bool whether the uid was on the list
+     */
+    public function removeInstructorUser(string $userId): bool {
+        $users = $this->readList(self::USERS_KEY);
+        if ($users === null || !in_array($userId, $users, true)) {
+            return false;
+        }
+        $remaining = array_values(array_filter($users, static fn (string $uid): bool => $uid !== $userId));
+        $this->config->setAppValue($this->appName, self::USERS_KEY, (string)json_encode($remaining));
+        return true;
+    }
+
+    /**
      * Trimmed, non-empty strings of at most MAX_ID_LENGTH characters, without duplicates, at most
      * MAX_ENTRIES. Anything else is dropped, never shortened: a cut id would name another group.
      *

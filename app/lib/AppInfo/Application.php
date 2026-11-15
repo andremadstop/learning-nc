@@ -16,6 +16,7 @@ use OCA\Learning\Service\CourseMergeService;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\DataMobilityService;
+use OCA\Learning\Listener\InstructorUserDeletedListener;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Search\PoolSearchProvider;
@@ -45,6 +46,7 @@ class Application extends App implements IBootstrap {
         $context->registerDashboardWidget(LearningWidget::class);
         $context->registerNotifierService(Notifier::class);
         $context->registerEventListener(UserDeletedEvent::class, UserDeletedListener::class);
+        $context->registerEventListener(UserDeletedEvent::class, InstructorUserDeletedListener::class);
         $context->registerSearchProvider(PoolSearchProvider::class);
         $context->registerSearchProvider(QuestionSearchProvider::class);
         $context->registerService(ImportVaultCommand::class, function (ContainerInterface $container): ImportVaultCommand {
