@@ -163,6 +163,16 @@ final class CertLayoutAssetsTest extends TestCase {
         }
     }
 
+    /**
+     * Nextcloud builds the cleanup job from its info.xml class name alone, which neither PHPStan
+     * nor the call graph sees: a wiring gap would only show as an image table that never shrinks.
+     */
+    public function testTheAppContainerBuildsTheImageCleanupJob(): void {
+        $job = Server::get(\OCA\Learning\BackgroundJob\CertAssetCleanupJob::class);
+        $property = new \ReflectionProperty($job, 'service');
+        $this->assertInstanceOf(CertLayoutService::class, $property->getValue($job));
+    }
+
     public function testAnotherUsersFileIsNotReachable(): void {
         $this->put(self::OTHER, 'fremd.png', self::png(10, 10, 3));
 
