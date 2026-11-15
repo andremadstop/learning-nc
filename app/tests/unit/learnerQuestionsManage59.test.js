@@ -85,6 +85,8 @@ describe('instructors manage the questions from learners (GitHub #59)', () => {
 
 		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/courses/7/support-tickets/1/archive')
 		expect(el.querySelectorAll('.ticket-item-cd')).toHaveLength(1)
+		// keyboard focus moves to the question that took its place, not to the page body
+		expect(document.activeElement).toBe(el.querySelector('.ticket-item-cd .ticket-manage-cd button'))
 		expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/courses/7/support-tickets/open-count')
 		expect(counts).toEqual([1, 0])
 		unmount()
@@ -192,6 +194,7 @@ describe('a learner withdraws an unanswered question (GitHub #59)', () => {
 		await flush()
 		expect(axios.delete).toHaveBeenCalledWith('/apps/learning/api/courses/7/questions/mine/1')
 		expect(el.querySelectorAll('.question-item')).toHaveLength(1)
+		expect(document.activeElement.textContent).toBe('Meine Fragen')
 		unmount()
 	})
 

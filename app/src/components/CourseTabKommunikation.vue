@@ -127,6 +127,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import { nextTick } from 'vue'
 import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { showError } from '@nextcloud/dialogs'
@@ -301,7 +302,7 @@ export default {
 				const action = archived ? 'archive' : 'restore'
 				await axios.post(generateUrl('/apps/learning/api/courses/{courseId}/support-tickets/{ticketId}/' + action, { courseId: this.courseId, ticketId: ticket.id }))
 				// it leaves the list it was in: the inbox when archived, the archive when restored
-				this.courseTickets = this.courseTickets.filter((x) => x.id !== ticket.id)
+				this.removeTicket(ticket)
 				this.refreshOpenCount()
 			} catch (e) {
 				console.error('Failed to change the archive state of a question', e)
@@ -311,6 +312,18 @@ export default {
 			} finally {
 				delete this.managingTickets[ticket.id]
 			}
+		},
+
+		// The clicked button leaves with its question; keyboard focus moves to the question that
+		// takes its place (or the one above), else to the archive switch, not to the page body.
+		async removeTicket(ticket) {
+			const index = this.courseTickets.findIndex((x) => x.id === ticket.id)
+			this.courseTickets = this.courseTickets.filter((x) => x.id !== ticket.id)
+			await nextTick()
+			const items = this.$el?.querySelectorAll?.('.ticket-item-cd .ticket-manage-cd') || []
+			const next = items[Math.min(Math.max(index, 0), items.length - 1)]
+			const target = next?.querySelector('button') || this.$el?.querySelector?.('.requests-archive-toggle')
+			target?.focus?.()
 		},
 
 		cancelDeleteTicket() {
@@ -325,8 +338,8 @@ export default {
 			this.deletingTicket = true
 			try {
 				await axios.delete(generateUrl('/apps/learning/api/courses/{courseId}/support-tickets/{ticketId}', { courseId: this.courseId, ticketId: ticket.id }))
-				this.courseTickets = this.courseTickets.filter((x) => x.id !== ticket.id)
 				this.confirmTicket = null
+				this.removeTicket(ticket)
 				this.refreshOpenCount()
 			} catch (e) {
 				console.error('Failed to delete a question', e)

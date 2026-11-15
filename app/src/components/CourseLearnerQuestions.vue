@@ -27,7 +27,7 @@
 		</NcNoteCard>
 
 		<section class="question-list-section">
-			<h3>{{ t('learning', 'Meine Fragen') }}</h3>
+			<h3 ref="listHeading" tabindex="-1">{{ t('learning', 'Meine Fragen') }}</h3>
 			<div v-if="loading" class="loading-hint">
 				{{ t('learning', 'Loading...') }}
 			</div>
@@ -77,6 +77,7 @@ import { translate as t } from '@nextcloud/l10n'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import { nextTick } from 'vue'
 import AccessibleDialog from './AccessibleDialog.vue'
 
 export default {
@@ -152,6 +153,9 @@ export default {
 				this.questions = this.questions.filter((q) => q.id !== question.id)
 				this.confirmQuestion = null
 				showSuccess(t('learning', 'Deine Frage wurde zurückgezogen.'))
+				// the clicked button is gone with the question; focus goes to the list's heading
+				await nextTick()
+				this.$refs.listHeading?.focus?.()
 			} catch (e) {
 				console.error('Failed to withdraw a course question', e)
 				if (e?.response?.status === 409) {
