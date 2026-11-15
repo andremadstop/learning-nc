@@ -3576,7 +3576,7 @@ OC.L10N.register(
     "Prüfung in diesem Kurs" : "Іспит у цьому курсі",
     "Fragen pro Prüfung" : "Питань в іспиті",
     "Zeitlimit (Minuten)" : "Обмеження часу (хвилини)",
-    "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße." : "Діє лише для іспитів у цьому курсі. Під час кожної спроби питання вибираються з пулу випадково. Порожні поля беруть значення курсу за замовчуванням із розділу «Керування → Правила курсу → Сертифікація»; без значення за замовчуванням іспит, як і раніше, залежить від розміру пулу.",
+    "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße." : "Діє лише для іспитів у цьому курсі. Під час кожної спроби питання вибираються з пулу випадково. Порожні поля беруть значення курсу за замовчуванням із розділу «Адміністрування → Правила курсу → Сертифікація»; без значення за замовчуванням іспит, як і раніше, залежить від розміру пулу.",
     "Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}." : "Питань в іспиті: ціле число від 1 до {max}.",
     "Fragen pro Prüfung: eine ganze Zahl ab 1." : "Питань в іспиті: ціле число не менше 1.",
     "Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten." : "Обмеження часу: ціле число від 1 до 600 хвилин.",

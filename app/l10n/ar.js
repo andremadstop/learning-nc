@@ -3576,7 +3576,7 @@ OC.L10N.register(
     "Prüfung in diesem Kurs" : "الاختبار في هذه الدورة",
     "Fragen pro Prüfung" : "عدد الأسئلة في كل اختبار",
     "Zeitlimit (Minuten)" : "المهلة الزمنية (بالدقائق)",
-    "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße." : "ينطبق فقط على الاختبارات في هذه الدورة. تُسحب الأسئلة عشوائيًا من المجموعة في كل محاولة. الحقول الفارغة تأخذ القيمة الافتراضية للدورة من الإدارة ← قواعد الدورة ← الشهادة؛ وبدون قيمة افتراضية يتبع الاختبار حجم المجموعة كما كان من قبل.",
+    "Gilt nur für Prüfungen in diesem Kurs. Die Fragen werden bei jedem Versuch zufällig aus dem Pool gezogen. Leere Felder übernehmen die Kurs-Vorgabe aus Verwaltung → Kursregeln → Zertifizierung; ohne Vorgabe richtet sich die Prüfung wie bisher nach der Poolgröße." : "ينطبق فقط على الاختبارات في هذه الدورة. تُسحب الأسئلة عشوائيًا من المجموعة في كل محاولة. الحقول الفارغة تأخذ القيمة الافتراضية للدورة من الإدارة ← قواعد المقرر ← إصدار الشهادات؛ وبدون قيمة افتراضية يتبع الاختبار حجم المجموعة كما كان من قبل.",
     "Fragen pro Prüfung: eine ganze Zahl von 1 bis {max}." : "عدد الأسئلة في كل اختبار: عدد صحيح من 1 إلى {max}.",
     "Fragen pro Prüfung: eine ganze Zahl ab 1." : "عدد الأسئلة في كل اختبار: عدد صحيح لا يقل عن 1.",
     "Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten." : "المهلة الزمنية: عدد صحيح من 1 إلى 600 دقيقة.",
