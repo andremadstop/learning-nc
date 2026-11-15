@@ -134,6 +134,24 @@ final class CertLayoutAssetsTest extends TestCase {
         $this->assertNotNull($this->layouts->presentationForCertificate($cert)['stamp']);
     }
 
+    /**
+     * The app container builds every controller that hands out or changes a layout. The show
+     * endpoints only draw the layout through the injected service, so a wiring gap would show
+     * every certificate as the standard card without any error.
+     */
+    public function testTheAppContainerWiresTheLayoutIntoTheControllers(): void {
+        $container = Server::get(\OCA\Learning\AppInfo\Application::class)->getContainer();
+        foreach ([
+            \OCA\Learning\Controller\CertificateController::class,
+            \OCA\Learning\Controller\CourseCertificateController::class,
+            \OCA\Learning\Controller\CertLayoutController::class,
+        ] as $class) {
+            $controller = $container->get($class);
+            $property = new \ReflectionProperty($controller, 'layoutService');
+            $this->assertInstanceOf(CertLayoutService::class, $property->getValue($controller), $class);
+        }
+    }
+
     public function testAnotherUsersFileIsNotReachable(): void {
         $this->put(self::OTHER, 'fremd.png', self::png(10, 10, 3));
 

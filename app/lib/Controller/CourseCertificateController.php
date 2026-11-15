@@ -42,7 +42,7 @@ class CourseCertificateController extends Controller {
     private AuditService $auditService;
     private LoggerInterface $logger;
     private ?string $userId;
-    private ?CertLayoutService $layoutService;
+    private CertLayoutService $layoutService;
 
     public function __construct(
         string $appName,
@@ -51,7 +51,7 @@ class CourseCertificateController extends Controller {
         AuditService $auditService,
         LoggerInterface $logger,
         ?string $userId,
-        ?CertLayoutService $layoutService = null
+        CertLayoutService $layoutService
     ) {
         parent::__construct($appName, $request);
         $this->reportService = $reportService;
@@ -87,7 +87,7 @@ class CourseCertificateController extends Controller {
         $data['revoked_at'] = $cert->getRevokedAt();
         $data['expired'] = $row['expired'];
         // GitHub #43: the instructor's copy is drawn like the learner's (same frozen layout).
-        $data['presentation'] = $this->layoutService?->presentationForCertificate($cert);
+        $data['presentation'] = $this->layoutService->presentationForCertificate($cert);
         return new JSONResponse($data);
     }
 

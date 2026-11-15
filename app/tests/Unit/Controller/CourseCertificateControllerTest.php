@@ -133,7 +133,8 @@ class CourseCertificateControllerTest extends TestCase {
             $service,
             $this->audit,
             $this->createMock(LoggerInterface::class),
-            $userId
+            $userId,
+            $this->createMock(\OCA\Learning\Service\CertLayoutService::class)
         );
     }
 
@@ -271,7 +272,8 @@ class CourseCertificateControllerTest extends TestCase {
             $this->createMock(ITimeFactory::class),
             'learner-uid',
             $this->createMock(AuditService::class),
-            new \OCA\Learning\Tests\Support\FakeDbConnection()
+            new \OCA\Learning\Tests\Support\FakeDbConnection(),
+            $this->createMock(\OCA\Learning\Service\CertLayoutService::class)
         ))->download(self::VID);
         $instructor = $this->makeController('teacher')->download(self::COURSE_ID, self::VID);
 

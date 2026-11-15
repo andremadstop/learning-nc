@@ -137,7 +137,8 @@ class CertificateRevokeTest extends TestCase {
             $time,
             $userId,
             $audit ?? $this->createMock(AuditService::class),
-            $db ?? new FakeDbConnection()
+            $db ?? new FakeDbConnection(),
+            $this->createMock(\OCA\Learning\Service\CertLayoutService::class)
         );
     }
 

@@ -41,7 +41,7 @@ class CertificateController extends Controller {
     private ?string $userId;
     private AuditService $auditService;
     private IDBConnection $db;
-    private ?CertLayoutService $layoutService;
+    private CertLayoutService $layoutService;
 
     public function __construct(
         string $appName,
@@ -52,7 +52,7 @@ class CertificateController extends Controller {
         ?string $userId,
         AuditService $auditService,
         IDBConnection $db,
-        ?CertLayoutService $layoutService = null
+        CertLayoutService $layoutService
     ) {
         parent::__construct($appName, $request);
         $this->certificateMapper = $certificateMapper;
@@ -122,7 +122,7 @@ class CertificateController extends Controller {
         $data = $this->projectOwnedCert($cert);
         // GitHub #43: how this certificate is drawn (frozen at issuance; null = the standard card),
         // with its stamp / signature as data URLs: only whoever may see the certificate gets them.
-        $data['presentation'] = $this->layoutService?->presentationForCertificate($cert);
+        $data['presentation'] = $this->layoutService->presentationForCertificate($cert);
         return new JSONResponse($data);
     }
 
