@@ -1347,7 +1347,7 @@ OC.L10N.register(
     "Pool" : "Pool",
     "Pool Management" : "Pool Management",
     "Pool Name *" : "Pool Name *",
-    "Pool Rules" : "Pool Rules",
+    "Pool Rules" : "Règles du pool",
     "Pool created" : "Pool created",
     "Pool deleted" : "Pool deleted",
     "Pool konnte nicht geöffnet werden" : "Could not open pool",
