@@ -603,6 +603,36 @@ class TrainingServiceTest extends TestCase {
     }
 
     /**
+     * GitHub #35 (B4): with the gate on and every required content done, the counting exam starts.
+     * The gate is consulted for exactly the gated course and the session is inserted. (Regression
+     * guard: the only "gate satisfied" test ran with Training before the gate became exam-only.)
+     */
+    public function testCountingExamStartsWhenTheRequiredContentIsDone(): void {
+        $questions = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $questions[] = $this->makeQuestion(300 + $i, 42, 'Q' . $i);
+        }
+        $videoProgressService = $this->createMock(VideoProgressService::class);
+        $videoProgressService->expects($this->once())->method('assertCourseVideosComplete')->with(7, 'alice');
+        [$service, $db] = $this->buildCourseExamService($questions, gatedCourseIds: [7], videoProgressService: $videoProgressService);
+
+        $payload = $service->startSession(42, 'alice', 45, 'exam', 3600, null, 7);
+
+        $insert = $this->findInsertBuilder($db);
+        $this->assertSame('exam', $insert->insertValues['mode']['value']);
+        $this->assertSame(7, $insert->insertValues['course_id']['value']);
+        $this->assertSame(99, $payload['session_id']);
+    }
+
+    /** A VideoProgressService whose gate would refuse; it must not even be asked. */
+    private function refusingGateNeverAsked(): VideoProgressService {
+        $videoProgressService = $this->createMock(VideoProgressService::class);
+        $videoProgressService->expects($this->never())->method('assertCourseVideosComplete')
+            ->willThrowException(new ForbiddenException('Required video/material not completed'));
+        return $videoProgressService;
+    }
+
+    /**
      * Shared harness for the gate-disabled and gate-satisfied course paths: a course (id 7) on pool 42
      * that resolves to two questions and inserts a session with generated id 99.
      */
@@ -913,7 +943,7 @@ class TrainingServiceTest extends TestCase {
      * @param Question[] $questions
      * @return array{0: TrainingService, 1: FakeDbConnection}
      */
-    private function buildCourseExamService(array $questions, bool $fromCourse = true, ?array $examScope = null): array {
+    private function buildCourseExamService(array $questions, bool $fromCourse = true, ?array $examScope = null, array $gatedCourseIds = [], ?VideoProgressService $videoProgressService = null): array {
         $db = new FakeDbConnection([
             new FakeQueryBuilder(FakeResult::fromFetch(false)),      // active exam lookup
             new FakeQueryBuilder(FakeResult::fromFetchOne(0)),       // attempts in the last 24 h
@@ -938,7 +968,7 @@ class TrainingServiceTest extends TestCase {
         $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
-        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn($gatedCourseIds);
         if ($fromCourse) {
             $context = ['question_ids' => $ids];
             if ($examScope !== null) {
@@ -955,6 +985,7 @@ class TrainingServiceTest extends TestCase {
             answerMapper: $answerMapper,
             poolMapper: $poolMapper,
             courseService: $courseService,
+            videoProgressService: $videoProgressService,
         );
         return [$service, $db];
     }
@@ -1068,9 +1099,9 @@ class TrainingServiceTest extends TestCase {
     }
 
     /** @param int[] $questionIds @param int[] $poolIds */
-    private function practiceCourseService(\OCA\Learning\Db\Course $course, array $questionIds, array $poolIds, bool $requiredOnly = false): CourseService {
+    private function practiceCourseService(\OCA\Learning\Db\Course $course, array $questionIds, array $poolIds, bool $requiredOnly = false, array $gatedCourseIds = []): CourseService {
         $courseService = $this->createMock(CourseService::class);
-        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn($gatedCourseIds);
         $courseService->method('resolveCoursePracticeContext')->willReturn([
             'course' => $course,
             'is_instructor' => false,
@@ -1339,12 +1370,37 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame('practice', $insert->insertValues['exam_kind']['value']);
     }
 
+    /**
+     * GitHub #35 (B4): the course practice exam never counts either; a gated course with content
+     * not done does not lock it.
+     */
+    public function testCoursePracticeExamOnAGatedCourseIsNotLocked(): void {
+        $insert = new FakeQueryBuilder(new FakeResult(), 0, 612);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])), // active exam on pool 42
+            new FakeQueryBuilder(FakeResult::fromFetch(false)), // resume
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),  // attempts last 24 h
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),  // attempt number
+            $insert,
+        ]);
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $this->poolQuestionMapper([$this->makeQuestion(10, 42, 'A')]),
+            courseService: $this->practiceCourseService($this->practiceCourse(), [10], [42], gatedCourseIds: [7]),
+            videoProgressService: $this->refusingGateNeverAsked(),
+        );
+
+        $service->startPracticeExam(7, 'alice');
+
+        $this->assertSame('practice', $insert->insertValues['exam_kind']['value']);
+    }
+
     // ── GitHub #35: pool practice run ("Practice run" card in a pool's exam mode) ───────────────
 
     /** @param int[] $questionIds */
-    private function poolPracticeCourseService(\OCA\Learning\Db\Course $course, array $questionIds): CourseService {
+    private function poolPracticeCourseService(\OCA\Learning\Db\Course $course, array $questionIds, array $gatedCourseIds = []): CourseService {
         $courseService = $this->createMock(CourseService::class);
-        $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn($gatedCourseIds);
         $courseService->expects($this->never())->method('resolveCoursePracticeContext');
         $courseService->method('resolveCoursePoolContext')->willReturnCallback(
             function (int $courseId, int $poolId, string $userId) use ($course, $questionIds): array {
@@ -1424,6 +1480,32 @@ class TrainingServiceTest extends TestCase {
 
         $this->assertSame(3, $insert->insertValues['total_questions']['value']);
         $this->assertNull($insert->insertValues['time_limit_seconds']['value'], '0 minutes = untimed');
+    }
+
+    /**
+     * GitHub #35 (B4): a practice run never counts, so the required-content gate does not lock it:
+     * the pool belongs to gated course 7 whose content is not done, and the run still starts.
+     */
+    public function testPoolPracticeRunOnAGatedCourseIsNotLocked(): void {
+        $insert = new FakeQueryBuilder(new FakeResult(), 0, 704);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),
+            $insert,
+        ]);
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $this->poolQuestionMapper([$this->makeQuestion(1, 42, 'A'), $this->makeQuestion(2, 42, 'B')]),
+            courseService: $this->poolPracticeCourseService($this->practiceCourse(questions: 20), [1, 2], gatedCourseIds: [7]),
+            videoProgressService: $this->refusingGateNeverAsked(),
+        );
+
+        $service->startPoolPracticeExam(42, 7, 'alice');
+
+        $this->assertSame('pool_practice', $insert->insertValues['exam_kind']['value']);
+        $this->assertSame(2, $insert->insertValues['total_questions']['value']);
     }
 
     public function testPoolPracticeRunRefusedWhenTheCourseOffersNoPracticeExams(): void {
