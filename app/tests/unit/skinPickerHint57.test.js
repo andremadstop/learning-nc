@@ -15,10 +15,13 @@ vi.hoisted(() => {
 	globalThis.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 })
 
-const { api } = vi.hoisted(() => ({ api: { personal: {} } }))
+const { api } = vi.hoisted(() => ({ api: { personal: {}, failPersonal: false } }))
 vi.mock('@nextcloud/axios', () => ({
 	default: {
-		get: vi.fn((url) => Promise.resolve({ data: url.endsWith('/api/settings/personal') ? api.personal : {} })),
+		get: vi.fn((url) => {
+			if (url.endsWith('/api/settings/personal') && api.failPersonal) return Promise.reject(new Error('500'))
+			return Promise.resolve({ data: url.endsWith('/api/settings/personal') ? api.personal : {} })
+		}),
 		post: vi.fn(() => Promise.resolve({ data: {} })),
 		put: vi.fn(() => Promise.resolve({ data: {} })),
 		delete: vi.fn(() => Promise.resolve({ data: {} })),
@@ -77,6 +80,7 @@ function hint() {
 beforeEach(() => {
 	localStorage.clear()
 	api.personal = {}
+	api.failPersonal = false
 	vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -92,6 +96,15 @@ describe('#57 skin hint on the personal settings page', () => {
 		await mountSettings()
 		expect(host.textContent).not.toContain(HINT_TEXT)
 		expect(host.textContent).not.toContain('Neue Skins verfügbar in den Einstellungen')
+	})
+
+	it('is not shown and does not start the 7-day window when the settings fail to load', async () => {
+		// the user's virtuprof_enabled is unknown then; the form default (on) must not count
+		api.failPersonal = true
+		await mountSettings()
+		expect(host.textContent).toContain('Failed to load settings')
+		expect(hint()).toBeNull()
+		expect(localStorage.getItem('learning-hint-skin-picker-v440-shown-at')).toBeNull()
 	})
 
 	it('is shown with the assistant on, with a way to the picker and a working close button', async () => {

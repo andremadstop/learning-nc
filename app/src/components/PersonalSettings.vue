@@ -613,7 +613,8 @@ export default {
       const HINT_ID = 'skin-picker-v440'
       // GitHub #57: the skins are VirtuProf's; with the assistant off the hint points at nothing.
       // Checked before the 7-day window starts, so it starts when the hint can actually be seen.
-      if (this.skinHintClosed || this.loading || !this.form.virtuProfEnabled) return false
+      // A failed load leaves virtuProfEnabled at its default (true), not the user's value.
+      if (this.skinHintClosed || this.loading || this.loadFailed || !this.form.virtuProfEnabled) return false
       if (this.hintDismissed(HINT_ID)) return false
 
       const SHOWN_KEY = `learning-hint-${HINT_ID}-shown-at`
