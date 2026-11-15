@@ -3664,5 +3664,8 @@ OC.L10N.register(
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "إذا كان هذا الخيار معطّلًا (موصى به)، فلا يحصل على صلاحيات المدرّس العامة إلا المجموعات والأشخاص المحدّدون أعلاه.",
     "Die Kursleitenden konnten nicht geladen werden." : "تعذّر تحميل المدرّسين.",
     "Kursbereiche" : "أقسام الدورة",
+    "Pool-Ansicht" : "عرض المجموعات",
+    "Importformat" : "صيغة الاستيراد",
+    "Quelle der Fragen" : "مصدر الأسئلة",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

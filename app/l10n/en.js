@@ -3664,5 +3664,8 @@ OC.L10N.register(
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "If disabled (recommended), only the groups and people selected above get global instructor privileges.",
     "Die Kursleitenden konnten nicht geladen werden." : "The instructors could not be loaded.",
     "Kursbereiche" : "Course sections",
+    "Pool-Ansicht" : "Pool view",
+    "Importformat" : "Import format",
+    "Quelle der Fragen" : "Source of the questions",
 },
 "nplurals=2; plural=(n != 1);");

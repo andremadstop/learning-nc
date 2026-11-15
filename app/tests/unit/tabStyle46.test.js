@@ -132,3 +132,17 @@ describe('#46 shared tab style', () => {
 		},
 	)
 })
+
+// Review of #46: every tab list switched to .lnc-tablist in this round has an accessible name;
+// two unnamed tab lists in the pool generator and the import dialog could not be told apart.
+describe('the .lnc-tablist tab lists have an accessible name (GitHub #46)', () => {
+	for (const rel of ['components/PoolList.vue', 'components/ImportDialog.vue', 'components/PoolGenerator.vue', 'components/CourseDetail.vue']) {
+		it(rel, () => {
+			const tags = [...read(rel).matchAll(/<(?:div|nav)\b[^>]*role="tablist"[^>]*>/g)].map((m) => m[0])
+			expect(tags.length, rel).toBeGreaterThan(0)
+			for (const tag of tags) {
+				expect(tag, rel).toMatch(/:aria-label="t\('learning', '[^']+'\)"/)
+			}
+		})
+	}
+})

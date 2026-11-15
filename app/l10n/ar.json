@@ -3663,6 +3663,9 @@
         "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.": "يمكن لأعضاء هذه المجموعات ولهؤلاء الأشخاص إنشاء مقررات ومجمّعات أسئلة. لا يحتاجون لذلك إلى صلاحيات مسؤول Nextcloud. يُعَدّ مسؤولو Nextcloud دائمًا مدرّسين. إذا لم يُحدَّد شيء، تُطبَّق المجموعة «learning-instructors».",
         "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.": "إذا كان هذا الخيار معطّلًا (موصى به)، فلا يحصل على صلاحيات المدرّس العامة إلا المجموعات والأشخاص المحدّدون أعلاه.",
         "Die Kursleitenden konnten nicht geladen werden.": "تعذّر تحميل المدرّسين.",
-        "Kursbereiche": "أقسام الدورة"
+        "Kursbereiche": "أقسام الدورة",
+        "Pool-Ansicht": "عرض المجموعات",
+        "Importformat": "صيغة الاستيراد",
+        "Quelle der Fragen": "مصدر الأسئلة"
     }
 }

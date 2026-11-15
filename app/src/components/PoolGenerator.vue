@@ -21,7 +21,7 @@
       </div>
 
       <!-- Tabs -->
-      <div class="pg-tabs lnc-tablist" role="tablist" @keydown="moveTablistFocus">
+      <div class="pg-tabs lnc-tablist" role="tablist" :aria-label="t('learning', 'Quelle der Fragen')" @keydown="moveTablistFocus">
         <button
           @click="activeTab = 'text'"
           :class="['pg-tab', 'lnc-tab', { active: activeTab === 'text' }]"

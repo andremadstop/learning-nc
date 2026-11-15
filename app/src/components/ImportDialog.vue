@@ -1,6 +1,6 @@
 <template>
   <AccessibleDialog :name="t('learning', 'Import Questions')" @closing="$emit('close')" size="normal">
-    <div class="format-tabs lnc-tablist" role="tablist" @keydown="moveTablistFocus">
+    <div class="format-tabs lnc-tablist" role="tablist" :aria-label="t('learning', 'Importformat')" @keydown="moveTablistFocus">
       <button @click="chooseFormat('csv')" :class="['tab-btn', 'lnc-tab', { active: format === 'csv' }]" role="tab" :aria-selected="format === 'csv' ? 'true' : 'false'">{{ t('learning', 'CSV') }}</button>
       <button @click="chooseFormat('json')" :class="['tab-btn', 'lnc-tab', { active: format === 'json' }]" role="tab" :aria-selected="format === 'json' ? 'true' : 'false'">{{ t('learning', 'JSON') }}</button>
     </div>

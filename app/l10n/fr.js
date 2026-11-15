@@ -3664,5 +3664,8 @@ OC.L10N.register(
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "Si cette option est désactivée (recommandé), seuls les groupes et les personnes sélectionnés ci-dessus disposent des droits d’enseignant globaux.",
     "Die Kursleitenden konnten nicht geladen werden." : "Impossible de charger les enseignants.",
     "Kursbereiche" : "Sections du cours",
+    "Pool-Ansicht" : "Vue des pools",
+    "Importformat" : "Format d'import",
+    "Quelle der Fragen" : "Source des questions",
 },
 "nplurals=2; plural=(n > 1);");

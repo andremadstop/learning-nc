@@ -3663,6 +3663,9 @@
         "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.": "Mitglieder dieser Gruppen und diese Personen dürfen Kurse und Fragenpools anlegen. Sie brauchen dafür keine Administratorrechte in Nextcloud. Nextcloud-Administratoren zählen immer als Kursleitende. Ist nichts ausgewählt, gilt die Gruppe „learning-instructors“.",
         "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.": "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte.",
         "Die Kursleitenden konnten nicht geladen werden.": "Die Kursleitenden konnten nicht geladen werden.",
-        "Kursbereiche": "Kursbereiche"
+        "Kursbereiche": "Kursbereiche",
+        "Pool-Ansicht": "Pool-Ansicht",
+        "Importformat": "Importformat",
+        "Quelle der Fragen": "Quelle der Fragen"
     }
 }

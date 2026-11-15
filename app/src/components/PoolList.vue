@@ -168,7 +168,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="pool-tabs lnc-tablist" role="tablist" @keydown="moveTablistFocus">
+    <div class="pool-tabs lnc-tablist" role="tablist" :aria-label="t('learning', 'Pool-Ansicht')" @keydown="moveTablistFocus">
       <button @click="activeTab = 'own'" :class="['tab-btn', 'lnc-tab', { active: activeTab === 'own' }]" role="tab" :aria-selected="activeTab === 'own' ? 'true' : 'false'">
         {{ t('learning', 'My Pools ({n})', { n: filteredPools.length }) }}
       </button>

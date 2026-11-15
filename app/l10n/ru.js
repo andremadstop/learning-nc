@@ -3664,5 +3664,8 @@ OC.L10N.register(
     "Ist das ausgeschaltet (empfohlen), haben nur die oben gewählten Gruppen und Personen globale Kursleitungsrechte." : "Если выключено (рекомендуется), глобальные права преподавателя есть только у выбранных выше групп и людей.",
     "Die Kursleitenden konnten nicht geladen werden." : "Не удалось загрузить преподавателей.",
     "Kursbereiche" : "Разделы курса",
+    "Pool-Ansicht" : "Вид пулов",
+    "Importformat" : "Формат импорта",
+    "Quelle der Fragen" : "Источник вопросов",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
