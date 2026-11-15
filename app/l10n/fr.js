@@ -3694,5 +3694,6 @@ OC.L10N.register(
     "Unterschrift auswählen" : "Choisir la signature",
     "Vorschau (Beispielwerte)" : "Aperçu (valeurs d’exemple)",
     "unbefristet" : "sans limite de durée",
+    "Als Lernende üben" : "S’entraîner en tant qu’apprenant",
 },
 "nplurals=2; plural=(n > 1);");

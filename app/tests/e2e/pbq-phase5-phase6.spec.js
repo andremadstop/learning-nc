@@ -187,8 +187,12 @@ test.describe('Phase 6 — Instructor Notes', () => {
 
     await openPoolManageView(page)
 
-    // Actually open training mode: the "Training" tab of the selected pool.
+    // Actually open training mode: the "Training" tab of the selected pool. Since GitHub #46 a
+    // pool editor sees it only behind the "practise as learner" switch.
     const trainingTab = page.locator('[role="tab"]').filter({ hasText: /^\s*Training\s*$/ }).first()
+    if (!(await trainingTab.isVisible({ timeout: 2_000 }).catch(() => false))) {
+      await page.locator('.pool-practise-switch').getByText(/Als Lernende üben|Practise as learner/).click()
+    }
     await expect(trainingTab).toBeVisible({ timeout: 15_000 })
     await trainingTab.click()
     const trainingMode = page.locator('.training-mode').first()

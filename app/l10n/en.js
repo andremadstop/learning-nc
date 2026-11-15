@@ -3694,5 +3694,6 @@ OC.L10N.register(
     "Unterschrift auswählen" : "Choose signature",
     "Vorschau (Beispielwerte)" : "Preview (sample values)",
     "unbefristet" : "no expiry",
+    "Als Lernende üben" : "Practise as learner",
 },
 "nplurals=2; plural=(n != 1);");

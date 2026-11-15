@@ -3694,5 +3694,6 @@ OC.L10N.register(
     "Unterschrift auswählen" : "Unterschrift auswählen",
     "Vorschau (Beispielwerte)" : "Vorschau (Beispielwerte)",
     "unbefristet" : "unbefristet",
+    "Als Lernende üben" : "Als Lernende üben",
 },
 "nplurals=2; plural=(n != 1);");

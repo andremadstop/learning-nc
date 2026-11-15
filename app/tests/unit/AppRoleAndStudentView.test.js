@@ -43,6 +43,8 @@ const { plain, withProps } = vi.hoisted(() => ({
 }))
 vi.mock('@nextcloud/vue/components/NcAppContent', () => plain('NcAppContent'))
 vi.mock('@nextcloud/vue/components/NcNoteCard', () => withProps('NcNoteCard', ['type'], '<div class="nc-note" :data-type="type"><slot /></div>'))
+vi.mock('@nextcloud/vue/components/NcCheckboxRadioSwitch', () => withProps('NcCheckboxRadioSwitch', ['modelValue', 'type'],
+	'<label class="nc-switch"><input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)"><slot /></label>'))
 vi.mock('@nextcloud/vue/components/NcButton', () => withProps('NcButton', ['variant'], '<button type="button"><slot /></button>'))
 vi.mock('../../src/components/PersonalSettings.vue', () => withProps('PersonalSettings', ['userRole', 'studentViewOverride'],
 	'<div class="ps-stub" :data-role="userRole" :data-override="String(studentViewOverride)">'
@@ -54,13 +56,15 @@ vi.mock('../../src/components/PoolList.vue', () => withProps('PoolList', ['userR
 	+ '<button class="open-edit" @click="$emit(\'selectPool\', { id: 9, name: \'Edit share\', is_shared: true, permission: \'edit\' })">edit</button></div>'))
 vi.mock('../../src/components/TrainingMode.vue', () => withProps('TrainingMode', ['poolId', 'totalQuestions', 'canManage', 'contentLanguage'],
 	'<div class="training-stub" :data-can-manage="String(canManage)" :data-total="totalQuestions"><button class="add-q" @click="$emit(\'manage\')">add</button></div>'))
+vi.mock('../../src/components/AnalyticsDashboard.vue', () => withProps('AnalyticsDashboard', ['poolId', 'gamificationEnabled'],
+	'<div class="stats-stub" :data-gamification="String(gamificationEnabled)"><button class="stats-back" @click="$emit(\'back\')">back</button></div>'))
 vi.mock('../../src/components/QuestionList.vue', () => withProps('QuestionList', ['poolId', 'poolName', 'readonly'], '<div class="question-list-stub" />'))
 // GitHub #35: the course views get the effective role and the student-view flag.
 vi.mock('../../src/components/CourseList.vue', () => withProps('CourseList', ['userRole', 'studentViewActive'],
 	'<div class="course-list-stub" :data-role="userRole" :data-preview="String(studentViewActive)" />'))
 vi.mock('../../src/components/CourseDetail.vue', () => withProps('CourseDetail', ['courseId', 'userRole', 'studentViewActive'],
 	'<div class="course-detail-stub" :data-course="courseId" :data-role="userRole" :data-preview="String(studentViewActive)" />'))
-for (const name of ['LeitnerMode', 'ExamMode', 'AnalyticsDashboard', 'StudentDetail',
+for (const name of ['LeitnerMode', 'ExamMode', 'StudentDetail',
 	'InstructorDashboard', 'SmartQueue', 'AdminSettings', 'GameshowMode', 'DuelMode', 'ArenaSelector', 'AbenteuerMode',
 	'SubnetCalculator', 'DnsResolver', 'FirewallBuilder', 'PortScanner', 'RoutingTable', 'NatTable', 'WiresharkLite',
 	'AuthFlowSimulator', 'OnboardingIntro', 'OnboardingRedesign', 'SkillMap', 'StudentDashboard', 'TeamLeadDashboard',
@@ -220,12 +224,16 @@ describe('App.vue: an empty pool and the Manage mode (GitHub #34)', () => {
 		expect(host.querySelector('.training-stub').dataset.canManage).toBe('false')
 	})
 
-	it('a pool with questions opens in Training; the empty-state button switches to Manage', async () => {
+	// Since GitHub #46 an editor opens every pool in Manage; the empty-state button in Training
+	// (reached through the practise switch) still leads there.
+	it('a pool with questions opens in Manage for its editor; the empty-state button in Training switches back', async () => {
 		api.questions = [{ id: 1 }]
 		await mountApp('/pools')
 		host.querySelector('.open-own').click()
 		await settle()
-		expect(vm.mode).toBe('train')
+		expect(vm.mode).toBe('manage')
+		vm.setMode('train')
+		await settle()
 		const training = host.querySelector('.training-stub')
 		expect(training.dataset.canManage).toBe('true')
 		training.querySelector('.add-q').click()
@@ -279,9 +287,12 @@ describe('App.vue: Manage follows the pool permission (GitHub #34)', () => {
 		await mountApp('/pools')
 		host.querySelector('.open-own').click()
 		await settle()
-		expect(vm.mode).toBe('train')
-		expect(modeIds()).toContain('manage')
-		expect(host.querySelector('.training-stub').dataset.canManage).toBe('true')
+		// GitHub #46: the editor's window, Manage first, no Statistics for the student role.
+		expect(vm.mode).toBe('manage')
+		expect(modeIds()).toEqual(['manage'])
+		vm.setPoolPractise(true)
+		await settle()
+		expect(modeIds()).toEqual(['manage', 'train', 'leitner', 'exam', 'gameshow'])
 	})
 
 	it('a student with a read share gets neither Manage nor the read-only question list (answer keys)', async () => {
@@ -388,6 +399,8 @@ describe('App.vue: no Arena in the pool window with gamification off (GitHub #46
 			api.role = { role, group: 'learning-instructors' }
 			api.questions = [{ id: 1 }]
 			await mountApp('/pools')
+			// The owner is a pool editor (GitHub #46): Arena sits behind the practise switch.
+			vm.setPoolPractise(true)
 			host.querySelector('.open-own').click()
 			await settle()
 			expect(modeIds(), role).toContain('gameshow')
@@ -400,5 +413,155 @@ describe('App.vue: no Arena in the pool window with gamification off (GitHub #46
 			host.remove()
 			app = null
 		}
+	})
+})
+
+/**
+ * GitHub #46 (revised decision): "instructors / admins can't do training … why does an admin need
+ * 'Training' tab when clicking on a pool". Whoever may edit the pool (owner or edit share) works
+ * in Manage, the first and active tab, next to Statistics; a switch "practise as learner" brings
+ * back Training, Leitner and Exam and is remembered. Learners without edit rights keep the window.
+ */
+describe('App.vue: the pool window of a pool editor (GitHub #46)', () => {
+	const modeIds = () => vm.filteredModes.map((m) => m.id)
+	const tabLabels = () => [...host.querySelectorAll('.mode-selector .mode-btn')].map((b) => b.textContent.trim())
+	const practiseSwitch = () => host.querySelector('.pool-practise-switch input')
+
+	it('an instructor opens an own pool with questions in Manage, the first tab, next to Statistics only', async () => {
+		api.questions = [{ id: 1 }, { id: 2 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		expect(vm.mode).toBe('manage')
+		expect(tabLabels()).toEqual(['Verwalten', 'Statistik'])
+		expect(host.querySelector('.mode-btn.active').textContent.trim()).toBe('Verwalten')
+		expect(host.querySelector('.question-list-stub')).not.toBeNull()
+		expect(host.querySelector('.training-stub')).toBeNull()
+	})
+
+	it('an edit share gets the same editor window', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-edit').click()
+		await settle()
+		expect(vm.mode).toBe('manage')
+		expect(modeIds()).toEqual(['manage', 'stats'])
+	})
+
+	it('the switch shows Training, Leitner, Exam and Arena after Manage and Statistics, and hides them again', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		expect(practiseSwitch()).not.toBeNull()
+		expect(host.querySelector('.pool-practise-switch').textContent).toContain('Als Lernende üben')
+		practiseSwitch().checked = true
+		practiseSwitch().dispatchEvent(new Event('change'))
+		await settle()
+		expect(modeIds()).toEqual(['manage', 'stats', 'train', 'leitner', 'exam', 'gameshow'])
+		expect(localStorage.getItem('learning:pool-practise')).toBe('yes')
+
+		vm.setMode('leitner')
+		await settle()
+		practiseSwitch().checked = false
+		practiseSwitch().dispatchEvent(new Event('change'))
+		await settle()
+		expect(modeIds()).toEqual(['manage', 'stats'])
+		// The open Leitner tab is gone: back to Manage, not to a hidden Training.
+		expect(vm.mode).toBe('manage')
+		expect(localStorage.getItem('learning:pool-practise')).toBeNull()
+	})
+
+	it('the switch is remembered across visits', async () => {
+		localStorage.setItem('learning:pool-practise', 'yes')
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		expect(practiseSwitch().checked).toBe(true)
+		expect(modeIds()).toContain('train')
+		// Still opens in Manage: the switch adds tabs, it does not change the start tab.
+		expect(vm.mode).toBe('manage')
+	})
+
+	it('a throwing localStorage leaves the switch working for the visit', async () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied') })
+		vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('denied') })
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		expect(vm.poolPractise).toBe(false)
+		vm.setPoolPractise(true)
+		await settle()
+		expect(modeIds()).toContain('train')
+	})
+
+	it('a path into a learner mode turns the switch on instead of opening a hidden tab', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		vm.setMode('exam')
+		await settle()
+		expect(vm.mode).toBe('exam')
+		expect(vm.poolPractise).toBe(true)
+		expect(modeIds()).toContain('exam')
+		expect(host.querySelector('.mode-btn.active').textContent.trim()).toBe('Prüfung')
+	})
+
+	it('back from Statistics lands on Manage for an editor', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		vm.setMode('stats')
+		await settle()
+		host.querySelector('.stats-back').click()
+		await settle()
+		expect(vm.mode).toBe('manage')
+	})
+
+	it('Statistics gets the gamification switch', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		vm.gamificationEnabled = false
+		vm.setMode('stats')
+		await settle()
+		expect(host.querySelector('.stats-stub').dataset.gamification).toBe('false')
+	})
+
+	it('a learner without edit rights keeps the old window, in Training, without the switch', async () => {
+		api.role = { role: 'student', group: 'learning-instructors' }
+		api.questions = [{ id: 1 }]
+		localStorage.setItem('learning:pool-practise', 'yes')
+		await mountApp('/pools')
+		host.querySelector('.open-readonly').click()
+		await settle()
+		expect(vm.mode).toBe('train')
+		expect(modeIds()).toEqual(['train', 'leitner', 'exam', 'gameshow'])
+		expect(practiseSwitch()).toBeNull()
+	})
+
+	it('an instructor on a read share keeps every tab, the read-only question list included', async () => {
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-readonly').click()
+		await settle()
+		expect(vm.mode).toBe('train')
+		expect(modeIds()).toEqual(['train', 'leitner', 'exam', 'gameshow', 'stats', 'manage'])
+		expect(practiseSwitch()).toBeNull()
+	})
+
+	it('the student view shows an own pool as learners see it', async () => {
+		localStorage.setItem('learning:view-as-student', 'yes')
+		api.questions = [{ id: 1 }]
+		await mountApp('/pools')
+		host.querySelector('.open-own').click()
+		await settle()
+		expect(vm.mode).toBe('train')
+		expect(modeIds()).toEqual(['train', 'leitner', 'exam', 'gameshow'])
+		expect(practiseSwitch()).toBeNull()
 	})
 })

@@ -140,6 +140,18 @@
                 {{ t('learning', 'Dieser Pool wurde mit dir geteilt (nur Ansicht)') }}
               </NcNoteCard>
 
+              <!-- GitHub #46: whoever may edit the pool works in Manage; the learner modes are one
+                   switch away (remembered per browser), so they can still try the pool out. -->
+              <div v-if="canManagePool" class="pool-practise-switch">
+                <NcCheckboxRadioSwitch
+                  type="switch"
+                  :model-value="poolPractise"
+                  @update:model-value="setPoolPractise"
+                >
+                  {{ t('learning', 'Als Lernende üben') }}
+                </NcCheckboxRadioSwitch>
+              </div>
+
               <div class="mode-selector lnc-tablist" role="tablist" @keydown="handleTablistKeydown">
                 <button
                   v-for="m in filteredModes"
@@ -178,7 +190,7 @@
                 :poolId="selectedPool.id"
                 :contentLanguage="contentLanguage"
                 :fsrsDetailedStats="fsrsDetailedStats"
-                @back="setMode('train')"
+                @back="setMode(defaultPoolMode)"
               />
 
               <ExamMode
@@ -186,7 +198,7 @@
                 :poolId="selectedPool.id"
                 :totalQuestions="questionCount"
                 :contentLanguage="contentLanguage"
-                @back="setMode('train')"
+                @back="setMode(defaultPoolMode)"
               />
 
               <template v-else-if="mode === 'gameshow'">
@@ -224,7 +236,8 @@
               <AnalyticsDashboard
                 v-else-if="mode === 'stats'"
                 :poolId="selectedPool.id"
-                @back="setMode('train')"
+                :gamification-enabled="gamificationEnabled"
+                @back="setMode(defaultPoolMode)"
               />
 
               <QuestionList
@@ -423,6 +436,7 @@
 import NcAppContent from '@nextcloud/vue/components/NcAppContent';
 import NcButton from '@nextcloud/vue/components/NcButton';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch';
 import PoolList from './components/PoolList.vue';
 import QuestionList from './components/QuestionList.vue';
 import TrainingMode from './components/TrainingMode.vue';
@@ -470,6 +484,10 @@ import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
 import { useOptionalA11yStore } from './stores/a11yStore.js';
 import { moveTablistFocus } from './utils/tablistKeydown.js';
 
+// GitHub #46: the pool window's learner modes, hidden for editors behind the practise switch.
+const LEARNER_POOL_MODES = ['train', 'leitner', 'exam', 'gameshow'];
+const POOL_PRACTISE_KEY = 'learning:pool-practise';
+
 const VirtuProf = defineAsyncComponent(() => import('./components/VirtuProf.vue'));
 
 export default {
@@ -478,6 +496,7 @@ export default {
     NcAppContent,
     NcButton,
     NcNoteCard,
+    NcCheckboxRadioSwitch,
     PoolList,
     QuestionList,
     TrainingMode,
@@ -533,6 +552,8 @@ export default {
       // GitHub #46: interactive simulations (question_type 'pbq') in the open pool.
       pbqQuestionCount: 0,
       poolPermission: 'owner',
+      // GitHub #46: a pool editor's switch "practise as learner" (localStorage, per browser).
+      poolPractise: false,
       error: null,
       poolFromCourse: false,
       poolFromCourseObj: null,
@@ -604,7 +625,26 @@ export default {
         { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'Fragen ansehen') : t('learning', 'Verwalten') }
       ];
     },
+    // GitHub #46: the tab an open pool starts on, and where a closed or hidden tab falls back to.
+    defaultPoolMode() {
+      return this.canManagePool ? 'manage' : 'train';
+    },
     filteredModes() {
+      if (this.canManagePool) {
+        // GitHub #46: an editor opened the pool in Training, a mode meant for learners. Manage
+        // comes first; Training, Leitner, Exam (and Arena) only behind the practise switch.
+        // Statistics stays an instructor view, as below for students.
+        const order = ['manage'];
+        if (this.effectiveUserRole !== 'student') {
+          order.push('stats');
+        }
+        if (this.poolPractise) {
+          order.push(...LEARNER_POOL_MODES);
+        }
+        return order
+          .map((id) => this.modes.find((m) => m.id === id))
+          .filter(Boolean);
+      }
       if (this.effectiveUserRole === 'student') {
         // Manage only where the student may edit: the read-only "view questions" variant would
         // show a read share's answer keys. Statistics is the instructor's own learning stats;
@@ -655,6 +695,12 @@ export default {
         && window.localStorage?.getItem('learning:view-as-student') === 'yes';
     } catch (_e) {
       this.studentViewOverride = false;
+    }
+    try {
+      this.poolPractise = typeof window !== 'undefined'
+        && window.localStorage?.getItem(POOL_PRACTISE_KEY) === 'yes';
+    } catch (_e) {
+      this.poolPractise = false;
     }
     const courseStore = useOptionalCourseStore();
     if (courseStore) {
@@ -731,7 +777,10 @@ export default {
     // a mode the student view does not offer.
     filteredModes(modes) {
       if (this.selectedPool && !modes.some((m) => m.id === this.mode)) {
-        this.setMode('train');
+        // Keep a learner in a learner mode (Arena gone with gamification off → Training); an
+        // editor whose switch went off goes back to Manage.
+        const fallback = modes.some((m) => m.id === 'train') ? 'train' : this.defaultPoolMode;
+        this.setMode(fallback);
       }
     },
   },
@@ -1570,12 +1619,10 @@ export default {
       this.currentView = 'questions';
       this.error = null;
       this.poolPermission = pool.is_shared ? (pool.permission || 'read') : 'owner';
-      const count = await this.refreshQuestionCount(pool, true);
-      // GitHub #34: an empty pool opened in Training ("No questions available") with no hint
-      // where questions are added. Whoever can add them lands in Manage directly.
-      if (count === 0 && this.isSelectedPool(pool) && this.canManagePool) {
-        this.setMode('manage');
-      }
+      // GitHub #46 (and #34 for empty pools): whoever can edit the pool lands in Manage, the
+      // others in Training. Set before the count request, so the first render is the right tab.
+      this.setMode(this.defaultPoolMode);
+      await this.refreshQuestionCount(pool, true);
     },
     // this.selectedPool is a reactive proxy, never === the raw object passed in; compare ids.
     isSelectedPool(pool) {
@@ -1660,9 +1707,30 @@ export default {
       this.smartQueueMode = 'remediation';
       this.currentView = 'smartQueue';
     },
+    setPoolPractise(enabled) {
+      const next = !!enabled;
+      this.poolPractise = next;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          if (next) {
+            window.localStorage.setItem(POOL_PRACTISE_KEY, 'yes');
+          } else {
+            window.localStorage.removeItem(POOL_PRACTISE_KEY);
+          }
+        }
+      } catch (_e) {
+        // localStorage may be unavailable (private mode): the switch holds for this visit
+      }
+    },
     setMode(newMode) {
       if (newMode === 'swipe') {
         newMode = 'train';
+      }
+      // GitHub #46: any path into a learner mode (empty-state button, VirtuProf, a back link)
+      // keeps working for an editor: it turns the practise switch on instead of opening a tab
+      // the tab bar does not show.
+      if (this.canManagePool && !this.poolPractise && LEARNER_POOL_MODES.includes(newMode)) {
+        this.setPoolPractise(true);
       }
       // Questions added or deleted in Manage change the count the other modes start from;
       // without this, a pool filled in Manage still said "No questions" in Training.
@@ -1853,6 +1921,12 @@ export default {
 /* Pool window tabs — look and width: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
 .mode-selector {
   margin-bottom: 28px;
+}
+
+.pool-practise-switch {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 
 .mode-description {
