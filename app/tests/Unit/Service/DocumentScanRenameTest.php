@@ -54,20 +54,29 @@ class DocumentScanRenameTest extends TestCase {
     }
 
     private function scan(CourseDocumentMapper $mapper, string $name, int $fileId): void {
+        $this->scanAll($mapper, [[$name, $fileId]]);
+    }
+
+    /** @param list<array{0: string, 1: int}> $listing name and file id, in Nextcloud's listing order */
+    private function scanAll(CourseDocumentMapper $mapper, array $listing): void {
         $course = new Course();
         $course->setInstructorId('teacher');
         $course->setMaterialFolder('/Material');
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
 
-        $file = $this->createMock(Node::class);
-        $file->method('getType')->willReturn(Node::TYPE_FILE);
-        $file->method('getName')->willReturn($name);
-        $file->method('getSize')->willReturn(1234);
-        $file->method('getId')->willReturn($fileId);
+        $nodes = [];
+        foreach ($listing as [$name, $fileId]) {
+            $file = $this->createMock(Node::class);
+            $file->method('getType')->willReturn(Node::TYPE_FILE);
+            $file->method('getName')->willReturn($name);
+            $file->method('getSize')->willReturn(1234);
+            $file->method('getId')->willReturn($fileId);
+            $nodes[] = $file;
+        }
         $folder = $this->createMock(Folder::class);
         $folder->method('getType')->willReturn(Node::TYPE_FOLDER);
-        $folder->method('getDirectoryListing')->willReturn([$file]);
+        $folder->method('getDirectoryListing')->willReturn($nodes);
         $userFolder = $this->createMock(Folder::class);
         $userFolder->method('get')->willReturn($folder);
         $root = $this->createMock(IRootFolder::class);
@@ -116,6 +125,40 @@ class DocumentScanRenameTest extends TestCase {
 
         self::assertCount(1, $mapper->inserted);
         self::assertSame(78, $mapper->inserted[0]->getFileId());
+    }
+
+    /** @return array<string, array{0: list<array{0: string, 1: int}>}> */
+    public static function renameAndReuploadListings(): array {
+        return [
+            'new file listed first' => [[['Policy.pdf', 200], ['Policy_v1.pdf', 100]]],
+            'renamed file listed first' => [[['Policy_v1.pdf', 100], ['Policy.pdf', 200]]],
+        ];
+    }
+
+    /**
+     * GitHub #75 (review): the instructor renames "Policy.pdf" (file 100, required) to
+     * "Policy_v1.pdf" and uploads a new "Policy.pdf" (file 200). The row follows its file, in
+     * either listing order, and stays there on the next scan; the new upload is a new row. It
+     * used to take the new file id when the new file came first, and then the old file's name,
+     * swapping between both files on every scan.
+     *
+     * @param list<array{0: string, 1: int}> $listing
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('renameAndReuploadListings')]
+    public function testRenamedAndReuploadedFileKeepsTheRowOnTheOldFile(array $listing): void {
+        $row = self::row(5, 'Policy.pdf', 100);
+        $mapper = $this->memoryMapper([$row]);
+
+        for ($scan = 1; $scan <= 2; $scan++) {
+            $this->scanAll($mapper, $listing);
+
+            self::assertSame(100, $row->getFileId(), "scan $scan: the row stays on its file");
+            self::assertSame('Policy_v1.pdf', $row->getFileName(), "scan $scan");
+            self::assertSame('/Material/Policy_v1.pdf', $row->getFilePath(), "scan $scan");
+            self::assertCount(1, $mapper->inserted, "scan $scan: one new row for the new upload, not one per scan");
+            self::assertSame(200, $mapper->inserted[0]->getFileId());
+            self::assertSame('/Material/Policy.pdf', $mapper->inserted[0]->getFilePath());
+        }
     }
 
     public function testVersionIgnoresTheNameAndFollowsTheContent(): void {

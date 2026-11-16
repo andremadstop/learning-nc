@@ -142,34 +142,57 @@ class DocumentService {
         }
         $normalizedFolder = self::normalizePath($materialFolder);
 
+        /** @var list<array{node: Node, name: string, ext: string, fileId: ?int}> $files */
+        $files = [];
+        /** @var array<int, true> $listedIds */
+        $listedIds = [];
         foreach ($nodes as $node) {
             if ($node->getType() !== Node::TYPE_FILE) {
                 continue;
             }
-
             $name = $node->getName();
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-
             if (!isset(self::FILE_TYPES[$ext])) {
                 continue;
             }
-
-            $relativePath = self::materialFilePath($normalizedFolder, $name);
             $fileId = self::nodeFileId($node);
+            $files[] = ['node' => $node, 'name' => $name, 'ext' => $ext, 'fileId' => $fileId];
+            if ($fileId !== null) {
+                $listedIds[$fileId] = true;
+            }
+        }
+
+        foreach ($files as ['node' => $node, 'name' => $name, 'ext' => $ext, 'fileId' => $fileId]) {
+            $relativePath = self::materialFilePath($normalizedFolder, $name);
             $known = $registered[$relativePath] ?? null;
             if ($known !== null) {
-                // Stamp the file id on a row from before 5.14.0 (or after a replaced file).
-                if ($fileId !== null && $known->getFileId() !== $fileId && !isset($byFileId[$fileId])) {
-                    $known->setFileId($fileId);
-                    $this->documentMapper->update($known);
-                    $byFileId[$fileId] = $known;
+                $knownId = $known->getFileId();
+                // GitHub #75 (review): the row's own file is still in the folder under another
+                // name (renamed, and a new file uploaded under the old name). The file id wins, in
+                // whatever order Nextcloud lists the files: the row follows its file below, and
+                // this path holds another file — a new row. Stamping the new id on the row here
+                // made the row swap between the two files on every scan.
+                $ownFileElsewhere = $fileId !== null && $knownId !== null && $knownId !== $fileId && isset($listedIds[$knownId]);
+                if (!$ownFileElsewhere) {
+                    // Stamp the file id on a row from before 5.14.0 (or after a replaced file).
+                    if ($fileId !== null && $knownId !== $fileId && !isset($byFileId[$fileId])) {
+                        if ($knownId !== null) {
+                            unset($byFileId[$knownId]);
+                        }
+                        $known->setFileId($fileId);
+                        $this->documentMapper->update($known);
+                        $byFileId[$fileId] = $known;
+                    }
+                    continue;
                 }
-                continue;
             }
             $renamed = $fileId !== null ? ($byFileId[$fileId] ?? null) : null;
             if ($renamed !== null) {
                 // The same file (one file id is one file) under a new name: the row follows it.
-                unset($registered[self::normalizePath((string)$renamed->getFilePath())]);
+                $oldPath = self::normalizePath((string)$renamed->getFilePath());
+                if (($registered[$oldPath] ?? null) === $renamed) {
+                    unset($registered[$oldPath]);
+                }
                 $renamed->setFilePath($relativePath);
                 $renamed->setFileName($name);
                 $renamed->setFileType(self::FILE_TYPES[$ext]);
