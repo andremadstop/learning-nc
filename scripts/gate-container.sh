@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # gate-container.sh — run PHPStan and/or PHPUnit for app/ in a throwaway Docker container.
 #
-# Usage: scripts/gate-container.sh [phpstan|phpunit|all] [--index | --ref <git-ref>]
+# Usage: scripts/gate-container.sh [phpstan|phpunit|all|coverage] [--index | --ref <git-ref>]
 #        scripts/gate-container.sh --self-test
 #
 # Source is a clean snapshot, never the dirty working copy:
@@ -16,6 +16,11 @@
 # PHPUnit runs the versioned app/phpunit.xml with --fail-on-skipped --fail-on-incomplete:
 # a skipped test is a check that never ran, so it fails the gate. Tests that need a real
 # Nextcloud database live in app/tests/Integration and run via scripts/nc-integration.sh.
+#
+# coverage (GitHub #65) is the phpunit gate with the pcov extension built in the container (pinned
+# tarball, checksum-verified) and a coverage report of app/lib copied to $GATE_COVERAGE_DIR
+# (default app/coverage/php: clover.xml, summary.txt, html/). A report only, no threshold; it
+# fails exactly when the phpunit gate fails. Not part of the hooks (it is slower).
 #
 # --self-test proves failures are actually caught: a PHPStan probe with a deliberate error
 # must fail and the clean snapshot must pass; a PHPUnit probe that skips, and one that calls
@@ -32,6 +37,9 @@ GIT_ROOT="${GATE_GIT_ROOT:-$REPO_ROOT}"
 IMAGE="${GATE_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 COMPOSER_VERSION="${GATE_COMPOSER_VERSION:-2.10.3}"
 COMPOSER_SHA256="${GATE_COMPOSER_SHA256:-7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6}"
+PCOV_VERSION="${GATE_PCOV_VERSION:-1.0.12}"
+PCOV_SHA256="${GATE_PCOV_SHA256:-23255c8c9335a9636ccb743f5302436a97a582a0bbde9869485be911bbc15da8}"
+COVERAGE_DIR="${GATE_COVERAGE_DIR:-$REPO_ROOT/app/coverage/php}"
 
 WORK=""
 NAME=""
@@ -128,6 +136,38 @@ run_phpunit() {
 	docker exec "$NAME" php -r '$f=$argv[1]; if(!is_file($f)){fwrite(STDERR,"no JUnit report: PHPUnit did not finish\n");exit(1);} $x=@simplexml_load_string((string)file_get_contents($f)); $s=$x?$x->testsuite:null; if(!$s){fwrite(STDERR,"JUnit report unreadable\n");exit(1);} $t=(int)$s["tests"];$e=(int)$s["errors"];$fl=(int)$s["failures"];$sk=(int)$s["skipped"]; echo "junit tests=$t errors=$e failures=$fl skipped=$sk\n"; exit($t>0&&$e===0&&$fl===0&&$sk===0?0:1);' /tmp/gate-junit.xml
 }
 
+# install_pcov — build the pcov extension from the pinned PECL tarball (gcc/make are in the image).
+install_pcov() {
+	echo "==> pcov $PCOV_VERSION"
+	docker exec -e PCOV_VERSION="$PCOV_VERSION" -e PCOV_SHA256="$PCOV_SHA256" "$NAME" sh -euc '
+		cd /tmp
+		curl -fsSL -o pcov.tgz "https://pecl.php.net/get/pcov-$PCOV_VERSION.tgz"
+		echo "$PCOV_SHA256  pcov.tgz" | sha256sum -c --quiet
+		MAKEFLAGS=-j4 pecl install --offline ./pcov.tgz >/tmp/pcov-build.log 2>&1 || { tail -20 /tmp/pcov-build.log >&2; exit 1; }
+		docker-php-ext-enable pcov
+		printf "pcov.enabled=1\npcov.directory=/work/lib\n" > /usr/local/etc/php/conf.d/zz-pcov.ini
+		php -m | grep -qx pcov
+	'
+}
+
+# run_coverage — the phpunit gate with a coverage report of lib/, copied to $COVERAGE_DIR.
+run_coverage() {
+	local rc=0
+	run_phpunit --coverage-filter lib --coverage-clover /tmp/coverage/clover.xml \
+		--coverage-html /tmp/coverage/html --coverage-text=/tmp/coverage/summary.txt --only-summary-for-coverage-text || rc=$?
+	if docker exec "$NAME" test -f /tmp/coverage/clover.xml; then
+		if [ -d "$COVERAGE_DIR" ]; then rm -r -- "$COVERAGE_DIR"; fi
+		mkdir -p "$(dirname "$COVERAGE_DIR")"
+		docker cp "$NAME:/tmp/coverage" "$COVERAGE_DIR"
+		echo "==> PHP coverage report: $COVERAGE_DIR"
+		cat "$COVERAGE_DIR/summary.txt"
+	else
+		echo "gate-container: no coverage report was written" >&2
+		[ "$rc" -ne 0 ] || rc=1
+	fi
+	return "$rc"
+}
+
 self_test() {
 	snapshot --index
 	start_container selftest
@@ -194,20 +234,26 @@ main() {
 	if [ "${1:-}" = "--self-test" ]; then self_test; return; fi
 
 	local mode="${1:-all}" src="${2:---index}" ref=""
-	case "$mode" in phpstan|phpunit|all) ;; *) die "usage: $0 [phpstan|phpunit|all] [--index|--ref <git-ref>] | --self-test" ;; esac
+	case "$mode" in phpstan|phpunit|all|coverage) ;; *) die "usage: $0 [phpstan|phpunit|all|coverage] [--index|--ref <git-ref>] | --self-test" ;; esac
 	case "$src" in
 		--index) ;;
 		--ref) ref="${3:-}"; [ -n "$ref" ] || die "--ref needs a git ref" ;;
 		*) die "unknown source: $src" ;;
 	esac
 
-	[ "$mode" != phpunit ] || PS=ok   # not requested -> cannot block
+	[ "$mode" != phpunit ] && [ "$mode" != coverage ] || PS=ok   # not requested -> cannot block
 	[ "$mode" != phpstan ] || PU=ok
 
 	snapshot "$src" "$ref"
 	start_container "$mode"
 
 	local ok=1
+	if [ "$mode" = coverage ]; then
+		install_pcov
+		if run_coverage; then PU=ok; else PU=fail; ok=0; fi
+		[ "$ok" = 1 ]
+		return
+	fi
 	if [ "$mode" != phpunit ]; then if run_phpstan; then PS=ok; else PS=fail; ok=0; fi; fi
 	if [ "$mode" != phpstan ]; then if run_phpunit; then PU=ok; else PU=fail; ok=0; fi; fi
 	[ "$ok" = 1 ]

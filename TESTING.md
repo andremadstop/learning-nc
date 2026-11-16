@@ -19,6 +19,7 @@ Every PHP gate runs in a throwaway Docker container on a clean snapshot of the c
 |---|:-:|:-:|:-:|:-:|
 | ESLint (0 errors; warnings allowed) | ✓ | ✓ | ✓ | |
 | Vitest | ✓ | ✓ | ✓ | |
+| Coverage report, JS and PHP (artifact, no threshold) | | | ✓ | |
 | Property tests with a random seed (fast-check) | | | | ✓ |
 | Production build (`npm run build`) | | | ✓ | |
 | i18n gates (7, see below) | ✓ | ✓ | ✓ | |
@@ -58,6 +59,7 @@ npm --prefix app run build                         # production bundle
 ./scripts/gate-container.sh all                    # PHPStan L5 + PHPUnit on the git index
 ./scripts/gate-container.sh all --ref HEAD         # ... or on a commit
 ./scripts/gate-container.sh --self-test            # proves an error and a skipped test turn the gate red
+./scripts/gate-container.sh coverage               # PHPUnit with a coverage report (see Coverage reports)
 ```
 
 `gate-container.sh` runs a pinned `nextcloud:33` image (by digest) and installs PHP dependencies from the versioned `composer.lock`. PHPUnit runs with `--fail-on-skipped --fail-on-incomplete`, because a skipped test is a check that never ran. The last output line is always `GATE-RESULT phpstan=<ok|fail> phpunit=<ok|fail>`.
@@ -203,6 +205,18 @@ FC_SEED=<seed> FC_RUNS=5000 npx --prefix app vitest run tests/unit/importRoundtr
 - A numeric explanation (for example `2`) is read as the number of the correct answer.
 
 Each case is excluded from the property by exactly its condition. Each is also pinned by an `it.fails` example, which turns red once the reader is fixed; then the exclusion and the example are removed.
+
+## Coverage reports
+
+Coverage is reported, not enforced: there is no threshold. A number to aim for would reward tests that execute code without checking it; the rule below (a fix comes with a test that fails on the old code) is the bar.
+
+```bash
+npm --prefix app run test:coverage                 # Vitest + v8 → app/coverage/js (html, lcov, summary)
+./scripts/gate-container.sh coverage               # PHPUnit + pcov on the git index → app/coverage/php
+./scripts/gate-container.sh coverage --ref HEAD    # ... on a commit
+```
+
+The PHP mode is the PHPUnit gate with the `pcov` extension. It is built in the throwaway container from a pinned PECL tarball whose checksum is verified. The mode fails exactly when the PHPUnit gate fails. CI uploads both reports as artifacts (`coverage-js`, `coverage-php`, kept for 14 days) and writes the PHP summary into the job summary. The hooks do not run coverage.
 
 ## Rule: every bug fix comes with a test that fails on the old code
 

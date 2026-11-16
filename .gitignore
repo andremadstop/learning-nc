@@ -108,6 +108,7 @@ Thumbs.db
 /.tmp_questions/
 /.tmpq/
 /.tmpq_upgrade2/
+app/coverage/
 scripts/*
 !scripts/check-consent-locales.py
 !scripts/check-forbidden-names.sh
