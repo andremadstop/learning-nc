@@ -145,3 +145,15 @@ describe('course settings: organisation name (GitHub #77)', () => {
 		expect(certLayoutPayload(layout)).toMatchObject({ issuer_name: '', show: { issuer: true, score: false } })
 	})
 })
+
+describe('admin: the operator details say when their name is the issuer (GitHub #77)', () => {
+	it('names the course entry and the Theming fallback, not "never this name"', async () => {
+		const { default: OperatorSettings } = await import('../../src/components/OperatorSettings.vue')
+		await mount(OperatorSettings, {})
+		const hint = host.querySelector('.operator-settings__issuer-hint').textContent.replace(/\s+/g, ' ')
+		expect(hint).toContain('steht als Aussteller auf neuen Zertifikaten')
+		expect(hint).toContain('„Gestaltung des Zertifikats“')
+		expect(hint).toContain('Bereits ausgestellte Zertifikate behalten ihren Namen.')
+		expect(hint).not.toContain('nicht dieser Name')
+	})
+})
