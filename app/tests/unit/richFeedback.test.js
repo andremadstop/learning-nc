@@ -264,3 +264,17 @@ describe('question editor', () => {
 		expect(onSave.mock.calls[0][0].optionFeedback).toEqual([])
 	})
 })
+
+describe('verdict labels (pre-existing: English in the FR/RU/AR columns)', () => {
+	it('"Richtig" and "Falsch" are translated in every language', () => {
+		const english = { Richtig: 'Correct', Falsch: 'Wrong' }
+		for (const lang of ['fr', 'ru', 'ar', 'uk']) {
+			const tr = JSON.parse(readFileSync(resolve(here, `../../l10n/${lang}.json`), 'utf-8')).translations
+			// French "Correct" is French as well; "Wrong" is not.
+			expect(tr.Falsch, lang).not.toBe(english.Falsch)
+			if (lang !== 'fr') {
+				expect(tr.Richtig, lang).not.toBe(english.Richtig)
+			}
+		}
+	})
+})
