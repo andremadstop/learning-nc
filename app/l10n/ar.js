@@ -3959,5 +3959,7 @@ OC.L10N.register(
     "Noch nicht abgeschlossen" : "لم يكتمل بعد",
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“." : "يُفتح الاختبار عندما تُكمل كل المحتوى الإلزامي. تجده في مساحة التعلّم ضمن «المواد التعليمية».",
     "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen." : "أكمل أولًا كل المحتوى الإلزامي في تبويب «المواد التعليمية». عندها فقط يُفتح الاختبار.",
+    "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "عرض أسئلة هذه المجموعة. لا يمكن تعديلها إلا لمالك المجموعة أو لمن شوركت معه للتحرير.",
+    "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "يتضمن التقرير أيضًا الشهادات المنتهية بالفعل.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

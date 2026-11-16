@@ -2,7 +2,9 @@
 	<ul class="pool-accuracy-list">
 		<li v-for="pool in pools" :key="pool.pool_id" class="pool-accuracy-item">
 			<span class="pool-accuracy-name">{{ pool.pool_name }}</span>
-			<span class="pool-accuracy-value">{{ pool.accuracy }}% {{ t('learning', 'accuracy') }}</span>
+			<!-- Fresh-eyes C5: a pool without a single answer has no accuracy, not 0 % -->
+			<span v-if="Number(pool.answered) === 0" class="pool-accuracy-value pool-accuracy-value--none">{{ t('learning', 'Noch keine Antworten') }}</span>
+			<span v-else class="pool-accuracy-value">{{ pool.accuracy }}% {{ t('learning', 'accuracy') }}</span>
 		</li>
 	</ul>
 </template>

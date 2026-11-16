@@ -3959,5 +3959,7 @@ OC.L10N.register(
     "Noch nicht abgeschlossen" : "Not completed yet",
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“." : "The exam opens once you have completed all required content. You find it in the learning space under “Learning materials”.",
     "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen." : "First complete all required content in the “Learning materials” tab. Only then is the exam open.",
+    "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "View the questions of this pool. Only the pool’s owner or someone it was shared with for editing can change them.",
+    "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "The report also includes certificates that have already expired.",
 },
 "nplurals=2; plural=(n != 1);");

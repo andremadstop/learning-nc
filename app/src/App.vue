@@ -713,7 +713,10 @@ export default {
         stats: this.poolStatsBasis === 'answers'
           ? t('learning', 'Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.')
           : t('learning', 'Lernstatistiken und Box-Verteilung für diesen Pool.'),
-        manage: t('learning', 'Fragen hinzufügen, bearbeiten, löschen und importieren.'),
+        // Fresh-eyes C5: a view-only share reads the questions; "add, edit, delete" promised more
+        manage: this.poolPermission === 'read'
+          ? t('learning', 'Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat.')
+          : t('learning', 'Fragen hinzufügen, bearbeiten, löschen und importieren.'),
       };
     },
   },

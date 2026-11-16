@@ -494,7 +494,7 @@
 						{{ t('learning', 'Filter anwenden') }}
 					</NcButton>
 				</div>
-				<p class="cert-report-hint">{{ t('learning', 'Inkl. bereits abgelaufener Zertifikate') }}</p>
+				<p class="cert-report-hint">{{ t('learning', 'Der Bericht enthält auch bereits abgelaufene Zertifikate.') }}</p>
 				<div v-if="certRows.length > 0" class="cert-report-table-container" role="region"
 					:aria-label="t('learning', 'Compliance-Bericht')">
 					<table class="cert-report-table">

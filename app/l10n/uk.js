@@ -3959,5 +3959,7 @@ OC.L10N.register(
     "Noch nicht abgeschlossen" : "Ще не пройдено",
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“." : "Іспит відкриється, коли ти пройдеш усі обов’язкові матеріали. Ти знайдеш їх у навчальному розділі в пункті «Навчальні матеріали».",
     "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen." : "Спершу пройди всі обов’язкові матеріали на вкладці «Навчальні матеріали». Лише тоді іспит відкриється.",
+    "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Перегляд питань цього пулу. Змінювати їх може лише власник пулу або той, з ким пул поширено для редагування.",
+    "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Звіт містить і вже прострочені сертифікати.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

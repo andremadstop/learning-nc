@@ -3959,5 +3959,7 @@ OC.L10N.register(
     "Noch nicht abgeschlossen" : "Pas encore terminé",
     "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“." : "L’examen s’ouvre lorsque tu as terminé tous les contenus obligatoires. Tu les trouves dans l’espace d’apprentissage sous « Supports de cours ».",
     "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen." : "Termine d’abord tous les contenus obligatoires dans l’onglet « Supports de cours ». Ce n’est qu’ensuite que l’examen est ouvert.",
+    "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Voir les questions de ce pool. Seul le propriétaire du pool ou une personne avec qui il est partagé en modification peut les changer.",
+    "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Le rapport inclut aussi les certificats déjà expirés.",
 },
 "nplurals=2; plural=(n > 1);");
