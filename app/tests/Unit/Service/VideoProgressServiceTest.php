@@ -27,7 +27,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  *
  * The pure decision methods (mergeIntervals, coveredPct, decideComplete, isPlausiblePing,
  * isDurationValidForGate, computeHeartbeatTransition) are tested DB-free.
- * markComplete/markDocumentRead are tested with a fluent QueryBuilder stub whose executeStatement()
+ * markComplete is tested with a fluent QueryBuilder stub whose executeStatement()
  * return value drives the exactly-once guard.
  */
 #[AllowMockObjectsWithoutExpectations]
@@ -301,26 +301,5 @@ class VideoProgressServiceTest extends TestCase {
         // Two crossings of 95% (two tabs) → only the winning UPDATE (affected=1) emits.
         $svc->markComplete(self::USER, self::CONTENT_ID, self::COURSE_ID);
         $svc->markComplete(self::USER, self::CONTENT_ID, self::COURSE_ID);
-    }
-
-    // ---- markDocumentRead: completion without intervals (VIDEO-07) ----------
-
-    public function testMarkDocumentReadCompletesWithMinimalPayload(): void {
-        $db = $this->createMock(IDBConnection::class);
-        $db->method('getQueryBuilder')->willReturn($this->fluentQb(1)); // INSERT succeeds
-
-        $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->once())
-            ->method('logComplianceEvent')
-            ->with(
-                $this->equalTo(ComplianceEventTypes::VIDEO_COMPLETED),
-                $this->equalTo(self::USER),
-                $this->callback(function ($context): bool {
-                    return $context === ['course_id' => self::COURSE_ID, 'content_id' => self::CONTENT_ID];
-                })
-            );
-
-        $svc = $this->makeService(audit: $audit, db: $db);
-        $svc->markDocumentRead(self::USER, self::CONTENT_ID, self::COURSE_ID);
     }
 }

@@ -94,6 +94,8 @@ class UserDeletedListener implements IEventListener {
         // The completion proof outlives this row: VideoProgressService writes it into the
         // compliance chain (course.video.completed), which is pseudonymised below, not deleted.
         $this->deleteByUserColumns('learning_video_progress', ['user_id'], $userId);
+        // GitHub #75: the read confirmations of required documents, same reasoning.
+        $this->deleteByUserColumns('learning_doc_confirms', ['user_id'], $userId);
         // Nothing writes learning_analytics any more (audit #221), but old rows still name the user.
         $this->deleteByUserColumns('learning_analytics', ['user_id'], $userId);
         // A pool share and a team-lead scope are access rights keyed by the uid string.

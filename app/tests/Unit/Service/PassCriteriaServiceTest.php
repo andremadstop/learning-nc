@@ -1339,6 +1339,27 @@ class PassCriteriaServiceTest extends TestCase {
             $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
     }
 
+    /**
+     * GitHub #75: the cycle a required-document confirmation must fall in is the one the exams
+     * count in — none before the renewal window, its opening once it is open.
+     */
+    public function testConfirmationCycleStartsWithTheRenewalWindow(): void {
+        $now = time();
+        $summary = $this->createMock(CourseSummaryService::class);
+        $audit = $this->createMock(AuditService::class);
+        $issuance = $this->createMock(IssuanceService::class);
+
+        $closed = $this->slotCert($now - 300 * 86400, $now + 40 * 86400);
+        $this->assertNull($this->renewalService($closed, $summary, $audit, $issuance, [])->confirmationCycleStart(self::USER, self::COURSE_ID));
+
+        $expires = $now + 10 * 86400;
+        $open = $this->slotCert($now - 355 * 86400, $expires);
+        $this->assertSame(
+            max($now - 355 * 86400 + 1, $this->windowStart($expires)),
+            $this->renewalService($open, $summary, $audit, $issuance, [])->confirmationCycleStart(self::USER, self::COURSE_ID)
+        );
+    }
+
     public function testBeforeTheRenewalWindowNothingIsIssued(): void {
         $now = time();
         $cert = $this->slotCert($now - 300 * 86400, $now + 40 * 86400);

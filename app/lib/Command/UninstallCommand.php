@@ -87,6 +87,7 @@ class UninstallCommand extends Command {
         'learning_course_snapshots',
         'learning_course_videos',
         'learning_courses',
+        'learning_doc_confirms',
         'learning_duel_answers',
         'learning_duel_invites',
         'learning_duel_sessions',

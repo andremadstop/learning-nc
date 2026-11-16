@@ -782,17 +782,25 @@ class CourseService {
     }
 
     /**
-     * Instructor toggles the video/material gate (Phase 162, B3). Owner-gated via
-     * assertInstructorOfCourse; persists the flag. Called by CourseController::setVideoGate.
+     * GitHub #75 (was setVideoGateEnabled, Phase 162 B3): the switches of the required
+     * content — the exam gate and "confirm again in every certification cycle". null leaves a switch unchanged. Owner/co-instructor gated.
      *
      * @throws DoesNotExistException if the course does not exist
      * @throws ForbiddenException    if $userId is not an instructor of this course
      */
-    public function setVideoGateEnabled(int $courseId, bool $enabled, string $userId): void {
+    public function setRequiredContentOptions(int $courseId, string $userId, ?bool $gateEnabled, ?bool $reconfirmPerCycle): Course {
         $course = $this->assertInstructorOfCourse($courseId, $userId);
-        $course->setVideoGateEnabled($enabled);
-        $course->setUpdatedAt(time());
-        $this->courseMapper->update($course);
+        if ($gateEnabled !== null) {
+            $course->setVideoGateEnabled($gateEnabled);
+        }
+        if ($reconfirmPerCycle !== null) {
+            $course->setReconfirmPerCycle($reconfirmPerCycle);
+        }
+        if ($gateEnabled !== null || $reconfirmPerCycle !== null) {
+            $course->setUpdatedAt(time());
+            $this->courseMapper->update($course);
+        }
+        return $course;
     }
 
     /**
@@ -1079,6 +1087,8 @@ class CourseService {
             // required pools = any passed exam of the course counts), so its settings are open.
             $course->setModeConfig(json_encode(self::MODE_CONFIG_MANDATORY));
             $course->setCertEnabled(true);
+            // GitHub #75: every renewal asks for the required documents again.
+            $course->setReconfirmPerCycle(true);
         } elseif (!$this->xpService->isGamificationEnabled()) {
             $course->setModeConfig(json_encode(self::MODE_CONFIG_WITHOUT_GAMIFICATION));
         }
@@ -1192,6 +1202,11 @@ class CourseService {
                     ->where($qb->expr()->in('content_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
                 $qb->executeStatement();
             }
+            // GitHub #75: read confirmations of required documents carry the course id.
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete('learning_doc_confirms')
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $qb->executeStatement();
 
             foreach (self::COURSE_SCOPED_TABLES as $table) {
                 if (!$this->db->tableExists($table)) {

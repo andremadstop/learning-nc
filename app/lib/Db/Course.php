@@ -70,6 +70,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setExamMinutes(?int $examMinutes)
  * @method string|null getCertLayout()
  * @method void setCertLayout(?string $certLayout)
+ * @method bool|null getReconfirmPerCycle()
+ * @method void setReconfirmPerCycle(bool $reconfirmPerCycle)
  */
 class Course extends Entity {
     protected $title;
@@ -107,6 +109,8 @@ class Course extends Entity {
     protected $examMinutes;
     /** GitHub #43: how the course's certificates look (CertLayout JSON); NULL = the standard card. */
     protected $certLayout;
+    /** GitHub #75: required documents are confirmed again in every certification cycle. */
+    protected $reconfirmPerCycle;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -131,6 +135,7 @@ class Course extends Entity {
         $this->addType('examQuestions', 'integer');
         $this->addType('examMinutes', 'integer');
         $this->addType('certLayout', 'string');
+        $this->addType('reconfirmPerCycle', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -163,6 +168,7 @@ class Course extends Entity {
             // NULL = unset → legacy days fallback governs expiry; 0 = explicit no-expiry; >0 = months
             'cert_validity_months' => $this->getCertValidityMonths(),
             'video_gate_enabled' => $this->getVideoGateEnabled() ?? false,
+            'reconfirm_per_cycle' => $this->getReconfirmPerCycle() ?? false,
             // Codeberg #9 — practice exam; 0 minutes = untimed. Visible to learners: they need it to start one.
             'practice_enabled' => $this->getPracticeEnabled() ?? false,
             'practice_questions' => $this->getPracticeQuestions() ?? 20,

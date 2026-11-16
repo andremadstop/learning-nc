@@ -1232,6 +1232,14 @@ namespace OCP\Files {
             public function getStorage();
 
             public function isReadable();
+
+            // GitHub #75: the scan follows the file id across a rename, and a read confirmation
+            // stores the file version (checksum, else mtime + size). Declared on FileInfo in NC 33.
+            public function getId();
+
+            public function getMTime();
+
+            public function getChecksum();
         }
     }
     if (!interface_exists(Folder::class)) {

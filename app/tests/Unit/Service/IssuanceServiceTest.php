@@ -740,6 +740,31 @@ class IssuanceServiceTest extends TestCase {
         }
     }
 
+    /**
+     * GitHub #75: "1 year" means the same date next year (a validity of 365 days loses a day in
+     * every leap year), and 29 February falls back to 28 February.
+     */
+    public function testAYearIsTheSameDateNextYearAndTheLeapDayFallsBackTo28February(): void {
+        $originalTz = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+        try {
+            $at = static fn(string $local): int => (new \DateTimeImmutable($local, new \DateTimeZone('Europe/Berlin')))->getTimestamp();
+            $cases = [
+                ['2026-03-16 10:00:00', '2027-03-16 10:00:00'],
+                ['2027-03-16 10:00:00', '2028-03-16 10:00:00'], // across 29 Feb 2028: still 16 March
+                ['2028-02-29 09:30:00', '2029-02-28 09:30:00'],
+            ];
+            foreach ($cases as [$issued, $expected]) {
+                $captured = null;
+                $service = $this->makeService(null, $this->makeCourse(validityDays: 365, validityMonths: 12), $captured, issuedAt: $at($issued));
+                $cert = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult())?->certificate;
+                $this->assertSame($at($expected), $cert?->getExpiresAt(), "issued $issued");
+            }
+        } finally {
+            date_default_timezone_set($originalTz);
+        }
+    }
+
     // ---- 164-04 post-impl Codex review locks (HIGH 3 / HIGH 4 / MED 6) ---------------------
 
     /**

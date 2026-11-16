@@ -441,6 +441,102 @@ class CourseVideoControllerTest extends TestCase {
         $this->assertSame(['instructor-uid'], $this->openedHomes);
     }
 
+    // ---- GitHub #75: a document is required once per course ----------------------------------
+
+    private function requiredRow(int $id, int $documentId): CourseVideo {
+        $row = new CourseVideo();
+        $row->setId($id);
+        $row->setCourseId(5);
+        $row->setSourceType('document');
+        $row->setVideoRef((string)$documentId);
+        $row->setDocumentId($documentId);
+        return $row;
+    }
+
+    public function testCreateRefusesADocumentThatIsRequiredAlready(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([31 => $this->requiredRow(8, 31)]);
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController()->create(5, 'document', '31', 'Policy', null);
+
+        $this->assertSame(Http::STATUS_CONFLICT, $resp->getStatus());
+    }
+
+    public function testCreateAnswersConflictWhenAConcurrentRequestAddedItFirst(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([]);
+        $this->videoMapper->method('insert')->willThrowException(
+            new \OCP\DB\Exception(\OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION, 'learn_cv_course_doc_uq')
+        );
+
+        $resp = $this->makeController()->create(5, 'document', '31', 'Policy', null);
+
+        $this->assertSame(Http::STATUS_CONFLICT, $resp->getStatus());
+    }
+
+    public function testCreateStoresTheDocumentId(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([]);
+        $this->videoMapper->expects($this->once())->method('insert')->willReturnArgument(0);
+
+        $resp = $this->makeController()->create(5, 'document', '31', 'Policy', null);
+
+        $this->assertSame(31, $resp->getData()->getDocumentId());
+    }
+
+    public function testTickingRequiredAddsOnlyDocumentsThatAreNotRequiredYet(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->documents[34] = $this->document(34, 5, '/Kurs/handbook.pdf', 'handbook.pdf');
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([31 => $this->requiredRow(8, 31)]);
+        $this->videoMapper->method('findByCourse')->willReturn([$this->requiredRow(8, 31)]);
+        $inserted = [];
+        $this->videoMapper->method('insert')->willReturnCallback(function (CourseVideo $v) use (&$inserted) {
+            $inserted[] = $v;
+            return $v;
+        });
+
+        $resp = $this->makeController()->setDocumentsRequired(5, [31, 34], true);
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+        $this->assertCount(1, $inserted, 'the document required already is not added again');
+        $this->assertSame(34, $inserted[0]->getDocumentId());
+        $this->assertSame('handbook.pdf', $inserted[0]->getTitle());
+    }
+
+    public function testTickingRequiredRefusesAForeignDocumentAndWritesNothing(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([]);
+        $this->videoMapper->method('findByCourse')->willReturn([]);
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        // 32 belongs to another course
+        $resp = $this->makeController()->setDocumentsRequired(5, [31, 32], true);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
+    public function testUntickingRemovesTheRegistryRow(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $row = $this->requiredRow(8, 31);
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([31 => $row]);
+        $this->videoMapper->method('findByCourse')->willReturn([]);
+        $this->videoMapper->expects($this->once())->method('delete')->with($row);
+
+        $resp = $this->makeController()->setDocumentsRequired(5, [31, 34], false);
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+    }
+
+    public function testRequiredColumnIsForInstructorsOnly(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willThrowException(new \OCA\Learning\Service\ForbiddenException('no'));
+        $this->videoMapper->expects($this->never())->method('insert');
+
+        $resp = $this->makeController('student')->setDocumentsRequired(5, [31], true);
+
+        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+    }
+
     public function testCreateRejectsWhenUnauthenticated(): void {
         $controller = new CourseVideoController(
             'learning',

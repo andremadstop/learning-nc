@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\CourseVideo;
+use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgress;
 use OCA\Learning\Db\VideoProgressMapper;
@@ -49,6 +50,11 @@ class VideoProgressService {
         private ITimeFactory $timeFactory,
         private AuditService $auditService,
         private IDBConnection $db,
+        // GitHub #75: documents are confirmed in learning_doc_confirms (per cycle and version).
+        // Optional only so older unit tests can build the service without it; the DI container
+        // always injects it.
+        private ?RequiredDocumentService $requiredDocuments = null,
+        private ?CourseMapper $courseMapper = null,
     ) {
     }
 
@@ -342,44 +348,6 @@ class VideoProgressService {
     }
 
     /**
-     * Record a document "Gelesen" completion (VIDEO-07): server-side proof with no intervals and no
-     * duration requirement. INSERT the completion row; if it already exists, promote it to completed
-     * via the same atomic `completed_at IS NULL` guard so the emit fires exactly once (double-click safe).
-     */
-    public function markDocumentRead(string $userId, int $contentId, int $courseId): void {
-        $now = $this->timeFactory->getTime();
-        try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->insert('learning_video_progress')
-                ->values([
-                    'user_id' => $qb->createNamedParameter($userId),
-                    'content_id' => $qb->createNamedParameter($contentId, IQueryBuilder::PARAM_INT),
-                    'completed_at' => $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT),
-                ])
-                ->executeStatement();
-        } catch (\OCP\DB\Exception $e) {
-            if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                throw $e;
-            }
-            // Row exists (prior heartbeat progress or an earlier read) — promote to completed once.
-            $qb = $this->db->getQueryBuilder();
-            $affected = (int)$qb->update('learning_video_progress')
-                ->set('completed_at', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT))
-                ->set('intervals_json', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
-                ->set('covered_pct', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
-                ->set('last_ping_ts', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
-                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-                ->andWhere($qb->expr()->eq('content_id', $qb->createNamedParameter($contentId, IQueryBuilder::PARAM_INT)))
-                ->andWhere($qb->expr()->isNull('completed_at'))
-                ->executeStatement();
-            if ($affected !== 1) {
-                return; // already completed by a concurrent writer — do not re-emit
-            }
-        }
-        $this->emitVideoCompleted($userId, $contentId, $courseId);
-    }
-
-    /**
      * Gate assertion consumed by TrainingService (162-03): every required course video/document must
      * be completed by the user. W1 scope: a VIDEO source with null/0 duration is a misconfigured gate
      * and blocks (documents are exempt from the duration check).
@@ -388,10 +356,19 @@ class VideoProgressService {
      */
     public function assertCourseVideosComplete(int $courseId, string $userId): void {
         $videos = $this->videoMapper->findByCourse($courseId);
+        $course = null;
         foreach ($videos as $video) {
             $vid = (int)$video->getId();
             if (!$this->isDurationValidForGate($video->getSourceType(), $video->getDurationSeconds())) {
                 throw new ForbiddenException('Video gate misconfigured: content ' . $vid . ' has no duration');
+            }
+            // GitHub #75: a document counts by the confirmation rule (cycle, version, asked again).
+            if ($this->requiredDocuments !== null && $this->courseMapper !== null && RequiredDocumentService::isDocument($video)) {
+                $course ??= $this->courseMapper->findById($courseId);
+                if (!$this->requiredDocuments->isConfirmed($course, $video, $userId)) {
+                    throw new ForbiddenException('Required document not confirmed: content ' . $vid);
+                }
+                continue;
             }
             $row = $this->progressMapper->findByUserAndContent($userId, $vid);
             if ($row === null || $row->getCompletedAt() === null) {

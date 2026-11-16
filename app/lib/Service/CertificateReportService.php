@@ -55,6 +55,7 @@ class CertificateReportService {
     private ?IConfig $config;
     private ?CourseVideoMapper $videoMapper;
     private ?VideoProgressMapper $progressMapper;
+    private ?RequiredDocumentService $requiredDocuments;
 
     public function __construct(
         CourseService $courseService,
@@ -69,8 +70,10 @@ class CertificateReportService {
         IUserManager $userManager,
         ?IConfig $config = null,
         ?CourseVideoMapper $videoMapper = null,
-        ?VideoProgressMapper $progressMapper = null
+        ?VideoProgressMapper $progressMapper = null,
+        ?RequiredDocumentService $requiredDocuments = null
     ) {
+        $this->requiredDocuments = $requiredDocuments;
         $this->courseService = $courseService;
         $this->certificateMapper = $certificateMapper;
         $this->timeFactory = $timeFactory;
@@ -304,7 +307,7 @@ class CertificateReportService {
         }
         $keptIds = array_map('strval', array_keys($statusByUserId));
         $pools = $this->passCriteriaService->requiredPoolProgress($courseId, $keptIds);
-        [$contentTotal, $contentDone] = $this->requiredContentProgress($courseId, $keptIds);
+        [$contentTotal, $contentDone] = $this->requiredContentProgress($course, $keptIds);
 
         $rows = [];
         foreach ($statusByUserId as $uid => $rowStatus) {
@@ -340,18 +343,32 @@ class CertificateReportService {
      * @param list<string> $userIds
      * @return array{0: int, 1: array<string, int>}
      */
-    private function requiredContentProgress(int $courseId, array $userIds): array {
+    private function requiredContentProgress(\OCA\Learning\Db\Course $course, array $userIds): array {
         if ($this->videoMapper === null || $this->progressMapper === null) {
             return [0, []];
         }
-        $contentIds = [];
-        foreach ($this->videoMapper->findByCourse($courseId) as $video) {
-            $contentIds[] = (int)$video->getId();
-        }
-        if ($contentIds === []) {
+        $registry = $this->videoMapper->findByCourse((int)$course->getId());
+        if ($registry === []) {
             return [0, []];
         }
-        return [count($contentIds), $this->progressMapper->countCompletedByUsers($userIds, $contentIds)];
+        // GitHub #75: documents count by the same rule as the exam gate (cycle, file version,
+        // asked again); videos by their completion row.
+        $videoIds = [];
+        $documents = [];
+        foreach ($registry as $video) {
+            if ($this->requiredDocuments !== null && RequiredDocumentService::isDocument($video)) {
+                $documents[] = $video;
+            } else {
+                $videoIds[] = (int)$video->getId();
+            }
+        }
+        $done = $this->progressMapper->countCompletedByUsers($userIds, $videoIds);
+        if ($documents !== [] && $this->requiredDocuments !== null) {
+            foreach ($this->requiredDocuments->countConfirmedByUsers($course, $documents, $userIds) as $uid => $n) {
+                $done[$uid] = ($done[$uid] ?? 0) + $n;
+            }
+        }
+        return [count($registry), $done];
     }
 
     /**

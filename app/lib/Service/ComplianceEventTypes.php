@@ -22,6 +22,9 @@ final class ComplianceEventTypes {
     public const PERIOD_CLOSED   = 'cert.period.closed';
     // Defined here for Phase 162 (VideoProgressService emits this event)
     public const VIDEO_COMPLETED = 'course.video.completed';
+    // GitHub #75: an instructor asked every learner to confirm a required document again
+    // (RequiredDocumentService::requestReconfirm); context {course_id, content_id}
+    public const CONTENT_RECONFIRM_REQUESTED = 'course.content.reconfirm_requested';
 
     private function __construct() {} // static-only class
 }

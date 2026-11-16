@@ -438,6 +438,8 @@ return [
         ['name' => 'courseVideo#create',      'url' => '/api/courses/{courseId}/videos',      'verb' => 'POST'],
         ['name' => 'courseVideo#update',      'url' => '/api/course-videos/{id}',             'verb' => 'PUT'],
         ['name' => 'courseVideo#destroy',     'url' => '/api/course-videos/{id}',             'verb' => 'DELETE'],
+        ['name' => 'courseVideo#requestReconfirm', 'url' => '/api/course-videos/{id}/reconfirm', 'verb' => 'POST'],
+        ['name' => 'courseVideo#setDocumentsRequired', 'url' => '/api/courses/{courseId}/required-documents', 'verb' => 'PUT'],
         ['name' => 'course#setVideoGate',     'url' => '/api/courses/{courseId}/video-gate',  'verb' => 'PUT'],
 
     ]

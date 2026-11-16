@@ -232,15 +232,21 @@ class CourseController extends Controller {
     }
 
     /**
-     * Instructor toggles the server-side video/material gate (Phase 162, B3).
+     * Instructor toggles the server-side video/material gate (Phase 162, B3) and, GitHub #75,
+     * whether required documents are confirmed again in every certification cycle. Each field
+     * is optional; an omitted one stays as it is.
      *
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function setVideoGate(int $courseId, bool $enabled): DataResponse {
+    public function setVideoGate(int $courseId, ?bool $enabled = null, ?bool $reconfirmPerCycle = null): DataResponse {
         try {
-            $this->courseService->setVideoGateEnabled($courseId, $enabled, $this->userId);
-            return new DataResponse(['course_id' => $courseId, 'video_gate_enabled' => $enabled]);
+            $course = $this->courseService->setRequiredContentOptions($courseId, $this->userId, $enabled, $reconfirmPerCycle);
+            return new DataResponse([
+                'course_id' => $courseId,
+                'video_gate_enabled' => $course->getVideoGateEnabled() ?? false,
+                'reconfirm_per_cycle' => $course->getReconfirmPerCycle() ?? false,
+            ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
@@ -783,6 +789,7 @@ class CourseController extends Controller {
         ?int $examQuestions = null,
         ?int $examMinutes = null,
         ?array $certLayout = null,
+        ?string $certValidityUnit = null,
     ): DataResponse {
         try {
             if ($this->userId === null) {
@@ -868,6 +875,16 @@ class CourseController extends Controller {
                     return new DataResponse(['error' => 'cert_validity_months must be >= 0'], Http::STATUS_BAD_REQUEST);
                 }
                 $course->setCertValidityMonths($certValidityMonths);
+            }
+            // GitHub #75: the unit of the validity field. 'months' (a year = 12 months) needs
+            // certValidityMonths; 'days' unsets the months so the days value governs again
+            // (months = 0 would mean "no expiry", NULL = "use the days"). Omitted = unchanged.
+            if ($certValidityUnit !== null) {
+                if ($certValidityUnit === 'days') {
+                    $course->setCertValidityMonths(null);
+                } elseif ($certValidityUnit !== 'months' || $certValidityMonths === null) {
+                    return new DataResponse(['error' => "cert_validity_unit must be 'days', or 'months' together with cert_validity_months"], Http::STATUS_BAD_REQUEST);
+                }
             }
             // GitHub #47: course default of the exam scope, used by every pool without its own
             // value. Omitted = unchanged, 0 = no course default (stored as NULL).

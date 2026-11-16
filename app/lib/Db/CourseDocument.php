@@ -26,6 +26,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setUpdatedAt(int $updatedAt)
  * @method string|null getChunkingStatus()
  * @method void setChunkingStatus(?string $chunkingStatus)
+ * @method int|null getFileId()
+ * @method void setFileId(?int $fileId)
  */
 class CourseDocument extends Entity {
     protected $courseId;
@@ -37,6 +39,8 @@ class CourseDocument extends Entity {
     protected $errorMessage;
     protected $fileSize;
     protected $chunkingStatus;
+    /** GitHub #75: Nextcloud file id, so a rename keeps the row (NULL until the next scan). */
+    protected $fileId;
     protected $createdAt;
     protected $updatedAt;
 
@@ -46,6 +50,7 @@ class CourseDocument extends Entity {
         $this->addType('fileSize', 'integer');
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
+        $this->addType('fileId', 'integer');
     }
 
     public function jsonSerialize(): array {

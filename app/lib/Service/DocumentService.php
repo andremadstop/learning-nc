@@ -128,9 +128,17 @@ class DocumentService {
         // Already registered for THIS course (the path is relative to the instructor's home;
         // another course may have the same folder name). Compared normalized: a folder typed as
         // 'Kurs' and picked again as '/Kurs' is the same folder, its files are no new rows.
+        // GitHub #75: also by Nextcloud file id, so a renamed file keeps its row — and with it
+        // its required-content link and the read confirmations — instead of becoming a new one.
+        /** @var array<string, CourseDocument> $registered */
         $registered = [];
+        /** @var array<int, CourseDocument> $byFileId */
+        $byFileId = [];
         foreach ($this->documentMapper->findByCourseId($courseId) as $existingDoc) {
-            $registered[self::normalizePath((string)$existingDoc->getFilePath())] = true;
+            $registered[self::normalizePath((string)$existingDoc->getFilePath())] = $existingDoc;
+            if ($existingDoc->getFileId() !== null) {
+                $byFileId[(int)$existingDoc->getFileId()] = $existingDoc;
+            }
         }
         $normalizedFolder = self::normalizePath($materialFolder);
 
@@ -147,10 +155,29 @@ class DocumentService {
             }
 
             $relativePath = self::materialFilePath($normalizedFolder, $name);
-            if (isset($registered[$relativePath])) {
+            $fileId = self::nodeFileId($node);
+            $known = $registered[$relativePath] ?? null;
+            if ($known !== null) {
+                // Stamp the file id on a row from before 5.14.0 (or after a replaced file).
+                if ($fileId !== null && $known->getFileId() !== $fileId && !isset($byFileId[$fileId])) {
+                    $known->setFileId($fileId);
+                    $this->documentMapper->update($known);
+                    $byFileId[$fileId] = $known;
+                }
                 continue;
             }
-            $registered[$relativePath] = true;
+            $renamed = $fileId !== null ? ($byFileId[$fileId] ?? null) : null;
+            if ($renamed !== null) {
+                // The same file (one file id is one file) under a new name: the row follows it.
+                unset($registered[self::normalizePath((string)$renamed->getFilePath())]);
+                $renamed->setFilePath($relativePath);
+                $renamed->setFileName($name);
+                $renamed->setFileType(self::FILE_TYPES[$ext]);
+                $renamed->setUpdatedAt($now);
+                $this->documentMapper->update($renamed);
+                $registered[$relativePath] = $renamed;
+                continue;
+            }
 
             $doc = new CourseDocument();
             $doc->setCourseId($courseId);
@@ -161,11 +188,60 @@ class DocumentService {
             $doc->setFileSize($node->getSize());
             $doc->setCreatedAt($now);
             $doc->setUpdatedAt($now);
+            $doc->setFileId($fileId);
 
             $this->documentMapper->insert($doc);
+            $registered[$relativePath] = $doc;
+            if ($fileId !== null) {
+                $byFileId[$fileId] = $doc;
+            }
         }
 
         return $this->documentMapper->findByCourseId($courseId);
+    }
+
+    /** The Nextcloud file id of a node, or null when the storage has none. */
+    private static function nodeFileId(Node $node): ?int {
+        try {
+            $id = $node->getId();
+        } catch (\Throwable $e) {
+            return null;
+        }
+        return $id > 0 ? (int)$id : null;
+    }
+
+    /**
+     * GitHub #75: the version of a material file a read confirmation refers to — sha256 of the
+     * Nextcloud checksum when the storage keeps one, else of mtime and size. A rename changes
+     * neither (the content and the file stay the same); new content changes the checksum, or
+     * the mtime when there is none. Fixed length, whatever algorithms the checksum lists.
+     */
+    public static function fileVersion(File $file): string {
+        $checksum = '';
+        try {
+            $checksum = trim((string)$file->getChecksum());
+        } catch (\Throwable $e) {
+            $checksum = '';
+        }
+        $basis = $checksum !== ''
+            ? 'checksum:' . $checksum
+            : 'mtime:' . (int)$file->getMTime() . ':size:' . (int)$file->getSize();
+        return hash('sha256', $basis);
+    }
+
+    /**
+     * GitHub #75: version and mtime of the file behind a document row, or null when it cannot be
+     * served (not in the material folder, gone, not readable).
+     *
+     * @return array{version: string, mtime: int}|null
+     */
+    public function currentFileInfo(Course $course, int $documentId): ?array {
+        try {
+            [, $file] = $this->resolveMaterialFile($course, $documentId);
+            return ['version' => self::fileVersion($file), 'mtime' => (int)$file->getMTime()];
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**

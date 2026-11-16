@@ -182,6 +182,23 @@ class PassCriteriaService {
     }
 
     /**
+     * GitHub #75: since when a read confirmation of a required document counts in a course that
+     * asks for it again in every certification cycle — the same bound the exams have
+     * (issuanceWindow()'s completed_after): from the opening of the renewal window, or of an
+     * open recertification period. null = no bound: no certificate yet (first cycle), a
+     * certificate whose renewal window is not open, or a course without certification.
+     */
+    public function confirmationCycleStart(string $userId, int $courseId): ?int {
+        $course = $this->courseMapper->findById($courseId);
+        if (!($course->getCertEnabled() ?? false)) {
+            return null;
+        }
+        $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+        $window = $this->issuanceWindow($userId, $courseId, $certificate);
+        return $window['may_issue'] ? $window['completed_after'] : null;
+    }
+
+    /**
      * When the renewal window of $certificate opens (GitHub #35), or null when it has none:
      * only a certificate that is not revoked, still owns its idempotency slot (the current
      * certificate of its period — a closed or superseded one has released it) and expires.

@@ -10,6 +10,7 @@ use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\VideoProgressService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -54,7 +55,8 @@ class VideoProgressController extends Controller {
         CourseVideoMapper $videoMapper,
         CourseService $courseService,
         ?string $userId,
-        CourseDocumentMapper $documentMapper
+        CourseDocumentMapper $documentMapper,
+        private ?RequiredDocumentService $requiredDocuments = null,
     ) {
         parent::__construct($appName, $request);
         $this->service = $service;
@@ -158,8 +160,17 @@ class VideoProgressController extends Controller {
         if (in_array($video->getSourceType(), ['nc-files', 'vimeo', 'youtube-nocookie'], true)) {
             return new DataResponse(['error' => 'Content is a video — it must be watched, not marked read'], Http::STATUS_BAD_REQUEST);
         }
-        $this->service->markDocumentRead($this->userId, $contentId, (int)$video->getCourseId());
-        return new DataResponse(['completed' => true, 'covered_pct' => 1.0]);
+        if ($video->getSourceType() !== CourseVideoController::DOCUMENT_SOURCE_TYPE || $this->requiredDocuments === null) {
+            return new DataResponse(['error' => 'Content is no document'], Http::STATUS_BAD_REQUEST);
+        }
+        // GitHub #75: appended per cycle and file version; a valid confirmation makes this a no-op.
+        $state = $this->requiredDocuments->confirm($video, $this->userId);
+        return new DataResponse([
+            'completed' => $state['confirmed'],
+            'covered_pct' => $state['confirmed'] ? 1.0 : 0.0,
+            'updated' => $state['updated'],
+            'confirm_again' => $state['again'],
+        ]);
     }
 
     /**
@@ -248,8 +259,17 @@ class VideoProgressController extends Controller {
             return new DataResponse(['error' => 'Unknown course'], Http::STATUS_NOT_FOUND);
         }
         $videos = [];
-        foreach ($this->videoMapper->findByCourse($courseId) as $video) {
+        $registry = $this->videoMapper->findByCourse($courseId);
+        // GitHub #75: documents by the confirmation rule (cycle, file version, asked again).
+        $documentStates = $this->requiredDocuments !== null
+            ? $this->requiredDocuments->statesForUser($course, $registry, $this->userId)
+            : [];
+        foreach ($registry as $video) {
             $state = $this->progressState((int)$video->getId());
+            $documentState = $documentStates[(int)$video->getId()] ?? null;
+            if ($documentState !== null) {
+                $state = ['completed' => $documentState['confirmed'], 'covered_pct' => $documentState['confirmed'] ? 1.0 : 0.0];
+            }
             $row = [
                 'id' => (int)$video->getId(),
                 'source_type' => $video->getSourceType(),
@@ -270,6 +290,9 @@ class VideoProgressController extends Controller {
             // a path never leaves the server.
             if ($video->getSourceType() === CourseVideoController::DOCUMENT_SOURCE_TYPE) {
                 $row['document_id'] = $this->servableDocumentId($course, $video);
+                // "Updated since you confirmed it" / "Please confirm again" (new cycle or asked).
+                $row['updated'] = $documentState['updated'] ?? false;
+                $row['confirm_again'] = $documentState['again'] ?? false;
             }
             $videos[] = $row;
         }
