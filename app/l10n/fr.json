@@ -3860,6 +3860,7 @@
         "_%n Frage_::_%n Fragen_": [
             "%n question",
             "%n questions"
-        ]
+        ],
+        "Meldung schließen": "Fermer le message"
     }
 }

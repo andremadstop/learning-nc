@@ -3858,5 +3858,6 @@ OC.L10N.register(
     "Noch keine Antworten" : "Noch keine Antworten",
     "Häufiger Denkfehler:" : "Häufiger Denkfehler:",
     "_%n Frage_::_%n Fragen_" : ["%n Frage", "%n Fragen"],
+    "Meldung schließen" : "Meldung schließen",
 },
 "nplurals=2; plural=(n != 1);");

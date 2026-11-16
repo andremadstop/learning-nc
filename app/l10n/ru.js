@@ -3858,5 +3858,6 @@ OC.L10N.register(
     "Noch keine Antworten" : "Пока нет ответов",
     "Häufiger Denkfehler:" : "Распространённое заблуждение:",
     "_%n Frage_::_%n Fragen_" : ["%n вопрос", "%n вопроса", "%n вопросов"],
+    "Meldung schließen" : "Закрыть сообщение",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

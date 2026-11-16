@@ -3858,5 +3858,6 @@ OC.L10N.register(
     "Noch keine Antworten" : "Pas encore de réponses",
     "Häufiger Denkfehler:" : "Idée fausse courante :",
     "_%n Frage_::_%n Fragen_" : ["%n question", "%n questions"],
+    "Meldung schließen" : "Fermer le message",
 },
 "nplurals=2; plural=(n > 1);");

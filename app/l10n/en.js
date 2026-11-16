@@ -3858,5 +3858,6 @@ OC.L10N.register(
     "Noch keine Antworten" : "No answers yet",
     "Häufiger Denkfehler:" : "Common misconception:",
     "_%n Frage_::_%n Fragen_" : ["%n question", "%n questions"],
+    "Meldung schließen" : "Dismiss message",
 },
 "nplurals=2; plural=(n != 1);");

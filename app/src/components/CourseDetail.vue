@@ -29,9 +29,22 @@
 			<p>{{ t('learning', 'Lade Kursdetails...') }}</p>
 		</div>
 
-		<!-- Error state -->
+		<!-- Error state: the course could not be loaded. Stays, there is nothing else to show. -->
 		<NcNoteCard v-if="error" type="error" class="detail-error">
 			{{ error }}
+		</NcNoteCard>
+		<!-- GitHub #72: what a tab reported (a failed save, …). It belongs to that tab: it can be
+			closed and goes away when another tab is opened or the course is loaded again. -->
+		<NcNoteCard v-else-if="actionError" type="error" class="detail-error" data-test="detail-action-error">
+			<div class="detail-action-error">
+				<span class="detail-action-error__text">{{ actionError }}</span>
+				<NcButton variant="tertiary"
+					size="small"
+					data-test="detail-action-error-close"
+					@click="actionError = ''">
+					{{ t('learning', 'Meldung schließen') }}
+				</NcButton>
+			</div>
 		</NcNoteCard>
 
 		<template v-if="!loading && course">
@@ -80,7 +93,7 @@
 					:ai-enabled="adminAiEnabled"
 					:gamification-enabled="gamificationEnabled"
 					@all-pools-loaded="allPools = $event"
-					@error="error = $event"
+					@error="actionError = $event"
 					@knowledge-pending-count="knowledgePendingCount = $event"
 					@mode-activated="activeLearningMode = $event"
 					@openPool="$emit('openPool', $event)"
@@ -102,7 +115,7 @@
 				:active-tab="currentTab"
 				:gamification-enabled="gamificationEnabled"
 				@tab-change="onLeafTabChange"
-				@error="error = $event"
+				@error="actionError = $event"
 				@members-changed="fetchCourseDetail"
 				@selectStudent="$emit('selectStudent', $event)" />
 
@@ -137,7 +150,7 @@
 				:preset-duel-code="presetDuelCode"
 				:gamification-enabled="gamificationEnabled"
 				@tab-change="onLeafTabChange"
-				@error="error = $event"
+				@error="actionError = $event"
 				@arena-sub-mode="arenaSubMode = $event"
 				@preset-consumed="$emit('clearPresetDuel')"
 				@selectStudent="$emit('selectStudent', $event)" />
@@ -153,7 +166,7 @@
 				:open-questions-count="openQuestionsCount"
 				@tab-change="onLeafTabChange"
 				@open-questions-count="openQuestionsCount = $event"
-				@error="error = $event"
+				@error="actionError = $event"
 				@refresh-course-detail="fetchCourseDetail" />
 
 			<CourseTabVerwaltung
@@ -166,7 +179,7 @@
 				:active-tab="currentTab"
 				:gamification-enabled="gamificationEnabled"
 				@tab-change="onLeafTabChange"
-				@error="error = $event"
+				@error="actionError = $event"
 				@refresh-course-detail="fetchCourseDetail" />
 
 		</template>
@@ -263,6 +276,7 @@ export default {
 		return {
 			loading: false,
 			error: '',
+			actionError: '',
 			course: null,
 			coursePools: [],
 			courseMembers: [],
@@ -740,6 +754,7 @@ export default {
 			return null
 		},
 		selectMegaTab(megaTabId) {
+			this.actionError = ''
 			this.activeMegaTab = megaTabId
 			const resolvedTabId = this.resolveSelectableTab(megaTabId)
 			this.currentTab = resolvedTabId
@@ -760,6 +775,7 @@ export default {
 		 * Receives a leaf tab ID, updates currentTab, syncs activeMegaTab, emits to App.vue.
 		 */
 		onLeafTabChange(leafTabId) {
+			this.actionError = ''
 			this.currentTab = leafTabId
 			useOptionalCourseStore()?.setTab(leafTabId)
 			this.pushCourseTabRoute(leafTabId)
@@ -786,6 +802,7 @@ export default {
 			}
 		},
 		selectTab(tabId) {
+			this.actionError = ''
 			const resolvedTabId = this.resolveSelectableTab(tabId)
 			this.currentTab = resolvedTabId
 			useOptionalCourseStore()?.setTab(resolvedTabId)
@@ -854,6 +871,7 @@ export default {
 		async fetchCourseDetail() {
 			this.loading = true
 			this.error = ''
+			this.actionError = ''
 			// The Lernraum unmounts while loading and reports its required content again after the
 			// remount; a stale flag would route learners to a videos leaf it does not show yet.
 			this.hasCourseVideos = false
@@ -990,6 +1008,18 @@ export default {
 
 .detail-error {
 	margin-bottom: 16px;
+}
+
+.detail-action-error {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.detail-action-error__text {
+	flex: 1 1 16em;
 }
 
 /* Mega-tab selector — look and width: .lnc-tablist / .lnc-tab in styles/tabs.css (#46) */
