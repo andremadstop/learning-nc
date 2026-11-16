@@ -250,7 +250,11 @@ class RequiredDocumentService {
                 $this->auditService->logComplianceEvent(ComplianceEventTypes::CONTENT_REQUIRED_CHANGED, $instructorId, [
                     'course_id' => $courseId,
                     'required' => $add !== [],
-                    'document_ids' => array_map(static fn(CourseVideo $v): int => (int)$v->getDocumentId(), $changed),
+                    // a row from before 5.14 may carry the document only in video_ref (fileInfo())
+                    'document_ids' => array_map(
+                        static fn(CourseVideo $v): int => (int)($v->getDocumentId() ?? CourseVideoController::documentIdFromRef($v->getVideoRef())),
+                        $changed
+                    ),
                     'content_ids' => array_map(static fn(CourseVideo $v): int => (int)$v->getId(), $changed),
                 ]);
             }

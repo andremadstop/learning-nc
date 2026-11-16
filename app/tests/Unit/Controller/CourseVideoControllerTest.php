@@ -569,6 +569,22 @@ class CourseVideoControllerTest extends TestCase {
         $this->assertSame(Http::STATUS_OK, $resp->getStatus());
     }
 
+    /** A row from before 5.14 knows its document only by video_ref: the chain names it anyway. */
+    public function testUntickingALegacyRowRecordsItsDocument(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $legacy = $this->requiredRow(9, 34);
+        $legacy->setDocumentId(null);
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([34 => $legacy]);
+        $this->videoMapper->method('findByCourse')->willReturn([]);
+        $this->audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CONTENT_REQUIRED_CHANGED,
+            'instructor-uid',
+            ['course_id' => 5, 'required' => false, 'document_ids' => [34], 'content_ids' => [9]]
+        );
+
+        $this->assertSame(Http::STATUS_OK, $this->makeController()->setDocumentsRequired(5, [34], false)->getStatus());
+    }
+
     public function testTickingIsRecordedWithTheNewRows(): void {
         $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
         $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([]);
