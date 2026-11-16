@@ -156,7 +156,8 @@
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
             <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
-          <div v-if="!isCorrect" class="ai-explain-row">
+          <!-- Fresh-eyes C4: the VirtuProf chat answers with the AI; with AI off the button led nowhere. -->
+          <div v-if="!isCorrect && aiAvailable" class="ai-explain-row">
             <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
               {{ t('learning', 'Explain via VirtuProf') }}
             </NcButton>
@@ -194,7 +195,8 @@
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
             <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
-          <div v-if="!isCorrect" class="ai-explain-row">
+          <!-- Fresh-eyes C4: the VirtuProf chat answers with the AI; with AI off the button led nowhere. -->
+          <div v-if="!isCorrect && aiAvailable" class="ai-explain-row">
             <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
               {{ t('learning', 'Explain via VirtuProf') }}
             </NcButton>
