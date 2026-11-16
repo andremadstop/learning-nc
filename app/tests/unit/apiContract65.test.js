@@ -21,7 +21,7 @@ const spec = JSON.parse(readFileSync(resolve(__dirname, '../../openapi.json'), '
  */
 const UNRESOLVED_ALLOWED = {
 	// Images handed over as data URLs or as URLs from API responses, not built in the frontend.
-	'components/CertLayoutSettings.vue :src(images[kind.key])': 'layout images loaded as data URLs',
+	'components/ImageFileField.vue :src(imageUrl)': 'image handed in by the parent (cert layout: data URL, #72)',
 	'components/CertificateCard.vue :src(fields.issuerLogo)': 'issuer logo from the certificate data',
 	'components/CertificateCard.vue :src(layout.stamp)': 'stamp image from the layout (data URL)',
 	'components/CertificateCard.vue :src(layout.signature)': 'signature image from the layout (data URL)',

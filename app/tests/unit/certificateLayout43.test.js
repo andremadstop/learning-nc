@@ -322,7 +322,7 @@ describe('course settings: stamp and signature stay visible without saving (GitH
 		await mountSettings({ has_stamp: false })
 
 		expect(axios.get.mock.calls.at(-1)[0]).toBe('/apps/learning/api/courses/7/cert-layout')
-		expect(host.querySelector('.cert-layout-image-thumb')?.getAttribute('src')).toBe(STAMP)
+		expect(host.querySelector('.image-file-field__thumb')?.getAttribute('src')).toBe(STAMP)
 		expect(host.querySelector('[data-test="cert-layout-remove-stamp"]')).not.toBeNull()
 	})
 
@@ -349,7 +349,7 @@ describe('course settings: stamp and signature stay visible without saving (GitH
 
 		expect(axios.delete.mock.calls.at(-1)[0]).toBe('/apps/learning/api/courses/7/cert-layout/images/stamp')
 		expect(updates.at(-1)).toMatchObject({ has_stamp: false, has_signature: false })
-		expect(host.querySelector('.cert-layout-image-thumb')).toBeNull()
+		expect(host.querySelector('.image-file-field__thumb')).toBeNull()
 	})
 
 	it('a mount-time load answering after a remove does not bring the removed stamp back', async () => {
@@ -372,7 +372,7 @@ describe('course settings: stamp and signature stay visible without saving (GitH
 		answerLoad({ data: { stamp: STAMP, signature: null } })
 		await flush()
 
-		expect(host.querySelector('.cert-layout-image-thumb')).toBeNull()
+		expect(host.querySelector('.image-file-field__thumb')).toBeNull()
 	})
 })
 

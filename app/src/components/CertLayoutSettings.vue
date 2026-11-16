@@ -53,34 +53,27 @@
 
 		<fieldset class="cert-config-field cert-layout-signoff">
 			<legend>{{ t('learning', 'Stempel und Unterschrift') }}</legend>
-			<p class="mode-config-hint">
+			<p :id="imageHintId" class="mode-config-hint">
 				{{ t('learning', 'PNG-Datei aus deinen Dateien, höchstens 1 MB und 3000 × 3000 Pixel. Ein transparenter Hintergrund sieht auf dem Zertifikat am besten aus.') }}
 			</p>
-			<div v-for="kind in imageKinds" :key="kind.key" class="cert-layout-image-row">
-				<span class="cert-layout-image-label">{{ kind.label }}</span>
-				<img
-					v-if="images[kind.key]"
-					:src="images[kind.key]"
-					:alt="kind.label"
-					class="cert-layout-image-thumb">
-				<NcButton
-					variant="secondary"
-					:disabled="imageBusy !== ''"
-					:data-test="'cert-layout-pick-' + kind.key"
-					:aria-label="t('learning', '{kind}: PNG aus Dateien wählen', { kind: kind.label })"
-					@click="pickImage(kind.key)">
-					{{ t('learning', 'PNG aus Dateien wählen') }}
-				</NcButton>
-				<NcButton
-					v-if="images[kind.key]"
-					variant="tertiary"
-					:disabled="imageBusy !== ''"
-					:data-test="'cert-layout-remove-' + kind.key"
-					:aria-label="t('learning', '„{title}“ entfernen', { title: kind.label })"
-					@click="removeImage(kind.key)">
-					{{ t('learning', 'Entfernen') }}
-				</NcButton>
-			</div>
+			<!-- GitHub #72: a refused file is named right here, not only at the top of the page -->
+			<ImageFileField
+				v-for="kind in imageKinds"
+				:key="kind.key"
+				:id-base="'cert-layout-' + kind.key + '-' + courseId"
+				:label="kind.label"
+				:image-url="images[kind.key]"
+				:described-by="imageHintId"
+				:error="imageErrors[kind.key]"
+				:busy="imageBusy !== ''"
+				:pick-label="t('learning', 'PNG aus Dateien wählen')"
+				:pick-aria-label="t('learning', '{kind}: PNG aus Dateien wählen', { kind: kind.label })"
+				:remove-aria-label="t('learning', '„{title}“ entfernen', { title: kind.label })"
+				:test-id="'cert-layout-image-' + kind.key"
+				:pick-test-id="'cert-layout-pick-' + kind.key"
+				:remove-test-id="'cert-layout-remove-' + kind.key"
+				@pick="pickImage(kind.key)"
+				@remove="removeImage(kind.key)" />
 			<div class="cert-config-field" data-test="cert-layout-signer-name-field">
 				<label :for="signerNameId">{{ t('learning', 'Name der unterschreibenden Person') }}</label>
 				<input
@@ -122,11 +115,14 @@
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import CertificateCard from './CertificateCard.vue'
+import ImageFileField from './ImageFileField.vue'
 import { PLACEHOLDERS } from '../utils/certificateLayout.js'
 import { getCertLayout, importCertLayoutImage, removeCertLayoutImage } from '../services/CertificateService.js'
 
 const INTRO_MAX = 2000
 const SIGNER_MAX = 120
+/** CertLayoutService::MAX_BYTES: a larger file is refused before it is sent (GitHub #72) */
+export const IMAGE_MAX_BYTES = 1048576
 
 /**
  * The message for a refused image (CertLayoutController error codes).
@@ -155,6 +151,7 @@ export default {
 
 	components: {
 		CertificateCard,
+		ImageFileField,
 		NcButton,
 		NcCheckboxRadioSwitch,
 	},
@@ -169,11 +166,12 @@ export default {
 		validityDays: { type: Number, default: 0 },
 	},
 
-	emits: ['update:modelValue', 'error'],
+	emits: ['update:modelValue'],
 
 	data() {
 		return {
 			images: { stamp: '', signature: '' },
+			imageErrors: { stamp: '', signature: '' },
 			imageBusy: '',
 			imageSeq: 0,
 			introMax: INTRO_MAX,
@@ -183,6 +181,7 @@ export default {
 			introHintId: `cert-layout-intro-hint-${this.courseId}`,
 			signerNameId: `cert-layout-signer-name-${this.courseId}`,
 			signerRoleId: `cert-layout-signer-role-${this.courseId}`,
+			imageHintId: `cert-layout-image-hint-${this.courseId}`,
 		}
 	},
 
@@ -299,8 +298,12 @@ export default {
 			this.update({ has_stamp: !!this.images.stamp, has_signature: !!this.images.signature })
 		},
 
+		setImageError(kind, message) {
+			this.imageErrors = { ...this.imageErrors, [kind]: message }
+		},
+
 		async pickImage(kind) {
-			let chosen = ''
+			let chosen = null
 			try {
 				// Loaded on use: the settings tab (and every test mounting it) does not need the dialogs.
 				const { getFilePickerBuilder } = await import('@nextcloud/dialogs')
@@ -314,24 +317,32 @@ export default {
 						variant: 'primary',
 						disabled: !selected[0]?.path,
 						callback: (nodes) => {
-							chosen = nodes[0]?.path || ''
+							chosen = nodes[0]?.path ? nodes[0] : null
 						},
 					}])
 					.build()
 				await picker.pickNodes()
 			} catch (e) {
-				// closed without choosing
+				// closed without choosing: an earlier message still describes the stored state
 				return
 			}
 			if (!chosen) {
 				return
 			}
+			// a new attempt: the message about the previous file no longer applies
+			this.setImageError(kind, '')
+			// The picker knows the size: a file over the limit is named at once, without a
+			// request. Pixels are only known to the server, which refuses them as too_large.
+			if (typeof chosen.size === 'number' && chosen.size > IMAGE_MAX_BYTES) {
+				this.setImageError(kind, imageErrorMessage({ response: { data: { error: 'too_large' } } }))
+				return
+			}
 			this.imageBusy = kind
 			this.imageSeq++
 			try {
-				this.imagesChanged(await importCertLayoutImage(this.courseId, kind, chosen))
+				this.imagesChanged(await importCertLayoutImage(this.courseId, kind, chosen.path))
 			} catch (e) {
-				this.$emit('error', imageErrorMessage(e))
+				this.setImageError(kind, imageErrorMessage(e))
 				// the load this call overtook is void: fetch what is stored now
 				this.loadImages()
 			} finally {
@@ -342,10 +353,11 @@ export default {
 		async removeImage(kind) {
 			this.imageBusy = kind
 			this.imageSeq++
+			this.setImageError(kind, '')
 			try {
 				this.imagesChanged(await removeCertLayoutImage(this.courseId, kind))
 			} catch (e) {
-				this.$emit('error', t('learning', 'Das Bild konnte nicht entfernt werden.'))
+				this.setImageError(kind, t('learning', 'Das Bild konnte nicht entfernt werden.'))
 				this.loadImages()
 			} finally {
 				this.imageBusy = ''
@@ -413,28 +425,6 @@ export default {
 	font-size: 0.9em;
 	padding: 0;
 	margin-bottom: 6px;
-}
-
-.cert-layout-image-row {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 6px;
-}
-
-.cert-layout-image-label {
-	min-width: 110px;
-	font-weight: 600;
-}
-
-.cert-layout-image-thumb {
-	max-height: 48px;
-	max-width: 120px;
-	object-fit: contain;
-	background: #fff;
-	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius, 4px);
 }
 
 .cert-layout-text {

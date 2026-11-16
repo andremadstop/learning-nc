@@ -239,8 +239,7 @@
 						:course-title="course?.title || ''"
 						:required-pool-names="certRequiredPoolNames"
 						:pass-percent="certPassPercent"
-						:validity-days="certValidityDays"
-						@error="$emit('error', $event)" />
+						:validity-days="certValidityDays" />
 				</template>
 
 				<!-- GitHub #47: course default of the exam scope. Outside the certification switch:
