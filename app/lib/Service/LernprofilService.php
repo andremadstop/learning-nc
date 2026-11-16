@@ -179,6 +179,22 @@ class LernprofilService {
     }
 
     /**
+     * The $limit weakest pools the user actually answered, for display to that person
+     * (fresh-eyes C3, #36). getWeakestTopics() keeps unanswered pools at the neutral 50 % for the
+     * planners; capping there first and filtering afterwards would let five untouched pools push
+     * every answered one out of the list.
+     */
+    public function getWeakestAnsweredTopics(string $userId, ?int $courseId = null, int $limit = 5): array {
+        $limit = max(1, min($limit, 20));
+        $profile = $this->aggregateProfile($userId, $courseId);
+        $answered = array_values(array_filter(
+            $profile['pools'],
+            static fn (array $pool): bool => ($pool['answered'] ?? true) !== false
+        ));
+        return array_slice($answered, 0, $limit);
+    }
+
+    /**
      * Return daily learning activity for the last $days days.
      *
      * PROF-03 — learning history + trend indicator.

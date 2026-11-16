@@ -55,4 +55,23 @@ class LernprofilAnsweredFlagTest extends TestCase {
 
         $this->assertFalse($pools[1]['answered']);
     }
+
+    /** Six untouched pools rank at 50 % above an answered pool at 25 %; the cap must not drop it. */
+    public function testTheDisplayListKeepsAnAnsweredPoolBehindManyUntouchedOnes(): void {
+        $ids = [1, 2, 3, 4, 5, 6, 7];
+        $builders = [$this->rows(array_map(static fn (int $id): array => ['pool_id' => $id], $ids)), $this->rows([])];
+        foreach ($ids as $id) {                                                  // training per pool
+            $builders[] = $this->rows($id === 7 ? [['pool_id' => 7, 'correct_answers' => 6, 'total_questions' => 8, 'completed_at' => 100]] : []);
+        }
+        foreach ($ids as $id) {                                                  // exam per pool
+            $builders[] = $this->rows([]);
+        }
+        $builders[] = $this->rows(array_map(static fn (int $id): array => ['id' => $id, 'name' => 'Pool ' . $id], $ids));
+        $service = new LernprofilService(new FakeDbConnection($builders), new FakeCacheFactory());
+
+        $topics = $service->getWeakestAnsweredTopics('learner', 7, 5);
+
+        $this->assertSame([7], array_column($topics, 'pool_id'));
+        $this->assertSame(25.0, $topics[0]['error_rate']);
+    }
 }

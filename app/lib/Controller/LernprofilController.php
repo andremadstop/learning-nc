@@ -51,7 +51,8 @@ class LernprofilController extends Controller {
         }
 
         try {
-            $weakest = $this->lernprofilService->getWeakestTopics($this->userId, $courseId, 5);
+            // Fresh-eyes C3 (#36): the person sees only pools they answered; see the service.
+            $weakest = $this->lernprofilService->getWeakestAnsweredTopics($this->userId, $courseId, 5);
             $history = $this->lernprofilService->getLernhistorie($this->userId, $days);
             $profile = $this->lernprofilService->aggregateProfile($this->userId, $courseId);
 
