@@ -616,6 +616,15 @@ export default {
 	cursor: pointer;
 }
 
+/* GitHub #79: Nextcloud's core rule for buttons (button:not(.button-vue):hover/:focus) paints a
+   background that beats the rule above and showed as a square block on the title. The whole card
+   reacts to the pointer already, so the title gets no hover background of its own. */
+.course-card-open:hover,
+.course-card-open:focus,
+.course-card-open:active {
+	background: none;
+}
+
 .course-card:has(.course-card-open:focus-visible) {
 	outline: 2px solid var(--color-primary-element);
 	outline-offset: 2px;
