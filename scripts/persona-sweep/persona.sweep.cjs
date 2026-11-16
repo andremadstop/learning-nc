@@ -283,7 +283,10 @@ async function clickAll(page, rec, reenter) {
 		await closeOverlays(page)
 		rec.current.clicked = (rec.current.clicked || 0) + 1
 	}
-	if (page.url() !== home) await reenter()
+	// Fresh-eyes C4: the screenshot is taken after this; without re-entering it showed wherever the
+	// last click led (the pool list after "← Back to pools", Manage instead of Exam), so stations
+	// looked as if their tab did not switch. Re-enter after any click, not only on a URL change.
+	if (page.url() !== home || rec.current.clicked) await reenter()
 }
 
 // ---------------------------------------------------------------- navigation
