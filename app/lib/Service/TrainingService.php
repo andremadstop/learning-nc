@@ -96,7 +96,8 @@ class TrainingService {
         NoteGeneratorService $noteGeneratorService,
         VideoProgressService $videoProgressService,
         TelosService $telosService,
-        ?RichFeedbackService $richFeedbackService = null
+        ?RichFeedbackService $richFeedbackService = null,
+        private ?QuestionMediaService $questionMediaService = null
     ) {
         $this->richFeedbackService = $richFeedbackService ?? new RichFeedbackService($db, $translationService);
         $this->db = $db;
@@ -125,9 +126,12 @@ class TrainingService {
      *
      * @return array<string, mixed>
      */
-    private function richFeedbackFor(int $questionId, ?string $lang): array {
+    private function richFeedbackFor(int $questionId, ?string $lang, string $userId): array {
         $rich = $this->richFeedbackService->forQuestion($questionId, $lang);
-        return $rich === null ? [] : ['rich_feedback' => $rich];
+        // The dialog track and cues explain the answer like the rich feedback, so they come with
+        // the same reveal, with a grant for the audio (QuestionMediaService).
+        $media = $this->questionMediaService?->revealFor($questionId, $userId) ?? [];
+        return ($rich === null ? [] : ['rich_feedback' => $rich]) + $media;
     }
 
     private function logSecurityEvent(string $event, array $context = []): void {
@@ -1372,7 +1376,7 @@ class TrainingService {
                 'user_answer_text' => $answerText,
                 'explanation' => $qRow ? $qRow['explanation'] : null,
                 'xp_earned' => $xpEarned,
-            ] + $this->richFeedbackFor($questionId, $contentLanguage);
+            ] + $this->richFeedbackFor($questionId, $contentLanguage, $userId);
             if (!$isCorrect) {
                 $openResult['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
             }
@@ -1435,7 +1439,7 @@ class TrainingService {
                 'pbq_max_points' => $maxPoints,
                 'explanation' => $qRow2['explanation'] ?? null,
                 'xp_earned' => $xpEarned,
-            ] + $this->richFeedbackFor($questionId, $contentLanguage);
+            ] + $this->richFeedbackFor($questionId, $contentLanguage, $userId);
         }
 
         // Multi-select path
@@ -1498,7 +1502,7 @@ class TrainingService {
                 'correct_answer_ids' => $correctIds,
                 'correct_answer_texts' => $correctTexts,
                 'xp_earned' => $xpEarned,
-            ] + $this->richFeedbackFor($questionId, $contentLanguage);
+            ] + $this->richFeedbackFor($questionId, $contentLanguage, $userId);
             if (!$isCorrect) {
                 $multiResult['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
             }
@@ -1558,7 +1562,7 @@ class TrainingService {
             'correct_answer_ids' => $correctIds,
             'correct_answer_texts' => $correctTexts,
             'xp_earned' => $xpEarned,
-        ] + $this->richFeedbackFor($questionId, $contentLanguage);
+        ] + $this->richFeedbackFor($questionId, $contentLanguage, $userId);
 
         // TRIG-02: After a wrong answer, check if user has ≥5 wrong answers on this pool
         // in recent sessions (last 30 days). Frontend uses this to show the "generate summary" button.

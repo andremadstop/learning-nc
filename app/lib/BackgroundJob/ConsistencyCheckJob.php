@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\BackgroundJob;
 
+use OCA\Learning\Service\QuestionMediaStorage;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -25,7 +26,8 @@ class ConsistencyCheckJob extends TimedJob {
         XpService $xpService,
         StreakService $streakService,
         ICacheFactory $cacheFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        private ?QuestionMediaStorage $mediaStorage = null
     ) {
         parent::__construct($time);
         $this->setInterval(24 * 3600); // Once per day
@@ -68,6 +70,16 @@ class ConsistencyCheckJob extends TimedJob {
             'count' => $count,
             'app' => 'learning',
         ]);
+
+        // GitHub #66: media of questions and pools that are gone (a cascade, a failed delete).
+        try {
+            $this->mediaStorage?->sweepOrphans();
+        } catch (\Throwable $e) {
+            $this->logger->warning('ConsistencyCheckJob: question media sweep failed: {error}', [
+                'error' => $e->getMessage(),
+                'app' => 'learning',
+            ]);
+        }
     }
 
     private function reconcileUser(string $userId, $cache): void {

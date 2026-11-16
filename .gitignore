@@ -161,6 +161,9 @@ app/tests/*
 !app/tests/Fixtures/
 !app/tests/Fixtures/llm/
 !app/tests/Fixtures/llm/*.json
+!app/tests/fixtures/
+!app/tests/fixtures/question-media/
+!app/tests/fixtures/question-media/**
 !app/tests/Integration/
 !app/tests/Integration/*.php
 !app/tests/Integration/phpunit.xml

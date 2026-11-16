@@ -1,0 +1,5 @@
+{
+  "icon": "🎨",
+  "en": {"line_keywords": [["primary colours"], ["green"]], "contrast": {"wrong": "Mixing makes purple", "right": "Blue and yellow make green"}, "merksatz": "Blue plus yellow is green.", "scene": "Art class"},
+  "de": {"line_keywords": [["Grundfarben"], ["Grün"]], "contrast": {"wrong": "Mischen ergibt Lila", "right": "Blau und Gelb ergeben Grün"}, "merksatz": "Blau plus Gelb ist Grün.", "scene": "Kunstunterricht"}
+}

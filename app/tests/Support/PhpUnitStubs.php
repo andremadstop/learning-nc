@@ -754,6 +754,28 @@ namespace OCP\AppFramework\Http {
         }
     }
 
+    // GitHub #66: QuestionMediaController answers audio (and byte ranges of it) with it.
+    // Signature of NC 33 lib/public/AppFramework/Http/DataDisplayResponse.php.
+    if (!class_exists(DataDisplayResponse::class)) {
+        class DataDisplayResponse extends Response {
+            protected $data;
+
+            /** @param array<string, string> $headers */
+            public function __construct(string $data = '', int $statusCode = 200, array $headers = []) {
+                parent::__construct($statusCode, $headers);
+                $this->data = $data;
+            }
+
+            public function render() {
+                return $this->data;
+            }
+
+            public function getData() {
+                return $this->data;
+            }
+        }
+    }
+
     // GitHub #35: streamed responses (DocumentController::download). Signatures copied from NC 33
     // lib/public/AppFramework/Http/IOutput.php and ICallbackResponse.php.
     if (!interface_exists(IOutput::class)) {

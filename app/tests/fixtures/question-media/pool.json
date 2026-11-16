@@ -1,0 +1,29 @@
+{
+  "name": "Question media demo",
+  "description": "Two generic questions for the media import fixture (GitHub #66).",
+  "questions": [
+    {
+      "exam_key": "demo-q1",
+      "lang": "en",
+      "type": "single",
+      "text": "Which colour do you get when you mix blue and yellow paint?",
+      "answers": [
+        {"text": "Red", "is_correct": false},
+        {"text": "Green", "is_correct": true},
+        {"text": "Purple", "is_correct": false},
+        {"text": "Orange", "is_correct": false}
+      ]
+    },
+    {
+      "exam_key": "demo-q2",
+      "lang": "en",
+      "type": "single",
+      "text": "How many legs does a spider have?",
+      "answers": [
+        {"text": "Eight", "is_correct": true},
+        {"text": "Six", "is_correct": false},
+        {"text": "Six", "is_correct": false}
+      ]
+    }
+  ]
+}

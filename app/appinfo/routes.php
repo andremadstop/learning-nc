@@ -73,6 +73,9 @@ return [
         ['name' => 'image#upload', 'url' => '/api/questions/{questionId}/image', 'verb' => 'POST'],
         ['name' => 'image#serve', 'url' => '/api/questions/{questionId}/image', 'verb' => 'GET'],
         ['name' => 'image#delete', 'url' => '/api/questions/{questionId}/image', 'verb' => 'DELETE'],
+        // GitHub #66: media per question (QuestionMediaController)
+        ['name' => 'questionMedia#index', 'url' => '/api/questions/{questionId}/media', 'verb' => 'GET'],
+        ['name' => 'questionMedia#track', 'url' => '/api/question-media/{trackId}', 'verb' => 'GET'],
 
         // Translations
         ['name' => 'translation#questionTranslations', 'url' => '/api/questions/{questionId}/translations', 'verb' => 'GET'],

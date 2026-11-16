@@ -1,0 +1,36 @@
+{
+  "format": "learning-question-media/1",
+  "questions": [
+    {
+      "exam_key": "demo-q1",
+      "hint": {"en": "Think of the colour of grass.", "de": "Denk an die Farbe von Gras."},
+      "background_fact": {"en": "Blue and yellow are primary colours in the subtractive model used for paint."},
+      "merksatz": {"en": "Blue plus yellow is green.", "de": "Blau plus Gelb ist Grün."},
+      "feedback_per_option": [
+        {"option_index": 0, "letter": "A", "verdict": "wrong", "why": {"en": "Red needs magenta, not blue and yellow."}, "misconception": {"en": "Confusing paint with light"}},
+        {"option_index": 1, "letter": "B", "verdict": "correct", "why": {"en": "Blue and yellow paint absorb everything but green."}},
+        {"option_index": 2, "letter": "C", "verdict": "wrong", "why": {"en": "Purple comes from blue and red."}},
+        {"option_index": 3, "letter": "D", "verdict": "wrong", "why": {"en": "Orange comes from red and yellow."}}
+      ],
+      "tracks": [
+        {"kind": "intro", "lang": "en", "file": "demo-q1/intro-en.mp3", "timeline": "demo-q1/intro-en.json"},
+        {"kind": "intro", "lang": "de", "file": "demo-q1/intro-de.mp3", "timeline": "demo-q1/intro-de.json"},
+        {"kind": "dialog", "lang": "en", "file": "demo-q1/dialog-en.mp3", "timeline": "demo-q1/dialog-en.json"},
+        {"kind": "dialog", "lang": "de", "file": "demo-q1/dialog-de.mp3", "timeline": "demo-q1/dialog-de.json"}
+      ],
+      "cues": "demo-q1/cues.json"
+    },
+    {
+      "exam_key": "demo-q2",
+      "hint": {"en": "Spiders are not insects."},
+      "feedback_per_option": [
+        {"option_index": 0, "letter": "A", "verdict": "correct", "why": {"en": "Spiders are arachnids with eight legs."}},
+        {"option_index": 1, "letter": "B", "verdict": "wrong", "why": {"en": "Six legs is what insects have."}},
+        {"option_index": 2, "letter": "C", "verdict": "wrong", "why": {"en": "The same wrong number twice."}}
+      ],
+      "tracks": [
+        {"kind": "intro", "lang": "en", "file": "demo-q2/intro-en.mp3", "timeline": "demo-q2/intro-en.json"}
+      ]
+    }
+  ]
+}

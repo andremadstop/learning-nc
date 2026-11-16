@@ -105,6 +105,8 @@ class UninstallCommand extends Command {
         'learning_oversight',
         'learning_pool_shares',
         'learning_pools',
+        'learning_qmedia_cues',
+        'learning_qmedia_tracks',
         'learning_qst_translations',
         'learning_questions',
         'learning_rag_chunks',
@@ -340,6 +342,8 @@ class UninstallCommand extends Command {
         $output->writeln('    ' . $prefix . 'preferences (dashboard/layout) may still list the "learning" widget.');
         $output->writeln('    That row holds your other widgets too, so remove the token by hand rather than the row.');
         $output->writeln('    Files the app created in users\' homes under /Learning/ stay as ordinary user files.');
+        $output->writeln('    Question media (GitHub #66) stay in the app data folder appdata_<instance id>/learning/qmedia-<pool id>/;');
+        $output->writeln('    delete those folders by hand on the data directory if the app does not come back.');
 
         $output->writeln('');
         $output->writeln(sprintf('  Total: %s tables, %s rows in tables, %s metadata rows.', count($tables), number_format($totalRows), number_format($metaTotal)));

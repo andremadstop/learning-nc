@@ -133,6 +133,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
             <step>OCA\Learning\Repair\CanonicalizeMemberUserIds</step>
             <step>OCA\Learning\Repair\RemoveRetiredJobs</step>
             <step>OCA\Learning\Repair\RemoveOrphanedAnnouncementFeedItems</step>
+            <step>OCA\Learning\Repair\RemoveOrphanedQuestionMedia</step>
         </post-migration>
         <install>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
@@ -144,6 +145,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
     <commands>
         <command>OCA\Learning\Command\ImportVaultCommand</command>
         <command>OCA\Learning\Command\ImportPoolJsonCommand</command>
+        <command>OCA\Learning\Command\ImportQuestionMediaCommand</command>
         <command>OCA\Learning\Command\ExportPoolCommand</command>
         <command>OCA\Learning\Command\ExportCourseCommand</command>
         <command>OCA\Learning\Command\ArchiveCourseCommand</command>

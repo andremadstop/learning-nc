@@ -49,6 +49,8 @@ class QuestionService {
     private $db;
     private TranslationService $translationService;
     private LoggerInterface $logger;
+    /** GitHub #66: removes the question's media on delete; null only in hand-built tests. */
+    private ?QuestionMediaStorage $mediaStorage;
 
     public function __construct(
         QuestionMapper $questionMapper,
@@ -57,8 +59,10 @@ class QuestionService {
         PoolMapper $poolMapper,
         IDBConnection $db,
         TranslationService $translationService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ?QuestionMediaStorage $mediaStorage = null
     ) {
+        $this->mediaStorage = $mediaStorage;
         $this->questionMapper = $questionMapper;
         $this->answerMapper = $answerMapper;
         $this->shareMapper = $shareMapper;
@@ -827,6 +831,9 @@ class QuestionService {
             $this->db->rollBack();
             throw $e;
         }
+        // GitHub #66: after the commit — the media rows cascade with the question, the files in
+        // the app data are removed here (best effort, the daily sweep catches a failure).
+        $this->mediaStorage?->deleteForQuestion($id, $question->getPoolId());
     }
 
     /**

@@ -305,3 +305,41 @@ A typical edit cycle:
   **Export JSON** in the interface)
 - edit the JSON — add explanations, fix typos
 - re-import it by one of the three routes above
+
+## Audio and cues per question (media bundle)
+
+Audio, subtitles and the cues for the player come in a separate **media bundle** after the pool
+is imported. Questions are matched by `exam_key`, so the pool's questions need one.
+
+```
+bundle/
+  manifest.json                                   {"format": "learning-question-media/1", "questions": [...]}
+  <dir>/intro-<lang>.mp3   + intro-<lang>.json    timeline [{role, text, start, end}] in seconds
+  <dir>/dialog-<lang>.mp3  + dialog-<lang>.json
+  <dir>/cues.json                                 keywords per line, contrast wrong/right, key takeaway
+```
+
+Per question the manifest lists `exam_key`, optionally the text fields of the pool JSON (`hint`,
+`background_fact`, `key_takeaway`/`merksatz`, `feedback_per_option`), `tracks`
+(`[{kind: intro|dialog, lang, file, timeline}]`) and `cues`. Text fields given as `{en, de, …}`
+are taken in the question's language. `option_index` counts the question's options in their
+stored order, and a `letter` given next to it must match (A = 0). Duplicate option texts and
+fewer than four options are fine.
+
+```bash
+php occ learning:import-question-media <poolId> /path/to/bundle --dry-run   # check, write nothing
+php occ learning:import-question-media <poolId> /path/to/bundle
+```
+
+- Files go into the app's own storage (app data), not into anyone's files. Paths in the
+  manifest are relative and limited to `a-z 0-9 . _ / -`. `..` and symlinks are refused, and
+  so is an mp3 over 8 MiB or a JSON file over 256 KiB.
+- Running it again changes nothing. The manifest is the truth for a matched question: tracks
+  it no longer lists are removed. A listed file that is missing keeps the stored copy.
+- The report lists matched questions, unknown or ambiguous `exam_key`s and missing or refused
+  files. The exit code is not 0 if any of those occurred.
+- Delivery: the intro goes to everyone who can see the pool. The dialog and the cues explain
+  the answer, so learners get them only with the answer response in training, Leitner and
+  Smart Queue. During a counting exam a learner gets no media at all. Media are deleted together
+  with their question or pool.
+- A generic example: `app/tests/fixtures/question-media/`.

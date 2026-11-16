@@ -14,11 +14,17 @@ class PoolService {
     private PoolMapper $mapper;
     private PoolShareMapper $shareMapper;
     private IDBConnection $db;
+    private ?QuestionMediaStorage $mediaStorage;
 
-    public function __construct(PoolMapper $mapper, PoolShareMapper $shareMapper, IDBConnection $db) {
+    /**
+     * @param QuestionMediaStorage|null $mediaStorage removes the pool's question media on delete
+     *        (GitHub #66); null only in tests that construct the service by hand
+     */
+    public function __construct(PoolMapper $mapper, PoolShareMapper $shareMapper, IDBConnection $db, ?QuestionMediaStorage $mediaStorage = null) {
         $this->mapper = $mapper;
         $this->shareMapper = $shareMapper;
         $this->db = $db;
+        $this->mediaStorage = $mediaStorage;
     }
 
     public function findAll(string $userId): array {
@@ -334,6 +340,9 @@ class PoolService {
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new NotFoundException('Pool not found');
         }
+        // GitHub #66: the questions (and their media rows) went with the pool by cascade; the
+        // files in the app data go here. A failure there is logged and left to the daily sweep.
+        $this->mediaStorage?->deleteForPool($id);
     }
 
     private function normalizeReviewStatus(string $status): string {

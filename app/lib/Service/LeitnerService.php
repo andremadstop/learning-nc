@@ -32,7 +32,7 @@ class LeitnerService {
     private FsrsService $fsrsService;
     private RichFeedbackService $richFeedbackService;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService, FsrsService $fsrsService, ?RichFeedbackService $richFeedbackService = null) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService, FsrsService $fsrsService, ?RichFeedbackService $richFeedbackService = null, private ?QuestionMediaService $questionMediaService = null) {
         $this->richFeedbackService = $richFeedbackService ?? new RichFeedbackService($db, $translationService);
         $this->db = $db;
         $this->poolMapper = $poolMapper;
@@ -742,7 +742,7 @@ class LeitnerService {
             $oRows = $this->translationService->translateAnswerRows($oRows, $contentLanguage);
             $response['correct_answer_text'] = $oRows[0]['text'] ?? '';
             $response['user_answer_text'] = $answerText;
-            return $response + $this->richFeedbackFor($questionId, $contentLanguage);
+            return $response + $this->richFeedbackFor($questionId, $contentLanguage, $userId);
         }
 
         // Return all correct answers for frontend display (only when no active exam)
@@ -765,7 +765,7 @@ class LeitnerService {
         $response['correct_answer_ids'] = $allCorrectIds;
         $response['correct_answer_texts'] = $allCorrectTexts;
 
-        return $response + $this->richFeedbackFor($questionId, $contentLanguage);
+        return $response + $this->richFeedbackFor($questionId, $contentLanguage, $userId);
     }
 
     /**
@@ -774,9 +774,12 @@ class LeitnerService {
      *
      * @return array<string, mixed>
      */
-    private function richFeedbackFor(int $questionId, ?string $lang): array {
+    private function richFeedbackFor(int $questionId, ?string $lang, string $userId): array {
         $rich = $this->richFeedbackService->forQuestion($questionId, $lang);
-        return $rich === null ? [] : ['rich_feedback' => $rich];
+        // The dialog track and cues explain the answer like the rich feedback, so they come with
+        // the same reveal, with a grant for the audio (QuestionMediaService).
+        $media = $this->questionMediaService?->revealFor($questionId, $userId) ?? [];
+        return ($rich === null ? [] : ['rich_feedback' => $rich]) + $media;
     }
 
     public function getRemediationQueue(string $userId, int $limit = 20, ?string $lang = null): array {
