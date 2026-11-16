@@ -142,6 +142,25 @@ class RequiredDocumentServiceTest extends TestCase {
         return $course;
     }
 
+    /**
+     * GitHub #75 (review): an IT course with the exam lock but without "confirm per renewal". A
+     * confirmation from 5.13 (no version) of a file touched after it (typo fix, sync client)
+     * keeps counting after the upgrade, for the exam gate and the coverage report alike; it
+     * used to lock the exam again. A confirmation made in 5.14 (with version) still asks again
+     * after a content change in every course, and so does the old one in a per-cycle course.
+     */
+    public function testAConfirmationFrom513KeepsCountingInACourseWithoutPerCycle(): void {
+        $latest = ['anna' => [31 => ['confirmed_at' => 500, 'doc_version' => null]]];
+        $touched = ['version' => self::V1, 'mtime' => 900];
+
+        self::assertTrue($this->service($latest, $touched, false, null)->isConfirmed(self::course(false), self::document(), 'anna'), 'exam gate, IT course');
+        self::assertSame(['anna' => 1], $this->service($latest, $touched, false, null)->countConfirmedByUsers(self::course(false), [self::document()], ['anna']), 'coverage, IT course');
+        self::assertFalse($this->service($latest, $touched, true, null)->isConfirmed(self::course(true), self::document(), 'anna'), 'per-cycle course: the touched file asks again');
+
+        $versioned = ['anna' => [31 => ['confirmed_at' => 500, 'doc_version' => self::V2]]];
+        self::assertFalse($this->service($versioned, $touched, false, null)->isConfirmed(self::course(false), self::document(), 'anna'), 'a 5.14 confirmation of another version');
+    }
+
     public function testCycleIsIgnoredWithoutTheCourseOption(): void {
         $latest = ['anna' => [31 => ['confirmed_at' => 500, 'doc_version' => self::V1]]];
         $file = ['version' => self::V1, 'mtime' => 100];

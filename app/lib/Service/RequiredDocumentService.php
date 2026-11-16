@@ -25,7 +25,9 @@ use OCP\IDBConnection;
  *     the instructor's last "Ask everyone to confirm again" (course_videos.confirm_after);
  *   - names the version of the file that is in the material folder now. A rename keeps the
  *     version (DocumentService::fileVersion()). A confirmation taken over from before 5.14.0
- *     has no version; it counts while the file has not been modified after it (mtime).
+ *     has no version; in a course with reconfirm_per_cycle it counts while the file has not
+ *     been modified after it (mtime), in any other course it keeps counting as before the
+ *     upgrade (a touched mtime from a sync client must not lock an IT course's exam again).
  *     When the file cannot be read right now, the version is not checked — the learner could
  *     not confirm anything else either.
  *
@@ -57,11 +59,13 @@ class RequiredDocumentService {
      * @param array{confirmed_at: int, doc_version: string|null}|null $latest newest confirmation
      * @param int $validFrom confirmations before this no longer count
      * @param array{version: string, mtime: int}|null $file the file now, null = unknown
+     * @param bool $legacyByMtime a confirmation without version (from before 5.14.0) is checked
+     *                            against the file's mtime; false = it counts as it did before
      * @return array{confirmed: bool, updated: bool, again: bool, confirmed_at: int|null}
      *         updated: confirmed for an older version of the file ("Updated since you confirmed it");
      *         again: confirmed before, but in an earlier cycle or before the instructor asked again
      */
-    public static function evaluate(?array $latest, int $validFrom, ?array $file): array {
+    public static function evaluate(?array $latest, int $validFrom, ?array $file, bool $legacyByMtime = true): array {
         if ($latest === null) {
             return ['confirmed' => false, 'updated' => false, 'again' => false, 'confirmed_at' => null];
         }
@@ -71,11 +75,22 @@ class RequiredDocumentService {
         }
         $versionOk = true;
         if ($file !== null) {
-            $versionOk = $latest['doc_version'] !== null
-                ? hash_equals($file['version'], (string)$latest['doc_version'])
-                : (int)$file['mtime'] <= $at;
+            if ($latest['doc_version'] !== null) {
+                $versionOk = hash_equals($file['version'], (string)$latest['doc_version']);
+            } elseif ($legacyByMtime) {
+                $versionOk = (int)$file['mtime'] <= $at;
+            }
         }
         return ['confirmed' => $versionOk, 'updated' => !$versionOk, 'again' => false, 'confirmed_at' => $at];
+    }
+
+    /**
+     * GitHub #75 (review): whether a confirmation from before 5.14.0 (no version) is checked
+     * against the file's mtime. Only in a course that asks per certification cycle; elsewhere
+     * an upgrade leaves the confirmations taken over as valid as they were.
+     */
+    public static function legacyByMtime(Course $course): bool {
+        return (bool)($course->getReconfirmPerCycle() ?? false);
     }
 
     /** Confirmations before this moment do not count for $video (see the class comment). */
@@ -132,7 +147,7 @@ class RequiredDocumentService {
         $states = [];
         foreach ($documents as $video) {
             $id = (int)$video->getId();
-            $states[$id] = self::evaluate($latest[$id] ?? null, self::validFrom($video, $cycleStart), $this->fileInfo($course, $video));
+            $states[$id] = self::evaluate($latest[$id] ?? null, self::validFrom($video, $cycleStart), $this->fileInfo($course, $video), self::legacyByMtime($course));
         }
         return $states;
     }
@@ -161,7 +176,7 @@ class RequiredDocumentService {
             $cycleStart = $cycleStarts[$uid] ?? null;
             foreach ($documents as $video) {
                 $id = (int)$video->getId();
-                $state = self::evaluate($latest[$uid][$id] ?? null, self::validFrom($video, $cycleStart), $files[$id]);
+                $state = self::evaluate($latest[$uid][$id] ?? null, self::validFrom($video, $cycleStart), $files[$id], self::legacyByMtime($course));
                 if ($state['confirmed']) {
                     $counts[$uid] = ($counts[$uid] ?? 0) + 1;
                 }
