@@ -807,6 +807,7 @@ export default {
 		},
 
 		async saveModeConfig() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.savingModeConfig = true
 			try {
 				const sent = { ...this.modeConfigLocal }
@@ -865,6 +866,7 @@ export default {
 		},
 
 		async saveToolConfig() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.savingToolConfig = true
 			try {
 				// GitHub #35: the master switch lives in mode_config. Saved on the last saved mode
@@ -910,6 +912,7 @@ export default {
 		},
 
 		async saveMaintenanceMode() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			try {
 				await axios.patch(
 					generateUrl(`/apps/learning/api/courses/${this.courseId}/maintenance`),
@@ -927,6 +930,7 @@ export default {
 		// GitHub #67: only the LinkedIn switch is saved here; the mode switches go as last stored,
 		// so unsaved changes above are not saved along with it.
 		async saveLinkedin(value, input = null) {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.savingLinkedin = true
 			const sent = { ...this.normalizeModeConfig(this.savedModeConfig), linkedin: value }
 			try {
@@ -946,6 +950,7 @@ export default {
 		},
 
 		async saveLeitnerSprint() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			try {
 				// Only the sprint flag is saved here; the mode switches go as last stored.
 				const sent = this.normalizeModeConfig(this.savedModeConfig)
@@ -963,6 +968,7 @@ export default {
 		},
 
 		async saveTalkRoomToken() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.savingTalkToken = true
 			try {
 				// Only the Talk token is saved here; the mode switches go as last stored.
@@ -986,6 +992,7 @@ export default {
 		},
 
 		async saveExamDate() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.savingExamDate = true
 			try {
 				const payloadExamDate = this.examDateLocal || null
@@ -1053,6 +1060,7 @@ export default {
 		},
 
 		async saveCampaignSelection() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.savingCampaigns = true
 			try {
 				const payload = this.selectedCampaignIds.length > 0
@@ -1113,6 +1121,7 @@ export default {
 		},
 
 		async saveSchedule() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			if (this.scheduleLoadError) {
 				return
 			}
@@ -1150,6 +1159,7 @@ export default {
 		},
 
 		async deleteSchedule() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.deletingSchedule = true
 			try {
 				await axios.delete(generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`))
@@ -1186,6 +1196,7 @@ export default {
 			return Number.isInteger(value) && value >= 1 && value <= max ? value : null
 		},
 		async saveCertConfig() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			const examQuestions = this.parseExamScopeDefault(this.examScopeQuestions, 500)
 			const examMinutes = this.parseExamScopeDefault(this.examScopeMinutes, 600)
 			if (examQuestions === null) {
@@ -1231,6 +1242,7 @@ export default {
 			}
 		},
 		async savePracticeConfig() {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
 			this.practiceSaving = true
 			this.practiceSaved = false
 			try {

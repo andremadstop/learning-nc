@@ -399,7 +399,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			await flush()
 
 			expect(axios.put.mock.calls.some(([url]) => url === '/apps/learning/api/courses/5/schedule')).toBe(false)
-			expect(emitted).toEqual([['error', 'Die Kapitel-Kennung „chapter-03“ kommt mehrfach vor. Jede Zeile braucht eine eigene Kennung.']])
+			expect(emitted).toEqual([['error', ''], ['error', 'Die Kapitel-Kennung „chapter-03“ kommt mehrfach vor. Jede Zeile braucht eine eigene Kennung.']])
 		})
 
 		it('two rows without an ID but with the same title collide too, and are named', async () => {
@@ -419,7 +419,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			await flush()
 
 			expect(axios.put.mock.calls.some(([url]) => url === '/apps/learning/api/courses/5/schedule')).toBe(false)
-			expect(emitted[0][1]).toContain('„basics“')
+			expect(emitted.at(-1)[1]).toContain('„basics“')
 		})
 
 		it('a refused save names the server reason instead of only "Failed to save schedule"', async () => {
@@ -436,7 +436,7 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			buttonByText('Zeitplan speichern').click()
 			await flush()
 
-			expect(emitted).toEqual([['error', 'Failed to save schedule: Entry 0: chapter_ref too long']])
+			expect(emitted).toEqual([['error', ''], ['error', 'Failed to save schedule: Entry 0: chapter_ref too long']])
 		})
 
 		// Pre-existing: a failed GET left an empty editor that looked like "no schedule yet". Adding a
