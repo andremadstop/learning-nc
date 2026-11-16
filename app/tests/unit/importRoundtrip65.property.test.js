@@ -30,7 +30,7 @@ const RUNS = Number(process.env.FC_RUNS ?? 300)
 const params = { seed: SEED, numRuns: RUNS }
 
 /** PHP trim(): " \t\n\r\0\x0B" only. */
-const phpTrim = (s) => s.replace(/^[ \t\n\r\0\x0B]+|[ \t\n\r\0\x0B]+$/g, '')
+const phpTrim = (s) => s.replace(/^[ \t\n\r\0\v]+|[ \t\n\r\0\v]+$/g, '')
 
 // --- generators -----------------------------------------------------------------------------
 
