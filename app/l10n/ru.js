@@ -3818,5 +3818,6 @@ OC.L10N.register(
     "Terminal" : "Терминал",
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "Skill-Map показывает каждый твой пул точкой. Цвет показывает, как часто ты там отвечаешь неправильно: зелёный — редко, оранжевый — иногда, красный — часто. Нажми на точку, чтобы увидеть подробности и потренироваться в пуле.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Твои пулы в виде карты; цвет показывает, как часто ты отвечаешь неправильно.",
+    "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "Чтобы изменить вопросы, попроси владельца пула поделиться им с тобой с правом редактирования.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -137,3 +137,36 @@ describe('App.vue: the Skill-Map guide (fresh-eyes C3, GitHub #36)', () => {
 		expect(`${guide.text} ${guide.shortText}`).not.toMatch(/Tagesübersicht|Lernübersicht|Leitner|XP/)
 	})
 })
+
+describe('App.vue: a view-only pool tells an instructor how to get the edit right (fresh-eyes C3, GitHub #69)', () => {
+	const HINT = 'Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.'
+
+	async function openReadOnlyPool(role, studentView = false) {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		api.personal = { onboarding_acknowledged: 'yes' }
+		const vm = await mountApp('/pools')
+		vm.userRole = role
+		vm.studentViewOverride = studentView
+		vm.selectedPool = { id: 3, name: 'Fire safety', is_shared: true, permission: 'read' }
+		vm.poolPermission = 'read'
+		vm.currentView = 'questions'
+		await settle()
+		return vm
+	}
+
+	it('names the owner share for an instructor', async () => {
+		await openReadOnlyPool('instructor')
+		expect(host.textContent).toContain('Dieser Pool wurde mit dir geteilt (nur Ansicht)')
+		expect(host.textContent).toContain(HINT)
+	})
+
+	it('not for a learner or in the student view', async () => {
+		await openReadOnlyPool('student')
+		expect(host.textContent).toContain('Dieser Pool wurde mit dir geteilt (nur Ansicht)')
+		expect(host.textContent).not.toContain(HINT)
+		app.unmount()
+		host.remove()
+		await openReadOnlyPool('instructor', true)
+		expect(host.textContent).not.toContain(HINT)
+	})
+})
