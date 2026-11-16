@@ -125,6 +125,11 @@ class LernprofilService {
                 'exam_attempts' => (int)$exam['attempts'],
                 'exam_last_score' => $exam['last_score'] !== null ? round((float)$exam['last_score'], 1) : null,
                 'error_rate' => $errorRate,
+                // Fresh-eyes C3 (#36): a pool nobody answered in Leitner or training gets the
+                // neutral 50 % error rate above; the personal settings listed it as a "weakest
+                // topic" for learners who never answered a question. Readers that show a weakness
+                // to a person check this flag; the rate itself stays as before for the planners.
+                'answered' => $leitnerTotal > 0 || (int)$training['sessions'] > 0,
                 'trend' => $trend,
             ];
         }

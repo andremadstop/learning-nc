@@ -366,6 +366,17 @@ final class FakeDbConnection implements IDBConnection {
 
 final class FakeCache {
     public array $removedKeys = [];
+    /** @var array<string, mixed> */
+    public array $values = [];
+
+    public function get(string $key): mixed {
+        return $this->values[$key] ?? null;
+    }
+
+    public function set(string $key, mixed $value, int $ttl = 0): bool {
+        $this->values[$key] = $value;
+        return true;
+    }
 
     public function remove(string $key): void {
         $this->removedKeys[] = $key;

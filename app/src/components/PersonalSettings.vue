@@ -862,7 +862,10 @@ export default {
           axios.get(generateUrl('/apps/learning/api/v1/user/state')),
         ])
         this.telosForm = applyTelosToForm(telosResponse.data)
-        this.weakestTopics = Array.isArray(profileResponse.data?.weakest_topics) ? profileResponse.data.weakest_topics : []
+        // Fresh-eyes C3 (#36): a pool nobody answered yet carries the neutral 50 % and is no weakness.
+        // Payloads cached before the flag existed have no answered key and keep their pools.
+        this.weakestTopics = (Array.isArray(profileResponse.data?.weakest_topics) ? profileResponse.data.weakest_topics : [])
+          .filter((topic) => topic?.answered !== false)
         this.profileSummary = profileResponse.data?.summary || this.profileSummary
         this.userState = stateResponse.data || this.userState
       } catch (e) {
