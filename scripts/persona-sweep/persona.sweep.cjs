@@ -39,7 +39,9 @@ const COURSE_TITLE = 'Annual safety training'
 const PASSWORDS = { admin: state.ADMIN_PASS, instructor: state.INSTRUCTOR_PASS, learner1: state.LEARNER_PASS, learner2: state.LEARNER_PASS, learner3: state.LEARNER_PASS }
 
 // Buttons the sweep never clicks: destructive, irreversible, or they use up an exam attempt.
-const DENY = /make (instructor|student|learner)|promot|demot|delet|remov|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
+// Fresh-eyes C5: "deselect" — NcSelect labels a chip's x "Deselect <name>"; the sweep clicked it on
+// the admin settings and then "Save recipients", so every later station showed nobody notified.
+const DENY = /make (instructor|student|learner)|promot|demot|delet|remov|deselect|abwählen|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
 const MAX_BUTTONS_PER_STATION = 30
 // Nextcloud core noise in a bare container (no user_status backend data); not the app's.
 const CORE_NOISE = /user_status|Failed to load user status/
@@ -523,7 +525,13 @@ async function sweepPersona(browser, persona, opts = {}) {
 	}
 	if (persona.startsWith('admin')) {
 		const enterAdmin = async () => { await page.goto(`${BASE}/index.php/settings/admin/learning`); await settle(page, 1200) }
-		await station(page, rec, 'Admin settings', async () => { await enterAdmin(); await clickAll(page, rec, enterAdmin) })
+		await station(page, rec, 'Admin settings', async () => {
+			await enterAdmin()
+			// Fresh-eyes C5: the recipient saved by the admin test must survive every sweep before
+			// this one (a whole run only: a station filter may skip the admin test).
+			if (!ONLY && await page.locator('.ticket-recipients-none').isVisible().catch(() => false)) rec.add('tickets', 'the ticket recipient saved earlier in this run is gone')
+			await clickAll(page, rec, enterAdmin)
+		})
 	}
 	flush()
 	await context.close()
