@@ -384,11 +384,18 @@ class CertLayoutService {
                 'data_b64' => $qb->createNamedParameter(base64_encode($bytes)),
                 'created_at' => $qb->createNamedParameter($this->timeFactory->getTime(), IQueryBuilder::PARAM_INT),
             ]);
+        // GitHub #78 (review): in its own (nested) transaction. Issuance calls this inside the outer
+        // transaction of PassCriteriaService::evaluate(); on PostgreSQL a failed INSERT aborts the
+        // whole transaction (25P02) unless it ran in a savepoint that is rolled back, and the
+        // certificate INSERT after it would then fail as well.
+        $this->db->beginTransaction();
         try {
             $qb->executeStatement();
-        } catch (\OCP\DB\Exception $e) {
-            // Two uploads of the same file at once: the other one stored it.
-            if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            // Two uploads (or issuances) of the same file at once: the other one stored it.
+            if (!($e instanceof \OCP\DB\Exception) || $e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
                 throw $e;
             }
         }

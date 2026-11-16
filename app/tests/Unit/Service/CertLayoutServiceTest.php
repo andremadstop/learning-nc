@@ -481,6 +481,54 @@ class CertLayoutServiceTest extends TestCase {
         $this->assertContains(7, $values);
     }
 
+    /** An insert that fails like the database would. */
+    private static function failingInsert(\Throwable $error): FakeQueryBuilder {
+        return new class($error) extends FakeQueryBuilder {
+            public function __construct(private \Throwable $error) {
+                parent::__construct();
+            }
+
+            public function executeStatement(): int {
+                throw $this->error;
+            }
+        };
+    }
+
+    /**
+     * GitHub #78 (review): two learners pass at the same moment, both see no copy yet, the second
+     * INSERT hits the unique index. Issuance runs inside the outer transaction of
+     * PassCriteriaService::evaluate(); on PostgreSQL that failed INSERT aborts the transaction
+     * (25P02) unless it ran in a savepoint that is rolled back. The copy exists then, so the
+     * certificate keeps pointing at it.
+     */
+    public function testAConcurrentThemingCopyRunsInASavepointAndIsKept(): void {
+        $bytes = self::png(120, 40);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult()),
+            self::failingInsert(new \OCP\DB\Exception(\OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION, 'lrn_certasset_course_sha')),
+        ]);
+
+        $json = $this->service(null, $db, null, ['mime' => 'image/png', 'bytes' => $bytes])->snapshotForIssuance($this->course());
+
+        $this->assertSame(1, $db->beginTransactionCalls, 'the INSERT runs in its own savepoint');
+        $this->assertSame(1, $db->rollBackCalls, 'the failed INSERT rolls back only its savepoint');
+        $this->assertSame(0, $db->commitCalls);
+        $this->assertSame(hash('sha256', $bytes), CertLayout::decode($json)['theming_logo_sha'], 'the other request stored the same copy');
+    }
+
+    /** Any other failure: rolled back in its savepoint, and the certificate shows the live logo. */
+    public function testAFailedThemingCopyIsRolledBackAndLeftOut(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult()),
+            self::failingInsert(new \OCP\DB\Exception(0, 'disk full')),
+        ]);
+
+        $json = $this->service(null, $db, null, ['mime' => 'image/png', 'bytes' => self::png()])->snapshotForIssuance($this->course());
+
+        $this->assertSame(1, $db->rollBackCalls);
+        $this->assertNull($json, 'standard layout without a copy: the old row shape');
+    }
+
     public function testNoThemingCopyKeepsTheOldRowShape(): void {
         $db = new FakeDbConnection();
 
