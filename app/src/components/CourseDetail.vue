@@ -681,7 +681,11 @@ export default {
 				exam: {
 					key: 'mode:course-exam',
 					title: t('learning', 'Exam'),
-					text: t('learning', 'Der Prüfungsmodus verbirgt Feedback bis zum Ende, damit du einen echten Testlauf simulieren kannst. Nutze ihn, wenn du Druck, Tempo und ein klareres Ergebnis willst.'),
+					// Fresh-eyes C3 (#35): in a certifying course the exam is the real one, not a
+					// "simulated test run"; the text there matches the App's course exam guide.
+					text: this.course?.cert_enabled
+						? t('learning', 'Prüfungsmodus: keine Hinweise, ein Zeitlimit und dein Ergebnis erst am Ende. Vergibt der Kurs ein Zertifikat, siehst du vor dem Start, ob die Prüfung dafür zählt. Ein Probedurchlauf zählt nie.')
+						: t('learning', 'Der Prüfungsmodus verbirgt Feedback bis zum Ende, damit du einen echten Testlauf simulieren kannst. Nutze ihn, wenn du Druck, Tempo und ein klareres Ergebnis willst.'),
 					shortText: t('learning', 'Prüfungsmodus zeigt Feedback erst am Ende des Durchlaufs.'),
 				},
 				leaderboard: {

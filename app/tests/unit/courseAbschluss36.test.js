@@ -351,3 +351,17 @@ describe('CourseDetail — an instructor in the student view (GitHub #63)', () =
 		expect((await studentDetailRequests()).length).toBeGreaterThan(0)
 	})
 })
+
+describe('the exam guide of a certifying course (fresh-eyes C3, GitHub #35)', () => {
+	it('calls the certificate exam no "simulated test run"; an IT course keeps its text', async () => {
+		const cert = await renderCourse({ course: certifying() })
+		const certText = cert.learningGuidePayload('exam').text
+		expect(certText).not.toMatch(/simulieren|Druck, Tempo/)
+		expect(certText).toMatch(/Vergibt der Kurs ein Zertifikat/)
+		app.unmount()
+		host.remove()
+
+		const itCourse = await renderCourse({ course: { cert_enabled: false, mode_config: {} } })
+		expect(itCourse.learningGuidePayload('exam').text).toMatch(/echten Testlauf simulieren/)
+	})
+})
