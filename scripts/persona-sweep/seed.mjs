@@ -11,9 +11,13 @@
 // question from the generic fixture (app/tests/fixtures/question-media, exam_key demo-q1); run.sh
 // then imports its hint, feedback per option, background, key takeaway, intro and dialog with
 // `occ learning:import-question-media`, so the sweep can answer it in Training.
+// C5: three Markdown files as learning materials, two of them required (#75; the exam waits for
+// them in the mandatory-training run), one logo in the administrator's certificate logo library
+// chosen for the course (#78), and the organisation name on the course's certificates (#77).
 // Basic auth plus `OCS-APIRequest: true` passes Nextcloud's CSRF check for app routes.
 // Writes out/seed.json (course and pool ids) for the sweep.
 import { readFileSync, writeFileSync } from 'node:fs'
+import { deflateSync } from 'node:zlib'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -137,6 +141,61 @@ for (const uid of ['learner1', 'learner2', 'learner3']) {
 	if (!memberIds.includes(uid)) throw new Error(`${uid} was not enrolled through the group: ${JSON.stringify(members).slice(0, 300)}`)
 }
 
+// GitHub #75: learning materials. Three Markdown files (no pdftotext needed) in the instructor's
+// folder "Safety materials", linked and scanned through the app; two are ticked as required
+// through the same endpoint as the Required column, the third stays optional. In the
+// mandatory-training run the exam waits for the required content (gate on), so learner1 has to
+// confirm both before the exam; the IT course leaves the gate off, as before.
+const dav = async (method, path, body) => {
+	const res = await fetch(`${state.URL}/remote.php/dav/files/instructor/${path}`, {
+		method,
+		headers: { Authorization: 'Basic ' + Buffer.from(`instructor:${state.INSTRUCTOR_PASS}`).toString('base64'), ...(body ? { 'Content-Type': 'text/markdown' } : {}) },
+		body,
+	})
+	if (!res.ok) throw new Error(`WebDAV ${method} ${path} → ${res.status}`)
+}
+const MATERIAL_FOLDER = 'Safety materials'
+const MATERIALS = [
+	{ file: 'Evacuation plan.md', required: true, text: '# Evacuation plan\n\nLeave by the nearest marked exit. Meet at the assembly point in the car park. Do not use the lifts.\n' },
+	{ file: 'Data protection policy.md', required: true, text: '# Data protection policy\n\nLock your screen when you leave your desk. Send personal data only through approved channels.\n' },
+	{ file: 'First aid kit locations.md', required: false, text: '# First aid kit locations\n\nGround floor kitchen, first floor copy room, reception.\n' },
+]
+await dav('MKCOL', encodeURIComponent(MATERIAL_FOLDER))
+for (const m of MATERIALS) await dav('PUT', `${encodeURIComponent(MATERIAL_FOLDER)}/${encodeURIComponent(m.file)}`, m.text)
+await asInstructor('POST', `/courses/${course.id}/material-folder`, { folder: `/${MATERIAL_FOLDER}` })
+const scanned = await asInstructor('POST', `/courses/${course.id}/documents/scan`)
+const docByName = Object.fromEntries((Array.isArray(scanned) ? scanned : []).map((d) => [d.file_name, d]))
+const missingDocs = MATERIALS.filter((m) => !docByName[m.file])
+if (missingDocs.length) throw new Error(`scan did not find ${missingDocs.map((m) => m.file).join(', ')}: ${JSON.stringify(scanned).slice(0, 300)}`)
+const requiredDocIds = MATERIALS.filter((m) => m.required).map((m) => docByName[m.file].id)
+await asInstructor('PUT', `/courses/${course.id}/required-documents`, { documentIds: requiredDocIds, required: true })
+const examGated = !itCourse
+await asInstructor('PUT', `/courses/${course.id}/video-gate`, { enabled: examGated })
+const requiredRows = (await asInstructor('GET', `/courses/${course.id}/videos`)) || []
+if (requiredRows.length !== requiredDocIds.length) throw new Error(`expected ${requiredDocIds.length} required documents, the course has ${JSON.stringify(requiredRows).slice(0, 300)}`)
+
+// GitHub #78: one logo in the administrator's library, chosen for the course. A 600 × 160 PNG
+// made here (dark lettering-like bars on transparent ground, like a wordmark), no fixture file.
+const LOGO_NAME = 'Wordmark'
+const logoPng = makePng(600, 160)
+const logoForm = new FormData()
+logoForm.append('name', LOGO_NAME)
+logoForm.append('logo', new Blob([logoPng], { type: 'image/png' }), 'wordmark.png')
+const logoRes = await fetch(`${api}/settings/admin/cert-logos`, {
+	method: 'POST',
+	headers: { Authorization: 'Basic ' + Buffer.from(`admin:${state.ADMIN_PASS}`).toString('base64'), 'OCS-APIRequest': 'true', Accept: 'application/json' },
+	body: logoForm,
+})
+const logoJson = await logoRes.json().catch(() => null)
+if (!logoRes.ok || !logoJson?.added) throw new Error(`logo upload → ${logoRes.status}: ${JSON.stringify(logoJson).slice(0, 300)}`)
+const logoId = logoJson.added
+await asInstructor('PUT', `/courses/${course.id}/cert-layout/logo`, { logoId })
+// GitHub #77: the organisation name on the certificate, set for this course only.
+const ISSUER_NAME = 'Northwind Safety Ltd'
+await asInstructor('PATCH', `/courses/${course.id}/cert-config`, { certLayout: { issuer_name: ISSUER_NAME } })
+const layout = await asInstructor('GET', `/courses/${course.id}/cert-layout`)
+if (layout?.issuer_name !== ISSUER_NAME) throw new Error(`issuer_name did not stick: ${JSON.stringify(layout).slice(0, 300)}`)
+
 const answers = {}
 for (const pool of JSON.parse(poolsDoc).pools) {
 	for (const q of pool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
@@ -145,8 +204,50 @@ answers[mediaQuestion.text] = mediaQuestion.answers.find((a) => a.is_correct).te
 // poolOwner: the only persona whose pool list must show the pools (nothing is shared).
 writeFileSync(join(HERE, 'out', 'seed.json'), JSON.stringify({
 	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig,
+	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated },
+	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },
 	media: { poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text },
 	gamification: itCourse, ai: admin.ai_enabled === 'yes' ? `${admin.ai_provider} (no backend answers)` : 'off',
 	answers,
 }, null, 2))
 console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, media pool ${mediaPoolId}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)
+
+/**
+ * A w × h RGBA PNG: transparent ground with dark bars, roughly a wordmark (GitHub #78 seed logo).
+ * Built here so that the seed needs no image file; zlib and a CRC-32 are all a PNG needs.
+ */
+function makePng(w, h) {
+	const crcTable = Array.from({ length: 256 }, (_, n) => {
+		let c = n
+		for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+		return c >>> 0
+	})
+	const crc = (buf) => {
+		let c = 0xffffffff
+		for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8)
+		return (c ^ 0xffffffff) >>> 0
+	}
+	const chunk = (type, data) => {
+		const len = Buffer.alloc(4); len.writeUInt32BE(data.length)
+		const td = Buffer.concat([Buffer.from(type, 'ascii'), data])
+		const c = Buffer.alloc(4); c.writeUInt32BE(crc(td))
+		return Buffer.concat([len, td, c])
+	}
+	const ihdr = Buffer.alloc(13)
+	ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4)
+	ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0
+	const raw = Buffer.alloc((w * 4 + 1) * h)
+	for (let y = 0; y < h; y++) {
+		const row = y * (w * 4 + 1)
+		raw[row] = 0
+		for (let x = 0; x < w; x++) {
+			const ink = y > 30 && y < 130 && (Math.floor(x / 22) % 3 !== 2) && x > 20 && x < w - 20
+			const o = row + 1 + x * 4
+			raw[o] = 0x1a; raw[o + 1] = 0x3a; raw[o + 2] = 0x5c; raw[o + 3] = ink ? 255 : 0
+		}
+	}
+	return Buffer.concat([
+		Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+		chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0)),
+	])
+}

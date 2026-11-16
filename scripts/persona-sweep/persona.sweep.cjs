@@ -1,5 +1,10 @@
 // persona.sweep.cjs — the Persona-Gate: click through Learning as each role would.
 //
+// C5: the learner first confirms the required documents (#75; the mandatory-training run gates the
+// exam on them), the certificate carries the course's organisation name and library logo (#77/#78),
+// the instructor reads and writes the Required column and the certificate design, the admin works
+// the logo library and the technical-ticket recipients (#59, with a real notification), and axe
+// checks the new controls hovered and focused too (axeStates, #76).
 // Order matters: the learner passes both exams BEFORE any generic sweep (a sweep that touched an
 // exam would burn attempts and start the cooldown); exam-start buttons are on the deny list.
 // Results go to out/gamification-<off|on>/ (the mode of the running instance): findings.json,
@@ -7,7 +12,7 @@
 const { test, expect } = require('@playwright/test')
 const fs = require('fs')
 const path = require('path')
-const { expectedReason, axeFindings, stationText, pickAnswerIndex } = require('./lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION } = require('./lib.cjs')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
@@ -166,6 +171,29 @@ async function runAxe(page) {
 		return { violations: slim(res.violations), incomplete: slim(res.incomplete.filter((v) => v.id === 'color-contrast')) }
 	})
 	return axeFindings(results.violations, { incomplete: results.incomplete })
+}
+
+/**
+ * axe only measures the state it sees (GitHub #76). For one control: hover it and check contrast,
+ * then focus it from the keyboard (a key press first, so :focus-visible applies) and check again.
+ * The state at rest is the station's own page check. Only contrast findings are recorded here.
+ */
+async function axeStates(page, rec, locator, what, focusLocator = null) {
+	const el = locator.first()
+	if (!(await el.isVisible().catch(() => false))) {
+		rec.add('station-error', `hover/focus check: "${what}" not visible`)
+		return
+	}
+	await el.scrollIntoViewIfNeeded().catch(() => {})
+	await el.hover().catch(() => {})
+	await page.waitForTimeout(300)
+	for (const f of await runAxe(page)) if (f.detail.startsWith('color-contrast')) rec.add(f.kind, `hovered ${what}: ${f.detail}`)
+	await page.mouse.move(0, 0)
+	await page.keyboard.press('Shift')
+	await (focusLocator || el).first().focus().catch(() => {})
+	await page.waitForTimeout(200)
+	for (const f of await runAxe(page)) if (f.detail.startsWith('color-contrast')) rec.add(f.kind, `focused ${what}: ${f.detail}`)
+	await page.evaluate(() => document.activeElement?.blur?.())
 }
 
 async function checkToasts(page, rec, since, action) {
@@ -570,6 +598,57 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 			rec.add('deep-link', `reloading ${shortUrl(own)} does not show the course (landed on ${shortUrl(page.url())})`)
 		}
 	})
+	// GitHub #75: one "Learning materials" tab for learners: the required documents first, each with
+	// "Confirm I have read this", the optional file below with an "Optional" hint. In the
+	// mandatory-training run the exam waits for both confirmations (seed: gate on).
+	const mats = seed.materials
+	const enterMaterials = async () => {
+		await openMegaTab(page, 'Learning space')
+		await page.locator('.lernraum-subnav button').filter({ hasText: 'Learning materials' }).first().click()
+		await settle(page)
+	}
+	const requiredList = () => page.locator('[data-test="required-content-learner"] > li')
+	const confirmButtons = () => requiredList().getByRole('button', { name: /^(Confirm I have read this|Confirmed as read|Saving…)$/ })
+	await station(page, rec, 'Learning materials (learner): required and optional', async () => {
+		await enterMaterials()
+		const titles = (await requiredList().locator('.video-item__title').allTextContents()).map((s) => s.trim())
+		for (const file of mats.required) if (!titles.includes(file)) rec.add('materials', `required document "${file}" is not in the required list (${titles.join(', ') || 'empty'})`)
+		for (const file of mats.optional) if (titles.includes(file)) rec.add('materials', `optional document "${file}" is listed as required`)
+		const optionalRows = page.locator('.student-videos-section .material-table tbody tr')
+		const optionalText = (await optionalRows.allTextContents()).join(' | ')
+		for (const file of mats.optional) {
+			const row = optionalRows.filter({ hasText: file }).first()
+			if (!(await row.isVisible().catch(() => false))) rec.add('materials', `optional document "${file}" is not under "More learning material" (${optionalText.slice(0, 160) || 'no rows'})`)
+			else if (!(await row.locator('.material-optional-hint').isVisible().catch(() => false))) rec.add('materials', `optional document "${file}" carries no "Optional" hint`)
+		}
+		for (const file of mats.required) if (optionalText.includes(file)) rec.add('materials', `required document "${file}" is also listed as optional`)
+		const locked = await page.locator('[data-test="required-content-locked"]').isVisible().catch(() => false)
+		if (mats.examGated && !locked) rec.add('materials', 'the exam is gated, but the learner is not told it is locked until the required content is done')
+		if (!mats.examGated && locked) rec.add('materials', 'the course does not gate the exam, but the learner is told it is locked')
+		// C5: VirtuProf's guide for this tab was the instructor's "Upload reference materials for students."
+		const guide = await page.evaluate(() => document.body.innerText)
+		if (/Upload reference materials/i.test(guide)) rec.add('materials', 'the learner is guided to "Upload reference materials for students" on Learning materials')
+		if ((await confirmButtons().count()) !== mats.required.length) rec.add('materials', `${await confirmButtons().count()} confirm buttons for ${mats.required.length} required documents`)
+		await page.screenshot({ path: path.join(SHOTS, 'guide-learner-materials.png'), fullPage: true })
+		await axeStates(page, rec, confirmButtons(), '"Confirm I have read this"')
+	})
+	await station(page, rec, 'Learning materials (learner): confirm both required documents', async () => {
+		await enterMaterials()
+		const n = await confirmButtons().count()
+		for (let i = 0; i < n; i++) {
+			const btn = confirmButtons().nth(i)
+			if (await btn.isDisabled().catch(() => true)) continue
+			await btn.click()
+			await page.waitForTimeout(800)
+		}
+		await enterMaterials() // read back: the confirmation is stored, not only shown
+		const labels = (await confirmButtons().allTextContents()).map((s) => s.trim())
+		const open = labels.filter((l) => l !== 'Confirmed as read')
+		if (open.length) rec.add('materials', `after confirming and reloading, ${open.length} of ${labels.length} required documents are not confirmed: ${labels.join(', ')}`)
+		if (mats.examGated && !(await page.locator('[data-test="required-content-unlocked"]').isVisible().catch(() => false))) {
+			rec.add('materials', 'all required documents confirmed, but the exam is not shown as unlocked')
+		}
+	})
 	const pools = ['Fire safety', 'Data protection']
 	for (const [i, pool] of pools.entries()) {
 		await station(page, rec, `Exam setup: ${pool}`, async () => {
@@ -629,6 +708,14 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		for (const must of ['Learner 1', COURSE_TITLE]) {
 			if (!card.includes(must)) rec.add('certificate', `certificate card does not show "${must}"`)
 		}
+		// GitHub #77/#78: the course's organisation name and its library logo (seed), not Theming's
+		if (!card.includes(seed.certificate.issuerName)) rec.add('certificate', `certificate card does not show the course's organisation name "${seed.certificate.issuerName}"`)
+		const logo = page.locator('.certificate-printable .certificate-logo').first()
+		if (!(await logo.isVisible().catch(() => false))) rec.add('certificate', 'certificate card shows no logo')
+		else {
+			if (!(await logo.evaluate((el) => el.classList.contains('certificate-logo--library')))) rec.add('certificate', 'certificate logo is not the library logo the course chose')
+			if (!(await logo.evaluate((el) => el.complete && el.naturalWidth > 0))) rec.add('certificate', 'certificate logo image did not load')
+		}
 	})
 	await station(page, rec, 'Certificate: print path', async () => {
 		await page.locator('.certificate-actions').getByRole('button', { name: /print/i }).first().click()
@@ -637,6 +724,8 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		if (!printed) rec.add('print', 'Print did not call window.print()')
 		const rootText = await page.evaluate(() => document.querySelector('#learning-certificate-print-root')?.textContent?.trim().length || 0)
 		if (rootText < 50) rec.add('print', `print copy #learning-certificate-print-root has ${rootText} characters`)
+		const printName = await page.evaluate((name) => (document.querySelector('#learning-certificate-print-root')?.textContent || '').includes(name), seed.certificate.issuerName)
+		if (!printName) rec.add('print', `print copy does not show the organisation name "${seed.certificate.issuerName}"`)
 		await page.emulateMedia({ media: 'print' })
 		await page.screenshot({ path: path.join(SHOTS, 'guide-certificate-print.png'), fullPage: true })
 		// GitHub #80: the page size the stylesheet asks for (A4 landscape), as Chrome's print dialog uses it
@@ -765,6 +854,44 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		const focused = await background()
 		if (!transparent(focused)) rec.add('hover', `course title has background ${focused} on focus (square block, #79)`)
 	})
+	// GitHub #75: the "Required" column in the instructor's Learning materials. Seeded: two of the
+	// three files required. The station reads that back, then ticks the third through the column
+	// (the write path) and takes it back with the confirmation accepted; both must survive a reload.
+	const mats = seed.materials
+	const enterMaterials = async () => {
+		await openMegaTab(page, 'Learning space')
+		await page.locator('.lernraum-subnav button').filter({ hasText: 'Learning materials' }).first().click()
+		await settle(page)
+	}
+	const docRow = (file) => page.locator('.material-table tbody tr').filter({ hasText: file }).first()
+	const requiredBox = (file) => docRow(file).locator('input[type=checkbox][data-test^="required-doc-"]')
+	const isTicked = (file) => requiredBox(file).isChecked().catch(() => null)
+	await station(page, rec, 'Learning materials (instructor): Required column', async () => {
+		await enterMaterials()
+		if (!(await page.locator('[data-test="required-all"]').isVisible().catch(() => false))) rec.add('materials', 'no "Required" head checkbox in the file list')
+		for (const file of mats.required) if ((await isTicked(file)) !== true) rec.add('materials', `"${file}" is required but its Required box is not ticked`)
+		for (const file of mats.optional) if ((await isTicked(file)) !== false) rec.add('materials', `"${file}" is optional but its Required box is ${await isTicked(file)}`)
+		// @nextcloud/vue 9 puts the attributes of a checkbox/radio switch on its <input>
+		const gate = await page.locator('input[data-test="required-content-gate"]').first().isChecked().catch(() => null)
+		if (gate !== mats.examGated) rec.add('materials', `"Exam only after all required content is completed" is ${gate}, the course has ${mats.examGated}`)
+		await page.screenshot({ path: path.join(SHOTS, 'guide-instructor-materials.png'), fullPage: true })
+		await axeStates(page, rec, page.locator('[data-test="required-all"]'), 'the "Required" head checkbox')
+		await axeStates(page, rec, docRow(mats.required[0]).locator('.reconfirm-btn'), '"Ask everyone to confirm again"')
+	})
+	await station(page, rec, 'Learning materials (instructor): tick and untick an optional file', async () => {
+		const file = mats.optional[0]
+		await enterMaterials()
+		await requiredBox(file).click()
+		await page.waitForTimeout(800)
+		await enterMaterials()
+		if ((await isTicked(file)) !== true) rec.add('materials', `"${file}" ticked as required, but not ticked after a reload`)
+		page.__acceptDialogs = true // "… becomes optional … Continue?"
+		await requiredBox(file).click()
+		await page.waitForTimeout(800)
+		page.__acceptDialogs = false
+		await enterMaterials()
+		if ((await isTicked(file)) !== false) rec.add('materials', `"${file}" made optional again, but still ticked after a reload`)
+	})
 	await station(page, rec, 'Administration › Course rules › Certification', async () => {
 		await openMegaTab(page, 'Administration')
 		const heading = page.getByText('Certification', { exact: true }).first()
@@ -777,11 +904,13 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		const fields = await page.locator('.cert-layout').evaluate((root) => [...root.querySelectorAll('label[for]')].map((label) => {
 			const control = document.getElementById(label.htmlFor)
 			if (!control) return { label: label.textContent.trim(), missing: true }
+			// radios and switches (logo choice, #78) have their label beside them by design
+			if (control.matches('input[type=checkbox], input[type=radio]')) return null
 			const l = label.getBoundingClientRect()
 			const c = control.getBoundingClientRect()
 			const field = label.parentElement.getBoundingClientRect()
 			return { label: label.textContent.trim(), above: l.bottom <= c.top + 1, width: c.width, fieldWidth: field.width }
-		}))
+		}).filter(Boolean))
 		if (!fields.length) rec.add('layout', 'no labelled field in "Certificate design" (.cert-layout)')
 		for (const f of fields) {
 			if (f.missing) rec.add('layout', `"${f.label}": the label points to no input`)
@@ -793,6 +922,18 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		if (!(await limit.isVisible().catch(() => false))) rec.add('layout', '"Stamp and signature" does not show the 1 MB limit (#72)')
 		const described = await page.locator('[data-test="cert-layout-pick-stamp"]').getAttribute('aria-describedby').catch(() => null)
 		if (!described || !described.includes('error')) rec.add('a11y', `stamp pick button: aria-describedby="${described}" names no error region (#72)`)
+		// GitHub #77/#78: the seeded organisation name and library logo are what the form shows
+		const issuer = await page.locator('[data-test="cert-layout-issuer-name"]').inputValue().catch(() => null)
+		if (issuer !== seed.certificate.issuerName) rec.add('certificate-design', `"Organisation name on the certificate" shows "${issuer}", the course has "${seed.certificate.issuerName}"`)
+		// @nextcloud/vue 9 puts the attributes of a radio switch on its <input>
+		const libraryRadio = page.locator(`input[data-test="cert-layout-logo-${seed.certificate.logoId}"]`)
+		const libraryOption = page.locator('[data-test="cert-layout-logo"] .checkbox-radio-switch').filter({ hasText: seed.certificate.logoName })
+		if (!(await libraryRadio.count())) rec.add('certificate-design', `the library logo "${seed.certificate.logoName}" is not offered in "Certificate design"`)
+		else if (!(await libraryRadio.isChecked().catch(() => false))) rec.add('certificate-design', `the library logo "${seed.certificate.logoName}" the course uses is not the selected one`)
+		await page.locator('[data-test="cert-layout-org"]').scrollIntoViewIfNeeded().catch(() => {})
+		await page.screenshot({ path: path.join(SHOTS, 'guide-certificate-design-org.png') })
+		await axeStates(page, rec, libraryOption, 'library logo choice', libraryRadio)
+		await axeStates(page, rec, page.locator('[data-test="cert-layout-issuer-name"]'), '"Organisation name on the certificate"')
 	})
 	const enterSummary = async () => {
 		await openMegaTab(page, 'Participants')
@@ -819,6 +960,94 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 	await station(page, rec, 'Compliance report: ZIP of certificates', async () => {
 		const dl = await download(page, () => page.locator('.cert-report-zip').click(), 'certificates')
 		if (dl.head.subarray(0, 2).toString('latin1') !== 'PK') rec.add('download', `certificate ZIP is not a ZIP (${dl.suggested}, ${dl.size} bytes)`)
+	})
+	flush()
+	await context.close()
+})
+
+// GitHub #78 and #59 on the administrator's settings page: the certificate logo library (seeded
+// with the course's logo) and who is told of technical tickets (chosen here, through the picker).
+test('admin: certificate logo library, ticket recipients, the notice of a technical ticket', async ({ browser }) => {
+	test.setTimeout(10 * 60_000)
+	const rec = new Recorder('admin')
+	const { context, page } = await login(browser, 'admin')
+	rec.attach(page)
+	const enterAdmin = async () => { await page.goto(`${BASE}/index.php/settings/admin/learning`); await settle(page, 1200) }
+	const cert = seed.certificate
+	const library = () => page.locator('[data-test="cert-logo-library"]')
+	await station(page, rec, 'Admin settings › Logos for certificates', async () => {
+		await enterAdmin()
+		await library().scrollIntoViewIfNeeded()
+		const entry = page.locator(`[data-test="cert-logo-${cert.logoId}"]`)
+		if (!(await entry.isVisible().catch(() => false))) rec.add('logo-library', `the seeded logo "${cert.logoName}" is not in the library`)
+		const usage = (await page.locator(`[data-test="cert-logo-usage-${cert.logoId}"]`).textContent().catch(() => '')).trim()
+		if (!/\b1\b/.test(usage)) rec.add('logo-library', `the logo the course uses says "${usage}" (expected: used by 1 course)`)
+		await page.screenshot({ path: path.join(SHOTS, 'guide-admin-logo-library.png') })
+		await axeStates(page, rec, page.locator('[data-test="cert-logo-pick"]'), '"Upload logo …"')
+	})
+	await station(page, rec, REFUSED_LOGO_STATION, async () => {
+		await enterAdmin()
+		await library().scrollIntoViewIfNeeded()
+		const before = await library().locator('[data-test^="cert-logo-name-"]').count()
+		await page.locator('[data-test="cert-logo-new-name"]').fill('Refused vector logo')
+		const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>'
+		const since = Date.now()
+		await page.locator('[data-test="cert-logo-file"]').setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(svg) })
+		await page.waitForTimeout(1500)
+		await checkToasts(page, rec, since, 'upload an SVG named .png')
+		const error = (await page.locator('[data-test="cert-logo-new-error"]').textContent().catch(() => '')).trim()
+		if (!error) rec.add('logo-library', 'an SVG named logo.png was not refused next to the file field')
+		const after = await library().locator('[data-test^="cert-logo-name-"]').count()
+		if (after !== before) rec.add('logo-library', `the library had ${before} logos and has ${after} after a refused upload`)
+		await page.screenshot({ path: path.join(SHOTS, 'admin-logo-refused.png') })
+	})
+	const recipients = () => page.locator('.ticket-recipients')
+	await station(page, rec, 'Admin settings › Ticket recipients: choose an administrator', async () => {
+		await enterAdmin()
+		await recipients().scrollIntoViewIfNeeded()
+		if (!(await page.locator('.ticket-recipients-none').isVisible().catch(() => false))) rec.add('tickets', 'nobody is chosen yet, but there is no "nobody is notified" note')
+		const search = recipients().locator('input').first()
+		await search.click()
+		await search.fill('admin')
+		const option = page.locator('.vs__dropdown-option, [role=option]').filter({ hasText: /admin/i }).first()
+		await option.waitFor({ timeout: 10000 })
+		await option.click()
+		const since = Date.now()
+		await recipients().getByRole('button', { name: 'Save recipients' }).click()
+		await page.waitForTimeout(1000)
+		await checkToasts(page, rec, since, 'Save recipients')
+		if (!(await recipients().getByText('Recipients saved.').isVisible().catch(() => false))) rec.add('tickets', 'no "Recipients saved." after saving')
+		await enterAdmin() // read back
+		await recipients().scrollIntoViewIfNeeded()
+		if (await page.locator('.ticket-recipients-none').isVisible().catch(() => false)) rec.add('tickets', 'after saving and reloading, the page still says nobody is notified')
+		const chosen = (await recipients().textContent().catch(() => '')).replace(/\s+/g, ' ')
+		if (!/admin/i.test(chosen)) rec.add('tickets', 'after a reload the picker does not show the chosen administrator')
+		await page.screenshot({ path: path.join(SHOTS, 'guide-admin-ticket-recipients.png') })
+		await axeStates(page, rec, recipients().getByRole('button', { name: 'Save recipients' }), '"Save recipients"')
+	})
+	await station(page, rec, 'Technical ticket from a learner: the chosen administrator is notified', async () => {
+		const subject = 'The material link does not open'
+		const res = await fetch(`${APP}/api/support-tickets`, {
+			method: 'POST',
+			headers: { Authorization: 'Basic ' + Buffer.from(`learner2:${PASSWORDS.learner2}`).toString('base64'), 'OCS-APIRequest': 'true', Accept: 'application/json', 'Content-Type': 'application/json' },
+			body: JSON.stringify({ subject, message: 'Clicking the evacuation plan shows nothing on my laptop.', category: 'technical', context: { courseId: seed.courseId } }),
+		})
+		if (!res.ok) throw new Error(`learner2 could not file a technical ticket: ${res.status}`)
+		const list = await page.request.get(`${BASE}/ocs/v2.php/apps/notifications/api/v2/notifications?format=json`, { headers: { 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+		if (!list.ok()) rec.add('tickets', `the administrator's notifications could not be read: ${list.status()}`)
+		else {
+			const items = ((await list.json())?.ocs?.data || []).filter((n) => n.app === 'learning')
+			if (!items.length) rec.add('tickets', 'the chosen administrator got no notification of the new technical ticket')
+			else (rec.current.notes ||= []).push(`notification: ${items[0].subject}`)
+		}
+		await enterAdmin()
+		const card = page.locator('.ticket-card').filter({ hasText: subject }).first()
+		if (!(await card.isVisible().catch(() => false))) rec.add('tickets', `the ticket "${subject}" is not in the admin inbox`)
+		else {
+			await card.scrollIntoViewIfNeeded()
+			if (!(await card.locator('.ticket-manage button').count())) rec.add('tickets', 'the ticket has no archive / delete buttons')
+		}
+		await page.screenshot({ path: path.join(SHOTS, 'guide-admin-ticket-inbox.png') })
 	})
 	flush()
 	await context.close()

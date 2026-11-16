@@ -35,6 +35,9 @@ const KINDS = {
 	'deep-link': 'Deep link', detector: 'Detector self-test',
 	'course-missing': 'Course not in the course list', 'pool-missing': 'Pool not in the pool list',
 	exam: 'Exam', certificate: 'Certificate', print: 'Print', download: 'Download', compliance: 'Compliance report',
+	hover: 'Hover / focus look', layout: 'Layout', media: 'Question media',
+	materials: 'Learning materials (required / optional)', 'certificate-design': 'Certificate design',
+	'logo-library': 'Certificate logo library', tickets: 'Technical tickets',
 }
 const esc = (s) => String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
 

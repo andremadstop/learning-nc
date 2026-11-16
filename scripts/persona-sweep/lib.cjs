@@ -19,8 +19,17 @@ function expectedReason(finding, ctx) {
 		// The Pools tab lists one's own pools and pools shared with one; the seed shares nothing.
 		return `not the pool owner (${ctx.poolOwner}): the pool is not shared with this persona`
 	}
+	// GitHub #78: the station that puts an SVG named logo.png into the logo library expects the
+	// server to refuse it (content check, 400). Only there, only that request, only as admin.
+	if (finding.kind === 'http' && ctx.user === 'admin' && ctx.station === REFUSED_LOGO_STATION
+		&& /^POST 400 (\/index\.php)?\/apps\/learning\/api\/settings\/admin\/cert-logos$/.test(finding.detail)) {
+		return 'the logo library refuses an SVG named .png (the station tests exactly that)'
+	}
 	return null
 }
+
+/** The station name of the refused-logo upload (persona.sweep.cjs uses the same constant). */
+const REFUSED_LOGO_STATION = 'Admin settings › Logos: an SVG named .png is refused'
 
 /** axe impacts that count, besides every colour-contrast violation. */
 const AXE_IMPACTS = ['critical', 'serious']
@@ -111,4 +120,4 @@ function pickAnswerIndex(buttonTexts, answer) {
 	return best
 }
 
-module.exports = { expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }
+module.exports = { REFUSED_LOGO_STATION, expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }

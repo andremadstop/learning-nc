@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
-const { expectedReason, axeFindings, stationText, pickAnswerIndex } = require('../../../scripts/persona-sweep/lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION } = require('../../../scripts/persona-sweep/lib.cjs')
 
 describe('persona sweep: expectedReason', () => {
 	const http = (detail) => ({ kind: 'http', detail })
@@ -36,6 +36,19 @@ describe('persona sweep: expectedReason', () => {
 		expect(expectedReason(missing, { user: 'instructor', poolOwner: 'instructor' })).toBeNull()
 		// without a known owner nothing is waved through
 		expect(expectedReason(missing, { user: 'learner2' })).toBeNull()
+	})
+
+	// GitHub #78 (C5): the station that uploads an SVG named logo.png wants the 400; nowhere else.
+	it('the refused logo upload is expected only at its own station, as admin, for that request', () => {
+		const refused = http('POST 400 /apps/learning/api/settings/admin/cert-logos')
+		const at = { user: 'admin', station: REFUSED_LOGO_STATION }
+		expect(expectedReason(refused, at)).toMatch(/refuses an SVG/)
+		expect(expectedReason(http('POST 400 /index.php/apps/learning/api/settings/admin/cert-logos'), at)).toBeTruthy()
+		expect(expectedReason(refused, { ...at, station: 'Admin settings' })).toBeNull()
+		expect(expectedReason(refused, { ...at, user: 'instructor' })).toBeNull()
+		expect(expectedReason(http('POST 500 /apps/learning/api/settings/admin/cert-logos'), at)).toBeNull()
+		expect(expectedReason(http('DELETE 400 /apps/learning/api/settings/admin/cert-logos/abc'), at)).toBeNull()
+		expect(expectedReason({ kind: 'console', detail: 'POST 400 /apps/learning/api/settings/admin/cert-logos' }, at)).toBeNull()
 	})
 
 	it('other kinds always count', () => {
