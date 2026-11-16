@@ -15,7 +15,8 @@
 // them in the mandatory-training run), one logo in the administrator's certificate logo library
 // chosen for the course (#78), and the organisation name on the course's certificates (#77).
 // Basic auth plus `OCS-APIRequest: true` passes Nextcloud's CSRF check for app routes.
-// Writes out/seed.json (course and pool ids) for the sweep.
+// Writes seed.json (course and pool ids) for the sweep next to the state file (out/ by default;
+// scripts/screenshots runs its own instance in its own folder, PERSONA_OUT).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { deflateSync } from 'node:zlib'
 import { dirname, join } from 'node:path'
@@ -202,7 +203,7 @@ for (const pool of JSON.parse(poolsDoc).pools) {
 }
 answers[mediaQuestion.text] = mediaQuestion.answers.find((a) => a.is_correct).text
 // poolOwner: the only persona whose pool list must show the pools (nothing is shared).
-writeFileSync(join(HERE, 'out', 'seed.json'), JSON.stringify({
+writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.stringify({
 	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig,
 	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated },
 	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },

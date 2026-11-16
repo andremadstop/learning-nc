@@ -16,6 +16,9 @@
 #                     PERSONA_STATIONS=<regex>  `sweep`: only these stations (findings-filtered.json,
 #                                       report-filtered.md, stations-filtered.json, shots-filtered/)
 #                     PERSONA_DEBUG=1   `sweep`: log every button the click-through finds
+#                     PERSONA_OUT=<dir> `up`/`down`: state and seed of the instance there instead of out/ (used by
+#                                       scripts/screenshots, so that its instance and a persona run
+#                                       never share a state file)
 #        Both modes against each other: GAMIFICATION=off …/run.sh, then GAMIFICATION=on …/run.sh;
 #        the results land in separate folders.
 #
@@ -46,7 +49,7 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$HERE/../.." && pwd)"
-OUT="$HERE/out"
+OUT="${PERSONA_OUT:-$HERE/out}"
 STATE="$OUT/instance.env"
 NC_IMAGE="${PERSONA_NC_IMAGE:-nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5}"
 PG_IMAGE="${PERSONA_PG_IMAGE:-postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea}"
