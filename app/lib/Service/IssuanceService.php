@@ -57,6 +57,7 @@ class IssuanceService {
     private AuditService $auditService;
     private IDBConnection $db;
     private CertIssuerName $issuerName;
+    private CertLayoutService $layoutService;
 
     public function __construct(
         CertificateMapper $certificateMapper,
@@ -71,7 +72,8 @@ class IssuanceService {
         LoggerInterface $logger,
         AuditService $auditService,
         IDBConnection $db,
-        CertIssuerName $issuerName
+        CertIssuerName $issuerName,
+        CertLayoutService $layoutService
     ) {
         $this->certificateMapper = $certificateMapper;
         $this->courseMapper = $courseMapper;
@@ -86,6 +88,7 @@ class IssuanceService {
         $this->auditService = $auditService;
         $this->db = $db;
         $this->issuerName = $issuerName;
+        $this->layoutService = $layoutService;
     }
 
     /**
@@ -166,8 +169,9 @@ class IssuanceService {
         // GitHub #43: the course's certificate layout of this moment, so a later change of text,
         // signer or stamp never redraws a certificate already issued. Presentation only, outside the
         // signed credential. Set only when the course has its own layout: a course with the standard
-        // layout writes exactly the row it wrote before.
-        $layoutSnapshot = CertLayout::snapshot($course->getCertLayout());
+        // layout writes exactly the row it wrote before. GitHub #78: a course on the Theming logo
+        // also keeps a copy of the Theming logo of this moment (CertLayoutService::snapshotForIssuance).
+        $layoutSnapshot = $this->layoutService->snapshotForIssuance($course);
         if ($layoutSnapshot !== null) {
             $cert->setLayoutJson($layoutSnapshot);
         }

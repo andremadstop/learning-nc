@@ -158,4 +158,25 @@ class CertLayoutTest extends TestCase {
         $this->expectException(\InvalidArgumentException::class);
         CertLayout::apply(['issuer_name' => str_repeat('x', CertLayout::ISSUER_NAME_MAX + 1)], CertLayout::defaults());
     }
+
+    /**
+     * GitHub #78 (review): the copy of the Theming logo lives only in a certificate's snapshot and
+     * only when the course shows the Theming logo.
+     */
+    public function testSnapshotCarriesTheThemingCopyOnlyWithoutALibraryLogo(): void {
+        $snapshot = CertLayout::snapshot(null, self::SHA);
+        $this->assertNotNull($snapshot);
+        $this->assertSame(self::SHA, CertLayout::decode($snapshot)['theming_logo_sha']);
+
+        $layout = CertLayout::defaults();
+        $layout['logo_sha'] = str_repeat('b', 64);
+        $this->assertNull(CertLayout::decode(CertLayout::snapshot(CertLayout::encode($layout), self::SHA))['theming_logo_sha']);
+
+        // a course layout cannot smuggle its own copy into the snapshot
+        $layout = CertLayout::defaults();
+        $layout['intro'] = 'x';
+        $layout['theming_logo_sha'] = self::SHA;
+        $this->assertNull(CertLayout::decode(CertLayout::snapshot(CertLayout::encode($layout)))['theming_logo_sha']);
+        $this->assertNull(CertLayout::snapshot(null, '../not-a-sha'));
+    }
 }

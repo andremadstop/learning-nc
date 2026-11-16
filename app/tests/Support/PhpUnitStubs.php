@@ -1298,6 +1298,11 @@ namespace OCP\Files\SimpleFS {
             public function delete(): void;
 
             public function getName(): string;
+
+            // GitHub #78 (review): the Theming logo lives in theming's global/images.
+            public function getFolder(string $name): ISimpleFolder;
+
+            public function newFolder(string $path): ISimpleFolder;
         }
     }
 }
@@ -1312,6 +1317,25 @@ namespace OCP\Files {
             public function newFolder(string $name): \OCP\Files\SimpleFS\ISimpleFolder;
 
             public function getDirectoryListing(): array;
+        }
+    }
+}
+
+namespace OCP\Files\AppData {
+    // GitHub #78 (review): another app's data folder, here theming's (NC 33
+    // lib/public/Files/AppData/IAppDataFactory.php).
+    if (!interface_exists(IAppDataFactory::class)) {
+        interface IAppDataFactory {
+            public function get(string $appId): \OCP\Files\IAppData;
+        }
+    }
+}
+
+namespace OCP\App {
+    // GitHub #78 (review): whether Theming is on (NC 33 lib/public/App/IAppManager.php, subset).
+    if (!interface_exists(IAppManager::class)) {
+        interface IAppManager {
+            public function isEnabledForAnyone(string $appId): bool;
         }
     }
 }

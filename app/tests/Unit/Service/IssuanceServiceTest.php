@@ -19,6 +19,8 @@ use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\PassResult;
 use OCA\Learning\Service\SigningService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
+use OCA\Learning\Tests\Support\FakeResult;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
 use OCP\Notification\IManager;
@@ -112,7 +114,9 @@ class IssuanceServiceTest extends TestCase {
         ?array &$notifySubject = null,
         ?int $releaseSlotResult = null,
         ?array &$releaseSlotArgs = null,
-        string $operatorName = ''
+        string $operatorName = '',
+        ?array $themingLogo = null,
+        ?FakeDbConnection $layoutDb = null
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
         $db = $db ?? new FakeDbConnection();
@@ -213,6 +217,28 @@ class IssuanceServiceTest extends TestCase {
             $audit,
             $db,
             new CertIssuerName($this->operatorInfo($operatorName), $theming),
+            $this->layoutService($theming, $themingLogo, $layoutDb),
+        );
+    }
+
+    /**
+     * The real layout service with its own fake database; ThemingLogoSource gives $themingLogo.
+     *
+     * @param array{mime: string, bytes: string}|null $themingLogo
+     */
+    private function layoutService(Defaults $theming, ?array $themingLogo = null, ?FakeDbConnection $db = null): \OCA\Learning\Service\CertLayoutService {
+        $source = $this->createMock(\OCA\Learning\Service\ThemingLogoSource::class);
+        $source->method('current')->willReturn($themingLogo);
+        $time = $this->createMock(ITimeFactory::class);
+        $time->method('getTime')->willReturn(self::ISSUED_AT);
+        return new \OCA\Learning\Service\CertLayoutService(
+            $db ?? new FakeDbConnection([new FakeQueryBuilder(new FakeResult()), new FakeQueryBuilder(null, 1)]),
+            $this->createMock(\OCP\Files\IRootFolder::class),
+            $this->createMock(CourseMapper::class),
+            $time,
+            new CertIssuerName($this->operatorInfo(''), $theming),
+            $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class),
+            $source,
         );
     }
 
@@ -350,6 +376,7 @@ class IssuanceServiceTest extends TestCase {
             $theming, $url, $userManager, $time, $this->createMock(LoggerInterface::class),
             $auditLoser, new FakeDbConnection(),
             new CertIssuerName($this->operatorInfo(''), $theming),
+            $this->layoutService($theming),
         );
 
         $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
@@ -621,6 +648,25 @@ class IssuanceServiceTest extends TestCase {
         $this->assertNotNull($captured);
         $this->assertSame('Coca Cola', $this->payloadOf($captured)['issuer']['name']);
         $this->assertFalse(CertLayout::decode($captured->getLayoutJson())['show']['issuer']);
+    }
+
+    /**
+     * GitHub #78 (review): a course on the Theming logo freezes a copy of the Theming logo of this
+     * moment into the certificate row; the signed credential still names the Theming URL.
+     */
+    public function testThemingLogoOfThisMomentIsCopiedIntoTheRow(): void {
+        $bytes = 'PNGBYTES-OF-THE-THEMING-LOGO';
+        $layoutDb = new FakeDbConnection([new FakeQueryBuilder(new FakeResult()), new FakeQueryBuilder(null, 1)]);
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, themingLogo: ['mime' => 'image/png', 'bytes' => $bytes], layoutDb: $layoutDb);
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNotNull($captured);
+        $this->assertSame(hash('sha256', $bytes), CertLayout::decode($captured->getLayoutJson())['theming_logo_sha']);
+        $this->assertSame('insert', $layoutDb->issuedBuilders[1]->operation);
+        $this->assertContains(base64_encode($bytes), array_column($layoutDb->issuedBuilders[1]->namedParameters, 'value'));
+        $this->assertSame('https://cloud.example/logo.png', $this->payloadOf($captured)['issuer']['image']['id'], 'credential unchanged');
     }
 
     // ---- RECERT-01/02 RED locking test (Wave 2, 164-02) ------------------------------------

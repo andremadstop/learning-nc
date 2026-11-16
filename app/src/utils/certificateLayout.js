@@ -39,7 +39,7 @@ const ELEMENTS = '{course.elements}'
  * and courses with the standard layout) give the standard layout.
  *
  * @param {object|null} presentation - from the show response (or the settings preview)
- * @return {{intro: string, show: Object<string, boolean>, signerName: string, signerRole: string, stamp: string, signature: string, logo: string}}
+ * @return {{intro: string, show: Object<string, boolean>, signerName: string, signerRole: string, stamp: string, signature: string, logo: string, logoLibrary: boolean}}
  */
 export function normalizePresentation(presentation) {
 	const p = presentation && typeof presentation === 'object' ? presentation : {}
@@ -54,8 +54,12 @@ export function normalizePresentation(presentation) {
 		signerRole: typeof p.signer_role === 'string' ? p.signer_role : '',
 		stamp: isPngDataUrl(p.stamp) ? p.stamp : '',
 		signature: isPngDataUrl(p.signature) ? p.signature : '',
-		// GitHub #78: the library logo the certificate was issued with; '' = the Theming logo
+		// GitHub #78: the library logo the certificate was issued with, else its copy of the Theming
+		// logo of that moment; '' = the live Theming logo (certificates issued before 5.14.0)
 		logo: isLogoDataUrl(p.logo) ? p.logo : '',
+		// only a library logo gets the white plate on the dark-mode card; the Theming logo keeps its look.
+		// Older responses (settings preview) have no flag: a logo there is always a library logo.
+		logoLibrary: isLogoDataUrl(p.logo) && p.logo_library !== false,
 	}
 }
 

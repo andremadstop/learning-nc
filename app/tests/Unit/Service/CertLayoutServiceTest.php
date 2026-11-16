@@ -46,7 +46,10 @@ class CertLayoutServiceTest extends TestCase {
         return $course;
     }
 
-    private function service(?IRootFolder $root = null, ?FakeDbConnection $db = null, ?\OCA\Learning\Service\CertLogoLibrary $library = null): CertLayoutService {
+    /** @param array{mime: string, bytes: string}|null $themingLogo what ThemingLogoSource::current() gives */
+    private function service(?IRootFolder $root = null, ?FakeDbConnection $db = null, ?\OCA\Learning\Service\CertLogoLibrary $library = null, ?array $themingLogo = null): CertLayoutService {
+        $theming = $this->createMock(\OCA\Learning\Service\ThemingLogoSource::class);
+        $theming->method('current')->willReturn($themingLogo);
         $mapper = $this->createMock(CourseMapper::class);
         $mapper->method('update')->willReturnCallback(function (Course $c): Course {
             $this->updated[] = $c;
@@ -61,6 +64,7 @@ class CertLayoutServiceTest extends TestCase {
             $time,
             $this->issuerName(),
             $library ?? $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class),
+            $theming,
         );
     }
 
@@ -277,6 +281,9 @@ class CertLayoutServiceTest extends TestCase {
 
         $candidates = $db->issuedBuilders[0];
         $this->assertSame([['type' => 'lt', 'left' => 'c.updated_at', 'right' => ['value' => 1760000000 - 3600, 'type' => \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT]]], $candidates->whereCalls);
+        // GitHub #78: an image stored within the grace period is spared too (the copy of the Theming
+        // logo is stored by an issuance that does not change the course)
+        $this->assertSame([['type' => 'lt', 'left' => 'a.created_at', 'right' => ['value' => 1760000000 - 3600, 'type' => \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT]]], $candidates->andWhereCalls);
         $this->assertSame('learning_courses', $candidates->joins[0]['join']);
     }
 
@@ -445,5 +452,72 @@ class CertLayoutServiceTest extends TestCase {
         $old = new Certificate();
         $old->setCourseId(7);
         $this->assertNull($service->logoForCertificate($old), 'issued before 5.14.0: the Theming logo');
+    }
+
+    /**
+     * GitHub #78 (review): a course on the Theming logo keeps a copy of the Theming logo of the
+     * moment of issuance, so replacing the Theming logo later does not redraw the certificate.
+     */
+    public function testIssuanceCopiesTheThemingLogoOfThisMoment(): void {
+        $bytes = self::png(120, 40);
+        $sha = hash('sha256', $bytes);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult()),   // not stored for the course yet
+            new FakeQueryBuilder(null, 1),            // insert
+        ]);
+
+        $json = $this->service(null, $db, null, ['mime' => 'image/png', 'bytes' => $bytes])->snapshotForIssuance($this->course());
+
+        $this->assertNotNull($json, 'the standard layout with a Theming copy is stored');
+        $layout = CertLayout::decode($json);
+        $this->assertSame($sha, $layout['theming_logo_sha']);
+        $this->assertNull($layout['logo_sha']);
+        $insert = $db->issuedBuilders[1];
+        $this->assertSame('insert', $insert->operation);
+        $this->assertSame('learning_cert_assets', $insert->table);
+        $values = array_column($insert->namedParameters, 'value');
+        $this->assertContains(base64_encode($bytes), $values);
+        $this->assertContains('image/png', $values);
+        $this->assertContains(7, $values);
+    }
+
+    public function testNoThemingCopyKeepsTheOldRowShape(): void {
+        $db = new FakeDbConnection();
+
+        $this->assertNull($this->service(null, $db)->snapshotForIssuance($this->course()));
+        $this->assertCount(0, $db->issuedBuilders);
+    }
+
+    public function testALibraryLogoNeedsNoThemingCopy(): void {
+        $layout = CertLayout::defaults();
+        $layout['logo_sha'] = str_repeat('d', 64);
+        $db = new FakeDbConnection();
+
+        $json = $this->service(null, $db, null, ['mime' => 'image/png', 'bytes' => self::png()])
+            ->snapshotForIssuance($this->course(CertLayout::encode($layout)));
+
+        $this->assertSame(str_repeat('d', 64), CertLayout::decode($json)['logo_sha']);
+        $this->assertNull(CertLayout::decode($json)['theming_logo_sha']);
+        $this->assertCount(0, $db->issuedBuilders, 'nothing copied');
+    }
+
+    public function testCertificateShowsItsThemingCopyWithoutTheLibraryPlate(): void {
+        $layout = CertLayout::defaults();
+        $layout['theming_logo_sha'] = str_repeat('f', 64);
+        $cert = new Certificate();
+        $cert->setCourseId(7);
+        $cert->setLayoutJson(CertLayout::encode($layout));
+        $row = ['mime' => 'image/png', 'data_b64' => 'QUJD'];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($row)),
+            new FakeQueryBuilder(FakeResult::fromFetch($row)),
+        ]);
+        $service = $this->service(null, $db);
+
+        $presentation = $service->presentationForCertificate($cert);
+        $this->assertSame('data:image/png;base64,QUJD', $presentation['logo'] ?? null);
+        $this->assertFalse($presentation['logo_library']);
+        $this->assertSame('data:image/png;base64,QUJD', $service->logoForCertificate($cert));
+        $this->assertSame(str_repeat('f', 64), $db->issuedBuilders[0]->namedParameters[1]['value']);
     }
 }

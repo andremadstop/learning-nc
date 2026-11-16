@@ -137,6 +137,7 @@ final class CertLayoutAssetsTest extends TestCase {
         $this->assertSame(2, $this->assetCount());
 
         // An hour later the cleanup job deletes B; A stays with its certificate.
+        $this->backdateAssets();
         $course = $this->course();
         $course->setUpdatedAt(time() - 7200);
         $this->courses->update($course);
@@ -176,6 +177,7 @@ final class CertLayoutAssetsTest extends TestCase {
             $this->assertSame('valid', $verify['status']);
             $this->assertSame($dataUrl, $verify['issuer_logo']);
 
+            $this->backdateAssets();
             $course = $this->course();
             $course->setUpdatedAt(time() - 7200);
             $this->courses->update($course);
@@ -186,6 +188,94 @@ final class CertLayoutAssetsTest extends TestCase {
                 $library->delete($logo['id']);
             }
         }
+    }
+
+    /**
+     * GitHub #78 (review) on a real Nextcloud: a course on the Theming logo. The certificate keeps
+     * the Theming logo of its issuance on the card and the public verify page after an admin
+     * replaces the Theming logo; the cleanup sweep leaves that copy alone.
+     */
+    public function testIssuedCertificateKeepsTheThemingLogoOfItsIssuance(): void {
+        $config = Server::get(\OCP\IConfig::class);
+        $images = $this->themingImages();
+        $hadMime = $config->getAppValue('theming', 'logoMime', '');
+        $hadLogo = $images->fileExists('logo') ? $images->getFile('logo')->getContent() : null;
+        $old = self::png(90, 30, 780);
+        $new = self::png(90, 30, 781);
+        $oldUrl = 'data:image/png;base64,' . base64_encode($old);
+        try {
+            $this->putThemingLogo($old);
+            $issued = Server::get(IssuanceService::class)
+                ->issueIfPassedResult(self::LEARNER, $this->courseId, new PassResult(true, 90, 80, true, time()));
+            $this->assertNotNull($issued);
+            $cert = $issued->certificate;
+
+            // The admin replaces the Theming logo (as the theming app does: the file and its raster copy).
+            $this->putThemingLogo($new);
+
+            $presentation = $this->layouts->presentationForCertificate($cert);
+            $this->assertSame($oldUrl, $presentation['logo'] ?? null, 'the card keeps the logo of its issuance');
+            $this->assertFalse($presentation['logo_library'], 'not a library logo: no white plate');
+            $verify = Server::get(\OCA\Learning\Service\CertificateVerifyService::class)
+                ->verifyByVerificationId((string)$cert->getVerificationId());
+            $this->assertSame('valid', $verify['status']);
+            $this->assertSame($oldUrl, $verify['issuer_logo']);
+
+            // The next certificate of the course gets the new logo.
+            $this->assertSame(hash('sha256', $new), CertLayout::decode($this->layouts->snapshotForIssuance($this->course()))['theming_logo_sha']);
+
+            // an hour later: the copy the certificate uses stays
+            $this->backdateAssets();
+            $course = $this->course();
+            $course->setUpdatedAt(time() - 7200);
+            $this->courses->update($course);
+            $this->assertSame(1, $this->layouts->sweepUnreferencedAssets(), 'only the unused copy of the new logo goes');
+            $this->assertSame($oldUrl, $this->layouts->presentationForCertificate($cert)['logo'] ?? null);
+        } finally {
+            if ($hadLogo !== null) {
+                $this->putThemingLogo($hadLogo);
+            } elseif ($images->fileExists('logo')) {
+                $images->getFile('logo')->delete();
+            }
+            if ($hadMime === '') {
+                $config->deleteAppValue('theming', 'logoMime');
+            } else {
+                $config->setAppValue('theming', 'logoMime', $hadMime);
+            }
+        }
+    }
+
+    /** The course's images were stored more than the sweep's grace period ago. */
+    private function backdateAssets(): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_cert_assets')->set('created_at', $qb->createNamedParameter(time() - 7200, IQueryBuilder::PARAM_INT))
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($this->courseId, IQueryBuilder::PARAM_INT)));
+        $qb->executeStatement();
+    }
+
+    private function themingImages(): \OCP\Files\SimpleFS\ISimpleFolder {
+        $appData = Server::get(\OCP\Files\AppData\IAppDataFactory::class)->get('theming');
+        try {
+            $global = $appData->getFolder('global');
+        } catch (NotFoundException $e) {
+            $global = $appData->newFolder('global');
+        }
+        try {
+            return $global->getFolder('images');
+        } catch (NotFoundException $e) {
+            return $global->newFolder('images');
+        }
+    }
+
+    private function putThemingLogo(string $bytes): void {
+        $images = $this->themingImages();
+        foreach (['logo', 'logo.png'] as $name) {
+            if ($images->fileExists($name)) {
+                $images->getFile($name)->delete();
+            }
+        }
+        $images->newFile('logo', $bytes);
+        Server::get(\OCP\IConfig::class)->setAppValue('theming', 'logoMime', 'image/png');
     }
 
     /**

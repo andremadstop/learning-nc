@@ -12,7 +12,7 @@
 				:alt="layout.show.issuer ? '' : fields.issuerName"
 				:aria-hidden="layout.show.issuer ? 'true' : null"
 				class="certificate-logo"
-				:class="{ 'certificate-logo--library': !!layout.logo }"
+				:class="{ 'certificate-logo--library': layout.logoLibrary }"
 				data-test="certificate-logo">
 			<span v-if="showIssuerName" class="certificate-issuer" data-test="certificate-issuer">{{ fields.issuerName }}</span>
 		</div>
@@ -171,7 +171,7 @@ export default {
 		showIssuerName() {
 			return this.layout.show.issuer || !(this.layout.show.logo && this.logoSrc)
 		},
-		/** GitHub #78: the library logo the certificate was issued with, else the Theming logo of the credential */
+		/** GitHub #78: the logo the certificate was issued with (library or copy of the Theming logo), else the live Theming logo of the credential */
 		logoSrc() {
 			return this.layout.logo || this.fields.issuerLogo
 		},

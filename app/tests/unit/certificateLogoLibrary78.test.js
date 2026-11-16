@@ -90,6 +90,15 @@ describe('a certificate is drawn with its own logo (GitHub #78)', () => {
 		// the Theming logo keeps exactly the look it had
 		expect(host.querySelector('[data-test="certificate-logo"]').classList.contains('certificate-logo--library')).toBe(false)
 	})
+
+	it('the copy of the Theming logo of the issuance replaces the live one, without the library plate', async () => {
+		const { default: CertificateCard } = await import('../../src/components/CertificateCard.vue')
+		const fields = { courseTitle: 'Kurs', recipientName: 'Alex', courseElements: [], score: 90, threshold: 80, issuerName: 'Coca Cola', issuerLogo: 'https://cloud.example/theming-logo.png', validFrom: '', validUntil: '' }
+		await mount(CertificateCard, { fields, presentation: { logo: JPEG_URL, logo_library: false } })
+		const logo = host.querySelector('[data-test="certificate-logo"]')
+		expect(logo.getAttribute('src')).toBe(JPEG_URL)
+		expect(logo.classList.contains('certificate-logo--library')).toBe(false)
+	})
 })
 
 describe('course settings: the logo choice (GitHub #78)', () => {

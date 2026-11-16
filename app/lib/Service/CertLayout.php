@@ -26,6 +26,11 @@ namespace OCA\Learning\Service;
  *   signature_sha  sha256 of the signature PNG, null = none
  *   logo_sha       sha256 of the course's logo from the logo library (GitHub #78), copied into
  *                  learning_cert_assets like the stamp; null = the Theming logo, as before
+ *   theming_logo_sha  only in a certificate's snapshot, never in a course's layout (GitHub #78):
+ *                  sha256 of the copy of the Theming logo of the moment of issuance, so replacing
+ *                  the Theming logo later does not redraw the certificate. null = no copy (no
+ *                  custom logo, an SVG without raster copy, a certificate issued before 5.14.0):
+ *                  the card and the verify page show the live Theming logo
  *
  * The standard layout (no text, every element shown, no signer, no images) is never stored: a
  * course with it keeps cert_layout NULL and its certificates keep layout_json NULL, so they render
@@ -43,7 +48,7 @@ final class CertLayout {
     public const IMAGE_KINDS = ['stamp', 'signature'];
 
     /**
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string, theming_logo_sha: ?string}
      */
     public static function defaults(): array {
         return [
@@ -55,6 +60,7 @@ final class CertLayout {
             'stamp_sha' => null,
             'signature_sha' => null,
             'logo_sha' => null,
+            'theming_logo_sha' => null,
         ];
     }
 
@@ -62,7 +68,7 @@ final class CertLayout {
      * Decode a stored layout. NULL, invalid JSON or a non-object give the standard layout; unknown
      * keys are dropped, missing ones take their standard value.
      *
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string, theming_logo_sha: ?string}
      */
     public static function decode(?string $json): array {
         $layout = self::defaults();
@@ -88,6 +94,7 @@ final class CertLayout {
             $layout[$kind . '_sha'] = self::cleanSha($data[$kind . '_sha'] ?? null);
         }
         $layout['logo_sha'] = self::cleanSha($data['logo_sha'] ?? null);
+        $layout['theming_logo_sha'] = self::cleanSha($data['theming_logo_sha'] ?? null);
         return $layout;
     }
 
@@ -99,7 +106,7 @@ final class CertLayout {
      *
      * @param array<string, mixed> $input
      * @param array<string, mixed> $current a decoded layout
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string, theming_logo_sha: ?string}
      * @throws \InvalidArgumentException when a value has the wrong type or is too long
      */
     public static function apply(array $input, array $current): array {
@@ -150,11 +157,16 @@ final class CertLayout {
     }
 
     /**
-     * What a certificate issued now stores: the course's layout of this moment, NULL for the
-     * standard one.
+     * What a certificate issued now stores: the course's layout of this moment, plus the copy of the
+     * Theming logo when the course uses that one (GitHub #78); NULL for the standard layout without
+     * such a copy.
      */
-    public static function snapshot(?string $courseLayoutJson): ?string {
-        return self::encode(self::decode($courseLayoutJson));
+    public static function snapshot(?string $courseLayoutJson, ?string $themingLogoSha = null): ?string {
+        $layout = self::decode($courseLayoutJson);
+        // GitHub #78: the copy of the Theming logo only counts when the course shows the Theming
+        // logo; a course layout never carries one of its own.
+        $layout['theming_logo_sha'] = $layout['logo_sha'] === null ? self::cleanSha($themingLogoSha) : null;
+        return self::encode($layout);
     }
 
     /**

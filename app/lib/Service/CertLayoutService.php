@@ -33,6 +33,12 @@ use OCP\IDBConnection;
  * (CertLogoLibrary) instead of the instructor's files, is copied into learning_cert_assets under its
  * sha256 when the course picks it, and a certificate keeps the logo it was issued with, also when
  * the library logo is deleted later. The public verify page shows that copy as well.
+ *
+ * A course on the Theming logo: issuance copies the Theming logo of that moment into
+ * learning_cert_assets (ThemingLogoSource; PNG, JPEG or WebP only) and names it in the certificate's
+ * snapshot as theming_logo_sha, so replacing the Theming logo later does not redraw issued
+ * certificates. Without such a copy (certificates issued before 5.14.0, an SVG logo without raster
+ * copy) card and verify page show the live Theming logo.
  */
 class CertLayoutService {
     public const MAX_BYTES = 1048576;
@@ -46,6 +52,7 @@ class CertLayoutService {
         private ITimeFactory $timeFactory,
         private CertIssuerName $issuerName,
         private CertLogoLibrary $logoLibrary,
+        private ThemingLogoSource $themingLogo,
     ) {
     }
 
@@ -219,16 +226,59 @@ class CertLayoutService {
     }
 
     /**
-     * GitHub #78: the logo a certificate was issued with, as a data URL for the public verify page;
-     * null when it was issued with the Theming logo (every certificate before 5.14.0 included).
+     * What a certificate issued now stores as its layout (learning_certificates.layout_json): the
+     * course's layout of this moment and, when the course shows the Theming logo, a copy of that
+     * logo (GitHub #78). NULL for the standard layout when there is nothing to copy, the row shape
+     * certificates had before.
+     */
+    public function snapshotForIssuance(Course $course): ?string {
+        $themingSha = null;
+        if (CertLayout::decode($course->getCertLayout())['logo_sha'] === null) {
+            $logo = $this->themingLogo->current();
+            if ($logo !== null) {
+                $themingSha = hash('sha256', $logo['bytes']);
+                try {
+                    $this->storeAsset((int)$course->getId(), $themingSha, $logo['bytes'], $logo['mime']);
+                } catch (\Throwable $e) {
+                    // Best effort: without the copy the certificate shows the live Theming logo.
+                    $themingSha = null;
+                }
+            }
+        }
+        return CertLayout::snapshot($course->getCertLayout(), $themingSha);
+    }
+
+    /**
+     * GitHub #78: the logo a certificate was issued with, as a data URL for the public verify page:
+     * the library logo, else its copy of the Theming logo; null when it has neither (every
+     * certificate before 5.14.0 included), and the page shows the live Theming logo.
      */
     public function logoForCertificate(Certificate $cert): ?string {
         $json = $cert->getLayoutJson();
         if ($json === null || $json === '') {
             return null;
         }
-        $sha = CertLayout::decode($json)['logo_sha'];
-        return $sha !== null ? $this->dataUrl((int)$cert->getCourseId(), $sha) : null;
+        return $this->issuedLogo(CertLayout::decode($json), (int)$cert->getCourseId())['logo'];
+    }
+
+    /**
+     * The logo a layout names: the library logo (library: true), else the copy of the Theming logo
+     * kept with a certificate, else none (the live Theming logo).
+     *
+     * @param array<string, mixed> $layout decoded
+     * @return array{logo: ?string, library: bool}
+     */
+    private function issuedLogo(array $layout, int $courseId): array {
+        if (is_string($layout['logo_sha'] ?? null)) {
+            $url = $this->dataUrl($courseId, $layout['logo_sha']);
+            if ($url !== null) {
+                return ['logo' => $url, 'library' => true];
+            }
+        }
+        if (is_string($layout['theming_logo_sha'] ?? null)) {
+            return ['logo' => $this->dataUrl($courseId, $layout['theming_logo_sha']), 'library' => false];
+        }
+        return ['logo' => null, 'library' => false];
     }
 
     /**
@@ -264,6 +314,7 @@ class CertLayoutService {
      * @return array<string, mixed>
      */
     private function presentation(array $layout, int $courseId): array {
+        $logo = $this->issuedLogo($layout, $courseId);
         return [
             'intro' => $layout['intro'],
             'show' => $layout['show'],
@@ -271,8 +322,11 @@ class CertLayoutService {
             'signer_role' => $layout['signer_role'],
             'stamp' => $layout['stamp_sha'] !== null ? $this->dataUrl($courseId, $layout['stamp_sha']) : null,
             'signature' => $layout['signature_sha'] !== null ? $this->dataUrl($courseId, $layout['signature_sha']) : null,
-            // GitHub #78: the library logo copied for this course; null = the Theming logo
-            'logo' => $layout['logo_sha'] !== null ? $this->dataUrl($courseId, $layout['logo_sha']) : null,
+            // GitHub #78: the library logo copied for this course, else the certificate's copy of the
+            // Theming logo; null = the live Theming logo. logo_library: the dark-mode card puts only
+            // a library logo on white (the Theming logo is made for the instance's themes).
+            'logo' => $logo['logo'],
+            'logo_library' => $logo['library'],
         ];
     }
 
@@ -363,6 +417,10 @@ class CertLayoutService {
      * the instructor swaps or removes it could drop the bytes of a certificate being inserted at
      * that moment, which would then show without its stamp for good. No request lives an hour.
      *
+     * GitHub #78: an image stored less than $graceSeconds ago is spared as well. Issuance copies the
+     * Theming logo without changing the course, so the course's updated_at does not cover that copy
+     * between storing it and inserting its certificate.
+     *
      * The sha256 is 64 hex characters, so a LIKE on it cannot match anything else in the JSON.
      *
      * @return int number of images deleted
@@ -373,7 +431,8 @@ class CertLayoutService {
         $qb->select('a.id', 'a.course_id', 'a.sha256', 'c.cert_layout')
             ->from('learning_cert_assets', 'a')
             ->innerJoin('a', 'learning_courses', 'c', $qb->expr()->eq('c.id', 'a.course_id'))
-            ->where($qb->expr()->lt('c.updated_at', $qb->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)));
+            ->where($qb->expr()->lt('c.updated_at', $qb->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->lt('a.created_at', $qb->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)));
         $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();

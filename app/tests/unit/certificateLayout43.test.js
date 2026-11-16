@@ -122,6 +122,7 @@ describe('normalizePresentation', () => {
 			stamp: '',
 			signature: '',
 			logo: '',
+			logoLibrary: false,
 		})
 	})
 
