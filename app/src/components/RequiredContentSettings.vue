@@ -7,7 +7,6 @@
 
 		<NcCheckboxRadioSwitch
 			:model-value="gateEnabled"
-			:disabled="savingGate"
 			data-test="required-content-gate"
 			@update:model-value="setGate(!!$event)">
 			{{ t('learning', 'Prüfung erst nach Abschluss aller Pflichtinhalte') }}
@@ -201,6 +200,7 @@ export default {
 			gateEnabled: this.course?.video_gate_enabled === true,
 			reconfirmPerCycle: this.course?.reconfirm_per_cycle === true,
 			savingGate: false,
+			saveQueue: Promise.resolve(),
 			adding: false,
 			removing: {},
 			videoForm: emptyVideoForm('youtube-nocookie'),
@@ -328,9 +328,20 @@ export default {
 			await this.saveOption('reconfirmPerCycle', { reconfirmPerCycle: enabled }, enabled)
 		},
 
-		async saveOption(field, body, value) {
+		/**
+		 * The switches stay enabled while a change is saved: a disabled switch drops the keyboard
+		 * focus to the page (review C5). A change made meanwhile is shown at once and saved after
+		 * the running one, in order, so the last change wins.
+		 */
+		saveOption(field, body, value) {
 			const before = this[field]
 			this[field] = value
+			const run = () => this.putOption(field, body, before)
+			this.saveQueue = this.saveQueue.then(run, run)
+			return this.saveQueue
+		},
+
+		async putOption(field, body, before) {
 			this.savingGate = true
 			try {
 				const response = await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/video-gate', { courseId: this.courseId }), body)

@@ -37,7 +37,7 @@ vi.mock('@nextcloud/vue/components/NcCheckboxRadioSwitch', () => ({
 		name: 'NcCheckboxRadioSwitch',
 		props: ['modelValue', 'disabled'],
 		emits: ['update:modelValue'],
-		template: '<label><input type="checkbox" class="switch" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)"><slot /></label>',
+		template: '<label><input type="checkbox" class="switch" :checked="modelValue" :disabled="disabled" @change="$emit(\'update:modelValue\', $event.target.checked)"><slot /></label>',
 	},
 }))
 
@@ -261,6 +261,33 @@ describe('RequiredContentSettings rendered', () => {
 		await flush()
 		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/5/video-gate', { enabled: true })
 	})
+
+	// Review C5: a switch that turns disabled while saving drops the keyboard focus to the page.
+	for (const name of ['required-content-gate']) {
+		it(`${name}: stays enabled while saving and saves a second change after the first`, async () => {
+			let release
+			axios.put.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({ data: {} }) }))
+			await mountSettings()
+			const sw = host.querySelector(`[data-test="${name}"] .switch`)
+			sw.focus()
+			sw.checked = true
+			sw.dispatchEvent(new Event('change'))
+			await new Promise((r) => setTimeout(r, 0))
+			await nextTick()
+			expect(axios.put).toHaveBeenCalledTimes(1)
+			expect(sw.disabled).toBe(false)
+			expect(document.activeElement).toBe(sw)
+			sw.checked = false
+			sw.dispatchEvent(new Event('change'))
+			await nextTick()
+			expect(axios.put).toHaveBeenCalledTimes(1)
+			release()
+			await flush()
+			expect(axios.put).toHaveBeenCalledTimes(2)
+			expect(Object.values(axios.put.mock.calls[1][1])).toEqual([false])
+			expect(sw.checked).toBe(false)
+		})
+	}
 
 	it('warns that the switch locks nothing while the list is empty', async () => {
 		api.videos = []
