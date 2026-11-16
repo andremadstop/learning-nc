@@ -28,6 +28,11 @@ use OCP\IDBConnection;
  * The bytes leave the server only as data URLs inside the certificate's own show response (and the
  * instructor's settings preview), so whoever may see the certificate sees its images and nobody
  * else; there is no separate image URL to guess or share.
+ *
+ * GitHub #78: the course's logo works the same way. It comes from the admin's logo library
+ * (CertLogoLibrary) instead of the instructor's files, is copied into learning_cert_assets under its
+ * sha256 when the course picks it, and a certificate keeps the logo it was issued with, also when
+ * the library logo is deleted later. The public verify page shows that copy as well.
  */
 class CertLayoutService {
     public const MAX_BYTES = 1048576;
@@ -40,6 +45,7 @@ class CertLayoutService {
         private CourseMapper $courseMapper,
         private ITimeFactory $timeFactory,
         private CertIssuerName $issuerName,
+        private CertLogoLibrary $logoLibrary,
     ) {
     }
 
@@ -84,7 +90,7 @@ class CertLayoutService {
         $this->assertPng($bytes);
 
         $sha = hash('sha256', $bytes);
-        $this->storeAsset((int)$course->getId(), $sha, $bytes);
+        $this->storeAsset((int)$course->getId(), $sha, $bytes, 'image/png');
 
         $layout = CertLayout::decode($course->getCertLayout());
         $previous = $layout[$kind . '_sha'];
@@ -118,6 +124,111 @@ class CertLayoutService {
         $course = $this->courseMapper->update($course);
         // The removed image is not deleted here: see sweepUnreferencedAssets().
         return $course;
+    }
+
+    /**
+     * GitHub #78: use a logo of the library on the course's certificates, or the Theming logo again
+     * ($logoId null or ''). The logo is copied into the course's certificate images now, so a
+     * certificate issued with it keeps it whatever happens to the library afterwards.
+     *
+     * The caller has checked that the user manages the course.
+     *
+     * @throws \InvalidArgumentException logo_not_found (not, or no longer, in the library)
+     */
+    public function selectLogo(Course $course, ?string $logoId): Course {
+        $layout = CertLayout::decode($course->getCertLayout());
+        if ($logoId === null || $logoId === '') {
+            if ($layout['logo_sha'] === null) {
+                return $course;
+            }
+            $layout['logo_sha'] = null;
+        } else {
+            if (!CertLogoLibrary::isId($logoId)) {
+                throw new \InvalidArgumentException('logo_not_found');
+            }
+            try {
+                $logo = $this->logoLibrary->content($logoId);
+            } catch (NotFoundException $e) {
+                throw new \InvalidArgumentException('logo_not_found');
+            }
+            $this->storeAsset((int)$course->getId(), $logoId, $logo['bytes'], $logo['mime']);
+            $layout['logo_sha'] = $logoId;
+        }
+        $course->setCertLayout(CertLayout::encode($layout));
+        $course->setUpdatedAt($this->timeFactory->getTime());
+        /** @var Course $course */
+        $course = $this->courseMapper->update($course);
+        return $course;
+    }
+
+    /**
+     * GitHub #78: how many courses use the library logo for their next certificates.
+     */
+    public function countCoursesUsingLogo(string $logoId): int {
+        return count($this->coursesUsingLogo($logoId));
+    }
+
+    /**
+     * GitHub #78: a library logo was deleted. Courses that used it fall back to the Theming logo for
+     * the certificates they issue from now on; certificates already issued keep their copy.
+     *
+     * @return int number of courses changed
+     */
+    public function resetLogo(string $logoId): int {
+        $changed = 0;
+        foreach ($this->coursesUsingLogo($logoId) as $course) {
+            $layout = CertLayout::decode($course->getCertLayout());
+            $layout['logo_sha'] = null;
+            $course->setCertLayout(CertLayout::encode($layout));
+            $course->setUpdatedAt($this->timeFactory->getTime());
+            $this->courseMapper->update($course);
+            $changed++;
+        }
+        return $changed;
+    }
+
+    /**
+     * Courses whose layout names the logo. The sha256 is 64 hex characters, so a LIKE on it cannot
+     * match anything else in the JSON; the decoded layout confirms it.
+     *
+     * @return list<Course>
+     */
+    private function coursesUsingLogo(string $logoId): array {
+        if (!CertLogoLibrary::isId($logoId)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+            ->from('learning_courses')
+            ->where($qb->expr()->like('cert_layout', $qb->createNamedParameter('%' . $this->db->escapeLikeParameter($logoId) . '%')));
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        $courses = [];
+        foreach (array_column($rows, 'id') as $id) {
+            try {
+                $course = $this->courseMapper->findById((int)$id);
+            } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+                continue;
+            }
+            if (CertLayout::decode($course->getCertLayout())['logo_sha'] === $logoId) {
+                $courses[] = $course;
+            }
+        }
+        return $courses;
+    }
+
+    /**
+     * GitHub #78: the logo a certificate was issued with, as a data URL for the public verify page;
+     * null when it was issued with the Theming logo (every certificate before 5.14.0 included).
+     */
+    public function logoForCertificate(Certificate $cert): ?string {
+        $json = $cert->getLayoutJson();
+        if ($json === null || $json === '') {
+            return null;
+        }
+        $sha = CertLayout::decode($json)['logo_sha'];
+        return $sha !== null ? $this->dataUrl((int)$cert->getCourseId(), $sha) : null;
     }
 
     /**
@@ -160,6 +271,8 @@ class CertLayoutService {
             'signer_role' => $layout['signer_role'],
             'stamp' => $layout['stamp_sha'] !== null ? $this->dataUrl($courseId, $layout['stamp_sha']) : null,
             'signature' => $layout['signature_sha'] !== null ? $this->dataUrl($courseId, $layout['signature_sha']) : null,
+            // GitHub #78: the library logo copied for this course; null = the Theming logo
+            'logo' => $layout['logo_sha'] !== null ? $this->dataUrl($courseId, $layout['logo_sha']) : null,
         ];
     }
 
@@ -203,7 +316,7 @@ class CertLayoutService {
         return 'data:' . (string)$row['mime'] . ';base64,' . $row['data_b64'];
     }
 
-    private function storeAsset(int $courseId, string $sha, string $bytes): void {
+    private function storeAsset(int $courseId, string $sha, string $bytes, string $mime): void {
         if ($this->assetExists($courseId, $sha)) {
             return;
         }
@@ -212,7 +325,7 @@ class CertLayoutService {
             ->values([
                 'course_id' => $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
                 'sha256' => $qb->createNamedParameter($sha),
-                'mime' => $qb->createNamedParameter('image/png'),
+                'mime' => $qb->createNamedParameter($mime),
                 'byte_size' => $qb->createNamedParameter(strlen($bytes), IQueryBuilder::PARAM_INT),
                 'data_b64' => $qb->createNamedParameter(base64_encode($bytes)),
                 'created_at' => $qb->createNamedParameter($this->timeFactory->getTime(), IQueryBuilder::PARAM_INT),
@@ -241,7 +354,7 @@ class CertLayoutService {
     }
 
     /**
-     * Delete the images nobody uses any more: not the course's stamp or signature, and in no
+     * Delete the images nobody uses any more: not the course's stamp, signature or logo, and in no
      * certificate of the course. Run by CertAssetCleanupJob, never inline on a change.
      *
      * Grace period: only courses whose last change (importImage/removeImage set updated_at) is at
@@ -270,7 +383,7 @@ class CertLayoutService {
             $sha = (string)$row['sha256'];
             $courseId = (int)$row['course_id'];
             $layout = CertLayout::decode(is_string($row['cert_layout'] ?? null) ? $row['cert_layout'] : null);
-            if ($layout['stamp_sha'] === $sha || $layout['signature_sha'] === $sha) {
+            if ($layout['stamp_sha'] === $sha || $layout['signature_sha'] === $sha || $layout['logo_sha'] === $sha) {
                 continue;
             }
             $qb = $this->db->getQueryBuilder();

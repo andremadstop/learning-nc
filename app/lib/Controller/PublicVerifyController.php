@@ -119,9 +119,17 @@ class PublicVerifyController extends Controller {
     private function buildParams(array $result): array {
         $status = $result['status'] ?? 'unknown';
 
+        // GitHub #78: a certificate issued with a library logo shows that logo (its own copy, a data
+        // URL); everything else, including unknown and invalid ids, shows the Theming logo as before.
+        $issuerLogo = $this->defaults->getLogo();
+        $certLogo = $result['issuer_logo'] ?? null;
+        if (in_array($status, ['valid', 'withdrawn', 'expired'], true) && is_string($certLogo)
+            && preg_match('#^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$#', $certLogo) === 1) {
+            $issuerLogo = $certLogo;
+        }
         $params = [
             'status' => $status,
-            'issuer_logo' => $this->defaults->getLogo(),
+            'issuer_logo' => $issuerLogo,
         ];
 
         if (in_array($status, ['valid', 'withdrawn', 'expired'], true)) {

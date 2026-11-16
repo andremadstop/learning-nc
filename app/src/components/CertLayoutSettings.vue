@@ -39,6 +39,56 @@
 		<!-- GitHub #77: the organisation the certificate names, and whether the name stands beside the logo -->
 		<fieldset class="cert-config-field cert-layout-org" data-test="cert-layout-org">
 			<legend>{{ t('learning', 'Ausstellende Organisation') }}</legend>
+			<!-- GitHub #78: the logo from the admin's logo library, or the Theming logo; taken over at once -->
+			<div
+				class="cert-config-field cert-layout-logo"
+				role="radiogroup"
+				:aria-labelledby="logoLabelId"
+				:aria-describedby="logoHintId + ' ' + logoErrorId"
+				data-test="cert-layout-logo">
+				<span :id="logoLabelId" class="cert-layout-sub-label">{{ t('learning', 'Logo') }}</span>
+				<NcCheckboxRadioSwitch
+					type="radio"
+					:name="'cert-layout-logo-' + courseId"
+					value="theming"
+					:model-value="selectedLogo || 'theming'"
+					:disabled="logoBusy"
+					data-test="cert-layout-logo-theming"
+					@update:model-value="chooseLogo('')">
+					{{ t('learning', 'Logo dieser Nextcloud (Theming)') }}
+				</NcCheckboxRadioSwitch>
+				<NcCheckboxRadioSwitch
+					v-for="logo in logos"
+					:key="logo.id"
+					type="radio"
+					:name="'cert-layout-logo-' + courseId"
+					:value="logo.id"
+					:model-value="selectedLogo || 'theming'"
+					:disabled="logoBusy"
+					:data-test="'cert-layout-logo-' + logo.id"
+					@update:model-value="chooseLogo(logo.id)">
+					<span class="cert-layout-logo-option">
+						<img :src="logoImageUrl(logo.id)" alt="" class="cert-layout-logo-thumb">
+						<span>{{ logo.name }}</span>
+					</span>
+				</NcCheckboxRadioSwitch>
+				<p :id="logoHintId" class="mode-config-hint">
+					{{ logos.length
+						? t('learning', 'Die Logos verwaltet die Administration unter Verwaltung → Learning. Bereits ausgestellte Zertifikate behalten ihr Logo.')
+						: t('learning', 'Weitere Logos (z. B. das vollständige Logo statt des Favicons) kann die Administration unter Verwaltung → Learning hinterlegen.') }}
+				</p>
+				<!-- always in the DOM: a live region that appears together with its text is often not read -->
+				<p
+					:id="logoErrorId"
+					class="cert-layout-logo-error"
+					aria-live="polite"
+					aria-atomic="true"
+					data-test="cert-layout-logo-error">
+					<template v-if="logoError">
+						{{ logoError }}
+					</template>
+				</p>
+			</div>
 			<div class="cert-config-field">
 				<label :for="issuerNameId">{{ t('learning', 'Name der Organisation auf dem Zertifikat') }}</label>
 				<input
@@ -146,7 +196,7 @@ import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwit
 import CertificateCard from './CertificateCard.vue'
 import ImageFileField from './ImageFileField.vue'
 import { PLACEHOLDERS } from '../utils/certificateLayout.js'
-import { getCertLayout, importCertLayoutImage, removeCertLayoutImage } from '../services/CertificateService.js'
+import { certLogoImageUrl, getCertLayout, getCertLogos, importCertLayoutImage, removeCertLayoutImage, selectCertLogo } from '../services/CertificateService.js'
 
 const INTRO_MAX = 2000
 const SIGNER_MAX = 120
@@ -201,7 +251,15 @@ export default {
 
 	data() {
 		return {
-			images: { stamp: '', signature: '' },
+			images: { stamp: '', signature: '', logo: '' },
+			// GitHub #78: the library logos this course can use; '' = the Theming logo
+			logos: [],
+			selectedLogo: typeof this.modelValue?.logo_id === 'string' ? this.modelValue.logo_id : '',
+			logoBusy: false,
+			logoError: '',
+			logoLabelId: `cert-layout-logo-label-${this.courseId}`,
+			logoHintId: `cert-layout-logo-hint-${this.courseId}`,
+			logoErrorId: `cert-layout-logo-error-${this.courseId}`,
 			imageErrors: { stamp: '', signature: '' },
 			imageBusy: '',
 			imageSeq: 0,
@@ -263,6 +321,7 @@ export default {
 				signer_role: this.modelValue.signer_role || '',
 				stamp: this.images.stamp || null,
 				signature: this.images.signature || null,
+				logo: this.images.logo || null,
 			}
 		},
 		previewIssued() {
@@ -280,6 +339,7 @@ export default {
 
 	mounted() {
 		this.loadImages()
+		this.loadLogos()
 	},
 
 	methods: {
@@ -314,6 +374,7 @@ export default {
 			this.images = {
 				stamp: typeof layout?.stamp === 'string' ? layout.stamp : '',
 				signature: typeof layout?.signature === 'string' ? layout.signature : '',
+				logo: typeof layout?.logo === 'string' ? layout.logo : '',
 			}
 		},
 
@@ -339,6 +400,49 @@ export default {
 		imagesChanged(layout) {
 			this.applyImages(layout)
 			this.update({ has_stamp: !!this.images.stamp, has_signature: !!this.images.signature })
+		},
+
+		logoImageUrl(id) {
+			return certLogoImageUrl(this.courseId, id)
+		},
+
+		/** GitHub #78: the library and the course's choice. Without it only the Theming logo is offered. */
+		async loadLogos() {
+			try {
+				const data = await getCertLogos(this.courseId)
+				this.logos = Array.isArray(data?.logos) ? data.logos.filter((logo) => typeof logo?.id === 'string') : []
+				if (!this.logoBusy) {
+					this.selectedLogo = typeof data?.selected === 'string' ? data.selected : ''
+				}
+			} catch (e) {
+				this.logos = []
+			}
+		},
+
+		/** GitHub #78: takes effect at once, like stamp and signature. */
+		async chooseLogo(id) {
+			if (this.logoBusy || id === this.selectedLogo) {
+				return
+			}
+			const previous = this.selectedLogo
+			this.selectedLogo = id
+			this.logoBusy = true
+			this.logoError = ''
+			this.imageSeq++
+			try {
+				const layout = await selectCertLogo(this.courseId, id)
+				this.applyImages(layout)
+				this.update({ logo_id: id || null })
+			} catch (e) {
+				this.selectedLogo = previous
+				this.logoError = e?.response?.data?.error === 'logo_not_found'
+					? t('learning', 'Dieses Logo gibt es in der Bibliothek nicht mehr.')
+					: t('learning', 'Das Logo konnte nicht übernommen werden.')
+				this.loadLogos()
+				this.loadImages()
+			} finally {
+				this.logoBusy = false
+			}
 		},
 
 		setImageError(kind, message) {
@@ -480,6 +584,34 @@ export default {
 	font-size: 0.9em;
 	padding: 0;
 	margin-bottom: 6px;
+}
+
+.cert-layout-sub-label {
+	font-weight: 600;
+	font-size: 0.9em;
+}
+
+.cert-layout-logo-option {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* the logo is printed on white paper: show it on white in dark mode too */
+.cert-layout-logo-thumb {
+	max-height: 32px;
+	max-width: 120px;
+	object-fit: contain;
+	background: #fff;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius, 4px);
+	padding: 2px;
+}
+
+.cert-layout-logo-error {
+	margin: 0;
+	color: var(--color-error-text, var(--color-error));
+	font-weight: 600;
 }
 
 .cert-layout-text {

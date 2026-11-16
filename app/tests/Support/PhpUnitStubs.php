@@ -1276,6 +1276,42 @@ namespace OCP\Files\SimpleFS {
             public function getSize(): int|float;
 
             public function getContent(): string;
+
+            // GitHub #78: the certificate logo library writes and deletes its files.
+            public function putContent($data): void;
+
+            public function delete(): void;
+        }
+    }
+    // GitHub #78: the certificate logo library's folder (NC 33 lib/public/Files/SimpleFS/
+    // ISimpleFolder.php, subset).
+    if (!interface_exists(ISimpleFolder::class)) {
+        interface ISimpleFolder {
+            public function getDirectoryListing(): array;
+
+            public function fileExists(string $name): bool;
+
+            public function getFile(string $name): ISimpleFile;
+
+            public function newFile(string $name, $content = null): ISimpleFile;
+
+            public function delete(): void;
+
+            public function getName(): string;
+        }
+    }
+}
+
+namespace OCP\Files {
+    // GitHub #78: the app's own data folder (NC 33 lib/public/Files/IAppData.php via ISimpleRoot,
+    // subset).
+    if (!interface_exists(IAppData::class)) {
+        interface IAppData {
+            public function getFolder(string $name): \OCP\Files\SimpleFS\ISimpleFolder;
+
+            public function newFolder(string $name): \OCP\Files\SimpleFS\ISimpleFolder;
+
+            public function getDirectoryListing(): array;
         }
     }
 }

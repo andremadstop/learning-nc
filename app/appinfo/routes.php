@@ -140,6 +140,12 @@ return [
         ['name' => 'legalOperator#get', 'url' => '/api/settings/admin/operator', 'verb' => 'GET'],
         ['name' => 'legalOperator#save', 'url' => '/api/settings/admin/operator', 'verb' => 'PUT'],
         ['name' => 'legalOperator#show', 'url' => '/api/legal/operator', 'verb' => 'GET'],
+        // GitHub #78: certificate logo library (admin-only, checked again in the controller)
+        ['name' => 'certLogo#index', 'url' => '/api/settings/admin/cert-logos', 'verb' => 'GET'],
+        ['name' => 'certLogo#upload', 'url' => '/api/settings/admin/cert-logos', 'verb' => 'POST'],
+        ['name' => 'certLogo#rename', 'url' => '/api/settings/admin/cert-logos/{id}', 'verb' => 'PUT'],
+        ['name' => 'certLogo#delete', 'url' => '/api/settings/admin/cert-logos/{id}', 'verb' => 'DELETE'],
+        ['name' => 'certLogo#image', 'url' => '/api/settings/admin/cert-logos/{id}/image', 'verb' => 'GET'],
         ['name' => 'settings#getTools', 'url' => '/api/settings/tools', 'verb' => 'GET'],
         ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
@@ -303,6 +309,10 @@ return [
         ['name' => 'certLayout#show', 'url' => '/api/courses/{courseId}/cert-layout', 'verb' => 'GET'],
         ['name' => 'certLayout#importImage', 'url' => '/api/courses/{courseId}/cert-layout/images/{kind}', 'verb' => 'POST'],
         ['name' => 'certLayout#removeImage', 'url' => '/api/courses/{courseId}/cert-layout/images/{kind}', 'verb' => 'DELETE'],
+        // GitHub #78: the course's logo from the certificate logo library
+        ['name' => 'certLayout#logos', 'url' => '/api/courses/{courseId}/cert-layout/logos', 'verb' => 'GET'],
+        ['name' => 'certLayout#logoImage', 'url' => '/api/courses/{courseId}/cert-layout/logos/{logoId}', 'verb' => 'GET'],
+        ['name' => 'certLayout#selectLogo', 'url' => '/api/courses/{courseId}/cert-layout/logo', 'verb' => 'PUT'],
         ['name' => 'course#updatePracticeConfig', 'url' => '/api/courses/{courseId}/practice-exam-config', 'verb' => 'PATCH'],
         ['name' => 'training#startPractice', 'url' => '/api/courses/{courseId}/practice-exam/start', 'verb' => 'POST'],
         ['name' => 'course#getPassStatus',    'url' => '/api/courses/{courseId}/pass-status',  'verb' => 'GET'],

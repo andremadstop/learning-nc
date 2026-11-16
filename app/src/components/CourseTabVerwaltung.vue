@@ -490,7 +490,7 @@ function firstDuplicateChapterRef(payload) {
  * GitHub #43: the layout fields of Course::jsonSerialize()['cert_layout'] (or the cert-config
  * response's certLayout), with the standard layout for a missing value.
  * @param {object|null} value - server layout
- * @return {{intro: string, show: object, issuer_name: string, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean}}
+ * @return {{intro: string, show: object, issuer_name: string, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean, logo_id: (string|null)}}
  */
 export function certLayoutFromServer(value) {
 	const v = value && typeof value === 'object' ? value : {}
@@ -507,6 +507,8 @@ export function certLayoutFromServer(value) {
 		signer_role: typeof v.signer_role === 'string' ? v.signer_role : '',
 		has_stamp: v.has_stamp === true,
 		has_signature: v.has_signature === true,
+		// GitHub #78: the library logo the course uses (its own endpoint, not part of the payload)
+		logo_id: typeof v.logo_id === 'string' ? v.logo_id : null,
 	}
 }
 

@@ -121,3 +121,85 @@ export async function removeCertLayoutImage(courseId, kind) {
 	)
 	return response.data
 }
+
+/**
+ * GitHub #78: the logos of the library the course can use and the one it uses (instructors only).
+ * @param {number} courseId — the course
+ * @return {Promise<{logos: Array<{id: string, name: string}>, selected: (string|null)}>}
+ */
+export async function getCertLogos(courseId) {
+	const response = await axios.get(generateUrl('/apps/learning/api/courses/{courseId}/cert-layout/logos', { courseId }))
+	return response.data
+}
+
+/**
+ * GitHub #78: a library logo's image for the choice in the course settings (an img src).
+ * @param {number} courseId — the course
+ * @param {string} logoId — the logo's id
+ * @return {string}
+ */
+export function certLogoImageUrl(courseId, logoId) {
+	return generateUrl('/apps/learning/api/courses/{courseId}/cert-layout/logos/{logoId}', { courseId, logoId })
+}
+
+/**
+ * GitHub #78: use a library logo on the course's certificates; '' = the Theming logo again.
+ * @param {number} courseId — the course
+ * @param {string} logoId — the logo's id or ''
+ * @return {Promise<object>} the course's layout with images (same shape as getCertLayout)
+ */
+export async function selectCertLogo(courseId, logoId) {
+	const response = await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/cert-layout/logo', { courseId }), { logoId })
+	return response.data
+}
+
+/**
+ * GitHub #78: the certificate logo library (administrators only).
+ * @return {Promise<{logos: Array<{id: string, name: string, mime: string, size: number, courses: number}>, max: number}>}
+ */
+export async function listLibraryLogos() {
+	const response = await axios.get(generateUrl('/apps/learning/api/settings/admin/cert-logos'))
+	return response.data
+}
+
+/**
+ * GitHub #78: upload a logo into the library. The server checks the content (PNG, JPEG or WebP).
+ * @param {string} name — the name instructors choose it by
+ * @param {File} file — the chosen file
+ * @return {Promise<object>} the library, plus `added` (the new logo's id)
+ */
+export async function uploadLibraryLogo(name, file) {
+	const form = new FormData()
+	form.append('name', name)
+	form.append('logo', file)
+	const response = await axios.post(generateUrl('/apps/learning/api/settings/admin/cert-logos'), form)
+	return response.data
+}
+
+/**
+ * @param {string} id — the logo's id
+ * @param {string} name — the new name
+ * @return {Promise<object>} the library
+ */
+export async function renameLibraryLogo(id, name) {
+	const response = await axios.put(generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}', { id }), { name })
+	return response.data
+}
+
+/**
+ * GitHub #78: delete a library logo. Courses that use it go back to the Theming logo.
+ * @param {string} id — the logo's id
+ * @return {Promise<object>} the library, plus `courses_reset`
+ */
+export async function deleteLibraryLogo(id) {
+	const response = await axios.delete(generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}', { id }))
+	return response.data
+}
+
+/**
+ * @param {string} id — the logo's id
+ * @return {string} the img src of a library logo in the admin list
+ */
+export function libraryLogoImageUrl(id) {
+	return generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}/image', { id })
+}

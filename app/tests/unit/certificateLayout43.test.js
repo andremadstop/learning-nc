@@ -121,6 +121,7 @@ describe('normalizePresentation', () => {
 			signerRole: '',
 			stamp: '',
 			signature: '',
+			logo: '',
 		})
 	})
 
@@ -321,7 +322,8 @@ describe('course settings: stamp and signature stay visible without saving (GitH
 
 		await mountSettings({ has_stamp: false })
 
-		expect(axios.get.mock.calls.at(-1)[0]).toBe('/apps/learning/api/courses/7/cert-layout')
+		// GitHub #78: the logo choice loads the library as well
+		expect(axios.get.mock.calls.map((call) => call[0])).toContain('/apps/learning/api/courses/7/cert-layout')
 		expect(host.querySelector('.image-file-field__thumb')?.getAttribute('src')).toBe(STAMP)
 		expect(host.querySelector('[data-test="cert-layout-remove-stamp"]')).not.toBeNull()
 	})

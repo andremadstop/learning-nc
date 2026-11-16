@@ -46,7 +46,7 @@ class CertLayoutServiceTest extends TestCase {
         return $course;
     }
 
-    private function service(?IRootFolder $root = null, ?FakeDbConnection $db = null): CertLayoutService {
+    private function service(?IRootFolder $root = null, ?FakeDbConnection $db = null, ?\OCA\Learning\Service\CertLogoLibrary $library = null): CertLayoutService {
         $mapper = $this->createMock(CourseMapper::class);
         $mapper->method('update')->willReturnCallback(function (Course $c): Course {
             $this->updated[] = $c;
@@ -60,6 +60,7 @@ class CertLayoutServiceTest extends TestCase {
             $mapper,
             $time,
             $this->issuerName(),
+            $library ?? $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class),
         );
     }
 
@@ -355,5 +356,94 @@ class CertLayoutServiceTest extends TestCase {
         $standard = $this->service()->presentationForCourse($this->course(null));
         $this->assertSame('DevCloud', $standard['issuer_name']);
         $this->assertTrue($standard['show']['issuer']);
+    }
+
+    // ---- GitHub #78: the course's logo from the library ---------------------------------------
+
+    private function library(?string $id = null, string $mime = 'image/jpeg', string $bytes = 'JPEGBYTES'): \OCA\Learning\Service\CertLogoLibrary {
+        $library = $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class);
+        $library->method('content')->willReturnCallback(function (string $asked) use ($id, $mime, $bytes): array {
+            if ($asked !== $id) {
+                throw new \OCP\Files\NotFoundException('no such logo');
+            }
+            return ['mime' => $mime, 'bytes' => $bytes];
+        });
+        return $library;
+    }
+
+    public function testChoosingALibraryLogoCopiesItIntoTheCourseImages(): void {
+        $id = str_repeat('d', 64);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult()),   // not stored for the course yet
+            new FakeQueryBuilder(null, 1),            // insert
+        ]);
+
+        $course = $this->service(null, $db, $this->library($id))->selectLogo($this->course(), $id);
+
+        $this->assertSame($id, CertLayout::decode($course->getCertLayout())['logo_sha']);
+        $insert = $db->issuedBuilders[1];
+        $this->assertSame('insert', $insert->operation);
+        $values = array_column($insert->namedParameters, 'value');
+        $this->assertContains('image/jpeg', $values, 'the type of the logo, not image/png');
+        $this->assertContains(base64_encode('JPEGBYTES'), $values);
+        $this->assertContains(7, $values);
+        $this->assertSame(1760000000, $course->getUpdatedAt(), 'the change starts the grace period of the sweep');
+    }
+
+    public function testALogoThatIsNotInTheLibraryIsRefused(): void {
+        $db = new FakeDbConnection();
+        foreach ([str_repeat('e', 64), '../../etc/passwd', 'x'] as $id) {
+            try {
+                $this->service(null, $db, $this->library(str_repeat('d', 64)))->selectLogo($this->course(), $id);
+                $this->fail('accepted ' . $id);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame('logo_not_found', $e->getMessage());
+            }
+        }
+        $this->assertCount(0, $db->issuedBuilders);
+        $this->assertSame([], $this->updated);
+    }
+
+    public function testThemingAgainClearsTheLogo(): void {
+        $layout = CertLayout::defaults();
+        $layout['logo_sha'] = str_repeat('d', 64);
+
+        $course = $this->service()->selectLogo($this->course(CertLayout::encode($layout)), null);
+
+        $this->assertNull($course->getCertLayout(), 'back to the standard layout');
+    }
+
+    public function testTheSweepKeepsTheCoursesLogo(): void {
+        $logo = str_repeat('d', 64);
+        $layout = CertLayout::defaults();
+        $layout['logo_sha'] = $logo;
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 1, 'course_id' => 7, 'sha256' => $logo, 'cert_layout' => CertLayout::encode($layout)]])),
+        ]);
+
+        $this->assertSame(0, $this->service(null, $db)->sweepUnreferencedAssets());
+        $this->assertCount(1, $db->issuedBuilders, 'no certificate lookup, no delete');
+    }
+
+    public function testCertificatePresentationAndVerifyLogoUseTheCopy(): void {
+        $logo = str_repeat('d', 64);
+        $layout = CertLayout::defaults();
+        $layout['logo_sha'] = $logo;
+        $cert = new Certificate();
+        $cert->setCourseId(7);
+        $cert->setLayoutJson(CertLayout::encode($layout));
+        $row = ['mime' => 'image/webp', 'data_b64' => 'UklGRg=='];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($row)),
+            new FakeQueryBuilder(FakeResult::fromFetch($row)),
+        ]);
+        $service = $this->service(null, $db);
+
+        $this->assertSame('data:image/webp;base64,UklGRg==', $service->presentationForCertificate($cert)['logo'] ?? null);
+        $this->assertSame('data:image/webp;base64,UklGRg==', $service->logoForCertificate($cert));
+
+        $old = new Certificate();
+        $old->setCourseId(7);
+        $this->assertNull($service->logoForCertificate($old), 'issued before 5.14.0: the Theming logo');
     }
 }

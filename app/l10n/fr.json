@@ -3885,6 +3885,48 @@
         "Name der Organisation neben dem Logo anzeigen": "Afficher le nom de l’organisation",
         "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.": "Désactivé, seul le logo figure sur le certificat, par exemple lorsque le logo contient déjà le nom en toutes lettres. Le nom reste dans le certificat signé et sur la page de vérification.",
         "Ausstellende Organisation": "Organisation émettrice",
-        "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen.": "Ce nom figure comme émetteur sur les nouveaux certificats lorsqu’un cours n’indique pas son propre nom d’organisation sous « Présentation du certificat ». Sans saisie ici, c’est le nom de ce Nextcloud dans « Personnalisation » → « Nom » qui est utilisé. Les certificats déjà délivrés conservent leur nom."
+        "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen.": "Ce nom figure comme émetteur sur les nouveaux certificats lorsqu’un cours n’indique pas son propre nom d’organisation sous « Présentation du certificat ». Sans saisie ici, c’est le nom de ce Nextcloud dans « Personnalisation » → « Nom » qui est utilisé. Les certificats déjà délivrés conservent leur nom.",
+        "Bitte einen Namen mit höchstens 80 Zeichen eingeben.": "Saisissez un nom de 80 caractères au maximum.",
+        "Bitte zuerst einen Namen für das Logo eingeben.": "Saisissez d’abord un nom pour le logo.",
+        "Das Logo konnte nicht gelöscht werden.": "Le logo n’a pas pu être supprimé.",
+        "Das Logo konnte nicht hochgeladen werden.": "Le logo n’a pas pu être téléversé.",
+        "Das Logo konnte nicht übernommen werden.": "Le logo n’a pas pu être appliqué.",
+        "Das Logo wird aus der Bibliothek entfernt. Bereits ausgestellte Zertifikate behalten ihr Logo.": "Le logo est retiré de la bibliothèque. Les certificats déjà délivrés conservent leur logo.",
+        "Datei": "Fichier",
+        "Die Bibliothek ist voll (höchstens {max} Logos). Lösche ein Logo, um ein neues hinzuzufügen.": "La bibliothèque est pleine ({max} logos au maximum). Supprimez un logo pour en ajouter un nouveau.",
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen.": "Le fichier n’est pas une image PNG, JPEG ou WebP. Le format SVG n’est pas accepté.",
+        "Die Logos konnten nicht geladen werden.": "Les logos n’ont pas pu être chargés.",
+        "Die Logos verwaltet die Administration unter Verwaltung → Learning. Bereits ausgestellte Zertifikate behalten ihr Logo.": "Les administrateurs gèrent les logos dans Administration → Learning. Les certificats déjà délivrés conservent leur logo.",
+        "Dieses Logo gibt es in der Bibliothek nicht mehr.": "Ce logo ne figure plus dans la bibliothèque.",
+        "Dieses Logo ist schon in der Bibliothek.": "Ce logo figure déjà dans la bibliothèque.",
+        "Es ist keine Datei angekommen. Bitte erneut versuchen.": "Aucun fichier n’a été reçu. Veuillez réessayer.",
+        "Lehrende können diese Logos in ihren Kursen unter „Gestaltung des Zertifikats“ statt des Logos dieser Nextcloud wählen, etwa das vollständige Logo, wenn Nextcloud nur das Favicon zeigt. PNG, JPEG oder WebP, höchstens 1 MB und 3000 × 3000 Pixel. SVG wird nicht angenommen, weil das Zertifikat auch auf der öffentlichen Prüfseite erscheint.": "Les formateurs peuvent choisir ces logos dans leurs cours sous « Présentation du certificat » à la place du logo de ce Nextcloud, par exemple le logo complet lorsque Nextcloud n’affiche que le favicon. PNG, JPEG ou WebP, 1 Mo et 3000 × 3000 pixels au maximum. Le format SVG n’est pas accepté, car le certificat apparaît aussi sur la page publique de vérification.",
+        "Logo dieser Nextcloud (Theming)": "Logo de ce Nextcloud (Personnalisation)",
+        "Logo endgültig löschen": "Supprimer définitivement le logo",
+        "Logo hinzufügen": "Ajouter un logo",
+        "Logo hochladen …": "Téléverser un logo …",
+        "Logos für Zertifikate": "Logos pour les certificats",
+        "Name des Logos": "Nom du logo",
+        "Name des Logos (z. B. Hauptlogo, Schriftzug)": "Nom du logo (p. ex. logo principal, logotype)",
+        "Name gespeichert.": "Nom enregistré.",
+        "Namen speichern": "Enregistrer le nom",
+        "Noch keine Logos hinterlegt. Bis dahin tragen alle Zertifikate das Logo dieser Nextcloud.": "Aucun logo pour l’instant. D’ici là, tous les certificats portent le logo de ce Nextcloud.",
+        "Von keinem Kurs verwendet": "Utilisé par aucun cours",
+        "Weitere Logos (z. B. das vollständige Logo statt des Favicons) kann die Administration unter Verwaltung → Learning hinterlegen.": "Les administrateurs peuvent ajouter d’autres logos (par exemple le logo complet au lieu du favicon) dans Administration → Learning.",
+        "„{title}“ löschen": "Supprimer « {title} »",
+        "„{title}“ wurde gelöscht.": "« {title} » a été supprimé.",
+        "„{title}“ wurde hinzugefügt.": "« {title} » a été ajouté.",
+        "_Von %n Kurs verwendet_::_Von %n Kursen verwendet_": [
+            "Utilisé par %n cours",
+            "Utilisé par %n cours"
+        ],
+        "_%n Kurs verwendet dieses Logo. Seine neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._::_%n Kurse verwenden dieses Logo. Ihre neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._": [
+            "%n cours utilise ce logo. Ses nouveaux certificats porteront ensuite de nouveau le logo de ce Nextcloud. Les certificats déjà délivrés conservent leur logo.",
+            "%n cours utilisent ce logo. Leurs nouveaux certificats porteront ensuite de nouveau le logo de ce Nextcloud. Les certificats déjà délivrés conservent leur logo."
+        ],
+        "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._": [
+            "« {title} » a été supprimé. %n cours porte de nouveau le logo de ce Nextcloud.",
+            "« {title} » a été supprimé. %n cours portent de nouveau le logo de ce Nextcloud."
+        ]
     }
 }

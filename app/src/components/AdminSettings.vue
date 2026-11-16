@@ -391,6 +391,8 @@
 
       <OperatorSettings />
 
+      <CertLogoLibrary />
+
       <details class="audit-section">
         <summary class="audit-summary">
           <h3 class="audit-summary-title">{{ t('learning', 'Recent Audit Events') }} ({{ auditEvents.length }})</h3>
@@ -479,6 +481,7 @@ import axios from '@nextcloud/axios'
 import { nextTick } from 'vue'
 import AccessibleDialog from './AccessibleDialog.vue'
 import OperatorSettings from './OperatorSettings.vue'
+import CertLogoLibrary from './CertLogoLibrary.vue'
 import InstructorPicker from './InstructorPicker.vue'
 import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -490,7 +493,7 @@ import { toInstructorPayload, toOptions } from '../utils/member-picker.js'
 
 export default {
   name: 'AdminSettings',
-  components: { AccessibleDialog, InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
+  components: { AccessibleDialog, CertLogoLibrary, InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
   data() {
     return {
       loading: true,

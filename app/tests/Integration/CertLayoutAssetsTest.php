@@ -146,6 +146,59 @@ final class CertLayoutAssetsTest extends TestCase {
     }
 
     /**
+     * GitHub #78 on a real Nextcloud: a library logo in the app data, chosen for the course, signed
+     * into a certificate's layout. Deleting it from the library sets the course back to the Theming
+     * logo; the certificate keeps its copy on the card and on the public verify page, and the
+     * cleanup sweep leaves that copy alone.
+     */
+    public function testIssuedCertificateKeepsItsLibraryLogo(): void {
+        $library = Server::get(\OCA\Learning\Service\CertLogoLibrary::class);
+        $bytes = self::png(120, 40, 78);
+        $logo = $library->add('Primary (wordmark)', $bytes);
+        $dataUrl = 'data:image/png;base64,' . base64_encode($bytes);
+        try {
+            $this->layouts->selectLogo($this->course(), $logo['id']);
+            $this->assertSame($dataUrl, $this->layouts->presentationForCourse($this->course())['logo']);
+
+            $issued = Server::get(IssuanceService::class)
+                ->issueIfPassedResult(self::LEARNER, $this->courseId, new PassResult(true, 90, 80, true, time()));
+            $this->assertNotNull($issued);
+            $cert = $issued->certificate;
+
+            $library->delete($logo['id']);
+            $this->assertSame(1, $this->layouts->resetLogo($logo['id']));
+            $this->assertNull(CertLayout::decode($this->course()->getCertLayout())['logo_sha'], 'the course is back on the Theming logo');
+            $this->assertNull($this->layouts->presentationForCourse($this->course())['logo']);
+
+            $this->assertSame($dataUrl, $this->layouts->presentationForCertificate($cert)['logo']);
+            $verify = Server::get(\OCA\Learning\Service\CertificateVerifyService::class)
+                ->verifyByVerificationId((string)$cert->getVerificationId());
+            $this->assertSame('valid', $verify['status']);
+            $this->assertSame($dataUrl, $verify['issuer_logo']);
+
+            $course = $this->course();
+            $course->setUpdatedAt(time() - 7200);
+            $this->courses->update($course);
+            $this->assertSame(0, $this->layouts->sweepUnreferencedAssets(), 'the certificate still uses the logo');
+            $this->assertSame($dataUrl, $this->layouts->presentationForCertificate($cert)['logo']);
+        } finally {
+            if ($library->find($logo['id']) !== null) {
+                $library->delete($logo['id']);
+            }
+        }
+    }
+
+    /**
+     * GitHub #78: the verify service takes the layout service as an optional dependency; a wiring
+     * gap would show every certificate's library logo as the Theming logo on the public page.
+     */
+    public function testTheAppContainerWiresTheLayoutIntoTheVerifyService(): void {
+        $service = Server::get(\OCA\Learning\Service\CertificateVerifyService::class);
+        $property = new \ReflectionProperty($service, 'layoutService');
+        $this->assertInstanceOf(CertLayoutService::class, $property->getValue($service));
+    }
+
+    /**
      * The app container builds every controller that hands out or changes a layout. The show
      * endpoints only draw the layout through the injected service, so a wiring gap would show
      * every certificate as the standard card without any error.
@@ -156,6 +209,7 @@ final class CertLayoutAssetsTest extends TestCase {
             \OCA\Learning\Controller\CertificateController::class,
             \OCA\Learning\Controller\CourseCertificateController::class,
             \OCA\Learning\Controller\CertLayoutController::class,
+            \OCA\Learning\Controller\CertLogoController::class,
         ] as $class) {
             $controller = $container->get($class);
             $property = new \ReflectionProperty($controller, 'layoutService');

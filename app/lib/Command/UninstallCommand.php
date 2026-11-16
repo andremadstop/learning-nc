@@ -344,6 +344,7 @@ class UninstallCommand extends Command {
         $output->writeln('    Files the app created in users\' homes under /Learning/ stay as ordinary user files.');
         $output->writeln('    Question media (GitHub #66) stay in the app data folder appdata_<instance id>/learning/qmedia-<pool id>/;');
         $output->writeln('    delete those folders by hand on the data directory if the app does not come back.');
+        $output->writeln('    The certificate logo library (GitHub #78) stays in appdata_<instance id>/learning/cert-logos/ as well.');
 
         $output->writeln('');
         $output->writeln(sprintf('  Total: %s tables, %s rows in tables, %s metadata rows.', count($tables), number_format($totalRows), number_format($metaTotal)));

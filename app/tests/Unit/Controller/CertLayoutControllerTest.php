@@ -113,7 +113,7 @@ class CertLayoutControllerTest extends TestCase {
         $this->assertSame('bleibt', CertLayout::decode($this->course->getCertLayout())['intro']);
     }
 
-    private function layoutController(CourseService $courses, CertLayoutService $layouts, ?string $userId = 'teacher'): CertLayoutController {
+    private function layoutController(CourseService $courses, CertLayoutService $layouts, ?string $userId = 'teacher', ?\OCA\Learning\Service\CertLogoLibrary $library = null): CertLayoutController {
         return new CertLayoutController(
             'learning',
             $this->createMock(IRequest::class),
@@ -121,6 +121,7 @@ class CertLayoutControllerTest extends TestCase {
             $layouts,
             $this->createMock(LoggerInterface::class),
             $userId,
+            $library ?? $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class),
         );
     }
 

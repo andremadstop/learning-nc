@@ -24,6 +24,8 @@ namespace OCA\Learning\Service;
  *   signer_role    their function, '' = none
  *   stamp_sha      sha256 of the stamp PNG in learning_cert_assets, null = none
  *   signature_sha  sha256 of the signature PNG, null = none
+ *   logo_sha       sha256 of the course's logo from the logo library (GitHub #78), copied into
+ *                  learning_cert_assets like the stamp; null = the Theming logo, as before
  *
  * The standard layout (no text, every element shown, no signer, no images) is never stored: a
  * course with it keeps cert_layout NULL and its certificates keep layout_json NULL, so they render
@@ -41,7 +43,7 @@ final class CertLayout {
     public const IMAGE_KINDS = ['stamp', 'signature'];
 
     /**
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string}
      */
     public static function defaults(): array {
         return [
@@ -52,6 +54,7 @@ final class CertLayout {
             'signer_role' => '',
             'stamp_sha' => null,
             'signature_sha' => null,
+            'logo_sha' => null,
         ];
     }
 
@@ -59,7 +62,7 @@ final class CertLayout {
      * Decode a stored layout. NULL, invalid JSON or a non-object give the standard layout; unknown
      * keys are dropped, missing ones take their standard value.
      *
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string}
      */
     public static function decode(?string $json): array {
         $layout = self::defaults();
@@ -84,17 +87,19 @@ final class CertLayout {
         foreach (self::IMAGE_KINDS as $kind) {
             $layout[$kind . '_sha'] = self::cleanSha($data[$kind . '_sha'] ?? null);
         }
+        $layout['logo_sha'] = self::cleanSha($data['logo_sha'] ?? null);
         return $layout;
     }
 
     /**
      * Apply what the course settings sent (intro, show, issuer_name, signer_name, signer_role) to the current
      * layout. The images are not settable here: they only change through the image endpoint, which
-     * checks the file. Keys that are not sent stay as they are.
+     * checks the file, and neither is the logo (GitHub #78, its own endpoint checks the library).
+     * Keys that are not sent stay as they are.
      *
      * @param array<string, mixed> $input
      * @param array<string, mixed> $current a decoded layout
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string, logo_sha: ?string}
      * @throws \InvalidArgumentException when a value has the wrong type or is too long
      */
     public static function apply(array $input, array $current): array {
@@ -155,7 +160,7 @@ final class CertLayout {
     /**
      * The layout for the course settings (no image bytes, only whether there is one).
      *
-     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, has_stamp: bool, has_signature: bool}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, has_stamp: bool, has_signature: bool, logo_id: ?string}
      */
     public static function forSettings(?string $json): array {
         $layout = self::decode($json);
@@ -167,6 +172,8 @@ final class CertLayout {
             'signer_role' => $layout['signer_role'],
             'has_stamp' => $layout['stamp_sha'] !== null,
             'has_signature' => $layout['signature_sha'] !== null,
+            // GitHub #78: the library logo the course uses (its id is its sha256), null = Theming
+            'logo_id' => $layout['logo_sha'],
         ];
     }
 

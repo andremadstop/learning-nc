@@ -49,14 +49,19 @@ class CertificateVerifyService {
     private ITimeFactory $timeFactory;
     private IConfig $config;
 
+    /** GitHub #78: the logo a certificate was issued with (null in callers that do not show it). */
+    private ?CertLayoutService $layoutService;
+
     public function __construct(
         CertificateMapper $certificateMapper,
         CertKeyMapper $certKeyMapper,
         SigningService $signingService,
         KeyService $keyService,
         ITimeFactory $timeFactory,
-        IConfig $config
+        IConfig $config,
+        ?CertLayoutService $layoutService = null
     ) {
+        $this->layoutService = $layoutService;
         $this->certificateMapper = $certificateMapper;
         $this->certKeyMapper = $certKeyMapper;
         $this->signingService = $signingService;
@@ -143,6 +148,18 @@ class CertificateVerifyService {
         }
 
         return ['status' => 'valid'] + $dto;
+    }
+
+    /** Best effort: a logo that cannot be read must not turn a valid certificate into an error page. */
+    private function issuerLogo(Certificate $cert): ?string {
+        if ($this->layoutService === null) {
+            return null;
+        }
+        try {
+            return $this->layoutService->logoForCertificate($cert);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**
@@ -272,8 +289,11 @@ class CertificateVerifyService {
      * achievement.alignment; empty for certificates issued before 5.12.0 and for courses without
      * required pools. Course content, not recipient data.
      *
+     * issuer_logo (GitHub #78): the library logo the certificate was issued with, as a data URL; null
+     * for a certificate issued with the Theming logo (the page then shows the Theming logo).
+     *
      * @param array<string, mixed> $payload
-     * @return array{issuer_name: string, course_title: string, course_elements: list<string>, issued_at: int, expires_at: int|null, verification_id: string}
+     * @return array{issuer_name: string, issuer_logo: string|null, course_title: string, course_elements: list<string>, issued_at: int, expires_at: int|null, verification_id: string}
      */
     private function projectDto(Certificate $cert, array $payload, string $vid): array {
         $issuerName = is_array($payload['issuer'] ?? null) && is_string($payload['issuer']['name'] ?? null)
@@ -289,6 +309,7 @@ class CertificateVerifyService {
 
         return [
             'issuer_name' => $issuerName,
+            'issuer_logo' => $this->issuerLogo($cert),
             'course_title' => $courseTitle,
             'course_elements' => self::courseElements($payload),
             'issued_at' => $cert->getIssuedAt(),

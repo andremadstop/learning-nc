@@ -39,7 +39,7 @@ const ELEMENTS = '{course.elements}'
  * and courses with the standard layout) give the standard layout.
  *
  * @param {object|null} presentation - from the show response (or the settings preview)
- * @return {{intro: string, show: Object<string, boolean>, signerName: string, signerRole: string, stamp: string, signature: string}}
+ * @return {{intro: string, show: Object<string, boolean>, signerName: string, signerRole: string, stamp: string, signature: string, logo: string}}
  */
 export function normalizePresentation(presentation) {
 	const p = presentation && typeof presentation === 'object' ? presentation : {}
@@ -54,7 +54,19 @@ export function normalizePresentation(presentation) {
 		signerRole: typeof p.signer_role === 'string' ? p.signer_role : '',
 		stamp: isPngDataUrl(p.stamp) ? p.stamp : '',
 		signature: isPngDataUrl(p.signature) ? p.signature : '',
+		// GitHub #78: the library logo the certificate was issued with; '' = the Theming logo
+		logo: isLogoDataUrl(p.logo) ? p.logo : '',
 	}
+}
+
+/**
+ * GitHub #78: a library logo comes as a PNG, JPEG or WebP data URL (never SVG); anything else
+ * is not put into an img src.
+ * @param {*} value - candidate
+ * @return {boolean}
+ */
+export function isLogoDataUrl(value) {
+	return typeof value === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)
 }
 
 /**

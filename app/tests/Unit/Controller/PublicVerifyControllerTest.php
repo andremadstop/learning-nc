@@ -49,7 +49,7 @@ class PublicVerifyControllerTest extends TestCase {
     }
 
     /** Build the controller over a (mock or real) CertificateVerifyService. */
-    private function makeController(CertificateVerifyService $service): PublicVerifyController {
+    private function makeController(CertificateVerifyService $service, ?Defaults $defaults = null): PublicVerifyController {
         $l = $this->createMock(IL10N::class);
         $l->method('t')->willReturnArgument(0);
         $factory = $this->createMock(IFactory::class);
@@ -59,7 +59,7 @@ class PublicVerifyControllerTest extends TestCase {
             $this->requestMock,
             $service,
             $factory,
-            $this->createMock(Defaults::class)
+            $defaults ?? $this->createMock(Defaults::class)
         );
     }
 
@@ -190,5 +190,31 @@ class PublicVerifyControllerTest extends TestCase {
         $this->assertArrayNotHasKey('course_elements', $resp->getParams());
         $this->assertArrayNotHasKey('issuer_name', $resp->getParams());
         $this->assertFalse($resp->isThrottled(), 'invalid is a rare integrity failure — not throttled');
+    }
+
+    /**
+     * GitHub #78: a certificate issued with a library logo shows that logo on the verify page (its
+     * own copy, a data URL); certificates issued with the Theming logo, unknown ids and anything that
+     * is not an image data URL show the Theming logo.
+     */
+    public function testTheCertificatesOwnLogo(): void {
+        $theming = $this->createMock(Defaults::class);
+        $theming->method('getLogo')->willReturn('/themed/logo.svg');
+        $logo = 'data:image/jpeg;base64,/9j/4AAQ';
+        $verify = function (array $result) use ($theming): array {
+            $service = $this->createMock(CertificateVerifyService::class);
+            $service->method('verifyByVerificationId')->willReturn($result);
+            return $this->makeController($service, $theming)->verify(self::VID_VALID)->getParams();
+        };
+        $found = ['issuer_name' => 'Coca Cola', 'course_title' => 'Kurs', 'issued_at' => 1, 'expires_at' => null, 'verification_id' => self::VID_VALID];
+
+        $this->assertSame($logo, $verify(['status' => 'valid', 'issuer_logo' => $logo] + $found)['issuer_logo']);
+        $this->assertSame($logo, $verify(['status' => 'withdrawn', 'issuer_logo' => $logo, 'revoked_at' => 2] + $found)['issuer_logo']);
+        $this->assertSame('/themed/logo.svg', $verify(['status' => 'valid', 'issuer_logo' => null] + $found)['issuer_logo']);
+        $this->assertSame('/themed/logo.svg', $verify(['status' => 'valid', 'issuer_logo' => 'javascript:alert(1)'] + $found)['issuer_logo']);
+        $this->assertSame('/themed/logo.svg', $verify(['status' => 'valid', 'issuer_logo' => 'data:image/svg+xml;base64,PHN2Zz4='] + $found)['issuer_logo']);
+        $this->assertSame('/themed/logo.svg', $verify(['status' => 'invalid', 'issuer_logo' => $logo])['issuer_logo']);
+        // the name stays whatever the card shows (GitHub #77)
+        $this->assertSame('Coca Cola', $verify(['status' => 'valid', 'issuer_logo' => $logo] + $found)['issuer_name']);
     }
 }

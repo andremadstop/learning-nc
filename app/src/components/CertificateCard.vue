@@ -7,8 +7,8 @@
 			<!-- GitHub #77: with the name hidden (a wordmark logo says it already) the logo is what names
 				the issuer, so it carries the name as its text alternative; beside the name it is decoration. -->
 			<img
-				v-if="layout.show.logo && fields.issuerLogo"
-				:src="fields.issuerLogo"
+				v-if="layout.show.logo && logoSrc"
+				:src="logoSrc"
 				:alt="layout.show.issuer ? '' : fields.issuerName"
 				:aria-hidden="layout.show.issuer ? 'true' : null"
 				class="certificate-logo"
@@ -168,7 +168,11 @@ export default {
 		 * stays: a certificate that names no issuer at all is not what the switch is for.
 		 */
 		showIssuerName() {
-			return this.layout.show.issuer || !(this.layout.show.logo && this.fields.issuerLogo)
+			return this.layout.show.issuer || !(this.layout.show.logo && this.logoSrc)
+		},
+		/** GitHub #78: the library logo the certificate was issued with, else the Theming logo of the credential */
+		logoSrc() {
+			return this.layout.logo || this.fields.issuerLogo
 		},
 		hasSignatureBlock() {
 			return !!(this.layout.stamp || this.layout.signature || this.layout.signerName || this.layout.signerRole)

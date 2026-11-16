@@ -586,10 +586,13 @@ class CertificateVerifyServiceTest extends TestCase {
 
         // And positively: only the allow-listed public keys are present.
         $this->assertEqualsCanonicalizing(
-            ['status', 'issuer_name', 'course_title', 'course_elements', 'issued_at', 'expires_at', 'verification_id'],
+            // issuer_logo (GitHub #78): the organisation's logo the certificate was issued with, no
+            // recipient data; null here (no layout service, a certificate without a library logo)
+            ['status', 'issuer_name', 'issuer_logo', 'course_title', 'course_elements', 'issued_at', 'expires_at', 'verification_id'],
             array_keys($result),
             'valid DTO exposes ONLY the allow-listed public fields'
         );
+        $this->assertNull($result['issuer_logo']);
     }
 
     // ---- RECERT-01/03 lifecycle states + DSGVO-03 anonymized branch (164-06) ---------------
