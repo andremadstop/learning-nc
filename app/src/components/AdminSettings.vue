@@ -134,7 +134,7 @@
             <div class="ticket-actions">
               <NcButton
                 variant="primary"
-                :disabled="answeringId === ticket.id"
+                :disabled="answeringId === ticket.id || !(ticketAnswers[ticket.id] || '').trim()"
                 @click="submitTicketAnswer(ticket.id)">
                 {{ answeringId === ticket.id ? t('learning', 'Saving...') : t('learning', 'Save answer') }}
               </NcButton>
@@ -789,8 +789,10 @@ export default {
       this.form.enabledTools = ALL_TOOL_IDS.filter((id) => next.has(id))
     },
     async submitTicketAnswer(ticketId) {
+      // An empty answer is refused by the server; it is not sent (the button is disabled, too).
+      if (!(this.ticketAnswers[ticketId] || '').trim()) return
       this.answeringId = ticketId
-      this.ticketError = ''
+      this.ticketActionError = ''
       this.ticketSuccess = ''
       try {
         await axios.post(generateUrl(`/apps/learning/api/settings/admin/support-tickets/${ticketId}/answer`), {
@@ -799,7 +801,10 @@ export default {
         this.ticketSuccess = t('learning', 'Support ticket answer saved')
         await this.loadSupportTickets()
       } catch (e) {
-        this.ticketError = e?.response?.data?.error || t('learning', 'Failed to save support ticket answer')
+        // The persona sweep (C5): this went to ticketError, which takes the place of the whole
+        // ticket list, so a failed answer hid every ticket behind the server's English message.
+        // It belongs above the list, as archive and delete errors do; the typed answer stays.
+        this.ticketActionError = t('learning', 'Failed to save support ticket answer')
       } finally {
         this.answeringId = null
       }

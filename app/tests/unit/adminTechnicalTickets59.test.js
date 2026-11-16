@@ -268,6 +268,29 @@ describe('#59 technical tickets on the admin page', () => {
 		expect(host.querySelectorAll('.ticket-card')).toHaveLength(2)
 		expect(host.textContent).toContain('Die Anfrage konnte nicht gelöscht werden.')
 	})
+
+	// Persona sweep C5: "Save answer" on an empty answer was sent, the server refused it (400), and
+	// the refusal took the place of the whole ticket list (ticketError), in the server's English.
+	it('does not send an empty answer, and a failed answer keeps the ticket list in view', async () => {
+		stubServer()
+		await mount()
+		const card = () => [...host.querySelectorAll('.ticket-card')].find((c) => c.textContent.includes('Login geht nicht'))
+		const save = () => [...card().querySelectorAll('button')].find((b) => b.textContent.includes('Save answer'))
+		expect(save().disabled).toBe(true)
+		await vm.submitTicketAnswer(1)
+		expect(axios.post).not.toHaveBeenCalled()
+
+		vm.setTicketAnswer(1, 'Bitte Cache leeren.')
+		await flush()
+		expect(save().disabled).toBe(false)
+		axios.post.mockRejectedValue({ response: { status: 500, data: { error: 'Internal error' } } })
+		await vm.submitTicketAnswer(1)
+		await flush()
+		expect(host.querySelectorAll('.ticket-card').length).toBe(2)
+		expect(host.querySelector('.ticket-action-error').textContent.trim()).toBe('Failed to save support ticket answer')
+		expect(host.textContent).not.toContain('Internal error')
+		expect(card().querySelector('.ticket-answer-input').value).toBe('Bitte Cache leeren.')
+	})
 })
 
 describe('#59 the picker in its ticket-recipients kind', () => {
