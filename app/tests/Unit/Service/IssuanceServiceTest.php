@@ -9,6 +9,9 @@ use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\CertIssuerName;
+use OCA\Learning\Service\CertLayout;
+use OCA\Learning\Service\OperatorInfo;
 use OCA\Learning\Service\ComplianceAuditException;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\IssuanceService;
@@ -21,6 +24,7 @@ use OCP\IURLGenerator;
 use OCP\Notification\IManager;
 use OCP\Notification\INotification;
 use OCP\Defaults;
+use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -107,7 +111,8 @@ class IssuanceServiceTest extends TestCase {
         ?\Throwable $signingThrows = null,
         ?array &$notifySubject = null,
         ?int $releaseSlotResult = null,
-        ?array &$releaseSlotArgs = null
+        ?array &$releaseSlotArgs = null,
+        string $operatorName = ''
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
         $db = $db ?? new FakeDbConnection();
@@ -207,7 +212,17 @@ class IssuanceServiceTest extends TestCase {
             $logger,
             $audit,
             $db,
+            new CertIssuerName($this->operatorInfo($operatorName), $theming),
         );
+    }
+
+    /** The operator details with only the legal name set (GitHub #77). */
+    private function operatorInfo(string $name): OperatorInfo {
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(
+            fn(string $app, string $key, string $default = ''): string => $key === 'operator_name' ? $name : $default
+        );
+        return new OperatorInfo($config);
     }
 
     private function b64uDecode(string $s): array {
@@ -334,6 +349,7 @@ class IssuanceServiceTest extends TestCase {
             $certMapper, $courseMapper, $signingService, $keyService, $manager,
             $theming, $url, $userManager, $time, $this->createMock(LoggerInterface::class),
             $auditLoser, new FakeDbConnection(),
+            new CertIssuerName($this->operatorInfo(''), $theming),
         );
 
         $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
@@ -554,6 +570,57 @@ class IssuanceServiceTest extends TestCase {
         $this->assertSame('AWO Akademie', $payload['issuer']['name']);
         $this->assertSame('https://cloud.example/themed-logo.png', $payload['issuer']['image']['id']);
         $this->assertSame(self::HOST_DID, $payload['issuer']['id']);
+    }
+
+    /**
+     * GitHub #77: the course's own organisation name is signed as issuer.name; the operator's legal
+     * name and the Theming name are only the fallbacks.
+     */
+    public function testCourseOrganisationNameIsTheSignedIssuerName(): void {
+        $layout = CertLayout::defaults();
+        $layout['issuer_name'] = 'Training Solutions LTD';
+        $course = $this->makeCourse();
+        $course->setCertLayout(CertLayout::encode($layout));
+        $captured = null;
+        $service = $this->makeService(null, $course, $captured, issuerName: 'T-Solutions', operatorName: 'Operator GmbH');
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNotNull($captured);
+        $this->assertSame('Training Solutions LTD', $this->payloadOf($captured)['issuer']['name']);
+        $this->assertSame('Training Solutions LTD', CertLayout::decode($captured->getLayoutJson())['issuer_name']);
+    }
+
+    /** GitHub #77: without a course name the operator's legal name comes before the Theming name. */
+    public function testOperatorLegalNameBeforeThemingName(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, issuerName: 'T-Solutions', operatorName: 'Training Solutions LTD');
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNotNull($captured);
+        $this->assertSame('Training Solutions LTD', $this->payloadOf($captured)['issuer']['name']);
+        // the standard layout still leaves no snapshot behind
+        $this->assertNull($captured->getLayoutJson());
+    }
+
+    /**
+     * GitHub #77: hiding the name is only the look of the card. The credential still names its
+     * issuer (OB3 requires it), so the verify page does too.
+     */
+    public function testHiddenOrganisationNameStaysInTheCredential(): void {
+        $layout = CertLayout::defaults();
+        $layout['show']['issuer'] = false;
+        $course = $this->makeCourse();
+        $course->setCertLayout(CertLayout::encode($layout));
+        $captured = null;
+        $service = $this->makeService(null, $course, $captured, issuerName: 'Coca Cola');
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNotNull($captured);
+        $this->assertSame('Coca Cola', $this->payloadOf($captured)['issuer']['name']);
+        $this->assertFalse(CertLayout::decode($captured->getLayoutJson())['show']['issuer']);
     }
 
     // ---- RECERT-01/02 RED locking test (Wave 2, 164-02) ------------------------------------

@@ -9,8 +9,12 @@
  * ({{ }}), never v-html, so markup typed into the layout or present in a name shows as text.
  */
 
-/** Element switches, all on in the standard layout. QR code and verification link are not here: always shown. */
-export const SHOW_KEYS = ['logo', 'score', 'threshold', 'elements', 'validity']
+/**
+ * Element switches, all on in the standard layout. QR code and verification link are not here: always shown.
+ * `issuer` (GitHub #77) only hides the organisation name beside the logo; the signed credential and
+ * the public verify page keep it.
+ */
+export const SHOW_KEYS = ['logo', 'issuer', 'score', 'threshold', 'elements', 'validity']
 
 /** The placeholders the introduction text understands, in the order the settings list them. */
 export const PLACEHOLDERS = [

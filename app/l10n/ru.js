@@ -3878,5 +3878,10 @@ OC.L10N.register(
     "Die Empfänger konnten nicht geladen werden." : "Не удалось загрузить получателей.",
     "Die Empfänger konnten nicht gespeichert werden." : "Не удалось сохранить получателей.",
     "Neue technische Anfrage: „%s“" : "Новое техническое обращение: «%s»",
+    "Name der Organisation auf dem Zertifikat" : "Название организации в сертификате",
+    "Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite." : "Оставьте пустым, чтобы использовать «{name}» (юридическое название из сведений об операторе, иначе название этого Nextcloud). Название подписывается в новых сертификатах и также отображается на публичной странице проверки.",
+    "Name der Organisation neben dem Logo anzeigen" : "Показывать название организации",
+    "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name." : "Если выключено, на сертификате остаётся только логотип — например, когда логотип уже содержит название в виде надписи. В подписанном сертификате и на странице проверки название сохраняется.",
+    "Ausstellende Organisation" : "Выдающая организация",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

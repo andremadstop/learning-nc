@@ -59,6 +59,17 @@ class CertLayoutServiceTest extends TestCase {
             $root ?? $this->createMock(IRootFolder::class),
             $mapper,
             $time,
+            $this->issuerName(),
+        );
+    }
+
+    /** GitHub #77: no course name, no operator name, Theming name "DevCloud". */
+    private function issuerName(): \OCA\Learning\Service\CertIssuerName {
+        $theming = $this->createMock(\OCP\Defaults::class);
+        $theming->method('getName')->willReturn('DevCloud');
+        return new \OCA\Learning\Service\CertIssuerName(
+            new \OCA\Learning\Service\OperatorInfo($this->createMock(\OCP\IConfig::class)),
+            $theming,
         );
     }
 
@@ -328,5 +339,21 @@ class CertLayoutServiceTest extends TestCase {
         // The image is looked up in the certificate's own course.
         $this->assertSame(7, $db->issuedBuilders[0]->namedParameters[0]['value']);
         $this->assertSame($sha, $db->issuedBuilders[0]->namedParameters[1]['value']);
+    }
+
+    /** GitHub #77: the settings preview names the organisation the next certificate is issued in. */
+    public function testCoursePresentationNamesTheOrganisation(): void {
+        $layout = CertLayout::defaults();
+        $layout['issuer_name'] = 'Training Solutions LTD';
+        $layout['show']['issuer'] = false;
+
+        $own = $this->service()->presentationForCourse($this->course(CertLayout::encode($layout)));
+        $this->assertSame('Training Solutions LTD', $own['issuer_name']);
+        $this->assertSame('DevCloud', $own['issuer_name_fallback']);
+        $this->assertFalse($own['show']['issuer']);
+
+        $standard = $this->service()->presentationForCourse($this->course(null));
+        $this->assertSame('DevCloud', $standard['issuer_name']);
+        $this->assertTrue($standard['show']['issuer']);
     }
 }

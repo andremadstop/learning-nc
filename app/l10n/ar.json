@@ -3884,6 +3884,11 @@
         "Die Anfrage konnte nicht gelöscht werden.": "تعذّر حذف الطلب.",
         "Die Empfänger konnten nicht geladen werden.": "تعذّر تحميل المستلمين.",
         "Die Empfänger konnten nicht gespeichert werden.": "تعذّر حفظ المستلمين.",
-        "Neue technische Anfrage: „%s“": "طلب تقني جديد: «%s»"
+        "Neue technische Anfrage: „%s“": "طلب تقني جديد: «%s»",
+        "Name der Organisation auf dem Zertifikat": "اسم المؤسسة على الشهادة",
+        "Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.": "اتركه فارغًا لاستخدام „{name}“ (الاسم القانوني من بيانات المشغّل، وإلا فاسم نسخة Nextcloud هذه). يُوقَّع الاسم في الشهادات الجديدة ويظهر أيضًا على صفحة التحقق العامة.",
+        "Name der Organisation neben dem Logo anzeigen": "إظهار اسم المؤسسة",
+        "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.": "عند الإيقاف لا يظهر على الشهادة سوى الشعار، مثلًا عندما يتضمن الشعار الاسم مكتوبًا. يبقى الاسم في الشهادة الموقّعة وعلى صفحة التحقق.",
+        "Ausstellende Organisation": "الجهة المُصدِرة"
     }
 }

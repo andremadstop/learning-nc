@@ -3880,6 +3880,11 @@
         "Die Anfrage konnte nicht gelöscht werden.": "The ticket could not be deleted.",
         "Die Empfänger konnten nicht geladen werden.": "The recipients could not be loaded.",
         "Die Empfänger konnten nicht gespeichert werden.": "The recipients could not be saved.",
-        "Neue technische Anfrage: „%s“": "New technical ticket: “%s”"
+        "Neue technische Anfrage: „%s“": "New technical ticket: “%s”",
+        "Name der Organisation auf dem Zertifikat": "Organisation name on the certificate",
+        "Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.": "Leave empty for “{name}” (the legal name from the operator details, otherwise the name of this Nextcloud). The name is signed into new certificates and also appears on the public verification page.",
+        "Name der Organisation neben dem Logo anzeigen": "Show organisation name",
+        "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.": "When off, only the logo appears next to it on the certificate, for example when the logo already spells out the name. The name stays in the signed certificate and on the verification page.",
+        "Ausstellende Organisation": "Issuing organisation"
     }
 }

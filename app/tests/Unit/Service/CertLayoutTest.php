@@ -134,4 +134,28 @@ class CertLayoutTest extends TestCase {
         $this->assertFalse($view['has_signature']);
         $this->assertArrayNotHasKey('stamp_sha', $view);
     }
+
+    /**
+     * GitHub #77: the organisation name and its switch are part of the layout. A layout stored by
+     * 5.13.0 (no issuer keys) still shows the name, and the standard layout is still stored as NULL.
+     */
+    public function testOrganisationNameDefaultsKeepTheStandardLayoutNull(): void {
+        $this->assertSame('', CertLayout::defaults()['issuer_name']);
+        $this->assertTrue(CertLayout::defaults()['show']['issuer']);
+        $this->assertNull(CertLayout::encode(CertLayout::apply(['issuer_name' => '  ', 'show' => ['issuer' => true]], CertLayout::defaults())));
+
+        $old = CertLayout::decode('{"intro":"x","show":{"logo":true,"score":false,"threshold":true,"elements":true,"validity":true}}');
+        $this->assertTrue($old['show']['issuer']);
+        $this->assertSame('', $old['issuer_name']);
+    }
+
+    public function testOrganisationNameIsSingleLineAndLimited(): void {
+        $layout = CertLayout::apply(['issuer_name' => "Training\nSolutions LTD ", 'show' => ['issuer' => false]], CertLayout::defaults());
+        $this->assertSame('Training Solutions LTD', $layout['issuer_name']);
+        $this->assertFalse($layout['show']['issuer']);
+        $this->assertSame('Training Solutions LTD', CertLayout::forSettings(CertLayout::encode($layout))['issuer_name']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        CertLayout::apply(['issuer_name' => str_repeat('x', CertLayout::ISSUER_NAME_MAX + 1)], CertLayout::defaults());
+    }
 }

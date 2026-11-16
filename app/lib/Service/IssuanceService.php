@@ -56,6 +56,7 @@ class IssuanceService {
     private LoggerInterface $logger;
     private AuditService $auditService;
     private IDBConnection $db;
+    private CertIssuerName $issuerName;
 
     public function __construct(
         CertificateMapper $certificateMapper,
@@ -69,7 +70,8 @@ class IssuanceService {
         ITimeFactory $timeFactory,
         LoggerInterface $logger,
         AuditService $auditService,
-        IDBConnection $db
+        IDBConnection $db,
+        CertIssuerName $issuerName
     ) {
         $this->certificateMapper = $certificateMapper;
         $this->courseMapper = $courseMapper;
@@ -83,6 +85,7 @@ class IssuanceService {
         $this->logger = $logger;
         $this->auditService = $auditService;
         $this->db = $db;
+        $this->issuerName = $issuerName;
     }
 
     /**
@@ -326,13 +329,12 @@ class IssuanceService {
      * Build the self-contained OB3/VC 2.0 credential object (CERT-06). Every value here is
      * frozen into the signed payload — the credential never reads back from the DB to verify.
      *
-     * @param \OCA\Learning\Db\Course $course
      * @return array<string, mixed>
      */
     private function buildCredential(
         string $verificationId,
         int $courseId,
-        $course,
+        Course $course,
         PassResult $result,
         string $recipientName,
         int $issuedAt,
@@ -351,7 +353,8 @@ class IssuanceService {
             'issuer' => [
                 'id' => $this->keyService->hostDid(),
                 'type' => ['Profile'],
-                'name' => $this->themingDefaults->getName(),
+                // GitHub #77: the course's organisation name, else the operator's, else Theming's
+                'name' => $this->issuerName->forCourse($course),
                 'image' => [
                     'id' => $this->absoluteLogoUrl(),
                     'type' => 'Image',

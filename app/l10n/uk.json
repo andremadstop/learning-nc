@@ -3881,6 +3881,11 @@
         "Die Anfrage konnte nicht gelöscht werden.": "Не вдалося видалити звернення.",
         "Die Empfänger konnten nicht geladen werden.": "Не вдалося завантажити отримувачів.",
         "Die Empfänger konnten nicht gespeichert werden.": "Не вдалося зберегти отримувачів.",
-        "Neue technische Anfrage: „%s“": "Нове технічне звернення: «%s»"
+        "Neue technische Anfrage: „%s“": "Нове технічне звернення: «%s»",
+        "Name der Organisation auf dem Zertifikat": "Назва організації в сертифікаті",
+        "Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.": "Залиште порожнім, щоб використати «{name}» (юридична назва з даних оператора, інакше назва цього Nextcloud). Назва підписується в нових сертифікатах і також відображається на публічній сторінці перевірки.",
+        "Name der Organisation neben dem Logo anzeigen": "Показувати назву організації",
+        "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.": "Якщо вимкнено, на сертифікаті лишається тільки логотип — наприклад, коли логотип уже містить назву написом. У підписаному сертифікаті та на сторінці перевірки назва залишається.",
+        "Ausstellende Organisation": "Організація, що видає"
     }
 }

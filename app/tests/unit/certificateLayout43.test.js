@@ -116,7 +116,7 @@ describe('normalizePresentation', () => {
 	it('null is the standard layout', () => {
 		expect(normalizePresentation(null)).toEqual({
 			intro: '',
-			show: { logo: true, score: true, threshold: true, elements: true, validity: true },
+			show: { logo: true, issuer: true, score: true, threshold: true, elements: true, validity: true },
 			signerName: '',
 			signerRole: '',
 			stamp: '',
@@ -275,9 +275,9 @@ describe('course settings: request body of the layout (GitHub #43)', () => {
 
 		const [url, body] = axios.patch.mock.calls.at(-1)
 		expect(url).toBe('/apps/learning/api/courses/7/cert-config')
-		expect(Object.keys(body.certLayout).sort()).toEqual(['intro', 'show', 'signer_name', 'signer_role'])
+		expect(Object.keys(body.certLayout).sort()).toEqual(['intro', 'issuer_name', 'show', 'signer_name', 'signer_role'])
 		expect(body.certLayout.intro).toBe('Hiermit {student.name}')
-		expect(body.certLayout.show).toEqual({ logo: true, score: true, threshold: true, elements: true, validity: true })
+		expect(body.certLayout.show).toEqual({ logo: true, issuer: true, score: true, threshold: true, elements: true, validity: true })
 		expect(ctx.certLayout.has_stamp).toBe(true)
 	})
 })

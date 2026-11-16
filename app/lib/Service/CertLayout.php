@@ -14,7 +14,12 @@ namespace OCA\Learning\Service;
  * Stored shape (learning_courses.cert_layout, snapshot in learning_certificates.layout_json):
  *   intro          introduction text with placeholders; '' = the standard "Awarded to: <name>" line
  *   show           element switches; QR code and verification link are not among them on purpose:
- *                  without them nobody can check the paper, so they are always printed
+ *                  without them nobody can check the paper, so they are always printed.
+ *                  show.issuer (GitHub #77) only hides the name beside the logo on the card: the
+ *                  signed credential and the public verify page always carry the issuer name
+ *   issuer_name    organisation name for the certificate (GitHub #77), '' = the fallback chain of
+ *                  CertIssuerName (operator details, then the Theming name). Signed into issuer.name
+ *                  of new certificates; the card shows the name from the credential, not this field
  *   signer_name    name of the person who signs, '' = none
  *   signer_role    their function, '' = none
  *   stamp_sha      sha256 of the stamp PNG in learning_cert_assets, null = none
@@ -27,19 +32,22 @@ namespace OCA\Learning\Service;
 final class CertLayout {
     public const INTRO_MAX = 2000;
     public const SIGNER_MAX = 120;
+    /** GitHub #77: as long as the operator's legal name (OperatorInfo::FIELDS['name']). */
+    public const ISSUER_NAME_MAX = 200;
 
     /** Element switches, all on in the standard layout. */
-    public const SHOW_KEYS = ['logo', 'score', 'threshold', 'elements', 'validity'];
+    public const SHOW_KEYS = ['logo', 'issuer', 'score', 'threshold', 'elements', 'validity'];
 
     public const IMAGE_KINDS = ['stamp', 'signature'];
 
     /**
-     * @return array{intro: string, show: array<string, bool>, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
      */
     public static function defaults(): array {
         return [
             'intro' => '',
             'show' => array_fill_keys(self::SHOW_KEYS, true),
+            'issuer_name' => '',
             'signer_name' => '',
             'signer_role' => '',
             'stamp_sha' => null,
@@ -51,7 +59,7 @@ final class CertLayout {
      * Decode a stored layout. NULL, invalid JSON or a non-object give the standard layout; unknown
      * keys are dropped, missing ones take their standard value.
      *
-     * @return array{intro: string, show: array<string, bool>, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
      */
     public static function decode(?string $json): array {
         $layout = self::defaults();
@@ -70,6 +78,7 @@ final class CertLayout {
                 }
             }
         }
+        $layout['issuer_name'] = self::cleanText($data['issuer_name'] ?? '', self::ISSUER_NAME_MAX, false);
         $layout['signer_name'] = self::cleanText($data['signer_name'] ?? '', self::SIGNER_MAX, false);
         $layout['signer_role'] = self::cleanText($data['signer_role'] ?? '', self::SIGNER_MAX, false);
         foreach (self::IMAGE_KINDS as $kind) {
@@ -79,13 +88,13 @@ final class CertLayout {
     }
 
     /**
-     * Apply what the course settings sent (intro, show, signer_name, signer_role) to the current
+     * Apply what the course settings sent (intro, show, issuer_name, signer_name, signer_role) to the current
      * layout. The images are not settable here: they only change through the image endpoint, which
      * checks the file. Keys that are not sent stay as they are.
      *
      * @param array<string, mixed> $input
      * @param array<string, mixed> $current a decoded layout
-     * @return array{intro: string, show: array<string, bool>, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, stamp_sha: ?string, signature_sha: ?string}
      * @throws \InvalidArgumentException when a value has the wrong type or is too long
      */
     public static function apply(array $input, array $current): array {
@@ -105,6 +114,9 @@ final class CertLayout {
                     $layout['show'][$key] = $input['show'][$key];
                 }
             }
+        }
+        if (array_key_exists('issuer_name', $input)) {
+            $layout['issuer_name'] = self::requireText($input['issuer_name'], self::ISSUER_NAME_MAX, false, 'issuer_name');
         }
         foreach (['signer_name', 'signer_role'] as $key) {
             if (array_key_exists($key, $input)) {
@@ -143,13 +155,14 @@ final class CertLayout {
     /**
      * The layout for the course settings (no image bytes, only whether there is one).
      *
-     * @return array{intro: string, show: array<string, bool>, signer_name: string, signer_role: string, has_stamp: bool, has_signature: bool}
+     * @return array{intro: string, show: array<string, bool>, issuer_name: string, signer_name: string, signer_role: string, has_stamp: bool, has_signature: bool}
      */
     public static function forSettings(?string $json): array {
         $layout = self::decode($json);
         return [
             'intro' => $layout['intro'],
             'show' => $layout['show'],
+            'issuer_name' => $layout['issuer_name'],
             'signer_name' => $layout['signer_name'],
             'signer_role' => $layout['signer_role'],
             'has_stamp' => $layout['stamp_sha'] !== null,

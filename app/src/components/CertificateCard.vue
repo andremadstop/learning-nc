@@ -4,13 +4,16 @@
 		so the preview is exactly what will be printed. Text goes into text nodes only. -->
 	<div class="certificate-card">
 		<div class="certificate-brand">
+			<!-- GitHub #77: with the name hidden (a wordmark logo says it already) the logo is what names
+				the issuer, so it carries the name as its text alternative; beside the name it is decoration. -->
 			<img
 				v-if="layout.show.logo && fields.issuerLogo"
 				:src="fields.issuerLogo"
-				alt=""
-				aria-hidden="true"
-				class="certificate-logo">
-			<span class="certificate-issuer">{{ fields.issuerName }}</span>
+				:alt="layout.show.issuer ? '' : fields.issuerName"
+				:aria-hidden="layout.show.issuer ? 'true' : null"
+				class="certificate-logo"
+				data-test="certificate-logo">
+			<span v-if="showIssuerName" class="certificate-issuer" data-test="certificate-issuer">{{ fields.issuerName }}</span>
 		</div>
 
 		<p class="certificate-kicker">{{ t('learning', 'Zertifikat') }}</p>
@@ -159,6 +162,13 @@ export default {
 				&& Array.isArray(elements) && elements.length > 0
 				// the text already lists them
 				&& !this.layout.intro.includes('{course.elements}')
+		},
+		/**
+		 * GitHub #77: the switch hides the name beside the logo. Without a logo on the card the name
+		 * stays: a certificate that names no issuer at all is not what the switch is for.
+		 */
+		showIssuerName() {
+			return this.layout.show.issuer || !(this.layout.show.logo && this.fields.issuerLogo)
 		},
 		hasSignatureBlock() {
 			return !!(this.layout.stamp || this.layout.signature || this.layout.signerName || this.layout.signerRole)

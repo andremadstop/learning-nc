@@ -39,6 +39,7 @@ class CertLayoutService {
         private IRootFolder $rootFolder,
         private CourseMapper $courseMapper,
         private ITimeFactory $timeFactory,
+        private CertIssuerName $issuerName,
     ) {
     }
 
@@ -134,12 +135,17 @@ class CertLayoutService {
     }
 
     /**
-     * The course's current presentation, for the preview in the course settings.
+     * The course's current presentation, for the preview in the course settings, with the names the
+     * next certificate would be issued in (GitHub #77): issuer_name is what it gets now,
+     * issuer_name_fallback what an empty field would give (operator details, then Theming).
      *
      * @return array<string, mixed>
      */
     public function presentationForCourse(Course $course): array {
-        return $this->presentation(CertLayout::decode($course->getCertLayout()), (int)$course->getId());
+        $presentation = $this->presentation(CertLayout::decode($course->getCertLayout()), (int)$course->getId());
+        $presentation['issuer_name'] = $this->issuerName->forCourse($course);
+        $presentation['issuer_name_fallback'] = $this->issuerName->fallback();
+        return $presentation;
     }
 
     /**

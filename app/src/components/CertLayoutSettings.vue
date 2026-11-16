@@ -36,6 +36,35 @@
 			</div>
 		</div>
 
+		<!-- GitHub #77: the organisation the certificate names, and whether the name stands beside the logo -->
+		<fieldset class="cert-config-field cert-layout-org" data-test="cert-layout-org">
+			<legend>{{ t('learning', 'Ausstellende Organisation') }}</legend>
+			<div class="cert-config-field">
+				<label :for="issuerNameId">{{ t('learning', 'Name der Organisation auf dem Zertifikat') }}</label>
+				<input
+					:id="issuerNameId"
+					:value="modelValue.issuer_name"
+					type="text"
+					:maxlength="issuerNameMax"
+					:placeholder="fallbackIssuerName"
+					class="cert-layout-text"
+					data-test="cert-layout-issuer-name"
+					:aria-describedby="issuerNameHintId"
+					@input="update({ issuer_name: $event.target.value })">
+				<p :id="issuerNameHintId" class="mode-config-hint">
+					{{ t('learning', 'Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.', { name: fallbackIssuerName }) }}
+				</p>
+			</div>
+			<!-- the description is tied to the switch's input (aria-describedby) by the component -->
+			<NcCheckboxRadioSwitch
+				:model-value="modelValue.show?.issuer !== false"
+				:description="t('learning', 'Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.')"
+				data-test="cert-layout-show-issuer"
+				@update:model-value="toggle('issuer', $event)">
+				{{ t('learning', 'Name der Organisation neben dem Logo anzeigen') }}
+			</NcCheckboxRadioSwitch>
+		</fieldset>
+
 		<fieldset class="cert-config-field cert-layout-switches">
 			<legend>{{ t('learning', 'Elemente auf dem Zertifikat') }}</legend>
 			<NcCheckboxRadioSwitch
@@ -121,6 +150,8 @@ import { getCertLayout, importCertLayoutImage, removeCertLayoutImage } from '../
 
 const INTRO_MAX = 2000
 const SIGNER_MAX = 120
+/** CertLayout::ISSUER_NAME_MAX (GitHub #77) */
+const ISSUER_NAME_MAX = 200
 /** CertLayoutService::MAX_BYTES: a larger file is refused before it is sent (GitHub #72) */
 export const IMAGE_MAX_BYTES = 1048576
 
@@ -176,6 +207,11 @@ export default {
 			imageSeq: 0,
 			introMax: INTRO_MAX,
 			signerMax: SIGNER_MAX,
+			issuerNameMax: ISSUER_NAME_MAX,
+			// GitHub #77: what an empty organisation name gives (operator details, then Theming); from the server
+			issuerNameFallback: '',
+			issuerNameId: `cert-layout-issuer-name-${this.courseId}`,
+			issuerNameHintId: `cert-layout-issuer-name-hint-${this.courseId}`,
 			placeholders: PLACEHOLDERS,
 			introId: `cert-layout-intro-${this.courseId}`,
 			introHintId: `cert-layout-intro-hint-${this.courseId}`,
@@ -201,6 +237,9 @@ export default {
 				{ key: 'signature', label: t('learning', 'Unterschrift') },
 			]
 		},
+		fallbackIssuerName() {
+			return this.issuerNameFallback || (typeof window !== 'undefined' && window.OC?.theme?.name) || 'Nextcloud'
+		},
 		previewFields() {
 			return {
 				courseTitle: this.courseTitle,
@@ -208,7 +247,8 @@ export default {
 				courseElements: [...this.requiredPoolNames],
 				score: 92,
 				threshold: this.passPercent,
-				issuerName: (typeof window !== 'undefined' && window.OC?.theme?.name) || 'Nextcloud',
+				// GitHub #77: the name the next certificate is issued in
+				issuerName: (this.modelValue.issuer_name || '').trim() || this.fallbackIssuerName,
 				// sample only: the real card shows the instance's themed logo
 				issuerLogo: `${(typeof window !== 'undefined' && window.OC?.webroot) || ''}/core/img/logo/logo.svg`,
 				validFrom: '',
@@ -268,6 +308,9 @@ export default {
 		},
 
 		applyImages(layout) {
+			if (typeof layout?.issuer_name_fallback === 'string') {
+				this.issuerNameFallback = layout.issuer_name_fallback
+			}
 			this.images = {
 				stamp: typeof layout?.stamp === 'string' ? layout.stamp : '',
 				signature: typeof layout?.signature === 'string' ? layout.signature : '',
@@ -422,6 +465,7 @@ export default {
 	gap: 4px;
 }
 
+.cert-layout-org,
 .cert-layout-switches,
 .cert-layout-signoff {
 	border: none;
@@ -429,6 +473,7 @@ export default {
 	margin-inline: 0;
 }
 
+.cert-layout-org legend,
 .cert-layout-switches legend,
 .cert-layout-signoff legend {
 	font-weight: 600;

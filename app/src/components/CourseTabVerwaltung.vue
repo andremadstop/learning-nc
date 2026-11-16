@@ -451,6 +451,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import CertLayoutSettings from './CertLayoutSettings.vue'
+import { SHOW_KEYS } from '../utils/certificateLayout.js'
 import RequiredContentSettings from './RequiredContentSettings.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
@@ -489,17 +490,19 @@ function firstDuplicateChapterRef(payload) {
  * GitHub #43: the layout fields of Course::jsonSerialize()['cert_layout'] (or the cert-config
  * response's certLayout), with the standard layout for a missing value.
  * @param {object|null} value - server layout
- * @return {{intro: string, show: object, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean}}
+ * @return {{intro: string, show: object, issuer_name: string, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean}}
  */
 export function certLayoutFromServer(value) {
 	const v = value && typeof value === 'object' ? value : {}
 	const show = {}
-	for (const key of ['logo', 'score', 'threshold', 'elements', 'validity']) {
+	for (const key of SHOW_KEYS) {
 		show[key] = v.show?.[key] !== false
 	}
 	return {
 		intro: typeof v.intro === 'string' ? v.intro : '',
 		show,
+		// GitHub #77: the course's organisation name for its certificates, '' = the fallback
+		issuer_name: typeof v.issuer_name === 'string' ? v.issuer_name : '',
 		signer_name: typeof v.signer_name === 'string' ? v.signer_name : '',
 		signer_role: typeof v.signer_role === 'string' ? v.signer_role : '',
 		has_stamp: v.has_stamp === true,
@@ -509,14 +512,15 @@ export function certLayoutFromServer(value) {
 
 /**
  * GitHub #43: what updateCertConfig reads from the request (CertLayout::apply): intro, show,
- * signer_name, signer_role. The images are not part of it (own endpoint).
+ * issuer_name (#77), signer_name, signer_role. The images are not part of it (own endpoint).
  * @param {object} layout - certLayoutFromServer() shape
- * @return {{intro: string, show: object, signer_name: string, signer_role: string}}
+ * @return {{intro: string, show: object, issuer_name: string, signer_name: string, signer_role: string}}
  */
 export function certLayoutPayload(layout) {
 	return {
 		intro: layout.intro,
 		show: { ...layout.show },
+		issuer_name: layout.issuer_name,
 		signer_name: layout.signer_name,
 		signer_role: layout.signer_role,
 	}
