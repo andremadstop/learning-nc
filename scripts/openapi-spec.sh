@@ -109,7 +109,9 @@ if [ "$rc" -ne 0 ]; then
 	if ! grep -qE '^Fatal error: Uncaught Error: app: Encountered [0-9]+ errors that need to be fixed!$' <<<"$fatal" \
 		|| [ "$(wc -l <<<"$fatal")" -ne 1 ]; then
 		echo "openapi-spec: the extractor failed (exit $rc) with something other than its error count:" >&2
-		grep -E 'Uncaught|Fatal|Error:' "$WORK/openapi.log" | head -20 >&2
+		# The panic first: the hundreds of known "Missing @return" lines would push it out of view.
+		printf '%s\n' "$fatal" | head -20 >&2
+		grep -E '^Error:' "$WORK/openapi.log" | grep -v 'Missing @return annotation' | head -20 >&2 || true
 		exit 1
 	fi
 	errors="$(sed -nE 's/^Fatal error: Uncaught Error: app: Encountered ([0-9]+) errors.*/\1/p' "$WORK/openapi.log")"
