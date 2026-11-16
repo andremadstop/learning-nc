@@ -75,5 +75,7 @@ describe('certificate design: label above, input full width below (GitHub #73)',
 		expect(rules['.cert-config-field']).toMatch(/display:\s*flex/)
 		expect(rules['.cert-config-field']).toMatch(/flex-direction:\s*column/)
 		expect(rules['.cert-layout-text']).toMatch(/width:\s*100%/)
+		// the hints look like the hints of the other course rules (same scoped-style gap)
+		expect(rules['.mode-config-hint']).toMatch(/color:\s*var\(--color-text-maxcontrast\)/)
 	})
 })

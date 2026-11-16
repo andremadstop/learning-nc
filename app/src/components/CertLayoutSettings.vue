@@ -398,6 +398,13 @@ export default {
 	font-size: 0.9em;
 }
 
+/* the hint style of the other course rules; the parent's scoped rule does not reach here either */
+.mode-config-hint {
+	color: var(--color-text-maxcontrast);
+	font-size: 0.9em;
+	margin: 0 0 8px;
+}
+
 .cert-layout-intro {
 	width: 100%;
 	max-width: 640px;
