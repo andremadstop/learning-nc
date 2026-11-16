@@ -814,19 +814,21 @@ export default {
 	font-weight: 600;
 }
 
+/* Persona sweep C5 (#76 class): the fixed orange on light orange was 3.45:1 and ignored dark mode;
+   Nextcloud's tint + its text colour, as the other status pills (statusColorContrast.test.js). */
 .status-uploaded {
-	background: #fff3e0;
-	color: #e65100;
+	background: var(--color-warning);
+	color: var(--color-warning-text);
 }
 
 .status-extracted {
-	background: #e8f5e9;
-	color: #2e7d32;
+	background: var(--color-success);
+	color: var(--color-success-text);
 }
 
 .status-error {
-	background: #ffebee;
-	color: #c62828;
+	background: var(--color-error);
+	color: var(--color-error-text);
 	cursor: help;
 }
 

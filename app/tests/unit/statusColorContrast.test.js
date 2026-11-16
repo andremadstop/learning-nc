@@ -122,6 +122,10 @@ const CASES = [
 	// #59 — the learner's own questions use the same status badges
 	['CourseLearnerQuestions.vue', '.question-status.status-open', 'pill'],
 	['CourseLearnerQuestions.vue', '.question-status.status-answered', 'pill'],
+	// persona sweep C5: the extraction status in Learning materials (AI on) was #e65100 on #fff3e0, 3.45:1
+	['CourseMaterials.vue', '.status-uploaded', 'pill'],
+	['CourseMaterials.vue', '.status-extracted', 'pill'],
+	['CourseMaterials.vue', '.status-error', 'pill'],
 	// StudentDetail (pre-existing, same pattern): level badge and per-pool mastery
 	['StudentDetail.vue', '.level-gold', 'pill'],
 	['StudentDetail.vue', '.mastery-high-text', 'pill'],
