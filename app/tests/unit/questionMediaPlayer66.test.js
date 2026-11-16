@@ -301,7 +301,7 @@ describe('QuestionMediaPlayer', () => {
 		expect(host.querySelector('.qmedia__controls')).toBeNull()
 	})
 
-	it('a late response for the previous question is dropped; a new question stops the audio', async () => {
+	it('a late response for the previous question is dropped', async () => {
 		let resolveFirst
 		axios.get
 			.mockImplementationOnce(() => new Promise((r) => { resolveFirst = r }))
@@ -313,6 +313,61 @@ describe('QuestionMediaPlayer', () => {
 		resolveFirst({ data: { tracks: [track('intro', 'en')] } })
 		await flush()
 		expect(host.querySelector('.qmedia')).toBeNull()
+	})
+
+	it('a new question stops the audio and unloads it', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [track('intro', 'en')] } })
+		const { root, state } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
+		buttonByText('Abspielen').click()
+		await flush()
+		const audio = host.querySelector('audio')
+		expect(audio.getAttribute('src')).not.toBeNull()
+		HTMLMediaElement.prototype.pause.mockClear()
+		HTMLMediaElement.prototype.load.mockClear()
+		state.props = { questionId: 6, answered: false }
+		root.$forceUpdate()
+		await flush()
+		expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled()
+		expect(HTMLMediaElement.prototype.load).toHaveBeenCalled()
+		expect(audio.getAttribute('src')).toBeNull()
+	})
+
+	it('a fresh grant for the same track (Leitner rating response) does not restart the audio', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		const { root, state } = await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL, contentLanguage: 'en' })
+		buttonByText('Abspielen').click()
+		await flush()
+		const audio = host.querySelector('audio')
+		const src = audio.getAttribute('src')
+		audio.dispatchEvent(new Event('play'))
+		await flush()
+		buttonByText('Pause').click()
+		audio.dispatchEvent(new Event('pause'))
+		await flush()
+		const regranted = { ...REVEAL, tracks: REVEAL.tracks.map((t) => ({ ...t, url: t.url.replace('grant=abc', 'grant=new') })) }
+		state.props = { questionId: 5, answered: true, reveal: regranted, contentLanguage: 'en' }
+		root.$forceUpdate()
+		await flush()
+		buttonByText('Abspielen').click()
+		await flush()
+		expect(audio.getAttribute('src')).toBe(src)
+	})
+
+	it('announces the line counter while stepping, never the running clock', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL })
+		buttonByText('Abspielen').click()
+		await flush()
+		vm.currentTime = 3
+		await flush()
+		const clock = host.querySelector('.qmedia__status')
+		expect(clock.textContent).toContain('0:03')
+		expect(clock.closest('[aria-live]')).toBeNull()
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		const counter = host.querySelector('.qmedia__status')
+		expect(counter.textContent).toContain('von 3')
+		expect(counter.getAttribute('aria-live')).toBe('polite')
 	})
 
 	it('reduced motion switches the animations off', async () => {

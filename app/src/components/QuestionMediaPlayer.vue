@@ -75,9 +75,9 @@
       <button type="button" class="qmedia__button" :disabled="stage.lineIndex < 0 && !ended && !playing" @click="restart">
         {{ t('learning', 'Von vorn') }}
       </button>
-      <span class="qmedia__status" aria-live="polite">
-        {{ statusText }}
-      </span>
+      <!-- Only the line counter is announced; the running clock would talk over the audio. -->
+      <span v-if="lineStatus" class="qmedia__status" aria-live="polite">{{ lineStatus }}</span>
+      <span v-else-if="clockStatus" class="qmedia__status">{{ clockStatus }}</span>
     </div>
     <p v-if="audioFailed" class="qmedia__note" role="status">
       {{ t('learning', 'Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.') }}
@@ -155,6 +155,9 @@ export default {
       reducedMotion: false,
       isRtl: false,
       motionQuery: null,
+      // id of the track whose audio is loaded: a new grant URL of the same track (the Leitner
+      // rating response) must not restart it
+      loadedTrackId: null,
     };
   },
   computed: {
@@ -220,13 +223,16 @@ export default {
       }
       return last ? last.end : 0;
     },
-    statusText() {
-      if (this.manualIndex !== null || this.audioFailed) {
-        return this.t('learning', 'Zeile {current} von {total}', {
-          current: Math.max(0, this.stage.lineIndex + 1),
-          total: this.timeline.length,
-        });
+    lineStatus() {
+      if (this.manualIndex === null && !this.audioFailed) {
+        return '';
       }
+      return this.t('learning', 'Zeile {current} von {total}', {
+        current: Math.max(0, this.stage.lineIndex + 1),
+        total: this.timeline.length,
+      });
+    },
+    clockStatus() {
       return this.started ? formatSeconds(this.currentTime) + ' / ' + formatSeconds(this.duration) : '';
     },
   },
@@ -300,6 +306,7 @@ export default {
           audio.pause();
           audio.removeAttribute('src');
           audio.load();
+          this.loadedTrackId = null;
         } catch (e) {
           // a media element without support (tests, old browsers): nothing to stop
         }
@@ -320,9 +327,9 @@ export default {
         audio.pause();
         return;
       }
-      const url = this.track.url;
-      if (audio.getAttribute('src') !== url) {
-        audio.setAttribute('src', url);
+      if (!audio.getAttribute('src') || this.loadedTrackId !== this.track.id) {
+        audio.setAttribute('src', this.track.url);
+        this.loadedTrackId = this.track.id;
       }
       // Resume where the learner stepped to, or from the start after the end.
       if (this.manualIndex !== null && this.timeline[this.manualIndex]) {
