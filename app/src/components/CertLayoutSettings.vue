@@ -81,24 +81,28 @@
 					{{ t('learning', 'Entfernen') }}
 				</NcButton>
 			</div>
-			<label :for="signerNameId">{{ t('learning', 'Name der unterschreibenden Person') }}</label>
-			<input
-				:id="signerNameId"
-				:value="modelValue.signer_name"
-				type="text"
-				:maxlength="signerMax"
-				class="cert-layout-text"
-				data-test="cert-layout-signer-name"
-				@input="update({ signer_name: $event.target.value })">
-			<label :for="signerRoleId">{{ t('learning', 'Funktion (z. B. Leitung Weiterbildung)') }}</label>
-			<input
-				:id="signerRoleId"
-				:value="modelValue.signer_role"
-				type="text"
-				:maxlength="signerMax"
-				class="cert-layout-text"
-				data-test="cert-layout-signer-role"
-				@input="update({ signer_role: $event.target.value })">
+			<div class="cert-config-field" data-test="cert-layout-signer-name-field">
+				<label :for="signerNameId">{{ t('learning', 'Name der unterschreibenden Person') }}</label>
+				<input
+					:id="signerNameId"
+					:value="modelValue.signer_name"
+					type="text"
+					:maxlength="signerMax"
+					class="cert-layout-text"
+					data-test="cert-layout-signer-name"
+					@input="update({ signer_name: $event.target.value })">
+			</div>
+			<div class="cert-config-field" data-test="cert-layout-signer-role-field">
+				<label :for="signerRoleId">{{ t('learning', 'Funktion (z. B. Leitung Weiterbildung)') }}</label>
+				<input
+					:id="signerRoleId"
+					:value="modelValue.signer_role"
+					type="text"
+					:maxlength="signerMax"
+					class="cert-layout-text"
+					data-test="cert-layout-signer-role"
+					@input="update({ signer_role: $event.target.value })">
+			</div>
 		</fieldset>
 
 		<details class="cert-layout-preview" data-test="cert-layout-preview">
@@ -366,6 +370,22 @@ export default {
 	margin: 0 0 6px;
 }
 
+/* GitHub #73: the field layout of the other course rules. CourseTabVerwaltung's rule for
+   .cert-config-field is scoped and does not reach into this component, so the labels stood
+   beside their inputs: label on top, input full width below. */
+.cert-config-field {
+	margin: 14px 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 6px;
+}
+
+.cert-config-field > label {
+	font-weight: 600;
+	font-size: 0.9em;
+}
+
 .cert-layout-intro {
 	width: 100%;
 	max-width: 640px;
@@ -419,7 +439,8 @@ export default {
 
 .cert-layout-text {
 	width: 100%;
-	max-width: 400px;
+	max-width: 640px;
+	margin-inline: 0;
 	box-sizing: border-box;
 }
 
