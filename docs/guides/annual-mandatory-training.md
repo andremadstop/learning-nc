@@ -2,7 +2,7 @@
 
 This guide covers one setup: a small organisation where everyone studies the material on their own, takes an exam, and gets a certificate that is valid for one year. Each person renews when their own certificate is about to expire. The certificates are your audit evidence. There is no AI, no gamification and no spaced repetition (Leitner).
 
-It describes Learning 5.12.0. A few things are not in the app yet. They are marked **(coming)**. Unfamiliar terms are explained in the [glossary](#glossary) at the end.
+It describes Learning 5.14.0. A few things are not in the app yet. They are marked **(coming)**. Unfamiliar terms are explained in the [glossary](#glossary) at the end. The screenshots come from a test instance with made-up people and an invented organisation, "Northwind Safety Ltd"; `scripts/screenshots/run.sh` in the repository takes them again.
 
 You need two kinds of account:
 - a **Nextcloud administrator** for step 1;
@@ -39,10 +39,13 @@ Open **Administration settings → Learning**.
 6. **Exam attempts per 24h (per user, pool and course)** (default 5) and **Exam cooldown (minutes)** (default 10): change these if you want a stricter or looser retake rule. Learners see these numbers.
 7. **Operator details (imprint and privacy notice):** fill in name, postal address and contact email, then click **Save operator details**.
 8. Click **Save**.
+9. Optional: **Certificate logos.** If the certificate should show a different logo than Nextcloud's own (for example your full logo, while Nextcloud only shows a small icon), enter a name under **Add a logo**, click **Upload logo …** and pick a PNG, JPEG or WebP file (at most 1 MB and 3000 × 3000 pixels; SVG is not accepted, because the logo also appears on the public verification page). Each logo shows how many courses use it. Instructors choose it per course (step 5).
+
+![Administration settings → Learning → Certificate logos: one logo "Northwind emblem", used by 1 course, and the form to add another](img/mandatory-training-admin-logos.png)
 
 Outside the Learning page:
 
-- **Organisation name and logo on the certificate.** The certificate shows an organisation name and a logo at the top, on screen, when printed and on the verification page. The name is, in this order: the course's **Organisation name on the certificate** (Certificate design), the legal name from the operator details (Administration → Learning), the name from Nextcloud's **Theming** settings. A switch **Show organisation name** hides the name next to the logo, for a logo that already spells it out; the signed certificate and the verification page keep the name. The logo is Theming's, unless the course picks one from the **certificate logos** an administrator uploaded under Administration → Learning (PNG, JPEG or WebP, no SVG). The name is written into the signed certificate when it is issued, and the logo is copied with the certificate (the library logo, or Theming's logo as it is at that moment), so later changes in the course, in the library or in Theming do not change existing certificates. Two exceptions show the current Theming logo instead: certificates issued before 5.14.0, and certificates issued while the Theming logo is an SVG without a PNG version (Learning keeps only PNG, JPEG and WebP; upload the Theming logo as PNG, or put a PNG of it into the library). The signed certificate file itself (Open Badges, for wallets) names the Theming logo by its web address, so a wallet shows the current Theming logo. Set name and logo before the first real certificate is issued. (The screenshots in this guide come from a test instance with the default name "Nextcloud".)
+- **Organisation name and logo on the certificate.** The certificate shows an organisation name and a logo at the top, on screen, when printed and on the verification page. The name is, in this order: the course's **Organisation name on the certificate** (Certificate design), the legal name from the operator details (Administration → Learning), the name from Nextcloud's **Theming** settings. A switch **Show organisation name** hides the name next to the logo, for a logo that already spells it out; the signed certificate and the verification page keep the name. The logo is Theming's, unless the course picks one from the **certificate logos** an administrator uploaded under Administration → Learning (PNG, JPEG or WebP, no SVG). The name is written into the signed certificate when it is issued, and the logo is copied with the certificate (the library logo, or Theming's logo as it is at that moment), so later changes in the course, in the library or in Theming do not change existing certificates. Two exceptions show the current Theming logo instead: certificates issued before 5.14.0, and certificates issued while the Theming logo is an SVG without a PNG version (Learning keeps only PNG, JPEG and WebP; upload the Theming logo as PNG, or put a PNG of it into the library). The signed certificate file itself (Open Badges, for wallets) names the Theming logo by its web address, so a wallet shows the current Theming logo. Set name and logo before the first real certificate is issued.
 - **Background jobs (Cron) must run.** Expiry reminders, the renewal window and the closing of expired periods all run as Nextcloud background jobs. Check under **Administration settings → Basic settings** that background jobs use Cron and ran recently.
 - **E-mail.** Learning does not send e-mail itself. It sends Nextcloud notifications (the bell icon): "You were enrolled in the course …", "Certificate issued: …", and the expiry reminders. These reach people by e-mail only if Nextcloud is set up to send notification e-mails: an e-mail server under Basic settings, an e-mail address on each account, and e-mail reminders switched on in the Notifications settings.
 - **How long evidence is kept.** By default, certificate and audit data are anonymised **3 years after the certificate's issue date**. After that, the certificate can no longer be verified. If your regulation asks for a longer period, change it before you go live, for example:
@@ -61,9 +64,9 @@ Outside the Learning page:
 4. Leave **Nextcloud group** empty for now. You will enrol people in step 7.
 5. Click **Create**.
 
-![The "Create Course" dialog with a title filled in and the Nextcloud group left empty](img/mandatory-training-create-course.png)
+![The "Create Course" dialog: title and description filled in, the course profile "Mandatory training with certificate" selected, the Nextcloud group left empty](../../screenshots/12-create-course-profile.png)
 
-Open the course. As an instructor, you see the areas **Learning space**, **Participants**, **Competition**, **Communication** and **Administration**.
+Open the course. As an instructor, you see the areas **Learning space**, **Participants**, **Communication** and **Administration** (with gamification off there is no **Competition** area).
 
 ---
 
@@ -76,7 +79,24 @@ The material lives in a normal Nextcloud folder in **your own** files (you are t
 3. Under **Material folder**, click **Choose folder…**, pick the folder and click **Link this folder**. (Or type the path and click **Link folder**.) The folder is linked and scanned straight away.
 4. Whenever you add or replace files later, click **Scan folder**. Otherwise learners won't see the new files.
 
-The page says: "Course members can open every PDF and Markdown file in this folder." Learners click a file name to open it in the browser. For learners, **Learning materials** is the first tab in the course's learning space.
+The page says: "Course members can open every PDF and Markdown file in this folder." Learners click a file name to open it in the browser.
+
+**Required documents.** The file list has a **Required** column. Tick every document that each person must read; the box in the column header ticks or unticks all of them. A file you upload later stays optional until you tick it. Learners confirm each required document with **Confirm I have read this**, and the coverage report (step 10) shows who has.
+
+Below the list, under **Required content**:
+
+| Switch | Recommended | What it does |
+|---|---|---|
+| **Exam only after all required content is completed** | on | Locks only the exam that counts for the certificate until every required document is confirmed (and every required video watched). Training and practice exams stay open. |
+| **Confirm required documents again at every renewal** | on for a yearly instruction | When the renewal window of a certificate opens (step 9), the required documents count as not confirmed again. Earlier confirmations stay in the audit log. |
+
+Two more things make a confirmation count no longer:
+- **The file changes.** If you replace a required document with a new version, learners who confirmed the old one see "Updated since you confirmed it. Please read it again and confirm once more." Renaming the file alone does not count as a change.
+- **You ask again.** **Ask everyone to confirm again** next to a required document opens it for everyone at once, for example after an important correction. This is written to the audit log.
+
+**Required videos** (your own video files or YouTube/Vimeo) are added under **Add video** on the same page. Learners must watch them; there is no confirmation button.
+
+![Learning materials as the instructor: the Required column with two documents ticked and "Ask everyone to confirm again" beside them, below it the switches "Exam only after all required content is completed" and "Confirm required documents again at every renewal"](img/mandatory-training-instructor-materials.png)
 
 Leave **Topics** alone. It is a filter by chapter and not needed here.
 
@@ -87,8 +107,10 @@ Leave **Topics** alone. It is a filter by chapter and not needed here.
 A **pool** is a set of exam questions. You can use one pool or several, for example one per topic.
 
 **Create pools:**
-- **One at a time:** open **Pools** in the top navigation and click **+ Create pool**. Then open the pool and go to the **Manage** tab. (Opening a pool lands on the Training tab. Opening it on Manage first is **(coming)**, #46.) In Manage, use **+ Add question**, or **Import** for a CSV or JSON file. The import dialog shows the CSV format.
-- **Several at once:** in **Pools**, click **Import pools** and drop a JSON file that contains several pools. Click **Check file** to preview, then **Import pools (n)**.
+- **One at a time:** open **Pools** in the top navigation and click **+ Create pool**. Open the pool: as its editor you land on the **Manage** tab. There, use **+ Add question**, or **Import** for a CSV or JSON file. The import dialog shows the CSV format.
+- **Several at once:** in **Pools**, click **Import pools** and drop a JSON file that contains several pools. Click **Check file**: nothing is saved yet, the preview shows how many questions of each pool can be imported and why others cannot. Then click **Import pools (n)**.
+
+  ![Import pools: the preview of a file with two pools, 18 of 18 questions importable in each, with "Back" and "Import pools (2)"](../../screenshots/19-pool-import.png)
 
 **Add them to the course:**
 1. In the course, go to **Learning space → Pools** and click **+ Add Pool**.
@@ -105,12 +127,12 @@ Go to **Administration → Course rules** and scroll to **Certification**.
 1. Switch on **Enable certification** (with the profile **Mandatory training with certificate** it is already on).
 2. **Minimum score (%)**: your pass mark, for example 75.
 3. **Required pools**: tick every pool a person must pass. Each required pool needs its **own** passed exam at the pass mark. If you tick none, any passed exam in the course is enough.
-4. **Validity duration (days, 0 = no expiry)**: `365` for a yearly training.
+4. **Validity period (0 = unlimited)**: `1` and **Years** for a yearly training. You can also choose months or days. Months and years follow the calendar: a certificate issued on 16 March is valid until 16 March of the next year, and 29 February becomes 28 February. (A value in days, such as 365, drifts by one day in a leap year.)
 5. **Offer learners "Add to LinkedIn"**: leave it off for an internal training (the profile switches it off). It is saved as soon as you click it.
 6. Optional: **Exam scope (default for all pools)**, see below.
 7. Click **Save** in this section. Each section on this page has its own Save button.
 
-![The Certification section: Enable certification on, minimum score 75 %, two required pools ticked, validity 365 days](img/mandatory-training-certification-settings.png)
+![The Certification section: Enable certification on, minimum score 75 %, two required pools ticked, validity 1 year, "Add to LinkedIn" off](../../screenshots/15-course-rules-certification.png)
 
 **How big the exam is.** Each exam is about **one pool**. You decide how many questions it has and how long it lasts, in two places:
 
@@ -119,7 +141,17 @@ Go to **Administration → Course rules** and scroll to **Certification**.
 
 The questions are drawn at random from the pool on every attempt, so each attempt is different. If you set a number of questions but no time limit, the exam allows 90 seconds per question. If you leave everything empty, the exam follows the pool size: all of the pool's questions, up to 90 (with more than 90, a random selection on every attempt), 90 seconds per question, at most 2 hours. Learners get no feedback until the end.
 
-**The certificate** shows: the organisation name from Theming, "Awarded to" with the person's name, the course title, **Course elements** (the required pools), Result, Minimum score, Issued on, Valid until, a QR code and the Certificate ID. If you tick no required pools, the certificate has no "Course elements". Your own wording on the certificate, a switch for the course elements, and a stamp or signature image are **(coming)**, #43.
+**The certificate** shows: the organisation's logo and name, the course title, "Awarded to" with the person's name, **Course elements** (the required pools), Result, Minimum score, Issued on, Valid until, a QR code and the Certificate ID. If you tick no required pools, the certificate has no "Course elements".
+
+**Certificate design** (below Certification, with its own **Save**) changes it for this course:
+- **Issuing organisation → Logo:** Nextcloud's logo (Theming), or one of the certificate logos an administrator uploaded (step 1).
+- **Organisation name on the certificate:** leave it empty to use the legal name from the operator details, or else the name of this Nextcloud. **Show organisation name** hides the name next to the logo, for a logo that already spells it out; the signed certificate and the verification page keep the name.
+- **Elements on the certificate:** switches for logo, result, minimum score, course elements and validity date. The QR code and the verification link are always printed.
+- An **Introduction text** with placeholders, and a **stamp and signature** as PNG files from your Nextcloud Files (at most 1 MB and 3000 × 3000 pixels), with the signer's name and position. A preview shows the result.
+
+Certificates already issued keep their design; changes apply to certificates issued after you save.
+
+![Certificate design: logo "Northwind emblem" chosen from the library, organisation name "Northwind Safety Ltd", "Show organisation name" on, and the element switches](img/mandatory-training-certificate-design.png)
 
 ---
 
@@ -169,18 +201,24 @@ Everyone added gets the notification "You were enrolled in the course …".
 
 A learner opens **Courses** and then your course. They see **Learning space**, **Completion & certificate** and **Communication**, plus **Participants** only if something is left in it (for example the Class register while it is on).
 
-1. **Learning space → Learning materials:** read the material.
+1. **Learning space → Learning materials:** the required documents come first, each with **Open document** and **Confirm I have read this**, and a counter "Completed: 0 of 2". While the exam is locked, a note says so. Optional files follow under **More learning material**, and the privacy notice of the training is folded to one line at the end.
+
+   ![A learner's learning materials: "The exam is locked until you have completed all required content", two required documents not completed yet with "Confirm I have read this", one optional file below](../../screenshots/13-required-materials.png)
+
 2. **Learning space → Training** (optional): practise with feedback.
 3. **Learning space → Exam:** the tab shows the pass mark, and for each required pool the best result and whether it is passed. To take the exam, the learner clicks a pool and then **Start Exam**.
    Before starting, the exam screen must say: "This exam counts towards your certificate. Pass mark: 75%. No feedback until the end." The card above **Start Exam** shows the number of questions and the time limit.
    If that line is missing, the learner is in the wrong place. **Only exams started inside the course count.** An exam started from the top **Pools** menu does not count.
 
-   ![The exam screen inside the course: "This exam counts towards your certificate. Pass mark: 75%." and the Start Exam button with questions and time limit](img/mandatory-training-exam-start.png)
+   ![The exam screen inside the course: "This exam counts towards your certificate. Pass mark: 75%. No feedback until the end." and the Start Exam button with questions and time limit](img/mandatory-training-exam-start.png)
 
 4. After the exam, the result screen says **Passed** or **Not passed**. If the last required pool was just passed, it shows **Certificate issued** and **Open certificate**. If pools are still missing, it says "Pool passed — still required: …". Learners also see the retake rules (attempts per pool in this course in 24 hours, minimum gap between two attempts).
-5. **Completion & certificate:** shows "What you need for the certificate", every required pool with its best result, the validity, and the certificate. Click **View certificate**, then **Print**, to save it as a PDF.
+5. **Completion & certificate:** shows Passed, the validity and when renewal opens, **View certificate**, and "What you need for the certificate" with every required pool and its best result. Click **View certificate**, then **Print**, to save it as a PDF (the print fills an A4 or Letter page in landscape).
 
-   ![A printed certificate: course title, "Awarded to", course elements, result, minimum score, issue and expiry date, QR code and certificate ID](img/mandatory-training-certificate.png)
+   ![Completion & certificate after passing: Passed, Certificate issued, valid until 16 Nov 2027, renewal opens on 17 Oct 2027, View certificate](img/mandatory-training-completion.png)
+
+
+   ![The certificate: logo and organisation name, course title, "Awarded to", course elements, result, minimum score, issue and expiry date, QR code and certificate ID](../../screenshots/16-certificate.png)
 
 6. **Communication → Ask a question:** learners write to the course's instructors. Only they and the learner see the question and the answer. Instructors find it under **Communication → Questions from learners** and get a notification. The learner is notified when it is answered.
 
@@ -201,6 +239,8 @@ Once set up, the cycle runs by itself. It needs background jobs (step 1).
 
 Only exams taken inside the renewal window count. Last year's exam can never renew a certificate. Before renewal opens, the completion tab says "Renewal opens on {date}".
 
+With **Confirm required documents again at every renewal** on (step 3), the required documents are open again as soon as the renewal window opens: the learner sees "Not confirmed yet for the current certification period." and, with the exam lock on, confirms them again before the renewal exam.
+
 Optional, for administrators (command line): `recert_reminder_thresholds` (default `30,7`; the largest value also sets when renewal opens) and `recert_grace_days` (default `14`). For example:
 ```
 occ config:app:set learning recert_reminder_thresholds --value=60,14
@@ -212,7 +252,7 @@ occ config:app:set learning recert_reminder_thresholds --value=60,14
 
 Go to **Participants → Completion & certificate**. The **Compliance report** is there.
 
-![The compliance report: Export CSV, Download all as JSON (ZIP), the filters, and one certificate with View, Download (JSON) and Revoke](img/mandatory-training-compliance-report.png)
+![The compliance report with the filters and one issued certificate (View, Download (JSON), Revoke), and below it the coverage of all enrolled learners: Current, Never passed, required pools passed and required content confirmed](../../screenshots/18-compliance-coverage.png)
 
 - **The table** lists every issued certificate: Name, Passed on, Score (%), Valid until (with "Expired" where it applies), Verification ID.
   "The report shows issued certificates, not historical pass events."
@@ -227,7 +267,11 @@ Go to **Participants → Completion & certificate**. The **Compliance report** i
 - **Revoke** withdraws a certificate, after a confirmation. **This cannot be undone.** After that, its verification page shows "Certificate withdrawn".
 - If someone passed but has no certificate (for example, the signing key is missing), a warning names them.
 
+**Coverage: all enrolled learners** is below the report. It lists everyone enrolled as a learner, also those who never passed, with their status (Current, Renewal open, Expired in grace period, Overdue, Never passed), the last certificate, valid until, the required pools passed and, if the course has required content, how many items they have confirmed for the current period. Filter by status; **Coverage of all learners as CSV** downloads the list shown.
+
 **Checking a certificate.** Anyone can scan the QR code or open the verification link on the certificate. The public page shows the issuer, the course, the course elements, the issue and expiry dates, and whether the certificate is valid, expired or withdrawn. For data protection, it does not show the holder's name. The verifier compares the Certificate ID on the document with the one on the page.
+
+![The public verification page without login: "Certificate successfully verified", the course, the organisation with its logo, the course elements, issued on and valid until, and what the check confirms](../../screenshots/17-certificate-verification.png)
 
 **For an external auditor.** The administrator creates a Nextcloud group named `learning-auditors`, which does not exist by default, and adds the auditor to it. To use another group, run `occ config:app:set learning auditor_group --value=<group id>`. Members of that group can open `/apps/learning/audit/export` on your Nextcloud. There they download a signed, tamper-evident event log (JSONL plus a .sig file) or open a printable report. The app has no menu link to this page, so send them the address.
 
@@ -237,7 +281,7 @@ Go to **Participants → Completion & certificate**. The **Compliance report** i
 
 ## Glossary
 
-Terms you will meet in the app that this setup does not need, as of 5.12.0.
+Terms you will meet in the app that this setup does not need, as of 5.14.0.
 
 **Pool** — A set of questions. A pool belongs to the person who created it, not to a course, and can be added to several courses. Each course decides for itself what a pool counts for (Required pools, pool rules). Opened from the top **Pools** menu, a pool is a practice area of its own, and an exam there never counts for a certificate.
 
