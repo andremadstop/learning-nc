@@ -1025,7 +1025,10 @@ namespace OCP\Search {
 
 namespace OCP\AppFramework\Db {
     if (!class_exists(Entity::class)) {
-        class Entity implements \JsonSerializable {
+        // Like NC's real Entity: NOT \JsonSerializable (GitHub #75). The stub used to implement it,
+        // so json_encode() of an entity that only has a jsonSerialize() method looked complete in
+        // the unit tests and sent {"id": N} in production.
+        class Entity {
             // Mirror NC's real Entity: a fresh, unpersisted entity has a null id.
             // (Was `int $id = 0`, which made new entities report id 0 and pushed
             //  "id === null ? insert : update" logic down the update path in tests.)
@@ -1034,7 +1037,6 @@ namespace OCP\AppFramework\Db {
 
             public function getId(): ?int { return $this->id; }
             public function setId(int $id): void { $this->id = $id; }
-            public function jsonSerialize(): array { return ['id' => $this->id]; }
 
             public function __call(string $name, array $args) {
                 // Support get/set magic for NC entities

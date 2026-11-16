@@ -26,7 +26,7 @@ use OCP\AppFramework\Db\Entity;
  * @method int getCreatedAt()
  * @method void setCreatedAt(int $createdAt)
  */
-class CourseVideo extends Entity {
+class CourseVideo extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $sourceType;
     protected $videoRef;
