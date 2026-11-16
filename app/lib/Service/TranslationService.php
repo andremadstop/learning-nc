@@ -243,6 +243,31 @@ class TranslationService {
         return $byQuestion;
     }
 
+    /**
+     * GitHub #66: the answers of a question were saved anew (QuestionService::update) and moved
+     * along $map (RichFeedbackFormat::positionMap). The translated option feedback is keyed by
+     * position too, so it moves with them; feedback of an answer that is gone is removed, never
+     * left behind for whichever answer now holds its position.
+     *
+     * @param array<int, int> $map old position → new position
+     */
+    public function remapOptionFeedback(int $questionId, array $map): void {
+        foreach ($this->questionTransMapper->findByQuestion($questionId) as $translation) {
+            $stored = $translation->getOptionFeedback();
+            if ($stored === null || $stored === '') {
+                continue;
+            }
+            $remapped = RichFeedbackFormat::encodeOptions(
+                RichFeedbackFormat::remapOptions(RichFeedbackFormat::decodeOptions($stored), $map)
+            );
+            if ($remapped === $stored) {
+                continue;
+            }
+            $translation->setOptionFeedback($remapped);
+            $this->questionTransMapper->update($translation);
+        }
+    }
+
     public function deleteQuestionTranslation(int $questionId, string $lang): void {
         $existing = $this->questionTransMapper->findByQuestionAndLang($questionId, $lang);
         if ($existing !== null) {

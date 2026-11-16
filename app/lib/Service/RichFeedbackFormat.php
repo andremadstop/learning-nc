@@ -205,6 +205,59 @@ final class RichFeedbackFormat {
     }
 
     /**
+     * Where each old answer position went when a question is saved with other answers: old
+     * position → new position, matched by the exact answer text. null when the answers are the
+     * same texts in the same order (nothing moved), or when there were no answers before (nothing
+     * to move: a PBQ, or a question saved for the first time with answers). An old answer whose text is gone, or appears
+     * more than once on either side, has no new position: its feedback cannot be placed safely.
+     *
+     * @param list<string> $oldTexts answer texts by old position
+     * @param list<string> $newTexts answer texts by new position
+     * @return array<int, int>|null
+     */
+    public static function positionMap(array $oldTexts, array $newTexts): ?array {
+        $oldTexts = array_values($oldTexts);
+        $newTexts = array_values($newTexts);
+        if ($oldTexts === [] || $oldTexts === $newTexts) {
+            return null;
+        }
+        $oldCount = array_count_values($oldTexts);
+        $newIndex = [];
+        foreach ($newTexts as $position => $text) {
+            $newIndex[$text] = isset($newIndex[$text]) ? -1 : $position;
+        }
+        $map = [];
+        foreach ($oldTexts as $position => $text) {
+            $target = $newIndex[$text] ?? -1;
+            if ($target >= 0 && $oldCount[$text] === 1) {
+                $map[$position] = $target;
+            }
+        }
+        return $map;
+    }
+
+    /**
+     * option_feedback moved along a positionMap(): entries whose old position has no new one are
+     * dropped, so feedback never ends up under another answer.
+     *
+     * @param list<array{position: int, why: ?string, misconception: ?string}> $list
+     * @param array<int, int> $map
+     * @return list<array{position: int, why: ?string, misconception: ?string}>
+     */
+    public static function remapOptions(array $list, array $map): array {
+        $out = [];
+        foreach ($list as $entry) {
+            if (!array_key_exists($entry['position'], $map)) {
+                continue;
+            }
+            $entry['position'] = $map[$entry['position']];
+            $out[] = $entry;
+        }
+        usort($out, static fn(array $a, array $b): int => $a['position'] <=> $b['position']);
+        return $out;
+    }
+
+    /**
      * The stored option_feedback JSON as a list; anything unreadable is an empty list.
      *
      * @return list<array{position: int, why: ?string, misconception: ?string}>

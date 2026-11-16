@@ -771,6 +771,22 @@ class QuestionService {
                 }
                 self::applyRichFeedback($question, $richFeedback);
 
+                $oldTexts = array_map(
+                    static fn(Answer $a): string => (string)$a->getText(),
+                    $this->answerMapper->findByQuestion($question->getId())
+                );
+
+                // GitHub #66: option feedback is keyed by answer position. When the answers move
+                // (one removed, reordered), feedback the caller did not send anew moves with them,
+                // so the stored and the translated texts never land under another answer.
+                $newTexts = array_map(static fn(array $a): string => (string)$a['text'], array_values($answers));
+                $positionMap = RichFeedbackFormat::positionMap(array_values($oldTexts), $newTexts);
+                if ($positionMap !== null && !array_key_exists('option_feedback', $richFeedback)) {
+                    $question->setOptionFeedback(RichFeedbackFormat::encodeOptions(RichFeedbackFormat::remapOptions(
+                        RichFeedbackFormat::decodeOptions($question->getOptionFeedback()), $positionMap
+                    )));
+                }
+
                 $question = $this->questionMapper->createOrUpdate($question);
 
                 $this->answerMapper->deleteByQuestion($question->getId());
@@ -783,6 +799,10 @@ class QuestionService {
                     $answer->setIsCorrect(filter_var($answerData['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN));
                     $answer->setPosition($index);
                     $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
+                }
+
+                if ($positionMap !== null) {
+                    $this->translationService->remapOptionFeedback($question->getId(), $positionMap);
                 }
 
                 $this->db->commit();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Controller\QuestionController;
+use OCA\Learning\Db\Answer;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\AnswerTranslationMapper;
 use OCA\Learning\Db\Pool;
@@ -49,7 +50,10 @@ class QuestionRichFeedbackTest extends TestCase {
     private array $saved = [];
     private ?Question $stored = null;
 
-    private function questionService(): QuestionService {
+    /**
+     * @param list<string> $storedAnswerTexts the answers as stored before the save
+     */
+    private function questionService(array $storedAnswerTexts = [], ?TranslationService $translations = null): QuestionService {
         $questionMapper = $this->createMock(QuestionMapper::class);
         $questionMapper->method('createOrUpdate')->willReturnCallback(function (Question $q): Question {
             if ($q->getId() === null) {
@@ -61,6 +65,12 @@ class QuestionRichFeedbackTest extends TestCase {
         $questionMapper->method('findById')->willReturnCallback(fn (): Question => $this->stored);
         $answerMapper = $this->createMock(AnswerMapper::class);
         $answerMapper->method('createOrUpdate')->willReturnArgument(0);
+        $answerMapper->method('findByQuestion')->willReturn(array_map(static function (string $text, int $i): Answer {
+            $a = new Answer();
+            $a->setText($text);
+            $a->setPosition($i);
+            return $a;
+        }, $storedAnswerTexts, array_keys($storedAnswerTexts)));
         $poolMapper = $this->createMock(PoolMapper::class);
         $poolMapper->method('find')->willReturn(new Pool());
         return new QuestionService(
@@ -69,7 +79,7 @@ class QuestionRichFeedbackTest extends TestCase {
             $this->createMock(PoolShareMapper::class),
             $poolMapper,
             new FakeDbConnection(),
-            $this->createMock(TranslationService::class),
+            $translations ?? $this->createMock(TranslationService::class),
             $this->createMock(LoggerInterface::class)
         );
     }
@@ -134,6 +144,55 @@ class QuestionRichFeedbackTest extends TestCase {
     }
 
     /** The controller passes on exactly the keys the request carries, in the service's names. */
+    /**
+     * Gesamt-Review C4: option feedback is keyed by the answer position, and the editor renumbers
+     * the answers 0..n-1 on save. A translation kept the old positions, so after removing answer
+     * B the translated "why" and misconception of B showed under C. Now the stored and the
+     * translated feedback move with their answers, matched by text; feedback of B is dropped.
+     */
+    public function testRemovingAnAnswerMovesTheFeedbackWithItsAnswersAndDropsTheRemovedOne(): void {
+        $translation = new QuestionTranslation();
+        $translation->setQuestionId(42);
+        $translation->setLang('en');
+        $translation->setText('Question');
+        $translation->setOptionFeedback('[{"position":0,"why":"A is right.","misconception":null},{"position":1,"why":"B is wrong.","misconception":"B trap"},{"position":2,"why":"C is wrong.","misconception":"C trap"}]');
+        $transMapper = $this->createMock(QuestionTranslationMapper::class);
+        $transMapper->method('findByQuestion')->willReturn([$translation]);
+        $transMapper->method('findByQuestionsAndLang')->willReturn([$translation]);
+        $transMapper->expects($this->once())->method('update')->willReturnArgument(0);
+        $translations = new TranslationService($transMapper, $this->createMock(AnswerTranslationMapper::class), $this->createMock(PoolMapper::class), $this->createMock(PoolShareMapper::class), new FakeDbConnection());
+
+        $this->stored = $this->storedWithRich();
+        $this->stored->setOptionFeedback('[{"position":0,"why":"A ok","misconception":null},{"position":1,"why":"B no","misconception":"Bm"},{"position":2,"why":"C no","misconception":"Cm"}]');
+        // An API caller that does not send option_feedback: the stored feedback moves too.
+        $this->questionService(['A', 'B', 'C'], $translations)->update(42, 'author', 'Q?', null, null,
+            [['text' => 'A', 'is_correct' => true], ['text' => 'C', 'is_correct' => false]]);
+
+        $this->assertSame(
+            [['position' => 0, 'why' => 'A ok', 'misconception' => null], ['position' => 1, 'why' => 'C no', 'misconception' => 'Cm']],
+            RichFeedbackFormat::decodeOptions($this->saved[0]->getOptionFeedback())
+        );
+        $out = $translations->translateRichFeedback([42 => [
+            'background_fact' => null,
+            'key_takeaway' => null,
+            'option_feedback' => [
+                ['position' => 0, 'why' => 'A ok', 'misconception' => null],
+                ['position' => 1, 'why' => 'C no', 'misconception' => 'Cm'],
+            ],
+        ]], 'en')[42];
+        $this->assertSame('C is wrong.', $out['option_feedback'][1]['why'], 'C keeps its own translated feedback');
+        $this->assertSame('C trap', $out['option_feedback'][1]['misconception'], 'never the misconception of the removed B');
+    }
+
+    public function testSavingTheSameAnswersLeavesTheTranslatedFeedbackAlone(): void {
+        $translations = $this->createMock(TranslationService::class);
+        $translations->expects($this->never())->method('remapOptionFeedback');
+        $this->stored = $this->storedWithRich();
+        $this->questionService(['Yes', 'No'], $translations)->update(42, 'author', 'New', null, null, self::ANSWERS);
+
+        $this->assertSame('[{"position":0,"why":"Stored why","misconception":null}]', $this->saved[0]->getOptionFeedback());
+    }
+
     public function testTheControllerPassesOnlyTheKeysTheRequestCarries(): void {
         $calls = [];
         $service = $this->createMock(QuestionService::class);

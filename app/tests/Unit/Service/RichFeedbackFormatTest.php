@@ -197,4 +197,25 @@ class RichFeedbackFormatTest extends TestCase {
 
         $this->assertSame(['»Q1: »Feedback field exceeds maximum length'], $results[0]['question_errors']);
     }
+
+    public function testPositionMapFollowsTheAnswerTexts(): void {
+        $this->assertNull(RichFeedbackFormat::positionMap(['A', 'B'], ['A', 'B']), 'nothing moved');
+        $this->assertNull(RichFeedbackFormat::positionMap([], ['A', 'B']), 'no answers before');
+        $this->assertSame([0 => 0, 2 => 1], RichFeedbackFormat::positionMap(['A', 'B', 'C'], ['A', 'C']));
+        $this->assertSame([0 => 1, 1 => 0], RichFeedbackFormat::positionMap(['A', 'B'], ['B', 'A']));
+        $this->assertSame([2 => 2], RichFeedbackFormat::positionMap(['X', 'X', 'C'], ['X', 'Y', 'C']), 'a duplicated text cannot be placed');
+        $this->assertSame([0 => 0], RichFeedbackFormat::positionMap(['A', 'B'], ['A', 'B2']), 'an edited text loses its feedback');
+    }
+
+    public function testRemapOptionsDropsWhatHasNoNewPosition(): void {
+        $list = [
+            ['position' => 0, 'why' => 'a', 'misconception' => null],
+            ['position' => 1, 'why' => 'b', 'misconception' => 'bm'],
+            ['position' => 2, 'why' => 'c', 'misconception' => 'cm'],
+        ];
+        $this->assertSame([
+            ['position' => 0, 'why' => 'c', 'misconception' => 'cm'],
+            ['position' => 1, 'why' => 'a', 'misconception' => null],
+        ], RichFeedbackFormat::remapOptions($list, [0 => 1, 2 => 0]));
+    }
 }
