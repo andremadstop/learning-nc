@@ -500,17 +500,20 @@ describe('the learning modes carry question_media to the player', () => {
 })
 
 describe('QuestionMediaPlayer — fresh-eyes C4', () => {
-	it('the intro shows no empty stage before the first line, then a compact caption strip', async () => {
+	it('the intro stage is a compact caption strip from the start, not the large empty box', async () => {
 		axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [track('intro', 'en'), track('intro', 'de')] } })
 		await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
-		expect(host.querySelector('.qmedia')).not.toBeNull()
-		expect(host.querySelector('.qmedia__stage')).toBeNull()
+		const before = host.querySelector('.qmedia__stage')
+		expect(before.classList.contains('qmedia__stage--intro')).toBe(true)
+		expect(before.textContent.trim()).toBe('')
+		// the compact rule overrides the 190 px of the dialog stage
+		const css = readFileSync(resolve(here, '../../src/components/QuestionMediaPlayer.vue'), 'utf-8')
+		expect(css).toMatch(/\.qmedia__stage--intro \{[^}]*min-height: calc\(1\.5em \+ 24px\);/)
 
 		buttonByText('Nächste Zeile').click()
 		await flush()
 		const stage = host.querySelector('.qmedia__stage')
-		expect(stage).not.toBeNull()
-		expect(stage.classList.contains('qmedia__stage--intro')).toBe(true)
+		expect(stage).toBe(before)
 		expect(stage.textContent).toContain('Eine Kunstklasse mischt zwei Farben.')
 	})
 

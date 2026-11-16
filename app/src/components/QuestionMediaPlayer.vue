@@ -23,9 +23,9 @@
     </div>
 
     <!-- Fresh-eyes C4: the intro never carries cues, so before the first "play" or "next line"
-         its stage was a large empty grey box. It appears with the first line, as a caption strip. -->
-    <div v-if="showStage"
-         class="qmedia__stage"
+         its 190 px stage was a large empty grey box. In the intro it is a strip of one caption
+         line, there from the start so that the controls below do not move on "play". -->
+    <div class="qmedia__stage"
          :class="{ 'qmedia__stage--intro': phase === 'intro' }"
          :lang="lang || null">
       <span v-if="cues.scene" class="qmedia__scene">{{ cues.scene }}</span>
@@ -247,9 +247,6 @@ export default {
         current: Math.max(0, this.stage.lineIndex + 1),
         total: this.timeline.length,
       });
-    },
-    showStage() {
-      return this.phase === 'dialog' || this.started || this.manualIndex !== null || this.ended;
     },
     clockStatus() {
       return this.started ? formatSeconds(this.currentTime) + ' / ' + formatSeconds(this.duration) : '';
@@ -509,8 +506,9 @@ export default {
   gap: 10px;
 }
 .qmedia__stage--intro {
-  min-height: 0;
+  min-height: calc(1.5em + 24px);
   padding: 12px 16px;
+  justify-content: center;
 }
 .qmedia__scene {
   position: absolute;
