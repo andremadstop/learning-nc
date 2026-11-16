@@ -107,7 +107,9 @@ class RequiredDocumentServiceTest extends TestCase {
         $documents = $this->createMock(DocumentService::class);
         $documents->method('currentFileInfo')->willReturn($file);
         $pass = $this->createMock(PassCriteriaService::class);
-        $pass->method('confirmationCycleStart')->willReturn($cycleStart);
+        $pass->method('confirmationCycleStarts')->willReturnCallback(
+            static fn(Course $c, array $uids): array => array_fill_keys($uids, $cycleStart)
+        );
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn($now);
 
@@ -206,6 +208,41 @@ class RequiredDocumentServiceTest extends TestCase {
         $video = $service->requestReconfirm(self::document(), 'teacher');
 
         self::assertSame(7000, $video->getConfirmAfter());
+    }
+
+    /**
+     * GitHub #75 (review): the coverage report asks for all learners' cycles at once and never
+     * reloads the course per learner; a confirmation from before a learner's cycle is not counted.
+     */
+    public function testCoverageReadsTheCyclesOfAllLearnersInOneCall(): void {
+        $latest = [
+            'anna' => [31 => ['confirmed_at' => 4000, 'doc_version' => self::V1]],
+            'ben' => [31 => ['confirmed_at' => 4000, 'doc_version' => self::V1]],
+        ];
+        $course = self::course(true);
+        $documents = $this->createMock(DocumentService::class);
+        $documents->method('currentFileInfo')->willReturn(['version' => self::V1, 'mtime' => 100]);
+        $confirms = $this->createMock(DocConfirmMapper::class);
+        $confirms->method('latestByUsers')->willReturn($latest);
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->expects($this->never())->method('findById');
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->expects($this->never())->method('confirmationCycleStart');
+        $pass->expects($this->once())->method('confirmationCycleStarts')
+            ->with($course, ['anna', 'ben'])
+            ->willReturn(['anna' => 3000, 'ben' => 4500]);
+        $service = new RequiredDocumentService(
+            $confirms,
+            $this->createMock(CourseVideoMapper::class),
+            $courseMapper,
+            $documents,
+            $pass,
+            $this->createMock(AuditService::class),
+            $this->createMock(ITimeFactory::class),
+            new FakeDbConnection(),
+        );
+
+        self::assertSame(['anna' => 1], $service->countConfirmedByUsers($course, [self::document()], ['anna', 'ben']));
     }
 
     public function testCoverageCountsWithTheSameRuleAndReadsEachFileOnce(): void {

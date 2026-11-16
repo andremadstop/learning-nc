@@ -85,10 +85,21 @@ class RequiredDocumentService {
 
     /** Start of the user's current cycle in a course that asks per cycle, else null. */
     public function cycleStart(Course $course, string $userId): ?int {
-        if (!($course->getReconfirmPerCycle() ?? false)) {
-            return null;
+        return $this->cycleStarts($course, [$userId])[$userId] ?? null;
+    }
+
+    /**
+     * The cycle start of each user (batched: the coverage report reads all learners at once).
+     * Empty in a course that does not ask per cycle.
+     *
+     * @param list<string> $userIds
+     * @return array<string, int|null>
+     */
+    public function cycleStarts(Course $course, array $userIds): array {
+        if (!($course->getReconfirmPerCycle() ?? false) || $userIds === []) {
+            return [];
         }
-        return $this->passCriteriaService->confirmationCycleStart($userId, (int)$course->getId());
+        return $this->passCriteriaService->confirmationCycleStarts($course, $userIds);
     }
 
     /**
@@ -144,9 +155,10 @@ class RequiredDocumentService {
             $files[(int)$video->getId()] = $this->fileInfo($course, $video);
         }
         $latest = $this->confirmMapper->latestByUsers($userIds, array_keys($files));
+        $cycleStarts = $this->cycleStarts($course, $userIds);
         $counts = [];
         foreach ($userIds as $uid) {
-            $cycleStart = $this->cycleStart($course, $uid);
+            $cycleStart = $cycleStarts[$uid] ?? null;
             foreach ($documents as $video) {
                 $id = (int)$video->getId();
                 $state = self::evaluate($latest[$uid][$id] ?? null, self::validFrom($video, $cycleStart), $files[$id]);

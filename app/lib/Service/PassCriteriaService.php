@@ -183,19 +183,79 @@ class PassCriteriaService {
 
     /**
      * GitHub #75: since when a read confirmation of a required document counts in a course that
-     * asks for it again in every certification cycle — the same bound the exams have
-     * (issuanceWindow()'s completed_after): from the opening of the renewal window, or of an
-     * open recertification period. null = no bound: no certificate yet (first cycle), a
-     * certificate whose renewal window is not open, or a course without certification.
+     * asks for it again in every certification cycle (one user; see confirmationCycleStarts()).
      */
     public function confirmationCycleStart(string $userId, int $courseId): ?int {
-        $course = $this->courseMapper->findById($courseId);
-        if (!($course->getCertEnabled() ?? false)) {
+        return $this->confirmationCycleStarts($this->courseMapper->findById($courseId), [$userId])[$userId] ?? null;
+    }
+
+    /**
+     * GitHub #75: the start of each user's current certification cycle — the bound a read
+     * confirmation must not be older than in a course that asks for it again in every cycle.
+     *
+     * While issuance is possible it is the bound the exams have (issuanceWindow()'s
+     * completed_after): the opening of the renewal window, or of an open recertification period.
+     * After a renewal the cycle does NOT end with the window: the new certificate was earned in
+     * it, so the cycle stays the one that issued it — max(predecessor issued_at + 1, opening of
+     * the predecessor's renewal window), or the recertification period it was issued in. Without
+     * that, the bound vanished once the renewed certificate was issued and last cycle's
+     * confirmations counted again (learner view, coverage report and exam gate).
+     * null = no bound: no certificate yet, a first certificate whose renewal window is not open
+     * yet, a revoked newest certificate, or a course without certification.
+     *
+     * Batched: one certificate query and one assignment query for all users.
+     *
+     * @param list<string> $userIds
+     * @return array<string, int|null> user => cycle start
+     */
+    public function confirmationCycleStarts(Course $course, array $userIds): array {
+        $userIds = array_values(array_unique(array_map('strval', $userIds)));
+        $out = array_fill_keys($userIds, null);
+        if ($userIds === [] || !($course->getCertEnabled() ?? false)) {
+            return $out;
+        }
+        $courseId = (int)$course->getId();
+        $certificates = $this->certificateMapper->findNewestTwoByCourseForUsers($courseId, $userIds);
+        $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, array_keys($certificates));
+        $now = time();
+        foreach ($certificates as $userId => $certs) {
+            $newest = $certs[0] ?? null;
+            if ($newest === null) {
+                continue;
+            }
+            $out[$userId] = self::cycleStartOf($newest, $certs[1] ?? null, $states[$userId] ?? null, $this->renewalOpensAt($newest), $now, $this->config);
+        }
+        return $out;
+    }
+
+    /**
+     * The rule of confirmationCycleStarts() for one user (pure but for the reminder config).
+     *
+     * @param array{status: string, due_date: int|null, assigned_at: int}|null $state the open assignment period
+     */
+    private static function cycleStartOf(Certificate $newest, ?Certificate $previous, ?array $state, ?int $opensAt, int $now, IConfig $config): ?int {
+        // Renewal window of the newest certificate open: the exams' bound (issuanceWindow()).
+        if ($opensAt !== null && $now >= $opensAt) {
+            return max((int)$newest->getIssuedAt() + 1, $opensAt);
+        }
+        $assignedAt = $state !== null ? (int)$state['assigned_at'] : null;
+        // Open recertification period (issuanceWindow() Branch B).
+        if ($state !== null && in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true)) {
+            return $assignedAt;
+        }
+        if ((bool)$newest->getRevoked() || $previous === null) {
             return null;
         }
-        $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
-        $window = $this->issuanceWindow($userId, $courseId, $certificate);
-        return $window['may_issue'] ? $window['completed_after'] : null;
+        // The newest certificate is a renewal or a re-certification: its cycle is the one it was
+        // issued in. A period that opened after the predecessor and before the newest one issued it.
+        $previousIssuedAt = (int)$previous->getIssuedAt();
+        if ($assignedAt !== null && $assignedAt > $previousIssuedAt && $assignedAt <= (int)$newest->getIssuedAt()) {
+            return $assignedAt;
+        }
+        if ($previous->getExpiresAt() !== null && !(bool)$previous->getRevoked()) {
+            return max($previousIssuedAt + 1, ConfigDefaults::renewalOpensAt($config, (int)$previous->getExpiresAt()));
+        }
+        return $previousIssuedAt + 1;
     }
 
     /**

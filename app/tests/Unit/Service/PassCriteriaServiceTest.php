@@ -1326,14 +1326,18 @@ class PassCriteriaServiceTest extends TestCase {
      * A learner holding $cert, with the assignment of the current period already 'passed' — the
      * renewal must not depend on it.
      */
-    private function renewalService(Certificate $cert, CourseSummaryService $summary, AuditService $audit, IssuanceService $issuance, array $builders): PassCriteriaService {
+    private function renewalService(Certificate $cert, CourseSummaryService $summary, AuditService $audit, IssuanceService $issuance, array $builders, ?Certificate $previous = null, ?array $state = null): PassCriteriaService {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($this->makeCourse(true, 75, json_encode([1])));
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByUserAndCourse')->willReturn($cert);
+        $certMapper->method('findNewestTwoByCourseForUsers')->willReturnCallback(
+            static fn(int $courseId, array $uids): array => [$uids[0] => $previous !== null ? [$cert, $previous] : [$cert]]
+        );
+        $state ??= ['status' => 'passed', 'due_date' => null, 'assigned_at' => 1_600_000_000];
         $assignment = $this->createMock(AssignmentService::class);
         $assignment->method('getStatesForCourseAndUsers')->willReturnCallback(
-            static fn(int $courseId, array $uids): array => [$uids[0] => ['status' => 'passed', 'due_date' => null, 'assigned_at' => 1_600_000_000]]
+            static fn(int $courseId, array $uids): array => [$uids[0] => $state]
         );
         return new PassCriteriaService($courseMapper, $summary, $audit, new FakeDbConnection($builders), $issuance,
             $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
@@ -1358,6 +1362,71 @@ class PassCriteriaServiceTest extends TestCase {
             max($now - 355 * 86400 + 1, $this->windowStart($expires)),
             $this->renewalService($open, $summary, $audit, $issuance, [])->confirmationCycleStart(self::USER, self::COURSE_ID)
         );
+    }
+
+    /**
+     * GitHub #75 (review): after a renewal the new certificate's window is closed again, but the
+     * cycle is still the one that issued it. The bound right after issuance equals the bound
+     * right before it — a confirmation from before the window must not count again.
+     */
+    public function testAfterARenewalTheCycleStaysTheWindowThatIssuedIt(): void {
+        $now = time();
+        $summary = $this->createMock(CourseSummaryService::class);
+        $audit = $this->createMock(AuditService::class);
+        $issuance = $this->createMock(IssuanceService::class);
+
+        $expires = $now + 10 * 86400;
+        $before = $this->slotCert($now - 355 * 86400, $expires);
+        $boundBefore = $this->renewalService($before, $summary, $audit, $issuance, [])->confirmationCycleStart(self::USER, self::COURSE_ID);
+
+        // Renewed a day ago: the predecessor released its slot, the successor's window is far off.
+        $previous = $this->slotCert($now - 355 * 86400, $expires, false, false);
+        $previous->setId(40);
+        $renewed = $this->slotCert($now - 86400, $expires + 365 * 86400);
+        $boundAfter = $this->renewalService($renewed, $summary, $audit, $issuance, [], $previous)->confirmationCycleStart(self::USER, self::COURSE_ID);
+
+        $this->assertNotNull($boundAfter, 'a renewal keeps a cycle bound');
+        $this->assertSame($boundBefore, $boundAfter);
+        $this->assertGreaterThan($now - 355 * 86400, $boundAfter, 'a confirmation from the first cycle does not count');
+    }
+
+    /** Re-certified in a period opened after expiry: that period is the cycle. */
+    public function testAfterARecertificationInAPeriodThePeriodIsTheCycle(): void {
+        $now = time();
+        $summary = $this->createMock(CourseSummaryService::class);
+        $audit = $this->createMock(AuditService::class);
+        $issuance = $this->createMock(IssuanceService::class);
+        $previous = $this->slotCert($now - 400 * 86400, $now - 35 * 86400, false, false);
+        $previous->setId(40);
+        $recertified = $this->slotCert($now - 5 * 86400, $now + 360 * 86400);
+        $state = ['status' => 'passed', 'due_date' => null, 'assigned_at' => $now - 20 * 86400];
+
+        $this->assertSame(
+            $now - 20 * 86400,
+            $this->renewalService($recertified, $summary, $audit, $issuance, [], $previous, $state)->confirmationCycleStart(self::USER, self::COURSE_ID)
+        );
+    }
+
+    /** One certificate query and one assignment query for the whole coverage report. */
+    public function testCycleStartsAreReadOnceForAllUsers(): void {
+        $now = time();
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->expects($this->never())->method('findById');
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->expects($this->never())->method('findByUserAndCourse');
+        $first = $this->slotCert($now - 300 * 86400, $now + 40 * 86400);
+        $certMapper->expects($this->once())->method('findNewestTwoByCourseForUsers')
+            ->with(self::COURSE_ID, ['anna', 'ben', 'carl'])
+            ->willReturn(['anna' => [$first]]);
+        $assignment = $this->createMock(AssignmentService::class);
+        $assignment->expects($this->once())->method('getStatesForCourseAndUsers')->willReturn([]);
+        $service = new PassCriteriaService($courseMapper, $this->createMock(CourseSummaryService::class), $this->createMock(AuditService::class),
+            new FakeDbConnection([]), $this->createMock(IssuanceService::class), $this->createMock(LoggerInterface::class),
+            $certMapper, $assignment, $this->members([]), $this->config());
+        $course = $this->makeCourse(true, 75, json_encode([1]));
+        $course->setId(self::COURSE_ID);
+
+        $this->assertSame(['anna' => null, 'ben' => null, 'carl' => null], $service->confirmationCycleStarts($course, ['anna', 'ben', 'carl']));
     }
 
     public function testBeforeTheRenewalWindowNothingIsIssued(): void {

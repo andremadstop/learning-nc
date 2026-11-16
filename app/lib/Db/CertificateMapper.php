@@ -196,6 +196,39 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * GitHub #75: the two newest certificates per user of a course — revoked ones included, in
+     * the order findByUserAndCourse() uses (issued_at DESC, id DESC) — in one query per 999 users
+     * instead of one per learner. [0] is the newest, [1] its predecessor if any.
+     *
+     * @param list<string> $userIds
+     * @return array<string, list<Certificate>> user => newest first, at most two
+     */
+    public function findNewestTwoByCourseForUsers(int $courseId, array $userIds): array {
+        $userIds = array_values(array_unique($userIds));
+        if ($userIds === []) {
+            return [];
+        }
+        $out = [];
+        foreach (array_chunk($userIds, 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+               ->from($this->getTableName())
+               ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+               ->andWhere($qb->expr()->in('user_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+               ->orderBy('issued_at', 'DESC')
+               ->addOrderBy('id', 'DESC');
+            /** @var Certificate $cert */
+            foreach ($this->findEntities($qb) as $cert) {
+                $uid = (string)$cert->getUserId();
+                if (count($out[$uid] ?? []) < 2) {
+                    $out[$uid][] = $cert;
+                }
+            }
+        }
+        return $out;
+    }
+
+    /**
      * All certificates issued to a user, newest first.
      *
      * @return Certificate[]
