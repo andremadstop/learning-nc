@@ -8,6 +8,7 @@ use OCA\Learning\Service\KeyService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * DidController — public did:web document for the instance issuer (CERT-02 + CERT-04 linchpin).
@@ -19,6 +20,7 @@ use OCP\IRequest;
  * Public + no-CSRF (mirrors IcsController::feed() DOCBLOCK style on NC 33). No secret material
  * is ever exposed: only the public Ed25519 key (publicKeyJwk, no `d`).
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class DidController extends Controller {
     private KeyService $keyService;
     private CertKeyMapper $certKeyMapper;
@@ -39,6 +41,8 @@ class DidController extends Controller {
      *
      * @PublicPage
      * @NoCSRFRequired
+     *
+     * @return JSONResponse<\OCP\AppFramework\Http::STATUS_OK, array<string, mixed>, array{}>
      */
     public function index(): JSONResponse {
         $did = $this->keyService->hostDid();

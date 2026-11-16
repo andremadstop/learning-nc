@@ -11,7 +11,9 @@ use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IGroupManager;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class SupportTicketController extends Controller {
     private SupportTicketService $service;
     private CourseService $courseService;

@@ -11,6 +11,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * LernplanController — Phase 25: Lernplan + Fortschritt
@@ -29,6 +30,7 @@ use OCP\IRequest;
  * PLAN-03: Writes /Learning/Lernplan.md
  * PLAN-04: generateFortschritt writes /Learning/Fortschritt.md with box stats + trend
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class LernplanController extends Controller {
     private ?string $userId;
     private LernplanService $lernplanService;

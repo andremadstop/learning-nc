@@ -15,7 +15,9 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class SettingsController extends Controller {
     private const AVAILABLE_TOOL_IDS = [
         'subnet',

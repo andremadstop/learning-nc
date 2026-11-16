@@ -9,6 +9,7 @@ use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * LernprofilController — Phase 22: Persönlicher Lernbot
@@ -19,6 +20,7 @@ use Psr\Log\LoggerInterface;
  * GET /api/profile/weakest   — top 5 weakest pools
  * GET /api/profile/history   — daily learning history
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class LernprofilController extends Controller {
     private ?string $userId;
     private LernprofilService $lernprofilService;

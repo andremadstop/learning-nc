@@ -20,6 +20,7 @@ use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Student-facing, authenticated read access to issued certificates (Phase 155 Plan 05).
@@ -31,6 +32,7 @@ use OCP\IRequest;
  * download() is opened by plain browser navigation, which carries no request token, so it is
  * the one action exempt from the CSRF check (GitHub #41).
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CertificateController extends Controller {
     /** Verification ids are RFC 4122 UUIDv4 (IssuanceService::uuidv4) — reject anything else early. */
     private const UUID_V4 = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';

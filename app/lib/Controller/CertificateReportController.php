@@ -17,6 +17,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IL10N;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Instructor-facing, owner-scoped compliance report for a certifying course (Phase 156 Plan 01).
@@ -31,6 +32,7 @@ use Psr\Log\LoggerInterface;
  * unauthenticated) with a null-guard → 401; all endpoints are @NoAdminRequired so a non-admin
  * instructor is not blocked by the admin middleware (load-bearing, unit-uncatchable).
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CertificateReportController extends Controller {
 
     private CertificateReportService $reportService;

@@ -12,7 +12,8 @@
     "require-dev": {
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^13.0",
-        "nextcloud/ocp": "dev-master"
+        "nextcloud/ocp": "dev-master",
+        "nextcloud/openapi-extractor": "1.9.1"
     },
     "config": {
         "allow-plugins": {}

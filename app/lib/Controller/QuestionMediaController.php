@@ -15,6 +15,7 @@ use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Media per question (GitHub #66). The rules for who gets what are QuestionMediaService's; this
@@ -29,6 +30,7 @@ use OCP\IRequest;
  * its (range) requests; it reads, never writes, and every byte is behind the login and the checks
  * above. The rate limit allows seeking through a handful of tracks per question.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class QuestionMediaController extends Controller {
     public function __construct(
         string $appName,

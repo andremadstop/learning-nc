@@ -19,7 +19,9 @@ use OCP\AppFramework\Http\Response;
 use OCP\Files\NotFoundException;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class DocumentController extends Controller {
     private DocumentService $documentService;
     private CourseService $courseService;

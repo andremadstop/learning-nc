@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IUserManager;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * GitHub #60: who counts as an instructor app-wide (may create courses and question pools):
@@ -19,6 +20,7 @@ use OCP\IUserManager;
  * Admin-only. The routes carry no @NoAdminRequired, and every method checks again, so a
  * route or annotation change cannot open the instructor list or the account search.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class InstructorAccessController extends Controller {
     private const SEARCH_LIMIT = 20;
     private const MAX_SEARCH_LENGTH = 64;

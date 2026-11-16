@@ -22,7 +22,9 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CourseController extends Controller {
     private CourseMapper $courseMapper;
     private CourseMemberMapper $courseMemberMapper;

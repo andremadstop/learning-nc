@@ -10,7 +10,9 @@ use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class DataExportController extends Controller {
     private DataExportService $dataExportService;
     private ?string $userId;

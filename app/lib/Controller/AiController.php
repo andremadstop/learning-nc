@@ -13,7 +13,9 @@ use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class AiController extends Controller {
     private AIService $aiService;
     private QuestionService $questionService;

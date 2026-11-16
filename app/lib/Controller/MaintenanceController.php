@@ -9,7 +9,9 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class MaintenanceController extends Controller {
     private MaintenanceService $service;
     private ?string $userId;

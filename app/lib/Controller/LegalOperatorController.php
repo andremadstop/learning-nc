@@ -10,11 +10,13 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Operator details for the imprint and privacy statement (audit 2026-11): entered by an admin
  * instead of the app author's company shipped in privacy-info.json.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class LegalOperatorController extends Controller {
     public function __construct(
         string $appName,

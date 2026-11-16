@@ -10,6 +10,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * The admin's connection test (spec 2.4, 5.4; plan Task B5): POST /api/admin/ai/test.
@@ -22,6 +23,7 @@ use OCP\IRequest;
  * Admin-only: no NoAdminRequired, so the App Framework refuses everyone else. The key the admin
  * typed is used for this one request and never stored, and it never comes back in the answer.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class AdminAiController extends Controller {
     public function __construct(
         string $appName,

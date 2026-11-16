@@ -12,6 +12,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Import of whole pools in the Pools tab (GitHub #34): one JSON file in the format of
@@ -19,6 +20,7 @@ use OCP\IRequest;
  * PoolBulkImportService, the one occ uses. With dry_run the same checks run and nothing is
  * written — the preview in the interface shows exactly that answer.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PoolImportController extends Controller {
     /** Pools one import may create. */
     public const MAX_POOLS = 50;

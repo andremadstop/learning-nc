@@ -1,0 +1,3 @@
+# Number of errors nextcloud/openapi-extractor reports for app/lib/Controller (scripts/openapi-spec.sh).
+# May only shrink: lower it in the commit that fixes some, never raise it.
+383

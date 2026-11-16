@@ -17,6 +17,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * TelosController — Phase 75: Personal learning profile API.
@@ -29,6 +30,7 @@ use OCP\IRequest;
  * POST /api/profile/telos/interview — process interview conversation
  * GET  /api/courses/{courseId}/telos — dozent: aggregated class profile
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class TelosController extends Controller {
     private ?string $userId;
     private TelosService $telosService;

@@ -117,6 +117,9 @@ scripts/*
 !scripts/check-i18n-placeholders.py
 !scripts/check-i18n-untranslated.py
 !scripts/i18n-untranslated-baseline.json
+!scripts/openapi-spec.sh
+!scripts/openapi-error-baseline.txt
+!scripts/visual-diff.mjs
 !scripts/check-node-modules.py
 !scripts/check-sql-columns.py
 !scripts/db-uninstall-probe.php

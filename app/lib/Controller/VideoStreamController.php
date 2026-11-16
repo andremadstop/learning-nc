@@ -19,6 +19,7 @@ use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * VideoStreamController — enrollment-gated Range-206 partial-content streaming of NC-Files videos
@@ -39,6 +40,7 @@ use Psr\Log\LoggerInterface;
  * @NoCSRFRequired is required because a native <video> element cannot attach a CSRF token to its
  * range requests. Auth is via @NoAdminRequired (logged-in) + the per-course enrollment assertion.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class VideoStreamController extends Controller {
     private const CHUNK_SIZE = 8192;
 

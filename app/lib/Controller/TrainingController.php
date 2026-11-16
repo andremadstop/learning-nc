@@ -10,7 +10,9 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class TrainingController extends Controller {
     private TrainingService $service;
     private CertificationTrigger $certificationTrigger;

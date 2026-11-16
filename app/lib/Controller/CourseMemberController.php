@@ -15,12 +15,14 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IL10N;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Enrolling course members (GitHub #35): one account, several accounts and groups at once, and the
  * search behind the member picker. Every endpoint is limited to instructors of the course; a
  * student gets 403 before any search runs, so the picker cannot be used to list accounts.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CourseMemberController extends Controller {
     public function __construct(
         string $appName,

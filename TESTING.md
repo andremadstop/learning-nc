@@ -23,6 +23,7 @@ Every PHP gate runs in a throwaway Docker container on a clean snapshot of the c
 | i18n gates (7, see below) | ✓ | ✓ | ✓ | |
 | PHPStan level 5 + PHPUnit (`gate-container.sh`) | ✓ | ✓ | ✓ | |
 | Secret scan (hard-coded keys and passwords) | | ✓ | | |
+| OpenAPI spec up to date (`openapi-spec.sh --check`) | | ✓ | ✓ | |
 | SQL columns against a freshly installed schema | | ✓ | | |
 | Forbidden names (trademark/publicity check) | | ✓ | | |
 | Umlaut check (`ae`/`oe`/`ue` in German UI text; warning only) | | ✓ | | |
@@ -148,6 +149,25 @@ ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
   Each scenario then checks the audit hash chain, a real compliance event, a translation round-trip, the AI-settings migration and the member repair step. `LIFECYCLE_NC_IMAGE` selects the Nextcloud image. This probe exists because Nextcloud runs only `changeSchema()` on a first install, never `postSchemaChange()`: data written there is missing on every new installation.
 - **SQL columns** (`schema-dump.sh` + `check-sql-columns.py`) checks the column names in raw SQL against the schema of a fresh install. PHPStan cannot see a wrong column inside a string. This check runs in the pre-push hook.
 - **Uninstall on both databases**: changes to raw SQL or transaction handling are also checked with `scripts/db-uninstall-probe.php`, once with `PROBE_PLATFORM=mysql` and once with `PROBE_PLATFORM=pgsql`. Instructions are in the file header. Each database has caught bugs the other could not: MariaDB treats double-quoted identifiers as strings, and PostgreSQL silently turns a `COMMIT` in a failed transaction into a rollback.
+
+## Contract tests: OpenAPI and frontend calls
+
+`app/openapi.json` describes every route of `appinfo/routes.php`: path, method, path and query parameters with the types from the method signatures, and whether the route needs the request token. It is generated from the controllers by [nextcloud/openapi-extractor](https://github.com/nextcloud/openapi-extractor), pinned in `app/composer.lock`. Every controller carries `#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]`; without it the extractor ignores routes that are not OCS routes.
+
+```bash
+./scripts/openapi-spec.sh --write          # regenerate app/openapi.json from the git index
+./scripts/openapi-spec.sh --check --ref HEAD   # what CI and pre-push run
+```
+
+`--check` fails when
+
+- the committed `app/openapi.json` differs from what the extractor generates,
+- a route of `appinfo/routes.php` is missing from the spec, or
+- the extractor fails with anything other than its final error count.
+
+**Known gap: response bodies.** Most controller methods have no typed `@return DataResponse<...>` annotation. The extractor reports each one as an error, writes the spec anyway, and ends with "Encountered N errors". The script accepts that only when N equals `scripts/openapi-error-baseline.txt`. The number may only shrink: a commit that documents a method lowers it, and a new undocumented method makes the check fail. Until the responses are typed, the spec checks requests (route, method, parameters, CSRF), not response keys and types.
+
+The spec is a development artefact. It is not in the release tarball (`app/Makefile`, `release_tracked`).
 
 ## Rule: every bug fix comes with a test that fails on the old code
 

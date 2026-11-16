@@ -15,6 +15,7 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\Files\NotFoundException;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * GitHub #43: the course's certificate layout preview and its stamp / signature images.
@@ -23,6 +24,7 @@ use Psr\Log\LoggerInterface;
  * creator or co-instructor of THIS course). The text, the element switches and the signer are saved
  * with the other certification settings (PATCH cert-config, CourseController::updateCertConfig).
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CertLayoutController extends Controller {
     public function __construct(
         string $appName,

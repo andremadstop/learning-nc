@@ -14,7 +14,9 @@ use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class UserStateController extends Controller {
     private const CACHE_NAMESPACE = 'learning';
     private const USER_STATE_CACHE_PREFIX = 'user_state_';

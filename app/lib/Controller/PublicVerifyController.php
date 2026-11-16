@@ -7,10 +7,12 @@ use OCA\Learning\Service\CertificateVerifyService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attributes\AnonRateLimit;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
+use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Defaults;
 use OCP\IL10N;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * PublicVerifyController — the public, unauthenticated certificate verify page (Phase 157, VERIFY-01/02/06).
@@ -33,6 +35,7 @@ use OCP\L10N\IFactory;
  * course_title, issued_at, expires_at, revoked_at(withdrawn), verification_id). The recipient identity
  * (name / login / signing key / raw credential) is never read here and never reaches the template.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PublicVerifyController extends Controller {
     /** Verification ids are RFC 4122 UUIDv4 (IssuanceService::uuidv4) — reject anything else early. */
     private const UUID_V4 = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
@@ -72,9 +75,11 @@ class PublicVerifyController extends Controller {
      * @PublicPage
      * @NoCSRFRequired
      * @BruteForceProtection(action=learningVerify)
+     *
+     * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
     #[AnonRateLimit(limit: 30, period: 60)]
-    public function verify(string $verificationId): PublicTemplateResponse {
+    public function verify(string $verificationId): TemplateResponse {
         // VERIFY-06: validate the FORMAT before any DB/service call. A malformed id is treated exactly
         // like a not-found id (generic 'unknown' page + throttle) — no enumeration oracle.
         if (preg_match(self::UUID_V4, $verificationId) !== 1) {

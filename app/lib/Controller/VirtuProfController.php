@@ -25,7 +25,9 @@ use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class VirtuProfController extends Controller {
     // Must stay in sync with ALLOWED in src/utils/virtuprof-i18n.js and the exported
     // dictionaries in src/l10n/virtuprof-strings.js. A language missing here is silently

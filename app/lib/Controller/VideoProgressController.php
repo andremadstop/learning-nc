@@ -17,6 +17,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * VideoProgressController — the student-facing progress endpoints for the Phase-162 video/material
@@ -33,6 +34,7 @@ use OCP\IRequest;
  *    covered_pct already crosses the threshold.
  *  - Responses never leak raw intervals — only covered_pct (a number) and completed (a bool).
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class VideoProgressController extends Controller {
     /** Sources played by a provider's own player after consent (VideoConsentOverlay). */
     private const THIRD_PARTY_SOURCES = ['vimeo', 'youtube-nocookie'];

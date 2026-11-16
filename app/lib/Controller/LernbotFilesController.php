@@ -8,6 +8,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * LernbotFilesController — Phase 23: NC Files Integration
@@ -17,6 +18,7 @@ use OCP\IRequest;
  * GET  /api/lernbot/files  — list .md notes (optional ?subfolder= param)
  * POST /api/lernbot/note   — create or update a Markdown note
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class LernbotFilesController extends Controller {
     private ?string $userId;
     private LernbotFileService $fileService;

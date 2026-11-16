@@ -14,7 +14,9 @@ use OCP\AppFramework\Http\Attributes\NoCSRFRequired;
 use OCP\AppFramework\Http\Attributes\PublicPage;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ExportController extends Controller {
     private QuestionService $questionService;
     private DataMobilityService $dataMobilityService;
@@ -109,6 +111,8 @@ class ExportController extends Controller {
      *
      * @PublicPage
      * @NoCSRFRequired
+     *
+     * @return DataDownloadResponse<\OCP\AppFramework\Http::STATUS_OK, 'text/calendar; charset=utf-8', array{}>|DataResponse<\OCP\AppFramework\Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
     public function exportIcsPublic(string $token): Http\Response {
         $cal = $this->icsService->renderCalendarForToken($token);

@@ -10,7 +10,9 @@ use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class IcsController extends Controller {
     private IcsService $icsService;
     private ?string $userId;
@@ -41,6 +43,8 @@ class IcsController extends Controller {
     /**
      * @PublicPage
      * @NoCSRFRequired
+     *
+     * @return DataDownloadResponse<\OCP\AppFramework\Http::STATUS_OK, 'text/calendar; charset=utf-8', array{}>|DataResponse<\OCP\AppFramework\Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
     public function feed(string $token): Http\Response {
         $calendar = $this->icsService->renderCalendarForToken($token);

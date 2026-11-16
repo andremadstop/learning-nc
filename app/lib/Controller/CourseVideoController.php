@@ -21,6 +21,7 @@ use OCP\Files\File;
 use OCP\Files\IRootFolder;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * CourseVideoController — instructor registry CRUD for gated content (Phase 162, VIDEO-09).
@@ -49,6 +50,7 @@ use Psr\Log\LoggerInterface;
  * The video_gate_enabled activation toggle lives in CourseController::setVideoGate (162-01), NOT here.
  * Routes are pre-registered by 162-01 (courseVideo#index/create/update/destroy).
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CourseVideoController extends Controller {
     public const SOURCE_TYPES = [NcFilesVideoAdapter::SOURCE_TYPE, 'vimeo', 'youtube-nocookie', 'document'];
     public const DOCUMENT_SOURCE_TYPE = 'document';

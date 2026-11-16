@@ -12,7 +12,9 @@ use OCP\AppFramework\Http\ICallbackResponse;
 use OCP\AppFramework\Http\IOutput;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class SseController extends Controller {
     private const STREAM_TIMEOUT_SECONDS = 120;
     private const POLL_INTERVAL_SECONDS = 1;

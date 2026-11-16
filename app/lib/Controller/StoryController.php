@@ -9,6 +9,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * StoryController — REST API for the Story-RPG (v6.0 Abenteuer).
@@ -33,6 +34,7 @@ use OCP\IRequest;
  * course-bound; no endpoint reads a courseId (audit #143).
  *   GET  /api/story/progress                          → listProgress
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class StoryController extends Controller {
 
     private StoryEngineService $service;

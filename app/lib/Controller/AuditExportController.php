@@ -16,6 +16,7 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IURLGenerator;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * AuditExportController — auditor-facing export of the compliance hash-chain (Phase 161, AUDIT-07).
@@ -37,6 +38,7 @@ use OCP\IURLGenerator;
  *   - The .sig file is `bin2hex(sig) . "\n"` — a trailing newline. Verifiers MUST trim before hex2bin:
  *         sodium_crypto_sign_verify_detached(hex2bin(trim($sigFile)), $jsonlBytes, $pubKey)
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class AuditExportController extends Controller {
     /**
      * F5 (Codex review — DSGVO): keys that MUST never leave the instance in an export, even though a

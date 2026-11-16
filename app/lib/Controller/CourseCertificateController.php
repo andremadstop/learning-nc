@@ -18,6 +18,7 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * Instructor copies of the certificates of ONE course (GitHub #42): organisations that maintain
@@ -35,6 +36,7 @@ use Psr\Log\LoggerInterface;
  * pattern for instructor/admin actions outside the compliance hash chain): who looked at or copied
  * which certificate. The event never blocks the response.
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CourseCertificateController extends Controller {
     public const AUDIT_EVENT = 'cert.instructor_access';
 

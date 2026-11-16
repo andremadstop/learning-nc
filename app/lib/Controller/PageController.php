@@ -11,7 +11,9 @@ use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IRequest;
 use OCP\IURLGenerator;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PageController extends Controller {
     private const VIDEO_FRAME_HOSTS = ['https://www.youtube-nocookie.com', 'https://player.vimeo.com'];
     // www.youtube.com serves the IFrame Player API (iframe_api + www-widgetapi.js); the player
@@ -53,8 +55,10 @@ class PageController extends Controller {
     /**
      * @PublicPage
      * @NoCSRFRequired
+     *
+     * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
-    public function privacy(): PublicTemplateResponse {
+    public function privacy(): TemplateResponse {
         return new PublicTemplateResponse('learning', 'privacy', [
             'appUrl' => $this->urlGenerator->linkToRoute('learning.page.index'),
             'imprintUrl' => $this->urlGenerator->linkToRoute('learning.page.impressum'),
@@ -68,8 +72,10 @@ class PageController extends Controller {
     /**
      * @PublicPage
      * @NoCSRFRequired
+     *
+     * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
-    public function impressum(): PublicTemplateResponse {
+    public function impressum(): TemplateResponse {
         return new PublicTemplateResponse('learning', 'impressum', [
             'appUrl' => $this->urlGenerator->linkToRoute('learning.page.index'),
             'privacyUrl' => $this->urlGenerator->linkToRoute('learning.page.privacy'),

@@ -72,3 +72,19 @@ jobs:
       # commit under test (on a pull request: the merge commit).
       - name: gate-container.sh all --ref HEAD
         run: ./scripts/gate-container.sh all --ref HEAD
+
+  openapi:
+    name: OpenAPI spec up to date
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Regenerates app/openapi.json with the pinned nextcloud/openapi-extractor (composer.lock) in
+      # the same throwaway nextcloud:33 container as the PHP gates, and fails when the committed spec
+      # differs, a route of appinfo/routes.php is missing from it, or the extractor's error count
+      # is not the baseline (scripts/openapi-error-baseline.txt, may only shrink).
+      - name: openapi-spec.sh --check --ref HEAD
+        run: ./scripts/openapi-spec.sh --check --ref HEAD

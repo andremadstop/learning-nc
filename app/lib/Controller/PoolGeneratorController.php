@@ -11,7 +11,9 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PoolGeneratorController extends Controller {
     private PoolGeneratorService $service;
     private LoggerInterface $logger;

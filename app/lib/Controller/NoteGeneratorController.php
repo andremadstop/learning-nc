@@ -12,6 +12,7 @@ use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IDBConnection;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
 /**
  * NoteGeneratorController — Phase 24: Note-Generator
@@ -30,6 +31,7 @@ use OCP\IRequest;
  * NOTE-03: Wiki-links embedded in generated note
  * NOTE-04: Overwrites existing note when same pool is requested again
  */
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class NoteGeneratorController extends Controller {
     private ?string $userId;
     private NoteGeneratorService $noteGeneratorService;

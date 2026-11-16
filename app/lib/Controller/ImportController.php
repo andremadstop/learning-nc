@@ -20,7 +20,9 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IL10N;
 use OCP\IRequest;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ImportController extends Controller {
     /** Questions per import (CSV records after the header, JSON items). */
     private const MAX_ITEMS = 500;

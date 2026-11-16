@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pre-push Quality Gate: Security + ESLint + Vitest + PHPStan + PHPUnit + SQL-Spalten + i18n
+# Pre-push Quality Gate: Security + ESLint + Vitest + PHPStan + PHPUnit + OpenAPI-Spec + SQL-Spalten + i18n
 # + Umlaute + Forbidden Names + Repo-Hygiene.
 #
 # Geprueft wird, was gepusht wird: fuer jeden lokalen Commit aus stdin
@@ -47,6 +47,20 @@ for SHA in $(echo "$PUSH_SHAS" | tr ' ' '\n' | sort -u); do
     gate_eslint "$SNAP"          || FAILED=1
     gate_vitest "$SNAP"          || FAILED=1
     gate_php "$SNAP" --ref "$SHA" || FAILED=1
+
+    # OpenAPI-Spec (GitHub #65): app/openapi.json muss zum Commit passen, jede Route aus
+    # routes.php enthalten und die Extractor-Fehlerzahl der Baseline treffen.
+    echo -n "OpenAPI-Spec... "
+    if [ ! -x "$SNAP/scripts/openapi-spec.sh" ]; then
+        gate_fail "Commit enthaelt scripts/openapi-spec.sh nicht"
+        FAILED=1
+    elif OAPI_OUT=$(GATE_GIT_ROOT="$ROOT_DIR" "$SNAP/scripts/openapi-spec.sh" --check --ref "$SHA" 2>&1); then
+        gate_ok "$(echo "$OAPI_OUT" | tail -1)"
+    else
+        gate_fail
+        echo "$OAPI_OUT" | grep -v '^Error:.*Missing @return annotation' | tail -12
+        FAILED=1
+    fi
 
     # SQL-Spalten gegen das Schema einer frischen Installation dieses Commits.
     # Fand am 22.08.2026 vier stille Totalausfaelle auf einmal (c.name auf learning_courses,
