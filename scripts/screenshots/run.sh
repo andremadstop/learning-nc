@@ -48,10 +48,10 @@ up() {
 	GAMIFICATION=off REF="$REF" "$REPO_ROOT/scripts/persona-sweep/run.sh" up
 
 	echo "==> fictional names"
-	occ user:setting instructor settings display_name "Dana Brooks" >/dev/null
-	occ user:setting learner1 settings display_name "Alex Morgan" >/dev/null
-	occ user:setting learner2 settings display_name "Sam Rivera" >/dev/null
-	occ user:setting learner3 settings display_name "Robin Hale" >/dev/null
+	occ user:setting instructor settings display_name "Dana Wexmoor" >/dev/null
+	occ user:setting learner1 settings display_name "Tamsin Rowe-Halden" >/dev/null
+	occ user:setting learner2 settings display_name "Joel Vantreck" >/dev/null
+	occ user:setting learner3 settings display_name "Priya Castellane" >/dev/null
 	# The VirtuProf side panel opens with a tip on every new screen and takes a third of the window;
 	# it is optional (personal settings → Virtual assistant), so the pictures show the app without it.
 	for u in admin instructor learner1 learner2 learner3; do

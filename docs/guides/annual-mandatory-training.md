@@ -213,7 +213,7 @@ A learner opens **Courses** and then your course. They see **Learning space**, *
    ![The exam screen inside the course: "This exam counts towards your certificate. Pass mark: 75%. No feedback until the end." and the Start Exam button with questions and time limit](img/mandatory-training-exam-start.png)
 
 4. After the exam, the result screen says **Passed** or **Not passed**. If the last required pool was just passed, it shows **Certificate issued** and **Open certificate**. If pools are still missing, it says "Pool passed — still required: …". Learners also see the retake rules (attempts per pool in this course in 24 hours, minimum gap between two attempts).
-5. **Completion & certificate:** shows Passed, the validity and when renewal opens, **View certificate**, and "What you need for the certificate" with every required pool and its best result. Click **View certificate**, then **Print**, to save it as a PDF (the print fills an A4 or Letter page in landscape).
+5. **Completion & certificate:** shows Passed, the validity and when renewal opens, **View certificate**, and "What you need for the certificate" with every required pool and its best result. Click **View certificate**, then **Print**, to save it as a PDF (the print fills the page, A4 landscape by default).
 
    ![Completion & certificate after passing: Passed, Certificate issued, valid until 16 Nov 2027, renewal opens on 17 Oct 2027, View certificate](img/mandatory-training-completion.png)
 

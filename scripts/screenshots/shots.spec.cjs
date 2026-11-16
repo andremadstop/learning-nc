@@ -2,8 +2,8 @@
 //
 // Runs against the instance of run.sh `up` (persona seed + seed.mjs). The order builds the state
 // the pictures show: the administrator puts the organisation's logo into the library, the
-// instructor shows the course setup, Sam confirms one required document and practises the example
-// question, Alex confirms both, passes both exams and gets the certificate, an anonymous visitor
+// instructor shows the course setup, Joel confirms one required document and practises the example
+// question, Tamsin confirms both, passes both exams and gets the certificate, an anonymous visitor
 // opens its verification page, and the instructor's compliance report then has one certificate,
 // one learner half way and one who has not started.
 // Every picture is the browser window (lib.mjs: VIEWPORT, light theme, en-GB), saved as
@@ -228,7 +228,7 @@ test('instructor: course profile, materials, course rules, pool import', async (
 	await context.close()
 })
 
-test('Sam: one required document confirmed, the example question practised', async ({ browser }) => {
+test('Joel: one required document confirmed, the example question practised', async ({ browser }) => {
 	test.setTimeout(5 * 60_000)
 	const { context, page } = await login(browser, 'learner2')
 	await openLernraum(page, 'Learning materials')
@@ -256,7 +256,7 @@ test('Sam: one required document confirmed, the example question practised', asy
 	await context.close()
 })
 
-test('Alex: required materials, both exams, certificate, completion', async ({ browser }) => {
+test('Tamsin: required materials, both exams, certificate, completion', async ({ browser }) => {
 	test.setTimeout(10 * 60_000)
 	const { context, page } = await login(browser, 'learner1')
 	await openLernraum(page, 'Learning materials')
