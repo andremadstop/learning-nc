@@ -83,6 +83,12 @@
 				<div class="zeugnis-requirements">
 					<p class="zeugnis-requirements-title">{{ t('learning', 'Was du für das Zertifikat brauchst') }}</p>
 					<p class="zeugnis-meta">{{ t('learning', 'Bestehensgrenze: {percent} %', { percent: passStatus.threshold }) }}</p>
+					<!-- Fresh-eyes C5: the exam waits for the required content; this list named only the
+						exams, so a learner found the lock only on the Exam tab. -->
+					<template v-if="requiresContent">
+						<p class="zeugnis-meta" data-test="cert-required-content">{{ t('learning', 'Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.') }}</p>
+						<p v-if="requiredContent" class="zeugnis-meta" data-test="cert-required-content-progress">{{ t('learning', 'Abgeschlossen: {done} von {total}', requiredContent) }}</p>
+					</template>
 					<template v-if="requiresPools">
 						<p class="zeugnis-meta">{{ t('learning', 'Bestehe in jedem dieser Pflicht-Pools eine Prüfung im Prüfungsmodus dieses Kurses:') }}</p>
 						<ul class="zeugnis-pool-list">
@@ -372,6 +378,8 @@ export default {
 			passStatusLoading: false,
 			passStatusError: false,
 			showCertModal: false,
+			// Fresh-eyes C5: { done, total } of the required content, null while unknown
+			requiredContent: null,
 		}
 	},
 
@@ -464,6 +472,11 @@ export default {
 		requiresPools() {
 			return this.passStatus?.requirement === 'required_pools'
 		},
+		// the course locks its exam until the required content is done, and has some (an empty list
+		// locks nothing: RequiredContentSettings says so to the instructor)
+		requiresContent() {
+			return this.course?.video_gate_enabled === true && this.requiredContent?.total !== 0
+		},
 		requiredPools() {
 			return Array.isArray(this.passStatus?.pools) ? this.passStatus.pools : []
 		},
@@ -521,6 +534,7 @@ export default {
 
 	mounted() {
 		this.fetchPassStatus()
+		this.fetchRequiredContent()
 	},
 
 	watch: {
@@ -540,12 +554,27 @@ export default {
 				// Initial load handled by mounted(); refetch only on actual course change.
 				if (oldId !== undefined) {
 					this.fetchPassStatus()
+					this.fetchRequiredContent()
 				}
 			},
 		},
 	},
 
 	methods: {
+		/** Fresh-eyes C5: never throws; unknown counts leave only the sentence. */
+		async fetchRequiredContent() {
+			this.requiredContent = null
+			if (!this.courseId || this.course?.video_gate_enabled !== true) return
+			const courseId = this.courseId
+			try {
+				const res = await axios.get(generateUrl('/apps/learning/api/video-progress/course/{courseId}', { courseId }))
+				if (courseId !== this.courseId) return
+				const rows = Array.isArray(res.data?.videos) ? res.data.videos : []
+				this.requiredContent = { done: rows.filter((row) => row.completed === true).length, total: rows.length }
+			} catch (e) {
+				this.requiredContent = null
+			}
+		},
 		async fetchPassStatus() {
 			if (!this.courseId) return
 			this.passStatusLoading = true

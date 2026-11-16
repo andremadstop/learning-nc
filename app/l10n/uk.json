@@ -3971,6 +3971,17 @@
             "%n файлів стануть необов’язковими. Якщо пізніше знову зробити їх обов’язковими, усім учасникам навчання доведеться знову підтвердити прочитання. Попередні підтвердження залишаються в журналі аудиту. Продовжити?"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Тут ти знайдеш матеріали цього курсу. Якщо курс має обовʼязкові документи, відкрий їх і підтверди, що прочитав. Усі інші файли необовʼязкові.",
-        "Die Unterlagen dieses Kurses lesen.": "Читай матеріали цього курсу."
+        "Die Unterlagen dieses Kurses lesen.": "Читай матеріали цього курсу.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training steht dir schon offen.": "Іспит заблоковано, доки ти не пройдеш усі обов’язкові матеріали. Тренування тобі вже доступне.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Leitner steht dir schon offen.": "Іспит заблоковано, доки ти не пройдеш усі обов’язкові матеріали. Лейтнер тобі вже доступний.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast.": "Іспит заблоковано, доки ти не пройдеш усі обов’язкові матеріали.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training und Probeprüfungen bleiben offen.": "Блокується лише іспит, що зараховується для сертифіката. Тренування і пробні іспити залишаються відкритими.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Leitner und Probeprüfungen bleiben offen.": "Блокується лише іспит, що зараховується для сертифіката. Лейтнер і пробні іспити залишаються відкритими.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Probeprüfungen bleiben offen.": "Блокується лише іспит, що зараховується для сертифіката. Пробні іспити залишаються відкритими.",
+        "Abgeschlossen: {done} von {total}": "Пройдено: {done} з {total}",
+        "Schüler-Ansicht: Hier bestätigen Lernende ihre Pflichtdokumente. Du bist in diesem Kurs Lehrkraft, deshalb wird nichts für dich gespeichert.": "Вигляд студента: тут учні підтверджують свої обов’язкові документи. Ви викладач цього курсу, тому для вас нічого не зберігається.",
+        "Noch nicht abgeschlossen": "Ще не пройдено",
+        "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“.": "Іспит відкриється, коли ти пройдеш усі обов’язкові матеріали. Ти знайдеш їх у навчальному розділі в пункті «Навчальні матеріали».",
+        "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.": "Спершу пройди всі обов’язкові матеріали на вкладці «Навчальні матеріали». Лише тоді іспит відкриється."
     }
 }

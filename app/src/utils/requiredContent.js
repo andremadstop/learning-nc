@@ -11,6 +11,20 @@ export const REQUIRED_CONTENT_SOURCE_TYPES = ['nc-files', 'vimeo', 'youtube-noco
 export const VIDEO_SOURCE_TYPES = ['nc-files', 'vimeo', 'youtube-nocookie']
 
 /**
+ * Fresh-eyes C5: the practising modes a gated course keeps open while its exam waits for the
+ * required content. The exam lock note and the instructor's gate hint name only these; a course
+ * with Leitner off said "Training and Leitner are already open to you". Same rule as the learner
+ * tabs (lernraumTabIds): a mode is on unless mode_config switches it off.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @return {{training: boolean, leitner: boolean}}
+ */
+export function practiseModesOpen(course) {
+	const modeConfig = course?.mode_config || {}
+	return { training: modeConfig.training !== false, leitner: modeConfig.leitner !== false }
+}
+
+/**
  * The course_documents id a document row stores, or null for any other reference (a legacy path).
  * Mirrors CourseVideoController::documentIdFromRef.
  *

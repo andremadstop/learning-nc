@@ -3989,6 +3989,17 @@
             "سيصبح %n ملف اختياريًا. إذا أصبحت إلزامية مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءتها من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "تجد هنا مستندات هذه الدورة. إذا كانت للدورة مستندات إلزامية، فافتحها وأكّد أنك قرأتها. جميع الملفات الأخرى اختيارية.",
-        "Die Unterlagen dieses Kurses lesen.": "اقرأ مستندات هذه الدورة."
+        "Die Unterlagen dieses Kurses lesen.": "اقرأ مستندات هذه الدورة.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training steht dir schon offen.": "الاختبار مقفل حتى تُكمل كل المحتوى الإلزامي. التدريب متاح لك من الآن.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Leitner steht dir schon offen.": "الاختبار مقفل حتى تُكمل كل المحتوى الإلزامي. Leitner متاح لك من الآن.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast.": "الاختبار مقفل حتى تُكمل كل المحتوى الإلزامي.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training und Probeprüfungen bleiben offen.": "يُقفل فقط الاختبار الذي يُحتسب للشهادة. يبقى التدريب والاختبارات التجريبية مفتوحة.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Leitner und Probeprüfungen bleiben offen.": "يُقفل فقط الاختبار الذي يُحتسب للشهادة. يبقى Leitner والاختبارات التجريبية مفتوحة.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Probeprüfungen bleiben offen.": "يُقفل فقط الاختبار الذي يُحتسب للشهادة. تبقى الاختبارات التجريبية مفتوحة.",
+        "Abgeschlossen: {done} von {total}": "المكتمل: {done} من {total}",
+        "Schüler-Ansicht: Hier bestätigen Lernende ihre Pflichtdokumente. Du bist in diesem Kurs Lehrkraft, deshalb wird nichts für dich gespeichert.": "واجهة الطالب: هنا يؤكد المتعلمون مستنداتهم الإلزامية. أنت مدرّس في هذه الدورة، لذلك لا يُحفظ شيء باسمك.",
+        "Noch nicht abgeschlossen": "لم يكتمل بعد",
+        "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“.": "يُفتح الاختبار عندما تُكمل كل المحتوى الإلزامي. تجده في مساحة التعلّم ضمن «المواد التعليمية».",
+        "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.": "أكمل أولًا كل المحتوى الإلزامي في تبويب «المواد التعليمية». عندها فقط يُفتح الاختبار."
     }
 }

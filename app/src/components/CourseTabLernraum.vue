@@ -356,7 +356,7 @@
 				<!-- GitHub #35 (B4): the lock is named only when the course switched it on, and it
 					locks the exam only. -->
 				<NcNoteCard v-if="examGated && !allVideoGatesComplete" type="warning" class="video-gate-note" data-test="required-content-locked">
-					{{ t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training und Leitner stehen dir schon offen.') }}
+					{{ examLockNote }}
 				</NcNoteCard>
 				<NcNoteCard v-else-if="examGated" type="success" class="video-gate-note" data-test="required-content-unlocked">
 					{{ t('learning', 'Alle Pflichtinhalte abgeschlossen. Die Prüfung ist freigeschaltet.') }}
@@ -368,6 +368,15 @@
 				<h4 class="materials-heading">
 					{{ t('learning', 'Pflichtinhalte') }}
 				</h4>
+				<!-- Fresh-eyes C5: with many documents the learner sees how many are left -->
+				<p class="materials-progress" data-test="required-content-progress">
+					{{ t('learning', 'Abgeschlossen: {done} von {total}', requiredContentProgress) }}
+				</p>
+				<!-- Fresh-eyes C5: an instructor previewing the course is no learner of it; the server
+					refuses his confirmation (VideoProgressController), the page says so first. -->
+				<NcNoteCard v-if="previewsAsStudent" type="info" class="video-gate-note" data-test="required-content-preview">
+					{{ t('learning', 'Schüler-Ansicht: Hier bestätigen Lernende ihre Pflichtdokumente. Du bist in diesem Kurs Lehrkraft, deshalb wird nichts für dich gespeichert.') }}
+				</NcNoteCard>
 				<ul class="video-item-list" data-test="required-content-learner">
 					<li v-for="item in normalizedCourseVideos" :key="'video-' + item.id" class="video-item">
 						<div class="video-item__header">
@@ -375,7 +384,7 @@
 							<span
 								class="video-item__status"
 								:class="isItemComplete(item.id) ? 'video-item__status--done' : 'video-item__status--pending'">
-								{{ isItemComplete(item.id) ? t('learning', '✓ Abgeschlossen') : t('learning', 'Offen') }}
+								{{ isItemComplete(item.id) ? t('learning', '✓ Abgeschlossen') : t('learning', 'Noch nicht abgeschlossen') }}
 							</span>
 						</div>
 
@@ -425,7 +434,7 @@
 								</a>
 								<NcButton
 									variant="primary"
-									:disabled="isItemComplete(item.id) || documentPending[item.id]"
+									:disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id]"
 									@click="markDocumentRead(item)">
 									{{ isItemComplete(item.id)
 										? t('learning', 'Als gelesen bestätigt')
@@ -686,11 +695,11 @@ import TrainingMode from './TrainingMode.vue'
 import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
 import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
-import { documentConfirmState, requiredDocumentUrl } from '../utils/requiredContent.js'
+import { documentConfirmState, practiseModesOpen, requiredDocumentUrl } from '../utils/requiredContent.js'
 import RequiredContentSettings from './RequiredContentSettings.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
-import { lernraumTabIds } from '../utils/courseView.js'
+import { lernraumTabIds, previewsCourseAsStudent } from '../utils/courseView.js'
 import { getPassStatus } from '../services/CourseService.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
@@ -997,6 +1006,29 @@ export default {
 			}
 			return this.normalizedCourseVideos.every((item) => this.isItemComplete(item.id))
 		},
+		// Fresh-eyes C5: the lock note named Leitner in a course with Leitner off. It names only
+		// the practising modes this course has open.
+		examLockNote() {
+			const open = practiseModesOpen(this.course)
+			if (open.training && open.leitner) {
+				return t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training und Leitner stehen dir schon offen.')
+			}
+			if (open.training) {
+				return t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training steht dir schon offen.')
+			}
+			if (open.leitner) {
+				return t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Leitner steht dir schon offen.')
+			}
+			return t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast.')
+		},
+		requiredContentProgress() {
+			const total = this.normalizedCourseVideos.length
+			const done = this.normalizedCourseVideos.filter((item) => this.isItemComplete(item.id)).length
+			return { done, total }
+		},
+		previewsAsStudent() {
+			return previewsCourseAsStudent(this.course, this.isInstructor)
+		},
 	},
 
 	mounted() {
@@ -1188,7 +1220,7 @@ export default {
 			}
 		},
 		async markDocumentRead(item) {
-			if (item.sourceType !== 'document' || this.isItemComplete(item.id)) {
+			if (item.sourceType !== 'document' || this.isItemComplete(item.id) || this.previewsAsStudent) {
 				return
 			}
 			this.documentPending = { ...this.documentPending, [item.id]: true }
@@ -2026,7 +2058,8 @@ export default {
 	margin: 8px 0 0;
 }
 
-.materials-optional-note {
+.materials-optional-note,
+.materials-progress {
 	margin: 0;
 	color: var(--color-text-maxcontrast);
 }

@@ -12,8 +12,8 @@
 			@update:model-value="setGate(!!$event)">
 			{{ t('learning', 'Prüfung erst nach Abschluss aller Pflichtinhalte') }}
 		</NcCheckboxRadioSwitch>
-		<p class="required-content-hint">
-			{{ t('learning', 'Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training, Leitner und Probeprüfungen bleiben offen.') }}
+		<p class="required-content-hint" data-test="required-content-gate-hint">
+			{{ gateHint }}
 		</p>
 		<NcNoteCard v-if="gateEnabled && loaded && items.length === 0" type="warning" data-test="required-content-gate-empty">
 			{{ t('learning', 'Es gibt noch keine Pflichtinhalte. Solange die Liste leer ist, sperrt der Schalter nichts.') }}
@@ -162,6 +162,7 @@ import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwit
 import { parseDocumentsResponse } from '../utils/courseMaterials.js'
 import {
 	documentIdFromRef,
+	practiseModesOpen,
 	providerVideoId,
 	videoFormComplete,
 	videoPayload,
@@ -207,6 +208,20 @@ export default {
 	},
 
 	computed: {
+		// Fresh-eyes C5: names only the practising modes this course has open (see practiseModesOpen)
+		gateHint() {
+			const open = practiseModesOpen(this.course)
+			if (open.training && open.leitner) {
+				return t('learning', 'Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training, Leitner und Probeprüfungen bleiben offen.')
+			}
+			if (open.training) {
+				return t('learning', 'Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training und Probeprüfungen bleiben offen.')
+			}
+			if (open.leitner) {
+				return t('learning', 'Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Leitner und Probeprüfungen bleiben offen.')
+			}
+			return t('learning', 'Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Probeprüfungen bleiben offen.')
+		},
 		isOwner() {
 			const uid = getCurrentUser()?.uid
 			return !!uid && uid === this.course?.instructor_id

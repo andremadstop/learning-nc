@@ -3965,6 +3965,17 @@
             "%n fichiers deviennent facultatifs. S’ils redeviennent obligatoires plus tard, tous les apprenants devront à nouveau confirmer les avoir lus. Les confirmations précédentes restent dans le journal d’audit. Continuer ?"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Vous trouverez ici les documents de ce cours. Si le cours comporte des documents obligatoires, ouvrez-les et confirmez que vous les avez lus. Tous les autres fichiers sont facultatifs.",
-        "Die Unterlagen dieses Kurses lesen.": "Lire les documents de ce cours."
+        "Die Unterlagen dieses Kurses lesen.": "Lire les documents de ce cours.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training steht dir schon offen.": "L’examen est verrouillé jusqu’à ce que tu aies terminé tous les contenus obligatoires. L’entraînement t’est déjà ouvert.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Leitner steht dir schon offen.": "L’examen est verrouillé jusqu’à ce que tu aies terminé tous les contenus obligatoires. Leitner t’est déjà ouvert.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast.": "L’examen est verrouillé jusqu’à ce que tu aies terminé tous les contenus obligatoires.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training und Probeprüfungen bleiben offen.": "Seul l’examen qui compte pour le certificat est verrouillé. L’entraînement et les examens blancs restent ouverts.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Leitner und Probeprüfungen bleiben offen.": "Seul l’examen qui compte pour le certificat est verrouillé. Leitner et les examens blancs restent ouverts.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Probeprüfungen bleiben offen.": "Seul l’examen qui compte pour le certificat est verrouillé. Les examens blancs restent ouverts.",
+        "Abgeschlossen: {done} von {total}": "Terminés : {done} sur {total}",
+        "Schüler-Ansicht: Hier bestätigen Lernende ihre Pflichtdokumente. Du bist in diesem Kurs Lehrkraft, deshalb wird nichts für dich gespeichert.": "Vue étudiant : ici, les apprenants confirment leurs documents obligatoires. Vous êtes formateur de ce cours, rien n’est donc enregistré pour vous.",
+        "Noch nicht abgeschlossen": "Pas encore terminé",
+        "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“.": "L’examen s’ouvre lorsque tu as terminé tous les contenus obligatoires. Tu les trouves dans l’espace d’apprentissage sous « Supports de cours ».",
+        "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.": "Termine d’abord tous les contenus obligatoires dans l’onglet « Supports de cours ». Ce n’est qu’ensuite que l’examen est ouvert."
     }
 }

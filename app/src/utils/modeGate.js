@@ -27,7 +27,7 @@ export function modeClosedMessage(error) {
 export function requiredContentMessage(error) {
 	const response = error?.response
 	if (response?.status === 403 && response?.data?.gate === 'video') {
-		return t('learning', 'Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Pflichtinhalte“.')
+		return t('learning', 'Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“.')
 	}
 	return null
 }

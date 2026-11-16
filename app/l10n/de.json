@@ -3965,6 +3965,17 @@
             "%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.",
-        "Die Unterlagen dieses Kurses lesen.": "Die Unterlagen dieses Kurses lesen."
+        "Die Unterlagen dieses Kurses lesen.": "Die Unterlagen dieses Kurses lesen.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training steht dir schon offen.": "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training steht dir schon offen.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Leitner steht dir schon offen.": "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Leitner steht dir schon offen.",
+        "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast.": "Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training und Probeprüfungen bleiben offen.": "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Training und Probeprüfungen bleiben offen.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Leitner und Probeprüfungen bleiben offen.": "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Leitner und Probeprüfungen bleiben offen.",
+        "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Probeprüfungen bleiben offen.": "Gesperrt wird nur die Prüfung, die für das Zertifikat zählt. Probeprüfungen bleiben offen.",
+        "Abgeschlossen: {done} von {total}": "Abgeschlossen: {done} von {total}",
+        "Schüler-Ansicht: Hier bestätigen Lernende ihre Pflichtdokumente. Du bist in diesem Kurs Lehrkraft, deshalb wird nichts für dich gespeichert.": "Schüler-Ansicht: Hier bestätigen Lernende ihre Pflichtdokumente. Du bist in diesem Kurs Lehrkraft, deshalb wird nichts für dich gespeichert.",
+        "Noch nicht abgeschlossen": "Noch nicht abgeschlossen",
+        "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“.": "Die Prüfung ist erst offen, wenn du alle Pflichtinhalte abgeschlossen hast. Du findest sie im Lernraum unter „Lernmaterial“.",
+        "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.": "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen."
     }
 }
