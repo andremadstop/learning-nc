@@ -709,6 +709,22 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		await page.screenshot({ path: path.join(SHOTS, 'guide-create-course.png') })
 		await closeOverlays(page)
 	})
+	// GitHub #79: the course title is a button; Nextcloud's core button style painted a square
+	// block behind it on hover and focus. The card reacts itself, the title stays transparent.
+	await station(page, rec, 'Course list: hover and focus on a course title', async () => {
+		await openTopTab(page, 'Courses')
+		const title = page.locator('.course-card .course-card-open', { hasText: COURSE_TITLE }).first()
+		await title.hover()
+		await page.waitForTimeout(300)
+		const background = () => title.evaluate((el) => getComputedStyle(el).backgroundColor)
+		const transparent = (c) => c === 'transparent' || /^rgba\(\d+, \d+, \d+, 0\)$/.test(c)
+		const hovered = await background()
+		if (!transparent(hovered)) rec.add('hover', `course title has background ${hovered} on hover (square block, #79)`)
+		await page.screenshot({ path: path.join(SHOTS, 'course-title-hover.png') })
+		await title.focus()
+		const focused = await background()
+		if (!transparent(focused)) rec.add('hover', `course title has background ${focused} on focus (square block, #79)`)
+	})
 	await station(page, rec, 'Administration › Course rules › Certification', async () => {
 		await openMegaTab(page, 'Administration')
 		const heading = page.getByText('Certification', { exact: true }).first()
@@ -716,6 +732,27 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		await page.waitForTimeout(400)
 		await page.screenshot({ path: path.join(SHOTS, 'guide-certification.png') })
 		await page.screenshot({ path: path.join(SHOTS, 'guide-course-rules-full.png'), fullPage: true })
+		// GitHub #73: in "Certificate design" every label stands above its input, and the input
+		// takes the width of its field like the other course rules.
+		const fields = await page.locator('.cert-layout').evaluate((root) => [...root.querySelectorAll('label[for]')].map((label) => {
+			const control = document.getElementById(label.htmlFor)
+			if (!control) return { label: label.textContent.trim(), missing: true }
+			const l = label.getBoundingClientRect()
+			const c = control.getBoundingClientRect()
+			const field = label.parentElement.getBoundingClientRect()
+			return { label: label.textContent.trim(), above: l.bottom <= c.top + 1, width: c.width, fieldWidth: field.width }
+		}))
+		if (!fields.length) rec.add('layout', 'no labelled field in "Certificate design" (.cert-layout)')
+		for (const f of fields) {
+			if (f.missing) rec.add('layout', `"${f.label}": the label points to no input`)
+			else if (!f.above) rec.add('layout', `"${f.label}": the input stands beside its label, not below it (#73)`)
+			else if (f.width < Math.min(f.fieldWidth, 640) * 0.9) rec.add('layout', `"${f.label}": the input is ${Math.round(f.width)} px wide in a ${Math.round(f.fieldWidth)} px field (#73)`)
+		}
+		// GitHub #72: the image limit is visible before anything is picked, next to the pick buttons.
+		const limit = page.locator('.cert-layout-signoff').getByText(/1 MB/).first()
+		if (!(await limit.isVisible().catch(() => false))) rec.add('layout', '"Stamp and signature" does not show the 1 MB limit (#72)')
+		const described = await page.locator('[data-test="cert-layout-pick-stamp"]').getAttribute('aria-describedby').catch(() => null)
+		if (!described || !described.includes('error')) rec.add('a11y', `stamp pick button: aria-describedby="${described}" names no error region (#72)`)
 	})
 	const enterSummary = async () => {
 		await openMegaTab(page, 'Participants')
