@@ -732,6 +732,13 @@ export default {
   cursor: pointer;
 }
 
+/* GitHub #76: Nextcloud core gives every plain button a light primary background on :hover/:focus
+   at (0,2,1), which beats the scoped rule above (0,2,0): white text on light blue. */
+.virtuprof-fullscreen__send:hover,
+.virtuprof-fullscreen__send:focus {
+  background: var(--color-primary-element-hover);
+}
+
 .virtuprof-fullscreen__send:disabled {
   opacity: 0.52;
   cursor: not-allowed;

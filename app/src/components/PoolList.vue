@@ -1038,6 +1038,13 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* GitHub #76: Nextcloud core gives every plain button a light primary background on :hover/:focus
+   at (0,2,1), which beats the scoped rule above (0,2,0): white text on light blue. */
+.smart-queue-btn:hover,
+.smart-queue-btn:focus {
+  background: var(--color-primary-element-hover);
+}
+
 .smart-queue-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);

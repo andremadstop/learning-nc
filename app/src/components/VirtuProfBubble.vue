@@ -1933,6 +1933,13 @@ export default {
   padding: 0;
 }
 
+/* GitHub #76: Nextcloud core gives every plain button a light primary background on :hover/:focus
+   at (0,2,1), which beats the scoped rule above (0,2,0): white text on light blue. */
+.chat-send-btn:hover,
+.chat-send-btn:focus {
+  background: var(--color-primary-element-hover);
+}
+
 .chat-send-btn:hover:not(:disabled) {
   opacity: 0.85;
 }

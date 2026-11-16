@@ -126,6 +126,13 @@ export default {
 	cursor: pointer;
 }
 
+/* GitHub #76: Nextcloud core gives every plain button a light primary background on :hover/:focus
+   at (0,2,1), which beats the scoped rule above (0,2,0): white text on light blue. */
+.training-privacy__ack:hover,
+.training-privacy__ack:focus {
+	background: var(--color-primary-element-hover);
+}
+
 .training-privacy__ack:focus-visible {
 	outline: 3px solid var(--color-primary-element);
 	outline-offset: 2px;

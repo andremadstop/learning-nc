@@ -393,7 +393,7 @@
           <NcButton variant="primary" :disabled="telosSaving" @click="saveTelosProfile">
             {{ telosSaving ? t('learning', 'Saving...') : t('learning', 'Save learning profile') }}
           </NcButton>
-          <NcButton variant="tertiary-on-primary" :disabled="telosSaving" @click="confirmResetProfile">
+          <NcButton variant="secondary" :disabled="telosSaving" @click="confirmResetProfile">
             {{ t('learning', 'Reset profile') }}
           </NcButton>
         </div>

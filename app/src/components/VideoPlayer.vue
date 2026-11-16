@@ -339,7 +339,9 @@ export default {
 	cursor: pointer;
 }
 
-.video-player__btn:hover {
+/* GitHub #76: also :focus — core's light background on a focused plain button (0,2,1) beats (0,2,0). */
+.video-player__btn:hover,
+.video-player__btn:focus {
 	background: var(--color-primary-element-hover);
 }
 

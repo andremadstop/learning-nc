@@ -1708,6 +1708,9 @@ export default {
   transform: scale(1.15);
 }
 
+/* GitHub #76: .nav-dot:hover (grey) outranks .nav-dot-current; the current dot keeps its primary pair. */
+.nav-dot-current:hover { background: var(--color-primary-element-hover); }
+
 /* Exam screen needs bottom padding for nav bar */
 .exam-screen { padding-bottom: 70px; }
 
