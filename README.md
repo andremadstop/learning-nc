@@ -1,34 +1,64 @@
 # Learning for Nextcloud
 
-```
-    +-------+   +-------+   +-------+   +-------+   +-------+
-    |   1   |   |   2   |   |   3   |   |   4   |   |   5   |
-    | ||||| |   |  |||  |   |   ||  |   |   |   |   |       |
-    +-------+   +-------+   +-------+   +-------+   +-------+
-     new and     getting     settling   nearly     mastered
-     missed      there                  there
+Courses with a signed certificate at the end, inside your own Nextcloud. Two uses:
 
-    A card you know moves one box up. A card you miss goes back to
-    box 1. The app does the counting. The server is yours.
-```
+- **Mandatory training with certificates** — fire safety, data protection, any yearly instruction:
+  learners read the required documents and confirm them, pass an exam, and get a certificate
+  that anyone can verify from its QR code. Renewal opens before it expires, and the compliance
+  report shows who is current, who is due and who has not started. No gamification, no AI needed.
+- **Self-study and exam preparation** — flashcards with spaced repetition (Leitner boxes or
+  FSRS-5), training with feedback for every answer option, timed exams, nine IT simulators and
+  story campaigns built from real incidents.
 
-A learning platform that runs inside your own Nextcloud: flashcards with spaced repetition (Leitner boxes or FSRS-5), timed exam simulation, nine interactive IT simulators, story campaigns built from real incidents, and completion certificates signed with Ed25519 that anyone can verify from a URL. Questions, progress and student data stay on your server. AI help is optional and stays off until an admin connects a recipient and each learner has consented.
-
-Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souverain Systems UG, a small IT company in Potsdam for teams that want to own their data, and teaches IT security. The app began as his own exam preparation for IT certifications and grew with the course groups that used it on his Nextcloud; the simulators, exam presets and certificates are what those courses needed and what hosted platforms only offer in exchange for the data. Written with AI, used in real courses, checked by 1,830 automated tests and pre-push gates (PHPStan, ESLint, Vitest, PHPUnit). What it stands on: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md).
+Questions, progress and certificates stay on your server. AI help is optional and stays off until
+an admin connects a recipient and each learner has consented.
 
 [![CI](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/andremadstop/learning-nc/actions/workflows/ci.yml)
 [![Nightly](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml/badge.svg?branch=main)](https://github.com/andremadstop/learning-nc/actions/workflows/nightly.yml)
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
-![Tests](https://img.shields.io/badge/Tests-1830%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5705%20passed-brightgreen)
 ![Version](https://img.shields.io/badge/Version-5.13.0-blue)
 
-Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject, from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate**, turning any course into a real credential.
+![A certificate with the organisation's name and logo, the course elements, result, validity, QR code and certificate ID](screenshots/16-certificate.png)
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Create Course dialog with the course profile "Mandatory training with certificate" selected](screenshots/12-create-course-profile.png) | ![A learner's learning materials: two required documents with "Confirm I have read this", the exam locked until both are confirmed](screenshots/13-required-materials.png) |
+| **Course profile.** "Mandatory training with certificate" switches off Leitner, simulators and games in one click. | **Required content.** Learners confirm each required document; the exam waits until they have. |
+| ![Course rules, Certification: pass mark 75 %, two required pools, validity 1 year counted by the calendar](screenshots/15-course-rules-certification.png) | ![The public verification page of a certificate: verified, course, organisation, course elements, issue and expiry date](screenshots/17-certificate-verification.png) |
+| **Certification rules.** Pass mark, required pools, validity in days, months or years. | **Public verification.** Anyone with the QR code checks the certificate, without an account. |
+| ![Compliance report with one issued certificate, and the coverage of all enrolled learners: current, never passed, required content confirmed 1 of 2](screenshots/18-compliance-coverage.png) | ![Training: a question answered wrong, with a spoken debrief dialog, feedback for the answer options and the correct answer](screenshots/14-question-feedback.png) |
+| **Compliance report and coverage.** Every enrolled learner with status, certificate and confirmed content; CSV export. | **Feedback that teaches.** Hint, feedback per option, key takeaway and an optional spoken intro and dialog. |
+| ![Import pools: the dry run of the example course file, 36 of 36 questions importable in 2 pools](screenshots/19-pool-import.png) | |
+| **Pool import.** Several pools from one JSON file, with a dry run before anything is saved. | |
+
+The pictures come from a throwaway test instance with made-up people and an invented
+organisation; [`scripts/screenshots/run.sh`](scripts/screenshots/run.sh) takes them again.
+
+## Quick start
+
+1. **Install** from the Nextcloud App Store: Apps → search "Learning" → Download and enable
+   ([listing](https://apps.nextcloud.com/apps/learning)).
+2. **Signing key** for certificates, once per server: Administration settings → Learning →
+   **Generate signing key**, or `occ learning:cert:init-issuer`.
+3. **First course:** Learning → Courses → **+ Create Course**, choose the profile
+   **Mandatory training with certificate** or **IT exam preparation**.
+4. **Questions:** Pools → **Import pools** with your own JSON file, or start from the
+   [example course](examples/app-tour/) (18 questions about the app itself, English and German).
+5. **Enrol people** under Participants → Members, by name or Nextcloud group.
+
+For a yearly mandatory training, follow the
+[step-by-step guide](docs/guides/annual-mandatory-training.md) instead.
+
+## Who makes it
+
+Made by [André Stiebitz](https://souverain-systems.de), who runs Stiebitz Souverain Systems UG, a small IT company in Potsdam for teams that want to own their data, and teaches IT security. The app began as his own exam preparation for IT certifications and grew with the course groups that used it on his Nextcloud; the simulators, exam presets and certificates are what those courses needed and what hosted platforms only offer in exchange for the data. Written with AI, used in real courses, checked by more than 5,700 automated tests and pre-push gates (PHPStan, ESLint, Vitest, PHPUnit). What it stands on: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md).
 
 > **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. [Open an issue](https://github.com/andremadstop/learning-nc/issues).
-
-![Student dashboard](screenshots/08-en-dashboard.png)
 
 ## Documentation
 
@@ -46,6 +76,19 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 ## Features
 
 ### Learning Modes
+
+```
+    +-------+   +-------+   +-------+   +-------+   +-------+
+    |   1   |   |   2   |   |   3   |   |   4   |   |   5   |
+    | ||||| |   |  |||  |   |   ||  |   |   |   |   |       |
+    +-------+   +-------+   +-------+   +-------+   +-------+
+     new and     getting     settling   nearly     mastered
+     missed      there                  there
+
+    A card you know moves one box up. A card you miss goes back to
+    box 1. The app does the counting. The server is yours.
+```
+
 - **Smart Queue** — one-click review of all due cards, sorted by memory strength (FSRS-5)
 - **Leitner System** — classic 5-box spaced repetition with automatic scheduling
 - **Training Mode** — quick quiz sessions with immediate feedback and confidence buttons
@@ -57,9 +100,10 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **Public verification portal** — anyone can confirm a certificate's authenticity from its permanent URL, no login required
 - **Compliance reports** — organization-wide completion overview for audits and works agreements
 - **Mandatory training & recertification** — assign required courses, track certificate expiry, and automate recertification reminders
+- **Required content with read confirmation** — learners confirm each required document (again at every renewal if you want, and again when the file changes); the exam can wait until they have
+- **Coverage** — every enrolled learner with status (current, renewal open, overdue, never passed), required pools passed and documents confirmed
+- **Certificate design per course** — organisation name, a logo from the administrator's logo library, introduction text, stamp and signature; validity in days, months or years
 - **Tamper-proof audit trail** — every issuance, revocation, and completion is logged
-
-![Certificate verification](screenshots/09-en-certificate.png)
 
 ### Interactive Simulators (9)
 - CLI Terminal, Subnet Calculator, DNS Resolver, Firewall Builder
@@ -183,7 +227,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 - **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9
 - **Backend:** PHP 8.2+, Nextcloud App Framework, QBMapper
-- **Tests:** 1,830 automated tests (1,329 Vitest, 501 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
+- **Tests:** 5,705 automated tests (2,992 Vitest, 2,713 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
 - **Real-time:** Server-Sent Events for multiplayer modes
 - **Caching:** Redis support for leaderboard and session data
 
