@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en" data-requesttoken="print-harness">
+<head>
+	<meta charset="utf-8">
+	<title>Certificate print harness</title>
+	<style>
+		/* stand-ins for the Nextcloud chrome that must not reach the paper */
+		#header { height: 50px; background: #0082c9; color: #fff; }
+		#app-navigation { width: 300px; height: 400px; background: #eee; float: left; }
+	</style>
+</head>
+<body>
+	<header id="header">Nextcloud header</header>
+	<nav id="app-navigation">Navigation</nav>
+	<main id="content"><div id="app"></div></main>
+	<script type="module" src="./harness.js"></script>
+</body>
+</html>

@@ -266,16 +266,23 @@ export default {
 </style>
 
 <style>
-/* Print stylesheet (CERT-07, GitHub #41). print() copies the card into
+/* Print stylesheet (CERT-07, GitHub #41, #80). print() copies the card into
    #learning-certificate-print-root directly under <body> and sets
    html.learning-certificate-printing; only then does printing show the copy and nothing else.
    Printing the card inside NcModal clipped it to the modal box (almost empty sheet), and the
    old unscoped `body * { visibility: hidden }` also blanked every other print in the app.
-   The A4 page is a named page used only by the print root: an unnamed @page in this global
-   stylesheet forced A4 with 18mm margins onto every print in the app (reports, Klassenbuch). */
+   The page is a named page used only by the print root: an unnamed @page in this global
+   stylesheet forced its size and margins onto every print in the app (reports, Klassenbuch).
+
+   GitHub #80: the card was capped at 165 mm on portrait A4 and came out about 16 × 12.5 cm. A
+   certificate is landscape: A4 landscape by default with fixed 12 mm margins, the card as wide as
+   the printable area and at least most of its height, so it fills the sheet. Its own spacing is in
+   millimetres on paper, so the fullest layout (text, course elements, stamp, signature, signer)
+   still fits one landscape page. When the printer's paper wins (Letter, or portrait in Firefox),
+   the card takes that page's full width instead: nothing is tied to A4 but the default. */
 @page learning-cert {
-	size: A4;
-	margin: 18mm;
+	size: A4 landscape;
+	margin: 12mm;
 }
 
 #learning-certificate-print-root {
@@ -287,6 +294,8 @@ export default {
 	html.learning-certificate-printing body {
 		height: auto !important;
 		min-height: 0 !important;
+		margin: 0 !important;
+		padding: 0 !important;
 		overflow: visible !important;
 		background: #fff !important;
 	}
@@ -301,34 +310,117 @@ export default {
 		page: learning-cert;
 		position: static;
 		width: 100%;
+		margin: 0;
+		padding: 0;
 		--color-main-background: #fff;
 		--color-main-text: #000;
 		--color-text-maxcontrast: #555;
 		--color-border: #ccc;
 		color: #000;
 		background: #fff;
+		print-color-adjust: exact;
+		-webkit-print-color-adjust: exact;
 	}
 
-	/* Certificate-grade geometry: card fits the A4 printable area (210mm minus 2x18mm margin = 174mm); */
-	/* border-box keeps the 32px padding INSIDE max-width so the outer box cannot overflow the page. */
+	#learning-certificate-print-root .certificate-printable {
+		width: 100%;
+	}
+
+	/* The card fills the printable width; its height stays below the shortest landscape page
+		(A4: 210 mm − 2 × 12 mm = 186 mm), with room for the revoked/expired note above it, so it never
+		spills onto a second sheet by a few millimetres.
+		border-box keeps padding and border inside. */
 	#learning-certificate-print-root .certificate-card {
 		box-sizing: border-box;
-		max-width: 165mm;
-		margin: 0 auto;
+		width: 100%;
+		max-width: none;
+		min-height: 160mm;
+		margin: 0;
+		padding: 6mm 14mm;
+		/* a grid instead of the screen's column: the sign-off and the verification block share the
+		bottom row, as on a printed certificate, which keeps the fullest layout on one page */
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		column-gap: 10mm;
+		row-gap: 3mm;
+		align-content: center;
 		box-shadow: none;
-		border: 1px solid #ccc;
+		border: 0.6mm solid #1a3a5c;
+		border-radius: 3mm;
 		break-inside: avoid;
 		page-break-inside: avoid;
+		font-size: 11pt;
+		line-height: 1.3;
+	}
+
+	#learning-certificate-print-root .certificate-card > * {
+		grid-column: 1 / -1;
+	}
+
+	#learning-certificate-print-root .certificate-card > .certificate-signoff {
+		grid-column: 1;
+		align-self: end;
+	}
+
+	#learning-certificate-print-root .certificate-card > .certificate-signoff + .certificate-verify {
+		grid-column: 2;
+		align-self: end;
+		justify-content: flex-end;
+	}
+
+	#learning-certificate-print-root .certificate-card p,
+	#learning-certificate-print-root .certificate-card li {
+		line-height: 1.3;
+	}
+
+	#learning-certificate-print-root .certificate-logo {
+		max-height: 16mm;
+		max-width: 60mm;
+	}
+
+	#learning-certificate-print-root .certificate-issuer {
+		font-size: 13pt;
+	}
+
+	#learning-certificate-print-root .certificate-title {
+		font-size: 22pt;
+	}
+
+	#learning-certificate-print-root .certificate-meta {
+		gap: 10mm;
+		margin-top: 1mm;
+	}
+
+	#learning-certificate-print-root .certificate-signoff {
+		margin-top: 1mm;
+	}
+
+	#learning-certificate-print-root .certificate-stamp {
+		max-height: 18mm;
+		max-width: 34mm;
+	}
+
+	#learning-certificate-print-root .certificate-signature {
+		max-height: 15mm;
+		max-width: 55mm;
+	}
+
+	#learning-certificate-print-root .certificate-verify {
+		margin-top: 1mm;
+		padding-top: 3mm;
 	}
 
 	/* Guaranteed scannable QR at a fixed physical size (not pixel-dependent). */
 	#learning-certificate-print-root .certificate-qr {
-		width: 30mm;
-		height: 30mm;
+		width: 22mm;
+		height: 22mm;
 	}
 
 	/* The revoked / expired note keeps its meaning on white paper in every theme. */
 	#learning-certificate-print-root .certificate-status-note {
+		margin: 0 0 3mm;
+		padding: 1.5mm 3mm;
+		font-size: 10pt;
 		background: #fff;
 		color: #8b0000;
 		border: 2px solid #8b0000;

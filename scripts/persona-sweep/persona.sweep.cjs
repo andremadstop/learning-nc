@@ -639,7 +639,8 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		if (rootText < 50) rec.add('print', `print copy #learning-certificate-print-root has ${rootText} characters`)
 		await page.emulateMedia({ media: 'print' })
 		await page.screenshot({ path: path.join(SHOTS, 'guide-certificate-print.png'), fullPage: true })
-		await page.pdf({ path: path.join(DOWNLOADS, 'certificate-print.pdf'), format: 'A4', printBackground: true })
+		// GitHub #80: the page size the stylesheet asks for (A4 landscape), as Chrome's print dialog uses it
+		await page.pdf({ path: path.join(DOWNLOADS, 'certificate-print.pdf'), preferCSSPageSize: true, printBackground: true })
 		await page.emulateMedia({ media: 'screen' })
 		const pdfSize = fs.statSync(path.join(DOWNLOADS, 'certificate-print.pdf')).size
 		if (pdfSize < 5000) rec.add('print', `printed PDF is only ${pdfSize} bytes`)

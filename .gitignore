@@ -168,6 +168,7 @@ app/tests/*
 !app/tests/fixtures/question-media/
 !app/tests/fixtures/question-media/**
 !app/tests/Integration/
+!app/tests/print/
 !app/tests/Integration/*.php
 !app/tests/Integration/phpunit.xml
 !app/tests/Integration/Support/

@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ci": "playwright test --project=chromium",
+    "test:print": "playwright test -c tests/print/playwright.config.cjs",
     "lint": "eslint --ext .js,.vue src/ tests/",
     "lint:fix": "eslint --ext .js,.vue --fix src/ tests/"
   },
