@@ -16,7 +16,7 @@ services:
       - learning-net
 
   app:
-    image: nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5
+    image: nextcloud:35@sha256:8041f24690c5631da46d2391e1fd7efcde95c6cf08695047f3dd7ce7783934b4
     container_name: learning-app
     restart: unless-stopped
     ports:
