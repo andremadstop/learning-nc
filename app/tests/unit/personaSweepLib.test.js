@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
-const { expectedReason, axeFindings, stationText } = require('../../../scripts/persona-sweep/lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex } = require('../../../scripts/persona-sweep/lib.cjs')
 
 describe('persona sweep: expectedReason', () => {
 	const http = (detail) => ({ kind: 'http', detail })
@@ -92,5 +92,21 @@ describe('persona sweep: stationText', () => {
 	it('cuts long text and says so', () => {
 		const t = stationText('a'.repeat(50), 10)
 		expect(t).toBe('aaaaaaaaaa […]')
+	})
+})
+
+describe('persona sweep: pickAnswerIndex (fresh-eyes C3)', () => {
+	it('picks the exact answer, not a longer one that contains it', () => {
+		expect(pickAnswerIndex(['Unlocked, so colleagues can help', ' Locked ', 'Switched off'], 'Locked')).toBe(1)
+	})
+	it('collapses whitespace from the button markup', () => {
+		expect(pickAnswerIndex(['\n  Raise the\n alarm  ', 'Finish your current task'], 'Raise the alarm')).toBe(0)
+	})
+	it('falls back to the shortest button that contains the answer', () => {
+		expect(pickAnswerIndex(['Locked and logged out now', 'Locked now'], 'Locked')).toBe(1)
+	})
+	it('returns -1 without a match', () => {
+		expect(pickAnswerIndex(['Yes', 'No'], 'Maybe')).toBe(-1)
+		expect(pickAnswerIndex(['Yes'], '')).toBe(-1)
 	})
 })

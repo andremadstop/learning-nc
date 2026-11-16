@@ -7,7 +7,7 @@
 const { test, expect } = require('@playwright/test')
 const fs = require('fs')
 const path = require('path')
-const { expectedReason, axeFindings, stationText } = require('./lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex } = require('./lib.cjs')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
@@ -549,7 +549,9 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 				const text = (await q.textContent()).trim()
 				const answer = seed.answers[text]
 				if (!answer) throw new Error(`no seeded answer for question "${text}"`)
-				await page.locator('.answer-btn').filter({ hasText: answer }).first().click()
+				const pick = pickAnswerIndex(await page.locator('.answer-btn').allTextContents(), answer)
+				if (pick === -1) throw new Error(`no answer button "${answer}" for question "${text}"`)
+				await page.locator('.answer-btn').nth(pick).click()
 				await page.waitForTimeout(500)
 				if (await resultsShown()) break
 				const progress = (await page.locator('.progress-label').count()) ? await page.locator('.progress-label').textContent() : ''
@@ -566,6 +568,10 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 			page.__acceptDialogs = false
 			const banner = (await page.locator('.result-banner__status').textContent().catch(() => '')).trim()
 			if (banner !== 'Passed') rec.add('exam', `${pool}: result banner says "${banner}" after all answers right`)
+			// "Passed" alone let a wrong click through (7 of 8 is still over the pass mark).
+			const score = (await page.locator('.results-screen .stat-value').first().textContent().catch(() => '')).trim()
+			const sm = score.match(/(\d+)\s*\/\s*(\d+)/)
+			if (!sm || sm[1] !== sm[2]) rec.add('exam', `${pool}: ${score || 'no score'} correct after all answers right`)
 		})
 	}
 	await station(page, rec, 'Exam result: certificate notice', async () => {

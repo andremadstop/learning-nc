@@ -69,4 +69,25 @@ function stationText(raw, max = 1500) {
 	return text.length > max ? `${text.slice(0, max)} […]` : text
 }
 
-module.exports = { expectedReason, axeFindings, stationText, AXE_IMPACTS }
+/**
+ * Index of the answer button whose text is the seeded answer, -1 if none (fresh-eyes C3, #36).
+ * Playwright's hasText (case-insensitive substring, first wins) clicked "Unlocked, so colleagues
+ * can help" for the answer "Locked", so the
+ * "all answers right" exam scored 7 of 8. Exact (trimmed, whitespace collapsed) match first; only
+ * without one the shortest button text that contains the answer.
+ */
+function pickAnswerIndex(buttonTexts, answer) {
+	const norm = (s) => String(s || '').replace(/\s+/g, ' ').trim()
+	const want = norm(answer)
+	if (!want) return -1
+	const texts = buttonTexts.map(norm)
+	const exact = texts.indexOf(want)
+	if (exact !== -1) return exact
+	let best = -1
+	texts.forEach((t, i) => {
+		if (t.includes(want) && (best === -1 || t.length < texts[best].length)) best = i
+	})
+	return best
+}
+
+module.exports = { expectedReason, axeFindings, stationText, pickAnswerIndex, AXE_IMPACTS }
