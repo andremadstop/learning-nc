@@ -3819,5 +3819,6 @@ OC.L10N.register(
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "تعرض Skill-Map كل مجموعة من مجموعاتك كنقطة. يبيّن اللون مدى تكرار إجاباتك الخاطئة فيها: الأخضر نادرًا، والبرتقالي أحيانًا، والأحمر كثيرًا. انقر على نقطة لرؤية التفاصيل والتدرّب على المجموعة.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "مجموعاتك على شكل خريطة؛ يبيّن اللون مدى تكرار إجاباتك الخاطئة.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "لتعديل الأسئلة، اطلب من مالك المجموعة مشاركتها معك مع صلاحية التحرير.",
+    "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "لا تذكر الشهادات هذا الاسم كجهة مُصدِرة، بل اسم Nextcloud هذا المحدد في إعدادات الإدارة تحت «السمات» ← «الاسم» (ويكون «Nextcloud» ما لم يُغيَّر).",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

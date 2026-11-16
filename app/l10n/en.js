@@ -3819,5 +3819,6 @@ OC.L10N.register(
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "The Skill-Map shows each of your pools as a dot. The colour shows how often you answer wrongly there: green rarely, orange sometimes, red often. Click a dot to see details and practise the pool.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Your pools as a map; the colour shows how often you answer wrongly.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "To change questions, ask the person who owns the pool to share it with you for editing.",
+    "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "Certificates do not name this operator as issuer but the name of this Nextcloud, set in the administration settings under \"Theming\" → \"Name\" (\"Nextcloud\" unless changed).",
 },
 "nplurals=2; plural=(n != 1);");

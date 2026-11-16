@@ -35,8 +35,9 @@
 					class="certificate-download-link"
 					download>
 					<NcButton variant="primary" @click.prevent="download">
-						<!-- GitHub #42: in the instructor copy the label says what the file is; the learner view is unchanged. -->
-						{{ courseId === null ? t('learning', 'Herunterladen') : t('learning', 'Herunterladen (JSON)') }}
+						<!-- GitHub #42: the label says what the file is. Fresh-eyes C3 (#35): the learner's copy too,
+							a plain "Download" made learners expect a PDF. -->
+						{{ t('learning', 'Herunterladen (JSON)') }}
 					</NcButton>
 				</a>
 				<NcButton v-if="courseId === null && linkedinAllowed" variant="secondary" @click="openLinkedIn">

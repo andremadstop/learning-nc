@@ -4,6 +4,11 @@
     <p class="field-help">
       {{ t('learning', 'Learning shows these details on its imprint and privacy pages. Until name, postal address and contact email are entered, both pages show no operator, and Learning does not set the Nextcloud imprint and privacy links. Links already set in the Theming settings are never replaced. Saving with all fields empty removes the details.') }}
     </p>
+    <!-- Fresh-eyes C3 (#35): the certificate's issuer is the theming name (IssuanceService), not
+      this operator name; an admin who entered the operator still read "Nextcloud" there. -->
+    <p class="field-help operator-settings__issuer-hint">
+      {{ t('learning', 'Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).') }}
+    </p>
 
     <div v-for="field in fields" :key="field.key" class="field-row">
       <label :for="'learning-operator-' + fieldId(field.key)">{{ field.label }}</label>

@@ -191,6 +191,16 @@ describe('OperatorSettings (admin)', () => {
 		axios.put.mockReset()
 	})
 
+	// Fresh-eyes C3 (#35): the certificate's issuer is the theming name, not this operator name.
+	it('says where the issuer name on certificates comes from', async () => {
+		axios.get.mockResolvedValue({ data: { operator: OPERATOR, configured: true } })
+		const el = render(OperatorSettings)
+		await vi.waitFor(() => expect(el.querySelector('#learning-operator-name').value).toBe('Musterschule e. V.'))
+		const hint = el.querySelector('.operator-settings__issuer-hint')
+		expect(hint).not.toBeNull()
+		expect(hint.textContent).toMatch(/Aussteller.*„Design“ → „Name“/)
+	})
+
 	it('loads the stored entry into the form', async () => {
 		axios.get.mockResolvedValue({ data: { operator: OPERATOR, configured: true } })
 		const el = render(OperatorSettings)

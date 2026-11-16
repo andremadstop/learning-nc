@@ -189,7 +189,7 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		expect(axios.get).not.toHaveBeenCalledWith(`/apps/learning/api/certificates/${VID}`)
 		expect(modal.querySelector('.certificate-title').textContent).toContain('Compliance')
 		expect(buttonByText(modal, 'Drucken')).toBeTruthy()
-		// The instructor copy names the file type; the learner view below keeps the plain label.
+		// The instructor copy names the file type (the learner view below does too).
 		expect(buttonByText(modal, 'Herunterladen (JSON)')).toBeTruthy()
 		expect(modal.textContent).not.toContain('LinkedIn')
 	})
@@ -247,13 +247,14 @@ describe('Certificate.vue in instructor mode labels a certificate that no longer
 		}
 	})
 
-	it('learner view keeps the plain Download label', async () => {
+	// Fresh-eyes C3 (#35): a plain "Download" made learners expect a PDF and get a JSON file.
+	it('learner view names the file type too', async () => {
 		axios.get.mockResolvedValue({ data: { verification_id: VID, credential_json: makeJwt(CREDENTIAL) } })
 		const view = mount(Certificate, { verificationId: VID })
 		await flush()
 		try {
-			expect(buttonByText(view.host, 'Herunterladen')).toBeTruthy()
-			expect(buttonByText(view.host, 'Herunterladen (JSON)')).toBeUndefined()
+			expect(buttonByText(view.host, 'Herunterladen (JSON)')).toBeTruthy()
+			expect(buttonByText(view.host, 'Herunterladen')).toBeUndefined()
 		} finally {
 			view.unmount()
 		}
