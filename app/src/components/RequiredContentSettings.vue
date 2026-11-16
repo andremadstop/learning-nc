@@ -44,7 +44,7 @@
 				<NcButton
 					variant="tertiary"
 					:disabled="removing[item.id] === true"
-					:aria-label="t('learning', '„{title}“ entfernen', { title: itemTitle(item) })"
+					:aria-label="t('learning', '„{title}“ entfernen', { title: itemTitle(item) }, undefined, { escape: false, sanitize: false })"
 					@click="removeItem(item)">
 					{{ t('learning', 'Entfernen') }}
 				</NcButton>

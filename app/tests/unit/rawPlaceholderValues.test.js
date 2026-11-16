@@ -83,6 +83,19 @@ describe('placeholder values are shown as written', () => {
 		expect(confirm.mock.calls[1][0]).toContain(`„${NAME}“ erneut`)
 	})
 
+	// pre-existing (before 5.14): the remove button of a required video
+	it('a video title on its remove button in the required content', async () => {
+		axios.get.mockImplementation((url) => {
+			if (url.endsWith('/videos')) return Promise.resolve({ data: [{ id: 11, source_type: 'vimeo', video_ref: '76979871', title: 'Q&A Session' }] })
+			if (url.endsWith('/documents')) return Promise.resolve({ data: { documents: [] } })
+			return Promise.resolve({ data: {} })
+		})
+		const { default: RequiredContentSettings } = await import('../../src/components/RequiredContentSettings.vue')
+		await mount(RequiredContentSettings, { courseId: 5, course: { instructor_id: 'anna', material_folder: '/Kurs' } })
+		const button = [...host.querySelectorAll('[data-test="required-content-list"] button')].find((b) => b.getAttribute('aria-label'))
+		expect(button.getAttribute('aria-label')).toBe('„Q&A Session“ entfernen')
+	})
+
 	it('a logo name in the logo library', async () => {
 		axios.get.mockResolvedValue({ data: { logos: [{ id: 'a'.repeat(64), name: 'Logo A&B', mime: 'image/png', size: 1, courses: 0 }], max: 20 } })
 		const { default: CertLogoLibrary } = await import('../../src/components/CertLogoLibrary.vue')
