@@ -516,6 +516,7 @@ export default {
       auditLoading: false,
       auditEvents: [],
       ticketLoading: false,
+      ticketLoadSeq: 0,
       ticketError: '',
       ticketSuccess: '',
       answeringId: null,
@@ -745,6 +746,9 @@ export default {
       }
     },
     async loadSupportTickets() {
+      // only the latest request writes the list and ends the loading state: a late answer
+      // (the other list, or an older load of the same one) must not show under the new mode
+      const seq = ++this.ticketLoadSeq
       this.ticketLoading = true
       this.ticketError = ''
       this.ticketSuccess = ''
@@ -753,8 +757,7 @@ export default {
         const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), {
           params: archived ? { limit: 100, archived: 1 } : { limit: 100 },
         })
-        // a late answer for the other list must not replace the one now shown
-        if (archived !== this.showArchivedTickets) return
+        if (seq !== this.ticketLoadSeq) return
         this.supportTickets = Array.isArray(res.data?.tickets) ? res.data.tickets : []
         this.ticketOpenCount = Number.isInteger(res.data?.open_count) ? res.data.open_count : null
         const nextAnswers = {}
@@ -763,10 +766,11 @@ export default {
         })
         this.ticketAnswers = nextAnswers
       } catch (e) {
+        if (seq !== this.ticketLoadSeq) return
         this.supportTickets = []
         this.ticketError = t('learning', 'Failed to load support tickets')
       } finally {
-        this.ticketLoading = false
+        if (seq === this.ticketLoadSeq) this.ticketLoading = false
       }
     },
     setTicketAnswer(ticketId, value) {
@@ -808,14 +812,10 @@ export default {
       this.ticketActionError = ''
       this.loadSupportTickets()
     },
-    async refreshTicketOpenCount() {
-      try {
-        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 1 } })
-        this.ticketOpenCount = Number.isInteger(res.data?.open_count) ? res.data.open_count : this.ticketOpenCount
-      } catch (e) {
-        // the count is a hint; the list itself is correct
-        console.error('Failed to refresh the open ticket count', e)
-      }
+    // archive, restore and delete answer with the new inbox count; no extra list request, whose
+    // rate limit (20/min) is lower than theirs (30/min)
+    applyTicketOpenCount(data) {
+      if (Number.isInteger(data?.open_count)) this.ticketOpenCount = data.open_count
     },
     async setTicketArchived(ticket, archived) {
       if (this.managingTickets[ticket.id]) return
@@ -823,14 +823,12 @@ export default {
       this.ticketActionError = ''
       this.ticketSuccess = ''
       try {
-        if (archived) {
-          await axios.post(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}/archive', { id: ticket.id }))
-        } else {
-          await axios.post(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}/restore', { id: ticket.id }))
-        }
+        const res = archived
+          ? await axios.post(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}/archive', { id: ticket.id }))
+          : await axios.post(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}/restore', { id: ticket.id }))
         // it leaves the list it was in: the inbox when archived, the archive when restored
         this.removeTicket(ticket)
-        this.refreshTicketOpenCount()
+        this.applyTicketOpenCount(res?.data)
       } catch (e) {
         this.ticketActionError = archived
           ? t('learning', 'Die Anfrage konnte nicht archiviert werden.')
@@ -862,10 +860,10 @@ export default {
       this.ticketActionError = ''
       this.ticketSuccess = ''
       try {
-        await axios.delete(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}', { id: ticket.id }))
+        const res = await axios.delete(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}', { id: ticket.id }))
         this.confirmTicket = null
         this.removeTicket(ticket)
-        this.refreshTicketOpenCount()
+        this.applyTicketOpenCount(res?.data)
       } catch (e) {
         this.confirmTicket = null
         this.ticketActionError = t('learning', 'Die Anfrage konnte nicht gelöscht werden.')

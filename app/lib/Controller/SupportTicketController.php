@@ -78,9 +78,11 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: an administrator hides a technical ticket from the admin inbox.
+     * open_count is the new inbox count, so the page needs no extra list request (whose rate
+     * limit is lower than this one's) to keep the heading right.
      *
      * @param int $id the ticket
-     * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>, open_count: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 30, period: 60)]
     public function archiveAdminTicket(int $id): DataResponse {
@@ -88,7 +90,8 @@ class SupportTicketController extends Controller {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         }
         try {
-            return new DataResponse(['ticket' => $this->service->setAdminTicketArchived($id, true)]);
+            $ticket = $this->service->setAdminTicketArchived($id, true);
+            return new DataResponse(['ticket' => $ticket, 'open_count' => $this->service->countOpenAdmin()]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
         }
@@ -98,7 +101,7 @@ class SupportTicketController extends Controller {
      * GitHub #59: an administrator brings an archived technical ticket back to the inbox.
      *
      * @param int $id the ticket
-     * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>, open_count: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 30, period: 60)]
     public function restoreAdminTicket(int $id): DataResponse {
@@ -106,7 +109,8 @@ class SupportTicketController extends Controller {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         }
         try {
-            return new DataResponse(['ticket' => $this->service->setAdminTicketArchived($id, false)]);
+            $ticket = $this->service->setAdminTicketArchived($id, false);
+            return new DataResponse(['ticket' => $ticket, 'open_count' => $this->service->countOpenAdmin()]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
         }
@@ -116,7 +120,7 @@ class SupportTicketController extends Controller {
      * GitHub #59: an administrator deletes a technical ticket for good.
      *
      * @param int $id the ticket
-     * @return DataResponse<Http::STATUS_OK, array{deleted: bool}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{deleted: bool, open_count: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 30, period: 60)]
     public function deleteAdminTicket(int $id): DataResponse {
@@ -125,7 +129,7 @@ class SupportTicketController extends Controller {
         }
         try {
             $this->service->deleteAdminTicket($id, $this->userId);
-            return new DataResponse(['deleted' => true]);
+            return new DataResponse(['deleted' => true, 'open_count' => $this->service->countOpenAdmin()]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
         }

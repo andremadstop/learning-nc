@@ -296,6 +296,10 @@ class TechnicalTicketsAdminTest extends TestCase {
         $this->assertSame(4, $controller->adminList(100, true)->getData()['open_count'], 'the open count is the server\'s, also in the archive');
 
         $this->assertSame('open', $controller->restoreAdminTicket(9)->getData()['ticket']['status']);
+        // the actions carry the new inbox count, so the page needs no extra list request (whose
+        // rate limit is lower) after each of them
+        $this->assertSame(4, $controller->archiveAdminTicket(9)->getData()['open_count']);
+        $this->assertSame(4, $controller->restoreAdminTicket(9)->getData()['open_count']);
         $controller->archiveAdminTicket(10);
         $this->assertSame('answered', $controller->restoreAdminTicket(10)->getData()['ticket']['status']);
     }
@@ -305,6 +309,7 @@ class TechnicalTicketsAdminTest extends TestCase {
         $response = $this->controller('ops')->deleteAdminTicket(9);
 
         $this->assertSame(Http::STATUS_OK, $response->getStatus());
+        $this->assertSame(['deleted' => true, 'open_count' => 4], $response->getData());
         $this->assertSame([9], $this->deleted);
         $this->assertContains(['user' => null, 'subject' => null], $this->dismissed, 'every notice about it goes, the learner\'s too');
         $this->assertCount(1, $this->audit);

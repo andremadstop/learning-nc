@@ -8064,7 +8064,7 @@
         "/index.php/apps/learning/api/settings/admin/support-tickets/{id}/archive": {
             "post": {
                 "operationId": "support_ticket-archive-admin-ticket",
-                "summary": "GitHub #59: an administrator hides a technical ticket from the admin inbox.",
+                "summary": "GitHub #59: an administrator hides a technical ticket from the admin inbox. open_count is the new inbox count, so the page needs no extra list request (whose rate limit is lower than this one's) to keep the heading right.",
                 "description": "This endpoint requires admin access",
                 "tags": [
                     "support_ticket"
@@ -8107,7 +8107,8 @@
                                 "schema": {
                                     "type": "object",
                                     "required": [
-                                        "ticket"
+                                        "ticket",
+                                        "open_count"
                                     ],
                                     "properties": {
                                         "ticket": {
@@ -8115,6 +8116,10 @@
                                             "additionalProperties": {
                                                 "type": "object"
                                             }
+                                        },
+                                        "open_count": {
+                                            "type": "integer",
+                                            "format": "int64"
                                         }
                                     }
                                 }
@@ -8239,7 +8244,8 @@
                                 "schema": {
                                     "type": "object",
                                     "required": [
-                                        "ticket"
+                                        "ticket",
+                                        "open_count"
                                     ],
                                     "properties": {
                                         "ticket": {
@@ -8247,6 +8253,10 @@
                                             "additionalProperties": {
                                                 "type": "object"
                                             }
+                                        },
+                                        "open_count": {
+                                            "type": "integer",
+                                            "format": "int64"
                                         }
                                     }
                                 }
@@ -8371,11 +8381,16 @@
                                 "schema": {
                                     "type": "object",
                                     "required": [
-                                        "deleted"
+                                        "deleted",
+                                        "open_count"
                                     ],
                                     "properties": {
                                         "deleted": {
                                             "type": "boolean"
+                                        },
+                                        "open_count": {
+                                            "type": "integer",
+                                            "format": "int64"
                                         }
                                     }
                                 }
