@@ -283,9 +283,35 @@ describe('TrainingPrivacyNotice — folded after the first view (GitHub #75)', (
 		window.localStorage.clear()
 	})
 
-	it('is shown in full the first time and as one line with "Details anzeigen" afterwards', async () => {
+	// A stand-in for IntersectionObserver that the test drives.
+	function stubObserver() {
+		const observers = []
+		vi.stubGlobal('IntersectionObserver', class {
+			constructor(callback, options) {
+				this.callback = callback
+				this.options = options
+				this.disconnected = false
+				observers.push(this)
+			}
+
+			observe(el) {
+				this.el = el
+			}
+
+			disconnect() {
+				this.disconnected = true
+			}
+		})
+		return observers
+	}
+
+	it('is shown in full until half of it was on screen, and as one line with "Details anzeigen" afterwards', async () => {
+		const observers = stubObserver()
 		mount({ collapsible: true })
 		expect(host.querySelector('#training-privacy-details').style.display).not.toBe('none')
+		expect(observers[0].options.threshold).toBe(0.5)
+		observers[0].callback([{ isIntersecting: true, intersectionRatio: 0.6 }])
+		expect(observers[0].disconnected).toBe(true)
 		app.unmount()
 		host.remove()
 
@@ -296,6 +322,34 @@ describe('TrainingPrivacyNotice — folded after the first view (GitHub #75)', (
 		toggle.click()
 		await nextTick()
 		expect(host.querySelector('#training-privacy-details').style.display).not.toBe('none')
+		vi.unstubAllGlobals()
+	})
+
+	// GitHub #75 (review): learners find the notice last, below the materials. Marking it on
+	// mount folded it for good for someone who never scrolled down to it (DSGVO Art. 13).
+	it('a notice that never came into view stays expanded next time', () => {
+		const observers = stubObserver()
+		mount({ collapsible: true })
+		observers[0].callback([{ isIntersecting: true, intersectionRatio: 0.1 }])
+		app.unmount()
+		host.remove()
+
+		mount({ collapsible: true })
+		expect(host.querySelector('#training-privacy-details').style.display).not.toBe('none')
+		vi.unstubAllGlobals()
+	})
+
+	it('a learner who opens or closes the details has seen it', async () => {
+		stubObserver()
+		mount({ collapsible: true })
+		host.querySelector('[data-test="training-privacy-toggle"]').click()
+		await nextTick()
+		app.unmount()
+		host.remove()
+
+		mount({ collapsible: true })
+		expect(host.querySelector('[data-test="training-privacy-toggle"]').getAttribute('aria-expanded')).toBe('false')
+		vi.unstubAllGlobals()
 	})
 
 	it('stays expanded when the browser keeps no storage', () => {

@@ -21,7 +21,7 @@
 				data-test="training-privacy-toggle"
 				:aria-expanded="expanded ? 'true' : 'false'"
 				aria-controls="training-privacy-details"
-				@click="expanded = !expanded">
+				@click="toggle">
 				{{ expanded ? t('learning', 'Details ausblenden') : t('learning', 'Details anzeigen') }}
 			</button>
 		</div>
@@ -45,7 +45,7 @@
 			<button
 				type="button"
 				class="training-privacy__ack"
-				@click="$emit('acknowledged')">
+				@click="acknowledge">
 				{{ acknowledgeLabel || t('learning', 'Verstanden') }}
 			</button>
 		</div>
@@ -104,9 +104,43 @@ export default {
 	},
 
 	mounted() {
-		if (this.collapsible) {
-			writeSeen()
+		// GitHub #75 (review): "seen" only once it was on screen. Learners find the notice last,
+		// below the materials; marking it on mount folded it for good, in every course, for
+		// someone who never scrolled down to it. Without IntersectionObserver it stays expanded.
+		if (!this.collapsible || !this.expanded || typeof window.IntersectionObserver !== 'function') {
+			return
 		}
+		this.observer = new window.IntersectionObserver((entries) => {
+			if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5)) {
+				this.markSeen()
+			}
+		}, { threshold: 0.5 })
+		this.observer.observe(this.$el)
+	},
+
+	beforeUnmount() {
+		this.observer?.disconnect()
+		this.observer = null
+	},
+
+	methods: {
+		markSeen() {
+			if (this.collapsible) {
+				writeSeen()
+			}
+			this.observer?.disconnect()
+			this.observer = null
+		},
+
+		toggle() {
+			this.expanded = !this.expanded
+			this.markSeen()
+		},
+
+		acknowledge() {
+			this.markSeen()
+			this.$emit('acknowledged')
+		},
 	},
 }
 </script>
