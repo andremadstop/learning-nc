@@ -101,6 +101,16 @@ describe('Pool statistics without Leitner (GitHub #68)', () => {
 		expect(ranks).toEqual(['1.', '2.'])
 	})
 
+	it('writes counts as "label: n", which needs no plural form in any language (5.13.0 review)', async () => {
+		api.answerStats = answers({ led_courses: 1, answers: 1, correct: 0, hardest: [
+			{ question_id: 3, question_text: 'Welcher Feuerlöscher?', total_answers: 1, wrong_rate: 100 },
+		] })
+		await mount()
+		expect(host.querySelector('.hardest-meta').textContent.trim()).toBe('100 % falsch · Antworten: 1')
+		expect(host.querySelector('.answer-stats-note').textContent).toContain('Antworten: 1, davon richtig: 0')
+		expect(host.textContent).not.toContain('1 Antworten')
+	})
+
 	it('names the viewer\'s own courses as the source of the answers', async () => {
 		api.answerStats = answers({ led_courses: 1 })
 		await mount()
@@ -111,7 +121,7 @@ describe('Pool statistics without Leitner (GitHub #68)', () => {
 		api.answerStats = answers({ led_courses: 0, learners: 0, attempts: 0, answers: 0, correct: 0, accuracy: null, hardest: [] })
 		await mount()
 		expect(host.querySelector('.answer-stats-none').textContent).toContain('Du leitest keinen der Kurse mit diesem Pool')
-		expect(host.textContent).not.toContain('0 Antworten, davon 0 richtig')
+		expect(host.textContent).not.toContain('Antworten: 0, davon richtig: 0')
 		expect(host.textContent).not.toContain('Lernende mit Antworten')
 		expect(host.textContent).not.toContain('Versuche')
 		expect(host.querySelector('.hardest-empty')).toBeNull()

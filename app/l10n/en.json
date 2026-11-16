@@ -3793,7 +3793,6 @@
         "Trefferquote gesamt": "Overall hit rate",
         "Nicht bestanden": "Not passed",
         "Frist überschritten": "Deadline passed",
-        "Frist endet in {n} Tagen": "Deadline in {n} days",
         "Bestes Prüfungsergebnis": "Best exam result",
         "Noch keine Prüfung abgelegt": "No exam taken yet",
         "Noch keine Antwort": "No answer yet",
@@ -3801,10 +3800,8 @@
         "Zurück zu „{mode}“": "Back to \"{mode}\"",
         "Fragen im Pool": "Questions in the pool",
         "Lernende mit Antworten": "Learners with answers",
-        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "This pool is not part of any course that uses Leitner. So this shows the answers of the learners in your courses with this pool, without names: {answers} answers, {correct} of them right.",
         "Dieser Pool hängt in keinem Kurs mit Leitner. Du leitest keinen der Kurse mit diesem Pool, deshalb stehen hier keine Antworten: Die Antworten aus Kursen anderer Lehrender siehst du nicht.": "This pool is not part of any course that uses Leitner. You lead none of the courses with this pool, so no answers are shown here: you do not see the answers from other instructors' courses.",
         "Schwierigste Fragen": "Hardest questions",
-        "{rate} % falsch · {n} Antworten": "{rate} % wrong · {n} answers",
         "Noch zu wenige falsche Antworten für eine Auswertung.": "Not enough wrong answers yet for an evaluation.",
         "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Answer statistics of the learners and the hardest questions of this pool.",
         "Zertifikat gültig · Erneuerung offen": "Certificate valid · renewal open",
@@ -3820,6 +3817,9 @@
         "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.": "Your pools as a map; the colour shows how often you answer wrongly.",
         "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.": "To change questions, ask the person who owns the pool to share it with you for editing.",
         "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).": "Certificates do not name this operator as issuer but the name of this Nextcloud, set in the administration settings under \"Theming\" → \"Name\" (\"Nextcloud\" unless changed).",
-        "{kind}: PNG aus Dateien wählen": "{kind}: Choose PNG from Files"
+        "{kind}: PNG aus Dateien wählen": "{kind}: Choose PNG from Files",
+        "Tage bis Fristende: {n}": "Days until deadline: {n}",
+        "{rate} % falsch · Antworten: {n}": "{rate} % wrong · Answers: {n}",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen. Antworten: {answers}, davon richtig: {correct}.": "This pool is not part of any course that uses Leitner. So this shows the answers of the learners in your courses with this pool, without names. Answers: {answers}, of them right: {correct}."
     }
 }

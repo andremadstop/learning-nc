@@ -50,6 +50,8 @@ class CsvExportLanguageTest extends TestCase {
         'Hohes Risiko' => 'High risk',
         'Mittleres Risiko' => 'Medium risk',
         'Inaktiv seit {n} Tagen' => 'Inactive for {n} days',
+        'Tage bis Fristende: {n}' => 'Days until deadline: {n}',
+        'Noch nicht bestanden' => 'Not passed yet',
         'Trefferquote: %s' => 'Accuracy: %s',
         'Karten in Box 1: %s' => 'Cards in box 1: %s',
         'Benutzer-ID' => 'User ID',
@@ -156,6 +158,21 @@ class CsvExportLanguageTest extends TestCase {
         $this->assertSame('Medium risk', $rows[1][1]);
         $this->assertSame('Inactive for 9 days; Accuracy: 30 %; Cards in box 1: 70 %', $rows[1][3]);
         $this->assertStringContainsString('charset=utf-8', $response->getHeaders()['Content-Type']);
+    }
+
+    /**
+     * 5.13.0 review: "Frist endet in {n} Tagen" read "in 1 Tagen" / "in 1 days" for a deadline
+     * tomorrow and had no form for n = 0; "label: n" needs no plural form in any language.
+     */
+    public function testTheDeadlineReasonNeedsNoPluralForm(): void {
+        $csv = new \OCA\Learning\Service\CsvExportL10n($this->english());
+        $this->assertSame('Not passed yet; Days until deadline: 1', $csv->riskReasons(['risk_reason_codes' => [
+            ['code' => 'not_passed'],
+            ['code' => 'deadline_days', 'n' => 1],
+        ]]));
+        $this->assertSame('Days until deadline: 0', $csv->riskReasons(['risk_reason_codes' => [
+            ['code' => 'deadline_days', 'n' => 0],
+        ]]));
     }
 
     public function testTheClassSummaryHeadersAreInTheExportersLanguage(): void {

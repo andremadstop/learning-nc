@@ -942,7 +942,7 @@ export default {
 				// GitHub #68: a course without Leitner judges by the exams.
 				case 'not_passed': return t('learning', 'Noch nicht bestanden')
 				case 'deadline_overdue': return t('learning', 'Frist überschritten')
-				case 'deadline_days': return t('learning', 'Frist endet in {n} Tagen', { n })
+				case 'deadline_days': return t('learning', 'Tage bis Fristende: {n}', { n })
 				case 'certificate_expired': return t('learning', 'Zertifikat abgelaufen')
 				case 'renewal_open': return t('learning', 'Erneuerung offen')
 				default: return code

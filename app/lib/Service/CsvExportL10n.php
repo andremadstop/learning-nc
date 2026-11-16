@@ -122,7 +122,7 @@ class CsvExportL10n {
                 // GitHub #68: the reasons of a course without Leitner.
                 'not_passed' => $this->t('Noch nicht bestanden'),
                 'deadline_overdue' => $this->t('Frist überschritten'),
-                'deadline_days' => str_replace('{n}', $n, $this->t('Frist endet in {n} Tagen')),
+                'deadline_days' => str_replace('{n}', $n, $this->t('Tage bis Fristende: {n}')),
                 'certificate_expired' => $this->t('Zertifikat abgelaufen'),
                 'renewal_open' => $this->t('Erneuerung offen'),
                 default => $code,

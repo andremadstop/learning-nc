@@ -2324,7 +2324,7 @@ class CourseService {
                     $score += 3;
                 } elseif ($due !== null && $due - $now <= self::AT_RISK_DEADLINE_NEAR_DAYS * 86400) {
                     $days = max(0, (int)ceil(($due - $now) / 86400));
-                    $reasons[] = "Frist endet in {$days} Tagen";
+                    $reasons[] = "Tage bis Fristende: {$days}";
                     $reasonCodes[] = ['code' => 'deadline_days', 'n' => $days];
                     $score += 2;
                 }

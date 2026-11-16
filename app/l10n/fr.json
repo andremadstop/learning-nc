@@ -3793,7 +3793,6 @@
         "Trefferquote gesamt": "Taux de réussite global",
         "Nicht bestanden": "Non réussi",
         "Frist überschritten": "Échéance dépassée",
-        "Frist endet in {n} Tagen": "Échéance dans {n} jours",
         "Bestes Prüfungsergebnis": "Meilleur résultat d'examen",
         "Noch keine Prüfung abgelegt": "Aucun examen passé pour l'instant",
         "Noch keine Antwort": "Aucune réponse pour l'instant",
@@ -3801,10 +3800,8 @@
         "Zurück zu „{mode}“": "Retour à « {mode} »",
         "Fragen im Pool": "Questions de la banque",
         "Lernende mit Antworten": "Apprenants ayant répondu",
-        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.": "Cette banque ne fait partie d'aucun cours qui utilise Leitner. Elle affiche donc les réponses des apprenants de vos cours qui contiennent cette banque, sans noms : {answers} réponses, dont {correct} justes.",
         "Dieser Pool hängt in keinem Kurs mit Leitner. Du leitest keinen der Kurse mit diesem Pool, deshalb stehen hier keine Antworten: Die Antworten aus Kursen anderer Lehrender siehst du nicht.": "Cette banque ne fait partie d'aucun cours qui utilise Leitner. Vous ne dirigez aucun des cours qui contiennent cette banque, aucune réponse n'est donc affichée ici : vous ne voyez pas les réponses des cours d'autres formateurs.",
         "Schwierigste Fragen": "Questions les plus difficiles",
-        "{rate} % falsch · {n} Antworten": "{rate} % fausses · {n} réponses",
         "Noch zu wenige falsche Antworten für eine Auswertung.": "Pas encore assez de réponses fausses pour une analyse.",
         "Antwortstatistik der Lernenden und die schwierigsten Fragen dieses Pools.": "Statistiques des réponses des apprenants et questions les plus difficiles de cette banque.",
         "Zertifikat gültig · Erneuerung offen": "Certificat valide · renouvellement ouvert",
@@ -3820,6 +3817,9 @@
         "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.": "Tes pools sous forme de carte ; la couleur indique à quelle fréquence tu réponds faux.",
         "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.": "Pour modifier des questions, demande à la personne à qui appartient le pool de le partager avec toi en modification.",
         "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).": "Les certificats n'indiquent pas ce nom comme émetteur, mais le nom de ce Nextcloud, défini dans les paramètres d'administration sous « Personnaliser l'apparence » → « Nom » (« Nextcloud » sauf modification).",
-        "{kind}: PNG aus Dateien wählen": "{kind} : choisir un PNG dans Fichiers"
+        "{kind}: PNG aus Dateien wählen": "{kind} : choisir un PNG dans Fichiers",
+        "Tage bis Fristende: {n}": "Jours avant l'échéance : {n}",
+        "{rate} % falsch · Antworten: {n}": "{rate} % fausses · Réponses : {n}",
+        "Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen. Antworten: {answers}, davon richtig: {correct}.": "Cette banque ne fait partie d'aucun cours qui utilise Leitner. Elle affiche donc les réponses des apprenants de vos cours qui contiennent cette banque, sans noms. Réponses : {answers}, dont justes : {correct}."
     }
 }

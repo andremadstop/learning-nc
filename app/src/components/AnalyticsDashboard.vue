@@ -106,7 +106,7 @@
         </p>
         <template v-else>
         <p class="answer-stats-note">
-          {{ t('learning', 'Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen: {answers} Antworten, davon {correct} richtig.', { answers: answerStats.answers, correct: answerStats.correct }) }}
+          {{ t('learning', 'Dieser Pool hängt in keinem Kurs mit Leitner. Deshalb stehen hier die Antworten der Lernenden aus deinen Kursen mit diesem Pool, ohne Namen. Antworten: {answers}, davon richtig: {correct}.', { answers: answerStats.answers, correct: answerStats.correct }) }}
         </p>
         <h3 class="section-heading">{{ t('learning', 'Schwierigste Fragen') }}</h3>
         <ol v-if="answerStats.hardest && answerStats.hardest.length > 0" class="hardest-list">
@@ -115,7 +115,7 @@
           <li v-for="(q, index) in answerStats.hardest" :key="q.question_id" class="hardest-item">
             <span class="hardest-rank">{{ index + 1 }}.</span>
             <span class="hardest-text">{{ q.question_text }}</span>
-            <span class="hardest-meta">{{ t('learning', '{rate} % falsch · {n} Antworten', { rate: q.wrong_rate, n: q.total_answers }) }}</span>
+            <span class="hardest-meta">{{ t('learning', '{rate} % falsch · Antworten: {n}', { rate: q.wrong_rate, n: q.total_answers }) }}</span>
           </li>
         </ol>
         <p v-else class="hardest-empty">{{ t('learning', 'Noch zu wenige falsche Antworten für eine Auswertung.') }}</p>
