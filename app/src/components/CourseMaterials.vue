@@ -116,7 +116,7 @@
 									:checked="requiredHeader === 'all'"
 									:disabled="requiredBusy || !hasSelectableDocuments"
 									:aria-label="requiredHeader === 'all' ? t('learning', 'Alle Dateien optional machen') : t('learning', 'Alle Dateien als Pflicht markieren')"
-									@change="setAllRequired($event.target.checked)">
+									@change="setAllRequired($event.target.checked, $event.target)">
 								<span>{{ t('learning', 'Pflicht') }}</span>
 							</label>
 						</th>
@@ -141,7 +141,7 @@
 								:checked="isRequired(doc)"
 								:disabled="requiredBusy || (!isRequired(doc) && doc.downloadable !== true)"
 								:aria-label="t('learning', '„{name}“ ist Pflicht', { name: doc.file_name })"
-								@change="setRequired([doc], $event.target.checked)">
+								@change="setRequired([doc], $event.target.checked, $event.target)">
 							<button
 								v-if="isRequired(doc)"
 								type="button"
@@ -203,7 +203,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { translate as t } from '@nextcloud/l10n'
+import { translate as t, translatePlural as n } from '@nextcloud/l10n'
 import { formatLocalDate } from '../utils/relativeTime.js'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import { parseDocumentsResponse } from '../utils/courseMaterials.js'
@@ -403,16 +403,35 @@ export default {
 			return this.requiredIds.has(Number(doc.id))
 		},
 
-		async setAllRequired(required) {
+		async setAllRequired(required, box = null) {
 			const docs = required
 				? this.documents.filter((doc) => doc.downloadable === true)
 				: this.documents.filter((doc) => this.isRequired(doc))
-			await this.setRequired(docs, required)
+			await this.setRequired(docs, required, box)
 		},
 
-		async setRequired(docs, required) {
+		/**
+		 * GitHub #75 (review): making a required file optional ends the count of its read
+		 * confirmations; ticking it again asks every learner anew. So it is asked first, like
+		 * "Ask everyone to confirm again". Cancelled: the box shows the unchanged state again.
+		 */
+		confirmMakeOptional(docs) {
+			const message = docs.length === 1
+				? t('learning', '„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: docs[0].file_name })
+				: n('learning', '%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', '%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', docs.length)
+			return window.confirm(message)
+		},
+
+		async setRequired(docs, required, box = null) {
 			const documentIds = docs.map((doc) => Number(doc.id))
 			if (documentIds.length === 0) {
+				return
+			}
+			if (!required && !this.confirmMakeOptional(docs)) {
+				if (box) {
+					box.checked = true
+				}
+				this.$nextTick(() => this.syncHeaderCheckbox())
 				return
 			}
 			this.requiredBusy = true

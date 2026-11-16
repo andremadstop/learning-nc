@@ -211,6 +211,36 @@ class RequiredDocumentServiceTest extends TestCase {
     }
 
     /**
+     * A row a concurrent request added first is skipped in its own savepoint (the outer
+     * transaction stays usable on PostgreSQL) and is not reported as this request's change.
+     */
+    public function testAConcurrentlyAddedRowIsSkippedInASavepoint(): void {
+        $videos = $this->createMock(CourseVideoMapper::class);
+        $videos->method('insert')->willThrowException(
+            new \OCP\DB\Exception(\OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION, 'learn_cv_course_doc_uq')
+        );
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $db = new FakeDbConnection();
+        $service = new RequiredDocumentService(
+            $this->createMock(DocConfirmMapper::class),
+            $videos,
+            $this->createMock(CourseMapper::class),
+            $this->createMock(DocumentService::class),
+            $this->createMock(PassCriteriaService::class),
+            $audit,
+            $this->createMock(ITimeFactory::class),
+            $db,
+        );
+
+        $service->changeRequired(9, [self::document()], [], 'teacher');
+
+        self::assertSame(2, $db->beginTransactionCalls, 'outer transaction plus one savepoint');
+        self::assertSame(1, $db->rollBackCalls, 'only the savepoint');
+        self::assertSame(1, $db->commitCalls);
+    }
+
+    /**
      * GitHub #75 (review): the coverage report asks for all learners' cycles at once and never
      * reloads the course per learner; a confirmation from before a learner's cycle is not counted.
      */

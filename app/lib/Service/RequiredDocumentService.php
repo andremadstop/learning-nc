@@ -214,6 +214,56 @@ class RequiredDocumentService {
     }
 
     /**
+     * The "Required" column (instructor, checked by the caller): adds the given new registry rows
+     * and removes the given ones, and records what actually changed as
+     * course.content.required_changed in the compliance chain with the instructor as actor —
+     * all or nothing. A removed row takes its confirmations out of the count for good (ticking
+     * the document again starts a new row), so who did it must be on record.
+     * A row added concurrently by another request (unique violation) is skipped inside a
+     * savepoint, so the outer transaction stays usable on PostgreSQL.
+     *
+     * @param CourseVideo[] $add new document rows (no id yet)
+     * @param CourseVideo[] $remove existing document rows
+     */
+    public function changeRequired(int $courseId, array $add, array $remove, string $instructorId): void {
+        $this->db->beginTransaction();
+        try {
+            $changed = [];
+            foreach ($remove as $video) {
+                $this->videoMapper->delete($video);
+                $changed[] = $video;
+            }
+            foreach ($add as $video) {
+                $this->db->beginTransaction();
+                try {
+                    $changed[] = $this->videoMapper->insert($video);
+                    $this->db->commit();
+                } catch (\OCP\DB\Exception $e) {
+                    $this->db->rollBack();
+                    if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                        throw $e;
+                    }
+                    // added by a concurrent request: required, as asked; not this request's change
+                }
+            }
+            if ($changed !== []) {
+                $this->auditService->logComplianceEvent(ComplianceEventTypes::CONTENT_REQUIRED_CHANGED, $instructorId, [
+                    'course_id' => $courseId,
+                    'required' => $add !== [],
+                    'document_ids' => array_map(static fn(CourseVideo $v): int => (int)$v->getDocumentId(), $changed),
+                    'content_ids' => array_map(static fn(CourseVideo $v): int => (int)$v->getId(), $changed),
+                ]);
+            }
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    /**
      * "Ask everyone to confirm again" (instructor, checked by the caller): confirmations from
      * before now no longer count for this document. Recorded in the compliance chain with the
      * instructor as actor.

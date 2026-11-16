@@ -3958,6 +3958,11 @@
         "_%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen._::_%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen._": [
             "%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen.",
             "%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen."
+        ],
+        "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?",
+        "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
+            "%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?",
+            "%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?"
         ]
     }
 }

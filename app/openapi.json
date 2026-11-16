@@ -22790,7 +22790,7 @@
         "/index.php/apps/learning/api/courses/{courseId}/required-documents": {
             "put": {
                 "operationId": "course_video-set-documents-required",
-                "summary": "GitHub #75: the \"Required\" column of the learning materials. Marks the given material documents of the course as required (adds a registry row each, at most one per document) or as optional (removes their rows). Idempotent: a document that is required already is left as it is, so ticking \"all\" twice adds nothing. Only documents of this course's material folder can be made required; any other id refuses the whole request. Removing a row leaves its confirmations in place (and in the compliance chain); ticking the document again later starts a new row that has to be confirmed anew.",
+                "summary": "GitHub #75: the \"Required\" column of the learning materials. Marks the given material documents of the course as required (adds a registry row each, at most one per document) or as optional (removes their rows). Idempotent: a document that is required already is left as it is, so ticking \"all\" twice adds nothing. Only documents of this course's material folder can be made required; any other id refuses the whole request. Removing a row leaves its confirmations in place (and in the compliance chain); ticking the document again later starts a new row that has to be confirmed anew. Every change is recorded as course.content.required_changed (RequiredDocumentService::changeRequired()).",
                 "tags": [
                     "course_video"
                 ],

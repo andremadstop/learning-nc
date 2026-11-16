@@ -3963,6 +3963,12 @@
             "%n обязательный документ больше не находится в папке материалов: учащиеся не могут его открыть.",
             "%n обязательных документа больше не находятся в папке материалов: учащиеся не могут их открыть.",
             "%n обязательных документов больше не находятся в папке материалов: учащиеся не могут их открыть."
+        ],
+        "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "«{name}» станет необязательным. Если позже файл снова сделать обязательным, всем учащимся придётся заново подтвердить, что они его прочитали. Прежние подтверждения остаются в журнале аудита. Продолжить?",
+        "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
+            "%n файл станет необязательным. Если позже снова сделать его обязательным, всем учащимся придётся заново подтвердить прочтение. Прежние подтверждения остаются в журнале аудита. Продолжить?",
+            "%n файла станут необязательными. Если позже снова сделать их обязательными, всем учащимся придётся заново подтвердить прочтение. Прежние подтверждения остаются в журнале аудита. Продолжить?",
+            "%n файлов станут необязательными. Если позже снова сделать их обязательными, всем учащимся придётся заново подтвердить прочтение. Прежние подтверждения остаются в журнале аудита. Продолжить?"
         ]
     }
 }

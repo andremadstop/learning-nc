@@ -323,7 +323,8 @@ class CourseVideoController extends Controller {
      * left as it is, so ticking "all" twice adds nothing. Only documents of this course's
      * material folder can be made required; any other id refuses the whole request.
      * Removing a row leaves its confirmations in place (and in the compliance chain); ticking the
-     * document again later starts a new row that has to be confirmed anew.
+     * document again later starts a new row that has to be confirmed anew. Every change is
+     * recorded as course.content.required_changed (RequiredDocumentService::changeRequired()).
      *
      * @param list<int> $documentIds course_documents ids
      * @param bool $required true = required, false = optional
@@ -349,9 +350,14 @@ class CourseVideoController extends Controller {
         if (count($ids) > 500) {
             return new DataResponse(['error' => 'Too many documents'], Http::STATUS_BAD_REQUEST);
         }
+        if ($this->requiredDocuments === null) {
+            return new DataResponse(['error' => 'Failed to change the required documents'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
         try {
             $course = $this->courseService->assertInstructorOfCourse($courseId, $this->userId);
             $existing = $this->videoMapper->findDocumentRowsByCourse($courseId);
+            $add = [];
+            $remove = [];
             if ($required) {
                 $maxSort = 0;
                 foreach ($this->videoMapper->findByCourse($courseId) as $row) {
@@ -378,22 +384,16 @@ class CourseVideoController extends Controller {
                     $video->setDurationSeconds(null);
                     $video->setSortOrder(++$maxSort);
                     $video->setCreatedAt(time());
-                    try {
-                        $this->videoMapper->insert($video);
-                    } catch (\OCP\DB\Exception $e) {
-                        if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                            throw $e;
-                        }
-                        // added by a concurrent request: required, as asked
-                    }
+                    $add[] = $video;
                 }
             } else {
                 foreach ($ids as $id) {
                     if (isset($existing[$id])) {
-                        $this->videoMapper->delete($existing[$id]);
+                        $remove[] = $existing[$id];
                     }
                 }
             }
+            $this->requiredDocuments->changeRequired($courseId, $add, $remove, $this->userId);
             return new DataResponse(array_map(
                 static fn(CourseVideo $v): array => $v->jsonSerialize(),
                 $this->videoMapper->findByCourse($courseId)

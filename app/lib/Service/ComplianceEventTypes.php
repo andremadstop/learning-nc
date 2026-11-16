@@ -25,6 +25,10 @@ final class ComplianceEventTypes {
     // GitHub #75: an instructor asked every learner to confirm a required document again
     // (RequiredDocumentService::requestReconfirm); context {course_id, content_id}
     public const CONTENT_RECONFIRM_REQUESTED = 'course.content.reconfirm_requested';
+    // GitHub #75: an instructor made material documents required or optional
+    // (RequiredDocumentService::changeRequired); context {course_id, required, document_ids, content_ids}.
+    // Making a document optional ends its confirmations: ticking it again starts a new row.
+    public const CONTENT_REQUIRED_CHANGED = 'course.content.required_changed';
 
     private function __construct() {} // static-only class
 }

@@ -110,11 +110,67 @@ describe('CourseMaterials — the "Required" column (GitHub #75)', () => {
 		await flush()
 		expect(api.puts[0].body).toEqual({ documentIds: [31, 32], required: true })
 
+		vi.stubGlobal('confirm', vi.fn(() => true))
 		const again = host.querySelector('[data-test="required-all"]')
 		again.checked = false
 		again.dispatchEvent(new Event('change'))
 		await flush()
 		expect(api.puts[1].body).toEqual({ documentIds: [31, 32], required: false })
+		vi.unstubAllGlobals()
+	})
+
+	// GitHub #75 (review): unticking ends the count of the confirmations — asked first.
+	it('asks before a file becomes optional and changes nothing when cancelled', async () => {
+		const confirm = vi.fn(() => false)
+		vi.stubGlobal('confirm', confirm)
+		await mount({ isInstructor: true })
+		const box = host.querySelector('[data-test="required-doc-31"]')
+		box.checked = false
+		box.dispatchEvent(new Event('change'))
+		await flush()
+		expect(confirm).toHaveBeenCalledTimes(1)
+		expect(confirm.mock.calls[0][0]).toContain('Chapter 1.pdf')
+		expect(api.puts).toEqual([])
+		expect(host.querySelector('[data-test="required-doc-31"]').checked).toBe(true)
+		vi.unstubAllGlobals()
+	})
+
+	it('the header box asks once for all files and keeps them required when cancelled', async () => {
+		api.registry = [
+			{ id: 7, source_type: 'document', video_ref: '31', document_id: 31 },
+			{ id: 8, source_type: 'document', video_ref: '32', document_id: 32 },
+		]
+		const confirm = vi.fn(() => false)
+		vi.stubGlobal('confirm', confirm)
+		await mount({ isInstructor: true })
+		const header = host.querySelector('[data-test="required-all"]')
+		expect(header.checked).toBe(true)
+		header.checked = false
+		header.dispatchEvent(new Event('change'))
+		await flush()
+		expect(confirm).toHaveBeenCalledTimes(1)
+		expect(api.puts).toEqual([])
+		expect(host.querySelector('[data-test="required-all"]').checked).toBe(true)
+
+		confirm.mockReturnValue(true)
+		header.checked = false
+		header.dispatchEvent(new Event('change'))
+		await flush()
+		expect(api.puts).toEqual([{ url: '/apps/learning/api/courses/9/required-documents', body: { documentIds: [31, 32], required: false } }])
+		vi.unstubAllGlobals()
+	})
+
+	it('ticking a file needs no confirmation', async () => {
+		const confirm = vi.fn(() => false)
+		vi.stubGlobal('confirm', confirm)
+		await mount({ isInstructor: true })
+		const box = host.querySelector('[data-test="required-doc-32"]')
+		box.checked = true
+		box.dispatchEvent(new Event('change'))
+		await flush()
+		expect(confirm).not.toHaveBeenCalled()
+		expect(api.puts).toHaveLength(1)
+		vi.unstubAllGlobals()
 	})
 
 	it('asks everyone to confirm a required file again after a confirmation', async () => {

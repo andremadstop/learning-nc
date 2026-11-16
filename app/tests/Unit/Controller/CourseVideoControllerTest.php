@@ -13,6 +13,13 @@ use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\VideoProgressService;
+use OCA\Learning\Service\ComplianceEventTypes;
+use OCA\Learning\Service\RequiredDocumentService;
+use OCA\Learning\Db\CourseMapper;
+use OCA\Learning\Db\DocConfirmMapper;
+use OCA\Learning\Service\DocumentService;
+use OCA\Learning\Service\PassCriteriaService;
+use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -56,6 +63,9 @@ class CourseVideoControllerTest extends TestCase {
     private $documentMapper;
     /** @var array<int, CourseDocument> material documents by id */
     private array $documents = [];
+    /** @var AuditService&\PHPUnit\Framework\MockObject\MockObject */
+    private $audit;
+    private FakeDbConnection $db;
 
     protected function setUp(): void {
         $this->rootFolder = $this->createMock(IRootFolder::class);
@@ -87,6 +97,8 @@ class CourseVideoControllerTest extends TestCase {
             return $this->documents[$id];
         });
         $this->videoMapper = $this->createMock(CourseVideoMapper::class);
+        $this->audit = $this->createMock(AuditService::class);
+        $this->db = new FakeDbConnection();
         $this->courseService = $this->createMock(CourseService::class);
         // Real service so the pure isDurationValidForGate logic runs; its deps are never called by it.
         $this->videoProgressService = new VideoProgressService(
@@ -126,6 +138,16 @@ class CourseVideoControllerTest extends TestCase {
             $this->createMock(LoggerInterface::class),
             $uid,
             $this->documentMapper,
+            new RequiredDocumentService(
+                $this->createMock(DocConfirmMapper::class),
+                $this->videoMapper,
+                $this->createMock(CourseMapper::class),
+                $this->createMock(DocumentService::class),
+                $this->createMock(PassCriteriaService::class),
+                $this->audit,
+                $this->createMock(ITimeFactory::class),
+                $this->db,
+            ),
         );
     }
 
@@ -526,6 +548,64 @@ class CourseVideoControllerTest extends TestCase {
         $resp = $this->makeController()->setDocumentsRequired(5, [31, 34], false);
 
         $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+    }
+
+    /**
+     * GitHub #75 (review): making a document optional ends the count of its confirmations, so
+     * the change is on record in the compliance chain with the instructor as actor.
+     */
+    public function testUntickingIsRecordedInTheComplianceChain(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([31 => $this->requiredRow(8, 31)]);
+        $this->videoMapper->method('findByCourse')->willReturn([]);
+        $this->audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CONTENT_REQUIRED_CHANGED,
+            'instructor-uid',
+            ['course_id' => 5, 'required' => false, 'document_ids' => [31], 'content_ids' => [8]]
+        );
+
+        $resp = $this->makeController()->setDocumentsRequired(5, [31, 34], false);
+
+        $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+    }
+
+    public function testTickingIsRecordedWithTheNewRows(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([]);
+        $this->videoMapper->method('findByCourse')->willReturn([]);
+        $this->videoMapper->method('insert')->willReturnCallback(static function (CourseVideo $v): CourseVideo {
+            $v->setId(12);
+            return $v;
+        });
+        $this->audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CONTENT_REQUIRED_CHANGED,
+            'instructor-uid',
+            ['course_id' => 5, 'required' => true, 'document_ids' => [31], 'content_ids' => [12]]
+        );
+
+        $this->assertSame(Http::STATUS_OK, $this->makeController()->setDocumentsRequired(5, [31], true)->getStatus());
+    }
+
+    public function testNothingChangedWritesNoEvent(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([31 => $this->requiredRow(8, 31)]);
+        $this->videoMapper->method('findByCourse')->willReturn([]);
+        $this->audit->expects($this->never())->method('logComplianceEvent');
+
+        $this->assertSame(Http::STATUS_OK, $this->makeController()->setDocumentsRequired(5, [31], true)->getStatus());
+    }
+
+    /** No audit, no change: a failing compliance append undoes the removal (500). */
+    public function testAFailedAuditAppendRollsTheChangeBack(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([31 => $this->requiredRow(8, 31)]);
+        $this->audit->method('logComplianceEvent')->willThrowException(new \RuntimeException('chain'));
+
+        $resp = $this->makeController()->setDocumentsRequired(5, [31], false);
+
+        $this->assertSame(Http::STATUS_INTERNAL_SERVER_ERROR, $resp->getStatus());
+        $this->assertSame(1, $this->db->rollBackCalls);
+        $this->assertSame(0, $this->db->commitCalls);
     }
 
     public function testRequiredColumnIsForInstructorsOnly(): void {
