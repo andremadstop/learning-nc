@@ -20,7 +20,7 @@ Every PHP gate runs in a throwaway Docker container on a clean snapshot of the c
 | ESLint (0 errors; warnings allowed) | ✓ | ✓ | ✓ | |
 | Vitest | ✓ | ✓ | ✓ | |
 | Production build (`npm run build`) | | | ✓ | |
-| i18n gates (6, see below) | ✓ | ✓ | ✓ | |
+| i18n gates (7, see below) | ✓ | ✓ | ✓ | |
 | PHPStan level 5 + PHPUnit (`gate-container.sh`) | ✓ | ✓ | ✓ | |
 | Secret scan (hard-coded keys and passwords) | | ✓ | | |
 | SQL columns against a freshly installed schema | | ✓ | | |
@@ -60,7 +60,7 @@ npm --prefix app run build                         # production bundle
 
 `gate-container.sh` runs a pinned `nextcloud:33` image (by digest) and installs PHP dependencies from the versioned `composer.lock`. PHPUnit runs with `--fail-on-skipped --fail-on-incomplete`, because a skipped test is a check that never ran. The last output line is always `GATE-RESULT phpstan=<ok|fail> phpunit=<ok|fail>`.
 
-The interface is translated into six languages (de, en, fr, ru, ar, uk). `check-i18n-parity.sh` runs six checks:
+The interface is translated into six languages (de, en, fr, ru, ar, uk). `check-i18n-parity.sh` runs seven checks:
 
 1. Every language has the same keys.
 2. `l10n/<lang>.js` matches `l10n/<lang>.json`.
@@ -68,6 +68,7 @@ The interface is translated into six languages (de, en, fr, ru, ar, uk). `check-
 4. Every string the source code uses exists in the catalogue (source → catalogue).
 5. The VirtuProf catalogue (`src/l10n/virtuprof-strings.js`) is up to date.
 6. The consent texts are complete in all six languages and name the recipient.
+7. No translation is simply the English text (`check-i18n-untranslated.py`), apart from product names, abbreviations and French cognates. The keys that were untranslated when this check came in are listed in `scripts/i18n-untranslated-baseline.json`; that list may only shrink.
 
 The first three compare the language files with each other. The fourth checks the source code against the catalogue: a string missing from every language looks consistent to the first three checks.
 
@@ -98,12 +99,12 @@ It needs Docker and Chromium. `PERSONA_CHROMIUM` points at the browser binary. T
 
 **The scenario:**
 
-- Nextcloud 33 and PostgreSQL 16, pinned by digest, with an English interface and AI off.
-- Gamification is off by default. `GAMIFICATION=on` seeds it switched on and runs the same stations and detectors.
+- Nextcloud 33 and PostgreSQL 16, pinned by digest, with an English interface.
+- By default gamification, AI and Leitner are off: the mandatory-training scenario. `GAMIFICATION=on` seeds an IT course as before #36 instead: gamification on, every course mode on (Leitner included), and AI on with an Ollama connection that nothing answers (no external provider). It runs the same detectors; the stations that only exist with these modes on are added. `sweep` takes the mode of the running instance.
 - The app comes from `git archive $REF`, so the committed bundle is what gets clicked, the same as what ships.
-- A signing key is created. One mandatory-training course has two required pools of 8 questions each, certification at 75 %, Leitner off in the course, and a group of three learners enrolled.
+- A signing key is created. One course has two required pools of 8 questions each, certification at 75 %, and a group of three learners enrolled. In the default mode it is created with the course profile "Mandatory training with certificate" (Leitner, tools, social and game modes off); the seed fails if the profile leaves any of them on. With `GAMIFICATION=on` it is created with the profile "IT exam preparation" (every mode on).
 
-**Roles (personas):** administrator, instructor, two learners, and the administrator in student view. Each persona opens every main tab and sub-tab of the course, the course list, the pool window, and the admin and personal settings. At each station it clicks up to 30 visible buttons. Destructive or irreversible actions are never clicked: delete, remove, revoke, unenrol, archive, reset, generate or rotate keys, start an exam. A learner passes both exams first and opens, prints and downloads the certificate.
+**Roles (personas):** administrator, instructor, two learners, and the administrator in student view. Each persona opens every main tab and sub-tab of the course, the course list, the pool window, and the admin and personal settings. At each station it clicks up to 30 visible buttons. Destructive or irreversible actions are never clicked: delete, remove, revoke, withdraw, unenrol, archive, reset, import or upload, generate or rotate keys, start an exam. A learner passes both exams first and opens, prints and downloads the certificate.
 
 **What each station records:**
 
@@ -113,8 +114,9 @@ It needs Docker and Chromium. `PERSONA_CHROMIUM` points at the browser binary. T
 - an empty main area
 - a success toast without a successful request before it. The toast detector checks itself at the start of each run.
 - German words in the English interface
+- accessibility with axe-core (pinned devDependency in `app/node_modules`) in `#app-content`: every contrast violation and every critical or serious WCAG 2.1 A/AA violation, reported as kind `a11y`. A self-test station proves at the start of each run that the contrast check reports a grey-on-grey element.
 
-Contrast is not checked yet. The output goes to `scripts/persona-sweep/out/` (gitignored): `report.md`, `findings.json` and `shots/`.
+Findings that are the app working as intended are listed separately and not counted. The gate reports findings, it does not fail on them. A run fails only when the click-through itself breaks, for example when an exam question has no seeded answer or no compliance report is found; a broken self-test shows up as a `detector` finding. The output goes to `scripts/persona-sweep/out/gamification-<off|on>/` (gitignored): `report.md`, `findings.json`, `stations.json` (the input for the fresh-eyes review), `shots/` and `downloads/`. `PERSONA_STATIONS=<regex>` sweeps only the matching stations and writes `*-filtered` files next to them.
 
 **Fresh-eyes review (by hand).** A sweep finds what can be measured. It does not find "what is this for?" or "nobody without an IT background understands this". For that, a language model gets only the screenshots and the visible text of each station. It sees no code, no documentation and no issue list, and it answers as the person the course is built for. That person is an administrator of a small organisation with no IT background, who has to set up an annual mandatory training with certificates. For every station it answers:
 
@@ -123,7 +125,7 @@ Contrast is not checked yet. The output goes to `scripts/persona-sweep/out/` (gi
 3. Is it readable? This covers contrast, cut-off text, unexplained jargon, internal identifiers or placeholders, and German words in the English interface.
 4. What would I report as an issue?
 
-It also gives an overall summary: would it set up the training with this app, and what holds it up most? Its findings are hypotheses. They are checked against the code before they become a fix or an issue. The prompt template arrives with the next extension of the Persona-Gate. Until then, this review is a manual step and not part of CI.
+It also gives an overall summary: would it set up the training with this app, and what holds it up most? Its findings are hypotheses. They are checked against the code before they become a fix or an issue. The procedure and the prompt are in [`scripts/persona-sweep/FRESH-EYES.md`](scripts/persona-sweep/FRESH-EYES.md): the reviewer runs in a directory that holds only `stations.json` and the screenshots, once per mode. This review is a manual step and not part of CI.
 
 ## Gate 4: integration, lifecycle, SQL columns
 
