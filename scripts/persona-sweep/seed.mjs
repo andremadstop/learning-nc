@@ -2,7 +2,8 @@
 //
 // The instructor (not the admin) creates everything, as in the guide: two pools of eight
 // questions (pools.json), the course "Annual safety training" with the group safety-staff
-// enrolled, both pools added and required for certification at 75 % for 365 days, Leitner off.
+// enrolled, created with the course profile "mandatory" (Leitner, tools, social and game modes
+// off), both pools added and required for certification at 75 % for 365 days.
 // GAMIFICATION=on (an IT course as before #36): gamification on, the course keeps every mode
 // (Leitner included), and AI is switched on with an Ollama connection that nothing answers —
 // the AI parts of the interface show, every AI call fails (no external provider, no key).
@@ -84,6 +85,9 @@ const course = await asInstructor('POST', '/courses', {
 	title: 'Annual safety training',
 	description: 'Fire safety and data protection, once a year.',
 	ncGroupId: 'safety-staff',
+	// GitHub #67: the mandatory-training scenario starts from the course profile, as the guide says;
+	// the IT course takes the default profile (every mode on).
+	profile: itCourse ? 'it' : 'mandatory',
 })
 for (const [i, poolId] of poolIds.entries()) {
 	await asInstructor('POST', `/courses/${course.id}/pools`, { poolId, sortOrder: i })
@@ -91,13 +95,16 @@ for (const [i, poolId] of poolIds.entries()) {
 await asInstructor('PATCH', `/courses/${course.id}/cert-config`, {
 	certEnabled: true, certPassPercent: 75, certRequiredPoolIds: poolIds, certValidityDays: 365,
 })
-// updateModeConfig turns every omitted key back on: send the full current map, Leitner off.
-// The IT course keeps the defaults (every mode on).
+// The profile alone must have switched the course over: nothing is patched afterwards, so a
+// profile that stops working fails the seed instead of being covered up.
 const detail = await asInstructor('GET', `/courses/${course.id}`)
-let modeConfig = detail.mode_config || {}
+const modeConfig = detail.mode_config || {}
 if (!itCourse) {
-	modeConfig = { ...modeConfig, leitner: false }
-	await asInstructor('PUT', `/courses/${course.id}/mode-config`, { modeConfig })
+	const mustBeOff = ['leitner', 'tools', 'classbook', 'buddies', 'duel', 'gameshow', 'league', 'abenteuer', 'linkedin']
+	const stillOn = mustBeOff.filter((k) => modeConfig[k] !== false)
+	if (stillOn.length) throw new Error(`profile 'mandatory' left on: ${stillOn.join(', ')} (${JSON.stringify(modeConfig)})`)
+} else if (Object.values(modeConfig).some((v) => v === false)) {
+	throw new Error(`IT course has modes off: ${JSON.stringify(modeConfig)}`)
 }
 
 // The administrator runs the course with the instructor (co-instructor). A Nextcloud admin who
