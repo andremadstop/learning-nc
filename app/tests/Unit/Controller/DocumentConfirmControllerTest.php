@@ -24,7 +24,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[AllowMockObjectsWithoutExpectations]
 class DocumentConfirmControllerTest extends TestCase {
-    private function controller(RequiredDocumentService $required): VideoProgressController {
+    private function controller(RequiredDocumentService $required, bool $instructor = false, ?VideoProgressService $service = null): VideoProgressController {
         $document = new CourseVideo();
         $document->setId(31);
         $document->setCourseId(7);
@@ -37,6 +37,7 @@ class DocumentConfirmControllerTest extends TestCase {
         $course->setId(7);
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('assertEnrolledInCourse')->willReturn($course);
+        $courseService->method('canManageCourse')->with(7, 'anna')->willReturn($instructor);
         // a confirmation of last year in the old table
         $old = new VideoProgress();
         $old->setCompletedAt(1_700_000_000);
@@ -46,7 +47,7 @@ class DocumentConfirmControllerTest extends TestCase {
         return new VideoProgressController(
             'learning',
             $this->createMock(IRequest::class),
-            $this->createMock(VideoProgressService::class),
+            $service ?? $this->createMock(VideoProgressService::class),
             $progress,
             $videos,
             $courseService,
@@ -75,5 +76,28 @@ class DocumentConfirmControllerTest extends TestCase {
         $data = $this->controller($required)->documentRead(31)->getData();
 
         $this->assertTrue($data['completed']);
+    }
+
+    /**
+     * Fresh-eyes C5: an instructor previewing his course in the student view confirmed a required
+     * document, which wrote a confirmation and a compliance event under his name.
+     */
+    public function testAnInstructorOfTheCourseConfirmsNothing(): void {
+        $required = $this->createMock(RequiredDocumentService::class);
+        $required->expects($this->never())->method('confirm');
+
+        $response = $this->controller($required, true)->documentRead(31);
+
+        $this->assertSame(403, $response->getStatus());
+    }
+
+    public function testAnInstructorOfTheCourseRecordsNoVideoProgress(): void {
+        $service = $this->createMock(VideoProgressService::class);
+        $service->expects($this->never())->method('recordHeartbeat');
+        $service->expects($this->never())->method('markComplete');
+        $controller = $this->controller($this->createMock(RequiredDocumentService::class), true, $service);
+
+        $this->assertSame(403, $controller->heartbeat(31, 0.0, 30.0)->getStatus());
+        $this->assertSame(403, $controller->complete(31)->getStatus());
     }
 }

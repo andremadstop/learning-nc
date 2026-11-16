@@ -190,6 +190,13 @@ class VideoProgressController extends Controller {
         try {
             $video = $this->videoMapper->findById($contentId);
             $this->courseService->assertEnrolledInCourse((int)$video->getCourseId(), (string)$this->userId);
+            // Fresh-eyes C5 (#75): an instructor of the course is no learner of it. In the student
+            // view he could confirm a required document (and watch a required video to the end),
+            // which wrote a confirmation row and an immutable course.video.completed event under his
+            // name into the compliance chain. All three callers write progress, so all refuse.
+            if ($this->courseService->canManageCourse((int)$video->getCourseId(), (string)$this->userId)) {
+                return new DataResponse(['error' => 'Instructors of this course record no progress of their own'], Http::STATUS_FORBIDDEN);
+            }
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Unknown content'], Http::STATUS_NOT_FOUND);
         } catch (ForbiddenException $e) {
