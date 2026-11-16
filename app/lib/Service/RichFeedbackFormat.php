@@ -208,8 +208,10 @@ final class RichFeedbackFormat {
      * Where each old answer position went when a question is saved with other answers: old
      * position → new position, matched by the exact answer text. null when the answers are the
      * same texts in the same order (nothing moved), or when there were no answers before (nothing
-     * to move: a PBQ, or a question saved for the first time with answers). An old answer whose text is gone, or appears
-     * more than once on either side, has no new position: its feedback cannot be placed safely.
+     * to move: a PBQ, or a question saved for the first time with answers). With the same number
+     * of answers, an old answer without a text match keeps its place if no matched answer took it
+     * (edited in place). Otherwise an old answer whose text is gone, or appears more than once on
+     * either side, has no new position: its feedback cannot be placed safely.
      *
      * @param list<string> $oldTexts answer texts by old position
      * @param list<string> $newTexts answer texts by new position
@@ -232,6 +234,18 @@ final class RichFeedbackFormat {
             if ($target >= 0 && $oldCount[$text] === 1) {
                 $map[$position] = $target;
             }
+        }
+        // An answer edited in place (a typo fixed): same number of answers, and its place is
+        // taken by no other matched answer — it keeps its feedback. With a different number of
+        // answers an unmatched place may be a new answer, so nothing is inherited there.
+        if (count($oldTexts) === count($newTexts)) {
+            $taken = array_flip($map);
+            foreach (array_keys($oldTexts) as $position) {
+                if (!isset($map[$position]) && !isset($taken[$position])) {
+                    $map[$position] = $position;
+                }
+            }
+            ksort($map);
         }
         return $map;
     }

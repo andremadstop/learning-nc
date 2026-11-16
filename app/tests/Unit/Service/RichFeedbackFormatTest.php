@@ -203,8 +203,10 @@ class RichFeedbackFormatTest extends TestCase {
         $this->assertNull(RichFeedbackFormat::positionMap([], ['A', 'B']), 'no answers before');
         $this->assertSame([0 => 0, 2 => 1], RichFeedbackFormat::positionMap(['A', 'B', 'C'], ['A', 'C']));
         $this->assertSame([0 => 1, 1 => 0], RichFeedbackFormat::positionMap(['A', 'B'], ['B', 'A']));
-        $this->assertSame([2 => 2], RichFeedbackFormat::positionMap(['X', 'X', 'C'], ['X', 'Y', 'C']), 'a duplicated text cannot be placed');
-        $this->assertSame([0 => 0], RichFeedbackFormat::positionMap(['A', 'B'], ['A', 'B2']), 'an edited text loses its feedback');
+        $this->assertSame([2 => 1], RichFeedbackFormat::positionMap(['X', 'X', 'C'], ['X', 'C']), 'a duplicated text cannot be placed');
+        $this->assertSame([0 => 0, 1 => 1], RichFeedbackFormat::positionMap(['A', 'B'], ['A', 'B2']), 'an answer edited in place keeps its feedback');
+        $this->assertSame([0 => 1, 2 => 0], RichFeedbackFormat::positionMap(['A', 'B', 'C'], ['C', 'A', 'B2']), 'its place taken by a moved answer: dropped');
+        $this->assertSame([0 => 0], RichFeedbackFormat::positionMap(['A', 'B'], ['A', 'X', 'Y']), 'with a new answer count nothing is inherited');
     }
 
     public function testRemapOptionsDropsWhatHasNoNewPosition(): void {

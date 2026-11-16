@@ -184,6 +184,26 @@ class QuestionRichFeedbackTest extends TestCase {
         $this->assertSame('C trap', $out['option_feedback'][1]['misconception'], 'never the misconception of the removed B');
     }
 
+    public function testATypoFixedInAnAnswerKeepsItsFeedbackAndItsTranslation(): void {
+        $translation = new QuestionTranslation();
+        $translation->setQuestionId(42);
+        $translation->setLang('en');
+        $translation->setText('Question');
+        $stored = '[{"position":0,"why":"Yes is right.","misconception":null},{"position":1,"why":"No is wrong.","misconception":"Haste"}]';
+        $translation->setOptionFeedback($stored);
+        $transMapper = $this->createMock(QuestionTranslationMapper::class);
+        $transMapper->method('findByQuestion')->willReturn([$translation]);
+        $transMapper->expects($this->never())->method('update');
+        $translations = new TranslationService($transMapper, $this->createMock(AnswerTranslationMapper::class), $this->createMock(PoolMapper::class), $this->createMock(PoolShareMapper::class), new FakeDbConnection());
+
+        $this->stored = $this->storedWithRich();
+        $this->stored->setOptionFeedback('[{"position":0,"why":"Ja ok","misconception":null},{"position":1,"why":"Nein nicht","misconception":"Eile"}]');
+        $this->questionService(['Yes', 'Noo'], $translations)->update(42, 'author', 'Q?', null, null, self::ANSWERS);
+
+        $this->assertSame($stored, $translation->getOptionFeedback());
+        $this->assertCount(2, RichFeedbackFormat::decodeOptions($this->saved[0]->getOptionFeedback()));
+    }
+
     public function testSavingTheSameAnswersLeavesTheTranslatedFeedbackAlone(): void {
         $translations = $this->createMock(TranslationService::class);
         $translations->expects($this->never())->method('remapOptionFeedback');
