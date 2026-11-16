@@ -210,6 +210,20 @@ describe('RequiredContentSettings rendered', () => {
 		expect(options).toEqual(['', '32'])
 	})
 
+	it('flags a document row from before 5.13 that names a URL instead of a material file', async () => {
+		// Up to 5.12.0 the API stored any reference; such a row gets no link in the Lernraum now,
+		// so the administration must say that it has to be chosen again from the material folder.
+		api.videos = [
+			{ id: 9, source_type: 'document', video_ref: '31', title: '' },
+			{ id: 10, source_type: 'document', video_ref: 'https://intranet/policy.pdf', title: 'Intranet-Richtlinie' },
+		]
+		await mountSettings()
+		const rows = [...host.querySelectorAll('.required-content-item')]
+		expect(rows).toHaveLength(2)
+		expect(rows[0].querySelector('.required-content-warning')).toBeNull()
+		expect(rows[1].querySelector('.required-content-warning')?.textContent).toContain('Nicht im Materialordner')
+	})
+
 	it('adds a material document by its id', async () => {
 		await mountSettings()
 		const select = host.querySelector('[data-test="required-doc-select"]')
