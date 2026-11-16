@@ -7,6 +7,7 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\SupportTicket;
 use OCA\Learning\Db\SupportTicketMapper;
+use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Service\SupportTicketNotifier;
 use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TechnicalTicketRecipients;
@@ -112,6 +113,19 @@ final class TechnicalTicketNotify59Test extends TestCase {
 
         // the author is no administrator, the third account does not exist; OTHER_ADMIN was not chosen
         $this->assertSame([[self::ADMIN, 'technical_ticket_created']], $sent->getArrayCopy());
+    }
+
+    public function testTheNoticeRendersWithTheRealAdminSettingsRoute(): void {
+        // every unit test mocks the URL generator; a wrong route name would throw in prepare()
+        $n = Server::get(INotificationManager::class)->createNotification();
+        $n->setApp('learning')->setUser(self::ADMIN)->setDateTime(new \DateTime())
+            ->setObject('support_ticket', '990591')
+            ->setSubject('technical_ticket_created', ['ticket_subject' => 'Login geht nicht']);
+
+        $prepared = (new App('learning'))->getContainer()->get(Notifier::class)->prepare($n, 'en');
+
+        $this->assertStringEndsWith('/settings/admin/learning', $prepared->getLink());
+        $this->assertSame('New technical ticket: “Login geht nicht”', $prepared->getParsedSubject());
     }
 
     public function testADeletedAccountLeavesTheRecipientList(): void {
