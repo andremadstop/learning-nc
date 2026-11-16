@@ -207,14 +207,34 @@
 						</div>
 					</div>
 
-					<div class="cert-config-field">
-						<label for="cert-validity-days">{{ t('learning', 'Gültigkeitsdauer (Tage, 0 = unbegrenzt)') }}</label>
-						<input id="cert-validity-days"
-							type="number"
-							:value="certValidityDays"
-							min="0"
-							class="cert-config-input"
-							@change="certValidityDays = Math.max(0, parseInt($event.target.value) || 0)" />
+					<!-- GitHub #75: days, months or years; a year ends on the same date next year -->
+					<div class="cert-config-field" data-test="cert-validity">
+						<label for="cert-validity-amount">{{ t('learning', 'Gültigkeitsdauer (0 = unbegrenzt)') }}</label>
+						<div class="cert-validity-row">
+							<input id="cert-validity-amount"
+								type="number"
+								:value="certValidity.amount"
+								min="0"
+								class="cert-config-input cert-validity-amount"
+								aria-describedby="cert-validity-desc"
+								@change="certValidity = { ...certValidity, amount: Math.max(0, parseInt($event.target.value) || 0) }" />
+							<select
+								v-model="certValidity.unit"
+								class="cert-config-input cert-validity-unit"
+								data-test="cert-validity-unit"
+								:aria-label="t('learning', 'Einheit der Gültigkeitsdauer')">
+								<option value="days">
+									{{ t('learning', 'Tage') }}
+								</option>
+								<option value="months">
+									{{ t('learning', 'Monate') }}
+								</option>
+								<option value="years">
+									{{ t('learning', 'Jahre') }}
+								</option>
+							</select>
+						</div>
+						<small id="cert-validity-desc" class="mode-config-note mode-description">{{ t('learning', 'Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.') }}</small>
 					</div>
 
 					<!-- GitHub #67: "Add to LinkedIn" on the learners' certificates of this course. Saved
@@ -239,7 +259,7 @@
 						:course-title="course?.title || ''"
 						:required-pool-names="certRequiredPoolNames"
 						:pass-percent="certPassPercent"
-						:validity-days="certValidityDays" />
+						:validity="certValidity" />
 				</template>
 
 				<!-- GitHub #47: course default of the exam scope. Outside the certification switch:
@@ -340,15 +360,6 @@
 				</NcButton>
 				<NcNoteCard v-if="practiceSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
-		</div>
-
-		<!-- GitHub #35 (B4): required content and the exam gate -->
-		<div v-if="currentSubTab === 'required-content'" class="tab-content required-content-section">
-			<RequiredContentSettings
-				:course-id="courseId"
-				:course="course"
-				@error="$emit('error', $event)"
-				@refresh-course-detail="$emit('refresh-course-detail')" />
 		</div>
 
 		<!-- Schedule -->
@@ -452,10 +463,10 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import CertLayoutSettings from './CertLayoutSettings.vue'
 import { SHOW_KEYS } from '../utils/certificateLayout.js'
-import RequiredContentSettings from './RequiredContentSettings.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { updateCertConfig, updatePracticeConfig } from '../services/CourseService.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
+import { validityFromCourse, validityPayload } from '../utils/certValidity.js'
 
 /**
  * The rows the schedule PUT sends. A row without a chapter ID gets one from its title, so two
@@ -536,7 +547,6 @@ export default {
 
 	components: {
 		CertLayoutSettings,
-		RequiredContentSettings,
 		NcButton,
 		NcNoteCard,
 		NcCheckboxRadioSwitch,
@@ -609,7 +619,8 @@ export default {
 			certEnabled: false,
 			certPassPercent: 80,
 			certRequiredPoolIds: [],
-			certValidityDays: 0,
+			// GitHub #75: {amount, unit} — days, months or years (stored as months)
+			certValidity: { amount: 0, unit: 'days' },
 			// GitHub #43: the certificate layout as Course::jsonSerialize gives it (cert_layout).
 			certLayout: certLayoutFromServer(null),
 			// GitHub #47: course default of the exam scope; '' = none.
@@ -635,7 +646,6 @@ export default {
 		visibleSubTabs() {
 			return [
 				{ id: 'mode-config', label: t('learning', 'Kursregeln') },
-				{ id: 'required-content', label: t('learning', 'Pflichtinhalte') },
 				{ id: 'schedule', label: t('learning', 'Zeitplan') },
 			]
 		},
@@ -732,7 +742,7 @@ export default {
 					this.certRequiredPoolIds = Array.isArray(c.cert_required_pool_ids)
 						? c.cert_required_pool_ids.map((id) => Number(id))
 						: []
-					this.certValidityDays = c.cert_validity_days ?? 0
+					this.certValidity = validityFromCourse(c.cert_validity_days, c.cert_validity_months)
 					this.certLayout = certLayoutFromServer(c.cert_layout)
 					this.examScopeQuestions = c.exam_questions ? String(c.exam_questions) : ''
 					this.examScopeMinutes = c.exam_minutes ? String(c.exam_minutes) : ''
@@ -1220,7 +1230,7 @@ export default {
 					certEnabled: this.certEnabled,
 					certPassPercent: this.certPassPercent,
 					certRequiredPoolIds: this.certRequiredPoolIds,
-					certValidityDays: this.certValidityDays,
+					...validityPayload(this.certValidity),
 					examQuestions,
 					examMinutes,
 					certLayout: certLayoutPayload(this.certLayout),
@@ -1231,7 +1241,7 @@ export default {
 				this.certRequiredPoolIds = Array.isArray(result.certRequiredPoolIds)
 					? result.certRequiredPoolIds.map((id) => Number(id))
 					: []
-				this.certValidityDays = result.certValidityDays ?? 0
+				this.certValidity = validityFromCourse(result.certValidityDays, result.certValidityMonths)
 				if (result.certLayout) {
 					this.certLayout = certLayoutFromServer(result.certLayout)
 				}
@@ -1363,6 +1373,17 @@ export default {
 /* Cert config (Phase 154) */
 .cert-config-field { margin: 14px 0; display: flex; flex-direction: column; gap: 6px; }
 .cert-config-field > label { font-weight: 600; font-size: 0.9em; }
+/* GitHub #75: amount and unit of the certificate validity side by side */
+.cert-validity-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.cert-validity-amount {
+	inline-size: 8em;
+}
+
 .cert-config-input {
 	padding: 6px 10px;
 	border: 1px solid var(--color-border);
@@ -1376,7 +1397,6 @@ export default {
 
 /* Schedule */
 .schedule-section { padding: 16px 0; }
-.required-content-section { padding: 16px 0; }
 
 .schedule-table {
 	width: 100%;

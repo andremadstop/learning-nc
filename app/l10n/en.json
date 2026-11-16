@@ -3927,6 +3927,37 @@
         "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._": [
             "“{title}” was deleted. %n course now carries this Nextcloud’s logo again.",
             "“{title}” was deleted. %n courses now carry this Nextcloud’s logo again."
+        ],
+        "Alle Dateien als Pflicht markieren": "Mark all files as required",
+        "Alle Dateien optional machen": "Make all files optional",
+        "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "All learners have to confirm \"{name}\" as read again. Earlier confirmations stay in the audit log. Continue?",
+        "Alle erneut bestätigen lassen": "Ask everyone to confirm again",
+        "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "Earlier confirmations of this file no longer count afterwards.",
+        "Details anzeigen": "Show details",
+        "Details ausblenden": "Hide details",
+        "Die Pflicht-Auswahl konnte nicht gespeichert werden.": "The required files could not be saved.",
+        "Die erneute Bestätigung konnte nicht angefordert werden.": "The new confirmation could not be requested.",
+        "Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.": "These files are optional. No confirmation is needed.",
+        "Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.": "Mark documents in the \"Required\" column above: learners confirm them as read. Add videos here: learners watch them. Learners find both in the \"Learning materials\" tab; the confirmations are listed in the coverage report.",
+        "Einheit der Gültigkeitsdauer": "Unit of the validity period",
+        "Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.": "Not confirmed yet for the current certification period.",
+        "Gültigkeitsdauer (0 = unbegrenzt)": "Validity period (0 = unlimited)",
+        "Gültigkeitsdauer (Jahre): {n}": "Validity period (years): {n}",
+        "Jahre": "Years",
+        "Monate": "Months",
+        "Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.": "Months and years follow the calendar: issued on 16 March, valid until 16 March of the next year. 29 February becomes 28 February.",
+        "Noch keine Pflichtvideos.": "No required videos yet.",
+        "Optional": "Optional",
+        "Pflicht": "Required",
+        "Pflichtdokumente bei jeder Erneuerung neu bestätigen": "Confirm required documents again at every renewal",
+        "Pflichtvideos": "Required videos",
+        "Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.": "Updated since you confirmed it. Please read it again and confirm once more.",
+        "Weiteres Lernmaterial": "More learning material",
+        "Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.": "When the renewal window of a certificate opens, the required documents count as not confirmed again. Earlier confirmations stay in the audit log.",
+        "„{name}“ ist Pflicht": "\"{name}\" is required",
+        "_%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen._::_%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen._": [
+            "%n required document is no longer in the material folder: learners cannot open it.",
+            "%n required documents are no longer in the material folder: learners cannot open them."
         ]
     }
 }

@@ -444,7 +444,10 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 
 		expect(instance.retakeText).toContain('5')
 		expect(instance.retakeText).toContain('10')
-		expect(instance.validityText).toBe('Gültigkeitsdauer (Monate): 12')
+		// GitHub #75: whole years of months read as years
+		expect(instance.validityText).toBe('Gültigkeitsdauer (Jahre): 1')
+		expect(createLiveInstance({ course: certCourse({ cert_validity_months: 18 }), passStatus: null }).validityText)
+			.toBe('Gültigkeitsdauer (Monate): 18')
 		expect(noCooldown.retakeText).toBe('Wiederholen ist erlaubt. Versuche pro Pool in diesem Kurs in 24 Stunden: höchstens 3.')
 		expect(noCooldown.validityText).toBe('Gültigkeit: unbegrenzt')
 	})

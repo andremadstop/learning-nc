@@ -45,14 +45,16 @@ import axios from '@nextcloud/axios'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import RequiredContentSettings from '../../src/components/RequiredContentSettings.vue'
 import {
-	addableDocuments,
+	documentConfirmState,
 	documentIdFromRef,
-	documentPayload,
 	EMBED_ID_PATTERNS,
 	formatContentProgress,
 	providerVideoId,
 	REQUIRED_CONTENT_SOURCE_TYPES,
+	registryRowForDocument,
+	requiredDocumentIds,
 	requiredDocumentUrl,
+	requiredHeaderState,
 	videoFormComplete,
 	videoPayload,
 } from '../../src/utils/requiredContent.js'
@@ -126,13 +128,6 @@ describe('required content helpers', () => {
 		}
 	})
 
-	it('sends a material document by its id, named after the file without a title', () => {
-		expect(documentPayload({ id: 31, file_name: 'policy.pdf' }, '', 2)).toEqual({
-			sourceType: 'document', videoRef: '31', title: 'policy.pdf', durationSeconds: null, sortOrder: 2,
-		})
-		expect(documentPayload({ id: 31, file_name: 'policy.pdf' }, ' Richtlinie ').title).toBe('Richtlinie')
-	})
-
 	it('sends a video only with a reference and a positive length', () => {
 		const form = { sourceType: 'youtube-nocookie', ref: ' dQw4w9WgXcQ ', title: 'Intro', minutes: '2', seconds: '5' }
 		expect(videoFormComplete(form)).toBe(true)
@@ -142,14 +137,36 @@ describe('required content helpers', () => {
 		expect(videoFormComplete({ ...form, sourceType: 'document' })).toBe(false)
 	})
 
-	it('offers only servable material documents that are not required yet', () => {
-		const docs = [
-			{ id: 31, file_name: 'a.pdf', downloadable: true },
-			{ id: 32, file_name: 'b.pdf', downloadable: true },
-			{ id: 33, file_name: 'old.pdf', downloadable: false },
+	// GitHub #75: the "Required" column of the learning materials
+	it('knows which material documents are required, by document_id or the older video_ref', () => {
+		const items = [
+			{ id: 1, source_type: 'document', video_ref: '31', document_id: 31 },
+			{ id: 2, source_type: 'document', video_ref: '33' },
+			{ id: 3, source_type: 'vimeo', video_ref: '32' },
+			{ id: 4, source_type: 'document', video_ref: 'Docs/old.pdf' },
 		]
-		const items = [{ source_type: 'document', video_ref: '31' }, { source_type: 'vimeo', video_ref: '32' }]
-		expect(addableDocuments(docs, items).map((d) => d.id)).toEqual([32])
+		expect([...requiredDocumentIds(items)].sort()).toEqual([31, 33])
+		expect(registryRowForDocument(items, 33)?.id).toBe(2)
+		expect(registryRowForDocument(items, 32)).toBeNull()
+	})
+
+	it('ticks the header box only when every openable file is required', () => {
+		const docs = [
+			{ id: 31, downloadable: true },
+			{ id: 32, downloadable: true },
+			{ id: 33, downloadable: false },
+		]
+		expect(requiredHeaderState(docs, new Set())).toBe('none')
+		expect(requiredHeaderState(docs, new Set([31]))).toBe('some')
+		expect(requiredHeaderState(docs, new Set([31, 32]))).toBe('all')
+		expect(requiredHeaderState([], new Set())).toBe('none')
+	})
+
+	it('tells the learner why a confirmed document is open again', () => {
+		expect(documentConfirmState({ completed: true, updated: true })).toBe('done')
+		expect(documentConfirmState({ completed: false, updated: true })).toBe('updated')
+		expect(documentConfirmState({ completed: false, confirmAgain: true })).toBe('again')
+		expect(documentConfirmState({ completed: false })).toBe('open')
 	})
 
 	it('links a required document through the material download, never a path', () => {
@@ -203,39 +220,37 @@ describe('RequiredContentSettings rendered', () => {
 		host?.remove()
 	})
 
-	it('lists the required content and offers only the remaining material files', async () => {
+	// GitHub #75: documents are ticked in the materials table, the settings list the videos only
+	it('lists the required videos only; documents are no longer added here', async () => {
+		api.videos = [
+			{ id: 9, source_type: 'document', video_ref: '31', title: '' },
+			{ id: 11, source_type: 'vimeo', video_ref: '76979871', title: 'Intro' },
+		]
 		await mountSettings()
-		expect(host.querySelector('[data-test="required-content-list"]').textContent).toContain('policy.pdf')
-		const options = [...host.querySelectorAll('[data-test="required-doc-select"] option')].map((o) => o.value)
-		expect(options).toEqual(['', '32'])
+		const list = host.querySelector('[data-test="required-content-list"]').textContent
+		expect(list).toContain('Intro')
+		expect(list).not.toContain('policy.pdf')
+		expect(host.querySelector('[data-test="required-doc-select"]')).toBeNull()
 	})
 
 	it('flags a document row from before 5.13 that names a URL instead of a material file', async () => {
 		// Up to 5.12.0 the API stored any reference; such a row gets no link in the Lernraum now,
-		// so the administration must say that it has to be chosen again from the material folder.
+		// so the instructor must learn that it has to be chosen again from the material folder.
 		api.videos = [
 			{ id: 9, source_type: 'document', video_ref: '31', title: '' },
 			{ id: 10, source_type: 'document', video_ref: 'https://intranet/policy.pdf', title: 'Intranet-Richtlinie' },
 		]
 		await mountSettings()
-		const rows = [...host.querySelectorAll('.required-content-item')]
-		expect(rows).toHaveLength(2)
-		expect(rows[0].querySelector('.required-content-warning')).toBeNull()
-		expect(rows[1].querySelector('.required-content-warning')?.textContent).toContain('Nicht im Materialordner')
+		expect(host.querySelector('[data-test="required-content-unservable"]')?.textContent).toContain('1 Pflichtdokument')
 	})
 
-	it('adds a material document by its id', async () => {
+	it('switches "confirm again in every cycle" with the field the controller reads', async () => {
 		await mountSettings()
-		const select = host.querySelector('[data-test="required-doc-select"]')
-		select.value = '32'
-		select.dispatchEvent(new Event('change'))
+		const sw = host.querySelector('[data-test="required-content-per-cycle"] .switch')
+		sw.checked = true
+		sw.dispatchEvent(new Event('change'))
 		await flush()
-		host.querySelector('[data-test="required-doc-add"]').click()
-		await flush()
-		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/courses/5/videos', {
-			sourceType: 'document', videoRef: '32', title: 'rules.md', durationSeconds: null, sortOrder: 1,
-		})
-		expect(host.querySelector('[data-test="required-content-list"]').textContent).toContain('rules.md')
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/5/video-gate', { reconfirmPerCycle: true })
 	})
 
 	it('switches the exam gate with the request body the controller reads', async () => {
@@ -361,6 +376,7 @@ describe('RequiredContentSettings rendered', () => {
 	})
 
 	it('removes a required content row', async () => {
+		api.videos = [{ id: 9, source_type: 'vimeo', video_ref: '76979871', title: 'Intro' }]
 		await mountSettings()
 		const remove = [...host.querySelectorAll('[data-test="required-content-list"] button')][0]
 		remove.click()

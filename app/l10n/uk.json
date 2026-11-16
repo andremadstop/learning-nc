@@ -3931,6 +3931,38 @@
             "«{title}» видалено. %n курс знову має логотип цього Nextcloud.",
             "«{title}» видалено. %n курси знову мають логотип цього Nextcloud.",
             "«{title}» видалено. %n курсів знову мають логотип цього Nextcloud."
+        ],
+        "Alle Dateien als Pflicht markieren": "Позначити всі файли як обов’язкові",
+        "Alle Dateien optional machen": "Зробити всі файли необов’язковими",
+        "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "Усім учням доведеться знову підтвердити прочитання «{name}». Попередні підтвердження залишаються в журналі аудиту. Продовжити?",
+        "Alle erneut bestätigen lassen": "Попросити всіх підтвердити знову",
+        "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "Після цього попередні підтвердження цього файлу більше не враховуються.",
+        "Details anzeigen": "Показати подробиці",
+        "Details ausblenden": "Сховати подробиці",
+        "Die Pflicht-Auswahl konnte nicht gespeichert werden.": "Не вдалося зберегти вибір обов’язкових файлів.",
+        "Die erneute Bestätigung konnte nicht angefordert werden.": "Не вдалося запросити повторне підтвердження.",
+        "Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.": "Ці файли необов’язкові. Підтвердження не потрібне.",
+        "Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.": "Документи позначайте вище в стовпці «Обов’язково»: учні підтверджують їх прочитання. Відео додавайте тут: учні їх переглядають. Обидва учні знайдуть на вкладці «Навчальні матеріали», підтвердження — у звіті про охоплення.",
+        "Einheit der Gültigkeitsdauer": "Одиниця терміну дії",
+        "Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.": "Ще не підтверджено для поточного періоду сертифікації.",
+        "Gültigkeitsdauer (0 = unbegrenzt)": "Термін дії (0 = без обмежень)",
+        "Gültigkeitsdauer (Jahre): {n}": "Термін дії (років): {n}",
+        "Jahre": "Роки",
+        "Monate": "Місяці",
+        "Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.": "Місяці й роки рахуються за календарем: видано 16 березня — дійсний до 16 березня наступного року. 29 лютого стає 28 лютого.",
+        "Noch keine Pflichtvideos.": "Обов’язкових відео поки немає.",
+        "Optional": "Необов’язково",
+        "Pflicht": "Обов’язково",
+        "Pflichtdokumente bei jeder Erneuerung neu bestätigen": "Підтверджувати обов’язкові документи заново під час кожного продовження",
+        "Pflichtvideos": "Обов’язкові відео",
+        "Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.": "Оновлено після вашого підтвердження. Прочитайте ще раз і підтвердьте знову.",
+        "Weiteres Lernmaterial": "Додаткові навчальні матеріали",
+        "Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.": "Коли відкривається вікно продовження сертифіката, обов’язкові документи знову вважаються непідтвердженими. Попередні підтвердження залишаються в журналі аудиту.",
+        "„{name}“ ist Pflicht": "«{name}» обов’язковий",
+        "_%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen._::_%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen._": [
+            "%n обов’язковий документ більше не в теці матеріалів: учні не можуть його відкрити.",
+            "%n обов’язкові документи більше не в теці матеріалів: учні не можуть їх відкрити.",
+            "%n обов’язкових документів більше не в теці матеріалів: учні не можуть їх відкрити."
         ]
     }
 }

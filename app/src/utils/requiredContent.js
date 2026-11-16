@@ -27,23 +27,6 @@ export function documentIdFromRef(ref) {
 }
 
 /**
- * The request body of POST /api/courses/{id}/videos for a material document.
- *
- * @param {object} doc - a row of GET /documents ({id, file_name})
- * @param {string} title - optional title, the file name when empty
- * @return {{sourceType: string, videoRef: string, title: string, durationSeconds: null, sortOrder: number}}
- */
-export function documentPayload(doc, title = '', sortOrder = 0) {
-	return {
-		sourceType: 'document',
-		videoRef: String(doc.id),
-		title: String(title || '').trim() || String(doc.file_name || ''),
-		durationSeconds: null,
-		sortOrder,
-	}
-}
-
-/**
  * The duration of a video in seconds from the two fields of the form, or null when not positive.
  *
  * @param {*} minutes - minutes field
@@ -139,27 +122,6 @@ export function videoFormComplete(form) {
 }
 
 /**
- * Material documents that can still be added: servable (in the current material folder) and not
- * already required.
- *
- * @param {Array} documents - rows of GET /documents
- * @param {Array} items - registry rows of GET /videos
- * @return {Array}
- */
-export function addableDocuments(documents, items) {
-	const taken = new Set()
-	for (const item of items || []) {
-		if (item?.source_type === 'document') {
-			const id = documentIdFromRef(item.video_ref)
-			if (id !== null) {
-				taken.add(id)
-			}
-		}
-	}
-	return (documents || []).filter((doc) => doc && doc.downloadable === true && !taken.has(Number(doc.id)))
-}
-
-/**
  * The link a learner opens a required document with: the material download, or null when the
  * server sent no servable document id.
  *
@@ -191,4 +153,79 @@ export function formatContentProgress(confirmed, total) {
 		return '—'
 	}
 	return `${Math.min(all, Number(confirmed) || 0)}/${all}`
+}
+
+/**
+ * GitHub #75: the material document ids a course requires (registry rows of GET /videos).
+ *
+ * @param {Array} items - registry rows
+ * @return {Set<number>}
+ */
+export function requiredDocumentIds(items) {
+	const ids = new Set()
+	for (const item of items || []) {
+		if (item?.source_type !== 'document') {
+			continue
+		}
+		const id = documentIdFromRef(item.document_id ?? item.video_ref)
+		if (id !== null) {
+			ids.add(id)
+		}
+	}
+	return ids
+}
+
+/**
+ * GitHub #75: the registry row of a material document, or null.
+ *
+ * @param {Array} items - registry rows
+ * @param {*} documentId - course_documents id
+ * @return {object|null}
+ */
+export function registryRowForDocument(items, documentId) {
+	const wanted = documentIdFromRef(documentId)
+	if (wanted === null) {
+		return null
+	}
+	return (items || []).find((item) => item?.source_type === 'document'
+		&& documentIdFromRef(item.document_id ?? item.video_ref) === wanted) || null
+}
+
+/**
+ * GitHub #75: the state of the "Required" header checkbox over the documents that can be ticked
+ * (the ones members can open). 'all' unticks all, anything else ticks all.
+ *
+ * @param {Array} documents - rows of GET /documents
+ * @param {Set<number>} requiredIds - requiredDocumentIds()
+ * @return {'all'|'some'|'none'}
+ */
+export function requiredHeaderState(documents, requiredIds) {
+	const selectable = (documents || []).filter((doc) => doc?.downloadable === true)
+	if (selectable.length === 0) {
+		return 'none'
+	}
+	const ticked = selectable.filter((doc) => requiredIds.has(Number(doc.id))).length
+	if (ticked === 0) {
+		return 'none'
+	}
+	return ticked === selectable.length ? 'all' : 'some'
+}
+
+/**
+ * GitHub #75: the learner's line under a required document.
+ *
+ * @param {object} item - normalized row of GET video-progress/course ({completed, updated, confirmAgain})
+ * @return {'done'|'updated'|'again'|'open'}
+ */
+export function documentConfirmState(item) {
+	if (item?.completed === true) {
+		return 'done'
+	}
+	if (item?.updated === true) {
+		return 'updated'
+	}
+	if (item?.confirmAgain === true) {
+		return 'again'
+	}
+	return 'open'
 }

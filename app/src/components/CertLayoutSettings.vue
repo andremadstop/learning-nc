@@ -197,6 +197,7 @@ import CertificateCard from './CertificateCard.vue'
 import ImageFileField from './ImageFileField.vue'
 import { PLACEHOLDERS } from '../utils/certificateLayout.js'
 import { certLogoImageUrl, getCertLayout, getCertLogos, importCertLayoutImage, removeCertLayoutImage, selectCertLogo } from '../services/CertificateService.js'
+import { addValidity } from '../utils/certValidity.js'
 
 const INTRO_MAX = 2000
 const SIGNER_MAX = 120
@@ -244,7 +245,8 @@ export default {
 		courseTitle: { type: String, default: '' },
 		requiredPoolNames: { type: Array, default: () => [] },
 		passPercent: { type: Number, default: 80 },
-		validityDays: { type: Number, default: 0 },
+		// GitHub #75: {amount, unit} with unit days, months or years (utils/certValidity.js)
+		validity: { type: Object, default: () => ({ amount: 0, unit: 'days' }) },
 	},
 
 	emits: ['update:modelValue'],
@@ -328,12 +330,8 @@ export default {
 			return this.formatDate(new Date())
 		},
 		previewExpiry() {
-			if (!(this.validityDays > 0)) {
-				return ''
-			}
-			const date = new Date()
-			date.setDate(date.getDate() + this.validityDays)
-			return this.formatDate(date)
+			const date = addValidity(new Date(), this.validity)
+			return date ? this.formatDate(date) : ''
 		},
 	},
 

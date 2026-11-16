@@ -183,15 +183,17 @@ describe('CourseDetail rendered (GitHub #35)', () => {
 		api.videos = [{ id: 11, title: 'Unterweisung', source_type: 'document', video_ref: '/u.pdf', completed: false }]
 		await mountDetail({})
 
-		expect(subTabLabels()[0]).toBe('Pflichtinhalte')
-		expect(detail.lernraumLeafTabs[0]).toBe('videos')
-		expect(detail.megaTabForLeaf('videos')).toBe('lernraum')
+		// GitHub #75: the required content lives in the learning materials tab
+		expect(subTabLabels()[0]).toBe('Lernmaterial')
+		expect(subTabLabels()).not.toContain('Pflichtinhalte')
+		expect(detail.lernraumLeafTabs[0]).toBe('materials')
+		expect(detail.megaTabForLeaf('materials')).toBe('lernraum')
 	})
 
 	// Review: hasCourseVideos used to outlive the Lernraum, so after Teilnehmer -> Lernraum
 	// CourseDetail named 'videos' while the remounted Lernraum showed Training, and a click on
 	// Pflichtinhalte changed nothing.
-	it('Teilnehmer -> Lernraum round trip: shown sub-tab and currentTab agree, Pflichtinhalte opens', async () => {
+	it('Teilnehmer -> Lernraum round trip: shown sub-tab and currentTab agree, the materials open', async () => {
 		api.videos = [{ id: 11, title: 'Unterweisung', source_type: 'document', video_ref: '/u.pdf', completed: false }]
 		await mountDetail({})
 
@@ -199,16 +201,29 @@ describe('CourseDetail rendered (GitHub #35)', () => {
 		await clickMega('Lernraum')
 
 		const active = host.querySelector('.lernraum-pill.active')?.textContent.trim()
-		const labelFor = { training: 'Training', videos: 'Pflichtinhalte', leitner: 'Leitner', exam: 'Exam' }
+		const labelFor = { training: 'Training', materials: 'Lernmaterial', leitner: 'Leitner', exam: 'Exam' }
 		expect(active).toBe(labelFor[detail.currentTab])
 
-		const pflicht = Array.from(host.querySelectorAll('.lernraum-pill')).find((b) => b.textContent.trim() === 'Pflichtinhalte')
+		const pflicht = Array.from(host.querySelectorAll('.lernraum-pill')).find((b) => b.textContent.trim() === 'Lernmaterial')
 		expect(pflicht).toBeTruthy()
 		pflicht.click()
 		await flush()
-		expect(detail.currentTab).toBe('videos')
-		expect(host.querySelector('.lernraum-pill.active')?.textContent.trim()).toBe('Pflichtinhalte')
+		expect(detail.currentTab).toBe('materials')
+		expect(host.querySelector('.lernraum-pill.active')?.textContent.trim()).toBe('Lernmaterial')
+		// the required document is in it
+		expect(host.querySelector('[data-test="required-content-learner"]')?.textContent).toContain('Unterweisung')
 	})
+	// GitHub #75: a confirmed document whose file changed asks again and says why.
+	it('says "updated since you confirmed it" at a changed required document', async () => {
+		api.videos = [{ id: 11, title: 'Unterweisung', source_type: 'document', video_ref: '/u.pdf', completed: false, updated: true }]
+		await mountDetail({})
+
+		const pill = Array.from(host.querySelectorAll('.lernraum-pill')).find((b) => b.textContent.trim() === 'Lernmaterial')
+		pill.click()
+		await flush()
+		expect(host.querySelector('[data-test="document-updated-11"]')?.textContent).toContain('Seit deiner Bestätigung aktualisiert')
+	})
+
 	// GitHub #35: mode_config.tools switches off the Werkzeuge tab and the tool hints in the
 	// learning space, whatever enabled_tools says.
 	it('the tools master switch removes the Werkzeuge tab and the tool hints for learners', async () => {

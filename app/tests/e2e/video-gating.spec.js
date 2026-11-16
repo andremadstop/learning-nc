@@ -56,13 +56,14 @@ async function maybeLoginStudent(page) {
 }
 
 /**
- * Open the student "Pflichtinhalte" tab for the seeded course. Returns true when the
+ * Open the student "Lernmaterial" tab (required content, GitHub #75) for the seeded course. Returns true when the
  * gated-content section is visible, false when the course exposes no student-readable
  * gate (not enrolled, gate off, nothing gated) so the test can skip rather than hard-fail.
  */
 async function openPflichtinhalte(page) {
 	await page.goto(`/apps/learning/#/course/${COURSE_ID}`, { waitUntil: 'domcontentloaded' })
-	const tab = page.getByRole('button', { name: /Pflichtinhalte/i }).first()
+	// GitHub #75: the required content is in the learning materials tab (role tab, label Lernmaterial)
+	const tab = page.getByRole('tab', { name: /Lernmaterial/i }).first()
 	if (!(await tab.isVisible({ timeout: 15_000 }).catch(() => false))) {
 		return false
 	}

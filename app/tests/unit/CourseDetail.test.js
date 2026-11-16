@@ -516,11 +516,12 @@ describe('CourseDetail — student view and course-level role (GitHub #35)', () 
 		expect(instance.currentTab).toBe('training')
 	})
 
-	it('routes the required-content leaf (videos) into Lernraum once the learning space reports it', () => {
+	it('routes the learning materials (with the required content) into Lernraum once the learning space reports it', () => {
+		// GitHub #75: no separate required-content leaf; the materials tab carries it
 		const instance = createInstance({ hasCourseVideos: true })
 
-		expect(instance.lernraumLeafTabs[0]).toBe('videos')
-		expect(instance.megaTabForLeaf('videos')).toBe('lernraum')
+		expect(instance.lernraumLeafTabs[0]).toBe('materials')
+		expect(instance.megaTabForLeaf('materials')).toBe('lernraum')
 	})
 })
 

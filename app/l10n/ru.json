@@ -3931,6 +3931,38 @@
             "«{title}» удалён. %n курс снова использует логотип этого Nextcloud.",
             "«{title}» удалён. %n курса снова используют логотип этого Nextcloud.",
             "«{title}» удалён. %n курсов снова используют логотип этого Nextcloud."
+        ],
+        "Alle Dateien als Pflicht markieren": "Отметить все файлы как обязательные",
+        "Alle Dateien optional machen": "Сделать все файлы необязательными",
+        "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "Всем учащимся придётся снова подтвердить прочтение «{name}». Прежние подтверждения остаются в журнале аудита. Продолжить?",
+        "Alle erneut bestätigen lassen": "Попросить всех подтвердить заново",
+        "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "После этого прежние подтверждения этого файла больше не учитываются.",
+        "Details anzeigen": "Показать подробности",
+        "Details ausblenden": "Скрыть подробности",
+        "Die Pflicht-Auswahl konnte nicht gespeichert werden.": "Не удалось сохранить выбор обязательных файлов.",
+        "Die erneute Bestätigung konnte nicht angefordert werden.": "Не удалось запросить повторное подтверждение.",
+        "Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.": "Эти файлы необязательны. Подтверждение не требуется.",
+        "Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.": "Документы отмечайте выше в столбце «Обязательно»: учащиеся подтверждают их прочтение. Видео добавляйте здесь: учащиеся их просматривают. И то и другое учащиеся найдут на вкладке «Учебные материалы», подтверждения — в отчёте о покрытии.",
+        "Einheit der Gültigkeitsdauer": "Единица срока действия",
+        "Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.": "Ещё не подтверждено для текущего периода сертификации.",
+        "Gültigkeitsdauer (0 = unbegrenzt)": "Срок действия (0 = без ограничений)",
+        "Gültigkeitsdauer (Jahre): {n}": "Срок действия (лет): {n}",
+        "Jahre": "Годы",
+        "Monate": "Месяцы",
+        "Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.": "Месяцы и годы считаются по календарю: выдан 16 марта — действителен до 16 марта следующего года. 29 февраля становится 28 февраля.",
+        "Noch keine Pflichtvideos.": "Обязательных видео пока нет.",
+        "Optional": "Необязательно",
+        "Pflicht": "Обязательно",
+        "Pflichtdokumente bei jeder Erneuerung neu bestätigen": "Подтверждать обязательные документы заново при каждом продлении",
+        "Pflichtvideos": "Обязательные видео",
+        "Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.": "Обновлено после вашего подтверждения. Прочитайте ещё раз и подтвердите снова.",
+        "Weiteres Lernmaterial": "Дополнительные учебные материалы",
+        "Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.": "Когда открывается окно продления сертификата, обязательные документы снова считаются неподтверждёнными. Прежние подтверждения остаются в журнале аудита.",
+        "„{name}“ ist Pflicht": "«{name}» обязателен",
+        "_%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen._::_%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen._": [
+            "%n обязательный документ больше не находится в папке материалов: учащиеся не могут его открыть.",
+            "%n обязательных документа больше не находятся в папке материалов: учащиеся не могут их открыть.",
+            "%n обязательных документов больше не находятся в папке материалов: учащиеся не могут их открыть."
         ]
     }
 }

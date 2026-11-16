@@ -2,7 +2,7 @@
 	<div class="required-content-settings" data-test="required-content">
 		<h3>{{ t('learning', 'Pflichtinhalte') }}</h3>
 		<p class="required-content-hint">
-			{{ t('learning', 'Dokumente, die Lernende als gelesen bestätigen, und Videos, die sie ansehen. Lernende finden sie im Lernraum unter „Pflichtinhalte“. Die Bestätigungen stehen im Abdeckungsbericht.') }}
+			{{ t('learning', 'Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.') }}
 		</p>
 
 		<NcCheckboxRadioSwitch
@@ -19,17 +19,30 @@
 			{{ t('learning', 'Es gibt noch keine Pflichtinhalte. Solange die Liste leer ist, sperrt der Schalter nichts.') }}
 		</NcNoteCard>
 
+		<!-- GitHub #75: a confirmation counts for one certification cycle -->
+		<NcCheckboxRadioSwitch
+			:model-value="reconfirmPerCycle"
+			:disabled="savingGate"
+			data-test="required-content-per-cycle"
+			@update:model-value="setPerCycle(!!$event)">
+			{{ t('learning', 'Pflichtdokumente bei jeder Erneuerung neu bestätigen') }}
+		</NcCheckboxRadioSwitch>
+		<p class="required-content-hint">
+			{{ t('learning', 'Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.') }}
+		</p>
+		<p v-if="unservableCount > 0" class="required-content-warning" data-test="required-content-unservable">
+			{{ n('learning', '%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen.', '%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen.', unservableCount) }}
+		</p>
+
 		<p v-if="loadError" class="required-content-error" role="alert">
 			{{ loadError }}
 		</p>
 
-		<ul v-if="items.length" class="required-content-list" data-test="required-content-list">
-			<li v-for="item in items" :key="item.id" class="required-content-item">
+		<h4>{{ t('learning', 'Pflichtvideos') }}</h4>
+		<ul v-if="videoItems.length" class="required-content-list" data-test="required-content-list">
+			<li v-for="item in videoItems" :key="item.id" class="required-content-item">
 				<span class="required-content-type">{{ typeLabel(item.source_type) }}</span>
 				<span class="required-content-title">{{ itemTitle(item) }}</span>
-				<span v-if="isUnservableDocument(item)" class="required-content-warning">
-					{{ t('learning', 'Nicht im Materialordner: Lernende können es nicht öffnen.') }}
-				</span>
 				<NcButton
 					variant="tertiary"
 					:disabled="removing[item.id] === true"
@@ -40,48 +53,8 @@
 			</li>
 		</ul>
 		<p v-else-if="loaded && !loadError" class="required-content-hint">
-			{{ t('learning', 'Noch keine Pflichtinhalte.') }}
+			{{ t('learning', 'Noch keine Pflichtvideos.') }}
 		</p>
-
-		<!-- Documents: only files of the material folder, which members can open -->
-		<div class="required-content-add">
-			<h4>{{ t('learning', 'Dokument hinzufügen') }}</h4>
-			<p v-if="!course?.material_folder" class="required-content-hint">
-				{{ t('learning', 'Pflichtdokumente kommen aus dem Materialordner des Kurses. Verknüpfe ihn im Lernraum unter „Lernmaterial“ und scanne ihn.') }}
-			</p>
-			<template v-else>
-				<label for="required-doc-select">{{ t('learning', 'Datei aus dem Materialordner') }}</label>
-				<select
-					id="required-doc-select"
-					v-model="docForm.documentId"
-					class="required-content-input"
-					data-test="required-doc-select">
-					<option value="">
-						{{ t('learning', 'Datei wählen …') }}
-					</option>
-					<option v-for="doc in addableDocs" :key="doc.id" :value="String(doc.id)">
-						{{ doc.file_name }}
-					</option>
-				</select>
-				<p v-if="loaded && addableDocs.length === 0" class="required-content-hint">
-					{{ t('learning', 'Keine weitere Datei im Materialordner. Neue Dateien erscheinen nach „Ordner scannen“ im Lernraum unter „Lernmaterial“.') }}
-				</p>
-				<label for="required-doc-title">{{ t('learning', 'Titel (optional)') }}</label>
-				<input
-					id="required-doc-title"
-					v-model="docForm.title"
-					type="text"
-					maxlength="255"
-					class="required-content-input">
-				<NcButton
-					variant="secondary"
-					:disabled="!docForm.documentId || adding"
-					data-test="required-doc-add"
-					@click="addDocument">
-					{{ t('learning', 'Dokument hinzufügen') }}
-				</NcButton>
-			</template>
-		</div>
 
 		<div class="required-content-add">
 			<h4>{{ t('learning', 'Video hinzufügen') }}</h4>
@@ -181,16 +154,14 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { translate as t } from '@nextcloud/l10n'
+import { translate as t, translatePlural as n } from '@nextcloud/l10n'
 import { getCurrentUser } from '@nextcloud/auth'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import { parseDocumentsResponse } from '../utils/courseMaterials.js'
 import {
-	addableDocuments,
 	documentIdFromRef,
-	documentPayload,
 	providerVideoId,
 	videoFormComplete,
 	videoPayload,
@@ -212,9 +183,13 @@ export default {
 	props: {
 		courseId: { type: Number, required: true },
 		course: { type: Object, default: null },
+		// GitHub #75: bumped by the learning materials after the "Required" column changed
+		reloadKey: { type: Number, default: 0 },
 	},
 
-	emits: ['error', 'refresh-course-detail'],
+	// GitHub #75: in the learning materials a full course reload would remount the tab; the
+	// switches patch the course instead, and the video list needs no course data.
+	emits: ['error', 'course-patched'],
 
 	data() {
 		return {
@@ -223,10 +198,10 @@ export default {
 			loaded: false,
 			loadError: '',
 			gateEnabled: this.course?.video_gate_enabled === true,
+			reconfirmPerCycle: this.course?.reconfirm_per_cycle === true,
 			savingGate: false,
 			adding: false,
 			removing: {},
-			docForm: { documentId: '', title: '' },
 			videoForm: emptyVideoForm('youtube-nocookie'),
 		}
 	},
@@ -236,8 +211,12 @@ export default {
 			const uid = getCurrentUser()?.uid
 			return !!uid && uid === this.course?.instructor_id
 		},
-		addableDocs() {
-			return addableDocuments(this.documents, this.items)
+		// GitHub #75: documents are ticked in the materials table; this list holds the videos.
+		videoItems() {
+			return this.items.filter((item) => item?.source_type !== 'document')
+		},
+		unservableCount() {
+			return this.items.filter((item) => this.isUnservableDocument(item)).length
 		},
 		videoReady() {
 			return videoFormComplete(this.videoForm)
@@ -260,6 +239,12 @@ export default {
 		'course.video_gate_enabled'(value) {
 			this.gateEnabled = value === true
 		},
+		'course.reconfirm_per_cycle'(value) {
+			this.reconfirmPerCycle = value === true
+		},
+		reloadKey() {
+			this.load()
+		},
 	},
 
 	mounted() {
@@ -271,6 +256,7 @@ export default {
 
 	methods: {
 		t,
+		n,
 
 		async load() {
 			this.loadError = ''
@@ -320,14 +306,25 @@ export default {
 		},
 
 		async setGate(enabled) {
-			const before = this.gateEnabled
-			this.gateEnabled = enabled
+			await this.saveOption('gateEnabled', { enabled }, enabled)
+		},
+
+		async setPerCycle(enabled) {
+			await this.saveOption('reconfirmPerCycle', { reconfirmPerCycle: enabled }, enabled)
+		},
+
+		async saveOption(field, body, value) {
+			const before = this[field]
+			this[field] = value
 			this.savingGate = true
 			try {
-				await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/video-gate', { courseId: this.courseId }), { enabled })
-				this.$emit('refresh-course-detail')
+				const response = await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/video-gate', { courseId: this.courseId }), body)
+				this.$emit('course-patched', {
+					video_gate_enabled: response.data?.video_gate_enabled ?? this.gateEnabled,
+					reconfirm_per_cycle: response.data?.reconfirm_per_cycle ?? this.reconfirmPerCycle,
+				})
 			} catch (e) {
-				this.gateEnabled = before
+				this[field] = before
 				this.$emit('error', t('learning', 'Die Einstellung konnte nicht gespeichert werden.'))
 			} finally {
 				this.savingGate = false
@@ -339,23 +336,12 @@ export default {
 			try {
 				const response = await axios.post(generateUrl('/apps/learning/api/courses/{courseId}/videos', { courseId: this.courseId }), payload)
 				this.items = [...this.items, response.data]
-				this.$emit('refresh-course-detail')
 				return true
 			} catch (e) {
 				this.$emit('error', t('learning', 'Der Pflichtinhalt konnte nicht hinzugefügt werden.'))
 				return false
 			} finally {
 				this.adding = false
-			}
-		},
-
-		async addDocument() {
-			const doc = this.documentsById[Number(this.docForm.documentId)]
-			if (!doc) {
-				return
-			}
-			if (await this.create(documentPayload(doc, this.docForm.title, this.items.length))) {
-				this.docForm = { documentId: '', title: '' }
 			}
 		},
 
@@ -373,7 +359,6 @@ export default {
 			try {
 				await axios.delete(generateUrl('/apps/learning/api/course-videos/{id}', { id: item.id }))
 				this.items = this.items.filter((row) => row.id !== item.id)
-				this.$emit('refresh-course-detail')
 			} catch (e) {
 				this.$emit('error', t('learning', 'Der Pflichtinhalt konnte nicht entfernt werden.'))
 			} finally {
@@ -416,6 +401,10 @@ export default {
 <style scoped>
 .required-content-settings h3 {
 	margin: 0 0 8px;
+}
+
+.required-content-settings h4 {
+	margin: 16px 0 4px;
 }
 
 .required-content-hint {

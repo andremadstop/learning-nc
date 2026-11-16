@@ -396,24 +396,25 @@ describe('CourseTabLernraum', () => {
 
 			await instance.fetchCourseVideos()
 
-			expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['videos', 'training'])
+			// GitHub #75: required content opens the materials tab, even without a material folder
+			expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['materials', 'training'])
 			expect(instance.$emit).toHaveBeenCalledWith('videos-available', true)
 		})
 
 		// A deep link to Pflichtinhalte arrives before the list: the sub-tab falls back to the
 		// default first and must resolve to the requested leaf once the list is known.
-		it('resolves a requested Pflichtinhalte leaf once the required content is loaded', async () => {
+		it('resolves a requested materials leaf once the required content is loaded', async () => {
 			const axios = (await import('@nextcloud/axios')).default
 			axios.get.mockResolvedValueOnce({ data: { videos: [{ id: 3, title: 'Unterweisung', sort_order: 1 }] } })
-			const instance = createInstance({ activeTab: 'videos', course: {
+			const instance = createInstance({ activeTab: 'materials', course: {
 				is_instructor: false, material_folder: null, mode_config: { training: true, leitner: false, exam: false }, enabled_tools: [],
 			} })
-			instance.syncFromActiveTab('videos')
+			instance.syncFromActiveTab('materials')
 			expect(instance.currentSubTab).toBe('training')
 
 			await instance.fetchCourseVideos()
 
-			expect(instance.currentSubTab).toBe('videos')
+			expect(instance.currentSubTab).toBe('materials')
 		})
 
 		it('tells CourseDetail on unmount that its required-content list is gone', () => {

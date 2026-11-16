@@ -69,11 +69,17 @@ describe('lernraumTabIds (GitHub #35)', () => {
 		expect(lernraumTabIds(course, { actsAsInstructor: true })).toEqual(['pools', 'curriculum', 'materials'])
 	})
 
-	it('learner list in display order: required content, then the learning material, then practice and exam', () => {
+	it('learner list in display order: the learning material (with the required content), then practice and exam', () => {
+		// GitHub #75: one "Learning materials" tab, no separate required-content tab
 		expect(lernraumTabIds(course, { hasVideos: true, hasCourseTools: true }))
-			.toEqual(['videos', 'materials', 'training', 'leitner', 'exam', 'practice', 'tools'])
+			.toEqual(['materials', 'training', 'leitner', 'exam', 'practice', 'tools'])
 		expect(lernraumTabIds(course, { hasCourseTools: true }))
 			.toEqual(['materials', 'training', 'leitner', 'exam', 'practice', 'tools'])
+		// required content without a material folder still has its tab
+		expect(lernraumTabIds({ ...course, material_folder: null }, { hasVideos: true }))
+			.toEqual(['materials', 'training', 'leitner', 'exam', 'practice'])
+		expect(lernraumTabIds({ ...course, material_folder: null }, {}))
+			.toEqual(['training', 'leitner', 'exam', 'practice'])
 	})
 
 	it('a disabled Training is not listed; a missing mode_config means every mode is on', () => {

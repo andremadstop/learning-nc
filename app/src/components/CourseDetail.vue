@@ -100,6 +100,7 @@
 					@open-tool="$emit('open-tool', $event)"
 					@pool-selected="selectedLearningPool = $event"
 					@refresh-course-detail="fetchCourseDetail"
+					@course-patched="onCoursePatched"
 					@tab-change="onLeafTabChange"
 					@videos-available="onVideosAvailable" />
 			</div>
@@ -205,7 +206,7 @@ import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
-import { abschlussTabIds, actsAsCourseInstructor, kommunikationTabIds, previewsCourseAsStudent, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
+import { abschlussTabIds, actsAsCourseInstructor, LEGACY_TAB_ALIASES, kommunikationTabIds, previewsCourseAsStudent, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
 // falls back to the Lernraum (GitHub #36).
@@ -347,7 +348,8 @@ export default {
 			return kommunikationTabIds(this.course, { actsAsInstructor: this.isInstructor, aiEnabled: this.adminAiEnabled })
 		},
 		verwaltungLeafTabs() {
-			return ['mode-config', 'required-content', 'schedule']
+			// GitHub #75: the required content moved into the learning materials (LEGACY_TAB_ALIASES).
+			return ['mode-config', 'schedule']
 		},
 		// Same list as the Lernraum sub-navigation (one helper), so a disabled Training is not
 		// routed to and the required content (videos) has a leaf of its own.
@@ -511,7 +513,7 @@ export default {
 			if (!tabId) {
 				return
 			}
-			const requested = String(tabId)
+			const requested = LEGACY_TAB_ALIASES[String(tabId)] ?? String(tabId)
 			// GitHub #36: a bookmark on an area or competition leaf this viewer does not have
 			// (gamification off, mode switched off) lands on the Lernraum, not on an empty area.
 			const hiddenMega = MEGA_TAB_IDS.includes(requested)
@@ -807,9 +809,26 @@ export default {
 		 * currentTab never names a sub-tab the Lernraum does not show — a click on that sub-tab
 		 * would then change nothing.
 		 */
+		/**
+		 * GitHub #75: the switches of the required content (learning materials) change two course
+		 * fields; a full reload would remount the tab the instructor is working in.
+		 */
+		onCoursePatched(patch) {
+			if (!this.course || !patch || typeof patch !== 'object') {
+				return
+			}
+			const allowed = ['video_gate_enabled', 'reconfirm_per_cycle']
+			const next = { ...this.course }
+			for (const key of allowed) {
+				if (key in patch) {
+					next[key] = patch[key] === true
+				}
+			}
+			this.course = next
+		},
 		onVideosAvailable(available) {
 			this.hasCourseVideos = available === true
-			if (!this.hasCourseVideos && this.currentTab === 'videos') {
+			if (!this.isInstructor && this.currentTab === 'materials' && !this.isLernraumTab('materials')) {
 				this.currentTab = this.defaultLernraumTab()
 			}
 		},

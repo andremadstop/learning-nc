@@ -3927,6 +3927,37 @@
         "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._": [
             "„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud.",
             "„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud."
+        ],
+        "Alle Dateien als Pflicht markieren": "Alle Dateien als Pflicht markieren",
+        "Alle Dateien optional machen": "Alle Dateien optional machen",
+        "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?",
+        "Alle erneut bestätigen lassen": "Alle erneut bestätigen lassen",
+        "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.",
+        "Details anzeigen": "Details anzeigen",
+        "Details ausblenden": "Details ausblenden",
+        "Die Pflicht-Auswahl konnte nicht gespeichert werden.": "Die Pflicht-Auswahl konnte nicht gespeichert werden.",
+        "Die erneute Bestätigung konnte nicht angefordert werden.": "Die erneute Bestätigung konnte nicht angefordert werden.",
+        "Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.": "Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.",
+        "Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.": "Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.",
+        "Einheit der Gültigkeitsdauer": "Einheit der Gültigkeitsdauer",
+        "Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.": "Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.",
+        "Gültigkeitsdauer (0 = unbegrenzt)": "Gültigkeitsdauer (0 = unbegrenzt)",
+        "Gültigkeitsdauer (Jahre): {n}": "Gültigkeitsdauer (Jahre): {n}",
+        "Jahre": "Jahre",
+        "Monate": "Monate",
+        "Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.": "Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.",
+        "Noch keine Pflichtvideos.": "Noch keine Pflichtvideos.",
+        "Optional": "Optional",
+        "Pflicht": "Pflicht",
+        "Pflichtdokumente bei jeder Erneuerung neu bestätigen": "Pflichtdokumente bei jeder Erneuerung neu bestätigen",
+        "Pflichtvideos": "Pflichtvideos",
+        "Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.": "Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.",
+        "Weiteres Lernmaterial": "Weiteres Lernmaterial",
+        "Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.": "Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.",
+        "„{name}“ ist Pflicht": "„{name}“ ist Pflicht",
+        "_%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen._::_%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen._": [
+            "%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen.",
+            "%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen."
         ]
     }
 }

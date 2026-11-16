@@ -3927,6 +3927,37 @@
         "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._": [
             "« {title} » a été supprimé. %n cours porte de nouveau le logo de ce Nextcloud.",
             "« {title} » a été supprimé. %n cours portent de nouveau le logo de ce Nextcloud."
+        ],
+        "Alle Dateien als Pflicht markieren": "Marquer tous les fichiers comme obligatoires",
+        "Alle Dateien optional machen": "Rendre tous les fichiers facultatifs",
+        "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "Tous les apprenants devront confirmer à nouveau la lecture de « {name} ». Les confirmations précédentes restent dans le journal d’audit. Continuer ?",
+        "Alle erneut bestätigen lassen": "Demander à tous de confirmer à nouveau",
+        "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "Les confirmations précédentes de ce fichier ne comptent plus ensuite.",
+        "Details anzeigen": "Afficher les détails",
+        "Details ausblenden": "Masquer les détails",
+        "Die Pflicht-Auswahl konnte nicht gespeichert werden.": "Les fichiers obligatoires n’ont pas pu être enregistrés.",
+        "Die erneute Bestätigung konnte nicht angefordert werden.": "La nouvelle confirmation n’a pas pu être demandée.",
+        "Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.": "Ces fichiers sont facultatifs. Aucune confirmation n’est nécessaire.",
+        "Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.": "Marquez les documents dans la colonne « Obligatoire » ci-dessus : les apprenants confirment les avoir lus. Ajoutez les vidéos ici : les apprenants les regardent. Les apprenants trouvent les deux dans l’onglet « Supports d’apprentissage » ; les confirmations figurent dans le rapport de couverture.",
+        "Einheit der Gültigkeitsdauer": "Unité de la durée de validité",
+        "Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.": "Pas encore confirmé pour la période de certification en cours.",
+        "Gültigkeitsdauer (0 = unbegrenzt)": "Durée de validité (0 = illimitée)",
+        "Gültigkeitsdauer (Jahre): {n}": "Durée de validité (années) : {n}",
+        "Jahre": "Années",
+        "Monate": "Mois",
+        "Monate und Jahre zählen nach Kalender: ausgestellt am 16. März, gültig bis 16. März des Folgejahres. Aus dem 29. Februar wird der 28. Februar.": "Les mois et les années suivent le calendrier : délivré le 16 mars, valable jusqu’au 16 mars de l’année suivante. Le 29 février devient le 28 février.",
+        "Noch keine Pflichtvideos.": "Pas encore de vidéos obligatoires.",
+        "Optional": "Facultatif",
+        "Pflicht": "Obligatoire",
+        "Pflichtdokumente bei jeder Erneuerung neu bestätigen": "Confirmer à nouveau les documents obligatoires à chaque renouvellement",
+        "Pflichtvideos": "Vidéos obligatoires",
+        "Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.": "Mis à jour depuis votre confirmation. Veuillez le relire et confirmer à nouveau.",
+        "Weiteres Lernmaterial": "Autres supports d’apprentissage",
+        "Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.": "À l’ouverture de la fenêtre de renouvellement d’un certificat, les documents obligatoires redeviennent non confirmés. Les confirmations précédentes restent dans le journal d’audit.",
+        "„{name}“ ist Pflicht": "« {name} » est obligatoire",
+        "_%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen._::_%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen._": [
+            "%n document obligatoire n’est plus dans le dossier de supports : les apprenants ne peuvent pas l’ouvrir.",
+            "%n documents obligatoires ne sont plus dans le dossier de supports : les apprenants ne peuvent pas les ouvrir."
         ]
     }
 }

@@ -40,6 +40,15 @@ export function previewsCourseAsStudent(course, actsAsInstructor) {
 }
 
 /**
+ * GitHub #75: leaves that moved. A bookmark on the old required-content tab of learners
+ * ('videos') or of the course administration ('required-content') opens the learning materials.
+ */
+export const LEGACY_TAB_ALIASES = Object.freeze({
+	videos: 'materials',
+	'required-content': 'materials',
+})
+
+/**
  * The leaf tabs of the Lernraum, in display order. CourseDetail (routing, default tab) and
  * CourseTabLernraum (the sub-navigation) both read this list, so they cannot drift apart:
  * CourseDetail used to always list Training and never the required content.
@@ -64,10 +73,11 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
 	const modeConfig = course?.mode_config || {}
 	const enabled = (key) => modeConfig[key] !== false
 	const tabs = []
-	if (hasVideos) tabs.push('videos')
 	// GitHub #35: learners read the material before they practise and take the exam, so the
-	// material comes before the learning modes (and becomes the landing tab without videos).
-	if (course?.material_folder) tabs.push('materials')
+	// material comes before the learning modes. GitHub #75: one "Learning materials" tab holds
+	// the required content (to confirm or watch) and the optional files; the separate required
+	// content tab is gone.
+	if (course?.material_folder || hasVideos) tabs.push('materials')
 	if (enabled('training')) tabs.push('training')
 	if (enabled('leitner')) tabs.push('leitner')
 	if (enabled('exam')) tabs.push('exam')

@@ -50,7 +50,7 @@
 		</div>
 
 		<!-- Empty States -->
-		<div v-else-if="!materialFolder && !loading" class="empty-state">
+		<div v-else-if="!materialFolder && !loading && !hideEmpty" class="empty-state">
 			<p>{{ t('learning', 'Kein Materialordner verknüpft. Bitte einen Nextcloud-Ordner auswählen.') }}</p>
 		</div>
 
@@ -59,7 +59,7 @@
 		</div>
 
 		<!-- Learners can neither upload nor scan: no instruction meant for the course owner. -->
-		<div v-else-if="materialFolder && documents.length === 0 && !loading" class="empty-state learner-empty-state">
+		<div v-else-if="materialFolder && documents.length === 0 && !loading && !hideEmpty" class="empty-state learner-empty-state">
 			<p>{{ t('learning', 'Für diesen Kurs wurden noch keine Lernmaterialien freigegeben.') }}</p>
 		</div>
 
@@ -102,10 +102,24 @@
 		</div>
 
 		<!-- Document List Table -->
-		<div v-if="documents.length > 0" class="material-table-wrapper">
+		<div v-if="visibleDocuments.length > 0" class="material-table-wrapper">
 			<table class="material-table">
 				<thead>
 					<tr>
+						<!-- GitHub #75: the "Required" column; ticked = learners confirm it as read. -->
+						<th v-if="showRequiredColumn" class="cell-required" scope="col">
+							<label class="required-head">
+								<input
+									ref="requiredHeader"
+									type="checkbox"
+									data-test="required-all"
+									:checked="requiredHeader === 'all'"
+									:disabled="requiredBusy || !hasSelectableDocuments"
+									:aria-label="requiredHeader === 'all' ? t('learning', 'Alle Dateien optional machen') : t('learning', 'Alle Dateien als Pflicht markieren')"
+									@change="setAllRequired($event.target.checked)">
+								<span>{{ t('learning', 'Pflicht') }}</span>
+							</label>
+						</th>
 						<th>{{ t('learning', 'Dateiname') }}</th>
 						<th>{{ t('learning', 'Typ') }}</th>
 						<th v-if="showExtractionStatus">
@@ -119,7 +133,26 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="doc in documents" :key="doc.id">
+					<tr v-for="doc in visibleDocuments" :key="doc.id">
+						<td v-if="showRequiredColumn" class="cell-required">
+							<input
+								type="checkbox"
+								:data-test="'required-doc-' + doc.id"
+								:checked="isRequired(doc)"
+								:disabled="requiredBusy || (!isRequired(doc) && doc.downloadable !== true)"
+								:aria-label="t('learning', '„{name}“ ist Pflicht', { name: doc.file_name })"
+								@change="setRequired([doc], $event.target.checked)">
+							<button
+								v-if="isRequired(doc)"
+								type="button"
+								class="material-btn small reconfirm-btn"
+								:data-test="'reconfirm-doc-' + doc.id"
+								:disabled="requiredBusy"
+								:title="t('learning', 'Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.')"
+								@click="askToConfirmAgain(doc)">
+								{{ t('learning', 'Alle erneut bestätigen lassen') }}
+							</button>
+						</td>
 						<td class="cell-filename">
 							<a
 								v-if="doc.downloadable"
@@ -131,6 +164,8 @@
 								v-else
 								class="material-file-unavailable"
 								:title="t('learning', 'Diese Datei liegt nicht mehr im Materialordner.')">{{ doc.file_name }}</span>
+							<!-- GitHub #75: optional files in a course with required content -->
+							<span v-if="optionalHint" class="material-optional-hint">{{ t('learning', 'Optional') }}</span>
 						</td>
 						<td>
 							<span class="type-badge" :class="'type-' + doc.file_type">
@@ -172,6 +207,7 @@ import { translate as t } from '@nextcloud/l10n'
 import { formatLocalDate } from '../utils/relativeTime.js'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import { parseDocumentsResponse } from '../utils/courseMaterials.js'
+import { registryRowForDocument, requiredDocumentIds, requiredHeaderState } from '../utils/requiredContent.js'
 
 export default {
 	name: 'CourseMaterials',
@@ -191,7 +227,23 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		// GitHub #75 (learners): documents shown in the required list above are left out here,
+		// the rest carry an "Optional" hint, and an empty list says nothing.
+		excludeDocumentIds: {
+			type: Array,
+			default: () => [],
+		},
+		optionalHint: {
+			type: Boolean,
+			default: false,
+		},
+		hideEmpty: {
+			type: Boolean,
+			default: false,
+		},
 	},
+
+	emits: ['required-changed', 'error'],
 
 	data() {
 		return {
@@ -209,6 +261,10 @@ export default {
 			// null until the server said so (older server, failed read)
 			canManageFiles: null,
 			pdfTextExtraction: null,
+			// GitHub #75: the required-content registry (instructors), for the "Required" column
+			registry: [],
+			registryLoaded: false,
+			requiredBusy: false,
 		}
 	},
 
@@ -227,13 +283,52 @@ export default {
 		showExtractionStatus() {
 			return this.isInstructor && this.aiEnabled
 		},
+		// GitHub #75: owner and co-instructors (both may change the registry), not in the student view.
+		showRequiredColumn() {
+			return this.isInstructor && this.registryLoaded
+		},
+		requiredIds() {
+			return requiredDocumentIds(this.registry)
+		},
+		requiredHeader() {
+			return requiredHeaderState(this.documents, this.requiredIds)
+		},
+		hasSelectableDocuments() {
+			return this.documents.some((doc) => doc.downloadable === true)
+		},
+		visibleDocuments() {
+			if (!this.excludeDocumentIds.length) {
+				return this.documents
+			}
+			const excluded = new Set(this.excludeDocumentIds.map(Number))
+			return this.documents.filter((doc) => !excluded.has(Number(doc.id)))
+		},
 		hasExtractableDocuments() {
 			return this.documents.some(doc => doc.status === 'uploaded' && this.isExtractable(doc))
 		},
 	},
 
+	watch: {
+		// A native checkbox shows "some ticked" only through the property.
+		requiredHeader: {
+			flush: 'post',
+			handler() {
+				this.syncHeaderCheckbox()
+			},
+		},
+		isInstructor(now) {
+			if (now) {
+				this.loadRegistry()
+			}
+		},
+	},
+
 	mounted() {
 		this.loadData()
+	},
+
+	updated() {
+		this.syncHeaderCheckbox()
 	},
 
 	methods: {
@@ -246,6 +341,7 @@ export default {
 				await Promise.all([
 					this.loadFolder(),
 					this.loadDocuments(),
+					this.isInstructor ? this.loadRegistry() : Promise.resolve(),
 				])
 			} finally {
 				this.loading = false
@@ -282,6 +378,73 @@ export default {
 				// last known canManageFiles stays, null would hand a co-instructor the controls
 				this.documents = []
 				this.loadError = true
+			}
+		},
+
+		async loadRegistry() {
+			try {
+				const response = await axios.get(generateUrl('/apps/learning/api/courses/{courseId}/videos', { courseId: this.courseId }))
+				this.registry = Array.isArray(response.data) ? response.data : []
+				this.registryLoaded = true
+			} catch (e) {
+				// no column rather than a column that shows every file as optional
+				this.registryLoaded = false
+			}
+		},
+
+		syncHeaderCheckbox() {
+			const box = this.$refs.requiredHeader
+			if (box) {
+				box.indeterminate = this.requiredHeader === 'some'
+			}
+		},
+
+		isRequired(doc) {
+			return this.requiredIds.has(Number(doc.id))
+		},
+
+		async setAllRequired(required) {
+			const docs = required
+				? this.documents.filter((doc) => doc.downloadable === true)
+				: this.documents.filter((doc) => this.isRequired(doc))
+			await this.setRequired(docs, required)
+		},
+
+		async setRequired(docs, required) {
+			const documentIds = docs.map((doc) => Number(doc.id))
+			if (documentIds.length === 0) {
+				return
+			}
+			this.requiredBusy = true
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/required-documents', { courseId: this.courseId })
+				const response = await axios.put(url, { documentIds, required })
+				this.registry = Array.isArray(response.data) ? response.data : this.registry
+				this.$emit('required-changed', this.registry)
+			} catch (e) {
+				this.$emit('error', t('learning', 'Die Pflicht-Auswahl konnte nicht gespeichert werden.'))
+			} finally {
+				this.requiredBusy = false
+			}
+		},
+
+		async askToConfirmAgain(doc) {
+			const row = registryRowForDocument(this.registry, doc.id)
+			if (!row) {
+				return
+			}
+			if (!window.confirm(t('learning', 'Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: doc.file_name }))) {
+				return
+			}
+			this.requiredBusy = true
+			try {
+				const response = await axios.post(generateUrl('/apps/learning/api/course-videos/{id}/reconfirm', { id: row.id }))
+				this.registry = this.registry.map((item) => (item.id === row.id ? { ...item, ...response.data } : item))
+				this.$emit('required-changed', this.registry)
+			} catch (e) {
+				this.$emit('error', t('learning', 'Die erneute Bestätigung konnte nicht angefordert werden.'))
+			} finally {
+				this.requiredBusy = false
 			}
 		},
 
@@ -545,6 +708,41 @@ export default {
 .cell-filename {
 	word-break: break-all;
 	max-width: 300px;
+}
+
+/* GitHub #75: the "Required" column (logical properties for RTL) */
+.cell-required {
+	white-space: nowrap;
+	width: 1%;
+	text-align: start;
+}
+
+.cell-required input[type='checkbox'] {
+	inline-size: 18px;
+	block-size: 18px;
+	vertical-align: middle;
+	accent-color: var(--color-primary-element);
+}
+
+.required-head {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+}
+
+.reconfirm-btn {
+	margin-inline-start: 8px;
+}
+
+.material-optional-hint {
+	display: inline-block;
+	margin-inline-start: 8px;
+	padding: 0 8px;
+	border-radius: var(--border-radius-pill, 12px);
+	background: var(--color-background-dark);
+	color: var(--color-text-maxcontrast);
+	font-size: 0.85em;
 }
 
 .material-file-link {

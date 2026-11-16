@@ -503,8 +503,13 @@ export default {
 			if (!this.course) return ''
 			const months = this.course.cert_validity_months
 			if (months !== null && months !== undefined) {
-				return Number(months) > 0
-					? t('learning', 'Gültigkeitsdauer (Monate): {n}', { n: Number(months) })
+				const m = Number(months)
+				if (m > 0 && m % 12 === 0) {
+					// GitHub #75: a validity in years is stored as whole years of months
+					return t('learning', 'Gültigkeitsdauer (Jahre): {n}', { n: m / 12 })
+				}
+				return m > 0
+					? t('learning', 'Gültigkeitsdauer (Monate): {n}', { n: m })
 					: t('learning', 'Gültigkeit: unbegrenzt')
 			}
 			const days = Number(this.course.cert_validity_days || 0)

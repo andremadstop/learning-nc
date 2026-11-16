@@ -236,75 +236,6 @@
 				@back="onExamBack" />
 		</div>
 
-		<div v-else-if="currentSubTab === 'videos' && !isInstructor" class="student-videos-section">
-			<TrainingPrivacyNotice />
-
-			<!-- GitHub #35 (B4): the lock is named only when the course switched it on, and it locks
-				the exam only. -->
-			<NcNoteCard v-if="examGated && !allVideoGatesComplete" type="warning" class="video-gate-note" data-test="required-content-locked">
-				{{ t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training und Leitner stehen dir schon offen.') }}
-			</NcNoteCard>
-			<NcNoteCard v-else-if="examGated" type="success" class="video-gate-note" data-test="required-content-unlocked">
-				{{ t('learning', 'Alle Pflichtinhalte abgeschlossen. Die Prüfung ist freigeschaltet.') }}
-			</NcNoteCard>
-			<NcNoteCard v-else-if="allVideoGatesComplete" type="success" class="video-gate-note">
-				{{ t('learning', 'Alle Pflichtinhalte abgeschlossen.') }}
-			</NcNoteCard>
-
-			<ul class="video-item-list">
-				<li v-for="item in normalizedCourseVideos" :key="'video-' + item.id" class="video-item">
-					<div class="video-item__header">
-						<span class="video-item__title">{{ item.title || defaultVideoTitle(item) }}</span>
-						<span
-							class="video-item__status"
-							:class="isItemComplete(item.id) ? 'video-item__status--done' : 'video-item__status--pending'">
-							{{ isItemComplete(item.id) ? t('learning', '✓ Abgeschlossen') : t('learning', 'Offen') }}
-						</span>
-					</div>
-
-					<VideoPlayer
-						v-if="item.sourceType === 'nc-files'"
-						:content-id="item.id"
-						:duration-seconds="item.durationSeconds"
-						:subtitle-ref="item.subtitleRef"
-						:title="item.title"
-						:initial-completed="isItemComplete(item.id)"
-						@completed="onItemCompleted"
-						@progress="onItemProgress" />
-
-					<VideoConsentOverlay
-						v-else-if="item.sourceType === 'vimeo' || item.sourceType === 'youtube-nocookie'"
-						:source-type="item.sourceType"
-						:embed-id="item.ref"
-						:title="item.title"
-						:content-id="item.id"
-						:duration-seconds="item.durationSeconds"
-						:initial-completed="isItemComplete(item.id)"
-						@completed="onItemCompleted"
-						@progress="onItemProgress" />
-
-					<div v-else-if="item.sourceType === 'document'" class="video-item__document">
-						<a
-							v-if="documentUrl(item)"
-							:href="documentUrl(item)"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="video-item__doc-link">
-							{{ t('learning', 'Dokument öffnen') }}
-						</a>
-						<NcButton
-							variant="primary"
-							:disabled="isItemComplete(item.id) || documentPending[item.id]"
-							@click="markDocumentRead(item)">
-							{{ isItemComplete(item.id)
-								? t('learning', 'Als gelesen bestätigt')
-								: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Lesen bestätigen')) }}
-						</NcButton>
-					</div>
-				</li>
-			</ul>
-		</div>
-
 		<div v-else-if="currentSubTab === 'tools'" class="course-tools-section">
 			<div class="section-header course-tools-section__header">
 				<div>
@@ -401,8 +332,133 @@
 			</template>
 		</div>
 
-		<div v-else-if="currentSubTab === 'materials'" class="tab-content materials-section">
-			<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" :ai-enabled="aiEnabled" />
+		<!-- GitHub #75: one tab for the material. Instructors tick "Required" in the file list and
+			set the switches and videos below it; learners get the required content (to confirm or
+			watch) first, the optional files below it, the privacy notice last. -->
+		<div v-else-if="currentSubTab === 'materials' && isInstructor" class="tab-content materials-section">
+			<CourseMaterials
+				:course-id="courseId"
+				:is-instructor="isInstructor"
+				:ai-enabled="aiEnabled"
+				@required-changed="requiredReloadKey++"
+				@error="$emit('error', $event)" />
+			<RequiredContentSettings
+				class="materials-required-settings"
+				:course-id="courseId"
+				:course="course"
+				:reload-key="requiredReloadKey"
+				@course-patched="$emit('course-patched', $event)"
+				@error="$emit('error', $event)" />
+		</div>
+
+		<div v-else-if="currentSubTab === 'materials'" class="tab-content materials-section student-videos-section">
+			<template v-if="normalizedCourseVideos.length > 0">
+				<!-- GitHub #35 (B4): the lock is named only when the course switched it on, and it
+					locks the exam only. -->
+				<NcNoteCard v-if="examGated && !allVideoGatesComplete" type="warning" class="video-gate-note" data-test="required-content-locked">
+					{{ t('learning', 'Die Prüfung ist gesperrt, bis du alle Pflichtinhalte abgeschlossen hast. Training und Leitner stehen dir schon offen.') }}
+				</NcNoteCard>
+				<NcNoteCard v-else-if="examGated" type="success" class="video-gate-note" data-test="required-content-unlocked">
+					{{ t('learning', 'Alle Pflichtinhalte abgeschlossen. Die Prüfung ist freigeschaltet.') }}
+				</NcNoteCard>
+				<NcNoteCard v-else-if="allVideoGatesComplete" type="success" class="video-gate-note">
+					{{ t('learning', 'Alle Pflichtinhalte abgeschlossen.') }}
+				</NcNoteCard>
+
+				<h4 class="materials-heading">
+					{{ t('learning', 'Pflichtinhalte') }}
+				</h4>
+				<ul class="video-item-list" data-test="required-content-learner">
+					<li v-for="item in normalizedCourseVideos" :key="'video-' + item.id" class="video-item">
+						<div class="video-item__header">
+							<span class="video-item__title">{{ item.title || defaultVideoTitle(item) }}</span>
+							<span
+								class="video-item__status"
+								:class="isItemComplete(item.id) ? 'video-item__status--done' : 'video-item__status--pending'">
+								{{ isItemComplete(item.id) ? t('learning', '✓ Abgeschlossen') : t('learning', 'Offen') }}
+							</span>
+						</div>
+
+						<VideoPlayer
+							v-if="item.sourceType === 'nc-files'"
+							:content-id="item.id"
+							:duration-seconds="item.durationSeconds"
+							:subtitle-ref="item.subtitleRef"
+							:title="item.title"
+							:initial-completed="isItemComplete(item.id)"
+							@completed="onItemCompleted"
+							@progress="onItemProgress" />
+
+						<VideoConsentOverlay
+							v-else-if="item.sourceType === 'vimeo' || item.sourceType === 'youtube-nocookie'"
+							:source-type="item.sourceType"
+							:embed-id="item.ref"
+							:title="item.title"
+							:content-id="item.id"
+							:duration-seconds="item.durationSeconds"
+							:initial-completed="isItemComplete(item.id)"
+							@completed="onItemCompleted"
+							@progress="onItemProgress" />
+
+						<template v-else-if="item.sourceType === 'document'">
+							<!-- GitHub #75: why a confirmed document is open again -->
+							<p
+								v-if="documentState(item) === 'updated'"
+								class="video-item__notice"
+								:data-test="'document-updated-' + item.id">
+								{{ t('learning', 'Seit deiner Bestätigung aktualisiert. Bitte lies es noch einmal und bestätige erneut.') }}
+							</p>
+							<p
+								v-else-if="documentState(item) === 'again'"
+								class="video-item__notice"
+								:data-test="'document-again-' + item.id">
+								{{ t('learning', 'Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.') }}
+							</p>
+							<div class="video-item__document">
+								<a
+									v-if="documentUrl(item)"
+									:href="documentUrl(item)"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="video-item__doc-link">
+									{{ t('learning', 'Dokument öffnen') }}
+								</a>
+								<NcButton
+									variant="primary"
+									:disabled="isItemComplete(item.id) || documentPending[item.id]"
+									@click="markDocumentRead(item)">
+									{{ isItemComplete(item.id)
+										? t('learning', 'Als gelesen bestätigt')
+										: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Lesen bestätigen')) }}
+								</NcButton>
+							</div>
+						</template>
+					</li>
+				</ul>
+
+				<template v-if="course && course.material_folder">
+					<h4 class="materials-heading">
+						{{ t('learning', 'Weiteres Lernmaterial') }}
+					</h4>
+					<p class="materials-optional-note">
+						{{ t('learning', 'Diese Dateien sind freiwillig. Eine Bestätigung ist nicht nötig.') }}
+					</p>
+					<CourseMaterials
+						:course-id="courseId"
+						:is-instructor="false"
+						:ai-enabled="aiEnabled"
+						:exclude-document-ids="requiredDocumentIdsForLearner"
+						:optional-hint="true"
+						:hide-empty="true" />
+				</template>
+
+				<TrainingPrivacyNotice collapsible class="materials-privacy" />
+			</template>
+			<CourseMaterials
+				v-else
+				:course-id="courseId"
+				:is-instructor="false"
+				:ai-enabled="aiEnabled" />
 		</div>
 
 		<div v-else-if="currentSubTab === 'knowledge' && isInstructor && aiEnabled" class="tab-content knowledge-section">
@@ -630,7 +686,8 @@ import TrainingMode from './TrainingMode.vue'
 import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
 import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
-import { requiredDocumentUrl } from '../utils/requiredContent.js'
+import { documentConfirmState, requiredDocumentUrl } from '../utils/requiredContent.js'
+import RequiredContentSettings from './RequiredContentSettings.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { lernraumTabIds } from '../utils/courseView.js'
@@ -662,6 +719,7 @@ export default {
 		SubnetCalculator,
 		TrainingMode,
 		TrainingPrivacyNotice,
+		RequiredContentSettings,
 		VideoConsentOverlay,
 		VideoPlayer,
 		WiresharkLite,
@@ -769,6 +827,8 @@ export default {
 			videoStatus: {},
 			documentPending: {},
 			videosLoaded: false,
+			// GitHub #75: bumped when the "Required" column changed, so the settings reload
+			requiredReloadKey: 0,
 		}
 	},
 
@@ -786,7 +846,6 @@ export default {
 				curriculum: t('learning', 'Themen'),
 				materials: t('learning', 'Lernmaterial'),
 				knowledge: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : ''),
-				videos: t('learning', 'Pflichtinhalte'),
 				training: t('learning', 'Training'),
 				leitner: t('learning', 'Leitner'),
 				exam: t('learning', 'Exam'),
@@ -925,6 +984,12 @@ export default {
 		},
 		examGated() {
 			return this.course?.video_gate_enabled === true
+		},
+		// GitHub #75: required documents are listed above; the optional list leaves them out.
+		requiredDocumentIdsForLearner() {
+			return this.normalizedCourseVideos
+				.filter((item) => item.sourceType === 'document' && item.documentId != null)
+				.map((item) => Number(item.documentId))
 		},
 		allVideoGatesComplete() {
 			if (this.normalizedCourseVideos.length === 0) {
@@ -1083,6 +1148,8 @@ export default {
 				completed: row.completed === true,
 				coveredPct: Number(row.covered_pct ?? row.coveredPct ?? 0) || 0,
 				documentId: row.document_id ?? null,
+				updated: row.updated === true,
+				confirmAgain: row.confirm_again === true,
 			}
 		},
 		defaultVideoTitle(item) {
@@ -1096,6 +1163,9 @@ export default {
 			// its download (the server sends its id only while that download serves it). The old
 			// Files-app link pointed into the learner's own home, where the file is not.
 			return requiredDocumentUrl(this.courseId, item.documentId)
+		},
+		documentState(item) {
+			return documentConfirmState({ ...item, completed: this.isItemComplete(item.id) })
 		},
 		isItemComplete(id) {
 			return this.videoStatus[id]?.completed === true
@@ -1945,6 +2015,35 @@ export default {
 
 .video-gate-note {
 	margin: 0;
+}
+
+/* GitHub #75: required content, optional files and the privacy notice in one tab */
+.materials-heading {
+	margin: 8px 0 0;
+}
+
+.materials-optional-note {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+}
+
+.materials-privacy {
+	margin-top: 8px;
+}
+
+.materials-required-settings {
+	margin-top: 32px;
+	padding-top: 16px;
+	border-top: 1px solid var(--color-border);
+}
+
+.video-item__notice {
+	margin: 0;
+	padding: 6px 10px;
+	border-inline-start: 3px solid var(--color-warning);
+	color: var(--color-main-text);
+	background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background));
+	border-radius: var(--border-radius-small, 4px);
 }
 
 .video-item-list {

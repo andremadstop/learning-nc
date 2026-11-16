@@ -8,12 +8,25 @@
 		playback patterns are NOT permanently stored.
 	-->
 	<section class="training-privacy" aria-labelledby="training-privacy-heading">
-		<h4 id="training-privacy-heading" class="training-privacy__heading">
-			<span class="training-privacy__icon" aria-hidden="true">🔒</span>
-			{{ t('learning', 'Datenschutzhinweis zur Pflichtschulung') }}
-		</h4>
+		<div class="training-privacy__top">
+			<h4 id="training-privacy-heading" class="training-privacy__heading">
+				<span class="training-privacy__icon" aria-hidden="true">🔒</span>
+				{{ t('learning', 'Datenschutzhinweis zur Pflichtschulung') }}
+			</h4>
+			<!-- GitHub #75: after the first view a short line; the details on request. -->
+			<button
+				v-if="collapsible"
+				type="button"
+				class="training-privacy__toggle"
+				data-test="training-privacy-toggle"
+				:aria-expanded="expanded ? 'true' : 'false'"
+				aria-controls="training-privacy-details"
+				@click="expanded = !expanded">
+				{{ expanded ? t('learning', 'Details ausblenden') : t('learning', 'Details anzeigen') }}
+			</button>
+		</div>
 
-		<dl class="training-privacy__list">
+		<dl v-show="expanded" id="training-privacy-details" class="training-privacy__list">
 			<div class="training-privacy__row">
 				<dt>{{ t('learning', 'Welche Daten') }}</dt>
 				<dd>{{ t('learning', 'Gespeichert werden ausschließlich dein Abschlussstatus und der Zeitpunkt des Abschlusses.') }}</dd>
@@ -40,10 +53,38 @@
 </template>
 
 <script>
+import { getCurrentUser } from '@nextcloud/auth'
+
+/** GitHub #75: per account in this browser; without storage the notice stays expanded. */
+function seenKey() {
+	return 'learning:training-privacy-seen:' + (getCurrentUser()?.uid || '')
+}
+
+function readSeen() {
+	try {
+		return window.localStorage.getItem(seenKey()) === '1'
+	} catch (e) {
+		return false
+	}
+}
+
+function writeSeen() {
+	try {
+		window.localStorage.setItem(seenKey(), '1')
+	} catch (e) {
+		// private window, blocked storage: shown in full next time
+	}
+}
+
 export default {
 	name: 'TrainingPrivacyNotice',
 
 	props: {
+		// GitHub #75: shown in full the first time, then folded to its heading with "Show details".
+		collapsible: {
+			type: Boolean,
+			default: false,
+		},
 		// When true, render a "Verstanden" button emitting `acknowledged`.
 		showAcknowledge: {
 			type: Boolean,
@@ -53,6 +94,19 @@ export default {
 			type: String,
 			default: '',
 		},
+	},
+
+	emits: ['acknowledged'],
+
+	data() {
+		const seen = this.collapsible && readSeen()
+		return { expanded: !seen }
+	},
+
+	mounted() {
+		if (this.collapsible) {
+			writeSeen()
+		}
 	},
 }
 </script>
@@ -77,6 +131,35 @@ export default {
 	font-size: 1em;
 	font-weight: 700;
 	color: var(--color-main-text);
+}
+
+.training-privacy__top {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 16px;
+}
+
+.training-privacy__toggle {
+	min-height: 36px;
+	padding: 0 12px;
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius-element, 8px);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	cursor: pointer;
+}
+
+.training-privacy__toggle:hover,
+.training-privacy__toggle:focus {
+	background: var(--color-background-hover);
+	color: var(--color-main-text);
+}
+
+.training-privacy__toggle:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
 }
 
 .training-privacy__list {
