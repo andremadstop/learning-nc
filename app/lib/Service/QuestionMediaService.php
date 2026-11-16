@@ -17,6 +17,7 @@ use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\IDBConnection;
 use OCP\IURLGenerator;
 use OCP\Security\ICrypto;
+use Psr\Log\LoggerInterface;
 
 /**
  * Media per question (GitHub #66): the import of a learning-question-media/1 bundle and the rules
@@ -38,12 +39,13 @@ use OCP\Security\ICrypto;
  *   key the 2026-11 audit closed for the question read APIs.
  *
  * IMPORT (importBundle()). Questions are matched by exam_key inside the pool, never by text. Per
- * matched question the manifest is the truth for its media: tracks it lists are written (a file
- * with the same sha256 and the same timeline is left alone, so a second run changes nothing),
- * tracks it no longer lists are removed, its cues replace the stored ones. A listed file that is
- * missing or refused is reported and keeps whatever was stored before. The text fields (hint,
- * background_fact, key_takeaway/merksatz, feedback_per_option) go through RichFeedbackFormat like
- * every other import; a field the entry does not carry keeps its stored value.
+ * matched question the manifest is the truth for its media: tracks it lists are written (a track
+ * with the same sha256 and the same timeline whose file is still in the app data is left alone,
+ * so a second run changes nothing and a lost file comes back), tracks it no longer lists are
+ * removed, its cues replace the stored ones. A listed file that is missing or refused, or whose
+ * write fails (reported as write_failed, the run goes on), keeps whatever was stored before. The
+ * text fields (hint, background_fact, key_takeaway/merksatz, feedback_per_option) go through
+ * RichFeedbackFormat like every other import; a field the entry does not carry keeps its stored value.
  */
 class QuestionMediaService {
     public const GRANT_TTL = 43200; // 12 h: a learner who answered can listen to the dialog the same day
@@ -61,6 +63,7 @@ class QuestionMediaService {
         private IDBConnection $db,
         private ICrypto $crypto,
         private IURLGenerator $urlGenerator,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -123,6 +126,7 @@ class QuestionMediaService {
      * @return array{track: QuestionTrack, bytes: string}
      * @throws NotFoundException unknown track, no access to its pool, or the file is gone
      * @throws ForbiddenException exam running, or a dialog without a valid grant
+     * @throws QuestionMediaUnavailableException the file is there but cannot be read right now
      */
     public function openTrack(int $trackId, string $userId, ?string $expires, ?string $grant): array {
         $track = $this->trackMapper->findById($trackId);
@@ -143,6 +147,13 @@ class QuestionMediaService {
             $bytes = $this->storage->get($track->getPoolId(), $track->getFileName())->getContent();
         } catch (\OCP\Files\NotFoundException | \OCP\Files\NotPermittedException $e) {
             throw new NotFoundException('Track file not found');
+        } catch (\OCP\Files\GenericFileException | \OCP\Lock\LockedException $e) {
+            // A read error of the storage backend or a file locked by a running import: temporary,
+            // so 503 (the player may retry), not a 500 with a stack trace.
+            $this->logger->warning('Question media: track {track} could not be read: {error}', [
+                'app' => 'learning', 'track' => $trackId, 'error' => $e->getMessage(),
+            ]);
+            throw new QuestionMediaUnavailableException('Track file cannot be read', 0, $e);
         }
         return ['track' => $track, 'bytes' => $bytes];
     }
@@ -240,6 +251,7 @@ class QuestionMediaService {
             'invalid_entries' => [],
             'missing_files' => [],
             'refused_files' => [],
+            'write_failed' => [],
             'tracks_written' => 0,
             'tracks_unchanged' => 0,
             'tracks_removed' => 0,
@@ -347,17 +359,25 @@ class QuestionMediaService {
             }
             $sha = hash('sha256', $bytes);
             $existing = $stored[$slot] ?? null;
-            if ($existing !== null && $existing->getSha256() === $sha && $existing->getTimeline() === $timeline) {
+            // Unchanged only when the row matches AND its file is still there: a database restored
+            // or moved without the app data keeps its rows, and a rerun must bring the files back.
+            if ($existing !== null && $existing->getSha256() === $sha && $existing->getTimeline() === $timeline
+                && $this->storage->holds($poolId, $existing->getFileName(), $existing->getSize())) {
                 $report['tracks_unchanged']++;
                 continue;
             }
-            $report['tracks_written']++;
-            $report['bytes_written'] += strlen($bytes);
             if ($dryRun) {
+                $report['tracks_written']++;
+                $report['bytes_written'] += strlen($bytes);
                 continue;
             }
             $fileName = QuestionMediaStorage::fileName($questionId, $kind, $lang);
-            $this->storage->put($poolId, $fileName, $bytes);
+            try {
+                $this->storage->put($poolId, $fileName, $bytes);
+            } catch (\Throwable $e) {
+                $this->writeFailed($report, $label, 'track ' . $slot, $e);
+                continue; // keeps the stored row and whatever file it had
+            }
             $track = $existing ?? new QuestionTrack();
             $track->setQuestionId($questionId);
             $track->setPoolId($poolId);
@@ -369,22 +389,44 @@ class QuestionMediaService {
             $track->setTimeline($timeline);
             $track->setDurationMs($duration);
             $track->setUpdatedAt(time());
-            if ($existing === null) {
-                $this->trackMapper->insert($track);
-            } else {
-                $this->trackMapper->update($track);
+            try {
+                if ($existing === null) {
+                    $this->trackMapper->insert($track);
+                } else {
+                    $this->trackMapper->update($track);
+                }
+            } catch (\Throwable $e) {
+                // An existing row keeps its old sha256, so the next run writes the track again.
+                // A new file without a row is left to the orphan sweep (it may belong to a
+                // parallel run whose row is about to land).
+                $this->writeFailed($report, $label, 'track ' . $slot, $e);
+                continue;
             }
+            $report['tracks_written']++;
+            $report['bytes_written'] += strlen($bytes);
         }
 
         foreach ($stored as $slot => $track) {
             if (isset($listed[$slot])) {
                 continue;
             }
-            $report['tracks_removed']++;
             if (!$dryRun) {
-                $this->trackMapper->delete($track);
-                $this->storage->remove($poolId, $track->getFileName());
+                try {
+                    $this->trackMapper->delete($track);
+                } catch (\Throwable $e) {
+                    $this->writeFailed($report, $label, 'removing track ' . $slot, $e);
+                    continue;
+                }
+                // The row is gone; a file left behind is the sweep's.
+                try {
+                    $this->storage->remove($poolId, $track->getFileName());
+                } catch (\Throwable $e) {
+                    $this->logger->warning('Question media: file {file} of a dropped track not removed, the sweep will: {error}', [
+                        'app' => 'learning', 'file' => $track->getFileName(), 'error' => $e->getMessage(),
+                    ]);
+                }
             }
+            $report['tracks_removed']++;
         }
     }
 
@@ -400,10 +442,15 @@ class QuestionMediaService {
         $stored = $this->cuesMapper->findByQuestion($questionId);
         if ($entry['cues'] === null) {
             if ($stored !== null) {
-                $report['cues_removed']++;
                 if (!$dryRun) {
-                    $this->cuesMapper->delete($stored);
+                    try {
+                        $this->cuesMapper->delete($stored);
+                    } catch (\Throwable $e) {
+                        $this->writeFailed($report, $label, 'removing cues', $e);
+                        return;
+                    }
                 }
+                $report['cues_removed']++;
             }
             return;
         }
@@ -418,8 +465,8 @@ class QuestionMediaService {
             $report['cues_unchanged']++;
             return;
         }
-        $report['cues_written']++;
         if ($dryRun) {
+            $report['cues_written']++;
             return;
         }
         $row = $stored ?? new QuestionCues();
@@ -427,11 +474,17 @@ class QuestionMediaService {
         $row->setPoolId($question->getPoolId());
         $row->setCues($json);
         $row->setUpdatedAt(time());
-        if ($stored === null) {
-            $this->cuesMapper->insert($row);
-        } else {
-            $this->cuesMapper->update($row);
+        try {
+            if ($stored === null) {
+                $this->cuesMapper->insert($row);
+            } else {
+                $this->cuesMapper->update($row);
+            }
+        } catch (\Throwable $e) {
+            $this->writeFailed($report, $label, 'cues', $e);
+            return;
         }
+        $report['cues_written']++;
     }
 
     /**
@@ -533,8 +586,8 @@ class QuestionMediaService {
             $report['feedback_unchanged']++;
             return;
         }
-        $report['feedback_updated']++;
         if ($dryRun) {
+            $report['feedback_updated']++;
             return;
         }
         $question->setHint($next['hint']);
@@ -542,7 +595,24 @@ class QuestionMediaService {
         $question->setKeyTakeaway($next['key_takeaway']);
         $question->setOptionFeedback($next['option_feedback']);
         $question->setUpdatedAt(time());
-        $this->questionMapper->update($question);
+        try {
+            $this->questionMapper->update($question);
+        } catch (\Throwable $e) {
+            $this->writeFailed($report, $label, 'feedback texts', $e);
+            return;
+        }
+        $report['feedback_updated']++;
+    }
+
+    /**
+     * A storage or database write that failed for one entry (disk full, quota, a unique violation
+     * from a parallel run): reported, and the import goes on with the next part — so the report
+     * says what was written and what was not, instead of an occ run that ends in a stack trace.
+     *
+     * @param array<string, mixed> $report
+     */
+    private function writeFailed(array &$report, string $label, string $what, \Throwable $e): void {
+        $report['write_failed'][] = $label . ': ' . $what . ' (' . (new \ReflectionClass($e))->getShortName() . ': ' . $e->getMessage() . ')';
     }
 
     /** @param array<string, mixed> $report */

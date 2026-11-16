@@ -68,6 +68,18 @@ class QuestionMediaStorage {
         return $folder->getFile($fileName);
     }
 
+    /**
+     * Whether the file is there with the given size. Any error reading it counts as "not there":
+     * the caller (the import) then writes it again rather than trusting a row whose file is gone.
+     */
+    public function holds(int $poolId, string $fileName, int $size): bool {
+        try {
+            return $this->get($poolId, $fileName)->getSize() === $size;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     public function remove(int $poolId, string $fileName): void {
         $folder = $this->poolFolder($poolId, false);
         if ($folder === null || !$folder->fileExists($fileName)) {

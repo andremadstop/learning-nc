@@ -22,8 +22,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *   php occ learning:import-question-media <poolId> <bundle-dir> [--dry-run]
  *
  * Exit code: 0 when every entry was matched and every listed file was read; 1 when the bundle or
- * the pool cannot be used at all, or when anything was unknown, ambiguous, missing or refused
- * (the rest is imported all the same — a script must still notice).
+ * the pool cannot be used at all, or when anything was unknown, ambiguous, missing, refused or
+ * could not be written (the rest is imported all the same — a script must still notice).
  */
 class ImportQuestionMediaCommand extends Command {
     private const LIST_LIMIT = 50;
@@ -74,6 +74,7 @@ class ImportQuestionMediaCommand extends Command {
         $output->writeln(sprintf('  invalid entries:    %d', count($r['invalid_entries'])));
         $output->writeln(sprintf('  missing files:      %d', count($r['missing_files'])));
         $output->writeln(sprintf('  refused files:      %d', count($r['refused_files'])));
+        $output->writeln(sprintf('  failed writes:      %d', count($r['write_failed'])));
         $output->writeln(sprintf('  tracks %s: %d (%s bytes), unchanged: %d, removed: %d',
             $verb, $r['tracks_written'], number_format($r['bytes_written']), $r['tracks_unchanged'], $r['tracks_removed']));
         $output->writeln(sprintf('  cues %s: %d, unchanged: %d, removed: %d', $verb, $r['cues_written'], $r['cues_unchanged'], $r['cues_removed']));
@@ -90,11 +91,12 @@ class ImportQuestionMediaCommand extends Command {
         $this->listing($output, 'Ambiguous exam_key (several questions of the pool have it)', $r['ambiguous_keys']);
         $this->listing($output, 'Invalid entries', $r['invalid_entries']);
         $this->listing($output, 'Missing files', $r['missing_files']);
+        $this->listing($output, 'Failed writes (storage or database error; rerun the import once it is fixed)', $r['write_failed']);
         $this->listing($output, 'Refused files', $r['refused_files']);
         $this->listing($output, 'Feedback warnings', $r['feedback_warnings']);
 
         $problems = count($r['unknown_keys']) + count($r['ambiguous_keys']) + count($r['invalid_entries'])
-            + count($r['missing_files']) + count($r['refused_files']);
+            + count($r['missing_files']) + count($r['refused_files']) + count($r['write_failed']);
         return $problems === 0 ? Command::SUCCESS : Command::FAILURE;
     }
 

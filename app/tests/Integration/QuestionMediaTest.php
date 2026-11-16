@@ -116,6 +116,24 @@ final class QuestionMediaTest extends TestCase {
 		$this->assertSame(5, $this->rows('learning_qmedia_tracks'));
 	}
 
+	public function testARerunBringsBackAFileTheAppDataLost(): void {
+		$this->runCommand(false);
+		$q1 = $this->questions['demo-q1'];
+		$lost = "q{$q1}-dialog-en.mp3";
+		// The database survived, the app data did not (restore or move without appdata_<id>).
+		$path = 'appdata_' . Server::get(IConfig::class)->getSystemValueString('instanceid') . '/learning/' . QuestionMediaStorage::FOLDER_PREFIX . $this->poolId . '/' . $lost;
+		Server::get(IRootFolder::class)->get($path)->delete();
+		$this->assertNotContains($lost, $this->poolFolderFiles());
+
+		[$code, $out] = $this->runCommand(false);
+		$this->assertSame(0, $code, $out);
+		$this->assertStringContainsString('tracks written: 1', $out);
+		$this->assertStringContainsString('unchanged: 4', $out);
+		$this->assertContains($lost, $this->poolFolderFiles());
+		$opened = $this->media->openTrack($this->trackId($q1, 'dialog', 'en'), self::OWNER, null, null);
+		$this->assertSame(file_get_contents(self::FIXTURE . '/bundle/demo-q1/dialog-en.mp3'), $opened['bytes']);
+	}
+
 	public function testUnknownKeysMissingFilesAndRemovedTracksAreReported(): void {
 		$this->runCommand(false);
 		$bundle = $this->copyFixture();

@@ -7,6 +7,7 @@ use OCA\Learning\Service\ByteRange;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\NotFoundException;
 use OCA\Learning\Service\QuestionMediaService;
+use OCA\Learning\Service\QuestionMediaUnavailableException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -70,6 +71,10 @@ class QuestionMediaController extends Controller {
             return new Response(Http::STATUS_NOT_FOUND);
         } catch (ForbiddenException $e) {
             return new Response(Http::STATUS_FORBIDDEN);
+        } catch (QuestionMediaUnavailableException $e) {
+            $response = new Response(Http::STATUS_SERVICE_UNAVAILABLE);
+            $response->addHeader('Retry-After', '5');
+            return $response;
         }
 
         $bytes = $opened['bytes'];

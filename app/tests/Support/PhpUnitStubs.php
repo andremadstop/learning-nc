@@ -1254,6 +1254,30 @@ namespace OCP\Files {
         class NotFoundException extends \Exception {
         }
     }
+    // GitHub #66: the question media read and write errors (NC 33 lib/public/Files/
+    // {NotPermittedException,GenericFileException}.php).
+    if (!class_exists(NotPermittedException::class)) {
+        class NotPermittedException extends \Exception {
+        }
+    }
+    if (!class_exists(GenericFileException::class)) {
+        class GenericFileException extends \Exception {
+        }
+    }
+}
+
+namespace OCP\Files\SimpleFS {
+    // GitHub #66: a question media file in the app data (NC 33 lib/public/Files/SimpleFS/
+    // ISimpleFile.php, subset).
+    if (!interface_exists(ISimpleFile::class)) {
+        interface ISimpleFile {
+            public function getName(): string;
+
+            public function getSize(): int|float;
+
+            public function getContent(): string;
+        }
+    }
 }
 
 namespace OCP\Files\Storage {

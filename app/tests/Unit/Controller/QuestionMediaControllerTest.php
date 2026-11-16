@@ -8,6 +8,7 @@ use OCA\Learning\Db\QuestionTrack;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\NotFoundException;
 use OCA\Learning\Service\QuestionMediaService;
+use OCA\Learning\Service\QuestionMediaUnavailableException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\IRequest;
@@ -81,6 +82,12 @@ final class QuestionMediaControllerTest extends TestCase {
         $this->assertSame(Http::STATUS_NOT_FOUND, $this->controller('', new NotFoundException('x'))->index(1)->getStatus());
         $this->assertSame(Http::STATUS_FORBIDDEN, $this->controller('', new ForbiddenException('x'))->index(1)->getStatus());
         $this->assertSame(Http::STATUS_OK, $this->controller('')->index(1)->getStatus());
+    }
+
+    public function testAnUnreadableFileIs503WithRetryAfter(): void {
+        $response = $this->controller('', new QuestionMediaUnavailableException('x'))->track(7);
+        $this->assertSame(Http::STATUS_SERVICE_UNAVAILABLE, $response->getStatus());
+        $this->assertSame('5', $response->getHeaders()['Retry-After'] ?? null);
     }
 
     public function testNotLoggedIn(): void {
