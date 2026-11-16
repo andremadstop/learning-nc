@@ -101,6 +101,18 @@ class DataMobilityService {
                     'is_correct' => (bool)$a->getIsCorrect(),
                 ];
             }, $answers);
+            // GitHub #66: hint, background_fact, key_takeaway, feedback_per_option (option_index =
+            // index in "answers" above), in the import format's names (RichFeedbackFormat).
+            $item += RichFeedbackFormat::toExport(
+                $question->getHint(),
+                $question->getBackgroundFact(),
+                $question->getKeyTakeaway(),
+                $question->getOptionFeedback(),
+                array_map(static fn ($a): array => [
+                    'position' => $a->getPosition() !== null ? (int)$a->getPosition() : null,
+                    'is_correct' => (bool)$a->getIsCorrect(),
+                ], array_values($answers))
+            );
             $export[] = $item;
         }
 

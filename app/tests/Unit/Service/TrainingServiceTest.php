@@ -20,6 +20,7 @@ use OCA\Learning\Service\XpService;
 use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\TelosService;
+use OCA\Learning\Service\RichFeedbackService;
 use OCA\Learning\Tests\Support\FakeCacheFactory;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
@@ -1952,6 +1953,122 @@ class TrainingServiceTest extends TestCase {
         $this->assertNull($review[11]['instructor_note'], 'a hidden note never reaches the learner');
     }
 
+    private const RICH = [
+        'option_feedback' => [['answer_id' => 100, 'position' => 0, 'is_correct' => true, 'why' => 'Right.', 'misconception' => null]],
+        'background_fact' => 'Background.',
+        'key_takeaway' => 'Takeaway.',
+    ];
+
+    /**
+     * GitHub #66: the hint is the one rich feedback field that comes with the question — in
+     * training, never in an exam attempt.
+     */
+    public function testTheTrainingPayloadCarriesTheHintAndTheExamPayloadDoesNot(): void {
+        $question = $this->makeQuestion(10, 42, 'Q');
+        $question->setHint('Look at the port number.');
+        $question->setOptionFeedback('[{"position":0,"why":"Right.","misconception":null}]');
+        $question->setBackgroundFact('Background.');
+        $build = function (FakeDbConnection $db) use ($question): TrainingService {
+            $questionMapper = $this->createMock(QuestionMapper::class);
+            $questionMapper->method('findByPoolId')->willReturn([$question]);
+            $answerMapper = $this->createMock(AnswerMapper::class);
+            $answerMapper->method('findByQuestions')->willReturn([10 => [$this->makeAnswer(100, 10, 'A')]]);
+            $poolMapper = $this->createMock(PoolMapper::class);
+            $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+            return $this->createService(db: $db, questionMapper: $questionMapper, answerMapper: $answerMapper, poolMapper: $poolMapper);
+        };
+
+        $training = $build(new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),
+            new FakeQueryBuilder(new FakeResult(), 0, 99),
+        ]))->startSession(42, 'alice', null, 'training')['questions'][0];
+        $this->assertSame('Look at the port number.', $training['hint']);
+        foreach (['option_feedback', 'background_fact', 'key_takeaway', 'rich_feedback'] as $field) {
+            $this->assertArrayNotHasKey($field, $training, 'the post-answer feedback never comes with the question');
+        }
+
+        $exam = $build(new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(0)),
+            new FakeQueryBuilder(new FakeResult(), 1),
+            new FakeQueryBuilder(new FakeResult(), 0, 99),
+        ]))->startSession(42, 'alice', null, 'exam')['questions'][0];
+        $this->assertArrayNotHasKey('hint', $exam);
+        $this->assertStringNotContainsString('port number', (string)json_encode($exam));
+    }
+
+    /** @return list<FakeQueryBuilder> the queries of a single-choice training answer, up to the reveal */
+    private function singleAnswerQueries(bool $examRunsOnPool): array {
+        $session = ['id' => 500, 'pool_id' => 42, 'user_id' => 'alice', 'mode' => 'training', 'exam_kind' => null,
+            'started_at' => time() - 60, 'completed_at' => null, 'time_limit_seconds' => null,
+            'total_questions' => 1, 'correct_answers' => 0, 'question_order_json' => json_encode([10])];
+        return [
+            new FakeQueryBuilder(FakeResult::fromFetch($session)),                                   // verifySessionOwnership
+            new FakeQueryBuilder(FakeResult::fromFetchAll($examRunsOnPool                            // active exam on pool
+                ? [['id' => 7, 'pool_id' => 42, 'mode' => 'exam', 'started_at' => time() - 60, 'completed_at' => null, 'time_limit_seconds' => null]]
+                : [])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['id' => 10])),                               // question belongs to the pool
+            new FakeQueryBuilder(FakeResult::fromFetch(false)),                                      // not answered yet
+            new FakeQueryBuilder(FakeResult::fromFetch(['question_type' => 'single'])),              // type
+            new FakeQueryBuilder(FakeResult::fromFetch(['is_correct' => '1'])),                      // chosen answer
+            new FakeQueryBuilder(new FakeResult(), 1),                                               // insert
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 100, 'text' => 'A']])),          // correct answers
+        ];
+    }
+
+    public function testTheAnswerResponseCarriesTheRichFeedback(): void {
+        $rich = $this->createMock(RichFeedbackService::class);
+        $rich->expects($this->once())->method('forQuestion')->with(10, null)->willReturn(self::RICH);
+        $streak = $this->createMock(StreakService::class);
+        $streak->method('getStreak')->willReturn(['current_streak' => 0]);
+        $service = $this->createService(db: new FakeDbConnection($this->singleAnswerQueries(false)), streakService: $streak, richFeedbackService: $rich);
+
+        $result = $service->submitAnswer(500, 10, 100, 'alice');
+
+        $this->assertTrue($result['is_correct']);
+        $this->assertSame(self::RICH, $result['rich_feedback']);
+    }
+
+    /** While a counting exam runs on the pool the answer response reveals nothing, feedback included. */
+    public function testASuppressedAnswerResponseCarriesNoRichFeedback(): void {
+        $rich = $this->createMock(RichFeedbackService::class);
+        $rich->expects($this->never())->method('forQuestion');
+        $service = $this->createService(db: new FakeDbConnection($this->singleAnswerQueries(true)), richFeedbackService: $rich);
+
+        $result = $service->submitAnswer(500, 10, 100, 'alice');
+
+        $this->assertSame(['recorded' => true, 'suppressed' => true], $result);
+    }
+
+    /** Today's review policy: the practice review explains, the counting review does not. */
+    public function testOnlyThePracticeReviewCarriesTheRichFeedback(): void {
+        $uaRow = ['id' => 1, 'question_id' => 10, 'is_correct' => '1', 'answer_id' => 100, 'answer_ids' => null,
+            'question_text' => 'A', 'question_type' => 'single', 'question_explanation' => 'Because.'];
+        $answers = [['id' => 100, 'question_id' => 10, 'text' => 'Yes', 'is_correct' => '1']];
+
+        $rich = $this->createMock(RichFeedbackService::class);
+        $rich->expects($this->once())->method('forQuestions')->with([10], null)->willReturn([10 => self::RICH]);
+        $practice = $this->createService(db: new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch($this->completedPracticeSession(1, 2, 50))),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$uaRow])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll($answers)),
+        ]), questionMapper: $this->practiceQuestionMapper(), richFeedbackService: $rich)->completeSession(600, 'alice');
+        $this->assertSame(self::RICH, $practice['review'][0]['rich_feedback']);
+
+        $none = $this->createMock(RichFeedbackService::class);
+        $none->expects($this->never())->method('forQuestions');
+        $counting = $this->createService(db: new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(['exam_kind' => null] + $this->completedPracticeSession(1, 2, 50))),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$uaRow])),
+            new FakeQueryBuilder(FakeResult::fromFetchAll($answers)),
+        ]), richFeedbackService: $none)->completeSession(600, 'alice');
+        $this->assertArrayNotHasKey('rich_feedback', $counting['review'][0]);
+        $this->assertArrayNotHasKey('explanation', $counting['review'][0]);
+    }
+
     private function createService(
         FakeDbConnection $db,
         ?QuestionMapper $questionMapper = null,
@@ -1964,7 +2081,8 @@ class TrainingServiceTest extends TestCase {
         ?CourseService $courseService = null,
         ?VideoProgressService $videoProgressService = null,
         ?LoggerInterface $logger = null,
-        ?IConfig $config = null
+        ?IConfig $config = null,
+        ?RichFeedbackService $richFeedbackService = null
     ): TrainingService {
         $questionMapper ??= $this->createMock(QuestionMapper::class);
         $answerMapper ??= $this->createMock(AnswerMapper::class);
@@ -2016,7 +2134,8 @@ class TrainingServiceTest extends TestCase {
             $lernprofilService,
             $noteGeneratorService,
             $videoProgressService,
-            $telosService
+            $telosService,
+            $richFeedbackService
         );
     }
 

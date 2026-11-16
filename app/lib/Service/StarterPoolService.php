@@ -171,6 +171,19 @@ class StarterPoolService {
             ? (int)$questionData['chapter_order']
             : (isset($defaults['chapter_order']) && is_numeric($defaults['chapter_order']) ? (int)$defaults['chapter_order'] : null));
         $question->setScenario($this->truncate((string)($questionData['scenario'] ?? ''), QuestionService::SCENARIO_MAX_LENGTH) ?: null);
+        // GitHub #66: rich feedback in the pool JSON format (RichFeedbackFormat); bundled data, so
+        // a field over the editor's limit is a packaging error and fails like a broken answer list.
+        $rich = RichFeedbackFormat::fromItem($questionData);
+        $rich = RichFeedbackFormat::normalize([
+            'hint' => $rich['hint'],
+            'background_fact' => $rich['background_fact'],
+            'key_takeaway' => $rich['key_takeaway'],
+            'option_feedback' => $rich['option_feedback'],
+        ]);
+        $question->setHint($rich['hint']);
+        $question->setBackgroundFact($rich['background_fact']);
+        $question->setKeyTakeaway($rich['key_takeaway']);
+        $question->setOptionFeedback(RichFeedbackFormat::encodeOptions($rich['option_feedback']));
         $question->setReviewStatus('published');
 
         $question = $this->questionMapper->createOrUpdate($question);

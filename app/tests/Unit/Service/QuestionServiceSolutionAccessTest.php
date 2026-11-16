@@ -49,6 +49,10 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $question->setQuestionType('single');
         $question->setInstructorNote('Answer B is the trap.');
         $question->setNoteVisible($this->noteVisible);
+        $question->setHint('Think of TLS.');
+        $question->setBackgroundFact('Port 443 was assigned in 1994.');
+        $question->setKeyTakeaway('HTTPS = 443.');
+        $question->setOptionFeedback('[{"position":0,"why":"80 is plain HTTP.","misconception":"Forgetting the S"}]');
         return $question;
     }
 
@@ -158,6 +162,30 @@ class QuestionServiceSolutionAccessTest extends TestCase {
             $this->assertArrayNotHasKey('is_correct', $answer);
             $this->assertNotSame('', $answer['text']);
         }
+    }
+
+    /**
+     * GitHub #66: the rich feedback is editor material on these paths — the per-option feedback
+     * names the right answer. Learners get it through the answer responses only.
+     */
+    #[DataProvider('learnerReadPaths')]
+    public function testLearnerGetsNoRichFeedback(callable $read, string $role): void {
+        $question = $read($this->service($role));
+
+        foreach (['hint', 'background_fact', 'key_takeaway', 'option_feedback'] as $field) {
+            $this->assertArrayNotHasKey($field, $question);
+        }
+        $this->assertStringNotContainsString('plain HTTP', (string)json_encode($question));
+    }
+
+    #[DataProvider('editorReadPaths')]
+    public function testEditorsGetTheRichFeedbackToEditIt(callable $read, string $role): void {
+        $question = $read($this->service($role));
+
+        $this->assertSame('Think of TLS.', $question['hint']);
+        $this->assertSame('Port 443 was assigned in 1994.', $question['background_fact']);
+        $this->assertSame('HTTPS = 443.', $question['key_takeaway']);
+        $this->assertSame([['position' => 0, 'why' => '80 is plain HTTP.', 'misconception' => 'Forgetting the S']], $question['option_feedback']);
     }
 
     #[DataProvider('editorReadPaths')]

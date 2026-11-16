@@ -30,6 +30,7 @@
  */
 import { translate as t } from '@nextcloud/l10n'
 import { SCENARIO_MAX_LENGTH } from './questionScenario.js'
+import { richFeedbackFromItem, richFeedbackTooLong } from './richFeedback.js'
 
 export const MAX_IMPORT_ITEMS = 500
 export const MAX_ANSWERS = 8
@@ -79,6 +80,11 @@ export const importMessages = {
 	correctCutOff: (num, max) => t('learning', 'Item {num}: A correct answer comes after answer {max}, but only the first {max} answers are imported — question skipped', { num, max }, undefined, RAW),
 	answerTruncated: (num) => t('learning', 'Item {num}: Answer text truncated to 2000 chars', { num }, undefined, RAW),
 	scenarioTooLong: (num, max) => t('learning', 'Item {num}: Scenario longer than {max} characters — question skipped', { num, max }, undefined, RAW),
+	// GitHub #66 (ImportController::prepareRichFeedback)
+	feedbackTooLong: (num) => t('learning', 'Item {num}: A feedback field is too long — question skipped', { num }, undefined, RAW),
+	feedbackLanguagesDropped: (num, languages) => t('learning', 'Item {num}: Feedback texts in {languages} were not imported — one language per question', { num, languages }, undefined, RAW),
+	feedbackVerdictMismatch: (num) => t('learning', 'Item {num}: A "verdict" in feedback_per_option contradicts the marked correct answers — the marked answers count', { num }, undefined, RAW),
+	feedbackUnmatched: (num) => t('learning', 'Item {num}: Feedback for an answer option the question does not have was left out', { num }, undefined, RAW),
 	textTruncated: (num) => t('learning', 'Item {num}: Question text truncated to 5000 chars', { num }, undefined, RAW),
 	openNeedsAnswer: (num) => t('learning', 'Item {num}: Open question needs at least 1 answer', { num }, undefined, RAW),
 	needTwoAnswers: (num) => t('learning', 'Item {num}: Need at least 2 answers', { num }, undefined, RAW),
@@ -497,7 +503,13 @@ function normalizeJsonItem(raw, num, defaultType) {
 		}
 	}
 
-	return { item: { text, type, answers, difficulty: difficultyOf(raw), scenarioTooLong: scenarioTooLong(raw) } }
+	// GitHub #66: rich feedback by stored answer position (RichFeedbackFormat::fromItem).
+	const rich = richFeedbackFromItem(raw, positions, answers.map((a) => a.isCorrect))
+	if (type === 'open') {
+		rich.option_feedback = []
+	}
+
+	return { item: { text, type, answers, difficulty: difficultyOf(raw), scenarioTooLong: scenarioTooLong(raw), rich } }
 }
 
 /** questionListFrom(): { items, pool } or { error }. */
@@ -606,6 +618,23 @@ export function analyzeJsonImport(text) {
 			entry.warnings.push(message)
 			warnings.push(message)
 		}
+		// ImportController::prepareRichFeedback(): false = the item is skipped.
+		const richFeedbackOk = (rich, answerCount) => {
+			if (richFeedbackTooLong(rich, answerCount)) {
+				fail(importMessages.feedbackTooLong(num))
+				return false
+			}
+			if (rich.dropped_languages.length > 0) {
+				warn(importMessages.feedbackLanguagesDropped(num, rich.dropped_languages.join(', ')))
+			}
+			if (rich.verdict_mismatches > 0) {
+				warn(importMessages.feedbackVerdictMismatch(num))
+			}
+			if (rich.unmatched > 0) {
+				warn(importMessages.feedbackUnmatched(num))
+			}
+			return true
+		}
 
 		if (!isArr(original)) {
 			fail(importMessages.notAnObject(num))
@@ -624,6 +653,8 @@ export function analyzeJsonImport(text) {
 				fail(importMessages.pbqMissingText(num))
 			} else if (scenarioTooLong(raw)) {
 				fail(importMessages.scenarioTooLong(num, SCENARIO_MAX_LENGTH))
+			} else if (!richFeedbackOk(richFeedbackFromItem(raw, new Map()), 0)) {
+				// failed: the message is set
 			} else if (!PBQ_SUBTYPES.includes(subtype)) {
 				fail(importMessages.pbqInvalidSubtype(num, subtype))
 			} else if (!isArr(pick(raw, 'pbq_config'))) {
@@ -651,6 +682,9 @@ export function analyzeJsonImport(text) {
 		entry.text = item.text
 		if (item.scenarioTooLong) {
 			fail(importMessages.scenarioTooLong(num, SCENARIO_MAX_LENGTH))
+			return
+		}
+		if (!richFeedbackOk(item.rich, item.type === 'open' ? 0 : Math.min(item.answers.length, MAX_ANSWERS))) {
 			return
 		}
 		let questionText = item.text

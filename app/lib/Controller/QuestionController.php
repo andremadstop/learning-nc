@@ -75,6 +75,24 @@ class QuestionController extends Controller {
     }
 
     /**
+     * Rich feedback fields of the request (GitHub #66): hint, backgroundFact, keyTakeaway (text) and
+     * optionFeedback ([{position, why, misconception}]). Only the keys the request carries, so an
+     * API client that predates the fields keeps what is stored; null or '' clears a field.
+     *
+     * @return array<string, mixed>
+     */
+    private function richFeedbackFromRequest(): array {
+        $params = $this->request->getParams();
+        $rich = [];
+        foreach (['hint' => 'hint', 'backgroundFact' => 'background_fact', 'keyTakeaway' => 'key_takeaway', 'optionFeedback' => 'option_feedback'] as $param => $field) {
+            if (array_key_exists($param, $params)) {
+                $rich[$field] = $params[$param];
+            }
+        }
+        return $rich;
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 60, period: 60)]
@@ -116,7 +134,8 @@ class QuestionController extends Controller {
                 chapterKey: $chapterKey,
                 chapterTitle: $chapterTitle,
                 chapterOrder: $chapterOrder,
-                scenario: $scenario
+                scenario: $scenario,
+                richFeedback: $this->richFeedbackFromRequest()
             );
             return new DataResponse($question, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
@@ -169,7 +188,8 @@ class QuestionController extends Controller {
                 chapterTitle: $chapterTitle,
                 chapterOrder: $chapterOrder,
                 // Absent key keeps the stored scenario; an explicit null or '' clears it.
-                scenario: array_key_exists('scenario', $this->request->getParams()) ? ($scenario ?? '') : null
+                scenario: array_key_exists('scenario', $this->request->getParams()) ? ($scenario ?? '') : null,
+                richFeedback: $this->richFeedbackFromRequest()
             ));
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);

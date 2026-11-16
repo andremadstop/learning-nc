@@ -53,6 +53,11 @@ class PoolExportRoundTripTest extends TestCase {
         $mc->setHandbookKey('ccna');
         $mc->setHandbookTitle('CCNA');
         $mc->setExamKey('ccna-q7');
+        // GitHub #66
+        $mc->setHint("Think of TLS.\nNot of the web.");
+        $mc->setBackgroundFact('443 was registered in 1994.');
+        $mc->setKeyTakeaway('HTTPS = 443.');
+        $mc->setOptionFeedback('[{"position":0,"why":"80 is plain HTTP.","misconception":"Forgetting the S"},{"position":1,"why":"Registered for HTTPS.","misconception":null}]');
 
         $ranking = new Question();
         $ranking->setId(22);
@@ -64,6 +69,7 @@ class PoolExportRoundTripTest extends TestCase {
         $ranking->setExplanation('Plan comes first.');
         $ranking->setScenario('A team meeting.');
         $ranking->setChapterKey('1.0');
+        $ranking->setKeyTakeaway('Plan first.');
 
         $dropdown = new Question();
         $dropdown->setId(23);
@@ -77,6 +83,7 @@ class PoolExportRoundTripTest extends TestCase {
             $answer->setQuestionId($qid);
             $answer->setText($text);
             $answer->setIsCorrect($correct);
+            $answer->setPosition($text === '80' ? 0 : 1);
             return $answer;
         };
 
@@ -116,6 +123,27 @@ class PoolExportRoundTripTest extends TestCase {
         $this->assertArrayNotHasKey('chapter_title', $export[1], 'empty fields are left out');
     }
 
+    /** GitHub #66: the rich feedback in the import format's own field names. */
+    public function testTheExportCarriesTheRichFeedback(): void {
+        $export = $this->export();
+
+        $this->assertSame("Think of TLS.\nNot of the web.", $export[0]['hint']);
+        $this->assertSame('443 was registered in 1994.', $export[0]['background_fact']);
+        $this->assertSame('HTTPS = 443.', $export[0]['key_takeaway']);
+        $this->assertSame([
+            ['option_index' => 0, 'letter' => 'A', 'verdict' => 'wrong', 'why' => '80 is plain HTTP.', 'misconception' => 'Forgetting the S'],
+            ['option_index' => 1, 'letter' => 'B', 'verdict' => 'correct', 'why' => 'Registered for HTTPS.'],
+        ], $export[0]['feedback_per_option']);
+        $this->assertSame('Plan first.', $export[1]['key_takeaway']);
+        $this->assertArrayNotHasKey('hint', $export[2], 'empty fields are left out');
+        $this->assertArrayNotHasKey('feedback_per_option', $export[1]);
+    }
+
+    private const STORED_OPTIONS = [
+        ['position' => 0, 'why' => '80 is plain HTTP.', 'misconception' => 'Forgetting the S'],
+        ['position' => 1, 'why' => 'Registered for HTTPS.', 'misconception' => null],
+    ];
+
     public function testTheInterfaceImportRestoresEverything(): void {
         $r = $this->importController()->importJson(9, json_encode($this->export(), JSON_THROW_ON_ERROR));
 
@@ -134,6 +162,13 @@ class PoolExportRoundTripTest extends TestCase {
         $this->assertSame('Order the PDCA steps', $ranking->getText());
         $this->assertSame(['pbq', 'dropdown'], [$dropdown->getQuestionType(), $dropdown->getPbqSubtype()]);
         $this->assertSame(self::DROPDOWN, json_decode((string)$dropdown->getPbqConfig(), true));
+
+        // GitHub #66
+        $this->assertSame(["Think of TLS.\nNot of the web.", '443 was registered in 1994.', 'HTTPS = 443.'], [$mc->getHint(), $mc->getBackgroundFact(), $mc->getKeyTakeaway()]);
+        $this->assertSame(self::STORED_OPTIONS, \OCA\Learning\Service\RichFeedbackFormat::decodeOptions($mc->getOptionFeedback()));
+        $this->assertSame('Plan first.', $ranking->getKeyTakeaway());
+        $this->assertNull($dropdown->getHint());
+        $this->assertArrayNotHasKey('warnings', $r->getData(), 'nothing is left out');
     }
 
     public function testOccImportRestoresEverything(): void {
@@ -168,6 +203,15 @@ class PoolExportRoundTripTest extends TestCase {
         $this->assertSame(['1.0', 'A team meeting.'], [$ranking[14], $ranking[17]]);
         $this->assertSame(['pbq', 'dropdown'], [$dropdown[6], $dropdown[7]]);
         $this->assertSame(self::DROPDOWN, json_decode((string)$dropdown[8], true));
+
+        // GitHub #66: create(…, scenario, richFeedback)
+        $this->assertSame([
+            'hint' => "Think of TLS.\nNot of the web.",
+            'background_fact' => '443 was registered in 1994.',
+            'key_takeaway' => 'HTTPS = 443.',
+            'option_feedback' => self::STORED_OPTIONS,
+        ], $mc[18]);
+        $this->assertSame(['hint' => null, 'background_fact' => null, 'key_takeaway' => 'Plan first.', 'option_feedback' => []], $ranking[18]);
     }
 
     /**

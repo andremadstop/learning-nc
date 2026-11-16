@@ -37,6 +37,7 @@ class TrainingService {
     private NoteGeneratorService $noteGeneratorService;
     private VideoProgressService $videoProgressService;
     private TelosService $telosService;
+    private RichFeedbackService $richFeedbackService;
 
     /** GitHub #47: exam time per question when the course sets the count but no minutes (= ExamMode.vue). */
     public const EXAM_SECONDS_PER_QUESTION = 90;
@@ -94,8 +95,10 @@ class TrainingService {
         LernprofilService $lernprofilService,
         NoteGeneratorService $noteGeneratorService,
         VideoProgressService $videoProgressService,
-        TelosService $telosService
+        TelosService $telosService,
+        ?RichFeedbackService $richFeedbackService = null
     ) {
+        $this->richFeedbackService = $richFeedbackService ?? new RichFeedbackService($db, $translationService);
         $this->db = $db;
         $this->questionMapper = $questionMapper;
         $this->answerMapper = $answerMapper;
@@ -113,6 +116,18 @@ class TrainingService {
         $this->noteGeneratorService = $noteGeneratorService;
         $this->videoProgressService = $videoProgressService;
         $this->telosService = $telosService;
+    }
+
+    /**
+     * The post-answer rich feedback of one question (GitHub #66) as the answer response carries it,
+     * or [] when it has none. Only for responses that already reveal the solution: never called on
+     * a suppressed path (counting exam on the pool).
+     *
+     * @return array<string, mixed>
+     */
+    private function richFeedbackFor(int $questionId, ?string $lang): array {
+        $rich = $this->richFeedbackService->forQuestion($questionId, $lang);
+        return $rich === null ? [] : ['rich_feedback' => $rich];
     }
 
     private function logSecurityEvent(string $event, array $context = []): void {
@@ -355,6 +370,8 @@ class TrainingService {
     private function sanitizeQuestionForAttempt(array $question): array {
         unset(
             $question['explanation'],
+            // GitHub #66: no hint during an exam attempt, counting or practice.
+            $question['hint'],
             $question['instructor_note'],
             $question['note_visible'],
             $question['reviewer_id'],
@@ -422,6 +439,14 @@ class TrainingService {
             $qData['pool_position'] = ($poolPositions[$qid] ?? 0) + 1;
             if ($suppressAnswerMetadata) {
                 $qData = $this->sanitizeQuestionForAttempt($qData);
+            } else {
+                // GitHub #66: the hint is the one rich feedback field meant for before the answer.
+                // The rest (feedback per option, background, takeaway) comes with the answer
+                // response — per-option feedback names the right answer.
+                $hint = trim((string)$q->getHint());
+                if ($hint !== '') {
+                    $qData['hint'] = $q->getHint();
+                }
             }
             $answers = $answersByQuestion[(int)$q->getId()] ?? [];
             $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
@@ -1347,7 +1372,7 @@ class TrainingService {
                 'user_answer_text' => $answerText,
                 'explanation' => $qRow ? $qRow['explanation'] : null,
                 'xp_earned' => $xpEarned,
-            ];
+            ] + $this->richFeedbackFor($questionId, $contentLanguage);
             if (!$isCorrect) {
                 $openResult['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
             }
@@ -1410,7 +1435,7 @@ class TrainingService {
                 'pbq_max_points' => $maxPoints,
                 'explanation' => $qRow2['explanation'] ?? null,
                 'xp_earned' => $xpEarned,
-            ];
+            ] + $this->richFeedbackFor($questionId, $contentLanguage);
         }
 
         // Multi-select path
@@ -1473,7 +1498,7 @@ class TrainingService {
                 'correct_answer_ids' => $correctIds,
                 'correct_answer_texts' => $correctTexts,
                 'xp_earned' => $xpEarned,
-            ];
+            ] + $this->richFeedbackFor($questionId, $contentLanguage);
             if (!$isCorrect) {
                 $multiResult['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
             }
@@ -1533,7 +1558,7 @@ class TrainingService {
             'correct_answer_ids' => $correctIds,
             'correct_answer_texts' => $correctTexts,
             'xp_earned' => $xpEarned,
-        ];
+        ] + $this->richFeedbackFor($questionId, $contentLanguage);
 
         // TRIG-02: After a wrong answer, check if user has ≥5 wrong answers on this pool
         // in recent sessions (last 30 days). Frontend uses this to show the "generate summary" button.
@@ -2434,6 +2459,10 @@ class TrainingService {
             $aResult->closeCursor();
         }
 
+        // GitHub #66: rich feedback follows the explanations — the review of a practice exam gets
+        // it, the review of a counting exam does not (today's review policy).
+        $richByQuestion = $withExplanations ? $this->richFeedbackService->forQuestions($answeredIds, $lang) : [];
+
         $review = [];
         foreach ($userAnswers as $ua) {
             $questionId = (int)$ua['question_id'];
@@ -2478,6 +2507,9 @@ class TrainingService {
             if ($withExplanations) {
                 $explanation = trim((string)($ua['question_explanation'] ?? ''));
                 $entry['explanation'] = $explanation !== '' ? $explanation : null;
+                if (isset($richByQuestion[$questionId])) {
+                    $entry['rich_feedback'] = $richByQuestion[$questionId];
+                }
             }
 
             // An instructor note marked visible belongs to the review (audit #239): the attempt

@@ -30,6 +30,13 @@ class Question extends Entity implements JsonSerializable {
     protected $chapterTitle;
     protected $chapterOrder;
     protected $scenario;
+    // GitHub #66 — see RichFeedbackFormat. Deliberately NOT in jsonSerialize(): that output reaches
+    // learners on many paths before they answer, and per-option feedback names the right answer.
+    // Editors get the fields through richFields(), learners through RichFeedbackService.
+    protected $hint;
+    protected $backgroundFact;
+    protected $keyTakeaway;
+    protected $optionFeedback;
 
     public function __construct() {
         $this->addType('poolId', 'integer');
@@ -56,6 +63,25 @@ class Question extends Entity implements JsonSerializable {
         $this->addType('chapterTitle', 'string');
         $this->addType('chapterOrder', 'integer');
         $this->addType('scenario', 'string');
+        $this->addType('hint', 'string');
+        $this->addType('backgroundFact', 'string');
+        $this->addType('keyTakeaway', 'string');
+        $this->addType('optionFeedback', 'string');
+    }
+
+    /**
+     * The rich feedback fields (GitHub #66) for the question's editors: the editor loads and saves
+     * them, the export writes them. Never merge this into a payload a learner gets before answering.
+     *
+     * @return array{hint: ?string, background_fact: ?string, key_takeaway: ?string, option_feedback: list<array{position: int, why: ?string, misconception: ?string}>}
+     */
+    public function richFields(): array {
+        return [
+            'hint' => $this->hint,
+            'background_fact' => $this->backgroundFact,
+            'key_takeaway' => $this->keyTakeaway,
+            'option_feedback' => \OCA\Learning\Service\RichFeedbackFormat::decodeOptions($this->optionFeedback),
+        ];
     }
 
     public function jsonSerialize(): array {

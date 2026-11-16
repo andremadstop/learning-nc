@@ -97,7 +97,8 @@
       <div v-else-if="!isPbq" class="form-group">
         <label>{{ form.questionType === 'multi' ? t('learning', 'Antworten (alle richtigen auswählen)') : t('learning', 'Antworten (die richtige auswählen)') }} <span aria-hidden="true">*</span></label>
         <div class="answers-form">
-          <div v-for="(answer, index) in form.answers" :key="index" class="answer-row">
+          <div v-for="(answer, index) in form.answers" :key="index" class="answer-item">
+          <div class="answer-row">
             <NcCheckboxRadioSwitch
               v-if="form.questionType === 'single'"
               :model-value="correctAnswerIndex === index"
@@ -114,6 +115,15 @@
             <input type="text" v-model="answer.text" :placeholder="t('learning', 'Antwort {n}', { n: index + 1 })" :aria-required="index < 2 ? 'true' : 'false'" :required="index < 2" class="nc-input" />
             <button v-if="form.answers.length > 2" type="button" class="remove-answer-btn" @click="removeAnswer(index)" :aria-label="t('learning', 'Antwort entfernen')">&#215;</button>
           </div>
+            <!-- #66: feedback for this option, shown to learners after they answer -->
+            <details class="answer-feedback-fields" :open="!!(answer.why || answer.misconception)">
+              <summary>{{ t('learning', 'Feedback zu Antwort {n} (optional)', { n: index + 1 }) }}</summary>
+              <label :for="'answer-why-' + index">{{ t('learning', 'Warum richtig oder falsch') }}</label>
+              <textarea :id="'answer-why-' + index" v-model="answer.why" rows="2" :maxlength="limits.why" class="nc-input"></textarea>
+              <label :for="'answer-misconception-' + index">{{ t('learning', 'Denkfehler hinter dieser Wahl') }}</label>
+              <input :id="'answer-misconception-' + index" v-model="answer.misconception" type="text" :maxlength="limits.misconception" class="nc-input" />
+            </details>
+          </div>
         </div>
         <div class="answer-actions">
           <NcButton type="button" variant="secondary" @click="addAnswer" :disabled="form.answers.length >= 8">
@@ -127,6 +137,21 @@
       <div class="form-group">
         <label for="explanation">{{ t('learning', 'Erklärung (optional)') }}</label>
         <textarea id="explanation" v-model="form.explanation" rows="2" :placeholder="t('learning', 'Erkläre, warum die Antwort richtig ist...')" class="nc-input"></textarea>
+      </div>
+      <!-- #66: rich feedback -->
+      <div class="form-group">
+        <label for="question-hint">{{ t('learning', 'Hinweis (optional)') }}</label>
+        <textarea id="question-hint" v-model="form.hint" rows="2" :maxlength="limits.hint" aria-describedby="question-hint-help" class="nc-input"></textarea>
+        <p id="question-hint-help" class="field-hint">{{ t('learning', 'Lernende können ihn vor dem Antworten aufklappen. In Prüfungen wird er nie gezeigt.') }}</p>
+      </div>
+      <div class="form-group">
+        <label for="question-background">{{ t('learning', 'Hintergrundwissen (optional)') }}</label>
+        <textarea id="question-background" v-model="form.backgroundFact" rows="2" :maxlength="limits.background" class="nc-input"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="question-takeaway">{{ t('learning', 'Merksatz (optional)') }}</label>
+        <input id="question-takeaway" v-model="form.keyTakeaway" type="text" :maxlength="limits.takeaway" aria-describedby="question-feedback-help" class="nc-input" />
+        <p id="question-feedback-help" class="field-hint">{{ t('learning', 'Hintergrundwissen, Merksatz und das Feedback zu den Antworten sehen Lernende nach dem Antworten, in Probeprüfungen in der Auswertung.') }}</p>
       </div>
       <!-- PBQ Config Section -->
       <div class="form-group">
@@ -212,6 +237,12 @@ import { generateUrl } from '@nextcloud/router';
 import PbqAuthorTool from './PbqAuthorTool.vue';
 import AccessibleDialog from './AccessibleDialog.vue';
 import { SCENARIO_MAX_LENGTH } from '../utils/questionScenario.js';
+import {
+  HINT_MAX_LENGTH, BACKGROUND_MAX_LENGTH, TAKEAWAY_MAX_LENGTH, WHY_MAX_LENGTH, MISCONCEPTION_MAX_LENGTH,
+  answersWithFeedback, optionFeedbackFromAnswers,
+} from '../utils/richFeedback.js';
+
+const emptyAnswer = () => ({ text: '', is_correct: false, why: '', misconception: '' });
 
 export default {
   name: 'QuestionForm',
@@ -236,13 +267,18 @@ export default {
       pbqConfigManualError: null,
       showAuthorTool: false,
       scenarioMaxLength: SCENARIO_MAX_LENGTH,
+      limits: {
+        hint: HINT_MAX_LENGTH,
+        background: BACKGROUND_MAX_LENGTH,
+        takeaway: TAKEAWAY_MAX_LENGTH,
+        why: WHY_MAX_LENGTH,
+        misconception: MISCONCEPTION_MAX_LENGTH,
+      },
       form: {
         text: '', explanation: '', difficulty: '', scenario: '',
+        hint: '', backgroundFact: '', keyTakeaway: '',
         questionType: 'single',
-        answers: [
-          { text: '', is_correct: false }, { text: '', is_correct: false },
-          { text: '', is_correct: false }, { text: '', is_correct: false }
-        ],
+        answers: [emptyAnswer(), emptyAnswer(), emptyAnswer(), emptyAnswer()],
         pbqSubtype: '',
         pbqConfig: '',
         instructorNote: '',
@@ -302,6 +338,9 @@ export default {
       this.form.text = this.question.text;
       this.form.explanation = this.question.explanation || '';
       this.form.scenario = this.question.scenario || '';
+      this.form.hint = this.question.hint || '';
+      this.form.backgroundFact = this.question.background_fact || '';
+      this.form.keyTakeaway = this.question.key_takeaway || '';
       this.form.difficulty = this.question.difficulty || '';
       this.form.questionType = this.question.question_type || 'single';
       this.existingImagePath = this.question.image_path || null;
@@ -309,10 +348,14 @@ export default {
         this.modelAnswer = this.question.answers[0].text || '';
       }
       if (this.question.answers && this.question.answers.length >= 2) {
-        this.form.answers = this.question.answers.map(a => ({ text: a.text, is_correct: a.is_correct }));
+        // #66: option_feedback is keyed by position = index in the stored (and shown) answer list.
+        this.form.answers = answersWithFeedback(
+          this.question.answers.map(a => ({ text: a.text, is_correct: a.is_correct })),
+          this.question.option_feedback
+        );
         // Pad to minimum 4 answer slots for consistency
         while (this.form.answers.length < 4) {
-          this.form.answers.push({ text: '', is_correct: false });
+          this.form.answers.push(emptyAnswer());
         }
         // Initialize correct indices for both modes
         this.correctAnswerIndices = new Set();
@@ -398,7 +441,7 @@ export default {
     },
     addAnswer() {
       if (this.form.answers.length < 8) {
-        this.form.answers.push({ text: '', is_correct: false });
+        this.form.answers.push(emptyAnswer());
       }
     },
     removeAnswer(index) {
@@ -521,8 +564,18 @@ export default {
         return;
       }
 
+      // #66: the feedback goes as option_feedback by the position each saved answer gets; an open
+      // question or a PBQ has no options, so [] clears any.
+      const optionFeedback = (this.isPbq || this.form.questionType === 'open') ? [] : optionFeedbackFromAnswers(filteredAnswers);
+      filteredAnswers = filteredAnswers.map(a => ({ text: a.text, is_correct: a.is_correct }));
+
       this.$emit('save', {
         text: this.form.text,
+        // Always sent: '' clears a stored field, an omitted key would keep it.
+        hint: this.form.hint || '',
+        backgroundFact: this.form.backgroundFact || '',
+        keyTakeaway: this.form.keyTakeaway || '',
+        optionFeedback,
         explanation: this.form.explanation || null,
         // Always sent: '' clears a stored scenario, an omitted key would keep it.
         scenario: this.form.scenario || '',
@@ -563,6 +616,9 @@ export default {
 .answers-form { display: flex; flex-direction: column; gap: 10px; }
 .answer-row { display: flex; align-items: center; gap: 10px; }
 .answer-row .nc-input { flex: 1; }
+.answer-feedback-fields { margin: 4px 0 0; margin-inline-start: 36px; font-size: 13px; }
+.answer-feedback-fields summary { cursor: pointer; color: var(--color-text-maxcontrast); }
+.answer-feedback-fields label { display: block; margin: 6px 0 4px; font-weight: 500; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
 
 /* Image upload */

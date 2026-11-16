@@ -171,7 +171,7 @@ class PoolBulkImportService {
             // Each question once through every check; the real import stores what passes.
             $prepared = [];
             foreach ($questions as $qIndex => $q) {
-                $args = $this->prepareQuestion($q, $qIndex, $poolData, $meta, $defaultType, $l, $result['question_errors']);
+                $args = $this->prepareQuestion($q, $qIndex, $poolData, $meta, $defaultType, $l, $result['question_errors'], $result['warnings']);
                 if ($args !== null) {
                     $prepared[] = $args;
                 }
@@ -218,7 +218,8 @@ class PoolBulkImportService {
                             $q['chapter_key'],
                             $q['chapter_title'],
                             $q['chapter_order'],
-                            $q['scenario']
+                            $q['scenario'],
+                            $q['rich_feedback']
                         );
                         $imported++;
                     } catch (\InvalidArgumentException $e) {
@@ -257,9 +258,10 @@ class PoolBulkImportService {
      * @param array<mixed> $poolData
      * @param array<mixed> $meta
      * @param list<string> $errors
+     * @param list<string> $warnings imported, but something of the item was left out (GitHub #66)
      * @return array{0: string, 1: array<string, mixed>}|null
      */
-    private function prepareQuestion(mixed $q, int $qIndex, array $poolData, array $meta, string $defaultType, IL10N $l, array &$errors): ?array {
+    private function prepareQuestion(mixed $q, int $qIndex, array $poolData, array $meta, string $defaultType, IL10N $l, array &$errors, array &$warnings = []): ?array {
         $number = is_array($q) ? PoolJsonFormat::scalarText($q['original_number'] ?? null) : '';
         $number = $number !== '' ? $number : (string)($qIndex + 1);
 
@@ -330,17 +332,40 @@ class PoolBulkImportService {
             'scenario' => isset($q['scenario']) && is_string($q['scenario']) ? $q['scenario'] : null,
         ];
 
+        // GitHub #66: rich feedback, feedback per option keyed by the stored answer position.
+        $rich = RichFeedbackFormat::fromItem($q, $isPbq ? [] : self::answerPositions($q), array_map(static fn (array $a): bool => $a['is_correct'], $answers));
+        if ($questionType === 'pbq' || $questionType === 'open') {
+            $rich['option_feedback'] = [];
+        }
+        $args['rich_feedback'] = [
+            'hint' => $rich['hint'],
+            'background_fact' => $rich['background_fact'],
+            'key_takeaway' => $rich['key_takeaway'],
+            'option_feedback' => $rich['option_feedback'],
+        ];
+
         // The rest of what QuestionService::create() refuses (lengths, answer counts, scenario,
         // metadata), so the dry run does not promise questions that the real import then drops.
         try {
             $this->questionService->validateForImport(
                 $args['text'], $args['answers'], $args['type'], $args['scenario'],
                 $args['handbook_key'], $args['handbook_title'], $args['exam_key'],
-                $args['chapter_key'], $args['chapter_title'], $args['chapter_order']
+                $args['chapter_key'], $args['chapter_title'], $args['chapter_order'],
+                $args['rich_feedback']
             );
         } catch (\InvalidArgumentException $e) {
             $errors[] = $l->t('Q%1$s: %2$s', [$number, self::localizedReason($e->getMessage(), $l) ?? $e->getMessage()]);
             return null;
+        }
+
+        if ($rich['dropped_languages'] !== []) {
+            $warnings[] = $l->t('Q%1$s: feedback texts in %2$s were not imported — one language per question', [$number, implode(', ', $rich['dropped_languages'])]);
+        }
+        if ($rich['verdict_mismatches'] > 0) {
+            $warnings[] = $l->t('Q%s: a "verdict" in feedback_per_option contradicts the marked correct answers — the marked answers count', [$number]);
+        }
+        if ($rich['unmatched'] > 0) {
+            $warnings[] = $l->t('Q%s: feedback for an answer option the question does not have was left out', [$number]);
         }
 
         return [$number, $args];
@@ -380,6 +405,7 @@ class PoolBulkImportService {
             'Field exceeds maximum length' => $l->t('Field exceeds maximum length'),
             'Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters'
                 => $l->t('Scenario must be max %s characters', [QuestionService::SCENARIO_MAX_LENGTH]),
+            RichFeedbackFormat::TOO_LONG_MESSAGE => $l->t('Feedback field exceeds maximum length'),
             default => null,
         };
     }
@@ -390,6 +416,24 @@ class PoolBulkImportService {
      */
     private static function questionsOf(array $poolData): array {
         return isset($poolData['questions']) && is_array($poolData['questions']) ? array_values($poolData['questions']) : [];
+    }
+
+    /**
+     * Index in the item's "answers" list → stored position, for the answers answersFrom() keeps.
+     *
+     * @param array<mixed> $question
+     * @return array<int, int>
+     */
+    private static function answerPositions(array $question): array {
+        $map = [];
+        $position = 0;
+        foreach (array_values(is_array($question['answers'] ?? null) ? $question['answers'] : []) as $index => $a) {
+            if (!is_array($a) || !isset($a['text'])) {
+                continue;
+            }
+            $map[$index] = $position++;
+        }
+        return $map;
     }
 
     /**

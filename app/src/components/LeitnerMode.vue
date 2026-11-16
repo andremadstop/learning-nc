@@ -86,6 +86,8 @@
           </div>
         </div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+        <!-- #66: the hint, only while the card is still open -->
+        <QuestionHint v-if="!answered" :question="currentItem" />
 
         <!-- PBQ block -->
         <div v-if="!answered && isPbq" class="pbq-answer-area">
@@ -104,6 +106,7 @@
           <NcNoteCard v-if="currentItem.explanation" type="info">
             <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentItem.explanation }}</span>
           </NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback" />
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -165,6 +168,9 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback"
+                             :answers="isOpenQuestion ? [] : (currentItem.answers || [])"
+                             :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -218,6 +224,9 @@
             <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback"
+                             :answers="isOpenQuestion ? [] : (currentItem.answers || [])"
+                             :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -282,6 +291,8 @@ import { celebrateMastery, celebrateStreak, isStreakMilestone } from '../confett
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
+import QuestionHint from './QuestionHint.vue';
+import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -294,7 +305,7 @@ import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsSchedule
 
 export default {
   name: 'LeitnerMode',
-  components: { AiConsentHint, QuestionScenario, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     poolId: { type: Number, required: true },
@@ -316,6 +327,8 @@ export default {
       fsrsIntervalNoticeVisible: false,
       fsrsIntervalNoticeTimer: null,
       selectedAnswerIds: [],
+      // #66: rich_feedback of the answer response
+      richFeedback: null,
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
       openAnswer: '',
@@ -685,6 +698,7 @@ export default {
       this.pbqMaxPoints = data.pbq_max_points ?? 1
       this.lastCorrectAnswerText = data.correct_answer_text || ''
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [this.lastCorrectAnswerText]
+      this.richFeedback = data.rich_feedback ?? null
       if (data.correct) this.sessionCorrect++
       else this.sessionIncorrect++
     },
@@ -698,6 +712,7 @@ export default {
       this.pbqMaxPoints = data.pbq_max_points ?? this.pbqMaxPoints
       this.lastCorrectAnswerText = data.correct_answer_text || this.lastCorrectAnswerText
       this.lastCorrectAnswerTexts = data.correct_answer_texts || this.lastCorrectAnswerTexts
+      this.richFeedback = data.rich_feedback ?? this.richFeedback
       if (this.currentItem) {
         this.currentItem.box = data.new_box
         this.currentItem.last_rating = data.rating
@@ -874,7 +889,7 @@ export default {
       clearInterval(this.explainPollTimer);
       this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
       this.clearFsrsIntervalNotice();
-      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastReviewResult = null; this.lastSubmittedRating = null; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
+      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.richFeedback = null; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastReviewResult = null; this.lastSubmittedRating = null; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
       else {
         const oldStreak = this.streak.current_streak;
         await this.fetchStreak();
@@ -897,7 +912,7 @@ export default {
       } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.levelBefore = 0; this.levelAfter = 0; this.started = false; this.currentIndex = 0; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
+    finishReview() { this.levelBefore = 0; this.levelAfter = 0; this.started = false; this.currentIndex = 0; this.answered = false; this.richFeedback = null; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
     continueLearning() { this.finishReview(); this.$emit('back'); }
   }
 };

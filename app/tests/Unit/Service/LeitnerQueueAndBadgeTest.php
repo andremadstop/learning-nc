@@ -10,6 +10,7 @@ use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\FsrsService;
 use OCA\Learning\Service\LeitnerService;
 use OCA\Learning\Service\LernprofilService;
+use OCA\Learning\Service\RichFeedbackService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\TranslationService;
 use OCA\Learning\Service\XpService;
@@ -27,7 +28,7 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 final class LeitnerQueueAndBadgeTest extends TestCase {
 
-    private function service(FakeDbConnection $db, ?BadgeService $badges = null, ?TranslationService $translation = null): LeitnerService {
+    private function service(FakeDbConnection $db, ?BadgeService $badges = null, ?TranslationService $translation = null, ?RichFeedbackService $rich = null): LeitnerService {
         $streakService = $this->createMock(StreakService::class);
         $streakService->method('getStreak')->willReturn(['current_streak' => 0]);
         $xpService = $this->createMock(XpService::class);
@@ -55,7 +56,8 @@ final class LeitnerQueueAndBadgeTest extends TestCase {
             $config,
             $this->createMock(CourseService::class),
             $this->createMock(LernprofilService::class),
-            new FsrsService()
+            new FsrsService(),
+            $rich
         );
     }
 
@@ -108,6 +110,45 @@ final class LeitnerQueueAndBadgeTest extends TestCase {
 
         $this->assertTrue($response['correct']);
         $this->assertSame([$badge], $response['newly_earned_badges']);
+    }
+
+    /** @return list<FakeQueryBuilder> a correct single-choice Leitner answer up to the reveal */
+    private function answerQueries(bool $examRunsOnPool): array {
+        return [
+            new FakeQueryBuilder(FakeResult::fromFetch([
+                'id' => 77, 'question_id' => 10, 'pool_id' => 5, 'user_id' => 'alice', 'box' => 2,
+                'next_review' => 0, 'correct_count' => 1, 'incorrect_count' => 1, 'last_rating' => null,
+                'stability' => null, 'difficulty' => null, 'last_reviewed' => null,
+            ])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['question_type' => 'single'])),
+            new FakeQueryBuilder(FakeResult::fromFetch(['is_correct' => true])),
+            new FakeQueryBuilder(null, 1), // CAS update of the item
+            new FakeQueryBuilder(FakeResult::fromFetch(['cnt' => 1])), // cards today
+            new FakeQueryBuilder(FakeResult::fromFetch(['daily_goal' => 20])),
+            new FakeQueryBuilder(FakeResult::fromFetch($examRunsOnPool ? ['id' => 9, 'started_at' => time() - 60, 'time_limit_seconds' => 0] : false)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 3, 'text' => 'A']])),
+        ];
+    }
+
+    /** GitHub #66: Leitner and the Smart Queue answer through here; the reveal carries the feedback. */
+    public function testTheLeitnerAnswerCarriesTheRichFeedback(): void {
+        $payload = ['option_feedback' => [], 'background_fact' => 'B', 'key_takeaway' => null];
+        $rich = $this->createMock(RichFeedbackService::class);
+        $rich->expects($this->once())->method('forQuestion')->with(10)->willReturn($payload);
+
+        $response = $this->service(new FakeDbConnection($this->answerQueries(false)), null, null, $rich)->answerQuestion(77, 3, 'alice');
+
+        $this->assertSame($payload, $response['rich_feedback']);
+    }
+
+    public function testNoRichFeedbackWhileACountingExamRunsOnThePool(): void {
+        $rich = $this->createMock(RichFeedbackService::class);
+        $rich->expects($this->never())->method('forQuestion');
+
+        $response = $this->service(new FakeDbConnection($this->answerQueries(true)), null, null, $rich)->answerQuestion(77, 3, 'alice');
+
+        $this->assertArrayNotHasKey('rich_feedback', $response);
+        $this->assertArrayNotHasKey('correct_answer_ids', $response);
     }
 
     /**

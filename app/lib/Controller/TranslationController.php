@@ -65,7 +65,16 @@ class TranslationController extends Controller {
             // SEC-MED-2: Require edit access, not just read access
             $question = $this->questionService->findEntity($questionId, $this->userId);
             $this->questionService->verifyEditAccess($question->getPoolId(), $this->userId);
-            $trans = $this->service->setQuestionTranslation($questionId, $lang, $text, $explanation, $scenario);
+            // GitHub #66: only the rich feedback keys the request carries (camelCase as in
+            // QuestionController); a client that predates them keeps the stored translation.
+            $params = $this->request->getParams();
+            $rich = [];
+            foreach (['hint' => 'hint', 'backgroundFact' => 'background_fact', 'keyTakeaway' => 'key_takeaway', 'optionFeedback' => 'option_feedback'] as $param => $field) {
+                if (array_key_exists($param, $params)) {
+                    $rich[$field] = $params[$param];
+                }
+            }
+            $trans = $this->service->setQuestionTranslation($questionId, $lang, $text, $explanation, $scenario, $rich);
             return new DataResponse($trans, Http::STATUS_OK);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);

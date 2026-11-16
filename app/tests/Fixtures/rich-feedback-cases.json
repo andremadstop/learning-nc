@@ -1,0 +1,127 @@
+{
+  "_comment": "GitHub #66: shared cases for the rich feedback of the pool JSON format (RichFeedbackFormat.php, src/utils/richFeedback.js). PHPUnit: RichFeedbackFormatTest, PoolExportRoundTripTest. Vitest: richFeedback.test.js. Generic content only.",
+  "cases": [
+    {
+      "name": "plain strings, question-level list with option_index",
+      "item": {
+        "text": "Which colour does a ripe banana have?",
+        "answers": [
+          { "text": "Blue", "is_correct": false },
+          { "text": "Yellow", "is_correct": true },
+          { "text": "Purple", "is_correct": false }
+        ],
+        "hint": "Think of the fruit bowl.",
+        "background_fact": "Bananas turn yellow as chlorophyll breaks down.",
+        "key_takeaway": "Ripe means yellow.",
+        "feedback_per_option": [
+          { "option_index": 0, "letter": "A", "verdict": "wrong", "why": "Blue bananas exist only as a cultivar name.", "misconception": "Taking a name literally" },
+          { "option_index": 1, "letter": "B", "verdict": "correct", "why": "The peel turns yellow when ripe." },
+          { "option_index": 2, "letter": "C", "verdict": "wrong", "why": "Purple is a plum.", "misconception": "Mixing up fruits" }
+        ]
+      },
+      "is_correct": [false, true, false],
+      "expected": {
+        "hint": "Think of the fruit bowl.",
+        "background_fact": "Bananas turn yellow as chlorophyll breaks down.",
+        "key_takeaway": "Ripe means yellow.",
+        "option_feedback": [
+          { "position": 0, "why": "Blue bananas exist only as a cultivar name.", "misconception": "Taking a name literally" },
+          { "position": 1, "why": "The peel turns yellow when ripe.", "misconception": null },
+          { "position": 2, "why": "Purple is a plum.", "misconception": "Mixing up fruits" }
+        ],
+        "dropped_languages": [],
+        "verdict_mismatches": 0,
+        "unmatched": 0
+      }
+    },
+    {
+      "name": "language objects: the item's lang wins, the other languages are reported",
+      "item": {
+        "text": "Wie viele Beine hat eine Spinne?",
+        "lang": "de",
+        "answers": [
+          { "text": "Sechs", "is_correct": false },
+          { "text": "Acht", "is_correct": true }
+        ],
+        "hint": { "en": "Count the pairs.", "de": "Zähle die Paare." },
+        "merksatz": { "de": "Spinnen: vier Paar Beine." },
+        "feedback_per_option": [
+          { "letter": "A", "verdict": "wrong", "why": { "en": "That is an insect.", "de": "Das ist ein Insekt." }, "misconception": { "de": "Spinne für Insekt halten" } }
+        ]
+      },
+      "is_correct": [false, true],
+      "expected": {
+        "hint": "Zähle die Paare.",
+        "background_fact": null,
+        "key_takeaway": "Spinnen: vier Paar Beine.",
+        "option_feedback": [
+          { "position": 0, "why": "Das ist ein Insekt.", "misconception": "Spinne für Insekt halten" }
+        ],
+        "dropped_languages": ["en"],
+        "verdict_mismatches": 0,
+        "unmatched": 0
+      }
+    },
+    {
+      "name": "without lang: en before de; feedback on the answer objects; a contradicting verdict is counted",
+      "item": {
+        "text": "Water boils at sea level at …",
+        "answers": [
+          { "text": "100 °C", "is_correct": true, "why": "At 1013 hPa." },
+          { "text": "80 °C", "is_correct": false, "feedback": { "de": "Das gilt auf etwa 6000 m.", "en": "That holds at about 6000 m." }, "trap": "Forgetting the air pressure" }
+        ],
+        "background": "The boiling point falls with the air pressure.",
+        "feedback_per_option": [
+          { "option_index": 0, "verdict": "wrong" }
+        ]
+      },
+      "is_correct": [true, false],
+      "expected": {
+        "hint": null,
+        "background_fact": "The boiling point falls with the air pressure.",
+        "key_takeaway": null,
+        "option_feedback": [
+          { "position": 0, "why": "At 1013 hPa.", "misconception": null },
+          { "position": 1, "why": "That holds at about 6000 m.", "misconception": "Forgetting the air pressure" }
+        ],
+        "dropped_languages": ["de"],
+        "verdict_mismatches": 1,
+        "unmatched": 0
+      }
+    },
+    {
+      "name": "feedback for an option the question does not have is left out and counted",
+      "item": {
+        "text": "Pick the even number",
+        "answers": [
+          { "text": "3", "is_correct": false },
+          { "text": "4", "is_correct": true }
+        ],
+        "feedback_per_option": [
+          { "option_index": 5, "why": "There is no sixth answer." },
+          { "option_index": 1, "why": "4 = 2 × 2." }
+        ]
+      },
+      "is_correct": [false, true],
+      "expected": {
+        "hint": null,
+        "background_fact": null,
+        "key_takeaway": null,
+        "option_feedback": [
+          { "position": 1, "why": "4 = 2 × 2.", "misconception": null }
+        ],
+        "dropped_languages": [],
+        "verdict_mismatches": 0,
+        "unmatched": 1
+      }
+    }
+  ],
+  "too_long": [
+    { "name": "hint over 2000", "field": "hint", "length": 2001, "skipped": true },
+    { "name": "hint at 2000", "field": "hint", "length": 2000, "skipped": false },
+    { "name": "key_takeaway over 500", "field": "key_takeaway", "length": 501, "skipped": true },
+    { "name": "background_fact over 5000", "field": "background_fact", "length": 5001, "skipped": true },
+    { "name": "why over 5000", "field": "why", "length": 5001, "skipped": true },
+    { "name": "misconception over 1000", "field": "misconception", "length": 1001, "skipped": true }
+  ]
+}

@@ -103,10 +103,19 @@ One file may contain any number of pools. Minimal example:
 | `pools[].questions[].explanation` | no | string | Shown after the question is answered |
 | `pools[].questions[].scenario` | no | string | Scenario / info text shown **before** the question (case, situation, background). Plain text, line breaks kept, max 10 000 characters. The question import (**Manage** → **Import**) also accepts `szenario`, `context` or `info`; occ and **Import pools** read only `scenario` |
 | `pools[].questions[].difficulty` | no | string | `easy` \| `medium` \| `hard`; at most 20 characters, a longer value is cut |
+| `pools[].questions[].hint` | no | string or object | Hint the learner can open **before** answering (training, Leitner, Smart Queue; never in an exam). Max 2 000 characters. Also read as `hinweis` |
+| `pools[].questions[].background_fact`, `key_takeaway` | no | string or object | Shown **after** answering, and in the review of a practice exam (never in or after a counting exam). Max 5 000 / 500 characters. Also read as `background` / `hintergrund` and `takeaway` / `merksatz` |
+| `pools[].questions[].feedback_per_option` | no | array | Feedback per answer option, shown after answering next to the chosen option: `[{"option_index": 0, "letter": "A", "verdict": "wrong", "why": "…", "misconception": "…"}]`. `option_index` counts from 0 in the order of `answers` (else `letter`, A = first, else the list order). `why` max 5 000, `misconception` max 1 000 characters. `verdict` is not stored — the answer's `is_correct` decides, and a contradicting verdict is reported. Instead of the list, an answer object may carry `why` (or `feedback`) and `misconception` (or `trap`) itself |
 | `pools[].questions[].original_number` | no | int/string | Original number from the PDF — for traceability |
 | `pools[].questions[].chapter_key`, `chapter_title`, `chapter_order`, `handbook_key`, `handbook_title`, `exam_key` | no | string / int | Per-question values; they win over the pool and `_meta`. An export writes them per question. `chapter_order` follows the pool rule: 1 to 9999, a value outside is dropped |
 | `pools[].questions[].subtype` | for `pbq` | string | Interactive question (`question_type: "pbq"`, no `answers`): `dropdown`, `placement`, `cli`, `cable`, `multi_panel`, `switch_config`, `routing_config`, `diagnostic` or `ranking` |
 | `pools[].questions[].pbq_config` | for `pbq` | object | Configuration of the interactive question; its layout differs per subtype — take it from an export |
+
+**Rich feedback languages (GitHub #66):** a field that holds an object of languages
+(`{"en": "…", "de": "…"}`) is read in one language: the question's `lang` if it has one,
+else `en`, else `de`, else the first. The other languages are reported and not imported — a
+pool file is one language. A field over its limit skips the question, as a too long scenario
+does.
 
 **Precedence:** a value on the question wins over the pool, the pool wins over `_meta`.
 Nothing is invented: a field missing on all three levels stays empty. The one exception is
@@ -273,8 +282,9 @@ missing, or ask for the output in batches. Context windows differ — Claude off
 `learning:export-pool --format=json` (and **Export JSON** in a pool's **Manage** tab) emits a
 plain **list of questions**, not the `pools` wrapper above. Per question it carries `text`,
 `type`, `scenario`, `explanation`, `difficulty`, `chapter_key`, `chapter_title`,
-`chapter_order`, `handbook_key`, `handbook_title`, `exam_key` and the `answers` with
-`is_correct`; an interactive question carries `subtype` and `pbq_config` instead of answers.
+`chapter_order`, `handbook_key`, `handbook_title`, `exam_key`, `hint`, `background_fact`,
+`key_takeaway`, `feedback_per_option` (with `option_index`, `letter` and the `verdict` from the
+answer key) and the `answers` with `is_correct`; an interactive question carries `subtype` and `pbq_config` instead of answers.
 Empty fields are left out. Translations of questions, instructor notes and attached images
 are not exported.
 

@@ -71,6 +71,8 @@
         <div class="question-text">{{ currentQuestion.text }}</div>
 
         <div v-if="isMultiSelect" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+        <!-- #66: the hint, only while the question is still open -->
+        <QuestionHint v-if="!answered" :question="currentQuestion" />
 
         <!-- PBQ block -->
         <div v-if="!answered && isPbq" class="pbq-answer-area">
@@ -89,6 +91,7 @@
           <NcNoteCard v-if="currentQuestion.explanation" type="info">
             <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span>
           </NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback" />
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
@@ -137,6 +140,7 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts[0] || '' }}</div>
           </div>
           <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback" />
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
@@ -172,6 +176,9 @@
             {{ displayCorrectAnswerTexts.join(', ') }}
           </div>
           <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback"
+                             :answers="currentQuestion.answers || []"
+                             :selected-ids="isMultiSelect ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
@@ -242,6 +249,8 @@ import { celebratePerfectSession, celebrateStreak, isStreakMilestone } from '../
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
+import QuestionHint from './QuestionHint.vue';
+import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -252,7 +261,7 @@ import { modeClosedMessage } from '../utils/modeGate.js';
 
 export default {
   name: 'TrainingMode',
-  components: { AiConsentHint, QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -303,6 +312,8 @@ export default {
       // Feedback per answered question id (audit #42): the server accepts one answer per question,
       // so a jump back shows the stored result instead of an answer form it would refuse.
       answeredFeedback: {},
+      // #66: rich_feedback of the answer response (feedback per option, background, takeaway)
+      richFeedback: null,
     };
   },
   mounted() {
@@ -420,6 +431,7 @@ export default {
       this.openAnswer = '';
       this.lastOpenAnswer = '';
       this.pbqPoints = 0; this.pbqMaxPoints = 1;
+      this.richFeedback = null;
     },
     rememberFeedback() {
       if (!this.currentQuestion) return;
@@ -434,6 +446,7 @@ export default {
           lastSelectedAnswerId: this.lastSelectedAnswerId,
           lastSelectedAnswerIds: this.lastSelectedAnswerIds.slice(),
           lastOpenAnswer: this.lastOpenAnswer,
+          richFeedback: this.richFeedback,
         },
       };
     },
@@ -450,6 +463,7 @@ export default {
         this.lastSelectedAnswerId = stored.lastSelectedAnswerId;
         this.lastSelectedAnswerIds = stored.lastSelectedAnswerIds.slice();
         this.lastOpenAnswer = stored.lastOpenAnswer;
+        this.richFeedback = stored.richFeedback ?? null;
         this.answered = true;
       }
     },
@@ -559,6 +573,7 @@ export default {
         this.pbqPoints = response.data.pbq_points ?? 0;
         this.pbqMaxPoints = response.data.pbq_max_points ?? 1;
         this.correctAnswerTexts = [];
+        this.richFeedback = response.data.rich_feedback ?? null;
         this.answered = true;
         this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
@@ -576,6 +591,7 @@ export default {
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = [response.data.correct_answer_text || ''];
+        this.richFeedback = response.data.rich_feedback ?? null;
         this.answered = true;
         this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
@@ -593,6 +609,7 @@ export default {
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
+        this.richFeedback = response.data.rich_feedback ?? null;
         this.answered = true;
         this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
@@ -611,6 +628,7 @@ export default {
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
+        this.richFeedback = response.data.rich_feedback ?? null;
         this.answered = true;
         this.rememberFeedback();
         // TRIG-02: Check if 5+ wrong answers on this pool → offer summary

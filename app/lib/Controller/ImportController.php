@@ -10,6 +10,7 @@ use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\PoolJsonFormat;
 use OCA\Learning\Service\QuestionService;
+use OCA\Learning\Service\RichFeedbackFormat;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -347,13 +348,66 @@ class ImportController extends Controller {
             }
         }
 
+        // GitHub #66: rich feedback; per-option feedback by the position the answer is stored at.
+        $rich = RichFeedbackFormat::fromItem($item, $positions, array_map(static fn (array $a): bool => $a['is_correct'], $answers));
+        if ($type === 'open') {
+            $rich['option_feedback'] = [];
+        }
+
         return [
             'text' => $text,
             'answers' => $answers,
             'explanation' => $explanation,
             'difficulty' => $difficulty,
             'type' => $type,
+            'rich' => $rich,
         ] + self::metadataFrom($item);
+    }
+
+    /**
+     * Rich feedback (GitHub #66) of a normalized item: refuses the item when a field is too long
+     * (the editor's limit, RichFeedbackFormat), drops per-option feedback beyond the imported
+     * answers and reports what was left out. Returns false when the item is skipped.
+     *
+     * @param array<string, mixed> $item from normalizeJsonItem(), or a PBQ item with 'rich'
+     * @param list<string> $errors
+     * @param list<string> $warnings
+     */
+    private function prepareRichFeedback(array &$item, int $num, int $answerCount, array &$errors, array &$warnings): bool {
+        $rich = $item['rich'];
+        $rich['option_feedback'] = array_values(array_filter(
+            $rich['option_feedback'],
+            static fn (array $o): bool => $o['position'] < $answerCount
+        ));
+        try {
+            $item['rich_feedback'] = RichFeedbackFormat::normalize([
+                'hint' => $rich['hint'],
+                'background_fact' => $rich['background_fact'],
+                'key_takeaway' => $rich['key_takeaway'],
+                'option_feedback' => $rich['option_feedback'],
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            $errors[] = $this->l10n->t('Item %s: A feedback field is too long — question skipped', [$num]);
+            return false;
+        }
+        if ($rich['dropped_languages'] !== []) {
+            $warnings[] = $this->l10n->t('Item %1$s: Feedback texts in %2$s were not imported — one language per question', [$num, implode(', ', $rich['dropped_languages'])]);
+        }
+        if ($rich['verdict_mismatches'] > 0) {
+            $warnings[] = $this->l10n->t('Item %s: A "verdict" in feedback_per_option contradicts the marked correct answers — the marked answers count', [$num]);
+        }
+        if ($rich['unmatched'] > 0) {
+            $warnings[] = $this->l10n->t('Item %s: Feedback for an answer option the question does not have was left out', [$num]);
+        }
+        return true;
+    }
+
+    /** @param array<string, mixed> $rich from RichFeedbackFormat::normalize() */
+    private static function applyRichFeedback(Question $question, array $rich): void {
+        $question->setHint($rich['hint'] ?? null);
+        $question->setBackgroundFact($rich['background_fact'] ?? null);
+        $question->setKeyTakeaway($rich['key_takeaway'] ?? null);
+        $question->setOptionFeedback(RichFeedbackFormat::encodeOptions($rich['option_feedback'] ?? []));
     }
 
     /**
@@ -860,6 +914,10 @@ class ImportController extends Controller {
                 if ($this->scenarioTooLong($item, $num, $errors)) {
                     continue;
                 }
+                // Open questions keep no option feedback; the others are cut to the answers kept below.
+                if (!$this->prepareRichFeedback($item, $num, $item['type'] === 'open' ? 0 : min(count($item['answers']), self::MAX_ANSWERS), $errors, $warnings)) {
+                    continue;
+                }
 
                 if (mb_strlen($item['text']) > 5000) {
                     $item['text'] = mb_substr($item['text'], 0, 5000);
@@ -885,6 +943,7 @@ class ImportController extends Controller {
                     $question->setDifficulty($item['difficulty']);
                     $question->setQuestionType('open');
                     $this->applyQuestionMetadata($question, $item);
+                    self::applyRichFeedback($question, $item['rich_feedback']);
                     $question = $this->questionMapper->createOrUpdate($question);
 
                     $answer = new Answer();
@@ -968,6 +1027,7 @@ class ImportController extends Controller {
                 $question->setDifficulty($item['difficulty']);
                 $question->setQuestionType($questionType);
                 $this->applyQuestionMetadata($question, $item);
+                self::applyRichFeedback($question, $item['rich_feedback']);
                 $question = $this->questionMapper->createOrUpdate($question);
 
                 foreach ($validatedAnswers as $va) {
@@ -1012,6 +1072,11 @@ class ImportController extends Controller {
         if ($this->scenarioTooLong($item, $num, $errors)) {
             return 0;
         }
+        // GitHub #66: a PBQ has no answer options, so only hint, background and takeaway.
+        $richItem = ['rich' => RichFeedbackFormat::fromItem($item, [])];
+        if (!$this->prepareRichFeedback($richItem, $num, 0, $errors, $warnings)) {
+            return 0;
+        }
 
         $subtype = self::scalarText($item['subtype'] ?? $item['pbq_subtype'] ?? null);
         if (!in_array($subtype, PoolJsonFormat::PBQ_SUBTYPES, true)) {
@@ -1036,6 +1101,7 @@ class ImportController extends Controller {
         $question->setDifficulty(PoolJsonFormat::difficulty($item) ?? 'medium');
         $question->setReviewStatus('published');
         $this->applyQuestionMetadata($question, self::metadataFrom($item));
+        self::applyRichFeedback($question, $richItem['rich_feedback']);
 
         $this->questionMapper->createOrUpdate($question);
         return 1;

@@ -30,8 +30,10 @@ class LeitnerService {
     private CourseService $courseService;
     private LernprofilService $lernprofilService;
     private FsrsService $fsrsService;
+    private RichFeedbackService $richFeedbackService;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService, FsrsService $fsrsService) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService, FsrsService $fsrsService, ?RichFeedbackService $richFeedbackService = null) {
+        $this->richFeedbackService = $richFeedbackService ?? new RichFeedbackService($db, $translationService);
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
@@ -326,7 +328,7 @@ class LeitnerService {
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty', 'q.question_type',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.hint', 'q.difficulty', 'q.question_type',
                      'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
@@ -378,7 +380,7 @@ class LeitnerService {
         $now = time();
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty', 'q.question_type',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.hint', 'q.difficulty', 'q.question_type',
                      'q.pbq_subtype', 'q.pbq_config')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
@@ -407,7 +409,7 @@ class LeitnerService {
         // Constructed attack (queue + exam on the same pool concurrently), but cheap to close.
         if ($this->hasActiveExamOnPool($poolId, $userId)) {
             foreach ($items as &$item) {
-                unset($item['explanation']);
+                unset($item['explanation'], $item['hint']);
                 if (array_key_exists('pbq_config', $item)) {
                     $item['pbq_config'] = PbqSolutionStripper::strip($item['pbq_config']);
                 }
@@ -713,7 +715,7 @@ class LeitnerService {
             $oRows = $this->translationService->translateAnswerRows($oRows, $contentLanguage);
             $response['correct_answer_text'] = $oRows[0]['text'] ?? '';
             $response['user_answer_text'] = $answerText;
-            return $response;
+            return $response + $this->richFeedbackFor($questionId, $contentLanguage);
         }
 
         // Return all correct answers for frontend display (only when no active exam)
@@ -736,7 +738,18 @@ class LeitnerService {
         $response['correct_answer_ids'] = $allCorrectIds;
         $response['correct_answer_texts'] = $allCorrectTexts;
 
-        return $response;
+        return $response + $this->richFeedbackFor($questionId, $contentLanguage);
+    }
+
+    /**
+     * GitHub #66: feedback per option, background fact and key takeaway of the answered question —
+     * only on the paths that already reveal the solution (after the active-exam return above).
+     *
+     * @return array<string, mixed>
+     */
+    private function richFeedbackFor(int $questionId, ?string $lang): array {
+        $rich = $this->richFeedbackService->forQuestion($questionId, $lang);
+        return $rich === null ? [] : ['rich_feedback' => $rich];
     }
 
     public function getRemediationQueue(string $userId, int $limit = 20, ?string $lang = null): array {
@@ -744,7 +757,7 @@ class LeitnerService {
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty', 'q.question_type',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.hint', 'q.difficulty', 'q.question_type',
                      'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')

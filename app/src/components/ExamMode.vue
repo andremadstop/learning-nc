@@ -272,6 +272,8 @@
           <div v-if="res.explanation" class="review-explanation">
             <strong>{{ t('learning', 'Explanation:') }}</strong> {{ res.explanation }}
           </div>
+          <!-- #66: only the practice review carries rich_feedback (server review policy) -->
+          <RichFeedbackPanel :rich="res.richFeedback" :answers="res.reviewAnswers" :selected-ids="res.selectedIds" />
           <NcNoteCard v-if="shouldShowNote(res.noteVisible, res.instructorNote)" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ res.instructorNote }}
           </NcNoteCard>
@@ -311,6 +313,7 @@ import { countUp } from '../countUp.js';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
+import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
@@ -334,7 +337,7 @@ const EXAM_SCOPE_MAX_SECONDS = 600 * 60;
 
 export default {
   name: 'ExamMode',
-  components: { QuestionScenario, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, NcModal, BadgeUnlock, Certificate, PbqRenderer, QuestionLanguageSwitcher },
+  components: { QuestionScenario, RichFeedbackPanel, NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, NcModal, BadgeUnlock, Certificate, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     // Not needed for a course practice exam, which draws across all of the course's pools.
     poolId: { type: Number, default: null },
@@ -1388,6 +1391,10 @@ export default {
             pbqMaxPoints: rv && rv.is_pbq ? (rv.pbq_max_points ?? 0) : null,
             answerDetails: answerDetails,
             explanation: rv && rv.explanation ? rv.explanation : null,
+            // #66: feedback per option, background, takeaway — practice reviews only
+            richFeedback: rv && rv.rich_feedback ? rv.rich_feedback : null,
+            reviewAnswers: rv && rv.answers ? rv.answers.map(a => ({ id: a.id, text: a.text })) : [],
+            selectedIds: rv && Array.isArray(rv.user_answer_ids) ? rv.user_answer_ids : [],
             // Audit #239: the attempt payload never carries the note; the server review adds it
             // after completion, and only when it is marked visible.
             instructorNote: rv && rv.instructor_note ? rv.instructor_note : null,

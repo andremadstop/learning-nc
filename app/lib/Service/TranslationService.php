@@ -134,7 +134,9 @@ class TranslationService {
         }
         return array_map(static function ($t): array {
             $data = $t->jsonSerialize();
-            unset($data['explanation']);
+            // GitHub #66: the rich feedback is solution material as well (the per-option feedback
+            // names the right answer); the hint is withheld with it, as in an exam attempt.
+            unset($data['explanation'], $data['hint'], $data['background_fact'], $data['key_takeaway'], $data['option_feedback']);
             return $data;
         }, $rows);
     }
@@ -143,8 +145,15 @@ class TranslationService {
      * @param string|null $scenario null keeps a stored scenario translation (callers that predate
      *   the field), '' clears it.
      */
-    public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null, ?string $scenario = null): QuestionTranslation {
+    /**
+     * @param array<string, mixed>|null $richFeedback GitHub #66: hint, background_fact, key_takeaway,
+     *   option_feedback ([{position, why, misconception}]) of this language; only the keys present
+     *   are written (null or an absent key keeps the stored translation), checked by
+     *   RichFeedbackFormat::normalize()
+     */
+    public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null, ?string $scenario = null, ?array $richFeedback = null): QuestionTranslation {
         $this->validateLang($lang);
+        $richFeedback = RichFeedbackFormat::normalize($richFeedback ?? []);
         if ($scenario !== null && mb_strlen($scenario) > QuestionService::SCENARIO_MAX_LENGTH) {
             throw new \InvalidArgumentException('Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters');
         }
@@ -157,6 +166,7 @@ class TranslationService {
             if ($scenario !== null) {
                 $existing->setScenario($scenario === '' ? null : $scenario);
             }
+            self::applyRichFeedback($existing, $richFeedback);
             return $this->questionTransMapper->update($existing);
         }
 
@@ -166,8 +176,71 @@ class TranslationService {
         $trans->setText($text);
         $trans->setExplanation($explanation);
         $trans->setScenario($scenario === '' ? null : $scenario);
+        self::applyRichFeedback($trans, $richFeedback);
         $trans->setCreatedAt(time());
         return $this->questionTransMapper->insert($trans);
+    }
+
+    /** @param array<string, mixed> $rich from RichFeedbackFormat::normalize() */
+    private static function applyRichFeedback(QuestionTranslation $trans, array $rich): void {
+        if (array_key_exists('hint', $rich)) {
+            $trans->setHint($rich['hint']);
+        }
+        if (array_key_exists('background_fact', $rich)) {
+            $trans->setBackgroundFact($rich['background_fact']);
+        }
+        if (array_key_exists('key_takeaway', $rich)) {
+            $trans->setKeyTakeaway($rich['key_takeaway']);
+        }
+        if (array_key_exists('option_feedback', $rich)) {
+            $trans->setOptionFeedback(RichFeedbackFormat::encodeOptions($rich['option_feedback']));
+        }
+    }
+
+    /**
+     * GitHub #66: the post-answer rich feedback (RichFeedbackService) in $lang. A translated field
+     * replaces the original only where the original has one — a translation never brings back
+     * feedback the author removed — and per option only for an option the original has feedback for.
+     *
+     * @param array<int, array{background_fact: ?string, key_takeaway: ?string, option_feedback: list<array{position: int, why: ?string, misconception: ?string}>}> $byQuestion
+     * @return array<int, array{background_fact: ?string, key_takeaway: ?string, option_feedback: list<array{position: int, why: ?string, misconception: ?string}>}>
+     */
+    public function translateRichFeedback(array $byQuestion, ?string $lang): array {
+        $lang = $this->normalizeLang($lang);
+        if ($lang === null || $byQuestion === []) {
+            return $byQuestion;
+        }
+        $translations = $this->getQuestionTranslationMap(array_keys($byQuestion), $lang);
+        foreach ($byQuestion as $questionId => &$row) {
+            $translation = $translations[$questionId] ?? null;
+            if ($translation === null) {
+                continue;
+            }
+            foreach (['background_fact', 'key_takeaway'] as $field) {
+                if ($row[$field] !== null && trim((string)($translation[$field] ?? '')) !== '') {
+                    $row[$field] = $translation[$field];
+                }
+            }
+            $translatedOptions = [];
+            foreach (RichFeedbackFormat::decodeOptions($translation['option_feedback'] ?? null) as $entry) {
+                $translatedOptions[$entry['position']] = $entry;
+            }
+            foreach ($row['option_feedback'] as &$entry) {
+                $t = $translatedOptions[$entry['position']] ?? null;
+                if ($t === null) {
+                    continue;
+                }
+                if ($entry['why'] !== null && $t['why'] !== null) {
+                    $entry['why'] = $t['why'];
+                }
+                if ($entry['misconception'] !== null && $t['misconception'] !== null) {
+                    $entry['misconception'] = $t['misconception'];
+                }
+            }
+            unset($entry);
+        }
+        unset($row);
+        return $byQuestion;
     }
 
     public function deleteQuestionTranslation(int $questionId, string $lang): void {
@@ -379,6 +452,10 @@ class TranslationService {
                 'text' => (string)$translation->getText(),
                 'explanation' => $translation->getExplanation(),
                 'scenario' => $translation->getScenario(),
+                'hint' => $translation->getHint(),
+                'background_fact' => $translation->getBackgroundFact(),
+                'key_takeaway' => $translation->getKeyTakeaway(),
+                'option_feedback' => $translation->getOptionFeedback(),
             ];
         }
         return $map;
@@ -410,6 +487,10 @@ class TranslationService {
             // An untranslated scenario keeps the original rather than vanishing.
             if (trim((string)($translation['scenario'] ?? '')) !== '' && trim((string)($questionData['scenario'] ?? '')) !== '') {
                 $questionData['scenario'] = $translation['scenario'];
+            }
+            // GitHub #66: the hint, where the payload carries one (never in an exam attempt).
+            if (trim((string)($translation['hint'] ?? '')) !== '' && trim((string)($questionData['hint'] ?? '')) !== '') {
+                $questionData['hint'] = $translation['hint'];
             }
         }
 

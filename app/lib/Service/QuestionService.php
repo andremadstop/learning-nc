@@ -282,9 +282,11 @@ class QuestionService {
     public function validateForImport(string $text, array $answers, ?string $questionType, ?string $scenario,
                                       ?string $handbookKey = null, ?string $handbookTitle = null,
                                       ?string $examKey = null, ?string $chapterKey = null,
-                                      ?string $chapterTitle = null, ?int $chapterOrder = null): void {
+                                      ?string $chapterTitle = null, ?int $chapterOrder = null,
+                                      array $richFeedback = []): void {
         $this->validateQuestionInput($text, $answers, $questionType ?? 'single');
         $this->normalizeScenario($scenario);
+        RichFeedbackFormat::normalize($richFeedback);
         $this->applyQuestionMetadata(new Question(), $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
     }
 
@@ -350,6 +352,9 @@ class QuestionService {
                 unset($questionData['explanation']);
                 $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
                 $questionData = self::withholdHiddenNote($questionData);
+            } else {
+                // GitHub #66: the editor loads and saves the rich feedback; nobody else reads it here.
+                $questionData += $question->richFields();
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
@@ -386,6 +391,9 @@ class QuestionService {
                 unset($questionData['explanation']);
                 $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
                 $questionData = self::withholdHiddenNote($questionData);
+            } else {
+                // GitHub #66: the editor loads and saves the rich feedback; nobody else reads it here.
+                $questionData += $question->richFields();
             }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
@@ -417,6 +425,9 @@ class QuestionService {
                 unset($questionData['explanation']);
                 $questionData['pbq_config'] = PbqSolutionStripper::strip($questionData['pbq_config'] ?? null);
                 $questionData = self::withholdHiddenNote($questionData);
+            } else {
+                // GitHub #66: the editor loads and saves the rich feedback; nobody else reads it here.
+                $questionData += $question->richFields();
             }
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
                 $row = $a->jsonSerialize();
@@ -630,7 +641,7 @@ class QuestionService {
                            ?string $handbookKey = null, ?string $handbookTitle = null,
                            ?string $examKey = null, ?string $chapterKey = null,
                            ?string $chapterTitle = null, ?int $chapterOrder = null,
-                           ?string $scenario = null): array {
+                           ?string $scenario = null, ?array $richFeedback = null): array {
         if (!$this->canEditPool($poolId, $userId)) {
             throw new Exception('No edit access to this pool');
         }
@@ -640,6 +651,7 @@ class QuestionService {
 
         $this->validateQuestionInput($text, $answers, $questionType);
         $scenario = $this->normalizeScenario($scenario);
+        $richFeedback = RichFeedbackFormat::normalize($richFeedback ?? []);
 
         $this->db->beginTransaction();
         try {
@@ -656,6 +668,7 @@ class QuestionService {
             $question->setNoteVisible($noteVisible);
             $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
             $question->setScenario($scenario);
+            self::applyRichFeedback($question, $richFeedback);
             if (!$question->getReviewStatus()) {
                 $question->setReviewStatus('published');
             }
@@ -678,10 +691,31 @@ class QuestionService {
             throw $e;
         }
 
-        $result = $question->jsonSerialize();
+        $result = $question->jsonSerialize() + $question->richFields();
         $result['answers'] = array_map(fn($a) => $a->jsonSerialize(), $savedAnswers);
 
         return $result;
+    }
+
+    /**
+     * Rich feedback fields (GitHub #66) from RichFeedbackFormat::normalize(): a key that is present
+     * is stored (null clears it), an absent key keeps the stored value.
+     *
+     * @param array<string, mixed> $rich
+     */
+    private static function applyRichFeedback(Question $question, array $rich): void {
+        if (array_key_exists('hint', $rich)) {
+            $question->setHint($rich['hint']);
+        }
+        if (array_key_exists('background_fact', $rich)) {
+            $question->setBackgroundFact($rich['background_fact']);
+        }
+        if (array_key_exists('key_takeaway', $rich)) {
+            $question->setKeyTakeaway($rich['key_takeaway']);
+        }
+        if (array_key_exists('option_feedback', $rich)) {
+            $question->setOptionFeedback(RichFeedbackFormat::encodeOptions($rich['option_feedback']));
+        }
     }
 
     public function update(int $id, string $userId, string $text, ?string $explanation,
@@ -691,7 +725,7 @@ class QuestionService {
                           ?string $handbookKey = null, ?string $handbookTitle = null,
                           ?string $examKey = null, ?string $chapterKey = null,
                           ?string $chapterTitle = null, ?int $chapterOrder = null,
-                          ?string $scenario = null): array {
+                          ?string $scenario = null, ?array $richFeedback = null): array {
         try {
             $question = $this->questionMapper->findById($id);
             if (!$this->canEditPool($question->getPoolId(), $userId)) {
@@ -707,6 +741,8 @@ class QuestionService {
             $this->validateQuestionInput($text, $answers, $questionType, $questionType !== $storedType);
             $keepScenario = $scenario === null;
             $scenario = $this->normalizeScenario($scenario);
+            // null or an absent key = the caller did not send the field: keep what is stored.
+            $richFeedback = RichFeedbackFormat::normalize($richFeedback ?? []);
 
             $this->db->beginTransaction();
             try {
@@ -729,6 +765,7 @@ class QuestionService {
                 if (!$keepScenario) {
                     $question->setScenario($scenario);
                 }
+                self::applyRichFeedback($question, $richFeedback);
 
                 $question = $this->questionMapper->createOrUpdate($question);
 
@@ -750,7 +787,7 @@ class QuestionService {
                 throw $e;
             }
 
-            $result = $question->jsonSerialize();
+            $result = $question->jsonSerialize() + $question->richFields();
             $result['answers'] = array_map(fn($a) => $a->jsonSerialize(), $savedAnswers);
 
             return $result;

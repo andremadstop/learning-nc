@@ -26,6 +26,8 @@
         <QuestionScenario :question="currentItem" />
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+        <!-- #66: the hint, only while the card is still open -->
+        <QuestionHint v-if="!answered" :question="currentItem" />
         <!-- PBQ: rendered and scored like in LeitnerMode; without it the card had no controls
              and every later due card of the session was unreachable (audit #40). -->
         <div v-if="!answered && isPbq" class="pbq-answer-area">
@@ -42,6 +44,7 @@
             — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
           </NcNoteCard>
           <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback" />
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -83,6 +86,7 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback" />
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -108,6 +112,9 @@
             </template>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+          <RichFeedbackPanel :rich="richFeedback"
+                             :answers="currentItem.answers || []"
+                             :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -152,6 +159,8 @@ import { showError } from '@nextcloud/dialogs';
 import { celebrateMastery } from '../confetti.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
+import QuestionHint from './QuestionHint.vue';
+import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import PbqRenderer from './PbqRenderer.vue';
@@ -159,7 +168,7 @@ import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'SmartQueue',
-  components: { QuestionScenario, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher, PbqRenderer },
+  components: { QuestionScenario, QuestionHint, RichFeedbackPanel, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher, PbqRenderer },
   mixins: [hintMixin],
   props: {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation', 'maintenance'].includes(v) },
@@ -178,6 +187,8 @@ export default {
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
+      // #66: rich_feedback of the answer response
+      richFeedback: null,
       openAnswer: '',
       lastOpenAnswer: '',
       showResults: false,
@@ -354,6 +365,7 @@ export default {
     handleAnswerResponse(data) {
       this.lastCorrect = data.correct;
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [data.correct_answer_text || ''];
+      this.richFeedback = data.rich_feedback ?? null;
       this.answered = true;
       this.pbqPoints = data.pbq_points ?? 0;
       this.pbqMaxPoints = data.pbq_max_points ?? 0;
@@ -380,6 +392,7 @@ export default {
       if (this.currentIndex < this.items.length - 1) {
         this.currentIndex++;
         this.answered = false;
+        this.richFeedback = null;
         this.selectedAnswerIds = [];
         this.lastSelectedAnswerId = null;
         this.lastSelectedAnswerIds = [];
