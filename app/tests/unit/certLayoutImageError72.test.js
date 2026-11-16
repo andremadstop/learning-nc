@@ -142,6 +142,26 @@ describe('stamp and signature: a refused file is named in its own field (GitHub 
 		expect(field('stamp').querySelector('img')?.getAttribute('src')).toBe(STAMP)
 	})
 
+	it('the same refusal twice in a row changes the live region both times, so both are announced', async () => {
+		await mount()
+		picker.node = { path: '/Stempel.png', size: 2 * 1048576 }
+		await pick('stamp')
+		expect(errorOf('stamp').textContent.trim()).toBe(TOO_LARGE)
+
+		const region = errorOf('stamp')
+		const seen = []
+		const observer = new MutationObserver(() => seen.push(region.textContent.trim()))
+		observer.observe(region, { childList: true, characterData: true, subtree: true })
+		picker.node = { path: '/Stempel-2.png', size: 3 * 1048576 }
+		await pick('stamp')
+		observer.disconnect()
+
+		// emptied first, then the message again: a screen reader hears the second refusal
+		expect(seen).toContain('')
+		expect(seen[seen.length - 1]).toBe(TOO_LARGE)
+		expect(region.textContent.trim()).toBe(TOO_LARGE)
+	})
+
 	it('a node without a known size goes to the server, which decides', async () => {
 		const axios = (await import('@nextcloud/axios')).default
 		await mount()

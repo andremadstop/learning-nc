@@ -334,6 +334,9 @@ export default {
 			// The picker knows the size: a file over the limit is named at once, without a
 			// request. Pixels are only known to the server, which refuses them as too_large.
 			if (typeof chosen.size === 'number' && chosen.size > IMAGE_MAX_BYTES) {
+				// Let the cleared region reach the DOM first: the same refusal twice in a row would
+				// otherwise leave the live region's text unchanged, and nothing would be announced.
+				await this.$nextTick()
 				this.setImageError(kind, imageErrorMessage({ response: { data: { error: 'too_large' } } }))
 				return
 			}
