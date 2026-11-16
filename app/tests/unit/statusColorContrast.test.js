@@ -174,6 +174,16 @@ describe('#37 status colours use the Nextcloud text/element pairs', () => {
 		expect(JSON.stringify(d)).not.toMatch(/white|#fff/i)
 	})
 
+	// persona sweep C5: the active tool in the course's Tools tab was a 12 % tint over the dark
+	// simulator panel with the page's dark text on it (axe 1:1)
+	it('the active tool pill in the course Tools tab is a solid light primary with its text colour', () => {
+		const d = declsFor(styleOf('CourseTabLernraum.vue'), '.sim-nav__item--active')
+		expect(d).not.toBeNull()
+		expect(d.background).toBe('var(--color-primary-element-light)')
+		expect(d.color).toBe('var(--color-primary-element-light-text)')
+		expect(JSON.stringify(d)).not.toMatch(/transparent/)
+	})
+
 	it('CourseSummary card accents follow the reading direction (RTL)', () => {
 		const css = styleOf('CourseSummary.vue')
 		expect(css).not.toMatch(/border-left/)

@@ -1729,9 +1729,13 @@ export default {
 	cursor: pointer;
 }
 
+/* Persona sweep C5 (#76 class): the 12 % tint over transparent let the global simulator panel
+   (css/style.css, dark) show through, and the label kept --color-main-text: the active tool's
+   name was dark on dark (axe 1:1). A solid light primary with its own text colour. */
 .sim-nav__item--active {
 	border-color: var(--color-primary-element);
-	background: color-mix(in srgb, var(--color-primary-element) 12%, transparent);
+	background: var(--color-primary-element-light);
+	color: var(--color-primary-element-light-text);
 }
 
 .sim-nav__icon {
