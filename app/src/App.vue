@@ -950,6 +950,11 @@ export default {
       if (this.mainView === 'settings') {
         return 'view:settings';
       }
+      // Fresh-eyes C3 (#36): without its own key the Skill-Map emitted no guide, and VirtuProf kept
+      // the previous one ("Dashboard — Your daily learning overview ...").
+      if (this.mainView === 'skillmap') {
+        return 'view:skillmap';
+      }
       if (this.mainView === 'courses') {
         if (this.selectedCourse) {
           // Map CourseDetail tabs to view keys
@@ -1166,6 +1171,11 @@ export default {
           title: t('learning', 'Abenteuermodus'),
           text: t('learning', 'Starte eine Kampagne und löse Netzwerkprobleme in einer Geschichte. Jede Entscheidung bringt dich weiter — Fehler kosten Lebenspunkte.'),
           shortText: t('learning', 'Löse Netzwerkprobleme in einer interaktiven Geschichte.'),
+        },
+        'view:skillmap': {
+          title: t('learning', 'Skill-Map'),
+          text: t('learning', 'Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.'),
+          shortText: t('learning', 'Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.'),
         },
         'view:settings': {
           title: t('learning', 'Einstellungen'),

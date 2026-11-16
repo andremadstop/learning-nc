@@ -124,3 +124,16 @@ describe('App.vue: the global gamification switch (GitHub #36)', () => {
 		expect(on.viewGuidePayload('view:course-summary').text).toMatch(/Streaks, Badges/)
 	})
 })
+
+describe('App.vue: the Skill-Map guide (fresh-eyes C3, GitHub #36)', () => {
+	it('the Skill-Map has its own guide instead of keeping the dashboard one', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		api.personal = { gamification_enabled: false, onboarding_acknowledged: 'yes' }
+		const vm = await mountApp('/skill-map')
+		expect(vm.mainView).toBe('skillmap')
+		expect(vm.currentViewKey()).toBe('view:skillmap')
+		const guide = vm.viewGuidePayload('view:skillmap')
+		expect(guide.title).toBe('Skill-Map')
+		expect(`${guide.text} ${guide.shortText}`).not.toMatch(/Tagesübersicht|Lernübersicht|Leitner|XP/)
+	})
+})

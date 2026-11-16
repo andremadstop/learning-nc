@@ -3816,5 +3816,7 @@ OC.L10N.register(
     "Berechtigung" : "Право доступу",
     "Berechtigung für {user}" : "Право доступу для {user}",
     "Terminal" : "Термінал",
+    "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "Skill-Map показує кожен твій пул точкою. Колір показує, як часто ти там відповідаєш неправильно: зелений — рідко, помаранчевий — інколи, червоний — часто. Натисни на точку, щоб побачити подробиці й потренуватися в пулі.",
+    "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Твої пули у вигляді мапи; колір показує, як часто ти відповідаєш неправильно.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

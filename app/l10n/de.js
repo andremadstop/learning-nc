@@ -3816,5 +3816,7 @@ OC.L10N.register(
     "Berechtigung" : "Berechtigung",
     "Berechtigung für {user}" : "Berechtigung für {user}",
     "Terminal" : "Terminal",
+    "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.",
+    "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.",
 },
 "nplurals=2; plural=(n != 1);");

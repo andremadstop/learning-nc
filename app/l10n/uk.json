@@ -3815,6 +3815,8 @@
         "Tagesziel (Karten pro Tag)": "Денна ціль (карток на день)",
         "Berechtigung": "Право доступу",
         "Berechtigung für {user}": "Право доступу для {user}",
-        "Terminal": "Термінал"
+        "Terminal": "Термінал",
+        "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.": "Skill-Map показує кожен твій пул точкою. Колір показує, як часто ти там відповідаєш неправильно: зелений — рідко, помаранчевий — інколи, червоний — часто. Натисни на точку, щоб побачити подробиці й потренуватися в пулі.",
+        "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.": "Твої пули у вигляді мапи; колір показує, як часто ти відповідаєш неправильно."
     }
 }
