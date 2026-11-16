@@ -474,6 +474,14 @@ export default {
   border-color: var(--color-primary-element);
   color: var(--color-primary-element-text);
 }
+/* Nextcloud core gives every plain button a light primary background on :hover/:focus at (0,2,1),
+   which beat the rule above: a focused or hovered Play showed white on light blue (1.3:1). */
+.qmedia .qmedia__lang--active:hover, .qmedia .qmedia__lang--active:focus,
+.qmedia .qmedia__button--primary:hover, .qmedia .qmedia__button--primary:focus {
+  background: var(--color-primary-element-hover);
+  border-color: var(--color-primary-element-hover);
+  color: var(--color-primary-element-text);
+}
 .qmedia__lang:focus-visible, .qmedia__button:focus-visible, .qmedia__transcript summary:focus-visible {
   outline: 2px solid var(--color-primary-element);
   outline-offset: 2px;
