@@ -108,7 +108,9 @@ if [ "$rc" -ne 0 ]; then
 fi
 echo "extractor errors: $errors (baseline $BASELINE)"
 if [ "$errors" -gt "$BASELINE" ]; then
-	echo "openapi-spec: $errors extractor errors, baseline $BASELINE — new ones (only the new ones need fixing):" >&2
+	echo "openapi-spec: $errors extractor errors, baseline $BASELINE. A new controller method needs a typed" >&2
+	echo "  @return, e.g. @return DataResponse<Http::STATUS_OK, array{id: int}, array{}>|DataResponse<Http::STATUS_NOT_FOUND, array{error: string}, array{}>." >&2
+	echo "  The errors other than the old 'Missing @return annotation' ones:" >&2
 	grep '^Error:' "$WORK/openapi.log" | grep -v 'Missing @return annotation' | head -30 >&2
 	exit 1
 elif [ "$errors" -lt "$BASELINE" ]; then

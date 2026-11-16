@@ -728,7 +728,7 @@ export function checkSites(sites, spec) {
 			const pretty = path.split(WILD).join('{…}')
 			const reach = matchingOperations(ops, path)
 			if (reach.length === 0) {
-				problems.push(`${where}: no route ${pretty} in openapi.json`)
+				problems.push(`${where}: no route ${pretty} in openapi.json (a new route? regenerate the spec: scripts/openapi-spec.sh --write)`)
 				continue
 			}
 			if (site.kind === 'xhr') {
