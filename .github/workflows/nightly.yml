@@ -100,6 +100,35 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+  properties:
+    name: Property tests, random seed
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: npm ci
+        working-directory: app
+        run: npm ci --no-audit --no-fund
+
+      # CI on every push uses the fixed seed (reproducible); the nightly run explores a new seed
+      # with more runs. A failure prints the seed and the shrunk counterexample: rerun locally with
+      # FC_SEED=<seed> npx vitest run tests/unit/importRoundtrip65.property.test.js
+      - name: fast-check with a random seed
+        working-directory: app
+        run: |
+          export FC_SEED="$(( $(od -An -N4 -tu4 /dev/urandom | tr -d ' ') % 2147483647 ))" FC_RUNS=5000
+          echo "FC_SEED=$FC_SEED"
+          npx vitest run tests/unit/importRoundtrip65.property.test.js
+
   persona:
     name: Persona sweep (NC 33 / pgsql, Playwright)
     runs-on: ubuntu-24.04

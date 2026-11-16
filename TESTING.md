@@ -19,6 +19,7 @@ Every PHP gate runs in a throwaway Docker container on a clean snapshot of the c
 |---|:-:|:-:|:-:|:-:|
 | ESLint (0 errors; warnings allowed) | ✓ | ✓ | ✓ | |
 | Vitest | ✓ | ✓ | ✓ | |
+| Property tests with a random seed (fast-check) | | | | ✓ |
 | Production build (`npm run build`) | | | ✓ | |
 | i18n gates (7, see below) | ✓ | ✓ | ✓ | |
 | PHPStan level 5 + PHPUnit (`gate-container.sh`) | ✓ | ✓ | ✓ | |
@@ -177,6 +178,31 @@ ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
 A URL with an unknown part is checked with that part as a wildcard segment. Request bodies are not checked yet: the spec types the parameters of the method signature, but many controllers read the body with `getParam()`.
 
 The spec is a development artefact. It is not in the release tarball (`app/Makefile`, `release_tracked`).
+
+## Property-based tests
+
+`app/tests/unit/importRoundtrip65.property.test.js` uses [fast-check](https://fast-check.dev/) (pinned devDependency) on the pool import readers. Instead of chosen examples it generates arbitrary text in every field: quotes, delimiters, line breaks, formula prefixes, Unicode, and the readers' own keywords. It checks four properties:
+
+1. `csvRecords()` reads back every table an independent RFC 4180 writer produced.
+2. A pool exported as CSV, in the exporter's format (`fputcsv`, formula guard), imports as the same questions.
+3. A pool exported as JSON (single, multi and open questions) imports as the same questions.
+4. Neither reader throws on any input, including arbitrary JSON built from the import keys. Each answers with an error or a summary.
+
+These properties run against the JavaScript port of the server's readers (`src/utils/importPreview.js`), not against the PHP importer. The port follows the PHP readers rule for rule, and the shared fixtures check both against each other.
+
+CI runs a fixed seed (`FC_SEED`, default 65065), so a red run can be reproduced. The nightly workflow runs a random seed with 5000 runs and prints the seed:
+
+```bash
+FC_SEED=<seed> FC_RUNS=5000 npx --prefix app vitest run tests/unit/importRoundtrip65.property.test.js
+```
+
+**Known findings (open).** The CSV format has no column names, so the reader has to guess. The property found three cases where it guesses wrong on an export:
+
+- A first question that mentions "question" and "answer" (or "Frage" and "Antwort") is dropped as a header.
+- Answers with an unquoted `;` (for example `cd;ls;pwd`) switch the reader to the `;` delimiter.
+- A numeric explanation (for example `2`) is read as the number of the correct answer.
+
+Each case is excluded from the property by exactly its condition. Each is also pinned by an `it.fails` example, which turns red once the reader is fixed; then the exclusion and the example are removed.
 
 ## Rule: every bug fix comes with a test that fails on the old code
 
