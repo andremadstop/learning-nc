@@ -152,6 +152,17 @@ class Notifier implements INotifier {
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
+            case 'technical_ticket_created':
+                // GitHub #59: a technical ticket reached the admin inbox; to the chosen admins
+                $params = $notification->getSubjectParameters();
+                $notification->setParsedSubject(
+                    $l->t('Neue technische Anfrage: „%s“', [(string)($params['ticket_subject'] ?? '')])
+                );
+                // the inbox sits at the top of the app's admin settings section
+                $notification->setLink($this->urlGenerator->linkToRouteAbsolute('settings.AdminSettings.index', ['section' => 'learning']));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
+                break;
+
             case 'ticket_answered':
             case 'ticket_answer_updated':
                 // GitHub #59: the learner's question got an answer, or its answer was changed

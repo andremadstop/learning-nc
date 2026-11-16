@@ -3861,6 +3861,25 @@
             "%n Frage",
             "%n Fragen"
         ],
-        "Meldung schließen": "Meldung schließen"
+        "Meldung schließen": "Meldung schließen",
+        "Aktuelle Anfragen anzeigen": "Aktuelle Anfragen anzeigen",
+        "Archivierte Anfragen anzeigen": "Archivierte Anfragen anzeigen",
+        "Bei neuen technischen Anfragen benachrichtigen": "Bei neuen technischen Anfragen benachrichtigen",
+        "Administrator suchen …": "Administrator suchen …",
+        "Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.": "Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.",
+        "Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.": "Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.",
+        "Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}": "Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}",
+        "Empfänger speichern": "Empfänger speichern",
+        "Empfänger gespeichert.": "Empfänger gespeichert.",
+        "Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.": "Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.",
+        "Keine archivierten Anfragen.": "Keine archivierten Anfragen.",
+        "Anfrage löschen": "Anfrage löschen",
+        "Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.": "Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.",
+        "Die Anfrage konnte nicht archiviert werden.": "Die Anfrage konnte nicht archiviert werden.",
+        "Die Anfrage konnte nicht wiederhergestellt werden.": "Die Anfrage konnte nicht wiederhergestellt werden.",
+        "Die Anfrage konnte nicht gelöscht werden.": "Die Anfrage konnte nicht gelöscht werden.",
+        "Die Empfänger konnten nicht geladen werden.": "Die Empfänger konnten nicht geladen werden.",
+        "Die Empfänger konnten nicht gespeichert werden.": "Die Empfänger konnten nicht gespeichert werden.",
+        "Neue technische Anfrage: „%s“": "Neue technische Anfrage: „%s“"
     }
 }

@@ -7797,7 +7797,8 @@
         "/index.php/apps/learning/api/settings/admin/support-tickets": {
             "get": {
                 "operationId": "support_ticket-admin-list",
-                "summary": "This endpoint requires admin access",
+                "summary": "The admin inbox: technical tickets without a course. GitHub #59: archived tickets are listed apart; open_count feeds the count at the heading, also while the archive is shown.",
+                "description": "Admin-only: the route carries no @NoAdminRequired, and the method checks again.",
                 "tags": [
                     "support_ticket"
                 ],
@@ -7813,10 +7814,20 @@
                     {
                         "name": "limit",
                         "in": "query",
+                        "description": "at most this many tickets (1 to 200)",
                         "schema": {
                             "type": "integer",
                             "format": "int64",
                             "default": 100
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "true lists only the archived tickets",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
                         }
                     },
                     {
@@ -7831,18 +7842,29 @@
                     }
                 ],
                 "responses": {
-                    "401": {
-                        "description": "Current user is not logged in",
+                    "200": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "required": [
-                                        "message"
+                                        "tickets",
+                                        "open_count"
                                     ],
                                     "properties": {
-                                        "message": {
-                                            "type": "string"
+                                        "tickets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "additionalProperties": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "open_count": {
+                                            "type": "integer",
+                                            "format": "int64"
                                         }
                                     }
                                 }
@@ -7850,7 +7872,25 @@
                         }
                     },
                     "403": {
-                        "description": "Logged in account must be an admin",
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -8002,6 +8042,781 @@
                     },
                     "403": {
                         "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/learning/api/settings/admin/support-tickets/{id}/archive": {
+            "post": {
+                "operationId": "support_ticket-archive-admin-ticket",
+                "summary": "GitHub #59: an administrator hides a technical ticket from the admin inbox.",
+                "description": "This endpoint requires admin access",
+                "tags": [
+                    "support_ticket"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "the ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ticket"
+                                    ],
+                                    "properties": {
+                                        "ticket": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/learning/api/settings/admin/support-tickets/{id}/restore": {
+            "post": {
+                "operationId": "support_ticket-restore-admin-ticket",
+                "summary": "GitHub #59: an administrator brings an archived technical ticket back to the inbox.",
+                "description": "This endpoint requires admin access",
+                "tags": [
+                    "support_ticket"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "the ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ticket"
+                                    ],
+                                    "properties": {
+                                        "ticket": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/learning/api/settings/admin/support-tickets/{id}": {
+            "delete": {
+                "operationId": "support_ticket-delete-admin-ticket",
+                "summary": "GitHub #59: an administrator deletes a technical ticket for good.",
+                "description": "This endpoint requires admin access",
+                "tags": [
+                    "support_ticket"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "the ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "deleted"
+                                    ],
+                                    "properties": {
+                                        "deleted": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/learning/api/settings/admin/ticket-recipients": {
+            "get": {
+                "operationId": "ticket_recipients-get",
+                "summary": "The chosen people, with their display names and whether they would get the notice.",
+                "description": "This endpoint requires admin access",
+                "tags": [
+                    "ticket_recipients"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "users"
+                                    ],
+                                    "properties": {
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "notified"
+                                                ],
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "notified": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "operationId": "ticket_recipients-save",
+                "summary": "This endpoint requires admin access",
+                "tags": [
+                    "ticket_recipients"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userIds": {
+                                        "type": "array",
+                                        "default": [],
+                                        "description": "the chosen accounts; an empty list means nobody is notified",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "users"
+                                    ],
+                                    "properties": {
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "notified"
+                                                ],
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "notified": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/learning/api/settings/admin/ticket-recipient-search": {
+            "get": {
+                "operationId": "ticket_recipients-search",
+                "summary": "Administrators whose name or id matches, for the picker.",
+                "description": "This endpoint requires admin access",
+                "tags": [
+                    "ticket_recipients"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "the typed text",
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "users"
+                                    ],
+                                    "properties": {
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "id",
+                                                    "label"
+                                                ],
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Logged in account must be an admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -20703,6 +21518,10 @@
         {
             "name": "legal_operator",
             "description": "Operator details for the imprint and privacy statement (audit 2026-11): entered by an admin instead of the app author's company shipped in privacy-info.json."
+        },
+        {
+            "name": "ticket_recipients",
+            "description": "GitHub #59: who is told of a new technical ticket (the admin inbox). Picked from Nextcloud's accounts, like the instructors (#60). The search offers administrators only: the notice links to the admin inbox and names the ticket's subject, and only an administrator may open it. Admin-only. The routes carry no @NoAdminRequired, and every method checks again."
         },
         {
             "name": "course_member",

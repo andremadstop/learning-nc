@@ -14,6 +14,8 @@ vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButto
 vi.mock('@nextcloud/vue/components/NcCheckboxRadioSwitch', () => ({ default: { name: 'NcCheckboxRadioSwitch', template: '<span />' } }))
 vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => ({ default: { name: 'NcLoadingIcon', template: '<span />' } }))
 vi.mock('@nextcloud/vue/components/NcNoteCard', () => ({ default: { name: 'NcNoteCard', template: '<div><slot /></div>' } }))
+// GitHub #59: AdminSettings opens AccessibleDialog (NcDialog) to confirm deleting a ticket
+vi.mock('../../src/components/AccessibleDialog.vue', () => ({ default: { name: 'AccessibleDialog', template: '<div><slot /></div>' } }))
 vi.mock('@nextcloud/vue/components/NcSelect', () => ({ default: { name: 'NcSelect', template: '<div />' } }))
 
 globalThis.t = (app, text) => text

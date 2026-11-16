@@ -46,11 +46,57 @@
               <span class="hidden-visually">{{ t('learning', 'Unbeantwortete Anfragen: {count}', { count: openSupportTicketCount }) }}</span>
             </span>
           </h3>
-          <NcButton variant="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
+          <div class="ticket-toolbar">
+            <!-- GitHub #59: archived tickets are hidden from the inbox and can be brought back -->
+            <NcButton variant="tertiary" class="ticket-archive-toggle" @click="toggleTicketArchive">
+              {{ showArchivedTickets ? t('learning', 'Aktuelle Anfragen anzeigen') : t('learning', 'Archivierte Anfragen anzeigen') }}
+            </NcButton>
+            <NcButton variant="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
+          </div>
         </div>
         <p class="field-help ticket-filter-note">
           {{ t('learning', 'Hier stehen nur technische Anfragen ohne Kursbezug. Fragen zu einem Kurs gehen an dessen Lehrende und stehen im Kurs im Bereich „Kommunikation“ unter „Fragen von Lernenden“.') }}
           <a :href="coursesUrl" class="ticket-courses-link">{{ t('learning', 'Zu den Kursen') }}</a>
+        </p>
+
+        <!-- GitHub #59: who is told of a new technical ticket. Not every administrator: on an
+             instance with several admins each looks after something else. Saved on its own, the
+             page's Save button is far below. -->
+        <div class="ticket-recipients">
+          <InstructorPicker
+            v-model="ticketRecipients"
+            kind="ticket-recipients"
+            :label="t('learning', 'Bei neuen technischen Anfragen benachrichtigen')"
+            :placeholder="t('learning', 'Administrator suchen …')"
+            :disabled="!ticketRecipientsLoaded || savingTicketRecipients" />
+          <small class="field-help">
+            {{ t('learning', 'Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.') }}
+          </small>
+          <NcNoteCard v-if="ticketRecipientsLoaded && savedTicketRecipients.length === 0" type="warning" class="ticket-recipients-none">
+            {{ t('learning', 'Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.') }}
+          </NcNoteCard>
+          <NcNoteCard v-else-if="silentTicketRecipients.length > 0" type="warning" class="ticket-recipients-silent">
+            {{ t('learning', 'Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}', { names: silentTicketRecipients.join(', ') }, undefined, { escape: false, sanitize: false }) }}
+          </NcNoteCard>
+          <p v-if="ticketRecipientsError" class="ticket-recipients-error" role="alert">
+            {{ ticketRecipientsError }}
+          </p>
+          <div class="ticket-actions">
+            <NcButton
+              variant="secondary"
+              :disabled="!ticketRecipientsLoaded || savingTicketRecipients"
+              @click="saveTicketRecipients">
+              {{ savingTicketRecipients ? t('learning', 'Saving...') : t('learning', 'Empfänger speichern') }}
+            </NcButton>
+            <span v-if="ticketRecipientsSaved" class="field-help" role="status">{{ t('learning', 'Empfänger gespeichert.') }}</span>
+          </div>
+        </div>
+
+        <p v-if="ticketActionError" class="ticket-recipients-error ticket-action-error" role="alert">
+          {{ ticketActionError }}
+        </p>
+        <p v-if="showArchivedTickets" class="field-help">
+          {{ t('learning', 'Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.') }}
         </p>
         <div v-if="ticketLoading" class="loading">
           <NcLoadingIcon :size="24" />
@@ -58,7 +104,7 @@
         </div>
         <NcNoteCard v-else-if="ticketError" type="error">{{ ticketError }}</NcNoteCard>
         <div v-else-if="supportTickets.length === 0" class="field-help">
-          {{ t('learning', 'No support tickets yet.') }}
+          {{ showArchivedTickets ? t('learning', 'Keine archivierten Anfragen.') : t('learning', 'No support tickets yet.') }}
         </div>
         <div v-else class="ticket-list">
           <div v-for="ticket in supportTickets" :key="ticket.id" class="ticket-card">
@@ -93,10 +139,44 @@
                 {{ answeringId === ticket.id ? t('learning', 'Saving...') : t('learning', 'Save answer') }}
               </NcButton>
             </div>
+            <!-- GitHub #59: archive and delete, as instructors do with course questions -->
+            <div class="ticket-manage">
+              <NcButton v-if="ticket.status === 'archived'"
+                variant="secondary"
+                :disabled="!!managingTickets[ticket.id]"
+                @click="setTicketArchived(ticket, false)">
+                {{ t('learning', 'Wiederherstellen') }}
+              </NcButton>
+              <NcButton v-else
+                variant="secondary"
+                :disabled="!!managingTickets[ticket.id]"
+                @click="setTicketArchived(ticket, true)">
+                {{ t('learning', 'Archivieren') }}
+              </NcButton>
+              <NcButton variant="tertiary"
+                :disabled="!!managingTickets[ticket.id]"
+                @click="confirmTicket = ticket">
+                {{ t('learning', 'Löschen') }}
+              </NcButton>
+            </div>
           </div>
         </div>
         <NcNoteCard v-if="ticketSuccess" type="success">{{ ticketSuccess }}</NcNoteCard>
       </div>
+
+      <AccessibleDialog v-if="confirmTicket"
+        :name="t('learning', 'Anfrage löschen')"
+        @closing="cancelDeleteTicket">
+        <p>{{ t('learning', 'Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.', { subject: confirmTicket.subject }, undefined, { escape: false, sanitize: false }) }}</p>
+        <template #actions>
+          <NcButton variant="tertiary" :disabled="deletingTicket" @click="cancelDeleteTicket">
+            {{ t('learning', 'Nicht löschen') }}
+          </NcButton>
+          <NcButton variant="error" :disabled="deletingTicket" @click="deleteTicket">
+            {{ t('learning', 'Löschen') }}
+          </NcButton>
+        </template>
+      </AccessibleDialog>
 
       <!-- GitHub #56: the label is the switch's own slot (Nextcloud pattern: switch and label on one
            line, and the switch gets an accessible name); help text is its description. -->
@@ -396,6 +476,8 @@
 
 <script>
 import axios from '@nextcloud/axios'
+import { nextTick } from 'vue'
+import AccessibleDialog from './AccessibleDialog.vue'
 import OperatorSettings from './OperatorSettings.vue'
 import InstructorPicker from './InstructorPicker.vue'
 import { generateUrl } from '@nextcloud/router'
@@ -408,7 +490,7 @@ import { toInstructorPayload, toOptions } from '../utils/member-picker.js'
 
 export default {
   name: 'AdminSettings',
-  components: { InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
+  components: { AccessibleDialog, InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
   data() {
     return {
       loading: true,
@@ -439,6 +521,21 @@ export default {
       answeringId: null,
       supportTickets: [],
       ticketAnswers: {},
+      // GitHub #59: archive and delete of technical tickets; the open count is the server's
+      showArchivedTickets: false,
+      ticketOpenCount: null,
+      managingTickets: {},
+      // a failed archive/delete must not replace the list (ticketError does)
+      ticketActionError: '',
+      confirmTicket: null,
+      deletingTicket: false,
+      // GitHub #59: who is told of new technical tickets (picker options) and what is saved
+      ticketRecipients: [],
+      savedTicketRecipients: [],
+      ticketRecipientsLoaded: false,
+      savingTicketRecipients: false,
+      ticketRecipientsSaved: false,
+      ticketRecipientsError: '',
       form: {
         dailyChallengeEnabled: true,
         defaultLanguage: 'de',
@@ -463,11 +560,20 @@ export default {
     this.load()
     this.loadAudit()
     this.loadSupportTickets()
+    this.loadTicketRecipients()
   },
   computed: {
     // GitHub #59: unanswered technical requests, next to the heading
     openSupportTicketCount() {
+      // the server's count stays right while the archive is shown
+      if (Number.isInteger(this.ticketOpenCount)) {
+        return this.ticketOpenCount
+      }
       return this.supportTickets.filter((ticket) => ticket.status === 'open').length
+    },
+    // GitHub #59: saved recipients who would get no notice as things are
+    silentTicketRecipients() {
+      return this.savedTicketRecipients.filter((user) => user.notified !== true).map((user) => user.label || user.id)
     },
     // a full URL: this component is mounted in the app and on Nextcloud's admin settings page
     coursesUrl() {
@@ -643,8 +749,14 @@ export default {
       this.ticketError = ''
       this.ticketSuccess = ''
       try {
-        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 100 } })
+        const archived = this.showArchivedTickets
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), {
+          params: archived ? { limit: 100, archived: 1 } : { limit: 100 },
+        })
+        // a late answer for the other list must not replace the one now shown
+        if (archived !== this.showArchivedTickets) return
         this.supportTickets = Array.isArray(res.data?.tickets) ? res.data.tickets : []
+        this.ticketOpenCount = Number.isInteger(res.data?.open_count) ? res.data.open_count : null
         const nextAnswers = {}
         this.supportTickets.forEach(ticket => {
           nextAnswers[ticket.id] = ticket.answer_text || ''
@@ -688,7 +800,111 @@ export default {
     ticketStatusLabel(status) {
       if (status === 'open') return t('learning', 'Offen (Status einer Frage)')
       if (status === 'answered') return t('learning', 'Answered')
+      if (status === 'archived') return t('learning', 'Archiviert')
       return status
+    },
+    toggleTicketArchive() {
+      this.showArchivedTickets = !this.showArchivedTickets
+      this.ticketActionError = ''
+      this.loadSupportTickets()
+    },
+    async refreshTicketOpenCount() {
+      try {
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 1 } })
+        this.ticketOpenCount = Number.isInteger(res.data?.open_count) ? res.data.open_count : this.ticketOpenCount
+      } catch (e) {
+        // the count is a hint; the list itself is correct
+        console.error('Failed to refresh the open ticket count', e)
+      }
+    },
+    async setTicketArchived(ticket, archived) {
+      if (this.managingTickets[ticket.id]) return
+      this.managingTickets[ticket.id] = true
+      this.ticketActionError = ''
+      this.ticketSuccess = ''
+      try {
+        if (archived) {
+          await axios.post(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}/archive', { id: ticket.id }))
+        } else {
+          await axios.post(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}/restore', { id: ticket.id }))
+        }
+        // it leaves the list it was in: the inbox when archived, the archive when restored
+        this.removeTicket(ticket)
+        this.refreshTicketOpenCount()
+      } catch (e) {
+        this.ticketActionError = archived
+          ? t('learning', 'Die Anfrage konnte nicht archiviert werden.')
+          : t('learning', 'Die Anfrage konnte nicht wiederhergestellt werden.')
+      } finally {
+        delete this.managingTickets[ticket.id]
+      }
+    },
+    // The clicked button leaves with its ticket; keyboard focus moves to the ticket that takes
+    // its place (or the one above), else to the archive switch, not to the page body.
+    async removeTicket(ticket) {
+      const index = this.supportTickets.findIndex((x) => x.id === ticket.id)
+      this.supportTickets = this.supportTickets.filter((x) => x.id !== ticket.id)
+      await nextTick()
+      const items = this.$el?.querySelectorAll?.('.ticket-card .ticket-manage') || []
+      const next = items[Math.min(Math.max(index, 0), items.length - 1)]
+      const target = next?.querySelector('button') || this.$el?.querySelector?.('.ticket-archive-toggle')
+      target?.focus?.()
+    },
+    cancelDeleteTicket() {
+      if (!this.deletingTicket) {
+        this.confirmTicket = null
+      }
+    },
+    async deleteTicket() {
+      const ticket = this.confirmTicket
+      if (!ticket || this.deletingTicket) return
+      this.deletingTicket = true
+      this.ticketActionError = ''
+      this.ticketSuccess = ''
+      try {
+        await axios.delete(generateUrl('/apps/learning/api/settings/admin/support-tickets/{id}', { id: ticket.id }))
+        this.confirmTicket = null
+        this.removeTicket(ticket)
+        this.refreshTicketOpenCount()
+      } catch (e) {
+        this.confirmTicket = null
+        this.ticketActionError = t('learning', 'Die Anfrage konnte nicht gelöscht werden.')
+      } finally {
+        this.deletingTicket = false
+      }
+    },
+    /** GitHub #59: never throws; on failure the picker stays disabled and nothing is saved. */
+    async loadTicketRecipients() {
+      this.ticketRecipientsError = ''
+      try {
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/ticket-recipients'))
+        this.applyTicketRecipients(res.data)
+        this.ticketRecipientsLoaded = true
+      } catch (e) {
+        this.ticketRecipientsLoaded = false
+        this.ticketRecipientsError = t('learning', 'Die Empfänger konnten nicht geladen werden.')
+      }
+    },
+    applyTicketRecipients(data) {
+      const users = Array.isArray(data?.users) ? data.users : []
+      this.savedTicketRecipients = users
+      this.ticketRecipients = toOptions({ users })
+    },
+    async saveTicketRecipients() {
+      if (!this.ticketRecipientsLoaded || this.savingTicketRecipients) return
+      this.savingTicketRecipients = true
+      this.ticketRecipientsSaved = false
+      this.ticketRecipientsError = ''
+      try {
+        const userIds = (this.ticketRecipients || []).filter((o) => o.type === 'user').map((o) => o.value)
+        const res = await axios.put(generateUrl('/apps/learning/api/settings/admin/ticket-recipients'), { userIds })
+        this.applyTicketRecipients(res.data)
+        this.ticketRecipientsSaved = true
+      } catch (e) {
+        this.ticketRecipientsError = t('learning', 'Die Empfänger konnten nicht gespeichert werden.')
+      } finally {
+        this.savingTicketRecipients = false
+      }
     },
 
     formatTicketContext(ticket) {
@@ -922,6 +1138,8 @@ details[open] > .audit-summary::before {
 
 .audit-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
@@ -1000,5 +1218,40 @@ details[open] > .audit-summary::before {
 .ticket-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+/* GitHub #59: archive switch, recipients and per-ticket archive/delete */
+.ticket-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ticket-recipients {
+  display: grid;
+  gap: 8px;
+  margin-block: 8px 16px;
+}
+
+.ticket-recipients .ticket-actions {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+.ticket-recipients-error {
+  margin: 0;
+  color: var(--color-error-text, var(--color-error));
+}
+
+.ticket-manage {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ticket-status.status-archived {
+  color: var(--color-main-text);
 }
 </style>

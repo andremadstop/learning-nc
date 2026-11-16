@@ -26,7 +26,8 @@ class SupportTicketService {
         CourseService $courseService,
         GeminiService $geminiService,
         TelosService $telosService,
-        ?SupportTicketNotifier $notifier = null
+        ?SupportTicketNotifier $notifier = null,
+        private ?AuditService $auditService = null,
     ) {
         $this->ticketMapper = $ticketMapper;
         $this->courseService = $courseService;
@@ -265,8 +266,72 @@ class SupportTicketService {
         return $this->ticketMapper->findById((int)$ticket->getId());
     }
 
-    public function listAdmin(int $limit = 100): array {
-        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByRoutingTarget('admin', max(1, min(200, $limit))));
+    /**
+     * GitHub #59: the admin inbox leaves archived technical tickets out; $archived = true lists
+     * only those.
+     */
+    public function listAdmin(int $limit = 100, bool $archived = false): array {
+        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByRoutingTarget('admin', max(1, min(200, $limit)), $archived));
+    }
+
+    /**
+     * GitHub #59: unanswered, not archived technical tickets (the count at the admin inbox).
+     */
+    public function countOpenAdmin(): int {
+        return $this->ticketMapper->countOpenByRoutingTarget('admin');
+    }
+
+    /**
+     * GitHub #59: an administrator hides a technical ticket from the inbox (true) or brings it
+     * back (false), as instructors do with the questions of their course. The caller checks that
+     * the user is an administrator.
+     *
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when it is no technical ticket
+     */
+    public function setAdminTicketArchived(int $ticketId, bool $archived): array {
+        $ticket = $this->adminTicket($ticketId);
+        if ($archived) {
+            $ticket->setStatus('archived');
+            $ticket->setUpdatedAt(time());
+            $u = $this->updateAndReread($ticket);
+            $this->notifier?->questionSettled($u);
+        } else {
+            $this->ticketMapper->restoreArchived($ticketId, time());
+            $u = $this->ticketMapper->findById($ticketId);
+        }
+        return $this->serializeTicket($u);
+    }
+
+    /**
+     * GitHub #59: an administrator deletes a technical ticket for good, with its answer and every
+     * notification about it. The audit trail keeps who deleted which ticket, never its text.
+     * The caller checks that the user is an administrator.
+     *
+     * @throws \OCP\AppFramework\Db\DoesNotExistException when it is no technical ticket
+     */
+    public function deleteAdminTicket(int $ticketId, string $adminUserId): void {
+        $ticket = $this->adminTicket($ticketId);
+        $this->ticketMapper->delete($ticket);
+        $this->notifier?->ticketRemoved($ticket);
+        $this->auditService?->logEvent('support_ticket_deleted', $adminUserId, [
+            'ticket_id' => $ticketId,
+            'routing_target_type' => 'admin',
+            'category' => (string)$ticket->getCategory(),
+            'status' => (string)$ticket->getStatus(),
+        ]);
+    }
+
+    /**
+     * Only a ticket of the admin inbox; a question routed to a course belongs to its instructors.
+     *
+     * @throws \OCP\AppFramework\Db\DoesNotExistException
+     */
+    private function adminTicket(int $ticketId): SupportTicket {
+        $ticket = $this->ticketMapper->findById($ticketId);
+        if ($ticket->getRoutingTargetType() !== 'admin') {
+            throw new \OCP\AppFramework\Db\DoesNotExistException('Ticket not found');
+        }
+        return $ticket;
     }
 
     /**

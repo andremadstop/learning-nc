@@ -3861,6 +3861,25 @@
             "%n question",
             "%n questions"
         ],
-        "Meldung schließen": "Dismiss message"
+        "Meldung schließen": "Dismiss message",
+        "Aktuelle Anfragen anzeigen": "Show current tickets",
+        "Archivierte Anfragen anzeigen": "Show archived tickets",
+        "Bei neuen technischen Anfragen benachrichtigen": "Users to be notified of technical tickets",
+        "Administrator suchen …": "Search for an administrator …",
+        "Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.": "These administrators get a Nextcloud notification as soon as a new technical ticket arrives. Other administrators are not notified.",
+        "Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.": "Nobody is notified of new technical tickets. Choose at least one administrator and save.",
+        "Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}": "Get no notification (not an administrator, disabled or deleted): {names}",
+        "Empfänger speichern": "Save recipients",
+        "Empfänger gespeichert.": "Recipients saved.",
+        "Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.": "Archived tickets are hidden from the inbox. The person who sent one still sees it and its answer.",
+        "Keine archivierten Anfragen.": "No archived tickets.",
+        "Anfrage löschen": "Delete ticket",
+        "Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.": "Do you really want to delete the ticket “{subject}”? The ticket and its answer will also be gone for the person who sent it. This cannot be undone.",
+        "Die Anfrage konnte nicht archiviert werden.": "The ticket could not be archived.",
+        "Die Anfrage konnte nicht wiederhergestellt werden.": "The ticket could not be restored.",
+        "Die Anfrage konnte nicht gelöscht werden.": "The ticket could not be deleted.",
+        "Die Empfänger konnten nicht geladen werden.": "The recipients could not be loaded.",
+        "Die Empfänger konnten nicht gespeichert werden.": "The recipients could not be saved.",
+        "Neue technische Anfrage: „%s“": "New technical ticket: “%s”"
     }
 }

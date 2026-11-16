@@ -102,6 +102,21 @@ class SupportTicketMapper extends QBMapper {
     }
 
     /**
+     * GitHub #59: the unanswered, not archived tickets of one routing target (the admin inbox).
+     */
+    public function countOpenByRoutingTarget(string $targetType): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->func()->count('*', 'cnt'))
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('routing_target_type', $qb->createNamedParameter($targetType)))
+            ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter('open')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count;
+    }
+
+    /**
      * GitHub #59: a learner withdraws their own question, only while it has no answer. One
      * conditional DELETE, so an answer saved in the meantime is never deleted with it.
      *

@@ -164,6 +164,13 @@ return [
         ['name' => 'supportTicket#adminList', 'url' => '/api/settings/admin/support-tickets', 'verb' => 'GET'],
         ['name' => 'supportTicket#answer', 'url' => '/api/settings/admin/support-tickets/{id}/answer', 'verb' => 'POST'],
         ['name' => 'supportTicket#approveDraft', 'url' => '/api/settings/admin/support-tickets/{id}/approve-draft', 'verb' => 'POST'],
+        // GitHub #59: archive and delete technical tickets; who is told of new ones
+        ['name' => 'supportTicket#archiveAdminTicket', 'url' => '/api/settings/admin/support-tickets/{id}/archive', 'verb' => 'POST'],
+        ['name' => 'supportTicket#restoreAdminTicket', 'url' => '/api/settings/admin/support-tickets/{id}/restore', 'verb' => 'POST'],
+        ['name' => 'supportTicket#deleteAdminTicket', 'url' => '/api/settings/admin/support-tickets/{id}', 'verb' => 'DELETE'],
+        ['name' => 'ticketRecipients#get', 'url' => '/api/settings/admin/ticket-recipients', 'verb' => 'GET'],
+        ['name' => 'ticketRecipients#save', 'url' => '/api/settings/admin/ticket-recipients', 'verb' => 'PUT'],
+        ['name' => 'ticketRecipients#search', 'url' => '/api/settings/admin/ticket-recipient-search', 'verb' => 'GET'],
 
         // AI Generation
         ['name' => 'ai#available', 'url' => '/api/ai/available', 'verb' => 'GET'],

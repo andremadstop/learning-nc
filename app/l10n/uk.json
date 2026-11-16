@@ -3862,6 +3862,25 @@
             "%n питання",
             "%n питань"
         ],
-        "Meldung schließen": "Закрити повідомлення"
+        "Meldung schließen": "Закрити повідомлення",
+        "Aktuelle Anfragen anzeigen": "Показати поточні звернення",
+        "Archivierte Anfragen anzeigen": "Показати заархівовані звернення",
+        "Bei neuen technischen Anfragen benachrichtigen": "Кого сповіщати про технічні звернення",
+        "Administrator suchen …": "Знайти адміністратора …",
+        "Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.": "Ці адміністратори отримують сповіщення Nextcloud, щойно надходить нове технічне звернення. Інші адміністратори сповіщень не отримують.",
+        "Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.": "Ніхто не отримує сповіщень про нові технічні звернення. Вибери принаймні одного адміністратора й збережи.",
+        "Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}": "Не отримують сповіщень (не адміністратор, вимкнений або видалений): {names}",
+        "Empfänger speichern": "Зберегти отримувачів",
+        "Empfänger gespeichert.": "Отримувачів збережено.",
+        "Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.": "Заархівовані звернення приховано з вхідних. Автор і надалі бачить своє звернення та відповідь.",
+        "Keine archivierten Anfragen.": "Немає заархівованих звернень.",
+        "Anfrage löschen": "Видалити звернення",
+        "Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.": "Справді видалити звернення «{subject}»? Звернення та відповідь зникнуть і в автора. Це не можна скасувати.",
+        "Die Anfrage konnte nicht archiviert werden.": "Не вдалося заархівувати звернення.",
+        "Die Anfrage konnte nicht wiederhergestellt werden.": "Не вдалося відновити звернення.",
+        "Die Anfrage konnte nicht gelöscht werden.": "Не вдалося видалити звернення.",
+        "Die Empfänger konnten nicht geladen werden.": "Не вдалося завантажити отримувачів.",
+        "Die Empfänger konnten nicht gespeichert werden.": "Не вдалося зберегти отримувачів.",
+        "Neue technische Anfrage: „%s“": "Нове технічне звернення: «%s»"
     }
 }

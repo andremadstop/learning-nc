@@ -56,11 +56,83 @@ class SupportTicketController extends Controller {
     }
 
     /**
-     * @AdminRequired
+     * The admin inbox: technical tickets without a course. GitHub #59: archived tickets are listed
+     * apart; open_count feeds the count at the heading, also while the archive is shown.
+     *
+     * Admin-only: the route carries no @NoAdminRequired, and the method checks again.
+     *
+     * @param int $limit at most this many tickets (1 to 200)
+     * @param bool $archived true lists only the archived tickets
+     * @return DataResponse<Http::STATUS_OK, array{tickets: list<array<string, mixed>>, open_count: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function adminList(int $limit = 100): DataResponse {
-        return new DataResponse(['tickets' => $this->service->listAdmin($limit)]);
+    public function adminList(int $limit = 100, bool $archived = false): DataResponse {
+        if (!$this->isAdmin()) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        return new DataResponse([
+            'tickets' => array_values($this->service->listAdmin($limit, $archived)),
+            'open_count' => $this->service->countOpenAdmin(),
+        ]);
+    }
+
+    /**
+     * GitHub #59: an administrator hides a technical ticket from the admin inbox.
+     *
+     * @param int $id the ticket
+     * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function archiveAdminTicket(int $id): DataResponse {
+        if (!$this->isAdmin()) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        try {
+            return new DataResponse(['ticket' => $this->service->setAdminTicketArchived($id, true)]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    /**
+     * GitHub #59: an administrator brings an archived technical ticket back to the inbox.
+     *
+     * @param int $id the ticket
+     * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function restoreAdminTicket(int $id): DataResponse {
+        if (!$this->isAdmin()) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        try {
+            return new DataResponse(['ticket' => $this->service->setAdminTicketArchived($id, false)]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    /**
+     * GitHub #59: an administrator deletes a technical ticket for good.
+     *
+     * @param int $id the ticket
+     * @return DataResponse<Http::STATUS_OK, array{deleted: bool}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function deleteAdminTicket(int $id): DataResponse {
+        if (!$this->isAdmin() || $this->userId === null) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        try {
+            $this->service->deleteAdminTicket($id, $this->userId);
+            return new DataResponse(['deleted' => true]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    private function isAdmin(): bool {
+        return $this->userId !== null && $this->userId !== '' && $this->groupManager->isAdmin($this->userId);
     }
 
     /**

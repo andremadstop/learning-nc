@@ -311,7 +311,6 @@ Error: summary#exportCsv: Missing @return annotation
 Error: summary#generateNarrative: Missing @return annotation
 Error: summary#getSnapshot: Missing @return annotation
 Error: summary#getSummary: Missing @return annotation
-Error: supportTicket#adminList: Missing @return annotation
 Error: supportTicket#answer: Missing @return annotation
 Error: supportTicket#approveDraft: Missing @return annotation
 Error: supportTicket#archiveCourseTicket: Missing @return annotation

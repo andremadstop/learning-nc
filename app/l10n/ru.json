@@ -3862,6 +3862,25 @@
             "%n вопроса",
             "%n вопросов"
         ],
-        "Meldung schließen": "Закрыть сообщение"
+        "Meldung schließen": "Закрыть сообщение",
+        "Aktuelle Anfragen anzeigen": "Показать текущие обращения",
+        "Archivierte Anfragen anzeigen": "Показать обращения в архиве",
+        "Bei neuen technischen Anfragen benachrichtigen": "Кого уведомлять о технических обращениях",
+        "Administrator suchen …": "Найти администратора …",
+        "Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.": "Эти администраторы получают уведомление Nextcloud, как только поступает новое техническое обращение. Другие администраторы уведомлений не получают.",
+        "Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.": "Никто не получает уведомлений о новых технических обращениях. Выбери хотя бы одного администратора и сохрани.",
+        "Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}": "Не получают уведомлений (не администратор, отключён или удалён): {names}",
+        "Empfänger speichern": "Сохранить получателей",
+        "Empfänger gespeichert.": "Получатели сохранены.",
+        "Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.": "Обращения в архиве скрыты из входящих. Отправитель по-прежнему видит своё обращение и ответ.",
+        "Keine archivierten Anfragen.": "Нет обращений в архиве.",
+        "Anfrage löschen": "Удалить обращение",
+        "Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.": "Точно удалить обращение «{subject}»? Обращение и ответ исчезнут и у отправителя. Это нельзя отменить.",
+        "Die Anfrage konnte nicht archiviert werden.": "Не удалось отправить обращение в архив.",
+        "Die Anfrage konnte nicht wiederhergestellt werden.": "Не удалось восстановить обращение.",
+        "Die Anfrage konnte nicht gelöscht werden.": "Не удалось удалить обращение.",
+        "Die Empfänger konnten nicht geladen werden.": "Не удалось загрузить получателей.",
+        "Die Empfänger konnten nicht gespeichert werden.": "Не удалось сохранить получателей.",
+        "Neue technische Anfrage: „%s“": "Новое техническое обращение: «%s»"
     }
 }

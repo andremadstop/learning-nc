@@ -2,8 +2,8 @@
 	<div class="instructor-picker">
 		<NcSelect :model-value="modelValue"
 			class="instructor-picker__select"
-			:input-label="t('learning', 'Kursleitende (Gruppen und Personen)')"
-			:placeholder="t('learning', 'Gruppe oder Person suchen …')"
+			:input-label="label || t('learning', 'Kursleitende (Gruppen und Personen)')"
+			:placeholder="placeholder || t('learning', 'Gruppe oder Person suchen …')"
 			:options="options"
 			:multiple="true"
 			:filterable="false"
@@ -54,6 +54,21 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		// GitHub #59: the same picker chooses who is told of technical tickets (accounts only)
+		label: {
+			type: String,
+			default: '',
+		},
+		placeholder: {
+			type: String,
+			default: '',
+		},
+		// 'instructors': groups and people (#60); 'ticket-recipients': administrators only (#59)
+		kind: {
+			type: String,
+			default: 'instructors',
+			validator: (value) => ['instructors', 'ticket-recipients'].includes(value),
+		},
 	},
 
 	emits: ['update:modelValue'],
@@ -73,6 +88,12 @@ export default {
 	},
 
 	methods: {
+		searchEndpoint() {
+			return this.kind === 'ticket-recipients'
+				? generateUrl('/apps/learning/api/settings/admin/ticket-recipient-search')
+				: generateUrl('/apps/learning/api/settings/admin/instructor-search')
+		},
+
 		optionHint(option) {
 			return option.type === 'group' ? t('learning', 'Gruppe') : option.value
 		},
@@ -93,7 +114,7 @@ export default {
 		async runSearch(term) {
 			const seq = ++this.searchSeq
 			try {
-				const { data } = await axios.get(generateUrl('/apps/learning/api/settings/admin/instructor-search'), { params: { search: term } })
+				const { data } = await axios.get(this.searchEndpoint(), { params: { search: term } })
 				if (seq !== this.searchSeq) {
 					return // a newer search is on its way
 				}

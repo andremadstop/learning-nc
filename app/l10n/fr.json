@@ -3861,6 +3861,25 @@
             "%n question",
             "%n questions"
         ],
-        "Meldung schließen": "Fermer le message"
+        "Meldung schließen": "Fermer le message",
+        "Aktuelle Anfragen anzeigen": "Afficher les demandes en cours",
+        "Archivierte Anfragen anzeigen": "Afficher les demandes archivées",
+        "Bei neuen technischen Anfragen benachrichtigen": "Utilisateurs à notifier des demandes techniques",
+        "Administrator suchen …": "Rechercher un administrateur …",
+        "Diese Administratoren erhalten eine Nextcloud-Benachrichtigung, sobald eine neue technische Anfrage eingeht. Andere Administratoren werden nicht benachrichtigt.": "Ces administrateurs reçoivent une notification Nextcloud dès qu’une nouvelle demande technique arrive. Les autres administrateurs ne sont pas notifiés.",
+        "Niemand wird über neue technische Anfragen benachrichtigt. Wähle mindestens einen Administrator aus und speichere.": "Personne n’est notifié des nouvelles demandes techniques. Choisis au moins un administrateur et enregistre.",
+        "Erhalten keine Benachrichtigung (kein Administrator, deaktiviert oder gelöscht): {names}": "Ne reçoivent pas de notification (pas administrateur, désactivé ou supprimé) : {names}",
+        "Empfänger speichern": "Enregistrer les destinataires",
+        "Empfänger gespeichert.": "Destinataires enregistrés.",
+        "Archivierte Anfragen sind aus dem Postfach ausgeblendet. Die anfragende Person sieht ihre Anfrage und die Antwort weiterhin.": "Les demandes archivées sont masquées de la boîte de réception. La personne qui l’a envoyée voit toujours sa demande et la réponse.",
+        "Keine archivierten Anfragen.": "Aucune demande archivée.",
+        "Anfrage löschen": "Supprimer la demande",
+        "Möchtest du die Anfrage „{subject}“ wirklich löschen? Anfrage und Antwort sind danach auch für die anfragende Person weg. Das lässt sich nicht rückgängig machen.": "Veux-tu vraiment supprimer la demande « {subject} » ? La demande et sa réponse disparaîtront aussi pour la personne qui l’a envoyée. Cette action est irréversible.",
+        "Die Anfrage konnte nicht archiviert werden.": "La demande n’a pas pu être archivée.",
+        "Die Anfrage konnte nicht wiederhergestellt werden.": "La demande n’a pas pu être restaurée.",
+        "Die Anfrage konnte nicht gelöscht werden.": "La demande n’a pas pu être supprimée.",
+        "Die Empfänger konnten nicht geladen werden.": "Les destinataires n’ont pas pu être chargés.",
+        "Die Empfänger konnten nicht gespeichert werden.": "Les destinataires n’ont pas pu être enregistrés.",
+        "Neue technische Anfrage: „%s“": "Nouvelle demande technique : « %s »"
     }
 }
