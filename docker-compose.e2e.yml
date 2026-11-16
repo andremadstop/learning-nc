@@ -3,7 +3,7 @@
 # Images pinned to the same digests as scripts/gate-container.sh and scripts/lifecycle-probe.sh.
 services:
   db:
-    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    image: postgres:16-alpine@sha256:81e77a4833487b8132fe4b00bedd39dc3f74b8641e387f19312a48f7de218c2e
     container_name: learning-db
     restart: unless-stopped
     volumes:
@@ -16,7 +16,7 @@ services:
       - learning-net
 
   app:
-    image: nextcloud:33@sha256:df735d59202b74546ca4f935ec860d8397995a6e4e353926c4876547f6c6c4a5
+    image: nextcloud:33@sha256:31dea97f55a09d2746c8e559be658a9df8152f16f6ab233c31c3c017105a2240
     container_name: learning-app
     restart: unless-stopped
     ports:
