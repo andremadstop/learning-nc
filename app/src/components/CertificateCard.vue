@@ -12,6 +12,7 @@
 				:alt="layout.show.issuer ? '' : fields.issuerName"
 				:aria-hidden="layout.show.issuer ? 'true' : null"
 				class="certificate-logo"
+				:class="{ 'certificate-logo--library': !!layout.logo }"
 				data-test="certificate-logo">
 			<span v-if="showIssuerName" class="certificate-issuer" data-test="certificate-issuer">{{ fields.issuerName }}</span>
 		</div>
@@ -204,6 +205,15 @@ export default {
 	max-height: 48px;
 	max-width: 160px;
 	object-fit: contain;
+}
+
+/* GitHub #78: a library logo is often dark lettering on a transparent background (a wordmark). On
+   the dark-mode card it would vanish, so it sits on white like on paper, as stamp and signature do.
+   The Theming logo keeps its look: Nextcloud's theming already provides it for the current theme. */
+.certificate-logo--library {
+	background: #fff;
+	border-radius: var(--border-radius, 4px);
+	padding: 4px;
 }
 
 .certificate-issuer {

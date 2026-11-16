@@ -81,10 +81,14 @@ describe('a certificate is drawn with its own logo (GitHub #78)', () => {
 		const fields = { courseTitle: 'Kurs', recipientName: 'Alex', courseElements: [], score: 90, threshold: 80, issuerName: 'Coca Cola', issuerLogo: 'https://cloud.example/theming-logo.png', validFrom: '', validUntil: '' }
 		await mount(CertificateCard, { fields, presentation: { logo: JPEG_URL } })
 		expect(host.querySelector('[data-test="certificate-logo"]').getAttribute('src')).toBe(JPEG_URL)
+		// on white like stamp and signature, so a dark wordmark stays visible on the dark-mode card
+		expect(host.querySelector('[data-test="certificate-logo"]').classList.contains('certificate-logo--library')).toBe(true)
 		app.unmount()
 		host.remove()
 		await mount(CertificateCard, { fields, presentation: null })
 		expect(host.querySelector('[data-test="certificate-logo"]').getAttribute('src')).toBe('https://cloud.example/theming-logo.png')
+		// the Theming logo keeps exactly the look it had
+		expect(host.querySelector('[data-test="certificate-logo"]').classList.contains('certificate-logo--library')).toBe(false)
 	})
 })
 
