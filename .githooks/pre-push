@@ -58,7 +58,8 @@ for SHA in $(echo "$PUSH_SHAS" | tr ' ' '\n' | sort -u); do
         gate_ok "$(echo "$OAPI_OUT" | tail -1)"
     else
         gate_fail
-        echo "$OAPI_OUT" | grep -v '^Error:.*Missing @return annotation' | tail -12
+        # Die neuen bzw. entfallenen Fehler druckt das Skript eingerueckt mit +/- (controller#method).
+        echo "$OAPI_OUT" | tail -40
         FAILED=1
     fi
 

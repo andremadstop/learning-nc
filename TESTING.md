@@ -171,6 +171,7 @@ ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
 ```bash
 ./scripts/openapi-spec.sh --write          # regenerate app/openapi.json from the git index
 ./scripts/openapi-spec.sh --check --ref HEAD   # what CI and pre-push run
+./scripts/openapi-spec.sh --write-baseline     # after typing methods: drop their lines from the error baseline
 ```
 
 `--check` fails when
@@ -179,7 +180,7 @@ ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
 - a route of `appinfo/routes.php` is missing from the spec, or
 - the extractor fails with anything other than its final error count.
 
-**Known gap: response bodies.** Most controller methods have no typed `@return DataResponse<...>` annotation. The extractor reports each one as an error, writes the spec anyway, and ends with "Encountered N errors". The script accepts that only when N equals `scripts/openapi-error-baseline.txt`. The number may only shrink: a commit that documents a method lowers it, and a new undocumented method makes the check fail. Until the responses are typed, the spec checks requests (route, method, parameters, CSRF), not response keys and types.
+**Known gap: response bodies.** Most controller methods have no typed `@return DataResponse<...>` annotation. The extractor reports each one as an error, writes the spec anyway, and ends with "Encountered N errors". The script accepts that only when the N error lines (`Error: <controller>#<method>: <message>`) are exactly the lines of `scripts/openapi-error-baseline.txt`. The list may only shrink: a commit that documents a method removes its lines (`scripts/openapi-spec.sh --write-baseline`, which refuses to add one), and a new undocumented method makes the check fail with its `controller#method` printed. Because lines are compared, not only their count, one fixed method cannot hide a new untyped one. Until the responses are typed, the spec checks requests (route, method, parameters, CSRF), not response keys and types.
 
 **Frontend contract test** (`app/tests/unit/apiContract65.test.js`, part of Vitest). It parses every file in `app/src` with the real parser (Babel through `@vue/compiler-sfc`) and evaluates the URL argument of each call site: literals, `+`, template strings, `generateUrl()`, local and imported constants, URL-builder functions, and `this.x` computed properties and methods. Then it checks:
 

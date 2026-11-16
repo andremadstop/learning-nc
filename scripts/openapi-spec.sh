@@ -2,10 +2,12 @@
 # openapi-spec.sh — generate app/openapi.json from the controllers with the pinned
 # nextcloud/openapi-extractor (app/composer.lock), in a throwaway container (GitHub #65).
 #
-# Usage: scripts/openapi-spec.sh [--check|--write] [--index | --ref <git-ref>]
+# Usage: scripts/openapi-spec.sh [--check|--write|--write-baseline] [--index | --ref <git-ref>]
 #   --check (default)  generate from the snapshot and compare with the snapshot's app/openapi.json;
 #                      exit 1 when it is missing or differs (CI and pre-push)
 #   --write            generate from the snapshot and write it to app/openapi.json in the working copy
+#   --write-baseline   write the snapshot's extractor errors to scripts/openapi-error-baseline.txt in
+#                      the working copy; refused when that would add a line (the list may only shrink)
 #   --index (default)  snapshot = what `git commit` would record; --ref <git-ref> = that commit
 #
 # What the spec covers: every route in appinfo/routes.php (all controllers carry
@@ -20,8 +22,10 @@
 # spec anyway and then exits with "Encountered N errors that need to be fixed!". This script accepts
 # that exit only when
 #   - it is exactly that message (any other panic fails),
-#   - N equals the number in scripts/openapi-error-baseline.txt (more = new undocumented code,
-#     fewer = lower the baseline in the same commit: the number may only shrink),
+#   - the N error lines ("Error: <controller>#<method>: <message>", no line numbers) are exactly the
+#     lines of scripts/openapi-error-baseline.txt. A line that is not there is new undocumented code
+#     and fails, named, even when another fix keeps N the same. A baseline line that no longer
+#     occurs fails too: remove it in the same commit (--write-baseline), so the list only shrinks.
 #   - the spec was written, is valid JSON, and contains every route of appinfo/routes.php.
 # Overrides: GATE_IMAGE, GATE_COMPOSER_VERSION, GATE_COMPOSER_SHA256 (as in gate-container.sh).
 set -euo pipefail
@@ -56,10 +60,10 @@ die() { echo "openapi-spec: $*" >&2; exit 2; }
 action=--check src=--index ref=""
 while [ $# -gt 0 ]; do
 	case "$1" in
-		--check|--write) action="$1" ;;
+		--check|--write|--write-baseline) action="$1" ;;
 		--index) src=--index ;;
 		--ref) src=--ref; ref="${2:-}"; [ -n "$ref" ] || die "--ref needs a git ref"; shift ;;
-		*) die "usage: $0 [--check|--write] [--index|--ref <git-ref>]" ;;
+		*) die "usage: $0 [--check|--write|--write-baseline] [--index|--ref <git-ref>]" ;;
 	esac
 	shift
 done
@@ -73,8 +77,12 @@ esac
 [ -f "$WORK/repo/app/composer.lock" ] || die "snapshot has no app/composer.lock"
 BASELINE_FILE="$WORK/repo/scripts/openapi-error-baseline.txt"
 [ -f "$BASELINE_FILE" ] || die "snapshot has no scripts/openapi-error-baseline.txt"
-BASELINE="$(grep -v '^#' "$BASELINE_FILE" | tr -d '[:space:]')"
-[[ "$BASELINE" =~ ^[0-9]+$ ]] || die "scripts/openapi-error-baseline.txt holds no number"
+# One error line per line, comments and blank lines aside; compared as a sorted multiset.
+grep -v -e '^#' -e '^[[:space:]]*$' "$BASELINE_FILE" | LC_ALL=C sort > "$WORK/baseline.txt" || true
+if grep -qv '^Error: ' "$WORK/baseline.txt"; then
+	die "scripts/openapi-error-baseline.txt holds a line that is not an extractor error (one 'Error: …' line each)"
+fi
+BASELINE="$(wc -l < "$WORK/baseline.txt" | tr -d '[:space:]')"
 
 NAME="learning-openapi-$$"
 echo "==> container $NAME ($IMAGE)"
@@ -106,15 +114,37 @@ if [ "$rc" -ne 0 ]; then
 	fi
 	errors="$(sed -nE 's/^Fatal error: Uncaught Error: app: Encountered ([0-9]+) errors.*/\1/p' "$WORK/openapi.log")"
 fi
-echo "extractor errors: $errors (baseline $BASELINE)"
-if [ "$errors" -gt "$BASELINE" ]; then
-	echo "openapi-spec: $errors extractor errors, baseline $BASELINE. A new controller method needs a typed" >&2
-	echo "  @return, e.g. @return DataResponse<Http::STATUS_OK, array{id: int}, array{}>|DataResponse<Http::STATUS_NOT_FOUND, array{error: string}, array{}>." >&2
-	echo "  The errors other than the old 'Missing @return annotation' ones:" >&2
-	grep '^Error:' "$WORK/openapi.log" | grep -v 'Missing @return annotation' | head -30 >&2
+grep '^Error: ' "$WORK/openapi.log" | LC_ALL=C sort > "$WORK/errors.txt" || true
+listed="$(wc -l < "$WORK/errors.txt" | tr -d '[:space:]')"
+if [ "$listed" -ne "$errors" ]; then
+	echo "openapi-spec: the extractor counted $errors errors but printed $listed 'Error:' lines — its output format changed, adapt this script" >&2
 	exit 1
-elif [ "$errors" -lt "$BASELINE" ]; then
-	echo "openapi-spec: $errors extractor errors, fewer than the baseline $BASELINE — set scripts/openapi-error-baseline.txt to $errors in this commit" >&2
+fi
+echo "extractor errors: $errors (baseline $BASELINE)"
+# Multiset difference (comm pairs repeated lines one to one). The lines are printed indented, so a
+# filter on "^Error:" further down a pipeline (pre-push) cannot hide them.
+LC_ALL=C comm -13 "$WORK/baseline.txt" "$WORK/errors.txt" > "$WORK/new.txt"
+LC_ALL=C comm -23 "$WORK/baseline.txt" "$WORK/errors.txt" > "$WORK/gone.txt"
+if [ -s "$WORK/new.txt" ]; then
+	echo "openapi-spec: $(wc -l < "$WORK/new.txt" | tr -d '[:space:]') extractor error(s) not in scripts/openapi-error-baseline.txt (baseline $BASELINE, now $errors)." >&2
+	echo "  A new controller method needs a typed @return, e.g." >&2
+	echo "  @return DataResponse<Http::STATUS_OK, array{id: int}, array{}>|DataResponse<Http::STATUS_NOT_FOUND, array{error: string}, array{}>." >&2
+	echo "  New errors (controller#method):" >&2
+	sed 's/^/    + /' "$WORK/new.txt" | head -40 >&2
+	exit 1
+fi
+if [ "$action" = --write-baseline ]; then
+	if [ -s "$WORK/gone.txt" ]; then
+		{ grep '^#' "$BASELINE_FILE" || true; cat "$WORK/errors.txt"; } > "$REPO_ROOT/scripts/openapi-error-baseline.txt"
+		echo "wrote scripts/openapi-error-baseline.txt ($BASELINE -> $errors lines)"
+	else
+		echo "scripts/openapi-error-baseline.txt is current ($errors lines)"
+	fi
+	exit 0
+fi
+if [ -s "$WORK/gone.txt" ]; then
+	echo "openapi-spec: $(wc -l < "$WORK/gone.txt" | tr -d '[:space:]') baseline error(s) no longer occur — remove them from scripts/openapi-error-baseline.txt in this commit (scripts/openapi-spec.sh --write-baseline):" >&2
+	sed 's/^/    - /' "$WORK/gone.txt" | head -40 >&2
 	exit 1
 fi
 

@@ -1,3 +1,386 @@
-# Number of errors nextcloud/openapi-extractor reports for app/lib/Controller (scripts/openapi-spec.sh).
-# May only shrink: lower it in the commit that fixes some, never raise it.
-383
+# The errors nextcloud/openapi-extractor reports for app/lib/Controller (scripts/openapi-spec.sh),
+# one per line, sorted (LC_ALL=C). May only shrink: a commit that types a method removes its lines
+# (scripts/openapi-spec.sh --write-baseline); a line that is not here fails the check.
+Error: adminAi#test: Missing @return annotation
+Error: ai#available: Missing @return annotation
+Error: ai#explain: $selectedAnswerIds: selectedAnswerIds: Instead of 'array' use:
+Error: ai#explain: Missing @return annotation
+Error: ai#generate: Missing @return annotation
+Error: ai#import: $questions: questions: Instead of 'array' use:
+Error: ai#import: Missing @return annotation
+Error: ai#status: Missing @return annotation
+Error: audit_export#events: Missing @return annotation
+Error: audit_export#page: Missing @return annotation
+Error: audit_export#report: Missing @return annotation
+Error: audit_export#sig: Missing @return annotation
+Error: certLayout#importImage: Missing @return annotation
+Error: certLayout#removeImage: Missing @return annotation
+Error: certLayout#show: Missing @return annotation
+Error: certificate#download: Missing @return annotation
+Error: certificate#index: Missing @return annotation
+Error: certificate#revoke: Missing @return annotation
+Error: certificate#show: Missing @return annotation
+Error: certificateReport#certReport: Missing @return annotation
+Error: certificateReport#certReport: getParam: expiringDays: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#certReport: getParam: from: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#certReport: getParam: to: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#coverageReport: Missing @return annotation
+Error: certificateReport#exportCertReportCsv: Missing @return annotation
+Error: certificateReport#exportCertReportCsv: getParam: expiringDays: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#exportCertReportCsv: getParam: from: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#exportCertReportCsv: getParam: to: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#exportCoverageCsv: Missing @return annotation
+Error: certificateReport#groupReport: Missing @return annotation
+Error: certificateReport#groupReport: getParam: expiringDays: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#groupReport: getParam: groupId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#myTeamLeadScopes: Missing @return annotation
+Error: certificateReport#remindMember: Missing @return annotation
+Error: certificateReport#remindMember: getParam: groupId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: certificateReport#remindMember: getParam: memberRef: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: classbook#exportVcard: Missing @return annotation
+Error: classbook#giveKudos: Missing @return annotation
+Error: classbook#index: Missing @return annotation
+Error: classbook#toggleVisibility: Missing @return annotation
+Error: coop#create: Missing @return annotation
+Error: coop#create: getParam: campaignId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#create: getParam: campaign_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#create: getParam: characterId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#create: getParam: character_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#create: getParam: maxPlayers: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#create: getParam: max_players: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#join: Missing @return annotation
+Error: coop#join: getParam: characterId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#join: getParam: character_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#join: getParam: displayName: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#join: getParam: display_name: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#lobby: Missing @return annotation
+Error: coop#ready: Missing @return annotation
+Error: coop#ready: getParam: action: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#state: Missing @return annotation
+Error: coop#vote: Missing @return annotation
+Error: coop#vote: getParam: edgeId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: coop#vote: getParam: edge_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: course#addPool: Missing @return annotation
+Error: course#archiveCourse: Missing @return annotation
+Error: course#atRisk: Missing @return annotation
+Error: course#chapterHeatmap: Missing @return annotation
+Error: course#courseDashboard: Missing @return annotation
+Error: course#create: Missing @return annotation
+Error: course#createAnnouncement: Missing @return annotation
+Error: course#dashboard: Missing @return annotation
+Error: course#deleteAnnouncement: Missing @return annotation
+Error: course#deleteSchedule: Missing @return annotation
+Error: course#destroy: Missing @return annotation
+Error: course#enroll: Missing @return annotation
+Error: course#exportAtRiskCsv: Missing @return annotation
+Error: course#getAnnouncements: Missing @return annotation
+Error: course#getCurriculumScope: Missing @return annotation
+Error: course#getPassStatus: Missing @return annotation
+Error: course#getSchedule: Missing @return annotation
+Error: course#getTools: Missing @return annotation
+Error: course#index: Missing @return annotation
+Error: course#leaderboard: Missing @return annotation
+Error: course#listMembers: Missing @return annotation
+Error: course#listPools: Missing @return annotation
+Error: course#listSnapshots: Missing @return annotation
+Error: course#myProgress: Missing @return annotation
+Error: course#poolAnswerStats: Missing @return annotation
+Error: course#progress: Missing @return annotation
+Error: course#removeMember: Missing @return annotation
+Error: course#removePool: Missing @return annotation
+Error: course#role: Missing @return annotation
+Error: course#setQuestionOverride: Missing @return annotation
+Error: course#setSchedule: $entries: entries: Instead of 'array' use:
+Error: course#setSchedule: Missing @return annotation
+Error: course#setVideoGate: Missing @return annotation
+Error: course#show: Missing @return annotation
+Error: course#showSnapshot: Missing @return annotation
+Error: course#studentDetail: Missing @return annotation
+Error: course#update: Missing @return annotation
+Error: course#updateAnnouncement: Missing @return annotation
+Error: course#updateCampaignSelection: $campaignIds: campaignIds: Instead of 'array' use:
+Error: course#updateCampaignSelection: Missing @return annotation
+Error: course#updateCertConfig: $certLayout: certLayout: Instead of 'array' use:
+Error: course#updateCertConfig: $certRequiredPoolIds: certRequiredPoolIds: Instead of 'array' use:
+Error: course#updateCertConfig: Missing @return annotation
+Error: course#updateCurriculumScope: $chapterKeys: chapterKeys: Instead of 'array' use:
+Error: course#updateCurriculumScope: Missing @return annotation
+Error: course#updateExamDate: Missing @return annotation
+Error: course#updateModeConfig: $modeConfig: modeConfig: Instead of 'array' use:
+Error: course#updateModeConfig: Missing @return annotation
+Error: course#updatePool: $filterQuestionIds: filterQuestionIds: Instead of 'array' use:
+Error: course#updatePool: Missing @return annotation
+Error: course#updatePracticeConfig: Missing @return annotation
+Error: course#updateTools: $enabledTools: enabledTools: Instead of 'array' use:
+Error: course#updateTools: Missing @return annotation
+Error: course#weakQuestions: Missing @return annotation
+Error: courseCertificate#download: Missing @return annotation
+Error: courseCertificate#exportZip: Missing @return annotation
+Error: courseCertificate#exportZip: getParam: expiringDays: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: courseCertificate#exportZip: getParam: from: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: courseCertificate#exportZip: getParam: to: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: courseCertificate#show: Missing @return annotation
+Error: courseMember#add: Missing @return annotation
+Error: courseMember#bulk: Missing @return annotation
+Error: courseMember#search: Missing @return annotation
+Error: courseVideo#create: Missing @return annotation
+Error: courseVideo#destroy: Missing @return annotation
+Error: courseVideo#index: Missing @return annotation
+Error: courseVideo#update: Missing @return annotation
+Error: dataExport#myData: Missing @return annotation
+Error: document#download: Missing @return annotation
+Error: document#extract: Missing @return annotation
+Error: document#extractAll: Missing @return annotation
+Error: document#getFolder: Missing @return annotation
+Error: document#index: Missing @return annotation
+Error: document#scan: Missing @return annotation
+Error: document#setFolder: Missing @return annotation
+Error: document#setFolder: getParam: folder: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: duel#acceptInvite: Missing @return annotation
+Error: duel#answer: Missing @return annotation
+Error: duel#cancelInvite: Missing @return annotation
+Error: duel#create: Missing @return annotation
+Error: duel#declineInvite: Missing @return annotation
+Error: duel#invite: Missing @return annotation
+Error: duel#invites: Missing @return annotation
+Error: duel#join: Missing @return annotation
+Error: duel#opponents: Missing @return annotation
+Error: duel#ready: Missing @return annotation
+Error: duel#rematch: Missing @return annotation
+Error: duel#state: Missing @return annotation
+Error: export#exportCsv: Missing @return annotation
+Error: export#exportJson: Missing @return annotation
+Error: export#getCalendarToken: Missing @return annotation
+Error: export#regenerateCalendarToken: Missing @return annotation
+Error: feed#courseFeed: Missing @return annotation
+Error: feed#index: Missing @return annotation
+Error: gameshow#answer: Missing @return annotation
+Error: gameshow#courseLobby: Missing @return annotation
+Error: gameshow#create: Missing @return annotation
+Error: gameshow#history: Missing @return annotation
+Error: gameshow#join: Missing @return annotation
+Error: gameshow#ready: Missing @return annotation
+Error: gameshow#state: Missing @return annotation
+Error: ics#generate: Missing @return annotation
+Error: image#delete: Missing @return annotation
+Error: image#serve: Missing @return annotation
+Error: image#upload: Missing @return annotation
+Error: import#importCsv: Missing @return annotation
+Error: import#importFile: Missing @return annotation
+Error: import#importJson: Missing @return annotation
+Error: instructorAccess#get: Missing @return annotation
+Error: instructorAccess#save: @param: groupIds: The 'array<TYPE>' syntax for arrays is forbidden due to ambiguities. Use 'list<TYPE>' for JSON arrays or 'array<string, TYPE>' for JSON objects instead.
+Error: instructorAccess#save: @param: userIds: The 'array<TYPE>' syntax for arrays is forbidden due to ambiguities. Use 'list<TYPE>' for JSON arrays or 'array<string, TYPE>' for JSON objects instead.
+Error: instructorAccess#save: Missing @return annotation
+Error: instructorAccess#search: Missing @return annotation
+Error: league#accept: Missing @return annotation
+Error: league#active: Missing @return annotation
+Error: league#challenge: Missing @return annotation
+Error: league#cl: Missing @return annotation
+Error: league#create: Missing @return annotation
+Error: league#finish: Missing @return annotation
+Error: league#start: Missing @return annotation
+Error: league#table: Missing @return annotation
+Error: legalOperator#get: Missing @return annotation
+Error: legalOperator#save: Missing @return annotation
+Error: legalOperator#show: Missing @return annotation
+Error: leitner#answer: $answerIds: answerIds: Instead of 'array' use:
+Error: leitner#answer: $pbqAnswers: pbqAnswers: Instead of 'array' use:
+Error: leitner#answer: Missing @return annotation
+Error: leitner#badgeProgress: Missing @return annotation
+Error: leitner#badges: Missing @return annotation
+Error: leitner#due: Missing @return annotation
+Error: leitner#initialize: Missing @return annotation
+Error: leitner#queue: Missing @return annotation
+Error: leitner#queueCount: Missing @return annotation
+Error: leitner#readiness: Missing @return annotation
+Error: leitner#remediation: Missing @return annotation
+Error: leitner#remediationCount: Missing @return annotation
+Error: leitner#stats: Missing @return annotation
+Error: leitner#streak: Missing @return annotation
+Error: lernbotFiles#listFiles: Missing @return annotation
+Error: lernbotFiles#writeNote: Missing @return annotation
+Error: lernbotFiles#writeNote: getParam: body: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: lernbotFiles#writeNote: getParam: filename: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: lernbotFiles#writeNote: getParam: meta: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: lernbotFiles#writeNote: getParam: subfolder: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: lernplan#generateFortschritt: Missing @return annotation
+Error: lernplan#generateFortschritt: getParam: course_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: lernplan#generatePlan: Missing @return annotation
+Error: lernplan#generatePlan: getParam: course_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: lernprofil#cheatSheet: Missing @return annotation
+Error: lernprofil#lernhistorie: Missing @return annotation
+Error: lernprofil#profile: Missing @return annotation
+Error: lernprofil#skillMap: Missing @return annotation
+Error: lernprofil#weakestTopics: Missing @return annotation
+Error: maintenance#queue: Missing @return annotation
+Error: maintenance#stats: Missing @return annotation
+Error: maintenance#toggle: Missing @return annotation
+Error: noteGenerator#generate: Missing @return annotation
+Error: noteGenerator#generate: getParam: course_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: noteGenerator#generate: getParam: pool_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: page#index: Missing @return annotation
+Error: pool#create: Missing @return annotation
+Error: pool#destroy: Missing @return annotation
+Error: pool#inMyCourses: Missing @return annotation
+Error: pool#index: Missing @return annotation
+Error: pool#review: Missing @return annotation
+Error: pool#show: Missing @return annotation
+Error: pool#update: Missing @return annotation
+Error: pool_generator#createPool: $questions: questions: Instead of 'array' use:
+Error: pool_generator#createPool: Missing @return annotation
+Error: pool_generator#fromFile: Missing @return annotation
+Error: pool_generator#fromText: Missing @return annotation
+Error: pool_generator#providerInfo: Missing @return annotation
+Error: pool_import#importPools: Missing @return annotation
+Error: pool_import#importPools: getParam: dry_run: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: pool_import#importPools: getParam: file_name: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: question#check: Missing @return annotation
+Error: question#create: $answers: answers: Instead of 'array' use:
+Error: question#create: $pbqConfig: pbqConfig: Instead of 'array' use:
+Error: question#create: Missing @return annotation
+Error: question#destroy: Missing @return annotation
+Error: question#index: Missing @return annotation
+Error: question#review: Missing @return annotation
+Error: question#search: Missing @return annotation
+Error: question#show: Missing @return annotation
+Error: question#update: $answers: answers: Instead of 'array' use:
+Error: question#update: $pbqConfig: pbqConfig: Instead of 'array' use:
+Error: question#update: Missing @return annotation
+Error: questionMedia#index: Missing @return annotation
+Error: questionMedia#track: Missing @return annotation
+Error: questionMedia#track: Request header "Range" should be "range".
+Error: rag_import#contributeNote: Missing @return annotation
+Error: rag_import#contributeNote: getParam: text: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: rag_import#contributeNote: getParam: title: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: rag_import#deleteImported: Missing @return annotation
+Error: rag_import#deleteImportedByQuery: Missing @return annotation
+Error: rag_import#importFile: Missing @return annotation
+Error: rag_import#importText: Missing @return annotation
+Error: rag_import#importText: getParam: text: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: rag_import#importText: getParam: title: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: rag_import#listImported: Missing @return annotation
+Error: rag_import#listPending: Missing @return annotation
+Error: rag_import#moderate: Missing @return annotation
+Error: rag_import#moderate: getParam: action: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: rag_import#myContributions: Missing @return annotation
+Error: settings#acknowledgeOnboarding: Missing @return annotation
+Error: settings#getAdmin: Missing @return annotation
+Error: settings#getAdminAudit: Missing @return annotation
+Error: settings#getPersonal: Missing @return annotation
+Error: settings#getTools: Missing @return annotation
+Error: settings#initCertIssuer: Missing @return annotation
+Error: settings#saveAdmin: Missing @return annotation
+Error: settings#savePersonal: Missing @return annotation
+Error: settings#saveTools: $enabledTools: enabledTools: Instead of 'array' use:
+Error: settings#saveTools: Missing @return annotation
+Error: share#create: Missing @return annotation
+Error: share#destroy: Missing @return annotation
+Error: share#index: Missing @return annotation
+Error: share#sharedWithMe: Missing @return annotation
+Error: share#update: Missing @return annotation
+Error: sse#duelStream: Missing @return annotation
+Error: sse#gameshowStream: Missing @return annotation
+Error: starterPool#import: Missing @return annotation
+Error: starterPool#index: Missing @return annotation
+Error: story#getScene: Missing @return annotation
+Error: story#getSkillCheckQuestions: Missing @return annotation
+Error: story#graphScene: Missing @return annotation
+Error: story#graphStart: Missing @return annotation
+Error: story#graphState: Missing @return annotation
+Error: story#graphTraverse: Missing @return annotation
+Error: story#graphTraverse: getParam: edgeId: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: story#graphTraverse: getParam: edge_id: Do not use getParam() when a controller method parameter also works. With getParam() it is not possible to add a comment and specify the parameter type, therefore it should be avoided whenever possible.
+Error: story#listCampaigns: Missing @return annotation
+Error: story#listProgress: Missing @return annotation
+Error: story#makeChoice: Missing @return annotation
+Error: story#startCampaign: Missing @return annotation
+Error: story#submitFreetext: @return: 'DataResponse' needs 3 parameters
+Error: story#submitSkillAnswer: Missing @return annotation
+Error: story#submitSkillBatch: Missing @return annotation
+Error: summary#createSnapshot: Missing @return annotation
+Error: summary#exportCsv: Missing @return annotation
+Error: summary#generateNarrative: Missing @return annotation
+Error: summary#getSnapshot: Missing @return annotation
+Error: summary#getSummary: Missing @return annotation
+Error: supportTicket#adminList: Missing @return annotation
+Error: supportTicket#answer: Missing @return annotation
+Error: supportTicket#approveDraft: Missing @return annotation
+Error: supportTicket#archiveCourseTicket: Missing @return annotation
+Error: supportTicket#askCourse: Missing @return annotation
+Error: supportTicket#create: $context: context: Instead of 'array' use:
+Error: supportTicket#create: Missing @return annotation
+Error: supportTicket#deleteCourseTicket: Missing @return annotation
+Error: supportTicket#instructorList: Missing @return annotation
+Error: supportTicket#mine: Missing @return annotation
+Error: supportTicket#myCourseQuestions: Missing @return annotation
+Error: supportTicket#openCount: Missing @return annotation
+Error: supportTicket#restoreCourseTicket: Missing @return annotation
+Error: supportTicket#withdrawCourseQuestion: Missing @return annotation
+Error: telos#getConsentStatus: Missing @return annotation
+Error: telos#getCourseBuddies: Missing @return annotation
+Error: telos#getCourseTelosAggregate: Missing @return annotation
+Error: telos#getQuestions: Missing @return annotation
+Error: telos#getStatus: Missing @return annotation
+Error: telos#getTelos: Missing @return annotation
+Error: telos#processInterview: Missing @return annotation
+Error: telos#revokeConsent: Missing @return annotation
+Error: telos#saveConsent: Missing @return annotation
+Error: telos#saveTelos: $help_offer: help_offer: Instead of 'array' use:
+Error: telos#saveTelos: $help_wanted: help_wanted: Instead of 'array' use:
+Error: telos#saveTelos: $telos: telos: Instead of 'array' use:
+Error: telos#saveTelos: Missing @return annotation
+Error: telos#updateTelos: $help_offer: help_offer: Instead of 'array' use:
+Error: telos#updateTelos: $help_wanted: help_wanted: Instead of 'array' use:
+Error: telos#updateTelos: $telos: telos: Instead of 'array' use:
+Error: telos#updateTelos: Missing @return annotation
+Error: training#abort: Missing @return annotation
+Error: training#answer: $answerIds: answerIds: Instead of 'array' use:
+Error: training#answer: $pbqAnswers: pbqAnswers: Instead of 'array' use:
+Error: training#answer: Missing @return annotation
+Error: training#complete: Missing @return annotation
+Error: training#start: Missing @return annotation
+Error: training#startPractice: Missing @return annotation
+Error: training#status: Missing @return annotation
+Error: training#submitBatch: $answers: answers: Instead of 'array' use:
+Error: training#submitBatch: Missing @return annotation
+Error: translation#answerTranslations: Missing @return annotation
+Error: translation#deleteAnswerTranslation: Missing @return annotation
+Error: translation#deleteQuestionTranslation: Missing @return annotation
+Error: translation#questionTranslations: Missing @return annotation
+Error: translation#setAnswerTranslation: Missing @return annotation
+Error: translation#setQuestionTranslation: Missing @return annotation
+Error: translation#translatedQuestion: Missing @return annotation
+Error: user_state#answerChallenge: $answer_ids: answer_ids: Instead of 'array' use:
+Error: user_state#answerChallenge: Missing @return annotation
+Error: user_state#claimMission: Missing @return annotation
+Error: user_state#dailyChallenge: Missing @return annotation
+Error: user_state#missions: Missing @return annotation
+Error: user_state#state: Missing @return annotation
+Error: user_state#updateSettings: Missing @return annotation
+Error: videoProgress#complete: Missing @return annotation
+Error: videoProgress#courseStatus: Missing @return annotation
+Error: videoProgress#documentRead: Missing @return annotation
+Error: videoProgress#heartbeat: Missing @return annotation
+Error: videoStream#show: Missing @return annotation
+Error: videoStream#show: Request header "Range" should be "range".
+Error: virtuProf#chat: $questionContext: questionContext: Instead of 'array' use:
+Error: virtuProf#chat: Missing @return annotation
+Error: virtuProf#clearChatHistory: Missing @return annotation
+Error: virtuProf#dismiss: Missing @return annotation
+Error: virtuProf#getChatHistory: Missing @return annotation
+Error: virtuProf#getState: Missing @return annotation
+Error: virtuProf#interviewTurn: $history: history: Instead of 'array' use:
+Error: virtuProf#interviewTurn: Missing @return annotation
+Error: virtuProf#markVisited: Missing @return annotation
+Error: virtuProf#savePreferences: Missing @return annotation
+Error: virtuProf#setEnabled: Missing @return annotation
+Error: virtuProf#setLanguage: Missing @return annotation

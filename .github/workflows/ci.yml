@@ -124,7 +124,8 @@ jobs:
 
       # Regenerates app/openapi.json with the pinned nextcloud/openapi-extractor (composer.lock) in
       # the same throwaway nextcloud:33 container as the PHP gates, and fails when the committed spec
-      # differs, a route of appinfo/routes.php is missing from it, or the extractor's error count
-      # is not the baseline (scripts/openapi-error-baseline.txt, may only shrink).
+      # differs, a route of appinfo/routes.php is missing from it, or the extractor's errors are
+      # not the baseline list (scripts/openapi-error-baseline.txt, may only shrink; a new error is
+      # printed with its controller#method).
       - name: openapi-spec.sh --check --ref HEAD
         run: ./scripts/openapi-spec.sh --check --ref HEAD
