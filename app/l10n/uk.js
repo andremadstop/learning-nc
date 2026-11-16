@@ -3810,7 +3810,6 @@ OC.L10N.register(
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "Skill-Map показує кожен твій пул точкою. Колір показує, як часто ти там відповідаєш неправильно: зелений — рідко, помаранчевий — інколи, червоний — часто, сірий — відповідей ще немає. Натисни на точку, щоб побачити подробиці й потренуватися в пулі.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Твої пули у вигляді мапи; колір показує, як часто ти відповідаєш неправильно.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "Щоб змінити питання, попроси власника пулу поділитися ним із тобою з правом редагування.",
-    "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "Як видавця на сертифікатах зазначено не це ім’я, а назву цього Nextcloud із налаштувань адміністрування в розділі «Оформлення» → «Назва» (без змін — «Nextcloud»).",
     "{kind}: PNG aus Dateien wählen" : "{kind}: вибрати PNG із файлів",
     "Tage bis Fristende: {n}" : "Днів до кінця строку: {n}",
     "{rate} % falsch · Antworten: {n}" : "{rate} % неправильно · Відповідей: {n}",
@@ -3883,5 +3882,6 @@ OC.L10N.register(
     "Name der Organisation neben dem Logo anzeigen" : "Показувати назву організації",
     "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name." : "Якщо вимкнено, на сертифікаті лишається тільки логотип — наприклад, коли логотип уже містить назву написом. У підписаному сертифікаті та на сторінці перевірки назва залишається.",
     "Ausstellende Organisation" : "Організація, що видає",
+    "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen." : "Ця назва зазначається як організація, що видала, у нових сертифікатах, якщо курс не вказує власну назву організації в розділі «Оформлення сертифіката». Якщо тут нічого не вказано, використовується назва цього Nextcloud з «Оформлення» → «Назва». Уже видані сертифікати зберігають свою назву.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

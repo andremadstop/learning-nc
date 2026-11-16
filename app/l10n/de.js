@@ -3810,7 +3810,6 @@ OC.L10N.register(
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.",
-    "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).",
     "{kind}: PNG aus Dateien wählen" : "{kind}: PNG aus Dateien wählen",
     "Tage bis Fristende: {n}" : "Tage bis Fristende: {n}",
     "{rate} % falsch · Antworten: {n}" : "{rate} % falsch · Antworten: {n}",
@@ -3883,5 +3882,6 @@ OC.L10N.register(
     "Name der Organisation neben dem Logo anzeigen" : "Name der Organisation neben dem Logo anzeigen",
     "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name." : "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.",
     "Ausstellende Organisation" : "Ausstellende Organisation",
+    "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen." : "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen.",
 },
 "nplurals=2; plural=(n != 1);");

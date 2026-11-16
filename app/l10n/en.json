@@ -3810,7 +3810,6 @@
         "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.": "The Skill-Map shows each of your pools as a dot. The colour shows how often you answer wrongly there: green rarely, orange sometimes, red often, grey not answered yet. Click a dot to see details and practise the pool.",
         "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.": "Your pools as a map; the colour shows how often you answer wrongly.",
         "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.": "To change questions, ask the person who owns the pool to share it with you for editing.",
-        "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).": "Certificates do not name this operator as issuer but the name of this Nextcloud, set in the administration settings under \"Theming\" → \"Name\" (\"Nextcloud\" unless changed).",
         "{kind}: PNG aus Dateien wählen": "{kind}: Choose PNG from Files",
         "Tage bis Fristende: {n}": "Days until deadline: {n}",
         "{rate} % falsch · Antworten: {n}": "{rate} % wrong · Answers: {n}",
@@ -3885,6 +3884,7 @@
         "Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.": "Leave empty for “{name}” (the legal name from the operator details, otherwise the name of this Nextcloud). The name is signed into new certificates and also appears on the public verification page.",
         "Name der Organisation neben dem Logo anzeigen": "Show organisation name",
         "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name.": "When off, only the logo appears next to it on the certificate, for example when the logo already spells out the name. The name stays in the signed certificate and on the verification page.",
-        "Ausstellende Organisation": "Issuing organisation"
+        "Ausstellende Organisation": "Issuing organisation",
+        "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen.": "This name appears as the issuer on new certificates when a course does not enter its own organisation name under “Certificate design”. Without an entry here, the name of this Nextcloud from “Theming” → “Name” is used. Certificates already issued keep their name."
     }
 }

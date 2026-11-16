@@ -3810,7 +3810,6 @@ OC.L10N.register(
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "تعرض Skill-Map كل مجموعة من مجموعاتك كنقطة. يبيّن اللون مدى تكرار إجاباتك الخاطئة فيها: الأخضر نادرًا، والبرتقالي أحيانًا، والأحمر كثيرًا، والرمادي لا توجد إجابات بعد. انقر على نقطة لرؤية التفاصيل والتدرّب على المجموعة.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "مجموعاتك على شكل خريطة؛ يبيّن اللون مدى تكرار إجاباتك الخاطئة.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "لتعديل الأسئلة، اطلب من مالك المجموعة مشاركتها معك مع صلاحية التحرير.",
-    "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "لا تذكر الشهادات هذا الاسم كجهة مُصدِرة، بل اسم Nextcloud هذا المحدد في إعدادات الإدارة تحت «السمات» ← «الاسم» (ويكون «Nextcloud» ما لم يُغيَّر).",
     "{kind}: PNG aus Dateien wählen" : "{kind}: اختيار PNG من الملفات",
     "Tage bis Fristende: {n}" : "الأيام المتبقية حتى الموعد النهائي: {n}",
     "{rate} % falsch · Antworten: {n}" : "{rate} % خطأ · الإجابات: {n}",
@@ -3883,5 +3882,6 @@ OC.L10N.register(
     "Name der Organisation neben dem Logo anzeigen" : "إظهار اسم المؤسسة",
     "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name." : "عند الإيقاف لا يظهر على الشهادة سوى الشعار، مثلًا عندما يتضمن الشعار الاسم مكتوبًا. يبقى الاسم في الشهادة الموقّعة وعلى صفحة التحقق.",
     "Ausstellende Organisation" : "الجهة المُصدِرة",
+    "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen." : "يظهر هذا الاسم كجهة مُصدِرة على الشهادات الجديدة إذا لم يُدخل المقرر اسم مؤسسة خاصًا به ضمن „تصميم الشهادة“. إذا لم يُدخل شيء هنا، يُستخدم اسم نسخة Nextcloud هذه من „السمة“ → „الاسم“. تحتفظ الشهادات الصادرة سابقًا باسمها.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

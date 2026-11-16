@@ -3810,7 +3810,6 @@ OC.L10N.register(
     "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben." : "La Skill-Map affiche chacun de tes pools sous forme de point. La couleur indique à quelle fréquence tu y réponds faux : vert rarement, orange parfois, rouge souvent, gris pas encore de réponse. Clique sur un point pour voir les détails et t'entraîner sur le pool.",
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Tes pools sous forme de carte ; la couleur indique à quelle fréquence tu réponds faux.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "Pour modifier des questions, demande à la personne à qui appartient le pool de le partager avec toi en modification.",
-    "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "Les certificats n'indiquent pas ce nom comme émetteur, mais le nom de ce Nextcloud, défini dans les paramètres d'administration sous « Personnaliser l'apparence » → « Nom » (« Nextcloud » sauf modification).",
     "{kind}: PNG aus Dateien wählen" : "{kind} : choisir un PNG dans Fichiers",
     "Tage bis Fristende: {n}" : "Jours avant l'échéance : {n}",
     "{rate} % falsch · Antworten: {n}" : "{rate} % fausses · Réponses : {n}",
@@ -3883,5 +3882,6 @@ OC.L10N.register(
     "Name der Organisation neben dem Logo anzeigen" : "Afficher le nom de l’organisation",
     "Ausgeschaltet steht nur das Logo auf dem Zertifikat, etwa wenn das Logo den Namen schon als Schriftzug enthält. Im signierten Zertifikat und auf der Prüfseite bleibt der Name." : "Désactivé, seul le logo figure sur le certificat, par exemple lorsque le logo contient déjà le nom en toutes lettres. Le nom reste dans le certificat signé et sur la page de vérification.",
     "Ausstellende Organisation" : "Organisation émettrice",
+    "Dieser Name steht als Aussteller auf neuen Zertifikaten, wenn ein Kurs unter „Gestaltung des Zertifikats“ keinen eigenen Namen der Organisation einträgt. Ohne Eintrag hier gilt der Name dieser Nextcloud aus „Design“ → „Name“. Bereits ausgestellte Zertifikate behalten ihren Namen." : "Ce nom figure comme émetteur sur les nouveaux certificats lorsqu’un cours n’indique pas son propre nom d’organisation sous « Présentation du certificat ». Sans saisie ici, c’est le nom de ce Nextcloud dans « Personnalisation » → « Nom » qui est utilisé. Les certificats déjà délivrés conservent leur nom.",
 },
 "nplurals=2; plural=(n > 1);");
