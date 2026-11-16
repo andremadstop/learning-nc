@@ -36,6 +36,9 @@ class CertLayoutControllerTest extends TestCase {
     /** @var Course[] */
     private array $updated = [];
 
+    private ?\OCA\Learning\Service\AuditService $audit = null;
+    private ?\OCA\Learning\Tests\Support\FakeDbConnection $db = null;
+
     private function courseController(string $userId): CourseController {
         $this->course = new Course();
         $this->course->setId(7);
@@ -61,7 +64,10 @@ class CertLayoutControllerTest extends TestCase {
             $this->createMock(ExamAttemptPolicy::class),
             $this->createMock(\OCA\Learning\Service\CourseEnrollmentService::class),
             $this->createMock(LoggerInterface::class),
-            $userId
+            $userId,
+            null,
+            $this->audit,
+            $this->db,
         );
     }
 
@@ -84,6 +90,46 @@ class CertLayoutControllerTest extends TestCase {
         $this->assertTrue($stored['show']['score']);
         $this->assertSame('Leitung Weiterbildung', $response->getData()['certLayout']['signer_role']);
         $this->assertSame('Maria Muster', $this->course->jsonSerialize()['cert_layout']['signer_name']);
+    }
+
+    /**
+     * GitHub #77 (review): the organisation name is signed into new certificates as their issuer
+     * and any manager of the course may set it. A change is recorded in the compliance chain
+     * with the instructor as actor, together with the course update; other layout changes are not.
+     */
+    public function testAChangedOrganisationNameIsRecordedInTheComplianceChain(): void {
+        $this->db = new \OCA\Learning\Tests\Support\FakeDbConnection();
+        $this->audit = $this->createMock(\OCA\Learning\Service\AuditService::class);
+        $this->audit->expects($this->once())->method('logComplianceEvent')->with(
+            \OCA\Learning\Service\ComplianceEventTypes::CERT_ISSUER_CHANGED,
+            'teacher',
+            ['course_id' => 7, 'issuer_name' => 'Training Solutions LTD', 'previous' => '']
+        );
+
+        $response = $this->saveLayout('teacher', ['issuer_name' => 'Training Solutions LTD']);
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(1, $this->db->commitCalls, 'course update and record in one transaction');
+        $this->assertCount(1, $this->updated);
+    }
+
+    public function testAnUnchangedOrganisationNameWritesNoEvent(): void {
+        $this->db = new \OCA\Learning\Tests\Support\FakeDbConnection();
+        $this->audit = $this->createMock(\OCA\Learning\Service\AuditService::class);
+        $this->audit->expects($this->never())->method('logComplianceEvent');
+
+        $this->assertSame(200, $this->saveLayout('teacher', ['issuer_name' => '', 'signer_name' => 'Maria Muster'])->getStatus());
+    }
+
+    /** No record, no new name: a failing compliance append saves nothing (500). */
+    public function testAFailedRecordKeepsTheOldOrganisationName(): void {
+        $this->db = new \OCA\Learning\Tests\Support\FakeDbConnection();
+        $this->audit = $this->createMock(\OCA\Learning\Service\AuditService::class);
+        $this->audit->method('logComplianceEvent')->willThrowException(new \RuntimeException('chain'));
+
+        $this->assertSame(500, $this->saveLayout('teacher', ['issuer_name' => 'Bundesamt'])->getStatus());
+        $this->assertSame(1, $this->db->rollBackCalls);
+        $this->assertSame(0, $this->db->commitCalls);
     }
 
     public function testLearnerCannotChangeTheLayout(): void {

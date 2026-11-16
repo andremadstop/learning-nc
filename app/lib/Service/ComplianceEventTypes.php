@@ -29,6 +29,10 @@ final class ComplianceEventTypes {
     // (RequiredDocumentService::changeRequired); context {course_id, required, document_ids, content_ids}.
     // Making a document optional ends its confirmations: ticking it again starts a new row.
     public const CONTENT_REQUIRED_CHANGED = 'course.content.required_changed';
+    // GitHub #77: a course manager changed the organisation name signed into new certificates as
+    // their issuer (CourseController::updateCertConfig); context {course_id, issuer_name, previous},
+    // '' = the fallback chain (operator details, then the Theming name).
+    public const CERT_ISSUER_CHANGED = 'cert.issuer_name.changed';
 
     private function __construct() {} // static-only class
 }

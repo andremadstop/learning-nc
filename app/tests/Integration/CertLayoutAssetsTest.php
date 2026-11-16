@@ -313,6 +313,17 @@ final class CertLayoutAssetsTest extends TestCase {
     }
 
     /**
+     * GitHub #77 (review): the course settings record a changed organisation name in the
+     * compliance chain only with both optional dependencies; without them the change goes
+     * through unrecorded and nothing says so.
+     */
+    public function testTheAppContainerWiresTheIssuerRecordIntoTheCourseController(): void {
+        $controller = Server::get(\OCA\Learning\AppInfo\Application::class)->getContainer()->get(\OCA\Learning\Controller\CourseController::class);
+        $this->assertInstanceOf(\OCA\Learning\Service\AuditService::class, (new \ReflectionProperty($controller, 'auditService'))->getValue($controller));
+        $this->assertInstanceOf(IDBConnection::class, (new \ReflectionProperty($controller, 'db'))->getValue($controller));
+    }
+
+    /**
      * Nextcloud builds the cleanup job from its info.xml class name alone, which neither PHPStan
      * nor the call graph sees: a wiring gap would only show as an image table that never shrinks.
      */

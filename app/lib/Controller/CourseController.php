@@ -38,6 +38,8 @@ class CourseController extends Controller {
     private LoggerInterface $logger;
     private ?string $userId;
     private \OCA\Learning\Service\CsvExportL10n $csvL10n;
+    private ?\OCA\Learning\Service\AuditService $auditService;
+    private ?\OCP\IDBConnection $db;
 
     public function __construct(
         string $appName,
@@ -53,7 +55,9 @@ class CourseController extends Controller {
         CourseEnrollmentService $enrollment,
         LoggerInterface $logger,
         ?string $userId,
-        ?\OCP\IL10N $l10n = null
+        ?\OCP\IL10N $l10n = null,
+        ?\OCA\Learning\Service\AuditService $auditService = null,
+        ?\OCP\IDBConnection $db = null,
     ) {
         parent::__construct($appName, $request);
         $this->courseMapper = $courseMapper;
@@ -68,6 +72,8 @@ class CourseController extends Controller {
         $this->logger = $logger;
         $this->userId = $userId;
         $this->csvL10n = new \OCA\Learning\Service\CsvExportL10n($l10n);
+        $this->auditService = $auditService;
+        $this->db = $db;
     }
 
     /**
@@ -803,16 +809,25 @@ class CourseController extends Controller {
             // GitHub #43: introduction text, element switches and signer of the certificate.
             // Validated before anything changes, so a rejected layout saves nothing. The images are
             // not settable here (CertLayoutController checks the file); the standard layout is NULL.
+            $issuerChange = null;
             if ($certLayout !== null) {
+                $before = \OCA\Learning\Service\CertLayout::decode($course->getCertLayout());
                 try {
-                    $layout = \OCA\Learning\Service\CertLayout::apply(
-                        $certLayout,
-                        \OCA\Learning\Service\CertLayout::decode($course->getCertLayout())
-                    );
+                    $layout = \OCA\Learning\Service\CertLayout::apply($certLayout, $before);
                 } catch (\InvalidArgumentException $e) {
                     return new DataResponse(['error' => 'cert_layout: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
                 }
                 $course->setCertLayout(\OCA\Learning\Service\CertLayout::encode($layout));
+                // GitHub #77 (review): the organisation name is signed into every new certificate
+                // as its issuer and shown on the public verify page, and any manager of the course
+                // can set it. Who changed it, from what to what, goes into the compliance chain.
+                if ($layout['issuer_name'] !== $before['issuer_name']) {
+                    $issuerChange = [
+                        'course_id' => $courseId,
+                        'issuer_name' => $layout['issuer_name'],
+                        'previous' => $before['issuer_name'],
+                    ];
+                }
             }
 
             if ($certEnabled !== null) {
@@ -902,7 +917,20 @@ class CourseController extends Controller {
             }
 
             $course->setUpdatedAt(time());
-            $this->courseMapper->update($course);
+            if ($issuerChange !== null && $this->auditService !== null && $this->db !== null) {
+                // both or neither: no new name without its record
+                $this->db->beginTransaction();
+                try {
+                    $this->courseMapper->update($course);
+                    $this->auditService->logComplianceEvent(\OCA\Learning\Service\ComplianceEventTypes::CERT_ISSUER_CHANGED, $this->userId, $issuerChange);
+                    $this->db->commit();
+                } catch (\Throwable $e) {
+                    $this->db->rollBack();
+                    throw $e;
+                }
+            } else {
+                $this->courseMapper->update($course);
+            }
 
             return new DataResponse([
                 'certEnabled'         => $course->getCertEnabled() ?? false,
