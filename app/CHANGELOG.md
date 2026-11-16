@@ -2,6 +2,119 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.13.0] - 2026-11-16 — Course profile for mandatory training, coverage report, required content and accessibility
+
+The larger parts left for later in 5.12.0 (#43, #46, #59, #35/#42), plus what the automated run of
+alphalib-g's scenario (gamification, AI and Leitner off) found since (#36, #62–#64, #66–#70). Thanks
+to @alphalib-g, whose reports this run replays.
+
+> **Administrators, please read:**
+> - **Course profile when a course is created** (#67). The create dialog offers "IT exam
+>   preparation" (preselected, the defaults so far) and "Mandatory training with certificate":
+>   Training, Exam and Certification on; Leitner, the simulator tools, Class register, Learning
+>   partner, the game modes and "Add to LinkedIn" off. The server applies the profile, so API
+>   callers get the same defaults; an unknown `profile` is refused with 400. It is a preselection
+>   only, not stored, and every switch stays changeable. Existing courses are not changed.
+> - **New course switch "Add to LinkedIn"** (#67) in the certification settings, on by default, so
+>   existing courses keep the button.
+> - **Exam results instead of Leitner in courses without Leitner** (#68). The Progress tab shows the
+>   best counting exam per required pool and whether it passed, the hit rate for other pools, and
+>   passed/not passed overall; a valid certificate in its renewal window reads "Certificate valid ·
+>   renewal open". The at-risk list follows deadlines, expiry, open renewals and inactivity; a
+>   learner who passed is never at risk. The pool's Statistics tab shows answer statistics instead
+>   of empty boxes, counted only over learners of the viewer's own courses.
+> - **Gamification and AI off also for instructors** (#70). With gamification off, the Competition
+>   area and the leaderboard are gone for every role, instructors included (this changes the #36
+>   rule of 5.12.0): the leaderboard API returns an empty list, league reads hand out no standings,
+>   league writes and kudos are refused. With AI off there is no "Generate questions" button, no
+>   voice or character settings and no empty consent question; revoking an existing consent stays
+>   possible.
+> - **Required content can lock the exam** (#35). Course administration → "Required content" holds
+>   documents from the course's material folder and videos. The switch "Exam only after all
+>   required content is completed" locks only the exam that counts for the certificate; Training,
+>   Leitner and practice exams stay open. A document row is now always a material-folder document
+>   and a YouTube/Vimeo row a provider id; the API refuses free paths and URLs with 400. Rows from
+>   before 5.13.0 that name a URL are marked in the settings ("not in the material folder") and
+>   should be replaced by the file from the material folder.
+> - **Learner questions can be archived and deleted** (#59). Instructors of the course archive,
+>   restore and delete questions in Communication → Questions from learners; deleting removes the
+>   answer and every notification about it. Learners withdraw their own unanswered questions.
+> - **Migrations**: one migration (`Version010800Date20261115120000`) adds `cert_layout` to the
+>   courses, `layout_json` to the certificates and the table `learning_cert_assets` (stamp and
+>   signature images, #43). A new daily background job (`CertAssetCleanupJob`) removes stamp and
+>   signature images that no course and no certificate uses, one hour after the last change.
+
+### Added
+- **Certificate design per course** (#43): an introduction text with placeholders (`{student.name}`,
+  `{course.title}`, `{course.elements}`, `{score}`, `{valid_until}`, `{issuer}` and more), switches
+  for logo, score, minimum score, course elements and validity date, a stamp and a signature as
+  PNG from Nextcloud Files (up to 1 MB and 3000 px) with signer name and position, and a preview.
+  QR code and verification link always stay. Each certificate keeps the design it was issued with;
+  certificates from 5.12.0 and earlier look as before. The signed credential and the verification
+  page are unchanged. A file shared view-only (download disabled) cannot become a stamp or
+  signature.
+- **Coverage in the compliance report** (#42, #35): "Coverage: all enrolled learners" lists every
+  enrolled learner, also those who never passed, with status (Current, Renewal open, Expired in
+  grace period, Overdue, Never passed), last certificate, valid until, required pools passed and,
+  where the course has required content, the confirmed items. Filter by status; "Export CSV"
+  downloads the list shown, in the exporter's language.
+- **Required content with read confirmation** (#35): instructors add material-folder documents and
+  videos (own files or YouTube/Vimeo; a pasted address is reduced to the video id); learners open
+  each document in the learning area and click "Confirm I have read this", videos count once
+  watched.
+- **"Pools in my courses"** (#69): a tab in the pool list with the pools of every course the user
+  leads, also when a colleague owns them; opened by default when the user owns no pools.
+- **Pool answer statistics** (#68): questions, learners with answers, attempts, hit rate and the
+  five hardest questions, without naming anyone.
+- **Archive, restore, delete and withdraw learner questions** (#59), and a count of unanswered
+  questions on the Communication tab and on "Questions from learners".
+- **Course profile** "Mandatory training with certificate" and the LinkedIn switch (#67), see
+  above.
+
+### Changed
+- **Pool window for editors** (#46): whoever may edit a pool opens it on Manage, with Statistics
+  next to it. A "Practise as learner" switch brings back Training, Leitner, Exam (and Arena with
+  gamification on); it is remembered per Nextcloud account in this browser. Links into a learner
+  mode turn it on. Learners, read-only shares and the student view are unchanged. With
+  gamification off the Statistics tab hides XP, streak, missions and achievements.
+- **Admin inbox** (#59) moved to the top of Course management, with an open count, translated
+  statuses and a note that course questions are in the course.
+- **No game parts with gamification off** (#36): no confetti after the counting exam, no daily
+  goal, bonus XP, speed tile or kudos.
+- **AI-only parts follow the AI switch** (#36, #70): ExplainBot is not offered with AI off, the
+  instructor's onboarding step says why there is nothing to choose, the VirtuProf context panel
+  names areas instead of internal keys.
+- The instructor dashboard counts co-instructed courses (#36). Every back button in a pool opened
+  from a course returns to the course; a view-only pool tells an instructor how to get the edit
+  right (#69). The exam heading names the pool (#36).
+- The learner's certificate button reads "Download (JSON)"; the operator settings say that the
+  certificate names the Nextcloud (Theming → Name) as issuer; the exam guide of a certificate course
+  no longer calls the exam a simulated test run (#35).
+- Explanations keep their paragraphs in every view (#66).
+
+### Fixed
+- **Accessibility** (#64): tab bars follow the ARIA tab pattern with arrow keys, sortable column
+  headers use `aria-sort` with a real button, course and pool cards have no nested buttons, the
+  flagged form fields have names, and status, kicker and simulator text keeps 4.5:1 contrast in
+  light and dark mode (also the remaining badges from #37 outside the compliance flow and the
+  due-cards count on the Smart Queue button). Stamp and signature buttons name their image (#43).
+  The automated run checks every screen with axe-core.
+- **Duel and gameshow streams** were refused with 412 for every user and fell back to polling; they
+  now send the request token (#63). The student view shows a note instead of a learner-record
+  error in My Progress and Completion (#63).
+- **LLM budget**: a database deadlock while reserving the budget is retried up to three times
+  instead of failing the request (MariaDB/MySQL 1213, PostgreSQL 40P01/40001) (#62).
+- A valid certificate in its renewal window no longer shows as "not passed" in the progress table
+  and the at-risk list (#68).
+- Pools nobody answered are no longer listed as a "weakest topic" (#36).
+- Leaderboard medals go only to a figure sorted in descending order, not to the first row of any
+  sort (#36).
+- A stamp or signature taken over without saving stays visible and removable; a later swap can no
+  longer remove the image a just-issued certificate refers to (#43).
+- Translations: English left in French, Russian and Arabic in the new screens is translated, and a
+  new i18n check fails on it; counts read right for 0 and 1; French names the subnet field
+  "Sous-réseau" (#64, #68).
+
 ## [5.12.0] - 2026-11-15 — Mandatory training: certificates, exam scope and a cleaner UI without gamification
 
 Reported by alphalib-g in GitHub #36–#61: an organisation running an annual mandatory training
