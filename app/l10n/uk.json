@@ -3857,6 +3857,7 @@
         "Zeile {current} von {total}": "Рядок {current} з {total}",
         "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "Звук зараз не відтворюється. Читай текст або пройди його кнопкою «Наступний рядок».",
         "Noch keine Antworten": "Ще немає відповідей",
-        "Häufiger Denkfehler:": "Поширене хибне уявлення:"
+        "Häufiger Denkfehler:": "Поширене хибне уявлення:",
+        "1 Frage": "1 питання"
     }
 }

@@ -3857,6 +3857,7 @@
         "Zeile {current} von {total}": "السطر {current} من {total}",
         "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "لا يمكن تشغيل الصوت الآن. اقرأ النص أو تنقّل فيه باستخدام «السطر التالي».",
         "Noch keine Antworten": "لا توجد إجابات بعد",
-        "Häufiger Denkfehler:": "فكرة خاطئة شائعة:"
+        "Häufiger Denkfehler:": "فكرة خاطئة شائعة:",
+        "1 Frage": "سؤال واحد"
     }
 }

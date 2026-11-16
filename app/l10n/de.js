@@ -3858,5 +3858,6 @@ OC.L10N.register(
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.",
     "Noch keine Antworten" : "Noch keine Antworten",
     "Häufiger Denkfehler:" : "Häufiger Denkfehler:",
+    "1 Frage" : "1 Frage",
 },
 "nplurals=2; plural=(n != 1);");

@@ -3858,5 +3858,6 @@ OC.L10N.register(
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "The audio cannot be played right now. Read the text along or go through it with “Next line”.",
     "Noch keine Antworten" : "No answers yet",
     "Häufiger Denkfehler:" : "Common misconception:",
+    "1 Frage" : "1 question",
 },
 "nplurals=2; plural=(n != 1);");

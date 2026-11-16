@@ -140,12 +140,13 @@
 
               <!-- Read-only banner for shared pools -->
               <NcNoteCard v-if="poolPermission === 'read'" type="info">
-                {{ t('learning', 'Dieser Pool wurde mit dir geteilt (nur Ansicht)') }}
+                <!-- Fresh-eyes C4: two lines, not one run-on sentence ("(view only) To change …"). -->
+                <p class="pool-readonly-note">{{ t('learning', 'Dieser Pool wurde mit dir geteilt (nur Ansicht)') }}</p>
                 <!-- Fresh-eyes C3 (#69): an instructor reading a course pool did not learn how to get
                   the edit right; pool shares can carry it ("edit"). -->
-                <template v-if="userRole === 'instructor' && !studentViewActive">
+                <p v-if="userRole === 'instructor' && !studentViewActive" class="pool-readonly-note">
                   {{ t('learning', 'Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.') }}
-                </template>
+                </p>
               </NcNoteCard>
 
               <!-- GitHub #46: whoever may edit the pool works in Manage; the learner modes are one

@@ -1103,6 +1103,16 @@ export default {
   background: color-mix(in srgb, var(--color-main-background) 92%, var(--color-primary-element) 8%);
 }
 
+/* Fresh-eyes C4: the long description squeezed the button to "Export my d…"; the text gives way. */
+.export-data-row > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.export-data-row > :last-child {
+  flex-shrink: 0;
+}
+
 .weak-topics-list {
   margin: 0;
   padding-inline-start: 18px;

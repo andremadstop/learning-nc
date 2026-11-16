@@ -57,7 +57,7 @@
 						<button type="button" class="pool-name pool-item-open" @click.stop="$emit('openPool', pool.pool_id)">{{ pool.pool_name }}</button>
 						<div class="pool-meta-row">
 							<span class="pool-questions">
-								{{ t('learning', '{n} questions', { n: pool.question_count || 0 }) }}
+								{{ questionCountLabel(pool.question_count || 0) }}
 							</span>
 							<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
 								{{ poolLanguageSummary(pool) }}
@@ -163,7 +163,7 @@
 							<span class="pool-name">{{ pool.pool_name }}</span>
 							<div class="pool-meta-row">
 								<span class="pool-questions">
-									{{ t('learning', '{n} questions', { n: getLearningPoolQuestionCount(pool) }) }}
+									{{ questionCountLabel(getLearningPoolQuestionCount(pool)) }}
 								</span>
 								<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
 									{{ poolLanguageSummary(pool) }}
@@ -1195,6 +1195,10 @@ export default {
 		},
 		getLearningPoolQuestionCount(pool) {
 			return this.poolQuestionCounts[pool.pool_id] ?? pool.question_count ?? 0
+		},
+		// Fresh-eyes C4: a pool with one question read "1 questions".
+		questionCountLabel(count) {
+			return count === 1 ? t('learning', '1 Frage') : t('learning', '{n} questions', { n: count })
 		},
 		poolLanguageCodes(pool) {
 			const langs = Array.isArray(pool.available_content_languages) ? pool.available_content_languages : ['de']
