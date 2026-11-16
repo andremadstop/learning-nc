@@ -260,7 +260,7 @@ describe('course settings: request body of the layout (GitHub #43)', () => {
 			certEnabled: true,
 			certPassPercent: 80,
 			certRequiredPoolIds: [],
-			certValidityDays: 0,
+			certValidity: { amount: 0, unit: 'days' },
 			examScopeQuestions: '',
 			examScopeMinutes: '',
 			certLayout: {

@@ -106,6 +106,8 @@ class CourseProfile67Test extends TestCase {
                 'linkedin' => false,
             ], $config, 'gamification ' . ($gamification ? 'on' : 'off'));
             $this->assertTrue($course->getCertEnabled(), 'the certification is switched on');
+            // GitHub #75: every renewal asks for the required documents again
+            $this->assertTrue($course->getReconfirmPerCycle(), 'required documents are confirmed per cycle');
             $this->assertNull($course->getEnabledTools(), 'the per-tool selection stays the default, only the master switch is off');
             $this->assertNull($course->getCertRequiredPoolIds());
         }
@@ -116,6 +118,7 @@ class CourseProfile67Test extends TestCase {
             $on = $this->service($this->inserting(), true)->create('Netzwerk', null, null, 'teacher', $profile);
             $this->assertNull($on->getModeConfig(), 'gamification on: empty mode config = the defaults');
             $this->assertNotTrue($on->getCertEnabled());
+            $this->assertNotTrue($on->getReconfirmPerCycle(), 'an IT course keeps one confirmation');
 
             $off = json_decode((string)$this->service($this->inserting(), false)->create('Netzwerk', null, null, 'teacher', $profile)->getModeConfig(), true);
             $this->assertFalse($off['duel']);

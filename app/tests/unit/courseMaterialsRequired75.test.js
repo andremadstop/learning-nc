@@ -203,6 +203,38 @@ describe('certificate validity in days, months or years (GitHub #75)', () => {
 		expect(validityPayload({ amount: 365, unit: 'days' })).toEqual({ certValidityDays: 365, certValidityUnit: 'days' })
 	})
 
+	it('the course settings send the validity fields the controller reads', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.patch = vi.fn(() => Promise.resolve({ data: { certValidityDays: 0, certValidityMonths: 24 } }))
+		const { default: CourseTabVerwaltung, certLayoutFromServer } = await import('../../src/components/CourseTabVerwaltung.vue')
+		const ctx = {
+			courseId: 7,
+			certEnabled: true,
+			certPassPercent: 80,
+			certRequiredPoolIds: [],
+			certValidity: { amount: 2, unit: 'years' },
+			examScopeQuestions: '',
+			examScopeMinutes: '',
+			certLayout: certLayoutFromServer({}),
+			$emit: vi.fn(),
+			parseExamScopeDefault: CourseTabVerwaltung.methods.parseExamScopeDefault,
+		}
+		await CourseTabVerwaltung.methods.saveCertConfig.call(ctx)
+		const [url, body] = axios.patch.mock.calls.at(-1)
+		expect(url).toBe('/apps/learning/api/courses/7/cert-config')
+		expect(body.certValidityMonths).toBe(24)
+		expect(body.certValidityUnit).toBe('months')
+		expect(body).not.toHaveProperty('certValidityDays')
+		expect(ctx.certValidity).toEqual({ amount: 2, unit: 'years' })
+
+		ctx.certValidity = { amount: 90, unit: 'days' }
+		axios.patch.mockResolvedValueOnce({ data: { certValidityDays: 90, certValidityMonths: null } })
+		await CourseTabVerwaltung.methods.saveCertConfig.call(ctx)
+		const [, daysBody] = axios.patch.mock.calls.at(-1)
+		expect(daysBody).toMatchObject({ certValidityDays: 90, certValidityUnit: 'days' })
+		expect(ctx.certValidity).toEqual({ amount: 90, unit: 'days' })
+	})
+
 	it('a year ends on the same date next year; 29 February falls back to 28 February', () => {
 		const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 		expect(iso(addValidity(new Date(2026, 2, 16), { amount: 1, unit: 'years' }))).toBe('2027-03-16')
