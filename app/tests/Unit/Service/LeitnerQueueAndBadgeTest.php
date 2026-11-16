@@ -112,28 +112,55 @@ final class LeitnerQueueAndBadgeTest extends TestCase {
         $this->assertSame([$badge], $response['newly_earned_badges']);
     }
 
-    /** GitHub #66: no hint in the Smart Queue for a pool with a running counting exam. */
-    public function testTheSmartQueueWithholdsTheHintOfAPoolWithARunningExam(): void {
-        $rows = [
-            ['id' => 1, 'question_id' => 10, 'pool_id' => 1, 'correct_count' => 0, 'incorrect_count' => 1, 'box' => 1, 'next_review' => 0,
-                'question_type' => 'single', 'pbq_config' => null, 'hint' => 'Exam pool hint', 'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
-            ['id' => 2, 'question_id' => 20, 'pool_id' => 2, 'correct_count' => 0, 'incorrect_count' => 1, 'box' => 1, 'next_review' => 0,
-                'question_type' => 'single', 'pbq_config' => null, 'hint' => 'Free pool hint', 'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
-            ['id' => 3, 'question_id' => 30, 'pool_id' => 3, 'correct_count' => 0, 'incorrect_count' => 1, 'box' => 1, 'next_review' => 0,
-                'question_type' => 'single', 'pbq_config' => null, 'hint' => null, 'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
+    /** @return list<array<string, mixed>> one due item of pool 1 (exam running) and one of pool 2 (no exam) */
+    private function rowsOfAnExamPoolAndAFreePool(): array {
+        $pbq = json_encode(['items' => [['label' => 'A', 'correct' => 'X']], 'expected' => 'secret']);
+        return [
+            ['id' => 1, 'question_id' => 10, 'pool_id' => 1, 'correct_count' => 0, 'incorrect_count' => 3, 'box' => 1, 'next_review' => 0,
+                'question_type' => 'pbq', 'pbq_config' => $pbq, 'hint' => 'Exam pool hint', 'explanation' => 'Exam pool explanation',
+                'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
+            ['id' => 2, 'question_id' => 20, 'pool_id' => 2, 'correct_count' => 0, 'incorrect_count' => 3, 'box' => 1, 'next_review' => 0,
+                'question_type' => 'pbq', 'pbq_config' => $pbq, 'hint' => 'Free pool hint', 'explanation' => 'Free pool explanation',
+                'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
         ];
+    }
+
+    /** @param array<int, array<string, mixed>> $items keyed by item id */
+    private function assertOnlyTheExamPoolIsStripped(array $items): void {
+        $this->assertArrayNotHasKey('hint', $items[1]);
+        $this->assertArrayNotHasKey('explanation', $items[1], 'the explanation is an answer oracle during the exam');
+        $this->assertSame(['items' => [['label' => 'A']]], $items[1]['pbq_config'], 'the PBQ solution keys are removed');
+
+        $this->assertSame('Free pool hint', $items[2]['hint']);
+        $this->assertSame('Free pool explanation', $items[2]['explanation']);
+        $this->assertSame('secret', $items[2]['pbq_config']['expected']);
+    }
+
+    /**
+     * #66 + pre-existing: the Smart Queue withholds hint, explanation and PBQ solution of a pool
+     * with a running counting exam, as getDueQuestions() does — and only of that pool.
+     */
+    public function testTheSmartQueueStripsTheItemsOfAPoolWithARunningExam(): void {
         $db = new FakeDbConnection([
-            new FakeQueryBuilder(FakeResult::fromFetchAll($rows)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll($this->rowsOfAnExamPoolAndAFreePool())),
             new FakeQueryBuilder(FakeResult::fromFetchAll([])), // answers
             new FakeQueryBuilder(FakeResult::fromFetch(['id' => 9, 'started_at' => time() - 60, 'time_limit_seconds' => 0])), // exam on pool 1
             new FakeQueryBuilder(FakeResult::fromFetch(false)), // none on pool 2
         ]);
 
-        $items = array_column($this->service($db)->getSmartQueue('alice', 10), null, 'id');
+        $this->assertOnlyTheExamPoolIsStripped(array_column($this->service($db)->getSmartQueue('alice', 10), null, 'id'));
+    }
 
-        $this->assertArrayNotHasKey('hint', $items[1]);
-        $this->assertSame('Free pool hint', $items[2]['hint']);
-        $this->assertCount(4, $db->issuedBuilders, 'no exam query for an item without a hint');
+    /** Pre-existing, next to #66: the remediation queue had no exam guard at all. */
+    public function testTheRemediationQueueStripsTheItemsOfAPoolWithARunningExam(): void {
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($this->rowsOfAnExamPoolAndAFreePool())),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])), // answers
+            new FakeQueryBuilder(FakeResult::fromFetch(['id' => 9, 'started_at' => time() - 60, 'time_limit_seconds' => 0])), // exam on pool 1
+            new FakeQueryBuilder(FakeResult::fromFetch(false)), // none on pool 2
+        ]);
+
+        $this->assertOnlyTheExamPoolIsStripped(array_column($this->service($db)->getRemediationQueue('alice', 10), null, 'id'));
     }
 
     /** @return list<FakeQueryBuilder> a correct single-choice Leitner answer up to the reveal */

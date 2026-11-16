@@ -347,27 +347,30 @@ class LeitnerService {
         $items = array_slice($items, 0, $limit);
         $this->hydrateQueueItems($items);
 
-        return $this->withholdHintsDuringExam($this->translateQueueItems($items, $contentLanguage), $userId);
+        return $this->stripItemsOfRunningExams($this->translateQueueItems($items, $contentLanguage), $userId);
     }
 
     /**
-     * GitHub #66: the Smart Queue and the remediation queue span all of the user's pools; an item
-     * of a pool with a running counting exam loses its hint (no hint during an exam). One exam
-     * check per pool.
+     * The Smart Queue and the remediation queue span all of the user's pools, so neither has the
+     * per-pool exam guard of getDueQuestions(). An item of a pool with a running counting exam
+     * loses what getDueQuestions() withholds there: explanation, hint (#66) and the PBQ solution
+     * keys. Without this, a second tab during the exam read the explanations and PBQ solutions of
+     * that pool's due items. One exam check per pool.
      *
      * @param list<array<string, mixed>> $items
      * @return list<array<string, mixed>>
      */
-    private function withholdHintsDuringExam(array $items, string $userId): array {
+    private function stripItemsOfRunningExams(array $items, string $userId): array {
         $examByPool = [];
         foreach ($items as &$item) {
-            if (trim((string)($item['hint'] ?? '')) === '') {
-                continue; // nothing to withhold, no exam query
-            }
             $poolId = (int)($item['pool_id'] ?? 0);
             $examByPool[$poolId] ??= $this->hasActiveExamOnPool($poolId, $userId);
-            if ($examByPool[$poolId]) {
-                unset($item['hint']);
+            if (!$examByPool[$poolId]) {
+                continue;
+            }
+            unset($item['explanation'], $item['hint']);
+            if (array_key_exists('pbq_config', $item)) {
+                $item['pbq_config'] = PbqSolutionStripper::strip($item['pbq_config']);
             }
         }
         unset($item);
@@ -819,7 +822,7 @@ class LeitnerService {
             $this->stripOpenAnswers($items);
         }
 
-        return $this->withholdHintsDuringExam($this->translateQueueItems($items, $contentLanguage), $userId);
+        return $this->stripItemsOfRunningExams($this->translateQueueItems($items, $contentLanguage), $userId);
     }
 
     public function getRemediationCount(string $userId): int {
