@@ -4,7 +4,9 @@
  *
  * Two kinds of call sites:
  *  - XHR: `axios.get|post|put|patch|delete(url, …)` — sends the request token, so any route that
- *    exists for that method is fine.
+ *    exists for that method is fine. Server-sent events count here too, as GET:
+ *    `createSseClient(url, …)` (src/utils/sse-client.js) and `new EventSource(url)` send the token as
+ *    the `requesttoken` query parameter, which Nextcloud's CSRF check accepts.
  *  - Navigation: `window.location(.href) = url`, `location.assign(url)`, `window.open(url)`,
  *    `<element>.href = url`, and `href`/`src` attributes and bindings in templates. The browser
  *    sends no request token, so the route must be GET and @NoCSRFRequired (in the spec: no
@@ -557,7 +559,7 @@ function memberPath(n) {
  * @property {number} line
  * @property {'xhr'|'navigation'} kind
  * @property {string|null} method  HTTP method for xhr, 'GET' for navigation
- * @property {string} sink  e.g. "axios.post", "window.location.href", ":href"
+ * @property {string} sink  e.g. "axios.post", "createSseClient", "window.location.href", ":href"
  * @property {string} arg   source text of the URL argument
  * @property {string[]} candidates  evaluated URL strings (WILD = unknown part)
  */
@@ -595,8 +597,13 @@ export function scanModule(mod, evaluator, root) {
 				const p = memberPath(c)
 				if (p === 'window.open' || p === 'window.location.assign' || p === 'location.assign' || p === 'window.location.replace' || p === 'location.replace') {
 					push('navigation', 'GET', p, node.arguments[0], fns, lineOf(node))
+				} else if (c.type === 'Identifier' && mod.imports.get(c.name)?.imported === 'createSseClient') {
+					push('xhr', 'GET', 'createSseClient', node.arguments[0], fns, lineOf(node))
 				}
 			}
+		}
+		if (node.type === 'NewExpression' && ['EventSource', 'window.EventSource'].includes(memberPath(node.callee) ?? '')) {
+			push('xhr', 'GET', 'new ' + memberPath(node.callee), node.arguments[0], fns, lineOf(node))
 		}
 		if (node.type === 'AssignmentExpression' && node.operator === '=') {
 			const p = memberPath(node.left)
@@ -702,6 +709,16 @@ export function matchingOperations(ops, pattern) {
 }
 
 /**
+ * Does a candidate say anything about the path? Not when it is all unknown, nor when its first
+ * literal part is a query or fragment appended to an unknown base (`url + '?requesttoken=' + t`):
+ * such a call site is unresolved, not a request to some foreign host.
+ */
+function hasLiteralPath(candidate) {
+	const rest = candidate.replace(new RegExp('^' + WILD + '+'), '')
+	return rest.replace(new RegExp(WILD, 'g'), '') !== '' && !/^[?&#]/.test(rest)
+}
+
+/**
  * Check call sites against the spec.
  * @return {{ checked: number, unresolved: CallSite[], foreign: number, problems: string[] }}
  */
@@ -713,7 +730,7 @@ export function checkSites(sites, spec) {
 	let foreign = 0
 	for (const site of sites) {
 		const where = `${site.file}:${site.line} ${site.sink}(${site.arg})`
-		const known = site.candidates.filter((c) => c.replace(new RegExp(WILD, 'g'), '') !== '')
+		const known = site.candidates.filter(hasLiteralPath)
 		if (known.length === 0) {
 			unresolved.push(site)
 			continue

@@ -37,6 +37,8 @@ const UNRESOLVED_ALLOWED = {
 	'components/PrivacyInfo.vue :href(privacyUrl)': 'prop from the server-rendered page (linkToRoute)',
 	'components/PrivacyPage.vue :href(appUrl)': 'prop from the server-rendered page (linkToRoute)',
 	'components/PrivacyPage.vue :href(imprintUrl)': 'prop from the server-rendered page (linkToRoute)',
+	// The SSE wrapper: its URL is the caller's, checked at each createSseClient(url) call site.
+	'utils/sse-client.js new window.EventSource(withRequestToken(url))': 'createSseClient(url) callers are checked',
 	// Downloads of content generated in the browser.
 	'components/InstructorDashboard.vue <el>.href(url)': 'URL.createObjectURL(blob)',
 	'utils/summary-export.js <el>.href(url)': 'URL.createObjectURL(blob)',
@@ -129,6 +131,45 @@ export default {
 		for (const p of r.problems) {
 			expect(p).toContain('not @NoCSRFRequired')
 		}
+	})
+
+	it('checks server-sent event streams: createSseClient(url) and new EventSource(url) as GET', () => {
+		const sse = "import { createSseClient } from '../utils/sse-client.js'\n"
+		const ok = scan({ 'e.js': header + sse + "export const f = (code) => createSseClient(generateUrl('/apps/learning/api/sse/duel/' + code), {})" })
+		expect(ok.problems).toEqual([])
+		expect(ok.checked).toBe(1)
+		const r = scan({
+			'f.js': header + sse + `
+export const f = (code) => createSseClient(generateUrl('/apps/learning/api/sse/duels/' + code), {})
+export const g = (code) => new window.EventSource(generateUrl('/apps/learning/api/sse/quiz/' + code))
+export const h = () => new EventSource(generateUrl('/apps/learning/api/courses'))`,
+		})
+		expect(r.problems).toHaveLength(2)
+		expect(r.problems[0]).toContain('createSseClient(')
+		expect(r.problems[0]).toContain('no route /api/sse/duels/{…}')
+		expect(r.problems[1]).toContain('new window.EventSource(')
+		expect(r.problems[1]).toContain('no route /api/sse/quiz/{…}')
+		expect(r.checked).toBe(3)
+	})
+
+	it('a renamed SSE route fails at the duel and gameshow call sites (the real sources)', () => {
+		const renamed = structuredClone(spec)
+		for (const path of Object.keys(renamed.paths)) {
+			if (path.includes('/api/sse/')) {
+				renamed.paths[path.replace('/api/sse/', '/api/stream/')] = renamed.paths[path]
+				delete renamed.paths[path]
+			}
+		}
+		const problems = checkSites(scanSources(SRC), renamed).problems
+		expect(problems.filter((p) => p.includes('no route /api/sse/')).map((p) => p.split(':')[0]).sort())
+			.toEqual(['components/DuelMode.vue', 'components/GameshowMode.vue'])
+	})
+
+	it('a URL whose only literal part is a query on an unknown base is unresolved, not foreign', () => {
+		const r = scan({ 'g.js': header + "export const f = (url, t) => axios.get(url + '?requesttoken=' + t)" })
+		expect(r.checked).toBe(0)
+		expect(r.foreign).toBe(0)
+		expect(r.unresolved.map(siteKey)).toEqual(["__probe__/g.js axios.get(url + '?requesttoken=' + t)"])
 	})
 
 	it('reports a call whose URL it cannot evaluate as unresolved, not as checked', () => {
