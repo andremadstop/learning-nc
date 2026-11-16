@@ -31,7 +31,7 @@ const AXE_SOURCE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8
 const BASE = state.URL
 const APP = `${BASE}/index.php/apps/learning`
 const COURSE_TITLE = 'Annual safety training'
-const PASSWORDS = { admin: state.ADMIN_PASS, instructor: state.INSTRUCTOR_PASS, learner1: state.LEARNER_PASS, learner2: state.LEARNER_PASS }
+const PASSWORDS = { admin: state.ADMIN_PASS, instructor: state.INSTRUCTOR_PASS, learner1: state.LEARNER_PASS, learner2: state.LEARNER_PASS, learner3: state.LEARNER_PASS }
 
 // Buttons the sweep never clicks: destructive, irreversible, or they use up an exam attempt.
 const DENY = /make (instructor|student|learner)|promot|demot|delet|remov|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
@@ -610,6 +610,83 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 	await closeOverlays(page)
 	await station(page, rec, 'Course › Completion & certificate (after passing)', async () => {
 		await openMegaTab(page, 'Completion')
+	})
+	flush()
+	await context.close()
+})
+
+// GitHub #66: one question carries a hint, feedback per option, background, key takeaway, a spoken
+// intro and a dialog (seed: fixture demo-q1 in the optional pool "Question media demo"). learner3
+// answers it in Training, wrong on purpose, so that the feedback for the chosen option shows.
+test('learner practises the media question: hint, intro, feedback, dialog', async ({ browser }) => {
+	test.setTimeout(10 * 60_000)
+	const media = seed.media
+	const rec = new Recorder('learner3')
+	const { context, page } = await login(browser, 'learner3')
+	rec.attach(page)
+	const card = () => page.locator('.training-active .question-card').first()
+	await station(page, rec, 'Training: media question before answering (hint, intro)', async () => {
+		await openMegaTab(page, 'Learning space')
+		await page.locator('.lernraum-subnav button').filter({ hasText: 'Training' }).first().click()
+		await settle(page)
+		await page.locator('#app-content .pool-item').filter({ hasText: media.poolName }).first().click()
+		await settle(page)
+		await page.getByRole('button', { name: 'Start Training' }).first().click()
+		await page.locator('.question-text').first().waitFor({ timeout: 15000 })
+		const text = (await page.locator('.question-text').first().textContent()).trim()
+		if (text !== media.question) throw new Error(`Training shows "${text}", not the media question`)
+		const hint = card().locator('.question-hint')
+		if (!(await hint.isVisible().catch(() => false))) rec.add('media', 'no hint before answering')
+		else {
+			await hint.locator('button').first().click()
+			await page.waitForTimeout(300)
+			if (!(await hint.locator('.question-hint__text').isVisible().catch(() => false))) rec.add('media', 'the hint does not open')
+		}
+		const player = card().locator('.qmedia')
+		await player.waitFor({ timeout: 10000 }).catch(() => rec.add('media', 'no intro player before answering'))
+		if (await player.isVisible().catch(() => false)) {
+			const title = (await player.locator('.qmedia__title').textContent().catch(() => '')).trim()
+			if (title !== 'Intro') rec.add('media', `player title before answering is "${title}", not "Intro"`)
+			const play = player.locator('.qmedia__button--primary')
+			if (await play.isDisabled().catch(() => true)) rec.add('media', 'the intro cannot be played (Play disabled)')
+			else {
+				await play.click()
+				await page.waitForTimeout(1500)
+				const note = (await player.locator('.qmedia__note').textContent().catch(() => '')).trim()
+				if (note) rec.add('media', `intro audio: ${note}`)
+				await play.click().catch(() => {}) // pause
+			}
+		}
+	})
+	await station(page, rec, 'Training: media question answered wrong (feedback, dialog)', async () => {
+		const pick = pickAnswerIndex(await page.locator('.answer-btn').allTextContents(), media.wrongAnswer)
+		if (pick === -1) throw new Error(`no answer button "${media.wrongAnswer}"`)
+		await page.locator('.answer-btn').nth(pick).click()
+		await page.locator('.answer-feedback').first().waitFor({ timeout: 15000 })
+		await settle(page)
+		const feedback = card().locator('.rich-feedback')
+		if (!(await feedback.isVisible().catch(() => false))) rec.add('media', 'no feedback per option after answering')
+		else {
+			const chosen = (await feedback.locator('.rich-feedback__option--wrong').first().textContent().catch(() => '')).replace(/\s+/g, ' ')
+			if (!chosen.includes(media.wrongAnswer)) rec.add('media', `the wrong option's feedback does not name "${media.wrongAnswer}": ${chosen.slice(0, 120)}`)
+			if (!(await feedback.locator('.rich-feedback__takeaway').isVisible().catch(() => false))) rec.add('media', 'no key takeaway after answering')
+		}
+		if (await card().locator('.question-hint').isVisible().catch(() => false)) rec.add('media', 'the hint is still shown after answering')
+		const player = card().locator('.qmedia')
+		if (!(await player.isVisible().catch(() => false))) rec.add('media', 'no dialog player after answering')
+		else {
+			const title = (await player.locator('.qmedia__title').textContent().catch(() => '')).trim()
+			if (title !== 'Debrief') rec.add('media', `player title after answering is "${title}", not "Debrief"`)
+			// Usable without sound: step to the second line and check a caption shows.
+			const next = player.getByRole('button', { name: /Next line/ })
+			await next.click().catch(() => rec.add('media', 'no "Next line" in the dialog'))
+			await next.click().catch(() => {})
+			await page.waitForTimeout(400)
+			const caption = (await player.locator('.qmedia__caption').textContent().catch(() => '')).trim()
+			if (!caption) rec.add('media', 'stepping through the dialog shows no caption')
+			await player.locator('.qmedia__transcript summary').click().catch(() => {})
+			await page.waitForTimeout(300)
+		}
 	})
 	flush()
 	await context.close()

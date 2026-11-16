@@ -45,7 +45,7 @@ const personas = [...new Set(stations.map((s) => s.persona))]
 
 let md = `# Persona sweep — ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC\n\n`
 md += `- App snapshot: \`${state.COMMIT || '?'}\` (${state.REF || 'HEAD'}), Nextcloud 33 + PostgreSQL 16, English UI\n`
-md += `- Gamification: **${mode}**, AI: ${ai}, Leitner: ${leitner} in the course, certification 75 % with two required pools\n`
+md += `- Gamification: **${mode}**, AI: ${ai}, Leitner: ${leitner} in the course, certification 75 % with two required pools, plus the optional pool \"${seed.media?.poolName || 'Question media demo'}\" (one question with hint, feedback and media, #66)\n`
 if (mode === 'on') md += '- IT-course run: the AI connection points at a loopback port nothing listens on, so AI requests are expected to fail; they are listed, not hidden.\n'
 md += `- Personas: ${personas.join(', ')}\n`
 const toasts = stations.flatMap((s) => (s.toasts || []).map((t) => `${s.persona}: ${s.station} — ${t}`))

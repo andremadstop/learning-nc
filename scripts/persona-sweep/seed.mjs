@@ -7,6 +7,10 @@
 // GAMIFICATION=on (an IT course as before #36): gamification on, the course keeps every mode
 // (Leitner included), and AI is switched on with an Ollama connection that nothing answers —
 // the AI parts of the interface show, every AI call fails (no external provider, no key).
+// GitHub #66: a third pool, "Question media demo", not required for the certificate, holds one
+// question from the generic fixture (app/tests/fixtures/question-media, exam_key demo-q1); run.sh
+// then imports its hint, feedback per option, background, key takeaway, intro and dialog with
+// `occ learning:import-question-media`, so the sweep can answer it in Training.
 // Basic auth plus `OCS-APIRequest: true` passes Nextcloud's CSRF check for app routes.
 // Writes out/seed.json (course and pool ids) for the sweep.
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -81,6 +85,19 @@ if (poolIds.length !== 2 || poolIds.some((id) => !id) || imported.imported_quest
 	throw new Error('pool import incomplete: ' + JSON.stringify(imported))
 }
 
+// GitHub #66: the media question, taken from the fixture as it is (not copied into pools.json).
+const MEDIA_KEY = 'demo-q1'
+const fixturePool = JSON.parse(readFileSync(join(HERE, '..', '..', 'app', 'tests', 'fixtures', 'question-media', 'pool.json'), 'utf8'))
+const mediaQuestion = fixturePool.questions.find((q) => q.exam_key === MEDIA_KEY)
+if (!mediaQuestion) throw new Error(`the question-media fixture has no ${MEDIA_KEY}`)
+const mediaImport = await asInstructor('POST', '/pools/import', {
+	jsonData: JSON.stringify({ pools: [{ name: fixturePool.name, description: fixturePool.description, questions: [mediaQuestion] }] }),
+	dry_run: false,
+	file_name: 'question-media-demo.json',
+})
+const mediaPoolId = mediaImport.pools?.[0]?.id
+if (!mediaPoolId || mediaImport.imported_questions !== 1) throw new Error('media pool import incomplete: ' + JSON.stringify(mediaImport))
+
 const course = await asInstructor('POST', '/courses', {
 	title: 'Annual safety training',
 	description: 'Fire safety and data protection, once a year.',
@@ -92,6 +109,8 @@ const course = await asInstructor('POST', '/courses', {
 for (const [i, poolId] of poolIds.entries()) {
 	await asInstructor('POST', `/courses/${course.id}/pools`, { poolId, sortOrder: i })
 }
+// Optional: in the course, not among the certificate's required pools.
+await asInstructor('POST', `/courses/${course.id}/pools`, { poolId: mediaPoolId, sortOrder: poolIds.length })
 await asInstructor('PATCH', `/courses/${course.id}/cert-config`, {
 	certEnabled: true, certPassPercent: 75, certRequiredPoolIds: poolIds, certValidityDays: 365,
 })
@@ -122,10 +141,12 @@ const answers = {}
 for (const pool of JSON.parse(poolsDoc).pools) {
 	for (const q of pool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
 }
+answers[mediaQuestion.text] = mediaQuestion.answers.find((a) => a.is_correct).text
 // poolOwner: the only persona whose pool list must show the pools (nothing is shared).
 writeFileSync(join(HERE, 'out', 'seed.json'), JSON.stringify({
 	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig,
+	media: { poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text },
 	gamification: itCourse, ai: admin.ai_enabled === 'yes' ? `${admin.ai_provider} (no backend answers)` : 'off',
 	answers,
 }, null, 2))
-console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)
+console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, media pool ${mediaPoolId}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)

@@ -184,6 +184,29 @@ up() {
 
 	echo "==> seed (course, pools, certification) as the instructor"
 	PERSONA_STATE="$STATE" node "$HERE/seed.mjs"
+
+	# GitHub #66: hint, feedback, intro and dialog for the seeded media question. The fixture bundle
+	# also describes demo-q2, which the seed does not import; an unknown exam_key fails the import,
+	# so the bundle goes in with demo-q1 only. From the same snapshot as the app ($REF), not the
+	# working copy.
+	echo "==> question media (fixture demo-q1) into the media pool"
+	local media_pool qm
+	media_pool="$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).media.poolId))' "$OUT/seed.json")"
+	qm="$(mktemp -d "${TMPDIR:-/tmp}/learning-persona-qm.XXXXXX")"
+	git -C "$REPO_ROOT" archive "$REF" app/tests/fixtures/question-media/bundle | tar -x -C "$qm"
+	mkdir -p "$qm/bundle"
+	mv "$qm/app/tests/fixtures/question-media/bundle/demo-q1" "$qm/bundle/"
+	node -e '
+		const fs = require("fs")
+		const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"))
+		m.questions = m.questions.filter((q) => q.exam_key === "demo-q1")
+		if (m.questions.length !== 1) throw new Error("fixture manifest has no demo-q1")
+		fs.writeFileSync(process.argv[2], JSON.stringify(m))
+	' "$qm/app/tests/fixtures/question-media/bundle/manifest.json" "$qm/bundle/manifest.json"
+	docker cp "$qm/bundle/." "$NC:/tmp/persona-question-media"
+	rm -r -- "$qm"
+	docker exec "$NC" chown -R www-data:www-data /tmp/persona-question-media
+	occ learning:import-question-media "$media_pool" /tmp/persona-question-media
 	echo "persona-sweep: up at $url (state in $STATE)"
 }
 
