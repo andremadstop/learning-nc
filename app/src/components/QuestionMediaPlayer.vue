@@ -41,16 +41,16 @@
       </div>
       <div v-if="stage.wrong || stage.right" class="qmedia__contrast">
         <span v-if="stage.wrong" class="qmedia__wrong" :class="{ 'qmedia__wrong--struck': stage.struck }">
-          <span aria-hidden="true">✗ </span><span class="qmedia__sr">{{ t('learning', 'Häufiger Denkfehler:') }} </span>{{ cues.wrong }}
+          <span aria-hidden="true">✗ </span><span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Häufiger Denkfehler:') }} </span>{{ cues.wrong }}
         </span>
         <span v-if="stage.right" class="qmedia__right">
-          <span aria-hidden="true">✓ </span><span class="qmedia__sr">{{ t('learning', 'Richtig:') }} </span>{{ cues.right }}
+          <span aria-hidden="true">✓ </span><span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Richtig:') }} </span>{{ cues.right }}
         </span>
       </div>
       <div v-if="stage.merksatz" class="qmedia__merksatz">
         <p>
           <span v-if="cues.icon" aria-hidden="true">{{ cues.icon }} </span>
-          <span class="qmedia__sr">{{ t('learning', 'Merksatz:') }} </span>{{ cues.merksatz }}
+          <span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Merksatz:') }} </span>{{ cues.merksatz }}
         </p>
       </div>
       <p v-if="stage.line" class="qmedia__caption">
@@ -63,7 +63,8 @@
     </div>
 
     <div v-if="timeline.length" class="qmedia__controls">
-      <button type="button"
+      <button ref="play"
+              type="button"
               class="qmedia__button qmedia__button--primary"
               :disabled="!track || audioFailed"
               :aria-label="playing ? t('learning', 'Pause') : t('learning', 'Abspielen')"
@@ -71,18 +72,21 @@
         <span aria-hidden="true">{{ playing ? '❚❚' : '▶' }}</span>
         <span class="qmedia__button-label">{{ playing ? t('learning', 'Pause') : t('learning', 'Abspielen') }}</span>
       </button>
-      <button type="button" class="qmedia__button" :disabled="cursorIndex <= 0 && !ended" @click="step(-1)">
+      <button ref="prev" type="button" class="qmedia__button" :disabled="cursorIndex <= 0 && !ended" @click="step(-1)">
         <span aria-hidden="true">{{ isRtl ? '→' : '←' }}</span> {{ t('learning', 'Vorherige Zeile') }}
       </button>
-      <button type="button" class="qmedia__button" :disabled="ended" @click="step(1)">
+      <button ref="next" type="button" class="qmedia__button" :disabled="ended" @click="step(1)">
         {{ t('learning', 'Nächste Zeile') }} <span aria-hidden="true">{{ isRtl ? '←' : '→' }}</span>
       </button>
-      <button type="button" class="qmedia__button" :disabled="cursorIndex < 0 && !ended && !playing" @click="restart">
+      <button ref="restart" type="button" class="qmedia__button" :disabled="cursorIndex < 0 && !ended && !playing" @click="restart">
         {{ t('learning', 'Von vorn') }}
       </button>
-      <!-- Only the line counter is announced; the running clock would talk over the audio.
+      <!-- Announced only while stepping without sound: the line counter, the line itself and what
+           it brings onto the stage (the misconception, the right answer, at the end the key
+           takeaway), the content in its own language. During playback it stays silent, so it
+           never talks over the audio, and the running clock is never announced.
            The live region is always in the DOM: one inserted together with its text is not read. -->
-      <span class="qmedia__status qmedia__status--lines" :class="{ 'qmedia__status--idle': !lineStatus }" aria-live="polite">{{ lineStatus }}</span>
+      <span class="qmedia__status qmedia__status--lines" :class="{ 'qmedia__status--idle': !lineStatus }" aria-live="polite"><template v-if="lineStatus">{{ lineStatus }}<template v-for="(part, index) in lineAnnouncement" :key="'say-' + index">{{ ' – ' }}<span v-if="part.label" :lang="uiLang">{{ part.label + ' ' }}</span><span :lang="lang || null">{{ part.text }}</span></template></template></span>
       <span v-if="!lineStatus && clockStatus" class="qmedia__status">{{ clockStatus }}</span>
     </div>
     <p class="qmedia__note" :class="{ 'qmedia__note--idle': !audioFailed }" role="status">
@@ -248,6 +252,35 @@ export default {
         total: this.timeline.length,
       });
     },
+    // The interface language as a BCP 47 tag (Nextcloud codes use "_": "pt_BR").
+    uiLang() {
+      return String(getLanguage() || '').replace(/_/g, '-') || null;
+    },
+    // What stepping brings: the line (speaker: text) and, the first time they appear, the
+    // misconception and the right answer; after the last line the key takeaway instead.
+    lineAnnouncement() {
+      if (!this.lineStatus) {
+        return [];
+      }
+      const dialog = this.phase === 'dialog';
+      if (this.ended) {
+        return this.stage.merksatz ? [{ label: this.t('learning', 'Merksatz:'), text: this.cues.merksatz }] : [];
+      }
+      const parts = [];
+      const line = this.stage.line;
+      if (line && line.text) {
+        const who = line.role ? roleName(line.role) + ': ' : '';
+        parts.push({ label: '', text: who + line.text });
+      }
+      const before = stageAt(this.timeline, this.cues, { lineIndex: this.stage.lineIndex - 1 }, { dialog, ended: false });
+      if (this.stage.wrong && !before.wrong) {
+        parts.push({ label: this.t('learning', 'Häufiger Denkfehler:'), text: this.cues.wrong });
+      }
+      if (this.stage.right && !before.right) {
+        parts.push({ label: this.t('learning', 'Richtig:'), text: this.cues.right });
+      }
+      return parts;
+    },
     clockStatus() {
       return this.started ? formatSeconds(this.currentTime) + ' / ' + formatSeconds(this.duration) : '';
     },
@@ -383,7 +416,40 @@ export default {
         }
       }
     },
+    /**
+     * A button that disables itself while focused drops the focus to <body> (HTML focus fixup),
+     * and with it the arrow keys of this section. Call right after the state change (so the
+     * check runs after the re-render): if the focus was in the player and is no longer on an
+     * enabled control, it goes to the first enabled one of $preferred.
+     */
+    keepFocus(preferred) {
+      if (typeof document === 'undefined') {
+        return;
+      }
+      const root = this.$el;
+      const before = document.activeElement;
+      if (!root || typeof root.contains !== 'function' || !before || !root.contains(before)) {
+        return;
+      }
+      this.$nextTick(() => {
+        const now = document.activeElement;
+        if (now && now !== document.body && root.contains(now) && !now.disabled) {
+          return;
+        }
+        for (const name of preferred) {
+          const el = this.$refs[name];
+          if (el && !el.disabled && typeof el.focus === 'function') {
+            el.focus();
+            return;
+          }
+        }
+      });
+    },
     step(delta) {
+      this.moveBy(delta);
+      this.keepFocus(delta > 0 ? ['prev', 'restart'] : ['next', 'restart']);
+    },
+    moveBy(delta) {
       const audio = this.audioElement();
       if (this.playing && audio) {
         audio.pause();
@@ -406,14 +472,12 @@ export default {
     restart() {
       const wasPlaying = this.playing;
       this.ended = false;
-      if (wasPlaying) {
-        this.manualIndex = null;
-        this.seek(0);
-        return;
-      }
       this.manualIndex = null;
-      this.started = false;
+      if (!wasPlaying) {
+        this.started = false;
+      }
       this.seek(0);
+      this.keepFocus(['play', 'next']);
     },
     onTimeUpdate() {
       const audio = this.audioElement();
@@ -436,6 +500,7 @@ export default {
       if (this.manualIndex === null) {
         this.manualIndex = Math.max(0, this.cursorIndex);
       }
+      this.keepFocus(['next', 'prev']);
     },
     onKeydown(event) {
       const tag = event.target?.tagName;
@@ -542,7 +607,7 @@ export default {
   text-underline-offset: .2em;
   animation: qmedia-pop .45s cubic-bezier(.2, 1.4, .4, 1) both;
 }
-.qmedia__keywords b.qmedia__keyword--doubt { text-decoration: underline wavy 2px var(--color-error); }
+.qmedia__keywords b.qmedia__keyword--doubt { text-decoration: underline wavy 2px var(--color-element-error, var(--color-error-text)); }
 .qmedia__contrast { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 16px; }
 .qmedia__wrong { color: var(--color-error-text); transition: opacity .5s; }
 .qmedia__wrong--struck { text-decoration: line-through; opacity: .7; }

@@ -306,6 +306,83 @@ describe('QuestionMediaPlayer', () => {
 		expect(showError).not.toHaveBeenCalled()
 	})
 
+	it('a control that disables itself hands the focus on, so the arrow keys keep working (Gesamt-Review C4)', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL, contentLanguage: 'en' })
+		const next = buttonByText('Nächste Zeile')
+		const prev = buttonByText('Vorherige Zeile')
+		next.focus()
+		for (let i = 0; i < 4; i++) {
+			next.click(); await flush()
+		}
+		expect(vm.ended).toBe(true)
+		expect(next.disabled).toBe(true)
+		expect(document.activeElement).toBe(prev)
+
+		for (let i = 0; i < 3; i++) {
+			prev.click(); await flush()
+		}
+		expect(vm.stage.lineIndex).toBe(0)
+		expect(prev.disabled).toBe(true)
+		expect(document.activeElement).toBe(next)
+	})
+
+	it('a failing audio hands the focus from Play to "Nächste Zeile"', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL })
+		const play = buttonByText('Abspielen')
+		play.focus()
+		play.click(); await flush()
+		host.querySelector('audio').dispatchEvent(new Event('error'))
+		await flush()
+		expect(play.disabled).toBe(true)
+		expect(document.activeElement).toBe(buttonByText('Nächste Zeile'))
+	})
+
+	it('stepping without sound announces the line, the misconception, the right answer and the takeaway (Gesamt-Review C4)', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL, contentLanguage: 'en' })
+		const live = host.querySelector('[aria-live="polite"]')
+		const next = buttonByText('Nächste Zeile')
+		next.click(); await flush()
+		expect(live.textContent).toContain('Zeile 1 von 3')
+		expect(live.textContent).toContain('Anna: Blue and yellow are both primary colours.')
+		expect(live.textContent).not.toContain('Häufiger Denkfehler')
+		next.click(); await flush()
+		expect(live.textContent).toContain('Ben: So mixing them makes purple, right?')
+		expect(live.textContent).toContain('Häufiger Denkfehler: Mixing makes purple')
+		next.click(); await flush()
+		expect(live.textContent).toContain('Richtig: Blue and yellow make green')
+		expect(live.textContent).not.toContain('Häufiger Denkfehler', 'only when it appears')
+		next.click(); await flush()
+		expect(live.textContent).toContain('Merksatz: Blue plus yellow is green.')
+		// labels in the interface language, the content in its own
+		const labels = [...live.querySelectorAll('span[lang]')]
+		expect(labels.find((el) => el.textContent.includes('Merksatz')).getAttribute('lang')).toBe('de')
+		expect(labels.find((el) => el.textContent.includes('Blue plus yellow')).getAttribute('lang')).toBe('en')
+	})
+
+	it('during playback the live region stays silent (it never talks over the audio)', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL, contentLanguage: 'en' })
+		buttonByText('Abspielen').click(); await flush()
+		vm.currentTime = 3; await flush()
+		expect(host.querySelector('[aria-live="polite"]').textContent.trim()).toBe('')
+	})
+
+	it('the screen-reader labels on the stage are in the interface language, not the content language', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		l10n.lang = 'de_DE'
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: { tracks: [], cues: CUES }, contentLanguage: 'en' })
+		expect(host.querySelector('.qmedia__stage').getAttribute('lang')).toBe('en')
+		const labels = [...host.querySelectorAll('.qmedia__stage .qmedia__sr')]
+		// cues without a track: the right answer and the takeaway
+		expect(labels.length).toBe(2)
+		for (const label of labels) {
+			expect(label.getAttribute('lang')).toBe('de-DE')
+		}
+	})
+
 	it('cues without a dialog track: contrast and takeaway at once', async () => {
 		axios.get.mockResolvedValue({ data: { tracks: [] } })
 		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: { tracks: [], cues: CUES } })

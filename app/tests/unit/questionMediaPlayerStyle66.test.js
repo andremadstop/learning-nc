@@ -57,3 +57,34 @@ describe('#66 media player: primary buttons keep their colours on hover and focu
 		}
 	}
 })
+
+/**
+ * Gesamt-Review C4: since NC 32/33 --color-error, --color-success and --color-warning are the pale
+ * background tints (#FFE7E7 light, #552121 dark), about 1.1:1 on the stage or a hover background.
+ * The wavy mark of the misconception keywords (aria-hidden, so the only cue) and the accent borders
+ * of the feedback panel and the hint must use the element variants (at least 3:1).
+ */
+describe('Gesamt-Review C4: coloured cues use the element colours, not the pale tints', () => {
+	const styleOf = (file) => [...readFileSync(resolve(__dirname, '../../src/components/' + file), 'utf8')
+		.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n').replace(/\/\*[\s\S]*?\*\//g, '')
+	const pale = /var\(--color-(error|success|warning)\)/
+
+	it('the wavy mark of a doubtful keyword', () => {
+		const hits = rules((sel) => sel.includes('qmedia__keyword--doubt'))
+		expect(hits.length).toBeGreaterThan(0)
+		for (const { decls } of hits) {
+			expect(decls['text-decoration']).toMatch(/var\(--color-element-error/)
+			expect(decls['text-decoration']).not.toMatch(pale)
+		}
+	})
+
+	for (const [file, needed] of [['RichFeedbackPanel.vue', ['--color-element-success', '--color-element-error']], ['QuestionHint.vue', ['--color-element-warning']]]) {
+		it(`the accent borders of ${file}`, () => {
+			const css = styleOf(file)
+			expect(css).not.toMatch(pale)
+			for (const name of needed) {
+				expect(css).toContain('var(' + name)
+			}
+		})
+	}
+})

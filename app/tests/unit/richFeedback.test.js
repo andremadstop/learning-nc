@@ -158,6 +158,21 @@ describe('what the learner sees after answering', () => {
 		expect(host.textContent).toContain('<b>bold</b>')
 	})
 
+	it('the panel leaves no empty named region when no option feedback names a shown answer (Gesamt-Review C4)', () => {
+		// feedback only for the wrong options, no background, no takeaway; the learner chose right
+		const onlyWrong = { option_feedback: [rich.option_feedback[0], rich.option_feedback[2]], background_fact: null, key_takeaway: null }
+		mount(RichFeedbackPanel, { rich: onlyWrong, answers, selectedIds: [12] })
+		expect(host.querySelector('.rich-feedback')).toBeNull()
+		expect(host.querySelector('[aria-label]')).toBeNull()
+	})
+
+	it('the panel shows the background alone when no option feedback applies', () => {
+		const factOnly = { option_feedback: [rich.option_feedback[0]], background_fact: 'Chlorophyll.', key_takeaway: null }
+		mount(RichFeedbackPanel, { rich: factOnly, answers, selectedIds: [12] })
+		expect(host.querySelector('.rich-feedback__options')).toBeNull()
+		expect(host.querySelector('.rich-feedback').textContent).toContain('Chlorophyll.')
+	})
+
 	it('the panel renders nothing without feedback', () => {
 		mount(RichFeedbackPanel, { rich: null })
 		expect(host.querySelector('.rich-feedback')).toBeNull()

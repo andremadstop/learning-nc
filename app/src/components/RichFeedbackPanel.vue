@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { hasRichFeedback, optionFeedbackToShow } from '../utils/richFeedback.js';
+import { optionFeedbackToShow } from '../utils/richFeedback.js';
 
 /**
  * GitHub #66: what a learner reads after answering — feedback for the chosen option(s), and for
@@ -46,8 +46,10 @@ export default {
     selectedIds: { type: Array, default: () => [] },
   },
   computed: {
+    // From what is rendered, not from the payload: option feedback that names no shown answer
+    // (only for the wrong options, answered right) must not leave an empty named region.
     visible() {
-      return hasRichFeedback(this.rich);
+      return this.options.length > 0 || this.backgroundFact !== '' || this.keyTakeaway !== '';
     },
     options() {
       return optionFeedbackToShow(this.rich, this.answers, this.selectedIds);
@@ -72,8 +74,8 @@ export default {
   background: var(--color-background-hover);
   color: var(--color-main-text);
 }
-.rich-feedback__option--correct { border-inline-start-color: var(--color-success); }
-.rich-feedback__option--wrong { border-inline-start-color: var(--color-error); }
+.rich-feedback__option--correct { border-inline-start-color: var(--color-element-success, var(--color-success-text)); }
+.rich-feedback__option--wrong { border-inline-start-color: var(--color-element-error, var(--color-error-text)); }
 .rich-feedback__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
 .rich-feedback__verdict { font-weight: 700; }
 .rich-feedback__option--correct .rich-feedback__verdict { color: var(--color-success-text); }

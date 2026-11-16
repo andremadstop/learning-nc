@@ -54,7 +54,7 @@ export default {
 .question-hint__text {
   margin: 6px 0 0;
   padding: 10px 14px;
-  border-inline-start: 4px solid var(--color-warning);
+  border-inline-start: 4px solid var(--color-element-warning, var(--color-warning-text));
   border-radius: var(--border-radius-large);
   background: var(--color-background-hover);
   color: var(--color-main-text);
