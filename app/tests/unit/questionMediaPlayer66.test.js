@@ -46,7 +46,7 @@ import axios from '@nextcloud/axios'
 import { showError } from '@nextcloud/dialogs'
 import QuestionMediaPlayer from '../../src/components/QuestionMediaPlayer.vue'
 import {
-	pickLanguage, cuesFor, timelineOf, stageAt, keywordTime, lineIndexAt, resolveLineIndex,
+	pickLanguage, cuesFor, timelineOf, stageAt, keywordTime, lineIndexAt, lastStartedIndex, resolveLineIndex,
 	tracksOfKind, roleName, roleColour, formatSeconds,
 } from '../../src/utils/questionMediaPlayer.js'
 
@@ -186,6 +186,18 @@ describe('questionMediaPlayer utils', () => {
 		expect(stage).toMatchObject({ keywords: [], wrong: false, right: false, merksatz: false })
 	})
 
+	it('the last started line stays the place during a pause between two lines', () => {
+		const paused = [
+			{ role: 'A', text: 'one', start: 0, end: 2 },
+			{ role: 'B', text: 'two', start: 3, end: 5 },
+		]
+		expect(lineIndexAt(paused, 2.6)).toBe(-1)
+		expect(lastStartedIndex(paused, 2.6)).toBe(0)
+		expect(lastStartedIndex(paused, 3)).toBe(1)
+		expect(lastStartedIndex(paused, -0.1)).toBe(-1)
+		expect(lastStartedIndex([], 1)).toBe(-1)
+	})
+
 	it('names, colours and times generically (no content-specific roles)', () => {
 		expect(roleName('MARA')).toBe('Mara')
 		expect(roleName('Dr. Keller')).toBe('Dr. Keller')
@@ -289,8 +301,8 @@ describe('QuestionMediaPlayer', () => {
 		await flush()
 		host.querySelector('audio').dispatchEvent(new Event('error'))
 		await flush()
-		expect(host.querySelector('.qmedia__note')).not.toBeNull()
-		expect(host.querySelector('.qmedia__status').textContent).toContain('Zeile 1 von 3')
+		expect(host.querySelector('.qmedia__note').textContent).toContain('Der Ton lässt sich gerade nicht abspielen')
+		expect(host.querySelector('[aria-live]').textContent).toContain('Zeile 1 von 3')
 		expect(showError).not.toHaveBeenCalled()
 	})
 
@@ -360,14 +372,63 @@ describe('QuestionMediaPlayer', () => {
 		await flush()
 		vm.currentTime = 3
 		await flush()
-		const clock = host.querySelector('.qmedia__status')
-		expect(clock.textContent).toContain('0:03')
+		const clock = [...host.querySelectorAll('.qmedia__status')].find((el) => el.textContent.includes('0:03'))
+		expect(clock).toBeTruthy()
 		expect(clock.closest('[aria-live]')).toBeNull()
 		buttonByText('Nächste Zeile').click()
 		await flush()
-		const counter = host.querySelector('.qmedia__status')
+		const counter = host.querySelector('[aria-live]')
 		expect(counter.textContent).toContain('von 3')
 		expect(counter.getAttribute('aria-live')).toBe('polite')
+	})
+
+	it('in a pause between two lines, "next line" goes on to the next one, and back and start over stay usable', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		const paused = [
+			{ role: 'ANNA', text: 'Blue and yellow are both primary colours.', start: 0, end: 2 },
+			{ role: 'BEN', text: 'So mixing them makes purple, right?', start: 3, end: 5 },
+			{ role: 'ANNA', text: 'No, together they make green.', start: 6, end: 8 },
+		]
+		const reveal = { tracks: [track('dialog', 'en', { timeline: paused })], cues: CUES }
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal, contentLanguage: 'en' })
+		buttonByText('Abspielen').click()
+		await flush()
+		const audio = host.querySelector('audio')
+		audio.dispatchEvent(new Event('play'))
+		vm.currentTime = 5.6
+		await flush()
+		buttonByText('Pause').click()
+		audio.dispatchEvent(new Event('pause'))
+		await flush()
+		// paused in the pause after line 2: nothing is "current", but the dialog is under way
+		expect(buttonByText('Vorherige Zeile').disabled).toBe(false)
+		expect(buttonByText('Von vorn').disabled).toBe(false)
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		expect(vm.manualIndex).toBe(2)
+		expect(host.querySelector('[aria-live]').textContent).toContain('Zeile 3 von 3')
+		expect(host.querySelector('.qmedia__line').textContent).toContain('green')
+	})
+
+	it('the live regions are in the DOM before their first text, so the first message is read', async () => {
+		axios.get.mockResolvedValue({ data: { tracks: [] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL })
+		const live = host.querySelector('[aria-live="polite"]')
+		const status = host.querySelector('[role="status"]')
+		expect(live).not.toBeNull()
+		expect(live.textContent.trim()).toBe('')
+		expect(status).not.toBeNull()
+		expect(status.textContent.trim()).toBe('')
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		expect(host.querySelector('[aria-live="polite"]')).toBe(live)
+		expect(live.textContent).toContain('Zeile 1 von 3')
+		buttonByText('Abspielen').click()
+		await flush()
+		host.querySelector('audio').dispatchEvent(new Event('error'))
+		await flush()
+		expect(host.querySelector('[role="status"]')).toBe(status)
+		expect(status.textContent).toContain('Der Ton lässt sich gerade nicht abspielen')
 	})
 
 	it('reduced motion switches the animations off', async () => {

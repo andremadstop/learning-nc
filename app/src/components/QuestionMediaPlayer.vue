@@ -66,21 +66,24 @@
         <span aria-hidden="true">{{ playing ? '❚❚' : '▶' }}</span>
         <span class="qmedia__button-label">{{ playing ? t('learning', 'Pause') : t('learning', 'Abspielen') }}</span>
       </button>
-      <button type="button" class="qmedia__button" :disabled="stage.lineIndex <= 0 && !ended" @click="step(-1)">
+      <button type="button" class="qmedia__button" :disabled="cursorIndex <= 0 && !ended" @click="step(-1)">
         <span aria-hidden="true">{{ isRtl ? '→' : '←' }}</span> {{ t('learning', 'Vorherige Zeile') }}
       </button>
       <button type="button" class="qmedia__button" :disabled="ended" @click="step(1)">
         {{ t('learning', 'Nächste Zeile') }} <span aria-hidden="true">{{ isRtl ? '←' : '→' }}</span>
       </button>
-      <button type="button" class="qmedia__button" :disabled="stage.lineIndex < 0 && !ended && !playing" @click="restart">
+      <button type="button" class="qmedia__button" :disabled="cursorIndex < 0 && !ended && !playing" @click="restart">
         {{ t('learning', 'Von vorn') }}
       </button>
-      <!-- Only the line counter is announced; the running clock would talk over the audio. -->
-      <span v-if="lineStatus" class="qmedia__status" aria-live="polite">{{ lineStatus }}</span>
-      <span v-else-if="clockStatus" class="qmedia__status">{{ clockStatus }}</span>
+      <!-- Only the line counter is announced; the running clock would talk over the audio.
+           The live region is always in the DOM: one inserted together with its text is not read. -->
+      <span class="qmedia__status qmedia__status--lines" :class="{ 'qmedia__status--idle': !lineStatus }" aria-live="polite">{{ lineStatus }}</span>
+      <span v-if="!lineStatus && clockStatus" class="qmedia__status">{{ clockStatus }}</span>
     </div>
-    <p v-if="audioFailed" class="qmedia__note" role="status">
-      {{ t('learning', 'Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.') }}
+    <p class="qmedia__note" :class="{ 'qmedia__note--idle': !audioFailed }" role="status">
+      <template v-if="audioFailed">
+        {{ t('learning', 'Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.') }}
+      </template>
     </p>
 
     <details v-if="timeline.length" class="qmedia__transcript">
@@ -111,7 +114,7 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { getLanguage, isRTL } from '@nextcloud/l10n';
 import {
-  tracksOfKind, trackLanguages, pickLanguage, trackFor, timelineOf, cuesFor, stageAt,
+  tracksOfKind, trackLanguages, pickLanguage, trackFor, timelineOf, cuesFor, stageAt, lastStartedIndex,
   roleName, roleColour, formatSeconds, languageLabel,
 } from '../utils/questionMediaPlayer.js';
 
@@ -222,6 +225,14 @@ export default {
         return this.track.duration_ms / 1000;
       }
       return last ? last.end : 0;
+    },
+    // Where stepping starts from: the stepped-to line, else the last line the audio has started
+    // (also in a pause between two lines, where no line is "current"), else -1.
+    cursorIndex() {
+      if (this.manualIndex !== null) {
+        return this.manualIndex;
+      }
+      return this.started ? lastStartedIndex(this.timeline, this.currentTime) : -1;
     },
     lineStatus() {
       if (this.manualIndex === null && !this.audioFailed) {
@@ -373,7 +384,7 @@ export default {
         audio.pause();
       }
       const last = this.timeline.length - 1;
-      let index = this.manualIndex !== null ? this.manualIndex : this.stage.lineIndex;
+      let index = this.cursorIndex;
       if (this.ended && delta < 0) {
         this.ended = false;
         index = last;
@@ -418,7 +429,7 @@ export default {
       this.playing = false;
       this.audioFailed = true;
       if (this.manualIndex === null) {
-        this.manualIndex = Math.max(0, this.stage.lineIndex);
+        this.manualIndex = Math.max(0, this.cursorIndex);
       }
     },
     onKeydown(event) {
@@ -550,6 +561,9 @@ export default {
 .qmedia__controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .qmedia__status { margin-inline-start: auto; font-size: 13px; color: var(--color-text-maxcontrast); font-variant-numeric: tabular-nums; }
 .qmedia__note { margin: 6px 0 0; font-size: 13px; color: var(--color-text-maxcontrast); }
+.qmedia__note--idle { margin: 0; }
+/* empty but present (see the template): out of the flex flow, so it adds no gap */
+.qmedia__status--idle { position: absolute; margin: 0; }
 .qmedia__transcript { margin-top: 8px; }
 .qmedia__transcript summary { cursor: pointer; color: var(--color-main-text); }
 .qmedia__transcript ol { margin: 6px 0 0; padding-inline-start: 22px; }

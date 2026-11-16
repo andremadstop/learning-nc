@@ -123,6 +123,21 @@ export function lineIndexAt(timeline, t) {
 }
 
 /**
+ * Index of the last line that has started by time t, or -1 before the first one. Unlike
+ * lineIndexAt it stays on the line just spoken during a pause between two lines, so "next line",
+ * "previous line" and "start over" keep their place there instead of losing it.
+ */
+export function lastStartedIndex(timeline, t) {
+	let found = -1
+	timeline.forEach((line, index) => {
+		if (t >= line.start) {
+			found = index
+		}
+	})
+	return found
+}
+
+/**
  * When a keyword of a line is said: its position in the line text, spread over the line's time.
  * A keyword that is not in the text (another wording, another language) comes with the line start.
  */
