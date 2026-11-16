@@ -1180,7 +1180,7 @@ export default {
         },
         'view:skillmap': {
           title: t('learning', 'Skill-Map'),
-          text: t('learning', 'Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.'),
+          text: t('learning', 'Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.'),
           shortText: t('learning', 'Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.'),
         },
         'view:settings': {

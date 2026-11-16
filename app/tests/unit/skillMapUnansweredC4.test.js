@@ -55,3 +55,14 @@ describe('Skill-Map without answers (fresh-eyes C4)', () => {
 		expect(radius({ id: 3, courseId: 1, radius: 60 })).toBe(68)
 	})
 })
+
+describe('Skill-Map guide (fresh-eyes C4)', () => {
+	it('the VirtuProf guide of the Skill-Map names the grey dots', async () => {
+		const { readFileSync } = await import('fs')
+		const { resolve } = await import('path')
+		const app = readFileSync(resolve(__dirname, '../../src/App.vue'), 'utf8')
+		const start = app.indexOf("'view:skillmap': {")
+		const guide = app.slice(start, app.indexOf('},', start))
+		expect(guide).toContain('grau noch keine Antworten')
+	})
+})

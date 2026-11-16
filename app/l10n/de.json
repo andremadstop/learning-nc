@@ -3808,7 +3808,7 @@
         "Berechtigung": "Berechtigung",
         "Berechtigung für {user}": "Berechtigung für {user}",
         "Terminal": "Terminal",
-        "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.": "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.",
+        "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.": "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft, grau noch keine Antworten. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.",
         "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.": "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.",
         "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.": "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.",
         "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).": "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).",
