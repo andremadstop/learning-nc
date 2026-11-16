@@ -23,11 +23,12 @@ final class ComplianceEventTypes {
     // Defined here for Phase 162 (VideoProgressService emits this event)
     public const VIDEO_COMPLETED = 'course.video.completed';
     // GitHub #75: an instructor asked every learner to confirm a required document again
-    // (RequiredDocumentService::requestReconfirm); context {course_id, content_id}
+    // (RequiredDocumentService::requestReconfirm); context {course_id, content_id, document_id}
     public const CONTENT_RECONFIRM_REQUESTED = 'course.content.reconfirm_requested';
     // GitHub #75: an instructor made material documents required or optional
     // (RequiredDocumentService::changeRequired); context {course_id, required, document_ids, content_ids}.
-    // Making a document optional ends its confirmations: ticking it again starts a new row.
+    // Making a document optional takes its confirmations out of the count until it is ticked again
+    // (they belong to the document, P9).
     public const CONTENT_REQUIRED_CHANGED = 'course.content.required_changed';
     // GitHub #77: a course manager changed the organisation name signed into new certificates as
     // their issuer (CourseController::updateCertConfig); context {course_id, issuer_name, previous},

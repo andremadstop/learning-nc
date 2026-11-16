@@ -13,7 +13,7 @@ const KEYS = [
 	'„{title}“ wurde gelöscht.',
 	'„{title}“ wurde hinzugefügt.',
 	'_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._',
-	'„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?',
+	'„{name}“ wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?',
 	'Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.',
 ]
 

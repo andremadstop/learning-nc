@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Controller\CourseVideoController;
 use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseDocumentMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
@@ -22,7 +23,7 @@ use OCP\IDBConnection;
  * A confirmation counts when its newest row
  *   - is not older than validFrom(): the start of the current certification cycle (only in a
  *     course with reconfirm_per_cycle, see PassCriteriaService::confirmationCycleStart()) and
- *     the instructor's last "Ask everyone to confirm again" (course_videos.confirm_after);
+ *     the instructor's last "Ask everyone to confirm again" (course_documents.confirm_after);
  *   - names the version of the file that is in the material folder now. A rename keeps the
  *     version (DocumentService::fileVersion()). A confirmation taken over from before 5.14.0
  *     has no version; in a course with reconfirm_per_cycle it counts while the file has not
@@ -32,7 +33,10 @@ use OCP\IDBConnection;
  *     not confirm anything else either.
  *
  * Rows are append-only (learning_doc_confirms): a new cycle or a new version asks for a new
- * row; the older ones and their course.video.completed events stay as evidence. Confirming
+ * row; the older ones and their course.video.completed events stay as evidence. They belong to
+ * the document of the course, not to the registry row (P9): a file made optional and required
+ * again gets its earlier confirmations back, measured by the same rule — and so does the
+ * instructor's "Ask everyone to confirm again", which is stored on the document as well. Confirming
  * while a valid confirmation exists is a no-op (no second row, no second audit event).
  * Videos are not handled here: they keep their watch state in learning_video_progress.
  */
@@ -46,6 +50,7 @@ class RequiredDocumentService {
         private AuditService $auditService,
         private ITimeFactory $timeFactory,
         private IDBConnection $db,
+        private CourseDocumentMapper $documentMapper,
     ) {
     }
 
@@ -93,9 +98,47 @@ class RequiredDocumentService {
         return (bool)($course->getReconfirmPerCycle() ?? false);
     }
 
-    /** Confirmations before this moment do not count for $video (see the class comment). */
-    public static function validFrom(CourseVideo $video, ?int $cycleStart): int {
-        return max($cycleStart ?? 0, (int)($video->getConfirmAfter() ?? 0));
+    /**
+     * Confirmations before this moment do not count (see the class comment): the later of the
+     * cycle start and the document's "Ask everyone to confirm again".
+     */
+    public static function validFrom(?int $confirmAfter, ?int $cycleStart): int {
+        return max($cycleStart ?? 0, $confirmAfter ?? 0);
+    }
+
+    /** The course_documents id of a document row; null for a legacy path row. */
+    public static function documentIdOf(CourseVideo $video): ?int {
+        $id = $video->getDocumentId() ?? CourseVideoController::documentIdFromRef($video->getVideoRef());
+        return $id !== null ? (int)$id : null;
+    }
+
+    /**
+     * @param CourseVideo[] $documents
+     * @return array<int, int|null> content id => document id
+     */
+    private static function documentMap(array $documents): array {
+        $map = [];
+        foreach ($documents as $video) {
+            $map[(int)$video->getId()] = self::documentIdOf($video);
+        }
+        return $map;
+    }
+
+    /**
+     * "Ask everyone to confirm again" of each document row, by content id (rows without are left out).
+     *
+     * @param array<int, int|null> $documentOf content id => document id
+     * @return array<int, int>
+     */
+    private function confirmAfterOf(int $courseId, array $documentOf): array {
+        $byDocument = $this->documentMapper->confirmAfterByIds($courseId, array_values(array_filter($documentOf, static fn(?int $d): bool => $d !== null)));
+        $out = [];
+        foreach ($documentOf as $contentId => $documentId) {
+            if ($documentId !== null && isset($byDocument[$documentId])) {
+                $out[$contentId] = $byDocument[$documentId];
+            }
+        }
+        return $out;
     }
 
     /** Start of the user's current cycle in a course that asks per cycle, else null. */
@@ -123,11 +166,11 @@ class RequiredDocumentService {
      * @return array{version: string, mtime: int}|null
      */
     public function fileInfo(Course $course, CourseVideo $video): ?array {
-        $documentId = $video->getDocumentId() ?? CourseVideoController::documentIdFromRef($video->getVideoRef());
+        $documentId = self::documentIdOf($video);
         if ($documentId === null) {
             return null;
         }
-        return $this->documentService->currentFileInfo($course, (int)$documentId);
+        return $this->documentService->currentFileInfo($course, $documentId);
     }
 
     /**
@@ -142,12 +185,13 @@ class RequiredDocumentService {
             return [];
         }
         $cycleStart = $this->cycleStart($course, $userId);
-        $ids = array_map(static fn(CourseVideo $v): int => (int)$v->getId(), $documents);
-        $latest = $this->confirmMapper->latestByUsers([$userId], $ids)[$userId] ?? [];
+        $documentOf = self::documentMap($documents);
+        $latest = $this->confirmMapper->latestByUsers((int)$course->getId(), [$userId], $documentOf)[$userId] ?? [];
+        $confirmAfter = $this->confirmAfterOf((int)$course->getId(), $documentOf);
         $states = [];
         foreach ($documents as $video) {
             $id = (int)$video->getId();
-            $states[$id] = self::evaluate($latest[$id] ?? null, self::validFrom($video, $cycleStart), $this->fileInfo($course, $video), self::legacyByMtime($course));
+            $states[$id] = self::evaluate($latest[$id] ?? null, self::validFrom($confirmAfter[$id] ?? null, $cycleStart), $this->fileInfo($course, $video), self::legacyByMtime($course));
         }
         return $states;
     }
@@ -169,14 +213,16 @@ class RequiredDocumentService {
         foreach ($documents as $video) {
             $files[(int)$video->getId()] = $this->fileInfo($course, $video);
         }
-        $latest = $this->confirmMapper->latestByUsers($userIds, array_keys($files));
+        $documentOf = self::documentMap($documents);
+        $latest = $this->confirmMapper->latestByUsers((int)$course->getId(), $userIds, $documentOf);
+        $confirmAfter = $this->confirmAfterOf((int)$course->getId(), $documentOf);
         $cycleStarts = $this->cycleStarts($course, $userIds);
         $counts = [];
         foreach ($userIds as $uid) {
             $cycleStart = $cycleStarts[$uid] ?? null;
             foreach ($documents as $video) {
                 $id = (int)$video->getId();
-                $state = self::evaluate($latest[$uid][$id] ?? null, self::validFrom($video, $cycleStart), $files[$id], self::legacyByMtime($course));
+                $state = self::evaluate($latest[$uid][$id] ?? null, self::validFrom($confirmAfter[$id] ?? null, $cycleStart), $files[$id], self::legacyByMtime($course));
                 if ($state['confirmed']) {
                     $counts[$uid] = ($counts[$uid] ?? 0) + 1;
                 }
@@ -206,13 +252,17 @@ class RequiredDocumentService {
         }
         $file = $this->fileInfo($course, $video);
         $now = $this->timeFactory->getTime();
+        $documentId = self::documentIdOf($video);
         $context = ['course_id' => (int)$course->getId(), 'content_id' => $id];
+        if ($documentId !== null) {
+            $context['document_id'] = $documentId;
+        }
         if ($file !== null) {
             $context['document_version'] = $file['version'];
         }
         $this->db->beginTransaction();
         try {
-            $this->confirmMapper->insert($userId, $id, (int)$course->getId(), $now, $file['version'] ?? null);
+            $this->confirmMapper->insert($userId, $id, (int)$course->getId(), $now, $file['version'] ?? null, $documentId);
             $this->auditService->logComplianceEvent(ComplianceEventTypes::VIDEO_COMPLETED, $userId, $context);
             $this->db->commit();
         } catch (\OCP\DB\Exception $e) {
@@ -232,8 +282,9 @@ class RequiredDocumentService {
      * The "Required" column (instructor, checked by the caller): adds the given new registry rows
      * and removes the given ones, and records what actually changed as
      * course.content.required_changed in the compliance chain with the instructor as actor —
-     * all or nothing. A removed row takes its confirmations out of the count for good (ticking
-     * the document again starts a new row), so who did it must be on record.
+     * all or nothing. A removed row takes its confirmations out of the count until the document
+     * is ticked again (P9: they belong to the document and then count again, see the class
+     * comment), so who did it must be on record.
      * A row added concurrently by another request (unique violation) is skipped inside a
      * savepoint, so the outer transaction stays usable on PostgreSQL.
      *
@@ -286,24 +337,35 @@ class RequiredDocumentService {
 
     /**
      * "Ask everyone to confirm again" (instructor, checked by the caller): confirmations from
-     * before now no longer count for this document. Recorded in the compliance chain with the
-     * instructor as actor.
+     * before now no longer count for this document. Stored on the document (course_documents),
+     * so it survives making the file optional and required again (P9). Recorded in the
+     * compliance chain with the instructor as actor.
+     *
+     * @return array<string, mixed> the registry row with the new confirm_after
+     * @throws \InvalidArgumentException a legacy path row has no document to store it on
      */
-    public function requestReconfirm(CourseVideo $video, string $instructorId): CourseVideo {
+    public function requestReconfirm(CourseVideo $video, string $instructorId): array {
+        $documentId = self::documentIdOf($video);
+        if ($documentId === null) {
+            throw new \InvalidArgumentException('The required document has no document id');
+        }
+        $courseId = (int)$video->getCourseId();
         $now = $this->timeFactory->getTime();
         $this->db->beginTransaction();
         try {
-            $video->setConfirmAfter($now);
-            $video = $this->videoMapper->update($video);
+            if ($this->documentMapper->setConfirmAfter($courseId, $documentId, $now) === 0) {
+                throw new \InvalidArgumentException('The required document is not in this course');
+            }
             $this->auditService->logComplianceEvent(ComplianceEventTypes::CONTENT_RECONFIRM_REQUESTED, $instructorId, [
-                'course_id' => (int)$video->getCourseId(),
+                'course_id' => $courseId,
                 'content_id' => (int)$video->getId(),
+                'document_id' => $documentId,
             ]);
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollBack();
             throw $e;
         }
-        return $video;
+        return $video->jsonSerialize() + ['confirm_after' => $now];
     }
 }

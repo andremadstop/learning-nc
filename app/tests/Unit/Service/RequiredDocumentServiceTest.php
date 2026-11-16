@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseDocumentMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
@@ -72,12 +73,10 @@ class RequiredDocumentServiceTest extends TestCase {
     }
 
     public function testValidFromIsTheLaterOfCycleAndReconfirmRequest(): void {
-        $video = new CourseVideo();
-        self::assertSame(0, RequiredDocumentService::validFrom($video, null));
-        self::assertSame(1000, RequiredDocumentService::validFrom($video, 1000));
-        $video->setConfirmAfter(2000);
-        self::assertSame(2000, RequiredDocumentService::validFrom($video, 1000));
-        self::assertSame(3000, RequiredDocumentService::validFrom($video, 3000));
+        self::assertSame(0, RequiredDocumentService::validFrom(null, null));
+        self::assertSame(1000, RequiredDocumentService::validFrom(null, 1000));
+        self::assertSame(2000, RequiredDocumentService::validFrom(2000, 1000));
+        self::assertSame(3000, RequiredDocumentService::validFrom(2000, 3000));
     }
 
     // ---- the service ----------------------------------------------------------------------
@@ -93,6 +92,7 @@ class RequiredDocumentServiceTest extends TestCase {
         ?AuditService $audit = null,
         ?DocConfirmMapper $confirms = null,
         int $now = 5000,
+        ?CourseDocumentMapper $documentMapper = null,
     ): RequiredDocumentService {
         $course = new Course();
         $course->setId(9);
@@ -122,6 +122,7 @@ class RequiredDocumentServiceTest extends TestCase {
             $audit ?? $this->createMock(AuditService::class),
             $time,
             new FakeDbConnection(),
+            $documentMapper ?? $this->createMock(CourseDocumentMapper::class),
         );
     }
 
@@ -175,12 +176,12 @@ class RequiredDocumentServiceTest extends TestCase {
         $confirms->method('latestByUsers')->willReturnCallback(function () use (&$calls) {
             return $calls++ === 0 ? [] : ['anna' => [31 => ['confirmed_at' => 5000, 'doc_version' => self::V2]]];
         });
-        $confirms->expects($this->once())->method('insert')->with('anna', 31, 9, 5000, self::V2);
+        $confirms->expects($this->once())->method('insert')->with('anna', 31, 9, 5000, self::V2, 12);
         $audit = $this->createMock(AuditService::class);
         $audit->expects($this->once())->method('logComplianceEvent')->with(
             ComplianceEventTypes::VIDEO_COMPLETED,
             'anna',
-            ['course_id' => 9, 'content_id' => 31, 'document_version' => self::V2]
+            ['course_id' => 9, 'content_id' => 31, 'document_id' => 12, 'document_version' => self::V2]
         );
 
         $state = $this->service([], ['version' => self::V2, 'mtime' => 100], false, null, $audit, $confirms)
@@ -207,26 +208,52 @@ class RequiredDocumentServiceTest extends TestCase {
         $audit->expects($this->once())->method('logComplianceEvent')->with(
             ComplianceEventTypes::CONTENT_RECONFIRM_REQUESTED,
             'teacher',
-            ['course_id' => 9, 'content_id' => 31]
+            ['course_id' => 9, 'content_id' => 31, 'document_id' => 12]
         );
-        $mapper = $this->createMock(CourseVideoMapper::class);
-        $mapper->method('update')->willReturnArgument(0);
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(7000);
+        // P9: stored on the document of the course, not on the registry row
+        $documentMapper = $this->createMock(CourseDocumentMapper::class);
+        $documentMapper->expects($this->once())->method('setConfirmAfter')->with(9, 12, 7000)->willReturn(1);
+        $videos = $this->createMock(CourseVideoMapper::class);
+        $videos->expects($this->never())->method('update');
         $service = new RequiredDocumentService(
             $this->createMock(DocConfirmMapper::class),
-            $mapper,
+            $videos,
             $this->createMock(CourseMapper::class),
             $this->createMock(DocumentService::class),
             $this->createMock(PassCriteriaService::class),
             $audit,
             $time,
             new FakeDbConnection(),
+            $documentMapper,
         );
 
-        $video = $service->requestReconfirm(self::document(), 'teacher');
+        $row = $service->requestReconfirm(self::document(), 'teacher');
 
-        self::assertSame(7000, $video->getConfirmAfter());
+        self::assertSame(7000, $row['confirm_after']);
+        self::assertSame(31, $row['id']);
+    }
+
+    /**
+     * P9: the instructor's "Ask everyone to confirm again" is read from the document, so a
+     * registry row that was added again for the same document still honours it.
+     */
+    public function testReconfirmRequestOnTheDocumentCountsForANewRegistryRow(): void {
+        $documentMapper = $this->createMock(CourseDocumentMapper::class);
+        $documentMapper->method('confirmAfterByIds')->with(9, [12])->willReturn([12 => 4500]);
+        $confirms = $this->createMock(DocConfirmMapper::class);
+        $confirms->expects($this->once())->method('latestByUsers')
+            ->with(9, ['anna'], [77 => 12])
+            ->willReturn(['anna' => [77 => ['confirmed_at' => 4000, 'doc_version' => self::V1]]]);
+        $service = $this->service([], ['version' => self::V1, 'mtime' => 100], false, null, null, $confirms, 5000, $documentMapper);
+        $row = self::document();
+        $row->setId(77); // the row of the second "Required" tick
+
+        $state = $service->statesForUser(self::course(false), [$row], 'anna')[77];
+
+        self::assertFalse($state['confirmed']);
+        self::assertTrue($state['again']);
     }
 
     /**
@@ -250,6 +277,7 @@ class RequiredDocumentServiceTest extends TestCase {
             $audit,
             $this->createMock(ITimeFactory::class),
             $db,
+            $this->createMock(CourseDocumentMapper::class),
         );
 
         $service->changeRequired(9, [self::document()], [], 'teacher');
@@ -289,6 +317,7 @@ class RequiredDocumentServiceTest extends TestCase {
             $this->createMock(AuditService::class),
             $this->createMock(ITimeFactory::class),
             new FakeDbConnection(),
+            $this->createMock(CourseDocumentMapper::class),
         );
 
         self::assertSame(['anna' => 1], $service->countConfirmedByUsers($course, [self::document()], ['anna', 'ben']));
@@ -313,6 +342,7 @@ class RequiredDocumentServiceTest extends TestCase {
             $this->createMock(AuditService::class),
             $this->createMock(ITimeFactory::class),
             new FakeDbConnection(),
+            $this->createMock(CourseDocumentMapper::class),
         );
 
         self::assertSame(['anna' => 1], $service->countConfirmedByUsers($course, [self::document()], ['anna', 'ben', 'carl']));

@@ -147,6 +147,7 @@ class CourseVideoControllerTest extends TestCase {
                 $this->audit,
                 $this->createMock(ITimeFactory::class),
                 $this->db,
+                $this->createMock(\OCA\Learning\Db\CourseDocumentMapper::class),
             ),
         );
     }

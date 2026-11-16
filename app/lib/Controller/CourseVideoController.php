@@ -355,7 +355,8 @@ class CourseVideoController extends Controller {
      * left as it is, so ticking "all" twice adds nothing. Only documents of this course's
      * material folder can be made required; any other id refuses the whole request.
      * Removing a row leaves its confirmations in place (and in the compliance chain); ticking the
-     * document again later starts a new row that has to be confirmed anew. Every change is
+     * document again later adds a new row, and the earlier confirmations count again as long as
+     * the file version and the certification cycle still match (P9). Every change is
      * recorded as course.content.required_changed (RequiredDocumentService::changeRequired()).
      *
      * @param list<int> $documentIds course_documents ids
@@ -462,7 +463,10 @@ class CourseVideoController extends Controller {
             if ($video->getSourceType() !== self::DOCUMENT_SOURCE_TYPE || $this->requiredDocuments === null) {
                 return new DataResponse(['error' => 'Only a required document can be confirmed again'], Http::STATUS_BAD_REQUEST);
             }
-            return new DataResponse($this->requiredDocuments->requestReconfirm($video, $this->userId)->jsonSerialize());
+            return new DataResponse($this->requiredDocuments->requestReconfirm($video, $this->userId));
+        } catch (\InvalidArgumentException $e) {
+            // a legacy path row has no document to store the request on
+            return new DataResponse(['error' => 'Only a required document can be confirmed again'], Http::STATUS_BAD_REQUEST);
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Video not found'], Http::STATUS_NOT_FOUND);
         } catch (ForbiddenException $e) {

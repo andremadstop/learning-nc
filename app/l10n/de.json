@@ -3957,10 +3957,10 @@
             "%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen.",
             "%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen."
         ],
-        "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?",
-        "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
-            "%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?",
-            "%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?"
+        "„{name}“ wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?": "„{name}“ wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?",
+        "_%n Datei wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?_::_%n Dateien werden optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht werden und sich bis dahin nicht geändert haben. Fortfahren?_": [
+            "%n Datei wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?",
+            "%n Dateien werden optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht werden und sich bis dahin nicht geändert haben. Fortfahren?"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.",
         "Die Unterlagen dieses Kurses lesen.": "Die Unterlagen dieses Kurses lesen.",

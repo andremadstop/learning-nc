@@ -13,7 +13,9 @@ use PHPUnit\Framework\TestCase;
  * GitHub #75: the data step of Version011100 against a real database (run on PostgreSQL and on
  * MariaDB: ENGINE=pgsql|mysql scripts/nc-integration.sh). Existing read confirmations — also
  * those on a document that was required twice — become confirmation rows; the duplicate
- * registry rows go; document_id is filled; a second run changes nothing. Every test rolls back.
+ * registry rows go; document_id is filled on the registry rows and on the confirmations (P9: a
+ * confirmation belongs to the document, also one taken over from a duplicate row); a second run
+ * changes nothing. Every test rolls back.
  */
 class DocConfirmMigrationTest extends TestCase {
     private const COURSE = 975001;
@@ -47,10 +49,10 @@ class DocConfirmMigrationTest extends TestCase {
         ])->executeStatement();
     }
 
-    /** @return list<array{user_id: string, content_id: int, confirmed_at: int, doc_version: ?string}> */
+    /** @return list<array{user_id: string, content_id: int, confirmed_at: int, doc_version: ?string, document_id: ?int}> */
     private function confirmations(): array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('user_id', 'content_id', 'confirmed_at', 'doc_version')->from('learning_doc_confirms')
+        $qb->select('user_id', 'content_id', 'confirmed_at', 'doc_version', 'document_id')->from('learning_doc_confirms')
             ->where($qb->expr()->in('course_id', $qb->createNamedParameter([self::COURSE, self::OTHER_COURSE], IQueryBuilder::PARAM_INT_ARRAY)))
             ->orderBy('user_id')->addOrderBy('confirmed_at');
         $rows = $qb->executeQuery()->fetchAll();
@@ -59,6 +61,7 @@ class DocConfirmMigrationTest extends TestCase {
             'content_id' => (int)$r['content_id'],
             'confirmed_at' => (int)$r['confirmed_at'],
             'doc_version' => $r['doc_version'] !== null ? (string)$r['doc_version'] : null,
+            'document_id' => $r['document_id'] !== null ? (int)$r['document_id'] : null,
         ], $rows);
     }
 
@@ -97,11 +100,11 @@ class DocConfirmMigrationTest extends TestCase {
             $this->assertSame(5, $result['confirmations']);
             $this->assertSame(1, $result['duplicates']);
             $this->assertSame([
-                ['user_id' => 'anna', 'content_id' => $kept, 'confirmed_at' => 1000, 'doc_version' => null],
-                ['user_id' => 'anna', 'content_id' => $kept, 'confirmed_at' => 1100, 'doc_version' => null],
-                ['user_id' => 'ben', 'content_id' => $kept, 'confirmed_at' => 1200, 'doc_version' => null],
-                ['user_id' => 'carl', 'content_id' => $legacy, 'confirmed_at' => 1300, 'doc_version' => null],
-                ['user_id' => 'dora', 'content_id' => $sameDocElsewhere, 'confirmed_at' => 1500, 'doc_version' => null],
+                ['user_id' => 'anna', 'content_id' => $kept, 'confirmed_at' => 1000, 'doc_version' => null, 'document_id' => 12],
+                ['user_id' => 'anna', 'content_id' => $kept, 'confirmed_at' => 1100, 'doc_version' => null, 'document_id' => 12],
+                ['user_id' => 'ben', 'content_id' => $kept, 'confirmed_at' => 1200, 'doc_version' => null, 'document_id' => 12],
+                ['user_id' => 'carl', 'content_id' => $legacy, 'confirmed_at' => 1300, 'doc_version' => null, 'document_id' => null],
+                ['user_id' => 'dora', 'content_id' => $sameDocElsewhere, 'confirmed_at' => 1500, 'doc_version' => null, 'document_id' => 12],
             ], $this->confirmations());
 
             $registry = $this->registry(self::COURSE);

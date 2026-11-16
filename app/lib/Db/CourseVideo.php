@@ -27,8 +27,6 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(int $createdAt)
  * @method int|null getDocumentId()
  * @method void setDocumentId(?int $documentId)
- * @method int|null getConfirmAfter()
- * @method void setConfirmAfter(?int $confirmAfter)
  */
 class CourseVideo extends Entity implements \JsonSerializable {
     protected $courseId;
@@ -41,8 +39,6 @@ class CourseVideo extends Entity implements \JsonSerializable {
     protected $createdAt;
     /** GitHub #75: course_documents id of a document row (UNIQUE per course), NULL for videos. */
     protected $documentId;
-    /** GitHub #75: "Ask everyone to confirm again" — confirmations before it no longer count. */
-    protected $confirmAfter;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -51,7 +47,6 @@ class CourseVideo extends Entity implements \JsonSerializable {
         $this->addType('sortOrder', 'integer');
         $this->addType('createdAt', 'integer');
         $this->addType('documentId', 'integer');
-        $this->addType('confirmAfter', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -66,7 +61,6 @@ class CourseVideo extends Entity implements \JsonSerializable {
             'sort_order' => $this->sortOrder,
             'created_at' => $this->createdAt,
             'document_id' => $this->documentId,
-            'confirm_after' => $this->confirmAfter,
         ];
     }
 }

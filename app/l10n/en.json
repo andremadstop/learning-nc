@@ -3957,10 +3957,10 @@
             "%n required document is no longer in the material folder: learners cannot open it.",
             "%n required documents are no longer in the material folder: learners cannot open them."
         ],
-        "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "“{name}” becomes optional. If the file is made required again later, every learner has to confirm it as read again. Earlier confirmations stay in the audit log. Continue?",
-        "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
-            "%n file becomes optional. If it is made required again later, every learner has to confirm it as read again. Earlier confirmations stay in the audit log. Continue?",
-            "%n files become optional. If they are made required again later, every learner has to confirm them as read again. Earlier confirmations stay in the audit log. Continue?"
+        "„{name}“ wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?": "“{name}” becomes optional. Earlier confirmations are kept and count again if the file is made required again and has not changed by then. Continue?",
+        "_%n Datei wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?_::_%n Dateien werden optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht werden und sich bis dahin nicht geändert haben. Fortfahren?_": [
+            "%n file becomes optional. Earlier confirmations are kept and count again if it is made required again and has not changed by then. Continue?",
+            "%n files become optional. Earlier confirmations are kept and count again if they are made required again and have not changed by then. Continue?"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Here you find the documents of this course. If the course has required documents, open them and confirm you have read them. All other files are optional.",
         "Die Unterlagen dieses Kurses lesen.": "Read the documents of this course.",

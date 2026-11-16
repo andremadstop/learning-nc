@@ -418,14 +418,15 @@ export default {
 		},
 
 		/**
-		 * GitHub #75 (review): making a required file optional ends the count of its read
-		 * confirmations; ticking it again asks every learner anew. So it is asked first, like
-		 * "Ask everyone to confirm again". Cancelled: the box shows the unchanged state again.
+		 * GitHub #75 (review): making a required file optional takes its read confirmations out
+		 * of the count until it is ticked again; they are kept and count again then, unless the
+		 * file has changed (P9). Still asked first, so a misclick is noticed. Cancelled: the box
+		 * shows the unchanged state again.
 		 */
 		confirmMakeOptional(docs) {
 			const message = docs.length === 1
-				? t('learning', '„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: docs[0].file_name }, undefined, RAW)
-				: n('learning', '%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', '%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', docs.length)
+				? t('learning', '„{name}“ wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?', { name: docs[0].file_name }, undefined, RAW)
+				: n('learning', '%n Datei wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?', '%n Dateien werden optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht werden und sich bis dahin nicht geändert haben. Fortfahren?', docs.length)
 			return window.confirm(message)
 		},
 

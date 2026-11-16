@@ -28,6 +28,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setChunkingStatus(?string $chunkingStatus)
  * @method int|null getFileId()
  * @method void setFileId(?int $fileId)
+ * @method int|null getConfirmAfter()
+ * @method void setConfirmAfter(?int $confirmAfter)
  */
 class CourseDocument extends Entity {
     protected $courseId;
@@ -41,6 +43,11 @@ class CourseDocument extends Entity {
     protected $chunkingStatus;
     /** GitHub #75: Nextcloud file id, so a rename keeps the row (NULL until the next scan). */
     protected $fileId;
+    /**
+     * GitHub #75: "Ask everyone to confirm again" — confirmations of this document from before it
+     * no longer count. On the document, so making it optional and required again keeps it (P9).
+     */
+    protected $confirmAfter;
     protected $createdAt;
     protected $updatedAt;
 
@@ -51,6 +58,7 @@ class CourseDocument extends Entity {
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
         $this->addType('fileId', 'integer');
+        $this->addType('confirmAfter', 'integer');
     }
 
     public function jsonSerialize(): array {

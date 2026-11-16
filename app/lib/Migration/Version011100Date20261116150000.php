@@ -20,12 +20,17 @@ use OCP\Migration\SimpleMigrationStep;
  *   doc_version is the version of the file that was read (sha256 of the Nextcloud checksum, or
  *   of mtime and size), NULL for a confirmation taken over from before 5.14.0. The unique key
  *   (user_id, content_id, confirmed_at) turns a double click within one second into a no-op.
+ *   document_id (P9) binds a confirmation to the document of the course, not to the registry
+ *   row: making a file optional deletes its row, ticking it again adds a new one, and the
+ *   confirmations of the old row count again (when the version and the cycle still match).
+ *   NULL only for a legacy path row without a document id; those are looked up by content_id.
  *   Videos keep their watch state in learning_video_progress, which this step does not change.
  * learning_course_videos.document_id — the course_documents id of a document row (it was only
  *   in the TEXT video_ref), with UNIQUE (course_id, document_id): a document can be required
  *   once per course. Video rows keep NULL, and NULLs never collide (PostgreSQL and MariaDB).
- * learning_course_videos.confirm_after — set by "Ask everyone to confirm again": confirmations
- *   from before it no longer count. NULL = never asked.
+ * learning_course_documents.confirm_after — set by "Ask everyone to confirm again": confirmations
+ *   from before it no longer count. NULL = never asked. On the document, not on the registry
+ *   row, so making the file optional and required again does not cancel the request (P9).
  * learning_course_documents.file_id — the Nextcloud file id, so a scan keeps the row (and with
  *   it the required-content link) when the file is only renamed.
  * learning_courses.reconfirm_per_cycle — confirmations count only within the current
@@ -34,7 +39,8 @@ use OCP\Migration\SimpleMigrationStep;
  * Data (postSchemaChange, upgrades only — a fresh install has nothing to take over; info.xml
  * stays unchanged in 5.14.0, so this is no repair step):
  *   1. every completed document row of learning_video_progress becomes a confirmation row
- *      (doc_version NULL), duplicates of a required document mapped onto the row that is kept;
+ *      (doc_version NULL, document_id of the document), duplicates of a required document
+ *      mapped onto the row that is kept;
  *   2. duplicate document rows (the same document required twice in one course, GitHub #75)
  *      are reduced to the oldest row; their progress rows go, the confirmations are in step 1;
  *   3. document_id is filled for every remaining document row.
@@ -65,15 +71,20 @@ class Version011100Date20261116150000 extends SimpleMigrationStep {
             $table->addIndex(['course_id'], 'learn_dconf_course_idx');
             $changed = true;
         }
+        $table = $schema->getTable('learning_doc_confirms');
+        if (!$table->hasColumn('document_id')) {
+            $table->addColumn('document_id', Types::BIGINT, ['notnull' => false, 'default' => null]);
+            $changed = true;
+        }
+        if (!$table->hasIndex('learn_dconf_crs_doc_idx')) {
+            $table->addIndex(['course_id', 'document_id'], 'learn_dconf_crs_doc_idx');
+            $changed = true;
+        }
 
         if ($schema->hasTable('learning_course_videos')) {
             $table = $schema->getTable('learning_course_videos');
             if (!$table->hasColumn('document_id')) {
                 $table->addColumn('document_id', Types::BIGINT, ['notnull' => false, 'default' => null]);
-                $changed = true;
-            }
-            if (!$table->hasColumn('confirm_after')) {
-                $table->addColumn('confirm_after', Types::BIGINT, ['notnull' => false, 'default' => null]);
                 $changed = true;
             }
             if (!$table->hasIndex('learn_cv_course_doc_uq')) {
@@ -86,6 +97,10 @@ class Version011100Date20261116150000 extends SimpleMigrationStep {
             $table = $schema->getTable('learning_course_documents');
             if (!$table->hasColumn('file_id')) {
                 $table->addColumn('file_id', Types::BIGINT, ['notnull' => false, 'default' => null]);
+                $changed = true;
+            }
+            if (!$table->hasColumn('confirm_after')) {
+                $table->addColumn('confirm_after', Types::BIGINT, ['notnull' => false, 'default' => null]);
                 $changed = true;
             }
             if (!$table->hasIndex('learn_cdoc_crs_file_idx')) {
@@ -167,7 +182,7 @@ class Version011100Date20261116150000 extends SimpleMigrationStep {
             $result->closeCursor();
             foreach ($rows as $row) {
                 $contentId = $target[(int)$row['content_id']];
-                if (self::insertConfirmation($db, (string)$row['user_id'], $contentId, $courseOf[$contentId], (int)$row['completed_at'])) {
+                if (self::insertConfirmation($db, (string)$row['user_id'], $contentId, $courseOf[$contentId], (int)$row['completed_at'], $documentOf[$contentId] ?? null)) {
                     $confirmations++;
                 }
             }
@@ -205,7 +220,7 @@ class Version011100Date20261116150000 extends SimpleMigrationStep {
     }
 
     /** A confirmation row unless the same one exists; true when a row was written. */
-    private static function insertConfirmation(IDBConnection $db, string $userId, int $contentId, int $courseId, int $confirmedAt): bool {
+    private static function insertConfirmation(IDBConnection $db, string $userId, int $contentId, int $courseId, int $confirmedAt, ?int $documentId): bool {
         $qb = $db->getQueryBuilder();
         $qb->select('id')
             ->from('learning_doc_confirms')
@@ -226,6 +241,7 @@ class Version011100Date20261116150000 extends SimpleMigrationStep {
                 'content_id' => $qb->createNamedParameter($contentId, IQueryBuilder::PARAM_INT),
                 'course_id' => $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
                 'confirmed_at' => $qb->createNamedParameter($confirmedAt, IQueryBuilder::PARAM_INT),
+                'document_id' => $qb->createNamedParameter($documentId, $documentId === null ? IQueryBuilder::PARAM_NULL : IQueryBuilder::PARAM_INT),
             ])
             ->executeStatement();
         return true;

@@ -3977,14 +3977,14 @@
             "%n مستندًا إلزاميًا ليست في مجلد المواد بعد الآن: لا يستطيع المتعلمون فتحها.",
             "%n مستند إلزامي ليست في مجلد المواد بعد الآن: لا يستطيع المتعلمون فتحها."
         ],
-        "„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "سيصبح «{name}» اختياريًا. إذا أصبح الملف إلزاميًا مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءته من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
-        "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
-            "%n ملفات ستصبح اختيارية. إذا أصبحت إلزامية مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءتها من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
-            "سيصبح %n ملف اختياريًا. إذا أصبح إلزاميًا مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءته من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
-            "سيصبح ملفان (%n) اختياريين. إذا أصبحت إلزامية مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءتها من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
-            "ستصبح %n ملفات اختيارية. إذا أصبحت إلزامية مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءتها من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
-            "سيصبح %n ملفًا اختياريًا. إذا أصبحت إلزامية مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءتها من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
-            "سيصبح %n ملف اختياريًا. إذا أصبحت إلزامية مرة أخرى لاحقًا، فعلى جميع المتعلمين تأكيد قراءتها من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟"
+        "„{name}“ wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?": "سيصبح «{name}» اختياريًا. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبح الملف إلزاميًا مرة أخرى دون أن يتغير في الأثناء. هل تريد المتابعة؟",
+        "_%n Datei wird optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht wird und sich bis dahin nicht geändert hat. Fortfahren?_::_%n Dateien werden optional. Die bisherigen Bestätigungen bleiben erhalten und zählen wieder, wenn sie erneut Pflicht werden und sich bis dahin nicht geändert haben. Fortfahren?_": [
+            "%n ملفات ستصبح اختيارية. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبحت إلزامية مرة أخرى دون أن تتغير في الأثناء. هل تريد المتابعة؟",
+            "سيصبح %n ملف اختياريًا. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبح إلزاميًا مرة أخرى دون أن يتغير في الأثناء. هل تريد المتابعة؟",
+            "سيصبح ملفان (%n) اختياريين. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبحا إلزاميين مرة أخرى دون أن يتغيرا في الأثناء. هل تريد المتابعة؟",
+            "ستصبح %n ملفات اختيارية. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبحت إلزامية مرة أخرى دون أن تتغير في الأثناء. هل تريد المتابعة؟",
+            "سيصبح %n ملفًا اختياريًا. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبحت إلزامية مرة أخرى دون أن تتغير في الأثناء. هل تريد المتابعة؟",
+            "سيصبح %n ملف اختياريًا. تبقى التأكيدات السابقة محفوظة وتُحتسب من جديد إذا أصبحت إلزامية مرة أخرى دون أن تتغير في الأثناء. هل تريد المتابعة؟"
         ],
         "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "تجد هنا مستندات هذه الدورة. إذا كانت للدورة مستندات إلزامية، فافتحها وأكّد أنك قرأتها. جميع الملفات الأخرى اختيارية.",
         "Die Unterlagen dieses Kurses lesen.": "اقرأ مستندات هذه الدورة.",
