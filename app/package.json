@@ -44,6 +44,8 @@
     "eslint-plugin-vue": "^9.33.0",
     "fast-check": "4.10.2",
     "happy-dom": "^21.0.4",
+    "pixelmatch": "8.0.0",
+    "pngjs": "7.0.0",
     "vite": "^7.3.1",
     "vitest": "^4.1.0"
   },

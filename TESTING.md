@@ -33,6 +33,7 @@ Every PHP gate runs in a throwaway Docker container on a clean snapshot of the c
 | Integration tests, NC 33/34/35 × PostgreSQL/MariaDB | | | | ✓ |
 | Lifecycle probe, NC 33/34/35 × PostgreSQL/MariaDB | | | | ✓ |
 | Persona sweep, NC 33 + PostgreSQL, gamification off | | | | ✓ |
+| Visual comparison with the previous nightly persona run (report only) | | | | ✓ |
 | Playwright E2E suite (`app/tests/e2e`) | | | | |
 
 The last row is not automated: the E2E suite runs locally (see Gate 3).
@@ -121,6 +122,16 @@ It needs Docker and Chromium. `PERSONA_CHROMIUM` points at the browser binary. T
 - accessibility with axe-core (pinned devDependency in `app/node_modules`) in `#app-content`: every contrast violation and every critical or serious WCAG 2.1 A/AA violation, reported as kind `a11y`. A self-test station proves at the start of each run that the contrast check reports a grey-on-grey element.
 
 Findings that are the app working as intended are listed separately and not counted. The gate reports findings, it does not fail on them. A run fails only when the click-through itself breaks, for example when an exam question has no seeded answer or no compliance report is found; a broken self-test shows up as a `detector` finding. The output goes to `scripts/persona-sweep/out/gamification-<off|on>/` (gitignored): `report.md`, `findings.json`, `stations.json` (the input for the fresh-eyes review), `shots/` and `downloads/`. `PERSONA_STATIONS=<regex>` sweeps only the matching stations and writes `*-filtered` files next to them.
+
+**Visual comparison of two runs.** `scripts/persona-sweep/visual-diff.mjs` compares the screenshots of two runs station by station (pixelmatch, pinned devDependency). It matches them by persona and station, not by file name, because the running number in `admin--018-top-courses.png` shifts when a station is added. The report lists each station as changed (with the share of changed pixels and a diff image), resized, new, gone or unreadable:
+
+```bash
+node scripts/persona-sweep/visual-diff.mjs <baseline-run> <current-run> [--out <dir>] [--threshold 0.1]
+# e.g. a kept run against the current one:
+node scripts/persona-sweep/visual-diff.mjs /tmp/persona-before/gamification-off scripts/persona-sweep/out/gamification-off
+```
+
+The output goes to `scripts/persona-sweep/out/visual-diff/` (`report.md`, `report.json`, `diff/`). No reference images are committed. The nightly job compares against the screenshots of the last successful nightly run of the same branch, adds the counts to the job summary and the report to the artifact. This is groundwork, not a gate: the script always exits 0, and a changed station is a lead to look at. Approved references and a failing check come later, once the screenshots are stable from run to run (for example dates, avatars, animations).
 
 **Fresh-eyes review (by hand).** A sweep finds what can be measured. It does not find "what is this for?" or "nobody without an IT background understands this". For that, a language model gets only the screenshots and the visible text of each station. It sees no code, no documentation and no issue list, and it answers as the person the course is built for. That person is an administrator of a small organisation with no IT background, who has to set up an annual mandatory training with certificates. For every station it answers:
 

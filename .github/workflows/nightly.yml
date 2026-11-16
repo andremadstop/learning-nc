@@ -132,6 +132,9 @@ jobs:
   persona:
     name: Persona sweep (NC 33 / pgsql, Playwright)
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read   # visual comparison: download the previous nightly run's screenshots
     timeout-minutes: 90   # 27 min end to end on the maintainer's machine (2026-11-15)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -170,6 +173,28 @@ jobs:
           test -x "$PERSONA_CHROMIUM"
           mkdir -p ci-logs
           ./scripts/persona-sweep/run.sh all 2>&1 | tee ci-logs/persona-sweep.log
+
+      # GitHub #65: compare the screenshots with the last successful nightly run of this branch
+      # (no reference images are committed). A report only: it never fails the job, and the first
+      # run, or a run whose predecessor has no persona artifact, just says so.
+      - name: Visual comparison with the previous nightly run
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prev="$(gh run list -R "$GITHUB_REPOSITORY" --workflow nightly.yml --branch "$GITHUB_REF_NAME" \
+            --status success --limit 1 --json databaseId -q '.[0].databaseId // empty')"
+          if [ -z "$prev" ]; then echo "no previous successful nightly run on $GITHUB_REF_NAME"; exit 0; fi
+          mkdir -p "$RUNNER_TEMP/prev-persona"
+          gh run download "$prev" -R "$GITHUB_REPOSITORY" -n persona-sweep -D "$RUNNER_TEMP/prev-persona"
+          for cur in scripts/persona-sweep/out/gamification-*/; do
+            mode="$(basename "$cur")"
+            base="$RUNNER_TEMP/prev-persona/scripts/persona-sweep/out/$mode"
+            if [ ! -d "$base" ]; then echo "run $prev has no $mode screenshots"; continue; fi
+            node scripts/persona-sweep/visual-diff.mjs "$base" "$cur" --out "scripts/persona-sweep/out/visual-diff/$mode"
+            { echo "### Visual comparison ($mode) with run $prev"; sed -n '1,16p' "scripts/persona-sweep/out/visual-diff/$mode/report.md"; } >> "$GITHUB_STEP_SUMMARY"
+          done
 
       # The report, findings and screenshots. Excluded: auth/ (session storage states) and
       # instance.env (throwaway passwords; `down` removes it, excluded in case it did not).
