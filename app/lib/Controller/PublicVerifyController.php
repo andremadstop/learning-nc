@@ -5,7 +5,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\CertificateVerifyService;
 use OCP\AppFramework\Controller;
-use OCP\AppFramework\Http\Attributes\AnonRateLimit;
+use OCP\AppFramework\Http\Attribute\AnonRateLimit;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Defaults;
@@ -66,11 +66,11 @@ class PublicVerifyController extends Controller {
      * Status precedence is owned by the service; this method only adds the format precheck and the
      * throttle-on-unknown policy, then renders. Returns HTTP 200 for every status.
      *
-     * Publicness/CSRF/brute-force are declared as PHPDoc annotations — the codebase-proven form for
-     * public routes in THIS NC build (DidController/IcsController/PageController all use @PublicPage
-     * PHPDoc; the #[PublicPage] attribute is NOT honoured here → would 401 logged-out). The IP-keyed
-     * #[AnonRateLimit] caps ALL requests and is read via the (working) attribute path, exactly like
-     * IcsController's #[UserRateLimit]. $tpl->throttle() (below) feeds @BruteForceProtection.
+     * Publicness/CSRF/brute-force are declared as PHPDoc annotations, like the other public routes
+     * (DidController/IcsController/PageController). The IP-keyed #[AnonRateLimit] caps ALL requests,
+     * signed-in visitors included (they have no #[UserRateLimit] here, so Nextcloud applies the anon
+     * limit); it is generous because a classroom behind one NAT shares an address and verification
+     * ids are unguessable UUIDv4. $tpl->throttle() (below) feeds @BruteForceProtection.
      *
      * @PublicPage
      * @NoCSRFRequired

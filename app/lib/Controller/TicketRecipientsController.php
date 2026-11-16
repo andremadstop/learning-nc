@@ -7,7 +7,7 @@ use OCA\Learning\Service\TechnicalTicketRecipients;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
-use OCP\AppFramework\Http\Attributes\UserRateLimit;
+use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IGroupManager;
 use OCP\IRequest;

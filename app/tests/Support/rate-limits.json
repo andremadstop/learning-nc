@@ -1,0 +1,1386 @@
+{
+ "_about": "Every rate limit on a controller method of the app, as reviewed. RateLimitInventoryTest keeps this file and the #[UserRateLimit]/#[AnonRateLimit] attributes in step; limit null means the method is deliberately unlimited. Nextcloud admins can override single limits with the ratelimit_overwrite system setting.",
+ "groups": {
+  "live": "polling, heartbeat and status reads the app itself repeats; never limited",
+  "stream": "server-sent event streams (one connection per game, reconnect about every 2 minutes)",
+  "media": "files a page embeds or streams (video range requests, documents, subtitles, logos)",
+  "answer": "answering questions and story steps; fast learners must never be slowed",
+  "fanout": "endpoints the frontend calls once per item of a selection or per answer x language",
+  "search": "type-ahead searches",
+  "read": "ordinary reads on navigation",
+  "write": "ordinary saves and settings",
+  "destructive": "deleting, removing, archiving",
+  "costly": "AI calls, imports, exports, uploads, tickets, tokens, session starts",
+  "public": "the public certificate verification page (keyed by IP address)"
+ },
+ "methods": {
+  "AdminAiController::test": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "AiController::available": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "AiController::explain": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "AiController::generate": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "AiController::import": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "AiController::status": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "CertLayoutController::importImage": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "CertLayoutController::logoImage": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "media"
+  },
+  "CertLayoutController::logos": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CertLayoutController::removeImage": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CertLayoutController::selectLogo": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CertLayoutController::show": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CertLogoController::delete": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CertLogoController::image": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "media"
+  },
+  "CertLogoController::rename": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CertLogoController::upload": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "CertificateReportController::exportCertReportCsv": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CertificateReportController::exportCoverageCsv": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "ClassbookController::exportVcard": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "ClassbookController::giveKudos": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "ClassbookController::index": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "ClassbookController::toggleVisibility": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CoopController::create": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "CoopController::join": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CoopController::lobby": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "CoopController::ready": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CoopController::state": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "CoopController::vote": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "answer"
+  },
+  "CourseController::addPool": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "CourseController::archiveCourse": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CourseController::atRisk": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::chapterHeatmap": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::courseDashboard": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::create": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseController::createAnnouncement": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseController::deleteAnnouncement": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseController::deleteSchedule": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CourseController::destroy": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CourseController::enroll": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseController::exportAtRiskCsv": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseController::getAnnouncements": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::getCurriculumScope": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::getPassStatus": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::getSchedule": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::getTools": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::leaderboard": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::poolAnswerStats": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::removeMember": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "CourseController::removePool": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CourseController::setQuestionOverride": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "CourseController::setSchedule": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::setVideoGate": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::studentDetail": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseController::update": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updateAnnouncement": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseController::updateCampaignSelection": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updateCertConfig": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updateCurriculumScope": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updateExamDate": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updateModeConfig": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updatePool": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "CourseController::updatePracticeConfig": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::updateTools": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseController::weakQuestions": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseCertificateController::download": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseCertificateController::exportZip": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseCertificateController::show": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CourseMemberController::add": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "CourseMemberController::bulk": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "CourseMemberController::search": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "search"
+  },
+  "CourseVideoController::create": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseVideoController::destroy": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CourseVideoController::requestReconfirm": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseVideoController::setDocumentsRequired": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CourseVideoController::update": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "DataExportController::myData": {
+   "kind": "user",
+   "limit": 3,
+   "period": 60,
+   "group": "costly"
+  },
+  "DocumentController::download": {
+   "kind": "user",
+   "limit": 600,
+   "period": 60,
+   "group": "media"
+  },
+  "DuelController::acceptInvite": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "DuelController::answer": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "answer"
+  },
+  "DuelController::cancelInvite": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "DuelController::create": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "DuelController::declineInvite": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "DuelController::invite": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "DuelController::invites": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "DuelController::join": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "DuelController::opponents": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "DuelController::ready": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "DuelController::rematch": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "DuelController::state": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "ExportController::exportCsv": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "ExportController::exportJson": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "ExportController::getCalendarToken": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "ExportController::regenerateCalendarToken": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "GameshowController::answer": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "answer"
+  },
+  "GameshowController::courseLobby": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "GameshowController::create": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "GameshowController::history": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "GameshowController::join": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "GameshowController::ready": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "GameshowController::state": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "IcsController::generate": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "ImageController::delete": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "ImageController::upload": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "ImportController::importCsv": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "ImportController::importFile": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "ImportController::importJson": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "LeagueController::accept": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "LeagueController::active": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LeagueController::challenge": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "LeagueController::cl": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LeagueController::create": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "LeagueController::finish": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "LeagueController::start": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "LeagueController::table": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LeitnerController::answer": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "answer"
+  },
+  "LeitnerController::badgeProgress": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LeitnerController::badges": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LeitnerController::readiness": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LeitnerController::streak": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LernbotFilesController::listFiles": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LernbotFilesController::writeNote": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "LernplanController::generateFortschritt": {
+   "kind": "user",
+   "limit": 3,
+   "period": 60,
+   "group": "costly"
+  },
+  "LernplanController::generatePlan": {
+   "kind": "user",
+   "limit": 3,
+   "period": 60,
+   "group": "costly"
+  },
+  "LernprofilController::cheatSheet": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "LernprofilController::lernhistorie": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LernprofilController::profile": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LernprofilController::skillMap": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "LernprofilController::weakestTopics": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "MaintenanceController::toggle": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "NoteGeneratorController::generate": {
+   "kind": "user",
+   "limit": 3,
+   "period": 60,
+   "group": "costly"
+  },
+  "PoolController::create": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "costly"
+  },
+  "PoolController::destroy": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "PoolController::review": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "PoolController::update": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "PoolGeneratorController::createPool": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "PoolGeneratorController::fromFile": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "PoolGeneratorController::fromText": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "PoolImportController::importPools": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "PublicVerifyController::verify": {
+   "kind": "anon",
+   "limit": 150,
+   "period": 60,
+   "group": "public"
+  },
+  "QuestionController::check": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "answer"
+  },
+  "QuestionController::create": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "costly"
+  },
+  "QuestionController::destroy": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "QuestionController::review": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "QuestionController::update": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "QuestionMediaController::index": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "media"
+  },
+  "QuestionMediaController::track": {
+   "kind": "user",
+   "limit": 600,
+   "period": 60,
+   "group": "media"
+  },
+  "ShareController::create": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "ShareController::destroy": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "ShareController::update": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "SseController::duelStream": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "stream"
+  },
+  "SseController::gameshowStream": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "stream"
+  },
+  "StarterPoolController::import": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "StarterPoolController::index": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::getScene": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::getSkillCheckQuestions": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::graphScene": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::graphStart": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "StoryController::graphState": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::graphTraverse": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "answer"
+  },
+  "StoryController::listCampaigns": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::listProgress": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "StoryController::makeChoice": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "answer"
+  },
+  "StoryController::startCampaign": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "StoryController::submitFreetext": {
+   "kind": "user",
+   "limit": 15,
+   "period": 60,
+   "group": "costly"
+  },
+  "StoryController::submitSkillAnswer": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "answer"
+  },
+  "StoryController::submitSkillBatch": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "SummaryController::generateNarrative": {
+   "kind": "user",
+   "limit": 10,
+   "period": 3600,
+   "group": "costly"
+  },
+  "SupportTicketController::adminList": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "SupportTicketController::answer": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "SupportTicketController::approveDraft": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "SupportTicketController::archiveAdminTicket": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "SupportTicketController::archiveCourseTicket": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "SupportTicketController::askCourse": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "SupportTicketController::create": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "SupportTicketController::deleteAdminTicket": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "SupportTicketController::deleteCourseTicket": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "SupportTicketController::instructorList": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "SupportTicketController::mine": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "SupportTicketController::myCourseQuestions": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "SupportTicketController::openCount": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "SupportTicketController::restoreAdminTicket": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "SupportTicketController::restoreCourseTicket": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "SupportTicketController::withdrawCourseQuestion": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "TelosController::getConsentStatus": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "TelosController::getCourseBuddies": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "TelosController::getCourseTelosAggregate": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "TelosController::getQuestions": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "TelosController::getStatus": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "TelosController::getTelos": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "TelosController::processInterview": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "TelosController::revokeConsent": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "TelosController::saveConsent": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "TelosController::saveTelos": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "TelosController::updateTelos": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "TicketRecipientsController::save": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "TicketRecipientsController::search": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "search"
+  },
+  "TrainingController::abort": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "TrainingController::answer": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "answer"
+  },
+  "TrainingController::complete": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "TrainingController::start": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "TrainingController::startPractice": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
+  },
+  "TrainingController::status": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "TrainingController::submitBatch": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
+  "TranslationController::deleteAnswerTranslation": {
+   "kind": "user",
+   "limit": 600,
+   "period": 60,
+   "group": "fanout"
+  },
+  "TranslationController::deleteQuestionTranslation": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "TranslationController::setAnswerTranslation": {
+   "kind": "user",
+   "limit": 600,
+   "period": 60,
+   "group": "fanout"
+  },
+  "TranslationController::setQuestionTranslation": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "fanout"
+  },
+  "UserStateController::answerChallenge": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "answer"
+  },
+  "UserStateController::claimMission": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "UserStateController::dailyChallenge": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "UserStateController::missions": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "UserStateController::state": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "UserStateController::updateSettings": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "VideoProgressController::complete": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "VideoProgressController::courseStatus": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "VideoProgressController::documentRead": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "VideoProgressController::heartbeat": {
+   "kind": "user",
+   "limit": null,
+   "period": 60,
+   "group": "live"
+  },
+  "VideoStreamController::show": {
+   "kind": "user",
+   "limit": 600,
+   "period": 60,
+   "group": "media"
+  },
+  "VirtuProfController::chat": {
+   "kind": "user",
+   "limit": 15,
+   "period": 60,
+   "group": "costly"
+  },
+  "VirtuProfController::clearChatHistory": {
+   "kind": "user",
+   "limit": 5,
+   "period": 60,
+   "group": "costly"
+  },
+  "VirtuProfController::dismiss": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "VirtuProfController::getChatHistory": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "VirtuProfController::getState": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "VirtuProfController::interviewTurn": {
+   "kind": "user",
+   "limit": 15,
+   "period": 60,
+   "group": "costly"
+  },
+  "VirtuProfController::markVisited": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "write"
+  },
+  "VirtuProfController::savePreferences": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "VirtuProfController::setEnabled": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "VirtuProfController::setLanguage": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  }
+ }
+}

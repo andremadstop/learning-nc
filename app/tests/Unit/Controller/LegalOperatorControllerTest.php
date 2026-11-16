@@ -167,8 +167,8 @@ class LegalOperatorControllerTest extends TestCase {
             $this->assertStringNotContainsString('@NoAdminRequired', $doc, $method);
             $this->assertStringNotContainsString('@PublicPage', $doc, $method);
             $this->assertStringNotContainsString('@NoCSRFRequired', $doc, $method);
-            $this->assertNotContains('OCP\AppFramework\Http\Attributes\NoAdminRequired', self::attributeNames($m), $method);
-            $this->assertNotContains('OCP\AppFramework\Http\Attributes\PublicPage', self::attributeNames($m), $method);
+            $this->assertNotContains('OCP\AppFramework\Http\Attribute\NoAdminRequired', self::attributeNames($m), $method);
+            $this->assertNotContains('OCP\AppFramework\Http\Attribute\PublicPage', self::attributeNames($m), $method);
         }
     }
 

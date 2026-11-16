@@ -8,7 +8,7 @@ use OCA\Learning\Service\CertLogoLibrary;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
-use OCP\AppFramework\Http\Attributes\UserRateLimit;
+use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\Files\NotFoundException;

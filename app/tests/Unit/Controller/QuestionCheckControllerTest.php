@@ -15,7 +15,7 @@ use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use OCP\AppFramework\Db\DoesNotExistException;
-use OCP\AppFramework\Http\Attributes\UserRateLimit;
+use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;

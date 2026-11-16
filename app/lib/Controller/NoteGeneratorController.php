@@ -8,7 +8,7 @@ use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\Attributes\UserRateLimit;
+use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IDBConnection;
 use OCP\IRequest;

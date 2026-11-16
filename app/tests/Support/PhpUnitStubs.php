@@ -903,34 +903,26 @@ namespace OCP\AppFramework\Http {
     }
 }
 
-namespace OCP\AppFramework\Http\Attributes {
+namespace OCP\AppFramework\Http\Attribute {
+    // The rate-limit attributes as Nextcloud defines them (lib/public/AppFramework/Http/Attribute,
+    // since NC 27): RateLimitingMiddleware reads them with getAttributes(<class>, IS_INSTANCEOF), so
+    // the stubs keep the real names and the ARateLimit parent. There is no "Attributes" (plural)
+    // namespace in Nextcloud; a stub for one would make attributes resolve here that the server
+    // never reads.
+    if (!class_exists(ARateLimit::class)) {
+        abstract class ARateLimit {
+            public function __construct(protected int $limit, protected int $period) {}
+            public function getLimit(): int { return $this->limit; }
+            public function getPeriod(): int { return $this->period; }
+        }
+    }
     if (!class_exists(UserRateLimit::class)) {
-        #[\Attribute]
-        class UserRateLimit {
-            public function __construct(int $limit = 0, int $period = 0) {}
-        }
-    }
-    // Phase 157: public verify route security attributes (autoloaded only on reflection at runtime;
-    // stubbed here so any direct reference in unit context resolves).
-    if (!class_exists(PublicPage::class)) {
-        #[\Attribute]
-        class PublicPage {}
-    }
-    if (!class_exists(NoCSRFRequired::class)) {
-        #[\Attribute]
-        class NoCSRFRequired {}
-    }
-    if (!class_exists(BruteForceProtection::class)) {
-        #[\Attribute]
-        class BruteForceProtection {
-            public function __construct(string $action = '') {}
-        }
+        #[\Attribute(\Attribute::TARGET_METHOD)]
+        class UserRateLimit extends ARateLimit {}
     }
     if (!class_exists(AnonRateLimit::class)) {
-        #[\Attribute]
-        class AnonRateLimit {
-            public function __construct(int $limit = 0, int $period = 0) {}
-        }
+        #[\Attribute(\Attribute::TARGET_METHOD)]
+        class AnonRateLimit extends ARateLimit {}
     }
 }
 

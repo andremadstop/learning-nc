@@ -7,7 +7,7 @@ use OCA\Learning\Controller\AdminAiController;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\Llm\LlmConnection;
 use OCA\Learning\Service\Llm\LlmGateway;
-use OCP\AppFramework\Http\Attributes\UserRateLimit;
+use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -118,8 +118,8 @@ class AdminAiControllerTest extends TestCase {
         $this->assertStringNotContainsString('@PublicPage', $doc);
         $this->assertStringNotContainsString('@NoCSRFRequired', $doc);
         $names = array_map(static fn (\ReflectionAttribute $a) => $a->getName(), $m->getAttributes());
-        $this->assertNotContains('OCP\AppFramework\Http\Attributes\NoAdminRequired', $names);
-        $this->assertNotContains('OCP\AppFramework\Http\Attributes\PublicPage', $names);
+        $this->assertNotContains('OCP\AppFramework\Http\Attribute\NoAdminRequired', $names);
+        $this->assertNotContains('OCP\AppFramework\Http\Attribute\PublicPage', $names);
 
         $limits = $m->getAttributes(UserRateLimit::class);
         $this->assertCount(1, $limits);
