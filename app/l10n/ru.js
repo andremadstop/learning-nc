@@ -3857,5 +3857,6 @@ OC.L10N.register(
     "Zeile {current} von {total}" : "Строка {current} из {total}",
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "Звук сейчас не воспроизводится. Читай текст или пройди его кнопкой «Следующая строка».",
     "Noch keine Antworten" : "Пока нет ответов",
+    "Häufiger Denkfehler:" : "Распространённое заблуждение:",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

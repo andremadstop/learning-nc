@@ -3856,6 +3856,7 @@
         "Text zum Mitlesen": "Текст для чтения",
         "Zeile {current} von {total}": "Строка {current} из {total}",
         "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "Звук сейчас не воспроизводится. Читай текст или пройди его кнопкой «Следующая строка».",
-        "Noch keine Antworten": "Пока нет ответов"
+        "Noch keine Antworten": "Пока нет ответов",
+        "Häufiger Denkfehler:": "Распространённое заблуждение:"
     }
 }

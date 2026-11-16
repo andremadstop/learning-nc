@@ -22,7 +22,12 @@
       </div>
     </div>
 
-    <div class="qmedia__stage" :lang="lang || null">
+    <!-- Fresh-eyes C4: the intro never carries cues, so before the first "play" or "next line"
+         its stage was a large empty grey box. It appears with the first line, as a caption strip. -->
+    <div v-if="showStage"
+         class="qmedia__stage"
+         :class="{ 'qmedia__stage--intro': phase === 'intro' }"
+         :lang="lang || null">
       <span v-if="cues.scene" class="qmedia__scene">{{ cues.scene }}</span>
       <span v-if="phase === 'dialog' && cues.icon" class="qmedia__icon" aria-hidden="true">{{ cues.icon }}</span>
       <div v-if="stage.trail.length" class="qmedia__trail" aria-hidden="true">
@@ -36,7 +41,7 @@
       </div>
       <div v-if="stage.wrong || stage.right" class="qmedia__contrast">
         <span v-if="stage.wrong" class="qmedia__wrong" :class="{ 'qmedia__wrong--struck': stage.struck }">
-          <span aria-hidden="true">✗ </span><span class="qmedia__sr">{{ t('learning', 'Denkfehler:') }} </span>{{ cues.wrong }}
+          <span aria-hidden="true">✗ </span><span class="qmedia__sr">{{ t('learning', 'Häufiger Denkfehler:') }} </span>{{ cues.wrong }}
         </span>
         <span v-if="stage.right" class="qmedia__right">
           <span aria-hidden="true">✓ </span><span class="qmedia__sr">{{ t('learning', 'Richtig:') }} </span>{{ cues.right }}
@@ -242,6 +247,9 @@ export default {
         current: Math.max(0, this.stage.lineIndex + 1),
         total: this.timeline.length,
       });
+    },
+    showStage() {
+      return this.phase === 'dialog' || this.started || this.manualIndex !== null || this.ended;
     },
     clockStatus() {
       return this.started ? formatSeconds(this.currentTime) + ' / ' + formatSeconds(this.duration) : '';
@@ -499,6 +507,10 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.qmedia__stage--intro {
+  min-height: 0;
+  padding: 12px 16px;
 }
 .qmedia__scene {
   position: absolute;

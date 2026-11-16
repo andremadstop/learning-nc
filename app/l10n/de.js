@@ -3857,5 +3857,6 @@ OC.L10N.register(
     "Zeile {current} von {total}" : "Zeile {current} von {total}",
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.",
     "Noch keine Antworten" : "Noch keine Antworten",
+    "Häufiger Denkfehler:" : "Häufiger Denkfehler:",
 },
 "nplurals=2; plural=(n != 1);");

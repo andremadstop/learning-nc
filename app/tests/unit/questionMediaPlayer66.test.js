@@ -498,3 +498,30 @@ describe('the learning modes carry question_media to the player', () => {
 		expect(source('LeitnerMode.vue')).toContain('this.questionMedia = data.question_media ?? this.questionMedia')
 	})
 })
+
+describe('QuestionMediaPlayer — fresh-eyes C4', () => {
+	it('the intro shows no empty stage before the first line, then a compact caption strip', async () => {
+		axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [track('intro', 'en'), track('intro', 'de')] } })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
+		expect(host.querySelector('.qmedia')).not.toBeNull()
+		expect(host.querySelector('.qmedia__stage')).toBeNull()
+
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		const stage = host.querySelector('.qmedia__stage')
+		expect(stage).not.toBeNull()
+		expect(stage.classList.contains('qmedia__stage--intro')).toBe(true)
+		expect(stage.textContent).toContain('Eine Kunstklasse mischt zwei Farben.')
+	})
+
+	it('the dialog keeps its full stage, and its misconception is the common one, not the chosen answer\'s', async () => {
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: true, reveal: REVEAL })
+		const stage = host.querySelector('.qmedia__stage')
+		expect(stage).not.toBeNull()
+		expect(stage.classList.contains('qmedia__stage--intro')).toBe(false)
+		vm.step(1)
+		vm.step(1)
+		await flush()
+		expect(host.querySelector('.qmedia__wrong').textContent).toContain('Häufiger Denkfehler:')
+	})
+})
