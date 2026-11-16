@@ -116,6 +116,22 @@ describe('#59 technical tickets on the admin page', () => {
 		expect(host.textContent).toContain('Empfänger gespeichert.')
 	})
 
+	// Review C5: a live region rendered together with its text is often not announced.
+	it('announces "saved" in a status region that is there before the save', async () => {
+		stubServer()
+		await mount()
+		const region = host.querySelector('[data-test="ticket-recipients-saved"]')
+		expect(region?.getAttribute('role')).toBe('status')
+		expect(region.textContent.trim()).toBe('')
+
+		axios.put.mockResolvedValue({ data: { users: [{ id: 'ops', label: 'Ops', notified: true }] } })
+		vm.ticketRecipients = [{ id: 'user:ops', type: 'user', value: 'ops', label: 'Ops' }]
+		await vm.saveTicketRecipients()
+		await flush()
+		expect(host.querySelector('[data-test="ticket-recipients-saved"]')).toBe(region)
+		expect(region.textContent.trim()).toBe('Empfänger gespeichert.')
+	})
+
 	it('names a chosen person who gets no notice (no administrator, disabled or deleted)', async () => {
 		stubServer({ recipients: [{ id: 'ops', label: 'Ops', notified: true }, { id: 'plain', label: 'Plain User', notified: false }] })
 		await mount()

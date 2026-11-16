@@ -88,7 +88,8 @@
               @click="saveTicketRecipients">
               {{ savingTicketRecipients ? t('learning', 'Saving...') : t('learning', 'Empfänger speichern') }}
             </NcButton>
-            <span v-if="ticketRecipientsSaved" class="field-help" role="status">{{ t('learning', 'Empfänger gespeichert.') }}</span>
+            <!-- always in the DOM: a live region that appears together with its text is often not read -->
+            <span class="field-help" role="status" data-test="ticket-recipients-saved"><template v-if="ticketRecipientsSaved">{{ t('learning', 'Empfänger gespeichert.') }}</template></span>
           </div>
         </div>
 
