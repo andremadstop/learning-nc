@@ -84,3 +84,14 @@ node --no-warnings "$ROOT_DIR/scripts/gen-virtuprof-strings.mjs" --check
 # while gates 1-5 stay green.
 echo ""
 python3 "$ROOT_DIR/scripts/check-consent-locales.py"
+
+# Gate 7: English left in a translation column.
+# Gates 1-3 compare the files against each other and accept Latin letters in every
+# column, so a RU/AR/FR value that is just the English text passes all of them
+# ('Frage löschen' -> 'Delete question' in the Russian delete dialog, 5.13.0 review).
+# Ratchet: the keys untranslated when the gate came in sit in
+# scripts/i18n-untranslated-baseline.json and may only shrink.
+# Verified: setting one RU value that is not in the baseline to its English text
+# turns this red while gates 1-6 stay green.
+echo ""
+python3 "$ROOT_DIR/scripts/check-i18n-untranslated.py"
