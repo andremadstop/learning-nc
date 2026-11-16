@@ -80,8 +80,9 @@ def collect():
         for m in JS_T.finditer(source):
             add(unescape(m.group(2)), path)
         for m in JS_N.finditer(source):
-            add(unescape(m.group(2)), path)
-            add(unescape(m.group(4)), path)
+            # translatePlural() looks up one key, "_<singular>_::_<plural>_", whose value is
+            # the list of plural forms — never the two strings on their own.
+            add(f"_{unescape(m.group(2))}_::_{unescape(m.group(4))}_", path)
         for m in INDIRECT.finditer(source):
             indirect.append((os.path.relpath(path, ROOT), m.group(1)))
 

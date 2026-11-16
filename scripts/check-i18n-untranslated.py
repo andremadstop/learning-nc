@@ -40,7 +40,7 @@ ALLOWED_VALUES = {
         "CSV", "JSON", "PDF", "PNG", "URL", "DNS", "VLAN", "OSPF", "RAG", "LLM", "API",
         "YouTube", "Vimeo", "Nextcloud", "Talk", "OK", "ID",
     },
-    "fr": {"Signature", "Source", "Minutes", "Document"},
+    "fr": {"Signature", "Source", "Minutes", "Document", "%n question", "%n questions"},
 }
 
 # A value without three letters in a row (numbers, symbols, "%s") needs no translation.
@@ -58,7 +58,9 @@ def identical_keys(en, translations, lang):
     for key, value in translations.items():
         if value != en.get(key):
             continue
-        if value in allowed or not WORDY.search(value):
+        # A plural value (n()) is a list of forms: allowed when every form is.
+        values = value if isinstance(value, list) else [value]
+        if all(v in allowed or not WORDY.search(v) for v in values):
             continue
         out.add(key)
     return out

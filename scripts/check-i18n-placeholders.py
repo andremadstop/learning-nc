@@ -56,17 +56,37 @@ def scripts_in(text):
     return found
 
 
+NPLURALS = re.compile(r"nplurals\s*=\s*(\d+)")
+PLURAL_KEY = re.compile(r"^_(.+)_::_(.+)_$", re.S)
+
+
+def forms(value):
+    """A plural value (n()) is a list of forms; every other value is one string."""
+    return value if isinstance(value, list) else [value]
+
+
+def placeholders(value):
+    """Placeholders of a value. For a plural value the set every form must carry."""
+    if isinstance(value, list):
+        return sorted(set(PLACEHOLDER.findall(value[0]))) if value else []
+    return sorted(PLACEHOLDER.findall(value))
+
+
 def main():
     failures = 0
     de_translations = json.load(open(f"{L10N}/de.json", encoding="utf-8"))["translations"]
     de_keys = list(de_translations)
 
     # Source-of-truth placeholder set per key, taken from the German value.
-    reference = {k: sorted(PLACEHOLDER.findall(v)) for k, v in de_translations.items()}
+    reference = {k: placeholders(v) for k, v in de_translations.items()}
 
     # A key that IS a source string must agree with its own German value.
     for key, want in reference.items():
-        in_key = sorted(PLACEHOLDER.findall(key))
+        plural = PLURAL_KEY.match(key) if isinstance(de_translations[key], list) else None
+        if plural:
+            in_key = sorted(set(PLACEHOLDER.findall(plural.group(1))) | set(PLACEHOLDER.findall(plural.group(2))))
+        else:
+            in_key = sorted(PLACEHOLDER.findall(key))
         if in_key and in_key != want:
             failures += 1
             print("FAIL de: source string and its translation disagree")
@@ -75,26 +95,39 @@ def main():
 
     for lang in LANGS:
         with open(f"{L10N}/{lang}.json", encoding="utf-8") as fh:
-            translations = json.load(fh)["translations"]
+            catalog = json.load(fh)
+        translations = catalog["translations"]
         expected_script = EXPECTED_SCRIPT[lang]
+        nplurals = int((NPLURALS.search(catalog.get("pluralForm", "")) or [None, 2])[1])
 
         for key in de_keys:
             value = translations.get(key)
             if value is None:
                 continue  # key-parity script owns that failure mode
 
-            want = reference[key]
-            got = sorted(PLACEHOLDER.findall(value))
-            if want != got:
+            # A plural key needs exactly the language's number of forms (de/en/fr 2,
+            # ru/uk 3, ar 6); a missing form renders as the key in that language.
+            if isinstance(de_translations[key], list) != isinstance(value, list) or (
+                    isinstance(value, list) and len(value) != nplurals):
                 failures += 1
-                print(f"FAIL {lang}: placeholder mismatch")
+                print(f"FAIL {lang}: plural forms do not match nplurals={nplurals}")
                 print(f"  key   {key!r}")
                 print(f"  value {value!r}")
-                print(f"  expected {want} but found {got}")
+                continue
+
+            want = reference[key]
+            for form in forms(value):
+                got = sorted(PLACEHOLDER.findall(form)) if not isinstance(value, list) else sorted(set(PLACEHOLDER.findall(form)))
+                if want != got:
+                    failures += 1
+                    print(f"FAIL {lang}: placeholder mismatch")
+                    print(f"  key   {key!r}")
+                    print(f"  value {form!r}")
+                    print(f"  expected {want} but found {got}")
 
             # Wrong-script detection: value carries a foreign script but not the
             # one this language is written in.
-            present = scripts_in(value)
+            present = scripts_in(" ".join(forms(value)))
             if present and expected_script not in present and (present & FOREIGN):
                 failures += 1
                 print(f"FAIL {lang}: value is not written in {expected_script}")
