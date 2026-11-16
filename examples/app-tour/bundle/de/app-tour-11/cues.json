@@ -1,0 +1,31 @@
+{
+ "icon": "💡",
+ "de": {
+  "line_keywords": [
+   [
+    "grün",
+    "falschen Punkte"
+   ],
+   [
+    "Zufallstreffer",
+    "Feedback"
+   ],
+   [
+    "richtig lag",
+    "geraten"
+   ],
+   [
+    "Missverständnis"
+   ],
+   [
+    "verstandene Option"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Weiterklicken bei richtigem Haken",
+   "right": "Jede Falle im Feedback analysieren"
+  },
+  "merksatz": "Feedback erklärt Irrtümer hinter jeder Antwort.",
+  "scene": "Prüfungsergebnisse im Rückblick"
+ }
+}

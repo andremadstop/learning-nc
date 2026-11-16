@@ -1,0 +1,31 @@
+{
+ "icon": "⏱️",
+ "en": {
+  "line_keywords": [
+   [
+    "answers",
+    "hints"
+   ],
+   [
+    "realistic conditions"
+   ],
+   [
+    "timer",
+    "submits"
+   ],
+   [
+    "review",
+    "after finishing"
+   ],
+   [
+    "realistic conditions"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Instant hints and paused clocks",
+   "right": "Exam mode mirrors reality"
+  },
+  "merksatz": "Exams test knowledge under realistic conditions.",
+  "scene": "Exam mode practice"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "icon": "🔄",
+ "en": {
+  "line_keywords": [
+   [
+    "restart",
+    "whole course"
+   ],
+   [
+    "waste",
+    "time"
+   ],
+   [
+    "app offer"
+   ],
+   [
+    "Maintenance Mode",
+    "dashboard"
+   ],
+   [
+    "cheat sheet"
+   ],
+   [
+    "Review only",
+    "due"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Restarting the entire course monthly",
+   "right": "Using targeted Maintenance Mode reviews"
+  },
+  "merksatz": "Maintenance Mode keeps learned knowledge reliably fresh.",
+  "scene": "Dashboard after course completion"
+ }
+}

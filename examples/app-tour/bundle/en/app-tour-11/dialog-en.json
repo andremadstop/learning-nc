@@ -1,0 +1,32 @@
+[
+ {
+  "role": "JONAS",
+  "text": "If I got the green checkmark, why should I care about the wrong choices?",
+  "start": 0.0,
+  "end": 4.4
+ },
+ {
+  "role": "MARA",
+  "text": "Because pure luck can feel like knowledge. The feedback tells you what trap each choice set.",
+  "start": 4.75,
+  "end": 11.71
+ },
+ {
+  "role": "JONAS",
+  "text": "So I see whether my reasoning was sound or just a lucky guess?",
+  "start": 12.06,
+  "end": 15.94
+ },
+ {
+  "role": "MARA",
+  "text": "Exactly. Understanding the misconception behind the distractor is where learning happens.",
+  "start": 16.29,
+  "end": 23.05
+ },
+ {
+  "role": "MARA",
+  "text": "Every explained option makes the next question easier.",
+  "start": 23.4,
+  "end": 27.56
+ }
+]

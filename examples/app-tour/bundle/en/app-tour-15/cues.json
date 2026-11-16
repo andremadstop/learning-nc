@@ -1,0 +1,32 @@
+{
+ "icon": "⏳",
+ "en": {
+  "line_keywords": [
+   [
+    "test",
+    "certificate"
+   ],
+   [
+    "validity",
+    "expiry date"
+   ],
+   [
+    "zero reason",
+    "deadline"
+   ],
+   [
+    "window",
+    "coverage"
+   ],
+   [
+    "Renewing early"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Early renewal shortens validity",
+   "right": "Early renewal preserves expiry date"
+  },
+  "merksatz": "Early renewal preserves the original expiry date.",
+  "scene": "Security certification renewal window"
+ }
+}

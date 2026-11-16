@@ -1,0 +1,35 @@
+{
+ "icon": "📦",
+ "de": {
+  "line_keywords": [
+   [
+    "Kurs",
+    "Fragen"
+   ],
+   [
+    "Pool",
+    "Kurscontainer"
+   ],
+   [
+    "Nextcloud-Ordner"
+   ],
+   [
+    "verknüpfst",
+    "Dateien"
+   ],
+   [
+    "Standardfragen",
+    "Teams"
+   ],
+   [
+    "Modulare Pools"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Kurslöschung löscht auch den Pool",
+   "right": "Pools überleben die Kurslöschung"
+  },
+  "merksatz": "Pools sind modular und mit Kursen verknüpft.",
+  "scene": "Einführungskurs einrichten"
+ }
+}

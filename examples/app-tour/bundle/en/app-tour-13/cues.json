@@ -1,0 +1,53 @@
+{
+ "icon": "🎧",
+ "en": {
+  "line_keywords": [
+   [
+    "locked out"
+   ],
+   [
+    "subtitles"
+   ],
+   [
+    "short scene"
+   ],
+   [
+    "German and English"
+   ],
+   [
+    "never a barrier"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Headphones required for the exam",
+   "right": "Audio optional with full subtitles"
+  },
+  "merksatz": "Sound is a helper, never a barrier.",
+  "scene": "Testing room audio check"
+ },
+ "de": {
+  "line_keywords": [
+   [
+    "Lautsprecher"
+   ],
+   [
+    "Untertitel"
+   ],
+   [
+    "kleine Szene"
+   ],
+   [
+    "Deutsch oder Englisch"
+   ],
+   [
+    "schließt niemanden aus"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Kopfhörer zwingend erforderlich",
+   "right": "Audio optional mit Untertiteln"
+  },
+  "merksatz": "Ton unterstützt, aber schließt niemanden aus.",
+  "scene": "Prüfungsraum Audiotest"
+ }
+}

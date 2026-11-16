@@ -1,0 +1,32 @@
+[
+ {
+  "role": "JONAS",
+  "text": "Wenn mein Haken grün ist, warum sollte ich mir die falschen Punkte ansehen?",
+  "start": 0.0,
+  "end": 4.2
+ },
+ {
+  "role": "MARA",
+  "text": "Weil ein Zufallstreffer noch kein Wissen ist. Das Feedback zeigt die eingebaute Falle.",
+  "start": 4.55,
+  "end": 10.03
+ },
+ {
+  "role": "JONAS",
+  "text": "Ich erkenne also, ob ich wirklich richtig lag oder nur gut geraten habe?",
+  "start": 10.38,
+  "end": 14.94
+ },
+ {
+  "role": "MARA",
+  "text": "Genau. Erst wenn du das Missverständnis verstehst, sitzt der Inhalt wirklich.",
+  "start": 15.29,
+  "end": 20.54
+ },
+ {
+  "role": "MARA",
+  "text": "Jede verstandene Option spart später Zeit.",
+  "start": 20.89,
+  "end": 24.89
+ }
+]

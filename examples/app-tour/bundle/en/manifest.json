@@ -1,0 +1,1059 @@
+{
+ "format": "learning-question-media/1",
+ "questions": [
+  {
+   "exam_key": "app-tour-01-en",
+   "hint": {
+    "en": "Think about whether you can reuse the same pool of safety questions across several departments."
+   },
+   "background_fact": {
+    "en": "Separating pools from courses allows organizations to update a central question pool once and have changes reflect everywhere."
+   },
+   "merksatz": {
+    "en": "Pools are modular and attach to courses."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Pools are created independently and attached to courses as needed, and materials are linked directly from Nextcloud Files."
+     },
+     "misconception": {
+      "en": "None. This correctly describes the modular architecture of the app."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "The app avoids duplication by referencing pools and folders instead of locking copies into closed archives."
+     },
+     "misconception": {
+      "en": "Assuming courses make isolated, static duplicates of everything you link to them."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "A pool exists on its own and can serve several courses simultaneously without being tied to the lifecycle of one course."
+     },
+     "misconception": {
+      "en": "Believing question pools are strictly nested sub-elements that disappear with a course."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Course owners link normal Nextcloud folders holding PDF or Markdown documents so learners can read them in the course."
+     },
+     "misconception": {
+      "en": "Thinking all study texts have to be typed into single question fields."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-01/cues.json"
+  },
+  {
+   "exam_key": "app-tour-02-en",
+   "hint": {
+    "en": "Consider who needs access to organizational settings versus who only needs to practice and view personal results."
+   },
+   "background_fact": {
+    "en": "Instructor visibility is strictly scoped to their own courses, meaning a teacher in course A cannot inspect course B."
+   },
+   "merksatz": {
+    "en": "Clear roles protect privacy and course order."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Students have dedicated learning views and cannot inspect the personal results of other participants."
+     },
+     "misconception": {
+      "en": "None. This correctly outlines the student scope."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "en": "Instructors are responsible for structuring the course content, enrolling learners, and tracking cohort progress."
+     },
+     "misconception": {
+      "en": "None. This matches the instructor privileges."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "correct",
+     "why": {
+      "en": "Administrators manage global app options, run server maintenance, and possess implicit instructor capabilities."
+     },
+     "misconception": {
+      "en": "None. This correctly identifies administrator responsibilities."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Students are learners without administrative permissions; they cannot reconfigure pools or modify server settings."
+     },
+     "misconception": {
+      "en": "Assuming every course member has equal administrative and editing power."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-02/cues.json"
+  },
+  {
+   "exam_key": "app-tour-03-en",
+   "hint": {
+    "en": "Remember the fundamental Leitner principle for refreshing forgotten material right from the beginning."
+   },
+   "background_fact": {
+    "en": "Returning missed cards to the first box prevents false confidence and guarantees that shaky knowledge is reviewed most frequently."
+   },
+   "merksatz": {
+    "en": "Known advances one, missed resets to one."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "This is the core mechanic of the Leitner system: gradual progression on success and an immediate return to the start on failure."
+     },
+     "misconception": {
+      "en": "None. This accurately reflects how cards transition across boxes."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Cards must be reinforced across multiple intervals rather than jumping directly to mastered, and wrong answers are never deleted."
+     },
+     "misconception": {
+      "en": "Believing that one single correct recall proves permanent mastery or that mistakes destroy content."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Cards advance through consecutive boxes to increase review intervals as retention deepens."
+     },
+     "misconception": {
+      "en": "Thinking cards never change position in the scheduling queue."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "A missed card does not gently step down one box; it returns all the way to box 1 so the concept can be rebuilt securely."
+     },
+     "misconception": {
+      "en": "Assuming mistakes only cause a minor one-step demotion instead of a full reset."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "en",
+     "file": "app-tour-03/intro-en.mp3",
+     "timeline": "app-tour-03/intro-en.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "en",
+     "file": "app-tour-03/dialog-en.mp3",
+     "timeline": "app-tour-03/dialog-en.json"
+    }
+   ],
+   "cues": "app-tour-03/cues.json"
+  },
+  {
+   "exam_key": "app-tour-04-en",
+   "hint": {
+    "en": "Recall the diagram showing boxes from 'new and missed' up to 'mastered'."
+   },
+   "background_fact": {
+    "en": "Sebastian Leitner designed the 5-box card file in the 1970s to widen the time gap between reviews as memory strengthens."
+   },
+   "merksatz": {
+    "en": "Five boxes guide cards to mastery."
+   },
+   "feedback_per_option": [],
+   "tracks": [],
+   "cues": "app-tour-04/cues.json"
+  },
+  {
+   "exam_key": "app-tour-05-en",
+   "hint": {
+    "en": "Focus on how the queue prioritizes what needs refreshing based on how well you remember it."
+   },
+   "background_fact": {
+    "en": "FSRS-5 models human forgetting curves mathematically to schedule cards right before they would fade from memory."
+   },
+   "merksatz": {
+    "en": "Smart Queue sorts due reviews smartly."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "The Smart Queue gathers all due items and presents them systematically based on memory stability."
+     },
+     "misconception": {
+      "en": "None. This correctly describes the Smart Queue function."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Cards are scheduled based on calculated due dates and memory strength rather than pure chance."
+     },
+     "misconception": {
+      "en": "Believing the queue acts as an arbitrary card shuffler."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "The Smart Queue prompts active recall practice; it never grants automatic completion credits."
+     },
+     "misconception": {
+      "en": "Assuming the queue bypasses the practice process."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "FSRS-5 maintains and updates your memory retention history instead of clearing your progress."
+     },
+     "misconception": {
+      "en": "Fearing that opening the review queue wipes out existing mastery data."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-05/cues.json"
+  },
+  {
+   "exam_key": "app-tour-06-en",
+   "hint": {
+    "en": "Consider what your brain must do when it reconstructs an answer compared to passive review."
+   },
+   "background_fact": {
+    "en": "Cognitive research shows that retrieval practice changes memory traces so they become significantly more resistant to future forgetting."
+   },
+   "merksatz": {
+    "en": "Active recall builds lasting memory."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Active recall exercises the memory pathway, which produces durable retention."
+     },
+     "misconception": {
+      "en": "Assuming that effortless reading stores knowledge just as deeply as active recall."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Highlighting and passive reading remain low engagement activities that fade quickly."
+     },
+     "misconception": {
+      "en": "Believing that marking text with highlighters replaces active practice."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Forgetting is a natural process that requires recurring reviews over time rather than a single effort."
+     },
+     "misconception": {
+      "en": "Expecting a single successful recall session to prevent forgetting permanently."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Spaced repetition benefits any kind of knowledge, from vocabulary to organizational policies."
+     },
+     "misconception": {
+      "en": "Restricting spaced practice solely to technical or mathematical subjects."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-06/cues.json"
+  },
+  {
+   "exam_key": "app-tour-07-en",
+   "hint": {
+    "en": "Look for the mode designed for low pressure exploration and learning from mistakes."
+   },
+   "background_fact": {
+    "en": "Receiving an explanation right after an error prevents false assumptions from consolidating in long term memory."
+   },
+   "merksatz": {
+    "en": "Immediate feedback turns mistakes into insights."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Training Mode prioritizes immediate understanding through instant feedback and helpful explanations."
+     },
+     "misconception": {
+      "en": "Assuming practice sessions hide your answers until the very end of the course."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Withholding feedback until the end is a hallmark of exam assessments, not training practice."
+     },
+     "misconception": {
+      "en": "Confusing practice rounds with strict assessment evaluations."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Practice answers in Training Mode never issue a certificate."
+     },
+     "misconception": {
+      "en": "Believing that everyday practice sessions automatically count toward certified credentials."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Training Mode allows you to study at your own comfortable pace without timer pressure."
+     },
+     "misconception": {
+      "en": "Thinking that all question modes impose hard countdown clocks."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "en",
+     "file": "app-tour-07/intro-en.mp3",
+     "timeline": "app-tour-07/intro-en.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "en",
+     "file": "app-tour-07/dialog-en.mp3",
+     "timeline": "app-tour-07/dialog-en.json"
+    }
+   ],
+   "cues": "app-tour-07/cues.json"
+  },
+  {
+   "exam_key": "app-tour-08-en",
+   "hint": {
+    "en": "Think about how an adaptive learning schedule benefits from knowing which cards were easy or difficult for you."
+   },
+   "background_fact": {
+    "en": "Learners who accurately judge their own knowledge retention retain material longer because review sessions match their actual memory strength."
+   },
+   "merksatz": {
+    "en": "Honest self-assessment optimizes your review schedule."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Honest feedback allows the schedule to calibrate repetitions precisely to your personal recall needs."
+     },
+     "misconception": {
+      "en": "Thinking confidence inputs are ignored or serve merely decorative purposes."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Confidence ratings do not bypass official requirements or grant automatic passes."
+     },
+     "misconception": {
+      "en": "Believing you can skip study requirements simply by claiming high confidence."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Uncertain questions need more practice, so they are kept and scheduled rather than deleted."
+     },
+     "misconception": {
+      "en": "Fearing that acknowledging difficulty will make questions disappear from review."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Confidence buttons support your personal learning rhythm and are not grading criteria."
+     },
+     "misconception": {
+      "en": "Treating personal self-evaluation as an audit report for supervisors."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-08/cues.json"
+  },
+  {
+   "exam_key": "app-tour-09-en",
+   "hint": {
+    "en": "Think about which settings recreate the genuine experience of an evaluation exam."
+   },
+   "background_fact": {
+    "en": "Practicing under simulated test constraints reduces performance anxiety and trains effective pacing under real evaluation conditions."
+   },
+   "merksatz": {
+    "en": "Exams test knowledge under realistic conditions."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "When the exam has a time limit, the countdown runs and the exam is submitted automatically when time runs out."
+     },
+     "misconception": {
+      "en": "Assuming a timed exam keeps running after its limit."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "en": "Passing thresholds are central to testing whether minimum course requirements have been achieved."
+     },
+     "misconception": {
+      "en": "Believing that exam simulations show scores without comparing them to a pass mark."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Immediate explanations belong to Training Mode; exams reserve all feedback until after submission."
+     },
+     "misconception": {
+      "en": "Expecting hints and explanations in the middle of an exam."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "correct",
+     "why": {
+      "en": "Configurable presets let educators and learners test specific scopes and durations."
+     },
+     "misconception": {
+      "en": "Assuming all test simulations must use identical fixed question counts."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-09/cues.json"
+  },
+  {
+   "exam_key": "app-tour-10-en",
+   "hint": {
+    "en": "Consider whether your current goal is building foundational knowledge or testing your overall readiness under real constraints."
+   },
+   "background_fact": {
+    "en": "Educational research demonstrates that low stakes practice with explanations must precede summative testing to achieve optimal learning outcomes."
+   },
+   "merksatz": {
+    "en": "First train understanding, then measure success."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Training Mode creates a safe space where immediate explanations help build comprehensive understanding."
+     },
+     "misconception": {
+      "en": "Thinking learners should jump into timed assessments before understanding core concepts."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Official certificates are earned through counting exams, not through exploratory training sessions."
+     },
+     "misconception": {
+      "en": "Assuming Training Mode grants verified credentials for regulatory compliance."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Verifying pace and passing readiness under test conditions is the exact purpose of exam mode."
+     },
+     "misconception": {
+      "en": "Using Training Mode when the goal is actually assessing exam stamina under time limits."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Mandatory recertification requires taking formal course exams rather than practice rounds."
+     },
+     "misconception": {
+      "en": "Confusing everyday training practice with formal mandatory recertification attempts."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-10/cues.json"
+  },
+  {
+   "exam_key": "app-tour-11-en",
+   "hint": {
+    "en": "Think about what turns an incorrect guess into a valuable micro-lesson."
+   },
+   "background_fact": {
+    "en": "Learning research confirms that understanding why an intuitive choice was wrong prevents repeating the exact same error later."
+   },
+   "merksatz": {
+    "en": "Feedback explains misconceptions behind every choice."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Option A correctly identifies that the feedback highlights both the right reasoning and the underlying misconceptions."
+     },
+     "misconception": {
+      "en": "None. Understanding why wrong answers are wrong is essential for long-term retention."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option B is incorrect because answers cannot be changed after submitting your decision."
+     },
+     "misconception": {
+      "en": "Believing that reading explanations is a mechanism to alter past choices rather than a learning tool."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option C is incorrect because feedback does not alter the number of cards scheduled for practice."
+     },
+     "misconception": {
+      "en": "Thinking that time spent reading feedback reduces the review workload automatically."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option D is incorrect because feedback is for personal study and triggers no instructor notifications."
+     },
+     "misconception": {
+      "en": "Assuming every detailed click is logged as a reporting message for teachers."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "en",
+     "file": "app-tour-11/intro-en.mp3",
+     "timeline": "app-tour-11/intro-en.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "en",
+     "file": "app-tour-11/dialog-en.mp3",
+     "timeline": "app-tour-11/dialog-en.json"
+    }
+   ],
+   "cues": "app-tour-11/cues.json"
+  },
+  {
+   "exam_key": "app-tour-12-en",
+   "hint": {
+    "en": "Consider whether a good learning hint gives away the secret or merely points you in the right direction."
+   },
+   "background_fact": {
+    "en": "Cognitive science shows that partial clues stimulate active recall much better than prematurely looking up the complete solution."
+   },
+   "merksatz": {
+    "en": "Hints nudge thinking without spoiling answers."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Option A accurately reflects the hint feature, which encourages independent thought through gentle guidance."
+     },
+     "misconception": {
+      "en": "None. A constructive hint stimulates active memory retrieval."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option B is incorrect because revealing the answer outright destroys the active recall process."
+     },
+     "misconception": {
+      "en": "Confusing a hint with an automatic solution reveal."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option C is incorrect because the app does not eliminate choices like a quiz show lifeline."
+     },
+     "misconception": {
+      "en": "Assuming hints function like elimination lifelines in television games."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option D is incorrect because requesting a hint is a supportive study tool and carries no penalty."
+     },
+     "misconception": {
+      "en": "Fearing that asking for guidance creates a negative mark on training records."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-12/cues.json"
+  },
+  {
+   "exam_key": "app-tour-13-en",
+   "hint": {
+    "en": "Look for statements emphasizing flexibility, optional sound, dual languages, and two distinct dialogue stages."
+   },
+   "background_fact": {
+    "en": "Dual-coding theory demonstrates that pairing written text with spoken dialogue reinforces comprehension when learners have control over playback."
+   },
+   "merksatz": {
+    "en": "Audio is optional and offers full subtitles."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Option A is correct: every spoken line has subtitles and keywords, and this question offers German and English audio."
+     },
+     "misconception": {
+      "en": "None. Subtitles provide accessibility across different environments."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "en": "Option B is correct because audio is purely optional and everything functions properly without sound."
+     },
+     "misconception": {
+      "en": "None. The app is fully usable without speakers or headphones."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option C is incorrect because learners are never forced to wait through audio tracks before making choices."
+     },
+     "misconception": {
+      "en": "Assuming audio elements act as forced progression timers."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "correct",
+     "why": {
+      "en": "Option D is correct because questions can present a small intro scene first and a debrief dialog after submission."
+     },
+     "misconception": {
+      "en": "None. The structure separates the initial dilemma from the subsequent debrief."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "en",
+     "file": "app-tour-13/intro-en.mp3",
+     "timeline": "app-tour-13/intro-en.json"
+    },
+    {
+     "kind": "intro",
+     "lang": "de",
+     "file": "app-tour-13/intro-de.mp3",
+     "timeline": "app-tour-13/intro-de.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "en",
+     "file": "app-tour-13/dialog-en.mp3",
+     "timeline": "app-tour-13/dialog-en.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "de",
+     "file": "app-tour-13/dialog-de.mp3",
+     "timeline": "app-tour-13/dialog-de.json"
+    }
+   ],
+   "cues": "app-tour-13/cues.json"
+  },
+  {
+   "exam_key": "app-tour-14-en",
+   "hint": {
+    "en": "Think about how public digital signatures enable independent confirmation without requiring internal credentials."
+   },
+   "background_fact": {
+    "en": "To protect personal privacy, the public verification page displays course details and the certificate identifier, but omits the learner's personal name."
+   },
+   "merksatz": {
+    "en": "Certificates verify publicly without any login."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Option A is correct because verification relies on a public link and QR code that require no login."
+     },
+     "misconception": {
+      "en": "None. The cryptographic signature provides tamper-evident validation on demand."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option B is incorrect because external auditors do not need instructor accounts or access to private learner records."
+     },
+     "misconception": {
+      "en": "Believing that certificate validation requires administrative access to the learning management system."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option C is incorrect because verification is automated through the permanent web address rather than manual correspondence."
+     },
+     "misconception": {
+      "en": "Thinking certificate checks require manual confirmation from IT personnel."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option D is incorrect because an authentic certificate proves completion on its own without re-testing."
+     },
+     "misconception": {
+      "en": "Assuming completed credentials must be demonstrated repeatedly to prove authenticity."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-14/cues.json"
+  },
+  {
+   "exam_key": "app-tour-15-en",
+   "hint": {
+    "en": "Consider when the renewal window opens, whether early completion causes lost days, and which exam attempts are recognized."
+   },
+   "background_fact": {
+    "en": "The renewal window opens on the day of the first reminder so learners have plenty of time to renew without risking a lapse in compliance."
+   },
+   "merksatz": {
+    "en": "Early renewal preserves the original expiry date."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "Option A is correct because the system sends notifications thirty days and seven days before expiry by default."
+     },
+     "misconception": {
+      "en": "None. Timely notices ensure employees can plan their required refreshers."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "en": "Option B is correct because completing the exam before the deadline extends validity from the old expiration date rather than resetting it early."
+     },
+     "misconception": {
+      "en": "None. Learners do not lose days by being proactive."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Option C is incorrect because recertification demands a new exam taken during the current window; prior attempts never carry over."
+     },
+     "misconception": {
+      "en": "Assuming an earlier successful attempt can automatically fulfill future annual obligations."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "correct",
+     "why": {
+      "en": "Option D is correct because only assessments submitted after the renewal window has opened are valid for recertification."
+     },
+     "misconception": {
+      "en": "None. Strictly bounding exams to the renewal timeframe protects compliance audit standards."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-15/cues.json"
+  },
+  {
+   "exam_key": "app-tour-16-en",
+   "hint": {
+    "en": "Look for features designed for targeted review of due cards and personal weak spots rather than repeating everything."
+   },
+   "background_fact": {
+    "en": "Spaced reviews scheduled right when forgetting begins reinforce memory far more effectively than massed rereading."
+   },
+   "merksatz": {
+    "en": "Maintenance Mode keeps learned knowledge reliably fresh."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "This correctly describes maintenance mode, once your instructor has switched it on, opening the review queue for due cards, and the cheat sheet focusing on your weakest areas."
+     },
+     "misconception": {
+      "en": "None. This accurately reflects post-course retention features."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "The app preserves your progress and schedules only due cards instead of wiping your work."
+     },
+     "misconception": {
+      "en": "Believing that long-term retention requires starting the entire curriculum over from scratch."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "You do not need to take full tests repeatedly; spaced reviews focus efficiently on what is due."
+     },
+     "misconception": {
+      "en": "Assuming only taking entire formal exams can maintain retention."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "Without deliberate review, knowledge fades over time, which is why Maintenance Mode exists."
+     },
+     "misconception": {
+      "en": "Thinking that passing a topic once guarantees permanent recall."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-16/cues.json"
+  },
+  {
+   "exam_key": "app-tour-17-en",
+   "hint": {
+    "en": "Consider where the app is hosted and what two separate permissions are needed before an AI service receives anything."
+   },
+   "background_fact": {
+    "en": "Even when AI is configured, you can withdraw your personal consent at any time in your settings."
+   },
+   "merksatz": {
+    "en": "Your learning data stays on your server."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "en": "This accurately states that data remains on your server by default and AI features require both administrator activation and individual user consent."
+     },
+     "misconception": {
+      "en": "None. This correctly describes the app's privacy model."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "en": "There is no central vendor server or external benchmarking; your learning data stays on your own organisation's installation."
+     },
+     "misconception": {
+      "en": "Assuming that web applications inevitably synchronize user profiles to a central vendor cloud."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "en": "Exams and certificate generation run strictly locally on your Nextcloud server without sending data outside."
+     },
+     "misconception": {
+      "en": "Believing certificate verification requires external validation services."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "en": "The app never automatically transmits account passwords or email addresses to the AI service."
+     },
+     "misconception": {
+      "en": "Fearing that turning on optional AI sends all confidential account credentials to the external provider."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-17/cues.json"
+  },
+  {
+   "exam_key": "app-tour-18-en",
+   "hint": {
+    "en": "It combines an English word for clever with the word for a waiting line."
+   },
+   "background_fact": {
+    "en": "The Smart Queue stays empty until you have started Leitner practice in at least one pool, because only then do your cards get a review schedule."
+   },
+   "merksatz": {
+    "en": "The Smart Queue reviews all due cards."
+   },
+   "feedback_per_option": [],
+   "tracks": [],
+   "cues": "app-tour-18/cues.json"
+  }
+ ]
+}

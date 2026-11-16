@@ -1,0 +1,18 @@
+{
+ "icon": "⚡",
+ "de": {
+  "line_keywords": [
+   [],
+   [],
+   [],
+   [],
+   []
+  ],
+  "contrast": {
+   "wrong": "Erst am Ende Fehler sehen",
+   "right": "Sofortige Erklärung bei Fehlern"
+  },
+  "merksatz": "Direktes Feedback verwandelt Fehler in Wissen.",
+  "scene": "Trainingsmodus Start"
+ }
+}

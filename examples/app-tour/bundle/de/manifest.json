@@ -1,0 +1,1059 @@
+{
+ "format": "learning-question-media/1",
+ "questions": [
+  {
+   "exam_key": "app-tour-01-de",
+   "hint": {
+    "de": "Überlege, ob man denselben Pool mit Arbeitsschutzfragen in mehreren Abteilungen wiederverwenden kann."
+   },
+   "background_fact": {
+    "de": "Die Trennung von Pools und Kursen ermöglicht es, zentrale Fragenkataloge an einer Stelle zu pflegen und überall zu nutzen."
+   },
+   "merksatz": {
+    "de": "Pools sind eigenständig und ergänzen Kurse flexibel."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Pools werden unabhängig erstellt und flexibel Kursen zugeordnet, während Materialien direkt aus Nextcloud-Dateien verlinkt werden."
+     },
+     "misconception": {
+      "de": "Keines. Dies beschreibt den modularen Aufbau der App vollkommen richtig."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Die App vermeidet Duplikate, indem sie Pools und Ordner referenziert, statt Kopien in geschlossenen Archiven abzulegen."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass Kurse isolierte, unveränderliche Kopien von allen Inhalten anlegen."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Ein Pool existiert eigenständig und kann mehreren Kursen gleichzeitig dienen, unabhängig von deren Laufzeit."
+     },
+     "misconception": {
+      "de": "Der Glaube, dass Fragenpools fest untergeordnete Elemente sind, die mit einem Kurs verschwinden."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Kursleitende verknüpfen normale Nextcloud-Ordner mit PDF- oder Markdown-Dateien, damit Lernende diese direkt lesen können."
+     },
+     "misconception": {
+      "de": "Die Vorstellung, man müsse alle Lerneinheiten mühsam in einzelne Fragenfelder eintippen."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-01/cues.json"
+  },
+  {
+   "exam_key": "app-tour-02-de",
+   "hint": {
+    "de": "Überlege, wer organisatorische Einstellungen anpassen muss und wer lediglich übt und eigene Ergebnisse sieht."
+   },
+   "background_fact": {
+    "de": "Kursleitende sehen Fortschritte nur in ihren eigenen Kursen, was den Anforderungen an den Datenschutz im Betrieb entgegenkommt."
+   },
+   "merksatz": {
+    "de": "Klare Rollen schützen Privatsphäre und Ordnung."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Lernende haben einen geschützten Lernbereich und können die Einzelergebnisse anderer Personen nicht einsehen."
+     },
+     "misconception": {
+      "de": "Keines. Dies gibt den Aufgabenbereich von Lernenden exakt wieder."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "de": "Kursleitende strukturieren Inhalte, schreiben Teilnehmende ein und behalten den Fortschritt im Kurs im Blick."
+     },
+     "misconception": {
+      "de": "Keines. Dies entspricht den Befugnissen von Lehrenden."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "correct",
+     "why": {
+      "de": "Administrierende steuern globale Einstellungen, warten das System und haben automatisch auch Kursleiterrechte."
+     },
+     "misconception": {
+      "de": "Keines. Dies fasst die Rolle der Administration treffend zusammen."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Lernende haben keine Verwaltungsrechte und können weder Pools umgestalten noch Einstellungen am Server ändern."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass alle Kursmitglieder dieselben Verwaltungs- und Schreibrechte besitzen."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-02/cues.json"
+  },
+  {
+   "exam_key": "app-tour-03-de",
+   "hint": {
+    "de": "Erinnere dich an das Grundprinzip von Leitner, wenn man eine Karte wiederholen muss."
+   },
+   "background_fact": {
+    "de": "Das Zurücksetzen auf Fach 1 verhindert Scheinsicherheit und sorgt dafür, dass Lücken am häufigsten wiederholt werden."
+   },
+   "merksatz": {
+    "de": "Gewusst steigt auf, Fehler zurück auf eins."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Das ist das bewährte Kernprinzip von Leitner: schrittweiser Aufstieg bei Erfolg und sofortiger Neubeginn bei Fehlern."
+     },
+     "misconception": {
+      "de": "Keines. Dies spiegelt den Ablauf des Leitner-Systems exakt wider."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Karten müssen mehrfach wiederholt werden und überspringen keine Fächer; Fehler führen keinesfalls zum Löschen."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass ein einmaliger Treffer sofortige Meisterschaft bedeutet oder Fehler Inhalte löschen."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Karten wandern durch aufeinanderfolgende Fächer, damit sich die Abstände bis zur nächsten Wiederholung vergrößern."
+     },
+     "misconception": {
+      "de": "Die Vorstellung, dass Karten starr an einer Stelle bleiben und keine Stufen durchlaufen."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Eine verpasste Karte wandert nicht nur ein Fach zurück, sondern startet bewusst wieder ganz vorne in Fach 1."
+     },
+     "misconception": {
+      "de": "Die Vermutung, dass ein Fehler die Karte lediglich um eine einzige Stufe zurückstuft."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "de",
+     "file": "app-tour-03/intro-de.mp3",
+     "timeline": "app-tour-03/intro-de.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "de",
+     "file": "app-tour-03/dialog-de.mp3",
+     "timeline": "app-tour-03/dialog-de.json"
+    }
+   ],
+   "cues": "app-tour-03/cues.json"
+  },
+  {
+   "exam_key": "app-tour-04-de",
+   "hint": {
+    "de": "Erinnere dich an die Übersicht mit Fächern von 'neu' bis 'gemeistert'."
+   },
+   "background_fact": {
+    "de": "Sebastian Leitner entwickelte die 5-Fächer-Lernkartei in den 1970er Jahren, um Wiederholungsabstände optimal zu staffeln."
+   },
+   "merksatz": {
+    "de": "Fünf Fächer führen sicher zur Meisterschaft."
+   },
+   "feedback_per_option": [],
+   "tracks": [],
+   "cues": "app-tour-04/cues.json"
+  },
+  {
+   "exam_key": "app-tour-05-de",
+   "hint": {
+    "de": "Achte darauf, wie die Warteschlange fällige Karten nach Erinnerungsleistung ordnet."
+   },
+   "background_fact": {
+    "de": "FSRS-5 bildet menschliche Vergessenskurven rechnerisch nach, um Karten genau im optimalen Auffrischmoment vorzulegen."
+   },
+   "merksatz": {
+    "de": "Smart Queue sortiert Fälliges nach Gedächtnisstärke."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Die Smart Queue versammelt alle fälligen Karten und ordnet sie systematisch nach ihrer Verankerung im Gedächtnis."
+     },
+     "misconception": {
+      "de": "Keines. Dies beschreibt die Funktion der Smart Queue vollkommen zutreffend."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Karten werden nach berechneten Fälligkeiten und Gedächtnisstärke vorgelegt, nicht nach reinem Zufall."
+     },
+     "misconception": {
+      "de": "Die Vermutung, die Warteschlange sei nur ein simpler Zufallsgenerator."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Die Smart Queue fordert aktives Erinnern ein und hakt Karten niemals ungeprüft ab."
+     },
+     "misconception": {
+      "de": "Die Annahme, die Warteschlange würde das Üben von alleine erledigen."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "FSRS-5 baut auf deinem bisherigen Lernstand auf und löscht diesen keinesfalls bei Sitzungsbeginn."
+     },
+     "misconception": {
+      "de": "Die Sorge, das Öffnen der Warteschlange würde bisherige Lernfortschritte löschen."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-05/cues.json"
+  },
+  {
+   "exam_key": "app-tour-06-de",
+   "hint": {
+    "de": "Überlege, wie sehr sich dein Gehirn anstrengen muss, wenn es eine Antwort aktiv rekonstruiert statt nur mitzulesen."
+   },
+   "background_fact": {
+    "de": "Kognitionswissenschaftliche Untersuchungen belegen, dass aktives Abrufen Gedächtnisspuren messbar widerstandsfähiger gegen das Vergessen macht."
+   },
+   "merksatz": {
+    "de": "Aktives Erinnern verankert Wissen dauerhaft."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Aktives Erinnern trainiert die Gedächtnisspur und sorgt für dauerhaftes Behalten."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass anstrengungsloses Durchlesen Inhalte genauso gut speichert wie aktives Erinnern."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Markieren und passives Lesen bleiben oberflächliche Aktivitäten, die schnell verblassen."
+     },
+     "misconception": {
+      "de": "Der Glaube, dass Textmarker das aktive Wiederholen ersetzen können."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Vergessen ist ein natürlicher Prozess, der wiederholte Auffrischungen verlangt und nie völlig aufhört."
+     },
+     "misconception": {
+      "de": "Die Erwartung, dass ein einmaliger Abruferfolg das Vergessen für immer ausschaltet."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Verteiltes Wiederholen hilft bei jeder Art von Wissen, von Fachbegriffen bis zu Richtlinien."
+     },
+     "misconception": {
+      "de": "Die Fehlannahme, dass zeitlich verteilte Wiederholung nur für technische Fächer taugt."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-06/cues.json"
+  },
+  {
+   "exam_key": "app-tour-07-de",
+   "hint": {
+    "de": "Achte auf die Eigenschaften eines Modus, der zum druckfreien Lernen und Verstehen gedacht ist."
+   },
+   "background_fact": {
+    "de": "Eine Erklärung direkt nach einem Denkfehler verhindert, dass sich falsche Annahmen im Langzeitgedächtnis festsetzen."
+   },
+   "merksatz": {
+    "de": "Direktes Feedback verwandelt Fehler in Wissen."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Der Trainingsmodus stellt das unmittelbare Verständnis durch sofortige Rückmeldung und Erklärungen in den Mittelpunkt."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass Übungsrunden die Auswertung immer bis zum Kursende verbergen."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Ergebnisse bis zum Schluss zurückzuhalten ist typisch für Prüfungen, nicht für das Üben."
+     },
+     "misconception": {
+      "de": "Übungsdurchläufe mit abschließenden Prüfungstests zu verwechseln."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Übungsfragen im Trainingsmodus führen niemals direkt zu einem Zertifikat."
+     },
+     "misconception": {
+      "de": "Der Glaube, dass alltägliches Beantworten im Training bereits zertifikatsrelevant ist."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Der Trainingsmodus erlaubt Lernen im eigenen Tempo ganz ohne Zeitnot."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass jeder Fragemodus von einer herablaufenden Uhr begrenzt wird."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "de",
+     "file": "app-tour-07/intro-de.mp3",
+     "timeline": "app-tour-07/intro-de.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "de",
+     "file": "app-tour-07/dialog-de.mp3",
+     "timeline": "app-tour-07/dialog-de.json"
+    }
+   ],
+   "cues": "app-tour-07/cues.json"
+  },
+  {
+   "exam_key": "app-tour-08-de",
+   "hint": {
+    "de": "Überlege, wie ein anpassungsfähiger Lernplan davon profitiert zu wissen, welche Fragen dir leicht oder schwer fielen."
+   },
+   "background_fact": {
+    "de": "Lernende, die ihr eigenes Wissen realistisch einschätzen, behalten Inhalte länger, weil Übungseinheiten zu ihrer tatsächlichen Gedächtnisstärke passen."
+   },
+   "merksatz": {
+    "de": "Ehrliche Selbsteinschätzung optimiert deinen Lernplan."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Ehrliche Rückmeldung erlaubt es dem Wiederholungsplan, Abstände optimal an deinen Bedarf anzupassen."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass die Zuversichtsauswahl ignoriert wird oder reine Dekoration ist."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Zuversichtsangaben überspringen keine Kursregeln und ersetzen keine Tests."
+     },
+     "misconception": {
+      "de": "Der Glaube, man könne Lernanforderungen durch Vorgabe hoher Sicherheit umgehen."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Fragen mit Unsicherheiten benötigen mehr Übung und werden keinesfalls gelöscht."
+     },
+     "misconception": {
+      "de": "Die Sorge, dass das Eingestehen von Unsicherheit zum Verschwinden der Frage führt."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Zuversichtsknöpfe dienen deinem persönlichen Lernrhythmus und bilden keine Prüfungsnote."
+     },
+     "misconception": {
+      "de": "Die Selbsteinschätzung fälschlich als Kontrollinstrument für Vorgesetzte zu betrachten."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-08/cues.json"
+  },
+  {
+   "exam_key": "app-tour-09-de",
+   "hint": {
+    "de": "Denke daran, welche Einstellungen das reale Erlebnis einer formellen Überprüfung nachbilden."
+   },
+   "background_fact": {
+    "de": "Das Üben unter realistischen Prüfungsbedingungen baut Testängste ab und trainiert das richtige Zeiteinteilen für den Ernstfall."
+   },
+   "merksatz": {
+    "de": "Prüfungen testen Wissen unter realistischen Bedingungen."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Hat die Prüfung ein Zeitlimit, läuft ein Countdown, der bei Zeitablauf automatisch abgibt."
+     },
+     "misconception": {
+      "de": "Die Annahme, eine Prüfung mit Zeitlimit liefe nach Ablauf einfach weiter."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "de": "Bestehensgrenzen sind entscheidend, um das Erreichen der geforderten Mindestleistung festzustellen."
+     },
+     "misconception": {
+      "de": "Der Glaube, Prüfungssimulationen zeigten Ergebnisse ohne Abgleich mit einer Mindestgrenze."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Direkte Erklärungen gehören zum Trainingsmodus; Prüfungen zeigen Rückmeldungen erst nach der Abgabe."
+     },
+     "misconception": {
+      "de": "Die Erwartung von Hinweisen und Erklärungen mitten in einer Prüfung."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "correct",
+     "why": {
+      "de": "Vordefinierte Einstellungen erlauben es, bestimmte Umfänge und Zeitfenster gezielt zu testen."
+     },
+     "misconception": {
+      "de": "Die Annahme, alle Testdurchläufe müssten zwingend dieselbe starre Fragenzahl besitzen."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-09/cues.json"
+  },
+  {
+   "exam_key": "app-tour-10-de",
+   "hint": {
+    "de": "Überlege, ob dein Ziel gerade im Aufbau von Verständnis liegt oder in der formellen Überprüfung deines Wissens."
+   },
+   "background_fact": {
+    "de": "Lernstudien zeigen deutlich, dass druckfreies Üben mit Erklärungen formellen Leistungstests vorausgehen muss, um nachhaltigen Lernerfolg zu sichern."
+   },
+   "merksatz": {
+    "de": "Erst Wissen aufbauen, dann Erfolg prüfen."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Der Trainingsmodus bietet einen geschützten Raum, in dem sofortige Erklärungen das Verständnis aufbauen."
+     },
+     "misconception": {
+      "de": "Die Vorstellung, man solle vor dem inhaltlichen Verständnis direkt in Zeitprüfungen starten."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Offizielle Nachweise entstehen aus gewerteten Prüfungen, nicht aus lockeren Übungsrunden."
+     },
+     "misconception": {
+      "de": "Der Glaube, dass der Trainingsmodus bereits anerkannte Nachweise für Richtlinien erzeugt."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Das Überprüfen von Tempo und Bestehensreife ist der eigentliche Zweck des Prüfungsmodus."
+     },
+     "misconception": {
+      "de": "Den Trainingsmodus zu wählen, wenn man eigentlich Zeitdruck und Prüfungsreife testen will."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Verbindliche Pflichtauffrischungen erfordern formelle Prüfungen statt bloßer Übungsdurchläufe."
+     },
+     "misconception": {
+      "de": "Tägliches Üben mit einem verbindlichen Wiederholungsversuch für Pflichtunterweisungen zu verwechseln."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-10/cues.json"
+  },
+  {
+   "exam_key": "app-tour-11-de",
+   "hint": {
+    "de": "Überlege, was einen Fehlversuch in eine echte Lernchance verwandelt."
+   },
+   "background_fact": {
+    "de": "Lernpsychologische Studien belegen, dass das Verstehen von Fehlern deren Wiederholung nachhaltig verhindert."
+   },
+   "merksatz": {
+    "de": "Feedback erklärt Missverständnisse hinter jeder Option."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Option A beschreibt zutreffend, dass das Feedback die Begründung liefert und Missverständnisse auflöst."
+     },
+     "misconception": {
+      "de": "Keines. Zu verstehen, warum falsche Optionen falsch sind, sichert den Lernerfolg."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option B ist falsch, da abgegebene Antworten nicht nachträglich korrigiert werden können."
+     },
+     "misconception": {
+      "de": "Der Irrglaube, Erklärungen dienten der Korrektur bereits abgegebener Antworten."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option C ist falsch, da das Lesen von Feedback keine Lernkarten überspringt."
+     },
+     "misconception": {
+      "de": "Die Annahme, Lesezeit würde den eigentlichen Lernstoff künstlich verkürzen."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option D ist falsch, da das Aufrufen von Feedback keine Benachrichtigungen versendet."
+     },
+     "misconception": {
+      "de": "Die Vermutung, jede Detailansicht würde als Berichtsmeldung an Lehrende gemeldet."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "de",
+     "file": "app-tour-11/intro-de.mp3",
+     "timeline": "app-tour-11/intro-de.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "de",
+     "file": "app-tour-11/dialog-de.mp3",
+     "timeline": "app-tour-11/dialog-de.json"
+    }
+   ],
+   "cues": "app-tour-11/cues.json"
+  },
+  {
+   "exam_key": "app-tour-12-de",
+   "hint": {
+    "de": "Überlege, ob ein guter Lernhinweis das Ergebnis verrät oder nur deine Gedanken lenkt."
+   },
+   "background_fact": {
+    "de": "Die Kognitionsforschung zeigt, dass kleine Hinweise den Abruf besser trainieren als das vorzeitige Aufdecken von Lösungen."
+   },
+   "merksatz": {
+    "de": "Hinweise stupsen an, ohne zu verraten."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Option A beschreibt die Funktion exakt: Ein Impuls unterstützt das eigene Nachdenken."
+     },
+     "misconception": {
+      "de": "Keines. Ein gezielter Denkanstoß stärkt den eigenen Wissensabruf."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option B ist falsch, weil das direkte Verraten der Antwort den Lerneffekt zunichtemachen würde."
+     },
+     "misconception": {
+      "de": "Die Verwechslung von Lernhinweisen mit einer automatischen Auflösung."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option C ist falsch, da die App keine Antwortmöglichkeiten wie ein Quiz-Joker streicht."
+     },
+     "misconception": {
+      "de": "Die Annahme, Hinweise funktionierten wie Joker in Quizsendungen."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option D ist falsch, da das Nutzen von Hinweisen niemals bestraft wird."
+     },
+     "misconception": {
+      "de": "Die Befürchtung, Hilfestellungen würden den Schulungsnachweis verschlechtern."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-12/cues.json"
+  },
+  {
+   "exam_key": "app-tour-13-de",
+   "hint": {
+    "de": "Achte darauf, welche Aussagen Sprachauswahl, Barrierefreiheit ohne Ton und die beiden Dialogphasen betreffen."
+   },
+   "background_fact": {
+    "de": "Erkenntnisse der Kognitionspsychologie zeigen, dass die Kombination aus Text und Sprache das Verständnis festigt, wenn Lernende das Tempo steuern."
+   },
+   "merksatz": {
+    "de": "Audio bleibt optional und bietet Untertitel."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Option A ist richtig: Jede gesprochene Zeile hat Untertitel und Schlagwörter, und diese Frage bietet deutschen und englischen Ton."
+     },
+     "misconception": {
+      "de": "Keines. Untertitel sichern das Lernen in ruhigen oder lauten Umgebungen."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "de": "Option B ist richtig, da die Audiofunktion rein freiwillig ist und stumm geschaltet werden kann."
+     },
+     "misconception": {
+      "de": "Keines. Die Anwendung lässt sich jederzeit ohne Ton bedienen."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option C ist falsch, da niemand gezwungen wird, Audioaufnahmen vor dem Klick abzuwarten."
+     },
+     "misconception": {
+      "de": "Die Fehlannahme, Audiobeiträge dienten als Zwangspausen im Lernablauf."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "correct",
+     "why": {
+      "de": "Option D ist richtig, da Aufgaben aus einer kurzen Anfangsszene und einem Nachgespräch bestehen können."
+     },
+     "misconception": {
+      "de": "Keines. Die Trennung zwischen Einstiegsszene und Auswertung unterstützt den Lernfluss."
+     }
+    }
+   ],
+   "tracks": [
+    {
+     "kind": "intro",
+     "lang": "de",
+     "file": "app-tour-13/intro-de.mp3",
+     "timeline": "app-tour-13/intro-de.json"
+    },
+    {
+     "kind": "intro",
+     "lang": "en",
+     "file": "app-tour-13/intro-en.mp3",
+     "timeline": "app-tour-13/intro-en.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "de",
+     "file": "app-tour-13/dialog-de.mp3",
+     "timeline": "app-tour-13/dialog-de.json"
+    },
+    {
+     "kind": "dialog",
+     "lang": "en",
+     "file": "app-tour-13/dialog-en.mp3",
+     "timeline": "app-tour-13/dialog-en.json"
+    }
+   ],
+   "cues": "app-tour-13/cues.json"
+  },
+  {
+   "exam_key": "app-tour-14-de",
+   "hint": {
+    "de": "Überlege, wie digitale Signaturen eine unabhängige Bestätigung ohne interne Zugangsdaten ermöglichen."
+   },
+   "background_fact": {
+    "de": "Aus Datenschutzgründen zeigt die öffentliche Prüfseite Kursinhalte und Zertifikats-ID, nennt aber bewusst keinen Namen."
+   },
+   "merksatz": {
+    "de": "Zertifikate prüfen öffentlich ohne jeden Login."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Option A ist richtig, da die Prüfung über den öffentlichen Link oder QR-Code ohne Anmeldung erfolgt."
+     },
+     "misconception": {
+      "de": "Keines. Die Signatur erlaubt jederzeit einen verlässlichen Echtheitsnachweis."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option B ist falsch, da Außenstehende keine Dozentenrechte oder Einblicke in Benutzerprofile benötigen."
+     },
+     "misconception": {
+      "de": "Die Annahme, eine Überprüfung erfordere administrativen Zugriff auf das Gesamtsystem."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option C ist falsch, da der Nachweis automatisiert über das Web erfolgt und keine manuelle E-Mail verlangt."
+     },
+     "misconception": {
+      "de": "Die Vorstellung, Nachweise müssten aufwendig per E-Mail von Administratoren bestätigt werden."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option D ist falsch, da ein gültiges Dokument den Abschluss bereits rechtssicher belegt."
+     },
+     "misconception": {
+      "de": "Der Irrglaube, eine Prüfung müsse bei jeder Kontrolle erneut abgelegt werden."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-14/cues.json"
+  },
+  {
+   "exam_key": "app-tour-15-de",
+   "hint": {
+    "de": "Achte darauf, wann das Erneuerungsfenster startet, ob frühes Wiederholen Tage verschenkt und welche Prüfungen zählen."
+   },
+   "background_fact": {
+    "de": "Das Erneuerungsfenster öffnet sich mit der ersten Erinnerung, damit genug Zeit für den Abschluss bleibt."
+   },
+   "merksatz": {
+    "de": "Frühe Erneuerung schützt die volle Laufzeit."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Option A ist richtig, da Erinnerungsbenachrichtigungen regulär 30 und 7 Tage vor Ablauf versendet werden."
+     },
+     "misconception": {
+      "de": "Keines. Frühzeitige Hinweise ermöglichen eine vorausschauende Planung."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "correct",
+     "why": {
+      "de": "Option B ist richtig, da eine frühe Prüfung die Restlaufzeit nicht abschneidet, sondern nahtlos anschließt."
+     },
+     "misconception": {
+      "de": "Keines. Wer früh lernt, verliert keine Tage seiner Zertifikatsdauer."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Option C ist falsch, da alte Prüfungen niemals zur Verlängerung im Folgejahr herangezogen werden können."
+     },
+     "misconception": {
+      "de": "Die falsche Annahme, vergangene Leistungen würden die jährliche Pflichtschulung dauerhaft ersetzen."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "correct",
+     "why": {
+      "de": "Option D ist richtig, da ausschließlich Prüfungen innerhalb des aktiven Erneuerungszeitraums gewertet werden."
+     },
+     "misconception": {
+      "de": "Keines. Die zeitliche Eingrenzung ist die Grundlage für rechtssichere Nachweise."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-15/cues.json"
+  },
+  {
+   "exam_key": "app-tour-16-de",
+   "hint": {
+    "de": "Achte auf Funktionen für gezielte Wiederholung fälliger Karten und eigener Schwachstellen statt alles zu wiederholen."
+   },
+   "background_fact": {
+    "de": "Gezielte Abfragen genau zum Zeitpunkt des Vergessens festigen das Gedächtnis wirksamer als ständiges Neulesen."
+   },
+   "merksatz": {
+    "de": "Der Wartungsmodus hält gelerntes Wissen verlässlich frisch."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Das beschreibt zutreffend, wie der Wartungsmodus, sobald die Kursleitung ihn eingeschaltet hat, fällige Karten anbietet und der Spickzettel persönliche Problemthemen bündelt."
+     },
+     "misconception": {
+      "de": "Keines. Dies bildet die Funktionen zur langfristigen Wissenssicherung korrekt ab."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Die App behält deinen Lernstand und plant nur fällige Karten ein, statt deinen Fortschritt zu löschen."
+     },
+     "misconception": {
+      "de": "Die Annahme, dass man zur Festigung jedes Mal den gesamten Stoff von vorne lernen müsste."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Es müssen keine kompletten Tests wiederholt werden; zeitlich gestaffelte Abfragen genügen völlig."
+     },
+     "misconception": {
+      "de": "Der Glaube, nur vollständige Prüfungen könnten Wissen dauerhaft sichern."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Ohne gezielte Wiederholung verblasst Wissen mit der Zeit, weshalb es den Wartungsmodus gibt."
+     },
+     "misconception": {
+      "de": "Die Vorstellung, einmal bestandener Stoff bleibe ohne jede Auffrischung für immer abrufbar."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-16/cues.json"
+  },
+  {
+   "exam_key": "app-tour-17-de",
+   "hint": {
+    "de": "Überlege, wo die App installiert ist und welche zwei Freigaben nötig sind, bevor ein KI-Dienst etwas erhält."
+   },
+   "background_fact": {
+    "de": "Selbst bei aktiver KI kannst du deine persönliche Einwilligung jederzeit in den Einstellungen widerrufen."
+   },
+   "merksatz": {
+    "de": "Deine Lerndaten bleiben auf deinem eigenen Server."
+   },
+   "feedback_per_option": [
+    {
+     "option_index": 0,
+     "letter": "A",
+     "verdict": "correct",
+     "why": {
+      "de": "Das gibt exakt wieder, dass Daten standardmäßig auf dem Server bleiben und KI immer Admin-Aktivierung plus persönliche Einwilligung verlangt."
+     },
+     "misconception": {
+      "de": "Keines. Dies beschreibt das Datenschutzmodell der App fehlerfrei."
+     }
+    },
+    {
+     "option_index": 1,
+     "letter": "B",
+     "verdict": "wrong",
+     "why": {
+      "de": "Es gibt keinen zentralen Hersteller-Server oder externen Vergleich; deine Lerndaten bleiben in der eigenen Organisation."
+     },
+     "misconception": {
+      "de": "Die Annahme, jede Web-App übertrage Nutzerdaten zwangsläufig an eine zentrale Hersteller-Cloud."
+     }
+    },
+    {
+     "option_index": 2,
+     "letter": "C",
+     "verdict": "wrong",
+     "why": {
+      "de": "Prüfungen und Zertifikatserstellung laufen komplett lokal auf dem Nextcloud-Server ab."
+     },
+     "misconception": {
+      "de": "Der Glaube, für Zertifikatsprüfungen müssten Daten an externe Prüfdienste geschickt werden."
+     }
+    },
+    {
+     "option_index": 3,
+     "letter": "D",
+     "verdict": "wrong",
+     "why": {
+      "de": "Die App sendet Passwörter und E-Mail-Adressen niemals automatisch an den KI-Dienst."
+     },
+     "misconception": {
+      "de": "Die Sorge, mit Aktivierung einer KI würden sämtliche Kontozugangsdaten ungefiltert übertragen."
+     }
+    }
+   ],
+   "tracks": [],
+   "cues": "app-tour-17/cues.json"
+  },
+  {
+   "exam_key": "app-tour-18-de",
+   "hint": {
+    "de": "Es ist ein zweiteiliger englischer Begriff aus dem Wort für schlau und dem Wort für Warteschlange."
+   },
+   "background_fact": {
+    "de": "Die Smart Queue bleibt leer, bis du in mindestens einem Pool mit Leitner begonnen hast, denn erst dann bekommen deine Karten einen Wiederholungsplan."
+   },
+   "merksatz": {
+    "de": "Die Smart Queue bündelt alle fälligen Wiederholungen."
+   },
+   "feedback_per_option": [],
+   "tracks": [],
+   "cues": "app-tour-18/cues.json"
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+[
+ {
+  "role": "JONAS",
+  "text": "Wenn ich eine Frage falsch beantworte, rutscht die Karte dann nur ein Fach tiefer?",
+  "start": 0.0,
+  "end": 5.84
+ },
+ {
+  "role": "MARA",
+  "text": "Nein, sie wandert direkt zurück in Fach 1, damit du den Inhalt solide neu festigst.",
+  "start": 6.19,
+  "end": 12.27
+ },
+ {
+  "role": "JONAS",
+  "text": "Klingt streng, aber so übersehe ich schwierige Begriffe wenigstens nicht.",
+  "start": 12.62,
+  "end": 16.78
+ },
+ {
+  "role": "MARA",
+  "text": "Ganz genau. Und bei jedem Treffer steigt sie schrittweise um ein Fach auf.",
+  "start": 17.13,
+  "end": 22.89
+ },
+ {
+  "role": "JONAS",
+  "text": "Jetzt verstehe ich, warum sich der Rhythmus so wirksam anfühlt.",
+  "start": 23.24,
+  "end": 26.68
+ },
+ {
+  "role": "MARA",
+  "text": "Schrittweises Festigen sorgt für verlässliches Wissen im Alltag.",
+  "start": 27.03,
+  "end": 31.75
+ }
+]

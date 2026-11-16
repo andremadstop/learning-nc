@@ -1,0 +1,31 @@
+{
+ "icon": "⏳",
+ "de": {
+  "line_keywords": [
+   [
+    "Test"
+   ],
+   [
+    "Gültigkeit",
+    "Ablaufdatum"
+   ],
+   [
+    "keinen Grund",
+    "Tag"
+   ],
+   [
+    "Fenster",
+    "abgesichert"
+   ],
+   [
+    "Frühe Erneuerung"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Frühe Verlängerung verkürzt Laufzeit",
+   "right": "Frühe Erneuerung erhält Ablaufdatum"
+  },
+  "merksatz": "Frühe Erneuerung bewahrt das ursprüngliche Ablaufdatum.",
+  "scene": "Sicherheitszertifizierung Verlängerungsfenster"
+ }
+}

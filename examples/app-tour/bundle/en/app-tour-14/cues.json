@@ -1,0 +1,32 @@
+{
+ "icon": "📜",
+ "en": {
+  "line_keywords": [
+   [
+    "compliance auditor",
+    "account"
+   ],
+   [
+    "No account",
+    "link"
+   ],
+   [
+    "authentic",
+    "valid"
+   ],
+   [
+    "validity status"
+   ],
+   [
+    "scan",
+    "authenticity"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Auditor needs system account",
+   "right": "Verify via public link"
+  },
+  "merksatz": "Certificates verify publicly without any login.",
+  "scene": "Certificate verification desk"
+ }
+}

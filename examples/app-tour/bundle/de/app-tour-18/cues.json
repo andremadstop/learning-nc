@@ -1,0 +1,33 @@
+{
+ "icon": "🧠",
+ "de": {
+  "line_keywords": [
+   [
+    "Ordner",
+    "fällige Fragen"
+   ],
+   [
+    "Modus",
+    "fälligen Karten"
+   ],
+   [
+    "fälligen Karten"
+   ],
+   [
+    "Smart Queue"
+   ],
+   [
+    "fällige Wissen"
+   ],
+   [
+    "Smart Queue"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Jeden Pool einzeln durchsuchen",
+   "right": "Smart Queue nutzen"
+  },
+  "merksatz": "Die Smart Queue bündelt alle fälligen Karten.",
+  "scene": "Lernpools durchsuchen"
+ }
+}

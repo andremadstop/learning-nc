@@ -1,0 +1,32 @@
+{
+ "icon": "🧠",
+ "en": {
+  "line_keywords": [
+   [
+    "topic",
+    "due"
+   ],
+   [
+    "review"
+   ],
+   [
+    "due cards"
+   ],
+   [
+    "Smart Queue"
+   ],
+   [
+    "due knowledge"
+   ],
+   [
+    "Smart Queue"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Check every single pool manually",
+   "right": "Use the Smart Queue"
+  },
+  "merksatz": "The Smart Queue reviews all due cards.",
+  "scene": "Reviewing study pools"
+ }
+}

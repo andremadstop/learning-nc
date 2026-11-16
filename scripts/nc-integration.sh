@@ -112,6 +112,12 @@ docker exec -e V="$PHPUNIT_VERSION" -e SUM="$PHPUNIT_SHA256" "$NC" sh -euc '
 echo "==> install Nextcloud + enable learning"
 docker exec "$NC" sh -euc 'cp -a /usr/src/nextcloud/. /var/www/html/ && mkdir -p /var/www/html/data'
 docker cp "$WORK/repo/app/." "$NC:/var/www/html/apps/learning"
+# AppTourExampleTest imports the shipped example course (examples/app-tour) itself, never a copy
+# of it. Outside the web root; older refs without examples/ fail that test loudly on their own.
+if [ -d "$WORK/repo/examples" ]; then
+	docker cp "$WORK/repo/examples/." "$NC:/opt/learning-examples"
+	docker exec "$NC" chown -R www-data:www-data /opt/learning-examples
+fi
 docker exec "$NC" chown -R www-data:www-data /var/www/html
 docker exec -u www-data -w /var/www/html "$NC" php occ maintenance:install -n \
 	--database="$ENGINE" --database-host="$DB" --database-name=nextcloud \
@@ -136,6 +142,6 @@ docker exec -u www-data "$NC" sh -euc ': > /tmp/llm-requests.log'   # tests star
 echo "==> PHPUnit (tests/Integration)"
 # Exit 0 alone is not proof (Nextcloud's error handler and any exit(0) end PHPUnit early with a
 # clean exit code): the JUnit report written at the very end must exist and count >0 tests.
-docker exec -u www-data -w /var/www/html/apps/learning "$NC" \
+docker exec -u www-data -w /var/www/html/apps/learning -e LEARNING_EXAMPLES_DIR=/opt/learning-examples "$NC" \
 	php /usr/local/bin/phpunit -c tests/Integration/phpunit.xml --log-junit /tmp/integration-junit.xml
 docker exec "$NC" php -r '$f=$argv[1]; if(!is_file($f)){fwrite(STDERR,"no JUnit report: PHPUnit did not finish\n");exit(1);} $x=@simplexml_load_string((string)file_get_contents($f)); $s=$x?$x->testsuite:null; if(!$s){fwrite(STDERR,"JUnit report unreadable\n");exit(1);} $t=(int)$s["tests"];$e=(int)$s["errors"];$fl=(int)$s["failures"];$sk=(int)$s["skipped"]; echo "junit tests=$t errors=$e failures=$fl skipped=$sk\n"; exit($t>0&&$e===0&&$fl===0&&$sk===0?0:1);' /tmp/integration-junit.xml

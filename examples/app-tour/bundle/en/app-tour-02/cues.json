@@ -1,0 +1,32 @@
+{
+ "icon": "🔒",
+ "en": {
+  "line_keywords": [
+   [
+    "passing threshold",
+    "question pools"
+   ],
+   [
+    "personal records"
+   ],
+   [
+    "test attempts"
+   ],
+   [
+    "Course management"
+   ],
+   [
+    "colleagues peace of mind"
+   ],
+   [
+    "Defined roles"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Everyone accesses all courses",
+   "right": "Clear roles protect privacy"
+  },
+  "merksatz": "Clear roles protect privacy and course order.",
+  "scene": "App Permission Planning"
+ }
+}

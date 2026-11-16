@@ -1,0 +1,38 @@
+[
+ {
+  "role": "JONAS",
+  "text": "When I get an answer wrong, does the card just drop down one level?",
+  "start": 0.0,
+  "end": 3.8
+ },
+ {
+  "role": "MARA",
+  "text": "No, it goes straight back to box 1 so you can refresh the concept thoroughly.",
+  "start": 4.15,
+  "end": 9.55
+ },
+ {
+  "role": "JONAS",
+  "text": "That sounds strict, but I guess it stops me from forgetting tricky terms.",
+  "start": 9.9,
+  "end": 14.74
+ },
+ {
+  "role": "MARA",
+  "text": "Exactly. And each correct recall moves it steadily up one box until it sticks.",
+  "start": 15.09,
+  "end": 21.13
+ },
+ {
+  "role": "JONAS",
+  "text": "Now I understand why the review schedule feels so reliable.",
+  "start": 21.48,
+  "end": 25.45
+ },
+ {
+  "role": "MARA",
+  "text": "Mastering cards step by step builds lasting knowledge.",
+  "start": 25.8,
+  "end": 30.2
+ }
+]

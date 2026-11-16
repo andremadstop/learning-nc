@@ -1,0 +1,33 @@
+{
+ "icon": "📦",
+ "en": {
+  "line_keywords": [
+   [
+    "wrong",
+    "drop down"
+   ],
+   [
+    "back to box 1"
+   ],
+   [
+    "forgetting"
+   ],
+   [
+    "correct recall",
+    "up one box"
+   ],
+   [
+    "schedule"
+   ],
+   [
+    "Mastering cards"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Missed cards drop one level",
+   "right": "Missed cards reset to box 1"
+  },
+  "merksatz": "Known advances one, missed resets to one.",
+  "scene": "Flashcard Study Review"
+ }
+}

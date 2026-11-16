@@ -1,0 +1,32 @@
+[
+ {
+  "role": "JONAS",
+  "text": "I was worried I would be locked out if my sound was turned off.",
+  "start": 0.0,
+  "end": 3.68
+ },
+ {
+  "role": "MARA",
+  "text": "Never. Everything works silently with text, subtitles, and keywords.",
+  "start": 4.03,
+  "end": 9.67
+ },
+ {
+  "role": "JONAS",
+  "text": "And there is a short scene before and a conversation after?",
+  "start": 10.02,
+  "end": 14.58
+ },
+ {
+  "role": "MARA",
+  "text": "Yes, German and English are available whenever you want to listen.",
+  "start": 14.93,
+  "end": 19.34
+ },
+ {
+  "role": "MARA",
+  "text": "Sound is a helper, never a barrier.",
+  "start": 19.69,
+  "end": 23.05
+ }
+]

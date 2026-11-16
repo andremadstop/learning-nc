@@ -1,0 +1,28 @@
+{
+ "icon": "💡",
+ "en": {
+  "line_keywords": [
+   [
+    "hint button"
+   ],
+   [
+    "gentle nudge"
+   ],
+   [
+    "thinking"
+   ],
+   [
+    "key concept"
+   ],
+   [
+    "guides without spoiling"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Hints spoil the answer",
+   "right": "Hints nudge thinking"
+  },
+  "merksatz": "Hints nudge thinking without spoiling answers.",
+  "scene": "Studying with interactive hints"
+ }
+}

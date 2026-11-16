@@ -1,0 +1,35 @@
+{
+ "icon": "🔒",
+ "en": {
+  "line_keywords": [
+   [
+    "test scores",
+    "external cloud"
+   ],
+   [
+    "strictly",
+    "own server"
+   ],
+   [
+    "AI assistant"
+   ],
+   [
+    "switched off",
+    "default"
+   ],
+   [
+    "account password"
+   ],
+   [
+    "Your server",
+    "your data"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Data flows to external cloud",
+   "right": "Data stays on your server"
+  },
+  "merksatz": "Your learning data stays on your server.",
+  "scene": "Nextcloud Security Review"
+ }
+}

@@ -1,0 +1,32 @@
+[
+ {
+  "role": "JONAS",
+  "text": "I thought I would only see my errors after finishing the whole topic.",
+  "start": 0.0,
+  "end": 4.04
+ },
+ {
+  "role": "MARA",
+  "text": "In Training Mode, waiting would hide your misunderstanding when curiosity is highest.",
+  "start": 4.39,
+  "end": 10.19
+ },
+ {
+  "role": "JONAS",
+  "text": "So seeing the explanation right away helps me fix the mistake on the spot?",
+  "start": 10.54,
+  "end": 15.38
+ },
+ {
+  "role": "MARA",
+  "text": "Exactly. You inspect the reason immediately and carry the lesson forward.",
+  "start": 15.73,
+  "end": 21.13
+ },
+ {
+  "role": "JONAS",
+  "text": "Immediate feedback turns mistakes into insights.",
+  "start": 21.48,
+  "end": 25.45
+ }
+]

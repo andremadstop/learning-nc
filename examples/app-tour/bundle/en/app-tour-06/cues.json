@@ -1,0 +1,28 @@
+{
+ "icon": "🧠",
+ "en": {
+  "line_keywords": [
+   [
+    "familiar"
+   ],
+   [
+    "deceptive"
+   ],
+   [
+    "produce the answer"
+   ],
+   [
+    "retrieval"
+   ],
+   [
+    "Active recall"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Reading over and over again",
+   "right": "Closing page and recalling actively"
+  },
+  "merksatz": "Active recall builds lasting memory.",
+  "scene": "Desk with tea and notes"
+ }
+}

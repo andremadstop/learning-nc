@@ -1,0 +1,14 @@
+[
+ {
+  "role": "MARA",
+  "text": "Let us check on your flashcard deck for the training module today.",
+  "start": 0.0,
+  "end": 4.08
+ },
+ {
+  "role": "JONAS",
+  "text": "I practiced yesterday, but I am still not completely sure how cards travel through the boxes.",
+  "start": 4.43,
+  "end": 10.27
+ }
+]

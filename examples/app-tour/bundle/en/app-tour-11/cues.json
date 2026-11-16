@@ -1,0 +1,32 @@
+{
+ "icon": "💡",
+ "en": {
+  "line_keywords": [
+   [
+    "green checkmark",
+    "wrong choices"
+   ],
+   [
+    "luck",
+    "feedback"
+   ],
+   [
+    "reasoning",
+    "lucky guess"
+   ],
+   [
+    "misconception",
+    "distractor"
+   ],
+   [
+    "Every explained option"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Skip explanations if correct",
+   "right": "Analyze every distractor trap"
+  },
+  "merksatz": "Feedback explains misconceptions behind every choice.",
+  "scene": "Reviewing exam results"
+ }
+}

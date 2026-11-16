@@ -1,0 +1,18 @@
+{
+ "icon": "⚡",
+ "en": {
+  "line_keywords": [
+   [],
+   [],
+   [],
+   [],
+   []
+  ],
+  "contrast": {
+   "wrong": "Delayed review at the very end",
+   "right": "Immediate feedback on each step"
+  },
+  "merksatz": "Immediate feedback turns mistakes into insights.",
+  "scene": "Training Mode session start"
+ }
+}

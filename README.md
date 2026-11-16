@@ -39,6 +39,9 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
   — one course, a yearly exam, certificates with renewal and audit evidence; no AI, no gamification.
 - [Bulk question import from PDF](docs/import-pool-workflow.md) — get an existing question
   catalogue into the app without typing it.
+- [Example course: How to learn with this app](examples/app-tour/) — 18 questions about the app
+  itself in English and German, with hints, feedback per option and audio; two `occ` commands
+  import it (CC BY 4.0).
 
 ## Features
 

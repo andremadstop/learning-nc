@@ -1,0 +1,30 @@
+{
+ "icon": "📦",
+ "en": {
+  "line_keywords": [
+   [
+    "ten different stages"
+   ],
+   [
+    "five boxes"
+   ],
+   [
+    "box five",
+    "mastered"
+   ],
+   [],
+   [
+    "daily reviews"
+   ],
+   [
+    "Five boxes"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Ten random stages",
+   "right": "Five systematic boxes"
+  },
+  "merksatz": "Five boxes guide cards to mastery.",
+  "scene": "Learning app interface"
+ }
+}

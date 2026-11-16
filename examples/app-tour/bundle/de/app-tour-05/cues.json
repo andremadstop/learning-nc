@@ -1,0 +1,30 @@
+{
+ "icon": "🧠",
+ "de": {
+  "line_keywords": [
+   [
+    "Smart Queue"
+   ],
+   [
+    "fälligen",
+    "Gedächtnisstärke"
+   ],
+   [
+    "vergessen"
+   ],
+   [
+    "FSRS-5"
+   ],
+   [],
+   [
+    "Gezielte Wiederholung"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Willkürliche Fragen",
+   "right": "Smart Queue Sortierung"
+  },
+  "merksatz": "Smart Queue sortiert fällige Karten klug.",
+  "scene": "Lern-Dashboard mit mehreren Pools"
+ }
+}

@@ -1,0 +1,18 @@
+{
+ "icon": "🧠",
+ "en": {
+  "line_keywords": [
+   [],
+   [],
+   [],
+   [],
+   []
+  ],
+  "contrast": {
+   "wrong": "Test knowledge before learning anything",
+   "right": "Train understanding, then measure success"
+  },
+  "merksatz": "First train understanding, then measure success.",
+  "scene": "Course Space Training Setup"
+ }
+}

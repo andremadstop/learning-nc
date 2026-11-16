@@ -1,0 +1,836 @@
+{
+ "_meta": {
+  "source": "app-tour, CC BY 4.0, André Stiebitz",
+  "default_difficulty": "easy"
+ },
+ "pools": [
+  {
+   "name": "How to learn with this app",
+   "description": "A short onboarding course about the Learning app itself.",
+   "questions": [
+    {
+     "text": "How do courses, question pools, and learning materials relate to each other?",
+     "question_type": "single",
+     "exam_key": "app-tour-01-en",
+     "answers": [
+      {
+       "text": "Question pools exist independently and are attached to courses, while learning materials are linked from a Nextcloud folder.",
+       "is_correct": true
+      },
+      {
+       "text": "Creating a course automatically copies all questions and documents into a closed archive that cannot be shared.",
+       "is_correct": false
+      },
+      {
+       "text": "A question pool can only belong to one single course and is permanently deleted when the course ends.",
+       "is_correct": false
+      },
+      {
+       "text": "Learning materials must be typed directly into each question rather than linked as files.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Question pools are independent units of content that can be attached to multiple courses, and documents stay in your own Nextcloud folder."
+    },
+    {
+     "text": "Which statements accurately describe the roles in the app? Select all that apply.",
+     "question_type": "multi",
+     "exam_key": "app-tour-02-en",
+     "answers": [
+      {
+       "text": "Students learn, take tests, and see only their own progress results.",
+       "is_correct": true
+      },
+      {
+       "text": "Instructors can create courses, attach question pools, and view the progress of learners in their own courses.",
+       "is_correct": true
+      },
+      {
+       "text": "Nextcloud administrators configure system settings, manage permissions, and always count as instructors.",
+       "is_correct": true
+      },
+      {
+       "text": "Every enrolled student automatically receives full rights to edit question pools and change server settings.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "The app cleanly separates administrative tasks, course management, and individual learning progress to safeguard privacy and structure."
+    },
+    {
+     "text": "How does a flashcard move between boxes in the Leitner system when you answer it?",
+     "question_type": "single",
+     "exam_key": "app-tour-03-en",
+     "answers": [
+      {
+       "text": "A card you know moves one box up, while a missed card goes back to box 1.",
+       "is_correct": true
+      },
+      {
+       "text": "A correct answer sends the card straight to the final box, while an incorrect answer deletes it permanently.",
+       "is_correct": false
+      },
+      {
+       "text": "Every card remains in box 1 permanently and only changes its displayed label.",
+       "is_correct": false
+      },
+      {
+       "text": "A missed card moves down exactly one box, while a known card stays in place.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "A card you know moves up one box, and a missed card goes back to box 1 for solid re-learning. Two details: if you rate a correct answer as hard, the card stays in its box, and a lucky guess (\"Guessed\") counts like a miss."
+    },
+    {
+     "text": "How many boxes does the classic Leitner spaced repetition system in the app use? (Enter a number)",
+     "question_type": "open",
+     "exam_key": "app-tour-04-en",
+     "answers": [
+      {
+       "text": "5",
+       "is_correct": true
+      }
+     ],
+     "explanation": "The Leitner system in the app organizes cards across exactly 5 progressive boxes."
+    },
+    {
+     "text": "What does the Smart Queue do when you open it to review cards?",
+     "question_type": "single",
+     "exam_key": "app-tour-05-en",
+     "answers": [
+      {
+       "text": "It gathers all due cards across your pools and sorts them by memory strength using FSRS-5.",
+       "is_correct": true
+      },
+      {
+       "text": "It randomly picks ten unread cards regardless of whether they are due for review.",
+       "is_correct": false
+      },
+      {
+       "text": "It automatically marks every due card as passed without requiring any practice.",
+       "is_correct": false
+      },
+      {
+       "text": "It resets your entire question history whenever you launch a study session.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "The Smart Queue uses the modern FSRS-5 algorithm to provide a one-click review of due cards ordered by memory strength."
+    },
+    {
+     "text": "Why is retrieving an answer from memory across intervals more effective than simply re-reading the material multiple times?",
+     "question_type": "single",
+     "exam_key": "app-tour-06-en",
+     "answers": [
+      {
+       "text": "Active retrieval strengthens memory connections, whereas re-reading creates only a misleading feeling of familiarity.",
+       "is_correct": true
+      },
+      {
+       "text": "Re-reading text multiple times guarantees permanent retention as long as sections are highlighted.",
+       "is_correct": false
+      },
+      {
+       "text": "Retrieval from memory completely halts the natural forgetting curve once and for all.",
+       "is_correct": false
+      },
+      {
+       "text": "Spaced review intervals are helpful only when learning complicated mathematical formulas.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Actively retrieving knowledge strengthens neural pathways, while passive re-reading often creates an illusion of competence without deep storage."
+    },
+    {
+     "text": "What is the defining characteristic of Training Mode during your study sessions?",
+     "question_type": "single",
+     "exam_key": "app-tour-07-en",
+     "answers": [
+      {
+       "text": "It provides quick practice sessions with immediate feedback and explanation after every question.",
+       "is_correct": true
+      },
+      {
+       "text": "It withholds all results and explanations until you have completed every question in the course.",
+       "is_correct": false
+      },
+      {
+       "text": "It issues an official completion certificate as soon as ten questions have been submitted.",
+       "is_correct": false
+      },
+      {
+       "text": "It enforces a strict countdown timer that automatically submits your session if time expires.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Training Mode is designed for everyday learning, presenting instant verification and explanatory text after each question."
+    },
+    {
+     "text": "Why should you select your confidence level honestly after answering a card in Leitner review?",
+     "question_type": "single",
+     "exam_key": "app-tour-08-en",
+     "answers": [
+      {
+       "text": "Your self-assessment helps guide the review schedule so difficult topics return sooner.",
+       "is_correct": true
+      },
+      {
+       "text": "Selecting high confidence automatically completes the course without taking an exam.",
+       "is_correct": false
+      },
+      {
+       "text": "Indicating low confidence removes the question permanently from your question pool.",
+       "is_correct": false
+      },
+      {
+       "text": "Instructors inspect your confidence choices to compute your final certificate score.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "The confidence buttons allow the system to schedule repetitions intelligently, bringing uncertain material back earlier and spacing out mastered items."
+    },
+    {
+     "text": "Which characteristics apply to exam mode (the Exam tab)? Select all that apply.",
+     "question_type": "multi",
+     "exam_key": "app-tour-09-en",
+     "answers": [
+      {
+       "text": "If the exam has a time limit, a countdown runs and the exam is submitted automatically when time is up.",
+       "is_correct": true
+      },
+      {
+       "text": "It evaluates your score against a defined passing threshold.",
+       "is_correct": true
+      },
+      {
+       "text": "It presents the full explanation immediately after every individual question.",
+       "is_correct": false
+      },
+      {
+       "text": "It allows configurable presets such as specific question counts and time frames.",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Exam mode works under realistic conditions: a pass mark, presets for the number of questions and, if set, a time limit with automatic submission. Feedback and explanations come only after you submit."
+    },
+    {
+     "text": "When is it best to choose Training Mode instead of exam mode?",
+     "question_type": "single",
+     "exam_key": "app-tour-10-en",
+     "answers": [
+      {
+       "text": "When you want to explore new topics and understand mistakes through instant feedback without timer pressure.",
+       "is_correct": true
+      },
+      {
+       "text": "When you need to issue your final certified completion record for compliance audits.",
+       "is_correct": false
+      },
+      {
+       "text": "When you want to verify whether you can pass under realistic test time limits.",
+       "is_correct": false
+      },
+      {
+       "text": "When you are taking a mandatory annual recertification attempt on the final deadline day.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Training Mode is ideal for learning, experimentation, and correcting misconceptions early, while exam mode is intended for readiness verification and final assessment."
+    },
+    {
+     "text": "Why is it helpful to read the feedback for every answer option after answering a question?",
+     "question_type": "single",
+     "exam_key": "app-tour-11-en",
+     "answers": [
+      {
+       "text": "It explains why each choice is right or wrong and uncovers the misconception behind it.",
+       "is_correct": true
+      },
+      {
+       "text": "It allows you to change your selected choice immediately to improve your score.",
+       "is_correct": false
+      },
+      {
+       "text": "It automatically shortens your remaining review queue for the current study day.",
+       "is_correct": false
+      },
+      {
+       "text": "It sends an automatic completion notice directly to your course instructor.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "The feedback explains the logic for all options, ensuring you understand why an answer is correct and which mistake led to the distractors."
+    },
+    {
+     "text": "What happens when you click the hint button before submitting your answer?",
+     "question_type": "single",
+     "exam_key": "app-tour-12-en",
+     "answers": [
+      {
+       "text": "It displays a gentle nudge that guides your thinking without revealing the solution.",
+       "is_correct": true
+      },
+      {
+       "text": "It reveals the correct answer immediately so you can confirm it without thinking.",
+       "is_correct": false
+      },
+      {
+       "text": "It eliminates two incorrect options from the screen for the current attempt.",
+       "is_correct": false
+      },
+      {
+       "text": "It deducts points from your course completion status for requesting assistance.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "The hint button is designed to offer helpful scaffolding, providing a gentle nudge without giving away the actual solution."
+    },
+    {
+     "text": "How do spoken intros and post-answer dialogs work in the learning app? Select all that apply.",
+     "question_type": "multi",
+     "exam_key": "app-tour-13-en",
+     "answers": [
+      {
+       "text": "They come with subtitles and on-screen keywords, and a question can offer them in several languages (here: German and English).",
+       "is_correct": true
+      },
+      {
+       "text": "Audio playback is entirely optional because all content is fully accessible without sound.",
+       "is_correct": true
+      },
+      {
+       "text": "Listening through the entire audio track is mandatory before any answer choice can be submitted.",
+       "is_correct": false
+      },
+      {
+       "text": "Questions can feature a brief scene before answering and a short reflective dialog afterwards.",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Spoken scenes come before and after a question, with subtitles and keywords, and everything works without sound. In this course only a few questions carry audio; this one offers German and English."
+    },
+    {
+     "text": "How can an auditor or supervisor verify the authenticity of an issued completion certificate?",
+     "question_type": "single",
+     "exam_key": "app-tour-14-en",
+     "answers": [
+      {
+       "text": "By scanning the QR code or opening the permanent verification link without needing an account.",
+       "is_correct": true
+      },
+      {
+       "text": "By logging into the instructor dashboard to view the learner's full account history.",
+       "is_correct": false
+      },
+      {
+       "text": "By sending a formal validation email to the technical administrator of the platform.",
+       "is_correct": false
+      },
+      {
+       "text": "By having the learner retake the original course exam under live personal observation.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Every signed certificate carries a public verification link and QR code, allowing anyone to confirm validity, course elements, and dates without logging into the platform."
+    },
+    {
+     "text": "What rules apply to deadlines and recertification in mandatory training? Select all that apply.",
+     "question_type": "multi",
+     "exam_key": "app-tour-15-en",
+     "answers": [
+      {
+       "text": "Automated reminders alert learners thirty and seven days prior to certificate expiry by default.",
+       "is_correct": true
+      },
+      {
+       "text": "Renewing early preserves your validity because the new certificate continues from the original expiry date.",
+       "is_correct": true
+      },
+      {
+       "text": "An exam taken during the previous year automatically counts toward the upcoming renewal period.",
+       "is_correct": false
+      },
+      {
+       "text": "Only exams completed inside the designated renewal window count toward renewing the certificate.",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Recertification relies on timely automated alerts, ensures early completion does not shorten the certificate period, and requires fresh exams taken within the renewal window."
+    },
+    {
+     "text": "How can you keep your knowledge fresh and targeted after completing a course?",
+     "question_type": "single",
+     "exam_key": "app-tour-16-en",
+     "answers": [
+      {
+       "text": "When your instructor switches the course to maintenance mode, due review cards appear on your dashboard, and the cheat sheet lets you export your weakest topics.",
+       "is_correct": true
+      },
+      {
+       "text": "The system automatically resets all course questions back to the beginning every month so you start over completely.",
+       "is_correct": false
+      },
+      {
+       "text": "You must retake all full course tests from scratch each week to prevent cards from expiring.",
+       "is_correct": false
+      },
+      {
+       "text": "Reviewing after a course finishes is unnecessary because cards marked completed are permanently preserved.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Maintenance mode is a course setting your instructor switches on after the course. Your dashboard then shows a card as soon as reviews are due, and the cheat sheet collects the questions you struggled with."
+    },
+    {
+     "text": "Where does your learning data stay, and under what conditions is data sent to an external recipient?",
+     "question_type": "single",
+     "exam_key": "app-tour-17-en",
+     "answers": [
+      {
+       "text": "All questions, progress, and account data stay on your organisation's server unless optional AI is enabled by an admin and you personally consent.",
+       "is_correct": true
+      },
+      {
+       "text": "Your learning statistics and full names are routinely stored in a central cloud provider for global benchmarking.",
+       "is_correct": false
+      },
+      {
+       "text": "Data is sent outside automatically whenever you start an exam or download your certificate.",
+       "is_correct": false
+      },
+      {
+       "text": "Personal passwords and email addresses are automatically transmitted to the AI whenever an admin turns it on.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "The app runs inside your Nextcloud and keeps your learning data there. Texts go to an AI service only when an admin has connected one and you have consented, and you can withdraw that consent at any time. Embedded YouTube or Vimeo videos are a separate case you control: they load only after you click, and the provider then receives your IP address."
+    },
+    {
+     "text": "What is the name of the review mode that lets you practice all due cards across your pools in one click?",
+     "question_type": "open",
+     "exam_key": "app-tour-18-en",
+     "answers": [
+      {
+       "text": "Smart Queue",
+       "is_correct": true
+      }
+     ],
+     "explanation": "The Smart Queue gathers all due cards from across your accessible pools into one unified list sorted by memory strength."
+    }
+   ]
+  },
+  {
+   "name": "So lernst du mit dieser App",
+   "description": "Ein kurzer Einstiegskurs über die Lern-App selbst.",
+   "questions": [
+    {
+     "text": "Wie hängen Kurse, Fragenpools und Lernmaterialien miteinander zusammen?",
+     "question_type": "single",
+     "exam_key": "app-tour-01-de",
+     "answers": [
+      {
+       "text": "Fragenpools existieren eigenständig und werden Kursen zugeordnet, während Lernmaterialien über einen Nextcloud-Ordner verknüpft werden.",
+       "is_correct": true
+      },
+      {
+       "text": "Beim Erstellen eines Kurses werden alle Fragen und Dokumente automatisch in ein geschlossenes Archiv kopiert, das man nicht teilen kann.",
+       "is_correct": false
+      },
+      {
+       "text": "Ein Fragenpool darf immer nur zu einem einzigen Kurs gehören und wird nach Kursende unwiderruflich gelöscht.",
+       "is_correct": false
+      },
+      {
+       "text": "Lernmaterialien müssen direkt in jede Frage eingetippt werden, statt als Dateien verknüpft zu werden.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Fragenpools sind eigenständige Inhaltssammlungen, die mehreren Kursen angehängt werden können, und Dokumente verbleiben im Nextcloud-Ordner."
+    },
+    {
+     "text": "Welche Aussagen beschreiben die Rollen in der App zutreffend? Wähle alle passenden.",
+     "question_type": "multi",
+     "exam_key": "app-tour-02-de",
+     "answers": [
+      {
+       "text": "Lernende bearbeiten Übungen, legen Tests ab und sehen ausschließlich ihre eigenen Ergebnisse.",
+       "is_correct": true
+      },
+      {
+       "text": "Kursleitende können Kurse erstellen, Fragenpools einbinden und den Lernstand in den eigenen Kursen einsehen.",
+       "is_correct": true
+      },
+      {
+       "text": "Nextcloud-Administratoren verwalten Grundeinstellungen, Berechtigungen und gelten zugleich immer als Kursleitende.",
+       "is_correct": true
+      },
+      {
+       "text": "Alle eingeschriebenen Lernenden erhalten automatisch volle Rechte, um Fragenpools zu bearbeiten und Servereinstellungen zu ändern.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Die App trennt Verwaltung, Kursleitung und individuelles Lernen sauber voneinander, um Datenschutz und Struktur zu gewährleisten."
+    },
+    {
+     "text": "Wie wandert eine Lernkarte im Leitner-System zwischen den Fächern, wenn du antwortest?",
+     "question_type": "single",
+     "exam_key": "app-tour-03-de",
+     "answers": [
+      {
+       "text": "Eine gewusste Karte wandert ein Fach vor, eine nicht gewusste zurück in Fach 1.",
+       "is_correct": true
+      },
+      {
+       "text": "Eine richtige Antwort befördert die Karte direkt ins letzte Fach, eine falsche löscht sie dauerhaft.",
+       "is_correct": false
+      },
+      {
+       "text": "Jede Karte bleibt dauerhaft in Fach 1 und ändert dort lediglich ihre Beschriftung.",
+       "is_correct": false
+      },
+      {
+       "text": "Eine verpasste Karte sinkt genau ein Fach ab, während eine gewusste Karte an Ort und Stelle verharrt.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Eine gewusste Karte wandert ein Fach vor, eine nicht gewusste zurück in Fach 1. Zwei Feinheiten: Bewertest du eine richtige Antwort als schwer, bleibt die Karte in ihrem Fach, und ein Glückstreffer („Geraten“) zählt wie ein Fehler."
+    },
+    {
+     "text": "Wie viele Fächer nutzt das klassische Leitner-System in der App? (Gib eine Zahl ein)",
+     "question_type": "open",
+     "exam_key": "app-tour-04-de",
+     "answers": [
+      {
+       "text": "5",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Das Leitner-System in der App unterteilt die Karten in genau 5 aufeinander aufbauende Fächer."
+    },
+    {
+     "text": "Was macht die Smart Queue, wenn du sie zur Wiederholung aufrufst?",
+     "question_type": "single",
+     "exam_key": "app-tour-05-de",
+     "answers": [
+      {
+       "text": "Sie bündelt alle fälligen Karten aus deinen Pools und sortiert sie mit FSRS-5 nach Gedächtnisstärke.",
+       "is_correct": true
+      },
+      {
+       "text": "Sie wählt zufällig zehn noch ungelesene Karten aus, ganz unabhängig von ihrer Fälligkeit.",
+       "is_correct": false
+      },
+      {
+       "text": "Sie markiert alle fälligen Karten automatisch als bestanden, ohne dass man üben muss.",
+       "is_correct": false
+      },
+      {
+       "text": "Sie setzt den gesamten Lernverlauf bei jedem Start einer Lerneinheit vollständig zurück.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Die Smart Queue nutzt den FSRS-5-Algorithmus, um alle fälligen Karten mit einem Klick sortiert nach Gedächtnisstärke vorzulegen."
+    },
+    {
+     "text": "Warum ist das aktive Abrufen einer Antwort in zeitlichen Abständen wirksamer als das wiederholte Durchlesen?",
+     "question_type": "single",
+     "exam_key": "app-tour-06-de",
+     "answers": [
+      {
+       "text": "Aktives Abrufen stärkt Gedächtnisspuren, während wiederholtes Lesen nur ein trügerisches Gefühl von Vertrautheit erzeugt.",
+       "is_correct": true
+      },
+      {
+       "text": "Wiederholtes Lesen garantiert dauerhaftes Behalten, solange Textstellen farblich markiert werden.",
+       "is_correct": false
+      },
+      {
+       "text": "Das Abrufen aus dem Gedächtnis stoppt das natürliche Vergessen ein für alle Mal.",
+       "is_correct": false
+      },
+      {
+       "text": "Zeitliche Abstände beim Wiederholen helfen ausschließlich bei komplizierten mathematischen Formeln.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Das aktive Abrufen baut stabile Verbindungen im Gedächtnis auf, während passives Wiederlesen oft nur Vertrautheit vorgaukelt."
+    },
+    {
+     "text": "Was zeichnet den Trainingsmodus beim Lernen vor allem aus?",
+     "question_type": "single",
+     "exam_key": "app-tour-07-de",
+     "answers": [
+      {
+       "text": "Er bietet kurze Übungsrunden mit sofortiger Rückmeldung und Erklärung nach jeder Frage.",
+       "is_correct": true
+      },
+      {
+       "text": "Er hält alle Ergebnisse und Erklärungen zurück, bis alle Kursfragen beantwortet sind.",
+       "is_correct": false
+      },
+      {
+       "text": "Er stellt ein offizielles Abschlusszertifikat aus, sobald zehn Fragen beantwortet wurden.",
+       "is_correct": false
+      },
+      {
+       "text": "Er erzwingt ein striktes Zeitlimit, das die Sitzung bei Ablauf automatisch beendet.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Der Trainingsmodus dient dem täglichen Lernen und liefert direkt nach jeder Frage das Ergebnis samt Erklärung."
+    },
+    {
+     "text": "Warum solltest du deine Zuversicht nach der Beantwortung einer Karte in der Leitner-Wiederholung ehrlich angeben?",
+     "question_type": "single",
+     "exam_key": "app-tour-08-de",
+     "answers": [
+      {
+       "text": "Deine Selbsteinschätzung steuert den Wiederholungsplan, damit schwierige Themen früher wiederkehren.",
+       "is_correct": true
+      },
+      {
+       "text": "Hohe Zuversicht schließt den Kurs automatisch ohne abschließende Prüfung ab.",
+       "is_correct": false
+      },
+      {
+       "text": "Geringe Zuversicht löscht die betreffende Frage dauerhaft aus dem Fragenpool.",
+       "is_correct": false
+      },
+      {
+       "text": "Lehrkräfte nutzen die Zuversichtsangaben zur Berechnung der Zertifikatsnote.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Die Zuversichtsknöpfe ermöglichen eine gezielte Planung, sodass unsichere Inhalte rasch wiederholt und beherrschte Karten seltener vorgelegt werden."
+    },
+    {
+     "text": "Welche Merkmale treffen auf den Prüfungsmodus (Reiter „Prüfung“) zu? Wähle alle passenden Optionen.",
+     "question_type": "multi",
+     "exam_key": "app-tour-09-de",
+     "answers": [
+      {
+       "text": "Hat die Prüfung ein Zeitlimit, läuft ein Countdown, und bei Ablauf wird automatisch abgegeben.",
+       "is_correct": true
+      },
+      {
+       "text": "Sie bewertet das Ergebnis anhand einer festgelegten Bestehensgrenze.",
+       "is_correct": true
+      },
+      {
+       "text": "Sie blendet die ausführliche Erklärung direkt nach jeder einzelnen Frage ein.",
+       "is_correct": false
+      },
+      {
+       "text": "Sie ermöglicht festgelegte Voreinstellungen wie Fragenanzahl und Bearbeitungszeit.",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Der Prüfungsmodus arbeitet unter realistischen Bedingungen: mit Bestehensgrenze, Voreinstellungen für die Fragenanzahl und, falls festgelegt, einem Zeitlimit mit automatischer Abgabe. Rückmeldung und Erklärungen gibt es erst nach der Abgabe."
+    },
+    {
+     "text": "Wann ist es sinnvoller, den Trainingsmodus anstelle des Prüfungsmodus zu wählen?",
+     "question_type": "single",
+     "exam_key": "app-tour-10-de",
+     "answers": [
+      {
+       "text": "Wenn du neue Themen ohne Zeitdruck erkunden und Fehler durch sofortige Erklärungen verstehen möchtest.",
+       "is_correct": true
+      },
+      {
+       "text": "Wenn du deinen offiziellen Abschlussnachweis für eine Prüfung vorlegen musst.",
+       "is_correct": false
+      },
+      {
+       "text": "Wenn du überprüfen willst, ob du unter realistischen Zeitvorgaben bestehen würdest.",
+       "is_correct": false
+      },
+      {
+       "text": "Wenn du am Stichtag die jährliche Pflichtunterweisung verbindlich abschließen musst.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Der Trainingsmodus eignet sich optimal zum Verstehen und Korrigieren von Denkfehlern, während der Prüfungsmodus der Messung unter Realbedingungen dient."
+    },
+    {
+     "text": "Warum lohnt es sich, nach dem Antworten das Feedback zu jeder einzelnen Option zu lesen?",
+     "question_type": "single",
+     "exam_key": "app-tour-11-de",
+     "answers": [
+      {
+       "text": "Es erklärt, warum jede Option stimmt oder falsch ist, und deckt den typischen Denkfehler auf.",
+       "is_correct": true
+      },
+      {
+       "text": "Du kannst deine Auswahl sofort ändern, um dein Ergebnis nachträglich zu verbessern.",
+       "is_correct": false
+      },
+      {
+       "text": "Es verkürzt automatisch deine restliche Lernliste für den aktuellen Lerntag.",
+       "is_correct": false
+      },
+      {
+       "text": "Es schickt eine automatische Bestätigung direkt an deine Kursleitung.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Das Feedback erklärt jede Option einzeln, damit du die Hintergründe verstehst und typische Denkfallen erkennst."
+    },
+    {
+     "text": "Was passiert, wenn du vor der Antwort auf den Hinweis-Button klickst?",
+     "question_type": "single",
+     "exam_key": "app-tour-12-de",
+     "answers": [
+      {
+       "text": "Er zeigt einen kleinen Denkanstoß, der dir hilft, ohne die Lösung zu verraten.",
+       "is_correct": true
+      },
+      {
+       "text": "Er zeigt sofort die richtige Antwort, damit du sie direkt bestätigen kannst.",
+       "is_correct": false
+      },
+      {
+       "text": "Er blendet für diesen Versuch zwei falsche Antwortmöglichkeiten aus.",
+       "is_correct": false
+      },
+      {
+       "text": "Er zieht dir Punkte im Kursfortschritt ab, weil du Hilfe beansprucht hast.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Der Hinweis-Button soll Denkblockaden lösen, indem er eine Orientierung bietet, ohne die Lösung vorwegzunehmen."
+    },
+    {
+     "text": "Wie funktionieren gesprochene Intros und Dialoge in der Lern-App? Wähle alle passenden.",
+     "question_type": "multi",
+     "exam_key": "app-tour-13-de",
+     "answers": [
+      {
+       "text": "Sie haben Untertitel und Schlagwörter, und eine Frage kann sie in mehreren Sprachen anbieten (hier: Deutsch und Englisch).",
+       "is_correct": true
+      },
+      {
+       "text": "Die Audiowiedergabe ist vollkommen optional, da alles auch komplett ohne Ton funktioniert.",
+       "is_correct": true
+      },
+      {
+       "text": "Das vollständige Anhören der Audiospur ist verpflichtend, bevor eine Antwort gewählt werden darf.",
+       "is_correct": false
+      },
+      {
+       "text": "Fragen können eine kurze Szene vor dem Antworten und einen kurzen Dialog danach enthalten.",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Die Audioszenen begleiten eine Aufgabe vor und nach der Antwort, mit Untertiteln und Schlagwörtern, und alles funktioniert auch ohne Ton. In diesem Kurs haben nur einige Fragen Ton; diese bietet Deutsch und Englisch."
+    },
+    {
+     "text": "Wie kann ein Prüfer oder Vorgesetzter die Echtheit eines ausgestellten Abschlusszertifikats überprüfen?",
+     "question_type": "single",
+     "exam_key": "app-tour-14-de",
+     "answers": [
+      {
+       "text": "Durch Scannen des QR-Codes oder Aufrufen des Verifizierungslinks ohne eigenes Benutzerkonto.",
+       "is_correct": true
+      },
+      {
+       "text": "Indem er sich im Dozentenbereich anmeldet und die Lernhistorie der Person einsieht.",
+       "is_correct": false
+      },
+      {
+       "text": "Durch das Versenden einer manuellen Bestätigungsmail an die Systemadministration.",
+       "is_correct": false
+      },
+      {
+       "text": "Indem die lernende Person die gesamte Prüfung unter Aufsicht noch einmal wiederholt.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Jedes signierte Zertifikat besitzt einen öffentlichen Prüflink und QR-Code, über den Status, Bausteine und Gültigkeit ohne Login einsehbar sind."
+    },
+    {
+     "text": "Welche Regeln gelten für Fristen und die Rezertifizierung bei Pflichtschulungen? Wähle alle passenden.",
+     "question_type": "multi",
+     "exam_key": "app-tour-15-de",
+     "answers": [
+      {
+       "text": "Automatische Erinnerungen informieren standardmäßig dreißig und sieben Tage vor dem Ablauf.",
+       "is_correct": true
+      },
+      {
+       "text": "Eine vorzeitige Erneuerung verkürzt nichts, da die neue Gültigkeit an das bisherige Ablaufdatum anschließt.",
+       "is_correct": true
+      },
+      {
+       "text": "Eine im Vorjahr abgelegte Prüfung zählt automatisch für den anstehenden neuen Schulungszeitraum.",
+       "is_correct": false
+      },
+      {
+       "text": "Nur Prüfungen, die innerhalb des festgelegten Erneuerungsfensters abgelegt werden, erneuern das Zertifikat.",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Die Rezertifizierung erinnert rechtzeitig, bewahrt bei frühem Bestehen die volle Laufzeit und verlangt neue Prüfungen im Erneuerungsfenster."
+    },
+    {
+     "text": "Wie hältst du dein Wissen nach Kursende gezielt und langfristig frisch?",
+     "question_type": "single",
+     "exam_key": "app-tour-16-de",
+     "answers": [
+      {
+       "text": "Schaltet deine Kursleitung den Kurs in den Wartungsmodus, erscheinen fällige Wiederholungskarten auf deiner Übersicht, und der Spickzettel exportiert deine schwächsten Themen.",
+       "is_correct": true
+      },
+      {
+       "text": "Das System setzt jeden Monat alle Kursfragen automatisch zurück, damit du wieder ganz von vorn beginnst.",
+       "is_correct": false
+      },
+      {
+       "text": "Du musst jede Woche alle kompletten Kurstests wiederholen, damit gelernte Karten nicht verfallen.",
+       "is_correct": false
+      },
+      {
+       "text": "Wiederholen nach Kursende ist unnötig, da als abgeschlossen markierte Inhalte dauerhaft im Gedächtnis bleiben.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Der Wartungsmodus ist eine Kurseinstellung, die deine Kursleitung nach dem Kurs einschaltet. Deine Übersicht zeigt dann eine Karte, sobald Wiederholungen fällig sind, und der Spickzettel fasst die Fragen zusammen, die dir schwerfielen."
+    },
+    {
+     "text": "Wo bleiben deine Lerndaten, und unter welchen Bedingungen werden Daten an externe Empfänger übermittelt?",
+     "question_type": "single",
+     "exam_key": "app-tour-17-de",
+     "answers": [
+      {
+       "text": "Alle Fragen, Fortschritte und Kontodaten bleiben auf dem Server deiner Organisation, außer eine optionale KI wurde aktiviert und du stimmst persönlich zu.",
+       "is_correct": true
+      },
+      {
+       "text": "Deine Lernstatistiken und vollen Namen werden routinemäßig bei einem zentralen Cloudanbieter für weltweite Vergleiche gespeichert.",
+       "is_correct": false
+      },
+      {
+       "text": "Daten werden automatisch nach außen übertragen, sobald du eine Prüfung startest oder dein Zertifikat herunterlädst.",
+       "is_correct": false
+      },
+      {
+       "text": "Persönliche Passwörter und E-Mail-Adressen werden automatisch an die KI gesendet, sobald ein Admin sie einschaltet.",
+       "is_correct": false
+      }
+     ],
+     "explanation": "Die App läuft in deiner Nextcloud und behält deine Lerndaten dort. Texte gehen nur dann an einen KI-Dienst, wenn ein Admin einen angebunden hat und du eingewilligt hast; widerrufen kannst du jederzeit. Eingebettete YouTube- oder Vimeo-Videos sind ein eigener Fall, den du selbst steuerst: Sie laden erst nach deinem Klick, und der Anbieter erhält dann deine IP-Adresse."
+    },
+    {
+     "text": "Wie heißt der Lernmodus, mit dem du alle fälligen Karten aus deinen Pools mit einem Klick wiederholen kannst?",
+     "question_type": "open",
+     "exam_key": "app-tour-18-de",
+     "answers": [
+      {
+       "text": "Smart Queue",
+       "is_correct": true
+      }
+     ],
+     "explanation": "Die Smart Queue versammelt alle fälligen Karten aus deinen Pools in einer gemeinsamen, nach Behaltensleistung geordneten Liste."
+    }
+   ]
+  }
+ ]
+}

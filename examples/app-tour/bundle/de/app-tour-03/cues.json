@@ -1,0 +1,33 @@
+{
+ "icon": "📦",
+ "de": {
+  "line_keywords": [
+   [
+    "falsch beantworte",
+    "rutscht"
+   ],
+   [
+    "zurück in Fach 1"
+   ],
+   [
+    "schwierige Begriffe"
+   ],
+   [
+    "Treffer",
+    "steigt"
+   ],
+   [
+    "Rhythmus"
+   ],
+   [
+    "Schrittweises Festigen"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Falsche Karten rutschen nur ein Fach",
+   "right": "Falsche Karten zurück in Fach 1"
+  },
+  "merksatz": "Gewusst steigt eins, falsch reset auf eins.",
+  "scene": "Lernkarten Wiederholung"
+ }
+}

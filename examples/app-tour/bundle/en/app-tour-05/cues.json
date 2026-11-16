@@ -1,0 +1,32 @@
+{
+ "icon": "🧠",
+ "en": {
+  "line_keywords": [
+   [
+    "Smart Queue"
+   ],
+   [
+    "due",
+    "memory strength"
+   ],
+   [
+    "forget"
+   ],
+   [
+    "FSRS-5"
+   ],
+   [
+    "time"
+   ],
+   [
+    "Focused reviews"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Random questions",
+   "right": "Smart Queue sorting"
+  },
+  "merksatz": "Smart Queue sorts due reviews smartly.",
+  "scene": "Studying dashboard with multiple pools"
+ }
+}

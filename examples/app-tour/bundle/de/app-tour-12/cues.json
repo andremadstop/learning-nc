@@ -1,0 +1,26 @@
+{
+ "icon": "💡",
+ "de": {
+  "line_keywords": [
+   [
+    "Hinweis"
+   ],
+   [
+    "Stoß in die richtige Richtung"
+   ],
+   [
+    "Nachdenken"
+   ],
+   [],
+   [
+    "helfen, ohne vorzugreifen"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Hinweise verraten die Lösung",
+   "right": "Hinweise geben Denkanstöße"
+  },
+  "merksatz": "Hinweise lenken, statt zu verraten.",
+  "scene": "Lernen mit interaktiven Hinweisen"
+ }
+}

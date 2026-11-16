@@ -1,0 +1,28 @@
+{
+ "icon": "🧠",
+ "de": {
+  "line_keywords": [
+   [
+    "bekannt"
+   ],
+   [
+    "täuscht"
+   ],
+   [
+    "Antwort selbst zu suchen"
+   ],
+   [
+    "Erinnern"
+   ],
+   [
+    "Aktives Erinnern"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Mehrmals passiv den Text lesen",
+   "right": "Seite zuklappen und aktiv erinnern"
+  },
+  "merksatz": "Aktives Erinnern verankert Wissen dauerhaft.",
+  "scene": "Schreibtisch mit Tee und Notizen"
+ }
+}

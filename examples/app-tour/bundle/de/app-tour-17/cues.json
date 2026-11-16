@@ -1,0 +1,34 @@
+{
+ "icon": "🔒",
+ "de": {
+  "line_keywords": [
+   [
+    "Prüfungsergebnisse",
+    "fremde Cloud"
+   ],
+   [
+    "ausschließlich",
+    "unserem Server"
+   ],
+   [
+    "KI-Funktionen"
+   ],
+   [
+    "standardmäßig aus"
+   ],
+   [
+    "Passwort"
+   ],
+   [
+    "Dein Server",
+    "deine Daten"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Daten wandern in fremde Cloud",
+   "right": "Deine Daten bleiben lokal"
+  },
+  "merksatz": "Deine Lerndaten bleiben auf deinem Server.",
+  "scene": "Nextcloud Sicherheitsprüfung"
+ }
+}

@@ -1,0 +1,32 @@
+{
+ "icon": "🔒",
+ "de": {
+  "line_keywords": [
+   [
+    "Bestehensgrenze",
+    "Fragen löschen"
+   ],
+   [
+    "eigene Ergebnisse"
+   ],
+   [
+    "Daten fremder Abteilungen"
+   ],
+   [
+    "Jeder Kurs"
+   ],
+   [
+    "Unsicherheit"
+   ],
+   [
+    "Geregelte Rollen"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Alle sehen alle Kursdaten",
+   "right": "Klare Rollen trennen Bereiche"
+  },
+  "merksatz": "Klare Rollen schützen Datenschutz und Kursordnung.",
+  "scene": "App-Berechtigungen planen"
+ }
+}

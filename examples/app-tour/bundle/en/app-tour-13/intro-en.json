@@ -1,0 +1,14 @@
+[
+ {
+  "role": "JONAS",
+  "text": "I see an audio icon next to this question. Do I need headphones right now?",
+  "start": 0.0,
+  "end": 5.0
+ },
+ {
+  "role": "MARA",
+  "text": "Only if you want to listen. Subtitles display every spoken word.",
+  "start": 5.35,
+  "end": 10.79
+ }
+]

@@ -1,0 +1,32 @@
+[
+ {
+  "role": "JONAS",
+  "text": "Ich dachte, ich erfahre erst am Ende des gesamten Themas, was gestimmt hat.",
+  "start": 0.0,
+  "end": 4.32
+ },
+ {
+  "role": "MARA",
+  "text": "Beim Üben wäre langes Warten unklug, Jonas. Die Neugier ist genau jetzt am größten.",
+  "start": 4.67,
+  "end": 11.35
+ },
+ {
+  "role": "JONAS",
+  "text": "Die Erklärung sofort zu lesen hilft also, Denkfehler auf der Stelle zu klären?",
+  "start": 11.7,
+  "end": 16.66
+ },
+ {
+  "role": "MARA",
+  "text": "Ganz genau. Du siehst sofort die Begründung und lernst direkt daraus.",
+  "start": 17.01,
+  "end": 21.22
+ },
+ {
+  "role": "JONAS",
+  "text": "Direktes Feedback verwandelt Fehler in Wissen.",
+  "start": 21.57,
+  "end": 24.85
+ }
+]

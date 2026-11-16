@@ -1,0 +1,30 @@
+{
+ "icon": "🧠",
+ "de": {
+  "line_keywords": [
+   [
+    "unsicher"
+   ],
+   [
+    "Zuversicht",
+    "Wahrheit"
+   ],
+   [
+    "geringe Sicherheit"
+   ],
+   [
+    "Ehrlichkeit"
+   ],
+   [
+    "Ehrliche Selbsteinschätzung",
+    "Lernplan"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Immer maximale Zuversicht vortäuschen",
+   "right": "Ehrliche Bewertung optimiert den Lernplan"
+  },
+  "merksatz": "Ehrliche Selbsteinschätzung optimiert deinen Lernplan.",
+  "scene": "Lernoberfläche Zuversichtseinstellungen"
+ }
+}

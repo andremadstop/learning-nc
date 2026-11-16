@@ -1,0 +1,30 @@
+{
+ "icon": "🧠",
+ "en": {
+  "line_keywords": [
+   [
+    "uncertain"
+   ],
+   [
+    "confidence rating",
+    "truth"
+   ],
+   [
+    "low confidence"
+   ],
+   [
+    "honesty"
+   ],
+   [
+    "Honest self-assessment",
+    "review schedule"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Fake high confidence every time",
+   "right": "Honest ratings optimize review schedule"
+  },
+  "merksatz": "Honest self-assessment optimizes your review schedule.",
+  "scene": "Review interface confidence options"
+ }
+}

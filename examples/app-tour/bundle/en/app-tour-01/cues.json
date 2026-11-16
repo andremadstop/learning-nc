@@ -1,0 +1,35 @@
+{
+ "icon": "📦",
+ "en": {
+  "line_keywords": [
+   [
+    "delete",
+    "questions"
+   ],
+   [
+    "pool",
+    "course container"
+   ],
+   [
+    "Nextcloud files folder"
+   ],
+   [
+    "link",
+    "files"
+   ],
+   [
+    "sharing",
+    "questions"
+   ],
+   [
+    "Modular pools"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Course deletion deletes pool content",
+   "right": "Pools survive course deletion"
+  },
+  "merksatz": "Pools are modular and attach to courses.",
+  "scene": "Onboarding course setup"
+ }
+}

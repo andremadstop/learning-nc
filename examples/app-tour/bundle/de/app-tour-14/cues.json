@@ -1,0 +1,33 @@
+{
+ "icon": "📜",
+ "de": {
+  "line_keywords": [
+   [
+    "Revisionsstelle",
+    "Zugang"
+   ],
+   [
+    "Überhaupt nicht",
+    "Scan"
+   ],
+   [
+    "echt",
+    "gültig"
+   ],
+   [
+    "Prüfseite",
+    "Status"
+   ],
+   [
+    "Link",
+    "Echtheit"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Prüfer braucht Systemkonto",
+   "right": "Öffentliche Prüfung per Link"
+  },
+  "merksatz": "Zertifikate verifizieren öffentlich ganz ohne Login.",
+  "scene": "Zertifikatsprüfung am Schreibtisch"
+ }
+}

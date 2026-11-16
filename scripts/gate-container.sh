@@ -94,6 +94,10 @@ start_container() {
 		docker exec "$NAME" mkdir -p /docs
 		docker cp "$WORK/repo/docs/import-pool-workflow.md" "$NAME:/docs/import-pool-workflow.md"
 	fi
+	# Same for the example course: AppTourExampleTest reads examples/app-tour at /examples.
+	if [ -d "$WORK/repo/examples" ]; then
+		docker cp "$WORK/repo/examples/." "$NAME:/examples"
+	fi
 	docker exec -e COMPOSER_VERSION="$COMPOSER_VERSION" -e COMPOSER_SHA256="$COMPOSER_SHA256" "$NAME" sh -euc '
 		ln -sf /usr/src/nextcloud/3rdparty /var/www/html/3rdparty
 		export DEBIAN_FRONTEND=noninteractive

@@ -1,0 +1,32 @@
+{
+ "icon": "📦",
+ "de": {
+  "line_keywords": [
+   [
+    "zehn verschiedene Stufen"
+   ],
+   [
+    "fünf Fächer"
+   ],
+   [
+    "Fach fünf",
+    "gemeistert"
+   ],
+   [
+    "Fünf Stufen"
+   ],
+   [
+    "tägliche Üben"
+   ],
+   [
+    "Fünf Fächer"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Zehn unübersichtliche Stufen",
+   "right": "Genau fünf Lernfächer"
+  },
+  "merksatz": "Fünf Fächer bringen Karten zur Meisterschaft.",
+  "scene": "Lern-App Benutzeroberfläche"
+ }
+}

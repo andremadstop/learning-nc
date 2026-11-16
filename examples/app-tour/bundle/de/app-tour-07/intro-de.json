@@ -1,0 +1,14 @@
+[
+ {
+  "role": "MARA",
+  "text": "Lass uns heute mit ein paar Fragen im Trainingsmodus starten, Jonas.",
+  "start": 0.0,
+  "end": 5.2
+ },
+ {
+  "role": "JONAS",
+  "text": "Muss ich mir da schon Sorgen um Zeitlimits und Noten machen?",
+  "start": 5.55,
+  "end": 9.39
+ }
+]

@@ -1,0 +1,34 @@
+{
+ "icon": "🔄",
+ "de": {
+  "line_keywords": [
+   [
+    "gesamten Kurs",
+    "wieder von vorne"
+   ],
+   [
+    "Zeit kosten"
+   ],
+   [
+    "nach Kursende"
+   ],
+   [
+    "Wartungsmodus",
+    "Übersicht"
+   ],
+   [
+    "Spickzettel"
+   ],
+   [
+    "Wiederhole gezielt",
+    "fällig"
+   ]
+  ],
+  "contrast": {
+   "wrong": "Gesamten Kurs monatlich wiederholen",
+   "right": "Gezielter Wartungsmodus für fällige Karten"
+  },
+  "merksatz": "Wartungsmodus hält gelerntes Wissen zuverlässig frisch.",
+  "scene": "Dashboard nach Kursabschluss"
+ }
+}
