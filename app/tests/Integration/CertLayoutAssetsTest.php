@@ -210,7 +210,7 @@ final class CertLayoutAssetsTest extends TestCase {
             $this->assertNotNull($issued);
             $cert = $issued->certificate;
 
-            // The admin replaces the Theming logo (as the theming app does: the file and its raster copy).
+            // The admin replaces the Theming logo (theming's own upload path).
             $this->putThemingLogo($new);
 
             $presentation = $this->layouts->presentationForCertificate($cert);
@@ -234,8 +234,8 @@ final class CertLayoutAssetsTest extends TestCase {
         } finally {
             if ($hadLogo !== null) {
                 $this->putThemingLogo($hadLogo);
-            } elseif ($images->fileExists('logo')) {
-                $images->getFile('logo')->delete();
+            } else {
+                Server::get(\OCA\Theming\ImageManager::class)->delete('logo');
             }
             if ($hadMime === '') {
                 $config->deleteAppValue('theming', 'logoMime');
@@ -267,15 +267,20 @@ final class CertLayoutAssetsTest extends TestCase {
         }
     }
 
+    /**
+     * Upload a Theming logo the way the theming app's own upload does (ThemingController::
+     * uploadImage: ImageManager::updateImage, then ThemingDefaults::set('logoMime')), so the test
+     * reads what Theming really stores, not what this test wrote.
+     */
     private function putThemingLogo(string $bytes): void {
-        $images = $this->themingImages();
-        foreach (['logo', 'logo.png'] as $name) {
-            if ($images->fileExists($name)) {
-                $images->getFile($name)->delete();
-            }
+        $tmp = tempnam(sys_get_temp_dir(), 'gh78-logo');
+        file_put_contents($tmp, $bytes);
+        try {
+            $mime = Server::get(\OCA\Theming\ImageManager::class)->updateImage('logo', $tmp);
+            Server::get(\OCA\Theming\ThemingDefaults::class)->set('logoMime', $mime);
+        } finally {
+            @unlink($tmp);
         }
-        $images->newFile('logo', $bytes);
-        Server::get(\OCP\IConfig::class)->setAppValue('theming', 'logoMime', 'image/png');
     }
 
     /**
