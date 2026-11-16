@@ -2245,7 +2245,6 @@ OC.L10N.register(
     "{n} out of {total} correct" : "{n} من {total} صحيح",
     "{n} pools" : "{n} مجموعات",
     "{n} problem questions to practice" : "{n} أسئلة إشكالية للتمرين",
-    "{n} questions" : "{n} أسئلة",
     "{n} questions due for review" : "{n} أسئلة مستحقة للمراجعة",
     "{n} questions due — sorted by priority: most urgent first." : "{n} أسئلة مستحقة — مرتبة حسب الأولوية: الأكثر إلحاحًا أولًا.",
     "{n} questions generated" : "تم توليد {n} أسئلة",
@@ -3858,6 +3857,6 @@ OC.L10N.register(
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "لا يمكن تشغيل الصوت الآن. اقرأ النص أو تنقّل فيه باستخدام «السطر التالي».",
     "Noch keine Antworten" : "لا توجد إجابات بعد",
     "Häufiger Denkfehler:" : "فكرة خاطئة شائعة:",
-    "1 Frage" : "سؤال واحد",
+    "_%n Frage_::_%n Fragen_" : ["%n سؤال", "%n سؤال", "%n سؤالان", "%n أسئلة", "%n سؤالًا", "%n سؤال"],
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

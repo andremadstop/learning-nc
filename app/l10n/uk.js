@@ -2272,7 +2272,6 @@ OC.L10N.register(
     "{n} out of {total} correct" : "{n} з {total} правильно",
     "{n} pools" : "{n} пулів",
     "{n} problem questions to practice" : "{n} проблемних питань для практики",
-    "{n} questions" : "{n} питань",
     "{n} questions due for review" : "{n} питань до повторення",
     "{n} questions due — sorted by priority: most urgent first." : "{n} питань до повторення — відсортовано за пріоритетом: найтерміновіші першими.",
     "{n} questions generated" : "Згенеровано {n} питань",
@@ -3858,6 +3857,6 @@ OC.L10N.register(
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "Звук зараз не відтворюється. Читай текст або пройди його кнопкою «Наступний рядок».",
     "Noch keine Antworten" : "Ще немає відповідей",
     "Häufiger Denkfehler:" : "Поширене хибне уявлення:",
-    "1 Frage" : "1 питання",
+    "_%n Frage_::_%n Fragen_" : ["%n питання", "%n питання", "%n питань"],
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

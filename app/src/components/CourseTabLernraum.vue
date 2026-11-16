@@ -1196,9 +1196,10 @@ export default {
 		getLearningPoolQuestionCount(pool) {
 			return this.poolQuestionCounts[pool.pool_id] ?? pool.question_count ?? 0
 		},
-		// Fresh-eyes C4: a pool with one question read "1 questions".
+		// Fresh-eyes C4: a pool with one question read "1 questions"; Gesamt-Review C4: with the
+		// plural forms of each language (ru/uk three, ar six), not just a special case for 1.
 		questionCountLabel(count) {
-			return count === 1 ? t('learning', '1 Frage') : t('learning', '{n} questions', { n: count })
+			return n('learning', '%n Frage', '%n Fragen', count)
 		},
 		poolLanguageCodes(pool) {
 			const langs = Array.isArray(pool.available_content_languages) ? pool.available_content_languages : ['de']

@@ -2278,7 +2278,6 @@ OC.L10N.register(
     "{n} out of {total} correct" : "{n} out of {total} correct",
     "{n} pools" : "{n} pools",
     "{n} problem questions to practice" : "{n} problem questions to practice",
-    "{n} questions" : "{n} questions",
     "{n} questions due for review" : "{n} questions due for review",
     "{n} questions due — sorted by priority: most urgent first." : "{n} questions due — sorted by priority: most urgent first.",
     "{n} questions generated" : "{n} questions generated",
@@ -3858,6 +3857,6 @@ OC.L10N.register(
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "The audio cannot be played right now. Read the text along or go through it with “Next line”.",
     "Noch keine Antworten" : "No answers yet",
     "Häufiger Denkfehler:" : "Common misconception:",
-    "1 Frage" : "1 question",
+    "_%n Frage_::_%n Fragen_" : ["%n question", "%n questions"],
 },
 "nplurals=2; plural=(n != 1);");
