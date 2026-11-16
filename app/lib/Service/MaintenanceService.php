@@ -84,7 +84,7 @@ class MaintenanceService {
         // 3) Get due leitner items from those pools
         $now = time();
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.difficulty AS q_difficulty',
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.scenario', 'q.hint', 'q.difficulty AS q_difficulty',
                      'q.question_type', 'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
             ->from('learning_leitner_items', 'l')
             ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
@@ -131,8 +131,9 @@ class MaintenanceService {
         unset($item);
 
         // While an exam is open on a pool, the queue must not become an oracle for it: no
-        // explanation, no PBQ solution — the same rule as LeitnerService::getDueQuestions
-        // (audit #229; this endpoint shipped both, and pbq_config as a raw JSON string).
+        // explanation, no hint (#66), no PBQ solution — the same rule as
+        // LeitnerService::getDueQuestions (audit #229; this endpoint shipped both, and pbq_config
+        // as a raw JSON string).
         $examPools = $this->getPoolsWithActiveExam($userId, array_values(array_unique(
             array_map(static fn(array $item): int => (int) $item['pool_id'], $items)
         )));
@@ -141,7 +142,7 @@ class MaintenanceService {
                 if (!in_array((int) $item['pool_id'], $examPools, true)) {
                     continue;
                 }
-                unset($item['explanation']);
+                unset($item['explanation'], $item['hint']);
                 if (array_key_exists('pbq_config', $item)) {
                     $item['pbq_config'] = PbqSolutionStripper::strip($item['pbq_config']);
                 }

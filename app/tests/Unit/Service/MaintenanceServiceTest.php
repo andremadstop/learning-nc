@@ -69,20 +69,20 @@ class MaintenanceServiceTest extends TestCase {
      * @param array<int, array<string, mixed>> $examRows
      * @return array<int, array<string, mixed>>
      */
-    private function maintenanceQueue(array $examRows, ?TranslationService $translation = null): array {
+    private function maintenanceQueue(array $examRows, ?TranslationService $translation = null, ?FakeQueryBuilder &$dueQuery = null): array {
         $items = [
             ['id' => 1, 'question_id' => 10, 'pool_id' => 5, 'user_id' => 'alice', 'box' => 1, 'next_review' => 0,
-                'stability' => null, 'last_reviewed' => null, 'text' => 'PBQ', 'explanation' => 'because',
+                'stability' => null, 'last_reviewed' => null, 'text' => 'PBQ', 'explanation' => 'because', 'hint' => 'look at the ports',
                 'question_type' => 'pbq', 'pbq_subtype' => 'dropdown',
                 'pbq_config' => '{"questions":[{"id":"q1","options":["a","b"],"correct":"b"}]}', 'pool_name' => 'P'],
             ['id' => 2, 'question_id' => 11, 'pool_id' => 6, 'user_id' => 'alice', 'box' => 1, 'next_review' => 0,
-                'stability' => null, 'last_reviewed' => null, 'text' => 'Open', 'explanation' => 'why',
+                'stability' => null, 'last_reviewed' => null, 'text' => 'Open', 'explanation' => 'why', 'hint' => 'think of the layers',
                 'question_type' => 'open', 'pbq_subtype' => null, 'pbq_config' => null, 'pool_name' => 'Q'],
         ];
         $db = new FakeDbConnection([
             new FakeQueryBuilder(new FakeResult([['id' => 3]])),                      // maintenance courses
             new FakeQueryBuilder(new FakeResult([['pool_id' => 5], ['pool_id' => 6]])), // their pools
-            new FakeQueryBuilder(FakeResult::fromFetchAll($items)),                    // due items
+            $dueQuery = new FakeQueryBuilder(FakeResult::fromFetchAll($items)),        // due items
             new FakeQueryBuilder(new FakeResult([                                      // answers
                 ['id' => 90, 'question_id' => 11, 'text' => 'model answer', 'is_correct' => 1, 'position' => 0],
             ])),
@@ -137,5 +137,18 @@ class MaintenanceServiceTest extends TestCase {
 
         $this->assertSame('', $items[2]['answers'][0]['text']);
         $this->assertArrayNotHasKey('is_correct', $items[2]['answers'][0]);
+    }
+
+    /**
+     * GitHub #66: SmartQueue.vue shows "Hinweis anzeigen" in all three modes, but the maintenance
+     * queue never selected q.hint, so the hint was missing there. Withheld while a counting exam
+     * runs on the pool, like the explanation (LeitnerService::stripItemsOfRunningExams).
+     */
+    public function testMaintenanceQueueSelectsTheHintAndWithholdsItDuringAnExam(): void {
+        $items = $this->maintenanceQueue([['pool_id' => 5]], null, $dueQuery);
+
+        $this->assertContains('q.hint', $dueQuery->selects, 'the due-items query must select the hint');
+        $this->assertArrayNotHasKey('hint', $items[1], 'no hint while an exam is open on the pool');
+        $this->assertSame('think of the layers', $items[2]['hint']);
     }
 }
