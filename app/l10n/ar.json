@@ -3843,6 +3843,18 @@
         "Q%1$s: feedback texts in %2$s were not imported — one language per question": "س%1$s: لم يتم استيراد نصوص الملاحظات بـ %2$s — لغة واحدة لكل سؤال",
         "Q%s: a \"verdict\" in feedback_per_option contradicts the marked correct answers — the marked answers count": "س%s: قيمة \"verdict\" في feedback_per_option تتعارض مع الإجابات الصحيحة المحددة — تُعتمد الإجابات المحددة",
         "Q%s: feedback for an answer option the question does not have was left out": "س%s: تم حذف ملاحظات لخيار إجابة غير موجود في السؤال",
-        "Feedback field exceeds maximum length": "حقل الملاحظات يتجاوز الحد الأقصى للطول"
+        "Feedback field exceeds maximum length": "حقل الملاحظات يتجاوز الحد الأقصى للطول",
+        "Einstieg": "المقدمة",
+        "Nachbesprechung": "المراجعة",
+        "Einstieg mit Ton und Untertiteln": "المقدمة مع الصوت والترجمة النصية",
+        "Nachbesprechung mit Ton und Untertiteln": "المراجعة مع الصوت والترجمة النصية",
+        "Sprache von Ton und Untertiteln": "لغة الصوت والترجمة النصية",
+        "Richtig:": "صحيح:",
+        "Vorherige Zeile": "السطر السابق",
+        "Nächste Zeile": "السطر التالي",
+        "Von vorn": "من البداية",
+        "Text zum Mitlesen": "النص للقراءة",
+        "Zeile {current} von {total}": "السطر {current} من {total}",
+        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "لا يمكن تشغيل الصوت الآن. اقرأ النص أو تنقّل فيه باستخدام «السطر التالي»."
     }
 }

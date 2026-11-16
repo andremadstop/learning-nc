@@ -73,6 +73,11 @@
         <div v-if="isMultiSelect" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <!-- #66: the hint, only while the question is still open -->
         <QuestionHint v-if="!answered" :question="currentQuestion" />
+        <!-- #66: intro before answering, dialog with keywords after it (one player, same place) -->
+        <QuestionMediaPlayer :question-id="currentQuestion.id"
+                             :answered="answered"
+                             :reveal="questionMedia"
+                             :content-language="effectiveContentLanguage" />
 
         <!-- PBQ block -->
         <div v-if="!answered && isPbq" class="pbq-answer-area">
@@ -251,6 +256,7 @@ import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
 import QuestionHint from './QuestionHint.vue';
 import RichFeedbackPanel from './RichFeedbackPanel.vue';
+import QuestionMediaPlayer from './QuestionMediaPlayer.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -261,7 +267,7 @@ import { modeClosedMessage } from '../utils/modeGate.js';
 
 export default {
   name: 'TrainingMode',
-  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -314,6 +320,8 @@ export default {
       answeredFeedback: {},
       // #66: rich_feedback of the answer response (feedback per option, background, takeaway)
       richFeedback: null,
+      // #66: question_media of the answer response (dialog tracks with grant, cues)
+      questionMedia: null,
     };
   },
   mounted() {
@@ -432,6 +440,7 @@ export default {
       this.lastOpenAnswer = '';
       this.pbqPoints = 0; this.pbqMaxPoints = 1;
       this.richFeedback = null;
+      this.questionMedia = null;
     },
     rememberFeedback() {
       if (!this.currentQuestion) return;
@@ -447,6 +456,7 @@ export default {
           lastSelectedAnswerIds: this.lastSelectedAnswerIds.slice(),
           lastOpenAnswer: this.lastOpenAnswer,
           richFeedback: this.richFeedback,
+          questionMedia: this.questionMedia,
         },
       };
     },
@@ -464,6 +474,7 @@ export default {
         this.lastSelectedAnswerIds = stored.lastSelectedAnswerIds.slice();
         this.lastOpenAnswer = stored.lastOpenAnswer;
         this.richFeedback = stored.richFeedback ?? null;
+        this.questionMedia = stored.questionMedia ?? null;
         this.answered = true;
       }
     },
@@ -574,6 +585,7 @@ export default {
         this.pbqMaxPoints = response.data.pbq_max_points ?? 1;
         this.correctAnswerTexts = [];
         this.richFeedback = response.data.rich_feedback ?? null;
+        this.questionMedia = response.data.question_media ?? null;
         this.answered = true;
         this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
@@ -592,6 +604,7 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = [response.data.correct_answer_text || ''];
         this.richFeedback = response.data.rich_feedback ?? null;
+        this.questionMedia = response.data.question_media ?? null;
         this.answered = true;
         this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
@@ -610,6 +623,7 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
         this.richFeedback = response.data.rich_feedback ?? null;
+        this.questionMedia = response.data.question_media ?? null;
         this.answered = true;
         this.rememberFeedback();
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
@@ -629,6 +643,7 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
         this.richFeedback = response.data.rich_feedback ?? null;
+        this.questionMedia = response.data.question_media ?? null;
         this.answered = true;
         this.rememberFeedback();
         // TRIG-02: Check if 5+ wrong answers on this pool → offer summary

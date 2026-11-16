@@ -28,6 +28,11 @@
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <!-- #66: the hint, only while the card is still open -->
         <QuestionHint v-if="!answered" :question="currentItem" />
+        <!-- #66: intro before answering, dialog with keywords after it (one player, same place) -->
+        <QuestionMediaPlayer :question-id="currentItem.question_id || currentItem.id"
+                             :answered="answered"
+                             :reveal="questionMedia"
+                             :content-language="effectiveContentLanguage" />
         <!-- PBQ: rendered and scored like in LeitnerMode; without it the card had no controls
              and every later due card of the session was unreachable (audit #40). -->
         <div v-if="!answered && isPbq" class="pbq-answer-area">
@@ -161,6 +166,7 @@ import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
 import QuestionHint from './QuestionHint.vue';
 import RichFeedbackPanel from './RichFeedbackPanel.vue';
+import QuestionMediaPlayer from './QuestionMediaPlayer.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import PbqRenderer from './PbqRenderer.vue';
@@ -168,7 +174,7 @@ import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'SmartQueue',
-  components: { QuestionScenario, QuestionHint, RichFeedbackPanel, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher, PbqRenderer },
+  components: { QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher, PbqRenderer },
   mixins: [hintMixin],
   props: {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation', 'maintenance'].includes(v) },
@@ -189,6 +195,8 @@ export default {
       lastSelectedAnswerIds: [],
       // #66: rich_feedback of the answer response
       richFeedback: null,
+      // #66: question_media of the answer response (dialog tracks with grant, cues)
+      questionMedia: null,
       openAnswer: '',
       lastOpenAnswer: '',
       showResults: false,
@@ -366,6 +374,7 @@ export default {
       this.lastCorrect = data.correct;
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [data.correct_answer_text || ''];
       this.richFeedback = data.rich_feedback ?? null;
+      this.questionMedia = data.question_media ?? null;
       this.answered = true;
       this.pbqPoints = data.pbq_points ?? 0;
       this.pbqMaxPoints = data.pbq_max_points ?? 0;
@@ -393,6 +402,7 @@ export default {
         this.currentIndex++;
         this.answered = false;
         this.richFeedback = null;
+        this.questionMedia = null;
         this.selectedAnswerIds = [];
         this.lastSelectedAnswerId = null;
         this.lastSelectedAnswerIds = [];

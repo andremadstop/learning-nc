@@ -3843,6 +3843,18 @@
         "Q%1$s: feedback texts in %2$s were not imported — one language per question": "Q%1$s : les textes de retour en %2$s n’ont pas été importés — une langue par question",
         "Q%s: a \"verdict\" in feedback_per_option contradicts the marked correct answers — the marked answers count": "Q%s : un « verdict » dans feedback_per_option contredit les bonnes réponses marquées — les réponses marquées font foi",
         "Q%s: feedback for an answer option the question does not have was left out": "Q%s : le retour pour une option de réponse que la question n’a pas a été omis",
-        "Feedback field exceeds maximum length": "Un champ de retour dépasse la longueur maximale"
+        "Feedback field exceeds maximum length": "Un champ de retour dépasse la longueur maximale",
+        "Einstieg": "Introduction",
+        "Nachbesprechung": "Débriefing",
+        "Einstieg mit Ton und Untertiteln": "Introduction avec son et sous-titres",
+        "Nachbesprechung mit Ton und Untertiteln": "Débriefing avec son et sous-titres",
+        "Sprache von Ton und Untertiteln": "Langue du son et des sous-titres",
+        "Richtig:": "Correct :",
+        "Vorherige Zeile": "Ligne précédente",
+        "Nächste Zeile": "Ligne suivante",
+        "Von vorn": "Depuis le début",
+        "Text zum Mitlesen": "Texte à lire en même temps",
+        "Zeile {current} von {total}": "Ligne {current} sur {total}",
+        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "Le son ne peut pas être lu pour le moment. Lis le texte ou parcours-le avec « Ligne suivante »."
     }
 }

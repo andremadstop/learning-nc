@@ -3843,6 +3843,18 @@
         "Q%1$s: feedback texts in %2$s were not imported — one language per question": "В%1$s: тексты отзыва на %2$s не импортированы — один язык на вопрос",
         "Q%s: a \"verdict\" in feedback_per_option contradicts the marked correct answers — the marked answers count": "В%s: «verdict» в feedback_per_option противоречит отмеченным правильным ответам — действуют отмеченные ответы",
         "Q%s: feedback for an answer option the question does not have was left out": "В%s: отзыв к варианту ответа, которого нет в вопросе, пропущен",
-        "Feedback field exceeds maximum length": "Поле отзыва превышает максимальную длину"
+        "Feedback field exceeds maximum length": "Поле отзыва превышает максимальную длину",
+        "Einstieg": "Вступление",
+        "Nachbesprechung": "Разбор",
+        "Einstieg mit Ton und Untertiteln": "Вступление со звуком и субтитрами",
+        "Nachbesprechung mit Ton und Untertiteln": "Разбор со звуком и субтитрами",
+        "Sprache von Ton und Untertiteln": "Язык звука и субтитров",
+        "Richtig:": "Правильно:",
+        "Vorherige Zeile": "Предыдущая строка",
+        "Nächste Zeile": "Следующая строка",
+        "Von vorn": "С начала",
+        "Text zum Mitlesen": "Текст для чтения",
+        "Zeile {current} von {total}": "Строка {current} из {total}",
+        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "Звук сейчас не воспроизводится. Читай текст или пройди его кнопкой «Следующая строка»."
     }
 }

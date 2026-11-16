@@ -3843,6 +3843,18 @@
         "Q%1$s: feedback texts in %2$s were not imported — one language per question": "F%1$s: Feedback-Texte in %2$s wurden nicht importiert — eine Sprache pro Frage",
         "Q%s: a \"verdict\" in feedback_per_option contradicts the marked correct answers — the marked answers count": "F%s: Ein „verdict“ in feedback_per_option widerspricht den markierten richtigen Antworten — es gelten die markierten Antworten",
         "Q%s: feedback for an answer option the question does not have was left out": "F%s: Feedback zu einer Antwortoption, die die Frage nicht hat, wurde ausgelassen",
-        "Feedback field exceeds maximum length": "Ein Feedback-Feld überschreitet die maximale Länge"
+        "Feedback field exceeds maximum length": "Ein Feedback-Feld überschreitet die maximale Länge",
+        "Einstieg": "Einstieg",
+        "Nachbesprechung": "Nachbesprechung",
+        "Einstieg mit Ton und Untertiteln": "Einstieg mit Ton und Untertiteln",
+        "Nachbesprechung mit Ton und Untertiteln": "Nachbesprechung mit Ton und Untertiteln",
+        "Sprache von Ton und Untertiteln": "Sprache von Ton und Untertiteln",
+        "Richtig:": "Richtig:",
+        "Vorherige Zeile": "Vorherige Zeile",
+        "Nächste Zeile": "Nächste Zeile",
+        "Von vorn": "Von vorn",
+        "Text zum Mitlesen": "Text zum Mitlesen",
+        "Zeile {current} von {total}": "Zeile {current} von {total}",
+        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch."
     }
 }

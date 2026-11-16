@@ -88,6 +88,11 @@
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <!-- #66: the hint, only while the card is still open -->
         <QuestionHint v-if="!answered" :question="currentItem" />
+        <!-- #66: intro before answering, dialog with keywords after it (one player, same place) -->
+        <QuestionMediaPlayer :question-id="currentItem.question_id || currentItem.id"
+                             :answered="answered"
+                             :reveal="questionMedia"
+                             :content-language="effectiveContentLanguage" />
 
         <!-- PBQ block -->
         <div v-if="!answered && isPbq" class="pbq-answer-area">
@@ -293,6 +298,7 @@ import BadgeUnlock from './BadgeUnlock.vue';
 import QuestionScenario from './QuestionScenario.vue';
 import QuestionHint from './QuestionHint.vue';
 import RichFeedbackPanel from './RichFeedbackPanel.vue';
+import QuestionMediaPlayer from './QuestionMediaPlayer.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -305,7 +311,7 @@ import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsSchedule
 
 export default {
   name: 'LeitnerMode',
-  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     poolId: { type: Number, required: true },
@@ -329,6 +335,8 @@ export default {
       selectedAnswerIds: [],
       // #66: rich_feedback of the answer response
       richFeedback: null,
+      // #66: question_media of the answer response (dialog tracks with grant, cues)
+      questionMedia: null,
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
       openAnswer: '',
@@ -699,6 +707,7 @@ export default {
       this.lastCorrectAnswerText = data.correct_answer_text || ''
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [this.lastCorrectAnswerText]
       this.richFeedback = data.rich_feedback ?? null
+      this.questionMedia = data.question_media ?? null
       if (data.correct) this.sessionCorrect++
       else this.sessionIncorrect++
     },
@@ -713,6 +722,7 @@ export default {
       this.lastCorrectAnswerText = data.correct_answer_text || this.lastCorrectAnswerText
       this.lastCorrectAnswerTexts = data.correct_answer_texts || this.lastCorrectAnswerTexts
       this.richFeedback = data.rich_feedback ?? this.richFeedback
+      this.questionMedia = data.question_media ?? this.questionMedia
       if (this.currentItem) {
         this.currentItem.box = data.new_box
         this.currentItem.last_rating = data.rating
@@ -889,7 +899,7 @@ export default {
       clearInterval(this.explainPollTimer);
       this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
       this.clearFsrsIntervalNotice();
-      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.richFeedback = null; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastReviewResult = null; this.lastSubmittedRating = null; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
+      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.richFeedback = null; this.questionMedia = null; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastReviewResult = null; this.lastSubmittedRating = null; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
       else {
         const oldStreak = this.streak.current_streak;
         await this.fetchStreak();
@@ -912,7 +922,7 @@ export default {
       } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.levelBefore = 0; this.levelAfter = 0; this.started = false; this.currentIndex = 0; this.answered = false; this.richFeedback = null; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
+    finishReview() { this.levelBefore = 0; this.levelAfter = 0; this.started = false; this.currentIndex = 0; this.answered = false; this.richFeedback = null; this.questionMedia = null; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
     continueLearning() { this.finishReview(); this.$emit('back'); }
   }
 };

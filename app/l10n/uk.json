@@ -3843,6 +3843,18 @@
         "Q%1$s: feedback texts in %2$s were not imported — one language per question": "П%1$s: тексти відгуку мовою %2$s не імпортовано — одна мова на питання",
         "Q%s: a \"verdict\" in feedback_per_option contradicts the marked correct answers — the marked answers count": "П%s: «verdict» у feedback_per_option суперечить позначеним правильним відповідям — діють позначені відповіді",
         "Q%s: feedback for an answer option the question does not have was left out": "П%s: відгук до варіанта відповіді, якого немає в питанні, пропущено",
-        "Feedback field exceeds maximum length": "Поле відгуку перевищує максимальну довжину"
+        "Feedback field exceeds maximum length": "Поле відгуку перевищує максимальну довжину",
+        "Einstieg": "Вступ",
+        "Nachbesprechung": "Розбір",
+        "Einstieg mit Ton und Untertiteln": "Вступ зі звуком і субтитрами",
+        "Nachbesprechung mit Ton und Untertiteln": "Розбір зі звуком і субтитрами",
+        "Sprache von Ton und Untertiteln": "Мова звуку й субтитрів",
+        "Richtig:": "Правильно:",
+        "Vorherige Zeile": "Попередній рядок",
+        "Nächste Zeile": "Наступний рядок",
+        "Von vorn": "Спочатку",
+        "Text zum Mitlesen": "Текст для читання",
+        "Zeile {current} von {total}": "Рядок {current} з {total}",
+        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "Звук зараз не відтворюється. Читай текст або пройди його кнопкою «Наступний рядок»."
     }
 }
