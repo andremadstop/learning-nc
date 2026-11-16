@@ -6,6 +6,7 @@
  *  1. csvRecords() reads back any table an independent RFC 4180 writer produced,
  *  2. a pool exported as CSV (DataMobilityService::exportPoolCsv) imports as the same questions,
  *  3. a pool exported as JSON (DataMobilityService::exportPoolJson) imports as the same questions,
+ *     PBQs and metadata included (difficulty, handbook, exam key, chapter),
  *  4. neither reader throws on any input; both answer with an error or a summary.
  *
  * Scope: this is the JavaScript port of the server's readers (src/utils/importPreview.js, kept
@@ -22,7 +23,7 @@ vi.mock('@nextcloud/l10n', () => ({
 	translate: (app, text, vars) => text.replace(/{(\w+)}/g, (m, k) => (vars && k in vars ? String(vars[k]) : m)),
 }))
 
-import { analyzeCsvImport, analyzeJsonImport, csvRecords } from '../../src/utils/importPreview.js'
+import { PBQ_SUBTYPES, analyzeCsvImport, analyzeJsonImport, csvRecords } from '../../src/utils/importPreview.js'
 
 const SEED = Number(process.env.FC_SEED ?? 65065)
 const RUNS = Number(process.env.FC_RUNS ?? 300)
@@ -144,29 +145,68 @@ describe('CSV export -> import: known findings (GitHub #65, open)', () => {
 
 // --- 3. JSON export -> import ---------------------------------------------------------------
 
+/** A stored text that fits a column of `max` characters (mb_strlen). */
+const columnText = (max) => storedText.filter((s) => Array.from(s).length <= max)
+/**
+ * The optional fields exportPoolJson writes, as the database holds them (within the column
+ * limits, chapter_order 1..9999), each absent or set: absent keys are left out, as the exporter
+ * does for null and ''. The reader's output exposes all of them; explanation and scenario are
+ * written too, so a reader that trips over them fails, but the JavaScript port does not carry them
+ * (PoolExportRoundTripTest checks them, and pbq_config, on the PHP importers).
+ */
+const metadata = fc.record({
+	scenario: storedText,
+	explanation: storedText,
+	difficulty: columnText(20),
+	handbook_key: columnText(64),
+	handbook_title: columnText(255),
+	exam_key: columnText(64),
+	chapter_key: columnText(64),
+	chapter_title: columnText(255),
+	chapter_order: fc.integer({ min: 1, max: 9999 }),
+}, { requiredKeys: [] })
+const METADATA_KEYS = ['handbook_key', 'handbook_title', 'exam_key', 'chapter_key', 'chapter_title', 'chapter_order']
+
 const choiceQuestion = fc.integer({ min: 2, max: 8 }).chain((n) => fc.record({
 	type: fc.constantFrom('single', 'multi'),
 	text: storedText,
 	answers: fc.array(storedText, { minLength: n, maxLength: n }),
 	flags: fc.array(fc.boolean(), { minLength: n, maxLength: n }),
 	pick: fc.integer({ min: 0, max: n - 1 }),
+	meta: metadata,
 }).map((q) => {
 	// what the app can store: single = exactly one correct answer, multi = at least one
 	const flags = q.type === 'single' ? q.flags.map((_, i) => i === q.pick) : q.flags.map((f, i) => f || i === q.pick)
-	return { text: q.text, type: q.type, answers: q.answers.map((t, i) => ({ text: t, is_correct: flags[i] })) }
+	return { text: q.text, type: q.type, ...q.meta, answers: q.answers.map((t, i) => ({ text: t, is_correct: flags[i] })) }
 }))
-const openQuestion = fc.record({ text: storedText, model: storedText }).map((q) => ({ text: q.text, type: 'open', answers: [{ text: q.model, is_correct: true }] }))
+const openQuestion = fc.record({ text: storedText, model: storedText, meta: metadata })
+	.map((q) => ({ text: q.text, type: 'open', ...q.meta, answers: [{ text: q.model, is_correct: true }] }))
+const pbqQuestion = fc.record({
+	text: storedText,
+	subtype: fc.constantFrom(...PBQ_SUBTYPES),
+	pbq_config: fc.dictionary(fc.string({ maxLength: 8 }), fc.jsonValue({ maxDepth: 2 }), { maxKeys: 4 }),
+	meta: metadata,
+}).map((q) => ({ text: q.text, type: 'pbq', subtype: q.subtype, pbq_config: q.pbq_config, ...q.meta, answers: [] }))
+
+/** What the reader reports for an exported question: everything it stores of it. */
+const expectedRead = (q) => ({
+	text: q.text,
+	type: q.type,
+	answers: q.answers.map((a) => ({ text: a.text, correct: a.is_correct })),
+	// a PBQ without a difficulty is stored as 'medium' (importPbqItem)
+	difficulty: q.difficulty ?? (q.type === 'pbq' ? 'medium' : null),
+	subtype: q.type === 'pbq' ? q.subtype : null,
+	...Object.fromEntries(METADATA_KEYS.map((k) => [k, q[k] ?? null])),
+})
 
 describe('JSON export -> import (property)', () => {
-	it('a pool of single, multi and open questions comes back as the same questions', () => {
-		fc.assert(fc.property(fc.array(fc.oneof(choiceQuestion, openQuestion), { minLength: 1, maxLength: 5 }), (exported) => {
+	it('a pool of single, multi, open and PBQ questions comes back as the same questions, with their metadata', () => {
+		fc.assert(fc.property(fc.array(fc.oneof(choiceQuestion, openQuestion, pbqQuestion), { minLength: 1, maxLength: 5 }), (exported) => {
 			const result = analyzeJsonImport(JSON.stringify(exported, null, 4))
 			expect(result.error).toBeUndefined()
 			expect(result.errors).toEqual([])
-			expect(result.items.map((i) => {
-				const q = i.question
-				return { text: q.text, type: q.type, answers: q.answers }
-			})).toEqual(exported.map((q) => ({ text: q.text, type: q.type, answers: q.answers.map((a) => ({ text: a.text, correct: a.is_correct })) })))
+			expect(result.warnings).toEqual([])
+			expect(result.items.map((i) => i.question)).toEqual(exported.map(expectedRead))
 		}), params)
 	})
 })

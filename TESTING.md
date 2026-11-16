@@ -198,7 +198,7 @@ The spec is a development artefact. It is not in the release tarball (`app/Makef
 
 1. `csvRecords()` reads back every table an independent RFC 4180 writer produced.
 2. A pool exported as CSV, in the exporter's format (`fputcsv`, formula guard), imports as the same questions.
-3. A pool exported as JSON (single, multi and open questions) imports as the same questions.
+3. A pool exported as JSON (single, multi, open and PBQ questions) imports as the same questions, with the metadata the reader stores: difficulty, PBQ subtype, handbook, exam key and chapter (key, title, order). Explanation and scenario are written too but not compared, because the port does not carry them on the JSON path; `PoolExportRoundTripTest` checks them, and `pbq_config`, on the PHP importers.
 4. Neither reader throws on any input, including arbitrary JSON built from the import keys. Each answers with an error or a summary.
 
 These properties run against the JavaScript port of the server's readers (`src/utils/importPreview.js`), not against the PHP importer. The port follows the PHP readers rule for rule, and the shared fixtures check both against each other.
