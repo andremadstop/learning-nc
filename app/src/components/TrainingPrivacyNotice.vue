@@ -1,13 +1,7 @@
 <template>
-	<!--
-		DSGVO Art.13 TRAINING-START transparency notice (DSGVO-04).
-		This is a SEPARATE surface from the third-party embed consent
-		(VideoConsentOverlay): it is shown at the start of a Pflichtschulung course
-		and states, in plain language, which data is processed, on which legal
-		basis, and — mirroring the VIDEO-06 transient-segment design — that detailed
-		playback patterns are NOT permanently stored.
-	-->
-	<section class="training-privacy" aria-labelledby="training-privacy-heading">
+	<section ref="root" class="training-privacy" aria-labelledby="training-privacy-heading">
+		<!-- GitHub #75: no comment beside <section>. The bundle keeps template comments, so one there
+			makes the root a fragment, $el no element, and the IntersectionObserver threw on every course page. -->
 		<div class="training-privacy__top">
 			<h4 id="training-privacy-heading" class="training-privacy__heading">
 				<span class="training-privacy__icon" aria-hidden="true">🔒</span>
@@ -53,6 +47,14 @@
 </template>
 
 <script>
+/**
+ * DSGVO Art.13 TRAINING-START transparency notice (DSGVO-04).
+ * This is a SEPARATE surface from the third-party embed consent
+ * (VideoConsentOverlay): it is shown at the start of a Pflichtschulung course
+ * and states, in plain language, which data is processed, on which legal
+ * basis, and — mirroring the VIDEO-06 transient-segment design — that detailed
+ * playback patterns are NOT permanently stored.
+ */
 import { getCurrentUser } from '@nextcloud/auth'
 
 /** GitHub #75: per account in this browser; without storage the notice stays expanded. */
@@ -115,7 +117,7 @@ export default {
 				this.markSeen()
 			}
 		}, { threshold: 0.5 })
-		this.observer.observe(this.$el)
+		this.observer.observe(this.$refs.root)
 	},
 
 	beforeUnmount() {
