@@ -167,6 +167,15 @@ ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
 
 **Known gap: response bodies.** Most controller methods have no typed `@return DataResponse<...>` annotation. The extractor reports each one as an error, writes the spec anyway, and ends with "Encountered N errors". The script accepts that only when N equals `scripts/openapi-error-baseline.txt`. The number may only shrink: a commit that documents a method lowers it, and a new undocumented method makes the check fail. Until the responses are typed, the spec checks requests (route, method, parameters, CSRF), not response keys and types.
 
+**Frontend contract test** (`app/tests/unit/apiContract65.test.js`, part of Vitest). It parses every file in `app/src` with the real parser (Babel through `@vue/compiler-sfc`) and evaluates the URL argument of each call site: literals, `+`, template strings, `generateUrl()`, local and imported constants, URL-builder functions, and `this.x` computed properties and methods. Then it checks:
+
+- **XHR** (`axios.get/post/put/patch/delete`): the route exists in `openapi.json` with that method. A wrong path or a `PUT` where the controller only has `POST` turns it red.
+- **Navigation** (`window.location`, `window.open`, `<a>.href = …`, `href`/`src` attributes and bindings in templates): the browser sends no request token, so the route must be `GET` and `@NoCSRFRequired`. That is the bug behind four CSRF fixes in 5.12.0 (#36, #41, #45).
+- **What it cannot evaluate** (data URLs, URLs from API responses, blob downloads) must be listed in `UNRESOLVED_ALLOWED` with a reason. An entry that no longer occurs fails the test, so the list only shrinks.
+- **The scanner itself**: it must find as many `axios.<method>(` calls as a plain text search does, and planted call sites (unknown route, wrong method, CSRF download through an imported URL builder) must each be reported.
+
+A URL with an unknown part is checked with that part as a wildcard segment. Request bodies are not checked yet: the spec types the parameters of the method signature, but many controllers read the body with `getParam()`.
+
 The spec is a development artefact. It is not in the release tarball (`app/Makefile`, `release_tracked`).
 
 ## Rule: every bug fix comes with a test that fails on the old code
