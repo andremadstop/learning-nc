@@ -3961,5 +3961,6 @@ OC.L10N.register(
     "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen." : "Спершу пройди всі обов’язкові матеріали на вкладці «Навчальні матеріали». Лише тоді іспит відкриється.",
     "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Перегляд питань цього пулу. Змінювати їх може лише власник пулу або той, з ким пул поширено для редагування.",
     "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Звіт містить і вже прострочені сертифікати.",
+    "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "Файл не є зображенням PNG, JPEG або WebP. SVG не приймається. Якщо логотип є лише у SVG, експортуй його в PNG у графічній програмі (приблизно 1000 пікселів завширшки) або попроси PNG-файл у того, хто його створив.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

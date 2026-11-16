@@ -156,7 +156,7 @@ export const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 export function logoErrorMessage(code, max = 20) {
 	switch (code) {
 	case 'unsupported_type':
-		return t('learning', 'Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen.')
+		return t('learning', 'Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.')
 	case 'too_large':
 		return t('learning', 'Die Datei ist zu groß (höchstens 1 MB und 3000 × 3000 Pixel).')
 	case 'duplicate':

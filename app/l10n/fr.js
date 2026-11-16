@@ -3961,5 +3961,6 @@ OC.L10N.register(
     "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen." : "Termine d’abord tous les contenus obligatoires dans l’onglet « Supports de cours ». Ce n’est qu’ensuite que l’examen est ouvert.",
     "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Voir les questions de ce pool. Seul le propriétaire du pool ou une personne avec qui il est partagé en modification peut les changer.",
     "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Le rapport inclut aussi les certificats déjà expirés.",
+    "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "Le fichier n’est pas une image PNG, JPEG ou WebP. Le format SVG n’est pas accepté. Si tu n’as le logo qu’en SVG, exporte-le en PNG dans un logiciel de graphisme (environ 1000 pixels de large) ou demande un fichier PNG à la personne qui l’a conçu.",
 },
 "nplurals=2; plural=(n > 1);");

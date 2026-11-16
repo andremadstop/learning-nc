@@ -196,7 +196,7 @@ describe('admin: the logo library (GitHub #78)', () => {
 		vm.newName = 'Logo'
 		await vm.upload(new File(['<svg/>'], 'logo.svg', { type: 'image/svg+xml' }))
 		await flush()
-		expect(host.querySelector('[data-test="cert-logo-new-error"]').textContent.trim()).toBe('Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen.')
+		expect(host.querySelector('[data-test="cert-logo-new-error"]').textContent.trim()).toBe('Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.')
 
 		const big = new File([new Uint8Array(1048577)], 'big.png', { type: 'image/png' })
 		await vm.upload(big)
@@ -214,7 +214,7 @@ describe('admin: the logo library (GitHub #78)', () => {
 		vm.newName = 'Logo'
 		await vm.upload(new File(['<svg/>'], 'logo.png', { type: 'image/png' }))
 		await flush()
-		expect(host.querySelector('[data-test="cert-logo-new-error"]').textContent.trim()).toBe('Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen.')
+		expect(host.querySelector('[data-test="cert-logo-new-error"]').textContent.trim()).toBe('Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.')
 	})
 
 	it('uploads name and file as a form and lists the new logo', async () => {
