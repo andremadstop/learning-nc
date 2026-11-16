@@ -144,22 +144,28 @@ async function checkPage(page, rec) {
 	for (const f of await runAxe(page)) rec.add(f.kind, f.detail)
 }
 
-/** axe-core on the app's area: WCAG 2.x A/AA rules, violations only (see lib.cjs: axeFindings). */
+/**
+ * axe-core on the app's area: WCAG 2.x A/AA rules, violations plus the 1:1 contrast nodes axe only
+ * calls incomplete (see lib.cjs: axeFindings, equalRatioContrast).
+ */
 async function runAxe(page) {
 	const hasAxe = await page.evaluate(() => typeof window.axe === 'object').catch(() => false)
 	if (!hasAxe) await page.evaluate(AXE_SOURCE)
-	const violations = await page.evaluate(async () => {
+	const results = await page.evaluate(async () => {
 		const root = document.querySelector('#app-content') || document.querySelector('#content') || document.body
 		const res = await window.axe.run(root, {
 			runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
-			resultTypes: ['violations'],
+			// incomplete too: axe files 1:1 text (same colour as its background) there, not as a
+			// violation — GitHub #76 (lib.cjs: equalRatioContrast)
+			resultTypes: ['violations', 'incomplete'],
 		})
-		return res.violations.map((v) => ({
+		const slim = (list) => list.map((v) => ({
 			id: v.id, impact: v.impact, help: v.help,
 			nodes: v.nodes.map((n) => ({ impact: n.impact, target: n.target, any: n.any.map((c) => ({ data: c.data })) })),
 		}))
+		return { violations: slim(res.violations), incomplete: slim(res.incomplete.filter((v) => v.id === 'color-contrast')) }
 	})
-	return axeFindings(violations)
+	return axeFindings(results.violations, { incomplete: results.incomplete })
 }
 
 async function checkToasts(page, rec, since, action) {
@@ -464,6 +470,29 @@ async function sweepPersona(browser, persona, opts = {}) {
 	// Settings pages.
 	const enterPersonal = async () => { await page.goto(`${BASE}/index.php/settings/user/learning`); await settle(page, 1200) }
 	await station(page, rec, 'Personal settings', async () => { await enterPersonal(); await clickAll(page, rec, enterPersonal) })
+	// GitHub #76: "Reset profile" at the very end of the page was white on white (1:1) and the sweep
+	// passed it: axe files 1:1 under incomplete (runAxe now counts it), and axe only measures the
+	// state it sees. Here the learner scrolls down and axe checks the button at rest, hovered and
+	// focused (the station's own page check then runs on the focused state).
+	if (persona.startsWith('learner')) {
+		await station(page, rec, 'Personal settings › end of page: Reset profile (rest, hover, focus)', async () => {
+			await enterPersonal()
+			await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+			const reset = page.getByRole('button', { name: /^reset profile$/i }).first()
+			if (!(await reset.isVisible().catch(() => false))) {
+				rec.add('station-error', 'Reset profile button not found at the end of the personal settings')
+				return
+			}
+			await reset.scrollIntoViewIfNeeded()
+			for (const f of await runAxe(page)) rec.add(f.kind, `at rest: ${f.detail}`)
+			await reset.hover()
+			await page.waitForTimeout(300)
+			for (const f of await runAxe(page)) if (f.kind === 'a11y' && f.detail.startsWith('color-contrast')) rec.add(f.kind, `hovered: ${f.detail}`)
+			await page.mouse.move(0, 0)
+			await reset.focus()
+			await page.waitForTimeout(200)
+		})
+	}
 	if (persona.startsWith('admin')) {
 		const enterAdmin = async () => { await page.goto(`${BASE}/index.php/settings/admin/learning`); await settle(page, 1200) }
 		await station(page, rec, 'Admin settings', async () => { await enterAdmin(); await clickAll(page, rec, enterAdmin) })
@@ -509,12 +538,22 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 			el.id = 'persona-axe-selftest'
 			el.textContent = 'persona self-test: grey on grey'
 			el.style.cssText = 'color:#777;background:#888;font-size:14px;padding:4px'
-			;(document.querySelector('#app-content') || document.body).prepend(el)
+			// GitHub #76: text in its background's colour (1:1) is filed by axe as incomplete, not as a
+			// violation; it must come out as a finding too.
+			const same = document.createElement('p')
+			same.id = 'persona-axe-selftest-equal'
+			same.textContent = 'persona self-test: white on white'
+			same.style.cssText = 'color:#fff;background:#fff;font-size:14px;padding:4px'
+			const root = document.querySelector('#app-content') || document.body
+			root.prepend(same)
+			root.prepend(el)
 		})
-		const hits = (await runAxe(page)).filter((f) => f.detail.startsWith('color-contrast') && f.detail.includes('#persona-axe-selftest'))
-		await page.evaluate(() => document.getElementById('persona-axe-selftest')?.remove())
-		rec.current.axeSelfTest = hits.length ? 'contrast check works' : 'CONTRAST CHECK BROKEN: the self-test element was not reported'
-		if (!hits.length) rec.add('detector', rec.current.axeSelfTest)
+		const found = await runAxe(page)
+		const hit = (id) => found.some((f) => f.detail.startsWith('color-contrast') && new RegExp('#' + id + '(?![\\w-])').test(f.detail))
+		await page.evaluate(() => ['persona-axe-selftest', 'persona-axe-selftest-equal'].forEach((id) => document.getElementById(id)?.remove()))
+		const broken = [hit('persona-axe-selftest') ? null : 'grey on grey', hit('persona-axe-selftest-equal') ? null : 'white on white (1:1)'].filter(Boolean)
+		rec.current.axeSelfTest = broken.length ? `CONTRAST CHECK BROKEN: not reported: ${broken.join(', ')}` : 'contrast check works'
+		if (broken.length) rec.add('detector', rec.current.axeSelfTest)
 	})
 	const enterExamTab = async () => {
 		await openMegaTab(page, 'Learning space')

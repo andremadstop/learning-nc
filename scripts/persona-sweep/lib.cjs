@@ -27,18 +27,39 @@ const AXE_IMPACTS = ['critical', 'serious']
 const AXE_MAX_NODES = 8
 
 /**
+ * axe files text whose colour equals its background (1:1) under `incomplete`, reason "equalRatio",
+ * not under `violations` (it might be hidden on purpose). On a visible element in the app's area
+ * it is invisible text: GitHub #76, white "Reset profile" (--color-primary-element-text) on the
+ * white settings page passed the sweep unseen. These nodes count like a contrast violation; every
+ * other incomplete reason (gradients, background images, overlap) stays out, it would only be noise.
+ *
+ * @param {Array} incomplete axe.run(...).incomplete
+ * @return {Array} violation-shaped entries (id "color-contrast", impact "serious") for axeFindings
+ */
+function equalRatioContrast(incomplete) {
+	const out = []
+	for (const v of incomplete || []) {
+		if (v.id !== 'color-contrast' && v.id !== 'color-contrast-enhanced') continue
+		const nodes = (v.nodes || []).filter((n) => (n.any || []).some((c) => c.data && c.data.messageKey === 'equalRatio'))
+		if (nodes.length) out.push({ ...v, impact: 'serious', nodes: nodes.map((n) => ({ ...n, impact: 'serious' })) })
+	}
+	return out
+}
+
+/**
  * axe-core violations → findings of kind "a11y", one per rule and element.
- * Contrast counts at any impact; other rules only when critical or serious.
+ * Contrast counts at any impact; other rules only when critical or serious. With opts.incomplete,
+ * the 1:1 contrast nodes among axe's incomplete results count too (equalRatioContrast).
  *
  * @param {Array} violations axe.run(...).violations
- * @param {{impacts?: string[], maxNodes?: number}} [opts]
+ * @param {{impacts?: string[], maxNodes?: number, incomplete?: Array}} [opts]
  * @return {Array<{kind: string, detail: string}>}
  */
 function axeFindings(violations, opts = {}) {
 	const impacts = opts.impacts || AXE_IMPACTS
 	const maxNodes = opts.maxNodes || AXE_MAX_NODES
 	const out = []
-	for (const v of violations || []) {
+	for (const v of [...(violations || []), ...equalRatioContrast(opts.incomplete)]) {
 		const contrast = v.id === 'color-contrast' || v.id === 'color-contrast-enhanced'
 		if (!contrast && !impacts.includes(v.impact)) continue
 		const nodes = v.nodes || []
@@ -90,4 +111,4 @@ function pickAnswerIndex(buttonTexts, answer) {
 	return best
 }
 
-module.exports = { expectedReason, axeFindings, stationText, pickAnswerIndex, AXE_IMPACTS }
+module.exports = { expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }

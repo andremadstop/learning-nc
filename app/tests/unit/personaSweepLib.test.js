@@ -82,6 +82,34 @@ describe('persona sweep: axeFindings', () => {
 		expect(axeFindings([])).toEqual([])
 		expect(axeFindings(undefined)).toEqual([])
 	})
+
+	// GitHub #76: axe files text in its background's colour (1:1) under incomplete ("equalRatio");
+	// the white "Reset profile" on the white settings page was never reported.
+	const incomplete = [{
+		id: 'color-contrast',
+		impact: 'serious',
+		help: 'Elements must meet minimum color contrast ratio thresholds',
+		nodes: [
+			{ impact: 'serious', target: ['.actions > button:nth-child(2) > span'], any: [{ data: { messageKey: 'equalRatio', contrastRatio: 1, expectedContrastRatio: '4.5:1', fgColor: '#ffffff', bgColor: '#ffffff' } }] },
+			{ impact: 'serious', target: ['.hero > h2'], any: [{ data: { messageKey: 'bgImage' } }] },
+		],
+	}, {
+		id: 'link-in-text-block',
+		impact: 'serious',
+		nodes: [{ target: ['p > a'], any: [{ data: { messageKey: 'equalRatio' } }] }],
+	}]
+
+	it('a 1:1 contrast node from axe\'s incomplete results counts; other incomplete reasons do not', () => {
+		const out = axeFindings([], { incomplete })
+		expect(out).toHaveLength(1)
+		expect(out[0].detail).toBe('color-contrast (serious): .actions > button:nth-child(2) > span — 1:1, needs 4.5:1 (#ffffff on #ffffff)')
+	})
+
+	it('incomplete is optional and adds to the violations', () => {
+		expect(axeFindings([contrast])).toHaveLength(1)
+		expect(axeFindings([contrast], { incomplete })).toHaveLength(2)
+		expect(axeFindings([], { incomplete: undefined })).toEqual([])
+	})
 })
 
 describe('persona sweep: stationText', () => {
