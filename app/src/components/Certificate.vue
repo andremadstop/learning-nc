@@ -345,7 +345,8 @@ export default {
 		row-gap: 3mm;
 		align-content: center;
 		box-shadow: none;
-		border: 0.6mm solid #1a3a5c;
+		/* the frame of the screen card, in the instance's primary colour */
+		border: 0.6mm solid var(--color-primary-element, #1a3a5c);
 		border-radius: 3mm;
 		break-inside: avoid;
 		page-break-inside: avoid;
