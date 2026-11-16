@@ -263,7 +263,7 @@ describe('RequiredContentSettings rendered', () => {
 	})
 
 	// Review C5: a switch that turns disabled while saving drops the keyboard focus to the page.
-	for (const name of ['required-content-gate']) {
+	for (const name of ['required-content-gate', 'required-content-per-cycle']) {
 		it(`${name}: stays enabled while saving and saves a second change after the first`, async () => {
 			let release
 			axios.put.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({ data: {} }) }))

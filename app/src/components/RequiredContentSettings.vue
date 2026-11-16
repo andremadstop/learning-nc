@@ -21,7 +21,6 @@
 		<!-- GitHub #75: a confirmation counts for one certification cycle -->
 		<NcCheckboxRadioSwitch
 			:model-value="reconfirmPerCycle"
-			:disabled="savingGate"
 			data-test="required-content-per-cycle"
 			@update:model-value="setPerCycle(!!$event)">
 			{{ t('learning', 'Pflichtdokumente bei jeder Erneuerung neu bestätigen') }}
@@ -199,7 +198,6 @@ export default {
 			loadError: '',
 			gateEnabled: this.course?.video_gate_enabled === true,
 			reconfirmPerCycle: this.course?.reconfirm_per_cycle === true,
-			savingGate: false,
 			saveQueue: Promise.resolve(),
 			adding: false,
 			removing: {},
@@ -342,7 +340,6 @@ export default {
 		},
 
 		async putOption(field, body, before) {
-			this.savingGate = true
 			try {
 				const response = await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/video-gate', { courseId: this.courseId }), body)
 				this.$emit('course-patched', {
@@ -352,8 +349,6 @@ export default {
 			} catch (e) {
 				this[field] = before
 				this.$emit('error', t('learning', 'Die Einstellung konnte nicht gespeichert werden.'))
-			} finally {
-				this.savingGate = false
 			}
 		},
 
