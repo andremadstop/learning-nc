@@ -112,6 +112,22 @@ describe('course page: a tab error can be closed and does not follow to other ta
 		expect(pageError()).toBeNull()
 	})
 
+	it('closing the message hands the focus to the tab it belongs to, not to the page body', async () => {
+		ownCourse()
+		await mountDetail()
+		await click(megaButton('Verwaltung'))
+		await click(host.querySelector('[data-tab="CourseTabVerwaltung"] .emit-error'))
+		const close = host.querySelector('[data-test="detail-action-error-close"]')
+		close.focus()
+		expect(document.activeElement).toBe(close)
+
+		await click(close)
+
+		expect(pageError()).toBeNull()
+		expect(document.activeElement).toBe(megaButton('Verwaltung'))
+		expect(document.activeElement).not.toBe(document.body)
+	})
+
 	it('opening another course area or another sub-tab removes it', async () => {
 		ownCourse()
 		await mountDetail()

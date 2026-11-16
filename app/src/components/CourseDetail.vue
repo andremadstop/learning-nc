@@ -41,7 +41,7 @@
 				<NcButton variant="tertiary"
 					size="small"
 					data-test="detail-action-error-close"
-					@click="actionError = ''">
+					@click="dismissActionError">
 					{{ t('learning', 'Meldung schließen') }}
 				</NcButton>
 			</div>
@@ -752,6 +752,18 @@ export default {
 			if (this.kommunikationLeafTabs.includes(leafId)) return 'kommunikation'
 			if (this.verwaltungLeafTabs.includes(leafId)) return 'verwaltung'
 			return null
+		},
+		/**
+		 * The close button disappears with the note it sits in. Without a new target the focus
+		 * would fall to <body> and the next Tab start at the top of the document (WCAG 2.4.3):
+		 * it moves to the tab the message belongs to before the note goes.
+		 */
+		dismissActionError() {
+			const activeTab = this.$el?.querySelector?.('.mega-tab-button.active')
+			if (activeTab) {
+				activeTab.focus()
+			}
+			this.actionError = ''
 		},
 		selectMegaTab(megaTabId) {
 			this.actionError = ''
