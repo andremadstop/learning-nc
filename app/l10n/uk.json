@@ -3819,6 +3819,7 @@
         "Die Skill-Map zeigt jeden deiner Pools als Punkt. Die Farbe zeigt, wie oft du dort falsch antwortest: grün selten, orange teils, rot oft. Klicke auf einen Punkt, um Details zu sehen und den Pool zu üben.": "Skill-Map показує кожен твій пул точкою. Колір показує, як часто ти там відповідаєш неправильно: зелений — рідко, помаранчевий — інколи, червоний — часто. Натисни на точку, щоб побачити подробиці й потренуватися в пулі.",
         "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest.": "Твої пули у вигляді мапи; колір показує, як часто ти відповідаєш неправильно.",
         "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen.": "Щоб змінити питання, попроси власника пулу поділитися ним із тобою з правом редагування.",
-        "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).": "Як видавця на сертифікатах зазначено не це ім’я, а назву цього Nextcloud із налаштувань адміністрування в розділі «Оформлення» → «Назва» (без змін — «Nextcloud»)."
+        "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“).": "Як видавця на сертифікатах зазначено не це ім’я, а назву цього Nextcloud із налаштувань адміністрування в розділі «Оформлення» → «Назва» (без змін — «Nextcloud»).",
+        "{kind}: PNG aus Dateien wählen": "{kind}: вибрати PNG із файлів"
     }
 }

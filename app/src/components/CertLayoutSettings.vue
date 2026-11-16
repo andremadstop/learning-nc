@@ -67,6 +67,7 @@
 					variant="secondary"
 					:disabled="imageBusy !== ''"
 					:data-test="'cert-layout-pick-' + kind.key"
+					:aria-label="t('learning', '{kind}: PNG aus Dateien wählen', { kind: kind.label })"
 					@click="pickImage(kind.key)">
 					{{ t('learning', 'PNG aus Dateien wählen') }}
 				</NcButton>
@@ -75,6 +76,7 @@
 					variant="tertiary"
 					:disabled="imageBusy !== ''"
 					:data-test="'cert-layout-remove-' + kind.key"
+					:aria-label="t('learning', '„{title}“ entfernen', { title: kind.label })"
 					@click="removeImage(kind.key)">
 					{{ t('learning', 'Entfernen') }}
 				</NcButton>

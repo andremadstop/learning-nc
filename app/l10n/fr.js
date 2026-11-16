@@ -3820,5 +3820,6 @@ OC.L10N.register(
     "Deine Pools als Karte; die Farbe zeigt, wie oft du falsch antwortest." : "Tes pools sous forme de carte ; la couleur indique à quelle fréquence tu réponds faux.",
     "Um Fragen zu ändern, bitte die Person, der der Pool gehört, ihn mit dir zum Bearbeiten zu teilen." : "Pour modifier des questions, demande à la personne à qui appartient le pool de le partager avec toi en modification.",
     "Als Aussteller steht auf Zertifikaten nicht dieser Name, sondern der Name dieser Nextcloud aus den Verwaltungseinstellungen unter „Design“ → „Name“ (ohne Änderung „Nextcloud“)." : "Les certificats n'indiquent pas ce nom comme émetteur, mais le nom de ce Nextcloud, défini dans les paramètres d'administration sous « Personnaliser l'apparence » → « Nom » (« Nextcloud » sauf modification).",
+    "{kind}: PNG aus Dateien wählen" : "{kind} : choisir un PNG dans Fichiers",
 },
 "nplurals=2; plural=(n > 1);");

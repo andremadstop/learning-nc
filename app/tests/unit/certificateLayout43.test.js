@@ -326,6 +326,18 @@ describe('course settings: stamp and signature stay visible without saving (GitH
 		expect(host.querySelector('[data-test="cert-layout-remove-stamp"]')).not.toBeNull()
 	})
 
+	it('names the image on the pick and remove buttons for screen readers (5.13.0 review)', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		axios.get.mockResolvedValueOnce({ data: { stamp: STAMP, signature: STAMP } })
+		await mountSettings({ has_stamp: true, has_signature: true })
+
+		const label = (sel) => host.querySelector(sel)?.getAttribute('aria-label')
+		expect(label('[data-test="cert-layout-pick-stamp"]')).toBe('Stempel: PNG aus Dateien wählen')
+		expect(label('[data-test="cert-layout-pick-signature"]')).toBe('Unterschrift: PNG aus Dateien wählen')
+		expect(label('[data-test="cert-layout-remove-stamp"]')).toBe('„Stempel“ entfernen')
+		expect(label('[data-test="cert-layout-remove-signature"]')).toBe('„Unterschrift“ entfernen')
+	})
+
 	it('removing the stamp tells the parent it is gone', async () => {
 		const axios = (await import('@nextcloud/axios')).default
 		axios.get.mockResolvedValueOnce({ data: { stamp: STAMP, signature: null } })
