@@ -347,7 +347,31 @@ class LeitnerService {
         $items = array_slice($items, 0, $limit);
         $this->hydrateQueueItems($items);
 
-        return $this->translateQueueItems($items, $contentLanguage);
+        return $this->withholdHintsDuringExam($this->translateQueueItems($items, $contentLanguage), $userId);
+    }
+
+    /**
+     * GitHub #66: the Smart Queue and the remediation queue span all of the user's pools; an item
+     * of a pool with a running counting exam loses its hint (no hint during an exam). One exam
+     * check per pool.
+     *
+     * @param list<array<string, mixed>> $items
+     * @return list<array<string, mixed>>
+     */
+    private function withholdHintsDuringExam(array $items, string $userId): array {
+        $examByPool = [];
+        foreach ($items as &$item) {
+            if (trim((string)($item['hint'] ?? '')) === '') {
+                continue; // nothing to withhold, no exam query
+            }
+            $poolId = (int)($item['pool_id'] ?? 0);
+            $examByPool[$poolId] ??= $this->hasActiveExamOnPool($poolId, $userId);
+            if ($examByPool[$poolId]) {
+                unset($item['hint']);
+            }
+        }
+        unset($item);
+        return $items;
     }
 
     public function getQueueCount(string $userId): int {
@@ -795,7 +819,7 @@ class LeitnerService {
             $this->stripOpenAnswers($items);
         }
 
-        return $this->translateQueueItems($items, $contentLanguage);
+        return $this->withholdHintsDuringExam($this->translateQueueItems($items, $contentLanguage), $userId);
     }
 
     public function getRemediationCount(string $userId): int {

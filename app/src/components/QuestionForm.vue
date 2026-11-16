@@ -329,6 +329,10 @@ export default {
     isPbq() {
       return this.form.questionType === 'pbq' || !!this.form.pbqSubtype;
     },
+    // #66: a new question, or one loaded with its rich feedback (editor read paths add the keys).
+    richFeedbackLoaded() {
+      return !this.question || Object.prototype.hasOwnProperty.call(this.question, 'option_feedback');
+    },
     pbqConfigDisplayError() {
       return this.pbqConfigManualError || this.pbqConfigLiveError;
     }
@@ -568,14 +572,16 @@ export default {
       // question or a PBQ has no options, so [] clears any.
       const optionFeedback = (this.isPbq || this.form.questionType === 'open') ? [] : optionFeedbackFromAnswers(filteredAnswers);
       filteredAnswers = filteredAnswers.map(a => ({ text: a.text, is_correct: a.is_correct }));
+      // '' / [] clear a stored field, an omitted key keeps it. Sent only when the form knows the
+      // stored values: a question object without them (the server leaves them out for anyone
+      // but the pool's editors) would otherwise save empty fields over the stored feedback.
+      const richFeedback = this.richFeedbackLoaded
+        ? { hint: this.form.hint || '', backgroundFact: this.form.backgroundFact || '', keyTakeaway: this.form.keyTakeaway || '', optionFeedback }
+        : {};
 
       this.$emit('save', {
         text: this.form.text,
-        // Always sent: '' clears a stored field, an omitted key would keep it.
-        hint: this.form.hint || '',
-        backgroundFact: this.form.backgroundFact || '',
-        keyTakeaway: this.form.keyTakeaway || '',
-        optionFeedback,
+        ...richFeedback,
         explanation: this.form.explanation || null,
         // Always sent: '' clears a stored scenario, an omitted key would keep it.
         scenario: this.form.scenario || '',

@@ -112,6 +112,30 @@ final class LeitnerQueueAndBadgeTest extends TestCase {
         $this->assertSame([$badge], $response['newly_earned_badges']);
     }
 
+    /** GitHub #66: no hint in the Smart Queue for a pool with a running counting exam. */
+    public function testTheSmartQueueWithholdsTheHintOfAPoolWithARunningExam(): void {
+        $rows = [
+            ['id' => 1, 'question_id' => 10, 'pool_id' => 1, 'correct_count' => 0, 'incorrect_count' => 1, 'box' => 1, 'next_review' => 0,
+                'question_type' => 'single', 'pbq_config' => null, 'hint' => 'Exam pool hint', 'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
+            ['id' => 2, 'question_id' => 20, 'pool_id' => 2, 'correct_count' => 0, 'incorrect_count' => 1, 'box' => 1, 'next_review' => 0,
+                'question_type' => 'single', 'pbq_config' => null, 'hint' => 'Free pool hint', 'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
+            ['id' => 3, 'question_id' => 30, 'pool_id' => 3, 'correct_count' => 0, 'incorrect_count' => 1, 'box' => 1, 'next_review' => 0,
+                'question_type' => 'single', 'pbq_config' => null, 'hint' => null, 'stability' => null, 'difficulty' => null, 'last_reviewed' => null],
+        ];
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($rows)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])), // answers
+            new FakeQueryBuilder(FakeResult::fromFetch(['id' => 9, 'started_at' => time() - 60, 'time_limit_seconds' => 0])), // exam on pool 1
+            new FakeQueryBuilder(FakeResult::fromFetch(false)), // none on pool 2
+        ]);
+
+        $items = array_column($this->service($db)->getSmartQueue('alice', 10), null, 'id');
+
+        $this->assertArrayNotHasKey('hint', $items[1]);
+        $this->assertSame('Free pool hint', $items[2]['hint']);
+        $this->assertCount(4, $db->issuedBuilders, 'no exam query for an item without a hint');
+    }
+
     /** @return list<FakeQueryBuilder> a correct single-choice Leitner answer up to the reveal */
     private function answerQueries(bool $examRunsOnPool): array {
         return [

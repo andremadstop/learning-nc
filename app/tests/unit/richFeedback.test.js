@@ -254,6 +254,20 @@ describe('question editor', () => {
 		expect(payload.optionFeedback).toEqual([{ position: 1, why: 'Nein ist falsch.', misconception: null }])
 	})
 
+	it('a question loaded without its rich feedback saves none of the fields, so nothing stored is wiped', async () => {
+		const onSave = vi.fn()
+		mount(QuestionForm, {
+			question: { id: 7, text: 'Frage?', question_type: 'single', answers: [{ id: 1, text: 'Ja', is_correct: true }, { id: 2, text: 'Nein', is_correct: false }] },
+			onSave,
+		})
+		await nextTick()
+		await submit()
+		const payload = onSave.mock.calls[0][0]
+		for (const key of ['hint', 'backgroundFact', 'keyTakeaway', 'optionFeedback']) {
+			expect(payload, key).not.toHaveProperty(key)
+		}
+	})
+
 	it('an open question sends no option feedback', async () => {
 		const onSave = vi.fn()
 		mount(QuestionForm, {

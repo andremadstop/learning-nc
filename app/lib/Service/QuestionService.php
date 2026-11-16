@@ -855,9 +855,15 @@ class QuestionService {
             $poolId = (int)($row['pool_id'] ?? 0);
             $withhold[$poolId] ??= $this->mustWithholdSolution($poolId, $userId);
             if (!$withhold[$poolId]) {
+                // GitHub #66: the same shape as find() gives the editor.
+                if (array_key_exists('option_feedback', $row)) {
+                    $rows[$i]['option_feedback'] = RichFeedbackFormat::decodeOptions(is_string($row['option_feedback']) ? $row['option_feedback'] : null);
+                }
                 continue;
             }
-            unset($row['explanation']);
+            // GitHub #66: q.* carries the rich feedback columns; the per-option feedback names the
+            // right answer, and the hint is withheld with it as on every other read path.
+            unset($row['explanation'], $row['hint'], $row['background_fact'], $row['key_takeaway'], $row['option_feedback']);
             $row = self::withholdHiddenNote($row);
             if (isset($row['pbq_config']) && is_string($row['pbq_config']) && $row['pbq_config'] !== '') {
                 $config = json_decode($row['pbq_config'], true);

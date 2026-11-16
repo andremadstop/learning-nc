@@ -256,10 +256,13 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $questionMapper->method('searchByText')->willReturn([
             ['id' => 1, 'pool_id' => 7, 'text' => 'own pool', 'explanation' => 'mine',
                 'pbq_config' => '{"positions":[{"id":"a","correct":"Firewall"}]}',
-                'instructor_note' => 'own note', 'note_visible' => false],
+                'instructor_note' => 'own note', 'note_visible' => false,
+                'hint' => 'my hint', 'option_feedback' => '[{"position":1,"why":"my why","misconception":null}]'],
             ['id' => 2, 'pool_id' => 8, 'text' => 'course pool', 'explanation' => 'secret',
                 'pbq_config' => '{"positions":[{"id":"a","label":"Edge","correct":"Firewall"}]}',
-                'instructor_note' => 'hidden note', 'note_visible' => '0'],
+                'instructor_note' => 'hidden note', 'note_visible' => '0',
+                'hint' => 'secret hint', 'background_fact' => 'secret fact', 'key_takeaway' => 'secret takeaway',
+                'option_feedback' => '[{"position":0,"why":"secret why","misconception":null}]'],
             ['id' => 3, 'pool_id' => 8, 'text' => 'course pool 2', 'explanation' => 'secret 2', 'pbq_config' => null,
                 'instructor_note' => 'shared note', 'note_visible' => '1'],
         ]);
@@ -291,6 +294,18 @@ class QuestionServiceSolutionAccessTest extends TestCase {
         $this->assertSame('Edge', $config['positions'][0]['label']);
         $this->assertArrayNotHasKey('correct', $config['positions'][0]);
         $this->assertNull($rows[2]['pbq_config']);
+    }
+
+    /** GitHub #66: the search reads q.*, so the rich feedback columns come along unless removed. */
+    public function testSearchWithholdsTheRichFeedbackOfPoolsTheUserCannotEdit(): void {
+        $rows = $this->searchService()->search('pool', 'u');
+
+        $this->assertSame('my hint', $rows[0]['hint']);
+        $this->assertSame([['position' => 1, 'why' => 'my why', 'misconception' => null]], $rows[0]['option_feedback'], 'the editor gets the decoded list');
+        foreach (['hint', 'background_fact', 'key_takeaway', 'option_feedback'] as $field) {
+            $this->assertArrayNotHasKey($field, $rows[1]);
+        }
+        $this->assertStringNotContainsString('secret', (string)json_encode($rows[1]));
     }
 
     public function testSearchWithholdsHiddenNotesOfPoolsTheUserCannotEdit(): void {
