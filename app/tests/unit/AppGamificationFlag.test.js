@@ -170,3 +170,29 @@ describe('App.vue: a view-only pool tells an instructor how to get the edit righ
 		expect(host.textContent).not.toContain(HINT)
 	})
 })
+
+// C5 persona sweep: a learner on "Learning materials" was guided with the instructor's
+// "Upload reference materials for students." The learner guide names reading and confirming;
+// a co-instructor of the course (outside the student view) keeps the instructor's guide.
+describe('App.vue: the Learning materials guide matches who is looking (persona sweep C5, GitHub #75)', () => {
+	it('a learner gets the learner guide, a co-instructor the instructor guide, the student view the learner one', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		api.personal = { gamification_enabled: false, onboarding_acknowledged: 'yes' }
+		const vm = await mountApp('/courses')
+		vm.mainView = 'courses'
+		vm.courseTab = 'materials'
+		vm.selectedCourse = { id: 1, title: 'Annual safety training', is_instructor: false }
+		expect(vm.currentViewKey()).toBe('view:course-materials-learner')
+		const learner = vm.viewGuidePayload('view:course-materials-learner')
+		expect(`${learner.text} ${learner.shortText}`).not.toMatch(/hochladen|Studierende/)
+		expect(learner.text).toMatch(/bestätigst sie als gelesen/)
+
+		vm.selectedCourse = { id: 1, title: 'Annual safety training' }
+		expect(vm.currentViewKey()).toBe('view:course-materials-learner')
+
+		vm.selectedCourse = { id: 1, title: 'Annual safety training', is_instructor: true }
+		expect(vm.currentViewKey()).toBe('view:course-materials')
+		vm.studentViewOverride = true
+		expect(vm.currentViewKey()).toBe('view:course-materials-learner')
+	})
+})

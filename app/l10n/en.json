@@ -3963,6 +3963,8 @@
         "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
             "%n file becomes optional. If it is made required again later, every learner has to confirm it as read again. Earlier confirmations stay in the audit log. Continue?",
             "%n files become optional. If they are made required again later, every learner has to confirm them as read again. Earlier confirmations stay in the audit log. Continue?"
-        ]
+        ],
+        "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Here you find the documents of this course. If the course has required documents, open them and confirm you have read them. All other files are optional.",
+        "Die Unterlagen dieses Kurses lesen.": "Read the documents of this course."
     }
 }

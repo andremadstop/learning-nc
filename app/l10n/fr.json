@@ -3963,6 +3963,8 @@
         "_%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_::_%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?_": [
             "%n fichier devient facultatif. S’il redevient obligatoire plus tard, tous les apprenants devront à nouveau confirmer l’avoir lu. Les confirmations précédentes restent dans le journal d’audit. Continuer ?",
             "%n fichiers deviennent facultatifs. S’ils redeviennent obligatoires plus tard, tous les apprenants devront à nouveau confirmer les avoir lus. Les confirmations précédentes restent dans le journal d’audit. Continuer ?"
-        ]
+        ],
+        "Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.": "Vous trouverez ici les documents de ce cours. Si le cours comporte des documents obligatoires, ouvrez-les et confirmez que vous les avez lus. Tous les autres fichiers sont facultatifs.",
+        "Die Unterlagen dieses Kurses lesen.": "Lire les documents de ce cours."
     }
 }

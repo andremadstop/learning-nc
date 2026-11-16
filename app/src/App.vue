@@ -983,7 +983,11 @@ export default {
             'announcements': 'view:course-announcements',
             'requests': 'view:course-requests',
             'mode-config': 'view:course-mode-config',
-            'materials': 'view:course-materials',
+            // C5 persona sweep: learners get the tab's learner guide, not the instructor's
+            // "Upload reference materials for students"; a co-instructor keeps the latter
+            'materials': this.selectedCourse?.is_instructor === true && !this.studentViewOverride
+              ? 'view:course-materials'
+              : 'view:course-materials-learner',
             'curriculum': 'view:course-curriculum',
             'feed': 'view:course-feed',
             'buddies': 'view:course-buddies',
@@ -1141,6 +1145,11 @@ export default {
           title: t('learning', 'Lernmaterial'),
           text: t('learning', 'Lade Lernmaterialien hoch und verwalte sie: PDFs, Links, Dokumente. Studierende sehen diese als Referenzmaterial neben ihren Fragen.'),
           shortText: t('learning', 'Referenzmaterialien für Studierende hochladen.'),
+        },
+        'view:course-materials-learner': {
+          title: t('learning', 'Lernmaterial'),
+          text: t('learning', 'Hier findest du die Unterlagen dieses Kurses. Gibt der Kurs Pflichtdokumente vor, öffnest du sie und bestätigst sie als gelesen. Alle anderen Dateien sind freiwillig.'),
+          shortText: t('learning', 'Die Unterlagen dieses Kurses lesen.'),
         },
         'view:course-curriculum': {
           title: t('learning', 'Lehrplan'),
