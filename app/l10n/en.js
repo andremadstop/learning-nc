@@ -3856,5 +3856,6 @@ OC.L10N.register(
     "Text zum Mitlesen" : "Text to read along",
     "Zeile {current} von {total}" : "Line {current} of {total}",
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "The audio cannot be played right now. Read the text along or go through it with “Next line”.",
+    "Noch keine Antworten" : "No answers yet",
 },
 "nplurals=2; plural=(n != 1);");

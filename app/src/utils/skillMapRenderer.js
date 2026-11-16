@@ -50,6 +50,9 @@ export function createSkillMap(svgElement, width, height) {
 	return { svg: svg, g: g };
 }
 
+/** Half the width of a truncated 18-character label at up to 12px, in px. */
+export const LABEL_HALF_WIDTH = 56;
+
 /**
  * Create a D3 force simulation for the skill-map layout.
  * @param {Array} nodes - graph nodes (will be mutated with x, y)
@@ -66,8 +69,10 @@ export function createForceSimulation(nodes, links, width, height) {
 			.strength(0.6))
 		.force('charge', forceManyBody()
 			.strength(function(d) { return -d.radius * 8; }))
+		// The label below a dot is wider than the dot (up to 18 characters): a collide radius of
+		// the dot alone let two neighbouring labels print over each other (fresh-eyes C4).
 		.force('collide', forceCollide()
-			.radius(function(d) { return d.radius + 8; })
+			.radius(function(d) { return Math.max(d.radius + 8, LABEL_HALF_WIDTH); })
 			.strength(0.8))
 		.alphaDecay(0.02);
 
@@ -202,6 +207,9 @@ export function renderNodes(g, nodes, onNodeClick) {
 	// Tooltip
 	nodeGroups.append('title')
 		.text(function(d) {
+			if (d.answered === false) {
+				return d.label + ' (' + d.courseName + ')';
+			}
 			return d.label + ' (' + d.courseName + ') — Error: ' + d.errorRate + '%';
 		});
 }

@@ -21,6 +21,13 @@ export function getNodeColor(errorRate) {
 }
 
 /**
+ * Grey for a pool without a single answer yet (fresh-eyes C4): the server gives such a pool a
+ * neutral 50 % error rate for its planners, which painted it orange ("sometimes wrong") for a
+ * learner who had not answered anything.
+ */
+export const UNANSWERED_NODE_COLOR = '#8a8a8a';
+
+/**
  * Return a proportional radius for the node circle.
  * Linear interpolation between 12px (min) and 40px (max).
  * @param {number} questionCount
@@ -81,11 +88,13 @@ export function buildGraphData(pools) {
 			id: pool.pool_id,
 			label: pool.pool_name,
 			errorRate: pool.error_rate,
+			// A missing flag (older server) counts as answered, so the colour stays as before.
+			answered: pool.answered !== false,
 			trend: pool.trend,
 			questionCount: pool.leitner_stats.total,
 			courseId: pool.course_id,
 			courseName: pool.course_name,
-			color: getNodeColor(pool.error_rate),
+			color: pool.answered === false ? UNANSWERED_NODE_COLOR : getNodeColor(pool.error_rate),
 			radius: getNodeRadius(pool.leitner_stats.total, minQ, maxQ),
 		};
 	});

@@ -3856,5 +3856,6 @@ OC.L10N.register(
     "Text zum Mitlesen" : "Текст для читання",
     "Zeile {current} von {total}" : "Рядок {current} з {total}",
     "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch." : "Звук зараз не відтворюється. Читай текст або пройди його кнопкою «Наступний рядок».",
+    "Noch keine Antworten" : "Ще немає відповідей",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

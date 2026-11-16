@@ -3855,6 +3855,7 @@
         "Von vorn": "من البداية",
         "Text zum Mitlesen": "النص للقراءة",
         "Zeile {current} von {total}": "السطر {current} من {total}",
-        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "لا يمكن تشغيل الصوت الآن. اقرأ النص أو تنقّل فيه باستخدام «السطر التالي»."
+        "Der Ton lässt sich gerade nicht abspielen. Lies den Text mit oder geh ihn mit „Nächste Zeile“ durch.": "لا يمكن تشغيل الصوت الآن. اقرأ النص أو تنقّل فيه باستخدام «السطر التالي».",
+        "Noch keine Antworten": "لا توجد إجابات بعد"
     }
 }

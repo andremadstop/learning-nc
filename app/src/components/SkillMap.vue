@@ -33,6 +33,10 @@
 					<span class="skill-map-legend__dot" style="background:#27ae60" />
 					{{ t('learning', 'Gemeistert') }}
 				</span>
+				<span class="skill-map-legend__item">
+					<span class="skill-map-legend__dot" style="background:#8a8a8a" />
+					{{ t('learning', 'Noch keine Antworten') }}
+				</span>
 			</div>
 
 			<!-- Detail sidebar -->
@@ -52,8 +56,12 @@
 
 					<div class="skill-map-sidebar__stat">
 						<strong>{{ t('learning', 'Fehlerquote') }}:</strong>
-						{{ selectedNode.errorRate }}%
-						<span :class="trendClass">{{ trendSymbol }}</span>
+						<template v-if="selectedNode.answered !== false">
+							{{ selectedNode.errorRate }}%
+							<span :class="trendClass">{{ trendSymbol }}</span>
+						</template>
+						<!-- Fresh-eyes C4: no answers yet is not a 50 % error rate. -->
+						<template v-else>{{ t('learning', 'Noch keine Antworten') }}</template>
 					</div>
 
 					<div class="skill-map-sidebar__stat">
