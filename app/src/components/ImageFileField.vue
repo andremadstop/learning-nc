@@ -22,7 +22,6 @@
 				:data-test="pickTestId || null"
 				:aria-label="pickAriaLabel || null"
 				:aria-describedby="describedIds"
-				:aria-invalid="error ? 'true' : null"
 				@click="$emit('pick')">
 				{{ pickLabel }}
 			</NcButton>

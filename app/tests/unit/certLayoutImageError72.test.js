@@ -109,7 +109,8 @@ describe('stamp and signature: a refused file is named in its own field (GitHub 
 		expect(described).toContain(error.id)
 		const hint = host.querySelector('#' + described[0])
 		expect(hint.textContent).toContain('höchstens 1 MB')
-		expect(button.getAttribute('aria-invalid')).toBe('true')
+		// no aria-invalid: ARIA 1.2 does not allow it on a button (axe aria-allowed-attr)
+		expect(button.hasAttribute('aria-invalid')).toBe(false)
 	})
 
 	it('a refusal of the server (pixels) lands in the field of that image, not at the top of the page', async () => {
@@ -176,7 +177,6 @@ describe('ImageFileField (GitHub #72, shared with #78)', () => {
 		expect(host.querySelector('#logo-1-hint').textContent).toContain('höchstens 1 MB')
 		expect(host.querySelector('#logo-1-error').getAttribute('aria-live')).toBe('polite')
 		expect(host.querySelector('#logo-1-error').textContent.trim()).toBe('')
-		expect(button.hasAttribute('aria-invalid')).toBe(false)
 		expect(host.querySelector('[role="group"]').getAttribute('aria-labelledby')).toBe('logo-1-label')
 	})
 
