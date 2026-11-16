@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Tests\Integration\Migration;
 
+use OCA\Learning\Db\DocConfirmMapper;
 use OCA\Learning\Migration\Version011100Date20261116150000;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
@@ -114,6 +115,14 @@ class DocConfirmMigrationTest extends TestCase {
             $this->assertNull($registry[$legacy], 'a legacy path row has no document id');
             $this->assertNull($registry[$video]);
             $this->assertSame([$sameDocElsewhere => 12], $this->registry(self::OTHER_COURSE));
+
+            // ... and the reader finds them (upgrade 5.13.0 -> 5.14.0 keeps them counting): by
+            // document for a row with one, by row for a legacy path row, newest per user.
+            $latest = Server::get(DocConfirmMapper::class)->latestByUsers(self::COURSE, ['anna', 'ben', 'carl', 'dora'], [$kept => 12, $legacy => null]);
+            $this->assertSame(1100, $latest['anna'][$kept]['confirmed_at'] ?? null);
+            $this->assertSame(1200, $latest['ben'][$kept]['confirmed_at'] ?? null, 'confirmed only on the duplicate row');
+            $this->assertSame(1300, $latest['carl'][$legacy]['confirmed_at'] ?? null);
+            $this->assertArrayNotHasKey('dora', $latest, 'the same document id in another course is another document');
 
             // The video progress of a kept row is untouched.
             $qb = $this->db->getQueryBuilder();
