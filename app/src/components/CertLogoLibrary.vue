@@ -51,7 +51,7 @@
 					<NcButton
 						variant="tertiary"
 						:disabled="busy"
-						:aria-label="t('learning', '„{title}“ löschen', { title: logo.name })"
+						:aria-label="t('learning', '„{title}“ löschen', { title: logo.name }, undefined, RAW)"
 						:data-test="'cert-logo-delete-' + logo.id"
 						@click="confirming = logo.id">
 						{{ t('learning', 'Löschen') }}
@@ -61,7 +61,7 @@
 					v-if="confirming === logo.id"
 					class="cert-logo-library__confirm"
 					role="group"
-					:aria-label="t('learning', '„{title}“ löschen', { title: logo.name })"
+					:aria-label="t('learning', '„{title}“ löschen', { title: logo.name }, undefined, RAW)"
 					:data-test="'cert-logo-confirm-' + logo.id">
 					<NcNoteCard :type="logo.courses > 0 ? 'warning' : 'info'">
 						{{ deleteWarning(logo.courses) }}
@@ -144,6 +144,8 @@ import {
 export const LOGO_MAX_BYTES = 1048576
 /** CertLogoLibrary::NAME_MAX */
 const NAME_MAX = 80
+/** Logo names in texts: shown as text (interpolation, attributes), never as HTML. */
+const RAW = { escape: false, sanitize: false }
 /** what the server accepts (checked there by content); SVG never */
 export const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
@@ -183,6 +185,7 @@ export default {
 
 	data() {
 		return {
+			RAW,
 			logos: [],
 			names: {},
 			max: 20,
@@ -299,7 +302,7 @@ export default {
 			try {
 				this.apply(await uploadLibraryLogo(name, file))
 				this.newName = ''
-				this.status = t('learning', '„{title}“ wurde hinzugefügt.', { title: name })
+				this.status = t('learning', '„{title}“ wurde hinzugefügt.', { title: name }, undefined, RAW)
 			} catch (e) {
 				this.uploadError = logoErrorMessage(e?.response?.data?.error, this.max)
 			} finally {
@@ -329,8 +332,8 @@ export default {
 				this.confirming = ''
 				const reset = Number(data?.courses_reset) || 0
 				this.status = reset > 0
-					? n('learning', '„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud.', '„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud.', reset, { title: logo.name })
-					: t('learning', '„{title}“ wurde gelöscht.', { title: logo.name })
+					? n('learning', '„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud.', '„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud.', reset, { title: logo.name }, RAW)
+					: t('learning', '„{title}“ wurde gelöscht.', { title: logo.name }, undefined, RAW)
 			} catch (e) {
 				this.status = t('learning', 'Das Logo konnte nicht gelöscht werden.')
 				this.load()

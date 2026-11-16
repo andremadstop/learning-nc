@@ -143,6 +143,29 @@ describe('course settings: the logo choice (GitHub #78)', () => {
 		expect(updates.at(-1).logo_id).toBe(B)
 	})
 
+	// Review C5: a disabled radio drops the keyboard focus, so the next arrow key did nothing.
+	it('the radios stay enabled while a choice is saved, and the last choice wins', async () => {
+		let release
+		axios.put.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({ data: { stamp: null, signature: null, logo: JPEG_URL } }) }))
+		const updates = await settings()
+
+		host.querySelector(`input[data-test="cert-layout-logo-${B}"]`).click()
+		await nextTick()
+		for (const input of host.querySelectorAll('[data-test="cert-layout-logo"] input[type="radio"]')) {
+			expect(input.disabled).toBe(false)
+		}
+		host.querySelector('input[data-test="cert-layout-logo-theming"]').click()
+		await nextTick()
+		expect(axios.put).toHaveBeenCalledTimes(1)
+		release()
+		await flush()
+
+		expect(axios.put).toHaveBeenCalledTimes(2)
+		expect(axios.put.mock.calls[1][1].logoId || '').toBe('')
+		expect(host.querySelector('input[data-test="cert-layout-logo-theming"]').checked).toBe(true)
+		expect(updates.at(-1).logo_id).toBeNull()
+	})
+
 	it('a logo deleted meanwhile is named next to the choice and the choice goes back', async () => {
 		axios.put.mockRejectedValueOnce({ response: { data: { error: 'logo_not_found' } } })
 		await settings(A)

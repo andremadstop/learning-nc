@@ -52,7 +52,6 @@
 					:name="'cert-layout-logo-' + courseId"
 					value="theming"
 					:model-value="selectedLogo || 'theming'"
-					:disabled="logoBusy"
 					data-test="cert-layout-logo-theming"
 					@update:model-value="chooseLogo('')">
 					{{ t('learning', 'Logo dieser Nextcloud (Theming)') }}
@@ -64,7 +63,6 @@
 					:name="'cert-layout-logo-' + courseId"
 					:value="logo.id"
 					:model-value="selectedLogo || 'theming'"
-					:disabled="logoBusy"
 					:data-test="'cert-layout-logo-' + logo.id"
 					@update:model-value="chooseLogo(logo.id)">
 					<span class="cert-layout-logo-option">
@@ -102,7 +100,7 @@
 					:aria-describedby="issuerNameHintId"
 					@input="update({ issuer_name: $event.target.value })">
 				<p :id="issuerNameHintId" class="mode-config-hint">
-					{{ t('learning', 'Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.', { name: fallbackIssuerName }) }}
+					{{ t('learning', 'Leer lassen für „{name}“ (rechtlicher Name aus den Betreiberangaben, sonst der Name dieser Nextcloud). Der Name wird in neue Zertifikate signiert und steht auch auf der öffentlichen Prüfseite.', { name: fallbackIssuerName }, undefined, { escape: false, sanitize: false }) }}
 				</p>
 			</div>
 			<!-- the description is tied to the switch's input (aria-describedby) by the component -->
@@ -257,6 +255,9 @@ export default {
 			// GitHub #78: the library logos this course can use; '' = the Theming logo
 			logos: [],
 			selectedLogo: typeof this.modelValue?.logo_id === 'string' ? this.modelValue.logo_id : '',
+			// the stored choice; selectedLogo runs ahead of it while a choice is saved
+			savedLogo: typeof this.modelValue?.logo_id === 'string' ? this.modelValue.logo_id : '',
+			pendingLogo: null,
 			logoBusy: false,
 			logoError: '',
 			logoLabelId: `cert-layout-logo-label-${this.courseId}`,
@@ -411,33 +412,50 @@ export default {
 				this.logos = Array.isArray(data?.logos) ? data.logos.filter((logo) => typeof logo?.id === 'string') : []
 				if (!this.logoBusy) {
 					this.selectedLogo = typeof data?.selected === 'string' ? data.selected : ''
+					this.savedLogo = this.selectedLogo
 				}
 			} catch (e) {
 				this.logos = []
 			}
 		},
 
-		/** GitHub #78: takes effect at once, like stamp and signature. */
+		/**
+		 * GitHub #78: takes effect at once, like stamp and signature.
+		 * The radios stay enabled while a choice is saved (review: a disabled radio drops the
+		 * keyboard focus to the page, so the next arrow key did nothing). A choice made meanwhile
+		 * is shown at once and saved after the running one: the last choice wins.
+		 */
 		async chooseLogo(id) {
-			if (this.logoBusy || id === this.selectedLogo) {
+			this.selectedLogo = id
+			this.pendingLogo = id
+			if (this.logoBusy) {
 				return
 			}
-			const previous = this.selectedLogo
-			this.selectedLogo = id
 			this.logoBusy = true
 			this.logoError = ''
-			this.imageSeq++
 			try {
-				const layout = await selectCertLogo(this.courseId, id)
-				this.applyImages(layout)
-				this.update({ logo_id: id || null })
-			} catch (e) {
-				this.selectedLogo = previous
-				this.logoError = e?.response?.data?.error === 'logo_not_found'
-					? t('learning', 'Dieses Logo gibt es in der Bibliothek nicht mehr.')
-					: t('learning', 'Das Logo konnte nicht übernommen werden.')
-				this.loadLogos()
-				this.loadImages()
+				while (this.pendingLogo !== null) {
+					const next = this.pendingLogo
+					this.pendingLogo = null
+					if (next === this.savedLogo) {
+						continue
+					}
+					this.imageSeq++
+					try {
+						const layout = await selectCertLogo(this.courseId, next)
+						this.savedLogo = next
+						this.applyImages(layout)
+						this.update({ logo_id: next || null })
+					} catch (e) {
+						this.pendingLogo = null
+						this.selectedLogo = this.savedLogo
+						this.logoError = e?.response?.data?.error === 'logo_not_found'
+							? t('learning', 'Dieses Logo gibt es in der Bibliothek nicht mehr.')
+							: t('learning', 'Das Logo konnte nicht übernommen werden.')
+						this.loadLogos()
+						this.loadImages()
+					}
+				}
 			} finally {
 				this.logoBusy = false
 			}
