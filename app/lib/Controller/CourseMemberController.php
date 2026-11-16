@@ -41,7 +41,7 @@ class CourseMemberController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function add(int $courseId, string $userId = '', string $role = 'student'): DataResponse {
         try {
             $result = $this->enrollment->addMember($courseId, $userId, $role, (string)$this->userId);
@@ -105,7 +105,7 @@ class CourseMemberController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function search(int $courseId, string $search = ''): DataResponse {
         try {
             return new DataResponse($this->enrollment->search($courseId, $search, (string)$this->userId));

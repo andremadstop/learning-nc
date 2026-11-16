@@ -44,7 +44,7 @@ class ClassbookController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function index(int $courseId): DataResponse {
         try {
             return new DataResponse($this->classbookService->getClassbook($courseId, (string)$this->userId));
@@ -58,7 +58,7 @@ class ClassbookController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function giveKudos(int $courseId, string $toUser, string $message = ''): DataResponse {
         try {
             return new DataResponse($this->classbookService->giveKudos($courseId, (string)$this->userId, $toUser, $message), Http::STATUS_CREATED);
@@ -78,7 +78,7 @@ class ClassbookController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 5, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function toggleVisibility(int $courseId, ?string $visibility = null): DataResponse {
         if ($visibility !== null && !in_array($visibility, ['course', 'private'], true)) {
             return new DataResponse(['error' => 'Invalid visibility'], Http::STATUS_BAD_REQUEST);

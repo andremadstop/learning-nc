@@ -94,7 +94,7 @@ class PoolController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function update(
         int $id,
         string $name,
@@ -134,7 +134,7 @@ class PoolController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
         try {
             // AUDIT LOW-01: never trust a client-supplied reviewer identity (attestation spoofing);
@@ -150,7 +150,7 @@ class PoolController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $id): DataResponse {
         try {
             $this->service->delete($id, $this->userId);

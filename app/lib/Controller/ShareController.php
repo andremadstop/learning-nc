@@ -44,7 +44,7 @@ class ShareController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function create(int $poolId, string $sharedWith, string $shareType = 'user', string $permission = 'read'): DataResponse {
         try {
             $share = $this->service->sharePool($poolId, $sharedWith, $shareType, $permission, $this->userId);
@@ -59,7 +59,7 @@ class ShareController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function update(int $poolId, string $sharedWith, string $permission): DataResponse {
         try {
             $share = $this->service->updatePermission($poolId, $sharedWith, $permission, $this->userId);
@@ -78,7 +78,7 @@ class ShareController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $poolId, string $sharedWith): DataResponse {
         try {
             $this->service->unsharePool($poolId, $sharedWith, $this->userId);

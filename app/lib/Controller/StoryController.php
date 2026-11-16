@@ -61,7 +61,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function listCampaigns(): DataResponse {
         try {
             return new DataResponse($this->service->listCampaigns());
@@ -77,7 +77,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function listProgress(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -134,7 +134,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getScene(string $campaignId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -176,7 +176,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function graphScene(string $campaignId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -198,7 +198,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function graphTraverse(string $campaignId, string $edgeId = ''): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -233,7 +233,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function graphState(string $campaignId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -258,7 +258,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getSkillCheckQuestions(string $campaignId = '', string $sceneId = '', string $choiceId = ''): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -289,7 +289,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function makeChoice(
         string $campaignId,
         string $choiceId,
@@ -331,7 +331,7 @@ class StoryController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function submitSkillAnswer(
         string $campaignId,
         string $choiceId,

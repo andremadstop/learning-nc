@@ -42,7 +42,7 @@ class LeagueController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function active(int $courseId): DataResponse {
         try {
             return new DataResponse($this->service->getOverview($courseId, (string)$this->userId));
@@ -102,7 +102,7 @@ class LeagueController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function table(int $courseId, int $id): DataResponse {
         try {
             return new DataResponse($this->service->getTable($courseId, $id, (string)$this->userId));
@@ -114,7 +114,7 @@ class LeagueController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function cl(int $courseId, int $id): DataResponse {
         try {
             return new DataResponse($this->service->getChampionsLeague($courseId, $id, (string)$this->userId));

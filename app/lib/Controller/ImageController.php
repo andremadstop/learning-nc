@@ -109,7 +109,7 @@ class ImageController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 30, period: 60)]
     public function delete(int $questionId): DataResponse {
         try {
             $question = $this->questionService->findEntity($questionId, $this->userId);

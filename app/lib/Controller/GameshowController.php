@@ -46,7 +46,7 @@ class GameshowController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function join(string $code): DataResponse {
         try {
             return new DataResponse($this->service->joinSession($code, $this->userId));
@@ -58,7 +58,7 @@ class GameshowController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function ready(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->setReady($code, $this->userId, $lang));
@@ -70,7 +70,6 @@ class GameshowController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
     public function state(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->getState($code, $this->userId, $lang));
@@ -82,7 +81,7 @@ class GameshowController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->submitAnswer($code, $this->userId, $answerId, $answeredAt, $lang));
@@ -94,7 +93,7 @@ class GameshowController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function history(): DataResponse {
         try {
             return new DataResponse($this->service->getHistory($this->userId));
@@ -106,7 +105,7 @@ class GameshowController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function courseLobby(int $courseId): DataResponse {
         try {
             return new DataResponse($this->service->getCourseLobby($courseId, $this->userId));

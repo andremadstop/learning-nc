@@ -67,7 +67,7 @@ class AiController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function available(): JSONResponse {
         return new JSONResponse(['available' => $this->aiService->isAvailable()]);
     }
@@ -107,7 +107,6 @@ class AiController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
     public function status(int $taskId): JSONResponse {
         try {
             $result = $this->aiService->getTaskStatus($taskId, $this->userId);

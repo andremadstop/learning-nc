@@ -38,7 +38,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function join(string $code): DataResponse {
         try {
             return new DataResponse($this->service->joinDuel($code, $this->userId));
@@ -50,7 +50,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function ready(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->setReady($code, $this->userId, $lang));
@@ -62,7 +62,6 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
     public function state(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->getState($code, $this->userId, $lang));
@@ -74,7 +73,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->submitAnswer($code, $this->userId, $answerId, $answeredAt, $lang));
@@ -117,7 +116,6 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
     public function invites(): DataResponse {
         try {
             return new DataResponse($this->service->listInvites($this->userId));
@@ -129,7 +127,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function acceptInvite(int $id): DataResponse {
         try {
             return new DataResponse($this->service->acceptInvite($id, $this->userId));
@@ -141,7 +139,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function declineInvite(int $id): DataResponse {
         try {
             return new DataResponse($this->service->declineInvite($id, $this->userId));
@@ -153,7 +151,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function cancelInvite(int $id): DataResponse {
         try {
             return new DataResponse($this->service->cancelInvite($id, $this->userId));
@@ -165,7 +163,7 @@ class DuelController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function opponents(int $courseId): DataResponse {
         try {
             return new DataResponse($this->service->getInviteCandidates($courseId, $this->userId));

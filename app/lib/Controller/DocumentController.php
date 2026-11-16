@@ -167,7 +167,7 @@ class DocumentController extends Controller {
      * @NoAdminRequired
      * @NoCSRFRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    #[UserRateLimit(limit: 600, period: 60)]
     public function download(int $courseId, int $documentId): Response {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

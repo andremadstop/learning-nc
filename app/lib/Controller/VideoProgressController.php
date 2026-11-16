@@ -75,7 +75,6 @@ class VideoProgressController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
     public function heartbeat(int $contentId, float $start, float $end): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -107,7 +106,7 @@ class VideoProgressController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function complete(int $contentId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -139,7 +138,7 @@ class VideoProgressController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function documentRead(int $contentId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -253,7 +252,7 @@ class VideoProgressController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function courseStatus(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

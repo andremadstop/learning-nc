@@ -47,7 +47,7 @@ class SupportTicketController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function mine(int $limit = 20): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -65,7 +65,7 @@ class SupportTicketController extends Controller {
      * @param bool $archived true lists only the archived tickets
      * @return DataResponse<Http::STATUS_OK, array{tickets: list<array<string, mixed>>, open_count: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function adminList(int $limit = 100, bool $archived = false): DataResponse {
         if (!$this->isAdmin()) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
@@ -103,7 +103,7 @@ class SupportTicketController extends Controller {
      * @param int $id the ticket
      * @return DataResponse<Http::STATUS_OK, array{ticket: array<string, mixed>, open_count: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function restoreAdminTicket(int $id): DataResponse {
         if (!$this->isAdmin()) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
@@ -205,7 +205,7 @@ class SupportTicketController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function myCourseQuestions(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -220,7 +220,7 @@ class SupportTicketController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function instructorList(int $courseId, int $limit = 50, bool $archived = false): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -240,7 +240,6 @@ class SupportTicketController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
     public function openCount(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -266,7 +265,7 @@ class SupportTicketController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function restoreCourseTicket(int $courseId, int $ticketId): DataResponse {
         return $this->manageCourseTicket(fn (string $uid) => ['ticket' => $this->service->setCourseTicketArchived($courseId, $ticketId, $uid, false)]);
     }
@@ -289,7 +288,7 @@ class SupportTicketController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 30, period: 60)]
     public function withdrawCourseQuestion(int $courseId, int $ticketId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

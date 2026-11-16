@@ -55,7 +55,7 @@ class CoopController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function join(string $code): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -78,7 +78,6 @@ class CoopController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
     public function lobby(int $id): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -94,7 +93,7 @@ class CoopController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function ready(int $id): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -117,7 +116,6 @@ class CoopController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
     public function state(int $id): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -133,7 +131,7 @@ class CoopController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function vote(int $id): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

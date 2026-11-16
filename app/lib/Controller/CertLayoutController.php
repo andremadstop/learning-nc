@@ -46,7 +46,7 @@ class CertLayoutController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function show(int $courseId): JSONResponse {
         try {
             $course = $this->courseService->assertInstructorOfCourse($courseId, (string)$this->userId);
@@ -94,7 +94,7 @@ class CertLayoutController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 30, period: 60)]
     public function removeImage(int $courseId, string $kind): JSONResponse {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
@@ -123,7 +123,7 @@ class CertLayoutController extends Controller {
      *
      * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string}>, selected: string|null}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function logos(int $courseId): DataResponse {
         try {
             $course = $this->courseService->assertInstructorOfCourse($courseId, (string)$this->userId);
@@ -173,7 +173,7 @@ class CertLayoutController extends Controller {
      * @param string $logoId the library logo's id, '' for the Theming logo
      * @return DataResponse<Http::STATUS_OK, array<string, mixed>, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function selectLogo(int $courseId, string $logoId = ''): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);

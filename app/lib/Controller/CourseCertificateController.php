@@ -70,7 +70,7 @@ class CourseCertificateController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function show(int $courseId, string $verificationId): JSONResponse {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -107,7 +107,7 @@ class CourseCertificateController extends Controller {
      * @NoAdminRequired
      * @NoCSRFRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function download(int $courseId, string $verificationId, string $format = 'jsonld'): Response {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

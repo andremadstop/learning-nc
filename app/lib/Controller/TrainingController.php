@@ -106,7 +106,7 @@ class TrainingController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function answer(int $sessionId, int $questionId, ?int $answerId = null, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?string $lang = null): DataResponse {
         if ($answerText !== null && mb_strlen($answerText) > 2000) {
             return new DataResponse(['error' => 'Answer text too long (max 2000 chars)'], 400);
@@ -169,7 +169,6 @@ class TrainingController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
     public function status(int $sessionId, ?string $lang = null, bool $includeQuestions = false): DataResponse {
         try {
             return new DataResponse($this->service->getSessionStatus($sessionId, $this->userId, $lang, $includeQuestions));

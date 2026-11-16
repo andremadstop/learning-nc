@@ -78,7 +78,7 @@ class PublicVerifyController extends Controller {
      *
      * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
-    #[AnonRateLimit(limit: 30, period: 60)]
+    #[AnonRateLimit(limit: 150, period: 60)]
     public function verify(string $verificationId): TemplateResponse {
         // VERIFY-06: validate the FORMAT before any DB/service call. A malformed id is treated exactly
         // like a not-found id (generic 'unknown' page + throttle) — no enumeration oracle.

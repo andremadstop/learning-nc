@@ -44,7 +44,7 @@ class QuestionMediaController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function index(int $questionId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not logged in'], Http::STATUS_UNAUTHORIZED);

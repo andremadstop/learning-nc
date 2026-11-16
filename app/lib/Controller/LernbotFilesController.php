@@ -40,7 +40,7 @@ class LernbotFilesController extends Controller {
      * @NoAdminRequired
      * @param string|null $subfolder  Optional subfolder name (e.g. 'Zusammenfassungen')
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function listFiles(?string $subfolder = null): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -78,7 +78,7 @@ class LernbotFilesController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function writeNote(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

@@ -115,7 +115,7 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function answer(int $itemId, ?int $answerId = null, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?int $rating = null, bool $preview = false, ?string $lang = null): DataResponse {
         if ($answerText !== null && mb_strlen($answerText) > 2000) {
             return new DataResponse(['error' => 'Answer text too long (max 2000 chars)'], 400);
@@ -147,7 +147,7 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function streak(): DataResponse {
         try {
             $streakData = $this->streakService->getStreak($this->userId);
@@ -160,7 +160,7 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function badges(): DataResponse {
         try {
             $badges = $this->badgeService->getUserBadges($this->userId);
@@ -177,7 +177,7 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function badgeProgress(): DataResponse {
         try {
             return new DataResponse(['progress' => $this->badgeService->getBadgeProgress($this->userId)]);
@@ -189,7 +189,7 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function readiness(int $courseId): DataResponse {
         try {
             return new DataResponse($this->readinessService->getCourseReadiness($courseId, (string)$this->userId));

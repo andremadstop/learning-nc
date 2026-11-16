@@ -85,7 +85,7 @@ class ExportController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getCalendarToken(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

@@ -46,7 +46,7 @@ class LernprofilController extends Controller {
      * @param int|null $courseId  Optional course filter
      * @param int      $days      History window in days (default 30)
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function profile(?int $courseId = null, int $days = 30): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -77,7 +77,7 @@ class LernprofilController extends Controller {
      * @param int|null $courseId Optional course filter
      * @param int      $limit    Max topics to return (1-20, default 5)
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function weakestTopics(?int $courseId = null, int $limit = 5): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -98,7 +98,7 @@ class LernprofilController extends Controller {
      * @NoAdminRequired
      * @param int $days History window in days (1-365, default 30)
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function lernhistorie(int $days = 30): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -140,7 +140,7 @@ class LernprofilController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function skillMap(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

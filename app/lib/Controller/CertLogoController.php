@@ -91,7 +91,7 @@ class CertLogoController extends Controller {
      * @param string $name the new name
      * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function rename(string $id, string $name = ''): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();

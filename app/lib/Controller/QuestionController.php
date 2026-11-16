@@ -63,7 +63,7 @@ class QuestionController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function check(int $id, int $answerId): DataResponse {
         try {
             return new DataResponse($this->service->checkAnswer($id, $answerId, (string)$this->userId));
@@ -203,7 +203,7 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
         try {
             // AUDIT LOW-01: never trust a client-supplied reviewer identity (attestation spoofing);

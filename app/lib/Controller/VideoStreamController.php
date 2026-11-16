@@ -61,7 +61,7 @@ class VideoStreamController extends Controller {
      * @NoAdminRequired
      * @NoCSRFRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    #[UserRateLimit(limit: 600, period: 60)]
     public function show(int $contentId): Response {
         if ($this->userId === null) {
             return new Response(Http::STATUS_UNAUTHORIZED);

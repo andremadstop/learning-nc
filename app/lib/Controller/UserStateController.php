@@ -62,7 +62,7 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function updateSettings(int $daily_goal): DataResponse {
         $daily_goal = max(5, min(200, $daily_goal));
 
@@ -112,7 +112,7 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function dailyChallenge(): DataResponse {
         $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
         $userEnabled = $this->config->getUserValue((string)$this->userId, 'learning', 'daily_challenge', 'yes');
@@ -204,7 +204,7 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 30, period: 60)]
     public function answerChallenge(?array $answer_ids = null, ?string $answer_text = null, ?int $question_id = null): DataResponse {
         $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
         $userEnabled = $this->config->getUserValue((string)$this->userId, 'learning', 'daily_challenge', 'yes');
@@ -487,7 +487,7 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function state(): DataResponse {
         $cache = $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE);
         $cacheKey = $this->userStateCacheKey();
@@ -564,7 +564,7 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function missions(): DataResponse {
         try {
             return new DataResponse($this->missionService->getMissions((string)$this->userId));
@@ -576,7 +576,7 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function claimMission(string $missionKey): DataResponse {
         try {
             $result = $this->missionService->claimMission((string)$this->userId, $missionKey);

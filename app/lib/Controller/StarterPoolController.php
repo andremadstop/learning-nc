@@ -34,7 +34,7 @@ class StarterPoolController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function index(): DataResponse {
         if (!$this->canManageStarterPools()) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);

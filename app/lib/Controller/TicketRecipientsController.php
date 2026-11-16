@@ -53,7 +53,7 @@ class TicketRecipientsController extends Controller {
      * @param list<string> $userIds the chosen accounts; an empty list means nobody is notified
      * @return DataResponse<Http::STATUS_OK, array{users: list<array{id: string, label: string, notified: bool}>}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function save(array $userIds = []): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();
@@ -67,7 +67,7 @@ class TicketRecipientsController extends Controller {
      * @param string $search the typed text
      * @return DataResponse<Http::STATUS_OK, array{users: list<array{id: string, label: string}>}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 300, period: 60)]
     public function search(string $search = ''): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();

@@ -60,7 +60,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getTelos(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -127,7 +127,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 20, period: 60)]
+    #[UserRateLimit(limit: 60, period: 60)]
     public function updateTelos(
         array|string|null $telos = null,
         ?string $bio = null,
@@ -180,7 +180,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 60, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getStatus(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -198,7 +198,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getConsentStatus(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -308,7 +308,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 30, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getQuestions(): DataResponse {
         return new DataResponse([
             'questions' => $this->telosService->getInterviewQuestions(),
@@ -367,7 +367,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 15, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getCourseTelosAggregate(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -398,7 +398,7 @@ class TelosController extends Controller {
      *
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 15, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function getCourseBuddies(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
