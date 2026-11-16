@@ -3916,8 +3916,6 @@ OC.L10N.register(
     "_Von %n Kurs verwendet_::_Von %n Kursen verwendet_" : ["Von %n Kurs verwendet", "Von %n Kursen verwendet"],
     "_%n Kurs verwendet dieses Logo. Seine neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._::_%n Kurse verwenden dieses Logo. Ihre neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._" : ["%n Kurs verwendet dieses Logo. Seine neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo.", "%n Kurse verwenden dieses Logo. Ihre neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo."],
     "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._" : ["„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud.", "„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud."],
-    "Alle Dateien als Pflicht markieren" : "Alle Dateien als Pflicht markieren",
-    "Alle Dateien optional machen" : "Alle Dateien optional machen",
     "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?" : "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?",
     "Alle erneut bestätigen lassen" : "Alle erneut bestätigen lassen",
     "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr." : "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.",
@@ -3962,5 +3960,7 @@ OC.L10N.register(
     "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat.",
     "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Der Bericht enthält auch bereits abgelaufene Zertifikate.",
     "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.",
+    "Pflicht: alle Dateien" : "Pflicht: alle Dateien",
+    "„{name}“: alle erneut bestätigen lassen" : "„{name}“: alle erneut bestätigen lassen",
 },
 "nplurals=2; plural=(n != 1);");

@@ -3916,8 +3916,6 @@ OC.L10N.register(
     "_Von %n Kurs verwendet_::_Von %n Kursen verwendet_" : ["Used by %n course", "Used by %n courses"],
     "_%n Kurs verwendet dieses Logo. Seine neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._::_%n Kurse verwenden dieses Logo. Ihre neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._" : ["%n course uses this logo. Its new certificates will then carry this Nextcloud’s logo again. Certificates already issued keep their logo.", "%n courses use this logo. Their new certificates will then carry this Nextcloud’s logo again. Certificates already issued keep their logo."],
     "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._" : ["“{title}” was deleted. %n course now carries this Nextcloud’s logo again.", "“{title}” was deleted. %n courses now carry this Nextcloud’s logo again."],
-    "Alle Dateien als Pflicht markieren" : "Mark all files as required",
-    "Alle Dateien optional machen" : "Make all files optional",
     "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?" : "All learners have to confirm \"{name}\" as read again. Earlier confirmations stay in the audit log. Continue?",
     "Alle erneut bestätigen lassen" : "Ask everyone to confirm again",
     "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr." : "Earlier confirmations of this file no longer count afterwards.",
@@ -3962,5 +3960,7 @@ OC.L10N.register(
     "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "View the questions of this pool. Only the pool’s owner or someone it was shared with for editing can change them.",
     "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "The report also includes certificates that have already expired.",
     "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "The file is not a PNG, JPEG or WebP image. SVG is not accepted. If you only have the logo as an SVG, export it as a PNG in a graphics program (about 1000 pixels wide) or ask whoever designed it for a PNG file.",
+    "Pflicht: alle Dateien" : "Required: all files",
+    "„{name}“: alle erneut bestätigen lassen" : "“{name}”: ask everyone to confirm again",
 },
 "nplurals=2; plural=(n != 1);");

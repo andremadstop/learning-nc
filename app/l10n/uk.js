@@ -3916,8 +3916,6 @@ OC.L10N.register(
     "_Von %n Kurs verwendet_::_Von %n Kursen verwendet_" : ["Використовується в %n курсі", "Використовується в %n курсах", "Використовується в %n курсах"],
     "_%n Kurs verwendet dieses Logo. Seine neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._::_%n Kurse verwenden dieses Logo. Ihre neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._" : ["Цей логотип використовується в %n курсі. Його нові сертифікати знову матимуть логотип цього Nextcloud. Уже видані сертифікати зберігають свій логотип.", "Цей логотип використовується в %n курсах. Їхні нові сертифікати знову матимуть логотип цього Nextcloud. Уже видані сертифікати зберігають свій логотип.", "Цей логотип використовується в %n курсах. Їхні нові сертифікати знову матимуть логотип цього Nextcloud. Уже видані сертифікати зберігають свій логотип."],
     "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._" : ["«{title}» видалено. %n курс знову має логотип цього Nextcloud.", "«{title}» видалено. %n курси знову мають логотип цього Nextcloud.", "«{title}» видалено. %n курсів знову мають логотип цього Nextcloud."],
-    "Alle Dateien als Pflicht markieren" : "Позначити всі файли як обов’язкові",
-    "Alle Dateien optional machen" : "Зробити всі файли необов’язковими",
     "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?" : "Усім учням доведеться знову підтвердити прочитання «{name}». Попередні підтвердження залишаються в журналі аудиту. Продовжити?",
     "Alle erneut bestätigen lassen" : "Попросити всіх підтвердити знову",
     "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr." : "Після цього попередні підтвердження цього файлу більше не враховуються.",
@@ -3962,5 +3960,7 @@ OC.L10N.register(
     "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Перегляд питань цього пулу. Змінювати їх може лише власник пулу або той, з ким пул поширено для редагування.",
     "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Звіт містить і вже прострочені сертифікати.",
     "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "Файл не є зображенням PNG, JPEG або WebP. SVG не приймається. Якщо логотип є лише у SVG, експортуй його в PNG у графічній програмі (приблизно 1000 пікселів завширшки) або попроси PNG-файл у того, хто його створив.",
+    "Pflicht: alle Dateien" : "Обов’язково: усі файли",
+    "„{name}“: alle erneut bestätigen lassen" : "«{name}»: попросити всіх підтвердити знову",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

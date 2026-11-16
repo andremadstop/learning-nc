@@ -3944,8 +3944,6 @@
             "تم حذف „{title}“. يحمل %n مقررًا شعار نسخة Nextcloud هذه مجددًا.",
             "تم حذف „{title}“. يحمل %n مقرر شعار نسخة Nextcloud هذه مجددًا."
         ],
-        "Alle Dateien als Pflicht markieren": "تحديد كل الملفات كإلزامية",
-        "Alle Dateien optional machen": "جعل كل الملفات اختيارية",
         "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "يجب على جميع المتعلمين تأكيد قراءة «{name}» من جديد. تبقى التأكيدات السابقة في سجل التدقيق. هل تريد المتابعة؟",
         "Alle erneut bestätigen lassen": "طلب التأكيد من الجميع مجددًا",
         "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "بعد ذلك لن تُحتسب التأكيدات السابقة لهذا الملف.",
@@ -4003,6 +4001,8 @@
         "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.": "أكمل أولًا كل المحتوى الإلزامي في تبويب «المواد التعليمية». عندها فقط يُفتح الاختبار.",
         "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat.": "عرض أسئلة هذه المجموعة. لا يمكن تعديلها إلا لمالك المجموعة أو لمن شوركت معه للتحرير.",
         "Der Bericht enthält auch bereits abgelaufene Zertifikate.": "يتضمن التقرير أيضًا الشهادات المنتهية بالفعل.",
-        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.": "الملف ليس صورة بصيغة PNG أو JPEG أو WebP. لا تُقبل ملفات SVG. إن كان الشعار متوفرًا بصيغة SVG فقط، فصدّره بصيغة PNG في برنامج رسوميات (بعرض 1000 بكسل تقريبًا) أو اطلب ملف PNG ممن صمّمه."
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.": "الملف ليس صورة بصيغة PNG أو JPEG أو WebP. لا تُقبل ملفات SVG. إن كان الشعار متوفرًا بصيغة SVG فقط، فصدّره بصيغة PNG في برنامج رسوميات (بعرض 1000 بكسل تقريبًا) أو اطلب ملف PNG ممن صمّمه.",
+        "Pflicht: alle Dateien": "إلزامي: كل الملفات",
+        "„{name}“: alle erneut bestätigen lassen": "«{name}»: طلب التأكيد من الجميع مجددًا"
     }
 }

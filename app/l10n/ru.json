@@ -3932,8 +3932,6 @@
             "«{title}» удалён. %n курса снова используют логотип этого Nextcloud.",
             "«{title}» удалён. %n курсов снова используют логотип этого Nextcloud."
         ],
-        "Alle Dateien als Pflicht markieren": "Отметить все файлы как обязательные",
-        "Alle Dateien optional machen": "Сделать все файлы необязательными",
         "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?": "Всем учащимся придётся снова подтвердить прочтение «{name}». Прежние подтверждения остаются в журнале аудита. Продолжить?",
         "Alle erneut bestätigen lassen": "Попросить всех подтвердить заново",
         "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.": "После этого прежние подтверждения этого файла больше не учитываются.",
@@ -3985,6 +3983,8 @@
         "Schließe zuerst alle Pflichtinhalte im Reiter „Lernmaterial“ ab. Erst dann ist die Prüfung offen.": "Сначала пройди все обязательные материалы на вкладке «Учебные материалы». Только тогда экзамен откроется.",
         "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat.": "Просмотр вопросов этого пула. Изменять их может только владелец пула или тот, с кем пул поделён для редактирования.",
         "Der Bericht enthält auch bereits abgelaufene Zertifikate.": "Отчёт включает и уже истёкшие сертификаты.",
-        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.": "Файл не является изображением PNG, JPEG или WebP. SVG не принимается. Если логотип есть только в SVG, экспортируй его в PNG в графической программе (около 1000 пикселей в ширину) или попроси PNG-файл у того, кто его создал."
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.": "Файл не является изображением PNG, JPEG или WebP. SVG не принимается. Если логотип есть только в SVG, экспортируй его в PNG в графической программе (около 1000 пикселей в ширину) или попроси PNG-файл у того, кто его создал.",
+        "Pflicht: alle Dateien": "Обязательно: все файлы",
+        "„{name}“: alle erneut bestätigen lassen": "«{name}»: попросить всех подтвердить заново"
     }
 }

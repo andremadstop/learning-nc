@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
 
 const { api } = vi.hoisted(() => ({
-	api: { documents: null, registry: [], puts: [], posts: [] },
+	api: { documents: null, registry: [], puts: [], posts: [], putFails: false, putHold: null },
 }))
 
 vi.mock('@nextcloud/axios', () => ({
@@ -22,8 +22,10 @@ vi.mock('@nextcloud/axios', () => ({
 			if (url === '/apps/learning/api/courses/9/videos') return Promise.resolve({ data: api.registry })
 			return Promise.resolve({ data: {} })
 		}),
-		put: vi.fn((url, body) => {
+		put: vi.fn(async (url, body) => {
 			api.puts.push({ url, body })
+			if (api.putHold) await api.putHold
+			if (api.putFails) throw new Error('500')
 			const ids = new Set(body.documentIds)
 			const kept = api.registry.filter((row) => !ids.has(Number(row.document_id)))
 			const added = body.required ? body.documentIds.map((id, i) => ({ id: 100 + i, source_type: 'document', video_ref: String(id), document_id: id })) : []
@@ -73,6 +75,8 @@ describe('CourseMaterials — the "Required" column (GitHub #75)', () => {
 		api.registry = [{ id: 7, source_type: 'document', video_ref: '31', document_id: 31 }]
 		api.puts = []
 		api.posts = []
+		api.putFails = false
+		api.putHold = null
 		vi.clearAllMocks()
 	})
 
@@ -183,6 +187,68 @@ describe('CourseMaterials — the "Required" column (GitHub #75)', () => {
 		expect(confirm).toHaveBeenCalled()
 		expect(api.posts).toEqual([{ url: '/apps/learning/api/course-videos/7/reconfirm', body: undefined }])
 		vi.unstubAllGlobals()
+	})
+
+	// GitHub #75 (review): nothing stored, so the box must not show the click.
+	it('a failed save shows the stored state again and announces the error each time', async () => {
+		api.putFails = true
+		const errors = []
+		await mount({ isInstructor: true, onError: (message) => errors.push(message) })
+		for (let attempt = 0; attempt < 2; attempt++) {
+			const box = host.querySelector('[data-test="required-doc-32"]')
+			box.checked = true
+			box.dispatchEvent(new Event('change'))
+			await flush()
+			expect(host.querySelector('[data-test="required-doc-32"]').checked).toBe(false)
+			expect(host.querySelector('[data-test="required-all"]').indeterminate).toBe(true)
+		}
+		// cleared before each attempt: a repeated identical message is a new announcement
+		expect(errors).toEqual(['', 'Die Pflicht-Auswahl konnte nicht gespeichert werden.', '', 'Die Pflicht-Auswahl konnte nicht gespeichert werden.'])
+	})
+
+	it('a failed save of the header box unticks it again', async () => {
+		api.putFails = true
+		await mount({ isInstructor: true })
+		const header = host.querySelector('[data-test="required-all"]')
+		header.checked = true
+		header.dispatchEvent(new Event('change'))
+		await flush()
+		expect(header.checked).toBe(false)
+		expect(header.indeterminate).toBe(true)
+	})
+
+	// GitHub #75 (review): a control that turns disabled drops the keyboard focus to the page.
+	it('keeps the boxes enabled while saving and ignores a click meanwhile', async () => {
+		let release
+		api.putHold = new Promise((resolve) => { release = resolve })
+		await mount({ isInstructor: true })
+		const box = host.querySelector('[data-test="required-doc-32"]')
+		box.focus()
+		box.checked = true
+		box.dispatchEvent(new Event('change'))
+		await nextTick()
+		for (const selector of ['[data-test="required-doc-32"]', '[data-test="required-all"]', '[data-test="reconfirm-doc-31"]']) {
+			const control = host.querySelector(selector)
+			expect(control.disabled, selector).toBe(false)
+			expect(control.getAttribute('aria-disabled'), selector).toBe('true')
+		}
+		expect(document.activeElement).toBe(box)
+		const other = host.querySelector('[data-test="required-doc-31"]')
+		other.checked = false
+		other.dispatchEvent(new Event('change'))
+		await nextTick()
+		expect(other.checked).toBe(true)
+		release()
+		await flush()
+		expect(api.puts).toHaveLength(1)
+		expect(host.querySelector('[data-test="required-doc-32"]').getAttribute('aria-disabled')).toBeNull()
+	})
+
+	// GitHub #75 (review): WCAG 2.5.3 and one name per button.
+	it('names the header box with its visible word and each "ask again" button with its file', async () => {
+		await mount({ isInstructor: true })
+		expect(host.querySelector('[data-test="required-all"]').getAttribute('aria-label')).toBe('Pflicht: alle Dateien')
+		expect(host.querySelector('[data-test="reconfirm-doc-31"]').getAttribute('aria-label')).toBe('„Chapter 1.pdf“: alle erneut bestätigen lassen')
 	})
 
 	it('learners get no column; with required content the optional files carry a hint', async () => {

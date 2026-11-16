@@ -3916,8 +3916,6 @@ OC.L10N.register(
     "_Von %n Kurs verwendet_::_Von %n Kursen verwendet_" : ["Utilisé par %n cours", "Utilisé par %n cours"],
     "_%n Kurs verwendet dieses Logo. Seine neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._::_%n Kurse verwenden dieses Logo. Ihre neuen Zertifikate tragen danach wieder das Logo dieser Nextcloud. Bereits ausgestellte Zertifikate behalten ihr Logo._" : ["%n cours utilise ce logo. Ses nouveaux certificats porteront ensuite de nouveau le logo de ce Nextcloud. Les certificats déjà délivrés conservent leur logo.", "%n cours utilisent ce logo. Leurs nouveaux certificats porteront ensuite de nouveau le logo de ce Nextcloud. Les certificats déjà délivrés conservent leur logo."],
     "_„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud._::_„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud._" : ["« {title} » a été supprimé. %n cours porte de nouveau le logo de ce Nextcloud.", "« {title} » a été supprimé. %n cours portent de nouveau le logo de ce Nextcloud."],
-    "Alle Dateien als Pflicht markieren" : "Marquer tous les fichiers comme obligatoires",
-    "Alle Dateien optional machen" : "Rendre tous les fichiers facultatifs",
     "Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?" : "Tous les apprenants devront confirmer à nouveau la lecture de « {name} ». Les confirmations précédentes restent dans le journal d’audit. Continuer ?",
     "Alle erneut bestätigen lassen" : "Demander à tous de confirmer à nouveau",
     "Bisherige Bestätigungen dieser Datei zählen danach nicht mehr." : "Les confirmations précédentes de ce fichier ne comptent plus ensuite.",
@@ -3962,5 +3960,7 @@ OC.L10N.register(
     "Die Fragen dieses Pools ansehen. Ändern kann sie nur, wer den Pool besitzt oder zum Bearbeiten geteilt bekommen hat." : "Voir les questions de ce pool. Seul le propriétaire du pool ou une personne avec qui il est partagé en modification peut les changer.",
     "Der Bericht enthält auch bereits abgelaufene Zertifikate." : "Le rapport inclut aussi les certificats déjà expirés.",
     "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "Le fichier n’est pas une image PNG, JPEG ou WebP. Le format SVG n’est pas accepté. Si tu n’as le logo qu’en SVG, exporte-le en PNG dans un logiciel de graphisme (environ 1000 pixels de large) ou demande un fichier PNG à la personne qui l’a conçu.",
+    "Pflicht: alle Dateien" : "Obligatoire : tous les fichiers",
+    "„{name}“: alle erneut bestätigen lassen" : "« {name} » : demander à tous de confirmer à nouveau",
 },
 "nplurals=2; plural=(n > 1);");

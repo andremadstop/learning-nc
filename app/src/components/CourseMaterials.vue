@@ -114,8 +114,9 @@
 									type="checkbox"
 									data-test="required-all"
 									:checked="requiredHeader === 'all'"
-									:disabled="requiredBusy || !hasSelectableDocuments"
-									:aria-label="requiredHeader === 'all' ? t('learning', 'Alle Dateien optional machen') : t('learning', 'Alle Dateien als Pflicht markieren')"
+									:disabled="!hasSelectableDocuments"
+									:aria-disabled="requiredBusy ? 'true' : null"
+									:aria-label="t('learning', 'Pflicht: alle Dateien')"
 									@change="setAllRequired($event.target.checked, $event.target)">
 								<span>{{ t('learning', 'Pflicht') }}</span>
 							</label>
@@ -139,15 +140,17 @@
 								type="checkbox"
 								:data-test="'required-doc-' + doc.id"
 								:checked="isRequired(doc)"
-								:disabled="requiredBusy || (!isRequired(doc) && doc.downloadable !== true)"
-								:aria-label="t('learning', '„{name}“ ist Pflicht', { name: doc.file_name })"
+								:disabled="!isRequired(doc) && doc.downloadable !== true"
+								:aria-disabled="requiredBusy ? 'true' : null"
+								:aria-label="t('learning', '„{name}“ ist Pflicht', { name: doc.file_name }, undefined, RAW)"
 								@change="setRequired([doc], $event.target.checked, $event.target)">
 							<button
 								v-if="isRequired(doc)"
 								type="button"
 								class="material-btn small reconfirm-btn"
 								:data-test="'reconfirm-doc-' + doc.id"
-								:disabled="requiredBusy"
+								:aria-disabled="requiredBusy ? 'true' : null"
+								:aria-label="t('learning', '„{name}“: alle erneut bestätigen lassen', { name: doc.file_name }, undefined, RAW)"
 								:title="t('learning', 'Bisherige Bestätigungen dieser Datei zählen danach nicht mehr.')"
 								@click="askToConfirmAgain(doc)">
 								{{ t('learning', 'Alle erneut bestätigen lassen') }}
@@ -209,6 +212,9 @@ import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import { parseDocumentsResponse } from '../utils/courseMaterials.js'
 import { registryRowForDocument, requiredDocumentIds, requiredHeaderState } from '../utils/requiredContent.js'
 
+/** File names in texts: shown as text (interpolation, attributes, window.confirm), never as HTML. */
+const RAW = { escape: false, sanitize: false }
+
 export default {
 	name: 'CourseMaterials',
 
@@ -247,6 +253,7 @@ export default {
 
 	data() {
 		return {
+			RAW,
 			documents: [],
 			materialFolder: null,
 			folderInput: '',
@@ -417,45 +424,62 @@ export default {
 		 */
 		confirmMakeOptional(docs) {
 			const message = docs.length === 1
-				? t('learning', '„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: docs[0].file_name })
+				? t('learning', '„{name}“ wird optional. Wird die Datei später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: docs[0].file_name }, undefined, RAW)
 				: n('learning', '%n Datei wird optional. Wird sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', '%n Dateien werden optional. Werden sie später wieder Pflicht, müssen alle Lernenden sie erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', docs.length)
 			return window.confirm(message)
 		},
 
 		async setRequired(docs, required, box = null) {
+			// GitHub #75 (review): the boxes stay focusable while a save runs (aria-disabled, not
+			// disabled: a disabled control drops the keyboard focus to the page). A click meanwhile
+			// changes nothing, so its box shows the stored state again.
+			if (this.requiredBusy) {
+				this.resetBox(box, !required)
+				return
+			}
 			const documentIds = docs.map((doc) => Number(doc.id))
 			if (documentIds.length === 0) {
 				return
 			}
 			if (!required && !this.confirmMakeOptional(docs)) {
-				if (box) {
-					box.checked = true
-				}
-				this.$nextTick(() => this.syncHeaderCheckbox())
+				this.resetBox(box, true)
 				return
 			}
 			this.requiredBusy = true
+			this.$emit('error', '') // a new attempt voids the last message, so a repeated one is announced again
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/required-documents', { courseId: this.courseId })
 				const response = await axios.put(url, { documentIds, required })
 				this.registry = Array.isArray(response.data) ? response.data : this.registry
 				this.$emit('required-changed', this.registry)
 			} catch (e) {
+				// nothing was stored: the box must not show the click (:checked did not change, so
+				// Vue does not patch it back)
+				this.resetBox(box, !required)
 				this.$emit('error', t('learning', 'Die Pflicht-Auswahl konnte nicht gespeichert werden.'))
 			} finally {
 				this.requiredBusy = false
 			}
 		},
 
+		/** Show the stored state on a box again (after a cancel, a failed save, a click while saving). */
+		resetBox(box, checked) {
+			if (box) {
+				box.checked = checked
+			}
+			this.$nextTick(() => this.syncHeaderCheckbox())
+		},
+
 		async askToConfirmAgain(doc) {
 			const row = registryRowForDocument(this.registry, doc.id)
-			if (!row) {
+			if (!row || this.requiredBusy) {
 				return
 			}
-			if (!window.confirm(t('learning', 'Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: doc.file_name }))) {
+			if (!window.confirm(t('learning', 'Alle Lernenden müssen „{name}“ erneut als gelesen bestätigen. Bisherige Bestätigungen bleiben im Audit-Protokoll. Fortfahren?', { name: doc.file_name }, undefined, RAW))) {
 				return
 			}
 			this.requiredBusy = true
+			this.$emit('error', '')
 			try {
 				const response = await axios.post(generateUrl('/apps/learning/api/course-videos/{id}/reconfirm', { id: row.id }))
 				this.registry = this.registry.map((item) => (item.id === row.id ? { ...item, ...response.data } : item))
@@ -696,9 +720,15 @@ export default {
 	min-height: 36px;
 }
 
-.material-btn:disabled {
+.material-btn:disabled,
+.material-btn[aria-disabled='true'] {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+/* GitHub #75 (review): busy, but still focusable (aria-disabled, see setRequired) */
+.cell-required input[aria-disabled='true'] {
+	cursor: progress;
 }
 
 .material-table-wrapper {
