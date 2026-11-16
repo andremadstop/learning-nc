@@ -263,15 +263,88 @@ class CourseVideoControllerTest extends TestCase {
         $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
     }
 
-    public function testUpdateCanPointADocumentRowAtAnotherMaterialDocument(): void {
+    /**
+     * GitHub #75 (review): a document row keeps its document. Pointing it at another one handed
+     * the confirmations of the first document to the second, without a trace in the compliance
+     * chain; that goes through the "Required" column now (optional, then tick the other).
+     */
+    public function testUpdateRefusesPointingADocumentRowAtAnotherDocument(): void {
         $this->documents[34] = $this->document(34, 5, '/Kurs/rules.md', 'rules.md');
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('document', '31'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, null, '34');
+
+        $this->assertSame(Http::STATUS_CONFLICT, $resp->getStatus());
+        $this->assertSame('document_row_fixed', $resp->getData()['code']);
+    }
+
+    public function testUpdateRefusesTurningADocumentRowIntoAVideo(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('document', '31'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, 'vimeo', '76979871', null, 120);
+
+        $this->assertSame(Http::STATUS_CONFLICT, $resp->getStatus());
+    }
+
+    public function testUpdateStillRenamesADocumentRow(): void {
         $this->videoMapper->method('findById')->willReturn($this->existingRow('document', '31'));
         $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
         $this->videoMapper->expects($this->once())->method('update')->willReturnArgument(0);
 
-        $resp = $this->makeController()->update(9, null, '34');
+        $resp = $this->makeController()->update(9, null, ' 31 ', 'Policy 2026');
 
         $this->assertSame(Http::STATUS_OK, $resp->getStatus());
+        $this->assertSame('Policy 2026', $resp->getData()->getTitle());
+    }
+
+    /**
+     * GitHub #75 (review): DELETE /api/course-videos/{id} on a required document ends the count
+     * of its confirmations; it is recorded like unticking it in the "Required" column.
+     */
+    public function testDeletingADocumentRowIsRecordedInTheComplianceChain(): void {
+        $this->videoMapper->method('findById')->willReturn($this->requiredRow(8, 31));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->once())->method('delete');
+        $this->audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CONTENT_REQUIRED_CHANGED,
+            'instructor-uid',
+            ['course_id' => 5, 'required' => false, 'document_ids' => [31], 'content_ids' => [8]]
+        );
+
+        $this->assertSame(Http::STATUS_NO_CONTENT, $this->makeController()->destroy(8)->getStatus());
+    }
+
+    public function testDeletingAVideoRowWritesNoComplianceEvent(): void {
+        $this->videoMapper->method('findById')->willReturn($this->existingRow('vimeo', '76979871'));
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->expects($this->once())->method('delete');
+        $this->audit->expects($this->never())->method('logComplianceEvent');
+
+        $this->assertSame(Http::STATUS_NO_CONTENT, $this->makeController()->destroy(8)->getStatus());
+    }
+
+    /** POST .../videos with a document: recorded like ticking it in the "Required" column. */
+    public function testAddingADocumentRowIsRecordedInTheComplianceChain(): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->course());
+        $this->videoMapper->method('findDocumentRowsByCourse')->willReturn([]);
+        $this->videoMapper->method('insert')->willReturnCallback(static function (CourseVideo $v): CourseVideo {
+            $v->setId(12);
+            return $v;
+        });
+        $this->audit->expects($this->once())->method('logComplianceEvent')->with(
+            ComplianceEventTypes::CONTENT_REQUIRED_CHANGED,
+            'instructor-uid',
+            ['course_id' => 5, 'required' => true, 'document_ids' => [31], 'content_ids' => [12]]
+        );
+
+        $resp = $this->makeController()->create(5, 'document', '31', 'Policy', null);
+
+        $this->assertSame(Http::STATUS_CREATED, $resp->getStatus());
+        $this->assertSame(12, $resp->getData()->getId());
     }
 
     public function testCreateAllowsNcFilesVideoWithPositiveDuration(): void {

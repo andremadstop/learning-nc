@@ -164,6 +164,16 @@ class CourseVideoController extends Controller {
             $video->setCreatedAt(time());
             if ($sourceType === self::DOCUMENT_SOURCE_TYPE) {
                 $video->setDocumentId((int)$videoRef);
+                if ($this->requiredDocuments !== null) {
+                    // GitHub #75 (review): the same way as the "Required" column, so the new
+                    // required document is recorded in the compliance chain.
+                    $added = $this->requiredDocuments->changeRequired($courseId, [$video], [], $this->userId);
+                    if ($added === []) {
+                        // A concurrent request added the same document a moment earlier.
+                        return new DataResponse(['error' => 'This document is required already', 'code' => 'already_required'], Http::STATUS_CONFLICT);
+                    }
+                    return new DataResponse($added[0], Http::STATUS_CREATED);
+                }
             }
 
             return new DataResponse($this->videoMapper->insert($video), Http::STATUS_CREATED);
@@ -249,6 +259,22 @@ class CourseVideoController extends Controller {
                 }
             }
 
+            // GitHub #75 (review): a document row is the required-content entry of one document;
+            // its confirmations belong to that document. Pointing it at another document (or
+            // turning it into a video, or a video into a document) would hand them over and leave
+            // no trace in the compliance chain. That goes through the "Required" column instead:
+            // make the one optional, tick the other.
+            $wasDocument = $video->getSourceType() === self::DOCUMENT_SOURCE_TYPE;
+            $isDocument = $effectiveSourceType === self::DOCUMENT_SOURCE_TYPE;
+            if ($wasDocument !== $isDocument
+                || ($isDocument && $videoRef !== null
+                    && self::documentIdFromRef($videoRef) !== self::documentIdFromRef($video->getVideoRef()))) {
+                return new DataResponse([
+                    'error' => 'A required document row keeps its document; make it optional and tick the other document instead',
+                    'code' => 'document_row_fixed',
+                ], Http::STATUS_CONFLICT);
+            }
+
             if ($sourceType !== null) {
                 $video->setSourceType($sourceType);
             }
@@ -304,7 +330,13 @@ class CourseVideoController extends Controller {
         try {
             $video = $this->videoMapper->findById($id);
             $this->courseService->assertInstructorOfCourse($video->getCourseId(), $this->userId);
-            $this->videoMapper->delete($video);
+            if ($this->requiredDocuments !== null && RequiredDocumentService::isDocument($video)) {
+                // GitHub #75 (review): removing a required document ends the count of its
+                // confirmations; recorded in the compliance chain like the "Required" column.
+                $this->requiredDocuments->changeRequired((int)$video->getCourseId(), [], [$video], $this->userId);
+            } else {
+                $this->videoMapper->delete($video);
+            }
             return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Video not found'], Http::STATUS_NOT_FOUND);

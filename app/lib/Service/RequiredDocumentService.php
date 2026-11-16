@@ -239,8 +239,9 @@ class RequiredDocumentService {
      *
      * @param CourseVideo[] $add new document rows (no id yet)
      * @param CourseVideo[] $remove existing document rows
+     * @return list<CourseVideo> the rows this request actually removed or added (inserted rows with their id)
      */
-    public function changeRequired(int $courseId, array $add, array $remove, string $instructorId): void {
+    public function changeRequired(int $courseId, array $add, array $remove, string $instructorId): array {
         $this->db->beginTransaction();
         try {
             $changed = [];
@@ -280,6 +281,7 @@ class RequiredDocumentService {
             }
             throw $e;
         }
+        return $changed;
     }
 
     /**
