@@ -108,7 +108,12 @@ writeFileSync(join(RUN, `report${suffix}.md`), md)
 const freshEyes = {
 	run: {
 		commit: state.COMMIT || '?', date: new Date().toISOString().slice(0, 10), ui_language: 'en',
-		gamification: mode, ai, leitner, course: 'Annual safety training (mandatory training, certificate at 75 %)',
+		gamification: mode, ai, leitner,
+		// The IT run seeds the same course title with the IT profile (every mode on): say so, or the
+		// fresh-eyes reviewer judges an IT course as a mandatory training.
+		course: mode === 'on'
+			? 'Annual safety training (course profile "IT exam preparation": every learning mode on, certificate at 75 %)'
+			: 'Annual safety training (course profile "Mandatory training with certificate", certificate at 75 %)',
 	},
 	stations: stations
 		.filter((s) => s.screenshot && !/^Detector self-test/.test(s.station))
