@@ -102,6 +102,20 @@ gate_vitest() {
 	gate_fail "exit $rc, summary: ${summary:-none}"; echo "$out" | tail -12; return 1
 }
 
+# GitHub #80: the certificate printed to PDF (system Chromium + poppler, no Nextcloud, no download).
+# Same proof as gate_vitest: Playwright's own "N passed" with nothing failed, not the exit code alone.
+gate_print() {
+	local dir="$1" out rc=0
+	echo -n "Certificate print (PDF)... "
+	out=$(cd "$dir/app" && npm run --silent test:print 2>&1) || rc=$?
+	local plain
+	plain=$(printf '%s\n' "$out" | sed 's/\x1b\[[0-9;]*m//g')
+	if [ "$rc" -eq 0 ] && grep -qE '^ *[1-9][0-9]* passed' <<<"$plain" && ! grep -qE '^ *[0-9]+ (failed|flaky)' <<<"$plain"; then
+		gate_ok "$(grep -oE '[0-9]+ passed' <<<"$plain" | tail -1)"; return 0
+	fi
+	gate_fail "exit $rc"; echo "$out" | tail -15; return 1
+}
+
 gate_i18n() {
 	local dir="$1" out
 	echo -n "i18n (parity, js sync, placeholders, coverage, VirtuProf, consent text)... "

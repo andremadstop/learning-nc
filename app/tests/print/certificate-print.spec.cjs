@@ -31,8 +31,11 @@ function pngDataUrl(width, height) {
 	return 'data:image/png;base64,' + PNG.sync.write(png).toString('base64')
 }
 
+/** A wide wordmark logo (1200 × 320), the shape most likely to push the header wider than the page. */
+const WORDMARK = pngDataUrl(1200, 320)
+
 const credential = {
-	issuer: { id: 'did:web:example.org', name: 'Training Solutions LTD' },
+	issuer: { id: 'did:web:example.org', name: 'Training Solutions LTD', image: { id: WORDMARK, type: 'Image' } },
 	validFrom: '2026-11-16T10:00:00Z',
 	validUntil: '2027-11-16T10:00:00Z',
 	credentialSubject: {
@@ -46,14 +49,19 @@ const credential = {
 	},
 }
 
-/** The fullest layout the settings allow in practice: text, elements, stamp, signature, signer. */
+/**
+ * The fullest layout the settings allow in practice: text, elements, stamp, signature, signer, and a
+ * library logo with the organisation name beside it (GitHub #77/#78).
+ */
 const presentation = {
 	intro: 'This is to certify that\n{student.name}\nhas successfully completed the annual mandatory training\n{course.title}\nwith the following course elements:\n{course.elements}\nThe training was carried out in accordance with the internal training policy.',
-	show: { logo: true, score: true, threshold: true, elements: true, validity: true },
+	show: { logo: true, issuer: true, score: true, threshold: true, elements: true, validity: true },
 	signer_name: 'Dr. Maria Example',
 	signer_role: 'Head of Training',
 	stamp: pngDataUrl(300, 300),
 	signature: pngDataUrl(440, 120),
+	logo: WORDMARK,
+	logo_library: true,
 }
 
 async function openAndPrint(page, { query = '', revoked = false } = {}) {
@@ -115,6 +123,8 @@ function measure(pdf) {
 
 test('the certificate prints on one A4 landscape page and fills its width', async ({ page }) => {
 	await openAndPrint(page)
+	// the wide wordmark is on the card, so its size is part of what is measured
+	await expect(page.locator('#learning-certificate-print-root [data-test="certificate-logo"]')).toHaveAttribute('src', WORDMARK)
 	// what Chrome's print dialog uses: the page size the stylesheet asks for
 	const m = measure(await page.pdf({ preferCSSPageSize: true, printBackground: true }))
 	expect(Math.round(m.widthPt)).toBe(Math.round(297 * PT_PER_MM))
@@ -124,6 +134,7 @@ test('the certificate prints on one A4 landscape page and fills its width', asyn
 	expect(m.inkHeight).toBeGreaterThanOrEqual(0.6)
 	expect(m.text).toContain('Annual data protection and IT security training')
 	expect(m.text).toContain('Alex Example')
+	expect(m.text).toContain('Training Solutions LTD')
 	expect(m.text).not.toContain('Nextcloud header')
 	expect(m.text).not.toContain('Navigation')
 	expect(m.text).not.toContain('Drucken')
