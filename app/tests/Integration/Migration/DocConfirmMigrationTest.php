@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  * GitHub #75: the data step of Version011100 against a real database (run on PostgreSQL and on
  * MariaDB: ENGINE=pgsql|mysql scripts/nc-integration.sh). Existing read confirmations — also
  * those on a document that was required twice — become confirmation rows; the duplicate
- * registry rows go; document_id is filled on the registry rows and on the confirmations (P9: a
+ * registry rows go; document_id is filled on the registry rows and on the confirmations (a
  * confirmation belongs to the document, also one taken over from a duplicate row); a second run
  * changes nothing. Every test rolls back.
  */

@@ -34,7 +34,7 @@ use OCP\IDBConnection;
  *
  * Rows are append-only (learning_doc_confirms): a new cycle or a new version asks for a new
  * row; the older ones and their course.video.completed events stay as evidence. They belong to
- * the document of the course, not to the registry row (P9): a file made optional and required
+ * the document of the course, not to the registry row (GitHub #75): a file made optional and required
  * again gets its earlier confirmations back, measured by the same rule — and so does the
  * instructor's "Ask everyone to confirm again", which is stored on the document as well. Confirming
  * while a valid confirmation exists is a no-op (no second row, no second audit event).
@@ -283,7 +283,7 @@ class RequiredDocumentService {
      * and removes the given ones, and records what actually changed as
      * course.content.required_changed in the compliance chain with the instructor as actor —
      * all or nothing. A removed row takes its confirmations out of the count until the document
-     * is ticked again (P9: they belong to the document and then count again, see the class
+     * is ticked again (they belong to the document and then count again, see the class
      * comment), so who did it must be on record.
      * A row added concurrently by another request (unique violation) is skipped inside a
      * savepoint, so the outer transaction stays usable on PostgreSQL.
@@ -338,7 +338,7 @@ class RequiredDocumentService {
     /**
      * "Ask everyone to confirm again" (instructor, checked by the caller): confirmations from
      * before now no longer count for this document. Stored on the document (course_documents),
-     * so it survives making the file optional and required again (P9). Recorded in the
+     * so it survives making the file optional and required again (GitHub #75). Recorded in the
      * compliance chain with the instructor as actor.
      *
      * @return array<string, mixed> the registry row with the new confirm_after

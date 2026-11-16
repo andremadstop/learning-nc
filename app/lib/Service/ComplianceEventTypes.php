@@ -28,7 +28,7 @@ final class ComplianceEventTypes {
     // GitHub #75: an instructor made material documents required or optional
     // (RequiredDocumentService::changeRequired); context {course_id, required, document_ids, content_ids}.
     // Making a document optional takes its confirmations out of the count until it is ticked again
-    // (they belong to the document, P9).
+    // (they belong to the document).
     public const CONTENT_REQUIRED_CHANGED = 'course.content.required_changed';
     // GitHub #77: a course manager changed the organisation name signed into new certificates as
     // their issuer (CourseController::updateCertConfig); context {course_id, issuer_name, previous},

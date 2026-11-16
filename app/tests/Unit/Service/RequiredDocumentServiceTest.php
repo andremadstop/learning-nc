@@ -212,7 +212,7 @@ class RequiredDocumentServiceTest extends TestCase {
         );
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(7000);
-        // P9: stored on the document of the course, not on the registry row
+        // GitHub #75: stored on the document of the course, not on the registry row
         $documentMapper = $this->createMock(CourseDocumentMapper::class);
         $documentMapper->expects($this->once())->method('setConfirmAfter')->with(9, 12, 7000)->willReturn(1);
         $videos = $this->createMock(CourseVideoMapper::class);
@@ -236,7 +236,7 @@ class RequiredDocumentServiceTest extends TestCase {
     }
 
     /**
-     * P9: the instructor's "Ask everyone to confirm again" is read from the document, so a
+     * GitHub #75: the instructor's "Ask everyone to confirm again" is read from the document, so a
      * registry row that was added again for the same document still honours it.
      */
     public function testReconfirmRequestOnTheDocumentCountsForANewRegistryRow(): void {

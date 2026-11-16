@@ -45,7 +45,7 @@ class CourseDocument extends Entity {
     protected $fileId;
     /**
      * GitHub #75: "Ask everyone to confirm again" — confirmations of this document from before it
-     * no longer count. On the document, so making it optional and required again keeps it (P9).
+     * no longer count. On the document, so making it optional and required again keeps it (GitHub #75).
      */
     protected $confirmAfter;
     protected $createdAt;

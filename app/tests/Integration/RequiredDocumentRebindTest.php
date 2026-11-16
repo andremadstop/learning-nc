@@ -19,7 +19,7 @@ use OCP\Server;
 use PHPUnit\Framework\TestCase;
 
 /**
- * GitHub #75 (P9): making a required file optional deletes its registry row, and ticking it
+ * GitHub #75: making a required file optional deletes its registry row, and ticking it
  * again adds a new one. Up to 5.14.0-dev the confirmations hung off the registry row
  * (learning_doc_confirms.content_id), so every learner had to confirm the file again after a
  * misclick. They now belong to the document of the course and count again — measured by the

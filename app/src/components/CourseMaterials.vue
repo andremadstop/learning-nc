@@ -420,7 +420,7 @@ export default {
 		/**
 		 * GitHub #75 (review): making a required file optional takes its read confirmations out
 		 * of the count until it is ticked again; they are kept and count again then, unless the
-		 * file has changed (P9). Still asked first, so a misclick is noticed. Cancelled: the box
+		 * file has changed (GitHub #75). Still asked first, so a misclick is noticed. Cancelled: the box
 		 * shows the unchanged state again.
 		 */
 		confirmMakeOptional(docs) {

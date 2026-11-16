@@ -20,7 +20,7 @@ use OCP\Migration\SimpleMigrationStep;
  *   doc_version is the version of the file that was read (sha256 of the Nextcloud checksum, or
  *   of mtime and size), NULL for a confirmation taken over from before 5.14.0. The unique key
  *   (user_id, content_id, confirmed_at) turns a double click within one second into a no-op.
- *   document_id (P9) binds a confirmation to the document of the course, not to the registry
+ *   document_id (GitHub #75) binds a confirmation to the document of the course, not to the registry
  *   row: making a file optional deletes its row, ticking it again adds a new one, and the
  *   confirmations of the old row count again (when the version and the cycle still match).
  *   NULL only for a legacy path row without a document id; those are looked up by content_id.
@@ -30,7 +30,7 @@ use OCP\Migration\SimpleMigrationStep;
  *   once per course. Video rows keep NULL, and NULLs never collide (PostgreSQL and MariaDB).
  * learning_course_documents.confirm_after — set by "Ask everyone to confirm again": confirmations
  *   from before it no longer count. NULL = never asked. On the document, not on the registry
- *   row, so making the file optional and required again does not cancel the request (P9).
+ *   row, so making the file optional and required again does not cancel the request (GitHub #75).
  * learning_course_documents.file_id — the Nextcloud file id, so a scan keeps the row (and with
  *   it the required-content link) when the file is only renamed.
  * learning_courses.reconfirm_per_cycle — confirmations count only within the current

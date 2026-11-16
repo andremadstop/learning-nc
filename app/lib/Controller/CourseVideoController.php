@@ -356,7 +356,7 @@ class CourseVideoController extends Controller {
      * material folder can be made required; any other id refuses the whole request.
      * Removing a row leaves its confirmations in place (and in the compliance chain); ticking the
      * document again later adds a new row, and the earlier confirmations count again as long as
-     * the file version and the certification cycle still match (P9). Every change is
+     * the file version and the certification cycle still match (GitHub #75). Every change is
      * recorded as course.content.required_changed (RequiredDocumentService::changeRequired()).
      *
      * @param list<int> $documentIds course_documents ids

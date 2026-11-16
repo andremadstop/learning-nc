@@ -13,7 +13,7 @@ use OCP\IDBConnection;
  *
  * A confirmation belongs to the document of the course (course_id, document_id), not to the
  * registry row it was given on (content_id): making a file optional deletes its row, ticking it
- * again adds a new one, and the earlier confirmations are found again (P9). Only a legacy path
+ * again adds a new one, and the earlier confirmations are found again (GitHub #75). Only a legacy path
  * row without a document id is looked up by content_id.
  */
 class DocConfirmMapper {
