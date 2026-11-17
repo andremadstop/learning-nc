@@ -73,6 +73,16 @@ class IcsService {
         return preg_match('/^[a-f0-9]{64}$/', $token) === 1;
     }
 
+    /**
+     * Whether $token has the shape v2.7.0 handed out on the legacy route export#exportIcsPublic:
+     * base64url(user id) + '.' + 64 lowercase hex (HMAC). Those tokens are no longer valid, but
+     * calendars subscribed back then keep polling them; like a well-formed unknown token they are a
+     * stale subscription, not a probe, and must not feed the brute-force throttle there.
+     */
+    public static function isLegacyFeedToken(string $token): bool {
+        return preg_match('/^[A-Za-z0-9_-]+\.[a-f0-9]{64}$/', $token) === 1;
+    }
+
     public function renderCalendarForToken(string $token): ?string {
         if (!self::isWellFormedFeedToken($token)) {
             return null;

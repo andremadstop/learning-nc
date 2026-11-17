@@ -127,4 +127,23 @@ final class IcsFeedThrottleTest extends TestCase {
         $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, IcsService::FEED_THROTTLE_ACTION));
         $this->assertSame(200, $this->fetch($feed, $feedMethod, $this->validToken));
     }
+
+    public function testV270SubscriptionsOnTheLegacyRouteNeverBlockAnAddress(): void {
+        [$legacy, $legacyMethod] = $this->route('legacy');
+        $this->remoteAddress = '198.51.100.13';
+        // v2.7.0 tokens: base64url(user id) + '.' + HMAC hex. Two old subscriptions behind one NAT,
+        // twenty polls in all: more than the 10 throttled attempts that would block the address.
+        $b64url = static fn (string $uid): string => rtrim(strtr(base64_encode($uid), '+/', '-_'), '=');
+        $tokens = [
+            $b64url('alice') . '.' . hash_hmac('sha256', 'alice:n1', 'secret'),
+            $b64url('bob') . '.' . hash_hmac('sha256', 'bob:n2', 'secret'),
+        ];
+        for ($i = 0; $i < 20; $i++) {
+            $this->assertSame(403, $this->fetch($legacy, $legacyMethod, $tokens[$i % 2]));
+        }
+        $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, IcsService::FEED_THROTTLE_ACTION));
+        $this->assertSame(200, $this->fetch($legacy, $legacyMethod, $this->validToken));
+        [$feed, $feedMethod] = $this->route('feed');
+        $this->assertSame(200, $this->fetch($feed, $feedMethod, $this->validToken));
+    }
 }

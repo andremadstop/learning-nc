@@ -116,11 +116,13 @@ class ExportController extends Controller {
     #[AnonRateLimit(limit: 120, period: 600)]
     #[BruteForceProtection(action: IcsService::FEED_THROTTLE_ACTION)]
     public function exportIcsPublic(string $token): Http\Response {
-        // Same per-address limit and brute-force action as ics#feed (reasoning there).
+        // Same per-address limit and brute-force action as ics#feed (reasoning there). A v2.7.0
+        // token (base64url(uid).hmac) is the stale subscription this alias exists for, so it is
+        // refused without feeding the throttle, like a well-formed unknown token.
         $cal = $this->icsService->renderCalendarForToken($token);
         if ($cal === null) {
             $response = new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
-            if (!IcsService::isWellFormedFeedToken($token)) {
+            if (!IcsService::isWellFormedFeedToken($token) && !IcsService::isLegacyFeedToken($token)) {
                 $response->throttle(['action' => IcsService::FEED_THROTTLE_ACTION]);
             }
             return $response;

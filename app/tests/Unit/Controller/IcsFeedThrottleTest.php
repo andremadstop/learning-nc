@@ -68,6 +68,45 @@ final class IcsFeedThrottleTest extends TestCase {
         $this->assertFalse($response->isThrottled());
     }
 
+    /**
+     * v2.7.0 handed out base64url(user id) + '.' + HMAC hex on the legacy route; calendars subscribed
+     * back then still poll it. On that route it is a stale subscription, not a probe: refused, never
+     * throttled, or a school NAT with a few such subscriptions locks every valid subscriber out.
+     */
+    public function testAV270TokenOnTheLegacyRouteIsRefusedWithoutThrottling(): void {
+        foreach (self::legacyTokens() as $token) {
+            $response = $this->call('legacy', $token);
+            $this->assertSame(Http::STATUS_FORBIDDEN, $response->getStatus(), $token);
+            $this->assertFalse($response->isThrottled(), "'$token' is an old v2.7.0 subscription");
+        }
+    }
+
+    /** No client was ever given a v2.7.0 token for ics#feed, so there it is a probe like any other. */
+    public function testAV270TokenOnTheCurrentRouteIsThrottled(): void {
+        foreach (self::legacyTokens() as $token) {
+            $this->assertTrue($this->call('feed', $token)->isThrottled(), $token);
+        }
+    }
+
+    public function testOnlyTheV270ShapeCountsAsLegacy(): void {
+        foreach (self::legacyTokens() as $token) {
+            $this->assertTrue(IcsService::isLegacyFeedToken($token), $token);
+        }
+        foreach ([self::VALID, 'not-a-token', '.' . str_repeat('a', 64), 'YWxpY2U.' . str_repeat('A', 64),
+            'YWxpY2U.' . str_repeat('a', 63), 'YWx/Y2U.' . str_repeat('a', 64), ''] as $token) {
+            $this->assertFalse(IcsService::isLegacyFeedToken($token), $token);
+        }
+    }
+
+    /** @return list<string> tokens as v2.7.0's ExportController::buildIcsToken built them */
+    private static function legacyTokens(): array {
+        $b64url = static fn (string $uid): string => rtrim(strtr(base64_encode($uid), '+/', '-_'), '=');
+        return [
+            $b64url('alice') . '.' . hash_hmac('sha256', 'alice:nonce', 'secret'),
+            $b64url('Max Müller?>') . '.' . hash_hmac('sha256', 'x', 'y'),
+        ];
+    }
+
     #[DataProvider('routes')]
     public function testAValidTokenGetsTheCalendar(string $route): void {
         $response = $this->call($route, self::VALID);
