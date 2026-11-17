@@ -43,6 +43,26 @@ class CourseDocumentMapper extends QBMapper {
     }
 
     /**
+     * The course's document row of this Nextcloud file id, if any (GitHub #75): a file belongs to
+     * the row that carries its id, not to another row that merely has the same name.
+     */
+    public function findByCourseAndFileId(int $courseId, int $fileId): ?CourseDocument {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('file_id', $qb->createNamedParameter($fileId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->orderBy('id', 'ASC')
+            ->setMaxResults(1);
+        try {
+            $doc = $this->findEntity($qb);
+        } catch (DoesNotExistException $e) {
+            return null;
+        }
+        return $doc instanceof CourseDocument ? $doc : null;
+    }
+
+    /**
      * @return CourseDocument
      * @throws DoesNotExistException
      */

@@ -173,7 +173,12 @@ class DocumentService {
                 // this path holds another file — a new row. Stamping the new id on the row here
                 // made the row swap between the two files on every scan.
                 $ownFileElsewhere = $fileId !== null && $knownId !== null && $knownId !== $fileId && isset($listedIds[$knownId]);
-                if (!$ownFileElsewhere) {
+                // GitHub #75 (review): the file under this name belongs to another row: "b.pdf"
+                // was deleted and "a.pdf" renamed to "b.pdf". That row follows its file below;
+                // this one is left like the row of a deleted file (and no longer resolves, see
+                // resolveMaterialFile()), instead of taking over the other row's file.
+                $fileOfAnotherRow = $fileId !== null && isset($byFileId[$fileId]) && $byFileId[$fileId] !== $known;
+                if (!$ownFileElsewhere && !$fileOfAnotherRow) {
                     // Stamp the file id on a row from before 5.14.0 (or after a replaced file).
                     if ($fileId !== null && $knownId !== $fileId && !isset($byFileId[$fileId])) {
                         if ($knownId !== null) {
@@ -190,6 +195,10 @@ class DocumentService {
             if ($renamed !== null) {
                 // The same file (one file id is one file) under a new name: the row follows it.
                 $oldPath = self::normalizePath((string)$renamed->getFilePath());
+                if ($oldPath === $relativePath) {
+                    $registered[$relativePath] = $renamed;
+                    continue; // followed on an earlier scan, a left-behind row shares the path
+                }
                 if (($registered[$oldPath] ?? null) === $renamed) {
                     unset($registered[$oldPath]);
                 }
@@ -453,6 +462,17 @@ class DocumentService {
         $node = $folder->get($doc->getFileName());
         if (!($node instanceof File)) {
             throw new NotFoundException('Not a file');
+        }
+        // GitHub #75 (review): the file under this name belongs to another row of the course (the
+        // row's own file was deleted and another one renamed to its name, scanFolder()); this row
+        // is left behind like the row of a deleted file. A file id no row carries (a replaced
+        // file before the next scan) still resolves by name.
+        $nodeId = self::nodeFileId($node);
+        if ($nodeId !== null && $nodeId !== $doc->getFileId()) {
+            $owner = $this->documentMapper->findByCourseAndFileId((int)$course->getId(), $nodeId);
+            if ($owner !== null && $owner->getId() !== $doc->getId()) {
+                throw new NotFoundException('The file belongs to another document');
+            }
         }
         if (!self::mayBeDownloaded($node)) {
             throw new NotFoundException('File may not be downloaded');

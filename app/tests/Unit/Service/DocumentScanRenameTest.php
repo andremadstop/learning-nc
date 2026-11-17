@@ -161,6 +161,83 @@ class DocumentScanRenameTest extends TestCase {
         }
     }
 
+    /** @return array<string, array{0: bool}> */
+    public static function rowOrders(): array {
+        return ['a.pdf row first' => [false], 'b.pdf row first' => [true]];
+    }
+
+    /**
+     * GitHub #75 (review L1): "b.pdf" (file 200) is deleted and "a.pdf" (file 100) renamed to
+     * "b.pdf". The row of a.pdf follows its file; the row of the deleted b.pdf stays behind. The
+     * b.pdf row used to take over the content of file 100 (the scan skipped the stamp and moved
+     * on), while the a.pdf row kept pointing at a file that no longer exists.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('rowOrders')]
+    public function testRenameOntoTheNameOfADeletedFileMovesTheRowOfThatFile(bool $deletedRowFirst): void {
+        $a = self::row(5, 'a.pdf', 100);
+        $b = self::row(6, 'b.pdf', 200);
+        $mapper = $this->memoryMapper($deletedRowFirst ? [$b, $a] : [$a, $b]);
+
+        for ($scan = 1; $scan <= 2; $scan++) {
+            $this->scanAll($mapper, [['b.pdf', 100]]);
+
+            self::assertSame([], $mapper->inserted, "scan $scan: no new row");
+            self::assertSame(100, $a->getFileId(), "scan $scan");
+            self::assertSame('/Material/b.pdf', $a->getFilePath(), "scan $scan: the row follows its file");
+            self::assertSame(200, $b->getFileId(), "scan $scan: the deleted file's row keeps its own file id");
+        }
+    }
+
+    /** A real DocumentService resolving "b.pdf" of /Material, whose file has id $nodeId. */
+    private function resolveService(int $nodeId, ?CourseDocument $owner): array {
+        $course = new Course();
+        $course->setId(4);
+        $course->setInstructorId('teacher');
+        $course->setMaterialFolder('/Material');
+
+        $storage = $this->createMock(\OCP\Files\Storage\IStorage::class);
+        $storage->method('instanceOfStorage')->willReturn(false);
+        $file = $this->createMock(File::class);
+        $file->method('getId')->willReturn($nodeId);
+        $file->method('isReadable')->willReturn(true);
+        $file->method('getStorage')->willReturn($storage);
+        $file->method('getChecksum')->willReturn('');
+        $file->method('getMTime')->willReturn(10);
+        $file->method('getSize')->willReturn(1);
+        $folder = $this->createMock(Folder::class);
+        $folder->method('get')->with('b.pdf')->willReturn($file);
+        $userFolder = $this->createMock(Folder::class);
+        $userFolder->method('get')->with('/Material')->willReturn($folder);
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturn($userFolder);
+
+        $left = self::row(6, 'b.pdf', 200);
+        $mapper = $this->createMock(CourseDocumentMapper::class);
+        $mapper->method('findById')->willReturn($left);
+        $mapper->method('findByCourseAndFileId')->with(4, $nodeId)->willReturn($owner);
+
+        return [new DocumentService($mapper, $this->createMock(CourseMapper::class), $root, $this->createMock(LoggerInterface::class)), $course];
+    }
+
+    /** GitHub #75 (review L1): the row left behind no longer serves the other row's file. */
+    public function testTheRowLeftBehindDoesNotServeTheFileOfAnotherRow(): void {
+        $moved = self::row(5, 'b.pdf', 100);
+        [$service, $course] = $this->resolveService(100, $moved);
+
+        self::assertNull($service->currentFileInfo($course, 6));
+        $this->expectException(\OCP\Files\NotFoundException::class);
+        $service->resolveMaterialFile($course, 6);
+    }
+
+    /** A file replaced under the same name (new id, no scan yet) still opens for its row. */
+    public function testAReplacedFileStillResolvesBeforeTheNextScan(): void {
+        [$service, $course] = $this->resolveService(300, null);
+
+        [$doc] = $service->resolveMaterialFile($course, 6);
+        self::assertSame(6, $doc->getId());
+        self::assertNotNull($service->currentFileInfo($course, 6));
+    }
+
     public function testVersionIgnoresTheNameAndFollowsTheContent(): void {
         $make = function (string $checksum, int $mtime, int $size): File {
             $file = $this->createMock(File::class);
