@@ -81,7 +81,9 @@ jobs:
         with:
           persist-credentials: false
 
-      # fresh install, 5.5.1 -> HEAD upgrade (seeded), bare 5.5.1 -> HEAD upgrade.
+      # fresh install, 5.5.1 -> HEAD upgrade (seeded), bare 5.5.1 -> HEAD upgrade, and
+      # 5.13.0 / 5.14.0 -> HEAD with course data (release assets, sha256 pinned in the script),
+      # each compared with the fresh schema and the entities (schema-drift.py).
       # The app and the fixtures come from the git index, which after checkout is HEAD.
       - name: lifecycle-probe.sh
         env:

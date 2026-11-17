@@ -2,6 +2,7 @@
 # lifecycle-probe.sh — fresh install and 5.5.1 -> working-state upgrade in throwaway containers.
 #
 # Usage: ENGINE=pgsql|mysql [PROBE_REF=<git-ref>] [PROBE_FAIL_AFTER=key_write] [LIFECYCLE_NC_IMAGE=<image>]
+#        [RECENT_BASES="5.13.0 5.14.0"] [RECENT_TARBALL_DIR=<dir>] [PROBE_BUMP_VERSION=<x.y.z>]
 #          scripts/lifecycle-probe.sh
 #
 # Per engine, three scenarios, each on its own Nextcloud + database pair. Nextcloud is 33 (pinned
@@ -13,7 +14,20 @@
 #            state, run `occ upgrade`, then `occ maintenance:repair` twice
 #   bare     install the 5.5.1 release tarball WITHOUT seeding (a fresh 5.5.1 has no audit chain
 #            head and only the legacy translation tables), then upgrade like `upgrade`
-# Each scenario ends with scripts/lifecycle-fixtures/check-working-state.php: audit chain head,
+#   recent-<v>  for each version in RECENT_BASES (default "5.13.0 5.14.0"): install that release,
+#            seed course videos, document rows, progress and read confirmations
+#            (scripts/lifecycle-fixtures/recent-case.php), upgrade like `upgrade`, repair once, then
+#            read them back through the app's mappers and RequiredDocumentService. The upgraded
+#            schema must equal the fresh scenario's schema, and scripts/schema-drift.py must find no
+#            breaking drift between them and the entities (the 5.14.1 lesson: SELECT * over a column
+#            the entity does not know). The tarballs are the GitHub release assets (sha256 pinned
+#            below); RECENT_TARBALL_DIR=<dir> takes <dir>/<v>/learning-<v>.tar.gz instead (the same
+#            checksum must match). Nextcloud runs migrations only on a version change, so a base
+#            that is not older than the working state fails `recent_<v>_version_jump` rather than
+#            passing an upgrade that did nothing; PROBE_BUMP_VERSION=<x.y.z> sets that version in
+#            the probe's copy of info.xml (never in the repository) to test unreleased migrations.
+#            RECENT_BASES="" leaves the scenario out (the log says so).
+# The fresh, upgrade and bare scenarios end with scripts/lifecycle-fixtures/check-working-state.php: audit chain head,
 # a real compliance event, the expected chain position, and a translation round-trip.
 # The LLM upgrade contract (plan Task C2) is checked by scripts/lifecycle-fixtures/check-llm-upgrade.php:
 #   fresh    a repair run reports no AI migration failure; no ai_connection, AI `disabled`, and the
@@ -60,6 +74,20 @@ OLD_URL="https://github.com/andremadstop/learning-nc/releases/download/v5.5.1/le
 OLD_SHA256="b4a7ff9100d761375d74031bbce6000ea0da89ff851a2873f109cb0ef02d01ef"
 OLD_VERSION="5.5.1"
 RELEASE_SET=(appinfo css img js l10n lib templates data CHANGELOG.md LICENSE README.md)
+# Recent releases for the recent-<v> scenario: GitHub release asset sha256 (= the signed tarball
+# uploaded to the App Store). Add a release here once it is out.
+declare -A RECENT_SHA256=(
+	[5.13.0]=e3079cdfe9b97addd1a69fe0b05d3ee05a9900ea3d3eddabaa7647f02d8d181d
+	[5.14.0]=20a168539d6f40c6e674204a49f44b6b88f511d26240781961ab0b2a4937f032
+	[5.14.1]=559815b220a2d1702c77713484510b932baf05cae67295a1bbe5f514f1a3d71a
+)
+RECENT_BASES="${RECENT_BASES-5.13.0 5.14.0}"
+RECENT_TARBALL_DIR="${RECENT_TARBALL_DIR:-}"
+PROBE_BUMP_VERSION="${PROBE_BUMP_VERSION:-}"
+for v in $RECENT_BASES; do
+	[ -n "${RECENT_SHA256[$v]:-}" ] || { echo "RECENT_BASES: no pinned sha256 for $v (known: ${!RECENT_SHA256[*]})" >&2; exit 2; }
+done
+case "$PROBE_BUMP_VERSION" in ''|[0-9]*.[0-9]*.[0-9]*) ;; *) echo "PROBE_BUMP_VERSION must look like x.y.z" >&2; exit 2 ;; esac
 
 PROBE_FAIL_AFTER="${PROBE_FAIL_AFTER:-}"
 case "$ENGINE" in pgsql|mysql) ;; *) echo "ENGINE must be pgsql or mysql" >&2; exit 2 ;; esac
@@ -70,6 +98,8 @@ SEEDER="$WORK/repo/scripts/lifecycle-fixtures/seed-5.5.1.sql.php"
 CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-working-state.php"
 LLM_CHECKER="$WORK/repo/scripts/lifecycle-fixtures/check-llm-upgrade.php"
 MEMBER_CASE="$WORK/repo/scripts/lifecycle-fixtures/member-case.php"
+RECENT_CASE="$WORK/repo/scripts/lifecycle-fixtures/recent-case.php"
+DRIFT="$WORK/repo/scripts/schema-drift.py"
 PASS="throwaway-$$-$RANDOM"   # dies with the containers; never leaves this machine
 CREATED=()                     # "container:<name>" / "network:<name>", in creation order
 FAILED=0
@@ -112,13 +142,18 @@ if [ -n "${PROBE_REF:-}" ]; then
 else
 	echo "==> app under test from git index"
 fi
-for f in "$SEEDER" "$CHECKER" "$LLM_CHECKER" "$MEMBER_CASE"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
+for f in "$SEEDER" "$CHECKER" "$LLM_CHECKER" "$MEMBER_CASE" "$RECENT_CASE" "$DRIFT"; do [ -f "$f" ] || { echo "fixture ${f#$WORK/repo/} is not in the git index" >&2; exit 2; }; done
 mkdir -p "$WORK/new/learning"
 for f in "${RELEASE_SET[@]}"; do
 	[ -e "$WORK/repo/app/$f" ] || { echo "working state lacks app/$f" >&2; exit 2; }
 	cp -a "$WORK/repo/app/$f" "$WORK/new/learning/"
 done
 rm -f -- "$WORK/new/learning/appinfo/signature.json"   # the unsigned working state, not a stale signature
+if [ -n "$PROBE_BUMP_VERSION" ]; then
+	# the probe's copy only: the first <version> is the app's (the AI provider list has others)
+	sed -i "0,/<version>[^<]*<\/version>/s//<version>$PROBE_BUMP_VERSION<\/version>/" "$WORK/new/learning/appinfo/info.xml"
+	echo "==> PROBE_BUMP_VERSION: working state installed as $PROBE_BUMP_VERSION (probe copy of info.xml only)"
+fi
 NEW_VERSION="$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' "$WORK/new/learning/appinfo/info.xml" | head -1)"
 
 echo "==> $OLD_VERSION release tarball"
@@ -126,6 +161,18 @@ curl -fsSL -o "$WORK/old.tar.gz" "$OLD_URL"
 echo "$OLD_SHA256  $WORK/old.tar.gz" | sha256sum -c --quiet -
 mkdir -p "$WORK/old"; tar -xzf "$WORK/old.tar.gz" -C "$WORK/old"
 [ -f "$WORK/old/learning/appinfo/info.xml" ] || { echo "tarball has no learning/appinfo/info.xml" >&2; exit 2; }
+
+for v in $RECENT_BASES; do
+	echo "==> $v release tarball${RECENT_TARBALL_DIR:+ from $RECENT_TARBALL_DIR}"
+	if [ -n "$RECENT_TARBALL_DIR" ]; then
+		cp -- "$RECENT_TARBALL_DIR/$v/learning-$v.tar.gz" "$WORK/base-$v.tar.gz"
+	else
+		curl -fsSL -o "$WORK/base-$v.tar.gz" "https://github.com/andremadstop/learning-nc/releases/download/v$v/learning-$v.tar.gz"
+	fi
+	echo "${RECENT_SHA256[$v]}  $WORK/base-$v.tar.gz" | sha256sum -c --quiet -
+	mkdir -p "$WORK/base-$v"; tar -xzf "$WORK/base-$v.tar.gz" -C "$WORK/base-$v"
+	[ -f "$WORK/base-$v/learning/appinfo/info.xml" ] || { echo "$v tarball has no learning/appinfo/info.xml" >&2; exit 2; }
+done
 
 # --- instance helpers -------------------------------------------------------------------------
 # new_instance <scenario> — start DB + Nextcloud (source copied, not installed); sets DB, NC.
@@ -295,6 +342,41 @@ upgrade_injected() {
 	[ "$rc" -ne 0 ] && grep -q "PROBE-INJECTED $PROBE_FAIL_AFTER" <<<"$out"
 }
 
+# recent_case <seed|check> — recent-release course data in, read back through the app (recent-case.php)
+recent_case() {
+	docker cp "$RECENT_CASE" "$NC:/tmp/recent-case.php" || return 1
+	local out rc=0
+	out="$(docker exec -u www-data "$NC" php /tmp/recent-case.php "$1" 2>&1)" || rc=$?
+	echo "$out"
+	if [ "$1" = seed ]; then [ "$rc" -eq 0 ] && grep -q '^SEED kind=' <<<"$out"
+	else [ "$rc" -eq 0 ] && grep -q '^CHECK result=ok$' <<<"$out"; fi
+}
+
+# schema_dump <name> — the learning tables' `table|column` lines of the current instance
+schema_dump() {
+	if [ "$ENGINE" = pgsql ]; then
+		docker exec "$DB" psql -U nc -d nextcloud -tA -F '|' -c "select table_name, column_name from information_schema.columns
+			where table_schema = current_schema() and table_name like 'oc\\_learning%' order by 1, 2" >"$WORK/schema-$1.txt" || return 1
+	else
+		docker exec "$DB" mariadb -unc -p"$PASS" -h 127.0.0.1 -N -B -e "select table_name, column_name from information_schema.columns
+			where table_schema = DATABASE() and table_name like 'oc\\_learning%' order by 1, 2" nextcloud | tr '\t' '|' >"$WORK/schema-$1.txt" || return 1
+	fi
+	echo "schema $1: $(wc -l <"$WORK/schema-$1.txt") columns"
+	[ -s "$WORK/schema-$1.txt" ]
+}
+
+# same_schema <a> <b> — two dumps list the same tables and columns
+same_schema() { diff "$WORK/schema-$1.txt" "$WORK/schema-$2.txt"; }
+
+# no_drift <live> <fresh> — schema-drift.py finds no breaking drift against the app under test
+no_drift() { python3 -I "$DRIFT" --live "$WORK/schema-$1.txt" --fresh "$WORK/schema-$2.txt" --lib "$WORK/repo/app/lib"; }
+
+# newer <a> <b> — version a is strictly newer than b
+newer() {
+	echo "working state $1, base $2"
+	[ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]
+}
+
 # Replace, not overlay: files removed between versions must not survive the upgrade.
 swap_to_working_state() {
 	docker exec "$NC" sh -euc 'd=/var/www/html/apps/learning; rm -r -- "$d"' &&
@@ -316,6 +398,7 @@ check fresh_repair occ_clean maintenance:repair
 check fresh_member_case member_case check
 check fresh_llm llm_contract fresh
 check fresh_working_state working_state 1
+check fresh_schema_dump schema_dump fresh
 
 # --- scenario: upgrade 5.5.1 -> working state -------------------------------------------------
 echo "==> [$ENGINE] install $OLD_VERSION, seed, upgrade to $NEW_VERSION"
@@ -363,5 +446,28 @@ check bare_occ_upgrade occ_clean upgrade
 check bare_new_version version_is "$NEW_VERSION"
 check bare_repair occ_clean maintenance:repair
 check bare_working_state working_state 1
+
+# --- scenario: recent release (5.13.x / 5.14.x) with course data -> working state ------------
+[ -n "$RECENT_BASES" ] || echo "==> [$ENGINE] recent-release scenario left out (RECENT_BASES is empty)"
+for v in $RECENT_BASES; do
+	echo "==> [$ENGINE] install $v, seed course data, upgrade to $NEW_VERSION"
+	s="recent_${v//./_}"
+	check "${s}_version_jump" newer "$NEW_VERSION" "$v"
+	check "${s}_setup" new_instance "recent-${v//./-}"
+	check "${s}_install_old" install_nc "$WORK/base-$v/learning"
+	check "${s}_enable_old" occ app:enable learning
+	check "${s}_old_version" version_is "$v"
+	check "${s}_users" add_users
+	check "${s}_seed" recent_case seed
+	check "${s}_swap" swap_to_working_state
+	check "${s}_occ_upgrade" occ_clean upgrade
+	check "${s}_new_version" version_is "$NEW_VERSION"
+	check "${s}_repair" occ_clean maintenance:repair
+	check "${s}_course_data" recent_case check
+	check "${s}_schema_dump" schema_dump "$s"
+	check "${s}_schema_eq_fresh" same_schema fresh "$s"
+	check "${s}_no_drift" no_drift "$s" fresh
+	check "${s}_enabled" app_enabled
+done
 
 [ "$FAILED" = 0 ] || exit 1   # the verdict line comes from cleanup(), after removal
