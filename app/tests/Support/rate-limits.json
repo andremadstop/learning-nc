@@ -754,9 +754,9 @@
   },
   "LernprofilController::cheatSheet": {
    "kind": "user",
-   "limit": 10,
+   "limit": 120,
    "period": 60,
-   "group": "costly"
+   "group": "read"
   },
   "LernprofilController::lernhistorie": {
    "kind": "user",

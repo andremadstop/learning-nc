@@ -120,7 +120,7 @@ class LernprofilController extends Controller {
      * @NoAdminRequired
      * @param int $limit Max questions (1-100, default 50)
      */
-    #[UserRateLimit(limit: 10, period: 60)]
+    #[UserRateLimit(limit: 120, period: 60)]
     public function cheatSheet(int $limit = 50): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
