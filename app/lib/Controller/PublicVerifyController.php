@@ -134,6 +134,8 @@ class PublicVerifyController extends Controller {
 
         if (in_array($status, ['valid', 'withdrawn', 'expired'], true)) {
             $params['issuer_name'] = $result['issuer_name'] ?? '';
+            // GitHub #77 (review): the signing instance, so the course-set name is not the only origin shown
+            $params['signed_by'] = is_string($result['signed_by'] ?? null) ? $result['signed_by'] : '';
             $params['course_title'] = $result['course_title'] ?? '';
             $params['course_elements'] = is_array($result['course_elements'] ?? null) ? $result['course_elements'] : [];
             $params['issued_at'] = $result['issued_at'] ?? null;

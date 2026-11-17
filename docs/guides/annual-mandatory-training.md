@@ -269,7 +269,7 @@ Go to **Participants → Completion & certificate**. The **Compliance report** i
 
 **Coverage: all enrolled learners** is below the report. It lists everyone enrolled as a learner, also those who never passed, with their status (Current, Renewal open, Expired in grace period, Overdue, Never passed), the last certificate, valid until, the required pools passed and, if the course has required content, how many items they have confirmed for the current period. Filter by status; **Coverage of all learners as CSV** downloads the list shown.
 
-**Checking a certificate.** Anyone can scan the QR code or open the verification link on the certificate. The public page shows the issuer, the course, the course elements, the issue and expiry dates, and whether the certificate is valid, expired or withdrawn. For data protection, it does not show the holder's name. The verifier compares the Certificate ID on the document with the one on the page.
+**Checking a certificate.** Anyone can scan the QR code or open the verification link on the certificate. The public page shows the issuer, the address of the Nextcloud whose key signed the certificate ("Signed by"; the organisation name is set per course, the address is what the signature vouches for), the course, the course elements, the issue and expiry dates, and whether the certificate is valid, expired or withdrawn. For data protection, it does not show the holder's name. The verifier compares the Certificate ID on the document with the one on the page.
 
 ![The public verification page without login: "Certificate successfully verified", the course, the organisation with its logo, the course elements, issued on and valid until, and what the check confirms](../../screenshots/17-certificate-verification.png)
 

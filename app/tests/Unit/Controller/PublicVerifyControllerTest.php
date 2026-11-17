@@ -128,6 +128,7 @@ class PublicVerifyControllerTest extends TestCase {
         $dto = [
             'status' => 'valid',
             'issuer_name' => 'DevCloud',
+            'signed_by' => 'cloud.example.org',
             'course_title' => 'Compliance-Schulung',
             'course_elements' => ['Brandschutz', 'Erste Hilfe'],
             'issued_at' => 1700000000,
@@ -143,6 +144,8 @@ class PublicVerifyControllerTest extends TestCase {
         $params = $resp->getParams();
         $this->assertSame('valid', $params['status']);
         $this->assertSame('DevCloud', $params['issuer_name']);
+        // GitHub #77 (review): the course sets the name; the page also names the signing instance.
+        $this->assertSame('cloud.example.org', $params['signed_by']);
         $this->assertSame('Compliance-Schulung', $params['course_title']);
         // GitHub #43: the signed required pools reach the public page.
         $this->assertSame(['Brandschutz', 'Erste Hilfe'], $params['course_elements']);

@@ -203,10 +203,43 @@ class CertificateVerifyServiceTest extends TestCase {
 
         $this->assertSame('valid', $result['status']);
         $this->assertSame(self::ISSUER_NAME, $result['issuer_name']);
+        // GitHub #77 (review): the signing instance comes from the bound issuer.id, not the name.
+        $this->assertSame('example.com', $result['signed_by']);
         $this->assertSame(self::COURSE_TITLE, $result['course_title']);
         $this->assertSame(self::VID, $result['verification_id']);
         $this->assertArrayHasKey('issued_at', $result);
         $this->assertArrayHasKey('expires_at', $result);
+    }
+
+    /**
+     * GitHub #77 (review): any manager of a course can set issuer.name, so the public page also
+     * names the host the signature belongs to. A course-set name must not change it.
+     */
+    public function testSignedByIsTheHostOfTheSigningKeyNotTheCourseSetName(): void {
+        $payload = $this->payload(self::VID);
+        $payload['issuer']['name'] = 'Some Other Academy GmbH';
+        $cert = $this->certificate(self::VID, $this->signJwt($payload));
+        $service = $this->buildService(
+            $this->certMapperFor($cert),
+            $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
+            $this->keyServiceWith(),
+            $this->timeAt()
+        );
+
+        $result = $service->verifyByVerificationId(self::VID);
+
+        $this->assertSame('valid', $result['status']);
+        $this->assertSame('Some Other Academy GmbH', $result['issuer_name']);
+        $this->assertSame('example.com', $result['signed_by']);
+    }
+
+    public function testDidWebHost(): void {
+        $this->assertSame('example.com', CertificateVerifyService::didWebHost('did:web:example.com:apps:learning'));
+        $this->assertSame('example.com:8443', CertificateVerifyService::didWebHost('did:web:example.com%3A8443:nc:apps:learning'));
+        $this->assertSame('example.com', CertificateVerifyService::didWebHost('did:web:example.com'));
+        $this->assertSame('', CertificateVerifyService::didWebHost('did:key:z6Mk'));
+        $this->assertSame('', CertificateVerifyService::didWebHost(''));
+        $this->assertSame('', CertificateVerifyService::didWebHost('did:web:%3Cscript%3E:apps'));
     }
 
     public function testTamperedInvalid(): void {
@@ -588,7 +621,8 @@ class CertificateVerifyServiceTest extends TestCase {
         $this->assertEqualsCanonicalizing(
             // issuer_logo (GitHub #78): the organisation's logo the certificate was issued with, no
             // recipient data; null here (no layout service, a certificate without a library logo)
-            ['status', 'issuer_name', 'issuer_logo', 'course_title', 'course_elements', 'issued_at', 'expires_at', 'verification_id'],
+            // signed_by (GitHub #77 review): the host of the signing instance, no recipient data
+            ['status', 'issuer_name', 'issuer_logo', 'signed_by', 'course_title', 'course_elements', 'issued_at', 'expires_at', 'verification_id'],
             array_keys($result),
             'valid DTO exposes ONLY the allow-listed public fields'
         );

@@ -292,8 +292,12 @@ class CertificateVerifyService {
      * issuer_logo (GitHub #78): the library logo the certificate was issued with, as a data URL; null
      * for a certificate issued with the Theming logo (the page then shows the Theming logo).
      *
+     * signed_by (GitHub #77 review): the host of the instance whose key signed the certificate, read
+     * from payload issuer.id, which verifyJwt() has already bound to hostDid(). issuer_name is free
+     * text any manager of the course can set; signed_by is what the signature itself vouches for.
+     *
      * @param array<string, mixed> $payload
-     * @return array{issuer_name: string, issuer_logo: string|null, course_title: string, course_elements: list<string>, issued_at: int, expires_at: int|null, verification_id: string}
+     * @return array{issuer_name: string, issuer_logo: string|null, signed_by: string, course_title: string, course_elements: list<string>, issued_at: int, expires_at: int|null, verification_id: string}
      */
     private function projectDto(Certificate $cert, array $payload, string $vid): array {
         $issuerName = is_array($payload['issuer'] ?? null) && is_string($payload['issuer']['name'] ?? null)
@@ -310,12 +314,26 @@ class CertificateVerifyService {
         return [
             'issuer_name' => $issuerName,
             'issuer_logo' => $this->issuerLogo($cert),
+            'signed_by' => self::didWebHost(is_array($payload['issuer'] ?? null) && is_string($payload['issuer']['id'] ?? null) ? $payload['issuer']['id'] : ''),
             'course_title' => $courseTitle,
             'course_elements' => self::courseElements($payload),
             'issued_at' => $cert->getIssuedAt(),
             'expires_at' => $cert->getExpiresAt(),
             'verification_id' => $vid,
         ];
+    }
+
+    /**
+     * The host (with a non-default port) of a did:web identifier as KeyService::hostDid() builds it:
+     * did:web:example.com:apps:learning → example.com, did:web:example.com%3A8443:nc:apps:learning →
+     * example.com:8443. Anything that is not did:web yields '' (the page then shows no line).
+     */
+    public static function didWebHost(string $did): string {
+        if (!str_starts_with($did, 'did:web:')) {
+            return '';
+        }
+        $host = rawurldecode(explode(':', substr($did, strlen('did:web:')), 2)[0]);
+        return preg_match('/^[A-Za-z0-9.\-]+(:[0-9]{1,5})?$/', $host) === 1 ? $host : '';
     }
 
     /**

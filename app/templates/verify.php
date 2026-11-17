@@ -90,6 +90,7 @@ if ($status === 'valid') {
 	.lrn-verify__issuer { display: flex; align-items: center; gap: 12px; margin: 12px 0 24px; }
 	.lrn-verify__issuer img { height: 40px; width: auto; }
 	.lrn-verify__issuer-name { font-weight: 600; color: #1a3a5c; }
+	.lrn-verify__signed-by { margin: -16px 0 24px; font-size: .9em; color: #555; text-align: start; }
 	.lrn-verify__elements { margin: 0 0 16px; text-align: start; }
 	.lrn-verify__elements h3 { margin: 0 0 6px; font-size: 1em; color: #555; font-weight: 600; }
 	.lrn-verify__elements ul { margin: 0; padding-inline-start: 20px; list-style: disc; color: #1a3a5c; }
@@ -140,6 +141,10 @@ if ($status === 'valid') {
 			<?php } ?>
 			<span class="lrn-verify__issuer-name"><?php p($_['issuer_name'] ?? ''); ?></span>
 		</div>
+		<?php if (($_['signed_by'] ?? '') !== '') { ?>
+			<!-- GitHub #77 (review): the organisation name above is set per course; this is the instance whose key signed it. -->
+			<p class="lrn-verify__signed-by"><?php p($l->t('Signiert von')); ?>: <span class="lrn-verify__ltr"><?php p($_['signed_by']); ?></span></p>
+		<?php } ?>
 
 		<?php $courseElements = is_array($_['course_elements'] ?? null) ? $_['course_elements'] : []; ?>
 		<?php if ($courseElements !== []) { ?>

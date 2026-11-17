@@ -1332,6 +1332,7 @@ OC.L10N.register(
     "Pflege VLAN-ID, Name, Subnetz und Gateway für dein Segment-Design." : "أدر معرّف VLAN والاسم والشبكة الفرعية والبوابة لتصميم القطاع.",
     "Pflicht-Pools" : "المجمعات الإلزامية",
     "Kursbestandteile" : "عناصر الدورة",
+    "Signiert von" : "موقَّع من",
     "Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition." : "اختر مجموعة لتمارين صواب/خطأ السريعة. هذا الوضع مناسب للتكرار السريع والتعرف.",
     "Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often." : "اختر مجموعة لمراجعة البطاقات بالتكرار المتباعد. سيعرض النظام البطاقات الصعبة أكثر والمُتقَنة أقل.",
     "Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review." : "اختر مجموعة لمحاكاة اختبار. ستنهي الجلسة كاملةً أولًا ثم ترى المراجعة الكاملة.",

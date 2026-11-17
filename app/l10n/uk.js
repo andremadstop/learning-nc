@@ -1344,6 +1344,7 @@ OC.L10N.register(
     "Pflege VLAN-ID, Name, Subnetz und Gateway für dein Segment-Design." : "Керуйте ID VLAN, назвою, підмережею та шлюзом для проєктування сегментів.",
     "Pflicht-Pools" : "Обов'язкові пули",
     "Kursbestandteile" : "Елементи курсу",
+    "Signiert von" : "Підписано",
     "Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition." : "Оберіть пул для швидкої практики «правда чи ні». Цей режим добре підходить для швидкого повторення та впізнавання.",
     "Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often." : "Оберіть пул, щоб повторювати картки з інтервальним повторенням. Система показуватиме складні картки частіше, а опановані — рідше.",
     "Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review." : "Оберіть пул, щоб змоделювати іспит. Спершу ви пройдете всю сесію й лише потім побачите повний розбір.",
