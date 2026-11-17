@@ -201,7 +201,7 @@ if (layout?.issuer_name !== ISSUER_NAME) throw new Error(`issuer_name did not st
 // course with nobody but its instructor, a course that was created and deleted again (its id is a
 // link that outlived its target) and a pool id that was never handed out. Only the instructor's and
 // learner1's course lists gain a course; the generic sweeps (admin, learner2) see nothing new.
-const archivedCourse = await asInstructor('POST', '/courses', { title: 'Safety training 2025', description: 'Last year\'s run.' })
+const archivedCourse = await asInstructor('POST', '/courses', { title: 'Safety training 2025', description: 'Last year\'s run.', profile: itCourse ? 'it' : 'mandatory' })
 await asInstructor('POST', `/courses/${archivedCourse.id}/members`, { userId: 'learner1', role: 'student' })
 await asInstructor('PUT', `/courses/${archivedCourse.id}`, { status: 'archived' })
 const archivedCheck = await asInstructor('GET', `/courses/${archivedCourse.id}`)
