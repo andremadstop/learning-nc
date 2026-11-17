@@ -1143,6 +1143,38 @@ for (const [persona, opts] of [['learner1', {}], ['instructor', {}], ['admin', {
 			await settle(page)
 			await expectDeadLinkNotice(page, rec, { title: 'This pool is not available', button: 'Back to the pools', landsOn: /\/pools$/ })
 		})
+		// review #82: a pool id that is no number named no pool and showed the plain list
+		await station(page, rec, `${DEAD}pool id that is no number`, async () => {
+			await page.goto(`${APP}/pools?poolId=abc`)
+			await settle(page)
+			await expectDeadLinkNotice(page, rec, { title: 'This pool is not available', button: 'Back to the pools', landsOn: /\/pools$/ })
+		})
+		// review #82: an address the app does not know went to the start view without a word
+		await station(page, rec, `${DEAD}address the app does not know`, async () => {
+			await page.goto(`${APP}/kurse/${seed.courseId}`)
+			await settle(page)
+			const note = page.locator('[data-test="unknown-link"]')
+			if (!(await note.count())) rec.add('dead-link', 'an unknown address opens the start view without a note')
+			else {
+				if ((await note.first().getAttribute('role')) !== 'status') rec.add('dead-link', 'the unknown-address note is not announced (role="status" missing)')
+				if (!/This address does not exist in Learning/.test(await note.first().innerText())) rec.add('dead-link', `unknown-address note: "${(await note.first().innerText()).slice(0, 160)}"`)
+			}
+			if (!/\/(dashboard|courses)$/.test(new URL(page.url()).pathname)) rec.add('dead-link', `an unknown address led to ${shortUrl(page.url())}, not to the start view`)
+		})
+		// review #82: the instructors' requests (ticket_created notification) for someone who is no
+		// instructor there (a learner, the student view) switched to the feed without a word
+		if (user !== 'admin') {
+			await station(page, rec, `${DEAD}course area this persona does not have (requests)`, async () => {
+				await page.goto(`${APP}/courses/${seed.courseId}/requests`)
+				await settle(page)
+				const note = page.locator('[data-test="tab-unavailable"]')
+				const instructorView = user === seed.poolOwner && !opts.studentView
+				if (instructorView) {
+					if (await note.count()) rec.add('dead-link', 'the instructor\'s own requests tab is reported as not available')
+				} else if (!(await note.count())) rec.add('dead-link', 'a course area this persona does not have opens another one without a note')
+				else if ((await note.first().getAttribute('role')) !== 'status') rec.add('dead-link', 'the course-area note is not announced (role="status" missing)')
+			})
+		}
 		await station(page, rec, `${DEAD}adventure link (gamification ${seed.gamification ? 'on' : 'off'})`, async () => {
 			await page.goto(`${APP}/?learningView=abenteuer`)
 			await settle(page)
