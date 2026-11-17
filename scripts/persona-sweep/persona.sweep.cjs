@@ -71,8 +71,13 @@ class Recorder {
 		this.page = page
 		page.on('response', (r) => {
 			const u = r.url()
-			if (!isAppUrl(u)) return
 			const req = r.request()
+			// Outside the app only a rate limit counts: Nextcloud's own limits (core OCS, login,
+			// notifications) hit the same learners while they click through Learning.
+			if (!isAppUrl(u)) {
+				if (r.status() === 429) this.add('http', `${req.method()} 429 ${shortUrl(u)} (outside the app)`)
+				return
+			}
 			this.requests.push({ t: Date.now(), method: req.method(), status: r.status(), url: shortUrl(u) })
 			if (r.status() >= 400) this.add('http', `${req.method()} ${r.status()} ${shortUrl(u)}`)
 		})
