@@ -19,7 +19,7 @@ an admin connects a recipient and each learner has consented.
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 ![Tests](https://img.shields.io/badge/Tests-5737%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-5.14.0-blue)
+![Version](https://img.shields.io/badge/Version-5.14.1-blue)
 
 ![A certificate with the organisation's name and logo, the course elements, result, validity, QR code and certificate ID](screenshots/16-certificate.png)
 

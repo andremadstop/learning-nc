@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.14.1] - 2026-11-17 — Pools on long-running installs, app icon caches
+
+A hotfix for two things alphalib-g ran into after 5.14.0 (#81, #83), and for pools on installs
+that started on 1.x or 2.x. Thanks to @alphalib-g for checking again and reporting back.
+
+> **Administrators, please read:**
+> - **No migration.** A new repair step (`ClearStaleThemingIcons`, "Clear cached Learning icons in
+>   theming") runs after the update and deletes only this app's icons cached by Theming
+>   (favicon, touch icon, app icon); Theming renders them again on the next request. It never
+>   fails an update.
+> - The app icon now also ships as `img/learning.svg` and `img/learning-dark.svg`, which Nextcloud
+>   prefers over `app.svg`. Browsers that cached the old icon for months load the new file name.
+
+### Fixed
+- **Pools on installs that started on 1.x or 2.x.** These still have the old column
+  `learning_pools.visibility`. Since 5.11.0 every full pool read failed there with
+  "visibility is not a valid attribute": the own pool list, opening a pool, export, merge and
+  `occ learning:import-question-media`. The column is read and ignored again; nothing is dropped
+  or changed.
+- **App icon** (#81): the new icon from 5.14.0 now reaches the Apps list, the favicon, the touch
+  icon and the settings sidebar after an update. Browser caches kept `app-dark.svg` for up to six
+  months and Theming kept its rendered icons forever; the icon has new file names, and the repair
+  step above clears Theming's cache.
+- **Russian** (#83): "certificate" is "сертификат" everywhere; two strings used "свидетельство".
+
 ## [5.14.0] - 2026-11-17 — Rich feedback and audio per question, required content per renewal, certificate branding and print, security hardening
 
 Rich feedback per question (#66), an example course and the second wave of quality checks (#65),
