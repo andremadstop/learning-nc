@@ -27,6 +27,7 @@ Every PHP gate runs in a throwaway Docker container on a clean snapshot of the c
 | Secret scan (hard-coded keys and passwords) | | ✓ | | |
 | OpenAPI spec up to date (`openapi-spec.sh --check`) | | ✓ | ✓ | |
 | SQL columns against a freshly installed schema | | ✓ | | |
+| Schema-drift self-test (`schema-drift.test.sh`) | | | ✓ | |
 | Forbidden names (trademark/publicity check) | | ✓ | | |
 | Umlaut check (`ae`/`oe`/`ue` in German UI text; warning only) | | ✓ | | |
 | Repo hygiene (no internal working documents in the tree) | | ✓ | | |
@@ -142,9 +143,9 @@ The output goes to `scripts/persona-sweep/out/visual-diff/` (`report.md`, `repor
 
 It also gives an overall summary: would it set up the training with this app, and what holds it up most? Its findings are hypotheses. They are checked against the code before they become a fix or an issue. The procedure and the prompt are in [`scripts/persona-sweep/FRESH-EYES.md`](scripts/persona-sweep/FRESH-EYES.md): the reviewer runs in a directory that holds only `stations.json` and the screenshots, once per mode. This review is a manual step and not part of CI.
 
-## Gate 4: integration, lifecycle, SQL columns
+## Gate 4: integration, lifecycle, SQL columns, schema drift
 
-All three install a real Nextcloud in throwaway containers, with no OCP stubs. Containers, volumes and networks are removed after every run. A failed cleanup fails the run.
+All four install a real Nextcloud in throwaway containers, with no OCP stubs. Containers, volumes and networks are removed after every run. A failed cleanup fails the run.
 
 ```bash
 ENGINE=pgsql ./scripts/nc-integration.sh            # app/tests/Integration on the git index
@@ -152,6 +153,7 @@ ENGINE=mysql ./scripts/nc-integration.sh --ref HEAD # ... on MariaDB, for a comm
 ENGINE=pgsql ./scripts/lifecycle-probe.sh
 ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
 ./scripts/schema-dump.sh /tmp/schema.txt && SCHEMA_FILE=/tmp/schema.txt python3 scripts/check-sql-columns.py
+./scripts/schema-drift.sh live-schema.txt --fresh /tmp/schema.txt   # live instance vs fresh schema vs entities
 ```
 
 - **Integration** (`nc-integration.sh`) runs `app/tests/Integration` with a pinned, checksum-verified PHPUnit PHAR against Nextcloud 33. PostgreSQL 16 is the default; `ENGINE=mysql` uses MariaDB 10.11. A local mock LLM server stands in for AI providers. `INTEG_NC_IMAGE` selects another Nextcloud image; the nightly run uses 34 and 35.
@@ -159,9 +161,34 @@ ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
   - a fresh install
   - an upgrade from the 5.5.1 release with seeded legacy data
   - an upgrade from a bare 5.5.1
+  - an upgrade from each recent release in `RECENT_BASES` (default 5.13.0 and 5.14.0) with course videos, document rows, progress and read confirmations, read back through the app's mappers. The upgraded schema must equal the fresh one, and `schema-drift.py` must find no breaking drift. A base that is not older than the working state fails, because Nextcloud runs migrations only on a version change; `PROBE_BUMP_VERSION=<x.y.z>` raises the version in the probe's copy of `info.xml` to test unreleased migrations. `RECENT_TARBALL_DIR=<dir>` reads the tarballs from `<dir>/<v>/learning-<v>.tar.gz` instead of downloading them; the pinned checksums still apply.
 
-  Each scenario then checks the audit hash chain, a real compliance event, a translation round-trip, the AI-settings migration and the member repair step. `LIFECYCLE_NC_IMAGE` selects the Nextcloud image. This probe exists because Nextcloud runs only `changeSchema()` on a first install, never `postSchemaChange()`: data written there is missing on every new installation.
+  The first three scenarios then check the audit hash chain, a real compliance event, a translation round-trip, the AI-settings migration and the member repair step. `LIFECYCLE_NC_IMAGE` selects the Nextcloud image. This probe exists because Nextcloud runs only `changeSchema()` on a first install, never `postSchemaChange()`: data written there is missing on every new installation.
 - **SQL columns** (`schema-dump.sh` + `check-sql-columns.py`) checks the column names in raw SQL against the schema of a fresh install. PHPStan cannot see a wrong column inside a string. This check runs in the pre-push hook.
+- **Entities cover the schema** (`app/tests/Integration/EntityCoversSchemaTest.php`, part of the integration suite) runs every column of the freshly installed schema through `Entity::fromRow()` for each mapper that selects `*`. A column without an entity property makes every such read throw ("… is not a valid attribute").
+- **Schema drift** (`schema-drift.sh`) compares the learning tables of a live instance with a fresh schema and with the entities in `lib/Db`. Old installs can carry columns no fresh install has: 5.11.0 removed `Pool::$visibility`, and every full pool read failed on installs that started on 1.x/2.x, which still have `learning_pools.visibility` (fixed in 5.14.1). The live side is a text file you produce on the instance; the script never connects to a database. Exit 1 means breaking drift: a live column on an entity table without a property, a missing column, or a missing table the code still uses. Extra tables and columns, name lookalikes (`q_translations` / `qst_translations`) and properties without a column are printed as notes.
+
+### Before every release: live schema against the fresh schema
+
+Run on the production instance (or a copy of its database) before each release, with the release candidate checked out:
+
+```bash
+# 1. On the instance: dump the learning tables (read-only). Replace oc_ with the dbtableprefix of config.php.
+#    PostgreSQL:
+psql -U <dbuser> -d <dbname> -tA -F '|' -c "select table_name, column_name from information_schema.columns
+  where table_schema = current_schema() and table_name like 'oc\_learning\_%' order by 1, 2" > live-schema.txt
+#    MySQL / MariaDB:
+mysql -u <dbuser> -p -N -B -e "select table_name, column_name from information_schema.columns
+  where table_schema = DATABASE() and table_name like 'oc\_learning\_%' order by 1, 2" <dbname> | tr '\t' '|' > live-schema.txt
+
+# 2. Locally, on the release candidate (git index; --lib-ref <ref> / --fresh-ref <ref> for a commit):
+./scripts/schema-drift.sh live-schema.txt              # runs schema-dump.sh itself (Docker, ~2 min)
+./scripts/schema-drift.sh live-schema.txt --fresh /tmp/schema.txt   # or reuse a dump
+```
+
+Exit 1 blocks the release. A live-only column needs a property on its entity (read and ignored, like `Pool::$visibility`) or a migration; a missing column means a migration did not run on that instance.
+
+After each release, pin its tarball's sha256 in `RECENT_SHA256` of `scripts/lifecycle-probe.sh` and add it to the default `RECENT_BASES`, so the lifecycle probe upgrades from the release users run now.
 - **Uninstall on both databases**: changes to raw SQL or transaction handling are also checked with `scripts/db-uninstall-probe.php`, once with `PROBE_PLATFORM=mysql` and once with `PROBE_PLATFORM=pgsql`. Instructions are in the file header. Each database has caught bugs the other could not: MariaDB treats double-quoted identifiers as strings, and PostgreSQL silently turns a `COMMIT` in a failed transaction into a rollback.
 
 ## Contract tests: OpenAPI and frontend calls
