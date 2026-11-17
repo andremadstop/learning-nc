@@ -238,6 +238,93 @@ class DocumentScanRenameTest extends TestCase {
         self::assertNotNull($service->currentFileInfo($course, 6));
     }
 
+    /**
+     * GitHub #75 (review): before 5.10.0 a folder typed as 'Material' and picked again as
+     * '/Material' registered one file twice ('Material/x.pdf' and '/Material/x.pdf', no file
+     * id). The scan stamps the file id on one of the two rows; the other one, which may be the
+     * required one, kept serving the file before 5.14.0 and must still do so.
+     */
+    public function testADuplicateRowFromBefore510StillResolvesAfterTheScan(): void {
+        $unnormalized = self::row(5, 'x.pdf', null);
+        $unnormalized->setFilePath('Material/x.pdf');
+        $normalized = self::row(6, 'x.pdf', null);
+        $mapper = new class([$unnormalized, $normalized]) extends CourseDocumentMapper {
+            /** @param list<CourseDocument> $rows */
+            public function __construct(public array $rows) {
+            }
+
+            public function findByCourseId(int $courseId): array {
+                return $this->rows;
+            }
+
+            public function findById(int $id): CourseDocument {
+                foreach ($this->rows as $row) {
+                    if ($row->getId() === $id) {
+                        return $row;
+                    }
+                }
+                throw new \OCP\AppFramework\Db\DoesNotExistException('none');
+            }
+
+            public function findByCourseAndFileId(int $courseId, int $fileId): ?CourseDocument {
+                foreach ($this->rows as $row) {
+                    if ($row->getFileId() === $fileId) {
+                        return $row;
+                    }
+                }
+                return null;
+            }
+
+            public function insert($entity) {
+                $this->rows[] = $entity;
+                return $entity;
+            }
+
+            public function update($entity) {
+                return $entity;
+            }
+        };
+
+        $course = new Course();
+        $course->setId(4);
+        $course->setInstructorId('teacher');
+        $course->setMaterialFolder('/Material');
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($course);
+
+        $storage = $this->createMock(\OCP\Files\Storage\IStorage::class);
+        $storage->method('instanceOfStorage')->willReturn(false);
+        $file = $this->createMock(File::class);
+        $file->method('getType')->willReturn(Node::TYPE_FILE);
+        $file->method('getName')->willReturn('x.pdf');
+        $file->method('getId')->willReturn(100);
+        $file->method('getSize')->willReturn(1);
+        $file->method('isReadable')->willReturn(true);
+        $file->method('getStorage')->willReturn($storage);
+        $file->method('getChecksum')->willReturn('');
+        $file->method('getMTime')->willReturn(10);
+        $folder = $this->createMock(Folder::class);
+        $folder->method('getType')->willReturn(Node::TYPE_FOLDER);
+        $folder->method('getDirectoryListing')->willReturn([$file]);
+        $folder->method('get')->with('x.pdf')->willReturn($file);
+        $userFolder = $this->createMock(Folder::class);
+        $userFolder->method('get')->willReturn($folder);
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturn($userFolder);
+
+        $service = new DocumentService($mapper, $courseMapper, $root, $this->createMock(LoggerInterface::class));
+        $service->scanFolder(4, 'teacher');
+
+        self::assertCount(2, $mapper->rows, 'the scan registers no third row');
+        $stamped = array_values(array_filter([$unnormalized, $normalized], static fn ($r) => $r->getFileId() === 100));
+        self::assertCount(1, $stamped, 'the scan stamps the file id on one of the two rows');
+        foreach ([5, 6] as $id) {
+            [$doc] = $service->resolveMaterialFile($course, $id);
+            self::assertSame($id, $doc->getId(), "row $id still serves the file");
+            self::assertNotNull($service->currentFileInfo($course, $id), "row $id is confirmed with a version");
+        }
+    }
+
     public function testVersionIgnoresTheNameAndFollowsTheContent(): void {
         $make = function (string $checksum, int $mtime, int $size): File {
             $file = $this->createMock(File::class);

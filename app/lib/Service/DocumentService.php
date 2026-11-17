@@ -466,9 +466,12 @@ class DocumentService {
         // GitHub #75 (review): the file under this name belongs to another row of the course (the
         // row's own file was deleted and another one renamed to its name, scanFolder()); this row
         // is left behind like the row of a deleted file. A file id no row carries (a replaced
-        // file before the next scan) still resolves by name.
+        // file before the next scan) still resolves by name. Only a row with a file id of its own
+        // is left behind: a row without one (from before 5.14.0) is resolved by name as before.
+        // Before 5.10.0 a folder typed as 'Kurs' and picked as '/Kurs' gave one file two rows;
+        // the scan stamps the id on one of them, and the other one must keep serving the file.
         $nodeId = self::nodeFileId($node);
-        if ($nodeId !== null && $nodeId !== $doc->getFileId()) {
+        if ($nodeId !== null && $doc->getFileId() !== null && $nodeId !== $doc->getFileId()) {
             $owner = $this->documentMapper->findByCourseAndFileId((int)$course->getId(), $nodeId);
             if ($owner !== null && $owner->getId() !== $doc->getId()) {
                 throw new NotFoundException('The file belongs to another document');
