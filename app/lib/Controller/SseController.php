@@ -34,7 +34,8 @@ class SseController extends Controller {
      * @NoAdminRequired
      */
     // Each stream holds a PHP worker for up to STREAM_TIMEOUT_SECONDS, so this limit is what
-    // bounds the workers one account can bind: 10 starts per 60 s → at most 20 open streams.
+    // bounds the workers one account can bind. Nextcloud counts per account AND method, so
+    // 10 starts per 60 s → at most 20 open streams here, 40 across duel and gameshow together.
     // Real use is one connect per game about every 2 minutes; on a 429 the client falls back
     // to polling after three retries, so the game goes on.
     #[UserRateLimit(limit: 10, period: 60)]
@@ -60,7 +61,8 @@ class SseController extends Controller {
      * @NoAdminRequired
      */
     // Each stream holds a PHP worker for up to STREAM_TIMEOUT_SECONDS, so this limit is what
-    // bounds the workers one account can bind: 10 starts per 60 s → at most 20 open streams.
+    // bounds the workers one account can bind. Nextcloud counts per account AND method, so
+    // 10 starts per 60 s → at most 20 open streams here, 40 across duel and gameshow together.
     // Real use is one connect per game about every 2 minutes; on a 429 the client falls back
     // to polling after three retries, so the game goes on.
     #[UserRateLimit(limit: 10, period: 60)]
