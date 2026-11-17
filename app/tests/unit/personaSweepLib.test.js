@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
-const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION } = require('../../../scripts/persona-sweep/lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, DEAD_LINK_STATION_PREFIX } = require('../../../scripts/persona-sweep/lib.cjs')
 
 describe('persona sweep: expectedReason', () => {
 	const http = (detail) => ({ kind: 'http', detail })
@@ -49,6 +49,27 @@ describe('persona sweep: expectedReason', () => {
 		expect(expectedReason(http('POST 500 /apps/learning/api/settings/admin/cert-logos'), at)).toBeNull()
 		expect(expectedReason(http('DELETE 400 /apps/learning/api/settings/admin/cert-logos/abc'), at)).toBeNull()
 		expect(expectedReason({ kind: 'console', detail: 'POST 400 /apps/learning/api/settings/admin/cert-logos' }, at)).toBeNull()
+	})
+
+	// GitHub #82: a dead-link station opens a link to a deleted course, a course without access or a
+	// pool that never existed; the server's 404 for exactly those ids is the station's subject.
+	it('the 404 of a dead link is expected only at a dead-link station, only for the seeded ids', () => {
+		const deadLinks = { deletedCourseId: 9, privateCourseId: 8, archivedCourseId: 7, unknownPoolId: 999999, noAccessCourseIds: [8] }
+		const at = { user: 'learner1', station: DEAD_LINK_STATION_PREFIX + 'deleted course (certificate notification)', deadLinks }
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/9'), at)).toMatch(/dead-link station/)
+		expect(expectedReason(http('GET 404 /index.php/apps/learning/api/courses/8'), at)).toBeTruthy()
+		expect(expectedReason(http('GET 404 /index.php/apps/learning/api/pools/999999'), at)).toBeTruthy()
+		// a 500, another method, another id, a sub-resource or another station still counts
+		expect(expectedReason(http('GET 500 /apps/learning/api/courses/9'), at)).toBeNull()
+		expect(expectedReason(http('GET 403 /apps/learning/api/courses/9'), at)).toBeNull()
+		expect(expectedReason(http('DELETE 404 /apps/learning/api/courses/9'), at)).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/7'), at)).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/9/students/learner1'), at)).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/pools/9'), at)).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/9'), { ...at, station: 'Course › Learning space' })).toBeNull()
+		// the instructor owns the private course: a 404 for it would be a bug
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/8'), { ...at, user: 'instructor', deadLinks: { ...deadLinks, noAccessCourseIds: [] } })).toBeNull()
+		expect(expectedReason(http('GET 404 /apps/learning/api/courses/9'), { ...at, deadLinks: undefined })).toBeNull()
 	})
 
 	it('other kinds always count', () => {

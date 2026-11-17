@@ -25,8 +25,24 @@ function expectedReason(finding, ctx) {
 		&& /^POST 400 (\/index\.php)?\/apps\/learning\/api\/settings\/admin\/cert-logos$/.test(finding.detail)) {
 		return 'the logo library refuses an SVG named .png (the station tests exactly that)'
 	}
+	// GitHub #82: a dead-link station opens a link whose target is gone or not this persona's; the
+	// app asks the server once and gets 404, which is the point of the station. Only at those
+	// stations, only GET 404, only for the ids the seed made dead (ctx.deadLinks).
+	if (finding.kind === 'http' && String(ctx.station || '').startsWith(DEAD_LINK_STATION_PREFIX) && ctx.deadLinks) {
+		const m = /^GET 404 (?:\/index\.php)?\/apps\/learning\/api\/(courses|pools)\/(\d+)$/.exec(finding.detail)
+		if (m) {
+			const id = Number(m[2])
+			const dead = m[1] === 'courses'
+				? [ctx.deadLinks.deletedCourseId, ...(ctx.deadLinks.noAccessCourseIds || [])]
+				: [ctx.deadLinks.unknownPoolId]
+			if (dead.includes(id)) return `dead-link station: ${m[1] === 'courses' ? 'course' : 'pool'} ${id} is gone or not this persona's (the server says 404)`
+		}
+	}
 	return null
 }
+
+/** Every dead-link station's name starts with this (GitHub #82). */
+const DEAD_LINK_STATION_PREFIX = 'Dead link: '
 
 /** The station name of the refused-logo upload (persona.sweep.cjs uses the same constant). */
 const REFUSED_LOGO_STATION = 'Admin settings › Logos: an SVG named .png is refused'
@@ -120,4 +136,4 @@ function pickAnswerIndex(buttonTexts, answer) {
 	return best
 }
 
-module.exports = { REFUSED_LOGO_STATION, expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }
+module.exports = { DEAD_LINK_STATION_PREFIX, REFUSED_LOGO_STATION, expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }

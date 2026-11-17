@@ -197,6 +197,25 @@ await asInstructor('PATCH', `/courses/${course.id}/cert-config`, { certLayout: {
 const layout = await asInstructor('GET', `/courses/${course.id}/cert-layout`)
 if (layout?.issuer_name !== ISSUER_NAME) throw new Error(`issuer_name did not stick: ${JSON.stringify(layout).slice(0, 300)}`)
 
+// GitHub #82: targets for the dead-link stations. An archived course with learner1 in it, a
+// course with nobody but its instructor, a course that was created and deleted again (its id is a
+// link that outlived its target) and a pool id that was never handed out. Only the instructor's and
+// learner1's course lists gain a course; the generic sweeps (admin, learner2) see nothing new.
+const archivedCourse = await asInstructor('POST', '/courses', { title: 'Safety training 2025', description: 'Last year\'s run.' })
+await asInstructor('POST', `/courses/${archivedCourse.id}/members`, { userId: 'learner1', role: 'student' })
+await asInstructor('PUT', `/courses/${archivedCourse.id}`, { status: 'archived' })
+const archivedCheck = await asInstructor('GET', `/courses/${archivedCourse.id}`)
+if (archivedCheck.status !== 'archived') throw new Error(`course ${archivedCourse.id} did not archive: ${archivedCheck.status}`)
+const privateCourse = await asInstructor('POST', '/courses', { title: 'Instructors only' })
+const deletedCourse = await asInstructor('POST', '/courses', { title: 'Deleted course' })
+await asInstructor('DELETE', `/courses/${deletedCourse.id}`)
+const deadLinks = {
+	archivedCourseId: archivedCourse.id,
+	privateCourseId: privateCourse.id,
+	deletedCourseId: deletedCourse.id,
+	unknownPoolId: 999999,
+}
+
 const answers = {}
 for (const pool of JSON.parse(poolsDoc).pools) {
 	for (const q of pool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
@@ -204,7 +223,7 @@ for (const pool of JSON.parse(poolsDoc).pools) {
 answers[mediaQuestion.text] = mediaQuestion.answers.find((a) => a.is_correct).text
 // poolOwner: the only persona whose pool list must show the pools (nothing is shared).
 writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.stringify({
-	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig,
+	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig, deadLinks,
 	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated },
 	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },
 	media: { poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text },

@@ -12,7 +12,7 @@
 const { test, expect } = require('@playwright/test')
 const fs = require('fs')
 const path = require('path')
-const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION } = require('./lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, DEAD_LINK_STATION_PREFIX } = require('./lib.cjs')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
@@ -61,7 +61,13 @@ function flush() { fs.writeFileSync(FINDINGS, JSON.stringify(allFindings, null, 
 class Recorder {
 	constructor(persona, { studentView = false } = {}) {
 		this.persona = persona
-		this.ctx = { user: persona.replace(/-.*/, ''), studentView, poolOwner: seed.poolOwner }
+		const user = persona.replace(/-.*/, '')
+		// GitHub #82: the ids a dead-link station may get a 404 for; the course with nobody but its
+		// instructor is dead for everyone else
+		const deadLinks = seed.deadLinks
+			? { ...seed.deadLinks, noAccessCourseIds: user === seed.poolOwner ? [] : [seed.deadLinks.privateCourseId] }
+			: null
+		this.ctx = { user, studentView, poolOwner: seed.poolOwner, deadLinks }
 		this.current = null
 		this.requests = []
 		this.toastsSeen = new Set()
@@ -1065,6 +1071,89 @@ test('admin: certificate logo library, ticket recipients, the notice of a techni
 	flush()
 	await context.close()
 })
+
+// GitHub #82: links that outlived their target, for every role. Each station opens the link
+// directly (as a notification, a search result or a bookmark would) and checks: a notice is there,
+// screen readers get it (role="alert"), it never names the course, and its button leads on. A blank
+// page, an uncaught error or a 500 is a finding through the station's own checks.
+const DEAD = DEAD_LINK_STATION_PREFIX
+async function expectDeadLinkNotice(page, rec, { title, button, landsOn }) {
+	const box = page.locator('[data-test="dead-link"]')
+	if (!(await box.count())) {
+		rec.add('dead-link', `no notice for a dead link (expected "${title}")`)
+		return
+	}
+	if ((await box.first().getAttribute('role')) !== 'alert') rec.add('dead-link', 'the notice is not announced (role="alert" missing)')
+	const text = (await box.first().innerText()).replace(/\s+/g, ' ')
+	if (!text.includes(title)) rec.add('dead-link', `notice says "${text.slice(0, 160)}", expected "${title}"`)
+	for (const name of ['Deleted course', 'Instructors only', 'Safety training 2025']) {
+		if (text.includes(name)) rec.add('dead-link', `the notice names the course "${name}"`)
+	}
+	// the notice itself gets the page checks (German, empty area, axe); the station's own checks
+	// afterwards see where its button led
+	await checkPage(page, rec).catch((e) => rec.add('station-error', 'page check on the notice failed: ' + e.message))
+	await shoot(page, rec, rec.current.station + ' notice')
+	await box.first().getByRole('button', { name: button }).click()
+	await settle(page)
+	if (!landsOn.test(new URL(page.url()).pathname + new URL(page.url()).search)) rec.add('dead-link', `"${button}" led to ${shortUrl(page.url())}`)
+	if (await page.locator('[data-test="dead-link"]').count()) rec.add('dead-link', `the notice is still there after "${button}"`)
+}
+
+for (const [persona, opts] of [['learner1', {}], ['instructor', {}], ['admin', {}], ['instructor-studentview', { studentView: true }]]) {
+	test(`dead links: ${persona}`, async ({ browser }) => {
+		test.setTimeout(10 * 60_000)
+		const d = seed.deadLinks
+		const rec = new Recorder(persona, opts)
+		const { context, page } = await login(browser, persona, opts)
+		rec.attach(page)
+		const user = persona.replace(/-.*/, '')
+		const back = { title: 'This course is not available', button: 'Back to my courses', landsOn: /\/courses$/ }
+
+		await station(page, rec, `${DEAD}deleted course (certificate notification)`, async () => {
+			await page.goto(`${APP}/courses/${d.deletedCourseId}/summary`)
+			await settle(page)
+			await expectDeadLinkNotice(page, rec, back)
+		})
+		await station(page, rec, `${DEAD}course id that never existed`, async () => {
+			await page.goto(`${APP}/courses/abc`)
+			await settle(page)
+			await expectDeadLinkNotice(page, rec, back)
+		})
+		if (user !== seed.poolOwner) {
+			await station(page, rec, `${DEAD}course without access`, async () => {
+				await page.goto(`${APP}/courses/${d.privateCourseId}`)
+				await settle(page)
+				await expectDeadLinkNotice(page, rec, back)
+			})
+		}
+		if (user === 'learner1' || user === seed.poolOwner) {
+			await station(page, rec, `${DEAD}archived course`, async () => {
+				await page.goto(`${APP}/courses/${d.archivedCourseId}`)
+				await settle(page)
+				const note = page.locator('[data-test="course-archived"]')
+				if (!(await note.count())) rec.add('dead-link', 'an archived course does not say it is archived')
+				else if (!/This course is archived/.test(await note.first().innerText())) rec.add('dead-link', `archive note: "${(await note.first().innerText()).slice(0, 160)}"`)
+				if (await page.locator('[data-test="dead-link"]').count()) rec.add('dead-link', 'an archived course is shown as unavailable')
+			})
+		}
+		await station(page, rec, `${DEAD}pool that never existed (search result)`, async () => {
+			await page.goto(`${APP}/pools?poolId=${d.unknownPoolId}`)
+			await settle(page)
+			await expectDeadLinkNotice(page, rec, { title: 'This pool is not available', button: 'Back to the pools', landsOn: /\/pools$/ })
+		})
+		await station(page, rec, `${DEAD}adventure link (gamification ${seed.gamification ? 'on' : 'off'})`, async () => {
+			await page.goto(`${APP}/?learningView=abenteuer`)
+			await settle(page)
+			if (seed.gamification) {
+				if (await page.locator('[data-test="dead-link"]').count()) rec.add('dead-link', 'the adventure link is refused although gamification is on')
+			} else {
+				await expectDeadLinkNotice(page, rec, { title: 'The adventure is switched off here', button: 'Back to the pools', landsOn: /\/pools$/ })
+			}
+		})
+		flush()
+		await context.close()
+	})
+}
 
 for (const [persona, opts] of [['admin', {}], ['instructor', {}], ['learner2', {}], ['admin-studentview', { studentView: true }]]) {
 	test(`sweep: ${persona}`, async ({ browser }) => {
