@@ -16,6 +16,7 @@ Run by scripts/schema-drift.sh, which documents how to produce the live file.
 Usage
 -----
     python3 scripts/schema-drift.py --live <file> --fresh <file> [--lib <app/lib>]
+    python3 scripts/schema-drift.py --list [--lib <app/lib>]    # mapper|table|entity|SELECT * methods
 
 Both files hold one `table|column` per line (a tab instead of `|` is accepted). Any table prefix
 before `learning_` is stripped and names are lowercased, so `oc_learning_pools`, `nc_learning_pools`
@@ -160,10 +161,18 @@ def similar(a, b):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--live", required=True)
-    ap.add_argument("--fresh", required=True)
+    ap.add_argument("--live")
+    ap.add_argument("--fresh")
+    ap.add_argument("--list", action="store_true", help="list every mapper method that selects '*' and exit")
     ap.add_argument("--lib", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "app", "lib"))
     args = ap.parse_args()
+
+    if args.list:
+        for table, e in sorted(read_entities(args.lib).items(), key=lambda kv: kv[1]["mapper"]):
+            print(f"{e['mapper']}|{table}|{e['entity']}|{','.join(e['star'])}")
+        return 0
+    if not args.live or not args.fresh:
+        die("--live and --fresh are required (or --list)")
 
     live = read_schema(args.live, "live")
     fresh = read_schema(args.fresh, "fresh")

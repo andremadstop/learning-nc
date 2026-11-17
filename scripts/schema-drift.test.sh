@@ -122,6 +122,10 @@ expect "missing live file" 2 'live file missing' --live "$T/nope.txt" --fresh "$
 expect "empty live file" 2 'no learning_\* table' --live "$T/empty.txt" --fresh "$T/fresh.txt" --lib "$T/new"
 expect "lib without Db" 2 'no Db directory' --live "$T/live-clean.txt" --fresh "$T/fresh.txt" --lib "$T"
 
+expect "--list names the select-star methods" 0 '^PoolMapper\|learning_pools\|Pool\|find$' --list --lib "$T/new"
+expect "--list shows mappers without one" 0 '^ShareMapper\|learning_pool_shares\|Share\|$' --list --lib "$T/new"
+expect "no --live without --list" 2 'required' --fresh "$T/fresh.txt" --lib "$T/new"
+
 # Non-vacuity on the real tree: the mapper and property parsers find the app's entities.
 out="$(python3 -I "$PY" --live "$T/live-clean.txt" --fresh "$T/fresh.txt" --lib "$ROOT/app/lib" 2>&1 | head -1)"
 ents="$(sed -n 's/.* \([0-9]*\) entities, \([0-9]*\) mapper methods.*/\1/p' <<<"$out")"

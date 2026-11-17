@@ -2,6 +2,7 @@
 # schema-drift.sh — compare a live instance's learning tables with a fresh schema and the entities.
 #
 # Usage: scripts/schema-drift.sh <live-file> [--fresh <file> | --fresh-ref <git-ref>] [--lib-ref <git-ref>]
+#        python3 scripts/schema-drift.py --list    # every mapper method that selects '*', per table
 #
 # Read-only by design: the live side is a text file of `table|column` lines that YOU produce on the
 # instance with one of the queries below. This script never connects to a database.
