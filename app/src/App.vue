@@ -27,6 +27,19 @@
           </div>
         </NcNoteCard>
 
+        <!-- GitHub #82: the address named no view of the app (a mistyped or outdated link); the
+             start view opens and says why. role="status": a screen reader reads it out. -->
+        <div v-if="unknownLinkNotice" role="status" class="unknown-link" data-test="unknown-link">
+          <NcNoteCard type="info">
+            <div class="app-banner__body">
+              <span>{{ t('learning', 'Diese Adresse gibt es in Learning nicht. Du siehst deshalb die Startansicht.') }}</span>
+              <NcButton variant="tertiary" data-test="unknown-link-close" @click="unknownLinkNotice = false">
+                {{ t('learning', 'Meldung schließen') }}
+              </NcButton>
+            </div>
+          </NcNoteCard>
+        </div>
+
         <!-- Top-level navigation -->
         <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
           <button
@@ -482,6 +495,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch';
 import PoolList from './components/PoolList.vue';
 import DeadLinkNotice from './components/DeadLinkNotice.vue';
+import { cameFromUnknownPath } from './utils/unknownPath.js';
 import QuestionList from './components/QuestionList.vue';
 import TrainingMode from './components/TrainingMode.vue';
 import LeitnerMode from './components/LeitnerMode.vue';
@@ -606,6 +620,8 @@ export default {
       // GitHub #82: a pool link that led nowhere: '', 'unavailable', 'failed' or 'adventure-off'
       poolLinkState: '',
       poolLinkId: 0,
+      // GitHub #82: the app was opened through an address it does not know
+      unknownLinkNotice: false,
       poolFromCourse: false,
       poolFromCourseObj: null,
 
@@ -792,6 +808,7 @@ export default {
     const openedAdventureRoute = this.applyInitialAdventureRoute();
     if (!openedAdventureRoute) {
       if (this.$route?.name === 'home') {
+        this.noteUnknownPath(this.$route);
         this.navigateToDefaultRoute(true);
       } else {
         this.applyRouteState(this.$route);
@@ -1525,6 +1542,10 @@ export default {
       this.pushAppRoute({ name: 'pools' }, true);
       return true;
     },
+    // GitHub #82: remembered across the redirect to the role's start view (dashboard or courses)
+    noteUnknownPath(route) {
+      this._pendingUnknownLink = cameFromUnknownPath(route);
+    },
     navigateToDefaultRoute(replace = false) {
       const target = this.effectiveUserRole === 'student' ? { name: 'dashboard' } : { name: 'courses' };
       this.pushAppRoute(target, replace);
@@ -1584,10 +1605,16 @@ export default {
 
       if (route.name === 'home') {
         if (this.appInitialized) {
+          this.noteUnknownPath(route);
           this.navigateToDefaultRoute(true);
         }
         return;
       }
+
+      // GitHub #82: the note about an unknown address belongs to the start view it led to and
+      // goes with the next navigation.
+      this.unknownLinkNotice = this._pendingUnknownLink === true;
+      this._pendingUnknownLink = false;
 
       if (route.name === 'dashboard') {
         this.mainView = 'dashboard';
@@ -1650,9 +1677,16 @@ export default {
           this.poolLinkState = this._pendingPoolLinkState;
           this._pendingPoolLinkState = null;
         }
-        const routePoolId = Number(route.query?.poolId || 0);
-        if (routePoolId > 0) {
-          this.openPoolFromRoute(routePoolId);
+        // GitHub #82: ?poolId=abc or ?poolId=0 names no pool at all; it says so like a pool that
+        // is gone, without asking the server. No poolId is the plain pool list.
+        if (route.query?.poolId !== undefined) {
+          const routePoolId = Number(route.query.poolId);
+          if (Number.isInteger(routePoolId) && routePoolId > 0) {
+            this.openPoolFromRoute(routePoolId);
+          } else {
+            this.poolLinkId = 0;
+            this.poolLinkState = 'unavailable';
+          }
         }
         if (this._pendingAdventureRoute) {
           this.currentView = 'abenteuer';
@@ -1956,7 +1990,8 @@ export default {
   gap: 8px 16px;
 }
 .student-view-banner,
-.role-load-failed {
+.role-load-failed,
+.unknown-link {
   margin-bottom: 12px;
 }
 #app-learning {

@@ -44,7 +44,7 @@
 			:text="t('learning', 'Kursdetails konnten nicht geladen werden. Bitte erneut versuchen.')"
 			:primary-label="t('learning', 'Erneut versuchen')"
 			:secondary-label="t('learning', 'Zurück zu meinen Kursen')"
-			@primary="fetchCourseDetail"
+			@primary="retryCourseLoad"
 			@secondary="$emit('back')" />
 		<!-- GitHub #72: what a tab reported (a failed save, …). It belongs to that tab: it can be
 			closed and goes away when another tab is opened or the course is loaded again. -->
@@ -65,10 +65,34 @@
 			type="info"
 			class="detail-archived"
 			data-test="course-archived">
-			{{ actsAsInstructor
-				? t('learning', 'Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; über das Menü in der Kursliste lässt er sich wieder aktivieren.')
-				: t('learning', 'Dieser Kurs ist archiviert. Du kannst die Inhalte weiter ansehen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.') }}
+			<!-- The reactivation menu of the course list (CourseList.vue) is only on the courses a
+				person created, and only in the instructor role; a co-instructor has none. -->
+			{{ !actsAsInstructor
+				? t('learning', 'Dieser Kurs ist archiviert. Du kannst die Inhalte weiter ansehen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.')
+				: canReactivateCourse
+					? t('learning', 'Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; über das Menü in der Kursliste lässt er sich wieder aktivieren.')
+					: t('learning', 'Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; wieder aktivieren kann ihn die Person, die ihn angelegt hat.') }}
 		</NcNoteCard>
+
+		<!-- GitHub #82: the link named an area of this course the viewer does not have (any more):
+			an instructor tab after losing the role, a switched-off mode, a mistyped address. The
+			course opens on another area, and says why instead of switching without a word. -->
+		<div v-if="!loading && course && tabUnavailable"
+			role="status"
+			class="detail-tab-unavailable"
+			data-test="tab-unavailable">
+			<NcNoteCard type="info">
+				<div class="detail-action-error">
+					<span class="detail-action-error__text">{{ t('learning', 'Der Link führt zu einem Bereich dieses Kurses, den es für dich nicht (mehr) gibt. Du siehst deshalb einen anderen Bereich des Kurses.') }}</span>
+					<NcButton variant="tertiary"
+						size="small"
+						data-test="tab-unavailable-close"
+						@click="tabUnavailable = false">
+						{{ t('learning', 'Meldung schließen') }}
+					</NcButton>
+				</div>
+			</NcNoteCard>
+		</div>
 
 		<template v-if="!loading && course">
 			<!-- Mega-tab selector: the app-wide tab look (#46), the countdown beside it, not in the tablist -->
@@ -243,6 +267,12 @@ const TEILNEHMER_LEAVES = ['members', 'classbook', 'progress', 'heatmap', 'weak-
 // not have (learning partners off, AI off, an instructor leaf) falls back to the feed (GitHub #40).
 const KOMMUNIKATION_LEAVES = ['announcements', 'feed', 'my-questions', 'buddies', 'schwarm', 'requests']
 const MEGA_TAB_IDS = ['lernraum', 'teilnehmer', 'abschluss', 'wettbewerb', 'kommunikation', 'verwaltung']
+// Every leaf the Lernraum can have, for both roles (lernraumTabIds).
+const LERNRAUM_LEAVES = ['pools', 'tools', 'curriculum', 'materials', 'knowledge', 'training', 'leitner', 'exam', 'practice']
+// The course administration, instructors only.
+const VERWALTUNG_LEAVES = ['mode-config', 'schedule']
+// GitHub #82: every leaf there is; a tab segment outside it is a mistyped or outdated address.
+const ALL_LEAVES = [...LERNRAUM_LEAVES, ...TEILNEHMER_LEAVES, ...WETTBEWERB_LEAVES, ...KOMMUNIKATION_LEAVES, ...VERWALTUNG_LEAVES]
 
 export default {
 	name: 'CourseDetail',
@@ -305,6 +335,8 @@ export default {
 			// or 'failed' (any other error: the link may be fine, the load was not)
 			loadState: '',
 			actionError: '',
+			// GitHub #82: the address named a course area this viewer does not have
+			tabUnavailable: false,
 			course: null,
 			coursePools: [],
 			courseMembers: [],
@@ -360,6 +392,13 @@ export default {
 		myUserId() {
 			const user = getCurrentUser()
 			return user ? user.uid : null
+		},
+		// GitHub #82: the course list offers "Activate" only on the courses this person created,
+		// and only in the instructor role (CourseList.vue, own courses).
+		canReactivateCourse() {
+			return this.userRole === 'instructor'
+				&& !!this.myUserId
+				&& String(this.course?.instructor_id || '') === String(this.myUserId)
 		},
 		isCourseSummaryReleased() {
 			return this.course?.mode_config?.course_summary === true
@@ -459,7 +498,8 @@ export default {
 		},
 		$route(route) {
 			if (route && Number(route.params?.id || 0) === Number(this.courseId || 0)) {
-				this.syncCurrentTabFromRoute(route.params?.tab || '')
+				// GitHub #82: an address change is a link; a hidden area it names gets a note
+				this.syncCurrentTabFromRoute(route.params?.tab || '', true)
 			}
 		},
 		visibleTabs(tabs) {
@@ -491,12 +531,17 @@ export default {
 		courseId: {
 			immediate: true,
 			handler(newId) {
-				// GitHub #82: /courses/abc or /courses/0 names no course at all
+				this.tabUnavailable = false
+				// GitHub #82: /courses/abc or /courses/0 names no course at all. A load still
+				// running for the course before is dropped when it answers (fetchCourseDetail).
 				if (!Number.isInteger(newId) || newId <= 0) {
 					this.course = null
+					this.loading = false
 					this.loadState = 'unavailable'
 					return
 				}
+				// a newly opened course came from a link (notification, bookmark, course card)
+				this._announceHiddenTab = true
 				this.fetchCourseDetail()
 			},
 		},
@@ -540,11 +585,30 @@ export default {
 			}
 			return String(this.$route.params?.tab || '').trim()
 		},
-		syncCurrentTabFromRoute(tabId = '') {
+		/**
+		 * @param {string} tabId the tab segment of the address
+		 * @param {boolean} fromLink GitHub #82: the address came from a link (a course opened, the
+		 *   address changed), not from a reload of the course data; a hidden area it names gets a note
+		 */
+		syncCurrentTabFromRoute(tabId = '', fromLink = false) {
 			if (!tabId) {
 				return
 			}
 			const requested = LEGACY_TAB_ALIASES[String(tabId)] ?? String(tabId)
+			// GitHub #82: a leaf this viewer does not have, or no leaf at all (a mistyped address),
+			// left the course on an area without content. 'materials' is left out: whether a
+			// learner has it is only known once the Lernraum reports its required content
+			// (onVideosAvailable falls back then).
+			const hiddenLernraumLeaf = LERNRAUM_LEAVES.includes(requested)
+				&& requested !== 'materials'
+				&& !this.isLernraumTab(requested)
+			const hiddenVerwaltungLeaf = VERWALTUNG_LEAVES.includes(requested) && !this.isInstructor
+			const unknownTab = !MEGA_TAB_IDS.includes(requested) && !ALL_LEAVES.includes(requested)
+			if (hiddenLernraumLeaf || hiddenVerwaltungLeaf || unknownTab) {
+				this.redirectHiddenTab(requested)
+				this.tabUnavailable = fromLink
+				return
+			}
 			// GitHub #36: a bookmark on an area or competition leaf this viewer does not have
 			// (gamification off, mode switched off) lands on the Lernraum, not on an empty area.
 			const hiddenMega = MEGA_TAB_IDS.includes(requested)
@@ -555,7 +619,10 @@ export default {
 				&& !this.isAbschlussTab(requested)
 			const hiddenKommunikationLeaf = KOMMUNIKATION_LEAVES.includes(requested) && !this.isKommunikationTab(requested)
 			if (hiddenMega || hiddenWettbewerbLeaf || hiddenTeilnehmerLeaf || hiddenKommunikationLeaf) {
-				this.redirectHiddenTab(requested)
+				const relocated = this.redirectHiddenTab(requested)
+				// GitHub #82: the area is gone for this viewer; say so. Not when its content only
+				// moved (GitHub #36: participants and "Mein Fortschritt" into the completion area).
+				this.tabUnavailable = fromLink && !relocated
 				return
 			}
 			const resolvedTabId = this.resolveSelectableTab(requested)
@@ -594,26 +661,30 @@ export default {
 		 * completion area (the recent sessions live there), a switched-off class register to the
 		 * remaining participants leaf, a hidden communication leaf to the feed (GitHub #40);
 		 * everything else to the Lernraum.
+		 *
+		 * @param {string} requested the requested area or leaf
+		 * @return {boolean} true when the content only moved (its new place is shown)
 		 */
 		redirectHiddenTab(requested) {
 			const moved = requested === 'teilnehmer' || requested === 'my-progress'
 			if (moved && this.abschlussLeafTabs.length > 0) {
 				this.currentTab = this.abschlussLeafTabs[0]
 				this.activeMegaTab = 'abschluss'
-				return
+				return true
 			}
 			if (TEILNEHMER_LEAVES.includes(requested) && this.teilnehmerLeafTabs.length > 0) {
 				this.currentTab = this.teilnehmerLeafTabs[0]
 				this.activeMegaTab = 'teilnehmer'
-				return
+				return false
 			}
 			if (KOMMUNIKATION_LEAVES.includes(requested) && this.kommunikationLeafTabs.length > 0) {
 				this.currentTab = this.kommunikationLeafTabs[0]
 				this.activeMegaTab = 'kommunikation'
-				return
+				return false
 			}
 			this.currentTab = this.defaultLernraumTab()
 			this.activeMegaTab = 'lernraum'
+			return false
 		},
 		defaultLernraumTab() {
 			return this.lernraumLeafTabs[0] || (this.isInstructor ? 'pools' : 'training')
@@ -800,6 +871,7 @@ export default {
 		},
 		selectMegaTab(megaTabId) {
 			this.actionError = ''
+			this.tabUnavailable = false
 			this.activeMegaTab = megaTabId
 			const resolvedTabId = this.resolveSelectableTab(megaTabId)
 			this.currentTab = resolvedTabId
@@ -821,6 +893,7 @@ export default {
 		 */
 		onLeafTabChange(leafTabId) {
 			this.actionError = ''
+			this.tabUnavailable = false
 			this.currentTab = leafTabId
 			useOptionalCourseStore()?.setTab(leafTabId)
 			this.pushCourseTabRoute(leafTabId)
@@ -865,6 +938,7 @@ export default {
 		},
 		selectTab(tabId) {
 			this.actionError = ''
+			this.tabUnavailable = false
 			const resolvedTabId = this.resolveSelectableTab(tabId)
 			this.currentTab = resolvedTabId
 			useOptionalCourseStore()?.setTab(resolvedTabId)
@@ -930,7 +1004,19 @@ export default {
 			}
 		},
 
+		// GitHub #82: "Erneut versuchen" after a failed load still opens the link the person came by
+		retryCourseLoad() {
+			this._announceHiddenTab = true
+			this.fetchCourseDetail()
+		},
+
 		async fetchCourseDetail() {
+			// GitHub #82: the course this load is for. The component stays mounted while the
+			// address moves to another course (or to /courses/abc); a late answer for the course
+			// before must not fill the page under the new address.
+			const requestedId = this.courseId
+			const announceHiddenTab = this._announceHiddenTab === true
+			this._announceHiddenTab = false
 			this.loading = true
 			this.loadState = ''
 			this.actionError = ''
@@ -941,6 +1027,9 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}', { courseId: this.courseId })
 				const [response] = await Promise.all([axios.get(url), this.fetchAdminEnabledTools()])
+				if (requestedId !== this.courseId) {
+					return
+				}
 				this.course = {
 					...response.data,
 					mode_config: this.normalizeModeConfig(response.data?.mode_config || {}),
@@ -960,12 +1049,15 @@ export default {
 					this.activeMegaTab = 'wettbewerb'
 					this.arenaSubMode = 'duel'
 				}
-				this.syncCurrentTabFromRoute(this.currentRouteTab())
+				this.syncCurrentTabFromRoute(this.currentRouteTab(), announceHiddenTab)
 				this.fetchOpenQuestionsCount()
 				this.$nextTick(() => {
 					this.emitVirtuProfContext()
 				})
 			} catch (err) {
+				if (requestedId !== this.courseId) {
+					return
+				}
 				// GitHub #82: 404 is every "not yours to see" (the server never says which); 403 is
 				// treated the same so that no answer tells a stranger the course exists. The course
 				// shown so far goes: a reload after being removed must not keep showing it.
@@ -978,7 +1070,9 @@ export default {
 					this.loadState = 'failed'
 				}
 			} finally {
-				this.loading = false
+				if (requestedId === this.courseId) {
+					this.loading = false
+				}
 			}
 		},
 	},
@@ -1072,7 +1166,8 @@ export default {
 .loading-container p { margin-top: 12px; }
 
 .detail-error,
-.detail-archived {
+.detail-archived,
+.detail-tab-unavailable {
 	margin-bottom: 16px;
 }
 

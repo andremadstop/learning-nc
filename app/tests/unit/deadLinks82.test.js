@@ -21,12 +21,14 @@ vi.hoisted(() => {
 	globalThis.n = (_app, s, p, c) => (c === 1 ? s : p)
 })
 
-const { api } = vi.hoisted(() => ({ api: { course: null, courseStatus: 200, poolStatus: 200, gamification: true } }))
+const { api } = vi.hoisted(() => ({ api: { course: null, courseStatus: 200, poolStatus: 200, gamification: true, courseQueue: [] } }))
 const reject = (status) => Promise.reject(Object.assign(new Error('http'), { response: { status } }))
 vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn((url) => {
 			if (url === '/apps/learning/api/courses/{courseId}') {
+				// review #82: a test can hold course answers open and settle them in any order
+				if (api.courseQueue.length > 0) return api.courseQueue.shift().promise
 				return api.courseStatus === 200 ? Promise.resolve({ data: api.course }) : reject(api.courseStatus)
 			}
 			if (/\/api\/pools\/\d+$/.test(url)) {
@@ -59,6 +61,14 @@ for (const name of ['CourseTabLernraum', 'CourseTabTeilnehmer', 'CourseTabWettbe
 }
 
 const notice = (root) => root.querySelector('[data-test="dead-link"]')
+const tabNote = (root) => root.querySelector('[data-test="tab-unavailable"]')
+const unknownNote = (root) => root.querySelector('[data-test="unknown-link"]')
+
+function deferred() {
+	let resolve, reject
+	const promise = new Promise((res, rej) => { resolve = res; reject = rej })
+	return { promise, resolve, reject }
+}
 
 async function flush() {
 	for (let i = 0; i < 8; i++) {
@@ -76,6 +86,7 @@ afterEach(() => {
 	api.courseStatus = 200
 	api.poolStatus = 200
 	api.gamification = true
+	api.courseQueue = []
 	window.history.replaceState(null, '', '/')
 	vi.clearAllMocks()
 })
@@ -154,10 +165,137 @@ describe('CourseDetail: a dead course link (GitHub #82)', () => {
 		expect(detail.loadState).toBe('')
 	})
 
+	// review #82: the menu with "Activate" exists only on the courses the person created
+	// (CourseList.vue, own courses); a co-instructor was sent to a menu they do not have.
+	it('a co-instructor is not sent to a reactivation menu they do not have', async () => {
+		api.course = { id: 5, title: 'Altkurs', status: 'archived', is_instructor: true, instructor_id: 'max', mode_config: {}, pools: [], members: [] }
+		await mountDetail(5, 'instructor')
+		const note = host.querySelector('[data-test="course-archived"]')?.textContent || ''
+		expect(note).toContain('die Person, die ihn angelegt hat')
+		expect(note).not.toContain('Menü')
+		app.unmount(); host.remove()
+		api.course = { ...api.course, instructor_id: 'lena' }
+		await mountDetail(5, 'instructor')
+		expect(host.querySelector('[data-test="course-archived"]')?.textContent).toContain('über das Menü in der Kursliste')
+	})
+
 	it('an active course shows no archive note', async () => {
 		api.course = { id: 5, title: 'Neu', status: 'active', is_instructor: false, mode_config: {}, pools: [], members: [] }
 		await mountDetail()
 		expect(host.querySelector('[data-test="course-archived"]')).toBeNull()
+	})
+})
+
+// review #82: the component stays mounted while the address moves on; a late answer for the
+// course before filled the page under the new address (dead-link notice plus a foreign course).
+describe('CourseDetail: a late answer for the course before is dropped (GitHub #82)', () => {
+	let courseId
+
+	async function mountWithId(id) {
+		const { default: CourseDetail } = await import('../../src/components/CourseDetail.vue')
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		courseId = ref(id)
+		app = createApp({ render: () => h(CourseDetail, { courseId: courseId.value, userRole: 'student' }) })
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = globalThis.n
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await flush()
+	}
+
+	const course5 = { id: 5, title: 'Kurs Fünf', status: 'active', is_instructor: false, mode_config: {}, pools: [], members: [] }
+
+	it('course 5 answering after the move to /courses/abc does not show course 5', async () => {
+		const d5 = deferred()
+		api.courseQueue = [d5]
+		await mountWithId(5)
+		courseId.value = 0
+		await flush()
+		d5.resolve({ data: course5 })
+		await flush()
+		expect(notice(host)?.textContent).toContain('Dieser Kurs ist nicht verfügbar')
+		expect(host.textContent).not.toContain('Kurs Fünf')
+		expect(host.textContent).not.toContain('Lade Kursdetails')
+	})
+
+	it('course 5 answering after course 7 answered 404 does not show course 5', async () => {
+		const d5 = deferred()
+		const d7 = deferred()
+		api.courseQueue = [d5, d7]
+		await mountWithId(5)
+		courseId.value = 7
+		await flush()
+		d7.reject(Object.assign(new Error('http'), { response: { status: 404 } }))
+		await flush()
+		d5.resolve({ data: course5 })
+		await flush()
+		expect(notice(host)?.textContent).toContain('Dieser Kurs ist nicht verfügbar')
+		expect(host.textContent).not.toContain('Kurs Fünf')
+	})
+})
+
+// review #82: a link to a course area the person does not have (an instructor tab after losing the
+// role, a switched-off mode, a mistyped tab) switched to another area without a word.
+describe('CourseDetail: a link to a course area this person does not have (GitHub #82)', () => {
+	let detail
+
+	async function mountAt(path, course = { id: 5, title: 'Kurs', status: 'active', is_instructor: false, mode_config: {}, pools: [], members: [] }) {
+		api.course = course
+		const { default: CourseDetail } = await import('../../src/components/CourseDetail.vue')
+		const router = createRouter({
+			history: createMemoryHistory(),
+			routes: [{ path: '/courses/:id/:tab?', name: 'course-tab', component: { render: () => h('div') } }],
+		})
+		router.push(path)
+		await router.isReady()
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		const detailRef = ref(null)
+		app = createApp({ render: () => h(CourseDetail, { ref: detailRef, courseId: 5, userRole: 'student' }) })
+		app.use(router)
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = globalThis.n
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await flush()
+		detail = detailRef.value
+	}
+
+	it('a learner opening the instructors\' requests (ticket_created) is told why they see the feed', async () => {
+		await mountAt('/courses/5/requests')
+		expect(detail.currentTab).toBe('feed')
+		const note = tabNote(host)
+		expect(note, 'a note is shown').not.toBeNull()
+		expect(note.getAttribute('role')).toBe('status')
+		expect(note.textContent).toContain('den es für dich nicht (mehr) gibt')
+		note.querySelector('[data-test="tab-unavailable-close"]').click()
+		await flush()
+		expect(tabNote(host)).toBeNull()
+	})
+
+	it('an instructor tab of the administration and a mistyped tab say so too, and land in the Lernraum', async () => {
+		await mountAt('/courses/5/mode-config')
+		expect(detail.activeMegaTab).toBe('lernraum')
+		expect(tabNote(host)).not.toBeNull()
+		app.unmount(); host.remove()
+		await mountAt('/courses/5/gibtsnicht')
+		expect(detail.activeMegaTab).toBe('lernraum')
+		expect(tabNote(host)).not.toBeNull()
+	})
+
+	it('a tab the person has opens as before, without a note', async () => {
+		await mountAt('/courses/5/feed')
+		expect(detail.currentTab).toBe('feed')
+		expect(tabNote(host)).toBeNull()
+	})
+
+	it('reloading the course data (not a link) does not bring the note back', async () => {
+		await mountAt('/courses/5/requests')
+		detail.tabUnavailable = false
+		await detail.fetchCourseDetail()
+		await flush()
+		expect(tabNote(host)).toBeNull()
 	})
 })
 
@@ -188,7 +326,8 @@ describe('App.vue: dead pool, course and adventure links (GitHub #82)', () => {
 			history: createMemoryHistory(),
 			routes: ['dashboard', 'courses', 'pools', 'tools', 'skill-map', 'settings', 'virtuprof']
 				.map((name) => ({ path: '/' + name, name, component: Shell }))
-				.concat([{ path: '/', name: 'home', component: Shell }, { path: '/courses/:id/:tab?', name: 'course-tab', component: Shell }]),
+				.concat([{ path: '/', name: 'home', component: Shell }, { path: '/courses/:id/:tab?', name: 'course-tab', component: Shell },
+					{ path: '/:pathMatch(.*)*', name: 'unknown-path', redirect: '/' }]),
 		})
 		router.push(path)
 		await router.isReady()
@@ -233,6 +372,43 @@ describe('App.vue: dead pool, course and adventure links (GitHub #82)', () => {
 		await mountApp('/pools?poolId=99')
 		expect(notice(host)?.textContent).toContain('Pool konnte nicht geöffnet werden')
 		expect(notice(host).querySelector('[data-test="dead-link-secondary"]')?.textContent).toContain('Zurück zu den Pools')
+	})
+
+	// review #82: /pools?poolId=abc showed the plain list without a word, /courses/abc explained itself
+	it('?poolId=abc and ?poolId=0 name no pool: the same notice, without asking the server', async () => {
+		const axios = (await import('@nextcloud/axios')).default
+		await mountApp('/pools?poolId=abc')
+		expect(notice(host)?.textContent).toContain('Dieser Pool ist nicht verfügbar')
+		expect(host.querySelector('.stub-PoolList')).toBeNull()
+		expect(axios.get.mock.calls.some(([url]) => /\/api\/pools\//.test(url))).toBe(false)
+		app.unmount(); host.remove()
+		await mountApp('/pools?poolId=0')
+		expect(notice(host)?.textContent).toContain('Dieser Pool ist nicht verfügbar')
+	})
+
+	it('the plain pool list (no poolId) shows no notice', async () => {
+		await mountApp('/pools')
+		expect(notice(host)).toBeNull()
+		expect(host.querySelector('.stub-PoolList')).not.toBeNull()
+	})
+
+	// review #82: an unknown path went to the start view through the catch-all without a word
+	it('an unknown address opens the start view and says so; the note goes with the next navigation', async () => {
+		await mountApp('/kurse/5')
+		expect(router.currentRoute.value.name).toBe('dashboard')
+		const note = unknownNote(host)
+		expect(note, 'a note is shown').not.toBeNull()
+		expect(note.getAttribute('role')).toBe('status')
+		expect(note.textContent).toContain('Diese Adresse gibt es in Learning nicht')
+		await router.push('/courses')
+		await flush()
+		expect(unknownNote(host)).toBeNull()
+	})
+
+	it('the app root opens the start view without a note', async () => {
+		await mountApp('/')
+		expect(router.currentRoute.value.name).toBe('dashboard')
+		expect(unknownNote(host)).toBeNull()
 	})
 
 	it('/courses/abc opens the course view with id 0 (which says the course is not there)', async () => {

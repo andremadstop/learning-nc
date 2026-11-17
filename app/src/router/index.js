@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { generateUrl } from '@nextcloud/router'
+import { UNKNOWN_PATH_ROUTE } from '../utils/unknownPath.js'
 
 const RouteShellMarker = {
 	name: 'RouteShellMarker',
@@ -19,7 +20,9 @@ const routes = [
   { path: '/skill-map', name: 'skill-map', component: RouteShellMarker, meta: { mainView: 'skillmap' } },
   { path: '/settings', name: 'settings', component: RouteShellMarker, meta: { mainView: 'settings' } },
   { path: '/virtuprof', name: 'virtuprof', component: RouteShellMarker, meta: { mainView: 'virtuprof-fullscreen' } },
-  { path: '/:pathMatch(.*)*', redirect: '/' },
+  // GitHub #82: named, so the start view can tell that it was reached through an address the app
+  // does not know (cameFromUnknownPath) and say so.
+  { path: '/:pathMatch(.*)*', name: UNKNOWN_PATH_ROUTE, redirect: '/' },
 ]
 
 /**
