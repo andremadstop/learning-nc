@@ -2,6 +2,148 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.14.0] - 2026-11-17 — Rich feedback and audio per question, required content per renewal, certificate branding and print, security hardening
+
+Rich feedback per question (#66), an example course and the second wave of quality checks (#65),
+then everything alphalib-g reported after 5.13.0 (#59, #72–#81). Thanks to @alphalib-g for the
+reports, the screenshots and the patience in testing each step.
+
+> **Administrators, please read:**
+> - **Migrations.** `Version010900Date20261116090000` adds `hint`, `background_fact`,
+>   `key_takeaway` and `option_feedback` to the questions and their translations.
+>   `Version011000Date20261116120000` adds the tables `learning_qmedia_tracks` and
+>   `learning_qmedia_cues` (audio per question). `Version011100Date20261116150000` adds the table
+>   `learning_doc_confirms` (read confirmations, one row per confirmation) and the columns
+>   `document_id` (course videos), `file_id` and `confirm_after` (course documents) and
+>   `reconfirm_per_cycle` (courses). Existing read confirmations are taken over and keep counting;
+>   duplicate required-document rows are merged without losing progress. A new repair step
+>   (`RemoveOrphanedQuestionMedia`) and the daily consistency job remove audio files whose question
+>   or pool is gone.
+> - **New command** `occ learning:import-question-media <poolId> <bundle-dir> [--dry-run]` imports
+>   audio, timelines and keywords per question (format `learning-question-media/1`). Files are kept
+>   in the app data folder, not in anyone's Files. Anything unknown or refused is listed and the
+>   command exits with 1. `occ learning:uninstall` removes the tables and names the app data folder,
+>   which it leaves in place.
+> - **Example course** `examples/app-tour` is in the repository only, not in the App Store package.
+>   The full audio is attached to the 5.14.0 GitHub release as `app-tour-media-full.zip`.
+> - **Who issues a certificate** (#77). The issuer name of new certificates comes from the course's
+>   new field "Organisation name", else from the **operator name** in Administration → Learning
+>   (operator details), else from the Theming name. On an instance with operator details, new
+>   certificates therefore name the operator instead of the Theming name. Issued certificates do not
+>   change. The public verification page now also shows "Signed by" with the host of the Nextcloud
+>   that signed the certificate.
+> - **Certificate logos** (#78). Administration → Learning → "Certificate logos" holds up to 20
+>   logos (PNG, JPEG or WebP, up to 1 MB, checked by content). **SVG is refused**, with a hint on how
+>   to get a PNG. A course picks one in its certificate design, or keeps the Theming logo. Deleting a
+>   logo that courses use sets them back to the Theming logo. Certificates issued from 5.14.0 keep
+>   the logo of their issuance, also the Theming logo. An SVG Theming logo is never converted by the
+>   app; it is kept through the PNG copy Nextcloud makes of it, and without that copy those
+>   certificates, like all issued before 5.14.0, follow the current Theming logo.
+> - **Technical tickets** (#59). Administration → Learning names the administrators who are
+>   notified of a new technical ticket. Only administrators can be chosen, because the notice links
+>   to the admin inbox and names the ticket's subject; an empty list means nobody is notified.
+>   Administrators archive, restore and delete technical tickets. `GET
+>   /api/settings/admin/support-tickets` now returns `{tickets, open_count}` instead of `{tickets}`.
+> - **Required content moved** (#75) from Course management into the "Learning materials" tab. A
+>   course can ask for every required document to be confirmed again in each certification cycle,
+>   and a changed file asks for a new confirmation. Certificate validity can be set in days, months
+>   or years; existing values in days stay as they are.
+> - **Required documents from before 5.10** (#75). "Confirm I have read this" needs the link that
+>   opens the document. Required rows added before 5.10 that only name a path and have no link
+>   cannot be confirmed; in a course whose exam waits for the required content, learners stay
+>   locked until an instructor ticks the file again under "Required" in Learning materials. Please
+>   check such courses after the update.
+> - **Rate limits** on the app's endpoints now take effect. Every limit was reviewed against real
+>   use and raised where it would have slowed normal work; polling and heartbeat endpoints are no
+>   longer limited. Administrators can adjust a single limit with Nextcloud's
+>   `ratelimit_overwrite` setting in `config.php`
+>   (`'learning.<controller>.<method>' => ['user' => ['limit' => …, 'period' => …]]`).
+
+### Added
+- **Rich feedback per question** (#66): an optional hint before answering (Training, Leitner and
+  the Smart Queue; never in counting or practice exams, and without effect on points or
+  scheduling), feedback per answer option with the misconception behind a distractor, a background
+  fact and a key takeaway. Learners see them only with the answer response; after a wrong answer
+  they see the feedback for their choice and for the right option. Pool JSON export and import
+  carry the new fields without loss.
+- **Audio per question with a player** (#66): a spoken intro before answering, a short dialog after
+  it, with subtitles, speakers, highlighted keywords and the misconception crossed out. No autoplay;
+  it can be stepped line by line without sound, and screen readers hear the line counter. The dialog
+  is only served after an answer, through a short-lived link, and during a counting exam learners
+  get no media.
+- **Example course** `examples/app-tour` (#66): a short course about the app itself in English and
+  German, with hints, feedback per option and audio for four questions.
+- **Certificate logo library** and a logo choice per course (#78), see above.
+- **Organisation name per course** on the certificate, with a switch to hide it beside the logo
+  (#77). A change of the name is recorded in the compliance chain.
+- **Notifications for technical tickets** to chosen administrators, and archive and delete in the
+  admin inbox (#59).
+- **Read confirmations per certification cycle and file version** (#75): "Confirm I have read this"
+  counts for the current cycle and the current file; "Updated since you confirmed it" asks again
+  after a change, a pure rename does not. Instructors can "Ask everyone to confirm again" per file;
+  the request is recorded in the compliance chain.
+
+### Changed
+- **Learning materials** (#75): instructors tick required files in a "Required" column, with a
+  header checkbox for all or none, and the switch "Exam only after all required content…" sits in
+  the same tab. Learners get one tab: required content to confirm or watch first, optional files
+  below. Making a file optional asks first and is recorded; ticking it again later keeps the
+  earlier confirmations, as long as file and certification cycle still match.
+- The privacy notice of the mandatory training folds to a short line with "Show details" once it
+  has been seen (#75).
+- **Certificate design** (#73): fields sit below their labels and use the width of the section, up
+  to 640 px; hints look like the other course-rule hints.
+- **Printing a certificate** (#80) fills an A4 landscape page, and the frame takes the instance's
+  primary colour.
+- **App icon** (#81) redrawn as plain paths, so the favicon, the touch icon and the Apps list show
+  it again (checked on Nextcloud 33 and 35).
+- README, screenshot gallery and the mandatory-training guide with pictures of each step (#74).
+
+### Fixed
+- **"File is too large"** for a stamp or signature is shown at the field, names the 1 MB limit up
+  front and is announced again on a second try (#72). A tab's error at the top of the course page
+  can be closed and keeps the focus on its tab; in Course rules it is also cleared on the next
+  attempt.
+- **Contrast** (#76): "Reset profile", the primary buttons on hover and focus, the extraction status
+  in Learning materials and the active tool in the course Tools tab are readable in every theme.
+- The course title shows no square block on hover (#79).
+- An instructor in the student view no longer records read confirmations or video progress (#75).
+- Required-content rows reached the browser as `{"id": N}` only, so the instructor list showed
+  them without type or reference (#75).
+- **Compliance chain:** adding or deleting a required document through the older course-videos
+  endpoints (`POST /api/courses/{id}/videos`, `PUT`/`DELETE /api/course-videos/{id}`) wrote no
+  `course.content.required_changed` event; it does now, and such a row stays on its document (#75).
+- The exam-lock switch keeps the keyboard focus while it saves (#75).
+- A required file that cannot be read at the moment is not confirmed without a version; the
+  confirmation is refused, the learner is told why, and no compliance event is written (#75).
+- "Confirm I have read this" is only offered together with the link that opens the document; without
+  it the button is off and names whom to ask (#75).
+- Renaming a file onto the name of a deleted one moves the right required-document row; the row of
+  the deleted file no longer serves the other file, and duplicate rows from before 5.10 keep serving
+  their file (#75).
+- The organisation name, the free-text fields of the certificate design and logo names lose
+  direction overrides and other invisible characters, on saving and on reading (#77).
+- The proof text of the verification page refers to "Signed by" only when that line is shown (#77).
+- An empty admin answer to a ticket is not sent, and a refused answer no longer replaces the ticket
+  list (#59).
+- During a running counting exam the Smart Queue and the remediation queue hold back explanation and
+  PBQ solution of that pool, as the regular due queue already did (#66).
+- Question counts use the plural forms of each language (#36); a pool without answers is grey in
+  the Skill-Map, and the Skill-Map guide names the grey dots (#36).
+- No "Explain via VirtuProf" after a wrong answer when AI is off (#70).
+- View-only pools, pools without answers and the compliance report say what is true (#36).
+- "Richtig" and "Falsch" are translated in French, Russian and Arabic (#66).
+
+### Tests
+- `app/openapi.json` is generated from the controllers and checked to be current; every frontend
+  request and download is checked against it (#65).
+- Property-based round trips and fuzzing for the pool import readers, JS and PHP coverage reports
+  without a threshold, and a visual comparison of two Persona-Gate runs (#65).
+- The Persona-Gate counts a 429 as a finding; rate limits are checked against Nextcloud's own
+  middleware on PostgreSQL and MariaDB.
+- A print test checks the A4 landscape certificate on every push; the pre-push hook needs Chromium
+  and poppler for it (#80).
+
 ## [5.13.0] - 2026-11-16 — Course profile for mandatory training, coverage report, required content and accessibility
 
 The larger parts left for later in 5.12.0 (#43, #46, #59, #35/#42), plus what the automated run of

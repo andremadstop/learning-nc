@@ -18,8 +18,8 @@ an admin connects a recipient and each learner has consented.
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
-![Tests](https://img.shields.io/badge/Tests-5705%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-5.13.0-blue)
+![Tests](https://img.shields.io/badge/Tests-5737%20passed-brightgreen)
+![Version](https://img.shields.io/badge/Version-5.14.0-blue)
 
 ![A certificate with the organisation's name and logo, the course elements, result, validity, QR code and certificate ID](screenshots/16-certificate.png)
 
@@ -227,7 +227,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 - **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9
 - **Backend:** PHP 8.2+, Nextcloud App Framework, QBMapper
-- **Tests:** 5,705 automated tests (2,992 Vitest, 2,713 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
+- **Tests:** 5,737 automated tests (3,002 Vitest, 2,735 PHPUnit), PHPStan Level 5, ESLint — enforced via pre-push quality gates
 - **Real-time:** Server-Sent Events for multiplayer modes
 - **Caching:** Redis support for leaderboard and session data
 

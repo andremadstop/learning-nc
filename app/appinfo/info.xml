@@ -73,7 +73,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
 **Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Open an issue with a bit of context and we're happy to walk you through it.
     ]]></description>
 
-    <version>5.13.0</version>
+    <version>5.14.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
@@ -105,10 +105,14 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-en-dashboard.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/09-en-certificate.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/10-en-simulators.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/11-en-pools.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/16-certificate.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/12-create-course-profile.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/13-required-materials.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/15-course-rules-certification.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/17-certificate-verification.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/18-compliance-coverage.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/14-question-feedback.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/19-pool-import.png</screenshot>
 
     <dependencies>
         <php min-version="8.2"/>
