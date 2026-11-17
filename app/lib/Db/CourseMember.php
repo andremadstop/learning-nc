@@ -13,7 +13,7 @@ use OCP\AppFramework\Db\Entity;
  * @method int getEnrolledAt()
  * @method void setEnrolledAt(int $enrolledAt)
  */
-class CourseMember extends Entity {
+class CourseMember extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $userId;
     protected $role;

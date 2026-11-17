@@ -27,7 +27,7 @@ use OCP\AppFramework\Db\Entity;
  * @method int|null getExamMinutes()
  * @method void setExamMinutes(?int $examMinutes)
  */
-class CoursePool extends Entity {
+class CoursePool extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $poolId;
     protected $sortOrder;

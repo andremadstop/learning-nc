@@ -53,6 +53,23 @@ class CourseMemberControllerTest extends TestCase {
         $this->assertSame(Http::STATUS_CREATED, $response->getStatus());
     }
 
+    /**
+     * GitHub #65 (C5 P11): the 201/200 body was {"id": N} only. CourseMember had a jsonSerialize()
+     * method but did not implement \JsonSerializable, so json_encode() (what DataResponse does)
+     * saw nothing but the public $id of the Entity.
+     */
+    public function testAddAnswersTheMemberRowWithUserIdAndRole(): void {
+        $member = $this->member();
+        $member->setId(5);
+        $service = $this->createMock(CourseEnrollmentService::class);
+        $service->method('addMember')->willReturn(['member' => $member, 'created' => true]);
+
+        $response = $this->controller($service)->add(7, 'alice', 'student');
+        $body = json_decode((string)json_encode($response->getData()), true);
+
+        $this->assertSame(['id' => 5, 'course_id' => 7, 'user_id' => 'alice', 'role' => 'student', 'enrolled_at' => null], $body);
+    }
+
     public function testAddAnswers200WhenOnlyTheRoleChanged(): void {
         $service = $this->createMock(CourseEnrollmentService::class);
         $service->method('addMember')->willReturn(['member' => $this->member(), 'created' => false]);
