@@ -227,7 +227,7 @@ class CertLogoLibrary {
      * @throws \InvalidArgumentException invalid_name
      */
     private static function cleanName(string $name): string {
-        $name = trim((string)preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $name));
+        $name = trim(CertLayout::stripInvisible((string)preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $name), false));
         if ($name === '' || preg_match('//u', $name) !== 1 || mb_strlen($name) > self::NAME_MAX) {
             throw new \InvalidArgumentException('invalid_name');
         }

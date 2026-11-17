@@ -65,6 +65,31 @@ class CertLayoutTest extends TestCase {
         $this->assertSame('Dr. Maria Muster', $layout['signer_name']);
     }
 
+    /**
+     * GitHub #77 (review L2): direction overrides, isolates and marks passed the control-character
+     * filter. An organisation name signed into the certificate could then read like another
+     * organisation on the public verify page ("\u{202E}" reverses what follows). All invisible
+     * characters go, in every free-text field; ordinary spaces and line breaks of the intro stay.
+     */
+    public function testDirectionAndOtherInvisibleCharactersAreStripped(): void {
+        $invisible = "\u{202A}\u{202B}\u{202C}\u{202D}\u{202E}\u{2066}\u{2067}\u{2068}\u{2069}\u{200E}\u{200F}\u{061C}\u{200B}\u{FEFF}\u{E000}";
+        $layout = CertLayout::apply([
+            'issuer_name' => "ACME{$invisible} GmbH",
+            'signer_name' => "Maria\u{202E}retsuM",
+            'signer_role' => "Leitung\u{2028}Schulung",
+            'intro' => "Zeile 1\u{2066}\nZeile 2\u{2029}Zeile 3",
+        ], CertLayout::defaults());
+
+        $this->assertSame('ACME GmbH', $layout['issuer_name']);
+        $this->assertSame('MariaretsuM', $layout['signer_name']);
+        $this->assertSame('Leitung Schulung', $layout['signer_role']);
+        $this->assertSame("Zeile 1\nZeile 2\nZeile 3", $layout['intro']);
+        // stored data is cleaned on read as well
+        $this->assertSame('ACME GmbH', CertLayout::decode((string)json_encode(['issuer_name' => "ACME\u{202E} GmbH"]))['issuer_name']);
+        // letters of right-to-left scripts are no control characters
+        $this->assertSame('شركة ACME', CertLayout::apply(['issuer_name' => 'شركة ACME'], CertLayout::defaults())['issuer_name']);
+    }
+
     public function testMarkupIsStoredAsPlainText(): void {
         // Escaping is the renderer's job (text nodes only); the store must not mangle the text.
         $layout = CertLayout::apply(['intro' => '<b>{student.name}</b> & Co'], CertLayout::defaults());

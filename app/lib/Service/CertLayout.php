@@ -190,8 +190,9 @@ final class CertLayout {
     }
 
     /**
-     * Strip control characters (line breaks stay in multi-line text), unify line endings, trim and
-     * cut to $max characters. Never throws: used for stored data.
+     * Strip control and other invisible characters (stripInvisible(); line breaks stay in
+     * multi-line text), unify line endings, trim and cut to $max characters. Never throws: used
+     * for stored data.
      */
     private static function cleanText(mixed $value, int $max, bool $multiline): string {
         if (!is_string($value)) {
@@ -201,11 +202,25 @@ final class CertLayout {
         $text = str_replace("\t", ' ', $text);
         $pattern = $multiline ? '/[\x00-\x09\x0B-\x1F\x7F]/u' : '/[\x00-\x1F\x7F]/u';
         $text = (string)preg_replace($pattern, $multiline ? '' : ' ', $text);
+        $text = self::stripInvisible($text, $multiline);
         $text = trim($text);
         if (mb_strlen($text) > $max) {
             $text = rtrim(mb_substr($text, 0, $max));
         }
         return $text;
+    }
+
+    /**
+     * GitHub #77 (review): remove the invisible characters a plain control-character filter lets
+     * through: direction overrides and isolates (U+202A–202E, U+2066–2069), direction marks
+     * (U+200E/F, U+061C), zero-width and other format characters (\p{Cf}), private-use and
+     * unassigned code points — all of \p{C}. On the public verify page they could make a signed
+     * organisation name read like another one. U+2028/2029 become a line break (multi-line) or a
+     * space. Line breaks stay in multi-line text; ordinary spaces stay everywhere.
+     */
+    public static function stripInvisible(string $text, bool $multiline): string {
+        $text = (string)preg_replace('/[\x{2028}\x{2029}]/u', $multiline ? "\n" : ' ', $text);
+        return (string)preg_replace($multiline ? '/[^\P{C}\n]/u' : '/\p{C}/u', '', $text);
     }
 
     private static function requireText(mixed $value, int $max, bool $multiline, string $key): string {

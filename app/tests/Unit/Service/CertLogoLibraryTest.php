@@ -157,6 +157,18 @@ class CertLogoLibraryTest extends TestCase {
         $this->assertSame('Square  logo', $entry['name']);
     }
 
+    /** GitHub #77 (review L2): direction overrides and other invisible characters leave the name. */
+    public function testNamesLoseDirectionAndInvisibleCharacters(): void {
+        $entry = $this->library()->add("ACME\u{202E}\u{2066}\u{200F}\u{200B} Logo", (string)base64_decode(self::PNG));
+        $this->assertSame('ACME Logo', $entry['name']);
+        try {
+            $this->library()->add("\u{202E}\u{200B}", (string)base64_decode(self::PNG));
+            $this->fail('a name of invisible characters only was accepted');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('invalid_name', $e->getMessage());
+        }
+    }
+
     public function testTheSameFileOnlyOnce(): void {
         $library = $this->library();
         $library->add('Primary', (string)base64_decode(self::PNG));
