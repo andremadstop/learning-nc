@@ -115,6 +115,19 @@ expect "unused missing table is a note" 0 'MISSING TABLE: learning_q_translation
 { cat "$T/live-clean.txt"; echo 'oc_learning_pool_shares|role'; } >"$T/live-extra.txt"
 expect "extra column on an entity table without property" 1 'COLUMN WITHOUT PROPERTY: learning_pool_shares.role -> Share::\$role missing \(live only; SELECT \* in ShareMapper: none\)' \
 	--live "$T/live-extra.txt" --fresh "$T/fresh.txt" --lib "$T/new"
+# The release recipe (TESTING.md "Before every release"): the instance still runs the installed
+# release, the candidate adds a column. Against the candidate's fresh schema that is a MISSING
+# COLUMN although nothing is wrong; against the installed release's fresh schema, with the
+# candidate's entities, it is a note, and a live column the candidate does not know still breaks.
+cp -r "$T/new" "$T/cand"
+sed -i 's/^}$/    protected $addedCol;\n}/' "$T/cand/Db/Pool.php"
+{ cat "$T/fresh.txt"; echo 'oc_learning_pools|added_col'; } >"$T/fresh-cand.txt"
+expect "release recipe: candidate's fresh schema reports its new column as missing" 1 'MISSING COLUMN: learning_pools.added_col' \
+	--live "$T/live-clean.txt" --fresh "$T/fresh-cand.txt" --lib "$T/cand"
+expect "release recipe: installed release's fresh schema + candidate entities" 0 'PROPERTY WITHOUT COLUMN: Pool::\$addedCol' \
+	--live "$T/live-clean.txt" --fresh "$T/fresh.txt" --lib "$T/cand"
+expect "release recipe: still catches a live column the candidate does not know" 1 'COLUMN WITHOUT PROPERTY: learning_pool_shares.role' \
+	--live "$T/live-extra.txt" --fresh "$T/fresh.txt" --lib "$T/cand"
 sed -e 's/^oc_/nc_/' -e 's/|/\t/' "$T/live-legacy.txt" | tr 'a-z' 'A-Z' >"$T/live-prefix.txt"
 expect "other prefix, tabs, upper case" 0 'EXTRA COLUMN: learning_pools.visibility' --live "$T/live-prefix.txt" --fresh "$T/fresh.txt" --lib "$T/new"
 expect "missing live file" 2 'live file missing' --live "$T/nope.txt" --fresh "$T/fresh.txt" --lib "$T/new"

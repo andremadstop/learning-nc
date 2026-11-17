@@ -81,6 +81,8 @@ declare -A RECENT_SHA256=(
 	[5.14.0]=20a168539d6f40c6e674204a49f44b6b88f511d26240781961ab0b2a4937f032
 	[5.14.1]=559815b220a2d1702c77713484510b932baf05cae67295a1bbe5f514f1a3d71a
 )
+# Default bases: add a release only in the commit that raises info.xml past it; while info.xml
+# still holds that version, recent_<v>_version_jump fails (see TESTING.md, "Before every release").
 RECENT_BASES="${RECENT_BASES-5.13.0 5.14.0}"
 RECENT_TARBALL_DIR="${RECENT_TARBALL_DIR:-}"
 PROBE_BUMP_VERSION="${PROBE_BUMP_VERSION:-}"

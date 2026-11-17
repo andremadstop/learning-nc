@@ -153,7 +153,7 @@ ENGINE=mysql ./scripts/nc-integration.sh --ref HEAD # ... on MariaDB, for a comm
 ENGINE=pgsql ./scripts/lifecycle-probe.sh
 ENGINE=mysql PROBE_REF=<git-ref> ./scripts/lifecycle-probe.sh
 ./scripts/schema-dump.sh /tmp/schema.txt && SCHEMA_FILE=/tmp/schema.txt python3 scripts/check-sql-columns.py
-./scripts/schema-drift.sh live-schema.txt --fresh /tmp/schema.txt   # live instance vs fresh schema vs entities
+./scripts/schema-drift.sh live-schema.txt --fresh-ref v<installed>   # live instance vs fresh schema vs entities
 ```
 
 - **Integration** (`nc-integration.sh`) runs `app/tests/Integration` with a pinned, checksum-verified PHPUnit PHAR against Nextcloud 33. PostgreSQL 16 is the default; `ENGINE=mysql` uses MariaDB 10.11. A local mock LLM server stands in for AI providers. `INTEG_NC_IMAGE` selects another Nextcloud image; the nightly run uses 34 and 35.
@@ -181,14 +181,18 @@ psql -U <dbuser> -d <dbname> -tA -F '|' -c "select table_name, column_name from 
 mysql -u <dbuser> -p -N -B -e "select table_name, column_name from information_schema.columns
   where table_schema = DATABASE() and table_name like 'oc\_learning\_%' order by 1, 2" <dbname> | tr '\t' '|' > live-schema.txt
 
-# 2. Locally, on the release candidate (git index; --lib-ref <ref> / --fresh-ref <ref> for a commit):
-./scripts/schema-drift.sh live-schema.txt              # runs schema-dump.sh itself (Docker, ~2 min)
-./scripts/schema-drift.sh live-schema.txt --fresh /tmp/schema.txt   # or reuse a dump
+# 2. Locally, with the release candidate in the git index: the fresh schema of the version the
+#    instance runs NOW (the tag of `occ app:list | grep learning`), the entities of the candidate.
+./scripts/schema-drift.sh live-schema.txt --fresh-ref v<installed version>   # schema-dump.sh in Docker, ~2 min
+#    after the update, optional: the instance must now match the candidate's own fresh schema
+./scripts/schema-drift.sh live-schema-after.txt                              # fresh schema of the git index
 ```
 
-Exit 1 blocks the release. A live-only column needs a property on its entity (read and ignored, like `Pool::$visibility`) or a migration; a missing column means a migration did not run on that instance.
+Before the update, the instance still runs the previous release, so it cannot have the columns and tables the candidate's migrations add. Compared with the candidate's own fresh schema, each of them would be a `MISSING COLUMN` or `MISSING TABLE`, and every release with a migration would fail for no reason. Compared with the fresh schema of the installed version, a missing column or table is real: a migration of an earlier release did not run on that instance. The candidate's entities are what the instance will read with after the update; a live column they have no property for is the 5.14.1 case. Columns the candidate adds appear only as `PROPERTY WITHOUT COLUMN` notes.
 
-After each release, pin its tarball's sha256 in `RECENT_SHA256` of `scripts/lifecycle-probe.sh` and add it to the default `RECENT_BASES`, so the lifecycle probe upgrades from the release users run now.
+Exit 1 of step 2 blocks the release. A live-only column needs a property on its entity (read and ignored, like `Pool::$visibility`) or a migration that drops it. If the candidate itself drops that column in a migration, the finding is expected: check that the migration covers exactly that column. Exit 1 of the run after the update means a migration of the candidate did not run.
+
+Right after a release, pin its tarball's sha256 in `RECENT_SHA256` of `scripts/lifecycle-probe.sh`. Add the release to the default `RECENT_BASES` only in the commit that raises `info.xml` to the next version: until then the working state has the same version, Nextcloud would run no migration, and `recent_<v>_version_jump` fails (the nightly run sets no `PROBE_BUMP_VERSION`).
 - **Uninstall on both databases**: changes to raw SQL or transaction handling are also checked with `scripts/db-uninstall-probe.php`, once with `PROBE_PLATFORM=mysql` and once with `PROBE_PLATFORM=pgsql`. Instructions are in the file header. Each database has caught bugs the other could not: MariaDB treats double-quoted identifiers as strings, and PostgreSQL silently turns a `COMMIT` in a failed transaction into a rollback.
 
 ## Contract tests: OpenAPI and frontend calls

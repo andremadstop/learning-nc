@@ -24,6 +24,9 @@
 # (Docker, ~2 min); --fresh <file> reuses a dump, --fresh-ref <ref> dumps a commit instead.
 # The entities come from app/lib of the git index, or of <ref> with --lib-ref (never the working
 # copy, like every other gate). Comparison and findings: scripts/schema-drift.py.
+# Before a release, while the instance still runs the installed version: --fresh-ref v<installed>
+# with the candidate in the index (TESTING.md, "Before every release"). Against the candidate's own
+# fresh schema, every column or table its migrations add would be a MISSING finding.
 #
 # Exit 0 = no breaking drift, 1 = breaking drift (a live column without entity property, a missing
 # table or column), 2 = usage or input error, 3 = cleanup failed.
