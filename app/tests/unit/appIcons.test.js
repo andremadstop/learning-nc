@@ -14,7 +14,8 @@
  * img/learning-dark.svg over app.svg/app-dark.svg, so 5.14.1 ships the icon under those new names
  * and a browser that still holds the old app-dark.svg has to load it fresh.
  * EVERY FUTURE CHANGE OF THE ICON NEEDS A NEW FILE NAME, or browsers keep showing the old one.
- * app.svg/app-dark.svg stay: notifications, activity, search and the admin section use them, and
+ * The settings section icon moved to learning-dark.svg as well. app.svg/app-dark.svg stay:
+ * notifications, activity and search use them, and
  * the learning*.svg copies must stay identical to them (checked below).
  */
 import { describe, it, expect } from 'vitest'
@@ -99,5 +100,11 @@ describe('app icons (#81)', () => {
 		const icons = [...infoXml.matchAll(/<navigation>[\s\S]*?<icon>([^<]+)<\/icon>/g)].map((m) => m[1])
 		expect(icons).toEqual(['learning.svg'])
 		expect(ICONS).toContain(icons[0])
+	})
+
+	it('the settings section (admin and personal sidebar) uses the new name too', () => {
+		const php = readFileSync(join(IMG_DIR, '..', 'lib', 'Settings', 'AdminSection.php'), 'utf8')
+		expect(php).toContain("imagePath('learning', 'learning-dark.svg')")
+		expect(ICONS).toContain('learning-dark.svg')
 	})
 })
