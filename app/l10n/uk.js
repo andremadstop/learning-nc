@@ -222,7 +222,7 @@ OC.L10N.register(
     "Bestanden am" : "Складено",
     "Bestanden bis" : "Дійсно до",
     "Beste Route: {destination}/{prefix} über {gateway}" : "Найкращий маршрут: {destination}/{prefix} через {gateway}",
-    "Bestätigt: Dieses Zertifikat wurde vom oben genannten Aussteller digital signiert und ist unverändert. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen." : "Підтверджено: цей сертифікат був цифрово підписаний зазначеним вище видавцем і не був змінений. Не підтверджено: особу того, хто вам його пред'являє. Щоб це перевірити, порівняйте ідентифікатор перевірки нижче з ідентифікатором на отриманому документі — вони мають збігатися точно.",
+    "Bestätigt: Dieses Zertifikat wurde von der oben unter „Signiert von“ genannten Nextcloud digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen." : "Підтверджено: цей сертифікат був цифрово підписаний Nextcloud, зазначеним вище в рядку «Підписано», і не був змінений. Назву організації задає курс. Не підтверджено: особу того, хто вам його пред'являє. Щоб це перевірити, порівняйте ідентифікатор перевірки нижче з ідентифікатором на отриманому документі — вони мають збігатися точно.",
     "Bild zu groß (max. 5 MB)" : "Зображення завелике (макс. 5 МБ)",
     "Binär-Display" : "Двійкове відображення",
     "Bit" : "Біт",

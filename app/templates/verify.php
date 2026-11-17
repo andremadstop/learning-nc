@@ -175,7 +175,7 @@ if ($status === 'valid') {
 
 		<div class="lrn-verify__proof">
 			<strong><?php p($l->t('Was diese Prüfung bestätigt – und was nicht')); ?></strong>
-			<?php p($l->t('Bestätigt: Dieses Zertifikat wurde vom oben genannten Aussteller digital signiert und ist unverändert. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen.')); ?>
+			<?php p($l->t('Bestätigt: Dieses Zertifikat wurde von der oben unter „Signiert von“ genannten Nextcloud digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen.')); ?>
 		</div>
 
 		<div class="lrn-verify__info">

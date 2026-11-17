@@ -47,11 +47,14 @@ class VerifyTemplateTest extends TestCase {
         $html = $this->render($this->valid());
         $this->assertStringContainsString('Some Other Academy GmbH', $html);
         $this->assertStringContainsString('Signiert von: <span class="lrn-verify__ltr">cloud.example.org</span>', $html);
+        // the proof text points at the signing instance, not at the course-set name above it
+        $this->assertStringContainsString('unter „Signiert von“ genannten Nextcloud digital signiert', $html);
+        $this->assertStringNotContainsString('vom oben genannten Aussteller', $html);
     }
 
     public function testNoLineWithoutASigningHost(): void {
         $html = $this->render(['signed_by' => ''] + $this->valid());
-        $this->assertStringNotContainsString('Signiert von', $html);
+        $this->assertStringNotContainsString('class="lrn-verify__signed-by"', $html);
     }
 
     public function testTheHostIsEscaped(): void {
@@ -61,6 +64,6 @@ class VerifyTemplateTest extends TestCase {
 
     public function testAnUnknownIdShowsNoSigner(): void {
         $html = $this->render(['status' => 'unknown', 'issuer_logo' => '']);
-        $this->assertStringNotContainsString('Signiert von', $html);
+        $this->assertStringNotContainsString('class="lrn-verify__signed-by"', $html);
     }
 }

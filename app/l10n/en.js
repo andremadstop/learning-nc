@@ -228,7 +228,7 @@ OC.L10N.register(
     "Bestanden am" : "Passed on",
     "Bestanden bis" : "Passed until",
     "Beste Route: {destination}/{prefix} über {gateway}" : "Best route: {destination}/{prefix} via {gateway}",
-    "Bestätigt: Dieses Zertifikat wurde vom oben genannten Aussteller digital signiert und ist unverändert. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen." : "Confirmed: this certificate was digitally signed by the issuer named above and is unaltered. Not confirmed: the identity of the person presenting it to you. To check that, compare the verification ID below with the ID on the document you were given – it must match exactly.",
+    "Bestätigt: Dieses Zertifikat wurde von der oben unter „Signiert von“ genannten Nextcloud digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen." : "Confirmed: this certificate was digitally signed by the Nextcloud named above under “Signed by” and is unaltered. The organisation name is set in the course. Not confirmed: the identity of the person presenting it to you. To check that, compare the verification ID below with the ID on the document you were given – it must match exactly.",
     "Bild zu groß (max. 5 MB)" : "Image too large (max. 5 MB)",
     "Binär-Display" : "Binary Display",
     "Bit" : "Bit",
