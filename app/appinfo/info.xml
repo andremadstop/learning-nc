@@ -138,6 +138,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
             <step>OCA\Learning\Repair\RemoveRetiredJobs</step>
             <step>OCA\Learning\Repair\RemoveOrphanedAnnouncementFeedItems</step>
             <step>OCA\Learning\Repair\RemoveOrphanedQuestionMedia</step>
+            <step>OCA\Learning\Repair\ClearStaleThemingIcons</step>
         </post-migration>
         <install>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>
@@ -180,7 +181,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
         <navigation>
             <name>Learning</name>
             <route>learning.page.index</route>
-            <icon>app.svg</icon>
+            <icon>learning.svg</icon>
             <order>10</order>
         </navigation>
     </navigations>

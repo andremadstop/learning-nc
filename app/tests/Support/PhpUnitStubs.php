@@ -259,6 +259,10 @@ namespace OCP {
 
             public function getValueString(string $app, string $key, string $default = '', bool $lazy = false): string;
 
+            // GitHub #81: ClearStaleThemingIcons reads theming's cachebuster (NC 33
+            // lib/public/IAppConfig.php line 200, verbatim).
+            public function getValueInt(string $app, string $key, int $default = 0, bool $lazy = false): int;
+
             public function setValueString(string $app, string $key, string $value, bool $lazy = false, bool $sensitive = false): bool;
 
             public function deleteKey(string $app, string $key): void;
