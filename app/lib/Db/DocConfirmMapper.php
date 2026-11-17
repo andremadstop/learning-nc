@@ -25,8 +25,14 @@ class DocConfirmMapper {
     /**
      * Append a confirmation. Throws \OCP\DB\Exception (unique violation) for a second row of the
      * same user, content and second.
+     *
+     * @throws \InvalidArgumentException a confirmation of a document without its version: such a
+     *         row would count like one taken over from before 5.14.0 (GitHub #75, review)
      */
     public function insert(string $userId, int $contentId, int $courseId, int $confirmedAt, ?string $docVersion, ?int $documentId = null): void {
+        if ($documentId !== null && ($docVersion === null || $docVersion === '')) {
+            throw new \InvalidArgumentException('A confirmation of a document needs the version of its file');
+        }
         $qb = $this->db->getQueryBuilder();
         $qb->insert(self::TABLE)
             ->values([

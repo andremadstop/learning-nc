@@ -9,6 +9,7 @@ use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\DocumentService;
+use OCA\Learning\Service\DocumentUnavailableException;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\VideoProgressService;
@@ -163,7 +164,15 @@ class VideoProgressController extends Controller {
             return new DataResponse(['error' => 'Content is no document'], Http::STATUS_BAD_REQUEST);
         }
         // GitHub #75: appended per cycle and file version; a valid confirmation makes this a no-op.
-        $state = $this->requiredDocuments->confirm($video, $this->userId);
+        try {
+            $state = $this->requiredDocuments->confirm($video, $this->userId);
+        } catch (DocumentUnavailableException $e) {
+            // GitHub #75 (review): nothing is recorded for a file nobody can open right now.
+            return new DataResponse([
+                'error' => 'The document cannot be opened right now',
+                'code' => 'document_unavailable',
+            ], Http::STATUS_CONFLICT);
+        }
         return new DataResponse([
             'completed' => $state['confirmed'],
             'covered_pct' => $state['confirmed'] ? 1.0 : 0.0,

@@ -11,6 +11,7 @@ use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgress;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\DocumentUnavailableException;
 use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\VideoProgressService;
 use OCP\IRequest;
@@ -76,6 +77,17 @@ class DocumentConfirmControllerTest extends TestCase {
         $data = $this->controller($required)->documentRead(31)->getData();
 
         $this->assertTrue($data['completed']);
+    }
+
+    /** GitHub #75 (review M1): a file nobody can open is answered with 409 and a code the page reads. */
+    public function testAnUnreadableFileIsAConflict(): void {
+        $required = $this->createMock(RequiredDocumentService::class);
+        $required->method('confirm')->willThrowException(new DocumentUnavailableException('gone'));
+
+        $response = $this->controller($required)->documentRead(31);
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame('document_unavailable', $response->getData()['code']);
     }
 
     /**

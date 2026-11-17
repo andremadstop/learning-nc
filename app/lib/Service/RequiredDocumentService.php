@@ -30,7 +30,10 @@ use OCP\IDBConnection;
  *     been modified after it (mtime), in any other course it keeps counting as before the
  *     upgrade (a touched mtime from a sync client must not lock an IT course's exam again).
  *     When the file cannot be read right now, the version is not checked — the learner could
- *     not confirm anything else either.
+ *     not confirm anything else either. Only the migration writes a row of a document without a
+ *     version: confirm() refuses a file it cannot read (DocumentUnavailableException) and
+ *     DocConfirmMapper::insert() a document confirmation without version (GitHub #75, review),
+ *     so such a row is always one taken over from before 5.14.0.
  *
  * Rows are append-only (learning_doc_confirms): a new cycle or a new version asks for a new
  * row; the older ones and their course.video.completed events stay as evidence. They belong to
@@ -242,6 +245,7 @@ class RequiredDocumentService {
      * A no-op while a valid confirmation exists.
      *
      * @return array{confirmed: bool, updated: bool, again: bool, confirmed_at: int|null}
+     * @throws DocumentUnavailableException the file of a document row cannot be read right now
      */
     public function confirm(CourseVideo $video, string $userId): array {
         $course = $this->courseMapper->findById((int)$video->getCourseId());
@@ -251,8 +255,14 @@ class RequiredDocumentService {
             return $state;
         }
         $file = $this->fileInfo($course, $video);
-        $now = $this->timeFactory->getTime();
         $documentId = self::documentIdOf($video);
+        // GitHub #75 (review): only a file that can be read now is confirmed, with its version.
+        // A row without version would count like one taken over from before 5.14.0, which is
+        // never checked against later changes in a course without reconfirm_per_cycle.
+        if ($documentId !== null && $file === null) {
+            throw new DocumentUnavailableException('The required document cannot be read right now');
+        }
+        $now = $this->timeFactory->getTime();
         $context = ['course_id' => (int)$course->getId(), 'content_id' => $id];
         if ($documentId !== null) {
             $context['document_id'] = $documentId;

@@ -12,6 +12,7 @@ use OCA\Learning\Db\DocConfirmMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\DocumentService;
+use OCA\Learning\Service\DocumentUnavailableException;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
@@ -188,6 +189,23 @@ class RequiredDocumentServiceTest extends TestCase {
             ->confirm(self::document(), 'anna');
 
         self::assertTrue($state['confirmed']);
+    }
+
+    /**
+     * GitHub #75 (review M1): a click while the file could not be read (moved, outside the
+     * material folder, storage hanging) stored a confirmation without version and a compliance
+     * event. Such a row counted like one taken over from 5.13 and never asked again after the
+     * file changed. Nothing is recorded now.
+     */
+    public function testConfirmRecordsNothingWhileTheFileCannotBeRead(): void {
+        $confirms = $this->createMock(DocConfirmMapper::class);
+        $confirms->method('latestByUsers')->willReturn([]);
+        $confirms->expects($this->never())->method('insert');
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+
+        $this->expectException(DocumentUnavailableException::class);
+        $this->service([], null, false, null, $audit, $confirms)->confirm(self::document(), 'anna');
     }
 
     public function testConfirmIsANoOpWhileAValidConfirmationExists(): void {
