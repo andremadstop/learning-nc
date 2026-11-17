@@ -41,7 +41,9 @@ const PASSWORDS = { admin: state.ADMIN_PASS, instructor: state.INSTRUCTOR_PASS, 
 // Buttons the sweep never clicks: destructive, irreversible, or they use up an exam attempt.
 // Fresh-eyes C5: "deselect" — NcSelect labels a chip's x "Deselect <name>"; the sweep clicked it on
 // the admin settings and then "Save recipients", so every later station showed nobody notified.
-const DENY = /make (instructor|student|learner)|promot|demot|delet|remov|deselect|abwählen|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
+// GitHub #82: "activat" — the instructor's course menu offers "Activate" on the archived seed course;
+// clicking it would turn the dead-link station's archived course back into an active one.
+const DENY = /activat|make (instructor|student|learner)|promot|demot|delet|remov|deselect|abwählen|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
 const MAX_BUTTONS_PER_STATION = 30
 // Nextcloud core noise in a bare container (no user_status backend data); not the app's.
 const CORE_NOISE = /user_status|Failed to load user status/
