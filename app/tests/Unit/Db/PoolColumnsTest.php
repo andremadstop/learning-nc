@@ -45,6 +45,9 @@ class PoolColumnsTest extends TestCase {
             )
         );
 
-        $this->assertSame([], array_values(array_diff($fields, $columns)));
+        // Legacy columns that only old installs (1.x/2.x) have: read and ignored, never written,
+        // so a fresh install without the column is safe. Removing the property breaks SELECT * there.
+        $legacyReadOnly = ['visibility'];
+        $this->assertSame([], array_values(array_diff($fields, $columns, $legacyReadOnly)));
     }
 }

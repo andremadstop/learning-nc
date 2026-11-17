@@ -19,6 +19,13 @@ class Pool extends Entity implements JsonSerializable {
     protected $chapterKey;
     protected $chapterTitle;
     protected $chapterOrder;
+    /**
+     * Legacy column, read and ignored. Installs that started on 1.x/2.x still have
+     * learning_pools.visibility (fresh installs never did). PoolMapper selects '*', and
+     * Entity::fromRow() throws on any column without a property, so removing this in 5.11.0
+     * broke every full pool read on those installs. Never serialized, never written.
+     */
+    protected $visibility;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -35,6 +42,7 @@ class Pool extends Entity implements JsonSerializable {
         $this->addType('chapterKey', 'string');
         $this->addType('chapterTitle', 'string');
         $this->addType('chapterOrder', 'integer');
+        $this->addType('visibility', 'string');
     }
 
     public function jsonSerialize(): array {
