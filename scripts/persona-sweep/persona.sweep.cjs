@@ -1149,9 +1149,11 @@ for (const [persona, opts] of [['learner1', {}], ['instructor', {}], ['admin', {
 			await settle(page)
 			await expectDeadLinkNotice(page, rec, { title: 'This pool is not available', button: 'Back to the pools', landsOn: /\/pools$/ })
 		})
-		// review #82: an address the app does not know went to the start view without a word
+		// review #82: an address the app does not know went to the start view without a word. The
+		// server hands the app every path under /courses/ (appinfo/routes.php); other top-level paths
+		// get Nextcloud's own 404 page and never reach the app.
 		await station(page, rec, `${DEAD}address the app does not know`, async () => {
-			await page.goto(`${APP}/kurse/${seed.courseId}`)
+			await page.goto(`${APP}/courses/${seed.courseId}/summary/old`)
 			await settle(page)
 			const note = page.locator('[data-test="unknown-link"]')
 			if (!(await note.count())) rec.add('dead-link', 'an unknown address opens the start view without a note')
