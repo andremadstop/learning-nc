@@ -29,7 +29,10 @@ export function createLearningViteConfig(entryName = 'learning', { emptyOutDir =
 			appName: JSON.stringify('learning'),
 			appVersion: JSON.stringify('0.1.0'),
 		},
-		plugins: [vue()],
+		// GitHub #65: drop template comments in the bundle. With a comment beside the root element
+		// the production runtime renders a fragment, `$el` is no element and class/style/attributes
+		// a parent passes are dropped without a warning (9 components, #75 TypeError).
+		plugins: [vue({ template: { compilerOptions: { comments: false } } })],
 		resolve: {
 			alias: {
 				'@': resolve(__dirname, 'src'),

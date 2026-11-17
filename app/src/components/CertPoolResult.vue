@@ -1,11 +1,13 @@
 <template>
-	<span class="cert-pool-result__score">
-		{{ bestScore !== null && bestScore !== undefined
-			? t('learning', 'Bestes Ergebnis: {score} %', { score: bestScore })
-			: t('learning', 'Noch keine Prüfung') }}
-	</span>
-	<span class="cert-pool-result__state" :class="{ 'cert-pool-result__state--passed': passed }">
-		{{ passed ? '✓ ' + t('learning', 'Bestanden') : t('learning', 'Noch nicht bestanden') }}
+	<span class="cert-pool-result">
+		<span class="cert-pool-result__score">
+			{{ bestScore !== null && bestScore !== undefined
+				? t('learning', 'Bestes Ergebnis: {score} %', { score: bestScore })
+				: t('learning', 'Noch keine Prüfung') }}
+		</span>
+		<span class="cert-pool-result__state" :class="{ 'cert-pool-result__state--passed': passed }">
+			{{ passed ? '✓ ' + t('learning', 'Bestanden') : t('learning', 'Noch nicht bestanden') }}
+		</span>
 	</span>
 </template>
 
@@ -15,7 +17,8 @@
  * reports it. Shared by "Completion & certificate" (CourseSummary) and the learner's Exam tab, so
  * both read the same server values and look the same. No logic of its own.
  *
- * Two root spans on purpose: CourseSummary lays them out as grid cells of its pool row.
+ * One root (GitHub #65): a two-span root is a fragment and silently drops class/style a parent
+ * passes. The wrapper is `display: contents`, so the two spans stay flex items of the parent row.
  */
 export default {
 	name: 'CertPoolResult',
@@ -35,6 +38,10 @@ export default {
 </script>
 
 <style scoped>
+.cert-pool-result {
+	display: contents;
+}
+
 .cert-pool-result__score,
 .cert-pool-result__state {
 	color: var(--color-text-maxcontrast);

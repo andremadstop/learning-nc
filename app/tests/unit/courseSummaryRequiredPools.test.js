@@ -74,17 +74,20 @@ describe('CourseSummary required-pool list (GitHub #39)', () => {
 		const rows = host.querySelectorAll('.zeugnis-pool')
 		expect(rows).toHaveLength(2)
 
+		// GitHub #65: CertPoolResult has one root now, a `display: contents` wrapper, so its two
+		// spans stay grid cells of the row. The cells are the row's children with that wrapper opened.
+		const cells = (row) => [...row.children].flatMap((el) => (el.classList.contains('cert-pool-result') ? [...el.children] : [el]))
 		const [passed, open] = rows
-		expect(passed.children).toHaveLength(3)
-		expect(passed.children[0].textContent).toBe('Brandschutz')
-		expect(passed.children[1].textContent.trim()).toBe('Bestes Ergebnis: 88 %')
-		expect(passed.children[2].textContent.trim()).toBe('✓ Bestanden')
-		expect(passed.children[2].classList.contains('cert-pool-result__state--passed')).toBe(true)
+		expect(cells(passed)).toHaveLength(3)
+		expect(cells(passed)[0].textContent).toBe('Brandschutz')
+		expect(cells(passed)[1].textContent.trim()).toBe('Bestes Ergebnis: 88 %')
+		expect(cells(passed)[2].textContent.trim()).toBe('✓ Bestanden')
+		expect(cells(passed)[2].classList.contains('cert-pool-result__state--passed')).toBe(true)
 		expect(passed.classList.contains('zeugnis-pool--passed')).toBe(true)
 
-		expect(open.children).toHaveLength(3)
-		expect(open.children[1].textContent.trim()).toBe('Noch keine Prüfung')
-		expect(open.children[2].textContent.trim()).toBe('Noch nicht bestanden')
-		expect(open.children[2].classList.contains('cert-pool-result__state--passed')).toBe(false)
+		expect(cells(open)).toHaveLength(3)
+		expect(cells(open)[1].textContent.trim()).toBe('Noch keine Prüfung')
+		expect(cells(open)[2].textContent.trim()).toBe('Noch nicht bestanden')
+		expect(cells(open)[2].classList.contains('cert-pool-result__state--passed')).toBe(false)
 	})
 })
