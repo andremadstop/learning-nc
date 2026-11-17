@@ -27,6 +27,13 @@ use OCP\AppFramework\Db\Entity;
  * @method void setStatus(string $status)
  * @method string getSourceType()
  * @method void setSourceType(string $sourceType)
+ *
+ * Deliberately NOT \JsonSerializable (GitHub #65): the full row (chunk text, contributor user_id)
+ * goes to course managers, and to a learner only for their own contributions
+ * (RagImportController::myContributions). A stray response with other people's chunks would
+ * expose their text and account id. Without the interface, an entity put into a response by
+ * mistake is sent as {"id": N} and leaks nothing. JsonSerializableEntitiesTest keeps this
+ * exception list.
  */
 class RagChunk extends Entity {
     protected $documentId;

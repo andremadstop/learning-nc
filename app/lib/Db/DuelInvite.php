@@ -5,7 +5,7 @@ namespace OCA\Learning\Db;
 
 use OCP\AppFramework\Db\Entity;
 
-class DuelInvite extends Entity {
+class DuelInvite extends Entity implements \JsonSerializable {
     protected $duelSessionId;
     protected $courseId;
     protected $poolId;

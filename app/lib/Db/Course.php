@@ -73,7 +73,7 @@ use OCP\AppFramework\Db\Entity;
  * @method bool|null getReconfirmPerCycle()
  * @method void setReconfirmPerCycle(bool $reconfirmPerCycle)
  */
-class Course extends Entity {
+class Course extends Entity implements \JsonSerializable {
     protected $title;
     protected $description;
     protected $instructorId;

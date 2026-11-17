@@ -5,7 +5,7 @@ namespace OCA\Learning\Db;
 
 use OCP\AppFramework\Db\Entity;
 
-class LeagueSeason extends Entity {
+class LeagueSeason extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $name;
     protected $poolId;

@@ -5,6 +5,14 @@ namespace OCA\Learning\Db;
 
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * Deliberately NOT \JsonSerializable (GitHub #65): the full row carries the AI triage, the draft
+ * answer, context_json and answered_by. SupportTicketService shapes it per path
+ * (serializeTicket() for staff and VirtuProf, serializeForLearner() for course questions); a raw
+ * response must not decide that audience. Without the interface, an entity put into a response by
+ * mistake is sent as {"id": N} and leaks nothing. JsonSerializableEntitiesTest keeps this
+ * exception list.
+ */
 class SupportTicket extends Entity {
     protected $userId;
     protected $status;

@@ -5,7 +5,7 @@ namespace OCA\Learning\Db;
 
 use OCP\AppFramework\Db\Entity;
 
-class Kudos extends Entity {
+class Kudos extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $fromUser;
     protected $toUser;

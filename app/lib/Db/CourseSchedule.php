@@ -23,7 +23,7 @@ use OCP\AppFramework\Db\Entity;
  * @method string getUpdatedAt()
  * @method void setUpdatedAt(string $updatedAt)
  */
-class CourseSchedule extends Entity {
+class CourseSchedule extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $chapterRef;
     protected $chapterTitle;

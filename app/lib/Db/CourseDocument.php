@@ -30,6 +30,11 @@ use OCP\AppFramework\Db\Entity;
  * @method void setFileId(?int $fileId)
  * @method int|null getConfirmAfter()
  * @method void setConfirmAfter(?int $confirmAfter)
+ *
+ * Deliberately NOT \JsonSerializable (GitHub #65): the full row (extracted_text, file_path,
+ * error_message) goes into no response; DocumentService::projectDocuments() builds the per-role
+ * view. Without the interface, an entity put into a response by mistake is sent as {"id": N} and
+ * leaks nothing. JsonSerializableEntitiesTest keeps this exception list.
  */
 class CourseDocument extends Entity {
     protected $courseId;

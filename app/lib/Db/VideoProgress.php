@@ -24,6 +24,11 @@ use OCP\AppFramework\Db\Entity;
  * @method void setLastPingTs(?int $lastPingTs)
  * @method int|null getCompletedAt()
  * @method void setCompletedAt(?int $completedAt)
+ *
+ * Deliberately NOT \JsonSerializable (GitHub #65): intervals_json is DSGVO-transient server state
+ * and never crosses to the client (VideoProgressController). Without the interface, an entity put
+ * into a response by mistake is sent as {"id": N} and leaks nothing. JsonSerializableEntitiesTest
+ * keeps this exception list.
  */
 class VideoProgress extends Entity {
     protected $userId;

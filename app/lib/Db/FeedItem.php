@@ -21,7 +21,7 @@ use OCP\AppFramework\Db\Entity;
  * @method int getCreatedAt()
  * @method void setCreatedAt(int $createdAt)
  */
-class FeedItem extends Entity {
+class FeedItem extends Entity implements \JsonSerializable {
     protected $courseId;
     protected $type;
     protected $title;
