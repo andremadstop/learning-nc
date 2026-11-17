@@ -123,7 +123,6 @@ describe('CertPoolResult in the production runtime (GitHub #65)', () => {
 			compilerOptions: { mode: 'function', ...buildCompilerOptions() },
 		})
 		expect(errors).toEqual([])
-		// eslint-disable-next-line no-new-func
 		const render = new Function('Vue', code)(ProdVue)
 		const component = { ...(await import('../../src/components/CertPoolResult.vue')).default, render }
 

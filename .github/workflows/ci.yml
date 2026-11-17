@@ -43,7 +43,7 @@ jobs:
       # Same command as the hook (gate_eslint): errors fail, warnings are allowed.
       - name: ESLint (0 errors)
         working-directory: app
-        run: npx eslint --ext .js,.vue src/ --quiet
+        run: npx eslint src/ --quiet
 
       # Vitest with the v8 coverage report (GitHub #65): a report, no threshold.
       - name: Vitest (with coverage)

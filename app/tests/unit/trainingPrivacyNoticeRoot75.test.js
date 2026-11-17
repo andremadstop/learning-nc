@@ -32,7 +32,6 @@ function productionNotice() {
 		compilerOptions: { mode: 'function', comments: true },
 	})
 	expect(errors).toEqual([])
-	// eslint-disable-next-line no-new-func
 	const render = new Function('Vue', code)(ProdVue)
 	return { ...TrainingPrivacyNotice, render }
 }

@@ -14,8 +14,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ci": "playwright test --project=chromium",
     "test:print": "playwright test -c tests/print/playwright.config.cjs",
-    "lint": "eslint --ext .js,.vue src/ tests/",
-    "lint:fix": "eslint --ext .js,.vue --fix src/ tests/"
+    "lint": "eslint src/ tests/",
+    "lint:fix": "eslint --fix src/ tests/"
   },
   "dependencies": {
     "@nextcloud/auth": "^2.6.0",
@@ -34,6 +34,7 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.53.1",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
@@ -41,14 +42,16 @@
     "@vitest/coverage-v8": "4.1.12",
     "@vue/compiler-sfc": "^3.5.32",
     "axe-core": "4.14.0",
-    "eslint": "^8.57.1",
-    "eslint-plugin-vue": "^9.33.0",
+    "eslint": "^10.15.0",
+    "eslint-plugin-vue": "^10.12.1",
     "fast-check": "4.10.2",
+    "globals": "^17.14.0",
     "happy-dom": "^21.0.4",
     "pixelmatch": "8.0.0",
     "pngjs": "7.0.0",
     "vite": "^7.3.1",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "vue-eslint-parser": "^10.4.2"
   },
   "browserslist": [
     "last 2 versions",

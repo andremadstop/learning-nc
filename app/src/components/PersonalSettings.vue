@@ -648,7 +648,7 @@ export default {
       if (this.hintDismissed(HINT_ID)) return false
 
       const SHOWN_KEY = `learning-hint-${HINT_ID}-shown-at`
-      let shownAt = 0
+      let shownAt
       // a blocked storage throws on read too; it must not take the whole page down (#57)
       try { shownAt = parseInt(localStorage.getItem(SHOWN_KEY) || '0', 10) } catch (e) { shownAt = 0 }
       if (!shownAt) {

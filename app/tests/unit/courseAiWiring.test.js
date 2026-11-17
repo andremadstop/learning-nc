@@ -19,7 +19,6 @@ const { api, recordingStub } = vi.hoisted(() => {
 			props: { aiEnabled: { type: Boolean, default: false } },
 			inheritAttrs: false,
 			render() {
-				// eslint-disable-next-line no-undef
 				return globalThis.__h('div', { class: 'stub-' + name, 'data-ai-enabled': String(this.aiEnabled) })
 			},
 		},

@@ -15,7 +15,7 @@ async function api(page, method, path, body = null) {
       credentials: 'same-origin',
       body: body !== null ? JSON.stringify(body) : undefined,
     })
-    let json = null
+    let json
     try {
       json = await response.json()
     } catch {

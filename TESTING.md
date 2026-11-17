@@ -53,7 +53,7 @@ CI and the workflows use no secrets. Signing, releases and the App Store upload 
 From the repository root, after `npm --prefix app ci`:
 
 ```bash
-(cd app && npx eslint --ext .js,.vue src/ --quiet) # ESLint, errors only
+(cd app && npx eslint src/ --quiet) # ESLint, errors only
 npm --prefix app run test                          # Vitest
 npm --prefix app run build                         # production bundle
 ./scripts/check-i18n-parity.sh                     # i18n gates
