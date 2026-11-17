@@ -55,6 +55,9 @@ class VerifyTemplateTest extends TestCase {
     public function testNoLineWithoutASigningHost(): void {
         $html = $this->render(['signed_by' => ''] + $this->valid());
         $this->assertStringNotContainsString('class="lrn-verify__signed-by"', $html);
+        // GitHub #77 (review L3): the proof text pointed at a "Signiert von" line that is not there
+        $this->assertStringNotContainsString('„Signiert von“', $html);
+        $this->assertStringContainsString('Bestätigt: Dieses Zertifikat wurde von der Nextcloud, die es ausgestellt hat, digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt.', $html);
     }
 
     public function testTheHostIsEscaped(): void {

@@ -3965,5 +3965,6 @@ OC.L10N.register(
     "„{name}“: alle erneut bestätigen lassen" : "«{name}»: طلب التأكيد من الجميع مجددًا",
     "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft." : "لا يمكن فتح المستند حاليًا. يمكنك تأكيده عندما يصبح متاحًا مرة أخرى. يُرجى التواصل مع المدرّب.",
     "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft." : "لا يمكن فتح المستند حاليًا. لم يُؤكَّد أي شيء. يُرجى التواصل مع المدرّب.",
+    "Bestätigt: Dieses Zertifikat wurde von der Nextcloud, die es ausgestellt hat, digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen." : "مؤكَّد: تم توقيع هذه الشهادة رقميًا من قِبل خادم Nextcloud الذي أصدرها وهي غير معدَّلة. يُحدَّد اسم المنظمة في الدورة. غير مؤكَّد: هوية الشخص الذي يقدّمها لك. للتحقق من ذلك، قارن معرّف التحقق أدناه بالمعرّف الموجود على المستند المقدَّم – يجب أن يتطابقا تمامًا.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
