@@ -9,6 +9,8 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 
 /**
  * DidController — public did:web document for the instance issuer (CERT-02 + CERT-04 linchpin).
@@ -39,11 +41,10 @@ class DidController extends Controller {
     /**
      * GET /apps/learning/did.json — the did:web DID document.
      *
-     * @PublicPage
-     * @NoCSRFRequired
-     *
      * @return JSONResponse<\OCP\AppFramework\Http::STATUS_OK, array<string, mixed>, array{}>
      */
+    #[PublicPage]
+    #[NoCSRFRequired]
     public function index(): JSONResponse {
         $did = $this->keyService->hostDid();
 

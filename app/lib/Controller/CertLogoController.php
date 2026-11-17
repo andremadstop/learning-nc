@@ -9,6 +9,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\Files\NotFoundException;
@@ -20,7 +21,7 @@ use Psr\Log\LoggerInterface;
  * GitHub #78: the certificate logo library in Administration → Learning. Upload (PNG, JPEG or
  * WebP, checked by content), rename, delete, and the images themselves for the list.
  *
- * Admin-only. The routes carry no @NoAdminRequired, and every method checks again. Deleting a logo
+ * Admin-only. The routes carry no #[NoAdminRequired], and every method checks again. Deleting a logo
  * that courses use sets those courses back to the Theming logo; certificates already issued keep
  * their own copy (CertLayoutService::resetLogo).
  */
@@ -129,11 +130,10 @@ class CertLogoController extends Controller {
     /**
      * The image of a library logo, for the admin list.
      *
-     * @NoCSRFRequired
-     *
      * @param string $id the logo's id
      * @return DataDisplayResponse<Http::STATUS_OK, array{Content-Type: string}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function image(string $id): DataDisplayResponse|DataResponse {
         if (!$this->isAdmin()) {

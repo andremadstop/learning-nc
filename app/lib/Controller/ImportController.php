@@ -21,6 +21,7 @@ use OCP\IDBConnection;
 use OCP\IL10N;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ImportController extends Controller {
@@ -651,9 +652,7 @@ class ImportController extends Controller {
         return $meta;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function importCsv(int $poolId, string $csvData): DataResponse {
         if (!$this->canEditPool($poolId)) {
@@ -844,9 +843,7 @@ class ImportController extends Controller {
         return new DataResponse($response, $imported > 0 ? Http::STATUS_CREATED : Http::STATUS_BAD_REQUEST);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function importJson(int $poolId, string $jsonData): DataResponse {
         if (!$this->canEditPool($poolId)) {
@@ -1110,11 +1107,10 @@ class ImportController extends Controller {
     }
 
     /**
-     * @NoAdminRequired
-     *
      * File upload endpoint — accepts multipart/form-data with a CSV or JSON file.
      * Auto-detects format from file extension and content.
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function importFile(int $poolId): DataResponse {
         if (!$this->canEditPool($poolId)) {

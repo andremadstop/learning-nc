@@ -120,7 +120,7 @@
             "get": {
                 "operationId": "public_verify-verify",
                 "summary": "Public verify page: GET /apps/learning/verify/{verificationId}.",
-                "description": "Status precedence is owned by the service; this method only adds the format precheck and the throttle-on-unknown policy, then renders. Returns HTTP 200 for every status.\nPublicness/CSRF/brute-force are declared as PHPDoc annotations, like the other public routes (DidController/IcsController/PageController). The IP-keyed #[AnonRateLimit] caps ALL requests, signed-in visitors included (they have no #[UserRateLimit] here, so Nextcloud applies the anon limit); it is generous because a classroom behind one NAT shares an address and verification ids are unguessable UUIDv4. $tpl->throttle() (below) feeds @BruteForceProtection.",
+                "description": "Status precedence is owned by the service; this method only adds the format precheck and the throttle-on-unknown policy, then renders. Returns HTTP 200 for every status.\nPublicness/CSRF/brute-force are declared as attributes, like the other public routes (DidController/IcsController/PageController). The IP-keyed #[AnonRateLimit] caps ALL requests, signed-in visitors included (they have no #[UserRateLimit] here, so Nextcloud applies the anon limit); it is generous because a classroom behind one NAT shares an address and verification ids are unguessable UUIDv4. $tpl->throttle() (below) feeds #[BruteForceProtection].",
                 "tags": [
                     "public_verify"
                 ],
@@ -8595,7 +8595,7 @@
             "get": {
                 "operationId": "support_ticket-admin-list",
                 "summary": "The admin inbox: technical tickets without a course. GitHub #59: archived tickets are listed apart; open_count feeds the count at the heading, also while the archive is shown.",
-                "description": "Admin-only: the route carries no @NoAdminRequired, and the method checks again.",
+                "description": "Admin-only: the route carries no #[NoAdminRequired], and the method checks again.\nThis endpoint requires admin access",
                 "tags": [
                     "support_ticket"
                 ],
@@ -8669,19 +8669,34 @@
                         }
                     },
                     "403": {
-                        "description": "",
+                        "description": "Logged in account must be an admin",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "required": [
-                                        "error"
-                                    ],
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
                                         }
-                                    }
+                                    ]
                                 }
                             }
                         }
@@ -20262,7 +20277,7 @@
             "get": {
                 "operationId": "document-download",
                 "summary": "Open a material file (GitHub #35): learners could see the file names but not open them.",
-                "description": "Security, in this order: logged in; member or instructor of THIS course (403 otherwise); the document belongs to this course; the file is a direct child of the course's current material folder, resolved by its plain name in the owner's home — never a path from the request (DocumentService::resolveMaterialFile; 404 otherwise). The Content-Type comes from the registered file type, not from the file: PDF is shown inline, Markdown as plain text, with nosniff, so an uploaded file cannot become an HTML page of this origin.\nis needed because the browser opens the file through a plain link, which carries no request token. The endpoint only reads.",
+                "description": "Security, in this order: logged in; member or instructor of THIS course (403 otherwise); the document belongs to this course; the file is a direct child of the course's current material folder, resolved by its plain name in the owner's home — never a path from the request (DocumentService::resolveMaterialFile; 404 otherwise). The Content-Type comes from the registered file type, not from the file: PDF is shown inline, Markdown as plain text, with nosniff, so an uploaded file cannot become an HTML page of this origin.\n#[NoCSRFRequired] is needed because the browser opens the file through a plain link, which carries no request token. The endpoint only reads.",
                 "tags": [
                     "document"
                 ],
@@ -21835,7 +21850,7 @@
             "get": {
                 "operationId": "audit_export-page",
                 "summary": "The auditor download page: GET /apps/learning/audit/export.",
-                "description": "A group-gated, self-contained server-rendered form (date-from / date-to / course-id + three download links). Deliberately NOT embedded in AdminSettings (that needs admin and contradicts\n) — a non-admin auditor reaches it directly.",
+                "description": "A group-gated, self-contained server-rendered form (date-from / date-to / course-id + three download links). Deliberately NOT embedded in AdminSettings (that needs admin and contradicts #[NoAdminRequired]) — a non-admin auditor reaches it directly.",
                 "tags": [
                     "audit_export"
                 ],
@@ -23064,7 +23079,7 @@
         },
         {
             "name": "question_media",
-            "description": "Media per question (GitHub #66). The rules for who gets what are QuestionMediaService's; this controller only maps them to HTTP: - GET /api/questions/{questionId}/media — the tracks (and for editors the cues) the player may load before answering. 404 for a question the user cannot see (its existence is not confirmed), 403 while a counting exam runs for them on the pool. - GET /api/question-media/{trackId}[?expires=&grant=] — the mp3, with Range support so the player can seek (206 / 416). A dialog track needs the grant of the answer response. The audio route is @NoCSRFRequired because an <audio> element cannot send the CSRF token with its (range) requests; it reads, never writes, and every byte is behind the login and the checks above. The rate limit allows seeking through a handful of tracks per question."
+            "description": "Media per question (GitHub #66). The rules for who gets what are QuestionMediaService's; this controller only maps them to HTTP: - GET /api/questions/{questionId}/media — the tracks (and for editors the cues) the player may load before answering. 404 for a question the user cannot see (its existence is not confirmed), 403 while a counting exam runs for them on the pool. - GET /api/question-media/{trackId}[?expires=&grant=] — the mp3, with Range support so the player can seek (206 / 416). A dialog track needs the grant of the answer response. The audio route is #[NoCSRFRequired] because an <audio> element cannot send the CSRF token with its (range) requests; it reads, never writes, and every byte is behind the login and the checks above. The rate limit allows seeking through a handful of tracks per question."
         },
         {
             "name": "pool_import",
@@ -23076,7 +23091,7 @@
         },
         {
             "name": "instructor_access",
-            "description": "GitHub #60: who counts as an instructor app-wide (may create courses and question pools): several Nextcloud groups and individual people, picked from Nextcloud's own groups and accounts instead of one typed group name. Admin-only. The routes carry no @NoAdminRequired, and every method checks again, so a route or annotation change cannot open the instructor list or the account search."
+            "description": "GitHub #60: who counts as an instructor app-wide (may create courses and question pools): several Nextcloud groups and individual people, picked from Nextcloud's own groups and accounts instead of one typed group name. Admin-only. The routes carry no #[NoAdminRequired], and every method checks again, so a route or annotation change cannot open the instructor list or the account search."
         },
         {
             "name": "admin_ai",
@@ -23088,11 +23103,11 @@
         },
         {
             "name": "cert_logo",
-            "description": "GitHub #78: the certificate logo library in Administration → Learning. Upload (PNG, JPEG or WebP, checked by content), rename, delete, and the images themselves for the list. Admin-only. The routes carry no @NoAdminRequired, and every method checks again. Deleting a logo that courses use sets those courses back to the Theming logo; certificates already issued keep their own copy (CertLayoutService::resetLogo)."
+            "description": "GitHub #78: the certificate logo library in Administration → Learning. Upload (PNG, JPEG or WebP, checked by content), rename, delete, and the images themselves for the list. Admin-only. The routes carry no #[NoAdminRequired], and every method checks again. Deleting a logo that courses use sets those courses back to the Theming logo; certificates already issued keep their own copy (CertLayoutService::resetLogo)."
         },
         {
             "name": "ticket_recipients",
-            "description": "GitHub #59: who is told of a new technical ticket (the admin inbox). Picked from Nextcloud's accounts, like the instructors (#60). The search offers administrators only: the notice links to the admin inbox and names the ticket's subject, and only an administrator may open it. Admin-only. The routes carry no @NoAdminRequired, and every method checks again."
+            "description": "GitHub #59: who is told of a new technical ticket (the admin inbox). Picked from Nextcloud's accounts, like the instructors (#60). The search offers administrators only: the notice links to the admin inbox and names the ticket's subject, and only an administrator may open it. Admin-only. The routes carry no #[NoAdminRequired], and every method checks again."
         },
         {
             "name": "course_member",
@@ -23100,7 +23115,7 @@
         },
         {
             "name": "certificate_report",
-            "description": "Instructor-facing, owner-scoped compliance report for a certifying course (Phase 156 Plan 01). Thin controller: both endpoints call the SAME service method so the on-screen JSON table and the CSV download are byte-identical filtered sets. Authorization is per-course (the service gate maps a foreign instructor to ForbiddenException → 403, a missing course to DoesNotExistException → 404). The account identifier and email never appear in any surface — the projection is done in the service and only the safe DTO (5 display fields plus the expired flag) reaches here. Auth mirrors CertificateController: a `?string $userId` ctor param (NC injects null when unauthenticated) with a null-guard → 401; all endpoints are @NoAdminRequired so a non-admin instructor is not blocked by the admin middleware (load-bearing, unit-uncatchable)."
+            "description": "Instructor-facing, owner-scoped compliance report for a certifying course (Phase 156 Plan 01). Thin controller: both endpoints call the SAME service method so the on-screen JSON table and the CSV download are byte-identical filtered sets. Authorization is per-course (the service gate maps a foreign instructor to ForbiddenException → 403, a missing course to DoesNotExistException → 404). The account identifier and email never appear in any surface — the projection is done in the service and only the safe DTO (5 display fields plus the expired flag) reaches here. Auth mirrors CertificateController: a `?string $userId` ctor param (NC injects null when unauthenticated) with a null-guard → 401; all endpoints are #[NoAdminRequired] so a non-admin instructor is not blocked by the admin middleware (load-bearing, unit-uncatchable)."
         },
         {
             "name": "course_certificate",
@@ -23128,7 +23143,7 @@
         },
         {
             "name": "story",
-            "description": "StoryController — REST API for the Story-RPG (v6.0 Abenteuer). Routes (all require authentication via @NoAdminRequired): GET /api/story/campaigns → listCampaigns POST /api/story/campaigns/{campaignId}/start → startCampaign GET /api/story/campaigns/{campaignId}/scene → getScene POST /api/story/campaigns/{campaignId}/graph-start → graphStart GET /api/story/campaigns/{campaignId}/graph-scene → graphScene POST /api/story/campaigns/{campaignId}/graph-traverse → graphTraverse GET /api/story/campaigns/{campaignId}/graph-state → graphState GET /api/story/skill-questions?campaignId=&sceneId=&choiceId= → getSkillCheckQuestions POST /api/story/campaigns/{campaignId}/choice → makeChoice POST /api/story/campaigns/{campaignId}/answer → submitSkillAnswer POST /api/story/campaigns/{campaignId}/batch → submitSkillBatch POST /api/story/campaigns/{campaignId}/freetext → submitFreetext Body and query keys are camelCase: Nextcloud binds a value only to the exact parameter name, so a snake_case key (character_class, choice_id, ...) is silently dropped. Campaigns are not course-bound; no endpoint reads a courseId (audit #143). GET /api/story/progress → listProgress"
+            "description": "StoryController — REST API for the Story-RPG (v6.0 Abenteuer). Routes (all require authentication via #[NoAdminRequired]): GET /api/story/campaigns → listCampaigns POST /api/story/campaigns/{campaignId}/start → startCampaign GET /api/story/campaigns/{campaignId}/scene → getScene POST /api/story/campaigns/{campaignId}/graph-start → graphStart GET /api/story/campaigns/{campaignId}/graph-scene → graphScene POST /api/story/campaigns/{campaignId}/graph-traverse → graphTraverse GET /api/story/campaigns/{campaignId}/graph-state → graphState GET /api/story/skill-questions?campaignId=&sceneId=&choiceId= → getSkillCheckQuestions POST /api/story/campaigns/{campaignId}/choice → makeChoice POST /api/story/campaigns/{campaignId}/answer → submitSkillAnswer POST /api/story/campaigns/{campaignId}/batch → submitSkillBatch POST /api/story/campaigns/{campaignId}/freetext → submitFreetext Body and query keys are camelCase: Nextcloud binds a value only to the exact parameter name, so a snake_case key (character_class, choice_id, ...) is silently dropped. Campaigns are not course-bound; no endpoint reads a courseId (audit #143). GET /api/story/progress → listProgress"
         },
         {
             "name": "did",
@@ -23136,15 +23151,15 @@
         },
         {
             "name": "certificate",
-            "description": "Student-facing, authenticated read access to issued certificates (Phase 155 Plan 05). STRICT ownership: every endpoint authorizes against the authenticated user id — a student may list / view / download ONLY their own certificates (no IDOR). The PUBLIC verify route is Phase 157 and is deliberately NOT implemented here; all routes are @NoAdminRequired and owner-scoped. index/show/revoke are called through axios and keep the framework CSRF check; download() is opened by plain browser navigation, which carries no request token, so it is the one action exempt from the CSRF check (GitHub #41)."
+            "description": "Student-facing, authenticated read access to issued certificates (Phase 155 Plan 05). STRICT ownership: every endpoint authorizes against the authenticated user id — a student may list / view / download ONLY their own certificates (no IDOR). The PUBLIC verify route is Phase 157 and is deliberately NOT implemented here; all routes are #[NoAdminRequired] and owner-scoped. index/show/revoke are called through axios and keep the framework CSRF check; download() is opened by plain browser navigation, which carries no request token, so it is the one action exempt from the CSRF check (GitHub #41)."
         },
         {
             "name": "audit_export",
-            "description": "AuditExportController — auditor-facing export of the compliance hash-chain (Phase 161, AUDIT-07). The Datenschutzbeauftragte / Betriebsrat downloads a deterministic JSONL event log, a detached Ed25519 signature over the EXACT JSONL bytes, and a printable HTML report — WITHOUT admin rights and WITHOUT shell access. Access is gated to members of the configurable 'learning-auditors' NC group (@NoAdminRequired + IGroupManager::isInGroup), NOT to admins. Security invariants (do not relax): - @NoAdminRequired + @NoCSRFRequired are PHPDoc annotations (NOT PHP-8 attributes — the attribute form is not honoured in this NC build and 401s logged-in non-admins). The downloads/page are reached by browser navigation / <a> links (no requesttoken), so @NoCSRFRequired is required. - assertAuditorOrDie() is the FIRST line of every action; a non-auditor gets HTTP 403 and the DB is never touched (no event data leaks). - The JSONL NEVER carries user_id — only user_ref (the DSGVO pseudonymous HMAC identifier). - The signature is produced inline via KeyService (sodium_crypto_sign_detached), NOT via AuditCheckpointService (avoids cross-plan file conflicts); the secret is memzeroed immediately. - The .sig file is `bin2hex(sig) . \"\\n\"` — a trailing newline. Verifiers MUST trim before hex2bin: sodium_crypto_sign_verify_detached(hex2bin(trim($sigFile)), $jsonlBytes, $pubKey)"
+            "description": "AuditExportController — auditor-facing export of the compliance hash-chain (Phase 161, AUDIT-07). The Datenschutzbeauftragte / Betriebsrat downloads a deterministic JSONL event log, a detached Ed25519 signature over the EXACT JSONL bytes, and a printable HTML report — WITHOUT admin rights and WITHOUT shell access. Access is gated to members of the configurable 'learning-auditors' NC group (#[NoAdminRequired] + IGroupManager::isInGroup), NOT to admins. Security invariants (do not relax): - #[NoAdminRequired] + #[NoCSRFRequired] are imported from OCP\\AppFramework\\Http\\Attribute; an attribute under any other name is silently ignored and 401s logged-in non-admins (RouteSecurityInventoryTest, GitHub #65). The downloads/page are reached by browser navigation / <a> links (no requesttoken), so #[NoCSRFRequired] is required. - assertAuditorOrDie() is the FIRST line of every action; a non-auditor gets HTTP 403 and the DB is never touched (no event data leaks). - The JSONL NEVER carries user_id — only user_ref (the DSGVO pseudonymous HMAC identifier). - The signature is produced inline via KeyService (sodium_crypto_sign_detached), NOT via AuditCheckpointService (avoids cross-plan file conflicts); the secret is memzeroed immediately. - The .sig file is `bin2hex(sig) . \"\\n\"` — a trailing newline. Verifiers MUST trim before hex2bin: sodium_crypto_sign_verify_detached(hex2bin(trim($sigFile)), $jsonlBytes, $pubKey)"
         },
         {
             "name": "video_stream",
-            "description": "VideoStreamController — enrollment-gated Range-206 partial-content streaming of NC-Files videos (Phase 162, VIDEO-01). This is the #1 grumpy-Codex IDOR / path-traversal review surface, so the ENTIRE security-critical byte path lives here, in strict order: 1. Resolve the registry row by content_id (404 if absent). Reject non-nc-files sources here. 2. Assert the CURRENT authenticated student is enrolled in the video's course (CourseService::assertEnrolledInCourse) — BEFORE a single byte is opened. A student passing another course's content_id is rejected with 403 here (the core IDOR gate). 3. Resolve the file in the INSTRUCTOR's namespace (getUserFolder($instructorId)) from the REGISTRY path ($video->getVideoRef()) ONLY — never a client-supplied path/filename. 4. Parse the Range header defensively: a malformed/out-of-bounds range → HTTP 416 (never a crash or a leak); a valid range → HTTP 206 with Content-Range + Accept-Ranges + Content-Length. 5. Stream via a custom ICallbackResponse (the in-repo idiom; there is no OCP\\StreamResponse), fseek-ing to the range start and reading a bounded chunk loop.\nrange requests. Auth is via @NoAdminRequired (logged-in) + the per-course enrollment assertion."
+            "description": "VideoStreamController — enrollment-gated Range-206 partial-content streaming of NC-Files videos (Phase 162, VIDEO-01). This is the #1 grumpy-Codex IDOR / path-traversal review surface, so the ENTIRE security-critical byte path lives here, in strict order: 1. Resolve the registry row by content_id (404 if absent). Reject non-nc-files sources here. 2. Assert the CURRENT authenticated student is enrolled in the video's course (CourseService::assertEnrolledInCourse) — BEFORE a single byte is opened. A student passing another course's content_id is rejected with 403 here (the core IDOR gate). 3. Resolve the file in the INSTRUCTOR's namespace (getUserFolder($instructorId)) from the REGISTRY path ($video->getVideoRef()) ONLY — never a client-supplied path/filename. 4. Parse the Range header defensively: a malformed/out-of-bounds range → HTTP 416 (never a crash or a leak); a valid range → HTTP 206 with Content-Range + Accept-Ranges + Content-Length. 5. Stream via a custom ICallbackResponse (the in-repo idiom; there is no OCP\\StreamResponse), fseek-ing to the range start and reading a bounded chunk loop. #[NoCSRFRequired] is required because a native <video> element cannot attach a CSRF token to its range requests. Auth is via #[NoAdminRequired] (logged-in) + the per-course enrollment assertion."
         },
         {
             "name": "video_progress",

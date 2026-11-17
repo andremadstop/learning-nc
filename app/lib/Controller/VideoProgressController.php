@@ -20,6 +20,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * VideoProgressController — the student-facing progress endpoints for the Phase-162 video/material
@@ -73,9 +74,8 @@ class VideoProgressController extends Controller {
      * the server (recordHeartbeat) discards <5s pings and atomically merges the interval — the client
      * cannot fake coverage. Returns the current server-computed covered_pct + completed flag ONLY
      * (never the raw interval set).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function heartbeat(int $contentId, float $start, float $end): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -104,9 +104,8 @@ class VideoProgressController extends Controller {
      * (VideoProgressService::decideComplete). For third-party embeds (vimeo / youtube-nocookie) the
      * intervals come from the provider's player API (VideoConsentOverlay sends them as heartbeats
      * after consent), under the same server caps as the native player.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function complete(int $contentId): DataResponse {
         if ($this->userId === null) {
@@ -136,9 +135,8 @@ class VideoProgressController extends Controller {
      * VIDEO-07: a document "Gelesen" click records a server-side read that satisfies the same gate
      * query as a completed video (no intervals, no duration requirement). Idempotent (double-click safe
      * inside the service). The courseId is resolved from the registry row — never taken from the body.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function documentRead(int $contentId): DataResponse {
         if ($this->userId === null) {
@@ -258,9 +256,8 @@ class VideoProgressController extends Controller {
      *  - DSGVO: the raw video_ref (instructor file path) and intervals_json are NOT returned — only
      *    id/source_type/title/duration/sort_order + covered_pct (number) + completed (bool), plus
      *    embed_id (the provider's public video id) for vimeo / youtube-nocookie only.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function courseStatus(int $courseId): DataResponse {
         if ($this->userId === null) {

@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class StarterPoolController extends Controller {
@@ -31,9 +32,7 @@ class StarterPoolController extends Controller {
         $this->starterPoolService = $starterPoolService;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function index(): DataResponse {
         if (!$this->canManageStarterPools()) {
@@ -45,9 +44,7 @@ class StarterPoolController extends Controller {
         ]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function import(string $id): DataResponse {
         if (!$this->canManageStarterPools()) {

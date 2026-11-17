@@ -9,6 +9,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * LernbotFilesController — Phase 23: NC Files Integration
@@ -37,9 +38,9 @@ class LernbotFilesController extends Controller {
     /**
      * List .md notes in /Learning/ or a subfolder.
      *
-     * @NoAdminRequired
      * @param string|null $subfolder  Optional subfolder name (e.g. 'Zusammenfassungen')
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function listFiles(?string $subfolder = null): DataResponse {
         if ($this->userId === null) {
@@ -75,9 +76,8 @@ class LernbotFilesController extends Controller {
      *
      * Returns:
      * { "path": "/Learning/Zusammenfassungen/VLAN-Grundlagen.md", "action": "created"|"updated" }
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function writeNote(): DataResponse {
         if ($this->userId === null) {

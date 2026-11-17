@@ -29,7 +29,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  * HTTP 200 (withdrawn/expired/unknown are tombstone renders, NOT 404).
  *
  * throttle()/AnonRateLimit/BruteForceProtection are middleware-level side effects that are
- * bypassed when the controller is instantiated directly (like @NoAdminRequired in 155/156),
+ * bypassed when the controller is instantiated directly (like #[NoAdminRequired] in 155/156),
  * so these tests assert the BRANCH logic (the response carries the throttle marker / the
  * generic params) — the live throttle is verified manually per VALIDATION.
  *

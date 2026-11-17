@@ -11,6 +11,7 @@ use OCA\Learning\Controller\CourseController;
 use OCA\Learning\Controller\DataExportController;
 use OCA\Learning\Controller\ExportController;
 use PHPUnit\Framework\Attributes\DataProvider;
+use OCA\Learning\Tests\Support\RouteSecurityInventory;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,8 +21,8 @@ use PHPUnit\Framework\TestCase;
  * navigation (window.location.href), which carries no request token. Both are read-only GETs that
  * authorize in the method (owner-scoped mapper query / instructor gate), so they must be exempt from
  * the framework CSRF check — and nothing else in these controllers may be: list/show/revoke go
- * through axios and keep it. Annotations are read from the PHPDoc (the attribute form is not
- * honoured in this NC build), so the docblock is what the middleware sees.
+ * through axios and keep it. RouteSecurityInventory reads the markers the way the middleware does
+ * (#[NoCSRFRequired] attribute, or the deprecated PHPDoc annotation).
  */
 class CertificateDownloadCsrfTest extends TestCase {
     /** @return array<string, array{0: class-string, 1: string}> */
@@ -65,11 +66,11 @@ class CertificateDownloadCsrfTest extends TestCase {
     /** @param class-string $class */
     #[DataProvider('navigationDownloads')]
     public function testNavigationDownloadNeedsNoCsrfTokenButStaysAuthenticated(string $class, string $method): void {
-        $doc = (string)(new \ReflectionMethod($class, $method))->getDocComment();
-        $this->assertMatchesRegularExpression('/^\s*\*\s*@NoCSRFRequired\s*$/m', $doc);
-        $this->assertMatchesRegularExpression('/^\s*\*\s*@NoAdminRequired\s*$/m', $doc);
+        $seen = RouteSecurityInventory::describe(new \ReflectionMethod($class, $method));
+        $this->assertTrue($seen['NoCSRFRequired'] ?? false, 'no #[NoCSRFRequired]');
+        $this->assertTrue($seen['NoAdminRequired'] ?? false, 'no #[NoAdminRequired]');
         // Never public: the server must still know who asks (owner / instructor check).
-        $this->assertStringNotContainsString('@PublicPage', $doc);
+        $this->assertArrayNotHasKey('PublicPage', $seen);
     }
 
     /** @return array<string, array{0: class-string, 1: string}> */
@@ -89,7 +90,7 @@ class CertificateDownloadCsrfTest extends TestCase {
     /** @param class-string $class */
     #[DataProvider('axiosActions')]
     public function testAxiosActionsKeepTheCsrfCheck(string $class, string $method): void {
-        $doc = (string)(new \ReflectionMethod($class, $method))->getDocComment();
-        $this->assertStringNotContainsString('@NoCSRFRequired', $doc);
+        $seen = RouteSecurityInventory::describe(new \ReflectionMethod($class, $method));
+        $this->assertArrayNotHasKey('NoCSRFRequired', $seen);
     }
 }

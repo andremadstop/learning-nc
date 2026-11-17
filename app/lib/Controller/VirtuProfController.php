@@ -26,6 +26,7 @@ use OCP\IL10N;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class VirtuProfController extends Controller {
@@ -348,9 +349,7 @@ class VirtuProfController extends Controller {
         return $sanitized;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getState(): DataResponse {
         if ($this->userId === null) {
@@ -360,9 +359,7 @@ class VirtuProfController extends Controller {
         return new DataResponse($this->buildStatePayload());
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function markVisited(string $guideKey): DataResponse {
         if ($this->userId === null) {
@@ -393,9 +390,7 @@ class VirtuProfController extends Controller {
         ]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function dismiss(string $triggerId): DataResponse {
         if ($this->userId === null) {
@@ -424,9 +419,7 @@ class VirtuProfController extends Controller {
         return new DataResponse(['ok' => true, 'dismissed' => array_values($dismissed)]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function setEnabled(bool $enabled): DataResponse {
         if ($this->userId === null) {
@@ -438,9 +431,7 @@ class VirtuProfController extends Controller {
         return new DataResponse(['ok' => true, 'enabled' => $enabled]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function setLanguage(string $language): DataResponse {
         if ($this->userId === null) {
@@ -454,9 +445,7 @@ class VirtuProfController extends Controller {
         return new DataResponse(['ok' => true, 'language' => $normalized]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function savePreferences(
         ?bool $ttsEnabled = null,
@@ -512,9 +501,7 @@ class VirtuProfController extends Controller {
         return new DataResponse(['ok' => true] + $this->buildStatePayload());
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 15, period: 60)]
     public function interviewTurn(array $history = [], int $nextQuestionNumber = 2): DataResponse {
         if ($this->userId === null) {
@@ -571,9 +558,8 @@ class VirtuProfController extends Controller {
 
     /**
      * Return the last 20 chat memory entries for the current user (for frontend display on mount).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getChatHistory(): DataResponse {
         if ($this->userId === null) {
@@ -592,9 +578,8 @@ class VirtuProfController extends Controller {
 
     /**
      * Delete all chat memory for the current user (MEM-04 — privacy right).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function clearChatHistory(): DataResponse {
         if ($this->userId === null) {
@@ -606,9 +591,7 @@ class VirtuProfController extends Controller {
         return new DataResponse(['ok' => true]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 15, period: 60)]
     public function chat(
         string $message,

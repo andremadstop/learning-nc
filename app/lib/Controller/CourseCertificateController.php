@@ -19,6 +19,8 @@ use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 /**
  * Instructor copies of the certificates of ONE course (GitHub #42): organisations that maintain
@@ -67,9 +69,8 @@ class CourseCertificateController extends Controller {
      * One certificate of the course for the instructor's viewer. Same DTO shape the learner's
      * show() returns (credential_json is what the viewer decodes; user_id and key_id dropped), plus
      * the state the instructor must see: revoked / revoked_at / expired.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function show(int $courseId, string $verificationId): JSONResponse {
         if ($this->userId === null) {
@@ -103,10 +104,9 @@ class CourseCertificateController extends Controller {
      * cross-site navigation by another page can add one. The file then really did reach the
      * instructor's browser (the other page cannot read it), so the entry is not false; it may just
      * not have been triggered knowingly. Same for exportZip().
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function download(int $courseId, string $verificationId, string $format = 'jsonld'): Response {
         if ($this->userId === null) {
@@ -133,10 +133,9 @@ class CourseCertificateController extends Controller {
      * learner's JSON-LD file, named <name>_<verification id>.json; an expired certificate carries
      * "_expired" in its name. Revoked certificates are not in the report and so not in the ZIP.
      * CSRF-exempt like download(), with the same accepted audit side effect (see there).
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportZip(int $courseId): Response {
         if ($this->userId === null) {

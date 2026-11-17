@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 /**
  * GitHub #60: the admin endpoints for instructor groups and people.
  *
- * Admin-only by route (no @NoAdminRequired) and again in every method; the unit tests do not run
+ * Admin-only by route (no #[NoAdminRequired]) and again in every method; the unit tests do not run
  * the middleware, so the method check is what is pinned here. Search uses the group and user
  * managers (an admin must see every group, whatever the sharing restrictions say).
  */

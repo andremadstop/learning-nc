@@ -16,6 +16,8 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 /**
  * Media per question (GitHub #66). The rules for who gets what are QuestionMediaService's; this
@@ -26,7 +28,7 @@ use OCP\AppFramework\Http\Attribute\OpenAPI;
  * - GET /api/question-media/{trackId}[?expires=&grant=] — the mp3, with Range support so the
  *   player can seek (206 / 416). A dialog track needs the grant of the answer response.
  *
- * The audio route is @NoCSRFRequired because an <audio> element cannot send the CSRF token with
+ * The audio route is #[NoCSRFRequired] because an <audio> element cannot send the CSRF token with
  * its (range) requests; it reads, never writes, and every byte is behind the login and the checks
  * above. The rate limit allows seeking through a handful of tracks per question.
  */
@@ -41,9 +43,7 @@ class QuestionMediaController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function index(int $questionId): DataResponse {
         if ($this->userId === null) {
@@ -58,10 +58,8 @@ class QuestionMediaController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 600, period: 60)]
     public function track(int $trackId, ?string $expires = null, ?string $grant = null): Response {
         if ($this->userId === null) {

@@ -14,6 +14,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class RagImportController extends Controller {
@@ -61,9 +62,8 @@ class RagImportController extends Controller {
 
     /**
      * Import pasted text/markdown as RAG chunks.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function importText(int $courseId): DataResponse {
         try {
             if (!$this->canManageCourse($courseId)) {
@@ -95,9 +95,8 @@ class RagImportController extends Controller {
 
     /**
      * Import an uploaded .md or .txt file as RAG chunks.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function importFile(int $courseId): DataResponse {
         try {
             if (!$this->canManageCourse($courseId)) {
@@ -146,9 +145,8 @@ class RagImportController extends Controller {
 
     /**
      * List web-imported knowledge sources for a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function listImported(int $courseId): DataResponse {
         try {
             if (!$this->canManageCourse($courseId)) {
@@ -164,9 +162,8 @@ class RagImportController extends Controller {
 
     /**
      * Delete web-imported knowledge chunks by title.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function deleteImported(int $courseId, string $title): DataResponse {
         return $this->deleteImportedTitle($courseId, $title);
     }
@@ -178,9 +175,8 @@ class RagImportController extends Controller {
      * Audit #93: a title with '/' ('Kapitel 3 / Netzwerktopologien') cannot travel as a path
      * segment ('%2F' is refused by Apache or matches no route), so such a source could never
      * be deleted. The path route above stays for older clients.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function deleteImportedByQuery(int $courseId, string $title = ''): DataResponse {
         if (trim($title) === '') {
             return new DataResponse(['error' => 'Title is required'], Http::STATUS_BAD_REQUEST);
@@ -204,9 +200,8 @@ class RagImportController extends Controller {
 
     /**
      * Student contributes a knowledge note to the shared pool.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function contributeNote(int $courseId): DataResponse {
         // AUDIT MED-02: only course members may contribute to a course's shared RAG pool.
         if ($this->userId === null) {
@@ -279,9 +274,8 @@ class RagImportController extends Controller {
 
     /**
      * List pending contributions for moderation (instructor only).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function listPending(int $courseId): DataResponse {
         try {
             if (!$this->canManageCourse($courseId)) {
@@ -306,9 +300,8 @@ class RagImportController extends Controller {
 
     /**
      * Moderate a contribution (approve/reject).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function moderate(int $courseId, int $chunkId): DataResponse {
         try {
             if (!$this->canManageCourse($courseId)) {
@@ -356,9 +349,8 @@ class RagImportController extends Controller {
 
     /**
      * List own contributions in a course (student view).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function myContributions(int $courseId): DataResponse {
         // AUDIT v5.2.1 (pre-live review): mirror contributeNote()'s membership gate — after a user
         // is removed from a course they must not keep reading their old contributions by course id.

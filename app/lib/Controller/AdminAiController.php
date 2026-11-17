@@ -34,8 +34,6 @@ class AdminAiController extends Controller {
     }
 
     /**
-     * @AdminRequired
-     *
      * @param string $provider gemini | ollama
      * @param string $ollama_url Ollama endpoint (ignored for Gemini)
      * @param string $ollama_model Ollama model (ignored for Gemini)

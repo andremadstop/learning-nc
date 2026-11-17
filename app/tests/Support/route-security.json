@@ -1,0 +1,1843 @@
+{
+ "_about": "What Nextcloud's security middlewares see on every public controller method (public page, CSRF, admin, brute force, rate limits), annotation and attribute form joined. Taken with scripts/route-security-inventory.sh --ref 32afcc43, the last commit whose routes used PHPDoc annotations; the move to PHP attributes (GitHub #65) had to leave it unchanged. RouteSecurityInventoryTest holds the code against it; a route that changes on purpose changes this file in the same commit.",
+ "methods": {
+  "AdminAiController::test": {
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "AiController::available": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "AiController::explain": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "AiController::generate": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "AiController::import": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "AiController::status": {
+   "NoAdminRequired": true
+  },
+  "AuditExportController::events": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "AuditExportController::page": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "AuditExportController::report": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "AuditExportController::sig": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "CertLayoutController::importImage": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "CertLayoutController::logoImage": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "CertLayoutController::logos": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CertLayoutController::removeImage": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CertLayoutController::selectLogo": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CertLayoutController::show": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CertLogoController::delete": {
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CertLogoController::image": {
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "CertLogoController::index": [],
+  "CertLogoController::rename": {
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CertLogoController::upload": {
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "CertificateController::download": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "CertificateController::index": {
+   "NoAdminRequired": true
+  },
+  "CertificateController::revoke": {
+   "NoAdminRequired": true
+  },
+  "CertificateController::show": {
+   "NoAdminRequired": true
+  },
+  "CertificateReportController::certReport": {
+   "NoAdminRequired": true
+  },
+  "CertificateReportController::coverageReport": {
+   "NoAdminRequired": true
+  },
+  "CertificateReportController::exportCertReportCsv": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CertificateReportController::exportCoverageCsv": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CertificateReportController::groupReport": {
+   "NoAdminRequired": true
+  },
+  "CertificateReportController::myTeamLeadScopes": {
+   "NoAdminRequired": true
+  },
+  "CertificateReportController::remindMember": {
+   "NoAdminRequired": true
+  },
+  "ClassbookController::exportVcard": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "ClassbookController::giveKudos": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "ClassbookController::index": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "ClassbookController::toggleVisibility": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CoopController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "CoopController::join": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CoopController::lobby": {
+   "NoAdminRequired": true
+  },
+  "CoopController::ready": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CoopController::state": {
+   "NoAdminRequired": true
+  },
+  "CoopController::vote": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseCertificateController::download": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseCertificateController::exportZip": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CourseCertificateController::show": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::addPool": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::archiveCourse": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CourseController::atRisk": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::chapterHeatmap": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::courseDashboard": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "CourseController::createAnnouncement": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CourseController::dashboard": {
+   "NoAdminRequired": true
+  },
+  "CourseController::deleteAnnouncement": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CourseController::deleteSchedule": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CourseController::destroy": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CourseController::enroll": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CourseController::exportAtRiskCsv": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CourseController::getAnnouncements": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::getCurriculumScope": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::getPassStatus": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::getSchedule": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::getTools": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::index": {
+   "NoAdminRequired": true
+  },
+  "CourseController::leaderboard": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::listMembers": {
+   "NoAdminRequired": true
+  },
+  "CourseController::listPools": {
+   "NoAdminRequired": true
+  },
+  "CourseController::listSnapshots": {
+   "NoAdminRequired": true
+  },
+  "CourseController::myProgress": {
+   "NoAdminRequired": true
+  },
+  "CourseController::poolAnswerStats": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::progress": {
+   "NoAdminRequired": true
+  },
+  "CourseController::removeMember": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::removePool": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CourseController::role": {
+   "NoAdminRequired": true
+  },
+  "CourseController::setQuestionOverride": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::setSchedule": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::setVideoGate": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::show": {
+   "NoAdminRequired": true
+  },
+  "CourseController::showSnapshot": {
+   "NoAdminRequired": true
+  },
+  "CourseController::studentDetail": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::update": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updateAnnouncement": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "CourseController::updateCampaignSelection": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updateCertConfig": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updateCurriculumScope": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updateExamDate": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updateModeConfig": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updatePool": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseController::updatePracticeConfig": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::updateTools": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseController::weakQuestions": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseMemberController::add": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "CourseMemberController::bulk": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "CourseMemberController::search": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "CourseVideoController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseVideoController::destroy": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CourseVideoController::index": {
+   "NoAdminRequired": true
+  },
+  "CourseVideoController::requestReconfirm": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseVideoController::setDocumentsRequired": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CourseVideoController::update": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "DataExportController::myData": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    3,
+    60
+   ]
+  },
+  "DidController::index": {
+   "NoCSRFRequired": true,
+   "PublicPage": true
+  },
+  "DocumentController::download": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    600,
+    60
+   ]
+  },
+  "DocumentController::extract": {
+   "NoAdminRequired": true
+  },
+  "DocumentController::extractAll": {
+   "NoAdminRequired": true
+  },
+  "DocumentController::getFolder": {
+   "NoAdminRequired": true
+  },
+  "DocumentController::index": {
+   "NoAdminRequired": true
+  },
+  "DocumentController::scan": {
+   "NoAdminRequired": true
+  },
+  "DocumentController::setFolder": {
+   "NoAdminRequired": true
+  },
+  "DuelController::acceptInvite": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "DuelController::answer": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "DuelController::cancelInvite": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "DuelController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "DuelController::declineInvite": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "DuelController::invite": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "DuelController::invites": {
+   "NoAdminRequired": true
+  },
+  "DuelController::join": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "DuelController::opponents": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "DuelController::ready": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "DuelController::rematch": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "DuelController::state": {
+   "NoAdminRequired": true
+  },
+  "ExportController::exportCsv": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "ExportController::exportIcsPublic": {
+   "BruteForceProtection": [
+    "learningIcsFeed"
+   ],
+   "NoCSRFRequired": true,
+   "PublicPage": true,
+   "anonRateLimit": [
+    120,
+    600
+   ]
+  },
+  "ExportController::exportJson": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "ExportController::getCalendarToken": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "ExportController::regenerateCalendarToken": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "FeedController::courseFeed": {
+   "NoAdminRequired": true
+  },
+  "FeedController::index": {
+   "NoAdminRequired": true
+  },
+  "GameshowController::answer": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "GameshowController::courseLobby": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "GameshowController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "GameshowController::history": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "GameshowController::join": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "GameshowController::ready": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "GameshowController::state": {
+   "NoAdminRequired": true
+  },
+  "IcsController::feed": {
+   "BruteForceProtection": [
+    "learningIcsFeed"
+   ],
+   "NoCSRFRequired": true,
+   "PublicPage": true,
+   "anonRateLimit": [
+    120,
+    600
+   ]
+  },
+  "IcsController::generate": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "ImageController::delete": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "ImageController::serve": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "ImageController::upload": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "ImportController::importCsv": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "ImportController::importFile": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "ImportController::importJson": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "InstructorAccessController::get": [],
+  "InstructorAccessController::save": [],
+  "InstructorAccessController::search": [],
+  "LeagueController::accept": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "LeagueController::active": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LeagueController::challenge": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "LeagueController::cl": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LeagueController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "LeagueController::finish": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "LeagueController::start": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "LeagueController::table": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LegalOperatorController::get": [],
+  "LegalOperatorController::save": [],
+  "LegalOperatorController::show": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::answer": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "LeitnerController::badgeProgress": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LeitnerController::badges": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LeitnerController::due": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::initialize": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::queue": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::queueCount": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::readiness": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LeitnerController::remediation": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::remediationCount": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::stats": {
+   "NoAdminRequired": true
+  },
+  "LeitnerController::streak": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LernbotFilesController::listFiles": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LernbotFilesController::writeNote": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "LernplanController::generateFortschritt": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    3,
+    60
+   ]
+  },
+  "LernplanController::generatePlan": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    3,
+    60
+   ]
+  },
+  "LernprofilController::cheatSheet": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LernprofilController::lernhistorie": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LernprofilController::profile": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LernprofilController::skillMap": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "LernprofilController::weakestTopics": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "MaintenanceController::queue": {
+   "NoAdminRequired": true
+  },
+  "MaintenanceController::stats": {
+   "NoAdminRequired": true
+  },
+  "MaintenanceController::toggle": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "NoteGeneratorController::generate": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    3,
+    60
+   ]
+  },
+  "PageController::impressum": {
+   "NoCSRFRequired": true,
+   "PublicPage": true
+  },
+  "PageController::index": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true
+  },
+  "PageController::privacy": {
+   "NoCSRFRequired": true,
+   "PublicPage": true
+  },
+  "PoolController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "PoolController::destroy": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "PoolController::inMyCourses": {
+   "NoAdminRequired": true
+  },
+  "PoolController::index": {
+   "NoAdminRequired": true
+  },
+  "PoolController::review": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "PoolController::show": {
+   "NoAdminRequired": true
+  },
+  "PoolController::update": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "PoolGeneratorController::createPool": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "PoolGeneratorController::fromFile": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "PoolGeneratorController::fromText": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "PoolGeneratorController::providerInfo": {
+   "NoAdminRequired": true
+  },
+  "PoolImportController::importPools": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "PublicVerifyController::verify": {
+   "BruteForceProtection": [
+    "learningVerify"
+   ],
+   "NoCSRFRequired": true,
+   "PublicPage": true,
+   "anonRateLimit": [
+    150,
+    60
+   ]
+  },
+  "QuestionController::check": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "QuestionController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "QuestionController::destroy": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "QuestionController::index": {
+   "NoAdminRequired": true
+  },
+  "QuestionController::review": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "QuestionController::search": {
+   "NoAdminRequired": true
+  },
+  "QuestionController::show": {
+   "NoAdminRequired": true
+  },
+  "QuestionController::update": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "QuestionMediaController::index": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "QuestionMediaController::track": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    600,
+    60
+   ]
+  },
+  "RagImportController::contributeNote": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::deleteImported": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::deleteImportedByQuery": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::importFile": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::importText": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::listImported": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::listPending": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::moderate": {
+   "NoAdminRequired": true
+  },
+  "RagImportController::myContributions": {
+   "NoAdminRequired": true
+  },
+  "SettingsController::acknowledgeOnboarding": {
+   "NoAdminRequired": true
+  },
+  "SettingsController::getAdmin": [],
+  "SettingsController::getAdminAudit": [],
+  "SettingsController::getPersonal": {
+   "NoAdminRequired": true
+  },
+  "SettingsController::getTools": {
+   "NoAdminRequired": true
+  },
+  "SettingsController::initCertIssuer": [],
+  "SettingsController::saveAdmin": [],
+  "SettingsController::savePersonal": {
+   "NoAdminRequired": true
+  },
+  "SettingsController::saveTools": [],
+  "ShareController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "ShareController::destroy": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "ShareController::index": {
+   "NoAdminRequired": true
+  },
+  "ShareController::sharedWithMe": {
+   "NoAdminRequired": true
+  },
+  "ShareController::update": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "SseController::duelStream": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "SseController::gameshowStream": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "StarterPoolController::import": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "StarterPoolController::index": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::getScene": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::getSkillCheckQuestions": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::graphScene": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::graphStart": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "StoryController::graphState": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::graphTraverse": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "StoryController::listCampaigns": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::listProgress": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "StoryController::makeChoice": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "StoryController::startCampaign": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "StoryController::submitFreetext": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    15,
+    60
+   ]
+  },
+  "StoryController::submitSkillAnswer": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "StoryController::submitSkillBatch": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "SummaryController::createSnapshot": {
+   "NoAdminRequired": true
+  },
+  "SummaryController::exportCsv": {
+   "NoAdminRequired": true
+  },
+  "SummaryController::generateNarrative": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    3600
+   ]
+  },
+  "SummaryController::getSnapshot": {
+   "NoAdminRequired": true
+  },
+  "SummaryController::getSummary": {
+   "NoAdminRequired": true
+  },
+  "SupportTicketController::adminList": {
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "SupportTicketController::answer": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "SupportTicketController::approveDraft": {
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "SupportTicketController::archiveAdminTicket": {
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "SupportTicketController::archiveCourseTicket": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "SupportTicketController::askCourse": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "SupportTicketController::create": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "SupportTicketController::deleteAdminTicket": {
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "SupportTicketController::deleteCourseTicket": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "SupportTicketController::instructorList": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "SupportTicketController::mine": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "SupportTicketController::myCourseQuestions": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "SupportTicketController::openCount": {
+   "NoAdminRequired": true
+  },
+  "SupportTicketController::restoreAdminTicket": {
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "SupportTicketController::restoreCourseTicket": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "SupportTicketController::withdrawCourseQuestion": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "TelosController::getConsentStatus": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TelosController::getCourseBuddies": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TelosController::getCourseTelosAggregate": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TelosController::getQuestions": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TelosController::getStatus": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TelosController::getTelos": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TelosController::processInterview": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "TelosController::revokeConsent": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "TelosController::saveConsent": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "TelosController::saveTelos": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "TelosController::updateTelos": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "TicketRecipientsController::get": [],
+  "TicketRecipientsController::save": {
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "TicketRecipientsController::search": {
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "TrainingController::abort": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "TrainingController::answer": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "TrainingController::complete": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "TrainingController::start": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "TrainingController::startPractice": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "TrainingController::status": {
+   "NoAdminRequired": true
+  },
+  "TrainingController::submitBatch": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
+  },
+  "TranslationController::answerTranslations": {
+   "NoAdminRequired": true
+  },
+  "TranslationController::deleteAnswerTranslation": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    600,
+    60
+   ]
+  },
+  "TranslationController::deleteQuestionTranslation": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TranslationController::questionTranslations": {
+   "NoAdminRequired": true
+  },
+  "TranslationController::setAnswerTranslation": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    600,
+    60
+   ]
+  },
+  "TranslationController::setQuestionTranslation": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "TranslationController::translatedQuestion": {
+   "NoAdminRequired": true
+  },
+  "UserStateController::answerChallenge": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "UserStateController::claimMission": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "UserStateController::dailyChallenge": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "UserStateController::missions": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "UserStateController::state": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "UserStateController::updateSettings": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "VideoProgressController::complete": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "VideoProgressController::courseStatus": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "VideoProgressController::documentRead": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "VideoProgressController::heartbeat": {
+   "NoAdminRequired": true
+  },
+  "VideoStreamController::show": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    600,
+    60
+   ]
+  },
+  "VirtuProfController::chat": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    15,
+    60
+   ]
+  },
+  "VirtuProfController::clearChatHistory": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    5,
+    60
+   ]
+  },
+  "VirtuProfController::dismiss": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "VirtuProfController::getChatHistory": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "VirtuProfController::getState": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "VirtuProfController::interviewTurn": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    15,
+    60
+   ]
+  },
+  "VirtuProfController::markVisited": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
+  "VirtuProfController::savePreferences": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "VirtuProfController::setEnabled": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "VirtuProfController::setLanguage": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
+    60
+   ]
+  }
+ }
+}

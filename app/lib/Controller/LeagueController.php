@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class LeagueController extends Controller {
@@ -24,9 +25,7 @@ class LeagueController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function create(int $courseId, int $poolId, int $clPoolId, ?string $name = null): DataResponse {
         try {
@@ -39,9 +38,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function active(int $courseId): DataResponse {
         try {
@@ -51,9 +48,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function start(int $courseId, int $id): DataResponse {
         try {
@@ -63,9 +58,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function finish(int $courseId, int $id): DataResponse {
         try {
@@ -75,9 +68,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function challenge(int $courseId, int $id, string $opponentUid): DataResponse {
         try {
@@ -87,9 +78,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function accept(int $courseId, int $id, int $challengeId): DataResponse {
         try {
@@ -99,9 +88,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function table(int $courseId, int $id): DataResponse {
         try {
@@ -111,9 +98,7 @@ class LeagueController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function cl(int $courseId, int $id): DataResponse {
         try {

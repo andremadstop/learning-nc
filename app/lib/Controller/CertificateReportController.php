@@ -18,6 +18,8 @@ use OCP\IL10N;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 /**
  * Instructor-facing, owner-scoped compliance report for a certifying course (Phase 156 Plan 01).
@@ -29,7 +31,7 @@ use OCP\AppFramework\Http\Attribute\OpenAPI;
  * service and only the safe DTO (5 display fields plus the expired flag) reaches here.
  *
  * Auth mirrors CertificateController: a `?string $userId` ctor param (NC injects null when
- * unauthenticated) with a null-guard → 401; all endpoints are @NoAdminRequired so a non-admin
+ * unauthenticated) with a null-guard → 401; all endpoints are #[NoAdminRequired] so a non-admin
  * instructor is not blocked by the admin middleware (load-bearing, unit-uncatchable).
  */
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
@@ -61,9 +63,8 @@ class CertificateReportController extends Controller {
     /**
      * JSON report table for a certifying course (REPORT-01/02): one row per issued certificate,
      * server-side filtered by from/to (issued_at window) and expiringDays (expiry window).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function certReport(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -107,10 +108,9 @@ class CertificateReportController extends Controller {
      * GitHub #41: the export button navigates the browser here (no request token), so without
      * the CSRF exemption the instructor got "CSRF check failed". Read-only GET; the instructor gate
      * in getCourseReport (ForbiddenException → 403) and the rate limit stay in force.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportCertReportCsv(int $courseId): Http\Response {
         if ($this->userId === null) {
@@ -160,9 +160,8 @@ class CertificateReportController extends Controller {
     /**
      * Coverage report (Lückencheck B2): every enrolled learner with a coverage status, the last
      * certificate, its expiry and the required pools passed. Optional ?status= keeps one status.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function coverageReport(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -183,10 +182,9 @@ class CertificateReportController extends Controller {
      * CSV of the SAME coverage list (same service call, same status filter), in the exporting
      * user's language. Navigation download like the certificate report CSV (GitHub #41): no
      * request token, so CSRF-exempt; read-only GET, instructor gate and rate limit stay in force.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportCoverageCsv(int $courseId): Http\Response {
         if ($this->userId === null) {
@@ -239,9 +237,8 @@ class CertificateReportController extends Controller {
      * with status 'passed' | 'expired' | 'overdue' | 'missing' and an 'expiring' flag (expiringDays
      * only sets that flag, it never filters the members). The groupId is read from the request so
      * an absent/empty groupId fails closed inside the service (no "all-groups" fallback).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function groupReport(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -279,9 +276,8 @@ class CertificateReportController extends Controller {
      * service fail closed (ForbiddenException before any DB read).
      *
      * Returns a generic 403 on any denial — no membership-oracle detail in the body.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function remindMember(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -303,9 +299,8 @@ class CertificateReportController extends Controller {
 
     /**
      * All (course_id, group_id) scopes this team lead is authorised to view.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function myTeamLeadScopes(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

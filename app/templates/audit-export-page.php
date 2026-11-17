@@ -1,7 +1,7 @@
 <?php
 /**
  * Auditor export page (Phase 161, AUDIT-07). Rendered by AuditExportController::page() via a group-gated
- * TemplateResponse (@NoAdminRequired + learning-auditors) — a NON-admin auditor reaches this directly.
+ * TemplateResponse (#[NoAdminRequired] + learning-auditors) — a NON-admin auditor reaches this directly.
  *
  * Self-contained server-rendered filter UI (zero build wiring): date-from / date-to / course-id inputs
  * plus three download actions wired to /audit/export/{events,sig,report}. A small inline script appends

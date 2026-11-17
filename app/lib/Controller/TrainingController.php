@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class TrainingController extends Controller {
@@ -32,9 +33,8 @@ class TrainingController extends Controller {
      * counts towards a certificate, and the course's practice rules decide length, time and pass
      * mark — limit, timeLimitSeconds and questionType are ignored. Any other examKind is refused
      * rather than silently starting a counting exam.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function start(int $poolId, ?int $limit = null, string $mode = 'training', ?int $timeLimitSeconds = null, ?string $lang = null, ?int $courseId = null, ?string $questionType = null, ?string $examKind = null): DataResponse {
         if ($examKind !== null) {
@@ -84,9 +84,8 @@ class TrainingController extends Controller {
 
     /**
      * Start or resume the practice exam an instructor configured for a course (Codeberg #9).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function startPractice(int $courseId, ?string $lang = null): DataResponse {
         try {
@@ -103,9 +102,7 @@ class TrainingController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function answer(int $sessionId, int $questionId, ?int $answerId = null, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?string $lang = null): DataResponse {
         if ($answerText !== null && mb_strlen($answerText) > 2000) {
@@ -118,9 +115,7 @@ class TrainingController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function submitBatch(int $sessionId, array $answers, ?string $lang = null): DataResponse {
         // S3: Hard cap on batch size
@@ -137,9 +132,7 @@ class TrainingController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function complete(int $sessionId, ?string $lang = null): DataResponse {
         try {
@@ -166,9 +159,7 @@ class TrainingController extends Controller {
         return new DataResponse($response);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function status(int $sessionId, ?string $lang = null, bool $includeQuestions = false): DataResponse {
         try {
             return new DataResponse($this->service->getSessionStatus($sessionId, $this->userId, $lang, $includeQuestions));
@@ -177,9 +168,7 @@ class TrainingController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function abort(int $sessionId): DataResponse {
         try {

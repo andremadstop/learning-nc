@@ -17,7 +17,7 @@ use OCP\AppFramework\Http\Attribute\OpenAPI;
  * several Nextcloud groups and individual people, picked from Nextcloud's own groups and
  * accounts instead of one typed group name.
  *
- * Admin-only. The routes carry no @NoAdminRequired, and every method checks again, so a
+ * Admin-only. The routes carry no #[NoAdminRequired], and every method checks again, so a
  * route or annotation change cannot open the instructor list or the account search.
  */
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]

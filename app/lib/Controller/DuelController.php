@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class DuelController extends Controller {
@@ -22,9 +23,7 @@ class DuelController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function create(int $poolId, int $numQuestions = 10, ?int $courseId = null): DataResponse {
         try {
@@ -35,9 +34,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function join(string $code): DataResponse {
         try {
@@ -47,9 +44,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function ready(string $code, ?string $lang = null): DataResponse {
         try {
@@ -59,9 +54,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function state(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->getState($code, $this->userId, $lang));
@@ -70,9 +63,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
@@ -82,9 +73,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function rematch(string $code): DataResponse {
         try {
@@ -94,9 +83,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function invite(?int $poolId = null, string $inviteeUid = '', int $numQuestions = 10, int $courseId = 0): DataResponse {
         try {
@@ -113,9 +100,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function invites(): DataResponse {
         try {
             return new DataResponse($this->service->listInvites($this->userId));
@@ -124,9 +109,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function acceptInvite(int $id): DataResponse {
         try {
@@ -136,9 +119,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function declineInvite(int $id): DataResponse {
         try {
@@ -148,9 +129,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function cancelInvite(int $id): DataResponse {
         try {
@@ -160,9 +139,7 @@ class DuelController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function opponents(int $courseId): DataResponse {
         try {

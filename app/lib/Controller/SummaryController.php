@@ -14,6 +14,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class SummaryController extends Controller {
@@ -42,9 +43,8 @@ class SummaryController extends Controller {
 
     /**
      * Student: get own course summary. Instructor: get class summary.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function getSummary(int $courseId): DataResponse {
         try {
             $course = $this->courseService->findById($courseId, $this->userId);
@@ -64,9 +64,8 @@ class SummaryController extends Controller {
 
     /**
      * Create a permanent snapshot of the student's course summary.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function createSnapshot(int $courseId): DataResponse {
         // findById() is the course access gate — every other endpoint in this controller passes
         // through it first. This one did not, so any logged-in user could snapshot an arbitrary
@@ -87,9 +86,8 @@ class SummaryController extends Controller {
 
     /**
      * Get an existing snapshot.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function getSnapshot(int $courseId): DataResponse {
         $snapshot = $this->summaryService->getSnapshot($courseId, $this->userId);
         if (!$snapshot) {
@@ -101,9 +99,8 @@ class SummaryController extends Controller {
     /**
      * Generate AI narrative portfolio for the student's course end summary.
      * Cached in snapshot on first generation. Returns null narrative if Gemini unconfigured.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 3600)]
     public function generateNarrative(int $courseId): DataResponse {
         try {
@@ -128,9 +125,8 @@ class SummaryController extends Controller {
 
     /**
      * Export class summary as CSV (instructor only).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function exportCsv(int $courseId): Http\Response {
         try {
             $course = $this->courseService->findById($courseId, $this->userId);

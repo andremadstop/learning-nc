@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PoolController extends Controller {
@@ -22,9 +23,7 @@ class PoolController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function index(): DataResponse {
         $own = $this->service->findAll($this->userId);
         $shared = $this->service->findSharedWithMe($this->userId);
@@ -37,16 +36,13 @@ class PoolController extends Controller {
     /**
      * GitHub #69: the pools of the courses the user leads (owner or co-instructor), with their
      * course titles and the user's permission per pool. Empty for anyone without such a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function inMyCourses(): DataResponse {
         return new DataResponse(['pools' => $this->service->findInMyCourses((string)$this->userId)]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function show(int $id): DataResponse {
         try {
             return new DataResponse($this->service->findByIdWithShareAccess($id, $this->userId));
@@ -55,9 +51,7 @@ class PoolController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function create(
         string $name,
@@ -91,9 +85,7 @@ class PoolController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function update(
         int $id,
@@ -131,9 +123,7 @@ class PoolController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
         try {
@@ -147,9 +137,7 @@ class PoolController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $id): DataResponse {
         try {

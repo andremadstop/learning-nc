@@ -29,6 +29,7 @@ use OCP\Share\IAttributes;
 use OCP\Share\IShare;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
+use OCA\Learning\Tests\Support\RouteSecurityInventory;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -396,9 +397,9 @@ class DocumentMaterialAccessTest extends TestCase {
 
     /** A plain link carries no request token: the endpoint must be reachable without one. */
     public function testDownloadNeedsNoCsrfTokenAndNoAdmin(): void {
-        $doc = (string)(new \ReflectionMethod(DocumentController::class, 'download'))->getDocComment();
-        $this->assertStringContainsString('@NoCSRFRequired', $doc);
-        $this->assertStringContainsString('@NoAdminRequired', $doc);
+        $seen = RouteSecurityInventory::describe(new \ReflectionMethod(DocumentController::class, 'download'));
+        $this->assertTrue($seen['NoCSRFRequired'] ?? false, 'no #[NoCSRFRequired]');
+        $this->assertTrue($seen['NoAdminRequired'] ?? false, 'no #[NoAdminRequired]');
     }
 
     // ---------------------------------------------------------------- view-only shares -------

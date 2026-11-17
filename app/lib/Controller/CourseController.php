@@ -23,6 +23,8 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CourseController extends Controller {
@@ -76,9 +78,7 @@ class CourseController extends Controller {
         $this->db = $db;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function role(): DataResponse {
         return new DataResponse([
             'role' => $this->roleService->getRole($this->userId),
@@ -86,9 +86,7 @@ class CourseController extends Controller {
         ]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function index(): DataResponse {
         try {
             return new DataResponse($this->courseService->findAll($this->userId));
@@ -97,9 +95,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function show(int $courseId): DataResponse {
         try {
             return new DataResponse($this->courseService->findById($courseId, $this->userId));
@@ -113,9 +109,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function create(string $title, ?string $description = null, ?string $ncGroupId = null, ?string $profile = null): DataResponse {
         // GitHub #67: the course profile is a preselection of the course switches. An unknown
@@ -196,9 +190,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function update(int $courseId, ?string $title = null, ?string $description = null, ?string $status = null, ?string $ncGroupId = null): DataResponse {
         try {
@@ -241,9 +233,8 @@ class CourseController extends Controller {
      * Instructor toggles the server-side video/material gate (Phase 162, B3) and, GitHub #75,
      * whether required documents are confirmed again in every certification cycle. Each field
      * is optional; an omitted one stays as it is.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function setVideoGate(int $courseId, ?bool $enabled = null, ?bool $reconfirmPerCycle = null): DataResponse {
         try {
@@ -262,9 +253,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $courseId): DataResponse {
         try {
@@ -277,9 +266,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function listPools(int $courseId): DataResponse {
         try {
             $data = $this->courseService->findById($courseId, $this->userId);
@@ -289,9 +276,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function addPool(int $courseId, int $poolId, int $sortOrder = 0, bool $required = true): DataResponse {
         try {
@@ -302,9 +287,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function updatePool(
         int $courseId,
@@ -340,9 +323,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function removePool(int $courseId, int $poolId): DataResponse {
         try {
@@ -353,9 +334,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function listMembers(int $courseId): DataResponse {
         try {
             return new DataResponse($this->courseService->getMembers($courseId, $this->userId));
@@ -364,9 +343,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function removeMember(int $courseId, string $memberId): DataResponse {
         try {
@@ -377,9 +354,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function enroll(int $courseId): DataResponse {
         try {
@@ -397,9 +372,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function progress(
         int $courseId,
         int $limit = 25,
@@ -421,9 +394,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function myProgress(int $courseId): DataResponse {
         try {
             return new DataResponse($this->courseService->getMyCourseProgress($courseId, $this->userId));
@@ -432,9 +403,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function dashboard(): DataResponse {
         try {
             return new DataResponse($this->courseService->getDashboard($this->userId));
@@ -443,9 +412,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function leaderboard(
         int $courseId,
@@ -477,9 +444,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function atRisk(int $courseId): DataResponse {
         try {
@@ -499,10 +464,9 @@ class CourseController extends Controller {
      * request token), so without the CSRF exemption the instructor got "CSRF check failed".
      * Read-only GET; the instructor gate in getAtRiskStudents (ForbiddenException → 403) and the
      * rate limit stay in force.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportAtRiskCsv(int $courseId): Http\Response {
         try {
@@ -537,9 +501,7 @@ class CourseController extends Controller {
         return new DataDownloadResponse(\OCA\Learning\Service\CsvExportL10n::BOM . $csv, 'at-risk-course-' . $courseId . '.csv', \OCA\Learning\Service\CsvExportL10n::CONTENT_TYPE);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function studentDetail(int $courseId, string $studentId): DataResponse {
         try {
@@ -556,9 +518,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function chapterHeatmap(int $courseId): DataResponse {
         try {
@@ -573,9 +533,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function weakQuestions(int $courseId, int $limit = 10): DataResponse {
         try {
@@ -593,9 +551,8 @@ class CourseController extends Controller {
     /**
      * GitHub #68: answer statistics of a pool (owner or edit share) and whether a course holding
      * it offers Leitner.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function poolAnswerStats(int $poolId): DataResponse {
         try {
@@ -608,9 +565,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function setQuestionOverride(int $courseId, int $questionId, bool $paused = false, bool $highlight = false): DataResponse {
         try {
@@ -625,9 +580,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function courseDashboard(int $courseId): DataResponse {
         try {
@@ -642,9 +595,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getAnnouncements(int $courseId): DataResponse {
         try {
@@ -659,9 +610,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function createAnnouncement(int $courseId, string $title = '', string $body = '', ?int $expiresAt = null): DataResponse {
         try {
@@ -679,9 +628,8 @@ class CourseController extends Controller {
 
     /**
      * GitHub #40: edit an announcement; the feed copy changes with it.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function updateAnnouncement(int $courseId, int $announcementId, string $title = '', string $body = ''): DataResponse {
         try {
@@ -699,9 +647,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function deleteAnnouncement(int $courseId, int $announcementId): DataResponse {
         try {
@@ -717,9 +663,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateModeConfig(int $courseId, array $modeConfig = [], ?string $talkRoomToken = null, ?bool $leitnerSprint = null): DataResponse {
         try {
@@ -744,9 +688,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateExamDate(int $courseId, ?string $examDate = null): DataResponse {
         try {
@@ -781,9 +723,8 @@ class CourseController extends Controller {
      *
      * Each field is optional; only provided fields are updated. Pool IDs are normalized
      * (positive ints, deduped) and validated against the course's own pool list.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateCertConfig(
         int $courseId,
@@ -955,9 +896,8 @@ class CourseController extends Controller {
     /**
      * Configure the course's practice exam (Codeberg #9, instructor-only). Each field is
      * optional; only provided fields change. Practice exams never count towards a certificate.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updatePracticeConfig(
         int $courseId,
@@ -1028,9 +968,8 @@ class CourseController extends Controller {
      * PASS-07 lazy trigger: PassCriteriaService::evaluate() emits a course.passed audit event
      * the first time this endpoint is called for a qualifying student. Subsequent calls are safe
      * (idempotent guard inside PassCriteriaService::emitPassEventIfFirst()).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getPassStatus(int $courseId): DataResponse {
         try {
@@ -1054,9 +993,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getTools(int $courseId): DataResponse {
         try {
@@ -1073,9 +1010,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateTools(int $courseId, ?array $enabledTools = null): DataResponse {
         try {
@@ -1092,9 +1027,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getCurriculumScope(int $courseId): DataResponse {
         try {
@@ -1107,9 +1040,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateCurriculumScope(
         int $courseId,
@@ -1135,9 +1066,8 @@ class CourseController extends Controller {
     /**
      * Update allowed campaigns for a course.
      * NULL means all campaigns available, empty array means none.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateCampaignSelection(int $courseId, ?array $campaignIds = null): DataResponse {
         try {
@@ -1174,9 +1104,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getSchedule(int $courseId): DataResponse {
         try {
@@ -1194,9 +1122,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function setSchedule(int $courseId, array $entries = []): DataResponse {
         try {
@@ -1216,9 +1142,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function deleteSchedule(int $courseId): DataResponse {
         try {
@@ -1309,9 +1233,7 @@ class CourseController extends Controller {
         return $examDate;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function archiveCourse(int $courseId): DataResponse {
         try {
@@ -1327,9 +1249,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function listSnapshots(int $courseId): DataResponse {
         try {
             $snapshots = $this->archiveService->listSnapshots($courseId, $this->userId);
@@ -1342,9 +1262,7 @@ class CourseController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function showSnapshot(int $courseId, int $snapshotId): DataResponse {
         try {
             $snapshot = $this->archiveService->getSnapshot($snapshotId, $this->userId);

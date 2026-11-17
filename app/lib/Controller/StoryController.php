@@ -10,11 +10,12 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * StoryController — REST API for the Story-RPG (v6.0 Abenteuer).
  *
- * Routes (all require authentication via @NoAdminRequired):
+ * Routes (all require authentication via #[NoAdminRequired]):
  *
  *   GET  /api/story/campaigns                         → listCampaigns
  *   POST /api/story/campaigns/{campaignId}/start      → startCampaign
@@ -58,9 +59,8 @@ class StoryController extends Controller {
 
     /**
      * List all available campaigns (lightweight metadata only).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function listCampaigns(): DataResponse {
         try {
@@ -74,9 +74,8 @@ class StoryController extends Controller {
 
     /**
      * List all campaign progress records for the current user.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function listProgress(): DataResponse {
         if ($this->userId === null) {
@@ -99,9 +98,8 @@ class StoryController extends Controller {
      * POST body:
      *   characterClass  string  One of: architect|security|sysadmin|helpdesk
      *   coopUserIds     string  Optional JSON array of additional user IDs
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function startCampaign(string $campaignId, string $characterClass = 'helpdesk', string $coopUserIds = '[]'): DataResponse {
         if ($this->userId === null) {
@@ -131,9 +129,8 @@ class StoryController extends Controller {
 
     /**
      * Get the current scene for the user's active campaign session.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getScene(string $campaignId): DataResponse {
         if ($this->userId === null) {
@@ -151,9 +148,8 @@ class StoryController extends Controller {
 
     /**
      * Start a graph campaign via dedicated graph endpoint.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function graphStart(string $campaignId, string $characterClass = 'helpdesk'): DataResponse {
         if ($this->userId === null) {
@@ -173,9 +169,8 @@ class StoryController extends Controller {
 
     /**
      * Resume a graph campaign from persisted state.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function graphScene(string $campaignId): DataResponse {
         if ($this->userId === null) {
@@ -195,9 +190,8 @@ class StoryController extends Controller {
 
     /**
      * Traverse one edge in a graph campaign.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function graphTraverse(string $campaignId, string $edgeId = ''): DataResponse {
         if ($this->userId === null) {
@@ -230,9 +224,8 @@ class StoryController extends Controller {
 
     /**
      * Read the persisted state-bag of a graph campaign.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function graphState(string $campaignId): DataResponse {
         if ($this->userId === null) {
@@ -255,9 +248,8 @@ class StoryController extends Controller {
     /**
      * Fetch skill-check questions for a specific scene choice.
      * Called before the player commits to a choice (pre-load questions).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getSkillCheckQuestions(string $campaignId = '', string $sceneId = '', string $choiceId = ''): DataResponse {
         if ($this->userId === null) {
@@ -286,9 +278,8 @@ class StoryController extends Controller {
      *   choiceId    string  ID of the chosen option
      *   questionId  int     Optional — question answered (single-question inline check)
      *   answerId    int     Optional — answer selected (paired with questionId)
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function makeChoice(
         string $campaignId,
@@ -328,9 +319,8 @@ class StoryController extends Controller {
      *   choiceId    string
      *   questionId  int
      *   answerId    int
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function submitSkillAnswer(
         string $campaignId,
@@ -362,9 +352,8 @@ class StoryController extends Controller {
      * POST body:
      *   choiceId  string
      *   answers   JSON string: [{question_id: int, answer_id: int}, ...] (keys inside the JSON stay snake_case)
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function submitSkillBatch(
         string $campaignId,
@@ -410,9 +399,8 @@ class StoryController extends Controller {
      *   text  string  Free-text action description (max 500 chars)
      *
      * @return DataResponse Success body: {valid: bool, narrative: string, next_scene: string|null, fallback: bool}
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 15, period: 60)]
     public function submitFreetext(string $campaignId, string $text = ''): DataResponse {
         if ($this->userId === null) {

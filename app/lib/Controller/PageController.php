@@ -12,6 +12,9 @@ use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PageController extends Controller {
@@ -30,10 +33,8 @@ class PageController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function index(): TemplateResponse {
         $response = new TemplateResponse('learning', 'index');
         // Vimeo / YouTube course videos play in the provider's player once the learner consented
@@ -53,11 +54,10 @@ class PageController extends Controller {
     }
 
     /**
-     * @PublicPage
-     * @NoCSRFRequired
-     *
      * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
+    #[PublicPage]
+    #[NoCSRFRequired]
     public function privacy(): TemplateResponse {
         return new PublicTemplateResponse('learning', 'privacy', [
             'appUrl' => $this->urlGenerator->linkToRoute('learning.page.index'),
@@ -70,11 +70,10 @@ class PageController extends Controller {
     }
 
     /**
-     * @PublicPage
-     * @NoCSRFRequired
-     *
      * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
+    #[PublicPage]
+    #[NoCSRFRequired]
     public function impressum(): TemplateResponse {
         return new PublicTemplateResponse('learning', 'impressum', [
             'appUrl' => $this->urlGenerator->linkToRoute('learning.page.index'),

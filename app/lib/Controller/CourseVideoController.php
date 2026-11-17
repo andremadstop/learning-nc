@@ -23,6 +23,7 @@ use OCP\Files\IRootFolder;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * CourseVideoController — instructor registry CRUD for gated content (Phase 162, VIDEO-09).
@@ -82,9 +83,8 @@ class CourseVideoController extends Controller {
 
     /**
      * List the gated-content registry for a course (instructor-only).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function index(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -104,9 +104,8 @@ class CourseVideoController extends Controller {
 
     /**
      * Add a registry row (instructor-only).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function create(
         int $courseId,
@@ -196,9 +195,8 @@ class CourseVideoController extends Controller {
 
     /**
      * Update a registry row (instructor-only). Only provided fields are changed.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function update(
         int $id,
@@ -319,9 +317,8 @@ class CourseVideoController extends Controller {
 
     /**
      * Delete a registry row (instructor-only).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $id): DataResponse {
         if ($this->userId === null) {
@@ -364,9 +361,8 @@ class CourseVideoController extends Controller {
      * @return DataResponse<Http::STATUS_OK, list<array<string, mixed>>, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
      *
      * 200: the registry of the course after the change
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function setDocumentsRequired(int $courseId, array $documentIds = [], bool $required = true): DataResponse {
         if ($this->userId === null) {
@@ -449,9 +445,8 @@ class CourseVideoController extends Controller {
      * @return DataResponse<Http::STATUS_OK, array<string, mixed>, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
      *
      * 200: the registry row with its new confirm_after
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function requestReconfirm(int $id): DataResponse {
         if ($this->userId === null) {

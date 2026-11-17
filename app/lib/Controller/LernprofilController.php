@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * LernprofilController — Phase 22: Persönlicher Lernbot
@@ -42,10 +43,10 @@ class LernprofilController extends Controller {
     /**
      * Returns the full learning profile: weakest topics, history summary, overall stats.
      *
-     * @NoAdminRequired
      * @param int|null $courseId  Optional course filter
      * @param int      $days      History window in days (default 30)
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function profile(?int $courseId = null, int $days = 30): DataResponse {
         if ($this->userId === null) {
@@ -73,10 +74,10 @@ class LernprofilController extends Controller {
     /**
      * Returns the top N weakest pools for the user.
      *
-     * @NoAdminRequired
      * @param int|null $courseId Optional course filter
      * @param int      $limit    Max topics to return (1-20, default 5)
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function weakestTopics(?int $courseId = null, int $limit = 5): DataResponse {
         if ($this->userId === null) {
@@ -95,9 +96,9 @@ class LernprofilController extends Controller {
     /**
      * Returns the daily learning history for the user.
      *
-     * @NoAdminRequired
      * @param int $days History window in days (1-365, default 30)
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function lernhistorie(int $days = 30): DataResponse {
         if ($this->userId === null) {
@@ -117,9 +118,9 @@ class LernprofilController extends Controller {
      * Returns a cheat-sheet of trouble-spot questions (accuracy <50%)
      * across all enrolled courses, enriched with correct answers and explanations.
      *
-     * @NoAdminRequired
      * @param int $limit Max questions (1-100, default 50)
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function cheatSheet(int $limit = 50): DataResponse {
         if ($this->userId === null) {
@@ -137,9 +138,8 @@ class LernprofilController extends Controller {
 
     /**
      * Returns skill-map data: all pools enriched with course grouping.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function skillMap(): DataResponse {
         if ($this->userId === null) {

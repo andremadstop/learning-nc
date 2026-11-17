@@ -20,6 +20,8 @@ use OCP\Files\NotFoundException;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class DocumentController extends Controller {
@@ -48,9 +50,8 @@ class DocumentController extends Controller {
 
     /**
      * Set the material folder for a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function setFolder(int $courseId): DataResponse {
         try {
             if (!$this->roleService->isInstructor($this->userId)) {
@@ -84,9 +85,8 @@ class DocumentController extends Controller {
 
     /**
      * Get the material folder for a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function getFolder(int $courseId): DataResponse {
         try {
             $this->courseService->findById($courseId, $this->userId);
@@ -99,9 +99,8 @@ class DocumentController extends Controller {
 
     /**
      * Scan the material folder for new documents.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function scan(int $courseId): DataResponse {
         try {
             if (!$this->roleService->isInstructor($this->userId)) {
@@ -126,9 +125,8 @@ class DocumentController extends Controller {
      * list at all (DocumentService::projectDocuments). The envelope carries what the page needs
      * to stay honest: whether the viewer can manage the files (they live in the owner's home)
      * and whether this server can extract text from PDFs at all.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function index(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -161,12 +159,11 @@ class DocumentController extends Controller {
      * the registered file type, not from the file: PDF is shown inline, Markdown as plain text,
      * with nosniff, so an uploaded file cannot become an HTML page of this origin.
      *
-     * @NoCSRFRequired is needed because the browser opens the file through a plain link, which
+     * #[NoCSRFRequired] is needed because the browser opens the file through a plain link, which
      * carries no request token. The endpoint only reads.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 600, period: 60)]
     public function download(int $courseId, int $documentId): Response {
         if ($this->userId === null) {
@@ -252,9 +249,8 @@ class DocumentController extends Controller {
 
     /**
      * Extract text from a single document.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function extract(int $courseId, int $documentId): DataResponse {
         try {
             if (!$this->roleService->isInstructor($this->userId)) {
@@ -276,9 +272,8 @@ class DocumentController extends Controller {
 
     /**
      * Extract text from all uploaded documents in a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function extractAll(int $courseId): DataResponse {
         try {
             if (!$this->roleService->isInstructor($this->userId)) {

@@ -133,6 +133,8 @@ scripts/*
 !scripts/lifecycle-fixtures/
 !scripts/lifecycle-probe.sh
 !scripts/nc-integration.sh
+!scripts/route-security-inventory.php
+!scripts/route-security-inventory.sh
 !scripts/persona-sweep/
 !scripts/screenshots/
 !scripts/schema-dump.sh

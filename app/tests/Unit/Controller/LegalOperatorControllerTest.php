@@ -11,6 +11,7 @@ use OCP\IRequest;
 use OCP\IURLGenerator;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use OCA\Learning\Tests\Support\RouteSecurityInventory;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -163,10 +164,10 @@ class LegalOperatorControllerTest extends TestCase {
     public function testReadingAndChangingTheFormIsAdminOnly(): void {
         foreach (['get', 'save'] as $method) {
             $m = new \ReflectionMethod(LegalOperatorController::class, $method);
-            $doc = (string)$m->getDocComment();
-            $this->assertStringNotContainsString('@NoAdminRequired', $doc, $method);
-            $this->assertStringNotContainsString('@PublicPage', $doc, $method);
-            $this->assertStringNotContainsString('@NoCSRFRequired', $doc, $method);
+            $seen = RouteSecurityInventory::describe($m);
+            $this->assertArrayNotHasKey('NoAdminRequired', $seen, $method);
+            $this->assertArrayNotHasKey('PublicPage', $seen, $method);
+            $this->assertArrayNotHasKey('NoCSRFRequired', $seen, $method);
             $this->assertNotContains('OCP\AppFramework\Http\Attribute\NoAdminRequired', self::attributeNames($m), $method);
             $this->assertNotContains('OCP\AppFramework\Http\Attribute\PublicPage', self::attributeNames($m), $method);
         }
@@ -174,10 +175,10 @@ class LegalOperatorControllerTest extends TestCase {
 
     public function testShowNeedsASignedInUserButNoAdmin(): void {
         $m = new \ReflectionMethod(LegalOperatorController::class, 'show');
-        $doc = (string)$m->getDocComment();
+        $seen = RouteSecurityInventory::describe($m);
 
-        $this->assertStringContainsString('@NoAdminRequired', $doc);
-        $this->assertStringNotContainsString('@PublicPage', $doc);
+        $this->assertTrue($seen['NoAdminRequired'] ?? false, 'no #[NoAdminRequired]');
+        $this->assertArrayNotHasKey('PublicPage', $seen);
     }
 
     public function testRoutesAreRegistered(): void {

@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class CoopController extends Controller {
@@ -23,9 +24,7 @@ class CoopController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function create(): DataResponse {
         if ($this->userId === null) {
@@ -52,9 +51,7 @@ class CoopController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function join(string $code): DataResponse {
         if ($this->userId === null) {
@@ -75,9 +72,7 @@ class CoopController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function lobby(int $id): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -90,9 +85,7 @@ class CoopController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function ready(int $id): DataResponse {
         if ($this->userId === null) {
@@ -113,9 +106,7 @@ class CoopController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function state(int $id): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -128,9 +119,7 @@ class CoopController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function vote(int $id): DataResponse {
         if ($this->userId === null) {

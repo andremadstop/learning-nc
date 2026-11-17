@@ -17,6 +17,8 @@ use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 /**
  * AuditExportController — auditor-facing export of the compliance hash-chain (Phase 161, AUDIT-07).
@@ -24,12 +26,13 @@ use OCP\AppFramework\Http\Attribute\OpenAPI;
  * The Datenschutzbeauftragte / Betriebsrat downloads a deterministic JSONL event log, a detached
  * Ed25519 signature over the EXACT JSONL bytes, and a printable HTML report — WITHOUT admin rights
  * and WITHOUT shell access. Access is gated to members of the configurable 'learning-auditors' NC
- * group (@NoAdminRequired + IGroupManager::isInGroup), NOT to admins.
+ * group (#[NoAdminRequired] + IGroupManager::isInGroup), NOT to admins.
  *
  * Security invariants (do not relax):
- *   - @NoAdminRequired + @NoCSRFRequired are PHPDoc annotations (NOT PHP-8 attributes — the attribute
- *     form is not honoured in this NC build and 401s logged-in non-admins). The downloads/page are
- *     reached by browser navigation / <a> links (no requesttoken), so @NoCSRFRequired is required.
+ *   - #[NoAdminRequired] + #[NoCSRFRequired] are imported from OCP\AppFramework\Http\Attribute; an
+ *     attribute under any other name is silently ignored and 401s logged-in non-admins
+ *     (RouteSecurityInventoryTest, GitHub #65). The downloads/page are reached by browser
+ *     navigation / <a> links (no requesttoken), so #[NoCSRFRequired] is required.
  *   - assertAuditorOrDie() is the FIRST line of every action; a non-auditor gets HTTP 403 and the DB
  *     is never touched (no event data leaks).
  *   - The JSONL NEVER carries user_id — only user_ref (the DSGVO pseudonymous HMAC identifier).
@@ -81,11 +84,10 @@ class AuditExportController extends Controller {
      *
      * A group-gated, self-contained server-rendered form (date-from / date-to / course-id + three
      * download links). Deliberately NOT embedded in AdminSettings (that needs admin and contradicts
-     * @NoAdminRequired) — a non-admin auditor reaches it directly.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
+     * #[NoAdminRequired]) — a non-admin auditor reaches it directly.
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function page(): Http\Response {
         try {
             $this->assertAuditorOrDie();
@@ -102,10 +104,9 @@ class AuditExportController extends Controller {
 
     /**
      * GET /apps/learning/audit/export/events — deterministic JSONL event log.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function events(): Http\Response {
         try {
             $this->assertAuditorOrDie();
@@ -119,10 +120,9 @@ class AuditExportController extends Controller {
 
     /**
      * GET /apps/learning/audit/export/sig — detached Ed25519 signature over the exact JSONL bytes.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function sig(): Http\Response {
         try {
             $this->assertAuditorOrDie();
@@ -140,10 +140,9 @@ class AuditExportController extends Controller {
 
     /**
      * GET /apps/learning/audit/export/report — printable HTML report (window.print() → PDF, zero deps).
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function report(): Http\Response {
         try {
             $this->assertAuditorOrDie();

@@ -13,6 +13,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * NoteGeneratorController — Phase 24: Note-Generator
@@ -57,9 +58,8 @@ class NoteGeneratorController extends Controller {
      * Generate an Obsidian-compatible Markdown summary for a learning pool.
      *
      * Rate-limited to 3 requests/minute — Gemini calls are expensive.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 3, period: 60)]
     public function generate(): DataResponse {
         if ($this->userId === null) {

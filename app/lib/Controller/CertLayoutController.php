@@ -19,6 +19,8 @@ use OCP\Files\NotFoundException;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 /**
  * GitHub #43: the course's certificate layout preview and its stamp / signature images.
@@ -43,9 +45,8 @@ class CertLayoutController extends Controller {
 
     /**
      * The course's current layout with its images, for the preview in the settings.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function show(int $courseId): JSONResponse {
         try {
@@ -60,9 +61,8 @@ class CertLayoutController extends Controller {
 
     /**
      * Take a PNG from the instructor's Nextcloud files as stamp or signature.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function importImage(int $courseId, string $kind, string $path = ''): JSONResponse {
         if ($this->userId === null) {
@@ -91,9 +91,8 @@ class CertLayoutController extends Controller {
 
     /**
      * Remove the course's stamp or signature. Certificates already issued keep theirs.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function removeImage(int $courseId, string $kind): JSONResponse {
         if ($this->userId === null) {
@@ -119,10 +118,9 @@ class CertLayoutController extends Controller {
     /**
      * GitHub #78: the logos of the library the course can use, and the one it uses.
      *
-     * @NoAdminRequired
-     *
      * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string}>, selected: string|null}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function logos(int $courseId): DataResponse {
         try {
@@ -147,11 +145,10 @@ class CertLayoutController extends Controller {
      * course's instructors; the public verify page never uses this route (it shows the
      * certificate's own copy).
      *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     *
      * @return DataDisplayResponse<Http::STATUS_OK, array{Content-Type: string}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function logoImage(int $courseId, string $logoId): DataDisplayResponse|DataResponse {
         try {
@@ -168,11 +165,10 @@ class CertLayoutController extends Controller {
      * GitHub #78: use a library logo on the course's certificates ('' = the Theming logo again).
      * Takes effect at once, like stamp and signature; certificates already issued keep theirs.
      *
-     * @NoAdminRequired
-     *
      * @param string $logoId the library logo's id, '' for the Theming logo
      * @return DataResponse<Http::STATUS_OK, array<string, mixed>, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function selectLogo(int $courseId, string $logoId = ''): DataResponse {
         if ($this->userId === null) {

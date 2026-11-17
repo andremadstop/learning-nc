@@ -12,6 +12,8 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\IUserManager;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ClassbookController extends Controller {
@@ -41,9 +43,8 @@ class ClassbookController extends Controller {
     /**
      * Get classbook profiles for a course.
      * Only returns users with visibility 'course' or 'public'.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function index(int $courseId): DataResponse {
         try {
@@ -55,9 +56,8 @@ class ClassbookController extends Controller {
 
     /**
      * Give kudos to another course member.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function giveKudos(int $courseId, string $toUser, string $message = ''): DataResponse {
         try {
@@ -75,9 +75,8 @@ class ClassbookController extends Controller {
      * GitHub #50: the visibility is global, so a toggle relative to the server value flipped
      * the wrong way when another tab had changed it. The register sends the state the learner
      * asked for ('course' or 'private'), which is set idempotently.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function toggleVisibility(int $courseId, ?string $visibility = null): DataResponse {
         if ($visibility !== null && !in_array($visibility, ['course', 'private'], true)) {
@@ -115,10 +114,9 @@ class ClassbookController extends Controller {
      *
      * A navigation download (window.location from the Participants tab), so no request token is
      * sent (GitHub #45). Read-only GET of the caller's own profile; course membership is checked.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportVcard(int $courseId): Http\Response {
         try {

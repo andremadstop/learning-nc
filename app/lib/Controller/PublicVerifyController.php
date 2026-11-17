@@ -13,6 +13,9 @@ use OCP\IL10N;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\BruteForceProtection;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 
 /**
  * PublicVerifyController — the public, unauthenticated certificate verify page (Phase 157, VERIFY-01/02/06).
@@ -66,18 +69,17 @@ class PublicVerifyController extends Controller {
      * Status precedence is owned by the service; this method only adds the format precheck and the
      * throttle-on-unknown policy, then renders. Returns HTTP 200 for every status.
      *
-     * Publicness/CSRF/brute-force are declared as PHPDoc annotations, like the other public routes
+     * Publicness/CSRF/brute-force are declared as attributes, like the other public routes
      * (DidController/IcsController/PageController). The IP-keyed #[AnonRateLimit] caps ALL requests,
      * signed-in visitors included (they have no #[UserRateLimit] here, so Nextcloud applies the anon
      * limit); it is generous because a classroom behind one NAT shares an address and verification
-     * ids are unguessable UUIDv4. $tpl->throttle() (below) feeds @BruteForceProtection.
-     *
-     * @PublicPage
-     * @NoCSRFRequired
-     * @BruteForceProtection(action=learningVerify)
+     * ids are unguessable UUIDv4. $tpl->throttle() (below) feeds #[BruteForceProtection].
      *
      * @return TemplateResponse<\OCP\AppFramework\Http::STATUS_OK, array{}>
      */
+    #[PublicPage]
+    #[NoCSRFRequired]
+    #[BruteForceProtection(action: self::THROTTLE_ACTION)]
     #[AnonRateLimit(limit: 150, period: 60)]
     public function verify(string $verificationId): TemplateResponse {
         // VERIFY-06: validate the FORMAT before any DB/service call. A malformed id is treated exactly

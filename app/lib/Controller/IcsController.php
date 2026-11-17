@@ -13,6 +13,9 @@ use OCP\AppFramework\Http\Attribute\BruteForceProtection;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class IcsController extends Controller {
@@ -30,9 +33,7 @@ class IcsController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function generate(): DataResponse {
         if ($this->userId === null) {
@@ -43,11 +44,10 @@ class IcsController extends Controller {
     }
 
     /**
-     * @PublicPage
-     * @NoCSRFRequired
-     *
      * @return DataDownloadResponse<\OCP\AppFramework\Http::STATUS_OK, 'text/calendar; charset=utf-8', array{}>|DataResponse<\OCP\AppFramework\Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
+    #[PublicPage]
+    #[NoCSRFRequired]
     #[AnonRateLimit(limit: 120, period: 600)]
     #[BruteForceProtection(action: IcsService::FEED_THROTTLE_ACTION)]
     public function feed(string $token): Http\Response {

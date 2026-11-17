@@ -24,11 +24,11 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  * Phase 161 Plan 04 — AuditExportController (auditor-gated compliance export, AUDIT-07).
  *
  * The controller gates every action on membership of the configurable 'learning-auditors' group
- * (@NoAdminRequired + IGroupManager::isInGroup) — NOT admin. It emits a deterministic JSONL event log
+ * (#[NoAdminRequired] + IGroupManager::isInGroup) — NOT admin. It emits a deterministic JSONL event log
  * (user_ref ONLY, never user_id — DSGVO), a detached Ed25519 signature over the EXACT JSONL bytes
  * (signed inline via KeyService, secret memzeroed), and a printable HTML report carrying sha256(JSONL).
  *
- * @NoAdminRequired / @NoCSRFRequired / the auditor gate are middleware/PHPDoc concerns; instantiating
+ * #[NoAdminRequired] / #[NoCSRFRequired] / the auditor gate are middleware concerns; instantiating
  * the controller directly bypasses NC middleware, so these tests exercise the in-method group gate
  * (isInGroup → 403) and the export payloads.
  *

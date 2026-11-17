@@ -11,6 +11,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class FeedController extends Controller {
@@ -36,9 +37,8 @@ class FeedController extends Controller {
 
     /**
      * Get aggregated feed for the current user across all enrolled courses.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function index(int $limit = 50, int $offset = 0): DataResponse {
         // Same bounds as courseFeed: an unbounded limit loaded every row of every course, a
         // negative offset is an SQL error on PostgreSQL (audit #207).
@@ -72,9 +72,8 @@ class FeedController extends Controller {
 
     /**
      * Get feed items for a specific course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function courseFeed(int $courseId, int $limit = 50, int $offset = 0): DataResponse {
         try {
             $this->courseService->findById($courseId, $this->userId);

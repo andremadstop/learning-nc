@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * Operator details for the imprint and privacy statement (audit 2026-11): entered by an admin
@@ -83,9 +84,8 @@ class LegalOperatorController extends Controller {
     /**
      * The public operator fields for the privacy section of the personal settings (the public
      * pages get them server-rendered); null while no complete entry exists.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function show(): DataResponse {
         return new DataResponse(['operator' => $this->operatorInfo->publicView()]);
     }

@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class QuestionController extends Controller {
@@ -23,9 +24,7 @@ class QuestionController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function index(int $poolId, int $limit = 0, int $offset = 0): DataResponse {
         // A deleted, unshared or foreign pool is a 404 like in every other action here, not a
         // 500 with a logged stack trace (audit #64).
@@ -45,9 +44,7 @@ class QuestionController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function show(int $id): DataResponse {
         try {
             return new DataResponse($this->service->find($id, $this->userId));
@@ -60,9 +57,8 @@ class QuestionController extends Controller {
      * Grades one answer for the bot modes of Duel and Gameshow (learners no longer receive
      * answers[].is_correct). 404 without read access, 403 during a graded exam on the pool,
      * 400 for an answer of another question. Rate-limited: it reveals the correct answer.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function check(int $id, int $answerId): DataResponse {
         try {
@@ -94,9 +90,7 @@ class QuestionController extends Controller {
         return $rich;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function create(
         int $poolId,
@@ -147,9 +141,7 @@ class QuestionController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function update(
         int $id,
@@ -200,9 +192,7 @@ class QuestionController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
         try {
@@ -215,9 +205,7 @@ class QuestionController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $id): DataResponse {
         try {
@@ -228,9 +216,7 @@ class QuestionController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function search(string $query, ?int $poolId = null): DataResponse {
         if (strlen($query) < 2) {
             return new DataResponse(['error' => 'Query must be at least 2 characters'], Http::STATUS_BAD_REQUEST);

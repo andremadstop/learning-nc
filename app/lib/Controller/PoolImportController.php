@@ -13,6 +13,7 @@ use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * Import of whole pools in the Pools tab (GitHub #34): one JSON file in the format of
@@ -40,14 +41,13 @@ class PoolImportController extends Controller {
     }
 
     /**
-     * @NoAdminRequired
-     *
      * POST /api/pools/import — instructors only.
      *
      * Request: `jsonData` (the file content as text) or a multipart upload `file`; `file_name`
      * (optional, the file's name — names the pool of a bare question list or an export, as occ
      * uses the file name); `dry_run` (true: check only, write nothing).
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function importPools(string $jsonData = ''): DataResponse {
         if ($this->userId === null || !$this->roleService->isInstructor($this->userId)) {

@@ -7,6 +7,7 @@ use OCA\Learning\Service\DuelService;
 use OCA\Learning\Service\GameshowService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\ICallbackResponse;
 use OCP\AppFramework\Http\IOutput;
@@ -30,14 +31,12 @@ class SseController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     */
     // Each stream holds a PHP worker for up to STREAM_TIMEOUT_SECONDS, so this limit is what
     // bounds the workers one account can bind. Nextcloud counts per account AND method, so
     // 10 starts per 60 s → at most 20 open streams here, 40 across duel and gameshow together.
     // Real use is one connect per game about every 2 minutes; on a 429 the client falls back
     // to polling after three retries, so the game goes on.
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function duelStream(string $code, ?string $lang = null): Response {
         if ($this->userId === null) {
@@ -57,14 +56,12 @@ class SseController extends Controller {
         );
     }
 
-    /**
-     * @NoAdminRequired
-     */
     // Each stream holds a PHP worker for up to STREAM_TIMEOUT_SECONDS, so this limit is what
     // bounds the workers one account can bind. Nextcloud counts per account AND method, so
     // 10 starts per 60 s → at most 20 open streams here, 40 across duel and gameshow together.
     // Real use is one connect per game about every 2 minutes; on a 429 the client falls back
     // to polling after three retries, so the game goes on.
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function gameshowStream(string $code, ?string $lang = null): Response {
         if ($this->userId === null) {

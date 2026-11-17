@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class GameshowController extends Controller {
@@ -22,9 +23,7 @@ class GameshowController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function create(int $poolId, string $mode, int $maxPlayers = 5, ?int $courseId = null): DataResponse {
         try {
@@ -43,9 +42,7 @@ class GameshowController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function join(string $code): DataResponse {
         try {
@@ -55,9 +52,7 @@ class GameshowController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function ready(string $code, ?string $lang = null): DataResponse {
         try {
@@ -67,9 +62,7 @@ class GameshowController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function state(string $code, ?string $lang = null): DataResponse {
         try {
             return new DataResponse($this->service->getState($code, $this->userId, $lang));
@@ -78,9 +71,7 @@ class GameshowController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
@@ -90,9 +81,7 @@ class GameshowController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function history(): DataResponse {
         try {
@@ -102,9 +91,7 @@ class GameshowController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function courseLobby(int $courseId): DataResponse {
         try {

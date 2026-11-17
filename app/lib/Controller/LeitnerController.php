@@ -13,6 +13,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class LeitnerController extends Controller {
@@ -33,9 +34,7 @@ class LeitnerController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function queue(int $limit = 30, ?string $lang = null): DataResponse {
         try {
             $limit = max(1, min($limit, 100));
@@ -45,9 +44,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function queueCount(): DataResponse {
         try {
             return new DataResponse(['count' => $this->service->getQueueCount($this->userId)]);
@@ -56,9 +53,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function remediation(int $limit = 20, ?string $lang = null): DataResponse {
         try {
             $limit = max(1, min($limit, 100));
@@ -68,9 +63,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function remediationCount(): DataResponse {
         try {
             return new DataResponse(['count' => $this->service->getRemediationCount($this->userId)]);
@@ -79,9 +72,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function initialize(int $poolId, ?int $courseId = null): DataResponse {
         try {
             $count = $this->service->initializePool($poolId, $this->userId, $courseId);
@@ -94,9 +85,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function due(?int $poolId = null, int $limit = 10, ?string $lang = null, ?int $courseId = null): DataResponse {
         if ($poolId === null) {
             return new DataResponse(['error' => 'poolId is required'], 400);
@@ -112,9 +101,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function answer(int $itemId, ?int $answerId = null, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?int $rating = null, bool $preview = false, ?string $lang = null): DataResponse {
         if ($answerText !== null && mb_strlen($answerText) > 2000) {
@@ -130,9 +117,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function stats(?int $poolId = null, ?int $courseId = null): DataResponse {
         if ($poolId === null) {
             return new DataResponse(['error' => 'poolId is required'], 400);
@@ -144,9 +129,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function streak(): DataResponse {
         try {
@@ -157,9 +140,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function badges(): DataResponse {
         try {
@@ -174,9 +155,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function badgeProgress(): DataResponse {
         try {
@@ -186,9 +165,7 @@ class LeitnerController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function readiness(int $courseId): DataResponse {
         try {

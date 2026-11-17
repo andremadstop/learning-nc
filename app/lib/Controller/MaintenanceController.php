@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class MaintenanceController extends Controller {
@@ -29,9 +30,8 @@ class MaintenanceController extends Controller {
 
     /**
      * Toggle maintenance mode for a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function toggle(int $courseId, bool $enabled = true): DataResponse {
         try {
@@ -48,9 +48,8 @@ class MaintenanceController extends Controller {
 
     /**
      * Get the maintenance review queue.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function queue(int $limit = 10, ?string $lang = null): DataResponse {
         try {
             $items = $this->service->getMaintenanceQueue($this->userId, $limit, $lang);
@@ -62,9 +61,8 @@ class MaintenanceController extends Controller {
 
     /**
      * Get maintenance stats for the dashboard widget.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function stats(): DataResponse {
         try {
             return new DataResponse($this->service->getMaintenanceStats($this->userId));

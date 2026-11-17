@@ -12,6 +12,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class SupportTicketController extends Controller {
@@ -28,9 +29,7 @@ class SupportTicketController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function create(?string $subject = null, string $message = '', array $context = [], ?string $category = null): DataResponse {
         if ($this->userId === null) {
@@ -44,9 +43,7 @@ class SupportTicketController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function mine(int $limit = 20): DataResponse {
         if ($this->userId === null) {
@@ -59,7 +56,7 @@ class SupportTicketController extends Controller {
      * The admin inbox: technical tickets without a course. GitHub #59: archived tickets are listed
      * apart; open_count feeds the count at the heading, also while the archive is shown.
      *
-     * Admin-only: the route carries no @NoAdminRequired, and the method checks again.
+     * Admin-only: the route carries no #[NoAdminRequired], and the method checks again.
      *
      * @param int $limit at most this many tickets (1 to 200)
      * @param bool $archived true lists only the archived tickets
@@ -139,9 +136,7 @@ class SupportTicketController extends Controller {
         return $this->userId !== null && $this->userId !== '' && $this->groupManager->isAdmin($this->userId);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function answer(int $id, string $answerText = ''): DataResponse {
         if ($this->userId === null) {
@@ -162,9 +157,6 @@ class SupportTicketController extends Controller {
         }
     }
 
-    /**
-     * @AdminRequired
-     */
     #[UserRateLimit(limit: 20, period: 60)]
     public function approveDraft(int $id): DataResponse {
         if ($this->userId === null) {
@@ -183,9 +175,8 @@ class SupportTicketController extends Controller {
      * GitHub #59: a learner asks the instructors of a course from its communication tab, with or
      * without VirtuProf. Only a learner of the course; the question reaches "Questions from
      * learners" of that course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function askCourse(int $courseId, ?string $subject = null, string $message = ''): DataResponse {
         if ($this->userId === null) {
@@ -202,9 +193,8 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: the caller's own questions to the instructors of a course, with the answers.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function myCourseQuestions(int $courseId): DataResponse {
         if ($this->userId === null) {
@@ -217,9 +207,7 @@ class SupportTicketController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function instructorList(int $courseId, int $limit = 50, bool $archived = false): DataResponse {
         if ($this->userId === null) {
@@ -237,9 +225,8 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: how many questions of the course wait for an answer (badge at the tab).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function openCount(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -252,9 +239,8 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: an instructor of the course hides a question from the inbox.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function archiveCourseTicket(int $courseId, int $ticketId): DataResponse {
         return $this->manageCourseTicket(fn (string $uid) => ['ticket' => $this->service->setCourseTicketArchived($courseId, $ticketId, $uid, true)]);
@@ -262,9 +248,8 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: an instructor of the course brings an archived question back.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function restoreCourseTicket(int $courseId, int $ticketId): DataResponse {
         return $this->manageCourseTicket(fn (string $uid) => ['ticket' => $this->service->setCourseTicketArchived($courseId, $ticketId, $uid, false)]);
@@ -272,9 +257,8 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: an instructor of the course deletes a question for good.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function deleteCourseTicket(int $courseId, int $ticketId): DataResponse {
         return $this->manageCourseTicket(function (string $uid) use ($courseId, $ticketId): array {
@@ -285,9 +269,8 @@ class SupportTicketController extends Controller {
 
     /**
      * GitHub #59: a learner withdraws their own question while it has no answer.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function withdrawCourseQuestion(int $courseId, int $ticketId): DataResponse {
         if ($this->userId === null) {

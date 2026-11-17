@@ -16,6 +16,7 @@ use OCP\IL10N;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * Enrolling course members (GitHub #35): one account, several accounts and groups at once, and the
@@ -38,9 +39,8 @@ class CourseMemberController extends Controller {
     /**
      * POST /api/courses/{courseId}/members — body {userId, role}.
      * 201 enrolled · 200 role changed · 404 no such account · 409 already a member with that role.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function add(int $courseId, string $userId = '', string $role = 'student'): DataResponse {
         try {
@@ -67,10 +67,10 @@ class CourseMemberController extends Controller {
      * available, failed. Any failed insert makes the status 500, with the
      * same body, so a partial enrolment is never reported as success.
      *
-     * @NoAdminRequired
      * @param mixed $userIds
      * @param mixed $groupIds
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function bulk(int $courseId, $userIds = [], $groupIds = [], string $role = 'student'): DataResponse {
         if (!is_array($userIds) || !is_array($groupIds)) {
@@ -102,9 +102,8 @@ class CourseMemberController extends Controller {
     /**
      * GET /api/courses/{courseId}/member-search?search= — accounts and groups for the picker, at
      * most 25 each, through Nextcloud's collaborator search.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 300, period: 60)]
     public function search(int $courseId, string $search = ''): DataResponse {
         try {

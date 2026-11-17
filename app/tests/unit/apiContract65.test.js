@@ -2,7 +2,7 @@
  * Frontend ↔ API contract (GitHub #65): every request the frontend makes to this app must target a
  * route in app/openapi.json (generated from the controllers, scripts/openapi-spec.sh), with a method
  * that route has; and every URL the browser opens without the request token (downloads, links,
- * images, `window.location`) must be a GET route that is @NoCSRFRequired.
+ * images, `window.location`) must be a GET route that is #[NoCSRFRequired].
  *
  * A wrong path, a PUT where the controller only has POST, or a CSV download behind the CSRF check
  * all pass the component's unit tests (axios is mocked) and only break in the browser.
@@ -129,7 +129,7 @@ export default {
 		})
 		expect(r.problems).toHaveLength(2)
 		for (const p of r.problems) {
-			expect(p).toContain('not @NoCSRFRequired')
+			expect(p).toContain('not #[NoCSRFRequired]')
 		}
 	})
 

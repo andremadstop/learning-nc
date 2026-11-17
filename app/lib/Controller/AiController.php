@@ -14,6 +14,7 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class AiController extends Controller {
@@ -64,17 +65,13 @@ class AiController extends Controller {
         return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function available(): JSONResponse {
         return new JSONResponse(['available' => $this->aiService->isAvailable()]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function generate(int $poolId, string $text, int $count = 10, string $lang = 'de'): JSONResponse {
         if (($consent = $this->aiConsentResponse()) !== null) {
@@ -104,9 +101,7 @@ class AiController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function status(int $taskId): JSONResponse {
         try {
             $result = $this->aiService->getTaskStatus($taskId, $this->userId);
@@ -116,9 +111,7 @@ class AiController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function explain(int $questionId, ?int $selectedAnswerId = null, ?array $selectedAnswerIds = null, ?string $answerText = null): JSONResponse {
         if ($this->userId === null) {
@@ -186,9 +179,7 @@ class AiController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function import(int $taskId, int $poolId, array $questions): JSONResponse {
         // Verify edit access (403 on failure)

@@ -14,6 +14,9 @@ use OCP\AppFramework\Http\Attribute\BruteForceProtection;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ExportController extends Controller {
@@ -40,10 +43,9 @@ class ExportController extends Controller {
     /**
      * Opened by browser navigation from the pool window (no request token): read-only GET, access
      * checked by verifyExportAccess(). Without the exemption it answered 412 (persona sweep, #36).
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportCsv(int $poolId): Http\Response {
         try {
@@ -59,10 +61,9 @@ class ExportController extends Controller {
     /**
      * Opened by browser navigation from the pool window (no request token): read-only GET, access
      * checked by verifyExportAccess(). Without the exemption it answered 412 (persona sweep, #36).
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportJson(int $poolId): Http\Response {
         try {
@@ -81,9 +82,7 @@ class ExportController extends Controller {
         return new DataDownloadResponse($json, 'pool-' . $poolId . '.json', 'application/json');
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getCalendarToken(): DataResponse {
         if ($this->userId === null) {
@@ -92,9 +91,7 @@ class ExportController extends Controller {
         return new DataResponse($this->icsService->ensureCalendarToken($this->userId));
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function regenerateCalendarToken(): DataResponse {
         if ($this->userId === null) {
@@ -108,11 +105,10 @@ class ExportController extends Controller {
      * still poll it. New links come from IcsService::buildFeedUrl (learning.ics.feed). Both
      * render through IcsService::renderCalendarForToken, so a fix there covers both (audit #134).
      *
-     * @PublicPage
-     * @NoCSRFRequired
-     *
      * @return DataDownloadResponse<\OCP\AppFramework\Http::STATUS_OK, 'text/calendar; charset=utf-8', array{}>|DataResponse<\OCP\AppFramework\Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
+    #[PublicPage]
+    #[NoCSRFRequired]
     #[AnonRateLimit(limit: 120, period: 600)]
     #[BruteForceProtection(action: IcsService::FEED_THROTTLE_ACTION)]
     public function exportIcsPublic(string $token): Http\Response {

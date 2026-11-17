@@ -11,6 +11,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ShareController extends Controller {
@@ -23,9 +24,7 @@ class ShareController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function index(int $poolId): DataResponse {
         try {
             return new DataResponse($this->service->getSharesForPool($poolId, $this->userId));
@@ -34,16 +33,12 @@ class ShareController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function sharedWithMe(): DataResponse {
         return new DataResponse($this->service->getSharedWithMe($this->userId));
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function create(int $poolId, string $sharedWith, string $shareType = 'user', string $permission = 'read'): DataResponse {
         try {
@@ -56,9 +51,7 @@ class ShareController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function update(int $poolId, string $sharedWith, string $permission): DataResponse {
         try {
@@ -75,9 +68,7 @@ class ShareController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function destroy(int $poolId, string $sharedWith): DataResponse {
         try {

@@ -13,6 +13,8 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class ImageController extends Controller {
@@ -36,9 +38,7 @@ class ImageController extends Controller {
         $this->logger = $logger;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 20, period: 60)]
     public function upload(int $questionId): DataResponse {
         try {
@@ -82,10 +82,8 @@ class ImageController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function serve(int $questionId): Response {
         try {
             $question = $this->questionService->findEntity($questionId, $this->userId);
@@ -106,9 +104,7 @@ class ImageController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function delete(int $questionId): DataResponse {
         try {

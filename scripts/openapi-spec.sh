@@ -13,7 +13,7 @@
 # What the spec covers: every route in appinfo/routes.php (all controllers carry
 # #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]) with path, method, path/query parameters and their
 # types from the method signatures, and the CSRF requirement: a route that is not
-# @NoCSRFRequired gets the required header parameter `OCS-APIRequest` (the extractor's marker for
+# #[NoCSRFRequired] gets the required header parameter `OCS-APIRequest` (the extractor's marker for
 # "needs the request token"). The frontend contract test (app/tests/unit/apiContract.test.js)
 # reads exactly that.
 #

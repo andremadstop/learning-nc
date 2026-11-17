@@ -16,6 +16,7 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class SettingsController extends Controller {
@@ -52,9 +53,6 @@ class SettingsController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @AdminRequired
-     */
     public function getAdmin(): DataResponse {
         // AUDIT-08 — liveness widget data. Defensive: on a fresh install the audit tables are not yet
         // migrated and getLivenessStatus() (a COUNT on learning_audit_events) would throw. Never 500 the
@@ -121,8 +119,6 @@ class SettingsController extends Controller {
      * Rotation stays occ-only. No password confirmation: the call is admin-only and CSRF-protected,
      * destroys nothing and returns no secret — the worst an abused admin session achieves is the key
      * the admin was about to create anyway.
-     *
-     * @AdminRequired
      */
     public function initCertIssuer(): DataResponse {
         if ($this->keyService->hasActiveKey()) {
@@ -155,9 +151,6 @@ class SettingsController extends Controller {
         ]);
     }
 
-    /**
-     * @AdminRequired
-     */
     public function getAdminAudit(int $limit = 100, int $offset = 0): DataResponse {
         $limit = max(1, min(500, $limit));
         $offset = max(0, $offset);
@@ -187,9 +180,6 @@ class SettingsController extends Controller {
         ]);
     }
 
-    /**
-     * @AdminRequired
-     */
     public function saveAdmin(
         string $daily_challenge_enabled,
         string $default_language,
@@ -276,9 +266,7 @@ class SettingsController extends Controller {
         return new DataResponse(['status' => 'ok']);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function getPersonal(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], 401);
@@ -308,9 +296,8 @@ class SettingsController extends Controller {
      * parameters, so a partial PUT for this single flag would be rejected inside NC's dispatcher
      * before the controller body runs. Deliberately not UserTelos::onboarding_completed, which
      * every profile save sets and which therefore means "a profile exists", not "intro seen".
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function acknowledgeOnboarding(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], 401);
@@ -321,9 +308,7 @@ class SettingsController extends Controller {
         return new DataResponse(['status' => 'ok']);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function savePersonal(
         string $daily_challenge,
         string $notifications_enabled,
@@ -356,9 +341,7 @@ class SettingsController extends Controller {
         return new DataResponse(['status' => 'ok']);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function getTools(): DataResponse {
         // GitHub #35: the course view also needs the admin's AI switch, to leave out what only
         // serves the AI assistant (knowledge import, text extraction of materials). Same
@@ -375,9 +358,6 @@ class SettingsController extends Controller {
         ]);
     }
 
-    /**
-     * @AdminRequired
-     */
     public function saveTools(array $enabledTools = []): DataResponse {
         $normalized = $this->normalizeTools($enabledTools);
         $this->config->setAppValue('learning', 'enabled_tools', json_encode($normalized));

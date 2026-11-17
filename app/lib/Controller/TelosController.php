@@ -18,6 +18,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * TelosController — Phase 75: Personal learning profile API.
@@ -57,9 +58,8 @@ class TelosController extends Controller {
 
     /**
      * Get own telos profile.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getTelos(): DataResponse {
         if ($this->userId === null) {
@@ -76,9 +76,8 @@ class TelosController extends Controller {
 
     /**
      * Save full telos (after onboarding interview or form).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function saveTelos(
         array|string|null $telos = null,
@@ -124,9 +123,8 @@ class TelosController extends Controller {
 
     /**
      * Update individual telos fields.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateTelos(
         array|string|null $telos = null,
@@ -177,9 +175,8 @@ class TelosController extends Controller {
 
     /**
      * Check onboarding status (lightweight, no full telos data).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getStatus(): DataResponse {
         if ($this->userId === null) {
@@ -195,9 +192,8 @@ class TelosController extends Controller {
      * AI consent state for the current connection (spec 3.3): whether it is valid, why not, and
      * the recipient the user would consent to. The client sends that recipient's fingerprint
      * back with the consent; the server never fills it in itself.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getConsentStatus(): DataResponse {
         if ($this->userId === null) {
@@ -225,9 +221,8 @@ class TelosController extends Controller {
      * Store the AI consent the user gave for the recipient they were shown.
      * 409 when the admin changed the recipient meanwhile (with the new one), 400 for an outdated
      * version, an unknown source or AI switched off.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function saveConsent(?string $version = null, ?string $recipient_fingerprint = null, string $source = 'dialog'): DataResponse {
         if ($this->userId === null) {
@@ -262,9 +257,8 @@ class TelosController extends Controller {
     /**
      * Revoke the AI consent. Takes effect for calls already under way: the gateway re-reads the
      * consent epoch right before sending.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function revokeConsent(): DataResponse {
         if ($this->userId === null) {
@@ -305,9 +299,8 @@ class TelosController extends Controller {
 
     /**
      * Get interview questions for the onboarding flow.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getQuestions(): DataResponse {
         return new DataResponse([
@@ -317,9 +310,8 @@ class TelosController extends Controller {
 
     /**
      * Process interview conversation text via Gemini.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function processInterview(?string $conversation = null): DataResponse {
         if ($this->userId === null) {
@@ -364,9 +356,8 @@ class TelosController extends Controller {
 
     /**
      * Dozent: Get aggregated class telos profile for a course.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getCourseTelosAggregate(int $courseId): DataResponse {
         if ($this->userId === null) {
@@ -395,9 +386,8 @@ class TelosController extends Controller {
 
     /**
      * Get study buddy matches for a course based on help_offer/help_wanted overlap.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function getCourseBuddies(int $courseId): DataResponse {
         if ($this->userId === null) {

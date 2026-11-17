@@ -15,6 +15,7 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class UserStateController extends Controller {
@@ -59,9 +60,7 @@ class UserStateController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function updateSettings(int $daily_goal): DataResponse {
         $daily_goal = max(5, min(200, $daily_goal));
@@ -109,9 +108,7 @@ class UserStateController extends Controller {
         return new DataResponse(['daily_goal' => $daily_goal]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function dailyChallenge(): DataResponse {
         $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
@@ -201,9 +198,7 @@ class UserStateController extends Controller {
         ]);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
     public function answerChallenge(?array $answer_ids = null, ?string $answer_text = null, ?int $question_id = null): DataResponse {
         $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
@@ -484,9 +479,7 @@ class UserStateController extends Controller {
         return $questionId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function state(): DataResponse {
         $cache = $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE);
@@ -561,9 +554,7 @@ class UserStateController extends Controller {
         return new DataResponse($data);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function missions(): DataResponse {
         try {
@@ -573,9 +564,7 @@ class UserStateController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
     public function claimMission(string $missionKey): DataResponse {
         try {

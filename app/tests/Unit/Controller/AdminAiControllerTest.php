@@ -10,6 +10,7 @@ use OCA\Learning\Service\Llm\LlmGateway;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
+use OCA\Learning\Tests\Support\RouteSecurityInventory;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -113,10 +114,10 @@ class AdminAiControllerTest extends TestCase {
     public function testIsAdminOnlyAndRateLimitedToFivePerMinute(): void {
         $m = new \ReflectionMethod(AdminAiController::class, 'test');
 
-        $doc = (string)$m->getDocComment();
-        $this->assertStringNotContainsString('@NoAdminRequired', $doc);
-        $this->assertStringNotContainsString('@PublicPage', $doc);
-        $this->assertStringNotContainsString('@NoCSRFRequired', $doc);
+        $seen = RouteSecurityInventory::describe($m);
+        $this->assertArrayNotHasKey('NoAdminRequired', $seen);
+        $this->assertArrayNotHasKey('PublicPage', $seen);
+        $this->assertArrayNotHasKey('NoCSRFRequired', $seen);
         $names = array_map(static fn (\ReflectionAttribute $a) => $a->getName(), $m->getAttributes());
         $this->assertNotContains('OCP\AppFramework\Http\Attribute\NoAdminRequired', $names);
         $this->assertNotContains('OCP\AppFramework\Http\Attribute\PublicPage', $names);

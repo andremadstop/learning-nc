@@ -18,7 +18,7 @@ use OCP\IUserManager;
  * accounts, like the instructors (#60). The search offers administrators only: the notice
  * links to the admin inbox and names the ticket's subject, and only an administrator may open it.
  *
- * Admin-only. The routes carry no @NoAdminRequired, and every method checks again.
+ * Admin-only. The routes carry no #[NoAdminRequired], and every method checks again.
  */
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class TicketRecipientsController extends Controller {

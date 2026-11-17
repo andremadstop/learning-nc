@@ -9,7 +9,7 @@
  *    the `requesttoken` query parameter, which Nextcloud's CSRF check accepts.
  *  - Navigation: `window.location(.href) = url`, `location.assign(url)`, `window.open(url)`,
  *    `<element>.href = url`, and `href`/`src` attributes and bindings in templates. The browser
- *    sends no request token, so the route must be GET and @NoCSRFRequired (in the spec: no
+ *    sends no request token, so the route must be GET and #[NoCSRFRequired] (in the spec: no
  *    required `OCS-APIRequest` header parameter). A download that needs the token fails with
  *    "CSRF check failed" for every user, and no unit test of the component notices.
  *
@@ -757,7 +757,7 @@ export function checkSites(sites, spec) {
 				if (get.length === 0) {
 					problems.push(`${where}: navigation to ${pretty}, which has no GET route`)
 				} else if (get.every((o) => o.csrf)) {
-					problems.push(`${where}: navigation to ${pretty} sends no request token, but the route is not @NoCSRFRequired (${get.map((o) => o.operationId).join(', ')})`)
+					problems.push(`${where}: navigation to ${pretty} sends no request token, but the route is not #[NoCSRFRequired] (${get.map((o) => o.operationId).join(', ')})`)
 				}
 			}
 		}

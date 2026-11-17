@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class TranslationController extends Controller {
@@ -24,9 +25,7 @@ class TranslationController extends Controller {
         $this->userId = $userId;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function questionTranslations(int $questionId): DataResponse {
         try {
             // Verify user has access to this question's pool
@@ -40,9 +39,7 @@ class TranslationController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function translatedQuestion(int $questionId, string $lang = ''): DataResponse {
         try {
             $question = $this->questionService->find($questionId, $this->userId);
@@ -58,9 +55,7 @@ class TranslationController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null, ?string $scenario = null): DataResponse {
         try {
@@ -85,9 +80,7 @@ class TranslationController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function deleteQuestionTranslation(int $questionId, string $lang): DataResponse {
         try {
@@ -101,9 +94,7 @@ class TranslationController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function answerTranslations(int $answerId): DataResponse {
         try {
             // Verify access via the answer's question's pool
@@ -114,9 +105,7 @@ class TranslationController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 600, period: 60)]
     public function setAnswerTranslation(int $answerId, string $lang, string $text): DataResponse {
         try {
@@ -131,9 +120,7 @@ class TranslationController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 600, period: 60)]
     public function deleteAnswerTranslation(int $answerId, string $lang): DataResponse {
         try {

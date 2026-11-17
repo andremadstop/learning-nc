@@ -12,6 +12,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 /**
  * LernplanController — Phase 25: Lernplan + Fortschritt
@@ -53,9 +54,8 @@ class LernplanController extends Controller {
      * Generate or regenerate /Learning/Lernplan.md via Gemini.
      *
      * Rate-limited to 3 requests/minute — Gemini calls are expensive.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 3, period: 60)]
     public function generatePlan(): DataResponse {
         if ($this->userId === null) {
@@ -93,9 +93,8 @@ class LernplanController extends Controller {
      * Generate or regenerate /Learning/Fortschritt.md (data-driven, no AI).
      *
      * Rate-limited to 3 requests/minute.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 3, period: 60)]
     public function generateFortschritt(): DataResponse {
         if ($this->userId === null) {

@@ -12,6 +12,7 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class PoolGeneratorController extends Controller {
@@ -48,18 +49,16 @@ class PoolGeneratorController extends Controller {
 
     /**
      * Get provider info (which AI backend is active).
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     public function providerInfo(): JSONResponse {
         return new JSONResponse($this->service->getProviderInfo());
     }
 
     /**
      * Generate draft questions from pasted text.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function fromText(string $text, int $questionCount = 20): JSONResponse {
         if ($this->userId === null) {
@@ -85,9 +84,8 @@ class PoolGeneratorController extends Controller {
 
     /**
      * Generate draft questions from a Nextcloud file.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 5, period: 60)]
     public function fromFile(string $filePath, int $questionCount = 20): JSONResponse {
         if ($this->userId === null) {
@@ -113,9 +111,8 @@ class PoolGeneratorController extends Controller {
 
     /**
      * Create a pool from accepted draft questions.
-     *
-     * @NoAdminRequired
      */
+    #[NoAdminRequired]
     #[UserRateLimit(limit: 10, period: 60)]
     public function createPool(string $title, array $questions): JSONResponse {
         if ($this->userId === null) {

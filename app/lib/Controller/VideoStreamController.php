@@ -20,6 +20,8 @@ use OCP\Files\NotFoundException;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 /**
  * VideoStreamController — enrollment-gated Range-206 partial-content streaming of NC-Files videos
@@ -37,8 +39,8 @@ use OCP\AppFramework\Http\Attribute\OpenAPI;
  *   5. Stream via a custom ICallbackResponse (the in-repo idiom; there is no OCP\StreamResponse),
  *      fseek-ing to the range start and reading a bounded chunk loop.
  *
- * @NoCSRFRequired is required because a native <video> element cannot attach a CSRF token to its
- * range requests. Auth is via @NoAdminRequired (logged-in) + the per-course enrollment assertion.
+ * #[NoCSRFRequired] is required because a native <video> element cannot attach a CSRF token to its
+ * range requests. Auth is via #[NoAdminRequired] (logged-in) + the per-course enrollment assertion.
  */
 #[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 class VideoStreamController extends Controller {
@@ -57,10 +59,8 @@ class VideoStreamController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     #[UserRateLimit(limit: 600, period: 60)]
     public function show(int $contentId): Response {
         if ($this->userId === null) {

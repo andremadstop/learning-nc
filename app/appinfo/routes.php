@@ -417,7 +417,7 @@ return [
         ['name' => 'certificate#download', 'url' => '/api/certificates/{verificationId}/download', 'verb' => 'GET'], // ?format=jsonld(default)|jwt
         ['name' => 'certificate#revoke',   'url' => '/api/certificates/{verificationId}/revoke',   'verb' => 'POST'], // instructor-owner-gated revoke (VERIFY-05)
 
-        // Auditor export (Phase 161, AUDIT-07) — group-gated (@NoAdminRequired + learning-auditors),
+        // Auditor export (Phase 161, AUDIT-07) — group-gated (#[NoAdminRequired] + learning-auditors),
         // NOT admin. page = self-contained filter UI; events/sig/report = deterministic JSONL + detached
         // Ed25519 sig + printable HTML report.
         ['name' => 'audit_export#page',   'url' => '/audit/export',        'verb' => 'GET'],
