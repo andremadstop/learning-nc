@@ -2,7 +2,7 @@
  "_about": "Every rate limit on a controller method of the app, as reviewed. RateLimitInventoryTest keeps this file and the #[UserRateLimit]/#[AnonRateLimit] attributes in step; limit null means the method is deliberately unlimited. Nextcloud admins can override single limits with the ratelimit_overwrite system setting.",
  "groups": {
   "live": "polling, heartbeat and status reads the app itself repeats; never limited",
-  "stream": "server-sent event streams (one connection per game, reconnect about every 2 minutes)",
+  "stream": "server-sent event streams (one connection per game, reconnect about every 2 minutes); each holds a PHP worker for up to 120 s, so the limit bounds how many workers one account can bind",
   "media": "files a page embeds or streams (video range requests, documents, subtitles, logos)",
   "answer": "answering questions and story steps; fast learners must never be slowed",
   "fanout": "endpoints the frontend calls once per item of a selection or per answer x language",
@@ -910,13 +910,13 @@
   },
   "SseController::duelStream": {
    "kind": "user",
-   "limit": 120,
+   "limit": 10,
    "period": 60,
    "group": "stream"
   },
   "SseController::gameshowStream": {
    "kind": "user",
-   "limit": 120,
+   "limit": 10,
    "period": 60,
    "group": "stream"
   },

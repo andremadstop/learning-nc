@@ -33,7 +33,11 @@ class SseController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    // Each stream holds a PHP worker for up to STREAM_TIMEOUT_SECONDS, so this limit is what
+    // bounds the workers one account can bind: 10 starts per 60 s → at most 20 open streams.
+    // Real use is one connect per game about every 2 minutes; on a 429 the client falls back
+    // to polling after three retries, so the game goes on.
+    #[UserRateLimit(limit: 10, period: 60)]
     public function duelStream(string $code, ?string $lang = null): Response {
         if ($this->userId === null) {
             return new Response(Http::STATUS_UNAUTHORIZED);
@@ -55,7 +59,11 @@ class SseController extends Controller {
     /**
      * @NoAdminRequired
      */
-    #[UserRateLimit(limit: 120, period: 60)]
+    // Each stream holds a PHP worker for up to STREAM_TIMEOUT_SECONDS, so this limit is what
+    // bounds the workers one account can bind: 10 starts per 60 s → at most 20 open streams.
+    // Real use is one connect per game about every 2 minutes; on a 429 the client falls back
+    // to polling after three retries, so the game goes on.
+    #[UserRateLimit(limit: 10, period: 60)]
     public function gameshowStream(string $code, ?string $lang = null): Response {
         if ($this->userId === null) {
             return new Response(Http::STATUS_UNAUTHORIZED);

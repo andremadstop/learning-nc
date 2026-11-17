@@ -107,6 +107,34 @@ final class RateLimitInventoryTest extends TestCase {
         }
     }
 
+    /**
+     * An SSE stream keeps its PHP worker for up to SseController::STREAM_TIMEOUT_SECONDS
+     * (set_time_limit(0), ignore_user_abort), so the per-account limit is the only thing that
+     * caps how many workers one account binds at once: limit × ceil(timeout / period). At 120/min
+     * that was about 240 — more than a typical php-fpm pool, one learner could stall the server.
+     */
+    public function testStreamLimitsBoundTheWorkersOneAccountCanHold(): void {
+        $maxConcurrentStreamsPerAccount = 20;
+        $timeout = (new \ReflectionClassConstant(\OCA\Learning\Controller\SseController::class, 'STREAM_TIMEOUT_SECONDS'))->getValue();
+        $this->assertIsInt($timeout);
+        $this->assertGreaterThan(0, $timeout);
+
+        $streams = 0;
+        foreach (self::inventory()['methods'] as $key => $entry) {
+            if ($entry['group'] !== 'stream') {
+                continue;
+            }
+            $streams++;
+            $this->assertStringStartsWith('SseController::', $key, "$key: only SseController holds streams");
+            $this->assertSame('user', $entry['kind'], $key);
+            $this->assertNotNull($entry['limit'], "$key: a stream must never be unlimited");
+            $concurrent = $entry['limit'] * (int)ceil($timeout / $entry['period']);
+            $this->assertLessThanOrEqual($maxConcurrentStreamsPerAccount, $concurrent,
+                "$key lets one account hold $concurrent PHP workers in open streams");
+        }
+        $this->assertSame(2, $streams, 'duelStream and gameshowStream are the stream group');
+    }
+
     public function testNoSourceFileImportsThePluralAttributeNamespace(): void {
         $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(__DIR__ . '/../../../lib', \FilesystemIterator::SKIP_DOTS));
         foreach ($it as $file) {
