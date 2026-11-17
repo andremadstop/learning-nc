@@ -434,13 +434,22 @@
 								</a>
 								<NcButton
 									variant="primary"
-									:disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id]"
+									:disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item)"
+									:aria-describedby="!documentUrl(item) && !isItemComplete(item.id) ? 'document-unavailable-' + item.id : undefined"
 									@click="markDocumentRead(item)">
 									{{ isItemComplete(item.id)
 										? t('learning', 'Als gelesen bestätigt')
 										: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Lesen bestätigen')) }}
 								</NcButton>
 							</div>
+							<!-- GitHub #75 (review): no link to open it, nothing to confirm -->
+							<p
+								v-if="!documentUrl(item) && !isItemComplete(item.id)"
+								:id="'document-unavailable-' + item.id"
+								class="video-item__notice"
+								:data-test="'document-unavailable-' + item.id">
+								{{ t('learning', 'Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft.') }}
+							</p>
 						</template>
 					</li>
 				</ul>
@@ -1220,7 +1229,8 @@ export default {
 			}
 		},
 		async markDocumentRead(item) {
-			if (item.sourceType !== 'document' || this.isItemComplete(item.id) || this.previewsAsStudent) {
+			// GitHub #75 (review): a document nobody can open is not confirmed as read
+			if (item.sourceType !== 'document' || this.isItemComplete(item.id) || this.previewsAsStudent || !this.documentUrl(item)) {
 				return
 			}
 			this.documentPending = { ...this.documentPending, [item.id]: true }

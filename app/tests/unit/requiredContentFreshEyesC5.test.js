@@ -116,6 +116,8 @@ describe('learner view of the required content', () => {
 			...overrides,
 		}
 		instance.isItemComplete = (id) => instance.videoStatus[id]?.completed === true
+		instance.courseId = 7
+		instance.documentUrl = (item) => CourseTabLernraum.methods.documentUrl.call(instance, item)
 		instance.setItemStatus = vi.fn()
 		instance.$emit = vi.fn()
 		Object.defineProperty(instance, 'previewsAsStudent', { get: () => CourseTabLernraum.computed.previewsAsStudent.call(instance) })
@@ -137,20 +139,34 @@ describe('learner view of the required content', () => {
 	it('an instructor in the student view confirms nothing', async () => {
 		const preview = lernraum({ course: { is_instructor: true, video_gate_enabled: true, mode_config: {} }, isInstructor: false })
 		expect(preview.previewsAsStudent).toBe(true)
-		await CourseTabLernraum.methods.markDocumentRead.call(preview, { id: 2, sourceType: 'document' })
+		await CourseTabLernraum.methods.markDocumentRead.call(preview, { id: 2, sourceType: 'document', documentId: 12 })
 		expect(axios.post).not.toHaveBeenCalled()
 
 		const learner = lernraum()
 		expect(learner.previewsAsStudent).toBe(false)
 		axios.post.mockResolvedValueOnce({ data: { completed: true } })
-		await CourseTabLernraum.methods.markDocumentRead.call(learner, { id: 2, sourceType: 'document' })
+		await CourseTabLernraum.methods.markDocumentRead.call(learner, { id: 2, sourceType: 'document', documentId: 12 })
 		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/video-progress/document-read', { contentId: 2 })
 		expect(learner.$emit).not.toHaveBeenCalledWith('error', expect.anything())
 	})
 
+	/**
+	 * GitHub #75 (review M1, pre-existing): "Confirm I have read this" was active without the
+	 * "Open document" link, so a learner confirmed a file nobody could open.
+	 */
+	it('a document without a link to open it is not confirmed, and the page says why', async () => {
+		const learner = lernraum()
+		await CourseTabLernraum.methods.markDocumentRead.call(learner, { id: 2, sourceType: 'document', documentId: null })
+		expect(axios.post).not.toHaveBeenCalled()
+
+		const template = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
+		expect(template).toContain('documentPending[item.id] || !documentUrl(item)"')
+		expect(template).toMatch(/v-if="!documentUrl\(item\) && !isItemComplete\(item\.id\)"\s*:id="'document-unavailable-' \+ item\.id"/)
+	})
+
 	it('the confirm button is disabled in the preview and the page says why', () => {
 		const template = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
-		expect(template).toContain(':disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id]"')
+		expect(template).toContain(':disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item)"')
 		expect(template).toMatch(/v-if="previewsAsStudent"[^>]*data-test="required-content-preview"/)
 	})
 

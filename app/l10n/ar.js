@@ -3963,5 +3963,6 @@ OC.L10N.register(
     "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei." : "الملف ليس صورة بصيغة PNG أو JPEG أو WebP. لا تُقبل ملفات SVG. إن كان الشعار متوفرًا بصيغة SVG فقط، فصدّره بصيغة PNG في برنامج رسوميات (بعرض 1000 بكسل تقريبًا) أو اطلب ملف PNG ممن صمّمه.",
     "Pflicht: alle Dateien" : "إلزامي: كل الملفات",
     "„{name}“: alle erneut bestätigen lassen" : "«{name}»: طلب التأكيد من الجميع مجددًا",
+    "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft." : "لا يمكن فتح المستند حاليًا. يمكنك تأكيده عندما يصبح متاحًا مرة أخرى. يُرجى التواصل مع المدرّب.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
