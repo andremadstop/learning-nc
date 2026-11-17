@@ -3981,6 +3981,7 @@
         "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.": "Le fichier n’est pas une image PNG, JPEG ou WebP. Le format SVG n’est pas accepté. Si tu n’as le logo qu’en SVG, exporte-le en PNG dans un logiciel de graphisme (environ 1000 pixels de large) ou demande un fichier PNG à la personne qui l’a conçu.",
         "Pflicht: alle Dateien": "Obligatoire : tous les fichiers",
         "„{name}“: alle erneut bestätigen lassen": "« {name} » : demander à tous de confirmer à nouveau",
-        "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft.": "Le document ne peut pas être ouvert pour le moment. Vous pourrez le confirmer dès qu’il sera de nouveau disponible. Veuillez contacter votre formateur."
+        "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft.": "Le document ne peut pas être ouvert pour le moment. Vous pourrez le confirmer dès qu’il sera de nouveau disponible. Veuillez contacter votre formateur.",
+        "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft.": "Le document ne peut pas être ouvert pour le moment. Rien n’a été confirmé. Veuillez contacter votre formateur."
     }
 }

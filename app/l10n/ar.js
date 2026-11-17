@@ -3964,5 +3964,6 @@ OC.L10N.register(
     "Pflicht: alle Dateien" : "إلزامي: كل الملفات",
     "„{name}“: alle erneut bestätigen lassen" : "«{name}»: طلب التأكيد من الجميع مجددًا",
     "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft." : "لا يمكن فتح المستند حاليًا. يمكنك تأكيده عندما يصبح متاحًا مرة أخرى. يُرجى التواصل مع المدرّب.",
+    "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft." : "لا يمكن فتح المستند حاليًا. لم يُؤكَّد أي شيء. يُرجى التواصل مع المدرّب.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

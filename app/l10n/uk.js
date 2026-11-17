@@ -3964,5 +3964,6 @@ OC.L10N.register(
     "Pflicht: alle Dateien" : "Обов’язково: усі файли",
     "„{name}“: alle erneut bestätigen lassen" : "«{name}»: попросити всіх підтвердити знову",
     "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft." : "Документ зараз не можна відкрити. Підтвердити його можна буде, коли він знову стане доступним. Будь ласка, зверніться до викладача.",
+    "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft." : "Документ зараз не можна відкрити. Нічого не підтверджено. Будь ласка, зверніться до викладача.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

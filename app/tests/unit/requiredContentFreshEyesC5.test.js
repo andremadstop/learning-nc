@@ -164,6 +164,17 @@ describe('learner view of the required content', () => {
 		expect(template).toMatch(/v-if="!documentUrl\(item\) && !isItemComplete\(item\.id\)"\s*:id="'document-unavailable-' \+ item\.id"/)
 	})
 
+	it('a 409 document_unavailable says that nothing was confirmed', async () => {
+		const learner = lernraum()
+		axios.post.mockRejectedValueOnce({ response: { status: 409, data: { code: 'document_unavailable' } } })
+		await CourseTabLernraum.methods.markDocumentRead.call(learner, { id: 2, sourceType: 'document', documentId: 12 })
+		expect(learner.$emit).toHaveBeenCalledWith('error', expect.stringContaining('Es wurde nichts bestätigt'))
+
+		axios.post.mockRejectedValueOnce({ response: { status: 500, data: {} } })
+		await CourseTabLernraum.methods.markDocumentRead.call(learner, { id: 2, sourceType: 'document', documentId: 12 })
+		expect(learner.$emit).toHaveBeenLastCalledWith('error', 'Dokument konnte nicht als gelesen markiert werden.')
+	})
+
 	it('the confirm button is disabled in the preview and the page says why', () => {
 		const template = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
 		expect(template).toContain(':disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item)"')

@@ -1246,7 +1246,11 @@ export default {
 					this.$emit('gate-updated', { contentId: item.id, completed: true })
 				}
 			} catch (e) {
-				this.$emit('error', t('learning', 'Dokument konnte nicht als gelesen markiert werden.'))
+				// GitHub #75 (review): the server could not read the file; nothing was recorded
+				const unavailable = e?.response?.status === 409 && e.response.data?.code === 'document_unavailable'
+				this.$emit('error', unavailable
+					? t('learning', 'Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft.')
+					: t('learning', 'Dokument konnte nicht als gelesen markiert werden.'))
 			} finally {
 				this.documentPending = { ...this.documentPending, [item.id]: false }
 			}

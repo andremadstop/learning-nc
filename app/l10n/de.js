@@ -3964,5 +3964,6 @@ OC.L10N.register(
     "Pflicht: alle Dateien" : "Pflicht: alle Dateien",
     "„{name}“: alle erneut bestätigen lassen" : "„{name}“: alle erneut bestätigen lassen",
     "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft." : "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft.",
+    "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft." : "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft.",
 },
 "nplurals=2; plural=(n != 1);");
