@@ -9,6 +9,8 @@ use OC\Security\Ip\BruteforceAllowList;
 use OC\Security\RateLimiting\Exception\RateLimitExceededException;
 use OC\Security\RateLimiting\Limiter;
 use OCA\Learning\Controller\DataExportController;
+use OCA\Learning\Controller\ExportController;
+use OCA\Learning\Controller\IcsController;
 use OCA\Learning\Controller\PublicVerifyController;
 use OCA\Learning\Tests\Integration\Support\ContainerObjects;
 use OCP\AppFramework\App;
@@ -30,7 +32,7 @@ use Psr\Log\LoggerInterface;
 /**
  * The app's rate limits against Nextcloud's own RateLimitingMiddleware and Limiter (database
  * backend, real server classes, no stubs): a per-user limit answers 429 once it is used up, the
- * public verification page is limited per address, and the polling/heartbeat endpoints the app
+ * public verification page and the calendar feeds are limited per address, and the polling/heartbeat endpoints the app
  * repeats by itself never run into a limit. Also checks that every attribute on every controller
  * method names a class the server actually has.
  */
@@ -130,6 +132,18 @@ final class RateLimitEnforcedTest extends TestCase {
         // Another address has its own budget.
         $this->remoteAddress = '203.0.113.11';
         $this->assertSame(['passed' => 5, 'status' => 0], $this->hit($controller, 'verify', 5));
+    }
+
+    public function testTheCalendarFeedsAreLimitedPerAddress(): void {
+        $this->userSession->setUser(null);
+        // 120 fetches in 10 minutes per address and route (tests/Support/rate-limits.json, group calendar).
+        foreach ([[IcsController::class, 'feed'], [ExportController::class, 'exportIcsPublic']] as [$class, $method]) {
+            $this->remoteAddress = '203.0.113.20';
+            $controller = $this->controller($class);
+            $this->assertSame(['passed' => 120, 'status' => 429], $this->hit($controller, $method, 130), $method);
+            $this->remoteAddress = '203.0.113.21';
+            $this->assertSame(['passed' => 5, 'status' => 0], $this->hit($controller, $method, 5), $method);
+        }
     }
 
     public function testPollingAndHeartbeatEndpointsAreNeverLimited(): void {

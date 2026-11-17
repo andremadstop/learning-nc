@@ -9,6 +9,8 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attribute\AnonRateLimit;
+use OCP\AppFramework\Http\Attribute\BruteForceProtection;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\IRequest;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
@@ -111,10 +113,17 @@ class ExportController extends Controller {
      *
      * @return DataDownloadResponse<\OCP\AppFramework\Http::STATUS_OK, 'text/calendar; charset=utf-8', array{}>|DataResponse<\OCP\AppFramework\Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
+    #[AnonRateLimit(limit: 120, period: 600)]
+    #[BruteForceProtection(action: IcsService::FEED_THROTTLE_ACTION)]
     public function exportIcsPublic(string $token): Http\Response {
+        // Same per-address limit and brute-force action as ics#feed (reasoning there).
         $cal = $this->icsService->renderCalendarForToken($token);
         if ($cal === null) {
-            return new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
+            $response = new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
+            if (!IcsService::isWellFormedFeedToken($token)) {
+                $response->throttle(['action' => IcsService::FEED_THROTTLE_ACTION]);
+            }
+            return $response;
         }
 
         return new DataDownloadResponse($cal, 'learning-nc.ics', 'text/calendar; charset=utf-8');

@@ -57,8 +57,24 @@ class IcsService {
         ];
     }
 
+    /**
+     * Brute-force action of the two public feed routes (ics#feed and its legacy alias
+     * export#exportIcsPublic); both count against the same per-address budget.
+     */
+    public const FEED_THROTTLE_ACTION = 'learningIcsFeed';
+
+    /**
+     * Whether $token has the shape of a feed token (64 lowercase hex, see ensureCalendarToken).
+     * The feed routes throttle only tokens that fail this check: a well-formed but unknown token
+     * is what an old subscription keeps sending after the token was regenerated, and throttling
+     * it would lock every subscriber behind the same address out of the feed.
+     */
+    public static function isWellFormedFeedToken(string $token): bool {
+        return preg_match('/^[a-f0-9]{64}$/', $token) === 1;
+    }
+
     public function renderCalendarForToken(string $token): ?string {
-        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+        if (!self::isWellFormedFeedToken($token)) {
             return null;
         }
 

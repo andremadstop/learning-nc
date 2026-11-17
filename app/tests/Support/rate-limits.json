@@ -11,7 +11,8 @@
   "write": "ordinary saves and settings",
   "destructive": "deleting, removing, archiving",
   "costly": "AI calls, imports, exports, uploads, tickets, tokens, session starts",
-  "public": "the public certificate verification page (keyed by IP address)"
+  "public": "the public certificate verification page (keyed by IP address)",
+  "calendar": "public calendar subscription feeds polled by calendar services (keyed by IP address)"
  },
  "methods": {
   "AdminAiController::test": {
@@ -554,6 +555,12 @@
    "period": 60,
    "group": "costly"
   },
+  "ExportController::exportIcsPublic": {
+   "kind": "anon",
+   "limit": 120,
+   "period": 600,
+   "group": "calendar"
+  },
   "ExportController::exportJson": {
    "kind": "user",
    "limit": 10,
@@ -619,6 +626,12 @@
    "limit": 5,
    "period": 60,
    "group": "costly"
+  },
+  "IcsController::feed": {
+   "kind": "anon",
+   "limit": 120,
+   "period": 600,
+   "group": "calendar"
   },
   "ImageController::delete": {
    "kind": "user",
