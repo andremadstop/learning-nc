@@ -83,6 +83,11 @@ jobs:
       - name: gate-container.sh all --ref HEAD
         run: ./scripts/gate-container.sh all --ref HEAD
 
+      # The comparison behind scripts/schema-drift.sh (live schema vs fresh schema vs entities);
+      # python3 stdlib only, no database. The live comparison itself runs before each release.
+      - name: schema-drift self-test
+        run: bash scripts/schema-drift.test.sh
+
   php-coverage:
     name: PHP coverage report (PHPUnit + pcov)
     runs-on: ubuntu-24.04

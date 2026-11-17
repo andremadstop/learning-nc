@@ -138,6 +138,9 @@ scripts/*
 !scripts/persona-sweep/
 !scripts/screenshots/
 !scripts/schema-dump.sh
+!scripts/schema-drift.sh
+!scripts/schema-drift.py
+!scripts/schema-drift.test.sh
 !scripts/test-api.sh
 !scripts/verify-credential.py
 !scripts/verify-issued-cert-gate.sh
