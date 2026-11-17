@@ -3989,6 +3989,20 @@
         "„{name}“: alle erneut bestätigen lassen": "«{name}»: попросити всіх підтвердити знову",
         "Das Dokument kann gerade nicht geöffnet werden. Bestätigen geht erst wieder, wenn es verfügbar ist. Wende dich bitte an deine Lehrkraft.": "Документ зараз не можна відкрити. Підтвердити його можна буде, коли він знову стане доступним. Будь ласка, зверніться до викладача.",
         "Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft.": "Документ зараз не можна відкрити. Нічого не підтверджено. Будь ласка, зверніться до викладача.",
-        "Bestätigt: Dieses Zertifikat wurde von der Nextcloud, die es ausgestellt hat, digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen.": "Підтверджено: цей сертифікат був цифрово підписаний Nextcloud, який його видав, і не був змінений. Назву організації задає курс. Не підтверджено: особу того, хто вам його пред'являє. Щоб це перевірити, порівняйте ідентифікатор перевірки нижче з ідентифікатором на отриманому документі — вони мають збігатися точно."
+        "Bestätigt: Dieses Zertifikat wurde von der Nextcloud, die es ausgestellt hat, digital signiert und ist unverändert. Der Organisationsname wird im Kurs festgelegt. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen.": "Підтверджено: цей сертифікат був цифрово підписаний Nextcloud, який його видав, і не був змінений. Назву організації задає курс. Не підтверджено: особу того, хто вам його пред'являє. Щоб це перевірити, порівняйте ідентифікатор перевірки нижче з ідентифікатором на отриманому документі — вони мають збігатися точно.",
+        "Dieser Kurs ist nicht verfügbar": "Цей курс недоступний",
+        "Der Link führt zu einem Kurs, den es nicht (mehr) gibt oder in dem du nicht (mehr) eingeschrieben bist.": "Посилання веде на курс, якого немає (або вже немає) або на який ти не записаний(-а) (або вже не записаний(-а)).",
+        "Wenn du meinst, dass du Zugang haben solltest, frag deine Kursleitung.": "Якщо ти вважаєш, що маєш мати доступ, запитай свого викладача.",
+        "Zurück zu meinen Kursen": "Назад до моїх курсів",
+        "Der Kurs konnte gerade nicht geladen werden": "Зараз не вдалося завантажити курс",
+        "Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; über das Menü in der Kursliste lässt er sich wieder aktivieren.": "Цей курс заархівовано. Учні й надалі його бачать; знову активувати його можна через меню в списку курсів.",
+        "Dieser Kurs ist archiviert. Du kannst die Inhalte weiter ansehen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.": "Цей курс заархівовано. Ти й надалі можеш переглядати його матеріали. Якщо маєш запитання щодо курсу, звернися до викладача.",
+        "Dieser Pool ist nicht verfügbar": "Цей пул недоступний",
+        "Der Link führt zu einem Pool, den es nicht (mehr) gibt oder der nicht (mehr) mit dir geteilt ist.": "Посилання веде на пул, якого немає (або вже немає) або який не надано (або вже не надано) тобі.",
+        "Wenn du ihn brauchst, frag die Person, die ihn erstellt hat, oder deine Kursleitung.": "Якщо він тобі потрібен, запитай того, хто його створив, або свого викладача.",
+        "Zurück zu den Pools": "Назад до пулів",
+        "Bitte versuch es gleich noch einmal.": "Спробуй ще раз трохи згодом.",
+        "Das Abenteuer ist hier ausgeschaltet": "Пригоду тут вимкнено",
+        "Auf diesem Server ist Gamification ausgeschaltet, deshalb gibt es den Abenteuer-Modus hier nicht.": "На цьому сервері гейміфікацію вимкнено, тому режиму пригоди тут немає."
     }
 }

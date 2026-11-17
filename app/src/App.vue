@@ -118,6 +118,34 @@
               @back="backToPools"
             />
 
+            <!-- GitHub #82: a link to a pool (search result, bookmark) that is gone or not shared, or to
+                 the adventure on a server without gamification. Before, the pool case showed the
+                 plain pool list without a word: the error was only rendered inside an open pool. -->
+            <DeadLinkNotice
+              v-else-if="currentView === 'pools' && poolLinkState === 'unavailable'"
+              :title="t('learning', 'Dieser Pool ist nicht verfügbar')"
+              :text="t('learning', 'Der Link führt zu einem Pool, den es nicht (mehr) gibt oder der nicht (mehr) mit dir geteilt ist.')"
+              :hint="t('learning', 'Wenn du ihn brauchst, frag die Person, die ihn erstellt hat, oder deine Kursleitung.')"
+              :primary-label="t('learning', 'Zurück zu den Pools')"
+              @primary="leavePoolLink"
+            />
+            <DeadLinkNotice
+              v-else-if="currentView === 'pools' && poolLinkState === 'failed'"
+              :title="t('learning', 'Pool konnte nicht geöffnet werden')"
+              :text="t('learning', 'Bitte versuch es gleich noch einmal.')"
+              :primary-label="t('learning', 'Erneut versuchen')"
+              :secondary-label="t('learning', 'Zurück zu den Pools')"
+              @primary="openPoolFromRoute(poolLinkId)"
+              @secondary="leavePoolLink"
+            />
+            <DeadLinkNotice
+              v-else-if="currentView === 'pools' && poolLinkState === 'adventure-off'"
+              :title="t('learning', 'Das Abenteuer ist hier ausgeschaltet')"
+              :text="t('learning', 'Auf diesem Server ist Gamification ausgeschaltet, deshalb gibt es den Abenteuer-Modus hier nicht.')"
+              :primary-label="t('learning', 'Zurück zu den Pools')"
+              @primary="leavePoolLink"
+            />
+
             <PoolList
               v-else-if="currentView === 'pools'"
               :userRole="effectiveUserRole"
@@ -453,6 +481,7 @@ import NcButton from '@nextcloud/vue/components/NcButton';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch';
 import PoolList from './components/PoolList.vue';
+import DeadLinkNotice from './components/DeadLinkNotice.vue';
 import QuestionList from './components/QuestionList.vue';
 import TrainingMode from './components/TrainingMode.vue';
 import LeitnerMode from './components/LeitnerMode.vue';
@@ -515,6 +544,7 @@ export default {
     NcButton,
     NcNoteCard,
     NcCheckboxRadioSwitch,
+    DeadLinkNotice,
     PoolList,
     QuestionList,
     TrainingMode,
@@ -573,6 +603,9 @@ export default {
       // GitHub #46: a pool editor's switch "practise as learner" (localStorage, per browser).
       poolPractise: false,
       error: null,
+      // GitHub #82: a pool link that led nowhere: '', 'unavailable', 'failed' or 'adventure-off'
+      poolLinkState: '',
+      poolLinkId: 0,
       poolFromCourse: false,
       poolFromCourseObj: null,
 
@@ -1477,6 +1510,14 @@ export default {
         return false;
       }
 
+      // GitHub #82: with gamification off the adventure does not exist here; the link explains
+      // that instead of opening it anyway.
+      if (this.gamificationEnabled === false) {
+        this._pendingPoolLinkState = 'adventure-off';
+        this.pushAppRoute({ name: 'pools' }, true);
+        return true;
+      }
+
       this._pendingAdventureRoute = {
         coop: wantsCoop,
         code: coopCode,
@@ -1573,6 +1614,13 @@ export default {
         this.mainView = 'courses';
         this.selectedStudent = null;
         this.courseView = 'list';
+        // GitHub #82: /courses/abc or /courses/0 is a link to a course that never existed; it
+        // opens the course view, which says so, instead of the list or the course left last.
+        if (!Number.isInteger(courseId) || courseId <= 0) {
+          this.selectedCourse = { id: 0, title: '' };
+          useOptionalCourseStore()?.setCourse(null);
+          return;
+        }
         if (courseId) {
           if (!this.selectedCourse || Number(this.selectedCourse.id) !== courseId) {
             this.selectedCourse = {
@@ -1597,6 +1645,10 @@ export default {
           this._skipRouteReset = false;
         } else {
           this.backToPools();
+        }
+        if (this._pendingPoolLinkState) {
+          this.poolLinkState = this._pendingPoolLinkState;
+          this._pendingPoolLinkState = null;
         }
         const routePoolId = Number(route.query?.poolId || 0);
         if (routePoolId > 0) {
@@ -1714,14 +1766,32 @@ export default {
       }
     },
     async openPoolFromRoute(poolId) {
+      this.poolLinkId = poolId;
+      this.poolLinkState = '';
+      let pool;
       try {
-        const response = await axios.get(generateUrl('/apps/learning/api/pools/' + poolId));
-        await this.selectPool(response.data);
+        pool = (await axios.get(generateUrl('/apps/learning/api/pools/' + poolId))).data;
       } catch (err) {
-        this.error = t('learning', 'Pool konnte nicht geöffnet werden');
+        // GitHub #82: the server answers 404 for a pool that is gone, never existed or is not
+        // shared with this person, and never says which; 403 is shown the same way.
+        const status = err?.response?.status;
+        if (status !== 404 && status !== 403) {
+          console.error('[learning] Could not open the pool from the link', err);
+        }
+        this.poolLinkState = status === 404 || status === 403 ? 'unavailable' : 'failed';
+        return;
       }
+      await this.selectPool(pool);
+    },
+    // GitHub #82: "Back to the pools" from a dead pool link: the list, and an address without the
+    // dead id, so a reload does not show the notice again.
+    leavePoolLink() {
+      this.poolLinkState = '';
+      this.poolLinkId = 0;
+      this.pushAppRoute({ name: 'pools' }, true);
     },
     backToPools() {
+      this.poolLinkState = '';
       this.currentView = 'pools';
       this.selectedPool = null;
       this.mode = 'train';

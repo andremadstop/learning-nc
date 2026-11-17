@@ -6,7 +6,8 @@
 				{{ t('learning', '\u2190 Zurück zu Kursen') }}
 			</NcButton>
 			<div class="header-title">
-				<h3>{{ course ? course.title : t('learning', 'Laden...') }}</h3>
+				<!-- GitHub #82: a course that could not be loaded has no title; "Laden..." stayed there. -->
+				<h3 v-if="course || loading">{{ course ? course.title : t('learning', 'Laden...') }}</h3>
 				<span v-if="course && course.status" class="status-badge" :class="course.status">
 					{{ course.status === 'active' ? t('learning', 'Aktiv') : t('learning', 'Archiviert') }}
 				</span>
@@ -29,10 +30,22 @@
 			<p>{{ t('learning', 'Lade Kursdetails...') }}</p>
 		</div>
 
-		<!-- Error state: the course could not be loaded. Stays, there is nothing else to show. -->
-		<NcNoteCard v-if="error" type="error" class="detail-error">
-			{{ error }}
-		</NcNoteCard>
+		<!-- GitHub #82: a link to a course that was deleted, never existed or is not (any longer) this
+			person's. The server answers 404 for all of them, so there is one message, without the
+			course's name, and a way on. A failed load (500, offline) says so and offers a retry. -->
+		<DeadLinkNotice v-if="loadState === 'unavailable'"
+			:title="t('learning', 'Dieser Kurs ist nicht verfügbar')"
+			:text="t('learning', 'Der Link führt zu einem Kurs, den es nicht (mehr) gibt oder in dem du nicht (mehr) eingeschrieben bist.')"
+			:hint="t('learning', 'Wenn du meinst, dass du Zugang haben solltest, frag deine Kursleitung.')"
+			:primary-label="t('learning', 'Zurück zu meinen Kursen')"
+			@primary="$emit('back')" />
+		<DeadLinkNotice v-else-if="loadState === 'failed'"
+			:title="t('learning', 'Der Kurs konnte gerade nicht geladen werden')"
+			:text="t('learning', 'Kursdetails konnten nicht geladen werden. Bitte erneut versuchen.')"
+			:primary-label="t('learning', 'Erneut versuchen')"
+			:secondary-label="t('learning', 'Zurück zu meinen Kursen')"
+			@primary="fetchCourseDetail"
+			@secondary="$emit('back')" />
 		<!-- GitHub #72: what a tab reported (a failed save, …). It belongs to that tab: it can be
 			closed and goes away when another tab is opened or the course is loaded again. -->
 		<NcNoteCard v-else-if="actionError" type="error" class="detail-error" data-test="detail-action-error">
@@ -45,6 +58,16 @@
 					{{ t('learning', 'Meldung schließen') }}
 				</NcButton>
 			</div>
+		</NcNoteCard>
+
+		<!-- GitHub #82: an archived course still opens; it says what that means for this viewer. -->
+		<NcNoteCard v-if="!loading && course && course.status === 'archived'"
+			type="info"
+			class="detail-archived"
+			data-test="course-archived">
+			{{ actsAsInstructor
+				? t('learning', 'Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; über das Menü in der Kursliste lässt er sich wieder aktivieren.')
+				: t('learning', 'Dieser Kurs ist archiviert. Du kannst die Inhalte weiter ansehen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.') }}
 		</NcNoteCard>
 
 		<template v-if="!loading && course">
@@ -199,6 +222,7 @@ import CourseTabTeilnehmer from './CourseTabTeilnehmer.vue'
 import CourseTabWettbewerb from './CourseTabWettbewerb.vue'
 import CourseTabKommunikation from './CourseTabKommunikation.vue'
 import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
+import DeadLinkNotice from './DeadLinkNotice.vue'
 import ExamReadiness from './ExamReadiness.vue'
 import CourseSummary from './CourseSummary.vue'
 import CourseRecentSessions from './CourseRecentSessions.vue'
@@ -227,6 +251,7 @@ export default {
 		NcButton,
 		NcLoadingIcon,
 		NcNoteCard,
+		DeadLinkNotice,
 		ExamReadiness,
 		CourseSummary,
 		CourseRecentSessions,
@@ -276,7 +301,9 @@ export default {
 	data() {
 		return {
 			loading: false,
-			error: '',
+			// GitHub #82: '' (loaded or loading), 'unavailable' (404: gone, never there, no access)
+			// or 'failed' (any other error: the link may be fine, the load was not)
+			loadState: '',
 			actionError: '',
 			course: null,
 			coursePools: [],
@@ -464,9 +491,13 @@ export default {
 		courseId: {
 			immediate: true,
 			handler(newId) {
-				if (newId) {
-					this.fetchCourseDetail()
+				// GitHub #82: /courses/abc or /courses/0 names no course at all
+				if (!Number.isInteger(newId) || newId <= 0) {
+					this.course = null
+					this.loadState = 'unavailable'
+					return
 				}
+				this.fetchCourseDetail()
 			},
 		},
 		currentTab(tab) {
@@ -901,7 +932,7 @@ export default {
 
 		async fetchCourseDetail() {
 			this.loading = true
-			this.error = ''
+			this.loadState = ''
 			this.actionError = ''
 			// The Lernraum unmounts while loading and reports its required content again after the
 			// remount; a stale flag would route learners to a videos leaf it does not show yet.
@@ -935,13 +966,16 @@ export default {
 					this.emitVirtuProfContext()
 				})
 			} catch (err) {
-				console.error('Failed to fetch course detail:', err)
-				if (err.response?.status === 404) {
-					this.error = t('learning', 'Kurs nicht gefunden.')
-				} else if (err.response?.status === 403) {
-					this.error = t('learning', 'Du hast keinen Zugriff auf diesen Kurs.')
+				// GitHub #82: 404 is every "not yours to see" (the server never says which); 403 is
+				// treated the same so that no answer tells a stranger the course exists. The course
+				// shown so far goes: a reload after being removed must not keep showing it.
+				const status = err.response?.status
+				if (status === 404 || status === 403) {
+					this.course = null
+					this.loadState = 'unavailable'
 				} else {
-					this.error = t('learning', 'Kursdetails konnten nicht geladen werden. Bitte erneut versuchen.')
+					console.error('Failed to fetch course detail:', err)
+					this.loadState = 'failed'
 				}
 			} finally {
 				this.loading = false
@@ -1037,7 +1071,8 @@ export default {
 
 .loading-container p { margin-top: 12px; }
 
-.detail-error {
+.detail-error,
+.detail-archived {
 	margin-bottom: 16px;
 }
 

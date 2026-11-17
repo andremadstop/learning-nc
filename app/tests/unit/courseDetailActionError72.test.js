@@ -144,11 +144,13 @@ describe('course page: a tab error can be closed and does not follow to other ta
 		expect(pageError()).toBeNull()
 	})
 
+	// GitHub #82: the load error is now the dead-link notice (its own tests: deadLinks82.test.js);
+	// it is still no closable tab error.
 	it('a course that cannot be loaded keeps its message, without a close button', async () => {
 		api.status = 404
 		await mountDetail()
-		expect(pageError()?.textContent).toContain('Kurs nicht gefunden.')
+		expect(host.querySelector('[data-test="dead-link"]')?.textContent).toContain('Dieser Kurs ist nicht verfügbar')
 		expect(host.querySelector('[data-test="detail-action-error-close"]')).toBeNull()
-		expect(detail.error).toBe('Kurs nicht gefunden.')
+		expect(detail.loadState).toBe('unavailable')
 	})
 })
