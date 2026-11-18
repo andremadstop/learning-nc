@@ -303,6 +303,43 @@ final class QuestionMediaTest extends TestCase {
 	}
 
 	/**
+	 * An editor reorders the answers (Green first, Red second) and removes Orange: the option
+	 * voices move with their answers on the real unique index (question, kind, lang), keep their
+	 * files, and the answer response hands Green its own voice; Orange's voice is gone.
+	 */
+	public function testOptionVoicesFollowTheirAnswersWhenTheEditorReordersThem(): void {
+		$this->runCommand(false);
+		[$code, $out] = $this->runCommand(false, self::FIXTURE . '/bundle-v2');
+		$this->assertSame(0, $code, $out);
+		$q1 = $this->questions['demo-q1'];
+		$question = Server::get(QuestionMapper::class)->findById($q1);
+
+		Server::get(QuestionService::class)->update($q1, self::OWNER, (string)$question->getText(), null, null, [
+			['text' => 'Green', 'is_correct' => true],
+			['text' => 'Red', 'is_correct' => false],
+			['text' => 'Purple', 'is_correct' => false],
+		], examKey: 'demo-q1');
+
+		$this->assertSame("q{$q1}-opt1-en.mp3", $this->scalar('learning_qmedia_tracks', 'file_name', ['question_id' => $q1, 'kind' => 'opt0', 'lang' => 'en']));
+		$this->assertSame("q{$q1}-opt1-de.mp3", $this->scalar('learning_qmedia_tracks', 'file_name', ['question_id' => $q1, 'kind' => 'opt0', 'lang' => 'de']));
+		$this->assertSame("q{$q1}-opt0-en.mp3", $this->scalar('learning_qmedia_tracks', 'file_name', ['question_id' => $q1, 'kind' => 'opt1', 'lang' => 'en']));
+		$this->assertSame("q{$q1}-opt2-en.mp3", $this->scalar('learning_qmedia_tracks', 'file_name', ['question_id' => $q1, 'kind' => 'opt2', 'lang' => 'en']));
+		$this->assertSame(10, $this->rows('learning_qmedia_tracks'), '5 intro/dialog tracks + 6 voices, minus the voice of the removed Orange');
+
+		$session = Server::get(TrainingService::class)->startSession($this->poolId, self::STUDENT, null, 'training', null, 'en', $this->courseId);
+		$response = Server::get(TrainingService::class)->submitAnswer((int)$session['session_id'], $q1, $this->answerId($q1, 'Red'), self::STUDENT);
+		$byAnswer = array_column($response['question_media']['option_tracks'], 'tracks', 'answer_id');
+		$this->assertCount(3, $byAnswer);
+		$green = array_values(array_filter($byAnswer[$this->answerId($q1, 'Green')], fn ($t) => $t['lang'] === 'en'))[0];
+		$this->assertSame('Option B, green, is correct: blue and yellow make green.', $green['timeline'][0]['text']);
+		[$expires, $grant] = $this->grantOf($green['url']);
+		$this->assertSame(
+			file_get_contents(self::FIXTURE . '/bundle-v2/demo-q1/opt-1-en.mp3'),
+			$this->media->openTrack($green['id'], self::STUDENT, $expires, $grant)['bytes']
+		);
+	}
+
+	/**
 	 * occ learning:export-pool --media-dir writes /2 when option voices exist, and the bundle
 	 * imports back into the pool unchanged; a pool without them is exported as /1.
 	 */
