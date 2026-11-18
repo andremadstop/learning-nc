@@ -771,10 +771,8 @@ class QuestionService {
                 }
                 self::applyRichFeedback($question, $richFeedback);
 
-                $oldTexts = array_map(
-                    static fn(Answer $a): string => (string)$a->getText(),
-                    $this->answerMapper->findByQuestion($question->getId())
-                );
+                $oldAnswers = array_values($this->answerMapper->findByQuestion($question->getId()));
+                $oldTexts = array_map(static fn(Answer $a): string => (string)$a->getText(), $oldAnswers);
 
                 // GitHub #66: option feedback is keyed by answer position. When the answers move
                 // (one removed, reordered), feedback the caller did not send anew moves with them,
@@ -803,6 +801,14 @@ class QuestionService {
 
                 if ($positionMap !== null) {
                     $this->translationService->remapOptionFeedback($question->getId(), $positionMap);
+                    // The option voices (kind opt<stored position>) move the same way; without
+                    // this a voice "… is correct" played under whichever answer took its place.
+                    $trackMap = [];
+                    foreach ($positionMap as $oldIndex => $newIndex) {
+                        $oldPosition = $oldAnswers[$oldIndex]->getPosition();
+                        $trackMap[$oldPosition !== null ? (int)$oldPosition : $oldIndex] = $newIndex;
+                    }
+                    $this->mediaStorage?->remapOptionTracks($question->getId(), $trackMap);
                 }
 
                 $this->db->commit();

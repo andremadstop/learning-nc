@@ -378,6 +378,57 @@ final class QuestionMediaServiceTest extends TestCase {
         }
     }
 
+    /**
+     * After an editor swapped the first two answers, the voices moved with them
+     * (QuestionMediaStorage::remapOptionTracks) and kept their files: opt0 now names
+     * q11-opt1-en.mp3, opt1 names q11-opt0-en.mp3. A re-import that changes only opt0 wrote the
+     * plain name q11-opt0-en.mp3 — the file of the unchanged opt1, whose answer then played
+     * opt0's voice. A row writes into its own file now.
+     */
+    public function testARewrittenOptionVoiceNeverWritesIntoTheFileOfAMovedVoice(): void {
+        $this->answers = $this->answerRows([0 => false, 1 => true, 2 => false, 3 => false]);
+        $open = QuestionMediaBundle::open(self::FIXTURE_V2);
+        $opt1 = $this->optionRow(2, 'opt1', 'q11-opt0-en.mp3', $open, 'demo-q1/opt-1-en');
+        $opt0 = $this->optionRow(1, 'opt0', 'q11-opt1-en.mp3', null, null);
+        $this->tracks->method('findByQuestion')->willReturn([$opt0, $opt1]);
+        $this->storage->method('holds')->willReturnCallback(fn (int $pool, string $name) => $name === 'q11-opt0-en.mp3');
+        $written = [];
+        $this->storage->method('put')->willReturnCallback(function (int $pool, string $name, string $bytes) use (&$written) {
+            $written[$name] = $bytes;
+        });
+
+        $report = $this->service()->importBundle(self::POOL, QuestionMediaBundle::open(self::FIXTURE_V2), false);
+
+        $this->assertSame(1, $report['option_tracks_unchanged'], $this->dump($report));
+        $this->assertArrayNotHasKey('q11-opt0-en.mp3', $written, 'the unchanged voice of the second answer keeps its bytes');
+        $this->assertSame((string)file_get_contents(self::FIXTURE_V2 . '/demo-q1/opt-0-en.mp3'), $written['q11-opt1-en.mp3']);
+        $this->assertSame('q11-opt1-en.mp3', $opt0->getFileName());
+        $this->assertSame('q11-opt0-en.mp3', $opt1->getFileName());
+    }
+
+    /** A new voice whose plain file name a moved voice still holds gets a name of its own. */
+    public function testANewOptionVoiceGetsItsOwnFileWhenAMovedVoiceHoldsThePlainName(): void {
+        $this->answers = $this->answerRows([0 => false, 1 => true, 2 => false, 3 => false]);
+        $opt0 = $this->optionRow(1, 'opt0', 'q11-opt1-en.mp3', null, null);
+        $this->tracks->method('findByQuestion')->willReturn([$opt0]);
+        $this->storage->method('holds')->willReturn(false);
+        $written = [];
+        $this->storage->method('put')->willReturnCallback(function (int $pool, string $name, string $bytes) use (&$written) {
+            $written[] = $name;
+        });
+        $rows = [];
+        $this->tracks->method('insert')->willReturnCallback(function (QuestionTrack $t) use (&$rows) {
+            $rows[$t->getKind() . '-' . $t->getLang()] = $t->getFileName();
+            return $t;
+        });
+
+        $this->service()->importBundle(self::POOL, QuestionMediaBundle::open(self::FIXTURE_V2), false);
+
+        $this->assertSame('q11-opt1-en.2.mp3', $rows['opt1-en']);
+        $this->assertSame(count($written), count(array_unique($written)), 'no file is written twice: ' . implode(', ', $written));
+        $this->assertSame(11, QuestionMediaStorage::questionOf('q11-opt1-en.2.mp3'), 'deleteForQuestion() still finds it');
+    }
+
     // ------------------------------------------------------------------ helpers
 
     /**
@@ -477,6 +528,26 @@ final class QuestionMediaServiceTest extends TestCase {
         }
         file_put_contents($this->tmp . '/manifest.json', json_encode(['format' => QuestionMediaBundle::FORMAT, 'questions' => [$entry]]));
         return $this->tmp;
+    }
+
+    /** An option voice row with the given file; with $slot, as the import wrote it from the v2 fixture. */
+    private function optionRow(int $id, string $kind, string $fileName, ?QuestionMediaBundle $open, ?string $slot): QuestionTrack {
+        $track = new QuestionTrack();
+        $track->setId($id);
+        $track->setQuestionId(self::QUESTION);
+        $track->setPoolId(self::POOL);
+        $track->setKind($kind);
+        $track->setLang('en');
+        $track->setFileName($fileName);
+        $track->setSize(10);
+        $track->setSha256('stale');
+        if ($open !== null && $slot !== null) {
+            $bytes = $open->readMp3($slot . '.mp3');
+            $track->setSize(strlen($bytes));
+            $track->setSha256(hash('sha256', $bytes));
+            $track->setTimeline((string)json_encode($open->readOptionSidecar($slot . '.json'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION));
+        }
+        return $track;
     }
 
     /** A stored row exactly as the import would have written it from the bundle (or a plain one). */

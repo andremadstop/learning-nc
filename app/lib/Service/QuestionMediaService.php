@@ -762,7 +762,9 @@ class QuestionMediaService {
             $report['bytes_written'] += strlen($bytes);
             return;
         }
-        $fileName = QuestionMediaStorage::fileName($questionId, $kind, $lang);
+        // An existing row writes into its own file; a new one never into a file another row of
+        // the question names (a voice moved with its answer keeps its old name).
+        $fileName = $existing?->getFileName() ?? $this->freeFileName($questionId, $kind, $lang);
         try {
             $this->storage->put($poolId, $fileName, $bytes);
         } catch (\Throwable $e) {
@@ -795,6 +797,18 @@ class QuestionMediaService {
         }
         $report[$counter . '_written']++;
         $report['bytes_written'] += strlen($bytes);
+    }
+
+    private function freeFileName(int $questionId, string $kind, string $lang): string {
+        $taken = [];
+        foreach ($this->trackMapper->findByQuestion($questionId) as $track) {
+            $taken[$track->getFileName()] = true;
+        }
+        $variant = 1;
+        while (isset($taken[QuestionMediaStorage::fileName($questionId, $kind, $lang, $variant)])) {
+            $variant++;
+        }
+        return QuestionMediaStorage::fileName($questionId, $kind, $lang, $variant);
     }
 
     /**
