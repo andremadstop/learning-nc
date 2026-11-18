@@ -658,3 +658,111 @@ describe('the learning modes: player first, question hidden until the intro is h
 		expect(source('ExamMode.vue')).not.toContain('QuestionMediaPlayer')
 	})
 })
+
+describe('review of the mini slideshow (#66): gaps closed', () => {
+	function deferred() {
+		let resolve
+		const promise = new Promise((r) => { resolve = r })
+		return { promise, resolve }
+	}
+
+	it('an option voice without a timeline (its sidecar is optional) still leads on to the dialog', async () => {
+		const bare = { ...OPT(1, 0), tracks: [{ ...OPT(1, 0).tracks[0], timeline: [] }] }
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
+		state.props = { questionId: 5, answered: true, reveal: { tracks: [DIALOG], cues: null, option_tracks: [bare] }, answerCorrect: true, selectedAnswerIds: [1] }
+		root.$forceUpdate()
+		await flush()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Zu deiner Antwort')
+		expect(host.textContent).not.toContain('0 Zeilen')
+		expect(buttonByText('Abspielen').disabled).toBe(false)
+		const next = buttonByText('Nächste Zeile')
+		expect(next.disabled).toBe(false)
+		next.click()
+		await flush()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Nachbesprechung')
+	})
+
+	it('…and its end, when played, chains to the dialog as well', async () => {
+		const bare = { ...OPT(1, 0), tracks: [{ ...OPT(1, 0).tracks[0], timeline: [] }] }
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
+		state.props = { questionId: 5, answered: true, reveal: { tracks: [DIALOG], cues: null, option_tracks: [bare] }, answerCorrect: true, selectedAnswerIds: [1] }
+		root.$forceUpdate()
+		await flush()
+		buttonByText('Abspielen').click()
+		await flush()
+		host.querySelector('audio').dispatchEvent(new Event('ended'))
+		await flush()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Nachbesprechung')
+	})
+
+	it('after a question with an intro, the next one stays hidden in its reserved place until its media are known', async () => {
+		const events = []
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { listeners: { onConceal: (value) => events.push(value) } })
+		const slow = deferred()
+		axios.get.mockReturnValue(slow.promise)
+		state.props = { questionId: 6, answered: false }
+		root.$forceUpdate()
+		await flush()
+		// no moment in which the next question is shown and then slides away
+		expect(events.at(-1)).toBe(true)
+		const section = host.querySelector('.qmedia')
+		expect(section).not.toBeNull()
+		expect(section.getAttribute('aria-busy')).toBe('true')
+		expect(host.querySelector('.qmedia__stage--intro')).not.toBeNull()
+		// the controls hold their place, invisible and out of reach
+		expect(host.querySelector('.qmedia__controls').classList.contains('qmedia__reserved')).toBe(true)
+		const since = events.length
+
+		slow.resolve({ data: { question_id: 6, tracks: [INTRO()] } })
+		await flush()
+		expect(events.slice(since).includes(false)).toBe(false)
+		expect(events.at(-1)).toBe(true)
+		expect(host.querySelector('.qmedia').getAttribute('aria-busy')).toBeNull()
+		expect(host.querySelector('.qmedia__controls').classList.contains('qmedia__reserved')).toBe(false)
+	})
+
+	it('…and shows at once when that question has no intro after all', async () => {
+		const events = []
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { listeners: { onConceal: (value) => events.push(value) } })
+		const slow = deferred()
+		axios.get.mockReturnValue(slow.promise)
+		state.props = { questionId: 6, answered: false }
+		root.$forceUpdate()
+		await flush()
+		slow.resolve({ data: { question_id: 6, tracks: [] } })
+		await flush()
+		expect(events.at(-1)).toBe(false)
+		expect(host.querySelector('.qmedia')).toBeNull()
+	})
+
+	it('a pool without media is never hidden, not even while the media request is open', async () => {
+		const slow = deferred()
+		axios.get.mockReturnValue(slow.promise)
+		const events = []
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { listeners: { onConceal: (value) => events.push(value) } })
+		expect(events.includes(true)).toBe(false)
+		expect(host.querySelector('.qmedia')).toBeNull()
+		slow.resolve({ data: { question_id: 5, tracks: [] } })
+		await flush()
+		expect(events.includes(true)).toBe(false)
+	})
+
+	it('no answer tone for a question without media, even with tones and autoplay on', async () => {
+		axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [] } })
+		const { pinia } = piniaWith({ autoplay: true, sounds: 'yes' })
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		state.props = { questionId: 5, answered: true, reveal: null, answerCorrect: true, selectedAnswerIds: [1] }
+		root.$forceUpdate()
+		await flush()
+		expect(audioCtx.created).toHaveLength(0)
+	})
+
+	it('a question with only an intro still gets its tone', async () => {
+		const { pinia } = piniaWith({ sounds: 'yes' })
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		state.props = { questionId: 5, answered: true, reveal: null, answerCorrect: false, selectedAnswerIds: [1] }
+		root.$forceUpdate()
+		await flush()
+		expect(audioCtx.created).toHaveLength(1)
+	})
+})

@@ -3,6 +3,7 @@
            class="qmedia"
            :class="{ 'qmedia--still': still }"
            :aria-label="sectionLabel"
+           :aria-busy="pendingIntro ? 'true' : null"
            @keydown="onKeydown">
     <div class="qmedia__bar">
       <h3 class="qmedia__title">
@@ -52,7 +53,7 @@
             </span>
             <span class="qmedia__line">{{ stage.line.text }}</span>
           </p>
-          <p v-else-if="timeline.length" key="cover" class="qmedia__cover" :lang="uiLang">{{ coverText }}</p>
+          <p v-else-if="coverText" key="cover" class="qmedia__cover" :lang="uiLang">{{ coverText }}</p>
         </transition>
         <ol v-if="timeline.length > 1" class="qmedia__progress" aria-hidden="true">
           <li v-for="(line, index) in timeline"
@@ -96,7 +97,10 @@
       </template>
     </div>
 
-    <div v-if="timeline.length" class="qmedia__controls">
+    <!-- #66: also for an option voice without a timeline (its sidecar is optional), so play and
+         "Nächste Zeile" lead on to the dialog; reserved but invisible while the media of a
+         question with an expected intro are loading, so nothing moves when they arrive. -->
+    <div v-if="steppable || pendingIntro" class="qmedia__controls" :class="{ 'qmedia__reserved': pendingIntro }">
       <button ref="play"
               type="button"
               class="qmedia__button qmedia__button--primary"
@@ -109,7 +113,7 @@
       <button ref="prev" type="button" class="qmedia__button" :disabled="cursorIndex <= 0 && !ended" @click="step(-1)">
         <span aria-hidden="true">{{ isRtl ? '→' : '←' }}</span> {{ t('learning', 'Vorherige Zeile') }}
       </button>
-      <button ref="next" type="button" class="qmedia__button" :disabled="ended" @click="step(1)">
+      <button ref="next" type="button" class="qmedia__button" :disabled="ended || !steppable" @click="step(1)">
         {{ t('learning', 'Nächste Zeile') }} <span aria-hidden="true">{{ isRtl ? '←' : '→' }}</span>
       </button>
       <button ref="restart" type="button" class="qmedia__button" :disabled="cursorIndex < 0 && !ended && !playing" @click="restart">
@@ -129,7 +133,7 @@
       </template>
     </p>
 
-    <details v-if="timeline.length" class="qmedia__transcript">
+    <details v-if="timeline.length || pendingIntro" class="qmedia__transcript" :class="{ 'qmedia__reserved': pendingIntro }">
       <summary>{{ t('learning', 'Text zum Mitlesen') }}</summary>
       <ol :lang="lang || null">
         <li v-for="(line, index) in timeline"
@@ -190,7 +194,10 @@ import {
  *   shown and the segments right after answering. A refused play() (Safari/iOS) falls back
  *   silently to the play button, and the question shows.
  * - "Töne": "Pling"/"Zonk" right after a fresh answer (never for an answer restored on jumping
- *   back), synthesised (answerSounds.js).
+ *   back), synthesised (answerSounds.js), and only for a question with media, where the switch is.
+ * - A question after one with an intro is held hidden in a reserved player while its media load
+ *   (`pendingIntro`), so it never shows first and then slides away; questions in pools without
+ *   media are never held.
  */
 export default {
   name: 'QuestionMediaPlayer',
@@ -240,14 +247,24 @@ export default {
       chain: false,
       // the post-answer autoplay waits for the answer tone (Andre: tone first, then the voice)
       autoStartTimer: null,
+      // GET /media of the current question is still open
+      loadingIntro: false,
+      // the last question loaded here had a spoken intro: the next one probably has one too
+      // (a pool with media has them throughout), so its place is kept and it stays hidden
+      // until its media are known — no question that shows and then slides away
+      expectIntro: false,
     };
   },
   computed: {
+    // #66: waiting for the media of a question that probably has an intro
+    pendingIntro() {
+      return !this.answered && this.loadingIntro && this.expectIntro;
+    },
     phase() {
       if (this.answered) {
         return this.segment ? this.segment.kind : '';
       }
-      return this.introTracks.length ? 'intro' : '';
+      return this.introTracks.length || this.pendingIntro ? 'intro' : '';
     },
     // After answering: the voices of the chosen options (answer order), then the dialog.
     segments() {
@@ -285,8 +302,16 @@ export default {
         : this.t('learning', 'Einstieg mit Ton und Untertiteln');
     },
     coverText() {
+      if (this.timeline.length === 0) {
+        // an option voice without a timeline: only its length, never "0 Zeilen"
+        return this.track && this.duration > 0 ? formatSeconds(this.duration) : '';
+      }
       const lines = this.n('learning', '%n Zeile', '%n Zeilen', this.timeline.length);
       return this.duration > 0 ? lines + ' · ' + formatSeconds(this.duration) : lines;
+    },
+    // Lines to step through, or an option voice without them: "Nächste Zeile" then leads on.
+    steppable() {
+      return this.timeline.length > 0 || (this.phase === 'option' && !!this.track);
     },
     autoplay() {
       return !!this.prefs.autoplay;
@@ -301,8 +326,7 @@ export default {
     concealQuestion() {
       return !this.answered
         && this.phase === 'intro'
-        && !!this.track
-        && this.timeline.length > 0
+        && (this.pendingIntro || (!!this.track && this.timeline.length > 0))
         && !this.introReleased
         && !this.ended
         && !this.audioFailed
@@ -376,7 +400,7 @@ export default {
       return this.started ? lastStartedIndex(this.timeline, this.currentTime) : -1;
     },
     lineStatus() {
-      if (this.manualIndex === null && !this.audioFailed) {
+      if ((this.manualIndex === null && !this.audioFailed) || this.timeline.length === 0) {
         return '';
       }
       return this.t('learning', 'Zeile {current} von {total}', {
@@ -442,7 +466,10 @@ export default {
       if (!fresh) {
         return;
       }
-      const toned = this.soundsEnabled && this.answerCorrect !== null && playAnswerSound(this.answerCorrect);
+      // #66: the tones belong to questions with media — only there is the switch to silence
+      // them; every other question (a mandatory training in the office) answers as before
+      const hasMedia = this.introTracks.length > 0 || this.segments.length > 0;
+      const toned = hasMedia && this.soundsEnabled && this.answerCorrect !== null && playAnswerSound(this.answerCorrect);
       if (this.autoplay) {
         // after the phase watcher's stop() and the render of the first segment, and after the
         // tone when there was one
@@ -509,19 +536,27 @@ export default {
     async loadIntro() {
       const token = ++this.requestToken;
       this.introTracks = [];
+      this.loadingIntro = false;
       if (this.questionId === null || this.questionId === '' || this.questionId === undefined) {
         return;
       }
+      this.loadingIntro = true;
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/questions/{id}/media', { id: this.questionId }));
         if (token !== this.requestToken) {
           return;
         }
+        // in one step with the end of loading: concealQuestion never passes through false
+        // while the intro is on, which would release the question for good
         this.introTracks = tracksOfKind(response?.data?.tracks, 'intro');
+        this.loadingIntro = false;
+        this.expectIntro = this.introTracks.length > 0;
       } catch (e) {
         // No media, no access or an exam running on the pool: the player simply stays away.
         if (token === this.requestToken) {
           this.introTracks = [];
+          this.loadingIntro = false;
+          this.expectIntro = false;
         }
       }
     },
@@ -681,6 +716,9 @@ export default {
       });
     },
     step(delta) {
+      if (!this.steppable) {
+        return;
+      }
       this.moveBy(delta);
       this.keepFocus(delta > 0 ? ['prev', 'restart'] : ['next', 'restart']);
     },
@@ -934,6 +972,8 @@ export default {
 .qmedia__note--idle { margin: 0; }
 /* empty but present (see the template): out of the flex flow, so it adds no gap */
 .qmedia__status--idle { position: absolute; margin: 0; }
+/* #66: holds the place of the controls and the transcript while the media load (not focusable) */
+.qmedia__reserved { visibility: hidden; }
 .qmedia__transcript { margin-top: 8px; }
 .qmedia__transcript summary { cursor: pointer; color: var(--color-main-text); }
 .qmedia__transcript ol { margin: 6px 0 0; padding-inline-start: 22px; }
