@@ -38,6 +38,8 @@ const KINDS = {
 	hover: 'Hover / focus look', layout: 'Layout', media: 'Question media',
 	materials: 'Learning materials (required / optional)', 'certificate-design': 'Certificate design',
 	'logo-library': 'Certificate logo library', tickets: 'Technical tickets',
+	guidance: 'Next step in the course (#92)', cycle: 'Certification cycle (#84)', attempts: 'Exam attempts (#87)',
+	notification: 'Notification', csv: 'CSV export', scroll: 'Scrolling', contrast: 'Contrast', 'dead-link': 'Dead link',
 }
 const esc = (s) => String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
 

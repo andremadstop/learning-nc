@@ -130,6 +130,12 @@ if (!itCourse) {
 } else if (Object.values(modeConfig).some((v) => v === false)) {
 	throw new Error(`IT course has modes off: ${JSON.stringify(modeConfig)}`)
 }
+// GitHub #86 / #87: the mandatory-training profile asks for an open before a confirmation and caps
+// the exam attempts per pool and cycle at 3; the IT course keeps neither (as before 5.16.0).
+const openFirst = detail.open_before_confirm === true
+const examAttemptLimit = detail.exam_attempt_limit ?? null
+if (!itCourse && (!openFirst || examAttemptLimit !== 3)) throw new Error(`profile 'mandatory': open_before_confirm=${detail.open_before_confirm}, exam_attempt_limit=${detail.exam_attempt_limit} (expected true, 3)`)
+if (itCourse && (openFirst || examAttemptLimit !== null)) throw new Error(`IT course: open_before_confirm=${detail.open_before_confirm}, exam_attempt_limit=${detail.exam_attempt_limit} (expected false, none)`)
 
 // The administrator runs the course with the instructor (co-instructor). A Nextcloud admin who
 // is not a member does not see the course in the list, and the student view is only meaningful
@@ -224,7 +230,8 @@ answers[mediaQuestion.text] = mediaQuestion.answers.find((a) => a.is_correct).te
 // poolOwner: the only persona whose pool list must show the pools (nothing is shared).
 writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.stringify({
 	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig, deadLinks,
-	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated },
+	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated, openFirst },
+	examAttemptLimit,
 	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },
 	media: { poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text },
 	gamification: itCourse, ai: admin.ai_enabled === 'yes' ? `${admin.ai_provider} (no backend answers)` : 'off',

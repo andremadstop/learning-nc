@@ -46,7 +46,7 @@ const PASSWORDS = { admin: state.ADMIN_PASS, instructor: state.INSTRUCTOR_PASS, 
 // the admin settings and then "Save recipients", so every later station showed nobody notified.
 // GitHub #82: "activat" — the instructor's course menu offers "Activate" on the archived seed course;
 // clicking it would turn the dead-link station's archived course back into an active one.
-const DENY = /activat|make (instructor|student|learner)|promot|demot|delet|remov|deselect|abwählen|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen/i
+const DENY = /activat|make (instructor|student|learner)|promot|demot|delet|remov|deselect|abwählen|revok|withdraw|unenrol|unenroll|leave|archiv|merge|reset|log ?out|sign out|generat|rotat|start exam|start the exam|practice exam|begin|abort|end exam|uninstall|discard|clear|close course|close panel|minimi[sz]e panel|import|upload|löschen|entfern|widerruf|austragen|zurücksetzen|new certification cycle|neuen zertifizierungszyklus/i
 const MAX_BUTTONS_PER_STATION = 30
 // Nextcloud core noise in a bare container (no user_status backend data); not the app's.
 const CORE_NOISE = /user_status|Failed to load user status/
@@ -431,6 +431,150 @@ async function download(page, trigger, name) {
 	return { file, size: fs.statSync(file).size, suggested: dl.suggestedFilename(), head: fs.readFileSync(file).subarray(0, 400) }
 }
 
+/** Poll check() until it is true; false after ms. */
+async function waitUntil(check, ms = 6000, step = 250) {
+	const end = Date.now() + ms
+	for (;;) {
+		if (await check().catch(() => false)) return true
+		if (Date.now() > end) return false
+		await new Promise((resolve) => setTimeout(resolve, step))
+	}
+}
+
+/** Whether an NcButton is the primary one (GitHub #92: one clear next action). */
+const isPrimary = (locator) => locator.first().evaluate((el) => el.classList.contains('button-vue--primary')).catch(() => false)
+
+/**
+ * The exam set up on the page (after "Start Exam"): every question answered right, or every one
+ * wrong (GitHub #87: attempts used up). Returns the result banner and the score line.
+ */
+async function takeExam(page, { wrong = false } = {}) {
+	page.__acceptDialogs = true
+	try {
+		await page.getByRole('button', { name: 'Start Exam' }).first().click()
+		await page.locator('.question-text').first().waitFor({ timeout: 15000 })
+		const resultsShown = () => page.locator('.results-screen').isVisible().catch(() => false)
+		for (let n = 0; n < 30; n++) {
+			if (await resultsShown()) break
+			const q = page.locator('.question-text').first()
+			if (!(await q.isVisible().catch(() => false))) { await page.waitForTimeout(500); continue }
+			const text = (await q.textContent()).trim()
+			const answer = seed.answers[text]
+			if (!answer) throw new Error(`no seeded answer for question "${text}"`)
+			const buttons = await page.locator('.answer-btn').allTextContents()
+			const right = pickAnswerIndex(buttons, answer)
+			if (right === -1) throw new Error(`no answer button "${answer}" for question "${text}"`)
+			const pick = wrong ? buttons.findIndex((_, i) => i !== right) : right
+			await page.locator('.answer-btn').nth(pick).click()
+			await page.waitForTimeout(500)
+			if (await resultsShown()) break
+			const progress = (await page.locator('.progress-label').count()) ? await page.locator('.progress-label').textContent() : ''
+			const m = progress.match(/(\d+)\s*\/\s*(\d+)/)
+			if (m && m[1] === m[2]) {
+				await page.locator('.end-exam-btn').click() // confirm() is accepted
+				break
+			}
+			const now = (await q.isVisible().catch(() => false)) ? (await q.textContent()).trim() : ''
+			if (now === text) await page.locator('.nav-dot').nth(Number(m?.[1] || n + 1)).click().catch(() => {})
+		}
+		await page.locator('.results-screen').waitFor({ timeout: 20000 })
+		await settle(page)
+	} finally {
+		page.__acceptDialogs = false
+	}
+	const banner = (await page.locator('.result-banner__status').textContent().catch(() => '')).trim()
+	const score = (await page.locator('.results-screen .stat-value').first().textContent().catch(() => '')).trim()
+	return { banner, score }
+}
+
+// GitHub #86: the learner's required documents on Learning materials. With the course option
+// "confirm only after opening" (on in the mandatory-training profile) every confirm button waits
+// for "Open document", says why (hint, aria-describedby), and the server refuses a confirmation of
+// an unopened file too. Without the option (the IT course) nothing waits, as before.
+const requiredItems = (page) => page.locator('[data-test="required-content-learner"] > li')
+const itemConfirm = (item) => item.locator('[data-test^="document-confirm-"]').first()
+const itemTitle = async (item) => (await item.locator('.video-item__title').first().textContent().catch(() => '')).trim()
+
+async function checkConfirmLock(page, rec, openFirst, who) {
+	const items = requiredItems(page)
+	const n = await items.count()
+	if (!n) rec.add('materials', `${who}: no required documents on Learning materials`)
+	for (let i = 0; i < n; i++) {
+		const item = items.nth(i)
+		const btn = itemConfirm(item)
+		const title = await itemTitle(item)
+		if ((await btn.textContent().catch(() => '')).trim() === 'Confirmed as read') {
+			rec.add('materials', `${who}: "${title}" is already confirmed before it was opened in this cycle`)
+			continue
+		}
+		const locked = await btn.isDisabled().catch(() => null)
+		const hint = item.locator('p[data-test^="document-open-first-"]')
+		const hinted = await hint.isVisible().catch(() => false)
+		if (openFirst) {
+			if (!locked) rec.add('materials', `${who}: "${title}" can be confirmed before it was opened (#86)`)
+			if (!hinted) rec.add('materials', `${who}: "${title}" is locked without the hint to open it first (#86)`)
+			else {
+				const id = await hint.getAttribute('id')
+				const describedBy = await btn.getAttribute('aria-describedby')
+				if (!id || describedBy !== id) rec.add('a11y', `${who}: the locked confirm button of "${title}" is described by "${describedBy}", not by the hint "${id}" (#86)`)
+			}
+		} else {
+			if (locked) rec.add('materials', `${who}: "${title}" cannot be confirmed although the course does not ask for opening first`)
+			if (hinted) rec.add('materials', `${who}: "${title}" shows "Open the document first" although the course does not ask for it`)
+		}
+	}
+	return n
+}
+
+/** GitHub #86: the server refuses a confirmation of an unopened file (409 document_not_opened). */
+async function probeConfirmRefused(page, rec, user, who) {
+	const items = requiredItems(page)
+	const ids = []
+	for (let i = 0; i < await items.count(); i++) {
+		const dt = await itemConfirm(items.nth(i)).getAttribute('data-test').catch(() => null)
+		const id = Number(String(dt || '').replace('document-confirm-', ''))
+		if (id) ids.push(id)
+	}
+	if (!ids.length) { rec.add('station-error', `${who}: no content id to probe the server with`); return }
+	// Node fetch with the learner's password, not the page: the expected 409 is not an app request
+	// of the station, and the page must not learn of it.
+	const res = await fetch(`${APP}/api/video-progress/document-read`, {
+		method: 'POST',
+		headers: { Authorization: 'Basic ' + Buffer.from(`${user}:${PASSWORDS[user]}`).toString('base64'), 'OCS-APIRequest': 'true', Accept: 'application/json', 'Content-Type': 'application/json' },
+		body: JSON.stringify({ contentId: ids[0] }),
+	})
+	const body = await res.json().catch(() => null)
+	if (res.status !== 409 || body?.code !== 'document_not_opened') rec.add('materials', `${who}: the server answers ${res.status} ${JSON.stringify(body).slice(0, 120)} to a confirmation of an unopened document (expected 409 document_not_opened, #86)`)
+	;(rec.current.notes ||= []).push(`server, confirm before open: ${res.status} ${body?.code || ''}`)
+}
+
+/** Open every unconfirmed required document (new tab, as a learner would), then confirm it. */
+async function openAndConfirmAll(page, rec, who) {
+	const items = requiredItems(page)
+	const n = await items.count()
+	for (let i = 0; i < n; i++) {
+		const item = items.nth(i)
+		const btn = itemConfirm(item)
+		const title = await itemTitle(item)
+		if ((await btn.textContent().catch(() => '')).trim() === 'Confirmed as read') continue
+		const opened = page.context().waitForEvent('page', { timeout: 10000 }).catch(() => null)
+		await item.locator('a[data-test^="document-open-"]').first().click()
+		const tab = await opened
+		if (!tab) rec.add('materials', `${who}: "Open document" of "${title}" opened nothing`)
+		else {
+			await tab.waitForLoadState().catch(() => {})
+			await tab.close().catch(() => {})
+		}
+		// the page reads the state again 1.5 s after the click and on return to the tab
+		if (!(await waitUntil(async () => !(await btn.isDisabled()), 8000))) {
+			rec.add('materials', `${who}: "${title}" is still locked 8 s after "Open document" (#86)`)
+			continue
+		}
+		await btn.click()
+		await waitUntil(async () => (await btn.textContent()).trim() === 'Confirmed as read', 5000)
+	}
+}
+
 // ---------------------------------------------------------------- the generic sweep
 async function sweepPersona(browser, persona, opts = {}) {
 	const rec = new Recorder(persona, opts)
@@ -666,15 +810,17 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		await page.screenshot({ path: path.join(SHOTS, 'guide-learner-materials.png'), fullPage: true })
 		await axeStates(page, rec, confirmButtons(), '"Confirm I have read this"')
 	})
+	// GitHub #86: in the mandatory-training run every confirm button waits for "Open document" (and
+	// the server refuses a confirmation without it); in the IT course nothing waits.
+	await station(page, rec, 'Learning materials (learner): confirm waits for "Open document" (#86)', async () => {
+		await enterMaterials()
+		await checkConfirmLock(page, rec, mats.openFirst, 'learner1')
+		if (mats.openFirst) await probeConfirmRefused(page, rec, 'learner1', 'learner1')
+		await page.screenshot({ path: path.join(SHOTS, 'guide-learner-materials-open-first.png'), fullPage: true })
+	})
 	await station(page, rec, 'Learning materials (learner): confirm both required documents', async () => {
 		await enterMaterials()
-		const n = await confirmButtons().count()
-		for (let i = 0; i < n; i++) {
-			const btn = confirmButtons().nth(i)
-			if (await btn.isDisabled().catch(() => true)) continue
-			await btn.click()
-			await page.waitForTimeout(800)
-		}
+		await openAndConfirmAll(page, rec, 'learner1')
 		await enterMaterials() // read back: the confirmation is stored, not only shown
 		const labels = (await confirmButtons().allTextContents()).map((s) => s.trim())
 		const open = labels.filter((l) => l !== 'Confirmed as read')
@@ -682,6 +828,27 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		if (mats.examGated && !(await page.locator('[data-test="required-content-unlocked"]').isVisible().catch(() => false))) {
 			rec.add('materials', 'all required documents confirmed, but the exam is not shown as unlocked')
 		}
+	})
+	// GitHub #92: with the required content done, one primary button leads on — to the exam, since
+	// the course certifies — and the area it opens is announced.
+	await station(page, rec, 'Learning materials (learner): next step after the required content (#92)', async () => {
+		await enterMaterials()
+		const next = page.locator('[data-test="materials-next-step-button"]')
+		if (!(await next.isVisible().catch(() => false))) {
+			rec.add('guidance', 'all required content confirmed, but no button leads on (#92)')
+			return
+		}
+		const label = (await next.textContent()).trim()
+		if (label !== 'Go to the exam') rec.add('guidance', `the next step after the required content reads "${label}", expected "Go to the exam" (#92)`)
+		if (!(await isPrimary(next))) rec.add('guidance', 'the next step after the required content is not the primary button (#92)')
+		await axeStates(page, rec, next, `"${label}"`)
+		await next.click()
+		await settle(page)
+		if (!/\/exam$/.test(new URL(page.url()).pathname)) rec.add('guidance', `"${label}" led to ${shortUrl(page.url())}, not to the exam (#92)`)
+		if (!(await page.locator('#app-content').getByText('Fire safety', { exact: true }).first().isVisible().catch(() => false))) rec.add('guidance', `"${label}" does not show the exam pools (#92)`)
+		const said = (await page.locator('[data-test="guide-announcement"]').textContent().catch(() => '')).trim()
+		if (!said) rec.add('a11y', `"${label}" changes the area without announcing it (#92)`)
+		;(rec.current.notes ||= []).push(`announced: ${said}`)
 	})
 	const pools = ['Fire safety', 'Data protection']
 	for (const [i, pool] of pools.entries()) {
@@ -693,38 +860,9 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 			if (i === 0) await page.screenshot({ path: path.join(SHOTS, 'guide-exam-start.png') })
 		})
 		await station(page, rec, `Exam: ${pool} (all answers right)`, async () => {
-			page.__acceptDialogs = true
-			await page.getByRole('button', { name: 'Start Exam' }).first().click()
-			await page.locator('.question-text').first().waitFor({ timeout: 15000 })
-			const resultsShown = () => page.locator('.results-screen').isVisible().catch(() => false)
-			for (let n = 0; n < 30; n++) {
-				if (await resultsShown()) break
-				const q = page.locator('.question-text').first()
-				if (!(await q.isVisible().catch(() => false))) { await page.waitForTimeout(500); continue }
-				const text = (await q.textContent()).trim()
-				const answer = seed.answers[text]
-				if (!answer) throw new Error(`no seeded answer for question "${text}"`)
-				const pick = pickAnswerIndex(await page.locator('.answer-btn').allTextContents(), answer)
-				if (pick === -1) throw new Error(`no answer button "${answer}" for question "${text}"`)
-				await page.locator('.answer-btn').nth(pick).click()
-				await page.waitForTimeout(500)
-				if (await resultsShown()) break
-				const progress = (await page.locator('.progress-label').count()) ? await page.locator('.progress-label').textContent() : ''
-				const m = progress.match(/(\d+)\s*\/\s*(\d+)/)
-				if (m && m[1] === m[2]) {
-					await page.locator('.end-exam-btn').click() // confirm() is accepted
-					break
-				}
-				const now = (await q.isVisible().catch(() => false)) ? (await q.textContent()).trim() : ''
-				if (now === text) await page.locator('.nav-dot').nth(Number(m?.[1] || n + 1)).click().catch(() => {})
-			}
-			await page.locator('.results-screen').waitFor({ timeout: 20000 })
-			await settle(page)
-			page.__acceptDialogs = false
-			const banner = (await page.locator('.result-banner__status').textContent().catch(() => '')).trim()
+			const { banner, score } = await takeExam(page)
 			if (banner !== 'Passed') rec.add('exam', `${pool}: result banner says "${banner}" after all answers right`)
 			// "Passed" alone let a wrong click through (7 of 8 is still over the pass mark).
-			const score = (await page.locator('.results-screen .stat-value').first().textContent().catch(() => '')).trim()
 			const sm = score.match(/(\d+)\s*\/\s*(\d+)/)
 			if (!sm || sm[1] !== sm[2]) rec.add('exam', `${pool}: ${score || 'no score'} correct after all answers right`)
 		})
@@ -732,6 +870,13 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 	await station(page, rec, 'Exam result: certificate notice', async () => {
 		const open = page.getByRole('button', { name: 'Open certificate' })
 		if (!(await open.isVisible().catch(() => false))) rec.add('certificate', 'no "Open certificate" after passing both required pools')
+		// GitHub #92: after the pass that brings the certificate, the way on is the certificate, and
+		// "Retake exam" is no longer the blue button
+		const mine = page.locator('[data-test="guide-certificate"]')
+		if (!(await mine.isVisible().catch(() => false))) rec.add('guidance', 'no "Go to my certificate" after the pass that brought the certificate (#92)')
+		else if (!(await isPrimary(mine))) rec.add('guidance', '"Go to my certificate" is not the primary button (#92)')
+		const retake = page.locator('[data-test="guide-retake"]')
+		if (await retake.isVisible().catch(() => false) && await isPrimary(retake)) rec.add('guidance', '"Retake exam" is the primary button after a pass (#92)')
 	})
 	await station(page, rec, 'Certificate (from the exam result)', async () => {
 		await page.getByRole('button', { name: 'Open certificate' }).click()
@@ -1405,6 +1550,392 @@ test('public: certificate verification page, light and dark, dark and light prim
 		}
 	}
 	flush()
+})
+
+// ---------------------------------------------------------------- 5.16.0 scenarios (C9)
+// They run after the public verification test (it reads learner1's valid certificate) and before
+// the generic sweeps (those then see the course as it is afterwards). Each persona gets its own
+// browser context, so the instructor's and the learner's views alternate as in real life.
+const basic = (user) => 'Basic ' + Buffer.from(`${user}:${PASSWORDS[user]}`).toString('base64')
+const occRun = (...args) => execFileSync('docker', ['exec', '-u', 'www-data', '-w', '/var/www/html', state.NC, 'php', 'occ', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+
+/** The Learning notifications of a user (Node fetch, so the page under test does not see it). */
+async function learningNotifications(user) {
+	const res = await fetch(`${BASE}/ocs/v2.php/apps/notifications/api/v2/notifications?format=json`, { headers: { Authorization: basic(user), 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+	if (!res.ok) return null
+	return ((await res.json())?.ocs?.data || []).filter((n) => n.app === 'learning')
+}
+
+/** Check that exactly `count` (or at least one, count = null) notifications match, and in English. */
+async function expectNotification(rec, user, pattern, what, count = null) {
+	const items = await learningNotifications(user)
+	if (!items) { rec.add('notification', `the notifications of ${user} could not be read`); return }
+	const hits = items.filter((n) => pattern.test(n.subject || ''))
+	if (!hits.length) rec.add('notification', `${user} got no notification ${what} (${items.map((n) => n.subject).join(' | ').slice(0, 200) || 'none'})`)
+	else if (count !== null && hits.length !== count) rec.add('notification', `${user} got ${hits.length} notifications ${what}, expected ${count}`)
+	for (const n of hits) if (GERMAN.test(`${n.subject} ${n.message || ''}`)) rec.add('german', `notification: ${n.subject} ${n.message || ''}`.slice(0, 200))
+	;(rec.current.notes ||= []).push(...hits.map((n) => `notification for ${user}: ${n.subject}`))
+}
+
+async function enterLearningMaterials(page) {
+	await openMegaTab(page, 'Learning space')
+	await page.locator('.lernraum-subnav button').filter({ hasText: 'Learning materials' }).first().click()
+	await settle(page)
+}
+
+async function enterExamTab(page) {
+	await openMegaTab(page, 'Learning space')
+	await page.locator('.lernraum-subnav button').filter({ hasText: 'Exam' }).first().click()
+	await settle(page)
+}
+
+async function enterMembers(page) {
+	await page.goto(`${APP}/courses/${seed.courseId}/members`)
+	await settle(page)
+	await page.locator('.member-item').first().waitFor({ timeout: 15000 })
+	await settle(page, 300)
+}
+const memberRow = (page, uid) => page.locator('.member-item').filter({ has: page.locator('.member-name', { hasText: new RegExp(`^${uid}$`) }) }).first()
+const memberBadge = async (page, uid) => (await memberRow(page, uid).locator('[data-test="member-cycle-status"]').textContent().catch(() => '')).trim()
+
+/** GitHub #84 / #87: the instructor opens a new cycle from the member list (confirm accepted). */
+async function openNewCycle(page, rec, uid) {
+	const button = memberRow(page, uid).locator('[data-test="member-new-cycle"]')
+	if (!(await button.isVisible().catch(() => false))) {
+		rec.add('cycle', `${uid}: no "Open a new certification cycle" in the member list`)
+		return
+	}
+	const since = Date.now()
+	page.__acceptDialogs = true
+	try {
+		await button.click()
+		if (!(await waitUntil(async () => (await memberBadge(page, uid)) === 'New cycle open', 8000))) rec.add('cycle', `${uid}: after "Open a new certification cycle" the badge reads "${await memberBadge(page, uid)}", not "New cycle open"`)
+		await checkToasts(page, rec, since, 'Open a new certification cycle')
+	} finally {
+		page.__acceptDialogs = false
+	}
+	await enterMembers(page) // read back
+	if ((await memberBadge(page, uid)) !== 'New cycle open') rec.add('cycle', `${uid}: after a reload the badge reads "${await memberBadge(page, uid)}", not "New cycle open"`)
+	if (await memberRow(page, uid).locator('[data-test="member-new-cycle"]').isVisible().catch(() => false)) rec.add('cycle', `${uid}: "Open a new certification cycle" is still offered with a cycle open`)
+}
+
+// GitHub #90: material entries whose file was deleted or moved out of the material folder. The
+// instructor sees them with the reason and a ×, learners never see them, the × and "Scan folder"
+// take them out of the list. Two extra files only; the seed's three files stay as they are.
+test('instructor: material entries whose file left the folder (#90)', async ({ browser }) => {
+	test.setTimeout(10 * 60_000)
+	const rec = new Recorder('instructor')
+	const { context, page } = await login(browser, 'instructor')
+	rec.attach(page)
+	const learnerRec = new Recorder('learner3')
+	const learner = await login(browser, 'learner3')
+	learnerRec.attach(learner.page)
+	const folder = seed.materials.folder
+	const GONE = 'Old fire drill.md'
+	const MOVED = 'Old visitor rules.md'
+	const davUrl = (p) => `${BASE}/remote.php/dav/files/instructor/${p.split('/').map(encodeURIComponent).join('/')}`
+	const dav = async (method, p, { body, headers = {} } = {}) => {
+		const res = await fetch(davUrl(p), { method, headers: { Authorization: basic('instructor'), ...headers }, body })
+		if (!res.ok) throw new Error(`WebDAV ${method} ${p} → ${res.status}`)
+	}
+	const row = (file) => page.locator('.material-table tbody tr').filter({ hasText: file }).first()
+	const scan = async (action) => {
+		const since = Date.now()
+		await page.getByRole('button', { name: 'Scan folder' }).first().click()
+		await page.waitForTimeout(1500)
+		await settle(page)
+		await checkToasts(page, rec, since, action)
+	}
+	await station(page, rec, 'Learning materials (instructor): two more files, scanned', async () => {
+		for (const f of [GONE, MOVED]) await dav('PUT', `${folder}/${f}`, { body: `# ${f.replace(/\.md$/, '')}\n\nNo longer valid.\n`, headers: { 'Content-Type': 'text/markdown' } })
+		await enterLearningMaterials(page)
+		await scan('Scan folder')
+		for (const f of [GONE, MOVED]) if (!(await row(f).isVisible().catch(() => false))) rec.add('materials', `"${f}" is not listed after "Scan folder"`)
+	})
+	await station(page, rec, 'Learning materials (instructor): entries whose file is gone or moved out (#90)', async () => {
+		await dav('DELETE', `${folder}/${GONE}`)
+		await dav('MOVE', `${folder}/${MOVED}`, { headers: { Destination: davUrl(MOVED), Overwrite: 'T' } })
+		await enterLearningMaterials(page)
+		for (const f of [GONE, MOVED]) {
+			const r = row(f)
+			if (!(await r.isVisible().catch(() => false))) { rec.add('materials', `"${f}" left the list before any scan or ×`); continue }
+			const reason = (await r.locator('.material-unavailable-reason').textContent().catch(() => '')).trim()
+			if (!reason) rec.add('materials', `"${f}": no reason why it cannot be opened (#90)`)
+			else if (!/no longer in the material folder/i.test(reason)) rec.add('materials', `"${f}": the reason reads "${reason}" (#90)`)
+			if (!(await r.locator('.material-remove-btn').isVisible().catch(() => false))) rec.add('materials', `"${f}": no × to take the entry out of the list (#90)`)
+			if (await r.locator('a.material-file-link').count()) rec.add('materials', `"${f}" is still offered as a link although its file left the folder`)
+		}
+		for (const f of [...seed.materials.required, ...seed.materials.optional]) {
+			if (await row(f).locator('.material-remove-btn').count()) rec.add('materials', `"${f}" is in the folder but offered for removal`)
+		}
+		await page.screenshot({ path: path.join(SHOTS, 'guide-instructor-materials-stale.png'), fullPage: true })
+		await axeStates(page, rec, row(MOVED).locator('.material-remove-btn'), 'the × of an entry whose file left the folder')
+	})
+	await station(learner.page, learnerRec, 'Learning materials (learner): no entry whose file left the folder (#90)', async () => {
+		await enterLearningMaterials(learner.page)
+		const text = await learner.page.locator('#app-content').innerText()
+		for (const f of [GONE, MOVED]) if (text.includes(f)) learnerRec.add('materials', `the learner sees "${f}", whose file left the material folder (#90)`)
+		for (const f of seed.materials.optional) if (!text.includes(f)) learnerRec.add('materials', `the learner no longer sees "${f}"`)
+	})
+	await station(page, rec, 'Learning materials (instructor): the × takes a stale entry out (#90)', async () => {
+		await enterLearningMaterials(page)
+		const since = Date.now()
+		await row(MOVED).locator('.material-remove-btn').click()
+		if (!(await waitUntil(async () => !(await row(MOVED).isVisible()), 8000))) rec.add('materials', `"${MOVED}" is still listed after its ×`)
+		await checkToasts(page, rec, since, '× (remove from the list)')
+		await enterLearningMaterials(page) // read back
+		if (await row(MOVED).isVisible().catch(() => false)) rec.add('materials', `"${MOVED}" is back after a reload`)
+		if (!(await row(GONE).isVisible().catch(() => false))) rec.add('materials', `the × of "${MOVED}" also took "${GONE}" out`)
+	})
+	await station(page, rec, 'Learning materials (instructor): "Scan folder" takes the deleted file out (#90)', async () => {
+		await enterLearningMaterials(page)
+		await scan('Scan folder (cleanup)')
+		await enterLearningMaterials(page) // read back
+		if (await row(GONE).isVisible().catch(() => false)) rec.add('materials', `"${GONE}" is still listed after "Scan folder" although its file is deleted (#90)`)
+		for (const f of [...seed.materials.required, ...seed.materials.optional]) if (!(await row(f).isVisible().catch(() => false))) rec.add('materials', `"Scan folder" took "${f}" out, which is still in the folder`)
+	})
+	flush()
+	await learner.context.close()
+	await context.close()
+})
+
+// GitHub #87 with #92 and #84: learner3 fails Fire safety until the attempts per pool and cycle are
+// used up (3: the mandatory-training profile's default; the IT course gets 3 through the course
+// rules for this test and none again afterwards). The first failure is checked with the usual
+// cooldown (wait time on the result), the next two with the cooldown at 0 (occ, restored).
+test('learner3: exam attempts used up, the instructor opens a new cycle (#87, #84, #92)', async ({ browser }) => {
+	test.setTimeout(20 * 60_000)
+	const LIMIT = 3
+	const instRec = new Recorder('instructor')
+	const inst = await login(browser, 'instructor')
+	instRec.attach(inst.page)
+	const rec = new Recorder('learner3')
+	const { context, page } = await login(browser, 'learner3')
+	rec.attach(page)
+	let cooldownBefore
+	try { cooldownBefore = occRun('config:app:get', 'learning', 'exam_attempt_cooldown_minutes') } catch { cooldownBefore = null }
+	let cooldownChanged = false
+	let limitChanged = false
+	const visible = (sel) => page.locator(sel).first().isVisible().catch(() => false)
+	const failFireSafety = async () => {
+		await enterExamTab(page)
+		await page.locator('#app-content').getByText('Fire safety', { exact: true }).first().click()
+		await settle(page)
+		const { banner, score } = await takeExam(page, { wrong: true })
+		if (banner === 'Passed') rec.add('exam', `Fire safety passed with every answer wrong (${score})`)
+		return (await page.locator('[data-test="result-attempts"]').textContent().catch(() => '')).replace(/\s+/g, ' ').trim()
+	}
+	try {
+		await station(inst.page, instRec, 'Administration › Course rules: exam attempts per pool and cycle (#87)', async () => {
+			const enter = async () => {
+				await openMegaTab(inst.page, 'Administration')
+				await inst.page.locator('[data-test="exam-attempt-limit"]').scrollIntoViewIfNeeded()
+			}
+			await enter()
+			const field = inst.page.locator('[data-test="exam-attempt-limit"]')
+			const shown = await field.inputValue()
+			const want = seed.examAttemptLimit ? String(seed.examAttemptLimit) : ''
+			if (shown !== want) instRec.add('attempts', `"Exam attempts per pool and certification cycle" shows "${shown}", the course has "${want || 'unlimited'}"`)
+			if (!seed.examAttemptLimit) {
+				await field.fill(String(LIMIT))
+				const since = Date.now()
+				await inst.page.locator('[data-test="cert-save"]').click()
+				await inst.page.waitForTimeout(1200)
+				await checkToasts(inst.page, instRec, since, 'Save (course rules)')
+				limitChanged = true
+				await enter() // read back
+				const again = await field.inputValue()
+				if (again !== String(LIMIT)) instRec.add('attempts', `saved ${LIMIT} attempts, after a reload the field shows "${again}"`)
+			}
+			await inst.page.screenshot({ path: path.join(SHOTS, 'guide-course-rules-attempts.png') })
+			await axeStates(inst.page, instRec, field, '"Exam attempts per pool and certification cycle"')
+		})
+		await station(page, rec, 'Learning materials (learner3): open and confirm the required documents', async () => {
+			await enterLearningMaterials(page)
+			await openAndConfirmAll(page, rec, 'learner3')
+			await enterLearningMaterials(page)
+			const open = (await requiredItems(page).locator('[data-test^="document-confirm-"]').allTextContents()).map((x) => x.trim()).filter((x) => x !== 'Confirmed as read')
+			if (open.length) rec.add('materials', `learner3: ${open.length} required documents not confirmed after opening and confirming`)
+		})
+		await station(page, rec, `Exam: Fire safety, every answer wrong (attempt 1 of ${LIMIT}) (#87, #92)`, async () => {
+			const line = await failFireSafety()
+			if (!/\b1 attempt failed\b/.test(line) || !/\b2 attempts left\b/.test(line)) rec.add('guidance', `after the first failed attempt of ${LIMIT} the result says "${line}" (#87, #92)`)
+			if (!(await visible('[data-test="result-wait"]'))) rec.add('guidance', 'no wait time on the result although the cooldown is on (#92)')
+			const back = page.locator('[data-test="guide-materials"]')
+			if (!(await back.isVisible().catch(() => false))) rec.add('guidance', 'no "Back to the learning materials" after a failed attempt (#92)')
+			else if (!(await isPrimary(back))) rec.add('guidance', '"Back to the learning materials" is not the primary button after a failed attempt (#92)')
+			const retake = page.locator('[data-test="guide-retake"]')
+			if (await retake.isVisible().catch(() => false) && !(await retake.isDisabled().catch(() => true))) rec.add('guidance', '"Retake exam" can be clicked during the wait time (#92)')
+			await page.screenshot({ path: path.join(SHOTS, 'guide-exam-failed-wait.png'), fullPage: true })
+		})
+		await station(page, rec, 'Exam result: "Back to the learning materials" (#92)', async () => {
+			await page.locator('[data-test="guide-materials"]').click()
+			await settle(page)
+			if (!(await requiredItems(page).first().isVisible().catch(() => false))) rec.add('guidance', `"Back to the learning materials" led to ${shortUrl(page.url())} without the required documents (#92)`)
+		})
+		occRun('config:app:set', 'learning', 'exam_attempt_cooldown_minutes', '--value', '0')
+		cooldownChanged = true
+		await station(page, rec, `Exam: Fire safety, every answer wrong (attempt 2 of ${LIMIT}) (#87)`, async () => {
+			const line = await failFireSafety()
+			if (!/\b2 attempts failed\b/.test(line) || !/\b1 attempt left\b/.test(line)) rec.add('guidance', `after the second failed attempt of ${LIMIT} the result says "${line}" (#87, #92)`)
+			if (await visible('[data-test="result-wait"]')) rec.add('guidance', 'a wait time on the result although the cooldown is 0')
+		})
+		await station(page, rec, `Exam: Fire safety, every answer wrong (attempt ${LIMIT} of ${LIMIT}): attempts used up (#87, #92)`, async () => {
+			await failFireSafety()
+			if (await visible('[data-test="guide-retake"]')) rec.add('guidance', '"Retake exam" after the last attempt (#87)')
+			if (await visible('[data-test="result-attempts"]')) rec.add('guidance', 'the result still counts attempts left after the last one (#87)')
+			const ask = page.locator('[data-test="guide-ask"]')
+			if (!(await ask.isVisible().catch(() => false))) rec.add('guidance', 'no "Question to the instructors" after the last attempt (#92)')
+			else if (!(await isPrimary(ask))) rec.add('guidance', '"Question to the instructors" is not the primary button after the last attempt (#92)')
+			const text = await page.locator('.results-screen').innerText().catch(() => '')
+			if (!/used up all exam attempts/i.test(text)) rec.add('guidance', 'the result does not say that the attempts are used up (#87)')
+			await page.screenshot({ path: path.join(SHOTS, 'guide-exam-attempts-used-up.png'), fullPage: true })
+		})
+		await station(page, rec, 'Exam tab: attempts used up, question to the instructors (#87, #92)', async () => {
+			await enterExamTab(page)
+			const note = page.locator('[data-test="exam-tab-exhausted"]')
+			if (!(await note.isVisible().catch(() => false))) { rec.add('guidance', 'the exam tab does not say the attempts for Fire safety are used up (#87)'); return }
+			const said = (await note.innerText()).replace(/\s+/g, ' ')
+			if (!said.includes('Fire safety')) rec.add('guidance', `the exhausted note names "${said.slice(0, 160)}", not Fire safety`)
+			if (said.includes('Data protection')) rec.add('guidance', 'the exhausted note names Data protection, which has attempts left')
+			await page.screenshot({ path: path.join(SHOTS, 'guide-exam-tab-exhausted.png'), fullPage: true })
+			const ask = page.locator('[data-test="exam-tab-ask"]')
+			if (!(await ask.isVisible().catch(() => false))) { rec.add('guidance', 'no "Question to the instructors" in the exam tab with the attempts used up (#92)'); return }
+			await ask.click()
+			await settle(page)
+			if (!/\/my-questions$/.test(new URL(page.url()).pathname)) rec.add('guidance', `"Question to the instructors" led to ${shortUrl(page.url())} (#92)`)
+		})
+		// the server refuses a fourth start too, not only the page (Node fetch: the 4xx is the point)
+		await station(page, rec, 'Exam start with the attempts used up: refused by the server (#87)', async () => {
+			const res = await fetch(`${APP}/api/training/start`, {
+				method: 'POST',
+				headers: { Authorization: basic('learner3'), 'OCS-APIRequest': 'true', Accept: 'application/json', 'Content-Type': 'application/json' },
+				body: JSON.stringify({ poolId: seed.poolIds[0], mode: 'exam', courseId: seed.courseId }),
+			})
+			const body = await res.json().catch(() => null)
+			;(rec.current.notes ||= []).push(`server, 4th start: ${res.status} ${JSON.stringify(body).slice(0, 120)}`)
+			if (res.ok) rec.add('attempts', `the server started a fourth exam on Fire safety (${res.status}) (#87)`)
+			else if (!JSON.stringify(body || {}).includes('exam_attempts_exhausted')) rec.add('attempts', `the server refuses the fourth start with ${res.status} ${JSON.stringify(body).slice(0, 120)}, not exam_attempts_exhausted`)
+		})
+		await station(inst.page, instRec, 'Members: attempts used up, open a new cycle (#87, #84)', async () => {
+			await expectNotification(instRec, 'instructor', /used up all exam attempts for “Fire safety”/, 'that learner3 used up the attempts', 1)
+			await enterMembers(inst.page)
+			const badge = await memberBadge(inst.page, 'learner3')
+			if (badge !== 'Exam attempts used up') instRec.add('cycle', `learner3: the member list says "${badge}", not "Exam attempts used up" (#87)`)
+			for (const uid of ['learner2']) if (await memberBadge(inst.page, uid)) instRec.add('cycle', `${uid} has the badge "${await memberBadge(inst.page, uid)}" without any exam`)
+			await inst.page.screenshot({ path: path.join(SHOTS, 'guide-members-attempts-used-up.png'), fullPage: true })
+			await axeStates(inst.page, instRec, memberRow(inst.page, 'learner3').locator('[data-test="member-new-cycle"]'), '"Open a new certification cycle"')
+			await openNewCycle(inst.page, instRec, 'learner3')
+		})
+		await station(page, rec, 'Exam tab after the new cycle: attempts again (#84, #87)', async () => {
+			await expectNotification(rec, 'learner3', /new certification cycle is open/i, 'of the new cycle')
+			await enterExamTab(page)
+			if (await visible('[data-test="exam-tab-exhausted"]')) rec.add('cycle', 'the exam tab still says the attempts are used up after the new cycle (#84)')
+			await page.locator('#app-content').getByText('Fire safety', { exact: true }).first().click()
+			await settle(page)
+			const start = page.getByRole('button', { name: 'Start Exam' }).first()
+			if (!(await start.isVisible().catch(() => false)) || await start.isDisabled().catch(() => true)) rec.add('cycle', 'Fire safety cannot be started in the new cycle (#84, #87)')
+		})
+	} finally {
+		if (cooldownChanged) {
+			if (cooldownBefore) occRun('config:app:set', 'learning', 'exam_attempt_cooldown_minutes', '--value', cooldownBefore)
+			else occRun('config:app:delete', 'learning', 'exam_attempt_cooldown_minutes')
+		}
+		if (limitChanged) {
+			await fetch(`${APP}/api/courses/${seed.courseId}/cert-config`, {
+				method: 'PATCH',
+				headers: { Authorization: basic('instructor'), 'OCS-APIRequest': 'true', Accept: 'application/json', 'Content-Type': 'application/json' },
+				body: JSON.stringify({ examAttemptLimit: 0 }),
+			}).catch(() => {})
+		}
+	}
+	flush()
+	await inst.context.close()
+	await context.close()
+})
+
+// GitHub #84 with #86 and #92: the instructor revokes learner1's certificate. learner1 is told,
+// the completion tab no longer leads to a valid certificate, and the member list offers a new
+// cycle. After it, learner1 confirms the required documents again (opening them first where the
+// course asks for it) and is led to the exam. Nothing is deleted: the revoked certificate stays.
+test('learner1: certificate revoked, the instructor opens a new cycle (#84, #86, #92)', async ({ browser }) => {
+	test.setTimeout(15 * 60_000)
+	const instRec = new Recorder('instructor')
+	const inst = await login(browser, 'instructor')
+	instRec.attach(inst.page)
+	const rec = new Recorder('learner1')
+	const { context, page } = await login(browser, 'learner1')
+	rec.attach(page)
+	const enterReport = async () => {
+		await openMegaTab(inst.page, 'Participants')
+		for (const sub of await subTabLabels(inst.page)) {
+			await clickSubTab(inst.page, sub)
+			if (await inst.page.locator('.cert-report-section').isVisible().catch(() => false)) return
+		}
+		throw new Error('no compliance report in any Participants sub-tab')
+	}
+	const certRow = () => inst.page.locator('.cert-report-section tbody tr').filter({ hasText: 'Learner 1' }).first()
+	await station(inst.page, instRec, 'Compliance report: revoke the certificate of Learner 1 (#84)', async () => {
+		await enterReport()
+		await certRow().scrollIntoViewIfNeeded()
+		const since = Date.now()
+		inst.page.__acceptDialogs = true
+		try {
+			await certRow().locator('.cert-revoke').click()
+			await inst.page.waitForTimeout(1500)
+			await checkToasts(inst.page, instRec, since, 'Revoke')
+		} finally {
+			inst.page.__acceptDialogs = false
+		}
+		await settle(inst.page)
+	})
+	await station(inst.page, instRec, 'Members: certificate revoked (#84)', async () => {
+		await enterMembers(inst.page)
+		const badge = await memberBadge(inst.page, 'learner1')
+		if (badge !== 'Certificate revoked') instRec.add('cycle', `learner1: the member list says "${badge}", not "Certificate revoked" (#84)`)
+		if (!(await memberRow(inst.page, 'learner1').locator('[data-test="member-new-cycle"]').isVisible().catch(() => false))) instRec.add('cycle', 'learner1: no "Open a new certification cycle" after the revoke (#84)')
+		await inst.page.screenshot({ path: path.join(SHOTS, 'guide-members-revoked.png'), fullPage: true })
+	})
+	await station(page, rec, 'Course › Completion after the revoke (#84)', async () => {
+		await expectNotification(rec, 'learner1', /certificate for the course .* was revoked/i, 'of the revoke', 1)
+		await openMegaTab(page, 'Completion')
+		const note = page.locator('.zeugnis-revoked')
+		if (!(await note.isVisible().catch(() => false))) rec.add('cycle', 'the completion tab does not say the certificate was revoked (#84)')
+		else if (!/contact your instructor/i.test(await note.innerText())) rec.add('cycle', `revoked note: "${(await note.innerText()).slice(0, 160)}"`)
+	})
+	await station(page, rec, 'Exam tab after the revoke: no way to the revoked certificate (#84, #92)', async () => {
+		await enterExamTab(page)
+		if (await page.locator('[data-test="exam-tab-certificate"]').isVisible().catch(() => false)) rec.add('guidance', '"Go to my certificate" in the exam tab although the certificate is revoked (#84, #92)')
+	})
+	await station(inst.page, instRec, 'Members: open a new cycle after the revoke (#84)', async () => {
+		await enterMembers(inst.page)
+		await openNewCycle(inst.page, instRec, 'learner1')
+	})
+	await station(page, rec, 'Course › Completion: revoked, new cycle open (#84)', async () => {
+		await expectNotification(rec, 'learner1', /new certification cycle is open/i, 'of the new cycle', 1)
+		await openMegaTab(page, 'Completion')
+		const note = page.locator('.zeugnis-revoked')
+		if (!(await note.isVisible().catch(() => false))) rec.add('cycle', 'the completion tab no longer says the certificate was revoked')
+		else if (!/opened a new certification cycle/i.test(await note.innerText())) rec.add('cycle', `with a new cycle open the revoked note says "${(await note.innerText()).slice(0, 160)}" (#84)`)
+		await page.screenshot({ path: path.join(SHOTS, 'guide-completion-new-cycle.png'), fullPage: true })
+	})
+	await station(page, rec, 'Learning materials in the new cycle: confirm again, open first (#84, #86)', async () => {
+		await enterLearningMaterials(page)
+		await checkConfirmLock(page, rec, seed.materials.openFirst, 'learner1, new cycle')
+	})
+	await station(page, rec, 'Learning materials in the new cycle: open, confirm, go on (#84, #86, #92)', async () => {
+		await enterLearningMaterials(page)
+		await openAndConfirmAll(page, rec, 'learner1, new cycle')
+		await enterLearningMaterials(page) // read back
+		const open = (await requiredItems(page).locator('[data-test^="document-confirm-"]').allTextContents()).map((x) => x.trim()).filter((x) => x !== 'Confirmed as read')
+		if (open.length) rec.add('materials', `learner1, new cycle: ${open.length} required documents not confirmed after opening and confirming`)
+		const next = page.locator('[data-test="materials-next-step-button"]')
+		if (!(await next.isVisible().catch(() => false))) rec.add('guidance', 'new cycle: the required content is done, but no button leads on (#92)')
+		else if ((await next.textContent()).trim() !== 'Go to the exam') rec.add('guidance', `new cycle: the next step reads "${(await next.textContent()).trim()}" (#92)`)
+	})
+	flush()
+	await inst.context.close()
+	await context.close()
 })
 
 for (const [persona, opts] of [['admin', {}], ['instructor', {}], ['learner2', {}], ['admin-studentview', { studentView: true }]]) {
