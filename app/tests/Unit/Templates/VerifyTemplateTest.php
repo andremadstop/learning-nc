@@ -69,4 +69,56 @@ class VerifyTemplateTest extends TestCase {
         $html = $this->render(['status' => 'unknown', 'issuer_logo' => '']);
         $this->assertStringNotContainsString('class="lrn-verify__signed-by"', $html);
     }
+
+    /** The page's own <style> block, comments removed. */
+    private function style(string $html): string {
+        $this->assertSame(1, preg_match('~<style>(.*?)</style>~s', $html, $m));
+        return (string)preg_replace('~/\*.*?\*/~s', '', $m[1]);
+    }
+
+    /**
+     * GitHub #91: Nextcloud's public layout makes #content a fixed box of the body height with
+     * overflow: clip; the page could not be scrolled. The page is its own scroll container now and
+     * wraps everything the template renders.
+     */
+    public function testThePageIsItsOwnScrollContainer(): void {
+        foreach ([$this->valid(), ['status' => 'unknown', 'issuer_logo' => ''], ['status' => 'anonymized']] as $params) {
+            $html = $this->render($params);
+            $this->assertSame(1, preg_match('~\.lrn-verify-page\s*\{([^}]*)\}~', $this->style($html), $rule));
+            $this->assertMatchesRegularExpression('~overflow-y:\s*auto~', $rule[1]);
+            $this->assertMatchesRegularExpression('~min-height:\s*0~', $rule[1]);
+            $this->assertMatchesRegularExpression('~background-color:\s*var\(--color-main-background\)~', $rule[1]);
+            $body = substr($html, (int)strpos($html, '</style>') + 8);
+            $this->assertStringStartsWith('<div class="lrn-verify-page">', ltrim($body));
+            $this->assertStringEndsWith('</div>', rtrim($body));
+        }
+    }
+
+    /**
+     * GitHub #91: fixed text colours (#1a3a5c, #555, #777) and light box backgrounds read as blue on
+     * blue or white on white with a theme colour behind the page or in dark mode. Apart from the
+     * banner (a fixed background with fixed white text) every colour is a theme variable.
+     */
+    public function testEveryColourOutsideTheBannerIsAThemeVariable(): void {
+        foreach ([$this->valid(), ['status' => 'expired', 'expires_at' => 1700000000] + $this->valid(), ['status' => 'unknown', 'issuer_logo' => '']] as $params) {
+            $html = $this->render($params);
+            preg_match_all('~([^{}]+)\{([^}]*)\}~', $this->style($html), $rules, PREG_SET_ORDER);
+            foreach ($rules as [, $selector, $body]) {
+                if (str_contains($selector, '__banner')) {
+                    continue;
+                }
+                $this->assertDoesNotMatchRegularExpression('~#[0-9a-fA-F]{3,8}\b|\brgba?\(~', $body, trim($selector));
+            }
+            // no inline colour outside the banner either (the badge had one: #2e7d32 on dark is 3.5:1)
+            $withoutBanner = (string)preg_replace('~<div class="lrn-verify__banner"[^>]*>~', '', $html);
+            $this->assertDoesNotMatchRegularExpression('~style="[^"]*colou?r~', $withoutBanner);
+        }
+    }
+
+    public function testOnlyAValidCertificateGetsTheSuccessBadge(): void {
+        $this->assertStringContainsString('class="lrn-verify__badge lrn-verify__badge--valid"', $this->render($this->valid()));
+        $expired = $this->render(['status' => 'expired', 'expires_at' => 1700000000] + $this->valid());
+        $this->assertStringContainsString('class="lrn-verify__badge"', $expired);
+        $this->assertStringNotContainsString('class="lrn-verify__badge lrn-verify__badge--valid"', $expired);
+    }
 }

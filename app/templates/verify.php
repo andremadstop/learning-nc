@@ -46,7 +46,6 @@ $bannerTitle = $l->t('Verifizierung fehlgeschlagen');
 $bannerSub = $l->t('Das Zertifikat konnte nicht gefunden werden. Bitte prüfen Sie den Link oder QR-Code.');
 // Badge default (withdrawn/expired): the signature is genuine but the cert is no longer valid — a NEUTRAL
 // badge that must NOT read as "verified". Only the valid branch below promotes it to the green badge.
-$badgeColor = '#5c636a';
 $badgeGlyph = 'ℹ';
 $badgeText = $l->t('Signatur echt – Zertifikat nicht mehr gültig');
 if ($status === 'valid') {
@@ -54,7 +53,6 @@ if ($status === 'valid') {
 	$color = '#2e7d32';
 	$bannerTitle = $l->t('Zertifikat erfolgreich verifiziert');
 	$bannerSub = $l->t('Dieses Zertifikat ist gültig.');
-	$badgeColor = '#2e7d32';
 	$badgeGlyph = '✓';
 	$badgeText = $l->t('Digital verifiziert');
 } elseif ($status === 'withdrawn') {
@@ -77,6 +75,16 @@ if ($status === 'valid') {
 }
 ?>
 <style>
+	/* GitHub #91: Nextcloud's public layout makes #content a fixed, clipped box of the body height
+	   (position: fixed; height: var(--body-height); overflow: clip) with no background of its own.
+	   The page is therefore its own scroll container with an opaque theme background, and every
+	   colour comes from the theme variables, so text keeps its contrast in light and dark and with
+	   any primary or background colour of Theming. Only the status banner keeps its fixed pair
+	   (fixed background + white text, WCAG-AA, independent of the theme). */
+	.lrn-verify-page {
+		flex: 1 1 auto; min-width: 0; min-height: 0; height: 100%; overflow-y: auto;
+		background-color: var(--color-main-background); color: var(--color-main-text);
+	}
 	.lrn-verify { max-width: 640px; margin-inline: auto; padding: 0 16px 48px; box-sizing: border-box; }
 	.lrn-verify * { box-sizing: border-box; }
 	.lrn-verify__banner {
@@ -86,45 +94,44 @@ if ($status === 'valid') {
 	.lrn-verify__icon { font-size: 56px; line-height: 1; display: block; margin-bottom: 8px; }
 	.lrn-verify__banner h1 { margin: 0 0 6px; font-size: 1.6em; font-weight: 700; color: #fff; }
 	.lrn-verify__banner p { margin: 0; font-size: 1.05em; opacity: .98; }
-	.lrn-verify__course { margin: 24px 0 8px; font-size: 1.35em; color: #1a3a5c; text-align: start; }
+	.lrn-verify__course { margin: 24px 0 8px; font-size: 1.35em; color: var(--color-main-text); text-align: start; }
 	.lrn-verify__issuer { display: flex; align-items: center; gap: 12px; margin: 12px 0 24px; }
 	.lrn-verify__issuer img { height: 40px; width: auto; }
-	.lrn-verify__issuer-name { font-weight: 600; color: #1a3a5c; }
-	.lrn-verify__signed-by { margin: -16px 0 24px; font-size: .9em; color: #555; text-align: start; }
+	.lrn-verify__issuer-name { font-weight: 600; color: var(--color-main-text); }
+	.lrn-verify__signed-by { margin: -16px 0 24px; font-size: .9em; color: var(--color-text-maxcontrast); text-align: start; }
 	.lrn-verify__elements { margin: 0 0 16px; text-align: start; }
-	.lrn-verify__elements h3 { margin: 0 0 6px; font-size: 1em; color: #555; font-weight: 600; }
-	.lrn-verify__elements ul { margin: 0; padding-inline-start: 20px; list-style: disc; color: #1a3a5c; }
-	.lrn-verify__data { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+	.lrn-verify__elements h3 { margin: 0 0 6px; font-size: 1em; color: var(--color-text-maxcontrast); font-weight: 600; }
+	.lrn-verify__elements ul { margin: 0; padding-inline-start: 20px; list-style: disc; color: var(--color-main-text); }
+	.lrn-verify__data { border: 1px solid var(--color-border); border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
 	.lrn-verify__row { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; }
-	.lrn-verify__row dt { color: #555; margin: 0; }
-	.lrn-verify__row dd { margin: 0; font-weight: 600; color: #1a3a5c; text-align: end; }
-	.lrn-verify__proof {
-		border-inline-start: 4px solid #2e7d32; background: #f1f8f2; border-radius: 8px;
+	.lrn-verify__row dt { color: var(--color-text-maxcontrast); margin: 0; }
+	.lrn-verify__row dd { margin: 0; font-weight: 600; color: var(--color-main-text); text-align: end; }
+	.lrn-verify__proof, .lrn-verify__info, .lrn-verify__warn {
+		border-inline-start: 4px solid var(--color-border-maxcontrast); border-radius: 8px;
+		background-color: var(--color-background-hover); color: var(--color-main-text);
 		padding: 14px 18px; margin: 20px 0; text-align: start;
 	}
-	.lrn-verify__info {
-		border-inline-start: 4px solid #1a3a5c; background: #f4f7fb; border-radius: 8px;
-		padding: 14px 18px; margin: 20px 0; text-align: start;
-	}
-	.lrn-verify__warn {
-		border-inline-start: 4px solid #d92f2f; background: #fdf2f2; border-radius: 8px;
-		padding: 14px 18px; margin: 20px 0; text-align: start; color: #1a3a5c;
-	}
+	.lrn-verify__proof { border-inline-start-color: var(--color-border-success, var(--color-success)); }
+	.lrn-verify__info { border-inline-start-color: var(--color-primary-element); }
+	.lrn-verify__warn { border-inline-start-color: var(--color-border-error, var(--color-error)); }
 	.lrn-verify__proof strong, .lrn-verify__info strong, .lrn-verify__warn strong {
-		display: block; margin-bottom: 6px; color: #1a3a5c;
+		display: block; margin-bottom: 6px; color: var(--color-main-text);
 	}
-	.lrn-verify__fine { font-size: .85em; color: #777; margin: 20px 0; text-align: start; }
+	.lrn-verify__fine { font-size: .85em; color: var(--color-text-maxcontrast); margin: 20px 0; text-align: start; }
 	/* Latin tokens (verification id, dates) stay LTR even inside an RTL (Arabic) page — no visual reorder. */
 	.lrn-verify__ltr { unicode-bidi: isolate; direction: ltr; word-break: break-all; }
 	.lrn-verify__badge {
 		display: inline-flex; align-items: center; gap: 6px; font-size: .85em;
 		font-weight: 600; border: 1px solid currentColor; border-radius: 999px; padding: 4px 12px;
+		color: var(--color-text-maxcontrast);
 	}
-	.lrn-verify__how { margin-top: 24px; color: #555; }
-	.lrn-verify__how summary { cursor: pointer; color: #1a3a5c; font-weight: 600; }
+	.lrn-verify__badge--valid { color: var(--color-success-text, var(--color-main-text)); }
+	.lrn-verify__how { margin-top: 24px; color: var(--color-text-maxcontrast); }
+	.lrn-verify__how summary { cursor: pointer; color: var(--color-main-text); font-weight: 600; }
 	.lrn-verify__how p { margin: 10px 0 0; font-size: .92em; line-height: 1.5; }
 </style>
 
+<div class="lrn-verify-page">
 <div class="lrn-verify">
 	<div class="lrn-verify__banner" role="status" aria-live="polite" style="background:<?php p($color); ?>;">
 		<span class="lrn-verify__icon" aria-hidden="true"><?php p($glyph); ?></span>
@@ -193,7 +200,7 @@ if ($status === 'valid') {
 			<?php p($l->t('Abgefragt am')); ?>: <span class="lrn-verify__ltr"><?php p($queryTime); ?></span>
 		</p>
 
-		<span class="lrn-verify__badge" style="color:<?php p($badgeColor); ?>;">
+		<span class="lrn-verify__badge<?php if ($status === 'valid') { ?> lrn-verify__badge--valid<?php } ?>">
 			<span aria-hidden="true"><?php p($badgeGlyph); ?></span> <?php p($badgeText); ?>
 		</span>
 	<?php } elseif ($status === 'anonymized') { ?>
@@ -212,4 +219,5 @@ if ($status === 'valid') {
 		<summary><?php p($l->t('Wie funktioniert diese Verifizierung?')); ?></summary>
 		<p><?php p($l->t('Das Zertifikat trägt eine digitale Signatur des Ausstellers, mit der sich jede nachträgliche Veränderung erkennen lässt. Diese Seite prüft die Signatur automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist.')); ?></p>
 	</details>
+</div>
 </div>
