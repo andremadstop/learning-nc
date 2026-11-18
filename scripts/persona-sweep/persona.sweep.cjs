@@ -1595,7 +1595,8 @@ async function enterMembers(page) {
 	await page.locator('.member-item').first().waitFor({ timeout: 15000 })
 	await settle(page, 300)
 }
-const memberRow = (page, uid) => page.locator('.member-item').filter({ has: page.locator('.member-name', { hasText: new RegExp(`^${uid}$`) }) }).first()
+// GitHub #87 (review): the row shows the display name; the uid is the secondary text when the two differ.
+const memberRow = (page, uid) => page.locator('.member-item').filter({ has: page.locator('.member-name, .member-uid', { hasText: new RegExp(`^${uid}$`) }) }).first()
 const memberBadge = async (page, uid) => (await memberRow(page, uid).locator('[data-test="member-cycle-status"]').textContent().catch(() => '')).trim()
 
 /** GitHub #84 / #87: the instructor opens a new cycle from the member list (confirm accepted). */
