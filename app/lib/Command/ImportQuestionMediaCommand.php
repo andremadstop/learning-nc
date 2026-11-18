@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Import audio, timelines, cues and rich feedback per question from a media bundle (GitHub #66,
- * format learning-question-media/1, see QuestionMediaBundle) into an existing pool. Questions are
+ * format learning-question-media/1 or /2, see QuestionMediaBundle) into an existing pool. Questions are
  * matched by exam_key. The files go into the app's own storage, not into a user's files.
  * Running it twice changes nothing the second time.
  *
@@ -39,7 +39,7 @@ class ImportQuestionMediaCommand extends Command {
             ->setName('learning:import-question-media')
             ->setDescription('Import audio, timelines, cues and feedback per question from a media bundle into a pool')
             ->addArgument('poolId', InputArgument::REQUIRED, 'ID of the pool whose questions the bundle belongs to (matched by exam_key)')
-            ->addArgument('bundle-dir', InputArgument::REQUIRED, 'Directory with manifest.json (format learning-question-media/1)')
+            ->addArgument('bundle-dir', InputArgument::REQUIRED, 'Directory with manifest.json (format learning-question-media/1 or /2)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Check everything and report, write nothing');
     }
 
@@ -77,6 +77,10 @@ class ImportQuestionMediaCommand extends Command {
         $output->writeln(sprintf('  failed writes:      %d', count($r['write_failed'])));
         $output->writeln(sprintf('  tracks %s: %d (%s bytes), unchanged: %d, removed: %d',
             $verb, $r['tracks_written'], number_format($r['bytes_written']), $r['tracks_unchanged'], $r['tracks_removed']));
+        if (($r['format'] ?? null) === QuestionMediaBundle::FORMAT_V2) {
+            $output->writeln(sprintf('  option tracks %s: %d, unchanged: %d, removed: %d',
+                $verb, $r['option_tracks_written'] ?? 0, $r['option_tracks_unchanged'] ?? 0, $r['option_tracks_removed'] ?? 0));
+        }
         $output->writeln(sprintf('  cues %s: %d, unchanged: %d, removed: %d', $verb, $r['cues_written'], $r['cues_unchanged'], $r['cues_removed']));
         $output->writeln(sprintf('  feedback texts %s: %d, unchanged: %d', $verb, $r['feedback_updated'], $r['feedback_unchanged']));
         if ($r['dropped_languages'] !== []) {

@@ -150,6 +150,8 @@ namespace OCP\Security {
         interface ICrypto {
             public function encrypt(string $plaintext, string $secret = ''): string;
             public function decrypt(string $encryptedContent, string $secret = ''): string;
+            // GitHub #66: QuestionMediaService signs the audio grant with it.
+            public function calculateHMAC(string $message, string $password = ''): string;
         }
     }
 

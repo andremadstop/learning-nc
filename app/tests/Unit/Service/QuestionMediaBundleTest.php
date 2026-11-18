@@ -40,6 +40,62 @@ final class QuestionMediaBundleTest extends TestCase {
         $this->assertSame('🎨', $bundle->readCues('demo-q1/cues.json')['icon']);
     }
 
+    /**
+     * Format /2 (spoken explanation per answer option): opened next to /1, its option audio
+     * resolved inside <exam_key>/, the sidecar {duration, role, text} read as a one-line timeline.
+     */
+    public function testFormatTwoReadsAndOneStaysOne(): void {
+        $v1 = QuestionMediaBundle::open(self::FIXTURE);
+        $this->assertSame(QuestionMediaBundle::FORMAT, $v1->format());
+        $this->assertFalse($v1->hasOptionAudio());
+
+        $v2 = QuestionMediaBundle::open(self::FIXTURE . '-v2');
+        $this->assertSame(QuestionMediaBundle::FORMAT_V2, $v2->format());
+        $this->assertTrue($v2->hasOptionAudio());
+        $path = QuestionMediaBundle::optionAudioPath('demo-q1', 'opt-1-de.mp3');
+        $this->assertSame('demo-q1/opt-1-de.mp3', $path);
+        $this->assertTrue(QuestionMediaBundle::looksLikeMp3($v2->readMp3($path)));
+        $this->assertTrue($v2->has('demo-q1/opt-1-de.json'));
+        $this->assertFalse($v2->has('demo-q1/opt-9-de.json'));
+        $this->assertSame(
+            [['role' => 'NARRATOR', 'text' => 'Option B, Grün, ist richtig: Blau und Gelb ergeben Grün.', 'start' => 0.0, 'end' => 0.2]],
+            $v2->readOptionSidecar('demo-q1/opt-1-de.json')
+        );
+    }
+
+    /** @return array<string, array{0: string, 1: mixed}> */
+    public static function unsafeOptionAudio(): array {
+        return [
+            'parent' => ['demo-q1', '../demo-q2/opt-0-en.mp3'],
+            'absolute' => ['demo-q1', '/etc/passwd.mp3'],
+            'not a string' => ['demo-q1', ['opt-0-en.mp3']],
+            'key with a slash' => ['demo/q1', 'opt-0-en.mp3'],
+            'key upper case' => ['Demo-Q1', 'opt-0-en.mp3'],
+            'key is a parent' => ['..', 'opt-0-en.mp3'],
+        ];
+    }
+
+    #[DataProvider('unsafeOptionAudio')]
+    public function testOptionAudioOutsideTheQuestionFolderIsRefused(string $examKey, mixed $file): void {
+        $this->assertNull(QuestionMediaBundle::optionAudioPath($examKey, $file));
+    }
+
+    /** @return array<string, array{0: string}> */
+    public static function badSidecars(): array {
+        return [
+            'a list' => ['[{"duration": 1, "text": "a"}]'],
+            'no text' => ['{"duration": 1}'],
+            'negative duration' => ['{"duration": -1, "text": "a"}'],
+            'duration a string' => ['{"duration": "1", "text": "a"}'],
+        ];
+    }
+
+    #[DataProvider('badSidecars')]
+    public function testABadSidecarIsRefused(string $json): void {
+        file_put_contents($this->dir . '/b/q1/opt-0-en.json', $json);
+        $this->assertRefused(fn () => QuestionMediaBundle::open($this->dir . '/b')->readOptionSidecar('q1/opt-0-en.json'), QuestionMediaBundle::E_INVALID_JSON);
+    }
+
     /** @return array<string, array{0: mixed}> */
     public static function unsafePaths(): array {
         return [
@@ -136,7 +192,7 @@ final class QuestionMediaBundleTest extends TestCase {
         return [
             'missing' => [null],
             'not json' => ['{'],
-            'wrong format' => ['{"format": "learning-question-media/2", "questions": []}'],
+            'unknown format' => ['{"format": "learning-question-media/3", "questions": []}'],
             'questions not a list' => ['{"format": "learning-question-media/1", "questions": {"a": 1}}'],
         ];
     }

@@ -251,7 +251,116 @@ final class QuestionMediaTest extends TestCase {
 		$this->poolId = 0;
 	}
 
+	/**
+	 * Format /2 (Andre 18.11., points 7–9): the spoken explanation per answer option. Imported
+	 * next to a /1 bundle, invisible before answering (demo-q2 voices only its right answer, so
+	 * even "which option has a voice" would give it away), delivered per answer with the grant of
+	 * the answer response, kept by a /1 rerun, removed with its question.
+	 */
+	public function testFormatTwoOptionVoicesArriveWithTheAnswerOnly(): void {
+		$this->runCommand(false);
+		[$code, $out] = $this->runCommand(false, self::FIXTURE . '/bundle-v2');
+		$this->assertSame(0, $code, $out);
+		$this->assertStringContainsString('option tracks written: 6, unchanged: 0, removed: 0', $out);
+		$this->assertStringContainsString('tracks written: 0', $out, 'a /2 entry without "tracks" leaves intro and dialog alone');
+		$q1 = $this->questions['demo-q1'];
+		$q2 = $this->questions['demo-q2'];
+		$this->assertContains("q{$q1}-opt1-de.mp3", $this->poolFolderFiles());
+		$this->assertContains("q{$q2}-opt0-en.mp3", $this->poolFolderFiles());
+
+		// Before answering: the student sees intros, nothing about option voices.
+		$before = $this->media->metadata($q2, self::STUDENT);
+		$this->assertSame(['intro'], array_column($before['tracks'], 'kind'));
+		$this->assertStringNotContainsString('opt', (string)json_encode($before));
+		$voiceId = $this->trackId($q2, 'opt0', 'en');
+		$this->assertForbidden(fn () => $this->media->openTrack($voiceId, self::STUDENT, null, null), 'an option voice before answering');
+
+		// The answer response: per answer, with a grant that opens the file.
+		$session = Server::get(TrainingService::class)->startSession($this->poolId, self::STUDENT, null, 'training', null, 'en', $this->courseId);
+		$response = Server::get(TrainingService::class)->submitAnswer((int)$session['session_id'], $q2, $this->answerId($q2, 'Eight'), self::STUDENT);
+		$this->assertArrayHasKey('question_media', $response, 'option voices alone are enough for question_media');
+		$options = $response['question_media']['option_tracks'];
+		$this->assertSame([$this->answerId($q2, 'Eight')], array_column($options, 'answer_id'));
+		$track = $options[0]['tracks'][0];
+		$this->assertSame('Option A, eight, is correct: spiders have eight legs.', $track['timeline'][0]['text']);
+		[$expires, $grant] = $this->grantOf($track['url']);
+		$opened = $this->media->openTrack($track['id'], self::STUDENT, $expires, $grant);
+		$this->assertSame(file_get_contents(self::FIXTURE . '/bundle-v2/demo-q2/opt-0-en.mp3'), $opened['bytes']);
+
+		$response = Server::get(TrainingService::class)->submitAnswer((int)$session['session_id'], $q1, $this->answerId($q1, 'Red'), self::STUDENT);
+		$byAnswer = array_column($response['question_media']['option_tracks'], 'tracks', 'answer_id');
+		$this->assertSame(['de', 'en'], $this->sortedLangs($byAnswer[$this->answerId($q1, 'Green')]));
+		$this->assertCount(4, $byAnswer);
+
+		// A /1 rerun says nothing about option voices and keeps them.
+		[$code, $out] = $this->runCommand(false);
+		$this->assertSame(0, $code, $out);
+		$this->assertSame(11, $this->rows('learning_qmedia_tracks'));
+
+		// Deleting the question removes its option files at once, not only via the sweep.
+		Server::get(QuestionService::class)->delete($q2, self::OWNER);
+		$this->assertNotContains("q{$q2}-opt0-en.mp3", $this->poolFolderFiles());
+	}
+
+	/**
+	 * occ learning:export-pool --media-dir writes /2 when option voices exist, and the bundle
+	 * imports back into the pool unchanged; a pool without them is exported as /1.
+	 */
+	public function testTheMediaExportWritesFormatTwoAndImportsBack(): void {
+		$this->runCommand(false);
+		$v1 = $this->tmpDir();
+		$r = $this->media->exportBundle($this->poolId, $v1);
+		$this->assertSame(QuestionMediaBundle::FORMAT, $r['format']);
+		$this->assertSame(5, $r['tracks']);
+		$this->assertSame(0, $r['option_tracks']);
+
+		$this->runCommand(false, self::FIXTURE . '/bundle-v2');
+		$dir = $this->tmpDir();
+		$command = Server::get(\OCA\Learning\Command\ExportPoolCommand::class);
+		$output = new BufferedOutput();
+		$code = $command->run(new ArrayInput(['poolId' => (string)$this->poolId, '--media-dir' => $dir]), $output);
+		$out = $output->fetch();
+		$this->assertSame(0, $code, $out);
+		$this->assertStringContainsString('format learning-question-media/2', $out);
+		$this->assertStringContainsString('option tracks: 6', $out);
+		$manifest = json_decode((string)file_get_contents($dir . '/manifest.json'), true);
+		$this->assertSame(QuestionMediaBundle::FORMAT_V2, $manifest['format']);
+		$q1 = array_values(array_filter($manifest['questions'], fn ($e) => $e['exam_key'] === 'demo-q1'))[0];
+		$this->assertSame(['de' => 'opt-1-de.mp3', 'en' => 'opt-1-en.mp3'], $q1['feedback_per_option'][1]['audio']);
+		$this->assertSame('Blue and yellow paint absorb everything but green.', $q1['feedback_per_option'][1]['why']);
+		$this->assertSame(file_get_contents(self::FIXTURE . '/bundle-v2/demo-q1/opt-1-de.mp3'), file_get_contents($dir . '/demo-q1/opt-1-de.mp3'));
+		$sidecar = json_decode((string)file_get_contents($dir . '/demo-q1/opt-1-de.json'), true);
+		$this->assertSame('Option B, Grün, ist richtig: Blau und Gelb ergeben Grün.', $sidecar['text']);
+
+		[$code, $out] = $this->runCommand(false, $dir);
+		$this->assertSame(0, $code, $out);
+		$this->assertStringContainsString('tracks written: 0 (0 bytes), unchanged: 5, removed: 0', $out);
+		$this->assertStringContainsString('option tracks written: 0, unchanged: 6, removed: 0', $out);
+		$this->assertStringContainsString('cues written: 0, unchanged: 1', $out);
+		$this->assertStringContainsString('feedback texts written: 0, unchanged: 2', $out);
+
+		// Nothing is written into a directory that is not empty.
+		$this->expectException(\InvalidArgumentException::class);
+		$this->media->exportBundle($this->poolId, $dir);
+	}
+
 	// ------------------------------------------------------------------ helpers
+
+	/** @param list<array<string, mixed>> $tracks */
+	private function sortedLangs(array $tracks): array {
+		$langs = array_column($tracks, 'lang');
+		sort($langs);
+		return $langs;
+	}
+
+	private function tmpDir(): string {
+		if ($this->tmp === '') {
+			$this->tmp = sys_get_temp_dir() . '/qmedia-' . bin2hex(random_bytes(4));
+			mkdir($this->tmp, 0700, true);
+		}
+		$dir = $this->tmp . '/export-' . bin2hex(random_bytes(4));
+		return $dir;
+	}
 
 	/** @return array{0: int, 1: string} */
 	private function runCommand(bool $dryRun, ?string $bundle = null): array {

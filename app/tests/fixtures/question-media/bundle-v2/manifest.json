@@ -1,0 +1,90 @@
+{
+  "format": "learning-question-media/2",
+  "questions": [
+    {
+      "exam_key": "demo-q1",
+      "feedback_per_option": [
+        {
+          "option_index": 0,
+          "letter": "A",
+          "verdict": "wrong",
+          "why": {
+            "en": "Red needs magenta, not blue and yellow."
+          },
+          "misconception": {
+            "en": "Confusing paint with light"
+          },
+          "audio": {
+            "en": "opt-0-en.mp3"
+          }
+        },
+        {
+          "option_index": 1,
+          "letter": "B",
+          "verdict": "correct",
+          "why": {
+            "en": "Blue and yellow paint absorb everything but green."
+          },
+          "audio": {
+            "en": "opt-1-en.mp3",
+            "de": "opt-1-de.mp3"
+          }
+        },
+        {
+          "option_index": 2,
+          "letter": "C",
+          "verdict": "wrong",
+          "why": {
+            "en": "Purple comes from blue and red."
+          },
+          "audio": {
+            "en": "opt-2-en.mp3"
+          }
+        },
+        {
+          "option_index": 3,
+          "letter": "D",
+          "verdict": "wrong",
+          "why": {
+            "en": "Orange comes from red and yellow."
+          },
+          "audio": {
+            "en": "opt-3-en.mp3"
+          }
+        }
+      ]
+    },
+    {
+      "exam_key": "demo-q2",
+      "feedback_per_option": [
+        {
+          "option_index": 0,
+          "letter": "A",
+          "verdict": "correct",
+          "why": {
+            "en": "Spiders are arachnids with eight legs."
+          },
+          "audio": {
+            "en": "opt-0-en.mp3"
+          }
+        },
+        {
+          "option_index": 1,
+          "letter": "B",
+          "verdict": "wrong",
+          "why": {
+            "en": "Six legs is what insects have."
+          }
+        },
+        {
+          "option_index": 2,
+          "letter": "C",
+          "verdict": "wrong",
+          "why": {
+            "en": "The same wrong number twice."
+          }
+        }
+      ]
+    }
+  ]
+}

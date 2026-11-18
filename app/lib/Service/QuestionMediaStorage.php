@@ -19,6 +19,9 @@ use Psr\Log\LoggerInterface;
  *
  *   appdata_<instance>/learning/qmedia-<poolId>/q<questionId>-<kind>-<lang>.mp3
  *
+ * kind is intro, dialog or opt<position> — the spoken explanation of the answer option at that
+ * stored position (bundle format /2), e.g. q12-opt1-en.mp3.
+ *
  * Flat per pool (no folder per question) because ISimpleFolder lists files only, and the orphan
  * sweep must see every file to find the ones nothing points at any more.
  *
@@ -30,7 +33,18 @@ use Psr\Log\LoggerInterface;
  */
 class QuestionMediaStorage {
     public const FOLDER_PREFIX = 'qmedia-';
-    private const FILE_PATTERN = '/^q(\d+)-(intro|dialog)-([a-z]{2,3}(?:-[a-z0-9]{2,8})?)\.mp3$/D';
+    private const FILE_PATTERN = '/^q(\d+)-(intro|dialog|opt\d{1,3})-([a-z]{2,3}(?:-[a-z0-9]{2,8})?)\.mp3$/D';
+    /** The kind of an option track: opt<position>. */
+    public const OPTION_KIND_PATTERN = '/^opt(\d{1,3})$/D';
+
+    public static function optionKind(int $position): string {
+        return 'opt' . $position;
+    }
+
+    /** The answer position an option kind names, or null for intro/dialog. */
+    public static function optionPosition(string $kind): ?int {
+        return preg_match(self::OPTION_KIND_PATTERN, $kind, $m) === 1 ? (int)$m[1] : null;
+    }
 
     public function __construct(
         private IAppData $appData,

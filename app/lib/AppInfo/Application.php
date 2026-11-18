@@ -72,7 +72,8 @@ class Application extends App implements IBootstrap {
         });
         $context->registerService(ExportPoolCommand::class, function (ContainerInterface $container): ExportPoolCommand {
             return new ExportPoolCommand(
-                $container->get(DataMobilityService::class)
+                $container->get(DataMobilityService::class),
+                $container->get(\OCA\Learning\Service\QuestionMediaService::class)
             );
         });
         $context->registerService(ImportPoolJsonCommand::class, function (ContainerInterface $container): ImportPoolJsonCommand {

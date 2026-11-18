@@ -317,7 +317,14 @@ bundle/
   <dir>/intro-<lang>.mp3   + intro-<lang>.json    timeline [{role, text, start, end}] in seconds
   <dir>/dialog-<lang>.mp3  + dialog-<lang>.json
   <dir>/cues.json                                 keywords per line, contrast wrong/right, key takeaway
+  <exam_key>/opt-<i>-<lang>.mp3 + .json           format /2 only: spoken explanation of option i, {duration, role, text}
 ```
+
+Format `learning-question-media/2` is format `/1` plus a spoken explanation per answer option:
+an entry of `feedback_per_option` may carry `"audio": {"<lang>": "opt-<option_index>-<lang>.mp3"}`,
+a path relative to the question's folder `<exam_key>/`, with a `.json` of the same name next to
+it (`{duration, role, text}`, the text is shown as the subtitle). A `/1` bundle is read exactly
+as before; `audio` inside a `/1` bundle is reported and ignored.
 
 Per question the manifest lists `exam_key`, optionally the text fields of the pool JSON (`hint`,
 `background_fact`, `key_takeaway`/`merksatz`, `feedback_per_option`), `tracks`
@@ -335,11 +342,18 @@ php occ learning:import-question-media <poolId> /path/to/bundle
   manifest are relative and limited to `a-z 0-9 . _ / -`. `..` and symlinks are refused, and
   so is an mp3 over 8 MiB or a JSON file over 256 KiB.
 - Running it again changes nothing. The manifest is the truth for a matched question: tracks
-  it no longer lists are removed. A listed file that is missing keeps the stored copy.
+  it no longer lists are removed. A listed file that is missing keeps the stored copy. The
+  option voices are only touched by a `/2` entry that has `feedback_per_option`; a `/1` bundle
+  (or an entry without that list) leaves them as they are.
 - The report lists matched questions, unknown or ambiguous `exam_key`s and missing or refused
   files. The exit code is not 0 if any of those occurred.
 - Delivery: the intro goes to everyone who can see the pool. The dialog and the cues explain
   the answer, so learners get them only with the answer response in training, Leitner and
-  Smart Queue. During a counting exam a learner gets no media at all. Media are deleted together
-  with their question or pool.
-- A generic example: `app/tests/fixtures/question-media/`.
+  Smart Queue. The option voices say which option is right, so they follow the dialog: before
+  answering a learner learns nothing about them, not even which options have one; the answer
+  response lists them per answer. During a counting exam a learner gets no media at all. Media
+  are deleted together with their question or pool.
+- Export: `occ learning:export-pool <poolId> --media-dir=<new or empty dir>` writes the pool's
+  media as a bundle that this command reads back — format `/2` when the pool has option voices,
+  `/1` otherwise. Questions with media but without `exam_key` are reported and left out.
+- Generic examples: `app/tests/fixtures/question-media/` (`bundle/` is `/1`, `bundle-v2/` is `/2`).

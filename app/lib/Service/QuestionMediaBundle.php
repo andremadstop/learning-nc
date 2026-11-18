@@ -4,13 +4,19 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 /**
- * A media bundle on disk in the format learning-question-media/1 (GitHub #66), read for
+ * A media bundle on disk in the format learning-question-media/1 or /2 (GitHub #66), read for
  * `occ learning:import-question-media`:
  *
  *   <bundle>/manifest.json                    {"format": "learning-question-media/1", "questions": [...]}
  *   <bundle>/<dir>/intro-<lang>.mp3 + .json   audio and its timeline [{role, text, start, end}] (seconds)
  *   <bundle>/<dir>/dialog-<lang>.mp3 + .json
  *   <bundle>/<dir>/cues.json                  keywords per line, contrast wrong/right, key takeaway
+ *
+ * Format /2 is /1 plus a spoken explanation per answer option: an entry of feedback_per_option
+ * may carry "audio": {"<lang>": "opt-<option_index>-<lang>.mp3"}, a path relative to the
+ * question's folder <exam_key>/, with a sidecar of the same name ending in .json:
+ * {duration, role, text} (seconds; readOptionSidecar()). Everything else is the same as /1, so a
+ * /1 bundle is read exactly as before.
  *
  * Every file is named by the manifest with a path relative to the bundle. This class is the one
  * place that turns such a path into bytes, and it refuses:
@@ -24,6 +30,8 @@ namespace OCA\Learning\Service;
  */
 final class QuestionMediaBundle {
     public const FORMAT = 'learning-question-media/1';
+    public const FORMAT_V2 = 'learning-question-media/2';
+    public const FORMATS = [self::FORMAT, self::FORMAT_V2];
     public const MANIFEST_MAX_BYTES = 33554432;   // 32 MiB (the CySA+ bundle's manifest: 1.4 MB for 538 questions)
     public const MP3_MAX_BYTES = 8388608;         // 8 MiB per track (64 kbit/s ≈ 17 minutes)
     public const JSON_MAX_BYTES = 262144;         // 256 KiB per timeline or cues file
@@ -45,6 +53,7 @@ final class QuestionMediaBundle {
     private function __construct(
         private string $root,
         private array $questions,
+        private string $format = self::FORMAT,
     ) {
     }
 
@@ -72,13 +81,35 @@ final class QuestionMediaBundle {
         } catch (\JsonException $e) {
             throw new \InvalidArgumentException('manifest.json is not valid JSON: ' . $e->getMessage());
         }
-        if (!is_array($manifest) || ($manifest['format'] ?? null) !== self::FORMAT) {
-            throw new \InvalidArgumentException('manifest.json: "format" must be "' . self::FORMAT . '"');
+        if (!is_array($manifest) || !in_array($manifest['format'] ?? null, self::FORMATS, true)) {
+            throw new \InvalidArgumentException('manifest.json: "format" must be "' . implode('" or "', self::FORMATS) . '"');
         }
         if (!is_array($manifest['questions'] ?? null) || !array_is_list($manifest['questions'])) {
             throw new \InvalidArgumentException('manifest.json: "questions" must be a list');
         }
-        return new self($bundle->root, $manifest['questions']);
+        return new self($bundle->root, $manifest['questions'], (string)$manifest['format']);
+    }
+
+    /** The manifest's format: self::FORMAT or self::FORMAT_V2. */
+    public function format(): string {
+        return $this->format;
+    }
+
+    /** Whether the bundle may carry spoken explanations per answer option (format /2). */
+    public function hasOptionAudio(): bool {
+        return $this->format === self::FORMAT_V2;
+    }
+
+    /**
+     * The bundle path of an option track: $file relative to the question's folder <exam_key>/.
+     * Null when either part is not a safe path (the caller reports it as refused).
+     */
+    public static function optionAudioPath(string $examKey, mixed $file): ?string {
+        if (!is_string($file) || !self::isSafePath($examKey) || str_contains($examKey, '/')) {
+            return null;
+        }
+        $path = $examKey . '/' . $file;
+        return self::isSafePath($path) ? $path : null;
     }
 
     /** @return list<mixed> the manifest's question entries as written */
@@ -165,6 +196,36 @@ final class QuestionMediaBundle {
     public function readTimeline(mixed $path): array {
         $data = $this->readJson($path);
         return self::normalizeTimeline($data, (string)$path);
+    }
+
+    /**
+     * The sidecar of an option track, {duration, role, text} (format /2), as a timeline of one
+     * line [{role, text, start: 0, end: duration}] so the player and the export treat it like
+     * every other track.
+     *
+     * @return list<array{role: ?string, text: string, start: float, end: float}>
+     * @throws QuestionMediaFileException
+     */
+    public function readOptionSidecar(mixed $path): array {
+        $data = $this->readJson($path);
+        if (!is_array($data) || array_is_list($data)) {
+            throw new QuestionMediaFileException(self::E_INVALID_JSON, (string)$path);
+        }
+        return self::normalizeTimeline([[
+            'role' => $data['role'] ?? null,
+            'text' => $data['text'] ?? null,
+            'start' => 0,
+            'end' => $data['duration'] ?? null,
+        ]], (string)$path);
+    }
+
+    /** Whether a file exists in the bundle at a safe path (a symlink counts as there: read() refuses it). */
+    public function has(string $path): bool {
+        if (!self::isSafePath($path)) {
+            return false;
+        }
+        $full = $this->root . '/' . $path;
+        return is_link($full) || file_exists($full);
     }
 
     /**
