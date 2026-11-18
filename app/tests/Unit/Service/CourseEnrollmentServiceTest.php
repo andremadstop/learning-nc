@@ -49,6 +49,8 @@ use Psr\Log\LoggerInterface;
 class CourseEnrollmentServiceTest extends TestCase {
     private const COURSE_ID = 7;
     private const OWNER = 'teacher';
+    /** GitHub #85: set by a test that inspects the activities; a plain mock otherwise. */
+    private ?\OCA\Learning\Activity\ActivityPublisher $activity = null;
 
     /** @var list<CourseMember> */
     private array $rows = [];
@@ -229,7 +231,8 @@ class CourseEnrollmentServiceTest extends TestCase {
             $this->search,
             $notifications,
             $time,
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
+            $this->activity ?? $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class)
         );
     }
 
@@ -304,6 +307,30 @@ class CourseEnrollmentServiceTest extends TestCase {
 
         $this->assertTrue($result['created']);
         $this->assertSame(['alice'], $this->insertedUids());
+    }
+
+    /**
+     * GitHub #85: the enrolment also becomes an activity (which the activity app emails by
+     * default), for exactly the people who get the bell — also when the bell backend fails.
+     */
+    public function testEveryNotifiedEnrolmentIsAlsoAnActivity(): void {
+        $activities = [];
+        $this->activity = $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class);
+        $this->activity->method('toUser')->willReturnCallback(function (string $subject, string $uid, int $courseId, ?string $title = null) use (&$activities): void {
+            $activities[] = [$subject, $uid, $courseId, $title];
+        });
+        $this->groups['team'] = ['teacher', 'cohost', 'alice', 'bob'];
+
+        $this->service()->bulkAdd(self::COURSE_ID, [], ['team'], 'student', 'cohost');
+        $this->notifyFailure = new \RuntimeException('notifications app broken');
+        $this->service()->addMember(self::COURSE_ID, 'carol', 'student', 'cohost');
+
+        $this->assertSame(['alice', 'bob'], $this->notified);
+        $this->assertSame([
+            ['course_enrolled', 'alice', self::COURSE_ID, 'Arbeitsschutz 2026'],
+            ['course_enrolled', 'bob', self::COURSE_ID, 'Arbeitsschutz 2026'],
+            ['course_enrolled', 'carol', self::COURSE_ID, 'Arbeitsschutz 2026'],
+        ], $activities);
     }
 
     public function testAConcurrentEnrolmentIsReportedAsAlreadyAMember(): void {

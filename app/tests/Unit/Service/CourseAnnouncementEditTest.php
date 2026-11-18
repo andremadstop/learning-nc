@@ -226,7 +226,7 @@ class CourseAnnouncementEditTest extends TestCase {
             return $item;
         });
 
-        $service = new FeedService($mapper, $this->createMock(CourseMemberMapper::class));
+        $service = new FeedService($mapper, $this->createMock(CourseMemberMapper::class), $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class));
         $count = $service->updateAnnouncementItems(self::COURSE_ID, 77, 'Exam moved', 1700000000, 'Exam on Friday', 'Room 4', 1700005000);
 
         $this->assertSame(2, $count);

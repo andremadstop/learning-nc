@@ -38,7 +38,7 @@ class ReminderServiceTest extends TestCase {
         return $notification;
     }
 
-    private function makeService(INotificationManager $manager, ?IConfig $config = null): ReminderService {
+    private function makeService(INotificationManager $manager, ?IConfig $config = null, ?\OCA\Learning\Activity\ActivityPublisher $activity = null): ReminderService {
         return new ReminderService(
             $this->createMock(IDBConnection::class),
             $manager,
@@ -46,7 +46,30 @@ class ReminderServiceTest extends TestCase {
             $this->createMock(StreakService::class),
             $this->createMock(LoggerInterface::class),
             $this->createMock(LeitnerService::class),
+            $activity ?? $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
+    }
+
+    /**
+     * GitHub #85: a delivered compliance reminder is also an activity (email on by default),
+     * with the course only — the notification's parameters name the lead, the activity must not.
+     * A reminder the bell already holds publishes nothing more.
+     */
+    public function testAComplianceReminderIsAlsoAnActivityWithoutTheLead(): void {
+        $manager = $this->createMock(INotificationManager::class);
+        $manager->method('createNotification')->willReturn($this->makeFluentNotification());
+        $manager->method('getCount')->willReturnOnConsecutiveCalls(0, 1);
+        $activities = [];
+        $activity = $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class);
+        $activity->method('toUser')->willReturnCallback(function (...$args) use (&$activities): void {
+            $activities[] = $args;
+        });
+
+        $svc = $this->makeService($manager, null, $activity);
+        $this->assertTrue($svc->sendComplianceReminder('alice', 42, ['lead_user_id' => 'lead-bob']));
+        $this->assertFalse($svc->sendComplianceReminder('alice', 42, ['lead_user_id' => 'lead-bob']));
+
+        $this->assertSame([['compliance_reminder', 'alice', 42, null, []]], $activities);
     }
 
     /**
@@ -160,6 +183,7 @@ class ReminderServiceTest extends TestCase {
             $this->createMock(StreakService::class),
             $this->createMock(LoggerInterface::class),
             $this->createMock(LeitnerService::class),
+            $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
 
         $this->assertSame(1, $service->sendExamReminders());
@@ -207,6 +231,7 @@ class ReminderServiceTest extends TestCase {
             $this->createMock(StreakService::class),
             $this->createMock(LoggerInterface::class),
             $leitner,
+            $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
 
         $this->assertSame(1, $service->sendDueCardReminders());

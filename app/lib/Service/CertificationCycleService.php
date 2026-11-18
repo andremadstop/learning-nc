@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\Course;
@@ -50,6 +51,7 @@ class CertificationCycleService {
         private readonly INotificationManager $notificationManager,
         private readonly ITimeFactory $timeFactory,
         private readonly LoggerInterface $logger,
+        private readonly ActivityPublisher $activityPublisher,
     ) {}
 
     /**
@@ -192,6 +194,7 @@ class CertificationCycleService {
     }
 
     private function notifyLearner(string $userId, Course $course, string $subject, string $objectType, string $objectId): void {
+        $fresh = false;
         try {
             $notification = $this->notificationManager->createNotification();
             $notification->setApp('learning')
@@ -199,11 +202,18 @@ class CertificationCycleService {
                 ->setObject($objectType, $objectId)
                 ->setSubject($subject, ['course_title' => (string)$course->getTitle(), 'course_id' => (int)$course->getId()]);
             if ($this->notificationManager->getCount($notification) === 0) {
+                $fresh = true;
                 $notification->setDateTime($this->timeFactory->getDateTime());
                 $this->notificationManager->notify($notification);
             }
         } catch (\Throwable $e) {
             $this->logger->warning('Learner notification {subject} failed: {msg}', ['subject' => $subject, 'msg' => $e->getMessage(), 'app' => 'learning']);
+        }
+        // GitHub #85: the same news as an activity, once — not again when the bell already holds
+        // it. The subjects are the activity subjects (certificate_revoked,
+        // certification_cycle_opened).
+        if ($fresh) {
+            $this->activityPublisher->toUser($subject, $userId, (int)$course->getId(), (string)$course->getTitle());
         }
     }
 }

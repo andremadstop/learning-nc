@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Db\CertKey;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
@@ -58,6 +59,7 @@ class IssuanceService {
     private IDBConnection $db;
     private CertIssuerName $issuerName;
     private CertLayoutService $layoutService;
+    private ActivityPublisher $activityPublisher;
 
     public function __construct(
         CertificateMapper $certificateMapper,
@@ -73,7 +75,8 @@ class IssuanceService {
         AuditService $auditService,
         IDBConnection $db,
         CertIssuerName $issuerName,
-        CertLayoutService $layoutService
+        CertLayoutService $layoutService,
+        ActivityPublisher $activityPublisher
     ) {
         $this->certificateMapper = $certificateMapper;
         $this->courseMapper = $courseMapper;
@@ -89,6 +92,7 @@ class IssuanceService {
         $this->db = $db;
         $this->issuerName = $issuerName;
         $this->layoutService = $layoutService;
+        $this->activityPublisher = $activityPublisher;
     }
 
     /**
@@ -466,6 +470,9 @@ class IssuanceService {
                 'msg' => $e->getMessage(),
             ]);
         }
+        // GitHub #85: the same news as an activity. Only the issuance that created the row gets
+        // here, so it is published once; best effort inside, independent of the bell.
+        $this->activityPublisher->toUser(ActivityPublisher::SUBJECT_CERT_ISSUED, $userId, $courseId, $courseTitle);
     }
 
     /**

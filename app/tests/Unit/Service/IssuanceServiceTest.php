@@ -52,6 +52,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  */
 #[AllowMockObjectsWithoutExpectations]
 class IssuanceServiceTest extends TestCase {
+    /** GitHub #85: set by a test that inspects the activities; a plain mock otherwise. */
+    private ?\OCA\Learning\Activity\ActivityPublisher $activity = null;
 
     private const HOST_DID = 'did:web:example.com:apps:learning';
     private const USER = 'alice';
@@ -218,6 +220,7 @@ class IssuanceServiceTest extends TestCase {
             $db,
             new CertIssuerName($this->operatorInfo($operatorName), $theming),
             $this->layoutService($theming, $themingLogo, $layoutDb),
+            $this->activity ?? $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
     }
 
@@ -377,6 +380,7 @@ class IssuanceServiceTest extends TestCase {
             $auditLoser, new FakeDbConnection(),
             new CertIssuerName($this->operatorInfo(''), $theming),
             $this->layoutService($theming),
+            $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
 
         $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
@@ -787,6 +791,39 @@ class IssuanceServiceTest extends TestCase {
         $this->assertNotNull($result, 'a notify failure must never surface as an issuance failure');
         $this->assertTrue($result->wasCreated, 'the committed insert still reports wasCreated=true');
         $this->assertNotNull($captured, 'the cert row was inserted despite the notify throw');
+    }
+
+    /**
+     * GitHub #85: the issuance that created the certificate publishes one activity (email on by
+     * default) — also when the bell backend throws; a rolled-back issuance publishes none.
+     */
+    public function testACreatedCertificateIsAlsoAnActivityEvenWhenTheBellFails(): void {
+        $activities = [];
+        $this->activity = $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class);
+        $this->activity->method('toUser')->willReturnCallback(function (...$args) use (&$activities): void {
+            $activities[] = $args;
+        });
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, notifyThrows: new \RuntimeException('notification backend down'));
+
+        $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertSame([['certificate_issued', self::USER, self::COURSE_ID, 'Security+ Kurs', []]], $activities);
+    }
+
+    public function testARolledBackIssuancePublishesNoActivity(): void {
+        $this->activity = $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class);
+        $this->activity->expects($this->never())->method('toUser');
+        $audit = $this->createMock(AuditService::class);
+        $audit->method('logComplianceEvent')->willThrowException(new ComplianceAuditException('chain append failed'));
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, expectNotify: false, audit: $audit, db: new FakeDbConnection());
+
+        try {
+            $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+            $this->fail('expected ComplianceAuditException');
+        } catch (ComplianceAuditException) {
+        }
     }
 
     /**

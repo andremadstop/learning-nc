@@ -39,6 +39,7 @@ class RecertReminderServiceTest extends TestCase {
             'config'         => $this->createMock(IConfig::class),
             'logger'         => $this->createMock(LoggerInterface::class),
             'courseMapper'   => $this->createMock(CourseMapper::class),
+            'activity'       => $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         ];
 
         if (is_callable($clock)) {
@@ -68,6 +69,7 @@ class RecertReminderServiceTest extends TestCase {
             $mocks['config'],
             $mocks['logger'],
             $mocks['courseMapper'],
+            $mocks['activity'],
         );
         return [$service, $mocks];
     }
@@ -113,6 +115,69 @@ class RecertReminderServiceTest extends TestCase {
 
         $this->assertSame(1, $service->sendRecertReminders(), 'run 1 delivers the T-30 reminder');
         $this->assertSame(0, $service->sendRecertReminders(), 'run 2 skips the delivered row');
+    }
+
+    /**
+     * GitHub #85: a delivered T-30 reminder is also a "certificate expiring" activity, once —
+     * the second run skips both.
+     */
+    public function testADeliveredReminderIsAlsoAnExpiringActivity(): void {
+        [$service, $m] = $this->makeService(self::NOW);
+        $m['certMapper']->method('findActiveExpiringBetween')->willReturn([$this->expiringCert(self::NOW)]);
+        $m['reminderMapper']->method('findByCertAndThreshold')
+            ->willReturnOnConsecutiveCalls(null, $this->reminderRow(self::NOW, self::NOW));
+        $m['reminderMapper']->method('insertOnce')->willReturn(true);
+        $activities = [];
+        $m['activity']->method('toUser')->willReturnCallback(function (...$args) use (&$activities): void {
+            $activities[] = $args;
+        });
+
+        $service->sendRecertReminders();
+        $service->sendRecertReminders();
+
+        $this->assertSame([['certificate_expiring', 'jmueller', 7, '', ['days_left' => 30]]], $activities);
+    }
+
+    /**
+     * GitHub #85: an active certificate that has expired gets one "expired" activity, claimed
+     * through the reminder outbox with threshold 0 (which no reminder threshold can be); a claim
+     * row already there means it was announced, and a renewed certificate (no longer active) is
+     * not in the query at all.
+     */
+    public function testAnExpiredCertificateIsAnnouncedOnce(): void {
+        [$service, $m] = $this->makeService(self::NOW);
+        $expired = $this->expiringCert(self::NOW);
+        $expired->setExpiresAt(self::NOW - 3600);
+        $windows = [];
+        $m['certMapper']->method('findActiveExpiringBetween')->willReturnCallback(
+            function (int $after, int $before) use ($expired, &$windows): array {
+                $windows[] = [$after, $before];
+                return $before === self::NOW ? [$expired] : [];
+            }
+        );
+        $claimed = null;
+        $m['reminderMapper']->method('findByCertAndThreshold')->willReturnCallback(
+            function (int $certId, int $days) use (&$claimed): ?RecertReminder {
+                return $days === 0 ? $claimed : null;
+            }
+        );
+        $m['reminderMapper']->expects($this->once())->method('insertOnce')->with(42, 0, self::NOW)
+            ->willReturnCallback(function () use (&$claimed): bool {
+                $claimed = $this->reminderRow(self::NOW, null);
+                return true;
+            });
+        $m['reminderMapper']->expects($this->once())->method('markDelivered')->with(42, 0, self::NOW);
+        $m['notifManager']->expects($this->never())->method('notify');
+        $activities = [];
+        $m['activity']->method('toUser')->willReturnCallback(function (...$args) use (&$activities): void {
+            $activities[] = $args;
+        });
+
+        $this->assertSame(0, $service->sendRecertReminders(), 'no bell: the expired activity is not a reminder');
+        $service->sendRecertReminders();
+
+        $this->assertSame([['certificate_expired', 'jmueller', 7, null, []]], $activities);
+        $this->assertSame([self::NOW - 7 * 86400, self::NOW], $windows[0], 'looks back one week');
     }
 
     /**

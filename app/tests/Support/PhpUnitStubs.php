@@ -630,23 +630,75 @@ namespace OCP\Http\Client {
 }
 
 namespace OCP\Activity {
-    if (!interface_exists(IManager::class)) {
-        interface IManager {
-        }
-    }
-
     if (!interface_exists(IEvent::class)) {
         interface IEvent {
             public function setApp(string $app): self;
             public function setType(string $type): self;
             public function setAffectedUser(string $user): self;
+            public function setAuthor(string $author): self;
+            public function setTimestamp(int $timestamp): self;
             public function setSubject(string $subject, array $parameters = []): self;
             public function setParsedSubject(string $subject): self;
+            public function setParsedMessage(string $message): self;
+            public function setObject(string $objectType, string|int $objectId, string $objectName = ''): self;
             public function setIcon(string $icon): self;
             public function setLink(string $link): self;
             public function getApp(): string;
+            public function getType(): string;
+            public function getAffectedUser(): string;
+            public function getAuthor(): string;
             public function getSubject(): string;
             public function getSubjectParameters(): array;
+        }
+    }
+
+    // GitHub #85: verbatim shapes of NC 33 lib/public/Activity/ISetting.php + ActivitySettings.php.
+    if (!interface_exists(ISetting::class)) {
+        interface ISetting {
+            public function getIdentifier();
+            public function getName();
+            public function getPriority();
+            public function canChangeStream();
+            public function isDefaultEnabledStream();
+            public function canChangeMail();
+            public function isDefaultEnabledMail();
+        }
+    }
+
+    if (!class_exists(ActivitySettings::class)) {
+        abstract class ActivitySettings implements ISetting {
+            abstract public function getIdentifier();
+            abstract public function getName();
+            abstract public function getGroupIdentifier();
+            abstract public function getGroupName();
+            abstract public function getPriority();
+            public function canChangeMail() {
+                return true;
+            }
+            public function canChangeNotification() {
+                return true;
+            }
+            public function isDefaultEnabledMail() {
+                return false;
+            }
+            public function isDefaultEnabledNotification() {
+                return $this->isDefaultEnabledMail() && !$this->canChangeMail();
+            }
+            public function canChangeStream() {
+                return false;
+            }
+            public function isDefaultEnabledStream() {
+                return true;
+            }
+        }
+    }
+
+    if (!interface_exists(IManager::class)) {
+        interface IManager {
+            public function generateEvent(): IEvent;
+            public function publish(IEvent $event): void;
+            public function bulkPublish(IEvent $event, array $affectedUserIds, ISetting $setting): void;
+            public function registerSetting(string $setting): void;
         }
     }
 

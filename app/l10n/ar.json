@@ -4057,6 +4057,25 @@
         "Geöffnete Pflichtdokumente": "المستندات الإلزامية التي فُتحت",
         "Wenn du ein Pflichtdokument öffnest, wird gespeichert, welche Fassung du wann zuletzt geöffnet hast. Erst danach kannst du es als gelesen bestätigen. Das zeigt nur, dass du es geöffnet hast, nicht dass du es gelesen hast. Die Angabe wird im Kurs niemandem angezeigt und nach Ablauf der Aufbewahrungsfrist gelöscht, spätestens mit deinem Konto.": "عندما تفتح مستندًا إلزاميًا، تُحفظ النسخة التي فتحتها ووقت الفتح. بعد ذلك فقط يمكنك تأكيد أنك قرأته. هذا يثبت فقط أنك فتحته، وليس أنك قرأته. لا تُعرض هذه المعلومة على أحد في الدورة، وتُحذف عند انتهاء مدة الاحتفاظ، وفي موعد أقصاه حذف حسابك.",
         "Pflichtdokumente erst nach dem Öffnen bestätigen": "تأكيد المستندات الإلزامية فقط بعد فتحها",
-        "Lernende müssen die aktuelle Fassung eines Pflichtdokuments geöffnet haben, bevor sie es als gelesen bestätigen können. Das belegt das Öffnen, nicht das Lesen. Bestehende Bestätigungen bleiben gültig.": "يجب على المتعلمين فتح النسخة الحالية من المستند الإلزامي قبل أن يتمكنوا من تأكيد قراءته. هذا يثبت الفتح وليس القراءة. تبقى التأكيدات الحالية سارية."
+        "Lernende müssen die aktuelle Fassung eines Pflichtdokuments geöffnet haben, bevor sie es als gelesen bestätigen können. Das belegt das Öffnen, nicht das Lesen. Bestehende Bestätigungen bleiben gültig.": "يجب على المتعلمين فتح النسخة الحالية من المستند الإلزامي قبل أن يتمكنوا من تأكيد قراءته. هذا يثبت الفتح وليس القراءة. تبقى التأكيدات الحالية سارية.",
+        "Einschreibung in einen Kurs": "التسجيل في دورة",
+        "Zertifikate: ausgestellt, läuft ab, abgelaufen, widerrufen, neuer Zyklus": "الشهادات: صدرت، قاربت على الانتهاء، انتهت، سُحبت، دورة جديدة",
+        "Erinnerungen an Pflichtschulungen": "تذكيرات التدريب الإلزامي",
+        "Neuigkeiten im Kurs-Feed": "جديد في موجز الدورة",
+        "Gamification: freigeschaltete Erfolge": "التلعيب: الإنجازات المفتوحة",
+        "Du wurdest in den Kurs %s eingeschrieben": "تم تسجيلك في الدورة %s",
+        "Dein Zertifikat für den Kurs %s wurde ausgestellt": "صدرت شهادتك في الدورة %s",
+        "Dein Zertifikat für den Kurs %s ist abgelaufen": "انتهت صلاحية شهادتك في الدورة %s",
+        "Erinnerung an die Pflichtschulung im Kurs %s": "تذكير بالتدريب الإلزامي في الدورة %s",
+        "Neuer Fragenpool im Kurs %1$s: %2$s": "مجموعة أسئلة جديدة في الدورة %1$s: %2$s",
+        "Neue Ankündigung im Kurs %1$s: %2$s": "إعلان جديد في الدورة %1$s: %2$s",
+        "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_": [
+            "تنتهي صلاحية شهادتك في الدورة %s خلال %n يوم",
+            "تنتهي صلاحية شهادتك في الدورة %s خلال يوم واحد (%n)",
+            "تنتهي صلاحية شهادتك في الدورة %s خلال يومين (%n)",
+            "تنتهي صلاحية شهادتك في الدورة %s خلال %n أيام",
+            "تنتهي صلاحية شهادتك في الدورة %s خلال %n يومًا",
+            "تنتهي صلاحية شهادتك في الدورة %s خلال %n يوم"
+        ]
     }
 }

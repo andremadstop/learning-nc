@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
@@ -22,6 +23,7 @@ class ReminderService {
     private StreakService $streakService;
     private LoggerInterface $logger;
     private LeitnerService $leitnerService;
+    private ActivityPublisher $activityPublisher;
 
     public function __construct(
         IDBConnection $db,
@@ -29,7 +31,8 @@ class ReminderService {
         IConfig $config,
         StreakService $streakService,
         LoggerInterface $logger,
-        LeitnerService $leitnerService
+        LeitnerService $leitnerService,
+        ActivityPublisher $activityPublisher
     ) {
         $this->db = $db;
         $this->notificationManager = $notificationManager;
@@ -37,6 +40,7 @@ class ReminderService {
         $this->streakService = $streakService;
         $this->logger = $logger;
         $this->leitnerService = $leitnerService;
+        $this->activityPublisher = $activityPublisher;
     }
 
     public function sendDueCardReminders(): int {
@@ -130,7 +134,13 @@ class ReminderService {
      * Does NOT call getEMailAddress() — email-null safe by construction (no IUserManager dep).
      */
     public function sendComplianceReminder(string $targetUserId, int $courseId, array $params): bool {
-        return $this->sendNotification($targetUserId, 'compliance_reminder', 'compliance', (string)$courseId, $params);
+        $created = $this->sendNotification($targetUserId, 'compliance_reminder', 'compliance', (string)$courseId, $params);
+        if ($created) {
+            // GitHub #85: also as an activity (email on by default). Course id and title only —
+            // never $params, which name the lead who sent it.
+            $this->activityPublisher->toUser(ActivityPublisher::SUBJECT_COMPLIANCE_REMINDER, $targetUserId, $courseId);
+        }
+        return $created;
     }
 
     public function sendExamReminders(): int {

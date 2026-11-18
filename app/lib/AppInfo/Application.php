@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace OCA\Learning\AppInfo;
 
+use OCA\Learning\Activity\CertificateSetting;
+use OCA\Learning\Activity\CourseFeedSetting;
+use OCA\Learning\Activity\EnrollmentSetting;
+use OCA\Learning\Activity\MandatoryReminderSetting;
 use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\AuditVerifyCommand;
 use OCA\Learning\Command\ExportCourseCommand;
@@ -24,6 +28,7 @@ use OCA\Learning\Search\PoolSearchProvider;
 use OCA\Learning\Search\QuestionSearchProvider;
 use OCA\Learning\Settings\LegalNoticeHelpSettings;
 use OCA\Learning\Settings\PrivacyHelpSettings;
+use OCP\Activity\IManager as ActivityManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -38,6 +43,14 @@ use Psr\Log\LoggerInterface;
 
 class Application extends App implements IBootstrap {
     public const APP_ID = 'learning';
+
+    /** GitHub #85: registered in boot(); the gamification setting comes from info.xml. */
+    public const ACTIVITY_SETTINGS = [
+        EnrollmentSetting::class,
+        CertificateSetting::class,
+        MandatoryReminderSetting::class,
+        CourseFeedSetting::class,
+    ];
 
     public function __construct() {
         parent::__construct(self::APP_ID);
@@ -116,6 +129,27 @@ class Application extends App implements IBootstrap {
      */
     public function boot(IBootContext $context): void {
         $this->registerHelpSettings($context->getServerContainer());
+        $this->registerActivitySettings($context->getServerContainer());
+    }
+
+    /**
+     * GitHub #85: the activity settings beyond the one appinfo/info.xml names (gamification).
+     * Registered here like the help settings, which is what Nextcloud does with the info.xml list
+     * as well (IManager::registerSetting, resolved lazily). Without the activity app nobody reads
+     * them, and registering costs nothing.
+     */
+    private function registerActivitySettings(ContainerInterface $container): void {
+        try {
+            $manager = $container->get(ActivityManager::class);
+            foreach (self::ACTIVITY_SETTINGS as $setting) {
+                $manager->registerSetting($setting);
+            }
+        } catch (\Throwable $e) {
+            $container->get(LoggerInterface::class)->warning(
+                'Learning: activity settings registration failed: ' . $e->getMessage(),
+                ['app' => self::APP_ID]
+            );
+        }
     }
 
     private function registerHelpSettings(ContainerInterface $container): void {

@@ -9,7 +9,6 @@ use OCA\Learning\Tests\Support\FakeCacheFactory;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
-use OCP\Activity\IManager as IActivityManager;
 use OCP\IConfig;
 use OCP\Notification\IManager as INotificationManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -42,7 +41,7 @@ final class PracticeAttemptsNotCountedTest extends TestCase {
             new FakeDbConnection([$query]),
             $this->createMock(INotificationManager::class),
             $this->createMock(IConfig::class),
-            $this->createMock(IActivityManager::class),
+            $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
 
         $method = new \ReflectionMethod(BadgeService::class, 'getSuccessfulExamRunCount');
@@ -83,7 +82,7 @@ final class PracticeAttemptsNotCountedTest extends TestCase {
             $db,
             $this->createMock(INotificationManager::class),
             $config,
-            $this->createMock(IActivityManager::class),
+            $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
         );
 
         $service->checkAndAward('alice', 'session_complete', $sessionData, false);

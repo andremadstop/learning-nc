@@ -42,6 +42,8 @@ class CertificationCycleServiceTest extends TestCase {
     private INotificationManager $notifications;
     private PassCriteriaService $pass;
     private Course $course;
+    /** GitHub #85: set by a test that inspects the activities; a plain mock otherwise. */
+    private ?\OCA\Learning\Activity\ActivityPublisher $activity = null;
 
     protected function setUp(): void {
         $this->course = new Course();
@@ -72,7 +74,7 @@ class CertificationCycleServiceTest extends TestCase {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($this->course);
         return new CertificationCycleService($this->courses, $courseMapper, $this->members, $this->certificates, $this->assignments,
-            $this->pass, $this->limits, $this->notifications, $time, $this->createMock(LoggerInterface::class));
+            $this->pass, $this->limits, $this->notifications, $time, $this->createMock(LoggerInterface::class), $this->activity ?? $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class));
     }
 
     private static function cert(bool $revoked, ?int $expiresAt = null, ?int $revokedAt = null): Certificate {
@@ -193,6 +195,28 @@ class CertificationCycleServiceTest extends TestCase {
         self::assertSame('anna', $sent[0]->getUser());
         self::assertSame('certificate_revoked', $sent[0]->getSubject());
         self::assertSame(['course_title' => 'Safety', 'course_id' => self::COURSE], $sent[0]->getSubjectParameters());
+    }
+
+    /**
+     * GitHub #85: the revoke becomes an activity once, next to the new bell; a revoke whose bell
+     * is already there (a repeated call) publishes nothing more.
+     */
+    public function testTheRevokeIsAlsoAnActivityOnceOnly(): void {
+        $activities = [];
+        $this->activity = $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class);
+        $this->activity->method('toUser')->willReturnCallback(function (...$args) use (&$activities): void {
+            $activities[] = $args;
+        });
+        $count = 0;
+        $this->notifications->method('createNotification')->willReturnCallback(fn () => self::fakeNotification($this));
+        $this->notifications->method('getCount')->willReturnCallback(function () use (&$count): int {
+            return $count++;
+        });
+
+        $this->service()->notifyRevoked(self::cert(true, null, self::NOW));
+        $this->service()->notifyRevoked(self::cert(true, null, self::NOW));
+
+        self::assertSame([['certificate_revoked', 'anna', self::COURSE, 'Safety', []]], $activities);
     }
 
     public function testStatesListStudentsOnly(): void {

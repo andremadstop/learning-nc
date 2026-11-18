@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Service\BadgeService;
-use OCP\Activity\IManager as IActivityManager;
+use OCA\Learning\Activity\ActivityPublisher;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
@@ -16,14 +16,14 @@ class BadgeServiceTest extends TestCase {
     private IDBConnection $db;
     private INotificationManager $notificationManager;
     private IConfig $config;
-    private IActivityManager $activityManager;
+    private ActivityPublisher $activityManager;
     private BadgeService $service;
 
     protected function setUp(): void {
         $this->db = $this->createMock(IDBConnection::class);
         $this->notificationManager = $this->createMock(INotificationManager::class);
         $this->config = $this->createMock(IConfig::class);
-        $this->activityManager = $this->createMock(IActivityManager::class);
+        $this->activityManager = $this->createMock(ActivityPublisher::class);
 
         $this->service = new BadgeService(
             $this->db,
@@ -71,5 +71,24 @@ class BadgeServiceTest extends TestCase {
         }
 
         $this->fail('Badge not found: ' . $badgeId);
+    }
+
+    /**
+     * GitHub #85: a badge goes to the activity through the publisher, whose author is not the
+     * learner. The old code published it with author = the learner, a "self action" for which the
+     * activity app never sends an email — even after the learner switched the email on.
+     */
+    public function testADispatchedBadgeIsPublishedThroughThePublisher(): void {
+        $this->config->method('getAppValue')->willReturn('yes');
+        $notification = $this->createMock(\OCP\Notification\INotification::class);
+        foreach (['setApp', 'setUser', 'setDateTime', 'setObject', 'setSubject'] as $m) {
+            $notification->method($m)->willReturnSelf();
+        }
+        $this->notificationManager->method('createNotification')->willReturn($notification);
+        $this->notificationManager->expects($this->once())->method('notify');
+        $this->activityManager->expects($this->once())->method('badgeEarned')
+            ->with('alice', 'first_session', 'First Steps', "\u{2B50}");
+
+        $this->service->dispatchNotifications('alice', [['badge_id' => 'first_session']]);
     }
 }

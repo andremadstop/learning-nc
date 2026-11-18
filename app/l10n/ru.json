@@ -4039,6 +4039,22 @@
         "Geöffnete Pflichtdokumente": "Открытые обязательные документы",
         "Wenn du ein Pflichtdokument öffnest, wird gespeichert, welche Fassung du wann zuletzt geöffnet hast. Erst danach kannst du es als gelesen bestätigen. Das zeigt nur, dass du es geöffnet hast, nicht dass du es gelesen hast. Die Angabe wird im Kurs niemandem angezeigt und nach Ablauf der Aufbewahrungsfrist gelöscht, spätestens mit deinem Konto.": "Когда вы открываете обязательный документ, сохраняются открытая версия и время. Только после этого вы можете подтвердить, что прочитали его. Это показывает лишь то, что вы его открыли, а не то, что прочитали. Эти данные никому в курсе не показываются и удаляются по истечении срока хранения, не позднее удаления вашей учётной записи.",
         "Pflichtdokumente erst nach dem Öffnen bestätigen": "Подтверждать обязательные документы только после открытия",
-        "Lernende müssen die aktuelle Fassung eines Pflichtdokuments geöffnet haben, bevor sie es als gelesen bestätigen können. Das belegt das Öffnen, nicht das Lesen. Bestehende Bestätigungen bleiben gültig.": "Учащиеся должны открыть текущую версию обязательного документа, прежде чем смогут подтвердить, что прочитали его. Это подтверждает открытие, а не прочтение. Уже существующие подтверждения остаются в силе."
+        "Lernende müssen die aktuelle Fassung eines Pflichtdokuments geöffnet haben, bevor sie es als gelesen bestätigen können. Das belegt das Öffnen, nicht das Lesen. Bestehende Bestätigungen bleiben gültig.": "Учащиеся должны открыть текущую версию обязательного документа, прежде чем смогут подтвердить, что прочитали его. Это подтверждает открытие, а не прочтение. Уже существующие подтверждения остаются в силе.",
+        "Einschreibung in einen Kurs": "Зачисление на курс",
+        "Zertifikate: ausgestellt, läuft ab, abgelaufen, widerrufen, neuer Zyklus": "Сертификаты: выдан, скоро истекает, истёк, отозван, новый цикл",
+        "Erinnerungen an Pflichtschulungen": "Напоминания об обязательном обучении",
+        "Neuigkeiten im Kurs-Feed": "Новое в ленте курса",
+        "Gamification: freigeschaltete Erfolge": "Геймификация: открытые достижения",
+        "Du wurdest in den Kurs %s eingeschrieben": "Тебя зачислили на курс %s",
+        "Dein Zertifikat für den Kurs %s wurde ausgestellt": "Твой сертификат по курсу %s выдан",
+        "Dein Zertifikat für den Kurs %s ist abgelaufen": "Срок действия твоего сертификата по курсу %s истёк",
+        "Erinnerung an die Pflichtschulung im Kurs %s": "Напоминание об обязательном обучении в курсе %s",
+        "Neuer Fragenpool im Kurs %1$s: %2$s": "Новый пул вопросов в курсе %1$s: %2$s",
+        "Neue Ankündigung im Kurs %1$s: %2$s": "Новое объявление в курсе %1$s: %2$s",
+        "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_": [
+            "Твой сертификат по курсу %s истекает через %n день",
+            "Твой сертификат по курсу %s истекает через %n дня",
+            "Твой сертификат по курсу %s истекает через %n дней"
+        ]
     }
 }

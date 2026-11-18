@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
@@ -61,6 +62,7 @@ class CourseEnrollmentService {
         private INotificationManager $notificationManager,
         private ITimeFactory $timeFactory,
         private LoggerInterface $logger,
+        private ActivityPublisher $activityPublisher,
     ) {
     }
 
@@ -488,6 +490,9 @@ class CourseEnrollmentService {
                 'msg' => $e->getMessage(),
             ]);
         }
+        // GitHub #85: the same news as an activity, which the activity app can email (own
+        // try/catch inside: it never costs the bell or the enrolment).
+        $this->activityPublisher->toUser(ActivityPublisher::SUBJECT_ENROLLED, $uid, (int)$course->getId(), (string)$course->getTitle());
     }
 
     private function logEnrolFailure(int $courseId, \Throwable $e): void {

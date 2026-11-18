@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\AppInfo\ConfigDefaults;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
@@ -45,7 +46,18 @@ class RecertReminderService {
         private readonly IConfig $config,
         private readonly LoggerInterface $logger,
         private readonly CourseMapper $courseMapper,
+        private readonly ActivityPublisher $activityPublisher,
     ) {}
+
+    /**
+     * GitHub #85: the threshold value of the once-only claim for the "certificate expired"
+     * activity. 0 can never be a reminder threshold (ConfigDefaults::reminderThresholds keeps
+     * only values > 0), so the claim never collides with a T-30/T-7 reminder row.
+     */
+    public const EXPIRED_THRESHOLD = 0;
+
+    /** How far back the expired sweep looks: a cert that expired while cron was down still counts. */
+    private const EXPIRED_LOOKBACK_SECONDS = 7 * 86400;
 
     /**
      * Scan all expiring certs and send T-30/T-7 reminders. Returns count of reminders sent.
@@ -60,6 +72,10 @@ class RecertReminderService {
         if ($thresholds === []) {
             return 0;
         }
+
+        // GitHub #85: certificates that have just expired, before the reminder window (which is
+        // strictly not yet expired). Activity only — there was never a bell for this.
+        $this->announceExpired($now);
 
         // Window: certs expiring within max(threshold) days, strictly not yet expired —
         // expired certs are the RecertPeriodCloseJob's territory, not the reminder's.
@@ -170,6 +186,50 @@ class RecertReminderService {
         if ($this->notificationManager->getCount($notification) === 0) {
             $notification->setDateTime($this->timeFactory->getDateTime());
             $this->notificationManager->notify($notification);
+            // GitHub #85: the same reminder as an activity, once per threshold (the retry of an
+            // earlier delivery finds the bell and skips both). Best effort inside.
+            $this->activityPublisher->toUser(
+                ActivityPublisher::SUBJECT_CERT_EXPIRING,
+                (string)$cert->getUserId(),
+                (int)$cert->getCourseId(),
+                $courseTitle,
+                ['days_left' => $thresholdDays]
+            );
+        }
+    }
+
+    /**
+     * One "certificate expired" activity per certificate (GitHub #85), for active certificates
+     * (own their slot, not revoked, not anonymized) that expired within the lookback. A renewed
+     * certificate gave up its slot and is skipped, so a learner who renewed in time hears nothing.
+     * Claimed once via the reminder outbox with threshold EXPIRED_THRESHOLD; the publisher never
+     * throws, so a won claim is delivered right away.
+     */
+    private function announceExpired(int $now): void {
+        try {
+            $certs = $this->certMapper->findActiveExpiringBetween($now - self::EXPIRED_LOOKBACK_SECONDS, $now);
+        } catch (\Throwable $e) {
+            $this->logger->warning('sendRecertReminders: expired sweep failed: {msg}', ['msg' => $e->getMessage(), 'app' => self::APP_ID]);
+            return;
+        }
+        foreach ($certs as $cert) {
+            try {
+                $expiresAt = $cert->getExpiresAt();
+                if ($expiresAt === null || (int)$expiresAt > $now) {
+                    continue; // not expired (the query already says so; cheap to be sure)
+                }
+                $certId = (int)$cert->getId();
+                // The sweep sees an expired certificate on every run of its lookback week: read
+                // first, so the claim INSERT (and its UNIQUE violation) happens once.
+                if ($this->reminderMapper->findByCertAndThreshold($certId, self::EXPIRED_THRESHOLD) !== null
+                    || !$this->reminderMapper->insertOnce($certId, self::EXPIRED_THRESHOLD, $now)) {
+                    continue;
+                }
+                $this->activityPublisher->toUser(ActivityPublisher::SUBJECT_CERT_EXPIRED, (string)$cert->getUserId(), (int)$cert->getCourseId());
+                $this->reminderMapper->markDelivered($certId, self::EXPIRED_THRESHOLD, $now);
+            } catch (\Throwable $e) {
+                $this->logger->warning('sendRecertReminders: expired activity for cert {cert} failed: {msg}', ['cert' => (int)$cert->getId(), 'msg' => $e->getMessage(), 'app' => self::APP_ID]);
+            }
         }
     }
 

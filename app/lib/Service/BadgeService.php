@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
-use OCP\Activity\IManager as IActivityManager;
+use OCA\Learning\Activity\ActivityPublisher;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
@@ -11,7 +11,7 @@ class BadgeService {
     private IDBConnection $db;
     private INotificationManager $notificationManager;
     private IConfig $config;
-    private IActivityManager $activityManager;
+    private ActivityPublisher $activityPublisher;
 
     private const BADGES = [
         'first_session' => ['name' => 'First Steps', 'emoji' => "\u{2B50}", 'description' => 'Complete your first session', 'category' => 'sessions', 'legacy' => true],
@@ -160,11 +160,11 @@ class BadgeService {
         ],
     ];
 
-    public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, IActivityManager $activityManager) {
+    public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, ActivityPublisher $activityPublisher) {
         $this->db = $db;
         $this->notificationManager = $notificationManager;
         $this->config = $config;
-        $this->activityManager = $activityManager;
+        $this->activityPublisher = $activityPublisher;
     }
 
     /**
@@ -231,18 +231,9 @@ class BadgeService {
                 ]);
             $this->notificationManager->notify($notification);
 
-            $event = $this->activityManager->generateEvent();
-            $event->setApp('learning')
-                ->setType('learning_badge_earned')
-                ->setAffectedUser($userId)
-                ->setAuthor($userId)
-                ->setTimestamp(time())
-                ->setSubject('badge_earned', [
-                    'badge_name' => $def['name'],
-                    'badge_emoji' => $def['emoji'],
-                ])
-                ->setObject('badge', (int)0, $badgeId);
-            $this->activityManager->publish($event);
+            // GitHub #85: through the publisher, whose author is not the learner — an author equal
+            // to the recipient is a "self action", and the activity app never emailed those.
+            $this->activityPublisher->badgeEarned($userId, $badgeId, (string)$def['name'], (string)$def['emoji']);
         }
     }
 
@@ -461,18 +452,8 @@ class BadgeService {
             ]);
         $this->notificationManager->notify($notification);
 
-        $event = $this->activityManager->generateEvent();
-        $event->setApp('learning')
-            ->setType('learning_badge_earned')
-            ->setAffectedUser($userId)
-            ->setAuthor($userId)
-            ->setTimestamp(time())
-            ->setSubject('badge_earned', [
-                'badge_name' => $def['name'],
-                'badge_emoji' => $def['emoji'],
-            ])
-            ->setObject('badge', (int)0, $badgeId);
-        $this->activityManager->publish($event);
+        // GitHub #85: author is not the learner (see dispatch above).
+        $this->activityPublisher->badgeEarned($userId, $badgeId, (string)$def['name'], (string)$def['emoji']);
     }
 
     private function getAnsweredQuestionCount(string $userId): int {

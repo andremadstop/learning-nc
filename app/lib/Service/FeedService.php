@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Db\FeedItem;
 use OCA\Learning\Db\FeedItemMapper;
 use OCA\Learning\Db\CourseMemberMapper;
@@ -10,13 +11,16 @@ use OCA\Learning\Db\CourseMemberMapper;
 class FeedService {
     private FeedItemMapper $feedItemMapper;
     private CourseMemberMapper $courseMemberMapper;
+    private ActivityPublisher $activityPublisher;
 
     public function __construct(
         FeedItemMapper $feedItemMapper,
-        CourseMemberMapper $courseMemberMapper
+        CourseMemberMapper $courseMemberMapper,
+        ActivityPublisher $activityPublisher
     ) {
         $this->feedItemMapper = $feedItemMapper;
         $this->courseMemberMapper = $courseMemberMapper;
+        $this->activityPublisher = $activityPublisher;
     }
 
     /**
@@ -66,7 +70,29 @@ class FeedService {
 
         /** @var FeedItem $inserted */
         $inserted = $this->feedItemMapper->insert($item);
+        $this->publishActivity($courseId, $type, $title, $actorId, $meta ?? []);
         return $inserted;
+    }
+
+    /**
+     * GitHub #85: a feed entry also becomes an activity for the course's members (the readers of
+     * getUserFeed), except its author; email off by default. Only the kinds the feed has today,
+     * with their ids and titles — never the body.
+     *
+     * @param array<array-key, mixed> $meta
+     */
+    private function publishActivity(int $courseId, string $type, string $title, ?string $actorId, array $meta): void {
+        if ($type === 'pool_added') {
+            $this->activityPublisher->toCourseMembers(ActivityPublisher::SUBJECT_FEED_POOL_ADDED, $courseId, $actorId, [
+                'pool_id' => (int)($meta['pool_id'] ?? 0),
+                'pool_name' => mb_substr((string)($meta['pool_name'] ?? ''), 0, 255),
+            ]);
+        } elseif ($type === 'announcement') {
+            $this->activityPublisher->toCourseMembers(ActivityPublisher::SUBJECT_FEED_ANNOUNCEMENT, $courseId, $actorId, [
+                'announcement_id' => (int)($meta['announcement_id'] ?? 0),
+                'title' => mb_substr($title, 0, 255),
+            ]);
+        }
     }
 
     /**

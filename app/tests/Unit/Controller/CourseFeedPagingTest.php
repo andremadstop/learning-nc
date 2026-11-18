@@ -29,7 +29,8 @@ class CourseFeedPagingTest extends TestCase {
         $qb = new FakeQueryBuilder();
         $service = new FeedService(
             new FeedItemMapper(new FakeDbConnection([$qb])),
-            $this->createMock(CourseMemberMapper::class)
+            $this->createMock(CourseMemberMapper::class),
+            $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class)
         );
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('findById')->willReturn(['id' => 7]);

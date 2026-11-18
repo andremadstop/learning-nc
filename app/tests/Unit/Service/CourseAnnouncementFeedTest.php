@@ -181,7 +181,7 @@ class CourseAnnouncementFeedTest extends TestCase {
         ]);
         $mapper->expects($this->once())->method('deleteByIds')->with(self::COURSE_ID, [1, 3])->willReturn(2);
 
-        $service = new FeedService($mapper, $this->createMock(CourseMemberMapper::class));
+        $service = new FeedService($mapper, $this->createMock(CourseMemberMapper::class), $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class));
         $this->assertSame(2, $service->deleteAnnouncementItems(self::COURSE_ID, 77, 'Exam moved', 1700000000));
     }
 
