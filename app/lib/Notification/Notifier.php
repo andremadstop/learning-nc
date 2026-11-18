@@ -17,6 +17,7 @@ class Notifier implements INotifier {
         IURLGenerator $urlGenerator,
         private ?\OCP\IUserManager $userManager = null,
         private ?\OCA\Learning\Db\CourseMemberMapper $memberMapper = null,
+        private ?\OCA\Learning\Db\CourseMapper $courseMapper = null,
     ) {
         $this->l10nFactory = $l10nFactory;
         $this->urlGenerator = $urlGenerator;
@@ -38,6 +39,18 @@ class Notifier implements INotifier {
         }
         $user = $this->userManager->get($uid);
         return $user !== null ? $user->getDisplayName() : null;
+    }
+
+    /** The current title of a course, '' when unknown (deleted course, no mapper). */
+    private function courseTitle(int $courseId): string {
+        if ($courseId <= 0 || $this->courseMapper === null) {
+            return '';
+        }
+        try {
+            return (string)$this->courseMapper->findById($courseId)->getTitle();
+        } catch (\OCP\AppFramework\Db\DoesNotExistException|\OCP\AppFramework\Db\MultipleObjectsReturnedException $e) {
+            return '';
+        }
     }
 
     public function getID(): string {
@@ -170,6 +183,13 @@ class Notifier implements INotifier {
             case 'compliance_reminder':
                 $params = $notification->getSubjectParameters();
                 $courseTitle = (string)($params['course_title'] ?? '');
+                // GitHub #85: the team lead's reminder (CertificateReportService::remindMember)
+                // never carried the title, so the bell read "Compliance reminder: " with nothing
+                // after it. The object id is the course id; resolving it here also mends the
+                // reminders already sitting in the bells.
+                if ($courseTitle === '') {
+                    $courseTitle = $this->courseTitle((int)$notification->getObjectId());
+                }
                 $notification->setParsedSubject(
                     $l->t('Compliance reminder: %s', [$courseTitle])
                 );

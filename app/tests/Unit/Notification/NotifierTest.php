@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Notification;
 
+use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Notification\Notifier;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IL10N;
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
@@ -193,5 +196,40 @@ class NotifierTest extends TestCase {
             ))->willReturnSelf();
             $notifier->prepare($n, 'de');
         }
+    }
+
+    /**
+     * GitHub #85 (pre-existing): the team lead's reminder carries no course title (only the
+     * course id as object id), and the bell read "Compliance reminder: " with nothing after it.
+     * The title is looked up from the course; a deleted course leaves the old text, not an error.
+     */
+    public function testComplianceReminderWithoutTitleNamesTheCourseFromItsId(): void {
+        $l = $this->createMock(IL10N::class);
+        $l->method('t')->willReturnCallback(fn (string $text, array $p = []) => vsprintf($text, $p));
+        $factory = $this->createMock(IFactory::class);
+        $factory->method('get')->willReturn($l);
+        $url = $this->createMock(IURLGenerator::class);
+        $url->method('linkToRouteAbsolute')->willReturn('https://nc.example/apps/learning/');
+        $url->method('getAbsoluteURL')->willReturn('https://nc.example/img/app.svg');
+
+        $course = new Course();
+        $course->setTitle('Arbeitsschutz 2026');
+        $courses = $this->createMock(CourseMapper::class);
+        $courses->method('findById')->willReturnCallback(
+            fn (int $id) => $id === 42 ? $course : throw new DoesNotExistException('gone')
+        );
+        $notifier = new Notifier($factory, $url, null, null, $courses);
+
+        $known = $this->makeNotification('learning', 'compliance_reminder', ['lead_user_id' => 'lead']);
+        $known->method('getObjectId')->willReturn('42');
+        $known->expects($this->once())->method('setParsedSubject')
+            ->with('Compliance reminder: Arbeitsschutz 2026')->willReturnSelf();
+        $notifier->prepare($known, 'de');
+
+        $gone = $this->makeNotification('learning', 'compliance_reminder', ['lead_user_id' => 'lead']);
+        $gone->method('getObjectId')->willReturn('7');
+        $gone->expects($this->once())->method('setParsedSubject')
+            ->with('Compliance reminder: ')->willReturnSelf();
+        $notifier->prepare($gone, 'de');
     }
 }
