@@ -549,23 +549,37 @@
 					</NcNoteCard>
 
 					<div v-if="availablePools.length > 0" class="pool-select-list">
+						<!-- GitHub #97: a pool shared "View only" cannot be added (the server lets only the
+							owner and edit shares do it); it stays in the list, greyed out with the reason,
+							so the instructor sees why instead of a failed request. -->
 						<div
 							v-for="pool in availablePools"
 							:key="pool.id"
 							class="pool-select-item"
-							:class="{ disabled: isPoolAlreadyAdded(pool.id), selected: selectedPoolIds.includes(pool.id) }"
+							:class="{ disabled: isPoolAlreadyAdded(pool.id), 'view-only': !isPoolAlreadyAdded(pool.id) && isPoolViewOnly(pool), selected: selectedPoolIds.includes(pool.id) }"
 							tabindex="0"
 							role="checkbox"
-							:aria-checked="selectedPoolIds.includes(pool.id)"
+							:aria-checked="selectedPoolIds.includes(pool.id) ? 'true' : 'false'"
+							:aria-disabled="isPoolAlreadyAdded(pool.id) || isPoolViewOnly(pool) ? 'true' : undefined"
+							:aria-describedby="!isPoolAlreadyAdded(pool.id) && isPoolViewOnly(pool) ? 'pool-view-only-' + pool.id : undefined"
 							@click="togglePoolSelection(pool)"
 							@keydown.enter="togglePoolSelection(pool)"
 							@keydown.space.prevent="togglePoolSelection(pool)">
 							<div class="pool-select-info">
 								<span class="pool-select-name">{{ pool.name }}</span>
 								<span v-if="pool.description" class="pool-select-desc">{{ pool.description }}</span>
+								<span
+									v-if="!isPoolAlreadyAdded(pool.id) && isPoolViewOnly(pool)"
+									:id="'pool-view-only-' + pool.id"
+									class="pool-view-only-reason">
+									{{ t('learning', 'Nur Besitzer oder Bearbeitende können diesen Pool einem Kurs hinzufügen.') }}
+								</span>
 							</div>
 							<span v-if="isPoolAlreadyAdded(pool.id)" class="pool-already-added">
 								{{ t('learning', 'Already added') }}
+							</span>
+							<span v-else-if="isPoolViewOnly(pool)" class="pool-view-only-badge">
+								{{ t('learning', 'View only') }}
 							</span>
 							<span v-else-if="selectedPoolIds.includes(pool.id)" class="pool-check">✓</span>
 						</div>
@@ -1703,8 +1717,15 @@ export default {
 		isPoolAlreadyAdded(poolId) {
 			return this.coursePools.some((pool) => pool.pool_id === poolId)
 		},
+		/**
+		 * GitHub #97: the rule of CourseService::canEditPool(): own pools (no is_shared) and edit
+		 * shares may be added to a course, a read share may not. The server still decides.
+		 */
+		isPoolViewOnly(pool) {
+			return !!pool?.is_shared && pool.permission !== 'edit'
+		},
 		togglePoolSelection(pool) {
-			if (this.isPoolAlreadyAdded(pool.id)) {
+			if (this.isPoolAlreadyAdded(pool.id) || this.isPoolViewOnly(pool)) {
 				return
 			}
 			const index = this.selectedPoolIds.indexOf(pool.id)
@@ -1724,6 +1745,7 @@ export default {
 			const baseSortOrder = this.coursePools.length > 0
 				? Math.max(...this.coursePools.map((pool) => pool.sort_order || 0)) + 1
 				: 0
+			const added = []
 			try {
 				for (let index = 0; index < this.selectedPoolIds.length; index++) {
 					await axios.post(url, {
@@ -1731,16 +1753,51 @@ export default {
 						sortOrder: baseSortOrder + index,
 						required: true,
 					})
+					added.push(this.selectedPoolIds[index])
 				}
 				this.selectedPoolIds = []
 				this.showAddPoolModal = false
 				this.$emit('refresh-course-detail')
 			} catch (err) {
-				const message = err.response?.data?.error || err.response?.data?.message
-				this.poolModalError = message || t('learning', 'Failed to add pool to course.')
+				// GitHub #97: say why, in the reader's language; the server's own text is English.
+				// The pools added before the failure are in the course: they leave the selection,
+				// and the course reloads, so a retry does not fail on them as duplicates.
+				const failedId = this.selectedPoolIds[added.length]
+				const failedPool = this.availablePools.find((pool) => pool.id === failedId)
+				this.selectedPoolIds = this.selectedPoolIds.filter((id) => !added.includes(id))
+				if (added.length > 0) {
+					this.$emit('refresh-course-detail')
+				}
+				const reason = this.addPoolErrorText(err)
+				this.poolModalError = failedPool
+					? t('learning', '„{pool}“ konnte nicht hinzugefügt werden: {reason}', { pool: failedPool.name, reason }, undefined, RAW)
+					: reason
 			} finally {
 				this.savingPool = false
 			}
+		},
+		/** GitHub #97: the server's error code of POST /courses/{id}/pools as a sentence. */
+		addPoolErrorText(err) {
+			const status = err?.response?.status
+			switch (err?.response?.data?.code) {
+			case 'pool_view_only':
+				return t('learning', 'Nur Besitzer oder Bearbeitende können diesen Pool einem Kurs hinzufügen.')
+			case 'pool_not_found':
+				return t('learning', 'Den Pool gibt es nicht mehr, oder er ist nicht mehr mit dir geteilt.')
+			case 'already_added':
+				return t('learning', 'Der Pool ist schon in diesem Kurs.')
+			case 'no_permission':
+				return t('learning', 'Nur Lehrkräfte dieses Kurses können Pools hinzufügen.')
+			case 'course_not_found':
+				return t('learning', 'Den Kurs gibt es nicht mehr.')
+			}
+			if (status === 429) {
+				return t('learning', 'Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.')
+			}
+			if (!err?.response) {
+				return t('learning', 'The server could not be reached. Check your connection and try again.')
+			}
+			return t('learning', 'Failed to add pool to course.')
 		},
 		confirmRemovePool(pool) {
 			this.removingPool = pool
@@ -2428,6 +2485,35 @@ export default {
 .pool-select-item.disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+/* GitHub #97: a view-only pool reads as unavailable without opacity, which took its text below
+   4.5:1; the reason stays readable. */
+.pool-select-item.view-only {
+	cursor: not-allowed;
+	background: var(--color-background-dark);
+	border-style: dashed;
+}
+
+.pool-select-item.view-only .pool-select-name {
+	color: var(--color-text-maxcontrast);
+}
+
+.pool-view-only-reason {
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+}
+
+.pool-view-only-badge {
+	padding: 3px 10px;
+	border-radius: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	flex-shrink: 0;
+	/* the "View only" badge of Pools › Shared with me */
+	background: var(--color-background-hover);
+	color: var(--color-primary-element);
+	border: 1px solid var(--color-primary-element);
 }
 
 .pool-add-confirm {

@@ -707,6 +707,23 @@ class CourseService {
     }
 
     /**
+     * GitHub #97: the user holds a share of the pool that is not an edit share ("View only").
+     */
+    private function hasReadShare(int $poolId, string $userId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_pool_shares')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->eq('shared_with', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('share_type', $qb->createNamedParameter('user')))
+            ->andWhere($qb->expr()->neq('permission', $qb->createNamedParameter('edit')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count > 0;
+    }
+
+    /**
      * Check if user is instructor of this course (creator or co-instructor member)
      */
     private function isInstructorOfCourse(Course $course, string $userId): bool {
@@ -1298,12 +1315,16 @@ class CourseService {
         $course = $this->courseMapper->findById($courseId);
 
         if (!$this->isInstructorOfCourse($course, $userId)) {
-            throw new \Exception('No permission');
+            throw new ForbiddenException('No permission');
         }
 
         // FIX-HI-2: Verify pool exists AND user has access (prevents IDOR)
         if (!$this->canEditPool($poolId, $userId)) {
-            throw new \Exception('Pool not found');
+            // GitHub #97: a read share learns why; anyone else still learns nothing about the pool.
+            if ($this->hasReadShare($poolId, $userId)) {
+                throw new PoolViewOnlyException('Pool is shared view only');
+            }
+            throw new NotFoundException('Pool not found');
         }
 
         $cp = new CoursePool();

@@ -11,11 +11,16 @@ use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CsvFormulaGuard;
 use OCA\Learning\Service\ExamAttemptPolicy;
 use OCA\Learning\Service\ExamScope;
+use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\GroupUnavailableException;
+use OCA\Learning\Service\NotFoundException;
+use OCA\Learning\Service\PoolViewOnlyException;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\DB\Exception as DbException;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http;
@@ -281,9 +286,24 @@ class CourseController extends Controller {
     #[NoAdminRequired]
     #[UserRateLimit(limit: 120, period: 60)]
     public function addPool(int $courseId, int $poolId, int $sortOrder = 0, bool $required = true): DataResponse {
+        // GitHub #97: each refusal carries a code the dialog turns into a sentence; it used to be a
+        // bare 400 "Failed to add pool" for every reason.
         try {
             $cp = $this->courseService->addPool($courseId, $poolId, $sortOrder, $required, $this->userId);
             return new DataResponse($cp, Http::STATUS_CREATED);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found', 'code' => 'course_not_found'], Http::STATUS_NOT_FOUND);
+        } catch (PoolViewOnlyException $e) {
+            return new DataResponse(['error' => 'Only the owner or editors can add this pool to a course', 'code' => 'pool_view_only'], Http::STATUS_FORBIDDEN);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission', 'code' => 'no_permission'], Http::STATUS_FORBIDDEN);
+        } catch (NotFoundException $e) {
+            return new DataResponse(['error' => 'Pool not found', 'code' => 'pool_not_found'], Http::STATUS_NOT_FOUND);
+        } catch (DbException $e) {
+            if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                return new DataResponse(['error' => 'Pool is already in this course', 'code' => 'already_added'], Http::STATUS_CONFLICT);
+            }
+            return new DataResponse(['error' => 'Failed to add pool'], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to add pool'], Http::STATUS_BAD_REQUEST);
         }

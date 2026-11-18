@@ -4062,5 +4062,12 @@ OC.L10N.register(
     "Nächster Versuch möglich am {date} ab {time} Uhr" : "Prochaine tentative possible le {date} à partir de {time}",
     "Neue Ankündigung im Kurs %s" : "Nouvelle annonce dans le cours %s",
     "Pools hinzufügen" : "Ajouter des pools",
+    "Nur Besitzer oder Bearbeitende können diesen Pool einem Kurs hinzufügen." : "Seuls le propriétaire ou les personnes pouvant modifier ce pool peuvent l’ajouter à un cours.",
+    "„{pool}“ konnte nicht hinzugefügt werden: {reason}" : "Impossible d’ajouter « {pool} » : {reason}",
+    "Den Pool gibt es nicht mehr, oder er ist nicht mehr mit dir geteilt." : "Le pool n’existe plus ou n’est plus partagé avec toi.",
+    "Der Pool ist schon in diesem Kurs." : "Le pool fait déjà partie de ce cours.",
+    "Nur Lehrkräfte dieses Kurses können Pools hinzufügen." : "Seuls les formateurs de ce cours peuvent ajouter des pools.",
+    "Den Kurs gibt es nicht mehr." : "Le cours n’existe plus.",
+    "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Trop de requêtes en peu de temps. Attends une minute, puis réessaie.",
 },
 "nplurals=2; plural=(n > 1);");

@@ -4091,6 +4091,13 @@
         "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Open a new certification cycle for {name}? The exam attempts start again. Earlier exams, confirmations and certificates are kept as evidence.",
         "Nächster Versuch möglich am {date} ab {time} Uhr": "Next attempt possible on {date} from {time}",
         "Neue Ankündigung im Kurs %s": "New announcement in the course %s",
-        "Pools hinzufügen": "Add pools"
+        "Pools hinzufügen": "Add pools",
+        "Nur Besitzer oder Bearbeitende können diesen Pool einem Kurs hinzufügen.": "Only the owner or people who can edit this pool can add it to a course.",
+        "„{pool}“ konnte nicht hinzugefügt werden: {reason}": "Could not add “{pool}”: {reason}",
+        "Den Pool gibt es nicht mehr, oder er ist nicht mehr mit dir geteilt.": "The pool no longer exists or is no longer shared with you.",
+        "Der Pool ist schon in diesem Kurs.": "The pool is already in this course.",
+        "Nur Lehrkräfte dieses Kurses können Pools hinzufügen.": "Only instructors of this course can add pools.",
+        "Den Kurs gibt es nicht mehr.": "The course no longer exists.",
+        "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Too many requests in a short time. Please wait a minute and try again."
     }
 }

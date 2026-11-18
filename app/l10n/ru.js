@@ -4062,5 +4062,12 @@ OC.L10N.register(
     "Nächster Versuch möglich am {date} ab {time} Uhr" : "Следующая попытка возможна {date} с {time}",
     "Neue Ankündigung im Kurs %s" : "Новое объявление в курсе %s",
     "Pools hinzufügen" : "Добавить пулы",
+    "Nur Besitzer oder Bearbeitende können diesen Pool einem Kurs hinzufügen." : "Добавить этот пул в курс могут только владелец или те, кто может его редактировать.",
+    "„{pool}“ konnte nicht hinzugefügt werden: {reason}" : "Не удалось добавить «{pool}»: {reason}",
+    "Den Pool gibt es nicht mehr, oder er ist nicht mehr mit dir geteilt." : "Этого пула больше нет, или он больше не открыт для тебя.",
+    "Der Pool ist schon in diesem Kurs." : "Этот пул уже есть в курсе.",
+    "Nur Lehrkräfte dieses Kurses können Pools hinzufügen." : "Добавлять пулы могут только преподаватели этого курса.",
+    "Den Kurs gibt es nicht mehr." : "Этого курса больше нет.",
+    "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Слишком много запросов за короткое время. Подожди минуту и попробуй снова.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

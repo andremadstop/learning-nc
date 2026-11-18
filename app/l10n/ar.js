@@ -4062,5 +4062,12 @@ OC.L10N.register(
     "Nächster Versuch möglich am {date} ab {time} Uhr" : "المحاولة التالية ممكنة يوم {date} ابتداءً من الساعة {time}",
     "Neue Ankündigung im Kurs %s" : "إعلان جديد في الدورة %s",
     "Pools hinzufügen" : "إضافة مجموعات",
+    "Nur Besitzer oder Bearbeitende können diesen Pool einem Kurs hinzufügen." : "لا يمكن إضافة هذه المجموعة إلى دورة إلا لمالكها أو لمن يملك صلاحية تعديلها.",
+    "„{pool}“ konnte nicht hinzugefügt werden: {reason}" : "تعذّرت إضافة «{pool}»: {reason}",
+    "Den Pool gibt es nicht mehr, oder er ist nicht mehr mit dir geteilt." : "لم تعد هذه المجموعة موجودة، أو لم تعد مشتركة معك.",
+    "Der Pool ist schon in diesem Kurs." : "هذه المجموعة موجودة بالفعل في هذه الدورة.",
+    "Nur Lehrkräfte dieses Kurses können Pools hinzufügen." : "لا يمكن إضافة المجموعات إلا لمدرّبي هذه الدورة.",
+    "Den Kurs gibt es nicht mehr." : "لم تعد هذه الدورة موجودة.",
+    "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "طلبات كثيرة جدًا في وقت قصير. يُرجى الانتظار دقيقة ثم المحاولة مرة أخرى.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
