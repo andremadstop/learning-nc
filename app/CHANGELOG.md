@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.15.0] - 2026-11-18 — Dead links explained, calendar feed limits, build and API fixes
+
+Links that lead nowhere now say why and offer a way on (#82), the public calendar feeds have a
+limit per address, and the second wave of quality checks (#65) found and fixed several things the
+production bundle and the API did differently from the tests. Thanks to @alphalib-g for #82.
+
+> **Administrators, please read:**
+> - **No migration.** The database schema is the same as in 5.14.1.
+> - **Calendar feeds are limited** to 120 requests per 10 minutes per IP address and route. That
+>   leaves room for many subscribers behind one address (a school network, Google's shared
+>   fetchers). If an instance needs more, raise it with Nextcloud's `ratelimit_overwrite` system
+>   setting, for example
+>   `'ratelimit_overwrite' => ['learning.ics.feed' => ['anon' => ['limit' => 300, 'period' => 600]], 'learning.export.exporticspublic' => ['anon' => ['limit' => 300, 'period' => 600]]]`
+>   (route names in lower case; the second one is the old feed address from 2.7.0).
+> - **Before an update**, `scripts/schema-drift.sh` in the repository compares the schema of an
+>   instance with a fresh one and with the entities of the new version, and names columns or
+>   tables that would break it. How to dump the live schema: TESTING.md, "Before every release".
+
+### Added
+- **Dead links explained** (#82). A course that was deleted, is not shared with you or never
+  existed, a pool or question link to a pool that is gone, an archived course, a course area you
+  cannot open, an adventure link while gamification is off and an unknown address inside the app
+  each get a short explanation and a way on, in all six languages and announced to screen
+  readers. "Deleted" and "no access" look the same, so the page never reveals a course you may
+  not see.
+- **Schema check for administrators**: `scripts/schema-drift.sh` (see above), with a self-test.
+
+### Changed
+- **Public calendar feeds** are limited to 120 requests per 10 minutes per IP address, with the
+  `ratelimit_overwrite` escape hatch above. Before, they had no limit.
+- **Support tickets**: the author of a ticket no longer receives its AI triage through the API.
+  The interface shows the same as before; administrators keep the triage in their inbox.
+- **Route security is declared with PHP attributes** (`#[NoAdminRequired]`, `#[NoCSRFRequired]`,
+  `#[PublicPage]`) instead of PHPDoc annotations. No route changes its behaviour.
+- **ESLint 10 with a flat config** (#71), with the same strictness as before. Development only;
+  nothing of it ships in the app.
+- **API contract**: course pool and member rows are sent with all their fields instead of
+  `{"id": N}`.
+
+### Fixed
+- **Classes and attributes dropped in nine components.** The production bundle kept template
+  comments, which turned these components into fragments, so classes and attributes passed by
+  the parent were lost without a warning. The bundle has no template comments any more.
+- **Responses that held only `{"id": N}`** carry all their fields again.
+- **PBQ grading in exams**: a native `change` event from a dropdown or the cable, diagnosis or
+  CLI simulators was saved as the answer and graded the question wrongly.
+- **Question language switcher**: the DE/EN buttons in training, exam, Leitner, smart queue, duel
+  and game show switch the question language again.
+- **Deep links through `index.php`** (`/index.php/apps/learning/...`, older links and bookmarks)
+  keep their route instead of ending on the start view.
+- **VirtuProf panel**: every touch ran its touch handlers twice.
+
 ## [5.14.1] - 2026-11-17 — Pools on long-running installs, app icon caches
 
 A hotfix for two things alphalib-g ran into after 5.14.0 (#81, #83), and for pools on installs
