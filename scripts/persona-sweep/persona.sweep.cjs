@@ -1175,6 +1175,13 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		if ((await isTicked(file)) !== false) rec.add('materials', `"${file}" made optional again, but still ticked after a reload`)
 	})
 	await station(page, rec, 'Administration › Course rules › Certification', async () => {
+		// "Certificate design" asks for its logo choice after it mounted (CertLayoutSettings#loadLogos).
+		// The logo check below waits for that answer, not for a fixed time: under load (the C9 run,
+		// parallel to Integration and Lifecycle) it judged the list before the answer was in.
+		const logosAnswer = page.waitForResponse(
+			(r) => r.request().method() === 'GET' && /\/apps\/learning\/api\/courses\/\d+\/cert-layout\/logos(\?|$)/.test(r.url()),
+			{ timeout: 30000 },
+		).catch(() => null)
 		await openMegaTab(page, 'Administration')
 		const heading = page.getByText('Certification', { exact: true }).first()
 		await heading.scrollIntoViewIfNeeded()
@@ -1210,6 +1217,9 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		// @nextcloud/vue 9 puts the attributes of a radio switch on its <input>
 		const libraryRadio = page.locator(`input[data-test="cert-layout-logo-${seed.certificate.logoId}"]`)
 		const libraryOption = page.locator('[data-test="cert-layout-logo"] .checkbox-radio-switch').filter({ hasText: seed.certificate.logoName })
+		if (!(await logosAnswer)) rec.add('certificate-design', '"Certificate design" never asked for its logos (no answer from cert-layout/logos within 30 s)')
+		// the answer is in; give Vue the render of the list
+		await libraryRadio.waitFor({ state: 'attached', timeout: 5000 }).catch(() => {})
 		if (!(await libraryRadio.count())) rec.add('certificate-design', `the library logo "${seed.certificate.logoName}" is not offered in "Certificate design"`)
 		else if (!(await libraryRadio.isChecked().catch(() => false))) rec.add('certificate-design', `the library logo "${seed.certificate.logoName}" the course uses is not the selected one`)
 		await page.locator('[data-test="cert-layout-org"]').scrollIntoViewIfNeeded().catch(() => {})
