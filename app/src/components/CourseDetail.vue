@@ -278,6 +278,10 @@ const VERWALTUNG_LEAVES = ['mode-config', 'schedule']
 // GitHub #82: every leaf there is; a tab segment outside it is a mistyped or outdated address.
 const ALL_LEAVES = [...LERNRAUM_LEAVES, ...TEILNEHMER_LEAVES, ...WETTBEWERB_LEAVES, ...KOMMUNIKATION_LEAVES, ...VERWALTUNG_LEAVES]
 
+// Placeholder values are shown as written: Vue escapes {{ }} and attributes itself; the default
+// escaping of @nextcloud/l10n would show "Netzwerk &amp; Sicherheit" (GitHub #87 / #92 review).
+const RAW = { escape: false, sanitize: false }
+
 export default {
 	name: 'CourseDetail',
 
@@ -937,7 +941,7 @@ export default {
 			}
 			const area = target ? String(target.textContent || '').replace(/\s+/g, ' ').trim() : ''
 			this.guideAnnouncement = area
-				? t('learning', 'Geöffnet: {area}', { area })
+				? t('learning', 'Geöffnet: {area}', { area }, undefined, RAW)
 				: ''
 		},
 		/**

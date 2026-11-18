@@ -156,7 +156,7 @@
 					</NcButton>
 				</div>
 				<NcNoteCard v-else-if="examExhaustedPools.length > 0" type="warning" class="exam-next-step" data-test="exam-tab-exhausted">
-					<p>{{ t('learning', 'Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.', { pools: examExhaustedPools.join(', ') }) }}</p>
+					<p>{{ t('learning', 'Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.', { pools: examExhaustedPools.join(', ') }, undefined, RAW) }}</p>
 					<NcButton v-if="examGuide && examGuide.askInstructor" variant="primary" data-test="exam-tab-ask" @click="guideTo('my-questions')">
 						{{ t('learning', 'Frage an die Kursleitung') }}
 					</NcButton>
@@ -751,6 +751,10 @@ import { getPassStatus } from '../services/CourseService.js'
 import { attemptsLeft } from '../utils/certificationCycle.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
+// Placeholder values are shown as written: Vue escapes {{ }} and attributes itself; the default
+// escaping of @nextcloud/l10n would show "Netzwerk &amp; Sicherheit" (GitHub #87 / #92 review).
+const RAW = { escape: false, sanitize: false }
+
 export default {
 	name: 'CourseTabLernraum',
 
@@ -846,6 +850,7 @@ export default {
 
 	data() {
 		return {
+			RAW,
 			currentSubTab: '',
 			knowledgePendingCount: 0,
 			selectedLearningPool: null,
@@ -1137,7 +1142,7 @@ export default {
 				return t('learning', 'Weiter zum Abschluss')
 			}
 			const tab = this.visibleSubTabs.find((entry) => entry.id === this.materialsNext)
-			return t('learning', 'Weiter: {area}', { area: tab ? tab.label : '' })
+			return t('learning', 'Weiter: {area}', { area: tab ? tab.label : '' }, undefined, RAW)
 		},
 	},
 

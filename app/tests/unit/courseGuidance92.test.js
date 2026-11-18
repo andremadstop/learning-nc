@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick, ref } from 'vue'
 
-vi.hoisted(() => {
-	globalThis.t = (_app, text, vars = {}) => Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(String(v)), String(text))
-	globalThis.n = (_app, s, p, c) => (c === 1 ? s : p)
+// The real translate() of @nextcloud/l10n, not a mock: it escapes placeholder values by default,
+// and a mock that never escapes cannot see "Abschluss &amp; Zertifikat" (GitHub #87 / #92 review).
+await vi.hoisted(async () => {
+	const l10n = await import('@nextcloud/l10n')
+	globalThis.t = l10n.translate
+	globalThis.n = l10n.translatePlural
 })
 
 const { api } = vi.hoisted(() => ({ api: { course: null, videos: [], passStatus: {} } }))
@@ -224,6 +227,18 @@ describe('CourseDetail guides the learner on (GitHub #92)', () => {
 		host.querySelector('[data-test="exam-tab-ask"]').click()
 		await flush()
 		expect(detail.currentTab).toBe('my-questions')
+	})
+
+	it('the exam tab names a pool as written, "&" and apostrophe included', async () => {
+		api.course = course({ pools: [{ pool_id: 3, pool_name: "Netzwerk & O'Reilly", question_count: 10 }] })
+		api.passStatus = { applicable: true, passed: false, threshold: 80, requirement: 'any_exam', pools: [], certificate_issued: false, certificate: null, attempt_policy: { limit_per_day: 5, cooldown_minutes: 10, total_limit: 3, used_by_pool: { 3: 3 } } }
+		await mountDetail()
+		nextStep().click()
+		await flush()
+
+		const note = host.querySelector('[data-test="exam-tab-exhausted"]')
+		expect(note.textContent).toContain("Keine Prüfungsversuche mehr für: Netzwerk & O'Reilly.")
+		expect(note.textContent).not.toContain('&amp;')
 	})
 
 	it('the exam tab leads to the certificate once there is one', async () => {
