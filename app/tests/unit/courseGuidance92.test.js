@@ -237,6 +237,15 @@ describe('CourseDetail guides the learner on (GitHub #92)', () => {
 		expect(detail.activeMegaTab).toBe('abschluss')
 	})
 
+	it('in the renewal window the exam tab offers no certificate button: the renewal exam is next', async () => {
+		api.passStatus = { applicable: true, passed: false, threshold: 80, requirement: 'any_exam', pools: [], certificate_issued: true, renewal_open_since: 1735689600, certificate: { verification_id: 'v', expired: false, revoked: false }, attempt_policy: { limit_per_day: 5, cooldown_minutes: 10, total_limit: null, used_by_pool: {} } }
+		await mountDetail()
+		nextStep().click()
+		await flush()
+
+		expect(host.querySelector('[data-test="exam-tab-certificate"]')).toBeNull()
+	})
+
 	it('instructors get no next-step buttons', async () => {
 		api.course = course({ is_instructor: true })
 		await mountDetail({ userRole: 'instructor' })

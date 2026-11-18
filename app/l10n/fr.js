@@ -4054,7 +4054,7 @@ OC.L10N.register(
     "Zur Prüfung" : "Passer à l’examen",
     "Weiter zum Abschluss" : "Continuer vers la fin du cours",
     "Weiter: {area}" : "Continuer : {area}",
-    "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "Plus aucune tentative d’examen pour : {pools}. Ton formateur a été prévenu et peut ouvrir un nouveau cycle de certification.",
+    "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "Plus aucune tentative d’examen pour : {pools}. Ton responsable de cours a été notifié et peut ouvrir un nouveau cycle de certification.",
     "Geöffnet: {area}" : "Ouvert : {area}",
     "Bisher: {failed}, {left}" : "Jusqu’ici : {failed}, {left}",
 },

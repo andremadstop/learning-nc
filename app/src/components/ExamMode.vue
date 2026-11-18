@@ -817,7 +817,11 @@ export default {
       const certValid = !!cert && !cert.revoked && !cert.expired
       const poolPassed = c.exam_passed === true
         || (Array.isArray(c.pools) && c.pools.some(p => Number(p.pool_id) === Number(c.pool_id) && p.passed))
-      if ((c.certificate_issued || (c.passed && certValid && !c.issuance_error)) && this.guide.certificate) {
+      // A valid certificate in its renewal window is not the next step after a failed attempt:
+      // the renewal exam is (certificate_issued means "a valid one exists", not "issued now").
+      const renewalOpen = Number(c.renewal_open_since) > 0
+      const certReady = c.certificate_issued || (c.passed && certValid && !c.issuance_error)
+      if (certReady && (c.exam_passed === true || !renewalOpen) && this.guide.certificate) {
         return { kind: 'certificate', retake: true, attemptsLine: '' }
       }
       if (poolPassed) {

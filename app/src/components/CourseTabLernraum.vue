@@ -1035,9 +1035,11 @@ export default {
 		examCertRequiresPools() {
 			return this.examCertStatus?.requirement === 'required_pools'
 		},
-		// GitHub #92: a valid certificate exists (certificate_issued: not revoked, not expired)
+		// GitHub #92: a valid certificate exists (certificate_issued: not revoked, not expired) and
+		// no renewal is open — in the renewal window the renewal exam is the next step
 		examCertReady() {
 			return this.examCertStatus?.certificate_issued === true
+				&& !(Number(this.examCertStatus?.renewal_open_since) > 0)
 		},
 		// GitHub #92 / #87: the course pools on which this learner has no attempt left in the
 		// current cycle and which the certificate still needs

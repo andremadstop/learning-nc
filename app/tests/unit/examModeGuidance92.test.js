@@ -144,6 +144,19 @@ describe('ExamMode result guidance (GitHub #92)', () => {
 		expect(clear).toHaveBeenCalled()
 	})
 
+	it('a failed renewal exam leads to the countdown and the materials, not to the old certificate', async () => {
+		await showResult({ applicable: true, passed: false, threshold: 70, exam_passed: false, requirement: 'any_exam', certificate_issued: true, certificate: validCert, renewal_open_since: 1735689600, pool_id: 3, attempt_policy: policy({ total_limit: 3, used_by_pool: { 3: 1 } }) })
+
+		expect(primaries()).toEqual(['Zurück zum Lernmaterial'])
+		expect(button('guide-certificate')).toBeNull()
+		expect(button('result-attempts')).not.toBeNull()
+	})
+
+	it('a passed renewal exam leads to the certificate', async () => {
+		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate: validCert, renewal_open_since: 1735689600, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+		expect(primaries()).toEqual(['Zu meinem Zertifikat'])
+	})
+
 	it('no attempt left: a question to the instructors is the way on, and there is no retake', async () => {
 		await showResult({ applicable: true, passed: false, threshold: 70, exam_passed: false, requirement: 'any_exam', certificate_issued: false, certificate: null, pool_id: 3, attempt_policy: policy({ total_limit: 3, used_by_pool: { 3: 3 } }) })
 
