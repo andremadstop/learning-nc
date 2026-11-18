@@ -187,7 +187,7 @@
           <p v-if="certificationMessage.retake" class="certification-result__retake">{{ certificationMessage.retake }}</p>
           <NcButton
             v-if="certificationMessage.verificationId"
-            :variant="resultGuidance && resultGuidance.kind === 'certificate' ? 'secondary' : 'primary'"
+            :variant="resultGuidance ? 'secondary' : 'primary'"
             class="certification-result__action"
             @click="certificateModalOpen = true"
           >
@@ -801,16 +801,29 @@ export default {
     /**
      * GitHub #92: the one next step after a counting exam in a certifying course, or null (pool
      * window, practice, a failed certificate check, no guide from the course: unchanged screen).
-     * - 'certificate': a valid certificate exists — to the completion area;
-     * - 'next-pool': this pool is passed, other required pools are still open — to the pool list;
+     * - 'certificate': a valid certificate exists outside its renewal window — to the completion
+     *   area (in the renewal window the existing certificate is the old one; a renewal that
+     *   issues a new certificate closes the window, so an open window means "not renewed yet");
+     * - 'next-pool': this pool is passed, but no certificate is ready (other required pools open,
+     *   a pool the certificate does not require, a renewal still missing pools, …) — to the
+     *   exam overview;
      * - 'ask': no attempt left on this pool, or a pass that cannot become a certificate (revoked
-     *   without a new cycle, expired without an open period) — a question to the instructors;
+     *   without a new cycle, expired without an open period, issuance failed) — a question to
+     *   the instructors;
      * - 'retry': not passed with attempts left — countdown, attempts and back to the materials.
      * retake: whether "retake" is still offered (always as the quiet button after a pass).
+     * After a pass the result never falls back to the old screen with "Retake Exam" as the
+     * bright button.
      */
     resultGuidance() {
-      if (!this.guide || this.screen !== 'results' || !this.certificationApplies) return null
+      if (!this.guide || this.screen !== 'results' || this.isPracticeResult) return null
       const c = this.certification
+      // The certificate check failed, but the attempt reached the pass mark: the note sends the
+      // learner to the completion tab, so that is the way on — not retaking a passed exam.
+      if (c && c.error && c.exam_passed === true) {
+        return { kind: this.guide.certificate ? 'certificate' : 'next-pool', retake: true, attemptsLine: '' }
+      }
+      if (!this.certificationApplies) return null
       // GitHub #35: the instructor in the student view gets no certificate; nothing to lead to.
       if (c.issuance_error === 'instructor_of_course') return null
       const cert = c.certificate && typeof c.certificate === 'object' ? c.certificate : null
@@ -821,20 +834,24 @@ export default {
       // the renewal exam is (certificate_issued means "a valid one exists", not "issued now").
       const renewalOpen = Number(c.renewal_open_since) > 0
       const certReady = c.certificate_issued || (c.passed && certValid && !c.issuance_error)
-      if (certReady && (c.exam_passed === true || !renewalOpen) && this.guide.certificate) {
+      if (certReady && !renewalOpen && this.guide.certificate) {
         return { kind: 'certificate', retake: true, attemptsLine: '' }
       }
       if (poolPassed) {
-        const missing = c.requirement === 'required_pools' && Array.isArray(c.pools) && c.pools.some(p => !p.passed)
-        if (missing && c.counts_for_requirement !== false) {
-          return { kind: 'next-pool', retake: true, attemptsLine: '' }
-        }
-        // a pass that the messages above send to the instructor (revoked, expired, not issued)
-        if (c.passed && cert && (cert.revoked || cert.expired) && this.guide.askInstructor) {
-          // exams taken now renew nothing (see certificationMessage); retaking leads nowhere
+        // a pass the certificate message sends to the people in charge (issuance failed: the
+        // next check retries it, retaking does not help)
+        if (c.passed && c.issuance_error && this.guide.askInstructor) {
           return { kind: 'ask', retake: false, attemptsLine: '' }
         }
-        return null
+        const missing = c.requirement === 'required_pools' && Array.isArray(c.pools) && c.pools.some(p => !p.passed)
+        if (missing) {
+          return { kind: 'next-pool', retake: true, attemptsLine: '' }
+        }
+        // revoked or expired: exams taken now renew nothing (see certificationMessage)
+        if (c.passed && cert && (cert.revoked || cert.expired) && this.guide.askInstructor) {
+          return { kind: 'ask', retake: false, attemptsLine: '' }
+        }
+        return { kind: 'next-pool', retake: true, attemptsLine: '' }
       }
       const policy = c.attempt_policy
       const left = attemptsLeft(policy, c.pool_id)

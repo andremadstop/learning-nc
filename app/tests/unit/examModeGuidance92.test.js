@@ -85,7 +85,8 @@ describe('ExamMode result guidance (GitHub #92)', () => {
 	}
 
 	const button = (test) => host.querySelector(`[data-test="${test}"]`)
-	const primaries = () => Array.from(host.querySelectorAll('.start-actions .nc-button[data-variant="primary"]')).map((b) => b.textContent.trim())
+	// every bright button on the result screen, the certificate note included
+	const primaries = () => Array.from(host.querySelectorAll('.nc-button[data-variant="primary"]')).map((b) => b.textContent.trim())
 
 	afterEach(() => {
 		app?.unmount()
@@ -152,9 +153,57 @@ describe('ExamMode result guidance (GitHub #92)', () => {
 		expect(button('result-attempts')).not.toBeNull()
 	})
 
-	it('a passed renewal exam leads to the certificate', async () => {
-		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate: validCert, renewal_open_since: 1735689600, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+	it('a renewal that issued the new certificate (window closed again) leads to the certificate', async () => {
+		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate: { ...validCert, verification_id: 'vid-2' }, renewal_open_since: null, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
 		expect(primaries()).toEqual(['Zu meinem Zertifikat'])
+	})
+
+	it('a renewal pool passed while another required pool is open leads to the overview, not to the old certificate', async () => {
+		const pools = [{ pool_id: 3, title: 'A', passed: true }, { pool_id: 4, title: 'B', passed: false }]
+		await showResult({ applicable: true, passed: false, threshold: 70, exam_passed: true, requirement: 'required_pools', pools, counts_for_requirement: true, certificate_issued: true, certificate: validCert, renewal_open_since: 1735689600, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+
+		expect(primaries()).toEqual(['Zur Prüfungsübersicht'])
+		expect(button('guide-certificate')).toBeNull()
+		// the old certificate stays reachable, but only as the quiet button in the note
+		expect(host.querySelector('.certification-result .nc-button').getAttribute('data-variant')).toBe('secondary')
+	})
+
+	it('a renewal pass whose new certificate could not be issued asks the instructors, no retake', async () => {
+		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate: validCert, issuance_error: 'issuance_failed', renewal_open_since: 1735689600, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+
+		expect(primaries()).toEqual(['Frage an die Kursleitung'])
+		expect(button('guide-certificate')).toBeNull()
+		expect(button('guide-retake')).toBeNull()
+	})
+
+	it('a pass whose certificate cannot be signed asks the instructors instead of offering "Retake Exam"', async () => {
+		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: false, certificate: null, issuance_error: 'signing_unavailable', pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+
+		expect(primaries()).toEqual(['Frage an die Kursleitung'])
+		expect(button('guide-retake')).toBeNull()
+		expect(primaries()).not.toContain('Retake Exam')
+	})
+
+	it('a pass on a pool the certificate does not require leads to the overview', async () => {
+		const pools = [{ pool_id: 4, title: 'B', passed: false }]
+		await showResult({ applicable: true, passed: false, threshold: 70, exam_passed: true, requirement: 'required_pools', pools, counts_for_requirement: false, certificate_issued: false, certificate: null, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+
+		expect(primaries()).toEqual(['Zur Prüfungsübersicht'])
+		expect(button('guide-retake').getAttribute('data-variant')).toBe('tertiary')
+	})
+
+	it('a pass whose certificate check failed leads to the completion area, not to retaking', async () => {
+		await showResult({ course_id: 7, error: 'evaluation_failed', threshold: 70, exam_score: 90, exam_passed: true }, { correct: 18 })
+
+		expect(primaries()).toEqual(['Zu meinem Zertifikat'])
+		expect(primaries()).not.toContain('Retake Exam')
+		expect(button('guide-retake').getAttribute('data-variant')).toBe('tertiary')
+	})
+
+	it('a failed attempt whose certificate check failed keeps the old screen', async () => {
+		await showResult({ course_id: 7, error: 'evaluation_failed', threshold: 70, exam_score: 40, exam_passed: false }, { correct: 8 })
+		expect(button('result-guidance')).toBeNull()
+		expect(primaries()).toEqual(['Retake Exam'])
 	})
 
 	it('no attempt left: a question to the instructors is the way on, and there is no retake', async () => {
