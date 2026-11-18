@@ -38,6 +38,8 @@ class ExamAttemptLimitServiceTest extends TestCase {
     private INotificationManager $notifications;
     /** @var \ArrayObject<int, INotification> */
     private \ArrayObject $sent;
+    /** @var \ArrayObject<string, string> learner preferences (the "already notified" markers) */
+    private \ArrayObject $prefs;
 
     protected function setUp(): void {
         $this->course = new Course();
@@ -57,6 +59,7 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $this->pass = $this->createMock(PassCriteriaService::class);
         $this->pass->method('attemptCycleStart')->willReturn(1500);
         $this->sent = new \ArrayObject();
+        $this->prefs = new \ArrayObject();
         $this->notifications = $this->createMock(INotificationManager::class);
         $this->notifications->method('createNotification')->willReturnCallback(fn () => CertificationCycleServiceTest::fakeNotification($this));
         $this->notifications->method('notify')->willReturnCallback(function (INotification $n): void { $this->sent[] = $n; });
@@ -78,7 +81,14 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $summary->method('getPoolTitles')->willReturn([self::POOL => 'Fire safety']);
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getDateTime')->willReturn(new \DateTime('@1700000000'));
-        return new ExamAttemptLimitService($db, $courses, $this->members, $this->pass, $summary, $this->notifications, $time, $this->createMock(LoggerInterface::class));
+        $summary->method('getCoursePoolIds')->willReturn([self::POOL]);
+        $time->method('getTime')->willReturn(1700000000);
+        $config = $this->createMock(\OCP\IConfig::class);
+        $prefs = $this->prefs;
+        $config->method('getUserValue')->willReturnCallback(fn (string $u, string $a, string $k, $d = '') => $prefs[$u . '/' . $k] ?? $d);
+        $config->method('setUserValue')->willReturnCallback(function (string $u, string $a, string $k, $v) use ($prefs): void { $prefs[$u . '/' . $k] = (string)$v; });
+        $config->method('deleteUserValue')->willReturnCallback(function (string $u, string $a, string $k) use ($prefs): void { unset($prefs[$u . '/' . $k]); });
+        return new ExamAttemptLimitService($db, $courses, $this->members, $this->pass, $summary, $this->notifications, $time, $this->createMock(LoggerInterface::class), $config);
     }
 
     private static function used(int $n): FakeQueryBuilder {
@@ -135,12 +145,23 @@ class ExamAttemptLimitServiceTest extends TestCase {
         self::assertNull(ExamAttemptLimitService::limitFor($this->course));
     }
 
-    public function testTheLastAttemptNotifiesOnceAfterCompletion(): void {
+    /**
+     * Once per learner, pool and cycle — also after the instructors dismissed it (getCount is 0
+     * again then), so a learner retrying the refused start does not flood them. A new cycle
+     * clears the marker, and the next used-up cycle is reported again.
+     */
+    public function testTheLastAttemptNotifiesOncePerCycle(): void {
         $this->pass->method('examStandings')->willReturn(['users' => ['anna' => ['passed' => false, 'pools' => []]]]);
-        $this->notifications->method('getCount')->willReturnOnConsecutiveCalls(0, 0, 1, 1);
+        $this->notifications->method('getCount')->willReturn(0);
         $this->service([self::used(3)])->afterExamCompleted('anna', self::COURSE, self::POOL);
-        $this->service([self::used(3)])->afterExamCompleted('anna', self::COURSE, self::POOL);
-        self::assertCount(2, $this->sent, 'one per instructor, the second completion adds none');
+        try {
+            $this->service([self::used(3)])->assertCanStart('anna', self::COURSE, self::POOL);
+        } catch (ExamAttemptLimitException $e) {
+        }
+        self::assertCount(2, $this->sent, 'one per instructor, the refused start adds none');
+
+        $this->service([])->clearNotifications('anna', self::COURSE, 1500);
+        self::assertCount(0, $this->prefs, 'the new cycle removes the marker');
     }
 
     public function testThePolicyShowsTheLimitAndTheUsedAttempts(): void {

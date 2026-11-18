@@ -147,10 +147,12 @@ class CertificationCycleService {
         if ($reason === null) {
             throw new NothingToResetException();
         }
-        // Before the period changes: the old cycle's notification ids depend on its start.
-        $this->attemptLimit->clearNotifications($uid, $courseId);
+        // Read before the period changes (the old cycle's notification ids depend on its start),
+        // cleared only once the new cycle is committed — a refused reopen keeps them.
+        $oldSince = $this->passCriteria->attemptCycleStart($uid, $courseId);
         $verificationId = $newest !== null && $reason !== self::REASON_ATTEMPTS ? (string)$newest->getVerificationId() : null;
         $since = $this->assignmentService->reopenPeriod($courseId, $uid, $reason, $instructorId, $verificationId);
+        $this->attemptLimit->clearNotifications($uid, $courseId, $oldSince);
         $this->notifyLearner($uid, $course, 'certification_cycle_opened', 'certification_cycle', hash('sha1', $courseId . ':' . $uid . ':' . $since));
         return ['reason' => $reason, 'since' => $since];
     }

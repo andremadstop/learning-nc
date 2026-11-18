@@ -113,6 +113,23 @@ describe('ExamMode — course practice exam', () => {
 		expect(vm.screen).not.toBe('exam')
 	})
 
+	// GitHub #87: the refusals reached learners as raw English server text.
+	it('explains the used-up total limit, the daily limit and the cooldown in the reader\'s language', async () => {
+		const { showError } = await import('@nextcloud/dialogs')
+		const cases = [
+			[409, 'exam_attempts_exhausted', 'Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.'],
+			[400, 'Exam attempt limit reached for the last 24 hours', 'Das Limit an Prüfungsversuchen für die letzten 24 Stunden ist erreicht. Bitte versuche es später erneut.'],
+			[400, 'Exam cooldown active', 'Zwischen zwei Prüfungsversuchen gilt eine Wartezeit. Bitte versuche es später erneut.'],
+		]
+		for (const [status, error, text] of cases) {
+			axios.post.mockRejectedValue({ response: { status, data: { error } } })
+			const vm = createInstance({ poolId: 42, totalQuestions: 60 })
+			await vm.startExam(vm.visiblePresets[0])
+			expect(showError).toHaveBeenLastCalledWith(text)
+			expect(vm.screen).not.toBe('exam')
+		}
+	})
+
 	it('starts through the course endpoint, not the pool endpoint', async () => {
 		axios.post.mockResolvedValue(startResponse())
 		const vm = createInstance({ practice: true, practiceConfig: { questions: 1, minutes: 0, passPercent: 75 } })

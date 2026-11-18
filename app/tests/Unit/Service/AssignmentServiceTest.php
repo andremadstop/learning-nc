@@ -376,7 +376,8 @@ class AssignmentServiceTest extends TestCase {
         $values = array_column($insert->namedParameters, 'value');
         $this->assertContains('assigned', $values);
         $this->assertContains('revoked', $values);
-        $this->assertContains('teacher', $values);
+        $this->assertContains('instructor', $values, 'assigned_by is a role marker');
+        $this->assertNotContains('teacher', $values, 'the instructor uid is not stored on the period');
         $this->assertContains(self::CP_COURSE . ':user:' . self::CP_USER, $values);
         $this->assertSame(['course_id' => self::CP_COURSE, 'subject_type' => 'user', 'reason' => 'revoked', 'opened_at' => $since, 'verification_id' => 'vid-1'], $context);
         $this->assertStringNotContainsString(self::CP_USER, (string)json_encode($context), 'no uid in the chained context');

@@ -228,3 +228,45 @@ describe('Course default in Administration (#47)', () => {
 		expect(certBlock).toContain('</template>')
 	})
 })
+
+// GitHub #87: the total attempt limit is saved with the course rules — only while the course
+// certifies (without a pass mark nobody can fail, the field is hidden then).
+describe('Total exam attempt limit in Administration (#87)', () => {
+	beforeEach(() => {
+		axios.patch.mockReset()
+	})
+
+	it('sends examAttemptLimit with certification on, 0 for an empty field, and reads it back', async () => {
+		axios.patch.mockResolvedValue({ data: { certEnabled: true, certPassPercent: 80, certRequiredPoolIds: [], certValidityDays: 0, examQuestions: null, examMinutes: null, examAttemptLimit: 3 } })
+		const vm = instanceOf(CourseTabVerwaltung, { courseId: 7, course: null, userRole: 'instructor', activeTab: 'mode-config' })
+		vm.certEnabled = true
+		vm.examAttemptLimit = '3'
+		await vm.saveCertConfig()
+		expect(axios.patch.mock.calls[0][1]).toMatchObject({ examAttemptLimit: 3 })
+		expect(vm.examAttemptLimit).toBe('3')
+
+		axios.patch.mockResolvedValue({ data: { certEnabled: true, examAttemptLimit: null } })
+		vm.examAttemptLimit = ''
+		await vm.saveCertConfig()
+		expect(axios.patch.mock.calls[1][1]).toMatchObject({ examAttemptLimit: 0 })
+		expect(vm.examAttemptLimit).toBe('')
+	})
+
+	it('leaves the limit out without certification', async () => {
+		axios.patch.mockResolvedValue({ data: { certEnabled: false } })
+		const vm = instanceOf(CourseTabVerwaltung, { courseId: 7, course: null, userRole: 'instructor', activeTab: 'mode-config' })
+		vm.certEnabled = false
+		vm.examAttemptLimit = '3'
+		await vm.saveCertConfig()
+		expect(axios.patch.mock.calls[0][1]).not.toHaveProperty('examAttemptLimit')
+	})
+
+	it('refuses a limit above 50 without a request', async () => {
+		const vm = instanceOf(CourseTabVerwaltung, { courseId: 7, course: null, userRole: 'instructor', activeTab: 'mode-config' })
+		vm.certEnabled = true
+		vm.examAttemptLimit = '51'
+		await vm.saveCertConfig()
+		expect(axios.patch).not.toHaveBeenCalled()
+		expect(vm.$emit).toHaveBeenCalledWith('error', 'Prüfungsversuche: eine ganze Zahl von 1 bis 50, oder leer für unbegrenzt.')
+	})
+})

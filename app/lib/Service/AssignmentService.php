@@ -263,7 +263,8 @@ class AssignmentService {
      *
      * Ends whatever period holds the subject's UNIQUE slot (active_period_key), whatever its status
      * — after a revoke that is usually the 'passed' period that issued the revoked certificate —
-     * and inserts a fresh 'assigned' period with assigned_at = now and the reason. Nothing is
+     * and inserts a fresh 'assigned' period with assigned_at = now, the reason and assigned_by =
+     * 'instructor' (a marker, never a uid). Nothing is
      * deleted: the old period row stays as history with its status. Both writes and the
      * PERIOD_REOPENED compliance event commit together or not at all; a concurrent writer that
      * took the slot in between makes the INSERT fail, everything rolls back and the exception
@@ -296,7 +297,9 @@ class AssignmentService {
                     'course_id'         => $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
                     'subject_type'      => $qb->createNamedParameter('user'),
                     'subject_id'        => $qb->createNamedParameter($userId),
-                    'assigned_by'       => $qb->createNamedParameter($instructorId),
+                    // A role marker, not the uid: who it was is in the non-chain audit log below,
+                    // which the account deletion and the retention already clean up.
+                    'assigned_by'       => $qb->createNamedParameter('instructor'),
                     'assigned_at'       => $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT),
                     'due_date'          => $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
                     'status'            => $qb->createNamedParameter('assigned'),

@@ -125,4 +125,32 @@ class ExamScopeConfigTest extends TestCase {
         $this->assertSame(400, $response->getStatus());
         $this->assertSame('exam_minutes must be 1–600', $response->getData()['error']);
     }
+
+    /**
+     * GitHub #87: the total attempt limit is saved with the certification settings and answered
+     * back by the name the course rules read (examAttemptLimit); 0 = unlimited, out of range = 400.
+     */
+    public function testTheAttemptLimitIsSavedAndClearedWithZero(): void {
+        $controller = $this->makeController('teacher');
+        $response = $controller->updateCertConfig(7, examAttemptLimit: 3);
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(3, $response->getData()['examAttemptLimit']);
+        $this->assertSame(3, $this->course->jsonSerialize()['exam_attempt_limit']);
+
+        $response = $controller->updateCertConfig(7, examAttemptLimit: 0);
+        $this->assertNull($response->getData()['examAttemptLimit'], '0 = unlimited');
+        $this->assertNull($this->course->getExamAttemptLimit());
+
+        $kept = $controller->updateCertConfig(7, examQuestions: 25);
+        $this->assertNull($kept->getData()['examAttemptLimit'], 'omitted = unchanged');
+    }
+
+    public function testAnAttemptLimitOutOfRangeIsRefused(): void {
+        foreach ([-1, 51] as $value) {
+            $this->updated = [];
+            $response = $this->makeController('teacher')->updateCertConfig(7, examAttemptLimit: $value);
+            $this->assertSame(400, $response->getStatus(), (string)$value);
+            $this->assertSame([], $this->updated);
+        }
+    }
 }

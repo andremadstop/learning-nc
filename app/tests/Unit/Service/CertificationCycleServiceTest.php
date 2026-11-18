@@ -137,13 +137,17 @@ class CertificationCycleServiceTest extends TestCase {
         $this->certificates->method('findByUserAndCourse')->willReturn($revoked);
         $this->assignments->method('getStatesForCourseAndUsers')->willReturn([]);
         $this->limits->method('exhaustedPools')->willReturn([]);
-        $this->limits->expects($this->once())->method('clearNotifications')->with('anna', self::COURSE);
+        $this->pass->method('attemptCycleStart')->willReturn(1234);
+        $order = [];
+        $this->limits->expects($this->once())->method('clearNotifications')->with('anna', self::COURSE, 1234)
+            ->willReturnCallback(function () use (&$order): void { $order[] = 'clear'; });
         $this->assignments->expects($this->once())->method('reopenPeriod')
             ->with(self::COURSE, 'anna', 'revoked', 'teacher', '11111111-1111-4111-8111-111111111111')
-            ->willReturn(self::NOW);
+            ->willReturnCallback(function () use (&$order): int { $order[] = 'reopen'; return self::NOW; });
         $sent = $this->captureNotifications();
 
         self::assertSame(['reason' => 'revoked', 'since' => self::NOW], $this->service()->open(self::COURSE, 31, 'teacher'));
+        self::assertSame(['reopen', 'clear'], $order, 'the old cycle\'s notifications go only once the new cycle is committed');
         self::assertCount(1, $sent);
         self::assertSame('anna', $sent[0]->getUser());
         self::assertSame('certification_cycle_opened', $sent[0]->getSubject());

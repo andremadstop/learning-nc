@@ -9,6 +9,7 @@ use OCA\Learning\Db\CourseMemberMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
 use Psr\Log\LoggerInterface;
@@ -51,6 +52,7 @@ class ExamAttemptLimitService {
         private readonly INotificationManager $notificationManager,
         private readonly ITimeFactory $timeFactory,
         private readonly LoggerInterface $logger,
+        private readonly IConfig $config,
     ) {}
 
     /** The limit that applies in this course, null = unlimited. */
@@ -196,21 +198,33 @@ class ExamAttemptLimitService {
     }
 
     /**
-     * Removes the instructors' "attempts used up" notifications of this learner's current cycle —
-     * called right before a new cycle starts the count again (CertificationCycleService).
+     * Removes the instructors' "attempts used up" notifications of the cycle that started at
+     * $since (PassCriteriaService::attemptCycleStart(), read before the new cycle opened) and the
+     * learner's "already notified" markers — called once a new cycle started the count again
+     * (CertificationCycleService).
      */
-    public function clearNotifications(string $userId, int $courseId): void {
+    public function clearNotifications(string $userId, int $courseId, ?int $since): void {
         try {
-            $since = $this->passCriteria->attemptCycleStart($userId, $courseId);
             foreach ($this->courseSummary->getCoursePoolIds($courseId) as $poolId) {
+                $objectId = self::objectId($courseId, (int)$poolId, $userId, $since);
                 $notification = $this->notificationManager->createNotification();
                 $notification->setApp('learning')
-                    ->setObject(self::NOTIFICATION_OBJECT, self::objectId($courseId, (int)$poolId, $userId, $since));
+                    ->setObject(self::NOTIFICATION_OBJECT, $objectId);
                 $this->notificationManager->markProcessed($notification);
+                $this->config->deleteUserValue($userId, 'learning', self::markerKey($objectId));
             }
         } catch (\Throwable $e) {
             $this->logger->warning('Clearing exam attempt notifications failed: {msg}', ['msg' => $e->getMessage(), 'app' => 'learning']);
         }
+    }
+
+    /**
+     * The learner's preference that says the instructors were told about this pool and cycle, so
+     * a dismissed notification is not sent again on every refused start. A preference of the
+     * learner: it goes with the account.
+     */
+    private static function markerKey(string $objectId): string {
+        return 'exam_attempts_notified_' . substr($objectId, 0, 40);
     }
 
     /**
@@ -239,8 +253,11 @@ class ExamAttemptLimitService {
                 }
             }
             $recipients = array_values(array_unique(array_filter($recipients, static fn(string $r): bool => $r !== '' && $r !== $userId)));
-            $poolTitle = $this->courseSummary->getPoolTitles([$poolId])[$poolId] ?? '';
             $objectId = self::objectId($courseId, $poolId, $userId, $since);
+            if ($this->config->getUserValue($userId, 'learning', self::markerKey($objectId), '') !== '') {
+                return; // told once for this pool and cycle, also if they dismissed it since
+            }
+            $poolTitle = $this->courseSummary->getPoolTitles([$poolId])[$poolId] ?? '';
             foreach ($recipients as $recipient) {
                 try {
                     $notification = $this->notificationManager->createNotification();
@@ -263,6 +280,7 @@ class ExamAttemptLimitService {
                     $this->logger->warning('Exam attempt notification failed for one recipient: {msg}', ['msg' => $e->getMessage(), 'app' => 'learning']);
                 }
             }
+            $this->config->setUserValue($userId, 'learning', self::markerKey($objectId), (string)$this->timeFactory->getTime());
         } catch (\Throwable $e) {
             $this->logger->warning('Exam attempt notification failed: {msg}', ['msg' => $e->getMessage(), 'app' => 'learning']);
         }

@@ -243,6 +243,9 @@ namespace OCP {
 
             public function setUserValue(string $userId, string $appName, string $key, string $value);
 
+            // Signature copied from NC 33's lib/public/IConfig.php (GitHub #87).
+            public function deleteUserValue(string $userId, string $appName, string $key);
+
             /**
              * @return string[]
              */
