@@ -74,6 +74,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setReconfirmPerCycle(bool $reconfirmPerCycle)
  * @method int|null getExamAttemptLimit()
  * @method void setExamAttemptLimit(?int $examAttemptLimit)
+ * @method int|null getExamAttemptLimitSince()
+ * @method void setExamAttemptLimitSince(?int $examAttemptLimitSince)
  * @method bool|null getOpenBeforeConfirm()
  * @method void setOpenBeforeConfirm(bool $openBeforeConfirm)
  */
@@ -117,6 +119,8 @@ class Course extends Entity implements \JsonSerializable {
     protected $reconfirmPerCycle;
     /** GitHub #87: counting exam attempts per pool in the current cycle; NULL = unlimited. */
     protected $examAttemptLimit;
+    /** GitHub #87 (review): when the limit was switched on; attempts before it do not count. Internal, not serialized. */
+    protected $examAttemptLimitSince;
     /** GitHub #86: a required document is confirmed only after the learner opened it. */
     protected $openBeforeConfirm;
 
@@ -145,6 +149,7 @@ class Course extends Entity implements \JsonSerializable {
         $this->addType('certLayout', 'string');
         $this->addType('reconfirmPerCycle', 'boolean');
         $this->addType('examAttemptLimit', 'integer');
+        $this->addType('examAttemptLimitSince', 'integer');
         $this->addType('openBeforeConfirm', 'boolean');
     }
 

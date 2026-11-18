@@ -866,7 +866,7 @@ class CourseController extends Controller {
                 if ($examAttemptLimit < 0 || $examAttemptLimit > \OCA\Learning\Service\ExamAttemptLimitService::MAX_LIMIT) {
                     return new DataResponse(['error' => sprintf('exam_attempt_limit must be 1–%d (0 = unlimited)', \OCA\Learning\Service\ExamAttemptLimitService::MAX_LIMIT)], Http::STATUS_BAD_REQUEST);
                 }
-                $course->setExamAttemptLimit($examAttemptLimit === 0 ? null : $examAttemptLimit);
+                \OCA\Learning\Service\ExamAttemptLimitService::applyLimit($course, $examAttemptLimit === 0 ? null : $examAttemptLimit, time());
             }
 
             $course->setUpdatedAt(time());

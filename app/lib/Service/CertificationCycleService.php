@@ -162,7 +162,7 @@ class CertificationCycleService {
         }
         // Read before the period changes (the old cycle's notification ids depend on its start),
         // cleared only once the new cycle is committed — a refused reopen keeps them.
-        $oldSince = $this->passCriteria->attemptCycleStart($uid, $courseId);
+        $oldSince = $this->attemptLimit->attemptCountStart($uid, $course);
         $verificationId = $newest !== null && $reason !== self::REASON_ATTEMPTS ? (string)$newest->getVerificationId() : null;
         $since = $this->assignmentService->reopenPeriod($courseId, $uid, $reason, $instructorId, $verificationId);
         $this->attemptLimit->clearNotifications($uid, $courseId, $oldSince);

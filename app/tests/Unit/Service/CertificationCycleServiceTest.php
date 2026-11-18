@@ -139,7 +139,8 @@ class CertificationCycleServiceTest extends TestCase {
         $this->certificates->method('findByUserAndCourse')->willReturn($revoked);
         $this->assignments->method('getStatesForCourseAndUsers')->willReturn([]);
         $this->limits->method('exhaustedPools')->willReturn([]);
-        $this->pass->method('attemptCycleStart')->willReturn(1234);
+        // the same count start as the attempt count (cycle start, never before the limit was set)
+        $this->limits->method('attemptCountStart')->with('anna', $this->anything())->willReturn(1234);
         $order = [];
         $this->limits->expects($this->once())->method('clearNotifications')->with('anna', self::COURSE, 1234)
             ->willReturnCallback(function () use (&$order): void { $order[] = 'clear'; });

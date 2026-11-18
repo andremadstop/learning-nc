@@ -26,8 +26,9 @@ use Psr\Log\LoggerInterface;
  *
  * The count starts with the current certification cycle (PassCriteriaService::attemptCycleStart()):
  * an instructor's new cycle (CertificationCycleService), a period the recertification job opened,
- * or the open renewal window. Earlier attempts stay in learning_sessions as evidence, they just do
- * not count against the new cycle.
+ * or the open renewal window — and never before the limit was switched on
+ * (course.exam_attempt_limit_since, countStart()). Earlier attempts stay in learning_sessions as
+ * evidence, they just do not count against the new cycle.
  *
  * Instructors of the course (owner, co-instructors) are exempt: in the student view they try the
  * exam as a preview, and evaluate() never certifies them there anyway.
@@ -63,6 +64,40 @@ class ExamAttemptLimitService {
         }
         $limit = $course->getExamAttemptLimit();
         return $limit !== null && (int)$limit > 0 ? (int)$limit : null;
+    }
+
+    /**
+     * Sets the course's limit (null = unlimited) and, on the step from unlimited to a number, when
+     * it was switched on (GitHub #87 review): attempts from before do not count against it.
+     * Changing one number to another keeps that moment; switching it off clears it.
+     */
+    public static function applyLimit(Course $course, ?int $limit, int $now): void {
+        $before = $course->getExamAttemptLimit();
+        $wasLimited = $before !== null && (int)$before > 0;
+        $isLimited = $limit !== null && $limit > 0;
+        $course->setExamAttemptLimit($isLimited ? $limit : null);
+        if (!$isLimited) {
+            $course->setExamAttemptLimitSince(null);
+        } elseif (!$wasLimited) {
+            $course->setExamAttemptLimitSince($now);
+        }
+    }
+
+    /**
+     * Since when the learner's attempts count against the limit: the later of the start of the
+     * certification cycle ($cycleStart, PassCriteriaService::attemptCycleStart(), null = no cycle
+     * yet) and the moment the limit was switched on. null = every attempt counts. Every count,
+     * notification id and clearing goes through here, so they always agree.
+     */
+    public static function countStart(Course $course, ?int $cycleStart): ?int {
+        $limitSince = $course->getExamAttemptLimitSince();
+        $starts = array_values(array_filter([$cycleStart, $limitSince !== null ? (int)$limitSince : null], static fn(?int $s): bool => $s !== null));
+        return $starts === [] ? null : max($starts);
+    }
+
+    /** countStart() for one learner of the course. */
+    public function attemptCountStart(string $userId, Course $course): ?int {
+        return self::countStart($course, $this->passCriteria->attemptCycleStart($userId, (int)$course->getId()));
     }
 
     /**
@@ -107,7 +142,7 @@ class ExamAttemptLimitService {
         if ($limit === null || $this->isInstructorOfCourse($course, $userId)) {
             return null;
         }
-        $since = $this->passCriteria->attemptCycleStart($userId, $courseId);
+        $since = $this->attemptCountStart($userId, $course);
         return [
             'total_limit' => $limit,
             'used_by_pool' => $this->usedByPool($userId, $courseId, $since),
@@ -146,7 +181,7 @@ class ExamAttemptLimitService {
         if ($limit === null || $this->isInstructorOfCourse($course, $userId)) {
             return;
         }
-        $since = $this->passCriteria->attemptCycleStart($userId, $courseId);
+        $since = $this->attemptCountStart($userId, $course);
         $used = $this->usedByPool($userId, $courseId, $since)[$poolId] ?? 0;
         if ($used < $limit) {
             return;
@@ -167,7 +202,7 @@ class ExamAttemptLimitService {
             if ($limit === null || $this->isInstructorOfCourse($course, $userId)) {
                 return;
             }
-            $since = $this->passCriteria->attemptCycleStart($userId, $courseId);
+            $since = $this->attemptCountStart($userId, $course);
             $used = $this->usedByPool($userId, $courseId, $since)[$poolId] ?? 0;
             if ($used >= $limit) {
                 $this->notifyIfExhausted($userId, $course, $poolId, $since, $used, $limit);
@@ -207,7 +242,7 @@ class ExamAttemptLimitService {
         }
         $since = [];
         foreach ($learners as $uid => $rows) {
-            $since[(string)$uid] = $this->passCriteria->attemptCycleStartOf($rows['certificate'], $rows['state']);
+            $since[(string)$uid] = self::countStart($course, $this->passCriteria->attemptCycleStartOf($rows['certificate'], $rows['state']));
         }
         $used = $this->usedByPoolForUsers((int)$course->getId(), $since);
         $candidates = [];
@@ -314,7 +349,7 @@ class ExamAttemptLimitService {
 
     /**
      * Removes the instructors' "attempts used up" notifications of the cycle that started at
-     * $since (PassCriteriaService::attemptCycleStart(), read before the new cycle opened) and the
+     * $since (attemptCountStart(), read before the new cycle opened) and the
      * learner's "already notified" markers — called once a new cycle started the count again
      * (CertificationCycleService).
      */

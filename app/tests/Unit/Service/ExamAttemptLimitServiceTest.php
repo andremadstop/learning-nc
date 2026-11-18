@@ -189,6 +189,53 @@ class ExamAttemptLimitServiceTest extends TestCase {
         self::assertStringContainsString('exam_kind', (string)json_encode($rows->andWhereCalls));
     }
 
+    /**
+     * GitHub #87 (review): a learner without a cycle (self-enrolled, enrolled by hand) whose failed
+     * attempts from before already reached a newly set limit was locked out at once — there never
+     * was a cycle in which those attempts were available. The count starts when the limit was
+     * switched on, or with the cycle when that is later.
+     */
+    public function testTheCountStartsWhenTheLimitWasSwitchedOnIfThatIsLater(): void {
+        $this->course->setExamAttemptLimitSince(2000);
+        $count = self::used(1);
+        $this->service([$count])->assertCanStart('anna', self::COURSE, self::POOL);
+        self::assertContains(2000, array_column($count->namedParameters, 'value'), 'counted from the switch-on (2000), not the cycle (1500)');
+        self::assertNotContains(1500, array_column($count->namedParameters, 'value'));
+
+        self::assertSame(2000, ExamAttemptLimitService::countStart($this->course, null), 'no cycle: from the switch-on');
+        self::assertSame(2500, ExamAttemptLimitService::countStart($this->course, 2500), 'a later cycle wins');
+        $this->course->setExamAttemptLimitSince(null);
+        self::assertNull(ExamAttemptLimitService::countStart($this->course, null), 'a limit from before the column: every attempt counts');
+    }
+
+    public function testTheMemberListCountsFromTheSwitchOnForLearnersWithoutACycle(): void {
+        $this->course->setExamAttemptLimitSince(1000);
+        $this->pass->method('attemptCycleStartOf')->willReturn(null);
+        $this->pass->method('examStandings')->willReturnCallback(fn (int $c, array $uids): array => ['required_pool_ids' => [], 'users' => array_fill_keys($uids, ['passed' => false, 'pools' => []])]);
+        $rows = new FakeQueryBuilder(new FakeResult(fetchQueue: [
+            // ben failed four times before the limit of 3 was set at 1000, once after
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '100'],
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '200'],
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '300'],
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '400'],
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '1100'],
+        ]));
+        self::assertSame([], $this->service([$rows])->exhaustedPoolsForLearners($this->course, ['ben' => ['certificate' => null, 'state' => null]]));
+    }
+
+    /** Only the step from unlimited to a number sets the moment; another number keeps it, off clears it. */
+    public function testApplyLimitRecordsWhenTheLimitWasSwitchedOn(): void {
+        $course = new Course();
+        ExamAttemptLimitService::applyLimit($course, 3, 1000);
+        self::assertSame([3, 1000], [$course->getExamAttemptLimit(), $course->getExamAttemptLimitSince()]);
+        ExamAttemptLimitService::applyLimit($course, 5, 2000);
+        self::assertSame([5, 1000], [$course->getExamAttemptLimit(), $course->getExamAttemptLimitSince()], 'raising it keeps the start');
+        ExamAttemptLimitService::applyLimit($course, null, 3000);
+        self::assertSame([null, null], [$course->getExamAttemptLimit(), $course->getExamAttemptLimitSince()]);
+        ExamAttemptLimitService::applyLimit($course, 2, 4000);
+        self::assertSame([2, 4000], [$course->getExamAttemptLimit(), $course->getExamAttemptLimitSince()], 'on again: counted from now');
+    }
+
     public function testNoNotificationWhenTheRequirementIsMet(): void {
         $this->pass->method('examStandings')->willReturn(['users' => ['anna' => ['passed' => true, 'pools' => []]]]);
         $this->expectException(ExamAttemptLimitException::class);

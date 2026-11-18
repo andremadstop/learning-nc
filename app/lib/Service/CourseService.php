@@ -1137,7 +1137,7 @@ class CourseService {
             // GitHub #75: every renewal asks for the required documents again.
             $course->setReconfirmPerCycle(true);
             // GitHub #87: three counting attempts per pool, then the instructor decides (new cycle).
-            $course->setExamAttemptLimit(ExamAttemptLimitService::MANDATORY_PROFILE_DEFAULT);
+            ExamAttemptLimitService::applyLimit($course, ExamAttemptLimitService::MANDATORY_PROFILE_DEFAULT, $now);
             // GitHub #86: a required document is confirmed only after it was opened.
             $course->setOpenBeforeConfirm(true);
             // GitHub #89: a document ticked "Required" holds the exam back until it is confirmed;
