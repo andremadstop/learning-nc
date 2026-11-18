@@ -101,6 +101,23 @@
 			</button>
 		</div>
 
+		<!-- GitHub #89: ticked documents hold the exam back only with the switch below the table.
+			Without it the marks only track reading, which an instructor would not guess. -->
+		<div
+			v-if="requiredWithoutGate"
+			class="required-gate-off-note"
+			role="note"
+			data-test="required-gate-off">
+			<p>{{ t('learning', 'Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen.') }}</p>
+			<button
+				type="button"
+				class="material-btn small"
+				data-test="required-gate-off-link"
+				@click="showGateSwitch">
+				{{ t('learning', 'Zum Schalter') }}
+			</button>
+		</div>
+
 		<!-- Document List Table -->
 		<div v-if="visibleDocuments.length > 0" class="material-table-wrapper">
 			<table class="material-table">
@@ -247,6 +264,11 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		// GitHub #89: "Exam only after all required content is completed" is off in this course
+		examGateOff: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	emits: ['required-changed', 'error'],
@@ -296,6 +318,10 @@ export default {
 		},
 		requiredIds() {
 			return requiredDocumentIds(this.registry)
+		},
+		// GitHub #89: documents are ticked "Required", but the exam is not held back by them
+		requiredWithoutGate() {
+			return this.showRequiredColumn && this.examGateOff && this.requiredIds.size > 0
 		},
 		requiredHeader() {
 			return requiredHeaderState(this.documents, this.requiredIds)
@@ -404,6 +430,16 @@ export default {
 			if (box) {
 				box.indeterminate = this.requiredHeader === 'some'
 			}
+		},
+
+		/** GitHub #89: bring the exam switch (RequiredContentSettings, below the table) into view. */
+		showGateSwitch() {
+			const input = document.getElementById('learning-required-content-gate')
+			if (!input) {
+				return
+			}
+			input.scrollIntoView?.({ block: 'center' })
+			input.focus({ preventScroll: true })
 		},
 
 		isRequired(doc) {
@@ -681,6 +717,24 @@ export default {
 	color: #c62828;
 	border-radius: var(--border-radius, 4px);
 	font-size: 14px;
+}
+
+.required-gate-off-note {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	padding: 10px 14px;
+	margin-bottom: 12px;
+	border-inline-start: 4px solid var(--color-warning, #c28900);
+	background: var(--color-background-hover);
+	color: var(--color-main-text);
+	border-radius: var(--border-radius, 4px);
+}
+
+.required-gate-off-note p {
+	flex: 1 1 280px;
+	margin: 0;
 }
 
 .load-error p {

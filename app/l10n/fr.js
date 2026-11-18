@@ -4029,5 +4029,7 @@ OC.L10N.register(
     "Neue Ankündigung im Kurs %1$s: %2$s" : "Nouvelle annonce dans le cours %1$s : %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["Ton certificat pour le cours %s expire dans %n jour", "Ton certificat pour le cours %s expire dans %n jours"],
     "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Trop de rappels en peu de temps. Veuillez patienter une minute, puis réessayez.",
+    "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen." : "Les cases de la colonne « Obligatoire » ne bloquent pas l’examen pour le moment : l’option « Examen uniquement après avoir terminé tous les contenus obligatoires » est désactivée. Les apprenants confirment les documents, mais peuvent aussi passer l’examen sans les confirmer.",
+    "Zum Schalter" : "Aller à l’option",
 },
 "nplurals=2; plural=(n > 1);");

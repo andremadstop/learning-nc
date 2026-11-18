@@ -4029,5 +4029,7 @@ OC.L10N.register(
     "Neue Ankündigung im Kurs %1$s: %2$s" : "إعلان جديد في الدورة %1$s: %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["تنتهي صلاحية شهادتك في الدورة %s خلال %n يوم", "تنتهي صلاحية شهادتك في الدورة %s خلال يوم واحد (%n)", "تنتهي صلاحية شهادتك في الدورة %s خلال يومين (%n)", "تنتهي صلاحية شهادتك في الدورة %s خلال %n أيام", "تنتهي صلاحية شهادتك في الدورة %s خلال %n يومًا", "تنتهي صلاحية شهادتك في الدورة %s خلال %n يوم"],
     "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "تذكيرات كثيرة جدًا في وقت قصير. يرجى الانتظار دقيقة ثم المحاولة مرة أخرى.",
+    "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen." : "العلامات في عمود «إلزامي» لا تقفل الاختبار حاليًا: مفتاح «الاختبار فقط بعد إكمال كل المحتوى الإلزامي» متوقف. يؤكد المتعلمون المستندات، لكن يمكنهم أيضًا أداء الاختبار دون تأكيدها.",
+    "Zum Schalter" : "الانتقال إلى المفتاح",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

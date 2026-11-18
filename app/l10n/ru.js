@@ -4029,5 +4029,7 @@ OC.L10N.register(
     "Neue Ankündigung im Kurs %1$s: %2$s" : "Новое объявление в курсе %1$s: %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["Твой сертификат по курсу %s истекает через %n день", "Твой сертификат по курсу %s истекает через %n дня", "Твой сертификат по курсу %s истекает через %n дней"],
     "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Слишком много напоминаний за короткое время. Подождите минуту и попробуйте снова.",
+    "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen." : "Отметки в столбце «Обязательно» сейчас не блокируют экзамен: переключатель «Экзамен только после прохождения всех обязательных материалов» выключен. Учащиеся подтверждают документы, но могут сдавать экзамен и без подтверждения.",
+    "Zum Schalter" : "К переключателю",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

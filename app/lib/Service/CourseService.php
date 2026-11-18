@@ -1115,6 +1115,9 @@ class CourseService {
             $course->setExamAttemptLimit(ExamAttemptLimitService::MANDATORY_PROFILE_DEFAULT);
             // GitHub #86: a required document is confirmed only after it was opened.
             $course->setOpenBeforeConfirm(true);
+            // GitHub #89: a document ticked "Required" holds the exam back until it is confirmed;
+            // without the switch the mark only tracks reading (still possible: switch it off).
+            $course->setVideoGateEnabled(true);
         } elseif (!$this->xpService->isGamificationEnabled()) {
             $course->setModeConfig(json_encode(self::MODE_CONFIG_WITHOUT_GAMIFICATION));
         }

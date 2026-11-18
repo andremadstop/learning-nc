@@ -112,6 +112,8 @@ class CourseProfile67Test extends TestCase {
             $this->assertSame(3, $course->getExamAttemptLimit());
             // GitHub #86: required documents are confirmed only after they were opened
             $this->assertTrue($course->getOpenBeforeConfirm());
+            // GitHub #89: "Exam only after all required content is completed" is on
+            $this->assertTrue($course->getVideoGateEnabled(), 'required content holds the exam back');
             $this->assertNull($course->getEnabledTools(), 'the per-tool selection stays the default, only the master switch is off');
             $this->assertNull($course->getCertRequiredPoolIds());
         }
@@ -125,6 +127,7 @@ class CourseProfile67Test extends TestCase {
             $this->assertNotTrue($on->getReconfirmPerCycle(), 'an IT course keeps one confirmation');
             $this->assertNull($on->getExamAttemptLimit(), 'an IT course keeps unlimited attempts');
             $this->assertNotTrue($on->getOpenBeforeConfirm(), 'an IT course confirms without opening');
+            $this->assertNotTrue($on->getVideoGateEnabled(), 'an IT course keeps the exam open (GitHub #89)');
 
             $off = json_decode((string)$this->service($this->inserting(), false)->create('Netzwerk', null, null, 'teacher', $profile)->getModeConfig(), true);
             $this->assertFalse($off['duel']);

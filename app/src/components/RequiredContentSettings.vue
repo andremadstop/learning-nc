@@ -5,7 +5,9 @@
 			{{ t('learning', 'Dokumente markierst du oben in der Spalte „Pflicht“: Lernende bestätigen sie als gelesen. Videos fügst du hier hinzu: Lernende sehen sie an. Beides finden Lernende im Reiter „Lernmaterial“, die Bestätigungen stehen im Abdeckungsbericht.') }}
 		</p>
 
+		<!-- GitHub #89: the id is the target of the note above the "Required" column -->
 		<NcCheckboxRadioSwitch
+			id="learning-required-content-gate"
 			:model-value="gateEnabled"
 			data-test="required-content-gate"
 			@update:model-value="setGate(!!$event)">

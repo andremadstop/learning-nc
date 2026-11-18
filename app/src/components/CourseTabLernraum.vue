@@ -340,6 +340,7 @@
 				:course-id="courseId"
 				:is-instructor="isInstructor"
 				:ai-enabled="aiEnabled"
+				:exam-gate-off="course?.video_gate_enabled !== true"
 				@required-changed="requiredReloadKey++"
 				@error="$emit('error', $event)" />
 			<RequiredContentSettings

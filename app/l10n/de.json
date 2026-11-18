@@ -4049,6 +4049,8 @@
             "Dein Zertifikat für den Kurs %s läuft in %n Tag ab",
             "Dein Zertifikat für den Kurs %s läuft in %n Tagen ab"
         ],
-        "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut."
+        "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.",
+        "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen.": "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen.",
+        "Zum Schalter": "Zum Schalter"
     }
 }

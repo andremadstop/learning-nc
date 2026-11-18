@@ -4029,5 +4029,7 @@ OC.L10N.register(
     "Neue Ankündigung im Kurs %1$s: %2$s" : "Neue Ankündigung im Kurs %1$s: %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["Dein Zertifikat für den Kurs %s läuft in %n Tag ab", "Dein Zertifikat für den Kurs %s läuft in %n Tagen ab"],
     "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.",
+    "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen." : "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen.",
+    "Zum Schalter" : "Zum Schalter",
 },
 "nplurals=2; plural=(n != 1);");
