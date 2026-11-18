@@ -148,11 +148,13 @@ class RecertReminderServiceTest extends TestCase {
         [$service, $m] = $this->makeService(self::NOW);
         $expired = $this->expiringCert(self::NOW);
         $expired->setExpiresAt(self::NOW - 3600);
+        $expired->setActiveIdemKey('jmueller:7');
         $windows = [];
-        $m['certMapper']->method('findActiveExpiringBetween')->willReturnCallback(
+        $m['certMapper']->method('findActiveExpiringBetween')->willReturn([]);
+        $m['certMapper']->method('findExpiredBetween')->willReturnCallback(
             function (int $after, int $before) use ($expired, &$windows): array {
                 $windows[] = [$after, $before];
-                return $before === self::NOW ? [$expired] : [];
+                return [$expired];
             }
         );
         $claimed = null;
@@ -178,6 +180,54 @@ class RecertReminderServiceTest extends TestCase {
 
         $this->assertSame([['certificate_expired', 'jmueller', 7, null, []]], $activities);
         $this->assertSame([self::NOW - 7 * 86400, self::NOW], $windows[0], 'looks back one week');
+    }
+
+    /**
+     * GitHub #85 review: with recert_grace_days = 0 the daily RecertPeriodCloseJob can release
+     * the slot of an expired certificate before the reminder sweep runs (from 09:00). The
+     * certificate is still the newest one for user + course, so the learner must still get the
+     * "certificate expired" activity. Before the fix the sweep only read slot owners and stayed
+     * silent.
+     */
+    public function testAnExpiredCertificateWhoseSlotTheCloseJobReleasedIsStillAnnounced(): void {
+        [$service, $m] = $this->makeService(self::NOW);
+        $expired = $this->expiringCert(self::NOW);
+        $expired->setExpiresAt(self::NOW - 3600);
+        $expired->setActiveIdemKey(null); // released by closePeriod
+        $m['certMapper']->method('findActiveExpiringBetween')->willReturn([]);
+        $m['certMapper']->method('findExpiredBetween')->willReturn([$expired]);
+        $m['certMapper']->method('findByUserAndCourse')->with('jmueller', 7)->willReturn($expired);
+        $m['reminderMapper']->method('findByCertAndThreshold')->willReturn(null);
+        $m['reminderMapper']->method('insertOnce')->willReturn(true);
+        $activities = [];
+        $m['activity']->method('toUser')->willReturnCallback(function (...$args) use (&$activities): void {
+            $activities[] = $args;
+        });
+
+        $service->sendRecertReminders();
+
+        $this->assertSame([['certificate_expired', 'jmueller', 7, null, []]], $activities);
+    }
+
+    /**
+     * GitHub #85: a certificate that gave up its slot because the learner RENEWED (a newer
+     * certificate exists for user + course) expires silently — the learner is covered.
+     */
+    public function testARenewedCertificateExpiresSilently(): void {
+        [$service, $m] = $this->makeService(self::NOW);
+        $old = $this->expiringCert(self::NOW);
+        $old->setExpiresAt(self::NOW - 3600);
+        $old->setActiveIdemKey(null);
+        $renewal = $this->expiringCert(self::NOW);
+        $renewal->setId(43);
+        $renewal->setActiveIdemKey('jmueller:7');
+        $m['certMapper']->method('findActiveExpiringBetween')->willReturn([]);
+        $m['certMapper']->method('findExpiredBetween')->willReturn([$old]);
+        $m['certMapper']->method('findByUserAndCourse')->willReturn($renewal);
+        $m['reminderMapper']->expects($this->never())->method('insertOnce');
+        $m['activity']->expects($this->never())->method('toUser');
+
+        $service->sendRecertReminders();
     }
 
     /**

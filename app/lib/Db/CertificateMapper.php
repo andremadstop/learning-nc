@@ -129,6 +129,27 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * Expired-sweep query (GitHub #85): the certs that expired inside (after, before], not
+     * revoked and not anonymized — WHETHER OR NOT they still own their idem slot. The daily
+     * RecertPeriodCloseJob releases the slot once expires_at < now - recert_grace_days; with a
+     * grace of 0 that can happen before the "certificate expired" activity went out. The caller
+     * tells a released slot of the same period from a renewal (a newer cert for user+course).
+     *
+     * @return Certificate[]
+     */
+    public function findExpiredBetween(int $after, int $before): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
+           ->andWhere($qb->expr()->isNull('anonymized_at'))
+           ->andWhere($qb->expr()->isNotNull('expires_at'))
+           ->andWhere($qb->expr()->gt('expires_at', $qb->createNamedParameter($after, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->lte('expires_at', $qb->createNamedParameter($before, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        return $this->findEntities($qb);
+    }
+
+    /**
      * Owner-scoped compliance-report query (156-01): the non-revoked certificates of one course,
      * newest first, with optional server-side filtering. TIME-FREE by design — the caller (service)
      * owns the clock and passes an ABSOLUTE unix cutoff for the expiry window, so this mapper stays

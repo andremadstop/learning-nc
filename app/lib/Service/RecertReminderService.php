@@ -199,15 +199,17 @@ class RecertReminderService {
     }
 
     /**
-     * One "certificate expired" activity per certificate (GitHub #85), for active certificates
-     * (own their slot, not revoked, not anonymized) that expired within the lookback. A renewed
-     * certificate gave up its slot and is skipped, so a learner who renewed in time hears nothing.
+     * One "certificate expired" activity per certificate (GitHub #85), for certificates (not
+     * revoked, not anonymized) that expired within the lookback. The slot is not a criterion:
+     * RecertPeriodCloseJob releases it at expiry + recert_grace_days, and with a grace of 0 that
+     * can happen before this sweep runs. A renewed certificate is skipped — a newer certificate
+     * for the same user and course exists — so a learner who renewed in time hears nothing.
      * Claimed once via the reminder outbox with threshold EXPIRED_THRESHOLD; the publisher never
      * throws, so a won claim is delivered right away.
      */
     private function announceExpired(int $now): void {
         try {
-            $certs = $this->certMapper->findActiveExpiringBetween($now - self::EXPIRED_LOOKBACK_SECONDS, $now);
+            $certs = $this->certMapper->findExpiredBetween($now - self::EXPIRED_LOOKBACK_SECONDS, $now);
         } catch (\Throwable $e) {
             $this->logger->warning('sendRecertReminders: expired sweep failed: {msg}', ['msg' => $e->getMessage(), 'app' => self::APP_ID]);
             return;
@@ -219,6 +221,14 @@ class RecertReminderService {
                     continue; // not expired (the query already says so; cheap to be sure)
                 }
                 $certId = (int)$cert->getId();
+                if ($cert->getActiveIdemKey() === null) {
+                    // Slot released: by the period close (still the newest cert → announce) or
+                    // by a renewal (a newer cert exists → the learner is covered, stay silent).
+                    $newest = $this->certMapper->findByUserAndCourse((string)$cert->getUserId(), (int)$cert->getCourseId());
+                    if ($newest === null || (int)$newest->getId() !== $certId) {
+                        continue;
+                    }
+                }
                 // The sweep sees an expired certificate on every run of its lookback week: read
                 // first, so the claim INSERT (and its UNIQUE violation) happens once.
                 if ($this->reminderMapper->findByCertAndThreshold($certId, self::EXPIRED_THRESHOLD) !== null
