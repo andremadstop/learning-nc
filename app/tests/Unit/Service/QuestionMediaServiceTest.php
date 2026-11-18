@@ -322,6 +322,62 @@ final class QuestionMediaServiceTest extends TestCase {
         $this->assertSame([], $this->service()->revealFor(self::QUESTION, 'learner')['question_media']['option_tracks']);
     }
 
+    /**
+     * Export: a question whose exam_key is no folder name ("Q 7") goes into the fallback folder
+     * media-q7 — which was the real folder of another question whose exam_key is "media-q7".
+     * Both wrote media-q7/intro-en.mp3, the last write won, and the re-import gave one question
+     * the other's audio. The fallback now steps aside, in either order of the questions; an
+     * exam_key "manifest.json" never becomes a folder (the manifest is written there last).
+     */
+    public function testTheFallbackFolderOfTheExportNeverTakesTheFolderOfAnotherExamKey(): void {
+        foreach ([[7, 9, 4], [9, 7, 4], [4, 7, 9]] as $order) {
+            $byId = [
+                7 => $this->poolQuestion(7, 'Q 7'),
+                9 => $this->poolQuestion(9, 'media-q7'),
+                4 => $this->poolQuestion(4, 'manifest.json'),
+            ];
+            $this->questions = $this->createMock(QuestionMapper::class);
+            $this->questions->method('findByPoolId')->willReturn(array_map(fn (int $id) => $byId[$id], $order));
+            $this->tracks = $this->createMock(QuestionTrackMapper::class);
+            $this->tracks->method('findByQuestion')->willReturnCallback(function (int $questionId): array {
+                $track = new QuestionTrack();
+                $track->setId($questionId * 10);
+                $track->setQuestionId($questionId);
+                $track->setPoolId(self::POOL);
+                $track->setKind('intro');
+                $track->setLang('en');
+                $track->setFileName(QuestionMediaStorage::fileName($questionId, 'intro', 'en'));
+                return [$track];
+            });
+            $this->cues = $this->createMock(QuestionCuesMapper::class);
+            $this->cues->method('findByQuestion')->willReturn(null);
+            $this->storage = $this->createMock(QuestionMediaStorage::class);
+            $this->storage->method('get')->willReturnCallback(function (int $pool, string $name): ISimpleFile {
+                $file = $this->createMock(ISimpleFile::class);
+                $file->method('getContent')->willReturn('audio of ' . $name);
+                return $file;
+            });
+            $this->tmp = sys_get_temp_dir() . '/qmedia-unit-' . bin2hex(random_bytes(4));
+
+            $report = $this->service()->exportBundle(self::POOL, $this->tmp);
+
+            $label = 'order ' . implode(',', $order);
+            $this->assertSame(3, $report['questions'], $label);
+            $manifest = json_decode((string)file_get_contents($this->tmp . '/manifest.json'), true);
+            $files = [];
+            foreach ($manifest['questions'] as $entry) {
+                $files[$entry['exam_key']] = $entry['tracks'][0]['file'];
+            }
+            $this->assertSame('media-q7/intro-en.mp3', $files['media-q7'], $label . ': a real exam_key keeps its folder');
+            $this->assertNotSame($files['media-q7'], $files['Q 7'], $label);
+            $this->assertStringStartsWith('media-q4', $files['manifest.json'], $label);
+            $this->assertSame('audio of q9-intro-en.mp3', file_get_contents($this->tmp . '/' . $files['media-q7']), $label);
+            $this->assertSame('audio of q7-intro-en.mp3', file_get_contents($this->tmp . '/' . $files['Q 7']), $label);
+            $this->assertSame('audio of q4-intro-en.mp3', file_get_contents($this->tmp . '/' . $files['manifest.json']), $label);
+            exec('rm -r -- ' . escapeshellarg($this->tmp));
+        }
+    }
+
     // ------------------------------------------------------------------ helpers
 
     /**
@@ -343,6 +399,14 @@ final class QuestionMediaServiceTest extends TestCase {
             $rows[] = $a;
         }
         return $rows;
+    }
+
+    private function poolQuestion(int $id, string $examKey): Question {
+        $question = new Question();
+        $question->setId($id);
+        $question->setPoolId(self::POOL);
+        $question->setExamKey($examKey);
+        return $question;
     }
 
     /** A database in which no exam runs (ExamLock reads learning_sessions and finds nothing). */

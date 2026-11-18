@@ -57,6 +57,7 @@ class QuestionMediaService {
     public const GRANT_TTL = 43200; // 12 h: a learner who answered can listen to the dialog the same day
     private const GRANT_CONTEXT = 'learning-qmedia-grant-v1';
     private const LANG_PATTERN = '/^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/D';
+    private const MANIFEST = 'manifest.json';
 
     public function __construct(
         private QuestionMediaStorage $storage,
@@ -287,8 +288,9 @@ class QuestionMediaService {
      *
      * A question needs an exam_key (the import matches by it; questions without are reported and
      * left out). Its files go into the folder <exam_key>/ when the key is a plain folder name
-     * ([a-z0-9._-]), else into media-q<question id>/ — but format /2 resolves option audio inside
-     * <exam_key>/, so option tracks of such a question cannot be written and are reported.
+     * ([a-z0-9._-], not manifest.json), else into media-q<question id>/ (with a suffix -2, -3 … when
+     * another question of the pool has that name as its exam_key) — but format /2 resolves option
+     * audio inside <exam_key>/, so option tracks of such a question cannot be written and are reported.
      * The target must not exist or be an empty directory — nothing is overwritten.
      *
      * Two questions of the pool with the same exam_key cannot be told apart by the import
@@ -323,7 +325,17 @@ class QuestionMediaService {
         ];
         $entries = [];
         $seenKeys = [];
-        foreach ($this->questionMapper->findByPoolId($poolId) as $question) {
+        $questions = $this->questionMapper->findByPoolId($poolId);
+        // Folder names nobody else may take: every exam_key of the pool that is a folder name
+        // (also of questions without media, in any order), and the manifest's own name.
+        $takenFolders = [self::MANIFEST => true];
+        foreach ($questions as $question) {
+            $key = trim((string)$question->getExamKey());
+            if (self::isFolderKey($key)) {
+                $takenFolders[$key] = true;
+            }
+        }
+        foreach ($questions as $question) {
             $questionId = (int)$question->getId();
             $tracks = $this->trackMapper->findByQuestion($questionId);
             $cues = $this->cuesMapper->findByQuestion($questionId);
@@ -341,8 +353,18 @@ class QuestionMediaService {
                 continue;
             }
             $seenKeys[$key] = true;
-            $keyIsFolder = QuestionMediaBundle::optionAudioPath($key, 'x.mp3') !== null;
-            $folder = $keyIsFolder ? $key : 'media-q' . $questionId;
+            $keyIsFolder = self::isFolderKey($key);
+            if ($keyIsFolder) {
+                $folder = $key;
+            } else {
+                // The fallback must not be the folder of another question's real exam_key (or
+                // another fallback): both would write the same files, the last one winning.
+                $folder = 'media-q' . $questionId;
+                for ($n = 2; isset($takenFolders[$folder]); $n++) {
+                    $folder = 'media-q' . $questionId . '-' . $n;
+                }
+                $takenFolders[$folder] = true;
+            }
 
             $answers = $this->answerMapper->findByQuestion($questionId);
             usort($answers, static fn (Answer $a, Answer $b): int => [(int)$a->getPosition(), (int)$a->getId()] <=> [(int)$b->getPosition(), (int)$b->getId()]);
@@ -433,8 +455,13 @@ class QuestionMediaService {
         if ($report['option_tracks'] > 0) {
             $report['format'] = QuestionMediaBundle::FORMAT_V2;
         }
-        $this->writeBundleFile($dir, 'manifest.json', $this->exportJson(['format' => $report['format'], 'questions' => $entries]));
+        $this->writeBundleFile($dir, self::MANIFEST, $this->exportJson(['format' => $report['format'], 'questions' => $entries]));
         return $report;
+    }
+
+    /** Whether an exam_key can be the folder of its question in a bundle (format /2 resolves option audio there). */
+    private static function isFolderKey(string $key): bool {
+        return $key !== self::MANIFEST && QuestionMediaBundle::optionAudioPath($key, 'x.mp3') !== null;
     }
 
     /** @param array<string, mixed> $report */
