@@ -60,18 +60,24 @@
 			</div>
 		</NcNoteCard>
 
-		<!-- GitHub #82: an archived course still opens; it says what that means for this viewer. -->
+		<!-- GitHub #82: an archived course still opens; it says what that means for this viewer.
+			GitHub #99: instructors get the full explanation (what learners can and can no longer
+			do), learners a short note that matches it. -->
 		<NcNoteCard v-if="!loading && course && course.status === 'archived'"
 			type="info"
 			class="detail-archived"
 			data-test="course-archived">
-			<!-- The reactivation menu of the course list (CourseList.vue) is only on the courses a
-				person created, and only in the instructor role; a co-instructor has none. -->
-			{{ !actsAsInstructor
-				? t('learning', 'Dieser Kurs ist archiviert. Du kannst die Inhalte weiter ansehen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.')
-				: canReactivateCourse
-					? t('learning', 'Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; über das Menü in der Kursliste lässt er sich wieder aktivieren.')
-					: t('learning', 'Dieser Kurs ist archiviert. Lernende sehen ihn weiterhin; wieder aktivieren kann ihn die Person, die ihn angelegt hat.') }}
+			<template v-if="!actsAsInstructor">
+				{{ course.exam_date
+					? t('learning', 'Dieser Kurs ist archiviert. Du kannst ihn weiter wie bisher nutzen, an den Prüfungstermin wirst du aber nicht mehr erinnert. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.')
+					: t('learning', 'Dieser Kurs ist archiviert. Du kannst ihn weiter wie bisher nutzen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.') }}
+			</template>
+			<template v-else>
+				<p class="detail-archived__title">{{ t('learning', 'Dieser Kurs ist archiviert.') }}</p>
+				<!-- The reactivation menu of the course list (CourseList.vue) is only on the courses a
+					person created, and only in the instructor role; a co-instructor has none. -->
+				<CourseArchiveExplanation :can-reactivate="canReactivateCourse" />
+			</template>
 		</NcNoteCard>
 
 		<!-- GitHub #82: the link named an area of this course the viewer does not have (any more):
@@ -251,6 +257,7 @@ import CourseTabWettbewerb from './CourseTabWettbewerb.vue'
 import CourseTabKommunikation from './CourseTabKommunikation.vue'
 import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
 import DeadLinkNotice from './DeadLinkNotice.vue'
+import CourseArchiveExplanation from './CourseArchiveExplanation.vue'
 import ExamReadiness from './ExamReadiness.vue'
 import CourseSummary from './CourseSummary.vue'
 import CourseRecentSessions from './CourseRecentSessions.vue'
@@ -290,6 +297,7 @@ export default {
 		NcLoadingIcon,
 		NcNoteCard,
 		DeadLinkNotice,
+		CourseArchiveExplanation,
 		ExamReadiness,
 		CourseSummary,
 		CourseRecentSessions,
@@ -1206,6 +1214,11 @@ export default {
 .detail-archived,
 .detail-tab-unavailable {
 	margin-bottom: 16px;
+}
+
+.detail-archived__title {
+	margin: 0 0 8px;
+	font-weight: bold;
 }
 
 .detail-action-error {

@@ -157,11 +157,15 @@ describe('CourseDetail: a dead course link (GitHub #82)', () => {
 		api.course = { id: 5, title: 'Altkurs', status: 'archived', is_instructor: false, mode_config: {}, pools: [], members: [] }
 		await mountDetail()
 		expect(notice(host)).toBeNull()
-		expect(host.querySelector('[data-test="course-archived"]')?.textContent).toContain('Du kannst die Inhalte weiter ansehen')
+		// GitHub #99: learners keep using the course; the note says so instead of "ansehen"
+		expect(host.querySelector('[data-test="course-archived"]')?.textContent).toContain('Du kannst ihn weiter wie bisher nutzen')
+		expect(host.querySelector('[data-test="course-archive-explanation"]')).toBeNull()
 		app.unmount(); host.remove()
 		api.course = { ...api.course, is_instructor: true }
 		await mountDetail(5, 'instructor')
-		expect(host.querySelector('[data-test="course-archived"]')?.textContent).toContain('wieder aktivieren')
+		expect(host.querySelector('[data-test="course-archived"]')?.textContent).toMatch(/wieder aktivieren/i)
+		// GitHub #99: instructors get what archiving changes, not just that it happened
+		expect(host.querySelector('[data-test="course-archive-explanation"]')).not.toBeNull()
 		expect(detail.loadState).toBe('')
 	})
 

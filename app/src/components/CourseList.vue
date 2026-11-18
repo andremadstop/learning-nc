@@ -35,6 +35,7 @@
 					<div v-for="course in ownCourses"
 						:key="'own-' + course.id"
 						class="course-card"
+						:data-course-id="course.id"
 						@click="$emit('selectCourse', course)">
 						<div class="course-card-header">
 							<!-- GitHub #64: the title is the card's button; the card itself stays clickable for the mouse but holds the action menu, so it is no button itself. -->
@@ -224,6 +225,37 @@
 				</div>
 			</div>
 		</NcModal>
+
+		<!-- GitHub #99: archiving explains itself first. "Nicht mehr anzeigen" is a user setting on
+			the server (archive_confirm_skip); with it, "Archive" archives directly as before. Escape
+			and "Abbrechen" archive nothing. -->
+		<AccessibleDialog v-if="archivingCourse"
+			:name="t('learning', 'Kurs „{title}“ archivieren?', { title: archivingCourse.title }, undefined, { escape: false, sanitize: false })"
+			size="normal"
+			data-test="archive-confirm"
+			@closing="cancelArchive">
+			<CourseArchiveExplanation :can-reactivate="true" />
+			<NcCheckboxRadioSwitch :model-value="archiveDontShowAgain"
+				class="archive-confirm__skip"
+				data-test="archive-confirm-skip"
+				@update:model-value="archiveDontShowAgain = $event">
+				{{ t('learning', 'Nicht mehr anzeigen') }}
+			</NcCheckboxRadioSwitch>
+			<template #actions>
+				<NcButton variant="tertiary"
+					:disabled="archiving"
+					data-test="archive-confirm-cancel"
+					@click="cancelArchive">
+					{{ t('learning', 'Abbrechen') }}
+				</NcButton>
+				<NcButton variant="primary"
+					:disabled="archiving"
+					data-test="archive-confirm-ok"
+					@click="confirmArchive">
+					{{ t('learning', 'Archivieren') }}
+				</NcButton>
+			</template>
+		</AccessibleDialog>
 	</div>
 </template>
 
@@ -238,6 +270,9 @@ import NcActions from '@nextcloud/vue/components/NcActions'
 import NcActionButton from '@nextcloud/vue/components/NcActionButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import AccessibleDialog from './AccessibleDialog.vue'
+import CourseArchiveExplanation from './CourseArchiveExplanation.vue'
 import { showSuccess, showError } from '@nextcloud/dialogs'
 import hintMixin from '../hintMixin.js'
 
@@ -253,6 +288,9 @@ export default {
 		NcActionButton,
 		NcLoadingIcon,
 		NcNoteCard,
+		NcCheckboxRadioSwitch,
+		AccessibleDialog,
+		CourseArchiveExplanation,
 	},
 
 	mixins: [hintMixin],
@@ -284,6 +322,12 @@ export default {
 			showDeleteModal: false,
 			editingCourse: null,
 			deletingCourse: null,
+			// GitHub #99: the archive confirmation
+			archivingCourse: null,
+			archiveDontShowAgain: false,
+			archiving: false,
+			// null = not read from the server yet; read on the first "Archive"
+			archiveConfirmSkip: null,
 			formSubmitted: false,
 			formData: {
 				title: '',
@@ -472,7 +516,72 @@ export default {
 		},
 
 		async toggleStatus(course) {
-			const newStatus = course.status === 'active' ? 'archived' : 'active'
+			// GitHub #99: "Archive" explains first, unless the person chose "Nicht mehr anzeigen".
+			// "Activate" needs no explanation and stays one click.
+			if (course.status === 'active' && !(await this.isArchiveConfirmSkipped())) {
+				this.archiveDontShowAgain = false
+				this.archivingCourse = course
+				return
+			}
+			await this.setCourseStatus(course, course.status === 'active' ? 'archived' : 'active')
+		},
+
+		/** A failed read shows the dialog: explaining once too often beats archiving unexplained. */
+		async isArchiveConfirmSkipped() {
+			if (this.archiveConfirmSkip === null) {
+				try {
+					const res = await axios.get(generateUrl('/apps/learning/api/settings/personal'))
+					this.archiveConfirmSkip = res.data?.archive_confirm_skip === 'yes'
+				} catch (err) {
+					console.error('Failed to read the archive confirmation setting:', err)
+					return false
+				}
+			}
+			return this.archiveConfirmSkip
+		},
+
+		async confirmArchive() {
+			const course = this.archivingCourse
+			if (!course || this.archiving) {
+				return
+			}
+			this.archiving = true
+			try {
+				if (this.archiveDontShowAgain) {
+					// Archiving does not depend on it: a failed save only means the dialog comes back.
+					try {
+						await axios.put(generateUrl('/apps/learning/api/settings/personal/archive-confirm'), { skip: true })
+						this.archiveConfirmSkip = true
+					} catch (err) {
+						console.error('Failed to save the archive confirmation setting:', err)
+					}
+				}
+				this.archivingCourse = null
+				await this.setCourseStatus(course, 'archived')
+			} finally {
+				this.archiving = false
+				this.focusCourseCard(course)
+			}
+		},
+
+		cancelArchive() {
+			const course = this.archivingCourse
+			if (!course || this.archiving) {
+				return
+			}
+			this.archivingCourse = null
+			this.focusCourseCard(course)
+		},
+
+		/** Focus back to the course the dialog was about (its action menu is gone with the dialog). */
+		focusCourseCard(course) {
+			this.$nextTick(() => {
+				const button = this.$el?.querySelector?.(`[data-course-id="${Number(course.id)}"] .course-card-open`)
+				button?.focus?.()
+			})
+		},
+
+		async setCourseStatus(course, newStatus) {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}', { id: course.id })
 				await axios.put(url, { status: newStatus })
@@ -514,6 +623,11 @@ export default {
 </script>
 
 <style scoped>
+/* GitHub #99 */
+.archive-confirm__skip {
+	margin-top: 12px;
+}
+
 .course-list {
 	padding: 20px;
 	max-width: 1200px;
