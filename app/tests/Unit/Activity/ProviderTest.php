@@ -111,7 +111,7 @@ class ProviderTest extends TestCase {
             'cycle' => ['certification_cycle_opened', $course, 'Im Kurs Brandschutz ist ein neuer Zertifizierungszyklus offen', '/courses/7/summary'],
             'compliance' => ['compliance_reminder', $course, 'Erinnerung an die Pflichtschulung im Kurs Brandschutz', '/courses/7'],
             'pool' => ['feed_pool_added', $course + ['pool_id' => 3, 'pool_name' => 'Pool A'], 'Neuer Fragenpool im Kurs Brandschutz: Pool A', '/courses/7/feed'],
-            'announcement' => ['feed_announcement', $course + ['announcement_id' => 4, 'title' => 'Termin'], 'Neue Ankündigung im Kurs Brandschutz: Termin', '/courses/7/announcements'],
+            'announcement' => ['feed_announcement', $course + ['announcement_id' => 4, 'title' => 'Termin'], 'Neue Ankündigung im Kurs Brandschutz: Termin', '/courses/7/feed'],
             'badge' => ['badge_earned', ['badge_name' => 'Wochenserie', 'badge_emoji' => '*'], 'Achievement unlocked: * Wochenserie', ''],
         ];
     }

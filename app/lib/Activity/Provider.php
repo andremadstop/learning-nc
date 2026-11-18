@@ -89,7 +89,9 @@ class Provider implements IProvider {
 
             case ActivityPublisher::SUBJECT_FEED_ANNOUNCEMENT:
                 $event->setParsedSubject($l->t('Neue Ankündigung im Kurs %1$s: %2$s', [$courseTitle, (string)($params['title'] ?? '')]));
-                $event->setLink($this->courseUrl($courseId, 'announcements'));
+                // The feed, not the announcements tab: learners (the main recipients) only have
+                // the feed, which shows the announcement; the announcements tab is instructor-only.
+                $event->setLink($this->courseUrl($courseId, 'feed'));
                 break;
 
             default:
