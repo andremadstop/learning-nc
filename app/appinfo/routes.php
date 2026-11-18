@@ -151,6 +151,8 @@ return [
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
         ['name' => 'settings#savePersonal', 'url' => '/api/settings/personal', 'verb' => 'PUT'],
         ['name' => 'settings#acknowledgeOnboarding', 'url' => '/api/settings/personal/onboarding', 'verb' => 'POST'],
+        // GitHub #99: "Nicht mehr anzeigen" in the archive confirmation, per user
+        ['name' => 'settings#saveArchiveConfirm', 'url' => '/api/settings/personal/archive-confirm', 'verb' => 'PUT'],
 
         // VirtuProf
         ['name' => 'virtuProf#getState', 'url' => '/api/virtuprof/state', 'verb' => 'GET'],

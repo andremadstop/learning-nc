@@ -7785,6 +7785,111 @@
                 }
             }
         },
+        "/index.php/apps/learning/api/settings/personal/archive-confirm": {
+            "put": {
+                "operationId": "settings-save-archive-confirm",
+                "summary": "GitHub #99: \"Nicht mehr anzeigen\" in the dialog that explains archiving a course. Stored per user on the server, so it holds in every browser and on every device; skip=false brings the dialog back. Its own route for the reason given at acknowledgeOnboarding(): savePersonal() has two mandatory parameters and would refuse a PUT carrying only this flag.",
+                "tags": [
+                    "settings"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "skip"
+                                ],
+                                "properties": {
+                                    "skip": {
+                                        "type": "boolean",
+                                        "description": "true archives without the dialog from now on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "archive_confirm_skip"
+                                    ],
+                                    "properties": {
+                                        "archive_confirm_skip": {
+                                            "type": "string",
+                                            "enum": [
+                                                "yes",
+                                                "no"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/index.php/apps/learning/api/virtuprof/state": {
             "get": {
                 "operationId": "virtu_prof-get-state",

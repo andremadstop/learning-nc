@@ -1266,6 +1266,9 @@
   },
   "SettingsController::initCertIssuer": [],
   "SettingsController::saveAdmin": [],
+  "SettingsController::saveArchiveConfirm": {
+   "NoAdminRequired": true
+  },
   "SettingsController::savePersonal": {
    "NoAdminRequired": true
   },

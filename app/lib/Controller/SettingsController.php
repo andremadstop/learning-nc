@@ -280,6 +280,8 @@ class SettingsController extends Controller {
             'fsrs_detailed_stats' => $this->config->getUserValue($this->userId, 'learning', 'fsrs_detailed_stats', 'no'),
             'animations_enabled' => $this->config->getUserValue($this->userId, 'learning', 'animations_enabled', 'yes'),
             'onboarding_acknowledged' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_acknowledged', 'no'),
+            // GitHub #99: "Nicht mehr anzeigen" in the archive confirmation (saveArchiveConfirm())
+            'archive_confirm_skip' => $this->config->getUserValue($this->userId, 'learning', 'archive_confirm_skip', 'no'),
             // GitHub #36: the admin's global gamification switch, read-only for everyone. The
             // frontend hides XP, level, streak and badges with it (App.vue holds the one copy).
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes') === 'yes',
@@ -306,6 +308,27 @@ class SettingsController extends Controller {
         $this->config->setUserValue($this->userId, 'learning', 'onboarding_acknowledged', 'yes');
 
         return new DataResponse(['status' => 'ok']);
+    }
+
+    /**
+     * GitHub #99: "Nicht mehr anzeigen" in the dialog that explains archiving a course. Stored per
+     * user on the server, so it holds in every browser and on every device; skip=false brings the
+     * dialog back. Its own route for the reason given at acknowledgeOnboarding(): savePersonal()
+     * has two mandatory parameters and would refuse a PUT carrying only this flag.
+     *
+     * @param bool $skip true archives without the dialog from now on
+     * @return DataResponse<Http::STATUS_OK, array{archive_confirm_skip: 'yes'|'no'}, array{}>|DataResponse<Http::STATUS_UNAUTHORIZED, array{error: string}, array{}>
+     */
+    #[NoAdminRequired]
+    public function saveArchiveConfirm(bool $skip): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $value = $skip ? 'yes' : 'no';
+        $this->config->setUserValue($this->userId, 'learning', 'archive_confirm_skip', $value);
+
+        return new DataResponse(['archive_confirm_skip' => $value]);
     }
 
     #[NoAdminRequired]
