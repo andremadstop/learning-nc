@@ -65,22 +65,32 @@
  */
 import { getCurrentUser } from '@nextcloud/auth'
 
-/** GitHub #75: per account in this browser; without storage the notice stays expanded. */
-function seenKey() {
-	return 'learning:training-privacy-seen:' + (getCurrentUser()?.uid || '')
+/**
+ * GitHub #75: per account in this browser; without storage the notice stays expanded.
+ * GitHub #86 (review): the notice that names the opens of required documents has its own key.
+ * Whoever saw the shorter notice before gets the longer one expanded once (Art. 13: a new kind
+ * of data is shown, not hidden behind "Show details"). The base key stays as it was, so courses
+ * without the option fold exactly as before.
+ */
+function seenKey(documentOpens) {
+	return 'learning:training-privacy-seen:' + (getCurrentUser()?.uid || '') + (documentOpens ? ':opens' : '')
 }
 
-function readSeen() {
+function readSeen(documentOpens) {
 	try {
-		return window.localStorage.getItem(seenKey()) === '1'
+		return window.localStorage.getItem(seenKey(documentOpens)) === '1'
 	} catch (e) {
 		return false
 	}
 }
 
-function writeSeen() {
+function writeSeen(documentOpens) {
 	try {
-		window.localStorage.setItem(seenKey(), '1')
+		window.localStorage.setItem(seenKey(false), '1')
+		if (documentOpens) {
+			// The longer notice contains the shorter one.
+			window.localStorage.setItem(seenKey(true), '1')
+		}
 	} catch (e) {
 		// private window, blocked storage: shown in full next time
 	}
@@ -114,23 +124,23 @@ export default {
 	emits: ['acknowledged'],
 
 	data() {
-		const seen = this.collapsible && readSeen()
+		const seen = this.collapsible && readSeen(this.documentOpens)
 		return { expanded: !seen }
 	},
 
-	mounted() {
-		// GitHub #75 (review): "seen" only once it was on screen. Learners find the notice last,
-		// below the materials; marking it on mount folded it for good, in every course, for
-		// someone who never scrolled down to it. Without IntersectionObserver it stays expanded.
-		if (!this.collapsible || !this.expanded || typeof window.IntersectionObserver !== 'function') {
-			return
-		}
-		this.observer = new window.IntersectionObserver((entries) => {
-			if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5)) {
-				this.markSeen()
+	watch: {
+		// GitHub #86 (review): the course switched the option on while the notice was shown
+		// (course data reloaded): the opens are new to a learner who only saw the shorter notice.
+		documentOpens(value) {
+			if (value && this.collapsible && !this.expanded && !readSeen(true)) {
+				this.expanded = true
+				this.observe()
 			}
-		}, { threshold: 0.5 })
-		this.observer.observe(this.$refs.root)
+		},
+	},
+
+	mounted() {
+		this.observe()
 	},
 
 	beforeUnmount() {
@@ -139,9 +149,24 @@ export default {
 	},
 
 	methods: {
+		observe() {
+			// GitHub #75 (review): "seen" only once it was on screen. Learners find the notice last,
+			// below the materials; marking it on mount folded it for good, in every course, for
+			// someone who never scrolled down to it. Without IntersectionObserver it stays expanded.
+			if (this.observer || !this.collapsible || !this.expanded || typeof window.IntersectionObserver !== 'function') {
+				return
+			}
+			this.observer = new window.IntersectionObserver((entries) => {
+				if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5)) {
+					this.markSeen()
+				}
+			}, { threshold: 0.5 })
+			this.observer.observe(this.$refs.root)
+		},
+
 		markSeen() {
 			if (this.collapsible) {
-				writeSeen()
+				writeSeen(this.documentOpens)
 			}
 			this.observer?.disconnect()
 			this.observer = null
