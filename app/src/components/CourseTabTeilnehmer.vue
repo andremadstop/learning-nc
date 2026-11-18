@@ -335,32 +335,41 @@
 			<div v-else-if="weakQuestions.length === 0" class="empty-hint">
 				{{ t('learning', 'Noch keine schwachen Fragen. Eine Frage erscheint hier ab {n} Antworten.', { n: minAnswersPerQuestion }) }}
 			</div>
-			<table v-else class="weak-questions-table">
-				<thead>
-					<tr>
-						<th>#</th>
-						<th>{{ t('learning', 'Question') }}</th>
-						<th>{{ t('learning', 'Chapter') }}</th>
-						<th>{{ t('learning', 'Wrong rate') }}</th>
-						<th>{{ t('learning', 'Actions') }}</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="(q, idx) in weakQuestions" :key="q.question_id" :class="{ 'paused-row': q.is_paused }">
-						<td>{{ idx + 1 }}</td>
-						<td class="q-text">{{ q.question_text }}</td>
-						<td>{{ q.chapter_title || q.chapter_key || '\u2014' }}</td>
-						<td class="wrong-rate" :class="q.wrong_rate >= 70 ? 'rate-red' : q.wrong_rate >= 50 ? 'rate-yellow' : 'rate-ok'">
-							{{ q.wrong_rate }}%
-						</td>
-						<td class="q-actions">
-							<NcButton variant="tertiary" @click="toggleQuestionPause(q)">
-								{{ q.is_paused ? t('learning', 'Resume') : t('learning', 'Pause') }}
-							</NcButton>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+			<div
+				v-else
+				class="weak-questions-scroll"
+				role="region"
+				tabindex="0"
+				:aria-label="t('learning', 'Schwache Fragen')">
+				<!-- GitHub #96: the table scrolls sideways on a narrow screen instead of overlapping;
+					the region takes the keyboard focus so it can be scrolled without a mouse. -->
+				<table class="weak-questions-table">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>{{ t('learning', 'Question') }}</th>
+							<th>{{ t('learning', 'Chapter') }}</th>
+							<th>{{ t('learning', 'Wrong rate') }}</th>
+							<th>{{ t('learning', 'Actions') }}</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(q, idx) in weakQuestions" :key="q.question_id" :class="{ 'paused-row': q.is_paused }">
+							<td>{{ idx + 1 }}</td>
+							<td class="q-text">{{ q.question_text }}</td>
+							<td>{{ q.chapter_title || q.chapter_key || '\u2014' }}</td>
+							<td class="wrong-rate" :class="q.wrong_rate >= 70 ? 'rate-red' : q.wrong_rate >= 50 ? 'rate-yellow' : 'rate-ok'">
+								{{ q.wrong_rate }}%
+							</td>
+							<td class="q-actions">
+								<NcButton variant="tertiary" @click="toggleQuestionPause(q)">
+									{{ q.is_paused ? t('learning', 'Resume') : t('learning', 'Pause') }}
+								</NcButton>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 
 		<!-- Class Profile (instructor only) -->
@@ -1815,10 +1824,15 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .wrong-q-rate { color: var(--color-error-text); font-weight: 600; }
 
 /* Weak questions */
-.weak-questions-table { width: 100%; border-collapse: collapse; }
+/* GitHub #96: a long question (or a long word or URL in it) ran over the Chapter column. The text
+   wraps inside its column, anywhere if it has to; below the table's minimum width the region
+   scrolls sideways instead of squeezing the columns together. */
+.weak-questions-scroll { overflow-x: auto; max-width: 100%; }
+.weak-questions-scroll:focus-visible { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
+.weak-questions-table { width: 100%; min-width: 36rem; border-collapse: collapse; }
 .weak-questions-table th, .weak-questions-table td { padding: 8px 12px; border-bottom: 1px solid var(--color-border); text-align: start; }
 .weak-questions-table th { font-weight: 600; background: var(--color-background-dark); }
-.q-text { max-width: 300px; }
+.q-text { min-width: 12rem; max-width: 30rem; overflow-wrap: anywhere; white-space: normal; }
 /* A paused question is marked by its text, not by fading the whole row: opacity 0.5 took the
    question, its wrong rate and the "Resume" button below 4.5:1 (persona sweep C9). */
 .paused-row .q-text { color: var(--color-text-maxcontrast); font-style: italic; }
