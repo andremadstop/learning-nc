@@ -1021,10 +1021,14 @@ export default {
 			return this.course?.video_gate_enabled === true
 		},
 		// GitHub #75: required documents are listed above; the optional list leaves them out.
+		// GitHub #90 (review): also the ones that cannot be opened right now (no documentId, no
+		// link), or a compliance document shows up again as "Optional".
 		requiredDocumentIdsForLearner() {
 			return this.normalizedCourseVideos
-				.filter((item) => item.sourceType === 'document' && item.documentId != null)
-				.map((item) => Number(item.documentId))
+				.filter((item) => item.sourceType === 'document')
+				.map((item) => item.materialDocumentId ?? item.documentId)
+				.filter((id) => id != null)
+				.map((id) => Number(id))
 		},
 		allVideoGatesComplete() {
 			if (this.normalizedCourseVideos.length === 0) {
@@ -1212,6 +1216,7 @@ export default {
 				completed: row.completed === true,
 				coveredPct: Number(row.covered_pct ?? row.coveredPct ?? 0) || 0,
 				documentId: row.document_id ?? null,
+				materialDocumentId: row.material_document_id ?? null,
 				updated: row.updated === true,
 				confirmAgain: row.confirm_again === true,
 				// GitHub #86: confirm only after opening (course option) and whether it was opened

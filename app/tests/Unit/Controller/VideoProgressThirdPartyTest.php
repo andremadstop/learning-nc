@@ -121,6 +121,27 @@ class VideoProgressThirdPartyTest extends TestCase {
         $this->assertNull($rows[5]['document_id']);
     }
 
+    /**
+     * GitHub #90 (review): a required file that is in the folder but cannot be handed out (a
+     * view-only share) lost its id with its link. The learner's optional list leaves required
+     * documents out by that id, so the compliance document showed up there again as "Optional".
+     * The entry's id is sent on its own now; the link still is not.
+     */
+    public function testARequiredDocumentWithoutLinkStillNamesItsMaterialEntry(): void {
+        $required = $this->createMock(\OCA\Learning\Service\RequiredDocumentService::class);
+        $required->method('statesForUser')->willReturn([]);
+        $required->method('fileInfo')->willReturn(null);
+
+        $rows = $this->courseStatusRows($required);
+
+        $this->assertNull($rows[5]['document_id']);
+        $this->assertSame(31, $rows[5]['material_document_id']);
+        $this->assertNull($rows[4]['material_document_id'], 'a legacy path row is no material entry');
+        $this->assertNull($rows[6]['material_document_id'], 'another course\'s document is not named');
+        $this->assertNull($rows[8]['material_document_id'], 'a document outside the current folder is not named');
+        $this->assertArrayNotHasKey('material_document_id', $rows[1]);
+    }
+
     public function testARequiredDocumentWhoseFileIsThereKeepsItsLink(): void {
         $required = $this->createMock(\OCA\Learning\Service\RequiredDocumentService::class);
         $required->method('statesForUser')->willReturn([]);

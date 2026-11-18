@@ -47,7 +47,7 @@ vi.mock('../../src/components/CourseMaterials.vue', () => ({
 	default: {
 		name: 'CourseMaterials',
 		props: ['courseId', 'isInstructor', 'aiEnabled', 'excludeDocumentIds', 'optionalHint', 'hideEmpty', 'examGateOff'],
-		template: '<pre class="materials-props">{{ JSON.stringify({ isInstructor, optionalHint: !!optionalHint, examGateOff: !!examGateOff }) }}</pre>',
+		template: '<div><pre class="materials-props">{{ JSON.stringify({ isInstructor, optionalHint: !!optionalHint, examGateOff: !!examGateOff }) }}</pre><i class="materials-exclude">{{ JSON.stringify(excludeDocumentIds ?? null) }}</i></div>',
 	},
 }))
 
@@ -102,6 +102,36 @@ describe('CourseTabLernraum — learning materials wiring', () => {
 		api.videos = [{ id: 1, source_type: 'youtube-nocookie', video_ref: 'abcdefghijk', duration_seconds: 60 }]
 		const shown = await mountMaterials({ id: 7, has_material_folder: true }, false)
 		expect(shown).toEqual([{ isInstructor: false, optionalHint: true, examGateOff: false }])
+	})
+})
+
+describe('CourseTabLernraum — required documents stay out of the optional list (GitHub #90 review)', () => {
+	async function excludedFor(videos) {
+		api.videos = videos
+		await mountMaterials({ id: 7, has_material_folder: true, video_gate_enabled: true }, false)
+		return JSON.parse(host.querySelector('.materials-exclude').textContent)
+	}
+
+	it('leaves out a required file that cannot be opened right now (no link, view-only share)', async () => {
+		const excluded = await excludedFor([
+			{ id: 5, source_type: 'document', title: 'Policy', document_id: null, material_document_id: 31 },
+		])
+		expect(excluded).toEqual([31])
+	})
+
+	it('and one that can be opened, as before', async () => {
+		const excluded = await excludedFor([
+			{ id: 5, source_type: 'document', title: 'Policy', document_id: 31, material_document_id: 31 },
+			{ id: 6, source_type: 'youtube-nocookie', video_ref: 'abcdefghijk', duration_seconds: 60 },
+		])
+		expect(excluded).toEqual([31])
+	})
+
+	it('a required row of no material entry leaves nothing out', async () => {
+		const excluded = await excludedFor([
+			{ id: 5, source_type: 'document', title: 'Old', document_id: null, material_document_id: null },
+		])
+		expect(excluded).toEqual([])
 	})
 })
 
