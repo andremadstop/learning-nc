@@ -130,6 +130,15 @@ async function checkPage(page, rec) {
 			const s = getComputedStyle(el)
 			return s.visibility !== 'hidden' && s.display !== 'none' && Number(s.opacity) > 0.05
 		}
+		// Text the app marks as another language than the page (lang="de" on the German-only
+		// campaign stories, GitHub #52, WCAG 3.1.2) is declared German on purpose: not an
+		// untranslated string. Unmarked German still counts.
+		const pageLang = String(document.documentElement.lang || '').toLowerCase().split('-')[0]
+		const markedOtherLang = (el) => {
+			const holder = el.closest('[lang]')
+			if (!holder || holder === document.documentElement) return false
+			return String(holder.getAttribute('lang') || '').toLowerCase().split('-')[0] !== pageLang
+		}
 		const hits = new Set()
 		const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
 		let node
@@ -137,11 +146,11 @@ async function checkPage(page, rec) {
 			const text = node.textContent.replace(/\s+/g, ' ').trim()
 			if (!text || !german.test(text)) continue
 			const el = node.parentElement
-			if (!el || el.closest('script,style,noscript,textarea') || !visible(el)) continue
+			if (!el || el.closest('script,style,noscript,textarea') || !visible(el) || markedOtherLang(el)) continue
 			hits.add('text: ' + text.slice(0, 140))
 		}
 		for (const el of document.querySelectorAll('[placeholder],[title],[aria-label]')) {
-			if (!visible(el)) continue
+			if (!visible(el) || markedOtherLang(el)) continue
 			for (const attr of ['placeholder', 'title', 'aria-label']) {
 				const v = el.getAttribute(attr)
 				if (v && german.test(v)) hits.add(`${attr}: ${v.slice(0, 140)}`)

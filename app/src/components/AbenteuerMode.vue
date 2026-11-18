@@ -36,8 +36,8 @@
             >
               <div class="ab-campaign-icon">{{ campaign.icon }}</div>
               <div class="ab-campaign-info">
-                <h3 class="ab-campaign-title">{{ campaign.title }}</h3>
-                <p class="ab-campaign-desc">{{ campaign.description }}</p>
+                <h3 class="ab-campaign-title" :lang="campaignTextLang(campaign)">{{ campaign.title }}</h3>
+                <p class="ab-campaign-desc" :lang="campaignTextLang(campaign)">{{ campaign.description }}</p>
                 <div class="ab-campaign-meta">
                   <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
                     {{ difficultyLabel(campaign.difficulty) }}
@@ -80,8 +80,8 @@
               <span class="ab-bonus-pill">{{ t('learning', 'Bonus') }}</span>
               <div class="ab-campaign-icon">{{ campaign.icon }}</div>
               <div class="ab-campaign-info">
-                <h3 class="ab-campaign-title">{{ campaign.title }}</h3>
-                <p class="ab-campaign-desc">{{ campaign.description }}</p>
+                <h3 class="ab-campaign-title" :lang="campaignTextLang(campaign)">{{ campaign.title }}</h3>
+                <p class="ab-campaign-desc" :lang="campaignTextLang(campaign)">{{ campaign.description }}</p>
                 <div class="ab-campaign-meta">
                   <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
                     {{ difficultyLabel(campaign.difficulty) }}
@@ -120,7 +120,7 @@
     <div v-else-if="phase === 'character-select'" class="ab-character-select">
       <div class="ab-header">
         <button class="ab-back-btn" @click="phase = 'campaign-select'">← {{ t('learning', 'Kampagnen') }}</button>
-        <h2 class="ab-title">{{ selectedCampaign ? selectedCampaign.title : '' }}</h2>
+        <h2 class="ab-title" :lang="campaignTextLang(selectedCampaign)">{{ selectedCampaign ? selectedCampaign.title : '' }}</h2>
         <p class="ab-subtitle">{{ t('learning', 'Wähle deinen Charakter') }}</p>
       </div>
 
@@ -920,7 +920,10 @@ export default {
 				const [resp, progressRows] = await Promise.all([axios.get(url), this.fetchCampaignProgress()])
 				const raw = resp.data.campaigns || resp.data || []
 				// Normalize: backend uses campaign_id, frontend expects id
-				this.campaigns = this.applyCampaignProgress(this.normalizeCampaignList(raw), progressRows)
+				// GitHub #52: what the server lists comes from the German-only campaign files; the
+				// fallback below goes through the catalogue and is translated, so it carries no mark.
+				const fromServer = this.normalizeCampaignList(raw).map((campaign) => ({ ...campaign, story_lang: 'de' }))
+				this.campaigns = this.applyCampaignProgress(fromServer, progressRows)
 				if (this.campaigns.length === 0) this.campaigns = this.normalizeCampaignList(buildStaticCampaigns())
 			} catch (e) {
 				// Backend not yet available — fall back to static graph campaigns only
@@ -979,6 +982,18 @@ export default {
 					}
 					return String(left.title || '').localeCompare(String(right.title || ''))
 				})
+		},
+
+		/**
+		 * `lang` for a campaign's title and description (GitHub #52, WCAG 3.1.2): text from the
+		 * German-only campaign files is marked German outside a German interface, so a screen reader
+		 * reads it with a German voice. Translated fallback campaigns and a German interface get none.
+		 *
+		 * @param {object|null} campaign
+		 * @return {string|null}
+		 */
+		campaignTextLang(campaign) {
+			return campaign && campaign.story_lang === 'de' && this.campaignsGermanOnly ? 'de' : null
 		},
 
 		selectCampaign(campaign) {
