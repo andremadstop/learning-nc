@@ -72,7 +72,7 @@ final class RouteSecurityMiddlewareTest extends TestCase {
 
         return new SecurityMiddleware(
             $request,
-            $this->reflector,
+            self::reflectorArgument($this->reflector),
             $this->createMock(INavigationManager::class),
             $this->createMock(IURLGenerator::class),
             new NullLogger(),
@@ -86,6 +86,27 @@ final class RouteSecurityMiddlewareTest extends TestCase {
             $session,
             $remote,
         );
+    }
+
+
+    /**
+     * The middleware's second constructor argument: NC 33 and 35 take the ControllerMethodReflector
+     * itself, NC 34.0.x takes OC\AppFramework\Middleware\MiddlewareUtils (a wrapper around the same
+     * reflector). Read the declared type instead of the server version, so the test builds the
+     * middleware the way the running server's DI container would.
+     */
+    private static function reflectorArgument(ControllerMethodReflector $reflector): object {
+        $param = (new \ReflectionMethod(SecurityMiddleware::class, '__construct'))->getParameters()[1];
+        $type = $param->getType();
+        $name = $type instanceof \ReflectionNamedType ? $type->getName() : '';
+        if ($name === '' || is_a($reflector, $name)) {
+            return $reflector;
+        }
+        if (!class_exists($name)) {
+            self::fail("SecurityMiddleware expects an unknown $name as its second argument");
+        }
+        // MiddlewareUtils(ControllerMethodReflector $reflector, LoggerInterface $logger)
+        return new $name($reflector, new NullLogger());
     }
 
 
