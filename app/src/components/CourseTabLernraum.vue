@@ -2462,6 +2462,15 @@ export default {
 	margin-bottom: 16px;
 }
 
+/* GitHub #88: Nextcloud's core style gives every textarea (and on NC 33 every select) a width of
+   130px, which the column's stretch cannot override. The fields of Pool rules span the column. */
+.rules-field select,
+.rules-field textarea {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
 /* GitHub #47: exam scope of the pool in this course */
 .rules-exam-scope {
 	border: 1px solid var(--color-border);
