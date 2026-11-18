@@ -802,7 +802,25 @@ class CourseService {
         }
         if ($gateEnabled !== null || $reconfirmPerCycle !== null || $openBeforeConfirm !== null) {
             $course->setUpdatedAt(time());
-            $this->courseMapper->update($course);
+            // GitHub #86 (review): without the option the stored opens of this course have no use
+            // and no evidence value, and the privacy notice says again that only the completion is
+            // stored. They go with the switch, in one transaction, so the notice is never wrong.
+            // Switching it on again means learners open the documents once more for a NEW
+            // confirmation; existing confirmations are untouched.
+            $this->db->beginTransaction();
+            try {
+                $this->courseMapper->update($course);
+                if ($openBeforeConfirm === false) {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->delete('learning_doc_opens')
+                        ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+                    $qb->executeStatement();
+                }
+                $this->db->commit();
+            } catch (\Throwable $e) {
+                $this->db->rollBack();
+                throw $e;
+            }
         }
         return $course;
     }
