@@ -130,6 +130,16 @@ describe('add-pool dialog: view-only pools (GitHub #97)', () => {
 		}
 	})
 
+	it('a view-only pool keeps the main background (grey text stays at 4.5:1)', async () => {
+		const { readFileSync } = await import('node:fs')
+		const { resolve } = await import('node:path')
+		const source = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
+		const style = source.slice(source.indexOf('<style')).replace(/\/\*[\s\S]*?\*\//g, '')
+		const rule = style.match(/\.pool-select-item\.view-only\s*\{([^}]*)\}/)
+		expect(rule).not.toBeNull()
+		expect(rule[1]).not.toMatch(/background|opacity/)
+	})
+
 	it('a view-only pool cannot be selected by click, Enter or Space', async () => {
 		await mount()
 		await openDialog()

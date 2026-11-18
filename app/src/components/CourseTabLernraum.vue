@@ -2487,11 +2487,11 @@ export default {
 	cursor: not-allowed;
 }
 
-/* GitHub #97: a view-only pool reads as unavailable without opacity, which took its text below
-   4.5:1; the reason stays readable. */
+/* GitHub #97: a view-only pool reads as unavailable without opacity or a darker background, which
+   both take its grey text below 4.5:1 (maxcontrast is only promised on the main background); the
+   dashed border, the cursor, the tag and the reason carry it. */
 .pool-select-item.view-only {
 	cursor: not-allowed;
-	background: var(--color-background-dark);
 	border-style: dashed;
 }
 
