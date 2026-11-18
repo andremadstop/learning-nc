@@ -99,6 +99,28 @@ describe('QuestionList opens the question from the pool search (GitHub #98)', ()
 		expect(vm.editingQuestion.id).toBe(1110)
 	})
 
+	// IDs 1–9 are one digit; the server's search used to refuse queries under two characters
+	// (QuestionSearchIdLookup98Test). The list asks with the bare ID and the pool.
+	it('a one-digit ID on another page: asked for as is, its page opens', async () => {
+		axios.get.mockImplementation((url, config) => {
+			if (url.endsWith('/questions')) {
+				const p = page(config.params.offset, config.params.limit)
+				if (config.params.offset === 100) p.data.questions[3] = { id: 7, pool_id: 7, text: 'Frage 7', question_type: 'single', answers: [] }
+				return Promise.resolve(p)
+			}
+			if (url.endsWith('/ai/available')) return Promise.resolve({ data: { available: false } })
+			if (url.endsWith('/questions/search')) return Promise.resolve({ data: [{ id: 7, pool_id: 7, text: 'Frage 7', position: 103 }] })
+			return Promise.reject(new Error('unexpected ' + url))
+		})
+		await mount({ focusQuestionId: 7 })
+		await flush()
+		const search = axios.get.mock.calls.find(([url]) => url.endsWith('/questions/search'))
+		expect(search[1].params).toEqual({ query: '7', poolId: 7 })
+		expect(vm.currentPage).toBe(2)
+		expect(host.querySelector('.question-item[data-question-id="7"]').classList.contains('question-item--focus')).toBe(true)
+		expect(vm.editingQuestion.id).toBe(7)
+	})
+
 	it('a read-only pool ("Fragen ansehen"): scrolled to and marked, no editor', async () => {
 		await mount({ focusQuestionId: 1004, readonly: true })
 		await flush()

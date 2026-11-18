@@ -140,8 +140,10 @@ class QuestionMapper extends QBMapper {
     /**
      * @param int|null $poolId only questions of this pool; the access joins still apply, so a pool
      *                         the user cannot see yields nothing
+     * @param bool     $idOnly     only the question whose ID is the (numeric) query, without the
+     *                             text matches (GitHub #98, see QuestionService::search())
      */
-    public function searchByText(string $query, string $userId, int $limit = 50, ?int $poolId = null): array {
+    public function searchByText(string $query, string $userId, int $limit = 50, ?int $poolId = null, bool $idOnly = false): array {
         $qb = $this->db->getQueryBuilder();
         $expr = $qb->expr();
         // GitHub #98: selectDistinct() takes one argument (string or list) and silently dropped a
@@ -169,12 +171,14 @@ class QuestionMapper extends QBMapper {
                $expr->isNotNull("cm.id")
            ))
            ->andWhere(
-               ctype_digit($query)
+               $idOnly
+                   ? $expr->eq("q.id", $qb->createNamedParameter((int)$query, IQueryBuilder::PARAM_INT))
+                   : (ctype_digit($query)
                    ? $expr->orX(
                        $expr->eq("q.id", $qb->createNamedParameter((int)$query, IQueryBuilder::PARAM_INT)),
                        $qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%"))
                    )
-                   : $qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%"))
+                   : $qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%")))
            )
            ->orderBy("q.created_at", "DESC")
            ->setMaxResults($limit);

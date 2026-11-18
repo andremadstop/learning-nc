@@ -867,6 +867,18 @@ class QuestionService {
         $limit = max(1, min($limit, 100));
         $rows = $this->questionMapper->searchByText($query, $userId, $limit, $poolId);
 
+        // GitHub #98: the question list finds an opened question's page by searching its pool for
+        // the ID. A numeric query also matches every text containing the digits, newest first, so
+        // in a pool with more than $limit such texts the (older) question itself was cut off and
+        // the list stayed on page 1. The exact ID hit is looked up on its own and leads the list.
+        if ($poolId !== null && $query !== '' && ctype_digit($query)
+            && !in_array((int)$query, array_map(static fn (array $row): int => (int)($row['id'] ?? 0), $rows), true)) {
+            $exact = $this->questionMapper->searchByText($query, $userId, 1, $poolId, true);
+            if ($exact !== []) {
+                $rows = array_slice(array_merge($exact, $rows), 0, $limit);
+            }
+        }
+
         if ($poolId !== null && $rows !== []) {
             // The search joins already limited the rows to pools the user can see.
             $positions = array_flip($this->questionMapper->findIdsInPoolOrder($poolId));

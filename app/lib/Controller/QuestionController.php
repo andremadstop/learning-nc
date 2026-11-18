@@ -218,7 +218,10 @@ class QuestionController extends Controller {
 
     #[NoAdminRequired]
     public function search(string $query, ?int $poolId = null): DataResponse {
-        if (strlen($query) < 2) {
+        // GitHub #98: a question opened from the Pools search is placed on its page by asking the
+        // pool's search for its ID, and IDs 1–9 are one digit; the minimum length kept them out.
+        $idInPool = $poolId !== null && $poolId > 0 && $query !== '' && ctype_digit($query);
+        if (strlen($query) < 2 && !$idInPool) {
             return new DataResponse(['error' => 'Query must be at least 2 characters'], Http::STATUS_BAD_REQUEST);
         }
         $poolId = $poolId !== null && $poolId > 0 ? $poolId : null;
