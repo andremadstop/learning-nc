@@ -964,12 +964,19 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		await page.locator('.pool-rules-btn').first().click()
 		await page.locator('#pool-rule-question-ids').waitFor({ timeout: 10000 })
 		await page.waitForTimeout(300)
-		const widths = await page.evaluate(() => Object.fromEntries(['pool-rule-question-ids', 'pool-rule-exam', 'pool-rule-chapter']
-			.map((id) => [id, Math.round(document.getElementById(id)?.getBoundingClientRect().width || 0)])))
+		// On NC 33 the core 130px rule hits the selects too, so "as wide as the others" alone would
+		// pass with all three at 130px: each field must also fill its .rules-field column.
+		const sizes = await page.evaluate(() => Object.fromEntries(['pool-rule-question-ids', 'pool-rule-exam', 'pool-rule-chapter'].map((id) => {
+			const el = document.getElementById(id)
+			const column = el?.closest('.rules-field')
+			return [id, { w: Math.round(el?.getBoundingClientRect().width || 0), column: Math.round(column?.getBoundingClientRect().width || 0) }]
+		})))
+		const widths = Object.fromEntries(Object.entries(sizes).map(([id, s]) => [id, s.w]))
 		const reference = Math.max(widths['pool-rule-exam'], widths['pool-rule-chapter'])
-		for (const [id, w] of Object.entries(widths)) {
+		for (const [id, { w, column }] of Object.entries(sizes)) {
 			if (!w) rec.add('layout', `Pool rules: #${id} not rendered`)
 			else if (Math.abs(w - reference) > 2) rec.add('layout', `Pool rules: #${id} is ${w}px wide, the widest field ${reference}px (#88)`)
+			else if (w < column - 2) rec.add('layout', `Pool rules: #${id} is ${w}px wide in a ${column}px column (#88)`)
 		}
 		rec.current.widths = widths
 		await page.screenshot({ path: path.join(SHOTS, 'pool-rules-fields.png') })
