@@ -39,6 +39,9 @@ export function unlockAnswerSounds() {
 	}
 }
 
+/** How long a tone lasts (ms): a spoken explanation starts after it, not over it. */
+export const ANSWER_SOUND_MS = 450
+
 /** The notes of a tone: [{type, from, to, start, length, gain}] (seconds, Hz). */
 export function answerSoundNotes(correct) {
 	if (correct) {
@@ -63,6 +66,10 @@ export function playAnswerSound(correct) {
 		return false
 	}
 	try {
+		if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+			// opened outside a gesture: try once more (allowed once the page had one)
+			ctx.resume()?.catch?.(() => {})
+		}
 		const now = ctx.currentTime || 0
 		for (const note of answerSoundNotes(!!correct)) {
 			const osc = ctx.createOscillator()

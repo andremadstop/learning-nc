@@ -158,7 +158,7 @@ import { generateUrl } from '@nextcloud/router';
 import { getLanguage, isRTL } from '@nextcloud/l10n';
 import { soundsOn, saveQuestionMediaPrefs, useOptionalQuestionMediaPrefsStore } from '../stores/questionMediaPrefsStore.js';
 import { useOptionalA11yStore } from '../stores/a11yStore.js';
-import { playAnswerSound } from '../utils/answerSounds.js';
+import { ANSWER_SOUND_MS, playAnswerSound } from '../utils/answerSounds.js';
 import {
   tracksOfKind, trackLanguages, optionSegments, pickLanguage, trackFor, timelineOf, cuesFor, stageAt, lastStartedIndex,
   roleName, roleColour, formatSeconds, languageLabel,
@@ -238,6 +238,8 @@ export default {
       segmentIndex: 0,
       // play the next segment when this one ends (one "play" runs through all of them)
       chain: false,
+      // the post-answer autoplay waits for the answer tone (Andre: tone first, then the voice)
+      autoStartTimer: null,
     };
   },
   computed: {
@@ -420,6 +422,7 @@ export default {
       immediate: true,
       handler() {
         this.stop();
+        this.cancelAutoStart();
         this.introReleased = false;
         this.segmentIndex = 0;
         this.chain = false;
@@ -439,12 +442,19 @@ export default {
       if (!fresh) {
         return;
       }
-      if (this.soundsEnabled && this.answerCorrect !== null) {
-        playAnswerSound(this.answerCorrect);
-      }
+      const toned = this.soundsEnabled && this.answerCorrect !== null && playAnswerSound(this.answerCorrect);
       if (this.autoplay) {
-        // after the phase watcher's stop() and the render of the first segment
-        this.$nextTick(() => this.autoStart());
+        // after the phase watcher's stop() and the render of the first segment, and after the
+        // tone when there was one
+        this.cancelAutoStart();
+        if (toned) {
+          this.autoStartTimer = setTimeout(() => {
+            this.autoStartTimer = null;
+            this.autoStart();
+          }, ANSWER_SOUND_MS);
+        } else {
+          this.$nextTick(() => this.autoStart());
+        }
       }
     },
     introTracks(tracks) {
@@ -481,6 +491,7 @@ export default {
     }
   },
   beforeUnmount() {
+    this.cancelAutoStart();
     this.requestToken++;
     this.stop();
     this.motionQuery?.removeEventListener?.('change', this.onMotionChange);
@@ -539,6 +550,12 @@ export default {
       this.blocked = false;
       this.currentTime = 0;
       this.manualIndex = null;
+    },
+    cancelAutoStart() {
+      if (this.autoStartTimer !== null) {
+        clearTimeout(this.autoStartTimer);
+        this.autoStartTimer = null;
+      }
     },
     /** Autoplay: start the current part if nothing plays yet and it is not already heard. */
     autoStart() {

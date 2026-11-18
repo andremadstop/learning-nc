@@ -1,6 +1,6 @@
 <template>
   <div class="qconceal"
-       :class="{ 'qconceal--hidden': hidden, 'qconceal--still': still, 'qconceal--shown': uncovered }"
+       :class="{ 'qconceal--hidden': hidden, 'qconceal--still': still, 'qconceal--shown': uncovered, 'qconceal--flow': hadIntro }"
        :tabindex="hidden ? 0 : (uncovered ? -1 : null)"
        :role="hidden ? 'button' : null"
        :aria-expanded="hidden ? 'false' : null"
@@ -10,6 +10,7 @@
        @click="reveal"
        @keydown.enter.space="onKey"
        @pointerdown.capture="primeSounds"
+       @click.capture="primeSounds"
        @keydown.capture="primeSounds">
     <p v-if="hidden" class="qconceal__veil" aria-hidden="true">
       {{ t('learning', 'Die Frage erscheint nach dem Einstieg.') }}
@@ -47,6 +48,8 @@ export default {
       userRevealed: false,
       // the question was hidden and is now shown: it glides in
       uncovered: false,
+      // this question had a spoken intro: its feedback fades in (questions without one as before)
+      hadIntro: false,
       reducedMotion: false,
       motionQuery: null,
       prefs: useOptionalQuestionMediaPrefsStore(),
@@ -65,6 +68,15 @@ export default {
     questionKey() {
       this.userRevealed = false;
       this.uncovered = false;
+      this.hadIntro = this.conceal;
+    },
+    conceal: {
+      immediate: true,
+      handler(now) {
+        if (now) {
+          this.hadIntro = true;
+        }
+      },
     },
     hidden(now, before) {
       if (!now && before) {
@@ -105,7 +117,9 @@ export default {
     },
     /**
      * The answer tone may only start from a gesture in Safari, and the result comes after a
-     * request: a press or key inside the question opens the audio output beforehand.
+     * request: a press or key inside the question opens the audio output beforehand. On touch
+     * only the click counts as a gesture (pointerdown does for a mouse only), so both; the
+     * capture phase runs before the answer button's own handler.
      */
     primeSounds() {
       if (soundsOn(this.prefs)) {
@@ -151,8 +165,9 @@ export default {
   color: var(--color-text-maxcontrast);
   pointer-events: none;
 }
-/* What appears after answering (the marked options, the explanation of the chosen one) fades in. */
-.qconceal :deep(.answer-feedback) { animation: qconceal-rise .4s ease both; }
+/* What appears after answering (the marked options, the explanation of the chosen one) fades in,
+   for a question with a spoken intro; every other question shows its feedback as before. */
+.qconceal--flow :deep(.answer-feedback) { animation: qconceal-rise .4s ease both; }
 @keyframes qconceal-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 .qconceal--still .qconceal__content { transition: opacity .2s linear; transform: none; }

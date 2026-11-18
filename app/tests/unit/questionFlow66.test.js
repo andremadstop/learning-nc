@@ -325,7 +325,7 @@ describe('QuestionMediaPlayer: "Automatisch abspielen"', () => {
 	})
 
 	it('after answering: the voice of the chosen option, then the dialog', async () => {
-		const { pinia } = piniaWith({ autoplay: true })
+		const { pinia } = piniaWith({ autoplay: true, sounds: 'no' })
 		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
 		playSpy.mockClear()
 		state.props = { questionId: 5, answered: true, reveal: REVEAL, answerCorrect: false, selectedAnswerIds: [2] }
@@ -341,6 +341,42 @@ describe('QuestionMediaPlayer: "Automatisch abspielen"', () => {
 		expect(host.querySelector('.qmedia__title').textContent).toContain('Nachbesprechung')
 		expect(audio.getAttribute('src')).toBe('/media/dialog-de?grant=g')
 		expect(playSpy).toHaveBeenCalledTimes(2)
+	})
+
+	it('with a tone, the option voice waits until the tone is over, and a new question cancels it', async () => {
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+		try {
+			const { pinia } = piniaWith({ autoplay: true })
+			const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+			playSpy.mockClear()
+			state.props = { questionId: 5, answered: true, reveal: REVEAL, answerCorrect: true, selectedAnswerIds: [1] }
+			root.$forceUpdate()
+			await flush()
+			expect(audioCtx.created).toHaveLength(1)
+			expect(playSpy).not.toHaveBeenCalled()
+			vi.advanceTimersByTime(450)
+			await flush()
+			expect(playSpy).toHaveBeenCalledTimes(1)
+			expect(host.querySelector('audio').getAttribute('src')).toBe('/media/opt0-en?grant=g')
+
+			// answered, then straight on to the next question: the pending start never fires
+			state.props = { questionId: 6, answered: false }
+			root.$forceUpdate()
+			await flush()
+			state.props = { questionId: 6, answered: true, reveal: REVEAL, answerCorrect: false, selectedAnswerIds: [1] }
+			root.$forceUpdate()
+			await flush()
+			state.props = { questionId: 7, answered: false }
+			root.$forceUpdate()
+			await flush()
+			playSpy.mockClear()
+			axios.get.mockResolvedValue({ data: { question_id: 7, tracks: [] } })
+			vi.advanceTimersByTime(1000)
+			await flush()
+			expect(host.querySelector('audio')?.getAttribute('src') ?? null).not.toBe('/media/opt0-en?grant=g')
+		} finally {
+			vi.useRealTimers()
+		}
 	})
 
 	it('without autoplay the parts are there to play or step through: past the option voice comes the dialog', async () => {
@@ -512,6 +548,38 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 		await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot, pinia })
 		host.querySelector('.answer').dispatchEvent(new Event('pointerdown', { bubbles: true }))
 		expect(audioCtx.created).toHaveLength(1)
+	})
+
+	it('a tap (click without pointerdown, as on touch screens) opens it too', async () => {
+		const { pinia } = piniaWith({ sounds: 'yes' })
+		await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot, pinia })
+		host.querySelector('.answer').click()
+		expect(audioCtx.created).toHaveLength(1)
+	})
+
+	it('a context opened outside a gesture is resumed when the tone plays', () => {
+		audioCtx.FakeContext.prototype.resume = vi.fn(() => Promise.resolve())
+		const ctx = unlockAnswerSounds()
+		ctx.state = 'suspended'
+		ctx.resume.mockClear()
+		playAnswerSound(true)
+		expect(ctx.resume).toHaveBeenCalled()
+	})
+
+	it('the feedback fades in only for a question that had an intro (others as before)', async () => {
+		const { state, root } = await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot })
+		const el = host.querySelector('.qconceal')
+		expect(el.classList.contains('qconceal--flow')).toBe(false)
+		state.props = { conceal: true, questionKey: 2 }
+		root.$forceUpdate()
+		await flush()
+		expect(el.classList.contains('qconceal--flow')).toBe(true)
+		state.props = { conceal: false, questionKey: 3 }
+		root.$forceUpdate()
+		await flush()
+		expect(el.classList.contains('qconceal--flow')).toBe(false)
+		const css = readFileSync(resolve(here, '../../src/components/QuestionConceal.vue'), 'utf-8')
+		expect(css).not.toMatch(/^\.qconceal :deep\(\.answer-feedback\) \{ animation: qconceal-rise/m)
 	})
 
 	it('…and not when they are off', async () => {
