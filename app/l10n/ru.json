@@ -4100,6 +4100,7 @@
         "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Открыть новый цикл сертификации для {name}? Прежние экзамены больше не будут учитываться, а попытки начнутся заново. Прежние экзамены, подтверждения и сертификаты сохраняются как доказательство.",
         "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Открыть новый цикл сертификации для {name}? Попытки сдать экзамен начнутся заново. Прежние экзамены, подтверждения и сертификаты сохраняются как доказательство.",
         "Nächster Versuch möglich am {date} ab {time} Uhr": "Следующая попытка возможна {date} с {time}",
-        "Neue Ankündigung im Kurs %s": "Новое объявление в курсе %s"
+        "Neue Ankündigung im Kurs %s": "Новое объявление в курсе %s",
+        "Pools hinzufügen": "Добавить пулы"
     }
 }

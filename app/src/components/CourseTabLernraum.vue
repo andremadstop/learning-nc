@@ -101,6 +101,13 @@
 				<template #description>
 					{{ t('learning', 'Add question pools to this course') }}
 				</template>
+				<!-- GitHub #92: the one thing to do on an empty course, right where the eye is; the
+					same dialog as the button at the top. -->
+				<template #action>
+					<NcButton variant="primary" class="empty-add-pool-btn" @click="openAddPoolModal">
+						{{ t('learning', 'Pools hinzufügen') }}
+					</NcButton>
+				</template>
 			</NcEmptyContent>
 		</div>
 

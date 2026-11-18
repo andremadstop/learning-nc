@@ -4061,5 +4061,6 @@ OC.L10N.register(
     "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Відкрити новий цикл сертифікації для {name}? Спроби скласти іспит почнуться заново. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
     "Nächster Versuch möglich am {date} ab {time} Uhr" : "Наступна спроба можлива {date} з {time}",
     "Neue Ankündigung im Kurs %s" : "Нове оголошення в курсі %s",
+    "Pools hinzufügen" : "Додати пули",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
