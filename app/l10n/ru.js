@@ -4028,5 +4028,6 @@ OC.L10N.register(
     "Neuer Fragenpool im Kurs %1$s: %2$s" : "Новый пул вопросов в курсе %1$s: %2$s",
     "Neue Ankündigung im Kurs %1$s: %2$s" : "Новое объявление в курсе %1$s: %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["Твой сертификат по курсу %s истекает через %n день", "Твой сертификат по курсу %s истекает через %n дня", "Твой сертификат по курсу %s истекает через %n дней"],
+    "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Слишком много напоминаний за короткое время. Подождите минуту и попробуйте снова.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

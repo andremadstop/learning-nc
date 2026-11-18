@@ -290,4 +290,19 @@ describe('TeamLeadDashboard.sendReminder', () => {
 		expect(instance.reminderError).not.toContain('Membership detail')
 		expect(instance.reminderError).toBeTruthy()
 	})
+
+	it('names the rate limit on 429 instead of reporting a failed send (#85)', async () => {
+		const err = new Error('Too Many Requests')
+		err.response = { status: 429, data: {} }
+		axios.post.mockRejectedValueOnce(err)
+
+		const instance = createInstance()
+		instance.scopes = [makeScope({ course_id: 7, group_id: 'awo-group' })]
+		instance.selectedScopeIndex = 0
+		await instance.sendReminder(makeRow({ member_ref: 'karl', status: 'overdue' }))
+
+		expect(instance.reminderStates['karl']).toBe('error')
+		expect(instance.reminderError).toContain('Minute')
+		expect(instance.reminderError).not.toBe('Erinnerung konnte nicht gesendet werden.')
+	})
 })

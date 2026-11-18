@@ -4048,6 +4048,7 @@
         "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_": [
             "Ton certificat pour le cours %s expire dans %n jour",
             "Ton certificat pour le cours %s expire dans %n jours"
-        ]
+        ],
+        "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Trop de rappels en peu de temps. Veuillez patienter une minute, puis réessayez."
     }
 }

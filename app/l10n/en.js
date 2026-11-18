@@ -4028,5 +4028,6 @@ OC.L10N.register(
     "Neuer Fragenpool im Kurs %1$s: %2$s" : "New question pool in the course %1$s: %2$s",
     "Neue Ankündigung im Kurs %1$s: %2$s" : "New announcement in the course %1$s: %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["Your certificate for the course %s expires in %n day", "Your certificate for the course %s expires in %n days"],
+    "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Too many reminders in a short time. Please wait a minute and try again.",
 },
 "nplurals=2; plural=(n != 1);");

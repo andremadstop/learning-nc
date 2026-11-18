@@ -4028,5 +4028,6 @@ OC.L10N.register(
     "Neuer Fragenpool im Kurs %1$s: %2$s" : "Nouvelle banque de questions dans le cours %1$s : %2$s",
     "Neue Ankündigung im Kurs %1$s: %2$s" : "Nouvelle annonce dans le cours %1$s : %2$s",
     "_Dein Zertifikat für den Kurs %s läuft in %n Tag ab_::_Dein Zertifikat für den Kurs %s läuft in %n Tagen ab_" : ["Ton certificat pour le cours %s expire dans %n jour", "Ton certificat pour le cours %s expire dans %n jours"],
+    "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Trop de rappels en peu de temps. Veuillez patienter une minute, puis réessayez.",
 },
 "nplurals=2; plural=(n > 1);");

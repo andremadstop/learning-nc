@@ -167,7 +167,7 @@
   "CertificateReportController::remindMember": {
    "NoAdminRequired": true,
    "userRateLimit": [
-    10,
+    60,
     60
    ]
   },

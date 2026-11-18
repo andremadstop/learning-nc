@@ -125,9 +125,9 @@
   },
   "CertificateReportController::remindMember": {
    "kind": "user",
-   "limit": 10,
+   "limit": 60,
    "period": 60,
-   "group": "costly"
+   "group": "fanout"
   },
   "CertificationCycleController::open": {
    "kind": "user",

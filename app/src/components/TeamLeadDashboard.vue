@@ -232,8 +232,11 @@ export default {
 			} catch (err) {
 				console.error('TeamLeadDashboard: failed to send reminder', err)
 				this.reminderStates = { ...this.reminderStates, [ref]: 'error' }
-				// Generic error — never leak membership detail from the 403 body
-				this.reminderError = t('learning', 'Erinnerung konnte nicht gesendet werden.')
+				// 429 = the per-lead rate limit, not a failure: say to wait, so the lead retries.
+				// Otherwise generic — never leak membership detail from the 403 body.
+				this.reminderError = err?.response?.status === 429
+					? t('learning', 'Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.')
+					: t('learning', 'Erinnerung konnte nicht gesendet werden.')
 			}
 		},
 
