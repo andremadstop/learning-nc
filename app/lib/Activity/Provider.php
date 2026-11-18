@@ -5,20 +5,27 @@ namespace OCA\Learning\Activity;
 use OCP\Activity\Exceptions\UnknownActivityException;
 use OCP\Activity\IEvent;
 use OCP\Activity\IProvider;
+use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IDBConnection;
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 
 /**
  * Renders every Learning activity (GitHub #85) in the reader's language, for the stream and for
- * the activity email. Texts are built from the stored ids and titles only (see ActivityPublisher).
+ * the activity email. Texts are built from the stored ids and titles only (see ActivityPublisher);
+ * an announcement's title is read when it is rendered (announcementTitle()).
  */
 class Provider implements IProvider {
     private IFactory $l10nFactory;
     private IURLGenerator $urlGenerator;
+    private IDBConnection $db;
+    /** @var array<string, string|null> per request: "<course>:<announcement>" => current title */
+    private array $announcementTitles = [];
 
-    public function __construct(IFactory $l10nFactory, IURLGenerator $urlGenerator) {
+    public function __construct(IFactory $l10nFactory, IURLGenerator $urlGenerator, IDBConnection $db) {
         $this->l10nFactory = $l10nFactory;
         $this->urlGenerator = $urlGenerator;
+        $this->db = $db;
     }
 
     public function parse(mixed $language, IEvent $event, ?IEvent $previousEvent = null): IEvent {
@@ -88,7 +95,11 @@ class Provider implements IProvider {
                 break;
 
             case ActivityPublisher::SUBJECT_FEED_ANNOUNCEMENT:
-                $event->setParsedSubject($l->t('Neue Ankündigung im Kurs %1$s: %2$s', [$courseTitle, (string)($params['title'] ?? '')]));
+                // GitHub #85 (review): the current title, or none once the announcement is gone.
+                $title = $this->announcementTitle($courseId, (int)($params['announcement_id'] ?? 0));
+                $event->setParsedSubject($title !== null && $title !== ''
+                    ? $l->t('Neue Ankündigung im Kurs %1$s: %2$s', [$courseTitle, $title])
+                    : $l->t('Neue Ankündigung im Kurs %s', [$courseTitle]));
                 // The feed, not the announcements tab: learners (the main recipients) only have
                 // the feed, which shows the announcement; the announcements tab is instructor-only.
                 $event->setLink($this->courseUrl($courseId, 'feed'));
@@ -103,6 +114,38 @@ class Provider implements IProvider {
         $event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
 
         return $event;
+    }
+
+    /**
+     * The announcement's title as it is now; null when it was deleted (or the event names none).
+     * Read on every render, so an edit shows the new title and a deletion leaves none behind.
+     */
+    private function announcementTitle(int $courseId, int $announcementId): ?string {
+        if ($courseId <= 0 || $announcementId <= 0) {
+            return null;
+        }
+        $key = $courseId . ':' . $announcementId;
+        if (array_key_exists($key, $this->announcementTitles)) {
+            return $this->announcementTitles[$key];
+        }
+        $title = null;
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('title')
+                ->from('learning_course_announcements')
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter($announcementId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)));
+            $result = $qb->executeQuery();
+            $row = $result->fetch();
+            $result->closeCursor();
+            if (is_array($row) && isset($row['title'])) {
+                $title = (string)$row['title'];
+            }
+        } catch (\Throwable $e) {
+            // Rendering the stream must not fail on one entry: without the title it still names the course.
+            $title = null;
+        }
+        return $this->announcementTitles[$key] = $title;
     }
 
     private function appUrl(): string {

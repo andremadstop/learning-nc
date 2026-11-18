@@ -5,6 +5,9 @@ namespace OCA\Learning\Tests\Unit\Activity;
 
 use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Activity\Provider;
+use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
+use OCA\Learning\Tests\Support\FakeResult;
 use OCP\Activity\Exceptions\UnknownActivityException;
 use OCP\Activity\IEvent;
 use OCP\IL10N;
@@ -29,7 +32,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class ProviderTest extends TestCase {
 
-    private function makeProvider(): Provider {
+    /** @param list<array<string, mixed>|false> $announcementRows what the announcement reads return, in order */
+    private function makeProvider(array $announcementRows = [['title' => 'Termin']], ?FakeDbConnection &$db = null): Provider {
         $l = $this->createMock(IL10N::class);
         $l->method('t')->willReturnCallback(static fn (string $text, array $params = []): string => vsprintf($text, $params));
         $l->method('n')->willReturnCallback(static fn (string $one, string $many, int $count, array $params = []): string =>
@@ -43,7 +47,8 @@ class ProviderTest extends TestCase {
         $urlGenerator->method('getAbsoluteURL')->willReturnCallback(static fn (string $path): string => 'https://nc.example' . $path);
         $urlGenerator->method('linkToRouteAbsolute')->willReturn('https://nc.example/apps/learning');
 
-        return new Provider($l10nFactory, $urlGenerator);
+        $db = new FakeDbConnection(array_map(static fn ($row) => new FakeQueryBuilder(FakeResult::fromFetch($row)), $announcementRows));
+        return new Provider($l10nFactory, $urlGenerator, $db);
     }
 
     private function makeEvent(string $app, string $subject, array $params = [], bool $stubSetters = true): IEvent {
@@ -111,7 +116,7 @@ class ProviderTest extends TestCase {
             'cycle' => ['certification_cycle_opened', $course, 'Im Kurs Brandschutz ist ein neuer Zertifizierungszyklus offen', '/courses/7/summary'],
             'compliance' => ['compliance_reminder', $course, 'Erinnerung an die Pflichtschulung im Kurs Brandschutz', '/courses/7'],
             'pool' => ['feed_pool_added', $course + ['pool_id' => 3, 'pool_name' => 'Pool A'], 'Neuer Fragenpool im Kurs Brandschutz: Pool A', '/courses/7/feed'],
-            'announcement' => ['feed_announcement', $course + ['announcement_id' => 4, 'title' => 'Termin'], 'Neue Ankündigung im Kurs Brandschutz: Termin', '/courses/7/feed'],
+            'announcement' => ['feed_announcement', $course + ['announcement_id' => 4], 'Neue Ankündigung im Kurs Brandschutz: Termin', '/courses/7/feed'],
             'badge' => ['badge_earned', ['badge_name' => 'Wochenserie', 'badge_emoji' => '*'], 'Achievement unlocked: * Wochenserie', ''],
         ];
     }
@@ -148,6 +153,37 @@ class ProviderTest extends TestCase {
         $subjects = array_keys(ActivityPublisher::TYPES);
         sort($subjects);
         $this->assertSame($subjects, $covered);
+    }
+
+    private function announcementSubject(array $announcementRows, array $params, ?FakeDbConnection &$db = null): ?string {
+        $parsed = null;
+        $event = $this->makeEvent('learning', 'feed_announcement', ['course_id' => 7, 'course_title' => 'Brandschutz'] + $params, false);
+        $event->method('setParsedSubject')->willReturnCallback(function (string $value) use (&$parsed, $event) {
+            $parsed = $value;
+            return $event;
+        });
+        $event->method('setLink')->willReturnSelf();
+        $event->method('setIcon')->willReturnSelf();
+        $this->makeProvider($announcementRows, $db)->parse('de', $event);
+        return $parsed;
+    }
+
+    /**
+     * GitHub #85 (review): an announcement deleted a minute after posting left its title in every
+     * member's stream (and in a not-yet-sent activity email). The title is read when the activity
+     * is rendered: an edited announcement shows its new title — never one stored in the event —
+     * and a deleted one names only the course.
+     */
+    public function testAnAnnouncementShowsItsCurrentTitleReadForThatCourse(): void {
+        $db = null;
+        $this->assertSame('Neue Ankündigung im Kurs Brandschutz: Termin neu', $this->announcementSubject([['title' => 'Termin neu']], ['announcement_id' => 4, 'title' => 'Alter Titel'], $db));
+        $reads = array_values(array_filter($db->issuedBuilders, fn ($qb) => ($qb->from['table'] ?? null) === 'learning_course_announcements'));
+        $this->assertCount(1, $reads);
+        $this->assertSame([4, 7], array_column($reads[0]->namedParameters, 'value'), 'that announcement, in that course');
+    }
+
+    public function testADeletedAnnouncementLeavesNoTitle(): void {
+        $this->assertSame('Neue Ankündigung im Kurs Brandschutz', $this->announcementSubject([false], ['announcement_id' => 4, 'title' => 'Prüfungsfragen Teil 2']));
     }
 
     /** An event from before the course id was stored opens the app instead of /courses/0. */

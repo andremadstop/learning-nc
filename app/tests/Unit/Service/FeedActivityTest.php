@@ -37,11 +37,17 @@ final class FeedActivityTest extends TestCase {
         $this->assertSame([['feed_pool_added', 7, 'teacher', ['pool_id' => 3, 'pool_name' => 'Pool A']]], $this->activities);
     }
 
-    public function testAnAnnouncementIsAnActivityWithItsTitleButNotItsBody(): void {
+    /**
+     * Review of #85: the activity stays in every member's stream; an announcement deleted a minute
+     * later must not leave its title there. Only the id is stored, Provider reads the title.
+     */
+    public function testAnAnnouncementIsAnActivityWithItsIdOnlyNeitherTitleNorBody(): void {
         $this->service()->createAutoItem(7, 'announcement', 'Prüfung verschoben', 'Geheimer Raum 4', 'teacher', ['announcement_id' => 12]);
 
-        $this->assertSame([['feed_announcement', 7, 'teacher', ['announcement_id' => 12, 'title' => 'Prüfung verschoben']]], $this->activities);
-        $this->assertStringNotContainsString('Geheimer', json_encode($this->activities, JSON_UNESCAPED_UNICODE) ?: '');
+        $this->assertSame([['feed_announcement', 7, 'teacher', ['announcement_id' => 12]]], $this->activities);
+        $json = json_encode($this->activities, JSON_UNESCAPED_UNICODE) ?: '';
+        $this->assertStringNotContainsString('Geheimer', $json);
+        $this->assertStringNotContainsString('verschoben', $json);
     }
 
     public function testOtherFeedKindsPublishNothing(): void {

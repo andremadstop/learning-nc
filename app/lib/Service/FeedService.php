@@ -77,7 +77,9 @@ class FeedService {
     /**
      * GitHub #85: a feed entry also becomes an activity for the course's members (the readers of
      * getUserFeed), except its author; email off by default. Only the kinds the feed has today,
-     * with their ids and titles — never the body.
+     * with their ids and titles — never the body. An announcement carries only its id (review of
+     * #85): the activity stays in every member's stream, and an instructor who deletes or edits the
+     * announcement must not leave its old title there; Provider reads the current one.
      *
      * @param array<array-key, mixed> $meta
      */
@@ -90,7 +92,6 @@ class FeedService {
         } elseif ($type === 'announcement') {
             $this->activityPublisher->toCourseMembers(ActivityPublisher::SUBJECT_FEED_ANNOUNCEMENT, $courseId, $actorId, [
                 'announcement_id' => (int)($meta['announcement_id'] ?? 0),
-                'title' => mb_substr($title, 0, 255),
             ]);
         }
     }

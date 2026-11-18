@@ -15,9 +15,11 @@ use Psr\Log\LoggerInterface;
  * send stay as they are.
  *
  * Rules every activity follows:
- *  - Parameters carry only ids and titles the recipient may see anyway (course title, pool name,
- *    announcement title). Never a uid, never a body, never the notification's own parameters
- *    (the compliance reminder's carry the lead's uid).
+ *  - Parameters carry only ids and titles the recipient may see anyway (course title, pool name).
+ *    Never a uid, never a body, never the notification's own parameters (the compliance
+ *    reminder's carry the lead's uid). An announcement carries only its id: Provider reads its
+ *    current title when the activity is rendered, so an edit or a deletion of the announcement
+ *    leaves no stale title behind in the members' streams or in a not-yet-sent activity email.
  *  - The author is AUTHOR, never a person. The activity API hands the author to the recipient, so
  *    an instructor's or lead's uid would leak; and an author equal to the recipient (a learner
  *    issuing their own certificate by passing the exam, a badge) is a "self action", for which the
