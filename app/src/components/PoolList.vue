@@ -875,6 +875,9 @@ export default {
 .pool-card-header h4 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; line-height: 1.4; color: var(--color-main-text); }
 /* GitHub #64: the pool name is the card's button (the card holds the action menu); it looks like the heading text. */
 .pool-card-open { min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+/* GitHub #79: Nextcloud's core button rule (button:not(.button-vue):hover/:focus) painted a square block
+   behind the title; the whole card reacts to the pointer already, so the title has no hover background. */
+.pool-card-open:hover, .pool-card-open:focus, .pool-card-open:active { background: none; }
 .pool-card:has(.pool-card-open:focus-visible) { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
 .permission-badge { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
 .permission-badge.read { background: var(--color-background-hover); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
