@@ -270,8 +270,11 @@ class AssignmentService {
      * took the slot in between makes the INSERT fail, everything rolls back and the exception
      * propagates (the caller answers 409).
      *
-     * From then on (PassCriteriaService::issuanceWindow() Branch B) only exams completed at or
-     * after assigned_at count, and the attempts are counted from there (ExamAttemptLimitService).
+     * The attempts are counted from assigned_at (ExamAttemptLimitService). Which exams count for
+     * the certificate depends on the issuanceWindow() branch: after a revoke or an expiry
+     * (Branch B) only exams completed at or after assigned_at count. For used-up attempts
+     * ('attempts') of a learner without a certificate (Branch A) or in an open renewal window,
+     * only the attempt count starts again; earlier passes still count there.
      *
      * Compliance event: the learner is the subject (user_id, like PERIOD_CLOSED); the context
      * holds facts only — course, reason, time, and the pseudonymous verification id of the

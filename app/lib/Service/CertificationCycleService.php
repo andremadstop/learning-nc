@@ -27,9 +27,11 @@ use Psr\Log\LoggerInterface;
  *                learner holds no certificate that is still valid outside its renewal window.
  * Anything else has nothing to reset (open() answers 409).
  *
- * open() starts a period (AssignmentService::reopenPeriod()): from then on only exams completed
- * in it count, the attempts count from zero, and after a revoke the required documents are
- * confirmed again in any course (RequiredDocumentService::cycleStarts()). Nothing is deleted:
+ * open() starts a period (AssignmentService::reopenPeriod()): the attempts count from zero; after
+ * a revoke or an expiry only exams completed in it count (for used-up attempts without a
+ * certificate or in an open renewal window earlier passes still count); and after a revoke the
+ * required documents are confirmed again in any course (RequiredDocumentService::cycleStarts()).
+ * Nothing is deleted:
  * earlier exams, confirmations, the revoked certificate and the old period stay as evidence, and
  * the reopening is a PERIOD_REOPENED event in the compliance chain. The learner is notified, and
  * the instructors' "attempts used up" notifications of the old cycle are removed.

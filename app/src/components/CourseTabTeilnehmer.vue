@@ -37,8 +37,11 @@
 					:key="member.id"
 					class="member-item">
 					<div class="member-info">
-						<span class="member-avatar">{{ member.user_id.charAt(0).toUpperCase() }}</span>
-						<span class="member-name">{{ member.user_id }}</span>
+						<span class="member-avatar" aria-hidden="true">{{ memberName(member).charAt(0).toUpperCase() }}</span>
+						<!-- GitHub #87 (review): the display name, as the instructors' notification names
+							the learner; the uid as secondary text when it differs (LDAP/SSO GUIDs). -->
+						<span class="member-name" data-test="member-name"><bdi>{{ memberName(member) }}</bdi></span>
+						<span v-if="memberName(member) !== member.user_id" class="member-uid" data-test="member-uid"><bdi>{{ member.user_id }}</bdi></span>
 						<span class="member-role-badge" :class="member.role">
 							{{ member.role }}
 						</span>
@@ -58,7 +61,7 @@
 							variant="secondary"
 							data-test="member-new-cycle"
 							:disabled="openingCycleFor === member.id"
-							:aria-label="t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen', { name: member.user_id })"
+							:aria-label="t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen', { name: memberName(member) }, undefined, RAW)"
 							@click="openNewCycle(member)">
 							{{ t('learning', 'Neuen Zertifizierungszyklus öffnen') }}
 						</NcButton>
@@ -692,6 +695,10 @@ import BuddyMatching from './BuddyMatching.vue'
 import { MIN_ANSWERS_PER_QUESTION } from '../utils/courseFigures.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
+// Names are shown as written: Vue escapes {{ }} and attributes itself, window.confirm shows plain
+// text — the default escaping of @nextcloud/l10n would show "o&#39;brien".
+const RAW = { escape: false, sanitize: false }
+
 export default {
 	name: 'CourseTabTeilnehmer',
 
@@ -723,6 +730,7 @@ export default {
 
 	data() {
 		return {
+			RAW,
 			currentSubTab: 'members',
 
 			// Members
@@ -1087,6 +1095,11 @@ export default {
 				this.savingMember = null
 			}
 		},
+		// GitHub #87 (review): the name the instructors' notifications use; the uid when the
+		// server sent none (an account the user backend no longer knows).
+		memberName(member) {
+			return member.display_name || member.user_id
+		},
 		confirmRemoveMember(member) {
 			this.removingMember = member
 			this.showRemoveMemberModal = true
@@ -1323,8 +1336,23 @@ export default {
 			}
 		},
 		// GitHub #84 / #87: an explicit instructor action; nothing is deleted.
+		// GitHub #84 / #87 (review): the text follows the reason. Only after a revoke or an expiry
+		// do exams from before the new cycle stop counting (PassCriteriaService::issuanceWindow()
+		// Branch B). For used-up attempts only the attempt count starts again: without a certificate
+		// or in an open renewal window an earlier pass on another pool still counts.
+		newCycleConfirmText(member) {
+			const name = this.memberName(member)
+			switch (this.cycleStates[member.id]?.reason) {
+			case 'revoked':
+				return t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.', { name }, undefined, RAW)
+			case 'expired':
+				return t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.', { name }, undefined, RAW)
+			default:
+				return t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.', { name }, undefined, RAW)
+			}
+		},
 		async openNewCycle(member) {
-			if (!window.confirm(t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.', { name: member.user_id }))) {
+			if (!window.confirm(this.newCycleConfirmText(member))) {
 				return
 			}
 			this.openingCycleFor = member.id
@@ -1541,6 +1569,8 @@ export default {
 }
 
 .member-name { font-weight: 600; color: var(--color-main-text); }
+
+.member-uid { color: var(--color-text-maxcontrast); font-size: 0.85em; }
 
 .member-role-badge {
 	display: inline-block;

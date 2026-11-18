@@ -3994,7 +3994,6 @@ OC.L10N.register(
     "Zertifikat abgelaufen, kein Zyklus offen" : "Certificate expired, no cycle open",
     "Prüfungsversuche aufgebraucht" : "Exam attempts used up",
     "Neuer Zyklus offen" : "New cycle open",
-    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Open a new certification cycle for {name}? Earlier exams will no longer count, the attempts start again, and after a revoke the required documents have to be confirmed again. Earlier exams, confirmations and certificates are kept as evidence.",
     "Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt." : "New certification cycle opened. The person has been notified.",
     "Für diese Person gibt es nichts zurückzusetzen." : "There is nothing to reset for this person.",
     "Der neue Zertifizierungszyklus konnte nicht geöffnet werden." : "The new certification cycle could not be opened.",
@@ -4057,5 +4056,8 @@ OC.L10N.register(
     "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "No exam attempts left for: {pools}. Your instructor has been notified and can open a new certification cycle.",
     "Geöffnet: {area}" : "Opened: {area}",
     "Bisher: {failed}, {left}" : "So far: {failed}, {left}",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Open a new certification cycle for {name}? Earlier exams will no longer count, the attempts start again, and the required documents have to be confirmed again. Earlier exams, confirmations and certificates are kept as evidence.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Open a new certification cycle for {name}? Earlier exams will no longer count, and the attempts start again. Earlier exams, confirmations and certificates are kept as evidence.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Open a new certification cycle for {name}? The exam attempts start again. Earlier exams, confirmations and certificates are kept as evidence.",
 },
 "nplurals=2; plural=(n != 1);");

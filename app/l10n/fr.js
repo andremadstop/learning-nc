@@ -3994,7 +3994,6 @@ OC.L10N.register(
     "Zertifikat abgelaufen, kein Zyklus offen" : "Certificat expiré, aucun cycle ouvert",
     "Prüfungsversuche aufgebraucht" : "Tentatives d’examen épuisées",
     "Neuer Zyklus offen" : "Nouveau cycle ouvert",
-    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Ouvrir un nouveau cycle de certification pour {name} ? Les examens précédents ne compteront plus, les tentatives recommencent et, après une révocation, les documents obligatoires doivent être confirmés à nouveau. Les examens, confirmations et certificats précédents sont conservés comme preuve.",
     "Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt." : "Nouveau cycle de certification ouvert. La personne a été notifiée.",
     "Für diese Person gibt es nichts zurückzusetzen." : "Il n’y a rien à réinitialiser pour cette personne.",
     "Der neue Zertifizierungszyklus konnte nicht geöffnet werden." : "Le nouveau cycle de certification n’a pas pu être ouvert.",
@@ -4057,5 +4056,8 @@ OC.L10N.register(
     "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "Plus aucune tentative d’examen pour : {pools}. Ton responsable de cours a été notifié et peut ouvrir un nouveau cycle de certification.",
     "Geöffnet: {area}" : "Ouvert : {area}",
     "Bisher: {failed}, {left}" : "Jusqu’ici : {failed}, {left}",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Ouvrir un nouveau cycle de certification pour {name} ? Les examens précédents ne compteront plus, les tentatives recommencent et les documents obligatoires doivent être confirmés à nouveau. Les examens, confirmations et certificats précédents sont conservés comme preuve.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Ouvrir un nouveau cycle de certification pour {name} ? Les examens précédents ne compteront plus et les tentatives recommencent. Les examens, confirmations et certificats précédents sont conservés comme preuve.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Ouvrir un nouveau cycle de certification pour {name} ? Les tentatives d’examen recommencent. Les examens, confirmations et certificats précédents sont conservés comme preuve.",
 },
 "nplurals=2; plural=(n > 1);");

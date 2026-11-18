@@ -3994,7 +3994,6 @@ OC.L10N.register(
     "Zertifikat abgelaufen, kein Zyklus offen" : "Zertifikat abgelaufen, kein Zyklus offen",
     "Prüfungsversuche aufgebraucht" : "Prüfungsversuche aufgebraucht",
     "Neuer Zyklus offen" : "Neuer Zyklus offen",
-    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.",
     "Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt." : "Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt.",
     "Für diese Person gibt es nichts zurückzusetzen." : "Für diese Person gibt es nichts zurückzusetzen.",
     "Der neue Zertifizierungszyklus konnte nicht geöffnet werden." : "Der neue Zertifizierungszyklus konnte nicht geöffnet werden.",
@@ -4057,5 +4056,8 @@ OC.L10N.register(
     "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.",
     "Geöffnet: {area}" : "Geöffnet: {area}",
     "Bisher: {failed}, {left}" : "Bisher: {failed}, {left}",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.",
 },
 "nplurals=2; plural=(n != 1);");

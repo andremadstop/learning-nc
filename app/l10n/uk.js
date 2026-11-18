@@ -3994,7 +3994,6 @@ OC.L10N.register(
     "Zertifikat abgelaufen, kein Zyklus offen" : "Сертифікат прострочено, цикл не відкрито",
     "Prüfungsversuche aufgebraucht" : "Спроби іспиту вичерпано",
     "Neuer Zyklus offen" : "Новий цикл відкрито",
-    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Відкрити новий цикл сертифікації для {name}? Попередні іспити більше не зараховуватимуться, спроби почнуться заново, а після відкликання обов’язкові документи потрібно буде підтвердити знову. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
     "Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt." : "Новий цикл сертифікації відкрито. Людину сповіщено.",
     "Für diese Person gibt es nichts zurückzusetzen." : "Для цієї людини нічого скидати.",
     "Der neue Zertifizierungszyklus konnte nicht geöffnet werden." : "Не вдалося відкрити новий цикл сертифікації.",
@@ -4057,5 +4056,8 @@ OC.L10N.register(
     "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "Не залишилося спроб іспиту для: {pools}. Твого викладача повідомлено, і він може відкрити новий цикл сертифікації.",
     "Geöffnet: {area}" : "Відкрито: {area}",
     "Bisher: {failed}, {left}" : "Поки що: {failed}, {left}",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Відкрити новий цикл сертифікації для {name}? Попередні іспити більше не зараховуватимуться, спроби почнуться заново, а обов’язкові документи потрібно буде підтвердити знову. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Відкрити новий цикл сертифікації для {name}? Попередні іспити більше не зараховуватимуться, а спроби почнуться заново. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "Відкрити новий цикл сертифікації для {name}? Спроби скласти іспит почнуться заново. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -1349,7 +1349,12 @@ class CourseService {
     }
 
     /**
-     * Get members of a course (instructor only)
+     * Get members of a course (instructor only). GitHub #87 (review): each row also carries the
+     * member's display_name — on an LDAP/SSO instance the uid is a GUID or personnel number, and
+     * the instructors' "attempts used up" notification names the learner by display name. An
+     * account the user backend no longer knows falls back to its uid.
+     *
+     * @return list<array<string, mixed>>
      */
     public function getMembers(int $courseId, string $userId): array {
         $course = $this->courseMapper->findById($courseId);
@@ -1358,8 +1363,12 @@ class CourseService {
             throw new \Exception('No permission');
         }
 
-        return array_map(fn($m) => $m->jsonSerialize(),
-            $this->courseMemberMapper->findByCourse($courseId));
+        return array_values(array_map(function ($m): array {
+            $row = $m->jsonSerialize();
+            $uid = (string)$m->getUserId();
+            $row['display_name'] = $this->getDisplayName($uid);
+            return $row;
+        }, $this->courseMemberMapper->findByCourse($courseId)));
     }
 
     /**

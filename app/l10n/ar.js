@@ -3994,7 +3994,6 @@ OC.L10N.register(
     "Zertifikat abgelaufen, kein Zyklus offen" : "الشهادة منتهية ولا توجد دورة مفتوحة",
     "Prüfungsversuche aufgebraucht" : "استُنفدت محاولات الاختبار",
     "Neuer Zyklus offen" : "دورة جديدة مفتوحة",
-    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "فتح دورة اعتماد جديدة لـ {name}؟ لن تُحتسب الاختبارات السابقة بعد ذلك، وتبدأ المحاولات من جديد، وبعد السحب يجب تأكيد المستندات الإلزامية مرة أخرى. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
     "Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt." : "تم فتح دورة اعتماد جديدة. تم إشعار الشخص.",
     "Für diese Person gibt es nichts zurückzusetzen." : "لا يوجد ما يمكن إعادة تعيينه لهذا الشخص.",
     "Der neue Zertifizierungszyklus konnte nicht geöffnet werden." : "تعذّر فتح دورة الاعتماد الجديدة.",
@@ -4057,5 +4056,8 @@ OC.L10N.register(
     "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "لم تعد هناك محاولات اختبار متاحة لـ: {pools}. تم إخطار المدرّب ويمكنه فتح دورة شهادة جديدة.",
     "Geöffnet: {area}" : "تم الفتح: {area}",
     "Bisher: {failed}, {left}" : "حتى الآن: {failed}، {left}",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "فتح جولة اعتماد جديدة لـ {name}؟ لن تُحتسب الاختبارات السابقة بعد ذلك، وتبدأ المحاولات من جديد، ويجب تأكيد المستندات الإلزامية مرة أخرى. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "فتح جولة اعتماد جديدة لـ {name}؟ لن تُحتسب الاختبارات السابقة بعد ذلك، وتبدأ المحاولات من جديد. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
+    "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten." : "فتح جولة اعتماد جديدة لـ {name}؟ تبدأ محاولات الاختبار من جديد. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
