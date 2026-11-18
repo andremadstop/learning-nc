@@ -89,6 +89,8 @@ class DataExportService {
             'kudos_given' => $this->exportKudos($userId, 'from_user'),
             // GitHub #86: when the user opened required documents (version of the served file).
             'document_opens' => $this->exportDocumentOpens($userId),
+            // GitHub #75/#86: each "Confirm I have read this" the user gave (append-only, version of the file).
+            'document_confirmations' => $this->exportDocumentConfirmations($userId),
             // Art.20 DSGVO — own-data export: raw VC-JWT + metadata (163-04).
             // SESSION-ONLY: $userId comes from the session, no external param exists —
             // a foreign export is impossible by construction.
@@ -372,6 +374,39 @@ class DataExportService {
                     'document_id' => (int)$row['document_id'],
                     'document_version' => (string)$row['doc_version'],
                     'opened_at' => (int)$row['opened_at'],
+                ];
+            }, $rows);
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * The read confirmations of required documents (learning_doc_confirms), all rows: the table is
+     * append-only, an older confirmation is part of the user's history, not a stale copy.
+     * document_id is null for a confirmation of a legacy path row (then content_id names it).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function exportDocumentConfirmations(string $userId): array {
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('course_id', 'document_id', 'content_id', 'doc_version', 'confirmed_at')
+                ->from('learning_doc_confirms')
+                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+                ->orderBy('confirmed_at', 'DESC');
+
+            $result = $qb->executeQuery();
+            $rows = $result->fetchAll();
+            $result->closeCursor();
+
+            return array_map(static function (array $row): array {
+                return [
+                    'course_id' => (int)$row['course_id'],
+                    'document_id' => $row['document_id'] === null ? null : (int)$row['document_id'],
+                    'content_id' => (int)$row['content_id'],
+                    'document_version' => $row['doc_version'] === null ? null : (string)$row['doc_version'],
+                    'confirmed_at' => (int)$row['confirmed_at'],
                 ];
             }, $rows);
         } catch (\Throwable $e) {

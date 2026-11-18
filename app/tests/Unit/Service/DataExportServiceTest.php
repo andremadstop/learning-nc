@@ -15,6 +15,8 @@ use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
+use OCA\Learning\Tests\Support\FakeResult;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
@@ -61,7 +63,7 @@ class DataExportServiceTest extends TestCase {
      * @param Certificate[] $certs  what CertificateMapper::findByUserId returns
      * @param AiChatMemory[] $memory what AiChatMemoryMapper::findAllByUser returns
      */
-    private function makeService(array $certs, ?UserTelos $telos = null, array $memory = [], ?string $recipientName = null): DataExportService {
+    private function makeService(array $certs, ?UserTelos $telos = null, array $memory = [], ?string $recipientName = null, ?FakeDbConnection $db = null): DataExportService {
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByUserId')->willReturn($certs);
 
@@ -88,7 +90,7 @@ class DataExportServiceTest extends TestCase {
         return new DataExportService(
             // FakeDbConnection absorbs all QB calls from leitner_items/sessions/answers/pools/
             // courses/campaign_progress/kudos branches (innerJoin, leftJoin, groupBy all handled).
-            new FakeDbConnection(),
+            $db ?? new FakeDbConnection(),
             $userTelosMapper,
             $xpService,
             $streakService,
@@ -239,5 +241,40 @@ class DataExportServiceTest extends TestCase {
 
         $this->assertArrayHasKey('document_opens', $result);
         $this->assertSame([], $result['document_opens']);
+    }
+
+    /**
+     * Pre-existing gap (found in the C9 round of 5.16.0): the read confirmations of required
+     * documents (learning_doc_confirms) were missing from the own-data export. All rows of the user
+     * are exported, the user filter is the session user, a legacy path row keeps a null document id.
+     */
+    public function testExportHasTheDocumentConfirmationsOfTheUser(): void {
+        // First run: find which query of the export reads learning_doc_confirms.
+        $probe = new FakeDbConnection();
+        $this->makeService([], db: $probe)->exportForUser(self::USER);
+        $index = null;
+        foreach ($probe->issuedBuilders as $i => $builder) {
+            if (($builder->from['table'] ?? null) === 'learning_doc_confirms') {
+                $index = $i;
+            }
+        }
+        $this->assertNotNull($index, 'the export does not read learning_doc_confirms');
+        $this->assertSame(self::USER, $probe->issuedBuilders[$index]->namedParameters[0]['value'] ?? null);
+
+        // Second run: that query returns two confirmations.
+        $queued = [];
+        for ($i = 0; $i < $index; $i++) {
+            $queued[] = new FakeQueryBuilder();
+        }
+        $queued[] = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            ['course_id' => '7', 'document_id' => '31', 'content_id' => '90', 'doc_version' => 'etag-2', 'confirmed_at' => '1763400000'],
+            ['course_id' => '7', 'document_id' => null, 'content_id' => '12', 'doc_version' => null, 'confirmed_at' => '1700000000'],
+        ]));
+        $result = $this->makeService([], db: new FakeDbConnection($queued))->exportForUser(self::USER);
+
+        $this->assertSame([
+            ['course_id' => 7, 'document_id' => 31, 'content_id' => 90, 'document_version' => 'etag-2', 'confirmed_at' => 1763400000],
+            ['course_id' => 7, 'document_id' => null, 'content_id' => 12, 'document_version' => null, 'confirmed_at' => 1700000000],
+        ], $result['document_confirmations'] ?? null);
     }
 }
