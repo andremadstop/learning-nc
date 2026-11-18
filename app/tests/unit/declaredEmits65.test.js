@@ -14,7 +14,7 @@
  * fails, and an entry that no longer offends must be removed.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { createApp, h, nextTick, reactive } from 'vue'
+import { createApp, h, nextTick, reactive, ref } from 'vue'
 import { createPinia } from 'pinia'
 import { ESLint } from 'eslint'
 import { join } from 'path'
@@ -45,6 +45,7 @@ import PopularisiererAvatar from '../../src/components/PopularisiererAvatar.vue'
 import NovaAvatar from '../../src/components/nova/NovaAvatar.vue'
 import NovaPanel from '../../src/components/nova/NovaPanel.vue'
 import DauBotDialog from '../../src/components/DauBotDialog.vue'
+import QuestionLanguageSwitcher from '../../src/components/QuestionLanguageSwitcher.vue'
 import VideoPlayer from '../../src/components/VideoPlayer.vue'
 
 const APP = join(__dirname, '../..')
@@ -92,7 +93,6 @@ const UNDECLARED_EMITS_BASELINE = {
 	'components/PortScanner.vue': ['result'],
 	'components/QuestMap.vue': ['close', 'navigate'],
 	'components/QuestionForm.vue': ['close', 'save'],
-	'components/QuestionLanguageSwitcher.vue': ['input'],
 	'components/RoutingTable.vue': ['result'],
 	'components/ShareDialog.vue': ['close'],
 	'components/SimulatorShell.vue': ['complete'],
@@ -303,6 +303,28 @@ describe('components emitting native DOM event names (GitHub #65)', () => {
 		await nextTick()
 		expect(submits).toEqual([{ errorId: 'e1', fixId: 'f1' }])
 		expect(DauBotDialog.emits).toEqual(expect.arrayContaining(['submit', 'result-applied']))
+	})
+
+	it('QuestionLanguageSwitcher: v-model in a parent switches the language and marks the pressed button', async () => {
+		const language = ref('')
+		const question = { id: 1, translations: ['en'] }
+		mount(() => h(QuestionLanguageSwitcher, {
+			question,
+			modelValue: language.value,
+			'onUpdate:modelValue': (value) => { language.value = value },
+		}))
+		const buttons = [...host.querySelectorAll('.lang-btn')]
+		expect(buttons.map((b) => b.textContent.trim())).toEqual(['DE', 'EN'])
+		expect(buttons[0].getAttribute('aria-pressed')).toBe('true')
+
+		buttons[1].click()
+		await nextTick()
+
+		expect(language.value).toBe('en')
+		expect(host.querySelector('.question-language-switcher').hasAttribute('modelvalue')).toBe(false)
+		const after = [...host.querySelectorAll('.lang-btn')]
+		expect(after[1].getAttribute('aria-pressed')).toBe('true')
+		expect(after[0].getAttribute('aria-pressed')).toBe('false')
 	})
 
 	it('VideoPlayer declares the completed and progress events its heartbeat mixin emits', () => {

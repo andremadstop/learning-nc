@@ -10,9 +10,9 @@
       :key="option.value"
       type="button"
       class="lang-btn"
-      :class="{ active: modelValue === option.value }"
-      :aria-pressed="modelValue === option.value ? 'true' : 'false'"
-      @click="$emit('input', option.value)"
+      :class="{ active: selectedValue === option.value }"
+      :aria-pressed="selectedValue === option.value ? 'true' : 'false'"
+      @click="$emit('update:modelValue', option.value)"
     >
       {{ option.label }}
     </button>
@@ -22,8 +22,12 @@
 <script>
 export default {
   name: 'QuestionLanguageSwitcher',
+  // GitHub #65: the parents bind v-model, which in Vue 3 is modelValue + update:modelValue. The Vue 2
+  // contract (prop value, event input) left the prop unset and the event unheard: the buttons did
+  // nothing and aria-pressed always named DE.
+  emits: ['update:modelValue'],
   props: {
-    value: {
+    modelValue: {
       type: String,
       default: '',
     },
@@ -37,8 +41,8 @@ export default {
     },
   },
   computed: {
-    modelValue() {
-      return this.value || '';
+    selectedValue() {
+      return this.modelValue || '';
     },
     normalizedOptions() {
       if (Array.isArray(this.options) && this.options.length > 0) {
