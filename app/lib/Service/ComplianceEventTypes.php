@@ -32,6 +32,9 @@ final class ComplianceEventTypes {
     // (RequiredDocumentService::changeRequired); context {course_id, required, document_ids, content_ids}.
     // Making a document optional takes its confirmations out of the count until it is ticked again
     // (they belong to the document).
+    // GitHub #90: also written by DocumentService when a required document leaves the learning
+    // materials (scan or ×) or comes back with its file; the context then carries
+    // reason 'document_removed' / 'document_back', the actor is the instructor who scanned or clicked.
     public const CONTENT_REQUIRED_CHANGED = 'course.content.required_changed';
     // GitHub #77: a course manager changed the organisation name signed into new certificates as
     // their issuer (CourseController::updateCertConfig); context {course_id, issuer_name, previous},
