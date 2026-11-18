@@ -4085,5 +4085,7 @@ OC.L10N.register(
     "Dieser Kurs ist archiviert." : "Dieser Kurs ist archiviert.",
     "Kurs „{title}“ archivieren?" : "Kurs „{title}“ archivieren?",
     "Nicht mehr anzeigen" : "Nicht mehr anzeigen",
+    "Vor dem Archivieren erklären" : "Vor dem Archivieren erklären",
+    "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.",
 },
 "nplurals=2; plural=(n != 1);");

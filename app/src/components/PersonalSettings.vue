@@ -85,6 +85,18 @@
         </NcCheckboxRadioSwitch>
       </div>
 
+      <!-- GitHub #99: brings back the archive confirmation after "Nicht mehr anzeigen" (CourseList).
+           ON = the dialog explains first, i.e. archive_confirm_skip 'no'. Only where courses are archived. -->
+      <div v-if="userRole === 'instructor'" class="switch-row archive-confirm-setting">
+        <NcCheckboxRadioSwitch
+          :model-value="form.archiveConfirm"
+          type="switch"
+          :description="t('learning', 'Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.')"
+          @update:model-value="form.archiveConfirm = !!$event">
+          {{ t('learning', 'Vor dem Archivieren erklären') }}
+        </NcCheckboxRadioSwitch>
+      </div>
+
       <hr class="section-divider" />
 
       <h3>{{ t('learning', 'VirtuProf Settings') }}</h3>
@@ -569,7 +581,11 @@ export default {
         fsrsDetailedStats: false,
         animationsEnabled: true,
         skinId: 'nova',
+        // GitHub #99: the inverse of archive_confirm_skip
+        archiveConfirm: true,
       },
+      // the archive_confirm_skip value read from the server, so save() only writes a change
+      archiveConfirmLoaded: true,
       // AI consent (5.7.0): status from the server; revoking is DELETE, granting stays in the dialog
       consentLoading: true,
       consentValid: false,
@@ -840,6 +856,8 @@ export default {
         this.form.notificationsEnabled = (data.notifications_enabled || 'yes') === 'yes'
         this.form.fsrsDetailedStats = (data.fsrs_detailed_stats || 'no') === 'yes'
         this.form.animationsEnabled = (data.animations_enabled || 'yes') !== 'no'
+        this.form.archiveConfirm = data.archive_confirm_skip !== 'yes'
+        this.archiveConfirmLoaded = this.form.archiveConfirm
         // Hydrate the a11y store so the WAAPI gate sees the server value on first paint.
         useA11yStore().loadFromServerPayload(data)
         // Hydrate the skin store from /api/virtuprof/state payload (Pattern A)
@@ -955,7 +973,12 @@ export default {
               : 'de-DE',
             skin: this.form.skinId,
           }),
+          // GitHub #99: own route, because savePersonal() has two mandatory parameters
+          ...(this.userRole === 'instructor' && this.form.archiveConfirm !== this.archiveConfirmLoaded
+            ? [axios.put(generateUrl('/apps/learning/api/settings/personal/archive-confirm'), { skip: !this.form.archiveConfirm })]
+            : []),
         ])
+        this.archiveConfirmLoaded = this.form.archiveConfirm
         this.saved = true
         this.$emit('content-language-changed', this.form.contentLanguage)
         this.$emit('virtuprof-enabled-changed', this.form.virtuProfEnabled)

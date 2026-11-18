@@ -4124,6 +4124,8 @@
         "Dieser Kurs ist archiviert. Du kannst ihn weiter wie bisher nutzen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.": "Цей курс в архіві. Ви можете користуватися ним як і раніше. Якщо маєте запитання щодо курсу, зверніться до керівника курсу.",
         "Dieser Kurs ist archiviert.": "Цей курс в архіві.",
         "Kurs „{title}“ archivieren?": "Архівувати курс «{title}»?",
-        "Nicht mehr anzeigen": "Більше не показувати"
+        "Nicht mehr anzeigen": "Більше не показувати",
+        "Vor dem Archivieren erklären": "Пояснювати перед архівуванням",
+        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "Перед архівуванням курсу пояснювати, що зміниться для учнів, і запитувати підтвердження. Вимк.: «Архівувати» архівує одразу."
     }
 }

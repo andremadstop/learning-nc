@@ -4114,6 +4114,8 @@
         "Dieser Kurs ist archiviert. Du kannst ihn weiter wie bisher nutzen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.": "Ce cours est archivé. Vous pouvez continuer à l’utiliser comme avant. Si vous avez des questions sur le cours, adressez-vous à votre responsable de cours.",
         "Dieser Kurs ist archiviert.": "Ce cours est archivé.",
         "Kurs „{title}“ archivieren?": "Archiver le cours « {title} » ?",
-        "Nicht mehr anzeigen": "Ne plus afficher"
+        "Nicht mehr anzeigen": "Ne plus afficher",
+        "Vor dem Archivieren erklären": "Expliquer avant d’archiver",
+        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "Avant d’archiver un cours, expliquer ce qui change pour les apprenants et demander confirmation. Désactivé : « Archiver » archive immédiatement."
     }
 }

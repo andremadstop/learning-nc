@@ -4085,5 +4085,7 @@ OC.L10N.register(
     "Dieser Kurs ist archiviert." : "Этот курс находится в архиве.",
     "Kurs „{title}“ archivieren?" : "Архивировать курс «{title}»?",
     "Nicht mehr anzeigen" : "Больше не показывать",
+    "Vor dem Archivieren erklären" : "Объяснять перед архивированием",
+    "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "Перед архивированием курса объяснять, что изменится для учащихся, и спрашивать подтверждение. Выкл.: «Архивировать» архивирует сразу.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

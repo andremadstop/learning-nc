@@ -4154,6 +4154,8 @@
         "Dieser Kurs ist archiviert. Du kannst ihn weiter wie bisher nutzen. Wenn du Fragen zum Kurs hast, wende dich an deine Kursleitung.": "هذه الدورة مؤرشفة. يمكنك الاستمرار في استخدامها كما من قبل. إذا كانت لديك أسئلة حول الدورة، فتواصل مع مسؤول الدورة.",
         "Dieser Kurs ist archiviert.": "هذه الدورة مؤرشفة.",
         "Kurs „{title}“ archivieren?": "أرشفة الدورة «{title}»؟",
-        "Nicht mehr anzeigen": "عدم الإظهار مرة أخرى"
+        "Nicht mehr anzeigen": "عدم الإظهار مرة أخرى",
+        "Vor dem Archivieren erklären": "الشرح قبل الأرشفة",
+        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "قبل أرشفة دورة، اشرح ما الذي يتغير للمتعلمين واطلب التأكيد. عند الإيقاف: «أرشفة» تؤرشف فورًا."
     }
 }
