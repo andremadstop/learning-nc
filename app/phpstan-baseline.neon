@@ -123,11 +123,6 @@ parameters:
 			path: lib/Db/QuestionMapper.php
 
 		-
-			message: "#^Method OCP\\\\DB\\\\QueryBuilder\\\\IQueryBuilder\\:\\:selectDistinct\\(\\) invoked with 2 parameters, 1 required\\.$#"
-			count: 1
-			path: lib/Db/QuestionMapper.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\StoryProgressMapper\\:\\:findByUserAndCampaign\\(\\) should return OCA\\\\Learning\\\\Db\\\\StoryProgress\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/StoryProgressMapper.php

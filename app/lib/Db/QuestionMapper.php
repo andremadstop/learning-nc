@@ -144,7 +144,10 @@ class QuestionMapper extends QBMapper {
     public function searchByText(string $query, string $userId, int $limit = 50, ?int $poolId = null): array {
         $qb = $this->db->getQueryBuilder();
         $expr = $qb->expr();
-        $qb->selectDistinct("q.*", "p.name as pool_name")
+        // GitHub #98: selectDistinct() takes one argument (string or list) and silently dropped a
+        // second one, so pool_name never reached the search results ("in {pool}").
+        $qb->selectDistinct("q.*")
+           ->selectAlias("p.name", "pool_name")
            ->from($this->getTableName(), "q")
            ->innerJoin("q", "learning_pools", "p", $qb->expr()->eq("q.pool_id", "p.id"))
            ->leftJoin("p", "learning_pool_shares", "s", $expr->andX(
