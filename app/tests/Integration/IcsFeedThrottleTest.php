@@ -23,15 +23,18 @@ use Psr\Log\LoggerInterface;
 
 /**
  * The public calendar feed through Nextcloud's own BruteForceMiddleware and Throttler (real server
- * classes, database backend): a valid token gets its calendar; an address that sends many malformed
- * tokens is refused with 429, valid token included, while other addresses keep their feed; and
- * well-formed unknown tokens (old subscriptions after a token regeneration) never block an address.
+ * classes, database backend): a valid token gets its calendar, and no run of refused tokens from an
+ * address (malformed probes, old subscriptions after a token regeneration, v2.7.0 subscriptions)
+ * records an attempt or keeps the valid token from that address from getting its feed. Before 5.15.0
+ * was released, 11 malformed probes locked every subscriber behind that address out with 429.
  * The per-address rate limit itself is in RateLimitEnforcedTest.
  */
 final class IcsFeedThrottleTest extends TestCase {
     use ContainerObjects;
 
     private const UID = 'ics-throttle-probe-user';
+    /** The brute-force action the routes carried before 5.15.0; nothing may be recorded under it. */
+    private const OLD_ACTION = 'learningIcsFeed';
 
     private ContainerInterface $container;
     private string $remoteAddress = '198.51.100.10';
@@ -53,7 +56,7 @@ final class IcsFeedThrottleTest extends TestCase {
         $db = Server::get(IDBConnection::class);
         $qb = $db->getQueryBuilder();
         $qb->delete('bruteforce_attempts')
-            ->where($qb->expr()->eq('action', $qb->createNamedParameter(IcsService::FEED_THROTTLE_ACTION)))
+            ->where($qb->expr()->eq('action', $qb->createNamedParameter(self::OLD_ACTION)))
             ->executeStatement();
         $qb = $db->getQueryBuilder();
         $qb->delete('learning_user_telos')
@@ -93,26 +96,20 @@ final class IcsFeedThrottleTest extends TestCase {
         }
     }
 
-    public function testManyMalformedTokensBlockThatAddressOnly(): void {
+    public function testManyMalformedTokensNeverBlockAnAddress(): void {
         [$feed, $feedMethod] = $this->route('feed');
         [$legacy, $legacyMethod] = $this->route('legacy');
-        // Nextcloud blocks after more than 10 throttled attempts within 30 minutes (auth.bruteforce.max-attempts).
-        // Ten probes, alternating routes, still get their 403 ...
-        for ($i = 0; $i < 5; $i++) {
+        // Nextcloud blocks an action for an address after more than 10 throttled attempts within
+        // 30 minutes (auth.bruteforce.max-attempts); 30 probes, alternating routes, are well past it.
+        for ($i = 0; $i < 15; $i++) {
             $this->assertSame(403, $this->fetch($feed, $feedMethod, 'probe-' . $i));
             $this->assertSame(403, $this->fetch($legacy, $legacyMethod, 'probe-legacy-' . $i));
         }
-        $this->assertSame(10, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, IcsService::FEED_THROTTLE_ACTION));
-        // ... the eleventh is answered with 429.
-        $this->assertSame(429, $this->fetch($feed, $feedMethod, 'probe-11'));
+        $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, self::OLD_ACTION));
 
-        // The probing address is refused, valid token included, on both routes (one shared action).
-        $this->assertSame(429, $this->fetch($feed, $feedMethod, $this->validToken));
-        $this->assertSame(429, $this->fetch($legacy, $legacyMethod, $this->validToken));
-
-        // Every other address keeps its feed.
-        $this->remoteAddress = '198.51.100.11';
+        // The valid token from the same address still gets its calendar on both routes.
         $this->assertSame(200, $this->fetch($feed, $feedMethod, $this->validToken));
+        $this->assertSame(200, $this->fetch($legacy, $legacyMethod, $this->validToken));
     }
 
     public function testWellFormedUnknownTokensNeverBlockAnAddress(): void {
@@ -124,7 +121,7 @@ final class IcsFeedThrottleTest extends TestCase {
         for ($i = 0; $i < 20; $i++) {
             $this->assertSame(403, $this->fetch($feed, $feedMethod, $stale));
         }
-        $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, IcsService::FEED_THROTTLE_ACTION));
+        $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, self::OLD_ACTION));
         $this->assertSame(200, $this->fetch($feed, $feedMethod, $this->validToken));
     }
 
@@ -141,7 +138,7 @@ final class IcsFeedThrottleTest extends TestCase {
         for ($i = 0; $i < 20; $i++) {
             $this->assertSame(403, $this->fetch($legacy, $legacyMethod, $tokens[$i % 2]));
         }
-        $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, IcsService::FEED_THROTTLE_ACTION));
+        $this->assertSame(0, Server::get(IThrottler::class)->getAttempts($this->remoteAddress, self::OLD_ACTION));
         $this->assertSame(200, $this->fetch($legacy, $legacyMethod, $this->validToken));
         [$feed, $feedMethod] = $this->route('feed');
         $this->assertSame(200, $this->fetch($feed, $feedMethod, $this->validToken));

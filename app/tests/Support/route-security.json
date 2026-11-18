@@ -718,9 +718,6 @@
    ]
   },
   "ExportController::exportIcsPublic": {
-   "BruteForceProtection": [
-    "learningIcsFeed"
-   ],
    "NoCSRFRequired": true,
    "PublicPage": true,
    "anonRateLimit": [
@@ -802,9 +799,6 @@
    "NoAdminRequired": true
   },
   "IcsController::feed": {
-   "BruteForceProtection": [
-    "learningIcsFeed"
-   ],
    "NoCSRFRequired": true,
    "PublicPage": true,
    "anonRateLimit": [
