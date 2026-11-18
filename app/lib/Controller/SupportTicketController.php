@@ -37,7 +37,8 @@ class SupportTicketController extends Controller {
         }
         try {
             $ticket = $this->service->create($this->userId, $subject, $message, $context, $category);
-            return new DataResponse(['ticket' => $ticket->jsonSerialize()], Http::STATUS_CREATED);
+            // GitHub #59: the author never gets the AI triage of their own ticket
+            return new DataResponse(['ticket' => $this->service->serializeForAuthor($ticket)], Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }

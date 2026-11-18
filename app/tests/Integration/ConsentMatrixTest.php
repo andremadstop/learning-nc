@@ -339,14 +339,15 @@ final class ConsentMatrixTest extends TestCase {
     public function testTicketTriage(): void {
         $resp = $this->controller(SupportTicketController::class)->create('Login kaputt', 'Ich komme nicht mehr rein.');
         $this->assertSame(201, $resp->getStatus(), 'the ticket stays');
-        $this->assertNull($resp->getData()['ticket']['ai_label'] ?? null, 'triage skipped');
-        $this->assertSame(0, self::sent());
+        $this->assertSame(0, self::sent(), 'triage skipped');
 
         $this->grantConsent();
         $resp = $this->controller(SupportTicketController::class)->create('Login kaputt', 'Ich komme nicht mehr rein.');
         $this->assertSame(201, $resp->getStatus());
         $this->assertSame(1, self::sent(), 'triage sent with the author\'s consent');
         $this->assertSame('ticket_triage', $this->lastAiCallPurpose());
+        // GitHub #59: the author never gets the triage that just ran
+        $this->assertArrayNotHasKey('ai_label', $resp->getData()['ticket']);
         $this->assertCount(2, $this->column('learning_support_tickets', 'id', 'user_id', $this->uid));
     }
 

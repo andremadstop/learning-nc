@@ -187,13 +187,15 @@ class SupportTicketService {
         }
     }
 
+    /**
+     * VirtuProf's "My tickets". GitHub #59: the author's view, like a course question: no AI
+     * triage fields, no draft, no answered_by. An archive is the staff's, so the status is the
+     * learner status.
+     *
+     * @return list<array<string, mixed>>
+     */
     public function listMine(string $userId, int $limit = 50): array {
-        // GitHub #59: VirtuProf's "My tickets" is the learner's view too; an archive is the staff's
-        return array_map(function (SupportTicket $ticket): array {
-            $data = $this->serializeTicket($ticket);
-            $data['status'] = $this->learnerStatus($ticket);
-            return $data;
-        }, $this->ticketMapper->findByUser($userId, max(1, min(100, $limit))));
+        return array_map([$this, 'serializeForAuthor'], $this->ticketMapper->findByUser($userId, max(1, min(100, $limit))));
     }
 
     public function answer(int $ticketId, string $answerText, string $answeredBy, bool $isAdmin = false, ?int $instructorCourseId = null): array {
@@ -501,6 +503,20 @@ class SupportTicketService {
             'answered_at' => $ticket->getAnsweredAt() !== null ? (int)$ticket->getAnsweredAt() : null,
             'created_at' => (int)$ticket->getCreatedAt(),
         ];
+    }
+
+    /**
+     * GitHub #59: what the author of a ticket gets back, from POST /api/support-tickets and from
+     * "My tickets" in VirtuProf. The learner projection plus updated_at, which "My tickets"
+     * shows. applyAiTriage() runs inside create(), so the full row would hand the author the
+     * triage label, confidence, draft answer and follow-up question of their own ticket.
+     *
+     * @return array<string, mixed>
+     */
+    public function serializeForAuthor(SupportTicket $ticket): array {
+        $data = $this->serializeForLearner($ticket);
+        $data['updated_at'] = (int)$ticket->getUpdatedAt();
+        return $data;
     }
 
     private function buildFallbackSubject(array $context): string {
