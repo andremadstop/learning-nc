@@ -50,6 +50,9 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $this->course->setExamAttemptLimit(3);
         $this->members = $this->createMock(CourseMemberMapper::class);
         $this->members->method('findByCourseAndUser')->willReturnCallback(function (int $c, string $uid): CourseMember {
+            if ($uid === 'anna') {
+                return self::member('anna', 'student', 31);
+            }
             if ($uid !== 'co') {
                 throw new DoesNotExistException('no');
             }
@@ -65,8 +68,9 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $this->notifications->method('notify')->willReturnCallback(function (INotification $n): void { $this->sent[] = $n; });
     }
 
-    private static function member(string $uid, string $role): CourseMember {
+    private static function member(string $uid, string $role, int $id = 0): CourseMember {
         $m = new CourseMember();
+        $m->setId($id);
         $m->setUserId($uid);
         $m->setRole($role);
         return $m;
@@ -89,6 +93,10 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $config->method('setUserValue')->willReturnCallback(function (string $u, string $a, string $k, $v) use ($prefs): void { $prefs[$u . '/' . $k] = (string)$v; });
         $config->method('deleteUserValue')->willReturnCallback(function (string $u, string $a, string $k) use ($prefs): void { unset($prefs[$u . '/' . $k]); });
         return new ExamAttemptLimitService($db, $courses, $this->members, $this->pass, $summary, $this->notifications, $time, $this->createMock(LoggerInterface::class), $config);
+    }
+
+    private static function usedOn(int $poolId, int $n): FakeQueryBuilder {
+        return new FakeQueryBuilder(new FakeResult(fetchQueue: [['pool_id' => (string)$poolId, 'n' => (string)$n]]));
     }
 
     private static function used(int $n): FakeQueryBuilder {
@@ -118,6 +126,67 @@ class ExamAttemptLimitServiceTest extends TestCase {
         self::assertSame('exam_attempts_exhausted', $this->sent[0]->getSubject());
         self::assertSame('Fire safety', $this->sent[0]->getSubjectParameters()['pool_title']);
         self::assertStringNotContainsString('anna', $this->sent[0]->getObjectId());
+        // Review C9: nor in the parameters — the member row instead, which goes with the account
+        self::assertSame(31, $this->sent[0]->getSubjectParameters()['member_id']);
+        self::assertStringNotContainsString('anna', (string)json_encode($this->sent[0]->getSubjectParameters()));
+    }
+
+    /**
+     * Review C9: a pool passed on its last attempt, or one the certificate does not require, blocks
+     * nothing. Listed as used up, the member list offered "open a new cycle" for it — which would
+     * have thrown the pass away.
+     */
+    public function testAPassedOrNotRequiredPoolIsNotExhausted(): void {
+        $this->pass->method('examStandings')->willReturn([
+            'required_pool_ids' => [self::POOL, 4],
+            'users' => ['anna' => ['passed' => false, 'pools' => [self::POOL => ['best_score' => 90, 'passed' => true], 4 => ['best_score' => null, 'passed' => false]]]],
+        ]);
+        $three = static fn (array $pools): FakeQueryBuilder => new FakeQueryBuilder(new FakeResult(fetchQueue: array_map(
+            static fn (int $p): array => ['pool_id' => (string)$p, 'n' => '3'], $pools)));
+        self::assertSame([], $this->service([$three([self::POOL])])->exhaustedPools('anna', $this->course), 'passed on the last attempt');
+        self::assertSame([], $this->service([$three([9])])->exhaustedPools('anna', $this->course), 'not a required pool');
+        self::assertSame([4], $this->service([$three([self::POOL, 4, 9])])->exhaustedPools('anna', $this->course));
+
+        // and the instructors are not told about a pool that counts for nothing
+        try {
+            $this->service([self::usedOn(9, 3)])->assertCanStart('anna', self::COURSE, 9);
+        } catch (ExamAttemptLimitException $e) {
+        }
+        self::assertCount(0, $this->sent);
+    }
+
+    /**
+     * Review C9: the member list reads the attempts of all learners in one query, each counted
+     * from their own cycle start, and the pass rule only for those at the limit.
+     */
+    public function testTheMemberListCountsAllLearnersInOneQuery(): void {
+        $this->pass->method('attemptCycleStartOf')->willReturnCallback(
+            static fn ($cert, ?array $state): ?int => $state['assigned_at'] ?? null
+        );
+        $standingsFor = [];
+        $this->pass->method('examStandings')->willReturnCallback(function (int $c, array $uids) use (&$standingsFor): array {
+            $standingsFor[] = $uids;
+            return ['required_pool_ids' => [], 'users' => array_fill_keys($uids, ['passed' => false, 'pools' => []])];
+        });
+        $rows = new FakeQueryBuilder(new FakeResult(fetchQueue: [
+            // anna: cycle from 1000 — two of her three attempts are older
+            ['user_id' => 'anna', 'pool_id' => '3', 'started_at' => '500'],
+            ['user_id' => 'anna', 'pool_id' => '3', 'started_at' => '900'],
+            ['user_id' => 'anna', 'pool_id' => '3', 'started_at' => '1100'],
+            // ben: no cycle, all count
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '100'],
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '200'],
+            ['user_id' => 'ben', 'pool_id' => '3', 'started_at' => '300'],
+        ]));
+        $period = ['status' => 'assigned', 'due_date' => null, 'assigned_at' => 1000, 'reopen_reason' => 'attempts'];
+        $out = $this->service([$rows])->exhaustedPoolsForLearners($this->course, [
+            'anna' => ['certificate' => null, 'state' => $period],
+            'ben' => ['certificate' => null, 'state' => null],
+            'cleo' => ['certificate' => null, 'state' => null],
+        ]);
+        self::assertSame(['ben' => [self::POOL]], $out);
+        self::assertSame([['ben']], $standingsFor, 'the pass rule only for learners at the limit');
+        self::assertStringContainsString('exam_kind', (string)json_encode($rows->andWhereCalls));
     }
 
     public function testNoNotificationWhenTheRequirementIsMet(): void {

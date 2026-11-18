@@ -16,9 +16,28 @@ class Notifier implements INotifier {
         IFactory $l10nFactory,
         IURLGenerator $urlGenerator,
         private ?\OCP\IUserManager $userManager = null,
+        private ?\OCA\Learning\Db\CourseMemberMapper $memberMapper = null,
     ) {
         $this->l10nFactory = $l10nFactory;
         $this->urlGenerator = $urlGenerator;
+    }
+
+    /** The display name behind a member row of the course, null when unknown. */
+    private function learnerName(int $memberId, int $courseId): ?string {
+        if ($memberId <= 0 || $this->memberMapper === null || $this->userManager === null) {
+            return null;
+        }
+        try {
+            $member = $this->memberMapper->findById($memberId);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException|\OCP\AppFramework\Db\MultipleObjectsReturnedException $e) {
+            return null;
+        }
+        $uid = (string)$member->getUserId();
+        if ((int)$member->getCourseId() !== $courseId || $uid === '') {
+            return null;
+        }
+        $user = $this->userManager->get($uid);
+        return $user !== null ? $user->getDisplayName() : null;
     }
 
     public function getID(): string {
@@ -114,12 +133,12 @@ class Notifier implements INotifier {
                 break;
 
             case 'exam_attempts_exhausted':
-                // GitHub #87: to the course's instructors; the learner's name is read now, so a
-                // renamed account shows its current name and a deleted one none.
+                // GitHub #87: to the course's instructors. The notification holds the learner's
+                // member row, never the uid; the name is read now, so a renamed account shows its
+                // current name, and a deleted account (its member rows go with it) or a learner
+                // removed from the course shows none — also once someone else gets the same uid.
                 $params = $notification->getSubjectParameters();
-                $learner = (string)($params['learner'] ?? '');
-                $user = ($learner !== '' && $this->userManager !== null) ? $this->userManager->get($learner) : null;
-                $name = $user !== null ? $user->getDisplayName() : $l->t('Eine lernende Person');
+                $name = $this->learnerName((int)($params['member_id'] ?? 0), (int)($params['course_id'] ?? 0)) ?? $l->t('Eine lernende Person');
                 $notification->setParsedSubject(
                     $l->t('%1$s hat alle Prüfungsversuche für „%2$s“ im Kurs %3$s aufgebraucht', [$name, (string)($params['pool_title'] ?? ''), (string)($params['course_title'] ?? '')])
                 );

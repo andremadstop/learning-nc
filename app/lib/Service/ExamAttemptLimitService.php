@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
@@ -177,8 +178,8 @@ class ExamAttemptLimitService {
     }
 
     /**
-     * The pools on which the learner has used up the attempts of the current cycle (instructor's
-     * member list). Empty without a limit.
+     * The pools on which the learner has used up the attempts of the current cycle and still has
+     * not met the requirement (see blockingPools()). Empty without a limit.
      *
      * @return list<int>
      */
@@ -187,13 +188,127 @@ class ExamAttemptLimitService {
         if ($state === null) {
             return [];
         }
+        return $this->blockingPools($course, [$userId => self::atLimit($state['used_by_pool'], $state['total_limit'])])[$userId] ?? [];
+    }
+
+    /**
+     * exhaustedPools() for all learners of the instructor's member list at once, from the rows
+     * the caller already read: one query for the attempts of all of them, the pass rule only for
+     * those at the limit. $learners must be students of the course (no instructors — the caller
+     * filters by member role, as stateFor() would).
+     *
+     * @param array<string, array{certificate: Certificate|null, state: array{status: string, due_date: int|null, assigned_at: int, reopen_reason: string|null}|null}> $learners uid => newest certificate (revoked included) and active period
+     * @return array<string, list<int>> uid => pools (only learners with any)
+     */
+    public function exhaustedPoolsForLearners(Course $course, array $learners): array {
+        $limit = self::limitFor($course);
+        if ($limit === null || $learners === []) {
+            return [];
+        }
+        $since = [];
+        foreach ($learners as $uid => $rows) {
+            $since[(string)$uid] = $this->passCriteria->attemptCycleStartOf($rows['certificate'], $rows['state']);
+        }
+        $used = $this->usedByPoolForUsers((int)$course->getId(), $since);
+        $candidates = [];
+        foreach ($used as $uid => $byPool) {
+            $pools = self::atLimit($byPool, $limit);
+            if ($pools !== []) {
+                $candidates[$uid] = $pools;
+            }
+        }
+        return $this->blockingPools($course, $candidates);
+    }
+
+    /**
+     * usedByPool() for several learners, each counted from their own cycle start.
+     *
+     * @param array<string, int|null> $since uid => cycle start (null = all attempts count)
+     * @return array<string, array<int, int>> uid => pool id => attempts
+     */
+    private function usedByPoolForUsers(int $courseId, array $since): array {
+        $bounds = array_filter($since, static fn(?int $s): bool => $s !== null);
+        $lowest = count($bounds) === count($since) && $bounds !== [] ? min($bounds) : null;
         $out = [];
-        foreach ($state['used_by_pool'] as $poolId => $used) {
-            if ($used >= $state['total_limit']) {
+        foreach (array_chunk(array_map('strval', array_keys($since)), 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('user_id', 'pool_id', 'started_at')
+                ->from('learning_sessions')
+                ->where($qb->expr()->in('user_id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_STR_ARRAY)))
+                ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+                ->andWhere($qb->expr()->isNull('exam_kind'));
+            if ($lowest !== null) {
+                $qb->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($lowest, IQueryBuilder::PARAM_INT)));
+            }
+            $result = $qb->executeQuery();
+            while (($row = $result->fetch()) !== false) {
+                if (!is_array($row)) {
+                    break;
+                }
+                $uid = (string)$row['user_id'];
+                if (!array_key_exists($uid, $since)) {
+                    continue;
+                }
+                $start = $since[$uid];
+                if ($start !== null && (int)$row['started_at'] < $start) {
+                    continue;
+                }
+                $poolId = (int)$row['pool_id'];
+                $out[$uid][$poolId] = ($out[$uid][$poolId] ?? 0) + 1;
+            }
+            $result->closeCursor();
+        }
+        return $out;
+    }
+
+    /**
+     * @param array<int, int> $usedByPool
+     * @return list<int>
+     */
+    private static function atLimit(array $usedByPool, int $limit): array {
+        $out = [];
+        foreach ($usedByPool as $poolId => $used) {
+            if ($used >= $limit) {
                 $out[] = (int)$poolId;
             }
         }
         sort($out);
+        return $out;
+    }
+
+    /**
+     * Of the pools at the limit, those that still block the certificate — one rule for the
+     * member list (CertificationCycleService) and the instructors' notification. A pool does not
+     * block when the learner has met the requirement, has passed that pool, or the course
+     * requires other pools and this one counts for nothing. Without that, a learner who passed a
+     * pool on the last attempt was listed as stuck, and "open a new cycle" would have thrown the
+     * pass away (after a revoke also the document confirmations).
+     *
+     * @param array<string, list<int>> $candidates uid => pools at the limit
+     * @return array<string, list<int>> uid => blocking pools (only learners with any)
+     */
+    private function blockingPools(Course $course, array $candidates): array {
+        $candidates = array_filter($candidates, static fn(array $pools): bool => $pools !== []);
+        if ($candidates === []) {
+            return [];
+        }
+        $standing = $this->passCriteria->examStandings((int)$course->getId(), array_map('strval', array_keys($candidates)));
+        $required = array_map('intval', $standing['required_pool_ids'] ?? []);
+        $out = [];
+        foreach ($candidates as $uid => $pools) {
+            $user = $standing['users'][(string)$uid] ?? null;
+            if ($user !== null && $user['passed']) {
+                continue;
+            }
+            $byPool = $user['pools'] ?? [];
+            $blocking = array_values(array_filter($pools, static fn(int $poolId): bool =>
+                !($byPool[$poolId]['passed'] ?? false)
+                && ($required === [] || in_array($poolId, $required, true))));
+            if ($blocking !== []) {
+                $out[(string)$uid] = $blocking;
+            }
+        }
         return $out;
     }
 
@@ -238,13 +353,9 @@ class ExamAttemptLimitService {
     private function notifyIfExhausted(string $userId, Course $course, int $poolId, ?int $since, int $used, int $limit): void {
         try {
             $courseId = (int)$course->getId();
-            $standing = $this->passCriteria->examStandings($courseId, [$userId]);
-            $user = $standing['users'][$userId] ?? null;
-            if ($user !== null) {
-                // Requirement met: further attempts change nothing, nobody needs to act.
-                if ($user['passed'] || ($user['pools'][$poolId]['passed'] ?? false)) {
-                    return;
-                }
+            // Requirement met, pool passed or not required: nobody needs to act (blockingPools()).
+            if ($this->blockingPools($course, [$userId => [$poolId]]) === []) {
+                return;
             }
             $recipients = [(string)$course->getInstructorId()];
             foreach ($this->memberMapper->findByCourse($courseId) as $member) {
@@ -258,6 +369,10 @@ class ExamAttemptLimitService {
                 return; // told once for this pool and cycle, also if they dismissed it since
             }
             $poolTitle = $this->courseSummary->getPoolTitles([$poolId])[$poolId] ?? '';
+            // The member row, never the uid (Notifier resolves the name): the row goes with the
+            // account (UserDeletedListener), and an account created later under the same uid gets
+            // a new row, so a notification left behind names nobody.
+            $memberId = $this->memberIdOf($courseId, $userId);
             foreach ($recipients as $recipient) {
                 try {
                     $notification = $this->notificationManager->createNotification();
@@ -268,7 +383,7 @@ class ExamAttemptLimitService {
                             'course_id' => $courseId,
                             'course_title' => (string)$course->getTitle(),
                             'pool_title' => $poolTitle,
-                            'learner' => $userId,
+                            'member_id' => $memberId,
                             'attempts' => $used,
                             'limit' => $limit,
                         ]);
@@ -283,6 +398,14 @@ class ExamAttemptLimitService {
             $this->config->setUserValue($userId, 'learning', self::markerKey($objectId), (string)$this->timeFactory->getTime());
         } catch (\Throwable $e) {
             $this->logger->warning('Exam attempt notification failed: {msg}', ['msg' => $e->getMessage(), 'app' => 'learning']);
+        }
+    }
+
+    private function memberIdOf(int $courseId, string $userId): int {
+        try {
+            return (int)$this->memberMapper->findByCourseAndUser($courseId, $userId)->getId();
+        } catch (DoesNotExistException $e) {
+            return 0;
         }
     }
 

@@ -178,8 +178,26 @@ class PassCriteriaService {
             $issuanceError,
             $renewalOpen ? $renewalOpensAt : null,
             $renewalOpen ? null : $renewalOpensAt,
-            $window['reopened'] ?? null,
+            array_key_exists('reopened', $window) ? $window['reopened'] : $this->reopenedCycle($userId, $courseId),
         );
+    }
+
+    /**
+     * GitHub #84 / #87: the open period an instructor opened (reason and since when), whatever
+     * issuanceWindow() branch applies. A new cycle for used-up attempts is also opened for a
+     * learner without a certificate (Branch A) or during an open renewal window; the learner was
+     * notified of it and must see it in the completion tab too. Display only: it changes neither
+     * may_issue nor completed_after.
+     *
+     * @return array{reason: string, since: int}|null
+     */
+    private function reopenedCycle(string $userId, int $courseId): ?array {
+        $state = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId])[$userId] ?? null;
+        if ($state === null || ($state['reopen_reason'] ?? null) === null
+            || !in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true)) {
+            return null;
+        }
+        return ['reason' => (string)$state['reopen_reason'], 'since' => (int)$state['assigned_at']];
     }
 
     /**
@@ -194,13 +212,25 @@ class PassCriteriaService {
      * instructor's new cycle is for there.
      */
     public function attemptCycleStart(string $userId, int $courseId): ?int {
+        return $this->attemptCycleStartOf(
+            $this->certificateMapper->findByUserAndCourse($userId, $courseId),
+            $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId])[$userId] ?? null,
+        );
+    }
+
+    /**
+     * attemptCycleStart() from rows the caller already read (the instructor's member list reads
+     * them for all learners at once): the newest certificate, revoked ones included
+     * (findByUserAndCourse()), and the active period (AssignmentService::getStatesForCourseAndUsers()).
+     *
+     * @param array{status: string, due_date: int|null, assigned_at: int, reopen_reason: string|null}|null $state
+     */
+    public function attemptCycleStartOf(?Certificate $certificate, ?array $state): ?int {
         $starts = [];
-        $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
         $opensAt = $this->renewalOpensAt($certificate);
         if ($certificate !== null && $opensAt !== null && time() >= $opensAt) {
             $starts[] = max((int)$certificate->getIssuedAt() + 1, $opensAt);
         }
-        $state = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId])[$userId] ?? null;
         if ($state !== null) {
             $starts[] = (int)$state['assigned_at'];
         }
@@ -639,7 +669,7 @@ class PassCriteriaService {
      * NULL and only Branch B applies. Outside the window Branch B behaves as before.
      *
      * reopened (GitHub #84): the open period was opened by an instructor (reason and since when),
-     * only in Branch B.
+     * set by Branch B only; for the other branches evaluate() reads it (reopenedCycle()).
      *
      * @return array{may_issue: bool, completed_after: int|null, renewing: Certificate|null, reopened?: array{reason: string, since: int}|null}
      */
@@ -662,7 +692,7 @@ class PassCriteriaService {
         $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId]);
         $state = $states[$userId] ?? null;
         if ($state === null || !in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true)) {
-            return ['may_issue' => false, 'completed_after' => null, 'renewing' => null];
+            return ['may_issue' => false, 'completed_after' => null, 'renewing' => null, 'reopened' => null];
         }
         $reopened = ($state['reopen_reason'] ?? null) !== null ? [
             'reason' => (string)$state['reopen_reason'],

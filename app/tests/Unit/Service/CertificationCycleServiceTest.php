@@ -200,12 +200,44 @@ class CertificationCycleServiceTest extends TestCase {
             self::member(31, self::COURSE, 'anna'),
             self::member(32, self::COURSE, 'co', 'instructor'),
         ]);
-        $this->certificates->method('findByUserAndCourse')->willReturn(self::cert(true, null, self::NOW - 100));
+        $this->certificates->method('findNewestTwoByCourseForUsers')->willReturn(['anna' => [self::cert(true, null, self::NOW - 100)]]);
         $this->assignments->method('getStatesForCourseAndUsers')->willReturn([]);
-        $this->limits->method('exhaustedPools')->willReturn([]);
+        $this->limits->method('exhaustedPoolsForLearners')->willReturn([]);
 
         $states = $this->service()->statesForCourse(self::COURSE, 'teacher');
         self::assertSame([31 => ['reason' => 'revoked', 'new_cycle' => null, 'exhausted_pool_ids' => []]], $states);
+    }
+
+    /**
+     * Review C9: the member list read ~5 rows per learner (certificate, instructor check, cycle
+     * start, attempts) on every open of the tab. Now one read per kind for the whole list.
+     */
+    public function testStatesAreReadOnceForAllLearners(): void {
+        $this->members->method('findByCourse')->willReturn([
+            self::member(31, self::COURSE, 'anna'),
+            self::member(33, self::COURSE, 'ben'),
+            self::member(34, self::COURSE, 'cleo'),
+        ]);
+        $this->certificates->expects($this->never())->method('findByUserAndCourse');
+        $this->certificates->expects($this->once())->method('findNewestTwoByCourseForUsers')
+            ->with(self::COURSE, ['anna', 'ben', 'cleo'])
+            ->willReturn(['anna' => [self::cert(true, null, self::NOW - 100)]]);
+        $open = ['status' => 'assigned', 'due_date' => null, 'assigned_at' => self::NOW - 50, 'reopen_reason' => 'attempts'];
+        $this->assignments->expects($this->once())->method('getStatesForCourseAndUsers')->willReturn(['cleo' => $open]);
+        $this->limits->expects($this->never())->method('exhaustedPools');
+        $this->limits->expects($this->once())->method('exhaustedPoolsForLearners')
+            ->with($this->course, [
+                'anna' => ['certificate' => self::cert(true, null, self::NOW - 100), 'state' => null],
+                'ben' => ['certificate' => null, 'state' => null],
+                'cleo' => ['certificate' => null, 'state' => $open],
+            ])
+            ->willReturn(['ben' => [3]]);
+
+        self::assertSame([
+            31 => ['reason' => 'revoked', 'new_cycle' => null, 'exhausted_pool_ids' => []],
+            33 => ['reason' => 'attempts', 'new_cycle' => null, 'exhausted_pool_ids' => [3]],
+            34 => ['reason' => null, 'new_cycle' => ['reason' => 'attempts', 'since' => self::NOW - 50], 'exhausted_pool_ids' => []],
+        ], $this->service()->statesForCourse(self::COURSE, 'teacher'));
     }
 
     /** @return \ArrayObject<int, INotification> */

@@ -705,10 +705,18 @@ export default {
       if (c.certificate && c.certificate.revoked && c.new_cycle) {
         extra.expiry = t('learning', 'Dein Zertifikat wurde widerrufen. Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet: Nur Prüfungen ab jetzt zählen.')
       }
-      // GitHub #87: no attempt left in this cycle — no retake, the instructor decides.
-      const retake = attemptsLeft(c.attempt_policy, c.pool_id) === 0
-        ? t('learning', 'Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.')
-        : this.retakeText(c.attempt_policy)
+      // GitHub #87: no attempt left in this cycle — no retake, the instructor decides. A pool
+      // passed on its last attempt blocks nothing: the server tells nobody, and there is nothing
+      // to retake on it, so no retake line at all.
+      const poolPassed = !!c.exam_passed
+        || (Array.isArray(c.pools) && c.pools.some(p => Number(p.pool_id) === Number(c.pool_id) && p.passed))
+      const noAttemptLeft = attemptsLeft(c.attempt_policy, c.pool_id) === 0
+      let retake = this.retakeText(c.attempt_policy)
+      if (noAttemptLeft) {
+        retake = poolPassed
+          ? null
+          : t('learning', 'Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.')
+      }
       if (c.requirement === 'required_pools') {
         const missing = (Array.isArray(c.pools) ? c.pools : [])
           .filter(p => !p.passed)

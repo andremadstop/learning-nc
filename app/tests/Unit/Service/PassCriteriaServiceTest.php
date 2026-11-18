@@ -1690,6 +1690,26 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertNull($payload['new_cycle']);
     }
 
+    /**
+     * Review C9 (#87): a new cycle for used-up attempts of a learner without a certificate
+     * (Branch A) was never reported as new_cycle — the learner got the notification, but the
+     * completion tab said nothing. Display only: the old exams still count in Branch A.
+     */
+    public function testANewCycleIsShownAlsoWithoutACertificate(): void {
+        $windows = [];
+        $states = [self::USER => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => self::PERIOD_OPENED_AT, 'reopen_reason' => 'attempts']];
+        $payload = $this->cycleService(null, $states, $this->summaryWithExams([], [1], $windows), $this->createMock(IssuanceService::class))
+            ->evaluate(self::USER, self::COURSE_ID)->toArray();
+        $this->assertSame(['reason' => 'attempts', 'since' => self::PERIOD_OPENED_AT], $payload['new_cycle']);
+        $this->assertSame([], array_filter($windows, static fn(?int $w): bool => $w !== null), 'Branch A keeps counting every exam');
+
+        $closed = [self::USER => ['status' => 'passed', 'due_date' => null, 'assigned_at' => self::PERIOD_OPENED_AT, 'reopen_reason' => 'attempts']];
+        $windows = [];
+        $payload = $this->cycleService(null, $closed, $this->summaryWithExams([], [1], $windows), $this->createMock(IssuanceService::class))
+            ->evaluate(self::USER, self::COURSE_ID)->toArray();
+        $this->assertNull($payload['new_cycle'], 'a period that is no longer open is no open cycle');
+    }
+
     /** GitHub #87: attempts count from the open period on — also for a learner without any certificate. */
     public function testAttemptsCountFromTheOpenPeriodAlsoWithoutACertificate(): void {
         $windows = [];

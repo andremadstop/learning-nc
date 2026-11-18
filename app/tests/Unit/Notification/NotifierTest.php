@@ -144,7 +144,7 @@ class NotifierTest extends TestCase {
         $cases = [
             ['certificate_revoked', ['course_title' => 'Safety', 'course_id' => 7], '/courses/7/summary'],
             ['certification_cycle_opened', ['course_title' => 'Safety', 'course_id' => 7], '/courses/7/summary'],
-            ['exam_attempts_exhausted', ['course_title' => 'Safety', 'course_id' => 7, 'pool_title' => 'Fire', 'learner' => 'anna'], '/courses/7/members'],
+            ['exam_attempts_exhausted', ['course_title' => 'Safety', 'course_id' => 7, 'pool_title' => 'Fire', 'member_id' => 31], '/courses/7/members'],
         ];
         foreach ($cases as [$subject, $params, $link]) {
             $notification = $this->makeNotification('learning', $subject, $params);
@@ -155,25 +155,41 @@ class NotifierTest extends TestCase {
         }
     }
 
-    /** GitHub #87: the learner's current display name, never the uid; a deleted account stays anonymous. */
+    /**
+     * GitHub #87: the learner's current display name, resolved from the member row the
+     * notification holds — never a uid (review C9: the uid stayed in oc_notifications after the
+     * account was deleted, and a new account with that uid would have been named as the one who
+     * failed). A row that is gone, or of another course, names nobody.
+     */
     public function testAttemptsNotificationNamesTheLearnerByDisplayName(): void {
         $users = $this->createMock(\OCP\IUserManager::class);
         $anna = $this->createMock(\OCP\IUser::class);
         $anna->method('getDisplayName')->willReturn('Anna Berg');
         $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'anna' ? $anna : null);
+        $members = $this->createMock(\OCA\Learning\Db\CourseMemberMapper::class);
+        $members->method('findById')->willReturnCallback(function (int $id): \OCA\Learning\Db\CourseMember {
+            if ($id !== 31 && $id !== 40) {
+                throw new \OCP\AppFramework\Db\DoesNotExistException('gone');
+            }
+            $m = new \OCA\Learning\Db\CourseMember();
+            $m->setId($id);
+            $m->setUserId('anna');
+            $m->setCourseId($id === 31 ? 7 : 99);
+            return $m;
+        });
         $l = $this->createMock(IL10N::class);
         $l->method('t')->willReturnCallback(fn (string $text, array $p = []) => $text . ($p === [] ? '' : '|' . implode('|', $p)));
         $factory = $this->createMock(IFactory::class);
         $factory->method('get')->willReturn($l);
         $url = $this->createMock(IURLGenerator::class);
         $url->method('linkToRouteAbsolute')->willReturn('https://nc.example/apps/learning');
-        $notifier = new Notifier($factory, $url, $users);
+        $notifier = new Notifier($factory, $url, $users, $members);
 
-        foreach (['anna' => 'Anna Berg', 'gone' => 'Eine lernende Person'] as $uid => $name) {
-            $n = $this->makeNotification('learning', 'exam_attempts_exhausted', ['course_title' => 'Safety', 'course_id' => 7, 'pool_title' => 'Fire', 'learner' => $uid]);
+        foreach ([31 => 'Anna Berg', 32 => 'Eine lernende Person', 40 => 'Eine lernende Person', 0 => 'Eine lernende Person'] as $memberId => $name) {
+            $n = $this->makeNotification('learning', 'exam_attempts_exhausted', ['course_title' => 'Safety', 'course_id' => 7, 'pool_title' => 'Fire', 'member_id' => $memberId]);
             $n->method('setParsedMessage')->willReturnSelf();
             $n->expects($this->once())->method('setParsedSubject')->with($this->callback(
-                fn (string $text) => str_contains($text, '|' . $name . '|Fire|Safety') && !str_contains($text, '|' . $uid . '|')
+                fn (string $text) => str_contains($text, '|' . $name . '|Fire|Safety')
             ))->willReturnSelf();
             $notifier->prepare($n, 'de');
         }

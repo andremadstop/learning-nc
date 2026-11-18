@@ -200,6 +200,25 @@ describe('ExamMode — new cycle and the total attempt limit (GitHub #84 / #87)'
 		expect(vm.certificationMessage.retake).toBe('Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.')
 	})
 
+	// Review C9: passing a pool on its last attempt while another required pool is still open
+	// claimed "attempts used up, your instructor was notified" — neither was true.
+	it('pool passed on its last attempt: no used-up text and no retake line', () => {
+		const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: true, pool_id: 3, certificate: null,
+			requirement: 'required_pools', counts_for_requirement: true,
+			pools: [{ pool_id: 3, title: 'A', passed: true }, { pool_id: 4, title: 'B', passed: false }],
+			attempt_policy: { ...policy, total_limit: 3, used_by_pool: { 3: 3 } } }))
+		expect(vm.certificationMessage.text).toBe('Pool passed — still required: B')
+		expect(vm.certificationMessage.retake).toBeFalsy()
+	})
+
+	it('a failed last attempt on a pool passed before: no used-up text either', () => {
+		const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, pool_id: 3, certificate: null,
+			requirement: 'required_pools', counts_for_requirement: true,
+			pools: [{ pool_id: 3, title: 'A', passed: true }, { pool_id: 4, title: 'B', passed: false }],
+			attempt_policy: { ...policy, total_limit: 3, used_by_pool: { 3: 3 } } }))
+		expect(vm.certificationMessage.retake).toBeFalsy()
+	})
+
 	it('attempts left: the usual retake rules', () => {
 		const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, pool_id: 3, certificate: null,
 			attempt_policy: { ...policy, total_limit: 3, used_by_pool: { 3: 1 } } }))

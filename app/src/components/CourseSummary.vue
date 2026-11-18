@@ -70,7 +70,7 @@
 					</template>
 				</div>
 				<NcNoteCard v-if="newCycleOpen && !certificateRevoked" type="info" class="zeugnis-new-cycle">
-					{{ t('learning', 'Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet. Prüfungen ab jetzt zählen für ein neues Zertifikat.') }}
+					{{ newCycleText }}
 				</NcNoteCard>
 				<!-- GitHub #35: the first reminder opens renewal; exams from then on renew the certificate. -->
 				<NcNoteCard v-if="renewalText" type="info" class="zeugnis-renewal">
@@ -464,6 +464,14 @@ export default {
 		// GitHub #84: a certification cycle an instructor opened is open ({reason, since} or null).
 		newCycleOpen() {
 			return !!this.passStatus?.new_cycle
+		},
+		// GitHub #87: a cycle opened for used-up attempts resets the attempts; earlier passes may
+		// still count there (no certificate yet, or an open renewal window), so it must not claim
+		// that only exams from now on count.
+		newCycleText() {
+			return this.passStatus?.new_cycle?.reason === 'attempts'
+				? t('learning', 'Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet. Deine Prüfungsversuche beginnen von vorn.')
+				: t('learning', 'Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet. Prüfungen ab jetzt zählen für ein neues Zertifikat.')
 		},
 		certificateRevoked() {
 			return this.certificate?.revoked === true

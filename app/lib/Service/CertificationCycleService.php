@@ -89,7 +89,8 @@ class CertificationCycleService {
     /**
      * The instructor's member list: for every student member of the course, whether a new cycle
      * can be opened and why, the cycle an instructor opened if one is open, and the pools whose
-     * attempts are used up.
+     * attempts are used up while the requirement is not met there
+     * (ExamAttemptLimitService::exhaustedPoolsForLearners()).
      *
      * @return array<int, array{reason: string|null, new_cycle: array{reason: string, since: int}|null, exhausted_pool_ids: list<int>}> member id => state
      * @throws DoesNotExistException course not found
@@ -107,15 +108,23 @@ class CertificationCycleService {
         if ($members === []) {
             return [];
         }
-        $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, array_values(array_unique($members)));
+        // Batched (one read per kind for the whole list, not ~5 per learner): the tab reloads on
+        // every membership change, and a mandatory-training course can have hundreds of learners.
+        $uids = array_values(array_unique($members));
+        $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, $uids);
+        $certificates = $this->certificateMapper->findNewestTwoByCourseForUsers($courseId, $uids);
+        $learners = [];
+        foreach ($uids as $uid) {
+            $learners[$uid] = ['certificate' => $certificates[$uid][0] ?? null, 'state' => $states[$uid] ?? null];
+        }
+        $exhaustedByUser = $this->attemptLimit->exhaustedPoolsForLearners($course, $learners);
         $now = $this->timeFactory->getTime();
         $out = [];
         foreach ($members as $memberId => $uid) {
-            $state = $states[$uid] ?? null;
-            $exhausted = $this->attemptLimit->exhaustedPools($uid, $course);
-            $newest = $this->certificateMapper->findByUserAndCourse($uid, $courseId);
+            $state = $learners[$uid]['state'];
+            $exhausted = $exhaustedByUser[$uid] ?? [];
             $out[$memberId] = [
-                'reason' => ($course->getCertEnabled() ?? false) ? $this->reasonFor($newest, $state, $exhausted, $now) : null,
+                'reason' => ($course->getCertEnabled() ?? false) ? $this->reasonFor($learners[$uid]['certificate'], $state, $exhausted, $now) : null,
                 'new_cycle' => self::newCycleOf($state),
                 'exhausted_pool_ids' => $exhausted,
             ];

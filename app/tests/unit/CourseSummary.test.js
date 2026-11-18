@@ -394,6 +394,17 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 		expect(reopened.certificateRevoked).toBe(true)
 	})
 
+	// Review C9: a cycle opened for used-up attempts (no certificate yet) resets the attempts; it
+	// must not claim that only exams from now on count.
+	it('names what a new cycle for used-up attempts does', () => {
+		const attempts = createLiveInstance({ passStatus: { applicable: true, passed: false, certificate: null, new_cycle: { reason: 'attempts', since: 1800000000 } } })
+		const expired = createLiveInstance({ passStatus: { applicable: true, passed: false, certificate: null, new_cycle: { reason: 'expired', since: 1800000000 } } })
+
+		expect(attempts.newCycleOpen).toBe(true)
+		expect(attempts.newCycleText).toBe('Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet. Deine Prüfungsversuche beginnen von vorn.')
+		expect(expired.newCycleText).toBe('Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet. Prüfungen ab jetzt zählen für ein neues Zertifikat.')
+	})
+
 	it('flags a passed learner without certificate when issuance failed', () => {
 		const instance = createLiveInstance({ passStatus: { applicable: true, passed: true, certificate: null, certificate_issued: false, issuance_error: 'signing_unavailable' } })
 
