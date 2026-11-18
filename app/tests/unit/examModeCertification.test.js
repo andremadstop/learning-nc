@@ -192,3 +192,23 @@ describe('ExamMode — certification result (GitHub #35)', () => {
 		expect(vm.usesPercentScore).toBe(false)
 	})
 })
+
+describe('ExamMode — new cycle and the total attempt limit (GitHub #84 / #87)', () => {
+	it('no attempt left in the cycle: no retake offer, the instructor decides', () => {
+		const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, pool_id: 3, certificate: null,
+			attempt_policy: { ...policy, total_limit: 3, used_by_pool: { 3: 3 } } }))
+		expect(vm.certificationMessage.retake).toBe('Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.')
+	})
+
+	it('attempts left: the usual retake rules', () => {
+		const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, pool_id: 3, certificate: null,
+			attempt_policy: { ...policy, total_limit: 3, used_by_pool: { 3: 1 } } }))
+		expect(vm.certificationMessage.retake).toContain('You can retake the exam.')
+	})
+
+	it('revoked, but a new cycle is open: says that only new exams count', () => {
+		const vm = createInstance(result({ applicable: true, passed: false, threshold: 80, exam_passed: false, pool_id: 3,
+			certificate: { verification_id: 'v', revoked: true, expired: false }, new_cycle: { reason: 'revoked', since: 100 }, attempt_policy: policy }))
+		expect(vm.certificationMessage.expiry).toBe('Dein Zertifikat wurde widerrufen. Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet: Nur Prüfungen ab jetzt zählen.')
+	})
+})

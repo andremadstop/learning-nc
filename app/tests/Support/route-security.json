@@ -167,6 +167,20 @@
   "CertificateReportController::remindMember": {
    "NoAdminRequired": true
   },
+  "CertificationCycleController::open": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CertificationCycleController::states": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
   "ClassbookController::exportVcard": {
    "NoAdminRequired": true,
    "NoCSRFRequired": true,

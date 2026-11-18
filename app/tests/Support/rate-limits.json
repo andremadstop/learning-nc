@@ -123,6 +123,18 @@
    "period": 60,
    "group": "costly"
   },
+  "CertificationCycleController::open": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "write"
+  },
+  "CertificationCycleController::states": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
   "ClassbookController::exportVcard": {
    "kind": "user",
    "limit": 10,

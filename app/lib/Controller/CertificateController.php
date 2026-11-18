@@ -56,7 +56,8 @@ class CertificateController extends Controller {
         ?string $userId,
         AuditService $auditService,
         IDBConnection $db,
-        CertLayoutService $layoutService
+        CertLayoutService $layoutService,
+        private ?\OCA\Learning\Service\CertificationCycleService $cycles = null,
     ) {
         parent::__construct($appName, $request);
         $this->certificateMapper = $certificateMapper;
@@ -243,6 +244,11 @@ class CertificateController extends Controller {
                 $this->db->rollBack();
             }
             throw $e; // audit failure or other — roll back so no un-audited tombstone survives
+        }
+
+        // GitHub #84: the learner is told, once, after the revoke is committed (best effort).
+        if ($isFirstRevoke && $this->cycles !== null) {
+            $this->cycles->notifyRevoked($cert);
         }
 
         return new JSONResponse(['revoked' => true, 'verification_id' => $verificationId]);

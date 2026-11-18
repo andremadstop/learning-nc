@@ -97,7 +97,8 @@ class TrainingService {
         VideoProgressService $videoProgressService,
         TelosService $telosService,
         ?RichFeedbackService $richFeedbackService = null,
-        private ?QuestionMediaService $questionMediaService = null
+        private ?QuestionMediaService $questionMediaService = null,
+        private ?ExamAttemptLimitService $examAttemptLimit = null,
     ) {
         $this->richFeedbackService = $richFeedbackService ?? new RichFeedbackService($db, $translationService);
         $this->db = $db;
@@ -276,6 +277,11 @@ class TrainingService {
     }
 
     private function enforceExamStartPolicy(int $poolId, string $userId, ?int $courseId): void {
+        // GitHub #87: the course's total limit per pool in the current certification cycle, before
+        // the daily limit — once it is reached no wait helps, only the instructor's new cycle.
+        if ($courseId !== null && $this->examAttemptLimit !== null) {
+            $this->examAttemptLimit->assertCanStart($userId, $courseId, $poolId);
+        }
         $now = time();
         $limitPerDay = $this->getExamAttemptLimitPerDay();
         $cooldownMinutes = $this->getExamAttemptCooldownMinutes();

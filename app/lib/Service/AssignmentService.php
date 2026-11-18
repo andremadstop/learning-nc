@@ -259,6 +259,80 @@ class AssignmentService {
     }
 
     /**
+     * GitHub #84 / #87: an instructor opens a new certification cycle for one learner by hand.
+     *
+     * Ends whatever period holds the subject's UNIQUE slot (active_period_key), whatever its status
+     * — after a revoke that is usually the 'passed' period that issued the revoked certificate —
+     * and inserts a fresh 'assigned' period with assigned_at = now and the reason. Nothing is
+     * deleted: the old period row stays as history with its status. Both writes and the
+     * PERIOD_REOPENED compliance event commit together or not at all; a concurrent writer that
+     * took the slot in between makes the INSERT fail, everything rolls back and the exception
+     * propagates (the caller answers 409).
+     *
+     * From then on (PassCriteriaService::issuanceWindow() Branch B) only exams completed at or
+     * after assigned_at count, and the attempts are counted from there (ExamAttemptLimitService).
+     *
+     * Compliance event: the learner is the subject (user_id, like PERIOD_CLOSED); the context
+     * holds facts only — course, reason, time, and the pseudonymous verification id of the
+     * certificate that was revoked or expired. Who opened it goes to the non-chain audit log.
+     *
+     * @return int assigned_at of the new period
+     */
+    public function reopenPeriod(int $courseId, string $userId, string $reason, string $instructorId, ?string $verificationId = null): int {
+        $periodKey = "{$courseId}:user:{$userId}";
+        $now = time();
+
+        $this->db->beginTransaction();
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_assignments')
+                ->set('active_period_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+                ->where($qb->expr()->eq('active_period_key', $qb->createNamedParameter($periodKey)));
+            $qb->executeStatement();
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_assignments')
+                ->values([
+                    'course_id'         => $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
+                    'subject_type'      => $qb->createNamedParameter('user'),
+                    'subject_id'        => $qb->createNamedParameter($userId),
+                    'assigned_by'       => $qb->createNamedParameter($instructorId),
+                    'assigned_at'       => $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT),
+                    'due_date'          => $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
+                    'status'            => $qb->createNamedParameter('assigned'),
+                    'active_period_key' => $qb->createNamedParameter($periodKey),
+                    'reopen_reason'     => $qb->createNamedParameter($reason),
+                ]);
+            $qb->executeStatement();
+
+            $context = [
+                'course_id'    => $courseId,
+                'subject_type' => 'user',
+                'reason'       => $reason,
+                'opened_at'    => $now,
+            ];
+            if ($verificationId !== null && $verificationId !== '') {
+                $context['verification_id'] = $verificationId;
+            }
+            $this->auditService->logComplianceEvent(ComplianceEventTypes::PERIOD_REOPENED, $userId, $context);
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+
+        // Who did it: outside the chain (the actor's uid must not be bound into payload_hash).
+        $this->auditService->logEvent('certification.cycle.reopened', $instructorId, [
+            'course_id' => $courseId,
+            'reason'    => $reason,
+        ]);
+        return $now;
+    }
+
+    /**
      * Close every recertification period whose cert expired past the grace window (RECERT-04).
      *
      * Called daily by RecertPeriodCloseJob. Source of truth is learning_CERTIFICATES, not the
@@ -330,7 +404,10 @@ class AssignmentService {
      * assigned_at is when the period opened. A recertification only counts exams completed from
      * then on (PassCriteriaService), so an exam from an earlier period never renews a certificate.
      *
-     * @return array<string, array{status: string, due_date: int|null, assigned_at: int}> keyed by subject_id (user UID)
+     * reopen_reason (GitHub #84): set when an instructor opened the period by hand (reopenPeriod()),
+     * null for one the recertification job opened.
+     *
+     * @return array<string, array{status: string, due_date: int|null, assigned_at: int, reopen_reason: string|null}> keyed by subject_id (user UID)
      */
     public function getStatesForCourseAndUsers(int $courseId, array $userIds): array {
         if ($userIds === []) {
@@ -339,7 +416,7 @@ class AssignmentService {
         $stateMap = [];
         foreach (array_chunk($userIds, 999) as $chunk) {
             $qb = $this->db->getQueryBuilder();
-            $qb->select('subject_id', 'status', 'due_date', 'assigned_at')
+            $qb->select('subject_id', 'status', 'due_date', 'assigned_at', 'reopen_reason')
                ->from('learning_assignments')
                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
                ->andWhere($qb->expr()->eq('subject_type', $qb->createNamedParameter('user')))
@@ -355,6 +432,7 @@ class AssignmentService {
                     'status'   => $row['status'],
                     'due_date' => $row['due_date'] !== null ? (int) $row['due_date'] : null,
                     'assigned_at' => (int) ($row['assigned_at'] ?? 0),
+                    'reopen_reason' => isset($row['reopen_reason']) && $row['reopen_reason'] !== '' ? (string)$row['reopen_reason'] : null,
                 ];
             }
             $result->closeCursor();

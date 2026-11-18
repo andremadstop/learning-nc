@@ -335,6 +335,67 @@ class AssignmentServiceTest extends TestCase {
         $states = $service->getStatesForCourseAndUsers(5, ['alice']);
 
         $this->assertContains('assigned_at', $builder->selects, 'the period start is read from the table');
-        $this->assertSame(['status' => 'assigned', 'due_date' => null, 'assigned_at' => 1800000000], $states['alice']);
+        $this->assertSame(['status' => 'assigned', 'due_date' => null, 'assigned_at' => 1800000000, 'reopen_reason' => null], $states['alice']);
+    }
+
+    /** GitHub #84: whether an instructor opened the period, and why, is read with it. */
+    public function testStatesCarryTheReopenReason(): void {
+        $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: [
+            ['subject_id' => 'alice', 'status' => 'assigned', 'due_date' => null, 'assigned_at' => '1800000000', 'reopen_reason' => 'revoked'],
+        ]));
+        $service = new AssignmentService(new FakeDbConnection([$builder]), $this->createMock(IGroupManager::class),
+            $this->createMock(AuditService::class), $this->createMock(\OCP\IConfig::class), $this->createMock(\Psr\Log\LoggerInterface::class));
+
+        $this->assertSame('revoked', $service->getStatesForCourseAndUsers(5, ['alice'])['alice']['reopen_reason']);
+        $this->assertContains('reopen_reason', $builder->selects);
+    }
+
+    /**
+     * GitHub #84: opening a new cycle ends whatever period holds the slot (after a revoke the
+     * 'passed' one that issued the revoked certificate — its status is not filtered), inserts an
+     * 'assigned' period with the reason and the instructor, and records PERIOD_REOPENED with the
+     * learner as subject and facts only — in one transaction. Nothing is deleted.
+     */
+    public function testReopenPeriodFreesTheSlotAndOpensAReasonedPeriodInOneTransaction(): void {
+        $free = new FakeQueryBuilder();
+        $insert = new FakeQueryBuilder();
+        [$svc, $db, $audit] = $this->makeClosePeriodService([$free, $insert]);
+        $context = null;
+        $audit->expects($this->once())->method('logComplianceEvent')
+            ->with(ComplianceEventTypes::PERIOD_REOPENED, self::CP_USER, $this->anything())
+            ->willReturnCallback(function (string $type, string $user, array $ctx) use (&$context): void { $context = $ctx; });
+        $audit->expects($this->once())->method('logEvent')->with('certification.cycle.reopened', 'teacher', $this->anything());
+
+        $since = $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'revoked', 'teacher', 'vid-1');
+
+        $this->assertSame('update', $free->operation);
+        $this->assertSame('learning_assignments', $free->table);
+        $this->assertArrayHasKey('active_period_key', $free->setCalls);
+        $this->assertStringNotContainsString('status', (string)json_encode($free->whereCalls), 'the slot is freed whatever the old status');
+        $this->assertSame('insert', $insert->operation);
+        $values = array_column($insert->namedParameters, 'value');
+        $this->assertContains('assigned', $values);
+        $this->assertContains('revoked', $values);
+        $this->assertContains('teacher', $values);
+        $this->assertContains(self::CP_COURSE . ':user:' . self::CP_USER, $values);
+        $this->assertSame(['course_id' => self::CP_COURSE, 'subject_type' => 'user', 'reason' => 'revoked', 'opened_at' => $since, 'verification_id' => 'vid-1'], $context);
+        $this->assertStringNotContainsString(self::CP_USER, (string)json_encode($context), 'no uid in the chained context');
+        $this->assertSame([1, 1, 0], [$db->beginTransactionCalls, $db->commitCalls, $db->rollBackCalls]);
+        foreach ($db->issuedBuilders as $b) {
+            $this->assertNotSame('delete', $b->operation, 'nothing is deleted');
+        }
+    }
+
+    public function testReopenPeriodRollsBackWhenTheAuditAppendFails(): void {
+        [$svc, $db, $audit] = $this->makeClosePeriodService([new FakeQueryBuilder(), new FakeQueryBuilder()]);
+        $audit->method('logComplianceEvent')->willThrowException(new \OCA\Learning\Service\ComplianceAuditException('chain'));
+        $audit->expects($this->never())->method('logEvent');
+
+        try {
+            $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'attempts', 'teacher');
+            $this->fail('the audit failure must propagate');
+        } catch (\OCA\Learning\Service\ComplianceAuditException $e) {
+        }
+        $this->assertSame([1, 0, 1], [$db->beginTransactionCalls, $db->commitCalls, $db->rollBackCalls]);
     }
 }

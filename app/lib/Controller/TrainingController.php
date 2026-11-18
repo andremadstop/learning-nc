@@ -51,6 +51,10 @@ class TrainingController extends Controller {
             // distinguish "watch the video first" from a bad request. Subclass catch MUST precede the
             // generic \Exception below (which would otherwise swallow it as a 400).
             return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
+        } catch (\OCA\Learning\Service\ExamAttemptLimitException $e) {
+            // GitHub #87: all attempts of the cycle are used up on this pool; only the instructor's
+            // new cycle helps, so it is a conflict with a stable code, not a bad request.
+            return new DataResponse(['error' => \OCA\Learning\Service\ExamAttemptLimitException::CODE], Http::STATUS_CONFLICT);
         } catch (\OCP\DB\Exception $e) {
             // A database error is no refusal: its driver message (table, column, SQL) stays in the log.
             $this->logger->error('Starting a session failed', ['exception' => $e, 'poolId' => $poolId, 'mode' => $mode]);

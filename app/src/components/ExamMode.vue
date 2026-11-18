@@ -320,6 +320,7 @@ import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 import NcModal from '@nextcloud/vue/components/NcModal';
 import Certificate from './Certificate.vue';
 import { shouldShowNote } from '../utils/instructorNoteUtils.js';
+import { attemptsLeft } from '../utils/certificationCycle.js';
 
 // Seconds before the deadline at which the countdown submits the exam. The server accepts the
 // final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
@@ -700,7 +701,14 @@ export default {
       // Not passed with an expired certificate: the renewal is under way or not open yet — the
       // block cannot tell which, so only the expiry is added to the usual verdict.
       const extra = expiry ? { expiry } : {}
-      const retake = this.retakeText(c.attempt_policy)
+      // GitHub #84: revoked, but the instructor opened a new cycle — only its exams count.
+      if (c.certificate && c.certificate.revoked && c.new_cycle) {
+        extra.expiry = t('learning', 'Dein Zertifikat wurde widerrufen. Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet: Nur Prüfungen ab jetzt zählen.')
+      }
+      // GitHub #87: no attempt left in this cycle — no retake, the instructor decides.
+      const retake = attemptsLeft(c.attempt_policy, c.pool_id) === 0
+        ? t('learning', 'Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.')
+        : this.retakeText(c.attempt_policy)
       if (c.requirement === 'required_pools') {
         const missing = (Array.isArray(c.pools) ? c.pools : [])
           .filter(p => !p.passed)
@@ -985,6 +993,13 @@ export default {
         // Codeberg #9 follow-up: the one start error learners cannot fix themselves — say so.
         if (this.practice && serverError === 'No required pools in this course') {
           showError(t('learning', 'This practice exam uses required pools only, but none is marked required yet. Please ask your instructor.'));
+        } else if (serverError === 'exam_attempts_exhausted') {
+          // GitHub #87: the course's total limit for this cycle is used up on this pool.
+          showError(t('learning', 'Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.'));
+        } else if (serverError === 'Exam attempt limit reached for the last 24 hours') {
+          showError(t('learning', 'Das Limit an Prüfungsversuchen für die letzten 24 Stunden ist erreicht. Bitte versuche es später erneut.'));
+        } else if (serverError === 'Exam cooldown active') {
+          showError(t('learning', 'Zwischen zwei Prüfungsversuchen gilt eine Wartezeit. Bitte versuche es später erneut.'));
         } else if (serverError === 'Exam timed out') {
           // Audit #181: the previous exam's time is up, but its grace period for the last answers
           // is still running — a start a few seconds later succeeds.

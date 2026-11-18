@@ -50,8 +50,11 @@
 				<NcNoteCard v-if="issuanceFailed" type="warning" class="zeugnis-issuance-error">
 					{{ t('learning', 'Du hast bestanden, aber das Zertifikat konnte noch nicht ausgestellt werden. Bitte wende dich an deine Administration.') }}
 				</NcNoteCard>
-				<NcNoteCard v-else-if="certificateRevoked" type="error">
-					{{ t('learning', 'Dein Zertifikat wurde widerrufen. Bitte wende dich an deine Kursleitung.') }}
+				<!-- GitHub #84: after a revoke the instructor can open a new cycle; then there is a way on. -->
+				<NcNoteCard v-else-if="certificateRevoked" :type="newCycleOpen ? 'info' : 'error'" class="zeugnis-revoked">
+					{{ newCycleOpen
+						? t('learning', 'Dein Zertifikat wurde widerrufen. Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet: Bestätige die Pflichtinhalte erneut und lege die Prüfung neu ab. Frühere Prüfungen zählen nicht mehr.')
+						: t('learning', 'Dein Zertifikat wurde widerrufen. Bitte wende dich an deine Kursleitung.') }}
 				</NcNoteCard>
 				<div v-else-if="certificate" class="zeugnis-state zeugnis-certificate">
 					<span v-if="certificate.expired" class="zeugnis-meta zeugnis-expired">
@@ -66,6 +69,9 @@
 						</span>
 					</template>
 				</div>
+				<NcNoteCard v-if="newCycleOpen && !certificateRevoked" type="info" class="zeugnis-new-cycle">
+					{{ t('learning', 'Deine Kursleitung hat einen neuen Zertifizierungszyklus geöffnet. Prüfungen ab jetzt zählen für ein neues Zertifikat.') }}
+				</NcNoteCard>
 				<!-- GitHub #35: the first reminder opens renewal; exams from then on renew the certificate. -->
 				<NcNoteCard v-if="renewalText" type="info" class="zeugnis-renewal">
 					{{ renewalText }}
@@ -454,6 +460,10 @@ export default {
 		},
 		certificate() {
 			return this.passStatus?.certificate || null
+		},
+		// GitHub #84: a certification cycle an instructor opened is open ({reason, since} or null).
+		newCycleOpen() {
+			return !!this.passStatus?.new_cycle
 		},
 		certificateRevoked() {
 			return this.certificate?.revoked === true

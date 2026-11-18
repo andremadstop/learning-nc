@@ -12628,6 +12628,308 @@
                 }
             }
         },
+        "/index.php/apps/learning/api/courses/{courseId}/certification-cycles": {
+            "get": {
+                "operationId": "certification_cycle-states",
+                "summary": "Per student member of the course (member_id = the course member row): whether a new cycle can be opened and why ('revoked' | 'expired' | 'attempts' | null), the cycle an instructor opened if it is still open, and the pools whose attempts are used up.",
+                "tags": [
+                    "certification_cycle"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "members"
+                                    ],
+                                    "properties": {
+                                        "members": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "member_id",
+                                                    "reason",
+                                                    "new_cycle",
+                                                    "exhausted_pool_ids"
+                                                ],
+                                                "properties": {
+                                                    "member_id": {
+                                                        "type": "integer",
+                                                        "format": "int64"
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "new_cycle": {
+                                                        "type": "object",
+                                                        "nullable": true,
+                                                        "required": [
+                                                            "reason",
+                                                            "since"
+                                                        ],
+                                                        "properties": {
+                                                            "reason": {
+                                                                "type": "string"
+                                                            },
+                                                            "since": {
+                                                                "type": "integer",
+                                                                "format": "int64"
+                                                            }
+                                                        }
+                                                    },
+                                                    "exhausted_pool_ids": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "integer",
+                                                            "format": "int64"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/learning/api/courses/{courseId}/members/{memberId}/new-cycle": {
+            "post": {
+                "operationId": "certification_cycle-open",
+                "summary": "Opens a new certification cycle for one student member: only exams of the new cycle count, the attempts count from zero, and after a revoke the required documents are confirmed again. Nothing is deleted; the opening is recorded in the compliance chain.",
+                "tags": [
+                    "certification_cycle"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "reason",
+                                        "since"
+                                    ],
+                                    "properties": {
+                                        "reason": {
+                                            "type": "string"
+                                        },
+                                        "since": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/index.php/apps/learning/api/courses/{courseId}/enroll": {
             "post": {
                 "operationId": "course-enroll",
@@ -16363,6 +16665,12 @@
                                     },
                                     "certValidityUnit": {
                                         "type": "string",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    "examAttemptLimit": {
+                                        "type": "integer",
+                                        "format": "int64",
                                         "nullable": true,
                                         "default": null
                                     }
@@ -23112,6 +23420,10 @@
         {
             "name": "course_member",
             "description": "Enrolling course members (GitHub #35): one account, several accounts and groups at once, and the search behind the member picker. Every endpoint is limited to instructors of the course; a student gets 403 before any search runs, so the picker cannot be used to list accounts."
+        },
+        {
+            "name": "certification_cycle",
+            "description": "GitHub #84 / #87: the instructor's \"Open a new certification cycle\" for one learner. Instructors of the course only (owner or co-instructor, CourseService::assertInstructorOfCourse()). A foreign course, an unknown course and a member of another course all answer the same 404, so the route is no oracle for other courses' members. The POST keeps Nextcloud's CSRF check."
         },
         {
             "name": "certificate_report",

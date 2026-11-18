@@ -60,6 +60,7 @@ class CourseController extends Controller {
         ?\OCP\IL10N $l10n = null,
         ?\OCA\Learning\Service\AuditService $auditService = null,
         ?\OCP\IDBConnection $db = null,
+        private ?\OCA\Learning\Service\ExamAttemptLimitService $examAttemptLimit = null,
     ) {
         parent::__construct($appName, $request);
         $this->courseMapper = $courseMapper;
@@ -737,6 +738,7 @@ class CourseController extends Controller {
         ?int $examMinutes = null,
         ?array $certLayout = null,
         ?string $certValidityUnit = null,
+        ?int $examAttemptLimit = null,
     ): DataResponse {
         try {
             if ($this->userId === null) {
@@ -857,6 +859,15 @@ class CourseController extends Controller {
                 $course->setExamMinutes($examMinutes === 0 ? null : $examMinutes);
             }
 
+            // GitHub #87: total counting exam attempts per pool in a certification cycle.
+            // Omitted = unchanged, 0 = unlimited (stored as NULL).
+            if ($examAttemptLimit !== null) {
+                if ($examAttemptLimit < 0 || $examAttemptLimit > \OCA\Learning\Service\ExamAttemptLimitService::MAX_LIMIT) {
+                    return new DataResponse(['error' => sprintf('exam_attempt_limit must be 1–%d (0 = unlimited)', \OCA\Learning\Service\ExamAttemptLimitService::MAX_LIMIT)], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setExamAttemptLimit($examAttemptLimit === 0 ? null : $examAttemptLimit);
+            }
+
             $course->setUpdatedAt(time());
             if ($issuerChange !== null && $this->auditService !== null && $this->db !== null) {
                 // both or neither: no new name without its record
@@ -883,6 +894,7 @@ class CourseController extends Controller {
                 'certValidityMonths'  => $course->getCertValidityMonths(),
                 'examQuestions'       => $course->getExamQuestions(),
                 'examMinutes'         => $course->getExamMinutes(),
+                'examAttemptLimit'    => $course->getExamAttemptLimit(),
                 'certLayout'          => \OCA\Learning\Service\CertLayout::forSettings($course->getCertLayout()),
             ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
@@ -984,6 +996,10 @@ class CourseController extends Controller {
             $payload = $result->toArray();
             // GitHub #35: learners see the retake rules that are actually enforced.
             $payload['attempt_policy'] = $this->examAttemptPolicy->toArray();
+            // GitHub #87: plus the course's total limit and the attempts of the current cycle.
+            if ($this->examAttemptLimit !== null) {
+                $payload['attempt_policy'] += $this->examAttemptLimit->policyFor($this->userId, $course);
+            }
             return new DataResponse($payload);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

@@ -31,6 +31,7 @@ final class PassResult {
     /**
      * @param list<array{pool_id: int, title: string|null, best_score: int|null, passed: bool}> $pools
      * @param array{verification_id: string, issued_at: int, expires_at: int|null, expired: bool, revoked: bool}|null $certificate
+     * @param array{reason: string, since: int}|null $reopenedCycle GitHub #84: an instructor opened a new certification cycle
      */
     public function __construct(
         private readonly bool $passed,
@@ -45,6 +46,7 @@ final class PassResult {
         private readonly ?string $issuanceError = null,
         private readonly ?int $renewalOpenSince = null,
         private readonly ?int $renewalOpensAt = null,
+        private readonly ?array $reopenedCycle = null,
     ) {}
 
     public static function notApplicable(): self {
@@ -65,6 +67,8 @@ final class PassResult {
     public function getIssuanceError(): ?string { return $this->issuanceError; }
     public function getRenewalOpenSince(): ?int { return $this->renewalOpenSince; }
     public function getRenewalOpensAt(): ?int { return $this->renewalOpensAt; }
+    /** @return array{reason: string, since: int}|null */
+    public function getReopenedCycle(): ?array { return $this->reopenedCycle; }
 
     /** A current certificate exists: issued, not revoked, not expired. */
     public function isCertificateIssued(): bool {
@@ -88,6 +92,9 @@ final class PassResult {
             'issuance_error'     => $this->issuanceError,
             'renewal_open_since' => $this->renewalOpenSince,
             'renewal_opens_at'   => $this->renewalOpensAt,
+            // GitHub #84: {reason: 'revoked'|'expired'|'attempts', since} while a cycle an
+            // instructor opened is open (only exams from `since` on count), else null.
+            'new_cycle'          => $this->reopenedCycle,
         ];
     }
 }

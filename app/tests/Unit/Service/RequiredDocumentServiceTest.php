@@ -171,6 +171,69 @@ class RequiredDocumentServiceTest extends TestCase {
         self::assertFalse($this->service($latest, $file, true, 1000)->isConfirmed(self::course(true), self::document(), 'anna'));
     }
 
+    /**
+     * GitHub #84: after a revoke the instructor opens a new cycle, and the required documents are
+     * confirmed again — also in a course without "confirm again at every renewal". A confirmation
+     * from before the new cycle no longer counts (exam gate and coverage alike); one made in the
+     * new cycle does.
+     */
+    public function testAfterARevokeTheDocumentsAreConfirmedAgainWithoutPerCycle(): void {
+        $course = self::course(false);
+        $course->setCertEnabled(true);
+        $file = ['version' => self::V1, 'mtime' => 100];
+        $old = ['anna' => [31 => ['confirmed_at' => 500, 'doc_version' => self::V1]]];
+        $new = ['anna' => [31 => ['confirmed_at' => 2500, 'doc_version' => self::V1]]];
+
+        $service = fn(array $latest): RequiredDocumentService => $this->serviceWithRevokeCycle($latest, $file, ['anna' => 2000]);
+        self::assertFalse($service($old)->isConfirmed($course, self::document(), 'anna'), 'exam gate: confirmed before the revoke');
+        self::assertSame([], $service($old)->countConfirmedByUsers($course, [self::document()], ['anna']), 'coverage: confirmed before the revoke');
+        self::assertTrue($service($new)->isConfirmed($course, self::document(), 'anna'), 'confirmed again in the new cycle');
+    }
+
+    /** GitHub #84: an IT course without certification never looks for a revoke cycle. */
+    public function testACourseWithoutCertificationIsUnchanged(): void {
+        $course = self::course(false);
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->expects($this->never())->method('revokeCycleStarts');
+        $pass->expects($this->never())->method('confirmationCycleStarts');
+        $service = $this->serviceWithPass(['anna' => [31 => ['confirmed_at' => 500, 'doc_version' => self::V1]]], ['version' => self::V1, 'mtime' => 100], $pass);
+        self::assertTrue($service->isConfirmed($course, self::document(), 'anna'));
+    }
+
+    /**
+     * @param array<string, array<int, array{confirmed_at: int, doc_version: string|null}>> $latest
+     * @param array<string, int> $revokeStarts
+     */
+    private function serviceWithRevokeCycle(array $latest, ?array $file, array $revokeStarts): RequiredDocumentService {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('confirmationCycleStarts')->willReturn([]);
+        $pass->method('revokeCycleStarts')->willReturn($revokeStarts);
+        return $this->serviceWithPass($latest, $file, $pass);
+    }
+
+    /**
+     * @param array<string, array<int, array{confirmed_at: int, doc_version: string|null}>> $latest
+     */
+    private function serviceWithPass(array $latest, ?array $file, PassCriteriaService $pass): RequiredDocumentService {
+        $confirms = $this->createMock(DocConfirmMapper::class);
+        $confirms->method('latestByUsers')->willReturnCallback(
+            static fn(int $courseId, array $uids): array => array_intersect_key($latest, array_flip($uids))
+        );
+        $documents = $this->createMock(DocumentService::class);
+        $documents->method('currentFileInfo')->willReturn($file);
+        return new RequiredDocumentService(
+            $confirms,
+            $this->createMock(CourseVideoMapper::class),
+            $this->createMock(CourseMapper::class),
+            $documents,
+            $pass,
+            $this->createMock(AuditService::class),
+            $this->createMock(ITimeFactory::class),
+            new FakeDbConnection(),
+            $this->createMock(CourseDocumentMapper::class),
+        );
+    }
+
     public function testConfirmAppendsTheCurrentVersionAndAuditsIt(): void {
         $confirms = $this->createMock(DocConfirmMapper::class);
         $calls = 0;

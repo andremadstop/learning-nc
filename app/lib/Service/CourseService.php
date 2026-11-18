@@ -1089,6 +1089,8 @@ class CourseService {
             $course->setCertEnabled(true);
             // GitHub #75: every renewal asks for the required documents again.
             $course->setReconfirmPerCycle(true);
+            // GitHub #87: three counting attempts per pool, then the instructor decides (new cycle).
+            $course->setExamAttemptLimit(ExamAttemptLimitService::MANDATORY_PROFILE_DEFAULT);
         } elseif (!$this->xpService->isGamificationEnabled()) {
             $course->setModeConfig(json_encode(self::MODE_CONFIG_WITHOUT_GAMIFICATION));
         }

@@ -178,7 +178,54 @@ class PassCriteriaService {
             $issuanceError,
             $renewalOpen ? $renewalOpensAt : null,
             $renewalOpen ? null : $renewalOpensAt,
+            $window['reopened'] ?? null,
         );
+    }
+
+    /**
+     * GitHub #87: since when the counting exam attempts of this learner count — the start of the
+     * current certification cycle. The later of the open renewal window (as in issuanceWindow())
+     * and the assigned_at of the active period, whatever its status: an instructor's new cycle
+     * (AssignmentService::reopenPeriod()) and a period the recertification job opened both start
+     * the count again. null = no cycle yet, every attempt counts.
+     *
+     * Read-only, never issues. Unlike issuanceWindow() it reads the period also for a learner
+     * without any certificate: resetting the attempts of someone who never passed is what the
+     * instructor's new cycle is for there.
+     */
+    public function attemptCycleStart(string $userId, int $courseId): ?int {
+        $starts = [];
+        $certificate = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+        $opensAt = $this->renewalOpensAt($certificate);
+        if ($certificate !== null && $opensAt !== null && time() >= $opensAt) {
+            $starts[] = max((int)$certificate->getIssuedAt() + 1, $opensAt);
+        }
+        $state = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId])[$userId] ?? null;
+        if ($state !== null) {
+            $starts[] = (int)$state['assigned_at'];
+        }
+        return $starts === [] ? null : max($starts);
+    }
+
+    /**
+     * GitHub #84: after a revoke the required documents are confirmed again — in every course,
+     * also without reconfirm_per_cycle. The bound is the start of the cycle an instructor opened
+     * after the revoke (reopen_reason 'revoked'), for as long as that period is the active one:
+     * keyed on the period, not on "newest certificate revoked", so it stays after the new
+     * certificate was issued in that cycle (the period is then 'passed' but still active).
+     * Confirmations made in the new cycle are newer and keep counting.
+     *
+     * @param list<string> $userIds
+     * @return array<string, int> user => start of the cycle opened after a revoke (only those users)
+     */
+    public function revokeCycleStarts(int $courseId, array $userIds): array {
+        $out = [];
+        foreach ($this->assignmentService->getStatesForCourseAndUsers($courseId, array_values(array_unique(array_map('strval', $userIds)))) as $uid => $state) {
+            if (($state['reopen_reason'] ?? null) === 'revoked') {
+                $out[(string)$uid] = (int)$state['assigned_at'];
+            }
+        }
+        return $out;
     }
 
     /**
@@ -266,7 +313,7 @@ class PassCriteriaService {
      * past expiry until the daily RecertPeriodCloseJob closes the period, so there is no gap
      * between renewal and recertification.
      */
-    private function renewalOpensAt(?Certificate $certificate): ?int {
+    public function renewalOpensAt(?Certificate $certificate): ?int {
         if ($certificate === null
             || (bool)$certificate->getRevoked()
             || $certificate->getActiveIdemKey() === null
@@ -591,7 +638,10 @@ class PassCriteriaService {
      * slot and dedupes), so this changes nothing there; once the period is closed the slot is
      * NULL and only Branch B applies. Outside the window Branch B behaves as before.
      *
-     * @return array{may_issue: bool, completed_after: int|null, renewing: Certificate|null}
+     * reopened (GitHub #84): the open period was opened by an instructor (reason and since when),
+     * only in Branch B.
+     *
+     * @return array{may_issue: bool, completed_after: int|null, renewing: Certificate|null, reopened?: array{reason: string, since: int}|null}
      */
     private function issuanceWindow(string $userId, int $courseId, ?Certificate $newestCertificate): array {
         // Branch A: student has no certificate history at all — always allow.
@@ -614,7 +664,11 @@ class PassCriteriaService {
         if ($state === null || !in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true)) {
             return ['may_issue' => false, 'completed_after' => null, 'renewing' => null];
         }
-        return ['may_issue' => true, 'completed_after' => (int)($state['assigned_at'] ?? 0), 'renewing' => null];
+        $reopened = ($state['reopen_reason'] ?? null) !== null ? [
+            'reason' => (string)$state['reopen_reason'],
+            'since' => (int)($state['assigned_at'] ?? 0),
+        ] : null;
+        return ['may_issue' => true, 'completed_after' => (int)($state['assigned_at'] ?? 0), 'renewing' => null, 'reopened' => $reopened];
     }
 
     /**

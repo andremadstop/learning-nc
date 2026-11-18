@@ -231,6 +231,9 @@ return [
         ['name' => 'courseMember#bulk', 'url' => '/api/courses/{courseId}/members/bulk', 'verb' => 'POST'],
         ['name' => 'courseMember#search', 'url' => '/api/courses/{courseId}/member-search', 'verb' => 'GET'],
         ['name' => 'course#removeMember', 'url' => '/api/courses/{courseId}/members/{memberId}', 'verb' => 'DELETE'],
+        // GitHub #84 / #87: the instructor opens a new certification cycle for a stuck learner
+        ['name' => 'certificationCycle#states', 'url' => '/api/courses/{courseId}/certification-cycles', 'verb' => 'GET'],
+        ['name' => 'certificationCycle#open', 'url' => '/api/courses/{courseId}/members/{memberId}/new-cycle', 'verb' => 'POST'],
         ['name' => 'course#enroll', 'url' => '/api/courses/{courseId}/enroll', 'verb' => 'POST'],
         ['name' => 'course#progress', 'url' => '/api/courses/{courseId}/progress', 'verb' => 'GET'],
         ['name' => 'course#myProgress', 'url' => '/api/courses/{courseId}/my-progress', 'verb' => 'GET'],

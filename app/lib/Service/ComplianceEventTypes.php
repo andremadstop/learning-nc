@@ -20,6 +20,9 @@ final class ComplianceEventTypes {
     public const CERT_REVOKED    = 'cert.revoked';
     // Phase 164 (AssignmentService::closePeriod emits this event)
     public const PERIOD_CLOSED   = 'cert.period.closed';
+    // GitHub #84 / #87: an instructor opened a new certification cycle for one learner
+    // (AssignmentService::reopenPeriod); context {course_id, subject_type, reason, opened_at, verification_id?}
+    public const PERIOD_REOPENED = 'cert.period.reopened';
     // Defined here for Phase 162 (VideoProgressService emits this event)
     public const VIDEO_COMPLETED = 'course.video.completed';
     // GitHub #75: an instructor asked every learner to confirm a required document again

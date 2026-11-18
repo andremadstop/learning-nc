@@ -38,6 +38,7 @@ class CertificationTrigger {
         private readonly PassCriteriaService $passCriteriaService,
         private readonly ExamAttemptPolicy $examAttemptPolicy,
         private readonly LoggerInterface $logger,
+        private readonly ?ExamAttemptLimitService $examAttemptLimit = null,
     ) {}
 
     /**
@@ -82,11 +83,19 @@ class CertificationTrigger {
             $countsForRequirement = $result->getRequirement() !== PassResult::REQUIREMENT_REQUIRED_POOLS
                 || in_array($poolId, array_map(static fn(array $p): int => (int)$p['pool_id'], $result->getPools()), true);
 
+            // GitHub #87: tell the instructors when this was the last attempt of the cycle, and
+            // show the learner the course's total limit next to the daily one.
+            $attemptPolicy = $this->examAttemptPolicy->toArray();
+            if ($this->examAttemptLimit !== null) {
+                $this->examAttemptLimit->afterExamCompleted($userId, $courseId, $poolId);
+                $attemptPolicy += $this->examAttemptLimit->policyFor($userId, $course);
+            }
+
             return array_merge($result->toArray(), $attempt, [
                 'course_id' => $courseId,
                 'pool_id' => $poolId,
                 'counts_for_requirement' => $countsForRequirement,
-                'attempt_policy' => $this->examAttemptPolicy->toArray(),
+                'attempt_policy' => $attemptPolicy,
             ]);
         } catch (ComplianceAuditException $e) {
             $this->logger->error('Certification after exam completion failed (compliance audit) for user {user} session {session}: {msg}', [

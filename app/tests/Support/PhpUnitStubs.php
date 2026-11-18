@@ -344,12 +344,16 @@ namespace OCP\Notification {
             public function setSubject(string $subject, array $parameters = []): self;
             public function setDateTime(\DateTime $dateTime): self;
             public function setParsedSubject(string $subject): self;
+            // Signatures copied from NC 33's lib/public/Notification/INotification.php (GitHub #87).
+            public function setParsedMessage(string $message): self;
             public function setLink(string $link): self;
             public function setIcon(string $icon): self;
             public function getApp(): string;
             public function getUser(): string;
             public function getSubject(): string;
             public function getSubjectParameters(): array;
+            public function getObjectType(): string;
+            public function getObjectId(): string;
         }
     }
 

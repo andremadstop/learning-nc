@@ -1648,4 +1648,67 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertTrue($alice['certificate_valid']);
         $this->assertFalse($alice['certificate_expired']);
     }
+    // ---- GitHub #84 / #87: the cycle an instructor opened --------------------------------
+
+    /** @param array<string, array{status: string, due_date: int|null, assigned_at: int, reopen_reason: string|null}> $states */
+    private function cycleService(?Certificate $cert, array $states, CourseSummaryService $summary, IssuanceService $issuance, array $builders = []): PassCriteriaService {
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse(true, 75, null));
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn($cert);
+        $assignment = $this->createMock(AssignmentService::class);
+        $assignment->method('getStatesForCourseAndUsers')->willReturnCallback(
+            static fn(int $courseId, array $uids): array => array_intersect_key($states, array_flip($uids))
+        );
+        return new PassCriteriaService($courseMapper, $summary, $this->createMock(AuditService::class), new FakeDbConnection($builders), $issuance,
+            $this->createMock(LoggerInterface::class), $certMapper, $assignment, $this->members([]), $this->config());
+    }
+
+    /**
+     * GitHub #84: after a revoke and the instructor's new cycle the old pass does not reissue, and
+     * the learner is told a new cycle is open instead of "revoked, contact your instructor".
+     */
+    public function testAfterARevokeTheNewCycleIgnoresTheOldPassAndSaysSo(): void {
+        $revoked = $this->makeCert('vid-revoked', true, null);
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassedResult');
+        $windows = [];
+        $summary = $this->summaryWithExams([[1, 95, self::PERIOD_OPENED_AT - 86400]], [1], $windows);
+        $states = [self::USER => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => self::PERIOD_OPENED_AT, 'reopen_reason' => 'revoked']];
+
+        $payload = $this->cycleService($revoked, $states, $summary, $issuance)->evaluate(self::USER, self::COURSE_ID)->toArray();
+
+        $this->assertFalse($payload['passed']);
+        $this->assertSame(['reason' => 'revoked', 'since' => self::PERIOD_OPENED_AT], $payload['new_cycle']);
+        $this->assertTrue($payload['certificate']['revoked']);
+    }
+
+    public function testWithoutANewCycleThereIsNone(): void {
+        $windows = [];
+        $payload = $this->cycleService($this->makeCert('vid-revoked', true, null), [], $this->summaryWithExams([], [1], $windows), $this->createMock(IssuanceService::class))
+            ->evaluate(self::USER, self::COURSE_ID)->toArray();
+        $this->assertNull($payload['new_cycle']);
+    }
+
+    /** GitHub #87: attempts count from the open period on — also for a learner without any certificate. */
+    public function testAttemptsCountFromTheOpenPeriodAlsoWithoutACertificate(): void {
+        $windows = [];
+        $summary = $this->summaryWithExams([], [1], $windows);
+        $states = [self::USER => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => self::PERIOD_OPENED_AT, 'reopen_reason' => 'attempts']];
+        $this->assertSame(self::PERIOD_OPENED_AT, $this->cycleService(null, $states, $summary, $this->createMock(IssuanceService::class))->attemptCycleStart(self::USER, self::COURSE_ID));
+        $this->assertNull($this->cycleService(null, [], $summary, $this->createMock(IssuanceService::class))->attemptCycleStart(self::USER, self::COURSE_ID), 'no cycle yet: every attempt counts');
+    }
+
+    /** GitHub #84: only a cycle opened after a revoke asks for the documents again in every course. */
+    public function testRevokeCycleStartsOnlyForCyclesOpenedAfterARevoke(): void {
+        $windows = [];
+        $states = [
+            'anna' => ['status' => 'passed', 'due_date' => null, 'assigned_at' => 100, 'reopen_reason' => 'revoked'],
+            'ben' => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => 200, 'reopen_reason' => 'attempts'],
+            'cleo' => ['status' => 'assigned', 'due_date' => null, 'assigned_at' => 300, 'reopen_reason' => null],
+        ];
+        $service = $this->cycleService(null, $states, $this->summaryWithExams([], [1], $windows), $this->createMock(IssuanceService::class));
+        $this->assertSame(['anna' => 100], $service->revokeCycleStarts(self::COURSE_ID, ['anna', 'ben', 'cleo']),
+            'still after the new certificate was issued in it (the period is then passed)');
+    }
 }

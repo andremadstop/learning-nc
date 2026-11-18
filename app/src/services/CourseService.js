@@ -12,7 +12,8 @@ import { generateUrl } from '@nextcloud/router'
  * Update cert configuration for a course (instructor only).
  * @param {number} courseId — the course to configure
  * @param {object} config — any subset of: certEnabled, certPassPercent, certRequiredPoolIds, certValidityDays,
- *   examQuestions, examMinutes (GitHub #47: course default of the exam scope, 0 = none)
+ *   examQuestions, examMinutes (GitHub #47: course default of the exam scope, 0 = none),
+ *   examAttemptLimit (GitHub #87: counting attempts per pool and cycle, 0 = unlimited)
  * @return {Promise<object>} updated cert config fields
  */
 export async function updateCertConfig(courseId, config) {

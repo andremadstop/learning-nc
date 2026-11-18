@@ -108,6 +108,8 @@ class CourseProfile67Test extends TestCase {
             $this->assertTrue($course->getCertEnabled(), 'the certification is switched on');
             // GitHub #75: every renewal asks for the required documents again
             $this->assertTrue($course->getReconfirmPerCycle(), 'required documents are confirmed per cycle');
+            // GitHub #87: three counting attempts per pool, then the instructor decides
+            $this->assertSame(3, $course->getExamAttemptLimit());
             $this->assertNull($course->getEnabledTools(), 'the per-tool selection stays the default, only the master switch is off');
             $this->assertNull($course->getCertRequiredPoolIds());
         }
@@ -119,6 +121,7 @@ class CourseProfile67Test extends TestCase {
             $this->assertNull($on->getModeConfig(), 'gamification on: empty mode config = the defaults');
             $this->assertNotTrue($on->getCertEnabled());
             $this->assertNotTrue($on->getReconfirmPerCycle(), 'an IT course keeps one confirmation');
+            $this->assertNull($on->getExamAttemptLimit(), 'an IT course keeps unlimited attempts');
 
             $off = json_decode((string)$this->service($this->inserting(), false)->create('Netzwerk', null, null, 'teacher', $profile)->getModeConfig(), true);
             $this->assertFalse($off['duel']);

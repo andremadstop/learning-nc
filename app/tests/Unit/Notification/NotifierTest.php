@@ -136,4 +136,46 @@ class NotifierTest extends TestCase {
 
         $notifier->prepare($notification, 'fr');
     }
+    /**
+     * GitHub #84 / #87: the revoke, the new cycle and the used-up attempts are rendered (before
+     * 5.16.0 every one of them fell into the "Unknown subject" branch), with links to the course.
+     */
+    public function testCycleAndAttemptSubjectsRender(): void {
+        $cases = [
+            ['certificate_revoked', ['course_title' => 'Safety', 'course_id' => 7], '/courses/7/summary'],
+            ['certification_cycle_opened', ['course_title' => 'Safety', 'course_id' => 7], '/courses/7/summary'],
+            ['exam_attempts_exhausted', ['course_title' => 'Safety', 'course_id' => 7, 'pool_title' => 'Fire', 'learner' => 'anna'], '/courses/7/members'],
+        ];
+        foreach ($cases as [$subject, $params, $link]) {
+            $notification = $this->makeNotification('learning', $subject, $params);
+            $notification->method('setParsedMessage')->willReturnSelf();
+            $notification->expects($this->once())->method('setParsedSubject');
+            $notification->expects($this->once())->method('setLink')->with($this->stringEndsWith($link))->willReturnSelf();
+            $this->makeNotifier()->prepare($notification, 'de');
+        }
+    }
+
+    /** GitHub #87: the learner's current display name, never the uid; a deleted account stays anonymous. */
+    public function testAttemptsNotificationNamesTheLearnerByDisplayName(): void {
+        $users = $this->createMock(\OCP\IUserManager::class);
+        $anna = $this->createMock(\OCP\IUser::class);
+        $anna->method('getDisplayName')->willReturn('Anna Berg');
+        $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'anna' ? $anna : null);
+        $l = $this->createMock(IL10N::class);
+        $l->method('t')->willReturnCallback(fn (string $text, array $p = []) => $text . ($p === [] ? '' : '|' . implode('|', $p)));
+        $factory = $this->createMock(IFactory::class);
+        $factory->method('get')->willReturn($l);
+        $url = $this->createMock(IURLGenerator::class);
+        $url->method('linkToRouteAbsolute')->willReturn('https://nc.example/apps/learning');
+        $notifier = new Notifier($factory, $url, $users);
+
+        foreach (['anna' => 'Anna Berg', 'gone' => 'Eine lernende Person'] as $uid => $name) {
+            $n = $this->makeNotification('learning', 'exam_attempts_exhausted', ['course_title' => 'Safety', 'course_id' => 7, 'pool_title' => 'Fire', 'learner' => $uid]);
+            $n->method('setParsedMessage')->willReturnSelf();
+            $n->expects($this->once())->method('setParsedSubject')->with($this->callback(
+                fn (string $text) => str_contains($text, '|' . $name . '|Fire|Safety') && !str_contains($text, '|' . $uid . '|')
+            ))->willReturnSelf();
+            $notifier->prepare($n, 'de');
+        }
+    }
 }

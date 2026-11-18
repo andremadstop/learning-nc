@@ -291,6 +291,23 @@
 						class="cert-config-input"
 						data-test="exam-scope-minutes"
 						:placeholder="t('learning', 'Nach Fragenzahl')" />
+					<!-- GitHub #87: only with certification — without a pass mark nobody can fail. -->
+					<template v-if="certEnabled">
+						<label for="exam-attempt-limit">{{ t('learning', 'Prüfungsversuche pro Pool und Zertifizierungszyklus') }}</label>
+						<input
+							id="exam-attempt-limit"
+							v-model="examAttemptLimit"
+							type="number"
+							min="1"
+							max="50"
+							step="1"
+							inputmode="numeric"
+							class="cert-config-input"
+							data-test="exam-attempt-limit"
+							aria-describedby="exam-attempt-limit-desc"
+							:placeholder="t('learning', 'Unbegrenzt')" />
+						<small id="exam-attempt-limit-desc" class="mode-config-note mode-description">{{ t('learning', 'Leer = unbegrenzt. Sind die Versuche aufgebraucht, startet keine weitere Prüfung auf diesem Pool, und die Kursleitung wird benachrichtigt. Sie kann in der Mitgliederliste einen neuen Zertifizierungszyklus öffnen; die bisherigen Versuche bleiben als Nachweis erhalten. Das Tageslimit der Administration gilt zusätzlich.') }}</small>
+					</template>
 				</div>
 
 				<NcButton
@@ -626,6 +643,8 @@ export default {
 			// GitHub #47: course default of the exam scope; '' = none.
 			examScopeQuestions: '',
 			examScopeMinutes: '',
+			// GitHub #87: '' = unlimited
+			examAttemptLimit: '',
 			certSaving: false,
 			certSaved: false,
 			practiceEnabled: false,
@@ -746,6 +765,7 @@ export default {
 					this.certLayout = certLayoutFromServer(c.cert_layout)
 					this.examScopeQuestions = c.exam_questions ? String(c.exam_questions) : ''
 					this.examScopeMinutes = c.exam_minutes ? String(c.exam_minutes) : ''
+					this.examAttemptLimit = c.exam_attempt_limit ? String(c.exam_attempt_limit) : ''
 					this.practiceEnabled = !!c.practice_enabled
 					this.practiceQuestions = c.practice_questions ?? 20
 					this.practiceMinutes = c.practice_minutes ?? 0
@@ -1223,6 +1243,11 @@ export default {
 				this.$emit('error', t('learning', 'Zeitlimit: eine ganze Zahl von 1 bis 600 Minuten.'))
 				return
 			}
+			const examAttemptLimit = this.parseExamScopeDefault(this.examAttemptLimit, 50)
+			if (examAttemptLimit === null) {
+				this.$emit('error', t('learning', 'Prüfungsversuche: eine ganze Zahl von 1 bis 50, oder leer für unbegrenzt.'))
+				return
+			}
 			this.certSaving = true
 			this.certSaved = false
 			try {
@@ -1233,6 +1258,8 @@ export default {
 					...validityPayload(this.certValidity),
 					examQuestions,
 					examMinutes,
+					// GitHub #87: only sent with certification on (the field is hidden otherwise)
+					...(this.certEnabled ? { examAttemptLimit } : {}),
 					certLayout: certLayoutPayload(this.certLayout),
 				})
 				// Server response is camelCase (CourseController::updateCertConfig)
@@ -1247,6 +1274,7 @@ export default {
 				}
 				this.examScopeQuestions = result.examQuestions ? String(result.examQuestions) : ''
 				this.examScopeMinutes = result.examMinutes ? String(result.examMinutes) : ''
+				this.examAttemptLimit = result.examAttemptLimit ? String(result.examAttemptLimit) : ''
 				this.certSaved = true
 				setTimeout(() => { this.certSaved = false }, 3000)
 				this.$emit('refresh-course-detail')

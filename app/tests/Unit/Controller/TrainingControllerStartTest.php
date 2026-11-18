@@ -155,4 +155,15 @@ class TrainingControllerStartTest extends TestCase {
         $this->assertSame(400, $response->getStatus());
         $this->assertSame('Exam cooldown active', $response->getData()['error']);
     }
+
+    /** GitHub #87: the used-up total limit is a 409 with a stable code the client translates. */
+    public function testUsedUpAttemptsAreAConflictWithAStableCode(): void {
+        $service = $this->createMock(TrainingService::class);
+        $service->method('startSession')->willThrowException(new \OCA\Learning\Service\ExamAttemptLimitException());
+
+        $response = $this->makeController($service)->start(poolId: 3, mode: 'exam', courseId: 7);
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame(['error' => 'exam_attempts_exhausted'], $response->getData());
+    }
 }

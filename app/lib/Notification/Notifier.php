@@ -12,7 +12,11 @@ class Notifier implements INotifier {
     private IFactory $l10nFactory;
     private IURLGenerator $urlGenerator;
 
-    public function __construct(IFactory $l10nFactory, IURLGenerator $urlGenerator) {
+    public function __construct(
+        IFactory $l10nFactory,
+        IURLGenerator $urlGenerator,
+        private ?\OCP\IUserManager $userManager = null,
+    ) {
         $this->l10nFactory = $l10nFactory;
         $this->urlGenerator = $urlGenerator;
     }
@@ -89,6 +93,42 @@ class Notifier implements INotifier {
                 $courseId = (int)($params['course_id'] ?? 0);
                 $notification->setLink($courseId > 0
                     ? rtrim($appUrl, '/') . '/courses/' . $courseId . '/summary'
+                    : $appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
+                break;
+
+            case 'certificate_revoked':
+            case 'certification_cycle_opened':
+                // GitHub #84: the learner learns of the revoke, and of the new cycle the instructor
+                // opened afterwards; both open the course's completion tab.
+                $params = $notification->getSubjectParameters();
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $notification->setParsedSubject($notification->getSubject() === 'certificate_revoked'
+                    ? $l->t('Dein Zertifikat für den Kurs %s wurde widerrufen', [$courseTitle])
+                    : $l->t('Im Kurs %s ist ein neuer Zertifizierungszyklus offen', [$courseTitle]));
+                $courseId = (int)($params['course_id'] ?? 0);
+                $notification->setLink($courseId > 0
+                    ? rtrim($appUrl, '/') . '/courses/' . $courseId . '/summary'
+                    : $appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
+                break;
+
+            case 'exam_attempts_exhausted':
+                // GitHub #87: to the course's instructors; the learner's name is read now, so a
+                // renamed account shows its current name and a deleted one none.
+                $params = $notification->getSubjectParameters();
+                $learner = (string)($params['learner'] ?? '');
+                $user = ($learner !== '' && $this->userManager !== null) ? $this->userManager->get($learner) : null;
+                $name = $user !== null ? $user->getDisplayName() : $l->t('Eine lernende Person');
+                $notification->setParsedSubject(
+                    $l->t('%1$s hat alle Prüfungsversuche für „%2$s“ im Kurs %3$s aufgebraucht', [$name, (string)($params['pool_title'] ?? ''), (string)($params['course_title'] ?? '')])
+                );
+                $notification->setParsedMessage(
+                    $l->t('Du kannst in der Mitgliederliste einen neuen Zertifizierungszyklus öffnen. Die bisherigen Versuche bleiben als Nachweis erhalten.')
+                );
+                $courseId = (int)($params['course_id'] ?? 0);
+                $notification->setLink($courseId > 0
+                    ? rtrim($appUrl, '/') . '/courses/' . $courseId . '/members'
                     : $appUrl);
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;

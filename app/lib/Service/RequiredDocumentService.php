@@ -21,8 +21,9 @@ use OCP\IDBConnection;
  * (CertificateReportService), so the report can never show 5/5 while the exam stays locked.
  *
  * A confirmation counts when its newest row
- *   - is not older than validFrom(): the start of the current certification cycle (only in a
- *     course with reconfirm_per_cycle, see PassCriteriaService::confirmationCycleStart()) and
+ *   - is not older than validFrom(): the start of the current certification cycle (in a course
+ *     with reconfirm_per_cycle, see PassCriteriaService::confirmationCycleStart(); in any course
+ *     after a revoke, from the new cycle the instructor opened, GitHub #84) and
  *     the instructor's last "Ask everyone to confirm again" (course_documents.confirm_after);
  *   - names the version of the file that is in the material folder now. A rename keeps the
  *     version (DocumentService::fileVersion()). A confirmation taken over from before 5.14.0
@@ -144,23 +145,35 @@ class RequiredDocumentService {
         return $out;
     }
 
-    /** Start of the user's current cycle in a course that asks per cycle, else null. */
+    /** Start of the user's current cycle (see cycleStarts()), else null. */
     public function cycleStart(Course $course, string $userId): ?int {
         return $this->cycleStarts($course, [$userId])[$userId] ?? null;
     }
 
     /**
      * The cycle start of each user (batched: the coverage report reads all learners at once).
-     * Empty in a course that does not ask per cycle.
+     * In a course that does not ask per cycle only learners in a cycle opened after a revoke
+     * have one (GitHub #84).
      *
      * @param list<string> $userIds
      * @return array<string, int|null>
      */
     public function cycleStarts(Course $course, array $userIds): array {
-        if (!($course->getReconfirmPerCycle() ?? false) || $userIds === []) {
+        if ($userIds === []) {
             return [];
         }
-        return $this->passCriteriaService->confirmationCycleStarts($course, $userIds);
+        $starts = ($course->getReconfirmPerCycle() ?? false)
+            ? $this->passCriteriaService->confirmationCycleStarts($course, $userIds)
+            : [];
+        if (!($course->getCertEnabled() ?? false)) {
+            return $starts; // no certificate, no revoke
+        }
+        // GitHub #84: after a revoke the documents are confirmed again in every course, from the
+        // start of the cycle the instructor opened (PassCriteriaService::revokeCycleStarts()).
+        foreach ($this->passCriteriaService->revokeCycleStarts((int)$course->getId(), $userIds) as $uid => $since) {
+            $starts[$uid] = max($starts[$uid] ?? 0, $since);
+        }
+        return $starts;
     }
 
     /**

@@ -45,8 +45,23 @@
 						<span class="member-date">
 							{{ t('learning', 'Enrolled {date}', { date: formatDate(member.enrolled_at) }) }}
 						</span>
+						<!-- GitHub #84 / #87: why a learner is stuck, or that a new cycle is open -->
+						<span v-if="memberCycleStatus(cycleStates[member.id])"
+							class="member-cycle-badge"
+							:class="'member-cycle-badge--' + memberCycleStatus(cycleStates[member.id])"
+							data-test="member-cycle-status">
+							{{ cycleStatusLabel(memberCycleStatus(cycleStates[member.id])) }}
+						</span>
 					</div>
 					<div class="member-actions">
+						<NcButton v-if="cycleStates[member.id] && cycleStates[member.id].reason"
+							variant="secondary"
+							data-test="member-new-cycle"
+							:disabled="openingCycleFor === member.id"
+							:aria-label="t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen', { name: member.user_id })"
+							@click="openNewCycle(member)">
+							{{ t('learning', 'Neuen Zertifizierungszyklus öffnen') }}
+						</NcButton>
 						<NcButton variant="tertiary"
 							:disabled="savingMember === member.id"
 							@click="toggleMemberRole(member)">
@@ -671,7 +686,8 @@ import Klassenbuch from './Klassenbuch.vue'
 import CourseMemberPicker from './CourseMemberPicker.vue'
 import StudentDetail from './StudentDetail.vue'
 import Certificate from './Certificate.vue'
-import { courseDownloadUrl, certReportZipUrl } from '../services/CertificateService.js'
+import { courseDownloadUrl, certReportZipUrl, getCertificationCycles, openCertificationCycle } from '../services/CertificateService.js'
+import { memberCycleStatus } from '../utils/certificationCycle.js'
 import BuddyMatching from './BuddyMatching.vue'
 import { MIN_ANSWERS_PER_QUESTION } from '../utils/courseFigures.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
@@ -741,6 +757,9 @@ export default {
 			certPassedWithoutCertificate: [],
 			revokingVid: null,
 			viewingCertVid: null,
+			// GitHub #84 / #87: certification cycle per course member row id (instructor list)
+			cycleStates: {},
+			openingCycleFor: null,
 			// GitHub #42: the filter query the table was last loaded with — the ZIP packs that list.
 			certAppliedQuery: '',
 			certFromDate: '',
@@ -870,6 +889,17 @@ export default {
 				this.syncFromActiveTab(tab)
 			},
 		},
+		// GitHub #84 / #87: members added or removed, or the course loaded after the tab
+		courseMembers() {
+			if (this.currentSubTab === 'members' && this.isInstructor) {
+				this.fetchCycleStates()
+			}
+		},
+		'course.cert_enabled'() {
+			if (this.currentSubTab === 'members' && this.isInstructor) {
+				this.fetchCycleStates()
+			}
+		},
 	},
 
 	methods: {
@@ -882,6 +912,9 @@ export default {
 			}
 		},
 		lazyLoad(tab) {
+			if (tab === 'members' && this.isInstructor) {
+				this.fetchCycleStates()
+			}
 			if (tab === 'progress' && this.isInstructor && this.progressData.length === 0) {
 				this.fetchProgress()
 				this.fetchAtRisk()
@@ -1262,6 +1295,52 @@ export default {
 		downloadAllCertificates() {
 			window.location.href = certReportZipUrl(this.courseId, this.certAppliedQuery)
 		},
+		memberCycleStatus,
+		cycleStatusLabel(status) {
+			switch (status) {
+			case 'revoked': return t('learning', 'Zertifikat widerrufen')
+			case 'expired': return t('learning', 'Zertifikat abgelaufen, kein Zyklus offen')
+			case 'attempts': return t('learning', 'Prüfungsversuche aufgebraucht')
+			case 'cycle_open': return t('learning', 'Neuer Zyklus offen')
+			default: return ''
+			}
+		},
+		// GitHub #84 / #87: only in a certifying course; a failed read leaves the list as it is.
+		async fetchCycleStates() {
+			if (!this.course?.cert_enabled) {
+				this.cycleStates = {}
+				return
+			}
+			try {
+				const rows = await getCertificationCycles(this.courseId)
+				const byMember = {}
+				for (const row of rows) {
+					byMember[row.member_id] = row
+				}
+				this.cycleStates = byMember
+			} catch (err) {
+				console.error('Failed to load certification cycles:', err)
+			}
+		},
+		// GitHub #84 / #87: an explicit instructor action; nothing is deleted.
+		async openNewCycle(member) {
+			if (!window.confirm(t('learning', 'Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und nach einem Widerruf müssen die Pflichtdokumente erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.', { name: member.user_id }))) {
+				return
+			}
+			this.openingCycleFor = member.id
+			try {
+				await openCertificationCycle(this.courseId, member.id)
+				showSuccess(t('learning', 'Neuer Zertifizierungszyklus geöffnet. Die Person wurde benachrichtigt.'))
+			} catch (err) {
+				console.error('Failed to open a certification cycle:', err)
+				showError(err?.response?.data?.error === 'nothing_to_reset'
+					? t('learning', 'Für diese Person gibt es nichts zurückzusetzen.')
+					: t('learning', 'Der neue Zertifizierungszyklus konnte nicht geöffnet werden.'))
+			} finally {
+				this.openingCycleFor = null
+				await this.fetchCycleStates()
+			}
+		},
 		// Instructor revoke: owner-gated + idempotent server-side (VERIFY-05). The /cert-report DTO
 		// has no revoked flag, so we always allow the click and refetch — a revoked cert reflects
 		// its new status on the next report load. The backend is the single source of truth.
@@ -1273,10 +1352,12 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/certificates/{verificationId}/revoke', { verificationId: row.verification_id })
 				await axios.post(url)
-				showSuccess(t('learning', 'Zertifikat wurde widerrufen'))
+				showSuccess(t('learning', 'Zertifikat wurde widerrufen. Einen neuen Zertifizierungszyklus kannst du in der Mitgliederliste öffnen.'))
 				await this.fetchCertReport()
 				// A revoked certificate changes the learner's coverage status too.
 				await this.fetchCoverage()
+				// GitHub #84: and offers a new cycle in the member list.
+				await this.fetchCycleStates()
 			} catch (err) {
 				console.error('Failed to revoke certificate:', err)
 				showError(t('learning', 'Widerruf fehlgeschlagen'))
@@ -1438,6 +1519,7 @@ export default {
 
 .member-info {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	gap: 10px;
 	flex: 1;
@@ -1484,6 +1566,28 @@ export default {
 	font-size: 0.8em;
 	color: var(--color-text-maxcontrast);
 	white-space: nowrap;
+}
+
+.member-cycle-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 0.75em;
+	font-weight: 600;
+	white-space: nowrap;
+	border: 1px solid var(--color-border);
+	color: var(--color-main-text);
+	background: var(--color-background-dark);
+}
+
+.member-cycle-badge--revoked,
+.member-cycle-badge--expired,
+.member-cycle-badge--attempts {
+	border-color: var(--color-element-warning, var(--color-warning));
+}
+
+.member-cycle-badge--cycle_open {
+	border-color: var(--color-element-success, var(--color-success));
 }
 
 .member-actions {

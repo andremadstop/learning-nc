@@ -384,6 +384,16 @@ describe('CourseSummary — certification card (GitHub #35)', () => {
 		expect(revoked.issuanceFailed).toBe(false)
 	})
 
+	// GitHub #84: "revoked, contact your instructor" was a dead end; with a new cycle there is a way on.
+	it('knows when the instructor opened a new cycle after a revoke', () => {
+		const stuck = createLiveInstance({ passStatus: { applicable: true, passed: false, certificate: { verification_id: 'vid-r', revoked: true }, new_cycle: null } })
+		const reopened = createLiveInstance({ passStatus: { applicable: true, passed: false, certificate: { verification_id: 'vid-r', revoked: true }, new_cycle: { reason: 'revoked', since: 1800000000 } } })
+
+		expect(stuck.newCycleOpen).toBe(false)
+		expect(reopened.newCycleOpen).toBe(true)
+		expect(reopened.certificateRevoked).toBe(true)
+	})
+
 	it('flags a passed learner without certificate when issuance failed', () => {
 		const instance = createLiveInstance({ passStatus: { applicable: true, passed: true, certificate: null, certificate_issued: false, issuance_error: 'signing_unavailable' } })
 

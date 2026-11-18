@@ -203,3 +203,30 @@ export async function deleteLibraryLogo(id) {
 export function libraryLogoImageUrl(id) {
 	return generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}/image', { id })
 }
+
+/**
+ * GitHub #84 / #87: for every student member of the course, whether the instructor can open a new
+ * certification cycle and why. Instructors of the course only (404 otherwise).
+ * @param {number} courseId — the course
+ * @return {Promise<Array<{member_id: number, reason: string|null, new_cycle: {reason: string, since: number}|null, exhausted_pool_ids: number[]}>>}
+ */
+export async function getCertificationCycles(courseId) {
+	const response = await axios.get(
+		generateUrl('/apps/learning/api/courses/{courseId}/certification-cycles', { courseId }),
+	)
+	return Array.isArray(response.data?.members) ? response.data.members : []
+}
+
+/**
+ * GitHub #84 / #87: open a new certification cycle for one student member (the course member row
+ * id). 409 'nothing_to_reset' when the learner is not stuck.
+ * @param {number} courseId — the course
+ * @param {number} memberId — the course member row
+ * @return {Promise<{reason: string, since: number}>}
+ */
+export async function openCertificationCycle(courseId, memberId) {
+	const response = await axios.post(
+		generateUrl('/apps/learning/api/courses/{courseId}/members/{memberId}/new-cycle', { courseId, memberId }),
+	)
+	return response.data
+}

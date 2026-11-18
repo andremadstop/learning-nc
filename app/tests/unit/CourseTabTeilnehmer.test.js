@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
 import axios from '@nextcloud/axios'
+import { generateUrl } from '@nextcloud/router'
 
 vi.mock('@nextcloud/axios', () => ({
 	default: {
@@ -495,5 +496,77 @@ describe('CourseTabTeilnehmer coverage request order (#42)', () => {
 		expect(instance.$emit).not.toHaveBeenCalledWith('error', expect.anything())
 		expect(instance.coverageAppliedStatus).toBe('expired')
 		errSpy.mockRestore()
+	})
+})
+
+// GitHub #84 / #87: a revoked certificate was a permanent ban — the member list had no way back.
+describe('CourseTabTeilnehmer new certification cycle (GitHub #84 / #87)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	async function mountMembers(cycleRows, course = { is_instructor: true, cert_enabled: true, mode_config: { course_summary: false } }) {
+		axios.get.mockImplementation((url) => Promise.resolve(
+			url.includes('/certification-cycles') ? { data: { members: cycleRows } } : { data: [] },
+		))
+		const host = document.createElement('div')
+		document.body.appendChild(host)
+		const app = createApp({
+			render: () => h(CourseTabTeilnehmer, {
+				courseId: 5,
+				course,
+				userRole: 'instructor',
+				actsAsInstructor: true,
+				activeTab: 'members',
+				courseMembers: [
+					{ id: 31, user_id: 'anna', role: 'student', enrolled_at: 1 },
+					{ id: 32, user_id: 'ben', role: 'student', enrolled_at: 1 },
+				],
+			}),
+		})
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = (app, s, p, c) => (c === 1 ? s : p)
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		for (let i = 0; i < 4; i++) {
+			await nextTick()
+		}
+		return { host, app }
+	}
+
+	it('offers the action only for a stuck learner and opens the cycle for that member row', async () => {
+		const { host, app } = await mountMembers([
+			{ member_id: 31, reason: 'revoked', new_cycle: null, exhausted_pool_ids: [] },
+			{ member_id: 32, reason: null, new_cycle: { reason: 'revoked', since: 100 }, exhausted_pool_ids: [] },
+		])
+		try {
+			const buttons = host.querySelectorAll('[data-test="member-new-cycle"]')
+			expect(buttons).toHaveLength(1)
+			const badges = [...host.querySelectorAll('[data-test="member-cycle-status"]')].map((b) => b.textContent.trim())
+			expect(badges).toEqual(['Zertifikat widerrufen', 'Neuer Zyklus offen'])
+
+			window.confirm = vi.fn(() => true)
+			axios.post.mockResolvedValue({ data: { reason: 'revoked', since: 200 } })
+			buttons[0].click()
+			await nextTick()
+			expect(window.confirm).toHaveBeenCalledTimes(1)
+			expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/members/{memberId}/new-cycle')
+			expect(generateUrl).toHaveBeenCalledWith('/apps/learning/api/courses/{courseId}/members/{memberId}/new-cycle', { courseId: 5, memberId: 31 })
+		} finally {
+			delete window.confirm
+			app.unmount()
+			host.remove()
+		}
+	})
+
+	it('asks nothing in a course without certification', async () => {
+		const { host, app } = await mountMembers([], { is_instructor: true, cert_enabled: false, mode_config: { course_summary: false } })
+		try {
+			expect(axios.get.mock.calls.some(([url]) => url.includes('/certification-cycles'))).toBe(false)
+			expect(host.querySelector('[data-test="member-new-cycle"]')).toBeNull()
+		} finally {
+			app.unmount()
+			host.remove()
+		}
 	})
 })

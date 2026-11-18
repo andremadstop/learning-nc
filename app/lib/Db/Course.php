@@ -72,6 +72,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCertLayout(?string $certLayout)
  * @method bool|null getReconfirmPerCycle()
  * @method void setReconfirmPerCycle(bool $reconfirmPerCycle)
+ * @method int|null getExamAttemptLimit()
+ * @method void setExamAttemptLimit(?int $examAttemptLimit)
  */
 class Course extends Entity implements \JsonSerializable {
     protected $title;
@@ -111,6 +113,8 @@ class Course extends Entity implements \JsonSerializable {
     protected $certLayout;
     /** GitHub #75: required documents are confirmed again in every certification cycle. */
     protected $reconfirmPerCycle;
+    /** GitHub #87: counting exam attempts per pool in the current cycle; NULL = unlimited. */
+    protected $examAttemptLimit;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -136,6 +140,7 @@ class Course extends Entity implements \JsonSerializable {
         $this->addType('examMinutes', 'integer');
         $this->addType('certLayout', 'string');
         $this->addType('reconfirmPerCycle', 'boolean');
+        $this->addType('examAttemptLimit', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -178,6 +183,8 @@ class Course extends Entity implements \JsonSerializable {
             // GitHub #47: course default of the exam scope; NULL = each pool decides (or legacy).
             'exam_questions' => $this->examQuestions !== null ? (int)$this->examQuestions : null,
             'exam_minutes' => $this->examMinutes !== null ? (int)$this->examMinutes : null,
+            // GitHub #87: total counting exam attempts per pool in the current cycle; NULL = unlimited.
+            'exam_attempt_limit' => $this->examAttemptLimit !== null ? (int)$this->examAttemptLimit : null,
             // GitHub #43: the certificate layout without image bytes (has_stamp / has_signature only).
             'cert_layout' => \OCA\Learning\Service\CertLayout::forSettings($this->certLayout),
         ];
