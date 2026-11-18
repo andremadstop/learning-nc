@@ -278,6 +278,7 @@ class CertificateReportController extends Controller {
      * Returns a generic 403 on any denial — no membership-oracle detail in the body.
      */
     #[NoAdminRequired]
+    #[UserRateLimit(limit: 10, period: 60)]
     public function remindMember(int $courseId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);

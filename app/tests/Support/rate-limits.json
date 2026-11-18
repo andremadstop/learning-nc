@@ -123,6 +123,12 @@
    "period": 60,
    "group": "costly"
   },
+  "CertificateReportController::remindMember": {
+   "kind": "user",
+   "limit": 10,
+   "period": 60,
+   "group": "costly"
+  },
   "CertificationCycleController::open": {
    "kind": "user",
    "limit": 30,

@@ -165,7 +165,11 @@
    "NoAdminRequired": true
   },
   "CertificateReportController::remindMember": {
-   "NoAdminRequired": true
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    10,
+    60
+   ]
   },
   "CertificationCycleController::open": {
    "NoAdminRequired": true,

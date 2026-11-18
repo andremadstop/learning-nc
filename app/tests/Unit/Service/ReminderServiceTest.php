@@ -53,7 +53,8 @@ class ReminderServiceTest extends TestCase {
     /**
      * GitHub #85: a delivered compliance reminder is also an activity (email on by default),
      * with the course only — the notification's parameters name the lead, the activity must not.
-     * A reminder the bell already holds publishes nothing more.
+     * A second reminder while the first is still unread in the bell is not a second bell, but it
+     * is a second activity: the person who never opens the web interface still gets it by email.
      */
     public function testAComplianceReminderIsAlsoAnActivityWithoutTheLead(): void {
         $manager = $this->createMock(INotificationManager::class);
@@ -69,7 +70,7 @@ class ReminderServiceTest extends TestCase {
         $this->assertTrue($svc->sendComplianceReminder('alice', 42, ['lead_user_id' => 'lead-bob']));
         $this->assertFalse($svc->sendComplianceReminder('alice', 42, ['lead_user_id' => 'lead-bob']));
 
-        $this->assertSame([['compliance_reminder', 'alice', 42, null, []]], $activities);
+        $this->assertSame([['compliance_reminder', 'alice', 42, null, []], ['compliance_reminder', 'alice', 42, null, []]], $activities);
     }
 
     /**

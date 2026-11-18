@@ -135,11 +135,12 @@ class ReminderService {
      */
     public function sendComplianceReminder(string $targetUserId, int $courseId, array $params): bool {
         $created = $this->sendNotification($targetUserId, 'compliance_reminder', 'compliance', (string)$courseId, $params);
-        if ($created) {
-            // GitHub #85: also as an activity (email on by default). Course id and title only —
-            // never $params, which name the lead who sent it.
-            $this->activityPublisher->toUser(ActivityPublisher::SUBJECT_COMPLIANCE_REMINDER, $targetUserId, $courseId);
-        }
+        // GitHub #85: also as an activity (email on by default), for EVERY reminder the lead sends —
+        // also while the first one is still unread in the bell, which is exactly the case of
+        // someone who never opens the web interface. The activity app batches the emails into its
+        // digest; the route is rate-limited. Course id and title only — never $params, which name
+        // the lead who sent it.
+        $this->activityPublisher->toUser(ActivityPublisher::SUBJECT_COMPLIANCE_REMINDER, $targetUserId, $courseId);
         return $created;
     }
 
