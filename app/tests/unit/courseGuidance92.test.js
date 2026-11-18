@@ -241,6 +241,18 @@ describe('CourseDetail guides the learner on (GitHub #92)', () => {
 		expect(note.textContent).not.toContain('&amp;')
 	})
 
+	// Pre-existing, the same class: the note on locked optional pools escaped the pool names too.
+	it('the locked-pools note names the required pools as written', async () => {
+		api.course = course({ pools: [{ pool_id: 3, pool_name: "Netzwerk & O'Reilly", question_count: 10, required_enforced: true, required_completed: false }] })
+		await mountDetail()
+		nextStep().click()
+		await flush()
+
+		const note = host.querySelector('.required-lock-note')
+		expect(note.textContent).toContain(": Netzwerk & O'Reilly")
+		expect(note.textContent).not.toContain('&amp;')
+	})
+
 	it('the exam tab leads to the certificate once there is one', async () => {
 		api.passStatus = { applicable: true, passed: true, threshold: 80, requirement: 'any_exam', pools: [], certificate_issued: true, certificate: { verification_id: 'v', expired: false, revoked: false }, attempt_policy: { limit_per_day: 5, cooldown_minutes: 10, total_limit: null, used_by_pool: {} } }
 		await mountDetail()

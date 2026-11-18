@@ -653,7 +653,7 @@
 		<NcModal v-if="showRemoveMemberModal" @close="showRemoveMemberModal = false" @closing="showRemoveMemberModal = false" size="small">
 			<div class="modal-content">
 				<h3>{{ t('learning', 'Mitglied entfernen') }}</h3>
-				<p>{{ t('learning', '"{name}" aus diesem Kurs entfernen?', { name: removingMember ? removingMember.user_id : '' }) }}</p>
+				<p>{{ t('learning', '"{name}" aus diesem Kurs entfernen?', { name: removingMember ? memberName(removingMember) : '' }, undefined, RAW) }}</p>
 				<div class="modal-actions">
 					<NcButton variant="tertiary"
 						:disabled="savingMember !== null"

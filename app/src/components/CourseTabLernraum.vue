@@ -206,7 +206,7 @@
 				</div>
 
 				<NcNoteCard v-if="currentRequiredBlockers.length > 0" type="warning" class="required-lock-note">
-					{{ t('learning', 'Optional pools are locked until these required pools are completed once: {names}', { names: currentRequiredBlockers.join(', ') }) }}
+					{{ t('learning', 'Optional pools are locked until these required pools are completed once: {names}', { names: currentRequiredBlockers.join(', ') }, undefined, RAW) }}
 				</NcNoteCard>
 
 				<!-- GitHub #39: its own condition — as v-else it hung on the blocker warning above and showed under every filled list. -->

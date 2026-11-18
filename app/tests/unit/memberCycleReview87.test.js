@@ -141,6 +141,15 @@ describe('member row', () => {
 			.toBe("Neuen Zertifizierungszyklus für Seán O'Brien öffnen")
 	})
 
+	// Pre-existing, the same class: the remove dialog escaped the uid and did not use the name.
+	it('the remove dialog names the member as written, by display name', async () => {
+		await mountMembers([{ id: 31, user_id: "o'brien", display_name: "Seán O'Brien", role: 'student', enrolled_at: 1 }], [])
+		host.querySelector('button[aria-label="Remove member"]').click()
+		await nextTick()
+		expect(host.textContent).toContain('"Seán O\'Brien" aus diesem Kurs entfernen?')
+		expect(host.textContent).not.toContain('&#39;')
+	})
+
 	it('falls back to the uid without a display name', async () => {
 		await mountMembers([{ id: 33, user_id: 'carl', role: 'student', enrolled_at: 1 }], [])
 		expect(host.querySelector('[data-test="member-name"]').textContent.trim()).toBe('carl')
