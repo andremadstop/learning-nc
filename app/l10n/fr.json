@@ -4051,6 +4051,16 @@
         ],
         "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Trop de rappels en peu de temps. Veuillez patienter une minute, puis réessayez.",
         "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen.": "Les cases de la colonne « Obligatoire » ne bloquent pas l’examen pour le moment : l’option « Examen uniquement après avoir terminé tous les contenus obligatoires » est désactivée. Les apprenants confirment les documents, mais peuvent aussi passer l’examen sans les confirmer.",
-        "Zum Schalter": "Aller à l’option"
+        "Zum Schalter": "Aller à l’option",
+        "Aus der Liste entfernen": "Retirer de la liste",
+        "„{name}“ aus der Liste entfernen": "Retirer « {name} » de la liste",
+        "Diese Datei kann gerade nicht geöffnet werden. Bitte wende dich an deine Lehrkraft.": "Ce fichier ne peut pas être ouvert pour le moment. Adresse-toi à ton enseignant.",
+        "Die Datei ist nicht mehr im Materialordner. „Ordner scannen“ nimmt den Eintrag aus der Liste.": "Le fichier ne se trouve plus dans le dossier des supports. « Analyser le dossier » retire l’entrée de la liste.",
+        "Die Datei gehört zu einem früher verknüpften Ordner. „Ordner scannen“ nimmt den Eintrag aus der Liste.": "Le fichier appartient à un dossier lié auparavant. « Analyser le dossier » retire l’entrée de la liste.",
+        "Der Materialordner ist nicht erreichbar. Lernende können die Datei nicht öffnen.": "Le dossier des supports n’est pas accessible. Les apprenants ne peuvent pas ouvrir le fichier.",
+        "Die Datei ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar. Lernende können sie deshalb nicht öffnen.": "Le fichier est partagé en lecture seule sans téléchargement, ou il est illisible. Les apprenants ne peuvent donc pas l’ouvrir.",
+        "„{name}“ ist Pflicht. Ohne den Eintrag wartet die Prüfung nicht mehr auf die Datei. Die Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei zurück in den Ordner kommt. Fortfahren?": "« {name} » est obligatoire. Sans cette entrée, l’examen n’attend plus ce fichier. Les confirmations sont conservées et comptent de nouveau si le fichier revient dans le dossier. Continuer ?",
+        "Die Datei liegt noch im Materialordner. Entferne sie dort, dann verschwindet sie beim nächsten Scan aus der Liste.": "Le fichier se trouve encore dans le dossier des supports. Supprime-le là-bas : il disparaîtra de la liste lors de la prochaine analyse.",
+        "Der Eintrag konnte nicht entfernt werden.": "L’entrée n’a pas pu être retirée."
     }
 }

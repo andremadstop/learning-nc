@@ -152,6 +152,45 @@ class DocumentController extends Controller {
     }
 
     /**
+     * GitHub #90: the instructor's × on an entry of the learning materials whose file is not in
+     * the linked material folder (deleted, from an earlier folder, or the folder is gone). The
+     * entry leaves the list for everyone; the row and its read confirmations stay as evidence and
+     * count again when a scan finds the same file in the folder. An entry whose file is still in
+     * the folder is refused (409): the next scan would only bring it back.
+     *
+     * Any instructor of THIS course (owner or co-instructor; the files are not touched), not in
+     * the student view of the frontend. CSRF-protected.
+     *
+     * @param int $courseId the course
+     * @param int $documentId the entry of its learning materials
+     * @return DataResponse<Http::STATUS_OK, list<array<string, mixed>>, array{}>|DataResponse<Http::STATUS_UNAUTHORIZED|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_CONFLICT|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
+     */
+    #[NoAdminRequired]
+    public function remove(int $courseId, int $documentId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $course = $this->courseService->assertInstructorOfCourse($courseId, $this->userId);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        }
+        try {
+            $this->documentService->removeEntry($course, $documentId, $this->userId);
+            return new DataResponse($this->documentService->listDocuments($courseId, true));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Document not found'], Http::STATUS_NOT_FOUND);
+        } catch (\DomainException $e) {
+            return new DataResponse(['error' => 'The file is still in the material folder'], Http::STATUS_CONFLICT);
+        } catch (\Throwable $e) {
+            $this->logger->error('DocumentController::remove failed: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Open a material file (GitHub #35): learners could see the file names but not open them.
      *
      * Security, in this order: logged in; member or instructor of THIS course (403 otherwise);

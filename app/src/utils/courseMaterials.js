@@ -19,3 +19,20 @@ export function parseDocumentsResponse(data) {
 		pdfTextExtraction: typeof data?.pdf_text_extraction === 'boolean' ? data.pdf_text_extraction : null,
 	}
 }
+
+/**
+ * GitHub #90: reasons (DocumentService::STALE_REASONS) meaning the file is not in the linked
+ * material folder any more. "Scan folder" and the instructor's × take such an entry out of the
+ * list; learners never see one.
+ */
+export const STALE_REASONS = ['outside_folder', 'missing', 'folder_missing']
+
+/**
+ * Whether an entry's file is no longer in the material folder.
+ *
+ * @param {object} doc - a row of GET /documents
+ * @return {boolean}
+ */
+export function isStaleDocument(doc) {
+	return STALE_REASONS.includes(doc?.unavailable_reason)
+}

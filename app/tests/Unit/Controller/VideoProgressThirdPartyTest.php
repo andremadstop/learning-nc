@@ -53,7 +53,7 @@ class VideoProgressThirdPartyTest extends TestCase {
     }
 
     /** @return array<int, array<string, mixed>> */
-    private function courseStatusRows(): array {
+    private function courseStatusRows(?\OCA\Learning\Service\RequiredDocumentService $required = null): array {
         $videoMapper = $this->createMock(CourseVideoMapper::class);
         $videoMapper->method('findByCourse')->with(7)->willReturn([
             $this->video(1, 'nc-files', 'Videos/secret-folder/intro.mp4'),
@@ -96,6 +96,7 @@ class VideoProgressThirdPartyTest extends TestCase {
             $courseService,
             'student',
             $documentMapper,
+            $required,
         );
         $data = $controller->courseStatus(7)->getData();
         $rows = [];
@@ -103,6 +104,29 @@ class VideoProgressThirdPartyTest extends TestCase {
             $rows[$row['id']] = $row;
         }
         return $rows;
+    }
+
+    /**
+     * GitHub #90: the file at the document's path was deleted (or may not be handed out). The
+     * learner got a link anyway, and it ended on a "Not found" page; now there is no link and the
+     * page says the document cannot be opened right now.
+     */
+    public function testARequiredDocumentWhoseFileCannotBeServedHasNoLink(): void {
+        $required = $this->createMock(\OCA\Learning\Service\RequiredDocumentService::class);
+        $required->method('statesForUser')->willReturn([]);
+        $required->method('fileInfo')->willReturn(null);
+
+        $rows = $this->courseStatusRows($required);
+
+        $this->assertNull($rows[5]['document_id']);
+    }
+
+    public function testARequiredDocumentWhoseFileIsThereKeepsItsLink(): void {
+        $required = $this->createMock(\OCA\Learning\Service\RequiredDocumentService::class);
+        $required->method('statesForUser')->willReturn([]);
+        $required->method('fileInfo')->willReturn(['version' => str_repeat('a', 64), 'mtime' => 1]);
+
+        $this->assertSame(31, $this->courseStatusRows($required)[5]['document_id']);
     }
 
     public function testTheLearnerGetsTheProviderVideoIdOfAThirdPartyVideo(): void {

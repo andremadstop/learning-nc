@@ -540,6 +540,8 @@ class CourseVideoController extends Controller {
         }
         if ($doc === null
             || (int)$doc->getCourseId() !== (int)$course->getId()
+            // GitHub #90: an entry out of the list cannot be ticked (its row would stay dormant)
+            || $doc->getRemovedAt() !== null
             || !DocumentService::isInMaterialFolder($doc, $course->getMaterialFolder())) {
             return new DataResponse(
                 ['error' => 'The document must be a file of this course\'s material folder'],

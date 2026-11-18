@@ -645,6 +645,9 @@
   "DocumentController::index": {
    "NoAdminRequired": true
   },
+  "DocumentController::remove": {
+   "NoAdminRequired": true
+  },
   "DocumentController::scan": {
    "NoAdminRequired": true
   },

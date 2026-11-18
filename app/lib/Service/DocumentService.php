@@ -6,6 +6,8 @@ use OCA\Learning\Db\CourseDocument;
 use OCA\Learning\Db\CourseDocumentMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseVideo;
+use OCA\Learning\Db\CourseVideoMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -13,6 +15,7 @@ use OCP\Files\IRootFolder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
 use OCP\Files\Storage\ISharedStorage;
+use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 class DocumentService {
@@ -28,11 +31,26 @@ class DocumentService {
         'markdown' => 'markdown',
     ];
 
+    /**
+     * GitHub #90: why an entry of the learning materials cannot be opened (projectDocuments(),
+     * "unavailable_reason"). The first three mean the file is not in the linked material folder:
+     * "Scan folder" and the instructor's × take such an entry out of the list.
+     */
+    public const REASON_OUTSIDE_FOLDER = 'outside_folder';
+    public const REASON_MISSING = 'missing';
+    public const REASON_FOLDER_MISSING = 'folder_missing';
+    /** The file is in the folder, but its owner may not hand it out (view-only share, unreadable). */
+    public const REASON_NO_DOWNLOAD = 'no_download';
+    public const STALE_REASONS = [self::REASON_OUTSIDE_FOLDER, self::REASON_MISSING, self::REASON_FOLDER_MISSING];
+
     public function __construct(
         CourseDocumentMapper $documentMapper,
         CourseMapper $courseMapper,
         IRootFolder $rootFolder,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        private ?CourseVideoMapper $videoMapper = null,
+        private ?AuditService $auditService = null,
+        private ?IDBConnection $db = null,
     ) {
         $this->documentMapper = $documentMapper;
         $this->courseMapper = $courseMapper;
@@ -229,7 +247,213 @@ class DocumentService {
             }
         }
 
+        // GitHub #90: the list shows what is in the folder now. An entry whose file is gone or no
+        // longer in this folder (also after linking another folder) leaves the list; one whose
+        // file is back returns, with its confirmations. Rows are only marked, never deleted.
+        $listing = [];
+        foreach ($nodes as $node) {
+            if ($node->getType() === Node::TYPE_FILE) {
+                $listing[$node->getName()] = $node;
+            }
+        }
+        $lookup = static fn(string $name): ?Node => $listing[$name] ?? null;
+        $rows = $this->documentMapper->findByCourseId($courseId);
+        $owners = self::fileIdOwners($rows);
+        $remove = [];
+        $restore = [];
+        foreach ($rows as $row) {
+            $stale = in_array(self::reasonFor($row, $materialFolder, $lookup, $owners, false), self::STALE_REASONS, true);
+            if ($stale && $row->getRemovedAt() === null) {
+                $remove[] = $row;
+            } elseif (!$stale && $row->getRemovedAt() !== null) {
+                $restore[] = $row;
+            }
+        }
+        $this->setListed($course, $remove, $restore, $userId);
+
         return $this->documentMapper->findByCourseId($courseId);
+    }
+
+    /**
+     * GitHub #90: the instructor's × on an entry whose file is not in the material folder (gone,
+     * from an earlier folder, or the folder is gone). An entry whose file is still there would
+     * come back with the next scan, so it is refused; such a file leaves the list when it leaves
+     * the folder. The caller checked that the user teaches the course.
+     *
+     * @throws DoesNotExistException the document is not one of this course's listed entries
+     * @throws \DomainException the file is still in the material folder
+     */
+    public function removeEntry(Course $course, int $documentId, string $userId): void {
+        $doc = $this->documentMapper->findById($documentId);
+        if ((int)$doc->getCourseId() !== (int)$course->getId() || $doc->getRemovedAt() !== null) {
+            throw new DoesNotExistException('Document not found');
+        }
+        $reason = $this->availability($course, [$doc], false)[(int)$doc->getId()];
+        if (!in_array($reason, self::STALE_REASONS, true)) {
+            throw new \DomainException('The file is still in the material folder');
+        }
+        $this->setListed($course, [$doc], [], $userId);
+    }
+
+    /**
+     * GitHub #90: take entries out of the list and bring others back, in one transaction. The
+     * required-content rows of these documents stay (CourseVideoMapper::findByCourse() leaves them
+     * out while their document is out of the list), so whether the exam waits for them changes:
+     * that is recorded as course.content.required_changed, with the instructor who scanned or
+     * clicked × as actor and the reason. The confirmations are not touched.
+     *
+     * @param CourseDocument[] $remove
+     * @param CourseDocument[] $restore
+     */
+    private function setListed(Course $course, array $remove, array $restore, string $userId): void {
+        if ($remove === [] && $restore === []) {
+            return;
+        }
+        $courseId = (int)$course->getId();
+        $required = $this->videoMapper !== null ? $this->videoMapper->findDocumentRowsByCourse($courseId, true) : [];
+        $now = time();
+        $this->db?->beginTransaction();
+        try {
+            foreach ($remove as $doc) {
+                $doc->setRemovedAt($now);
+                $doc->setUpdatedAt($now);
+                $this->documentMapper->update($doc);
+            }
+            foreach ($restore as $doc) {
+                $doc->setRemovedAt(null);
+                $doc->setUpdatedAt($now);
+                $this->documentMapper->update($doc);
+            }
+            $this->logRequiredChange($courseId, $remove, $required, false, 'document_removed', $userId);
+            $this->logRequiredChange($courseId, $restore, $required, true, 'document_back', $userId);
+            $this->db?->commit();
+        } catch (\Throwable $e) {
+            if ($this->db !== null && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+        $this->logger->info('DocumentService: {removed} material entries left the list of course {courseId}, {restored} came back', [
+            'removed' => count($remove),
+            'restored' => count($restore),
+            'courseId' => $courseId,
+            'app' => 'learning',
+        ]);
+    }
+
+    /**
+     * @param CourseDocument[] $documents
+     * @param array<int, CourseVideo> $required document id => required-content row (dormant ones included)
+     */
+    private function logRequiredChange(int $courseId, array $documents, array $required, bool $nowRequired, string $reason, string $userId): void {
+        $rows = [];
+        foreach ($documents as $doc) {
+            if (isset($required[(int)$doc->getId()])) {
+                $rows[(int)$doc->getId()] = $required[(int)$doc->getId()];
+            }
+        }
+        if ($rows === [] || $this->auditService === null) {
+            return;
+        }
+        $this->auditService->logComplianceEvent(ComplianceEventTypes::CONTENT_REQUIRED_CHANGED, $userId, [
+            'course_id' => $courseId,
+            'required' => $nowRequired,
+            'reason' => $reason,
+            'document_ids' => array_keys($rows),
+            'content_ids' => array_values(array_map(static fn(CourseVideo $v): int => (int)$v->getId(), $rows)),
+        ]);
+    }
+
+    /**
+     * GitHub #75 rule of resolveMaterialFile(): a file belongs to the first row (by id) that carries
+     * its file id, in whatever state that row is.
+     *
+     * @param CourseDocument[] $rows
+     * @return array<int, int> file id => document id
+     */
+    private static function fileIdOwners(array $rows): array {
+        $owners = [];
+        foreach ($rows as $row) {
+            $fileId = $row->getFileId();
+            if ($fileId === null) {
+                continue;
+            }
+            if (!isset($owners[(int)$fileId]) || (int)$row->getId() < $owners[(int)$fileId]) {
+                $owners[(int)$fileId] = (int)$row->getId();
+            }
+        }
+        return $owners;
+    }
+
+    /**
+     * GitHub #90: why a row cannot be opened now, null when document#download would serve it. The
+     * same decisions as resolveMaterialFile(), against one listing of the folder.
+     *
+     * @param (callable(string): ?Node)|null $lookup a child of the material folder by file name
+     *                                             (null = none), null = the folder is not reachable
+     * @param array<int, int> $owners fileIdOwners()
+     * @param bool $checkDownload also ask whether the owner may hand the file out (needs a File)
+     */
+    private static function reasonFor(CourseDocument $doc, ?string $folderPath, ?callable $lookup, array $owners, bool $checkDownload): ?string {
+        if (!self::isInMaterialFolder($doc, $folderPath)) {
+            return self::REASON_OUTSIDE_FOLDER;
+        }
+        if ($lookup === null) {
+            return self::REASON_FOLDER_MISSING;
+        }
+        $node = $lookup((string)$doc->getFileName());
+        if ($node === null || !($node instanceof File || $node->getType() === Node::TYPE_FILE)) {
+            return self::REASON_MISSING;
+        }
+        $nodeId = self::nodeFileId($node);
+        if ($nodeId !== null && $doc->getFileId() !== null && $nodeId !== (int)$doc->getFileId()
+            && isset($owners[$nodeId]) && $owners[$nodeId] !== (int)$doc->getId()) {
+            // the row's own file is gone, another row's file carries its name now
+            return self::REASON_MISSING;
+        }
+        if ($checkDownload && (!($node instanceof File) || !self::mayBeDownloaded($node))) {
+            return self::REASON_NO_DOWNLOAD;
+        }
+        return null;
+    }
+
+    /**
+     * GitHub #90: for each row, why it cannot be opened now (null = it can). Resolves the course
+     * owner's material folder once and each file by its plain name in it, as resolveMaterialFile()
+     * does (a cached lookup per file, no directory listing).
+     *
+     * @param CourseDocument[] $documents
+     * @return array<int, string|null> document id => reason
+     */
+    public function availability(Course $course, array $documents, bool $checkDownload = true): array {
+        if ($documents === []) {
+            return [];
+        }
+        $folderPath = $course->getMaterialFolder();
+        $lookup = null;
+        if ($folderPath !== null && $folderPath !== '' && self::normalizePath($folderPath) !== '/') {
+            try {
+                $folder = $this->rootFolder->getUserFolder((string)$course->getInstructorId())->get($folderPath);
+                if ($folder instanceof Folder) {
+                    $lookup = static function (string $name) use ($folder): ?Node {
+                        try {
+                            return $folder->get($name);
+                        } catch (\Throwable $e) {
+                            return null;
+                        }
+                    };
+                }
+            } catch (\Throwable $e) {
+                // gone, or the course owner no longer exists: nothing can be served from it
+                $lookup = null;
+            }
+        }
+        $owners = self::fileIdOwners($this->documentMapper->findByCourseId((int)$course->getId()));
+        $reasons = [];
+        foreach ($documents as $doc) {
+            $reasons[(int)$doc->getId()] = self::reasonFor($doc, $folderPath, $lookup, $owners, $checkDownload);
+        }
+        return $reasons;
     }
 
     /** The Nextcloud file id of a node, or null when the storage has none. */
@@ -346,7 +570,7 @@ class DocumentService {
         // (GitHub #35). The single-document extract still says why it cannot work.
         $pdfAvailable = $this->isPdfTextExtractionAvailable();
         foreach ($documents as $doc) {
-            if ($doc->getStatus() !== 'uploaded') {
+            if ($doc->getStatus() !== 'uploaded' || $doc->getRemovedAt() !== null) {
                 continue;
             }
             if ($doc->getFileType() === 'pdf' && !$pdfAvailable) {
@@ -378,24 +602,34 @@ class DocumentService {
      * (status, error, path) stay with the instructors of the course. The folder name itself is
      * not hidden by this: course members still receive material_folder with the course.
      *
-     * "downloadable" says whether the download endpoint would serve the row: a row whose path no
-     * longer lies in the current material folder (the folder was changed, scan keeps old rows)
-     * is shown, but not as a link that can only fail.
+     * "downloadable" says whether the download endpoint would serve the row, and
+     * "unavailable_reason" why not (GitHub #90, availability()): the file is not in the current
+     * material folder (gone, from an earlier folder, the folder is gone) or its owner may not hand
+     * it out. Instructors see such a row until a scan or their × takes it out of the list;
+     * learners only see the ones whose file is still in the folder.
      *
      * @param CourseDocument[] $documents
      * @return list<array<string, mixed>>
      */
     public function projectDocuments(int $courseId, array $documents, bool $forInstructor): array {
-        $folder = null;
+        // GitHub #90: entries a scan or the instructor took out of the list are in no list.
+        $documents = array_values(array_filter($documents, static fn(CourseDocument $doc): bool => $doc->getRemovedAt() === null));
         try {
-            $folder = $this->courseMapper->findById($courseId)->getMaterialFolder();
+            $reasons = $this->availability($this->courseMapper->findById($courseId), $documents);
         } catch (\Throwable $e) {
             // A course that cannot be read serves no file either; the list itself still shows.
-            $folder = null;
+            $reasons = array_fill_keys(array_map(static fn(CourseDocument $doc): int => (int)$doc->getId(), $documents), self::REASON_FOLDER_MISSING);
         }
 
         $rows = [];
         foreach ($documents as $doc) {
+            // not `??`: null is the answer "it can be opened"
+            $reason = array_key_exists((int)$doc->getId(), $reasons) ? $reasons[(int)$doc->getId()] : self::REASON_MISSING;
+            // GitHub #90: learners see what is in the folder; a file that is gone or from an
+            // earlier folder is nothing they can act on (the instructor sees it until a scan).
+            if (!$forInstructor && in_array($reason, self::STALE_REASONS, true)) {
+                continue;
+            }
             $row = [
                 'id' => $doc->getId(),
                 'file_name' => $doc->getFileName(),
@@ -403,7 +637,10 @@ class DocumentService {
                 'file_size' => $doc->getFileSize(),
                 'created_at' => $doc->getCreatedAt(),
                 'updated_at' => $doc->getUpdatedAt(),
-                'downloadable' => self::isInMaterialFolder($doc, $folder),
+                // whether document#download serves it now (it checks the same, GitHub #90: also
+                // that the file exists and may be handed out), and if not, why
+                'downloadable' => $reason === null,
+                'unavailable_reason' => $reason,
             ];
             if ($forInstructor) {
                 $row['course_id'] = $doc->getCourseId();
@@ -439,6 +676,10 @@ class DocumentService {
         // IDOR: the course in the URL is the one the membership was checked for.
         if ($doc->getCourseId() !== $course->getId()) {
             throw new NotFoundException('Document not found');
+        }
+        // GitHub #90: out of the list until a scan finds its file again
+        if ($doc->getRemovedAt() !== null) {
+            throw new NotFoundException('Document is not listed');
         }
 
         $folderPath = $course->getMaterialFolder();

@@ -30,6 +30,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setFileId(?int $fileId)
  * @method int|null getConfirmAfter()
  * @method void setConfirmAfter(?int $confirmAfter)
+ * @method int|null getRemovedAt()
+ * @method void setRemovedAt(?int $removedAt)
  *
  * Deliberately NOT \JsonSerializable (GitHub #65): the full row (extracted_text, file_path,
  * error_message) goes into no response; DocumentService::projectDocuments() builds the per-role
@@ -53,6 +55,11 @@ class CourseDocument extends Entity {
      * no longer count. On the document, so making it optional and required again keeps it (GitHub #75).
      */
     protected $confirmAfter;
+    /**
+     * GitHub #90: when a scan or the instructor took the entry out of the list (file gone or no
+     * longer in the material folder). The row stays for the confirmations; NULL = listed.
+     */
+    protected $removedAt;
     protected $createdAt;
     protected $updatedAt;
 
@@ -64,6 +71,7 @@ class CourseDocument extends Entity {
         $this->addType('updatedAt', 'integer');
         $this->addType('fileId', 'integer');
         $this->addType('confirmAfter', 'integer');
+        $this->addType('removedAt', 'integer');
     }
 
     public function jsonSerialize(): array {

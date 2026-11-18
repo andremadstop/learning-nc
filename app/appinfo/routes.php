@@ -378,6 +378,8 @@ return [
         ['name' => 'document#index',       'url' => '/api/courses/{courseId}/documents',                     'verb' => 'GET'],
         ['name' => 'document#extract',     'url' => '/api/courses/{courseId}/documents/{documentId}/extract', 'verb' => 'POST'],
         ['name' => 'document#extractAll',  'url' => '/api/courses/{courseId}/documents/extract-all',         'verb' => 'POST'],
+        // GitHub #90: the instructor's × on an entry whose file left the material folder
+        ['name' => 'document#remove',      'url' => '/api/courses/{courseId}/documents/{documentId}',        'verb' => 'DELETE'],
         // GitHub #35: course members open a material file (only from the course's material folder)
         ['name' => 'document#download',    'url' => '/api/courses/{courseId}/documents/{documentId}/download', 'verb' => 'GET'],
 

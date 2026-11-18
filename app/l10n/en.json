@@ -4051,6 +4051,16 @@
         ],
         "Zu viele Erinnerungen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Too many reminders in a short time. Please wait a minute and try again.",
         "Die Markierungen in der Spalte „Pflicht“ sperren die Prüfung gerade nicht: Der Schalter „Prüfung erst nach Abschluss aller Pflichtinhalte“ ist aus. Lernende bestätigen die Dokumente, können die Prüfung aber auch ohne Bestätigung ablegen.": "The marks in the \"Required\" column do not lock the exam right now: the switch \"Exam only after all required content is completed\" is off. Learners confirm the documents, but can also take the exam without confirming them.",
-        "Zum Schalter": "Go to the switch"
+        "Zum Schalter": "Go to the switch",
+        "Aus der Liste entfernen": "Remove from the list",
+        "„{name}“ aus der Liste entfernen": "Remove \"{name}\" from the list",
+        "Diese Datei kann gerade nicht geöffnet werden. Bitte wende dich an deine Lehrkraft.": "This file cannot be opened right now. Please contact your instructor.",
+        "Die Datei ist nicht mehr im Materialordner. „Ordner scannen“ nimmt den Eintrag aus der Liste.": "The file is no longer in the material folder. \"Scan folder\" removes the entry from the list.",
+        "Die Datei gehört zu einem früher verknüpften Ordner. „Ordner scannen“ nimmt den Eintrag aus der Liste.": "The file belongs to a previously linked folder. \"Scan folder\" removes the entry from the list.",
+        "Der Materialordner ist nicht erreichbar. Lernende können die Datei nicht öffnen.": "The material folder cannot be reached. Learners cannot open the file.",
+        "Die Datei ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar. Lernende können sie deshalb nicht öffnen.": "The file is shared view-only without download, or cannot be read. Learners therefore cannot open it.",
+        "„{name}“ ist Pflicht. Ohne den Eintrag wartet die Prüfung nicht mehr auf die Datei. Die Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei zurück in den Ordner kommt. Fortfahren?": "\"{name}\" is required. Without the entry, the exam no longer waits for this file. The confirmations are kept and count again if the file comes back to the folder. Continue?",
+        "Die Datei liegt noch im Materialordner. Entferne sie dort, dann verschwindet sie beim nächsten Scan aus der Liste.": "The file is still in the material folder. Remove it there, and it will disappear from the list with the next scan.",
+        "Der Eintrag konnte nicht entfernt werden.": "The entry could not be removed."
     }
 }

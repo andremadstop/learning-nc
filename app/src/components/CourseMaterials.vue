@@ -182,10 +182,26 @@
 								rel="noopener noreferrer">{{ doc.file_name }}</a>
 							<span
 								v-else
-								class="material-file-unavailable"
-								:title="t('learning', 'Diese Datei liegt nicht mehr im Materialordner.')">{{ doc.file_name }}</span>
+								class="material-file-unavailable">{{ doc.file_name }}</span>
 							<!-- GitHub #75: optional files in a course with required content -->
 							<span v-if="optionalHint" class="material-optional-hint">{{ t('learning', 'Optional') }}</span>
+							<!-- GitHub #90: an entry whose file left the folder can be taken out of the list -->
+							<button
+								v-if="isInstructor && isStale(doc)"
+								type="button"
+								class="material-remove-btn"
+								:data-test="'remove-doc-' + doc.id"
+								:disabled="removing[doc.id] === true"
+								:aria-label="t('learning', '„{name}“ aus der Liste entfernen', { name: doc.file_name }, undefined, RAW)"
+								:title="t('learning', 'Aus der Liste entfernen')"
+								@click="removeEntry(doc)">
+								<span aria-hidden="true">×</span>
+							</button>
+							<!-- GitHub #90: why it cannot be opened, as text (not only a tooltip) -->
+							<span
+								v-if="!doc.downloadable"
+								class="material-unavailable-reason"
+								:data-test="'unavailable-doc-' + doc.id">{{ unavailableText(doc) }}</span>
 						</td>
 						<td>
 							<span class="type-badge" :class="'type-' + doc.file_type">
@@ -226,7 +242,7 @@ import { generateUrl } from '@nextcloud/router'
 import { translate as t, translatePlural as n } from '@nextcloud/l10n'
 import { formatLocalDate } from '../utils/relativeTime.js'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
-import { parseDocumentsResponse } from '../utils/courseMaterials.js'
+import { isStaleDocument, parseDocumentsResponse } from '../utils/courseMaterials.js'
 import { registryRowForDocument, requiredDocumentIds, requiredHeaderState } from '../utils/requiredContent.js'
 
 /** File names in texts: shown as text (interpolation, attributes, window.confirm), never as HTML. */
@@ -294,6 +310,8 @@ export default {
 			registry: [],
 			registryLoaded: false,
 			requiredBusy: false,
+			// GitHub #90: entries being taken out of the list
+			removing: {},
 		}
 	},
 
@@ -330,11 +348,14 @@ export default {
 			return this.documents.some((doc) => doc.downloadable === true)
 		},
 		visibleDocuments() {
+			// GitHub #90: the server sends instructors the entries whose file left the folder; in the
+			// student view they are left out, as for learners.
+			const shown = this.isInstructor ? this.documents : this.documents.filter((doc) => !isStaleDocument(doc))
 			if (!this.excludeDocumentIds.length) {
-				return this.documents
+				return shown
 			}
 			const excluded = new Set(this.excludeDocumentIds.map(Number))
-			return this.documents.filter((doc) => !excluded.has(Number(doc.id)))
+			return shown.filter((doc) => !excluded.has(Number(doc.id)))
 		},
 		hasExtractableDocuments() {
 			return this.documents.some(doc => doc.status === 'uploaded' && this.isExtractable(doc))
@@ -429,6 +450,70 @@ export default {
 			const box = this.$refs.requiredHeader
 			if (box) {
 				box.indeterminate = this.requiredHeader === 'some'
+			}
+		},
+
+		isStale(doc) {
+			return isStaleDocument(doc)
+		},
+
+		/** GitHub #90: why an entry cannot be opened, for the viewer. */
+		unavailableText(doc) {
+			if (!this.isInstructor) {
+				return t('learning', 'Diese Datei kann gerade nicht geöffnet werden. Bitte wende dich an deine Lehrkraft.')
+			}
+			switch (doc.unavailable_reason) {
+			case 'missing':
+				return t('learning', 'Die Datei ist nicht mehr im Materialordner. „Ordner scannen“ nimmt den Eintrag aus der Liste.')
+			case 'outside_folder':
+				return t('learning', 'Die Datei gehört zu einem früher verknüpften Ordner. „Ordner scannen“ nimmt den Eintrag aus der Liste.')
+			case 'folder_missing':
+				return t('learning', 'Der Materialordner ist nicht erreichbar. Lernende können die Datei nicht öffnen.')
+			case 'no_download':
+				return t('learning', 'Die Datei ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar. Lernende können sie deshalb nicht öffnen.')
+			default:
+				return t('learning', 'Diese Datei liegt nicht mehr im Materialordner.')
+			}
+		},
+
+		/**
+		 * GitHub #90: take an entry whose file left the material folder out of the list. A required
+		 * one stops holding the exam back, so that is asked first; its confirmations are kept.
+		 */
+		async removeEntry(doc) {
+			if (this.removing[doc.id]) {
+				return
+			}
+			const required = this.isRequired(doc)
+			if (required && !window.confirm(t('learning', '„{name}“ ist Pflicht. Ohne den Eintrag wartet die Prüfung nicht mehr auf die Datei. Die Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei zurück in den Ordner kommt. Fortfahren?', { name: doc.file_name }, undefined, RAW))) {
+				return
+			}
+			this.removing = { ...this.removing, [doc.id]: true }
+			this.$emit('error', '')
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/documents/{documentId}', { courseId: this.courseId, documentId: doc.id })
+				const response = await axios.delete(url)
+				this.documents = Array.isArray(response.data) ? response.data : this.documents.filter((row) => row.id !== doc.id)
+				if (required) {
+					await this.reloadRegistryAfterListChange()
+				}
+			} catch (e) {
+				this.$emit('error', e.response?.status === 409
+					? t('learning', 'Die Datei liegt noch im Materialordner. Entferne sie dort, dann verschwindet sie beim nächsten Scan aus der Liste.')
+					: t('learning', 'Der Eintrag konnte nicht entfernt werden.'))
+			} finally {
+				this.removing = { ...this.removing, [doc.id]: false }
+			}
+		},
+
+		/** GitHub #90: entries left or came back, and with them required rows; the settings below follow. */
+		async reloadRegistryAfterListChange() {
+			if (!this.isInstructor) {
+				return
+			}
+			await this.loadRegistry()
+			if (this.registryLoaded) {
+				this.$emit('required-changed', this.registry)
 			}
 		},
 
@@ -603,6 +688,8 @@ export default {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/documents/scan', { courseId: this.courseId })
 				const response = await axios.post(url)
 				this.documents = response.data || []
+				// GitHub #90: the scan takes entries out of the list (and brings some back)
+				await this.reloadRegistryAfterListChange()
 			} catch (e) {
 				this.errorMessage = e.response?.data?.error || t('learning', 'Ordner konnte nicht gescannt werden.')
 			} finally {
@@ -737,6 +824,32 @@ export default {
 	margin: 0;
 }
 
+.material-remove-btn {
+	min-width: 32px;
+	min-height: 32px;
+	margin-inline-start: 6px;
+	padding: 0 8px;
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius-element, 8px);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.material-remove-btn:hover:not(:disabled),
+.material-remove-btn:focus-visible {
+	background: var(--color-background-hover);
+}
+
+.material-unavailable-reason {
+	display: block;
+	margin-top: 2px;
+	font-size: 0.9em;
+	color: var(--color-text-maxcontrast);
+}
+
 .load-error p {
 	margin: 0 0 8px;
 }
@@ -856,7 +969,6 @@ export default {
 
 .material-file-unavailable {
 	color: var(--color-text-maxcontrast, #767676);
-	cursor: help;
 }
 
 .extract-explanation,

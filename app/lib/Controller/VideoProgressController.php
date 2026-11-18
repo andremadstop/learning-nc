@@ -236,6 +236,11 @@ class VideoProgressController extends Controller {
             || !DocumentService::isInMaterialFolder($doc, $course->getMaterialFolder())) {
             return null;
         }
+        // GitHub #90: a deleted file at the same path, or one its owner may not hand out, is no
+        // link that ends on "Not found"; the learner is told it cannot be opened right now.
+        if ($this->requiredDocuments !== null && $this->requiredDocuments->fileInfo($course, $video) === null) {
+            return null;
+        }
         return $documentId;
     }
 

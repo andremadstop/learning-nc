@@ -207,6 +207,7 @@ class DocumentMaterialAccessTest extends TestCase {
         $this->enrolled('student');
         $this->courseService->method('canManageCourse')->willReturn(false);
         $this->documentMapper->expects($this->atLeastOnce())->method('findByCourseId')->with(self::COURSE)->willReturn([self::doc(1, 'skript.pdf')]);
+        $this->children['skript.pdf'] = $this->fileNode('%PDF');
 
         $response = $this->controller('student')->index(self::COURSE);
 
@@ -214,8 +215,9 @@ class DocumentMaterialAccessTest extends TestCase {
         $data = $response->getData();
         $this->assertFalse($data['can_manage_files']);
         $row = $data['documents'][0];
-        $this->assertSame(['id', 'file_name', 'file_type', 'file_size', 'created_at', 'updated_at', 'downloadable'], array_keys($row));
+        $this->assertSame(['id', 'file_name', 'file_type', 'file_size', 'created_at', 'updated_at', 'downloadable', 'unavailable_reason'], array_keys($row));
         $this->assertTrue($row['downloadable']);
+        $this->assertNull($row['unavailable_reason']);
         $this->assertStringNotContainsString('SECRET', json_encode($data));
         $this->assertStringNotContainsString('private-notes', json_encode($data));
     }
@@ -226,6 +228,7 @@ class DocumentMaterialAccessTest extends TestCase {
         $this->roleService->method('isInstructor')->willReturn(true);
         $this->courseService->expects($this->once())->method('canManageCourse')->with(self::COURSE, 'colleague')->willReturn(false);
         $this->documentMapper->method('findByCourseId')->willReturn([self::doc(1, 'skript.pdf')]);
+        $this->children['skript.pdf'] = $this->fileNode('%PDF');
 
         $data = $this->controller('colleague')->index(self::COURSE)->getData();
 
@@ -260,18 +263,44 @@ class DocumentMaterialAccessTest extends TestCase {
         $this->assertSame(Http::STATUS_FORBIDDEN, $response->getStatus());
     }
 
-    public function testRowFromAnEarlierFolderIsListedButNotDownloadable(): void {
-        $this->enrolled('student');
-        $this->courseService->method('canManageCourse')->willReturn(false);
+    /**
+     * GitHub #90: a row from an earlier folder, or whose file was deleted, is nothing a learner
+     * can act on: learners only get what is in the folder now. The instructor still sees it,
+     * with the reason, until a scan or the × takes it out of the list.
+     */
+    public function testRowsWhoseFileLeftTheFolderAreHiddenFromLearnersAndExplainedToInstructors(): void {
         $this->documentMapper->method('findByCourseId')->willReturn([
             self::doc(1, 'alt.pdf', 'pdf', '/Alter/Ordner/alt.pdf'),
             self::doc(2, 'neu.md', 'markdown'),
+            self::doc(3, 'geloescht.pdf'),
         ]);
+        $this->children['neu.md'] = $this->fileNode('# neu');
 
+        $this->enrolled('student');
+        $this->courseService->method('canManageCourse')->willReturnCallback(fn (int $c, string $uid) => $uid === self::OWNER);
         $rows = $this->controller('student')->index(self::COURSE)->getData()['documents'];
+        $this->assertSame([2], array_column($rows, 'id'));
+        $this->assertTrue($rows[0]['downloadable']);
+    }
 
-        $this->assertFalse($rows[0]['downloadable']);
-        $this->assertTrue($rows[1]['downloadable']);
+    public function testInstructorsSeeWhyAnEntryCannotBeOpened(): void {
+        $this->documentMapper->method('findByCourseId')->willReturn([
+            self::doc(1, 'alt.pdf', 'pdf', '/Alter/Ordner/alt.pdf'),
+            self::doc(2, 'neu.md', 'markdown'),
+            self::doc(3, 'geloescht.pdf'),
+        ]);
+        $this->children['neu.md'] = $this->fileNode('# neu');
+        $this->enrolled(self::OWNER);
+        $this->courseService->method('canManageCourse')->willReturn(true);
+
+        $rows = $this->controller(self::OWNER)->index(self::COURSE)->getData()['documents'];
+
+        $this->assertSame([
+            1 => DocumentService::REASON_OUTSIDE_FOLDER,
+            2 => null,
+            3 => DocumentService::REASON_MISSING,
+        ], array_column($rows, 'unavailable_reason', 'id'));
+        $this->assertSame([1 => false, 2 => true, 3 => false], array_column($rows, 'downloadable', 'id'));
     }
 
     // ---------------------------------------------------------------- download ---------------
@@ -498,6 +527,100 @@ class DocumentMaterialAccessTest extends TestCase {
         $this->assertSame(Http::STATUS_OK, $this->controller('student')->download(self::COURSE, 43)->getStatus());
     }
 
+    /**
+     * GitHub #90: a file that exists but may not be handed out is no link to a "Not found" page:
+     * the row says why, for learners too (they keep seeing it, it is still in the folder).
+     */
+    public function testAViewOnlyFileIsListedWithItsReasonInsteadOfAsALink(): void {
+        $this->enrolled('student');
+        $this->courseService->method('canManageCourse')->willReturn(false);
+        $this->documentMapper->method('findByCourseId')->willReturn([self::doc(41, 'nur-ansehen.pdf')]);
+        $this->children['nur-ansehen.pdf'] = $this->fileNode('protected', $this->sharedStorage(false));
+
+        $row = $this->controller('student')->index(self::COURSE)->getData()['documents'][0];
+
+        $this->assertFalse($row['downloadable']);
+        $this->assertSame(DocumentService::REASON_NO_DOWNLOAD, $row['unavailable_reason']);
+    }
+
+    /** GitHub #90: an entry out of the list is out of every list and serves nothing. */
+    public function testAnEntryOutOfTheListIsNeitherListedNorServed(): void {
+        $removed = self::doc(51, 'weg.pdf');
+        $removed->setRemovedAt(1700000100);
+        $this->enrolled(self::OWNER);
+        $this->courseService->method('canManageCourse')->willReturn(true);
+        $this->documentMapper->method('findByCourseId')->willReturn([$removed]);
+        $this->documentMapper->method('findById')->willReturn($removed);
+        $this->children['weg.pdf'] = $this->fileNode('x');
+
+        $this->assertSame([], $this->controller(self::OWNER)->index(self::COURSE)->getData()['documents']);
+        $this->assertSame(Http::STATUS_NOT_FOUND, $this->controller(self::OWNER)->download(self::COURSE, 51)->getStatus());
+    }
+
+    // ---------------------------------------------------------------- × (GitHub #90) ---------
+
+    private function instructorOfCourse(string $uid): void {
+        $this->courseService->method('assertInstructorOfCourse')->willReturnCallback(
+            function (int $courseId, string $user) use ($uid) {
+                if ($courseId !== self::COURSE) {
+                    throw new DoesNotExistException('course');
+                }
+                if ($user !== $uid) {
+                    throw new ForbiddenException('not an instructor here');
+                }
+                return $this->course;
+            });
+    }
+
+    public function testTheInstructorRemovesAnEntryWhoseFileIsGone(): void {
+        $gone = self::doc(61, 'geloescht.pdf');
+        $this->instructorOfCourse('coteacher');
+        $this->documentMapper->method('findById')->willReturn($gone);
+        $this->documentMapper->method('findByCourseId')->willReturnCallback(fn () => [$gone]);
+        $this->documentMapper->expects($this->once())->method('update')->with($gone)->willReturnArgument(0);
+
+        $response = $this->controller('coteacher')->remove(self::COURSE, 61);
+
+        $this->assertSame(Http::STATUS_OK, $response->getStatus());
+        $this->assertNotNull($gone->getRemovedAt(), 'the row is marked, not deleted');
+        $this->assertSame([], $response->getData(), 'the list without the entry');
+    }
+
+    public function testAnEntryWhoseFileIsStillInTheFolderIsNotRemoved(): void {
+        $here = self::doc(62, 'da.pdf');
+        $this->children['da.pdf'] = $this->fileNode('x', $this->sharedStorage(false));
+        $this->instructorOfCourse(self::OWNER);
+        $this->documentMapper->method('findById')->willReturn($here);
+        $this->documentMapper->method('findByCourseId')->willReturn([$here]);
+        $this->documentMapper->expects($this->never())->method('update');
+
+        $this->assertSame(Http::STATUS_CONFLICT, $this->controller(self::OWNER)->remove(self::COURSE, 62)->getStatus());
+        $this->assertNull($here->getRemovedAt());
+    }
+
+    public function testLearnersAndOtherCoursesCannotRemoveEntries(): void {
+        $gone = self::doc(63, 'geloescht.pdf');
+        $foreign = self::doc(64, 'fremd.pdf', 'pdf', null, self::COURSE + 1);
+        $this->instructorOfCourse(self::OWNER);
+        $this->documentMapper->method('findById')->willReturnCallback(fn (int $id) => $id === 63 ? $gone : $foreign);
+        $this->documentMapper->expects($this->never())->method('update');
+
+        $this->assertSame(Http::STATUS_FORBIDDEN, $this->controller('student')->remove(self::COURSE, 63)->getStatus());
+        $this->assertSame(Http::STATUS_NOT_FOUND, $this->controller(self::OWNER)->remove(self::COURSE + 1, 63)->getStatus());
+        // IDOR: a document of another course through this course's URL
+        $this->assertSame(Http::STATUS_NOT_FOUND, $this->controller(self::OWNER)->remove(self::COURSE, 64)->getStatus());
+    }
+
+    public function testTheRemoveRouteIsADeleteWithCsrf(): void {
+        $routes = require dirname(__DIR__, 3) . '/appinfo/routes.php';
+        $match = array_values(array_filter($routes['routes'], static fn (array $r) => $r['name'] === 'document#remove'));
+        $this->assertCount(1, $match);
+        $this->assertSame('/api/courses/{courseId}/documents/{documentId}', $match[0]['url']);
+        $this->assertSame('DELETE', $match[0]['verb']);
+        $seen = RouteSecurityInventory::describe(new \ReflectionMethod(DocumentController::class, 'remove'));
+        $this->assertFalse($seen['NoCSRFRequired'] ?? false, 'a write needs the request token');
+    }
+
     public function testUnreadableFileIsNotServed(): void {
         $this->enrolled('student');
         $this->documentMapper->method('findById')->willReturn(self::doc(44, 'gesperrt.pdf'));
@@ -540,7 +663,8 @@ class DocumentMaterialAccessTest extends TestCase {
         // a resolver that let the row through would find the file in the home root
         $this->children['privat.pdf'] = $this->fileNode('home root');
 
-        $this->assertFalse($this->controller('student')->index(self::COURSE)->getData()['documents'][0]['downloadable']);
+        // GitHub #90: not in the folder, so not in the learner's list at all
+        $this->assertSame([], $this->controller('student')->index(self::COURSE)->getData()['documents']);
         $this->assertSame(Http::STATUS_NOT_FOUND, $this->controller('student')->download(self::COURSE, 52)->getStatus());
     }
 
@@ -597,7 +721,15 @@ class DocumentMaterialAccessTest extends TestCase {
             if ($path === '/Kurs/Material') {
                 $folder = $this->createMock(Folder::class);
                 $folder->method('getType')->willReturn(\OCP\Files\Node::TYPE_FOLDER);
-                $folder->method('getDirectoryListing')->willReturn([]);
+                // GitHub #90: both files are in the folder, so the scan keeps both entries
+                $listing = [];
+                foreach (['a.pdf', 'b.md'] as $name) {
+                    $node = $this->createMock(\OCP\Files\Node::class);
+                    $node->method('getType')->willReturn(\OCP\Files\Node::TYPE_FILE);
+                    $node->method('getName')->willReturn($name);
+                    $listing[] = $node;
+                }
+                $folder->method('getDirectoryListing')->willReturn($listing);
                 return $folder;
             }
             throw new NotFoundException($path);
