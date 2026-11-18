@@ -1789,7 +1789,9 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
 .weak-questions-table th, .weak-questions-table td { padding: 8px 12px; border-bottom: 1px solid var(--color-border); text-align: start; }
 .weak-questions-table th { font-weight: 600; background: var(--color-background-dark); }
 .q-text { max-width: 300px; }
-.paused-row { opacity: 0.5; }
+/* A paused question is marked by its text, not by fading the whole row: opacity 0.5 took the
+   question, its wrong rate and the "Resume" button below 4.5:1 (persona sweep C9). */
+.paused-row .q-text { color: var(--color-text-maxcontrast); font-style: italic; }
 .rate-red { color: var(--color-error-text); font-weight: 700; }
 .rate-yellow { color: #e6a817; font-weight: 600; }
 
