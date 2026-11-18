@@ -4156,6 +4156,7 @@
         "Kurs „{title}“ archivieren?": "أرشفة الدورة «{title}»؟",
         "Nicht mehr anzeigen": "عدم الإظهار مرة أخرى",
         "Vor dem Archivieren erklären": "الشرح قبل الأرشفة",
-        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "قبل أرشفة دورة، اشرح ما الذي يتغير للمتعلمين واطلب التأكيد. عند الإيقاف: «أرشفة» تؤرشف فورًا."
+        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "قبل أرشفة دورة، اشرح ما الذي يتغير للمتعلمين واطلب التأكيد. عند الإيقاف: «أرشفة» تؤرشف فورًا.",
+        "Dein bisheriges Zertifikat bleibt gültig.": "تبقى شهادتك الحالية سارية."
     }
 }

@@ -50,9 +50,18 @@ function result(certification, extra = {}) {
 
 describe('ExamMode — certification result (GitHub #35)', () => {
 	it('certificate issued: says so and offers to open it', () => {
-		const vm = createInstance(result({ applicable: true, passed: true, threshold: 70, exam_passed: true, certificate_issued: true, certificate: { verification_id: 'vid-1', revoked: false, expired: false } }))
+		const vm = createInstance(result({ applicable: true, passed: true, threshold: 70, exam_passed: true, certificate_issued: true, certificate_issued_now: true, certificate: { verification_id: 'vid-1', revoked: false, expired: false } }))
 
 		expect(vm.certificationMessage).toEqual({ type: 'success', text: 'Certificate issued', verificationId: 'vid-1' })
+	})
+
+	// GitHub #92 (pre-existing): certificate_issued means "a valid certificate exists". A failed
+	// attempt next to an old valid certificate read "Certificate issued".
+	it('failed attempt with a valid old certificate: does not say "Certificate issued"', () => {
+		const vm = createInstance(result({ applicable: true, passed: true, threshold: 70, exam_passed: false, requirement: 'any_exam', certificate_issued: true, certificate_issued_now: false, certificate: { verification_id: 'vid-old', revoked: false, expired: false }, attempt_policy: policy }, { correct_answers: 6, score_percentage: 30 }))
+
+		// the earlier certificate stays reachable, but the note says what it is
+		expect(vm.certificationMessage).toEqual({ type: 'info', text: 'Dein bisheriges Zertifikat bleibt gültig.', verificationId: 'vid-old' })
 	})
 
 	it('judges the attempt against the course pass mark, not 720/900', () => {

@@ -95,7 +95,7 @@ describe('ExamMode result guidance (GitHub #92)', () => {
 	})
 
 	it('after a pass with a certificate, "Zu meinem Zertifikat" is the one primary button and retaking is quiet', async () => {
-		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate: validCert, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
+		await showResult({ applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate_issued_now: true, certificate: validCert, pool_id: 3, attempt_policy: policy() }, { correct: 18 })
 
 		expect(primaries()).toEqual(['Zu meinem Zertifikat'])
 		expect(button('guide-retake').getAttribute('data-variant')).toBe('tertiary')

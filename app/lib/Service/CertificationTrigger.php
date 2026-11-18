@@ -45,7 +45,8 @@ class CertificationTrigger {
      * @return array<string, mixed>|null the certification block for the completion response:
      *   the pass status (PassResult::toArray()) plus course_id, pool_id, exam_score, exam_passed
      *   (this attempt reached the course pass mark), counts_for_requirement (this attempt's pool
-     *   is one the certificate needs — always true without required pools) and the enforced
+     *   is one the certificate needs — always true without required pools), certificate_issued_now
+ *   (the valid certificate was issued since this session started, GitHub #92) and the enforced
      *   retake rules. When the check itself failed: {course_id, error:'evaluation_failed'} plus
      *   threshold, exam_score and exam_passed, so the result screen still judges the attempt by
      *   the course pass mark. null when the session is not a counting exam of a certifying course.
@@ -93,7 +94,17 @@ class CertificationTrigger {
             // GitHub #92: the result screen counts down to the next possible start on this pool.
             $attemptPolicy['next_start_at'] = $this->nextStartAt($userId, $courseId, $poolId);
 
+            // GitHub #92: certificate_issued means "a valid certificate exists" — also an old one,
+            // next to a failed attempt. Issued by this completion is a certificate issued since
+            // this session started (the pass of this attempt, or a deferred issuance the
+            // evaluation above caught up on).
+            $certificate = $result->getCertificate();
+            $startedAt = (int)($session['started_at'] ?? 0);
+            $issuedNow = $result->isCertificateIssued() && $certificate !== null
+                && $startedAt > 0 && (int)$certificate['issued_at'] >= $startedAt;
+
             return array_merge($result->toArray(), $attempt, [
+                'certificate_issued_now' => $issuedNow,
                 'course_id' => $courseId,
                 'pool_id' => $poolId,
                 'counts_for_requirement' => $countsForRequirement,
@@ -146,7 +157,7 @@ class CertificationTrigger {
      */
     private function loadSession(int $sessionId, string $userId): ?array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('id', 'pool_id', 'course_id', 'mode', 'exam_kind', 'completed_at', 'total_questions', 'correct_answers')
+        $qb->select('id', 'pool_id', 'course_id', 'mode', 'exam_kind', 'started_at', 'completed_at', 'total_questions', 'correct_answers')
             ->from('learning_sessions')
             ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));

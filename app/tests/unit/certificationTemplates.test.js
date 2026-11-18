@@ -201,7 +201,7 @@ describe('ExamMode template — result screen of a counting exam', () => {
 		const vm = getVm()
 		vm.resultsData = {
 			total_questions: 20, correct_answers: 15, score_percentage: 75,
-			certification: { applicable: true, passed: true, threshold: 70, exam_score: 75, exam_passed: true, certificate_issued: true, certificate: { verification_id: 'vid-1', revoked: false, expired: false } },
+			certification: { applicable: true, passed: true, threshold: 70, exam_score: 75, exam_passed: true, certificate_issued: true, certificate_issued_now: true, certificate: { verification_id: 'vid-1', revoked: false, expired: false } },
 		}
 		vm.screen = 'results'
 		await flush()

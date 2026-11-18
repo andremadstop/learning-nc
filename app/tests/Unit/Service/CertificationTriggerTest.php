@@ -40,6 +40,7 @@ class CertificationTriggerTest extends TestCase {
             'course_id' => (string)self::COURSE_ID,
             'mode' => 'exam',
             'exam_kind' => null,
+            'started_at' => '1699999000',
             'completed_at' => '1700000000',
             'total_questions' => '20',
             'correct_answers' => '17',
@@ -101,6 +102,7 @@ class CertificationTriggerTest extends TestCase {
 
         $this->assertNotNull($block);
         $this->assertTrue($block['certificate_issued']);
+        $this->assertTrue($block['certificate_issued_now'], 'issued after the session started');
         $this->assertSame('vid-1', $block['certificate']['verification_id']);
         $this->assertSame(self::COURSE_ID, $block['course_id']);
         $this->assertSame(3, $block['pool_id']);
@@ -258,5 +260,23 @@ class CertificationTriggerTest extends TestCase {
 
         $this->assertArrayHasKey('next_start_at', $block['attempt_policy']);
         $this->assertNull($block['attempt_policy']['next_start_at']);
+    }
+
+    /**
+     * GitHub #92 (pre-existing): a failed attempt next to a valid certificate from an earlier
+     * exam. certificate_issued stays true (a valid one exists, the completion tab relies on it),
+     * but nothing was issued by this completion — the result screen must not say so.
+     */
+    public function testFailedAttemptWithAValidOldCertificateIssuedNothingNow(): void {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('evaluate')->willReturn(new PassResult(true, 90, 80, true, 1600000000, true, PassResult::REQUIREMENT_ANY_EXAM, [],
+            ['verification_id' => 'vid-old', 'issued_at' => 1600000000, 'expires_at' => null, 'expired' => false, 'revoked' => false]));
+
+        $block = $this->makeTrigger($this->sessionRow(['correct_answers' => '5']), $pass)
+            ->afterSessionCompleted(self::SESSION_ID, self::USER);
+
+        $this->assertFalse($block['exam_passed']);
+        $this->assertTrue($block['certificate_issued']);
+        $this->assertFalse($block['certificate_issued_now']);
     }
 }

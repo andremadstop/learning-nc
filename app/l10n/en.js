@@ -4087,5 +4087,6 @@ OC.L10N.register(
     "Nicht mehr anzeigen" : "Don’t show again",
     "Vor dem Archivieren erklären" : "Explain before archiving",
     "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "Before a course is archived, explain what changes for the learners and ask first. Off: “Archive” archives right away.",
+    "Dein bisheriges Zertifikat bleibt gültig." : "Your existing certificate remains valid.",
 },
 "nplurals=2; plural=(n != 1);");

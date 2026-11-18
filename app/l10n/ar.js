@@ -4087,5 +4087,6 @@ OC.L10N.register(
     "Nicht mehr anzeigen" : "عدم الإظهار مرة أخرى",
     "Vor dem Archivieren erklären" : "الشرح قبل الأرشفة",
     "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "قبل أرشفة دورة، اشرح ما الذي يتغير للمتعلمين واطلب التأكيد. عند الإيقاف: «أرشفة» تؤرشف فورًا.",
+    "Dein bisheriges Zertifikat bleibt gültig." : "تبقى شهادتك الحالية سارية.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

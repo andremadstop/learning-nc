@@ -737,8 +737,14 @@ export default {
         return { type: 'info', text: t('learning', 'Your result is saved. The certificate status could not be checked right now; please look at the completion tab of the course later.') }
       }
       if (c.applicable !== true) return null
+      // GitHub #92: certificate_issued only says a valid certificate exists — also an old one next
+      // to a failed attempt. "Certificate issued" is for one this completion issued.
       if (c.certificate_issued && c.certificate && c.certificate.verification_id) {
-        return { type: 'success', text: t('learning', 'Certificate issued'), verificationId: c.certificate.verification_id }
+        if (c.certificate_issued_now === true) {
+          return { type: 'success', text: t('learning', 'Certificate issued'), verificationId: c.certificate.verification_id }
+        }
+        // the earlier certificate stays reachable from the note (also during a renewal)
+        return { type: 'info', text: t('learning', 'Dein bisheriges Zertifikat bleibt gültig.'), verificationId: c.certificate.verification_id }
       }
       // GitHub #35: an instructor of the course (e.g. trying the exam in the student view) is never
       // certified there — a fact, not a failed issuance.

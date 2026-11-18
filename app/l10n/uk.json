@@ -4126,6 +4126,7 @@
         "Kurs „{title}“ archivieren?": "Архівувати курс «{title}»?",
         "Nicht mehr anzeigen": "Більше не показувати",
         "Vor dem Archivieren erklären": "Пояснювати перед архівуванням",
-        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "Перед архівуванням курсу пояснювати, що зміниться для учнів, і запитувати підтвердження. Вимк.: «Архівувати» архівує одразу."
+        "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.": "Перед архівуванням курсу пояснювати, що зміниться для учнів, і запитувати підтвердження. Вимк.: «Архівувати» архівує одразу.",
+        "Dein bisheriges Zertifikat bleibt gültig.": "Твій чинний сертифікат залишається дійсним."
     }
 }
