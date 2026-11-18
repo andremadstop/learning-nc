@@ -123,6 +123,11 @@ export default {
     PbqRanking,
     PbqReferenceGallery,
   },
+  // GitHub #65: declared, so the parents' @change/@submit/@skip stay component listeners. Undeclared
+  // they fall through to the root element as native DOM listeners, and a bubbling `change` from an
+  // inner <select>/<input> called the parent a second time with the Event (ExamMode then stored
+  // the Event as the PBQ answer).
+  emits: ['change', 'submit', 'skip'],
   props: {
     question:     { type: Object, required: true },
     initialValue: { type: Object, default: null },
