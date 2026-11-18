@@ -107,6 +107,12 @@ describe('Archive confirmation in the course list (GitHub #99)', () => {
 		expect(dialog().querySelector('[data-test="course-archive-explanation"]')?.textContent).toContain('Prüfungen ablegen, die wie bisher zählen')
 		expect(dialog().textContent).toContain('Du kannst den Kurs jederzeit über das Menü in der Kursliste wieder aktivieren.')
 		expect(dialog().textContent).toContain('Nicht mehr anzeigen')
+		// a screen reader hears the explanation with the dialog name
+		const described = dialog().getAttribute('aria-describedby')
+		expect(described).toBeTruthy()
+		expect(host.querySelector('#' + described)?.textContent).toContain('Lernende bekommen nicht mehr:')
+		// the checkbox is not inside the text, so the first focus does not land on it
+		expect(host.querySelector('#' + described + ' input[type="checkbox"]')).toBeNull()
 		expect(statusPuts()).toHaveLength(0)
 	})
 

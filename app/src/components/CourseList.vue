@@ -232,16 +232,23 @@
 		<AccessibleDialog v-if="archivingCourse"
 			:name="t('learning', 'Kurs „{title}“ archivieren?', { title: archivingCourse.title }, undefined, { escape: false, sanitize: false })"
 			size="normal"
+			class="archive-confirm-dialog"
+			aria-describedby="archive-confirm-text"
 			data-test="archive-confirm"
 			@closing="cancelArchive">
-			<CourseArchiveExplanation :can-reactivate="true" />
-			<NcCheckboxRadioSwitch :model-value="archiveDontShowAgain"
-				class="archive-confirm__skip"
-				data-test="archive-confirm-skip"
-				@update:model-value="archiveDontShowAgain = $event">
-				{{ t('learning', 'Nicht mehr anzeigen') }}
-			</NcCheckboxRadioSwitch>
+			<!-- The dialog announces this text with its name. The checkbox sits with the buttons, so the
+				first focus lands on the text (AccessibleDialog falls back to its content) and not on a
+				box that Space would tick before the explanation was heard. -->
+			<div id="archive-confirm-text">
+				<CourseArchiveExplanation :can-reactivate="true" />
+			</div>
 			<template #actions>
+				<NcCheckboxRadioSwitch :model-value="archiveDontShowAgain"
+					class="archive-confirm__skip"
+					data-test="archive-confirm-skip"
+					@update:model-value="archiveDontShowAgain = $event">
+					{{ t('learning', 'Nicht mehr anzeigen') }}
+				</NcCheckboxRadioSwitch>
 				<NcButton variant="tertiary"
 					:disabled="archiving"
 					data-test="archive-confirm-cancel"
@@ -622,10 +629,18 @@ export default {
 }
 </script>
 
+<style>
+/* GitHub #99: the dialog is teleported, so this cannot be scoped. Checkbox and two buttons do not
+   fit next to each other on a phone; they wrap instead of running out of the dialog. */
+.archive-confirm-dialog .dialog__actions {
+	flex-wrap: wrap;
+}
+</style>
+
 <style scoped>
-/* GitHub #99 */
+/* GitHub #99: left of the buttons; wraps above them on a narrow screen */
 .archive-confirm__skip {
-	margin-top: 12px;
+	margin-inline-end: auto;
 }
 
 .course-list {
