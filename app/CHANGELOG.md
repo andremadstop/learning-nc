@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 Links that lead nowhere now say why and offer a way on (#82), the public calendar feeds have a
 limit per address, and the second wave of quality checks (#65) found and fixed several things the
-production bundle and the API did differently from the tests. Thanks to @alphalib-g for #82.
+production bundle and the API did differently from the tests.
 
 > **Administrators, please read:**
 > - **No migration.** The database schema is the same as in 5.14.1.
