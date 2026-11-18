@@ -94,6 +94,9 @@
 			</NcNoteCard>
 		</div>
 
+		<!-- GitHub #92: says where a "next step" button led; the focus moves there as well -->
+		<p class="hidden-visually" role="status" data-test="guide-announcement">{{ guideAnnouncement }}</p>
+
 		<template v-if="!loading && course">
 			<!-- Mega-tab selector: the app-wide tab look (#46), the countdown beside it, not in the tablist -->
 			<div class="mega-tab-row">
@@ -149,6 +152,7 @@
 					@refresh-course-detail="fetchCourseDetail"
 					@course-patched="onCoursePatched"
 					@tab-change="onLeafTabChange"
+					@guide="onGuide"
 					@videos-available="onVideosAvailable" />
 			</div>
 
@@ -358,6 +362,9 @@ export default {
 
 			// Reported by CourseTabLernraum once it knows whether required content exists.
 			hasCourseVideos: false,
+
+			// GitHub #92: the screen reader note after a "next step" button opened another tab
+			guideAnnouncement: '',
 		}
 	},
 
@@ -906,6 +913,32 @@ export default {
 			if (leafTabId === 'league' && !this.isInstructor) {
 				useOptionalVirtuProfStore()?.trigger('liga-first-visit')
 			}
+		},
+		/**
+		 * GitHub #92: a "next step" button (learning materials, exam result, exam tab) opens
+		 * another tab, possibly in another area (completion, communication). The tab opens like a
+		 * click on it; then the focus moves to the opened tab — the innermost selected one, so the
+		 * next Tab key reaches its content — and a status line names it for screen readers.
+		 *
+		 * @param {string} leafTabId the leaf to open
+		 */
+		async onGuide(leafTabId) {
+			if (!this.megaTabForLeaf(leafTabId)) {
+				return
+			}
+			this.guideAnnouncement = ''
+			this.onLeafTabChange(leafTabId)
+			await this.$nextTick()
+			await this.$nextTick()
+			const selected = this.$el?.querySelectorAll?.('[role="tab"][aria-selected="true"]') || []
+			const target = selected.length > 0 ? selected[selected.length - 1] : null
+			if (target && typeof target.focus === 'function') {
+				target.focus()
+			}
+			const area = target ? String(target.textContent || '').replace(/\s+/g, ' ').trim() : ''
+			this.guideAnnouncement = area
+				? t('learning', 'Geöffnet: {area}', { area })
+				: ''
 		},
 		/**
 		 * CourseTabLernraum reports whether required content (Pflichtinhalte) exists: after its

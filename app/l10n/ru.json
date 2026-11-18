@@ -4073,6 +4073,29 @@
             "%n обязательный документ предоставлен только для просмотра без скачивания или не читается: учащиеся не могут его открыть.",
             "%n обязательных документа предоставлены только для просмотра без скачивания или не читаются: учащиеся не могут их открыть.",
             "%n обязательных документов предоставлены только для просмотра без скачивания или не читаются: учащиеся не могут их открыть."
-        ]
+        ],
+        "Nächster Versuch möglich in {time}": "Следующая попытка возможна через {time}",
+        "Nächster Versuch möglich ab {time} Uhr": "Следующая попытка возможна с {time}",
+        "Zu meinem Zertifikat": "К моему сертификату",
+        "Zur Prüfungsübersicht": "К обзору экзаменов",
+        "Zurück zum Lernmaterial": "Вернуться к учебным материалам",
+        "Prüfung wiederholen": "Пересдать экзамен",
+        "_%n Versuch nicht bestanden_::_%n Versuche nicht bestanden_": [
+            "%n попытка не сдана",
+            "%n попытки не сданы",
+            "%n попыток не сдано"
+        ],
+        "_%n Versuch übrig_::_%n Versuche übrig_": [
+            "осталась %n попытка",
+            "осталось %n попытки",
+            "осталось %n попыток"
+        ],
+        "Du kannst die Prüfung jetzt wiederholen.": "Теперь ты можешь пересдать экзамен.",
+        "Zur Prüfung": "К экзамену",
+        "Weiter zum Abschluss": "Перейти к завершению",
+        "Weiter: {area}": "Далее: {area}",
+        "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.": "Не осталось попыток экзамена для: {pools}. Твой преподаватель уведомлён и может открыть новый цикл сертификации.",
+        "Geöffnet: {area}": "Открыто: {area}",
+        "Bisher: {failed}, {left}": "Пока: {failed}, {left}"
     }
 }

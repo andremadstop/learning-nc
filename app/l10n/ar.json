@@ -4097,6 +4097,35 @@
             "%n مستندات إلزامية مشارَكة للعرض فقط دون تنزيل أو لا يمكن قراءتها: لا يستطيع المتعلمون فتحها.",
             "%n مستندًا إلزاميًا مشارَكًا للعرض فقط دون تنزيل أو لا يمكن قراءته: لا يستطيع المتعلمون فتحها.",
             "%n مستند إلزامي مشارَك للعرض فقط دون تنزيل أو لا يمكن قراءتها: لا يستطيع المتعلمون فتحها."
-        ]
+        ],
+        "Nächster Versuch möglich in {time}": "المحاولة التالية ممكنة بعد {time}",
+        "Nächster Versuch möglich ab {time} Uhr": "المحاولة التالية ممكنة ابتداءً من الساعة {time}",
+        "Zu meinem Zertifikat": "الانتقال إلى شهادتي",
+        "Zur Prüfungsübersicht": "العودة إلى نظرة عامة على الاختبارات",
+        "Zurück zum Lernmaterial": "العودة إلى المواد التعليمية",
+        "Prüfung wiederholen": "إعادة الاختبار",
+        "_%n Versuch nicht bestanden_::_%n Versuche nicht bestanden_": [
+            "%n محاولة غير ناجحة",
+            "%n محاولة غير ناجحة",
+            "%n محاولتان غير ناجحتين",
+            "%n محاولات غير ناجحة",
+            "%n محاولةً غير ناجحة",
+            "%n محاولة غير ناجحة"
+        ],
+        "_%n Versuch übrig_::_%n Versuche übrig_": [
+            "تبقّى %n محاولة",
+            "تبقّت %n محاولة",
+            "تبقّت %n محاولتان",
+            "تبقّت %n محاولات",
+            "تبقّت %n محاولةً",
+            "تبقّت %n محاولة"
+        ],
+        "Du kannst die Prüfung jetzt wiederholen.": "يمكنك إعادة الاختبار الآن.",
+        "Zur Prüfung": "الانتقال إلى الاختبار",
+        "Weiter zum Abschluss": "المتابعة إلى الإكمال",
+        "Weiter: {area}": "التالي: {area}",
+        "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.": "لم تعد هناك محاولات اختبار متاحة لـ: {pools}. تم إخطار المدرّب ويمكنه فتح دورة شهادة جديدة.",
+        "Geöffnet: {area}": "تم الفتح: {area}",
+        "Bisher: {failed}, {left}": "حتى الآن: {failed}، {left}"
     }
 }

@@ -4073,6 +4073,29 @@
             "%n обов’язковий документ надано лише для перегляду без завантаження або його неможливо прочитати: учні не можуть його відкрити.",
             "%n обов’язкові документи надано лише для перегляду без завантаження або їх неможливо прочитати: учні не можуть їх відкрити.",
             "%n обов’язкових документів надано лише для перегляду без завантаження або їх неможливо прочитати: учні не можуть їх відкрити."
-        ]
+        ],
+        "Nächster Versuch möglich in {time}": "Наступна спроба можлива через {time}",
+        "Nächster Versuch möglich ab {time} Uhr": "Наступна спроба можлива з {time}",
+        "Zu meinem Zertifikat": "До мого сертифіката",
+        "Zur Prüfungsübersicht": "До огляду іспитів",
+        "Zurück zum Lernmaterial": "Повернутися до навчальних матеріалів",
+        "Prüfung wiederholen": "Перескласти іспит",
+        "_%n Versuch nicht bestanden_::_%n Versuche nicht bestanden_": [
+            "%n спроба не складена",
+            "%n спроби не складені",
+            "%n спроб не складено"
+        ],
+        "_%n Versuch übrig_::_%n Versuche übrig_": [
+            "залишилася %n спроба",
+            "залишилося %n спроби",
+            "залишилося %n спроб"
+        ],
+        "Du kannst die Prüfung jetzt wiederholen.": "Тепер ти можеш перескласти іспит.",
+        "Zur Prüfung": "До іспиту",
+        "Weiter zum Abschluss": "Перейти до завершення",
+        "Weiter: {area}": "Далі: {area}",
+        "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.": "Не залишилося спроб іспиту для: {pools}. Твого викладача повідомлено, і він може відкрити новий цикл сертифікації.",
+        "Geöffnet: {area}": "Відкрито: {area}",
+        "Bisher: {failed}, {left}": "Поки що: {failed}, {left}"
     }
 }

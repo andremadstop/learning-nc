@@ -148,6 +148,20 @@
 					</span>
 				</div>
 
+				<!-- GitHub #92: the exam tab also leads on — to the certificate once there is one, to
+					the instructors when a pool has no attempt left. -->
+				<div v-if="examCertReady && examGuide && examGuide.certificate" class="exam-next-step" data-test="exam-tab-certificate">
+					<NcButton variant="primary" data-test="exam-tab-certificate-button" @click="guideTo('summary')">
+						{{ t('learning', 'Zu meinem Zertifikat') }}
+					</NcButton>
+				</div>
+				<NcNoteCard v-else-if="examExhaustedPools.length > 0" type="warning" class="exam-next-step" data-test="exam-tab-exhausted">
+					<p>{{ t('learning', 'Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.', { pools: examExhaustedPools.join(', ') }) }}</p>
+					<NcButton v-if="examGuide && examGuide.askInstructor" variant="primary" data-test="exam-tab-ask" @click="guideTo('my-questions')">
+						{{ t('learning', 'Frage an die Kursleitung') }}
+					</NcButton>
+				</NcNoteCard>
+
 				<div v-if="coursePools.length > 0" class="pool-list">
 					<div
 						v-for="pool in sortedPools"
@@ -233,6 +247,8 @@
 				:examScope="selectedLearningPool.exam_scope || null"
 				:pool-name="selectedLearningPool.pool_name || ''"
 				:gamification-enabled="gamificationEnabled"
+				:guide="examGuide"
+				@guide="guideTo"
 				@back="onExamBack" />
 		</div>
 
@@ -467,6 +483,13 @@
 						</template>
 					</li>
 				</ul>
+
+				<!-- GitHub #92: all required content done — one button leads on to the next step -->
+				<div v-if="allVideoGatesComplete && materialsNext" class="materials-next-step" data-test="materials-next-step">
+					<NcButton variant="primary" data-test="materials-next-step-button" @click="guideTo(materialsNext)">
+						{{ materialsNextLabel }}
+					</NcButton>
+				</div>
 
 				<!-- GitHub #90 (U2): learners get has_material_folder, not the folder path -->
 				<template v-if="course && (course.material_folder || course.has_material_folder)">
@@ -723,12 +746,16 @@ import { documentConfirmState, practiseModesOpen, requiredDocumentUrl } from '..
 import RequiredContentSettings from './RequiredContentSettings.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
-import { lernraumTabIds, previewsCourseAsStudent } from '../utils/courseView.js'
+import { abschlussTabIds, kommunikationTabIds, lernraumTabIds, materialsNextStep, previewsCourseAsStudent } from '../utils/courseView.js'
 import { getPassStatus } from '../services/CourseService.js'
+import { attemptsLeft } from '../utils/certificationCycle.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 export default {
 	name: 'CourseTabLernraum',
+
+	// GitHub #92: declared (the #65 ratchet); the older events are still in its baseline
+	emits: ['guide'],
 
 	components: {
 		AuthFlowSimulator,
@@ -1008,6 +1035,22 @@ export default {
 		examCertRequiresPools() {
 			return this.examCertStatus?.requirement === 'required_pools'
 		},
+		// GitHub #92: a valid certificate exists (certificate_issued: not revoked, not expired)
+		examCertReady() {
+			return this.examCertStatus?.certificate_issued === true
+		},
+		// GitHub #92 / #87: the course pools on which this learner has no attempt left in the
+		// current cycle and which the certificate still needs
+		examExhaustedPools() {
+			const status = this.examCertStatus
+			if (!status || status.passed === true) {
+				return []
+			}
+			return this.sortedPools
+				.filter((pool) => attemptsLeft(status.attempt_policy, pool.pool_id) === 0)
+				.filter((pool) => !this.examCertRequiresPools || (this.examCertPool(pool) && this.examCertPool(pool).passed !== true))
+				.map((pool) => pool.pool_name)
+		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)
 		},
@@ -1058,6 +1101,41 @@ export default {
 		},
 		previewsAsStudent() {
 			return previewsCourseAsStudent(this.course, this.isInstructor)
+		},
+		// GitHub #92: the completion area this viewer has (learners and the student view)
+		guideAbschlussTabs() {
+			return abschlussTabIds(this.course, { actsAsInstructor: this.isInstructor })
+		},
+		// GitHub #92: where the result screen of a course exam may lead this viewer
+		examGuide() {
+			if (this.isInstructor) {
+				return null
+			}
+			return {
+				materials: this.isVisibleSubTab('materials'),
+				certificate: this.guideAbschlussTabs.includes('summary'),
+				askInstructor: kommunikationTabIds(this.course, { actsAsInstructor: false, aiEnabled: this.aiEnabled }).includes('my-questions'),
+			}
+		},
+		// GitHub #92: the next step after the learning materials (see materialsNextStep)
+		materialsNext() {
+			if (this.isInstructor) {
+				return null
+			}
+			return materialsNextStep(this.course, {
+				lernraumTabs: this.visibleSubTabs.map((tab) => tab.id),
+				abschlussTabs: this.guideAbschlussTabs,
+			})
+		},
+		materialsNextLabel() {
+			if (this.materialsNext === 'exam') {
+				return t('learning', 'Zur Prüfung')
+			}
+			if (this.materialsNext === 'summary') {
+				return t('learning', 'Weiter zum Abschluss')
+			}
+			const tab = this.visibleSubTabs.find((entry) => entry.id === this.materialsNext)
+			return t('learning', 'Weiter: {area}', { area: tab ? tab.label : '' })
 		},
 	},
 
@@ -1385,6 +1463,19 @@ export default {
 				this.$emit('mode-activated', tabId)
 			}
 			this.$emit('tab-change', tabId)
+		},
+		/**
+		 * GitHub #92: a "next step" button. A Lernraum leaf goes the way of its own pill (the
+		 * learning modes report the mode); every leaf goes to CourseDetail, which also opens
+		 * other areas (completion, communication) and moves the focus there.
+		 *
+		 * @param {string} tabId the leaf to open
+		 */
+		guideTo(tabId) {
+			if (['training', 'leitner', 'exam'].includes(tabId) && this.isVisibleSubTab(tabId)) {
+				this.$emit('mode-activated', tabId)
+			}
+			this.$emit('guide', tabId)
 		},
 		openCourseTool(toolId) {
 			this.ensureActiveToolVisible()
@@ -1714,6 +1805,20 @@ export default {
 </script>
 
 <style scoped>
+/* GitHub #92: the next step on the exam tab */
+.exam-next-step {
+	margin: 8px 0 12px;
+}
+.exam-next-step p {
+	margin-bottom: 8px;
+}
+/* GitHub #92: the next step under the required content */
+.materials-next-step {
+	display: flex;
+	justify-content: flex-end;
+	margin: 12px 0 20px;
+}
+
 .course-tab-lernraum {
 	display: flex;
 	flex-direction: column;

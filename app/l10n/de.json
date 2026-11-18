@@ -4065,6 +4065,27 @@
         "_%n Pflichtdokument ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können es nicht öffnen._::_%n Pflichtdokumente sind nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können sie nicht öffnen._": [
             "%n Pflichtdokument ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können es nicht öffnen.",
             "%n Pflichtdokumente sind nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können sie nicht öffnen."
-        ]
+        ],
+        "Nächster Versuch möglich in {time}": "Nächster Versuch möglich in {time}",
+        "Nächster Versuch möglich ab {time} Uhr": "Nächster Versuch möglich ab {time} Uhr",
+        "Zu meinem Zertifikat": "Zu meinem Zertifikat",
+        "Zur Prüfungsübersicht": "Zur Prüfungsübersicht",
+        "Zurück zum Lernmaterial": "Zurück zum Lernmaterial",
+        "Prüfung wiederholen": "Prüfung wiederholen",
+        "_%n Versuch nicht bestanden_::_%n Versuche nicht bestanden_": [
+            "%n Versuch nicht bestanden",
+            "%n Versuche nicht bestanden"
+        ],
+        "_%n Versuch übrig_::_%n Versuche übrig_": [
+            "%n Versuch übrig",
+            "%n Versuche übrig"
+        ],
+        "Du kannst die Prüfung jetzt wiederholen.": "Du kannst die Prüfung jetzt wiederholen.",
+        "Zur Prüfung": "Zur Prüfung",
+        "Weiter zum Abschluss": "Weiter zum Abschluss",
+        "Weiter: {area}": "Weiter: {area}",
+        "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.": "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.",
+        "Geöffnet: {area}": "Geöffnet: {area}",
+        "Bisher: {failed}, {left}": "Bisher: {failed}, {left}"
     }
 }

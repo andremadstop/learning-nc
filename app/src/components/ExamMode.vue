@@ -187,7 +187,7 @@
           <p v-if="certificationMessage.retake" class="certification-result__retake">{{ certificationMessage.retake }}</p>
           <NcButton
             v-if="certificationMessage.verificationId"
-            variant="primary"
+            :variant="resultGuidance && resultGuidance.kind === 'certificate' ? 'secondary' : 'primary'"
             class="certification-result__action"
             @click="certificateModalOpen = true"
           >
@@ -282,7 +282,64 @@
 
       <div v-if="resultsData && resultsData.xp_earned" class="xp-earned">+{{ resultsData.xp_earned }} XP</div>
 
-      <div class="start-actions">
+      <!-- GitHub #92: in a certifying course every result ends with the one next step as the
+        primary button; retaking is never the bright button after a pass. -->
+      <div v-if="resultGuidance" class="result-guidance" data-test="result-guidance">
+        <p v-if="resultGuidance.attemptsLine" class="result-guidance__attempts" data-test="result-attempts">
+          {{ resultGuidance.attemptsLine }}
+        </p>
+        <template v-if="resultGuidance.kind === 'retry' && waitSeconds > 0">
+          <p class="result-guidance__wait" data-test="result-wait">
+            <span aria-hidden="true">{{ t('learning', 'Nächster Versuch möglich in {time}', { time: waitClock }) }}</span>
+            <span class="hidden-visually">{{ t('learning', 'Nächster Versuch möglich ab {time} Uhr', { time: nextStartClock }) }}</span>
+          </p>
+        </template>
+        <p class="hidden-visually" role="status">{{ retryReadyAnnouncement }}</p>
+        <div class="start-actions">
+          <NcButton
+            v-if="resultGuidance.kind === 'certificate'"
+            variant="primary"
+            wide
+            data-test="guide-certificate"
+            @click="$emit('guide', 'summary')">
+            {{ t('learning', 'Zu meinem Zertifikat') }}
+          </NcButton>
+          <NcButton
+            v-else-if="resultGuidance.kind === 'next-pool'"
+            variant="primary"
+            wide
+            data-test="guide-pools"
+            @click="$emit('back')">
+            {{ t('learning', 'Zur Prüfungsübersicht') }}
+          </NcButton>
+          <NcButton
+            v-else-if="resultGuidance.kind === 'ask'"
+            variant="primary"
+            wide
+            data-test="guide-ask"
+            @click="$emit('guide', 'my-questions')">
+            {{ t('learning', 'Frage an die Kursleitung') }}
+          </NcButton>
+          <NcButton
+            v-else-if="resultGuidance.kind === 'retry' && guide && guide.materials"
+            variant="primary"
+            wide
+            data-test="guide-materials"
+            @click="$emit('guide', 'materials')">
+            {{ t('learning', 'Zurück zum Lernmaterial') }}
+          </NcButton>
+          <NcButton
+            v-if="resultGuidance.retake"
+            :variant="resultGuidance.kind === 'retry' && !(guide && guide.materials) ? 'primary' : 'tertiary'"
+            :disabled="resultGuidance.kind === 'retry' && waitSeconds > 0"
+            data-test="guide-retake"
+            @click="retakeExam">
+            {{ t('learning', 'Prüfung wiederholen') }}
+          </NcButton>
+          <NcButton v-if="resultGuidance.kind !== 'next-pool'" variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        </div>
+      </div>
+      <div v-else class="start-actions">
         <NcButton variant="primary" wide @click="retakeExam">{{ t('learning', 'Retake Exam') }}</NcButton>
         <NcButton variant="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
@@ -364,7 +421,12 @@ export default {
     poolName: { type: String, default: '' },
     // GitHub #36: the admin's global gamification switch. Off: no speed score (questions/minute).
     gamificationEnabled: { type: Boolean, default: true },
+    // GitHub #92: where the result screen of a certifying course may lead —
+    // { materials, certificate, askInstructor } (booleans: the course offers that tab to this
+    // viewer). null = no guidance, the result screen stays as it was (pool window, tests).
+    guide: { type: Object, default: null },
   },
+  emits: ['back', 'guide'],
   data() {
     return {
       // True after a pointer press, false again after Tab: a button clicked with the mouse keeps
@@ -388,6 +450,10 @@ export default {
       // Server clock minus local clock, in seconds (audit #181): the countdown runs on the
       // server's time, so a wrong local clock cannot end the exam early or late.
       clockOffsetSeconds: 0,
+      // GitHub #92: the clock of the countdown to the next possible start (server seconds)
+      guideNowSeconds: 0,
+      guideTimer: null,
+      retryReadyAnnouncement: '',
       lastLockedStatusPollAt: 0,
       attemptNo: null,
       resumedFromServer: false,
@@ -732,6 +798,76 @@ export default {
       }
       return { type: 'warning', text: t('learning', 'Not passed yet. The pass mark is {percent}%.', { percent: c.threshold }), retake, ...extra }
     },
+    /**
+     * GitHub #92: the one next step after a counting exam in a certifying course, or null (pool
+     * window, practice, a failed certificate check, no guide from the course: unchanged screen).
+     * - 'certificate': a valid certificate exists — to the completion area;
+     * - 'next-pool': this pool is passed, other required pools are still open — to the pool list;
+     * - 'ask': no attempt left on this pool, or a pass that cannot become a certificate (revoked
+     *   without a new cycle, expired without an open period) — a question to the instructors;
+     * - 'retry': not passed with attempts left — countdown, attempts and back to the materials.
+     * retake: whether "retake" is still offered (always as the quiet button after a pass).
+     */
+    resultGuidance() {
+      if (!this.guide || this.screen !== 'results' || !this.certificationApplies) return null
+      const c = this.certification
+      // GitHub #35: the instructor in the student view gets no certificate; nothing to lead to.
+      if (c.issuance_error === 'instructor_of_course') return null
+      const cert = c.certificate && typeof c.certificate === 'object' ? c.certificate : null
+      const certValid = !!cert && !cert.revoked && !cert.expired
+      const poolPassed = c.exam_passed === true
+        || (Array.isArray(c.pools) && c.pools.some(p => Number(p.pool_id) === Number(c.pool_id) && p.passed))
+      if ((c.certificate_issued || (c.passed && certValid && !c.issuance_error)) && this.guide.certificate) {
+        return { kind: 'certificate', retake: true, attemptsLine: '' }
+      }
+      if (poolPassed) {
+        const missing = c.requirement === 'required_pools' && Array.isArray(c.pools) && c.pools.some(p => !p.passed)
+        if (missing && c.counts_for_requirement !== false) {
+          return { kind: 'next-pool', retake: true, attemptsLine: '' }
+        }
+        // a pass that the messages above send to the instructor (revoked, expired, not issued)
+        if (c.passed && cert && (cert.revoked || cert.expired) && this.guide.askInstructor) {
+          // exams taken now renew nothing (see certificationMessage); retaking leads nowhere
+          return { kind: 'ask', retake: false, attemptsLine: '' }
+        }
+        return null
+      }
+      const policy = c.attempt_policy
+      const left = attemptsLeft(policy, c.pool_id)
+      if (left === 0) {
+        return this.guide.askInstructor ? { kind: 'ask', retake: false, attemptsLine: '' } : null
+      }
+      let attemptsLine = ''
+      if (left !== null) {
+        const used = Number(policy.total_limit) - left
+        attemptsLine = t('learning', 'Bisher: {failed}, {left}', {
+          failed: n('learning', '%n Versuch nicht bestanden', '%n Versuche nicht bestanden', used),
+          left: n('learning', '%n Versuch übrig', '%n Versuche übrig', left),
+        })
+      }
+      return { kind: 'retry', retake: true, attemptsLine }
+    },
+    // GitHub #92: the next possible start on this pool (server seconds), from the exam result
+    guideNextStartAt() {
+      const at = Number(this.certification?.attempt_policy?.next_start_at)
+      return this.resultGuidance?.kind === 'retry' && Number.isFinite(at) && at > 0 ? at : null
+    },
+    waitSeconds() {
+      if (this.guideNextStartAt === null) return 0
+      return Math.max(0, Math.ceil(this.guideNextStartAt - this.guideNowSeconds))
+    },
+    waitClock() {
+      const total = this.waitSeconds
+      const h = Math.floor(total / 3600)
+      const m = Math.floor((total % 3600) / 60)
+      const sec = String(total % 60).padStart(2, '0')
+      return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
+    },
+    nextStartClock() {
+      if (this.guideNextStartAt === null) return ''
+      const local = (this.guideNextStartAt - (this.clockOffsetSeconds || 0)) * 1000
+      return new Date(local).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    },
     resultBannerClass() {
       if (this.scoreOnlyResult) return 'result-banner--neutral';
       return this.passedExam ? 'result-banner--passed' : 'result-banner--failed';
@@ -753,6 +889,24 @@ export default {
     }
   },
   watch: {
+    // GitHub #92: the countdown runs only while there is something to wait for
+    guideNextStartAt: {
+      immediate: true,
+      handler(at) {
+        this.stopGuideTimer()
+        this.retryReadyAnnouncement = ''
+        if (at === null) return
+        this.guideNowSeconds = this.serverNowSeconds()
+        if (this.waitSeconds <= 0) return
+        this.guideTimer = setInterval(() => {
+          this.guideNowSeconds = this.serverNowSeconds()
+          if (this.waitSeconds <= 0) {
+            this.stopGuideTimer()
+            this.retryReadyAnnouncement = t('learning', 'Du kannst die Prüfung jetzt wiederholen.')
+          }
+        }, 1000)
+      },
+    },
     contentLanguage(newLang, oldLang) {
       if (!this.questionLanguage || this.questionLanguage === oldLang) {
         this.questionLanguage = newLang || '';
@@ -1485,8 +1639,15 @@ export default {
       }
       return t('learning', 'You can retake the exam. Attempts per pool in this course in 24 hours: at most {limit}.', { limit: policy.limit_per_day });
     },
+    stopGuideTimer() {
+      if (this.guideTimer) {
+        clearInterval(this.guideTimer);
+        this.guideTimer = null;
+      }
+    },
     retakeExam() {
       this.certificateModalOpen = false;
+      this.stopGuideTimer();
       this.cleanupSnake();
       this.screen = 'setup';
       this.session = null;
@@ -1525,6 +1686,7 @@ export default {
     window.removeEventListener('keydown', this.handleExamHotkeys);
     window.removeEventListener('pointerdown', this.markPointerFocus, true);
     if (this.timerInterval) clearInterval(this.timerInterval);
+    this.stopGuideTimer();
     this.stopStatusPolling();
     this.releaseExamLock();
     this.cleanupSnake();
@@ -1534,6 +1696,11 @@ export default {
 
 <style scoped>
 .exam-mode { max-width: 900px; margin: 0 auto; }
+/* GitHub #92: the next step after a result */
+.result-guidance { margin-top: 16px; }
+.result-guidance__attempts,
+.result-guidance__wait { text-align: center; margin: 4px 0; color: var(--color-main-text); }
+.result-guidance__wait { font-variant-numeric: tabular-nums; color: var(--color-text-maxcontrast); }
 .timer-display.timer-untimed { font-size: 18px; font-weight: 600; color: var(--color-text-maxcontrast); }
 .review-explanation { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
 

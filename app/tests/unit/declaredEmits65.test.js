@@ -69,7 +69,6 @@ const UNDECLARED_EMITS_BASELINE = {
 	'components/CourseTabWettbewerb.vue': ['arena-sub-mode', 'error', 'preset-consumed', 'selectStudent', 'tab-change'],
 	'components/DnsResolver.vue': ['result'],
 	'components/DuelMode.vue': ['back', 'preset-consumed'],
-	'components/ExamMode.vue': ['back'],
 	'components/FirewallBuilder.vue': ['result'],
 	'components/GameTimer.vue': ['expired'],
 	'components/GameshowMode.vue': ['back'],

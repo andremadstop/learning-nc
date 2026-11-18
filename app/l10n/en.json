@@ -4065,6 +4065,27 @@
         "_%n Pflichtdokument ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können es nicht öffnen._::_%n Pflichtdokumente sind nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können sie nicht öffnen._": [
             "%n required document is shared view-only without download, or cannot be read: learners cannot open it.",
             "%n required documents are shared view-only without download, or cannot be read: learners cannot open them."
-        ]
+        ],
+        "Nächster Versuch möglich in {time}": "Next attempt possible in {time}",
+        "Nächster Versuch möglich ab {time} Uhr": "Next attempt possible from {time}",
+        "Zu meinem Zertifikat": "Go to my certificate",
+        "Zur Prüfungsübersicht": "Back to the exam overview",
+        "Zurück zum Lernmaterial": "Back to the learning materials",
+        "Prüfung wiederholen": "Retake exam",
+        "_%n Versuch nicht bestanden_::_%n Versuche nicht bestanden_": [
+            "%n attempt failed",
+            "%n attempts failed"
+        ],
+        "_%n Versuch übrig_::_%n Versuche übrig_": [
+            "%n attempt left",
+            "%n attempts left"
+        ],
+        "Du kannst die Prüfung jetzt wiederholen.": "You can retake the exam now.",
+        "Zur Prüfung": "Go to the exam",
+        "Weiter zum Abschluss": "Continue to completion",
+        "Weiter: {area}": "Continue: {area}",
+        "Keine Prüfungsversuche mehr für: {pools}. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen.": "No exam attempts left for: {pools}. Your instructor has been notified and can open a new certification cycle.",
+        "Geöffnet: {area}": "Opened: {area}",
+        "Bisher: {failed}, {left}": "So far: {failed}, {left}"
     }
 }

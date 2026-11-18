@@ -215,3 +215,28 @@ export function kommunikationTabIds(course, { actsAsInstructor = false, aiEnable
 export function buddiesEnabled(course) {
 	return course?.mode_config?.buddies !== false
 }
+
+/**
+ * GitHub #92: where the primary button under the learning materials leads once all required
+ * content is completed. The exam, when it is the next step: the course certifies or locks the
+ * exam until the required content is done. Otherwise the next tab of the Lernraum after the
+ * materials (Training, Leitner, … as the course offers them), else the completion area.
+ *
+ * @param {object|null|undefined} course - the course detail (snake_case fields)
+ * @param {object} options
+ * @param {string[]} options.lernraumTabs - lernraumTabIds() for this viewer
+ * @param {string[]} [options.abschlussTabs] - abschlussTabIds() for this viewer
+ * @return {string|null} a leaf tab id, or null when nothing follows
+ */
+export function materialsNextStep(course, { lernraumTabs = [], abschlussTabs = [] } = {}) {
+	const examIsNext = course?.cert_enabled === true || course?.video_gate_enabled === true
+	if (examIsNext && lernraumTabs.includes('exam')) {
+		return 'exam'
+	}
+	const index = lernraumTabs.indexOf('materials')
+	const after = index >= 0 ? lernraumTabs.slice(index + 1) : []
+	if (after.length > 0) {
+		return after[0]
+	}
+	return abschlussTabs.includes('summary') ? 'summary' : null
+}
