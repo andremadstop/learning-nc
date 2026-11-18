@@ -61,8 +61,14 @@ class CertificationTriggerTest extends TestCase {
         bool $member = true,
         ?LoggerInterface $logger = null,
         ?FakeQueryBuilder &$builder = null,
+        array $recentStarts = [],
     ): CertificationTrigger {
         $builder = new FakeQueryBuilder(new FakeResult(fetchQueue: $row === false ? [] : [$row]));
+        // GitHub #92: the second query reads the recent starts on the pool for next_start_at
+        $startsBuilder = new FakeQueryBuilder(new FakeResult(fetchQueue: array_map(
+            static fn(int $s): array => ['started_at' => (string)$s],
+            $recentStarts,
+        )));
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnArgument(2);
         $courseMapper = $this->createMock(CourseMapper::class);
@@ -74,7 +80,7 @@ class CertificationTriggerTest extends TestCase {
             $members->method('findByCourseAndUser')->willThrowException(new DoesNotExistException('none'));
         }
         return new CertificationTrigger(
-            new FakeDbConnection([$builder]),
+            new FakeDbConnection([$builder, $startsBuilder]),
             $courseMapper,
             $members,
             $pass,
@@ -101,7 +107,7 @@ class CertificationTriggerTest extends TestCase {
         $this->assertSame(85, $block['exam_score']);
         $this->assertTrue($block['exam_passed']);
         $this->assertTrue($block['counts_for_requirement'], 'without required pools every counting exam counts');
-        $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool_context'], $block['attempt_policy']);
+        $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool_context', 'next_start_at' => null], $block['attempt_policy']);
         // The session is read for this user only — another user's session id must not count.
         $this->assertContains(['type' => 'eq', 'left' => 'user_id', 'right' => ['value' => self::USER, 'type' => null]], $builder->andWhereCalls);
     }
@@ -226,5 +232,31 @@ class CertificationTriggerTest extends TestCase {
 
         $this->assertSame('evaluation_failed', $block['error']);
         $this->assertStringNotContainsString('db gone', json_encode($block));
+    }
+
+    /**
+     * GitHub #92: after a failed attempt the result screen counts down to the next start. The
+     * block names it from the attempt that just started (default cooldown 10 minutes).
+     */
+    public function testBlockNamesTheNextPossibleStartAfterTheCooldown(): void {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('evaluate')->willReturn(new PassResult(false, 40, 80, false, null, true, PassResult::REQUIREMENT_ANY_EXAM, []));
+        $started = time() - 120;
+
+        $block = $this->makeTrigger($this->sessionRow(['correct_answers' => '8']), $pass, recentStarts: [$started])
+            ->afterSessionCompleted(self::SESSION_ID, self::USER);
+
+        $this->assertSame($started + 600, $block['attempt_policy']['next_start_at']);
+    }
+
+    public function testBlockHasNoNextStartWhenTheCooldownIsOver(): void {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('evaluate')->willReturn(new PassResult(false, 40, 80, false, null, true, PassResult::REQUIREMENT_ANY_EXAM, []));
+
+        $block = $this->makeTrigger($this->sessionRow(['correct_answers' => '8']), $pass, recentStarts: [time() - 3600])
+            ->afterSessionCompleted(self::SESSION_ID, self::USER);
+
+        $this->assertArrayHasKey('next_start_at', $block['attempt_policy']);
+        $this->assertNull($block['attempt_policy']['next_start_at']);
     }
 }
