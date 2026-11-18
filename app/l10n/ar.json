@@ -4128,6 +4128,7 @@
         "Bisher: {failed}, {left}": "حتى الآن: {failed}، {left}",
         "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "فتح جولة اعتماد جديدة لـ {name}؟ لن تُحتسب الاختبارات السابقة بعد ذلك، وتبدأ المحاولات من جديد، ويجب تأكيد المستندات الإلزامية مرة أخرى. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
         "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "فتح جولة اعتماد جديدة لـ {name}؟ لن تُحتسب الاختبارات السابقة بعد ذلك، وتبدأ المحاولات من جديد. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
-        "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "فتح جولة اعتماد جديدة لـ {name}؟ تبدأ محاولات الاختبار من جديد. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل."
+        "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "فتح جولة اعتماد جديدة لـ {name}؟ تبدأ محاولات الاختبار من جديد. تبقى الاختبارات والتأكيدات والشهادات السابقة محفوظة كدليل.",
+        "Nächster Versuch möglich am {date} ab {time} Uhr": "المحاولة التالية ممكنة يوم {date} ابتداءً من الساعة {time}"
     }
 }

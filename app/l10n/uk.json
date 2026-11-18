@@ -4098,6 +4098,7 @@
         "Bisher: {failed}, {left}": "Поки що: {failed}, {left}",
         "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, die Versuche beginnen neu, und die Pflichtdokumente müssen erneut bestätigt werden. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Відкрити новий цикл сертифікації для {name}? Попередні іспити більше не зараховуватимуться, спроби почнуться заново, а обов’язкові документи потрібно буде підтвердити знову. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
         "Neuen Zertifizierungszyklus für {name} öffnen? Frühere Prüfungen zählen dann nicht mehr, und die Versuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Відкрити новий цикл сертифікації для {name}? Попередні іспити більше не зараховуватимуться, а спроби почнуться заново. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
-        "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Відкрити новий цикл сертифікації для {name}? Спроби скласти іспит почнуться заново. Попередні іспити, підтвердження та сертифікати зберігаються як доказ."
+        "Neuen Zertifizierungszyklus für {name} öffnen? Die Prüfungsversuche beginnen neu. Bisherige Prüfungen, Bestätigungen und Zertifikate bleiben als Nachweis erhalten.": "Відкрити новий цикл сертифікації для {name}? Спроби скласти іспит почнуться заново. Попередні іспити, підтвердження та сертифікати зберігаються як доказ.",
+        "Nächster Versuch möglich am {date} ab {time} Uhr": "Наступна спроба можлива {date} з {time}"
     }
 }

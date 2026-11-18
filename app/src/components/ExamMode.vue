@@ -291,7 +291,7 @@
         <template v-if="resultGuidance.kind === 'retry' && waitSeconds > 0">
           <p class="result-guidance__wait" data-test="result-wait">
             <span aria-hidden="true">{{ t('learning', 'Nächster Versuch möglich in {time}', { time: waitClock }) }}</span>
-            <span class="hidden-visually">{{ t('learning', 'Nächster Versuch möglich ab {time} Uhr', { time: nextStartClock }) }}</span>
+            <span class="hidden-visually" data-test="result-next-start">{{ nextStartText }}</span>
           </p>
         </template>
         <p class="hidden-visually" role="status">{{ retryReadyAnnouncement }}</p>
@@ -378,6 +378,8 @@ import NcModal from '@nextcloud/vue/components/NcModal';
 import Certificate from './Certificate.vue';
 import { shouldShowNote } from '../utils/instructorNoteUtils.js';
 import { attemptsLeft } from '../utils/certificationCycle.js';
+import { getCanonicalLocale } from '@nextcloud/l10n';
+import { intlLocale } from '../utils/relativeTime.js';
 
 // Seconds before the deadline at which the countdown submits the exam. The server accepts the
 // final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
@@ -392,6 +394,10 @@ const EXAM_MAX_SECONDS = 7200;
 // GitHub #47: a course-configured count (up to 500) is sized by the same rule up to
 // ExamScope::MAX_MINUTES; TrainingService grants that much when the course set the count.
 const EXAM_SCOPE_MAX_SECONDS = 600 * 60;
+
+// Placeholder values are shown as written: Vue escapes {{ }} and attributes itself; the default
+// escaping of @nextcloud/l10n would show "Netzwerk &amp; Sicherheit" (GitHub #87 / #92 review).
+const RAW = { escape: false, sanitize: false };
 
 export default {
   name: 'ExamMode',
@@ -864,7 +870,7 @@ export default {
         attemptsLine = t('learning', 'Bisher: {failed}, {left}', {
           failed: n('learning', '%n Versuch nicht bestanden', '%n Versuche nicht bestanden', used),
           left: n('learning', '%n Versuch übrig', '%n Versuche übrig', left),
-        })
+        }, undefined, RAW)
       }
       return { kind: 'retry', retake: true, attemptsLine }
     },
@@ -884,10 +890,20 @@ export default {
       const sec = String(total % 60).padStart(2, '0')
       return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
     },
-    nextStartClock() {
+    // GitHub #92 (review): the screen-reader text for the next start, in the Nextcloud locale (not
+    // the browser's), and with the day when it is not today — the 24-hour limit moves it to
+    // tomorrow, while sighted users see the countdown.
+    nextStartText() {
       if (this.guideNextStartAt === null) return ''
-      const local = (this.guideNextStartAt - (this.clockOffsetSeconds || 0)) * 1000
-      return new Date(local).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      const at = new Date((this.guideNextStartAt - (this.clockOffsetSeconds || 0)) * 1000)
+      const locale = intlLocale(getCanonicalLocale())
+      const time = at.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+      const now = this.guideNowSeconds > 0 ? (this.guideNowSeconds - (this.clockOffsetSeconds || 0)) * 1000 : Date.now()
+      if (at.toDateString() === new Date(now).toDateString()) {
+        return t('learning', 'Nächster Versuch möglich ab {time} Uhr', { time }, undefined, RAW)
+      }
+      const date = at.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })
+      return t('learning', 'Nächster Versuch möglich am {date} ab {time} Uhr', { date, time }, undefined, RAW)
     },
     resultBannerClass() {
       if (this.scoreOnlyResult) return 'result-banner--neutral';

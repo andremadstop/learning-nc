@@ -134,6 +134,30 @@ describe('ExamMode result guidance (GitHub #92)', () => {
 		expect(exam.guideTimer).toBeNull()
 	})
 
+	// GitHub #92 (review): the screen-reader line used the browser locale ("02:30 PM Uhr") and gave
+	// no day, though the 24-hour limit moves the next start to tomorrow.
+	it('the screen-reader line names the next start in the Nextcloud locale, with the day when it is not today', async () => {
+		const { setLocale } = await import('@nextcloud/l10n')
+		const before = globalThis._nc_l10n_locale
+		setLocale('de_DE')
+		try {
+			vi.useFakeTimers()
+			vi.setSystemTime(new Date(2026, 10, 18, 10, 0, 0))
+			const now = Math.floor(Date.now() / 1000)
+			const failed = (nextStartAt) => ({ applicable: true, passed: false, threshold: 70, exam_passed: false, requirement: 'any_exam', certificate_issued: false, certificate: null, pool_id: 3, attempt_policy: policy({ total_limit: 3, used_by_pool: { 3: 1 }, next_start_at: nextStartAt }) })
+
+			await showResult(failed(now + 90 * 60))
+			expect(button('result-next-start').textContent.trim()).toBe('Nächster Versuch möglich ab 11:30 Uhr')
+			app.unmount()
+			host.remove()
+
+			await showResult(failed(Math.floor(new Date(2026, 10, 19, 9, 15, 0).getTime() / 1000)))
+			expect(button('result-next-start').textContent.trim()).toBe('Nächster Versuch möglich am Donnerstag, 19. November ab 09:15 Uhr')
+		} finally {
+			setLocale(before ?? 'en')
+		}
+	})
+
 	it('the countdown stops when the exam view goes away', async () => {
 		vi.useFakeTimers()
 		const now = Math.floor(Date.now() / 1000)
