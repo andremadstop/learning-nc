@@ -19,6 +19,7 @@ use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
 use OCA\Learning\Service\TelosService;
+use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -32,6 +33,12 @@ use Psr\Log\LoggerInterface;
  */
 #[AllowMockObjectsWithoutExpectations]
 class CsvFormulaInjectionTest extends TestCase {
+
+    private function gamificationOn(): XpService {
+        $xp = $this->createMock(XpService::class);
+        $xp->method('isGamificationEnabled')->willReturn(true);
+        return $xp;
+    }
 
     private function courseController(CourseService $courseService): CourseController {
         return new CourseController(
@@ -113,6 +120,7 @@ class CsvFormulaInjectionTest extends TestCase {
             $summary,
             $courseService,
             $this->createMock(TelosService::class),
+            $this->gamificationOn(),
             'teacher'
         );
 

@@ -7,6 +7,7 @@ use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CsvFormulaGuard;
 use OCA\Learning\Service\TelosService;
+use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
@@ -21,6 +22,7 @@ class SummaryController extends Controller {
     private CourseSummaryService $summaryService;
     private CourseService $courseService;
     private TelosService $telosService;
+    private XpService $xpService;
     private ?string $userId;
     private \OCA\Learning\Service\CsvExportL10n $csvL10n;
 
@@ -30,6 +32,7 @@ class SummaryController extends Controller {
         CourseSummaryService $summaryService,
         CourseService $courseService,
         TelosService $telosService,
+        XpService $xpService,
         ?string $userId,
         ?\OCP\IL10N $l10n = null
     ) {
@@ -37,6 +40,7 @@ class SummaryController extends Controller {
         $this->summaryService = $summaryService;
         $this->courseService = $courseService;
         $this->telosService = $telosService;
+        $this->xpService = $xpService;
         $this->userId = $userId;
         $this->csvL10n = new \OCA\Learning\Service\CsvExportL10n($l10n);
     }
@@ -135,23 +139,17 @@ class SummaryController extends Controller {
             }
 
             $data = $this->summaryService->getClassSummary($courseId);
+            $columns = $this->classSummaryColumns($this->xpService->isGamificationEnabled());
             $handle = fopen('php://temp', 'r+');
             // GitHub #48: headers in the exporting user's language
-            CsvFormulaGuard::writeRow($handle, $this->csvL10n->classSummaryHeader());
+            CsvFormulaGuard::writeRow($handle, array_column($columns, 0));
 
             foreach ($data['students'] as $uid => $s) {
-                CsvFormulaGuard::writeRow($handle, [
-                    (string)$uid,
-                    $s['xp']['total_xp'] ?? 0,
-                    $s['xp']['current_level'] ?? 1,
-                    $s['sessions']['overall_accuracy'] ?? 0,
-                    $s['mastery']['mastery_rate'] ?? 0,
-                    $s['sessions']['total_sessions'] ?? 0,
-                    $s['streak']['current_streak'] ?? 0,
-                    count($s['badges'] ?? []),
-                    $s['duels']['wins'] ?? 0,
-                    $s['swarm']['approved_contributions'] ?? 0,
-                ]);
+                $row = [];
+                foreach ($columns as [, $value]) {
+                    $row[] = $value((string)$uid, $s);
+                }
+                CsvFormulaGuard::writeRow($handle, $row);
             }
 
             rewind($handle);
@@ -162,5 +160,37 @@ class SummaryController extends Controller {
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
         }
+    }
+
+    /**
+     * Columns of the class summary CSV: header and value of each, in one list so that the header and
+     * the rows cannot drift apart. GitHub #79: without gamification (the admin's switch, as in the
+     * participant table since #36) XP, level, streak, badges, duels and swarm contributions are
+     * frozen old values or zero, so those columns are left out.
+     *
+     * @return list<array{0: string, 1: callable(string, array<string, mixed>): (int|float|string)}>
+     */
+    private function classSummaryColumns(bool $gamificationEnabled): array {
+        $header = $this->csvL10n->classSummaryHeader();
+        $columns = [
+            [$header[0], static fn (string $uid, array $s) => $uid, false],
+            [$header[1], static fn (string $uid, array $s) => $s['xp']['total_xp'] ?? 0, true],
+            [$header[2], static fn (string $uid, array $s) => $s['xp']['current_level'] ?? 1, true],
+            [$header[3], static fn (string $uid, array $s) => $s['sessions']['overall_accuracy'] ?? 0, false],
+            [$header[4], static fn (string $uid, array $s) => $s['mastery']['mastery_rate'] ?? 0, false],
+            [$header[5], static fn (string $uid, array $s) => $s['sessions']['total_sessions'] ?? 0, false],
+            [$header[6], static fn (string $uid, array $s) => $s['streak']['current_streak'] ?? 0, true],
+            [$header[7], static fn (string $uid, array $s) => count($s['badges'] ?? []), true],
+            [$header[8], static fn (string $uid, array $s) => $s['duels']['wins'] ?? 0, true],
+            [$header[9], static fn (string $uid, array $s) => $s['swarm']['approved_contributions'] ?? 0, true],
+        ];
+        $kept = [];
+        foreach ($columns as [$title, $value, $gamification]) {
+            if ($gamification && !$gamificationEnabled) {
+                continue;
+            }
+            $kept[] = [$title, $value];
+        }
+        return $kept;
     }
 }

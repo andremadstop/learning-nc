@@ -16,6 +16,7 @@ use OCA\Learning\Service\Llm\ConsentService;
 use OCA\Learning\Service\Llm\LlmConsentException;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\TelosService;
+use OCA\Learning\Service\XpService;
 use OCP\IDBConnection;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -62,7 +63,7 @@ class ConsentLateFailureTest extends TestCase {
         $summary->method('generateAndCacheNarrative')->willThrowException(new LlmConsentException());
         $courses = $this->createMock(CourseService::class);
         $courses->method('findById')->willReturn(['id' => 7, 'is_instructor' => false]);
-        $controller = new SummaryController('learning', $this->createMock(IRequest::class), $summary, $courses, $this->telos, 'alice');
+        $controller = new SummaryController('learning', $this->createMock(IRequest::class), $summary, $courses, $this->telos, $this->createMock(XpService::class), 'alice');
 
         $resp = $controller->generateNarrative(7);
 

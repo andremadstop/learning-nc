@@ -7,6 +7,7 @@ use OCA\Learning\Controller\SummaryController;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\TelosService;
+use OCA\Learning\Service\XpService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -22,7 +23,7 @@ class SummaryControllerConsentTest extends TestCase {
         $courses = $this->createMock(CourseService::class);
         $courses->method('findById')->willReturn(['id' => 7, 'is_instructor' => false]);
 
-        return new SummaryController('learning', $this->createMock(IRequest::class), $summary, $courses, $telos, 'alice');
+        return new SummaryController('learning', $this->createMock(IRequest::class), $summary, $courses, $telos, $this->createMock(XpService::class), 'alice');
     }
 
     public function testNarrativeWithoutValidConsentNeverReachesTheModel(): void {

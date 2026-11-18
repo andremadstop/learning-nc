@@ -19,6 +19,7 @@ use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
 use OCA\Learning\Service\TelosService;
+use OCA\Learning\Service\XpService;
 use OCP\IL10N;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -57,6 +58,8 @@ class CsvExportLanguageTest extends TestCase {
         'Benutzer-ID' => 'User ID',
         'Beherrschung' => 'Mastery',
         'Gewonnene Duelle' => 'Duels won',
+        'Abzeichen' => 'Badges',
+        'Schwarm-Beiträge' => 'Swarm Contributions',
         'Letztes Zertifikat' => 'Last certificate',
         'Pflicht-Pools bestanden' => 'Required pools passed',
         'Pflicht-Pools gesamt' => 'Required pools total',
@@ -175,13 +178,20 @@ class CsvExportLanguageTest extends TestCase {
         ]]));
     }
 
-    public function testTheClassSummaryHeadersAreInTheExportersLanguage(): void {
+    /** @param array<string, array<string, mixed>> $students */
+    private function classSummary(bool $gamification, array $students = ['anna' => []]): SummaryController {
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('findById')->willReturn(['is_instructor' => true]);
         $summary = $this->createMock(CourseSummaryService::class);
-        $summary->method('getClassSummary')->willReturn(['students' => ['anna' => []]]);
-        $controller = new SummaryController('learning', $this->createMock(IRequest::class), $summary, $courseService,
-            $this->createMock(TelosService::class), 'teacher', $this->english());
+        $summary->method('getClassSummary')->willReturn(['students' => $students]);
+        $xp = $this->createMock(XpService::class);
+        $xp->method('isGamificationEnabled')->willReturn($gamification);
+        return new SummaryController('learning', $this->createMock(IRequest::class), $summary, $courseService,
+            $this->createMock(TelosService::class), $xp, 'teacher', $this->english());
+    }
+
+    public function testTheClassSummaryHeadersAreInTheExportersLanguage(): void {
+        $controller = $this->classSummary(true);
 
         $rows = $this->rows($controller->exportCsv(7)->render());
 
@@ -189,5 +199,44 @@ class CsvExportLanguageTest extends TestCase {
         $this->assertSame('Accuracy (%)', $rows[0][3]);
         $this->assertSame('Mastery (%)', $rows[0][4]);
         $this->assertSame('Duels won', $rows[0][8]);
+    }
+
+    /** A student with a value in every column of the class summary. */
+    private const FULL_STUDENT = [
+        'xp' => ['total_xp' => 120, 'current_level' => 3],
+        'sessions' => ['overall_accuracy' => 82.5, 'total_sessions' => 9],
+        'mastery' => ['mastery_rate' => 40],
+        'streak' => ['current_streak' => 4],
+        'badges' => ['first', 'second'],
+        'duels' => ['wins' => 2],
+        'swarm' => ['approved_contributions' => 1],
+    ];
+
+    /**
+     * GitHub #79 (comment 18.11.): without gamification the class summary CSV still had XP, level,
+     * streak, badges, duels won and swarm contributions — frozen old values or zero.
+     */
+    public function testWithoutGamificationTheClassSummaryHasOnlyTheLearningColumns(): void {
+        $rows = $this->rows($this->classSummary(false, ['anna' => self::FULL_STUDENT])->exportCsv(7)->render());
+
+        $this->assertSame(['User ID', 'Accuracy (%)', 'Mastery (%)', 'Sessions'], $rows[0]);
+        $this->assertSame(['anna', '82.5', '40', '9'], $rows[1]);
+    }
+
+    public function testWithGamificationTheClassSummaryKeepsEveryColumn(): void {
+        $rows = $this->rows($this->classSummary(true, ['anna' => self::FULL_STUDENT])->exportCsv(7)->render());
+
+        $this->assertSame(['User ID', 'XP', 'Level', 'Accuracy (%)', 'Mastery (%)', 'Sessions', 'Streak', 'Badges', 'Duels won', 'Swarm Contributions'], $rows[0]);
+        $this->assertSame(['anna', '120', '3', '82.5', '40', '9', '4', '2', '2', '1'], $rows[1]);
+    }
+
+    public function testEveryRowIsAsWideAsTheHeaderInBothModes(): void {
+        foreach ([true, false] as $gamification) {
+            $rows = $this->rows($this->classSummary($gamification, ['anna' => self::FULL_STUDENT, 'bob' => []])->exportCsv(7)->render());
+            $this->assertCount(3, $rows);
+            foreach ($rows as $row) {
+                $this->assertCount(count($rows[0]), $row, 'gamification ' . ($gamification ? 'on' : 'off'));
+            }
+        }
     }
 }
