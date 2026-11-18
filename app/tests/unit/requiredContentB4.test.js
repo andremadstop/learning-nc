@@ -244,6 +244,21 @@ describe('RequiredContentSettings rendered', () => {
 		expect(host.querySelector('[data-test="required-content-unservable"]')?.textContent).toContain('1 Pflichtdokument')
 	})
 
+	// GitHub #90: a view-only file is in the folder; "no longer in the material folder" was wrong
+	it('names a required view-only file for what it is, not as gone from the folder', async () => {
+		api.videos = [
+			{ id: 9, source_type: 'document', video_ref: '31', title: '' },
+			{ id: 10, source_type: 'document', video_ref: '32', title: '' },
+		]
+		api.documents = [
+			{ id: 31, file_name: 'policy.pdf', downloadable: false, unavailable_reason: 'no_download' },
+			{ id: 32, file_name: 'rules.md', downloadable: false, unavailable_reason: 'missing' },
+		]
+		await mountSettings()
+		expect(host.querySelector('[data-test="required-content-unservable"]')?.textContent).toContain('1 Pflichtdokument liegt nicht mehr')
+		expect(host.querySelector('[data-test="required-content-no-download"]')?.textContent).toContain('1 Pflichtdokument ist nur zum Ansehen')
+	})
+
 	it('switches "confirm again in every cycle" with the field the controller reads', async () => {
 		await mountSettings()
 		const sw = host.querySelector('[data-test="required-content-per-cycle"] .switch')

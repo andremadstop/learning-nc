@@ -4089,6 +4089,14 @@
         "Die Datei ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar. Lernende können sie deshalb nicht öffnen.": "الملف مشارَك للعرض فقط دون تنزيل، أو لا يمكن قراءته. لذلك لا يستطيع المتعلمون فتحه.",
         "„{name}“ ist Pflicht. Ohne den Eintrag wartet die Prüfung nicht mehr auf die Datei. Die Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei zurück in den Ordner kommt. Fortfahren?": "«{name}» إلزامي. بدون هذا الإدخال لن ينتظر الاختبار هذا الملف بعد الآن. تبقى التأكيدات محفوظة وتُحتسب من جديد إذا عاد الملف إلى المجلد. هل تريد المتابعة؟",
         "Die Datei liegt noch im Materialordner. Entferne sie dort, dann verschwindet sie beim nächsten Scan aus der Liste.": "لا يزال الملف موجودًا في مجلد المواد. احذفه من هناك، وسيختفي من القائمة عند الفحص التالي.",
-        "Der Eintrag konnte nicht entfernt werden.": "تعذّرت إزالة الإدخال."
+        "Der Eintrag konnte nicht entfernt werden.": "تعذّرت إزالة الإدخال.",
+        "_%n Pflichtdokument ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können es nicht öffnen._::_%n Pflichtdokumente sind nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können sie nicht öffnen._": [
+            "%n مستند إلزامي مشارَك للعرض فقط دون تنزيل أو لا يمكن قراءته: لا يستطيع المتعلمون فتحه.",
+            "%n مستند إلزامي مشارَك للعرض فقط دون تنزيل أو لا يمكن قراءته: لا يستطيع المتعلمون فتحه.",
+            "%n مستندان إلزاميان مشارَكان للعرض فقط دون تنزيل أو لا يمكن قراءتهما: لا يستطيع المتعلمون فتحهما.",
+            "%n مستندات إلزامية مشارَكة للعرض فقط دون تنزيل أو لا يمكن قراءتها: لا يستطيع المتعلمون فتحها.",
+            "%n مستندًا إلزاميًا مشارَكًا للعرض فقط دون تنزيل أو لا يمكن قراءته: لا يستطيع المتعلمون فتحها.",
+            "%n مستند إلزامي مشارَك للعرض فقط دون تنزيل أو لا يمكن قراءتها: لا يستطيع المتعلمون فتحها."
+        ]
     }
 }

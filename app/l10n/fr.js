@@ -4041,5 +4041,6 @@ OC.L10N.register(
     "„{name}“ ist Pflicht. Ohne den Eintrag wartet die Prüfung nicht mehr auf die Datei. Die Bestätigungen bleiben erhalten und zählen wieder, wenn die Datei zurück in den Ordner kommt. Fortfahren?" : "« {name} » est obligatoire. Sans cette entrée, l’examen n’attend plus ce fichier. Les confirmations sont conservées et comptent de nouveau si le fichier revient dans le dossier. Continuer ?",
     "Die Datei liegt noch im Materialordner. Entferne sie dort, dann verschwindet sie beim nächsten Scan aus der Liste." : "Le fichier se trouve encore dans le dossier des supports. Supprime-le là-bas : il disparaîtra de la liste lors de la prochaine analyse.",
     "Der Eintrag konnte nicht entfernt werden." : "L’entrée n’a pas pu être retirée.",
+    "_%n Pflichtdokument ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können es nicht öffnen._::_%n Pflichtdokumente sind nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können sie nicht öffnen._" : ["%n document obligatoire est partagé en lecture seule sans téléchargement, ou il est illisible : les apprenants ne peuvent pas l’ouvrir.", "%n documents obligatoires sont partagés en lecture seule sans téléchargement, ou ils sont illisibles : les apprenants ne peuvent pas les ouvrir."],
 },
 "nplurals=2; plural=(n > 1);");

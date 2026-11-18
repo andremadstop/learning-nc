@@ -43,6 +43,10 @@
 		<p v-if="unservableCount > 0" class="required-content-warning" data-test="required-content-unservable">
 			{{ n('learning', '%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen.', '%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen.', unservableCount) }}
 		</p>
+		<!-- GitHub #90: in the folder, but its owner may not hand it out (view-only share) -->
+		<p v-if="noDownloadCount > 0" class="required-content-warning" data-test="required-content-no-download">
+			{{ n('learning', '%n Pflichtdokument ist nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können es nicht öffnen.', '%n Pflichtdokumente sind nur zum Ansehen ohne Herunterladen freigegeben oder nicht lesbar: Lernende können sie nicht öffnen.', noDownloadCount) }}
+		</p>
 
 		<p v-if="loadError" class="required-content-error" role="alert">
 			{{ loadError }}
@@ -242,7 +246,10 @@ export default {
 			return this.items.filter((item) => item?.source_type !== 'document')
 		},
 		unservableCount() {
-			return this.items.filter((item) => this.isUnservableDocument(item)).length
+			return this.items.filter((item) => this.isUnservableDocument(item) && !this.isNoDownloadDocument(item)).length
+		},
+		noDownloadCount() {
+			return this.items.filter((item) => this.isNoDownloadDocument(item)).length
 		},
 		videoReady() {
 			return videoFormComplete(this.videoForm)
@@ -332,6 +339,14 @@ export default {
 			}
 			const doc = this.documentsById[documentIdFromRef(item.video_ref)]
 			return !doc || doc.downloadable !== true
+		},
+
+		/** GitHub #90: the file is in the material folder, but may not be handed out. */
+		isNoDownloadDocument(item) {
+			if (!this.isUnservableDocument(item)) {
+				return false
+			}
+			return this.documentsById[documentIdFromRef(item.video_ref)]?.unavailable_reason === 'no_download'
 		},
 
 		async setGate(enabled) {
