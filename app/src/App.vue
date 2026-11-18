@@ -300,6 +300,8 @@
                 :poolId="selectedPool.id"
                 :poolName="selectedPool.name"
                 :readonly="poolPermission === 'read'"
+                :focusQuestionId="poolFocusQuestionId"
+                @focus-done="poolFocusQuestionId = null"
                 @back="leavePool"
               />
             </div>
@@ -614,6 +616,8 @@ export default {
       // GitHub #46: interactive simulations (question_type 'pbq') in the open pool.
       pbqQuestionCount: 0,
       poolPermission: 'owner',
+      // GitHub #98: the question the pool search opened; QuestionList scrolls to it and clears it.
+      poolFocusQuestionId: null,
       // GitHub #46: a pool editor's switch "practise as learner" (localStorage, per browser).
       poolPractise: false,
       error: null,
@@ -1763,7 +1767,7 @@ export default {
     },
 
     // --- Pools methods ---
-    async selectPool(pool) {
+    async selectPool(pool, { focusQuestionId = null } = {}) {
       this.selectedPool = pool;
       this.currentView = 'questions';
       this.error = null;
@@ -1771,6 +1775,16 @@ export default {
       // GitHub #46 (and #34 for empty pools): whoever can edit the pool lands in Manage, the
       // others in Training. Set before the count request, so the first render is the right tab.
       this.setMode(this.defaultPoolMode);
+      // GitHub #98: a question picked in the pool search opens in the question list: the editor
+      // where the pool may be edited, "Fragen ansehen" for a read share. Only where that tab is
+      // offered — a learner never gets it (it would show a read share's answer keys).
+      this.poolFocusQuestionId = null;
+      if (focusQuestionId && this.filteredModes.some((m) => m.id === 'manage')) {
+        this.poolFocusQuestionId = focusQuestionId;
+        if (this.mode !== 'manage') {
+          this.setMode('manage');
+        }
+      }
       await this.refreshQuestionCount(pool, true);
     },
     // this.selectedPool is a reactive proxy, never === the raw object passed in; compare ids.

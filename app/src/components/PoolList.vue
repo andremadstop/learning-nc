@@ -142,7 +142,8 @@
                   tabindex="0" role="button"
                   @keydown.enter="selectQuestion(question)"
                   @keydown.space.prevent="selectQuestion(question)">
-                <span class="result-id">#{{ question.id }}</span>
+                <!-- GitHub #98: "#304" read like a count; it is the question's ID (the one Pool rules take). -->
+                <span class="result-id">{{ t('learning', 'Frage-ID {id}', { id: question.id }) }}</span>
                 <span class="result-text">"{{ question.text }}"</span>
                 <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }) }}</span>
               </li>
@@ -654,11 +655,14 @@ export default {
       this.clearSearch(); // Clear search and close results after selecting a pool
     },
     selectQuestion(question) {
-      // Find the pool associated with the question and emit it
+      // Find the pool associated with the question and emit it. GitHub #98: the search also finds
+      // questions of the pools of the courses one leads, so those are looked up too; the question
+      // goes along, so the pool opens on it (the editor, or "Fragen ansehen" for a read share).
       const targetPool = this.pools.find(p => p.id === question.pool_id) ||
-                         this.sharedPools.find(p => p.id === question.pool_id);
+                         this.sharedPools.find(p => p.id === question.pool_id) ||
+                         this.coursePools.find(p => p.id === question.pool_id);
       if (targetPool) {
-        this.$emit('selectPool', targetPool);
+        this.$emit('selectPool', targetPool, { focusQuestionId: question.id });
         this.clearSearch(); // Clear search and close results after selecting a question
       } else {
         showError(t('learning', 'Could not find the pool for the selected question.'));

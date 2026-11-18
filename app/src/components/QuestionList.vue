@@ -53,7 +53,7 @@
     </NcEmptyContent>
 
     <div v-else class="question-items">
-      <div v-for="(question, index) in questions" :key="question.id" class="question-item" :data-question-id="question.id">
+      <div v-for="(question, index) in questions" :key="question.id" class="question-item" :class="{ 'question-item--focus': question.id === focusedId }" :data-question-id="question.id" tabindex="-1">
         <div class="question-header">
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
@@ -138,15 +138,21 @@ export default {
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true },
-    readonly: { type: Boolean, default: false }
+    readonly: { type: Boolean, default: false },
+    // GitHub #98: a question picked in the pool search; the list opens its page, scrolls to it,
+    // marks it briefly and, where the pool may be edited, opens the editor. Then 'focus-done'.
+    focusQuestionId: { type: Number, default: null }
   },
+  emits: ['back', 'focus-done'],
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null, savingQuestion: false };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null, savingQuestion: false, focusedId: null, focusTimer: null };
   },
   watch: {
-    poolId() { this.currentPage = 0; this.loadQuestions(); },
+    async poolId() { this.currentPage = 0; await this.loadQuestions(); this.applyFocus(); },
+    focusQuestionId(id) { if (id && !this.loading) this.applyFocus(); },
   },
-  mounted() { this.loadQuestions(); this.checkAIAvailable(); },
+  async mounted() { this.checkAIAvailable(); await this.loadQuestions(); this.applyFocus(); },
+  beforeUnmount() { clearTimeout(this.focusTimer); },
   methods: {
     formatChapterLabel(question) {
       if (!question.chapter_title) {
@@ -213,6 +219,40 @@ export default {
       await this.$nextTick();
       const el = this.$el.querySelector('.question-item[data-question-id="' + result.id + '"]');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+    /** GitHub #98: open the question the pool search picked (see the focusQuestionId prop). */
+    async applyFocus() {
+      const id = this.focusQuestionId;
+      if (!id) return;
+      let question = this.questions.find(q => q.id === id);
+      if (!question) {
+        // Not on this page: the in-pool search by ID gives its place in the pool's order.
+        try {
+          const response = await axios.get(generateUrl('/apps/learning/api/questions/search'), { params: { query: String(id), poolId: this.poolId } });
+          const hit = (Array.isArray(response.data) ? response.data : []).find(q => q.id === id);
+          if (hit && Number.isInteger(hit.position)) {
+            this.currentPage = Math.floor(hit.position / this.pageSize);
+            await this.loadQuestions();
+          }
+        } catch { /* the list stays on its page */ }
+        question = this.questions.find(q => q.id === id);
+      }
+      this.$emit('focus-done');
+      if (!question) return;
+      await this.$nextTick();
+      const el = this.$el.querySelector('.question-item[data-question-id="' + id + '"]');
+      if (el) {
+        const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+        // The keyboard and the screen reader land on the question, not at the top of the list.
+        el.focus({ preventScroll: true });
+      }
+      this.focusedId = id;
+      clearTimeout(this.focusTimer);
+      this.focusTimer = setTimeout(() => { this.focusedId = null; }, 2500);
+      if (!this.readonly) {
+        this.editQuestion(question);
+      }
     },
     jumpToFirstSearchResult() {
       if (this.searchResults.length > 0) this.jumpToSearchResult(this.searchResults[0]);
@@ -342,7 +382,17 @@ export default {
   .question-item { padding: 14px 16px; }
 }
 
+/* GitHub #98: the question the pool search opened is marked for a moment. */
+.question-item--focus { outline: 2px solid var(--color-primary-element); outline-offset: 2px; animation: question-focus-pulse 1.2s ease-out 2; }
+.question-item:focus { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
+.question-item:focus:not(:focus-visible):not(.question-item--focus) { outline: none; }
+@keyframes question-focus-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-element) 45%, transparent); }
+  100% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-primary-element) 0%, transparent); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .question-item:hover { transform: none; }
+  .question-item--focus { animation: none; }
 }
 </style>

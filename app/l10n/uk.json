@@ -4108,6 +4108,7 @@
         "Der Pool ist schon in diesem Kurs.": "Цей пул уже є в курсі.",
         "Nur Lehrkräfte dieses Kurses können Pools hinzufügen.": "Додавати пули можуть лише викладачі цього курсу.",
         "Den Kurs gibt es nicht mehr.": "Цього курсу більше немає.",
-        "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Забагато запитів за короткий час. Зачекай хвилину й спробуй знову."
+        "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "Забагато запитів за короткий час. Зачекай хвилину й спробуй знову.",
+        "Frage-ID {id}": "ID питання {id}"
     }
 }

@@ -4069,5 +4069,6 @@ OC.L10N.register(
     "Nur Lehrkräfte dieses Kurses können Pools hinzufügen." : "Додавати пули можуть лише викладачі цього курсу.",
     "Den Kurs gibt es nicht mehr." : "Цього курсу більше немає.",
     "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Забагато запитів за короткий час. Зачекай хвилину й спробуй знову.",
+    "Frage-ID {id}" : "ID питання {id}",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

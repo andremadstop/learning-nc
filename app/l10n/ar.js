@@ -4069,5 +4069,6 @@ OC.L10N.register(
     "Nur Lehrkräfte dieses Kurses können Pools hinzufügen." : "لا يمكن إضافة المجموعات إلا لمدرّبي هذه الدورة.",
     "Den Kurs gibt es nicht mehr." : "لم تعد هذه الدورة موجودة.",
     "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "طلبات كثيرة جدًا في وقت قصير. يُرجى الانتظار دقيقة ثم المحاولة مرة أخرى.",
+    "Frage-ID {id}" : "معرّف السؤال {id}",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

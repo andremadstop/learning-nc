@@ -4069,5 +4069,6 @@ OC.L10N.register(
     "Nur Lehrkräfte dieses Kurses können Pools hinzufügen." : "Seuls les formateurs de ce cours peuvent ajouter des pools.",
     "Den Kurs gibt es nicht mehr." : "Le cours n’existe plus.",
     "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut." : "Trop de requêtes en peu de temps. Attends une minute, puis réessaie.",
+    "Frage-ID {id}" : "ID de la question {id}",
 },
 "nplurals=2; plural=(n > 1);");

@@ -4138,6 +4138,7 @@
         "Der Pool ist schon in diesem Kurs.": "هذه المجموعة موجودة بالفعل في هذه الدورة.",
         "Nur Lehrkräfte dieses Kurses können Pools hinzufügen.": "لا يمكن إضافة المجموعات إلا لمدرّبي هذه الدورة.",
         "Den Kurs gibt es nicht mehr.": "لم تعد هذه الدورة موجودة.",
-        "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "طلبات كثيرة جدًا في وقت قصير. يُرجى الانتظار دقيقة ثم المحاولة مرة أخرى."
+        "Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute und versuche es dann erneut.": "طلبات كثيرة جدًا في وقت قصير. يُرجى الانتظار دقيقة ثم المحاولة مرة أخرى.",
+        "Frage-ID {id}": "معرّف السؤال {id}"
     }
 }
