@@ -10,6 +10,7 @@
 // Results go to out/gamification-<off|on>/ (the mode of the running instance): findings.json,
 // shots/, downloads/. report.mjs turns findings.json into report.md and stations.json there.
 const { test, expect } = require('@playwright/test')
+const { execFileSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, DEAD_LINK_STATION_PREFIX } = require('./lib.cjs')
@@ -29,6 +30,8 @@ const AUTH = path.join(OUT, 'auth')
 const SHOTS = path.join(RUN, process.env.PERSONA_STATIONS ? 'shots-filtered' : 'shots')
 const FINDINGS = path.join(RUN, process.env.PERSONA_STATIONS ? 'findings-filtered.json' : 'findings.json')
 const seed = JSON.parse(fs.readFileSync(path.join(OUT, 'seed.json'), 'utf8'))
+// GitHub #91: written by the learner's certificate station, read by the public verification test
+const VERIFY_URL_FILE = path.join(RUN, 'verify-url.txt')
 // axe-core from app/node_modules (devDependency, pinned). Injected with page.evaluate: that runs
 // over the DevTools protocol, outside the page's CSP. A <script> tag would be blocked by
 // Nextcloud's nonce CSP, and bypassCSP would hide the CSP violations this sweep has caught before.
@@ -569,6 +572,7 @@ test.beforeAll(() => {
 })
 
 test('learner passes both exams, opens, prints and downloads the certificate', async ({ browser }) => {
+	fs.rmSync(VERIFY_URL_FILE, { force: true }) // a stale address must not stand in for this run's certificate
 	test.setTimeout(10 * 60_000)
 	const rec = new Recorder('learner1')
 	const { context, page } = await login(browser, 'learner1')
@@ -740,6 +744,10 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		}
 		// GitHub #77/#78: the course's organisation name and its library logo (seed), not Theming's
 		if (!card.includes(seed.certificate.issuerName)) rec.add('certificate', `certificate card does not show the course's organisation name "${seed.certificate.issuerName}"`)
+		// GitHub #91: the public verification page is checked from outside with this address
+		const verifyUrl = (await page.locator('.certificate-printable .certificate-verify-url').first().textContent().catch(() => '')).trim()
+		if (verifyUrl) fs.writeFileSync(VERIFY_URL_FILE, verifyUrl)
+		else rec.add('certificate', 'certificate card shows no verification address')
 		const logo = page.locator('.certificate-printable .certificate-logo').first()
 		if (!(await logo.isVisible().catch(() => false))) rec.add('certificate', 'certificate card shows no logo')
 		else {
@@ -883,6 +891,89 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		await title.focus()
 		const focused = await background()
 		if (!transparent(focused)) rec.add('hover', `course title has background ${focused} on focus (square block, #79)`)
+	})
+	// GitHub #79 (reopened): the same title button sits on the Dashboard course cards and on the pool
+	// cards of My pools and Pools in my courses; 5.14.0 cleared the core button background only in
+	// the course list. Every card title is hovered and focused here; a card that is not there is a
+	// finding, not a pass.
+	const openDashboard = async () => {
+		await openTopTab(page, 'Courses')
+		await page.locator('.course-sub-nav [role=tab]').filter({ hasText: 'Dashboard' }).first().click()
+		await page.locator('.dashboard-course-card').first().waitFor({ timeout: 15000 })
+		await settle(page, 300)
+	}
+	const titleHasNoBlock = async (title, where) => {
+		await title.hover() // throws (station-error) when the card is missing
+		await page.waitForTimeout(300)
+		const background = () => title.evaluate((el) => getComputedStyle(el).backgroundColor)
+		const transparent = (c) => c === 'transparent' || /^rgba\(\d+, \d+, \d+, 0\)$/.test(c)
+		const hovered = await background()
+		if (!transparent(hovered)) rec.add('hover', `${where}: card title has background ${hovered} on hover (square block, #79)`)
+		await title.focus()
+		const focused = await background()
+		if (!transparent(focused)) rec.add('hover', `${where}: card title has background ${focused} on focus (square block, #79)`)
+		await page.mouse.move(0, 0)
+	}
+	await station(page, rec, 'Dashboard: hover and focus on a course card title', async () => {
+		await openDashboard()
+		const title = page.locator('.dashboard-course-card .card-open', { hasText: COURSE_TITLE }).first()
+		await titleHasNoBlock(title, 'Dashboard')
+		await page.screenshot({ path: path.join(SHOTS, 'dashboard-title-hover.png') })
+	})
+	// GitHub #79 (CSV): the Dashboard's class summary export. Without gamification the game columns
+	// (XP, level, streak, badges, duels, swarm) are left out; with it they stay.
+	await station(page, rec, 'Dashboard: class summary CSV', async () => {
+		await openDashboard()
+		const csv = await page.evaluate(async (courseId) => {
+			const res = await fetch(OC.generateUrl(`/apps/learning/api/courses/${courseId}/summary/export/csv`), { headers: { requesttoken: OC.requestToken } })
+			return { status: res.status, text: await res.text() }
+		}, seed.courseId)
+		if (csv.status !== 200) {
+			rec.add('download', `class summary CSV answered ${csv.status}`)
+			return
+		}
+		const header = csv.text.replace(/^\uFEFF/, '').split('\n')[0]
+		const game = ['XP', 'Level', 'Streak', 'Badges', 'Duels won', 'Swarm Contributions'].filter((h) => header.split(',').some((c) => c.replace(/"/g, '') === h))
+		if (state.GAMIFICATION !== 'on' && game.length) rec.add('csv', `class summary CSV without gamification still has ${game.join(', ')} (#79)`)
+		if (state.GAMIFICATION === 'on' && game.length !== 6) rec.add('csv', `class summary CSV with gamification has only ${game.join(', ') || 'no'} game columns`)
+		fs.writeFileSync(path.join(DOWNLOADS, 'class-summary.csv'), csv.text)
+	})
+	await station(page, rec, 'Pools: hover and focus on a pool card title (My pools, Pools in my courses)', async () => {
+		await openTopTab(page, 'Pools')
+		const tabs = page.locator('.pool-tabs [role=tab]')
+		await tabs.filter({ hasText: 'My Pools' }).first().click()
+		await settle(page, 300)
+		await titleHasNoBlock(page.locator('.pool-card .pool-card-open', { hasText: 'Fire safety' }).first(), 'My pools')
+		const courseTab = tabs.filter({ hasText: 'Pools in my courses' }).first()
+		if (!(await courseTab.isVisible().catch(() => false))) {
+			rec.add('station-error', 'no "Pools in my courses" tab for the instructor of the seeded course')
+			return
+		}
+		await courseTab.click()
+		await settle(page, 300)
+		await titleHasNoBlock(page.locator('.course-pool-card .pool-card-open').first(), 'Pools in my courses')
+		await page.screenshot({ path: path.join(SHOTS, 'pool-title-hover.png') })
+	})
+	// GitHub #88: in Pool rules the "Specific question IDs" field was 130px wide (Nextcloud's core
+	// textarea width); every field of the dialog must span the same column.
+	await station(page, rec, 'Learning space › Pools › Pool rules: field widths', async () => {
+		await openMegaTab(page, 'Learning space')
+		const poolsTab = page.locator('.lernraum-subnav button').filter({ hasText: /^\s*Pools\s*$/ }).first()
+		if (await poolsTab.isVisible().catch(() => false)) await poolsTab.click()
+		await settle(page, 300)
+		await page.locator('.pool-rules-btn').first().click()
+		await page.locator('#pool-rule-question-ids').waitFor({ timeout: 10000 })
+		await page.waitForTimeout(300)
+		const widths = await page.evaluate(() => Object.fromEntries(['pool-rule-question-ids', 'pool-rule-exam', 'pool-rule-chapter']
+			.map((id) => [id, Math.round(document.getElementById(id)?.getBoundingClientRect().width || 0)])))
+		const reference = Math.max(widths['pool-rule-exam'], widths['pool-rule-chapter'])
+		for (const [id, w] of Object.entries(widths)) {
+			if (!w) rec.add('layout', `Pool rules: #${id} not rendered`)
+			else if (Math.abs(w - reference) > 2) rec.add('layout', `Pool rules: #${id} is ${w}px wide, the widest field ${reference}px (#88)`)
+		}
+		rec.current.widths = widths
+		await page.screenshot({ path: path.join(SHOTS, 'pool-rules-fields.png') })
+		await closeOverlays(page)
 	})
 	// GitHub #75: the "Required" column in the instructor's Learning materials. Seeded: two of the
 	// three files required. The station reads that back, then ticks the third through the column
@@ -1199,6 +1290,115 @@ for (const [persona, opts] of [['learner1', {}], ['instructor', {}], ['admin', {
 		await context.close()
 	})
 }
+
+// GitHub #91: the public verification page, opened from outside as the QR code would (no session).
+// Nextcloud's public layout clips #content to the window, and the theming background showed through
+// fixed text colours (blue on blue, white on white). Checked: the page scrolls to its last element
+// on a phone and on a desktop, its container is opaque, and axe finds no contrast problem in light
+// and dark, each with a dark and a light custom primary colour (plain theming background in that
+// colour, the reporter's case). Dark and primary are proven to have reached the page, so a theme
+// that silently stayed the same cannot pass. Theming is restored afterwards.
+test('public: certificate verification page, light and dark, dark and light primary colour', async ({ browser }) => {
+	test.setTimeout(10 * 60_000)
+	const rec = new Recorder('public')
+	const occ = (...args) => execFileSync('docker', ['exec', '-u', 'www-data', '-w', '/var/www/html', state.NC, 'php', 'occ', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+	const theming = (key) => { try { return occ('config:app:get', 'theming', key) } catch { return null } }
+	const before = { primary_color: theming('primary_color'), background_color: theming('background_color'), backgroundMime: theming('backgroundMime') }
+	let verifyUrl = ''
+	try { verifyUrl = fs.readFileSync(VERIFY_URL_FILE, 'utf8').trim() } catch { /* reported below */ }
+	const unknownUrl = `${APP}/verify/00000000-0000-4000-8000-000000000000`
+	const pages = [['certificate', verifyUrl], ['unknown id', unknownUrl]]
+	const variants = [
+		{ scheme: 'light', primary: '#0b2545' },
+		{ scheme: 'dark', primary: '#0b2545' },
+		{ scheme: 'light', primary: '#ffd60a' },
+		{ scheme: 'dark', primary: '#ffd60a' },
+	]
+	const seen = { main: {}, primary: {} }
+	try {
+		for (const v of variants) {
+			occ('theming:config', 'primary_color', v.primary)
+			occ('theming:config', 'background', 'backgroundColor')
+			occ('theming:config', 'background_color', v.primary)
+			const context = await browser.newContext({ locale: 'en-GB', colorScheme: v.scheme, viewport: { width: 1400, height: 900 } })
+			const page = await context.newPage()
+			rec.attach(page)
+			for (const [what, url] of pages) {
+				await station(page, rec, `Public verification (${what}): ${v.scheme}, primary ${v.primary}`, async () => {
+					if (!url) {
+						rec.add('station-error', 'no verification address from the learner\'s certificate (learner test did not get one)')
+						return
+					}
+					const res = await page.goto(url.startsWith('http') ? url : `${BASE}${url}`)
+					if (!res || res.status() !== 200) rec.add('http', `verification page answered ${res ? res.status() : 'nothing'}`)
+					await settle(page)
+					const look = await page.evaluate(() => {
+						const css = getComputedStyle(document.body)
+						const box = document.querySelector('.lrn-verify-page')
+						return {
+							main: css.getPropertyValue('--color-main-background').trim(),
+							primary: css.getPropertyValue('--color-primary-element').trim(),
+							container: box ? getComputedStyle(box).backgroundColor : null,
+						}
+					})
+					;(seen.main[v.scheme] ||= new Set()).add(look.main)
+					;(seen.primary[v.primary] ||= new Set()).add(look.primary)
+					if (!look.container) rec.add('layout', 'no .lrn-verify-page container')
+					else if (look.container === 'transparent' || /rgba\(\d+, \d+, \d+, (0|0?\.\d+)\)/.test(look.container)) rec.add('contrast', `page container is not opaque (${look.container}): the theming background shows through (#91)`)
+					// Scroll to the end on a phone and on a desktop: the last element must be reachable
+					// and not covered by the fixed public footer.
+					for (const vp of [{ width: 390, height: 700 }, { width: 1400, height: 900 }]) {
+						await page.setViewportSize(vp)
+						await page.waitForTimeout(200)
+						const end = await page.evaluate(() => {
+							const last = document.querySelector('.lrn-verify__how summary')
+							if (!last) return { missing: true }
+							// as a reader would: every ancestor that can scroll goes to its end
+							for (let el = last.parentElement; el; el = el.parentElement) {
+								if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) el.scrollTop = el.scrollHeight
+							}
+							window.scrollTo(0, document.documentElement.scrollHeight)
+							const r = last.getBoundingClientRect()
+							const hit = document.elementFromPoint(r.left + Math.min(20, r.width / 2), r.top + r.height / 2)
+							return { bottom: Math.round(r.bottom), inner: window.innerHeight, reachable: !!hit && last.contains(hit) }
+						})
+						if (end.missing) rec.add('layout', 'verification page without its "How does this verification work?" section')
+						else if (!end.reachable) rec.add('scroll', `${vp.width}×${vp.height}: the last section of the page cannot be reached by scrolling (bottom ${end.bottom}px, window ${end.inner}px) (#91)`)
+						if (vp.width === 390) await page.screenshot({ path: path.join(SHOTS, `verify-${slug(what)}-${v.scheme}-${v.primary.slice(1)}-phone-end.png`) })
+						await page.evaluate(() => {
+							for (const el of document.querySelectorAll('*')) if (el.scrollTop) el.scrollTop = 0
+							window.scrollTo(0, 0)
+						})
+					}
+				})
+			}
+			flush()
+			await context.close()
+		}
+		// Not a page station: the proof that the variants above really differed.
+		if (!ONLY || ONLY.test('Public verification')) {
+			rec.begin('Public verification: dark mode and primary colour reached the page')
+			const [light] = [...(seen.main.light || [])]
+			const [dark] = [...(seen.main.dark || [])]
+			if (!light || !dark || light === dark) rec.add('detector', `dark mode did not reach the public page (main background light "${light}", dark "${dark}")`)
+			const [p1] = [...(seen.primary[variants[0].primary] || [])]
+			const [p2] = [...(seen.primary[variants[2].primary] || [])]
+			if (!p1 || !p2 || p1 === p2) rec.add('detector', `the custom primary colour did not reach the public page ("${p1}" / "${p2}")`)
+			rec.current.seen = { light, dark, primaryDark: p1, primaryLight: p2 }
+		}
+	} finally {
+		for (const [key, value] of Object.entries(before)) {
+			if (key === 'backgroundMime') {
+				try { occ('theming:config', '--reset', 'background') } catch { /* already default */ }
+				if (value) occ('config:app:set', 'theming', 'backgroundMime', '--value', value)
+				continue
+			}
+			if (value) occ('theming:config', key, value)
+			else { try { occ('theming:config', '--reset', key) } catch { /* not set */ } }
+		}
+	}
+	flush()
+})
 
 for (const [persona, opts] of [['admin', {}], ['instructor', {}], ['learner2', {}], ['admin-studentview', { studentView: true }]]) {
 	test(`sweep: ${persona}`, async ({ browser }) => {
