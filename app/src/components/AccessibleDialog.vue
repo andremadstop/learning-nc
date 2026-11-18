@@ -20,12 +20,38 @@ export default {
   name: 'AccessibleDialog',
   components: { NcDialog },
   inheritAttrs: false,
+  props: {
+    // GitHub #99 review: an aria-describedby passed through $attrs never reached the dialog,
+    // because NcModal merges its own "modal-description-<id>" over $attrs. Declared as a prop it
+    // leaves $attrs and is set on the role="dialog" element itself (applyDescribedBy()).
+    ariaDescribedby: {
+      type: String,
+      default: '',
+    },
+  },
+  watch: {
+    ariaDescribedby() {
+      this.$nextTick(() => this.applyDescribedBy())
+    },
+  },
   mounted() {
     this.$nextTick(() => {
+      this.applyDescribedBy()
       focusFirstElement(this.$refs.content, this.$refs.content)
     })
   },
   methods: {
+    // NcModal's vnode keeps the same "modal-description-<id>" on every patch, so Vue does not
+    // write the attribute again and the value set here stays.
+    applyDescribedBy() {
+      if (!this.ariaDescribedby) {
+        return
+      }
+      const dialog = this.$refs.content?.closest?.('[role="dialog"]')
+      if (dialog) {
+        dialog.setAttribute('aria-describedby', this.ariaDescribedby)
+      }
+    },
     handleKeydown(event) {
       trapTabKey(event, this.trapRoot(event), this.$refs.content)
     },
