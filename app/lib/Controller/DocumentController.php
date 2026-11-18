@@ -6,6 +6,7 @@ use OCA\Learning\Db\CourseDocument;
 use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -38,7 +39,8 @@ class DocumentController extends Controller {
         CourseService $courseService,
         RoleService $roleService,
         LoggerInterface $logger,
-        ?string $userId
+        ?string $userId,
+        private ?RequiredDocumentService $requiredDocuments = null,
     ) {
         parent::__construct($appName, $request);
         $this->documentService = $documentService;
@@ -160,7 +162,10 @@ class DocumentController extends Controller {
      * with nosniff, so an uploaded file cannot become an HTML page of this origin.
      *
      * #[NoCSRFRequired] is needed because the browser opens the file through a plain link, which
-     * carries no request token. The endpoint only reads.
+     * carries no request token. The endpoint reads the file; the only write is GitHub #86: in a
+     * course with open_before_confirm, a learner's open of a required document is stored
+     * (RequiredDocumentService::recordOpen()) so he can confirm it afterwards. A cross-site link
+     * can at most mark a document as opened that the victim could open anyway.
      */
     #[NoAdminRequired]
     #[NoCSRFRequired]
@@ -189,6 +194,7 @@ class DocumentController extends Controller {
         if (!is_resource($stream)) {
             return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+        $this->recordOpen($course, $documentId, $file);
 
         $headers = [
             'Content-Type' => self::contentTypeFor($doc),
@@ -201,6 +207,26 @@ class DocumentController extends Controller {
             $headers['Content-Length'] = (string)(int)$size;
         }
         return self::streamResponse($stream, $headers);
+    }
+
+    /**
+     * GitHub #86: store a learner's open of a required document (version of the served file).
+     * Instructors of the course record nothing, also in the student view (the same rule as the
+     * confirmation, VideoProgressController). A failure costs the record, never the file: the
+     * learner then sees the confirmation still waiting and can open the file again.
+     */
+    private function recordOpen(\OCA\Learning\Db\Course $course, int $documentId, \OCP\Files\File $file): void {
+        if ($this->requiredDocuments === null || $this->userId === null || !RequiredDocumentService::openRequired($course)) {
+            return;
+        }
+        try {
+            if ($this->courseService->canManageCourse((int)$course->getId(), $this->userId)) {
+                return;
+            }
+            $this->requiredDocuments->recordOpen($course, $documentId, DocumentService::fileVersion($file), $this->userId);
+        } catch (\Throwable $e) {
+            $this->logger->warning('DocumentController::download could not record the open: ' . $e->getMessage(), ['app' => 'learning']);
+        }
     }
 
     /** Whitelist by the registered type; the file's own mime type is not trusted. */

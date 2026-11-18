@@ -11,6 +11,7 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
@@ -134,9 +135,9 @@ class DocumentMaterialAccessTest extends TestCase {
         return $this->pdfAvailable;
     }
 
-    private function controller(string $uid): DocumentController {
+    private function controller(string $uid, ?RequiredDocumentService $required = null): DocumentController {
         return new DocumentController('learning', $this->createMock(IRequest::class), $this->service(),
-            $this->courseService, $this->roleService, $this->createMock(LoggerInterface::class), $uid);
+            $this->courseService, $this->roleService, $this->createMock(LoggerInterface::class), $uid, $required);
     }
 
     private static function doc(int $id, string $name, string $type = 'pdf', ?string $path = null, int $courseId = self::COURSE): CourseDocument {
@@ -290,6 +291,57 @@ class DocumentMaterialAccessTest extends TestCase {
         $this->assertStringContainsString("filename*=UTF-8''Skript%20%22Teil%201%22%20%C3%A4.pdf", $headers['Content-Disposition']);
         $this->assertSame('%PDF-1.7 bytes', $this->body($response));
         $this->assertSame(['Skript "Teil 1" ä.pdf'], $this->requestedNames, 'resolved by plain name inside the folder');
+    }
+
+    // ---------------------------------------------------------------- GitHub #86: the open ---
+
+    /** @return array{0: File, 1: RequiredDocumentService&MockObject} */
+    private function openScenario(bool $openBeforeConfirm, bool $instructor): array {
+        $this->course->setOpenBeforeConfirm($openBeforeConfirm);
+        $this->enrolled('student');
+        $this->courseService->method('canManageCourse')->with(self::COURSE, 'student')->willReturn($instructor);
+        $this->documentMapper->method('findById')->willReturn(self::doc(11, 'skript.pdf'));
+        $file = $this->fileNode('%PDF-1.7 bytes');
+        $this->children['skript.pdf'] = $file;
+        return [$file, $this->createMock(RequiredDocumentService::class)];
+    }
+
+    /** GitHub #86: a learner's open is stored with the version of the file that was served. */
+    public function testALearnersOpenIsRecordedWithTheServedVersion(): void {
+        [$file, $required] = $this->openScenario(true, false);
+        $required->expects($this->once())->method('recordOpen')
+            ->with($this->course, 11, DocumentService::fileVersion($file), 'student')->willReturn(true);
+
+        $response = $this->controller('student', $required)->download(self::COURSE, 11);
+
+        $this->assertSame(Http::STATUS_OK, $response->getStatus());
+    }
+
+    /** GitHub #86: the instructor's preview (also his student view) records nothing. */
+    public function testAnInstructorsOpenIsNotRecorded(): void {
+        [, $required] = $this->openScenario(true, true);
+        $required->expects($this->never())->method('recordOpen');
+
+        $this->assertSame(Http::STATUS_OK, $this->controller('student', $required)->download(self::COURSE, 11)->getStatus());
+    }
+
+    /** GitHub #86: a course without the option stores no open (IT courses as before). */
+    public function testNoOpenIsRecordedWithoutTheCourseOption(): void {
+        [, $required] = $this->openScenario(false, false);
+        $required->expects($this->never())->method('recordOpen');
+
+        $this->assertSame(Http::STATUS_OK, $this->controller('student', $required)->download(self::COURSE, 11)->getStatus());
+    }
+
+    /** GitHub #86: a failing record costs the record, never the file. */
+    public function testAFailingRecordStillServesTheFile(): void {
+        [, $required] = $this->openScenario(true, false);
+        $required->method('recordOpen')->willThrowException(new \RuntimeException('db down'));
+
+        $response = $this->controller('student', $required)->download(self::COURSE, 11);
+
+        $this->assertSame(Http::STATUS_OK, $response->getStatus());
+        $this->assertSame('%PDF-1.7 bytes', $this->body($response));
     }
 
     /** Markdown is served as plain text: an uploaded file must not become an HTML page here. */

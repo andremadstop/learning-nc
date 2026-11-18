@@ -74,6 +74,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setReconfirmPerCycle(bool $reconfirmPerCycle)
  * @method int|null getExamAttemptLimit()
  * @method void setExamAttemptLimit(?int $examAttemptLimit)
+ * @method bool|null getOpenBeforeConfirm()
+ * @method void setOpenBeforeConfirm(bool $openBeforeConfirm)
  */
 class Course extends Entity implements \JsonSerializable {
     protected $title;
@@ -115,6 +117,8 @@ class Course extends Entity implements \JsonSerializable {
     protected $reconfirmPerCycle;
     /** GitHub #87: counting exam attempts per pool in the current cycle; NULL = unlimited. */
     protected $examAttemptLimit;
+    /** GitHub #86: a required document is confirmed only after the learner opened it. */
+    protected $openBeforeConfirm;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -141,6 +145,7 @@ class Course extends Entity implements \JsonSerializable {
         $this->addType('certLayout', 'string');
         $this->addType('reconfirmPerCycle', 'boolean');
         $this->addType('examAttemptLimit', 'integer');
+        $this->addType('openBeforeConfirm', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -174,6 +179,8 @@ class Course extends Entity implements \JsonSerializable {
             'cert_validity_months' => $this->getCertValidityMonths(),
             'video_gate_enabled' => $this->getVideoGateEnabled() ?? false,
             'reconfirm_per_cycle' => $this->getReconfirmPerCycle() ?? false,
+            // GitHub #86: "Confirm I have read this" only after opening the document
+            'open_before_confirm' => $this->getOpenBeforeConfirm() ?? false,
             // Codeberg #9 — practice exam; 0 minutes = untimed. Visible to learners: they need it to start one.
             'practice_enabled' => $this->getPracticeEnabled() ?? false,
             'practice_questions' => $this->getPracticeQuestions() ?? 20,

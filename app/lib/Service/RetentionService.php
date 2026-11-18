@@ -121,6 +121,13 @@ class RetentionService {
             ));
         $qb2->executeStatement();
 
+        // 4. GitHub #86: when a learner opened a required document. No evidence (not in the
+        //    compliance chain), only the precondition for confirming it: deleted, not pseudonymised.
+        $qb3 = $this->db->getQueryBuilder();
+        $qb3->delete('learning_doc_opens')
+            ->where($qb3->expr()->lt('opened_at', $qb3->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)));
+        $qb3->executeStatement();
+
         if ($erased > 0) {
             $this->logger->info('anonymizeExpired: crypto-erased {count} certificate(s) past the {years}y retention window', [
                 'count' => $erased,

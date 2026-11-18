@@ -4010,5 +4010,11 @@ OC.L10N.register(
     "Du hast alle Prüfungsversuche für diesen Pool verbraucht. Deine Kursleitung wurde benachrichtigt und kann einen neuen Zertifizierungszyklus öffnen." : "لقد استنفدت كل محاولات الاختبار لمجموعة الأسئلة هذه. تم إشعار مسؤول الدورة ويمكنه فتح دورة اعتماد جديدة.",
     "Das Limit an Prüfungsversuchen für die letzten 24 Stunden ist erreicht. Bitte versuche es später erneut." : "تم بلوغ حد محاولات الاختبار خلال آخر 24 ساعة. يُرجى المحاولة لاحقًا.",
     "Zwischen zwei Prüfungsversuchen gilt eine Wartezeit. Bitte versuche es später erneut." : "توجد مدة انتظار بين محاولتي اختبار. يُرجى المحاولة لاحقًا.",
+    "Öffne das Dokument zuerst. Danach kannst du es als gelesen bestätigen." : "افتح المستند أولاً. بعد ذلك يمكنك تأكيد أنك قرأته.",
+    "Gespeichert werden dein Abschlussstatus, der Zeitpunkt des Abschlusses und wann du welches Pflichtdokument zuletzt geöffnet hast." : "تُحفظ حالة إتمامك ووقت الإتمام ووقت آخر فتح لكل مستند إلزامي.",
+    "Geöffnete Pflichtdokumente" : "المستندات الإلزامية التي فُتحت",
+    "Wenn du ein Pflichtdokument öffnest, wird gespeichert, welche Fassung du wann zuletzt geöffnet hast. Erst danach kannst du es als gelesen bestätigen. Das zeigt nur, dass du es geöffnet hast, nicht dass du es gelesen hast. Die Angabe wird im Kurs niemandem angezeigt und nach Ablauf der Aufbewahrungsfrist gelöscht, spätestens mit deinem Konto." : "عندما تفتح مستندًا إلزاميًا، تُحفظ النسخة التي فتحتها ووقت الفتح. بعد ذلك فقط يمكنك تأكيد أنك قرأته. هذا يثبت فقط أنك فتحته، وليس أنك قرأته. لا تُعرض هذه المعلومة على أحد في الدورة، وتُحذف عند انتهاء مدة الاحتفاظ، وفي موعد أقصاه حذف حسابك.",
+    "Pflichtdokumente erst nach dem Öffnen bestätigen" : "تأكيد المستندات الإلزامية فقط بعد فتحها",
+    "Lernende müssen die aktuelle Fassung eines Pflichtdokuments geöffnet haben, bevor sie es als gelesen bestätigen können. Das belegt das Öffnen, nicht das Lesen. Bestehende Bestätigungen bleiben gültig." : "يجب على المتعلمين فتح النسخة الحالية من المستند الإلزامي قبل أن يتمكنوا من تأكيد قراءته. هذا يثبت الفتح وليس القراءة. تبقى التأكيدات الحالية سارية.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

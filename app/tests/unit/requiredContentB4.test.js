@@ -253,6 +253,16 @@ describe('RequiredContentSettings rendered', () => {
 		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/5/video-gate', { reconfirmPerCycle: true })
 	})
 
+	// GitHub #86: the course option "confirm only after opening", in the field the controller reads
+	it('switches "confirm only after opening" with the field the controller reads', async () => {
+		await mountSettings()
+		const sw = host.querySelector('[data-test="required-content-open-first"] .switch')
+		sw.checked = true
+		sw.dispatchEvent(new Event('change'))
+		await flush()
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/courses/5/video-gate', { openBeforeConfirm: true })
+	})
+
 	it('switches the exam gate with the request body the controller reads', async () => {
 		await mountSettings()
 		const sw = host.querySelector('[data-test="required-content-gate"] .switch') || host.querySelector('.switch')
@@ -263,7 +273,7 @@ describe('RequiredContentSettings rendered', () => {
 	})
 
 	// Review C5: a switch that turns disabled while saving drops the keyboard focus to the page.
-	for (const name of ['required-content-gate', 'required-content-per-cycle']) {
+	for (const name of ['required-content-gate', 'required-content-per-cycle', 'required-content-open-first']) {
 		it(`${name}: stays enabled while saving and saves a second change after the first`, async () => {
 			let release
 			axios.put.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({ data: {} }) }))

@@ -28,6 +28,16 @@
 		<p class="required-content-hint">
 			{{ t('learning', 'Öffnet sich das Erneuerungsfenster eines Zertifikats, gelten die Pflichtdokumente wieder als offen. Frühere Bestätigungen bleiben im Audit-Protokoll.') }}
 		</p>
+		<!-- GitHub #86: "Confirm I have read this" only after opening the file -->
+		<NcCheckboxRadioSwitch
+			:model-value="openBeforeConfirm"
+			data-test="required-content-open-first"
+			@update:model-value="setOpenFirst(!!$event)">
+			{{ t('learning', 'Pflichtdokumente erst nach dem Öffnen bestätigen') }}
+		</NcCheckboxRadioSwitch>
+		<p class="required-content-hint">
+			{{ t('learning', 'Lernende müssen die aktuelle Fassung eines Pflichtdokuments geöffnet haben, bevor sie es als gelesen bestätigen können. Das belegt das Öffnen, nicht das Lesen. Bestehende Bestätigungen bleiben gültig.') }}
+		</p>
 		<p v-if="unservableCount > 0" class="required-content-warning" data-test="required-content-unservable">
 			{{ n('learning', '%n Pflichtdokument liegt nicht mehr im Materialordner: Lernende können es nicht öffnen.', '%n Pflichtdokumente liegen nicht mehr im Materialordner: Lernende können sie nicht öffnen.', unservableCount) }}
 		</p>
@@ -198,6 +208,7 @@ export default {
 			loadError: '',
 			gateEnabled: this.course?.video_gate_enabled === true,
 			reconfirmPerCycle: this.course?.reconfirm_per_cycle === true,
+			openBeforeConfirm: this.course?.open_before_confirm === true,
 			saveQueue: Promise.resolve(),
 			adding: false,
 			removing: {},
@@ -254,6 +265,9 @@ export default {
 		},
 		'course.reconfirm_per_cycle'(value) {
 			this.reconfirmPerCycle = value === true
+		},
+		'course.open_before_confirm'(value) {
+			this.openBeforeConfirm = value === true
 		},
 		reloadKey() {
 			this.load()
@@ -326,6 +340,10 @@ export default {
 			await this.saveOption('reconfirmPerCycle', { reconfirmPerCycle: enabled }, enabled)
 		},
 
+		async setOpenFirst(enabled) {
+			await this.saveOption('openBeforeConfirm', { openBeforeConfirm: enabled }, enabled)
+		},
+
 		/**
 		 * The switches stay enabled while a change is saved: a disabled switch drops the keyboard
 		 * focus to the page (review C5). A change made meanwhile is shown at once and saved after
@@ -345,6 +363,7 @@ export default {
 				this.$emit('course-patched', {
 					video_gate_enabled: response.data?.video_gate_enabled ?? this.gateEnabled,
 					reconfirm_per_cycle: response.data?.reconfirm_per_cycle ?? this.reconfirmPerCycle,
+					open_before_confirm: response.data?.open_before_confirm ?? this.openBeforeConfirm,
 				})
 			} catch (e) {
 				this[field] = before

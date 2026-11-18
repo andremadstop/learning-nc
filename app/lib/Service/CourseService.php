@@ -783,12 +783,13 @@ class CourseService {
 
     /**
      * GitHub #75 (was setVideoGateEnabled, Phase 162 B3): the switches of the required
-     * content — the exam gate and "confirm again in every certification cycle". null leaves a switch unchanged. Owner/co-instructor gated.
+     * content — the exam gate, "confirm again in every certification cycle" and, GitHub #86,
+     * "confirm only after opening". null leaves a switch unchanged. Owner/co-instructor gated.
      *
      * @throws DoesNotExistException if the course does not exist
      * @throws ForbiddenException    if $userId is not an instructor of this course
      */
-    public function setRequiredContentOptions(int $courseId, string $userId, ?bool $gateEnabled, ?bool $reconfirmPerCycle): Course {
+    public function setRequiredContentOptions(int $courseId, string $userId, ?bool $gateEnabled, ?bool $reconfirmPerCycle, ?bool $openBeforeConfirm = null): Course {
         $course = $this->assertInstructorOfCourse($courseId, $userId);
         if ($gateEnabled !== null) {
             $course->setVideoGateEnabled($gateEnabled);
@@ -796,7 +797,10 @@ class CourseService {
         if ($reconfirmPerCycle !== null) {
             $course->setReconfirmPerCycle($reconfirmPerCycle);
         }
-        if ($gateEnabled !== null || $reconfirmPerCycle !== null) {
+        if ($openBeforeConfirm !== null) {
+            $course->setOpenBeforeConfirm($openBeforeConfirm);
+        }
+        if ($gateEnabled !== null || $reconfirmPerCycle !== null || $openBeforeConfirm !== null) {
             $course->setUpdatedAt(time());
             $this->courseMapper->update($course);
         }
@@ -1091,6 +1095,8 @@ class CourseService {
             $course->setReconfirmPerCycle(true);
             // GitHub #87: three counting attempts per pool, then the instructor decides (new cycle).
             $course->setExamAttemptLimit(ExamAttemptLimitService::MANDATORY_PROFILE_DEFAULT);
+            // GitHub #86: a required document is confirmed only after it was opened.
+            $course->setOpenBeforeConfirm(true);
         } elseif (!$this->xpService->isGamificationEnabled()) {
             $course->setModeConfig(json_encode(self::MODE_CONFIG_WITHOUT_GAMIFICATION));
         }
@@ -1207,6 +1213,11 @@ class CourseService {
             // GitHub #75: read confirmations of required documents carry the course id.
             $qb = $this->db->getQueryBuilder();
             $qb->delete('learning_doc_confirms')
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            $qb->executeStatement();
+            // GitHub #86: when learners opened its required documents.
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete('learning_doc_opens')
                 ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
             $qb->executeStatement();
 

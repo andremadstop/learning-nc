@@ -921,7 +921,7 @@ export default {
 			if (!this.course || !patch || typeof patch !== 'object') {
 				return
 			}
-			const allowed = ['video_gate_enabled', 'reconfirm_per_cycle']
+			const allowed = ['video_gate_enabled', 'reconfirm_per_cycle', 'open_before_confirm']
 			const next = { ...this.course }
 			for (const key of allowed) {
 				if (key in patch) {

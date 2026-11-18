@@ -8,6 +8,7 @@ use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\DocumentNotOpenedException;
 use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\DocumentUnavailableException;
 use OCA\Learning\Service\ForbiddenException;
@@ -170,6 +171,12 @@ class VideoProgressController extends Controller {
                 'error' => 'The document cannot be opened right now',
                 'code' => 'document_unavailable',
             ], Http::STATUS_CONFLICT);
+        } catch (DocumentNotOpenedException $e) {
+            // GitHub #86: the course asks for an open of this version first; nothing is recorded.
+            return new DataResponse([
+                'error' => 'Open the document before confirming it',
+                'code' => 'document_not_opened',
+            ], Http::STATUS_CONFLICT);
         }
         return new DataResponse([
             'completed' => $state['confirmed'],
@@ -276,6 +283,11 @@ class VideoProgressController extends Controller {
         $documentStates = $this->requiredDocuments !== null
             ? $this->requiredDocuments->statesForUser($course, $registry, $this->userId)
             : [];
+        // GitHub #86: whether "Confirm I have read this" waits for an open (course option).
+        $openRequired = RequiredDocumentService::openRequired($course);
+        $opened = $this->requiredDocuments !== null && $openRequired
+            ? $this->requiredDocuments->openedForUser($course, $registry, $this->userId)
+            : [];
         foreach ($registry as $video) {
             $state = $this->progressState((int)$video->getId());
             $documentState = $documentStates[(int)$video->getId()] ?? null;
@@ -305,6 +317,9 @@ class VideoProgressController extends Controller {
                 // "Updated since you confirmed it" / "Please confirm again" (new cycle or asked).
                 $row['updated'] = $documentState['updated'] ?? false;
                 $row['confirm_again'] = $documentState['again'] ?? false;
+                // GitHub #86: confirm only after opening this version in the current cycle.
+                $row['open_required'] = $openRequired;
+                $row['opened'] = $opened[(int)$video->getId()] ?? false;
             }
             $videos[] = $row;
         }

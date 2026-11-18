@@ -110,6 +110,8 @@ class CourseProfile67Test extends TestCase {
             $this->assertTrue($course->getReconfirmPerCycle(), 'required documents are confirmed per cycle');
             // GitHub #87: three counting attempts per pool, then the instructor decides
             $this->assertSame(3, $course->getExamAttemptLimit());
+            // GitHub #86: required documents are confirmed only after they were opened
+            $this->assertTrue($course->getOpenBeforeConfirm());
             $this->assertNull($course->getEnabledTools(), 'the per-tool selection stays the default, only the master switch is off');
             $this->assertNull($course->getCertRequiredPoolIds());
         }
@@ -122,6 +124,7 @@ class CourseProfile67Test extends TestCase {
             $this->assertNotTrue($on->getCertEnabled());
             $this->assertNotTrue($on->getReconfirmPerCycle(), 'an IT course keeps one confirmation');
             $this->assertNull($on->getExamAttemptLimit(), 'an IT course keeps unlimited attempts');
+            $this->assertNotTrue($on->getOpenBeforeConfirm(), 'an IT course confirms without opening');
 
             $off = json_decode((string)$this->service($this->inserting(), false)->create('Netzwerk', null, null, 'teacher', $profile)->getModeConfig(), true);
             $this->assertFalse($off['duel']);

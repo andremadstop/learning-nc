@@ -9,8 +9,10 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\DocConfirmMapper;
+use OCA\Learning\Db\DocOpenMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\ComplianceEventTypes;
+use OCA\Learning\Service\DocumentNotOpenedException;
 use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\DocumentUnavailableException;
 use OCA\Learning\Service\PassCriteriaService;
@@ -94,10 +96,14 @@ class RequiredDocumentServiceTest extends TestCase {
         ?DocConfirmMapper $confirms = null,
         int $now = 5000,
         ?CourseDocumentMapper $documentMapper = null,
+        bool $openBeforeConfirm = false,
+        ?DocOpenMapper $opens = null,
+        ?CourseVideoMapper $videos = null,
     ): RequiredDocumentService {
         $course = new Course();
         $course->setId(9);
         $course->setReconfirmPerCycle($perCycle);
+        $course->setOpenBeforeConfirm($openBeforeConfirm);
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
 
@@ -116,7 +122,7 @@ class RequiredDocumentServiceTest extends TestCase {
 
         return new RequiredDocumentService(
             $confirms,
-            $this->createMock(CourseVideoMapper::class),
+            $videos ?? $this->createMock(CourseVideoMapper::class),
             $courseMapper,
             $documents,
             $pass,
@@ -124,6 +130,7 @@ class RequiredDocumentServiceTest extends TestCase {
             $time,
             new FakeDbConnection(),
             $documentMapper ?? $this->createMock(CourseDocumentMapper::class),
+            $opens,
         );
     }
 
@@ -427,5 +434,106 @@ class RequiredDocumentServiceTest extends TestCase {
         );
 
         self::assertSame(['anna' => 1], $service->countConfirmedByUsers($course, [self::document()], ['anna', 'ben', 'carl']));
+    }
+
+    // ---- GitHub #86: confirm only after opening -------------------------------------------
+
+    /** @param array<int, array{doc_version: string, opened_at: int}> $lastOpens document id => open */
+    private function opens(array $lastOpens): DocOpenMapper {
+        $opens = $this->createMock(DocOpenMapper::class);
+        $opens->method('lastOpens')->willReturn($lastOpens);
+        return $opens;
+    }
+
+    /**
+     * @param array<int, array{doc_version: string, opened_at: int}> $lastOpens
+     * @return bool whether confirm() appended a confirmation (false: refused, DocumentNotOpenedException)
+     */
+    private function confirmWith(array $lastOpens, bool $openBeforeConfirm, bool $perCycle = false, ?int $cycleStart = null): bool {
+        $confirms = $this->createMock(DocConfirmMapper::class);
+        $inserted = false;
+        $confirms->method('latestByUsers')->willReturnCallback(function () use (&$inserted) {
+            return $inserted ? ['anna' => [31 => ['confirmed_at' => 5000, 'doc_version' => self::V1]]] : [];
+        });
+        $confirms->method('insert')->willReturnCallback(function () use (&$inserted): void {
+            $inserted = true;
+        });
+        $service = $this->service([], ['version' => self::V1, 'mtime' => 100], $perCycle, $cycleStart, null, $confirms, 5000, null, $openBeforeConfirm, $this->opens($lastOpens));
+        try {
+            $service->confirm(self::document(), 'anna');
+        } catch (DocumentNotOpenedException $e) {
+            self::assertFalse($inserted, 'a refused confirmation records nothing');
+            return false;
+        }
+        return $inserted;
+    }
+
+    /**
+     * GitHub #86: "Confirm I have read this" without ever opening the file was accepted (also
+     * straight through the API). In a course with the option the server refuses it now.
+     */
+    public function testAConfirmationWithoutAnOpenIsRefused(): void {
+        $this->expectException(DocumentNotOpenedException::class);
+        $this->service([], ['version' => self::V1, 'mtime' => 100], false, null, null, null, 5000, null, true, $this->opens([]))
+            ->confirm(self::document(), 'anna');
+    }
+
+    public function testAnOpenOfTheCurrentVersionAllowsTheConfirmation(): void {
+        self::assertTrue($this->confirmWith([12 => ['doc_version' => self::V1, 'opened_at' => 4000]], true));
+    }
+
+    public function testAnOpenOfAnOlderVersionDoesNotCount(): void {
+        self::assertFalse($this->confirmWith([12 => ['doc_version' => self::V2, 'opened_at' => 4000]], true), 'the file was replaced after the open');
+    }
+
+    public function testAnOpenFromAnEarlierCycleDoesNotCount(): void {
+        self::assertFalse($this->confirmWith([12 => ['doc_version' => self::V1, 'opened_at' => 4000]], true, true, 4500), 'opened before the renewal window');
+        self::assertTrue($this->confirmWith([12 => ['doc_version' => self::V1, 'opened_at' => 4500]], true, true, 4500), 'opened in it');
+    }
+
+    public function testACourseWithoutTheOptionConfirmsWithoutAnOpen(): void {
+        self::assertTrue($this->confirmWith([], false), 'IT courses as before');
+    }
+
+    /** GitHub #86: a confirmation that counts today keeps counting; nothing locks again. */
+    public function testAnExistingConfirmationStaysValidWithoutAnOpen(): void {
+        $confirms = $this->createMock(DocConfirmMapper::class);
+        $confirms->method('latestByUsers')->willReturn(['anna' => [31 => ['confirmed_at' => 4000, 'doc_version' => self::V1]]]);
+        $confirms->expects($this->never())->method('insert');
+        $opens = $this->createMock(DocOpenMapper::class);
+        $opens->expects($this->never())->method('lastOpens');
+
+        $service = $this->service([], ['version' => self::V1, 'mtime' => 100], false, null, null, $confirms, 5000, null, true, $opens);
+
+        self::assertTrue($service->confirm(self::document(), 'anna')['confirmed']);
+        self::assertTrue($service->isConfirmed(self::course(false), self::document(), 'anna'), 'exam gate unchanged');
+    }
+
+    public function testOpenedForUserFollowsTheSameRule(): void {
+        $course = self::course(false);
+        $course->setOpenBeforeConfirm(true);
+        $opened = $this->service([], ['version' => self::V1, 'mtime' => 100], false, null, null, null, 5000, null, true, $this->opens([12 => ['doc_version' => self::V1, 'opened_at' => 4000]]))
+            ->openedForUser($course, [self::document()], 'anna');
+        self::assertSame([31 => true], $opened);
+
+        $replaced = $this->service([], ['version' => self::V2, 'mtime' => 100], false, null, null, null, 5000, null, true, $this->opens([12 => ['doc_version' => self::V1, 'opened_at' => 4000]]))
+            ->openedForUser($course, [self::document()], 'anna');
+        self::assertSame([31 => false], $replaced);
+
+        self::assertSame([], $this->service([], ['version' => self::V1, 'mtime' => 100], false, null)->openedForUser(self::course(false), [self::document()], 'anna'), 'no option, no lookup');
+    }
+
+    public function testRecordOpenStoresOnlyRequiredDocumentsOfACourseWithTheOption(): void {
+        $videos = $this->createMock(CourseVideoMapper::class);
+        $videos->method('findDocumentRowsByCourse')->willReturn([12 => self::document()]);
+        $opens = $this->createMock(DocOpenMapper::class);
+        $opens->expects($this->once())->method('record')->with('anna', 9, 12, self::V1, 5000);
+        $service = $this->service([], null, false, null, null, null, 5000, null, true, $opens, $videos);
+
+        $course = self::course(false);
+        $course->setOpenBeforeConfirm(true);
+        self::assertTrue($service->recordOpen($course, 12, self::V1, 'anna'));
+        self::assertFalse($service->recordOpen($course, 13, self::V1, 'anna'), 'an optional file');
+        self::assertFalse($service->recordOpen(self::course(false), 12, self::V1, 'anna'), 'a course without the option');
     }
 }

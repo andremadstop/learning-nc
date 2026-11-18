@@ -87,6 +87,8 @@ class DataExportService {
             'campaign_progress' => $this->exportCampaignProgress($userId),
             'kudos_received' => $this->exportKudos($userId, 'to_user'),
             'kudos_given' => $this->exportKudos($userId, 'from_user'),
+            // GitHub #86: when the user opened required documents (version of the served file).
+            'document_opens' => $this->exportDocumentOpens($userId),
             // Art.20 DSGVO — own-data export: raw VC-JWT + metadata (163-04).
             // SESSION-ONLY: $userId comes from the session, no external param exists —
             // a foreign export is impossible by construction.
@@ -342,6 +344,34 @@ class DataExportService {
                         : (string)$row['to_user'],
                     'message' => (string)($row['message'] ?? ''),
                     'created_at' => (int)$row['created_at'],
+                ];
+            }, $rows);
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function exportDocumentOpens(string $userId): array {
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('course_id', 'document_id', 'doc_version', 'opened_at')
+                ->from('learning_doc_opens')
+                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+                ->orderBy('opened_at', 'DESC');
+
+            $result = $qb->executeQuery();
+            $rows = $result->fetchAll();
+            $result->closeCursor();
+
+            return array_map(static function (array $row): array {
+                return [
+                    'course_id' => (int)$row['course_id'],
+                    'document_id' => (int)$row['document_id'],
+                    'document_version' => (string)$row['doc_version'],
+                    'opened_at' => (int)$row['opened_at'],
                 ];
             }, $rows);
         } catch (\Throwable $e) {

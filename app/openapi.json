@@ -20585,7 +20585,7 @@
             "get": {
                 "operationId": "document-download",
                 "summary": "Open a material file (GitHub #35): learners could see the file names but not open them.",
-                "description": "Security, in this order: logged in; member or instructor of THIS course (403 otherwise); the document belongs to this course; the file is a direct child of the course's current material folder, resolved by its plain name in the owner's home — never a path from the request (DocumentService::resolveMaterialFile; 404 otherwise). The Content-Type comes from the registered file type, not from the file: PDF is shown inline, Markdown as plain text, with nosniff, so an uploaded file cannot become an HTML page of this origin.\n#[NoCSRFRequired] is needed because the browser opens the file through a plain link, which carries no request token. The endpoint only reads.",
+                "description": "Security, in this order: logged in; member or instructor of THIS course (403 otherwise); the document belongs to this course; the file is a direct child of the course's current material folder, resolved by its plain name in the owner's home — never a path from the request (DocumentService::resolveMaterialFile; 404 otherwise). The Content-Type comes from the registered file type, not from the file: PDF is shown inline, Markdown as plain text, with nosniff, so an uploaded file cannot become an HTML page of this origin.\n#[NoCSRFRequired] is needed because the browser opens the file through a plain link, which carries no request token. The endpoint reads the file; the only write is GitHub #86: in a course with open_before_confirm, a learner's open of a required document is stored (RequiredDocumentService::recordOpen()) so he can confirm it afterwards. A cross-site link can at most mark a document as opened that the victim could open anyway.",
                 "tags": [
                     "document"
                 ],
@@ -23301,7 +23301,7 @@
         "/index.php/apps/learning/api/courses/{courseId}/video-gate": {
             "put": {
                 "operationId": "course-set-video-gate",
-                "summary": "Instructor toggles the server-side video/material gate (Phase 162, B3) and, GitHub #75, whether required documents are confirmed again in every certification cycle. Each field is optional; an omitted one stays as it is.",
+                "summary": "Instructor toggles the server-side video/material gate (Phase 162, B3) and, GitHub #75, whether required documents are confirmed again in every certification cycle and, GitHub #86, only after the learner opened them. Each field is optional; an omitted one stays as it is.",
                 "tags": [
                     "course"
                 ],
@@ -23326,6 +23326,11 @@
                                         "default": null
                                     },
                                     "reconfirmPerCycle": {
+                                        "type": "boolean",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    "openBeforeConfirm": {
                                         "type": "boolean",
                                         "nullable": true,
                                         "default": null

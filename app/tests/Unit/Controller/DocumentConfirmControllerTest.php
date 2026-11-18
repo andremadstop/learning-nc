@@ -11,6 +11,7 @@ use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgress;
 use OCA\Learning\Db\VideoProgressMapper;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\DocumentNotOpenedException;
 use OCA\Learning\Service\DocumentUnavailableException;
 use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\VideoProgressService;
@@ -25,7 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[AllowMockObjectsWithoutExpectations]
 class DocumentConfirmControllerTest extends TestCase {
-    private function controller(RequiredDocumentService $required, bool $instructor = false, ?VideoProgressService $service = null): VideoProgressController {
+    private function controller(RequiredDocumentService $required, bool $instructor = false, ?VideoProgressService $service = null, bool $openBeforeConfirm = false): VideoProgressController {
         $document = new CourseVideo();
         $document->setId(31);
         $document->setCourseId(7);
@@ -36,6 +37,7 @@ class DocumentConfirmControllerTest extends TestCase {
         $videos->method('findByCourse')->willReturn([$document]);
         $course = new Course();
         $course->setId(7);
+        $course->setOpenBeforeConfirm($openBeforeConfirm);
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('assertEnrolledInCourse')->willReturn($course);
         $courseService->method('canManageCourse')->with(7, 'anna')->willReturn($instructor);
@@ -111,5 +113,37 @@ class DocumentConfirmControllerTest extends TestCase {
 
         $this->assertSame(403, $controller->heartbeat(31, 0.0, 30.0)->getStatus());
         $this->assertSame(403, $controller->complete(31)->getStatus());
+    }
+
+    /**
+     * GitHub #86: "Confirm I have read this" before the document was opened is refused with a
+     * code the page reads (the service decides, also for a request without the page).
+     */
+    public function testAConfirmationBeforeOpeningIsAConflict(): void {
+        $required = $this->createMock(RequiredDocumentService::class);
+        $required->method('confirm')->willThrowException(new DocumentNotOpenedException('not opened'));
+
+        $response = $this->controller($required, false, null, true)->documentRead(31);
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame('document_not_opened', $response->getData()['code']);
+    }
+
+    /** GitHub #86: the learner's list says whether the course waits for an open, and whether there was one. */
+    public function testStatusSaysWhetherTheDocumentWasOpened(): void {
+        $required = $this->createMock(RequiredDocumentService::class);
+        $required->method('statesForUser')->willReturn([31 => ['confirmed' => false, 'updated' => false, 'again' => false, 'confirmed_at' => null]]);
+        $required->method('openedForUser')->willReturn([31 => true]);
+
+        $row = $this->controller($required, false, null, true)->courseStatus(7)->getData()['videos'][0];
+        $this->assertTrue($row['open_required']);
+        $this->assertTrue($row['opened']);
+
+        $off = $this->createMock(RequiredDocumentService::class);
+        $off->method('statesForUser')->willReturn([31 => ['confirmed' => false, 'updated' => false, 'again' => false, 'confirmed_at' => null]]);
+        $off->expects($this->never())->method('openedForUser');
+        $row = $this->controller($off)->courseStatus(7)->getData()['videos'][0];
+        $this->assertFalse($row['open_required'], 'an IT course confirms without opening, as before');
+        $this->assertFalse($row['opened']);
     }
 }

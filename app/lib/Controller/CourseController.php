@@ -232,18 +232,19 @@ class CourseController extends Controller {
 
     /**
      * Instructor toggles the server-side video/material gate (Phase 162, B3) and, GitHub #75,
-     * whether required documents are confirmed again in every certification cycle. Each field
-     * is optional; an omitted one stays as it is.
+     * whether required documents are confirmed again in every certification cycle and, GitHub
+     * #86, only after the learner opened them. Each field is optional; an omitted one stays as it is.
      */
     #[NoAdminRequired]
     #[UserRateLimit(limit: 60, period: 60)]
-    public function setVideoGate(int $courseId, ?bool $enabled = null, ?bool $reconfirmPerCycle = null): DataResponse {
+    public function setVideoGate(int $courseId, ?bool $enabled = null, ?bool $reconfirmPerCycle = null, ?bool $openBeforeConfirm = null): DataResponse {
         try {
-            $course = $this->courseService->setRequiredContentOptions($courseId, $this->userId, $enabled, $reconfirmPerCycle);
+            $course = $this->courseService->setRequiredContentOptions($courseId, $this->userId, $enabled, $reconfirmPerCycle, $openBeforeConfirm);
             return new DataResponse([
                 'course_id' => $courseId,
                 'video_gate_enabled' => $course->getVideoGateEnabled() ?? false,
                 'reconfirm_per_cycle' => $course->getReconfirmPerCycle() ?? false,
+                'open_before_confirm' => $course->getOpenBeforeConfirm() ?? false,
             ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

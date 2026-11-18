@@ -123,4 +123,26 @@ class RetentionServiceTest extends TestCase {
         $this->assertArrayNotHasKey('chain_hash', $auditUpdate->setCalls,
             'DSGVO-03: chain_hash must NOT appear in audit UPDATE — chain-immutability by construction');
     }
+
+    /**
+     * GitHub #86: when a learner opened a required document follows the retention window: rows
+     * older than the cutoff are deleted (no evidence, so not pseudonymised).
+     */
+    public function testOpensOfRequiredDocumentsAgeOut(): void {
+        $now = 1750000000;
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findAnonymizableBefore')->willReturn([]);
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturn('3');
+        $time = $this->createMock(ITimeFactory::class);
+        $time->method('getTime')->willReturn($now);
+        $fakeDb = new FakeDbConnection();
+
+        (new RetentionService($certMapper, $fakeDb, $config, $time, $this->createMock(LoggerInterface::class)))->anonymizeExpired();
+
+        $cutoff = (new \DateTimeImmutable('@' . $now))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->modify('-3 years')->getTimestamp();
+        $deletes = array_values(array_filter($fakeDb->issuedBuilders, static fn($qb): bool => $qb->operation === 'delete' && $qb->table === 'learning_doc_opens'));
+        $this->assertCount(1, $deletes, 'the opens are deleted');
+        $this->assertSame(['type' => 'lt', 'left' => 'opened_at', 'right' => ['value' => $cutoff, 'type' => \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT]], $deletes[0]->whereCalls[0]);
+    }
 }

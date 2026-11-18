@@ -232,4 +232,12 @@ class DataExportServiceTest extends TestCase {
         $result = $this->makeService([])->exportForUser(self::USER);
         $this->assertSame([], $result['ai_chat_memory']);
     }
+
+    /** GitHub #86: the opens of required documents are part of the own-data export. */
+    public function testExportHasTheDocumentOpens(): void {
+        $result = $this->makeService([])->exportForUser(self::USER);
+
+        $this->assertArrayHasKey('document_opens', $result);
+        $this->assertSame([], $result['document_opens']);
+    }
 }

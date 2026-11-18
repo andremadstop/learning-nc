@@ -10,6 +10,7 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\DocConfirmMapper;
+use OCA\Learning\Db\DocOpenMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;
 
@@ -43,6 +44,12 @@ use OCP\IDBConnection;
  * instructor's "Ask everyone to confirm again", which is stored on the document as well. Confirming
  * while a valid confirmation exists is a no-op (no second row, no second audit event).
  * Videos are not handled here: they keep their watch state in learning_video_progress.
+ *
+ * GitHub #86: in a course with open_before_confirm (mandatory-training profile) confirm() first
+ * asks for an open of the current file version within the current validFrom() — recorded by
+ * document#download (recordOpen(), learning_doc_opens). The open is a precondition of a NEW
+ * confirmation only: evaluate() does not look at it, so every confirmation that counts today
+ * keeps counting, and switching the option on locks no exam that is open now.
  */
 class RequiredDocumentService {
     public function __construct(
@@ -55,6 +62,7 @@ class RequiredDocumentService {
         private ITimeFactory $timeFactory,
         private IDBConnection $db,
         private CourseDocumentMapper $documentMapper,
+        private ?DocOpenMapper $openMapper = null,
     ) {
     }
 
@@ -259,6 +267,8 @@ class RequiredDocumentService {
      *
      * @return array{confirmed: bool, updated: bool, again: bool, confirmed_at: int|null}
      * @throws DocumentUnavailableException the file of a document row cannot be read right now
+     * @throws DocumentNotOpenedException the course asks for an open first (GitHub #86) and there
+     *         is none of this version in the current cycle; an existing valid confirmation stays a no-op
      */
     public function confirm(CourseVideo $video, string $userId): array {
         $course = $this->courseMapper->findById((int)$video->getCourseId());
@@ -274,6 +284,10 @@ class RequiredDocumentService {
         // never checked against later changes in a course without reconfirm_per_cycle.
         if ($documentId !== null && $file === null) {
             throw new DocumentUnavailableException('The required document cannot be read right now');
+        }
+        // GitHub #86: opened before confirmed (on the server, so also through the API).
+        if (self::openRequired($course) && !$this->openedFor($course, $video, $userId, $file)) {
+            throw new DocumentNotOpenedException('The required document has not been opened yet');
         }
         $now = $this->timeFactory->getTime();
         $context = ['course_id' => (int)$course->getId(), 'content_id' => $id];
@@ -299,6 +313,90 @@ class RequiredDocumentService {
             throw $e;
         }
         return $this->statesForUser($course, [$video], $userId)[$id];
+    }
+
+    /** GitHub #86: whether the course confirms a required document only after it was opened. */
+    public static function openRequired(Course $course): bool {
+        return (bool)($course->getOpenBeforeConfirm() ?? false);
+    }
+
+    /**
+     * GitHub #86 (pure): whether the last open counts for a confirmation now — the file version
+     * that is in the material folder now, opened not before validFrom().
+     *
+     * @param array{doc_version: string, opened_at: int}|null $open
+     * @param array{version: string, mtime: int}|null $file the file now, null = unknown
+     */
+    public static function openCounts(?array $open, int $validFrom, ?array $file): bool {
+        if ($open === null || $file === null) {
+            return false;
+        }
+        return $open['opened_at'] >= $validFrom && hash_equals($file['version'], $open['doc_version']);
+    }
+
+    /**
+     * GitHub #86: whether the user opened this document row so that a confirmation is accepted.
+     * A legacy path row (no document id) has no download and so can never be opened.
+     *
+     * @param array{version: string, mtime: int}|null $file the current file (fileInfo())
+     */
+    private function openedFor(Course $course, CourseVideo $video, string $userId, ?array $file): bool {
+        $documentId = self::documentIdOf($video);
+        if ($documentId === null || $this->openMapper === null) {
+            return false;
+        }
+        $open = $this->openMapper->lastOpens((int)$course->getId(), $userId, [$documentId])[$documentId] ?? null;
+        $confirmAfter = $this->confirmAfterOf((int)$course->getId(), [(int)$video->getId() => $documentId]);
+        $validFrom = self::validFrom($confirmAfter[(int)$video->getId()] ?? null, $this->cycleStart($course, $userId));
+        return self::openCounts($open, $validFrom, $file);
+    }
+
+    /**
+     * GitHub #86: per document row of $videos, whether the user opened it so that "Confirm I have
+     * read this" is accepted (learner's status list). Empty in a course without open_before_confirm.
+     *
+     * @param CourseVideo[] $videos
+     * @return array<int, bool> content id => opened
+     */
+    public function openedForUser(Course $course, array $videos, string $userId): array {
+        $documents = array_values(array_filter($videos, [self::class, 'isDocument']));
+        if ($documents === [] || !self::openRequired($course)) {
+            return [];
+        }
+        $documentOf = self::documentMap($documents);
+        $opens = $this->openMapper !== null
+            ? $this->openMapper->lastOpens((int)$course->getId(), $userId, array_values(array_filter($documentOf, static fn(?int $d): bool => $d !== null)))
+            : [];
+        $confirmAfter = $this->confirmAfterOf((int)$course->getId(), $documentOf);
+        $cycleStart = $this->cycleStart($course, $userId);
+        $opened = [];
+        foreach ($documents as $video) {
+            $id = (int)$video->getId();
+            $documentId = $documentOf[$id];
+            $opened[$id] = $documentId !== null && self::openCounts(
+                $opens[$documentId] ?? null,
+                self::validFrom($confirmAfter[$id] ?? null, $cycleStart),
+                $this->fileInfo($course, $video)
+            );
+        }
+        return $opened;
+    }
+
+    /**
+     * GitHub #86: document#download served the file of $documentId to $userId. Stored only when
+     * it matters: a course with open_before_confirm, a document that is required in it, and a
+     * learner (the caller leaves out the instructors of the course, as VideoProgressController
+     * does for the confirmation). Not in the compliance chain.
+     */
+    public function recordOpen(Course $course, int $documentId, string $docVersion, string $userId): bool {
+        if ($this->openMapper === null || !self::openRequired($course)) {
+            return false;
+        }
+        if (!isset($this->videoMapper->findDocumentRowsByCourse((int)$course->getId())[$documentId])) {
+            return false; // an optional file: nothing to confirm, nothing to store
+        }
+        $this->openMapper->record($userId, (int)$course->getId(), $documentId, $docVersion, $this->timeFactory->getTime());
+        return true;
     }
 
     /**

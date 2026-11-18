@@ -23,7 +23,15 @@
 		<dl v-show="expanded" id="training-privacy-details" class="training-privacy__list">
 			<div class="training-privacy__row">
 				<dt>{{ t('learning', 'Welche Daten') }}</dt>
-				<dd>{{ t('learning', 'Gespeichert werden ausschließlich dein Abschlussstatus und der Zeitpunkt des Abschlusses.') }}</dd>
+				<dd v-if="documentOpens" data-test="training-privacy-data-opens">
+					{{ t('learning', 'Gespeichert werden dein Abschlussstatus, der Zeitpunkt des Abschlusses und wann du welches Pflichtdokument zuletzt geöffnet hast.') }}
+				</dd>
+				<dd v-else>{{ t('learning', 'Gespeichert werden ausschließlich dein Abschlussstatus und der Zeitpunkt des Abschlusses.') }}</dd>
+			</div>
+			<!-- GitHub #86: the open of a required document is recorded in this course -->
+			<div v-if="documentOpens" class="training-privacy__row" data-test="training-privacy-opens">
+				<dt>{{ t('learning', 'Geöffnete Pflichtdokumente') }}</dt>
+				<dd>{{ t('learning', 'Wenn du ein Pflichtdokument öffnest, wird gespeichert, welche Fassung du wann zuletzt geöffnet hast. Erst danach kannst du es als gelesen bestätigen. Das zeigt nur, dass du es geöffnet hast, nicht dass du es gelesen hast. Die Angabe wird im Kurs niemandem angezeigt und nach Ablauf der Aufbewahrungsfrist gelöscht, spätestens mit deinem Konto.') }}</dd>
 			</div>
 			<div class="training-privacy__row">
 				<dt>{{ t('learning', 'Zweck & Rechtsgrundlage') }}</dt>
@@ -95,6 +103,11 @@ export default {
 		acknowledgeLabel: {
 			type: String,
 			default: '',
+		},
+		// GitHub #86: the course records when a learner opens a required document
+		documentOpens: {
+			type: Boolean,
+			default: false,
 		},
 	},
 

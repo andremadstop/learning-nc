@@ -424,24 +424,37 @@
 								{{ t('learning', 'Für den aktuellen Zertifizierungszeitraum noch nicht bestätigt.') }}
 							</p>
 							<div class="video-item__document">
+								<!-- GitHub #86: the server records the open; the state is read again afterwards -->
 								<a
 									v-if="documentUrl(item)"
 									:href="documentUrl(item)"
 									target="_blank"
 									rel="noopener noreferrer"
-									class="video-item__doc-link">
+									class="video-item__doc-link"
+									:data-test="'document-open-' + item.id"
+									@click="onDocumentOpened(item)"
+									@auxclick="onDocumentOpened(item)">
 									{{ t('learning', 'Dokument öffnen') }}
 								</a>
 								<NcButton
 									variant="primary"
-									:disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item)"
-									:aria-describedby="!documentUrl(item) && !isItemComplete(item.id) ? 'document-unavailable-' + item.id : undefined"
+									:data-test="'document-confirm-' + item.id"
+									:disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item) || needsOpen(item)"
+									:aria-describedby="confirmDescribedBy(item)"
 									@click="markDocumentRead(item)">
 									{{ isItemComplete(item.id)
 										? t('learning', 'Als gelesen bestätigt')
 										: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Lesen bestätigen')) }}
 								</NcButton>
 							</div>
+							<!-- GitHub #86: the course asks for an open of this version first -->
+							<p
+								v-if="documentUrl(item) && needsOpen(item) && !previewsAsStudent"
+								:id="'document-open-first-' + item.id"
+								class="video-item__hint"
+								:data-test="'document-open-first-' + item.id">
+								{{ t('learning', 'Öffne das Dokument zuerst. Danach kannst du es als gelesen bestätigen.') }}
+							</p>
 							<!-- GitHub #75 (review): no link to open it, nothing to confirm -->
 							<p
 								v-if="!documentUrl(item) && !isItemComplete(item.id)"
@@ -470,7 +483,7 @@
 						:hide-empty="true" />
 				</template>
 
-				<TrainingPrivacyNotice collapsible class="materials-privacy" />
+				<TrainingPrivacyNotice collapsible class="materials-privacy" :document-opens="course?.open_before_confirm === true" />
 			</template>
 			<CourseMaterials
 				v-else
@@ -844,6 +857,8 @@ export default {
 			courseVideos: [],
 			videoStatus: {},
 			documentPending: {},
+			// GitHub #86: an "Open" click whose recorded open is not read back yet
+			documentOpenPending: false,
 			videosLoaded: false,
 			// GitHub #75: bumped when the "Required" column changed, so the settings reload
 			requiredReloadKey: 0,
@@ -1045,9 +1060,15 @@ export default {
 			this.fetchCourseVideos()
 		}
 		this.ensureActiveToolVisible()
+		// GitHub #86: back from the tab with the opened document
+		window.addEventListener('focus', this.onPageVisible)
+		document.addEventListener('visibilitychange', this.onPageVisible)
 	},
 
 	beforeUnmount() {
+		window.removeEventListener('focus', this.onPageVisible)
+		document.removeEventListener('visibilitychange', this.onPageVisible)
+		clearTimeout(this.documentOpenTimer)
 		// CourseDetail keeps its own copy of "required content exists" to route the Pflichtinhalte
 		// leaf. A remounted Lernraum starts without the list, so a stale true would make CourseDetail
 		// pick a leaf this component cannot show yet — the two would disagree until a reload.
@@ -1191,6 +1212,9 @@ export default {
 				documentId: row.document_id ?? null,
 				updated: row.updated === true,
 				confirmAgain: row.confirm_again === true,
+				// GitHub #86: confirm only after opening (course option) and whether it was opened
+				openRequired: row.open_required === true,
+				opened: row.opened === true,
 			}
 		},
 		defaultVideoTitle(item) {
@@ -1204,6 +1228,58 @@ export default {
 			// its download (the server sends its id only while that download serves it). The old
 			// Files-app link pointed into the learner's own home, where the file is not.
 			return requiredDocumentUrl(this.courseId, item.documentId)
+		},
+		/** GitHub #86: the confirmation waits for an open of this version in this cycle. */
+		needsOpen(item) {
+			return item.sourceType === 'document' && item.openRequired === true && item.opened !== true && !this.isItemComplete(item.id)
+		},
+		confirmDescribedBy(item) {
+			if (this.isItemComplete(item.id)) {
+				return undefined
+			}
+			if (!this.documentUrl(item)) {
+				return 'document-unavailable-' + item.id
+			}
+			return this.needsOpen(item) && !this.previewsAsStudent ? 'document-open-first-' + item.id : undefined
+		},
+		/**
+		 * GitHub #86: the file opens in a new tab, whose request records the open. Read the state
+		 * again shortly after, and once more when the learner comes back to this tab.
+		 */
+		onDocumentOpened(item) {
+			if (!this.needsOpen(item) || this.previewsAsStudent) {
+				return
+			}
+			this.documentOpenPending = true
+			clearTimeout(this.documentOpenTimer)
+			this.documentOpenTimer = setTimeout(() => this.refreshDocumentStates(), 1500)
+		},
+		onPageVisible() {
+			if (this.documentOpenPending && (typeof document === 'undefined' || document.visibilityState !== 'hidden')) {
+				this.refreshDocumentStates()
+			}
+		},
+		/** GitHub #86: the learner's states again, without the routing side effects of fetchCourseVideos(). */
+		async refreshDocumentStates() {
+			try {
+				const url = generateUrl('/apps/learning/api/video-progress/course/{courseId}', { courseId: this.courseId })
+				const response = await axios.get(url)
+				if (!Array.isArray(response.data?.videos)) {
+					return
+				}
+				this.courseVideos = response.data.videos
+				for (const row of this.courseVideos) {
+					const item = this.normalizeVideo(row)
+					if (item.id !== null) {
+						this.setItemStatus(item.id, { completed: item.completed === true })
+					}
+				}
+				if (!this.normalizedCourseVideos.some((item) => this.needsOpen(item))) {
+					this.documentOpenPending = false
+				}
+			} catch (e) {
+				// the next return to this tab tries again
+			}
 		},
 		documentState(item) {
 			return documentConfirmState({ ...item, completed: this.isItemComplete(item.id) })
@@ -1247,8 +1323,14 @@ export default {
 				}
 			} catch (e) {
 				// GitHub #75 (review): the server could not read the file; nothing was recorded
-				const unavailable = e?.response?.status === 409 && e.response.data?.code === 'document_unavailable'
-				this.$emit('error', unavailable
+				const code = e?.response?.status === 409 ? e.response.data?.code : null
+				if (code === 'document_not_opened') {
+					// GitHub #86: e.g. the file was replaced since the learner opened it
+					this.$emit('error', t('learning', 'Öffne das Dokument zuerst. Danach kannst du es als gelesen bestätigen.'))
+					this.refreshDocumentStates()
+					return
+				}
+				this.$emit('error', code === 'document_unavailable'
 					? t('learning', 'Das Dokument kann gerade nicht geöffnet werden. Es wurde nichts bestätigt. Wende dich bitte an deine Lehrkraft.')
 					: t('learning', 'Dokument konnte nicht als gelesen markiert werden.'))
 			} finally {
@@ -2144,6 +2226,12 @@ export default {
 .video-item__status--pending {
 	background: var(--color-warning);
 	color: var(--color-warning-text, var(--color-warning));
+}
+
+.video-item__hint {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+	font-size: 0.95em;
 }
 
 .video-item__document {

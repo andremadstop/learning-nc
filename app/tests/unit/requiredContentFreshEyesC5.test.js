@@ -160,7 +160,7 @@ describe('learner view of the required content', () => {
 		expect(axios.post).not.toHaveBeenCalled()
 
 		const template = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
-		expect(template).toContain('documentPending[item.id] || !documentUrl(item)"')
+		expect(template).toContain('documentPending[item.id] || !documentUrl(item) || needsOpen(item)"')
 		expect(template).toMatch(/v-if="!documentUrl\(item\) && !isItemComplete\(item\.id\)"\s*:id="'document-unavailable-' \+ item\.id"/)
 	})
 
@@ -177,7 +177,7 @@ describe('learner view of the required content', () => {
 
 	it('the confirm button is disabled in the preview and the page says why', () => {
 		const template = readFileSync(resolve(__dirname, '../../src/components/CourseTabLernraum.vue'), 'utf8')
-		expect(template).toContain(':disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item)"')
+		expect(template).toContain(':disabled="previewsAsStudent || isItemComplete(item.id) || documentPending[item.id] || !documentUrl(item) || needsOpen(item)"')
 		expect(template).toMatch(/v-if="previewsAsStudent"[^>]*data-test="required-content-preview"/)
 	})
 
