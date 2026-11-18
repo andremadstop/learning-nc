@@ -282,6 +282,9 @@ class SettingsController extends Controller {
             'onboarding_acknowledged' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_acknowledged', 'no'),
             // GitHub #99: "Nicht mehr anzeigen" in the archive confirmation (saveArchiveConfirm())
             'archive_confirm_skip' => $this->config->getUserValue($this->userId, 'learning', 'archive_confirm_skip', 'no'),
+            // GitHub #66: the question player's switches (saveQuestionMedia())
+            'question_media_autoplay' => $this->config->getUserValue($this->userId, 'learning', 'question_media_autoplay', 'no'),
+            'answer_sounds' => $this->config->getUserValue($this->userId, 'learning', 'answer_sounds', 'auto'),
             // GitHub #36: the admin's global gamification switch, read-only for everyone. The
             // frontend hides XP, level, streak and badges with it (App.vue holds the one copy).
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes') === 'yes',
@@ -329,6 +332,43 @@ class SettingsController extends Controller {
         $this->config->setUserValue($this->userId, 'learning', 'archive_confirm_skip', $value);
 
         return new DataResponse(['archive_confirm_skip' => $value]);
+    }
+
+    /**
+     * GitHub #66: the two switches of the question player, stored per user on the server like
+     * saveArchiveConfirm() (own route for the same reason). Either field may be left out; only
+     * the ones sent are stored.
+     *
+     * - autoplay: the intro starts by itself when a question is shown, and after answering the
+     *   spoken explanation of the chosen option and the dialog follow. Off by default (WCAG
+     *   1.4.2, required training in an office).
+     * - sounds: the short "right"/"wrong" tone after answering. 'auto' (the default) follows
+     *   autoplay; 'yes'/'no' is the learner's explicit choice.
+     *
+     * @param bool|null $autoplay start the intro and the explanations by themselves
+     * @param string|null $sounds 'auto', 'yes' or 'no'
+     * @return DataResponse<Http::STATUS_OK, array{question_media_autoplay: string, answer_sounds: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string}, array{}>
+     */
+    #[NoAdminRequired]
+    public function saveQuestionMedia(?bool $autoplay = null, ?string $sounds = null): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if ($sounds !== null && !in_array($sounds, ['auto', 'yes', 'no'], true)) {
+            return new DataResponse(['error' => 'sounds must be auto, yes or no'], Http::STATUS_BAD_REQUEST);
+        }
+
+        if ($autoplay !== null) {
+            $this->config->setUserValue($this->userId, 'learning', 'question_media_autoplay', $autoplay ? 'yes' : 'no');
+        }
+        if ($sounds !== null) {
+            $this->config->setUserValue($this->userId, 'learning', 'answer_sounds', $sounds);
+        }
+
+        return new DataResponse([
+            'question_media_autoplay' => $this->config->getUserValue($this->userId, 'learning', 'question_media_autoplay', 'no'),
+            'answer_sounds' => $this->config->getUserValue($this->userId, 'learning', 'answer_sounds', 'auto'),
+        ]);
     }
 
     #[NoAdminRequired]

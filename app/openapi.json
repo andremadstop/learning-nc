@@ -7890,6 +7890,135 @@
                 }
             }
         },
+        "/index.php/apps/learning/api/settings/personal/question-media": {
+            "put": {
+                "operationId": "settings-save-question-media",
+                "summary": "GitHub #66: the two switches of the question player, stored per user on the server like saveArchiveConfirm() (own route for the same reason). Either field may be left out; only the ones sent are stored.",
+                "description": "- autoplay: the intro starts by itself when a question is shown, and after answering the spoken explanation of the chosen option and the dialog follow. Off by default (WCAG 1.4.2, required training in an office). - sounds: the short \"right\"/\"wrong\" tone after answering. 'auto' (the default) follows autoplay; 'yes'/'no' is the learner's explicit choice.",
+                "tags": [
+                    "settings"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "autoplay": {
+                                        "type": "boolean",
+                                        "nullable": true,
+                                        "default": null,
+                                        "description": "start the intro and the explanations by themselves"
+                                    },
+                                    "sounds": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "default": null,
+                                        "description": "'auto', 'yes' or 'no'"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "question_media_autoplay",
+                                        "answer_sounds"
+                                    ],
+                                    "properties": {
+                                        "question_media_autoplay": {
+                                            "type": "string"
+                                        },
+                                        "answer_sounds": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "error"
+                                            ],
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "message"
+                                            ],
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/index.php/apps/learning/api/virtuprof/state": {
             "get": {
                 "operationId": "virtu_prof-get-state",

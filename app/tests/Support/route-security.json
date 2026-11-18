@@ -1272,6 +1272,9 @@
   "SettingsController::savePersonal": {
    "NoAdminRequired": true
   },
+  "SettingsController::saveQuestionMedia": {
+   "NoAdminRequired": true
+  },
   "SettingsController::saveTools": [],
   "ShareController::create": {
    "NoAdminRequired": true,
