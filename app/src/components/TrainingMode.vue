@@ -66,143 +66,148 @@
       </div>
       <div v-if="currentQuestion" class="question-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
-        <QuestionScenario :question="currentQuestion" />
-        <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
-        <div class="question-text">{{ currentQuestion.text }}</div>
-
-        <div v-if="isMultiSelect" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
-        <!-- #66: the hint, only while the question is still open -->
-        <QuestionHint v-if="!answered" :question="currentQuestion" />
-        <!-- #66: intro before answering, dialog with keywords after it (one player, same place) -->
+        <!-- #66: intro before answering, then the voice of the chosen option and the dialog after
+             it — first in the card, one player, one place (Andre 18.11.: "Mini-Slideshow"). -->
         <QuestionMediaPlayer :question-id="currentQuestion.id"
                              :answered="answered"
                              :reveal="questionMedia"
-                             :content-language="effectiveContentLanguage" />
+                             :content-language="effectiveContentLanguage"
+                             :answer-correct="answered ? !!isCorrect : null"
+                             :selected-answer-ids="mediaSelectedIds"
+                             @conceal="questionConcealed = $event" />
+        <QuestionConceal :conceal="questionConcealed" :question-key="currentQuestion.id">
+          <QuestionScenario :question="currentQuestion" />
+          <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
+          <div class="question-text">{{ currentQuestion.text }}</div>
 
-        <!-- PBQ block -->
-        <div v-if="!answered && isPbq" class="pbq-answer-area">
-          <PbqRenderer
-            :question="currentQuestion"
-            :disabled="submitting"
-            @submit="submitPbqAnswer"
-            @skip="skipQuestion"
-          />
-        </div>
-        <div v-else-if="answered && isPbq" class="answer-feedback">
-          <NcNoteCard :type="isCorrect ? 'success' : 'error'">
-            {{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
-            — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
-          </NcNoteCard>
-          <NcNoteCard v-if="currentQuestion.explanation" type="info">
-            <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span>
-          </NcNoteCard>
-          <RichFeedbackPanel :rich="richFeedback" />
-          <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
-            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
-          </NcNoteCard>
-          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">
-            {{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
-          </NcButton>
-        </div>
-
-        <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
-          <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
-          <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
-            {{ t('learning', 'Submit Answer') }}
-          </NcButton>
-        </div>
-        <div v-else-if="!answered" class="answers-grid">
-          <template v-if="currentQuestion.answers && currentQuestion.answers.length > 0">
-            <template v-if="isMultiSelect">
-              <button
-                v-for="answer in currentQuestion.answers"
-                :key="answer.id"
-                @click="toggleMultiAnswer(answer.id)"
-                class="answer-btn"
-                :class="{ 'answer-selected': selectedAnswerIds.includes(answer.id) }"
-                :aria-pressed="selectedAnswerIds.includes(answer.id) ? 'true' : 'false'"
-                :disabled="submitting"
-              >{{ answer.text }}</button>
-              <div class="multi-submit-area">
-                <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
-                  {{ t('learning', 'Submit Answer') }}
-                </NcButton>
-              </div>
-            </template>
-            <template v-else>
-              <button v-for="answer in currentQuestion.answers" :key="answer.id" @click="submitAnswer(answer.id)" class="answer-btn" :aria-pressed="selectedAnswerId === answer.id ? 'true' : 'false'" :disabled="submitting">{{ answer.text }}</button>
-            </template>
-          </template>
-          <div v-else class="no-answers">
-            <p>{{ t('learning', 'This question has no answers yet.') }}</p>
-            <NcButton variant="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
+          <div v-if="isMultiSelect" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+          <!-- #66: the hint, only while the question is still open -->
+          <QuestionHint v-if="!answered" :question="currentQuestion" />
+          <!-- PBQ block -->
+          <div v-if="!answered && isPbq" class="pbq-answer-area">
+            <PbqRenderer
+              :question="currentQuestion"
+              :disabled="submitting"
+              @submit="submitPbqAnswer"
+              @skip="skipQuestion"
+            />
           </div>
-        </div>
-        <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
-          <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
-          <div class="open-answer-review">
-            <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
-            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts[0] || '' }}</div>
-          </div>
-          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
-          <RichFeedbackPanel :rich="richFeedback" />
-          <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
-            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
-          </NcNoteCard>
-          <div v-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
-              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
-            </NcButton>
-            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
-            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
-          </div>
-          <!-- Fresh-eyes C4: the VirtuProf chat answers with the AI; with AI off the button led nowhere. -->
-          <div v-if="!isCorrect && aiAvailable" class="ai-explain-row">
-            <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
-              {{ t('learning', 'Explain via VirtuProf') }}
+          <div v-else-if="answered && isPbq" class="answer-feedback">
+            <NcNoteCard :type="isCorrect ? 'success' : 'error'">
+              {{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
+              — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
+            </NcNoteCard>
+            <NcNoteCard v-if="currentQuestion.explanation" type="info">
+              <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span>
+            </NcNoteCard>
+            <RichFeedbackPanel :rich="richFeedback" />
+            <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
+              <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
+            </NcNoteCard>
+            <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">
+              {{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
             </NcButton>
           </div>
-          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
-        </div>
-        <div v-else class="answer-feedback">
-          <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
-          <div class="answer-buttons-review">
-            <div v-for="answer in currentQuestion.answers" :key="'fb-' + answer.id"
-                 class="answer-btn-review"
-                 :class="{
-                   'answer-user-selected': isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
-                   'answer-correct': answer.is_correct,
-                   'answer-wrong-selected': (isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
-                 }">
-              {{ answer.text }}
+
+          <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
+            <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
+            <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+              {{ t('learning', 'Submit Answer') }}
+            </NcButton>
+          </div>
+          <div v-else-if="!answered" class="answers-grid">
+            <template v-if="currentQuestion.answers && currentQuestion.answers.length > 0">
+              <template v-if="isMultiSelect">
+                <button
+                  v-for="answer in currentQuestion.answers"
+                  :key="answer.id"
+                  @click="toggleMultiAnswer(answer.id)"
+                  class="answer-btn"
+                  :class="{ 'answer-selected': selectedAnswerIds.includes(answer.id) }"
+                  :aria-pressed="selectedAnswerIds.includes(answer.id) ? 'true' : 'false'"
+                  :disabled="submitting"
+                >{{ answer.text }}</button>
+                <div class="multi-submit-area">
+                  <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
+                    {{ t('learning', 'Submit Answer') }}
+                  </NcButton>
+                </div>
+              </template>
+              <template v-else>
+                <button v-for="answer in currentQuestion.answers" :key="answer.id" @click="submitAnswer(answer.id)" class="answer-btn" :aria-pressed="selectedAnswerId === answer.id ? 'true' : 'false'" :disabled="submitting">{{ answer.text }}</button>
+              </template>
+            </template>
+            <div v-else class="no-answers">
+              <p>{{ t('learning', 'This question has no answers yet.') }}</p>
+              <NcButton variant="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
             </div>
           </div>
-          <div class="correct-answer">
-            <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
-            {{ displayCorrectAnswerTexts.join(', ') }}
+          <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
+            <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
+            <div class="open-answer-review">
+              <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
+              <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts[0] || '' }}</div>
+            </div>
+            <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
+            <RichFeedbackPanel :rich="richFeedback" />
+            <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
+              <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
+            </NcNoteCard>
+            <div v-if="aiAvailable" class="ai-explain-row">
+              <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
+                {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+              </NcButton>
+              <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+              <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
+            </div>
+            <!-- Fresh-eyes C4: the VirtuProf chat answers with the AI; with AI off the button led nowhere. -->
+            <div v-if="!isCorrect && aiAvailable" class="ai-explain-row">
+              <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
+                {{ t('learning', 'Explain via VirtuProf') }}
+              </NcButton>
+            </div>
+            <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
           </div>
-          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
-          <RichFeedbackPanel :rich="richFeedback"
-                             :answers="currentQuestion.answers || []"
-                             :selected-ids="isMultiSelect ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
-          <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
-            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
-          </NcNoteCard>
-          <div v-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
-              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
-            </NcButton>
-            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
-            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
+          <div v-else class="answer-feedback">
+            <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
+            <div class="answer-buttons-review">
+              <div v-for="answer in currentQuestion.answers" :key="'fb-' + answer.id"
+                   class="answer-btn-review"
+                   :class="{
+                     'answer-user-selected': isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
+                     'answer-correct': answer.is_correct,
+                     'answer-wrong-selected': (isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
+                   }">
+                {{ answer.text }}
+              </div>
+            </div>
+            <div class="correct-answer">
+              <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
+              {{ displayCorrectAnswerTexts.join(', ') }}
+            </div>
+            <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentQuestion.explanation }}</span></NcNoteCard>
+            <RichFeedbackPanel :rich="richFeedback"
+                               :answers="currentQuestion.answers || []"
+                               :selected-ids="isMultiSelect ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
+            <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
+              <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
+            </NcNoteCard>
+            <div v-if="aiAvailable" class="ai-explain-row">
+              <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
+                {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+              </NcButton>
+              <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+              <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
+            </div>
+            <!-- Fresh-eyes C4: the VirtuProf chat answers with the AI; with AI off the button led nowhere. -->
+            <div v-if="!isCorrect && aiAvailable" class="ai-explain-row">
+              <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
+                {{ t('learning', 'Explain via VirtuProf') }}
+              </NcButton>
+            </div>
+            <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
           </div>
-          <!-- Fresh-eyes C4: the VirtuProf chat answers with the AI; with AI off the button led nowhere. -->
-          <div v-if="!isCorrect && aiAvailable" class="ai-explain-row">
-            <NcButton variant="tertiary" size="small" @click="explainViaVirtuProf">
-              {{ t('learning', 'Explain via VirtuProf') }}
-            </NcButton>
-          </div>
-          <NcButton variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
-        </div>
+        </QuestionConceal>
       </div>
     </div>
 
@@ -259,6 +264,7 @@ import QuestionScenario from './QuestionScenario.vue';
 import QuestionHint from './QuestionHint.vue';
 import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import QuestionMediaPlayer from './QuestionMediaPlayer.vue';
+import QuestionConceal from './QuestionConceal.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -269,7 +275,7 @@ import { modeClosedMessage } from '../utils/modeGate.js';
 
 export default {
   name: 'TrainingMode',
-  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, QuestionConceal, NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -324,6 +330,8 @@ export default {
       richFeedback: null,
       // #66: question_media of the answer response (dialog tracks with grant, cues)
       questionMedia: null,
+      // #66: the player asks to keep the question hidden until its spoken intro has been heard
+      questionConcealed: false,
     };
   },
   mounted() {
@@ -375,6 +383,11 @@ export default {
   },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
+    // #66: the chosen answers, for the spoken explanation of each
+    mediaSelectedIds() {
+      if (this.isMultiSelect) return this.lastSelectedAnswerIds;
+      return this.lastSelectedAnswerId !== null ? [this.lastSelectedAnswerId] : [];
+    },
     progress() { return this.questions.length > 0 ? ((this.currentIndex + 1) / this.questions.length) * 100 : 0; },
     isMultiSelect() { return this.currentQuestion && this.currentQuestion.question_type === 'multi'; },
     isOpenQuestion() { return this.currentQuestion && this.currentQuestion.question_type === 'open'; },

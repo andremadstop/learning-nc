@@ -4088,5 +4088,12 @@ OC.L10N.register(
     "Vor dem Archivieren erklären" : "Expliquer avant d’archiver",
     "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "Avant d’archiver un cours, expliquer ce qui change pour les apprenants et demander confirmation. Désactivé : « Archiver » archive immédiatement.",
     "Dein bisheriges Zertifikat bleibt gültig." : "Ton certificat actuel reste valable.",
+    "Automatisch abspielen" : "Lecture automatique",
+    "Töne" : "Sons",
+    "Zu deiner Antwort" : "À propos de ta réponse",
+    "Erklärung zu deiner Antwort mit Ton und Untertiteln" : "Explication de ta réponse avec son et sous-titres",
+    "Frage, ausgeblendet bis zum Ende des Einstiegs" : "Question, masquée jusqu’à la fin de l’introduction",
+    "Die Frage erscheint nach dem Einstieg." : "La question apparaît après l’introduction.",
+    "_%n Zeile_::_%n Zeilen_" : ["%n ligne", "%n lignes"],
 },
 "nplurals=2; plural=(n > 1);");

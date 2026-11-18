@@ -577,15 +577,18 @@ describe('the learning modes carry question_media to the player', () => {
 })
 
 describe('QuestionMediaPlayer — fresh-eyes C4', () => {
-	it('the intro stage is a compact caption strip from the start, not the large empty box', async () => {
+	// #66 (Andre 18.11., "Mini-Slideshow"): the strip became a compact slide stage. It is still not
+	// the 190 px box, and before "play" it shows a short cover (lines, length) instead of nothing.
+	it('the intro stage is a compact slide stage from the start, not the large empty box', async () => {
 		axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [track('intro', 'en'), track('intro', 'de')] } })
 		await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
 		const before = host.querySelector('.qmedia__stage')
 		expect(before.classList.contains('qmedia__stage--intro')).toBe(true)
-		expect(before.textContent.trim()).toBe('')
+		expect(before.querySelector('.qmedia__cover').textContent).toContain('0:06')
+		expect(before.querySelector('.qmedia__slide')).toBeNull()
 		// the compact rule overrides the 190 px of the dialog stage
 		const css = readFileSync(resolve(here, '../../src/components/QuestionMediaPlayer.vue'), 'utf-8')
-		expect(css).toMatch(/\.qmedia__stage--intro \{[^}]*min-height: calc\(1\.5em \+ 24px\);/)
+		expect(css).toMatch(/\.qmedia__stage--intro \{[^}]*min-height: calc\(3em \+ 52px\);/)
 
 		buttonByText('Nächste Zeile').click()
 		await flush()

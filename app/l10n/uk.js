@@ -4088,5 +4088,12 @@ OC.L10N.register(
     "Vor dem Archivieren erklären" : "Пояснювати перед архівуванням",
     "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "Перед архівуванням курсу пояснювати, що зміниться для учнів, і запитувати підтвердження. Вимк.: «Архівувати» архівує одразу.",
     "Dein bisheriges Zertifikat bleibt gültig." : "Твій чинний сертифікат залишається дійсним.",
+    "Automatisch abspielen" : "Відтворювати автоматично",
+    "Töne" : "Звуки",
+    "Zu deiner Antwort" : "Про твою відповідь",
+    "Erklärung zu deiner Antwort mit Ton und Untertiteln" : "Пояснення твоєї відповіді зі звуком і субтитрами",
+    "Frage, ausgeblendet bis zum Ende des Einstiegs" : "Питання, приховане до кінця вступу",
+    "Die Frage erscheint nach dem Einstieg." : "Питання з’явиться після вступу.",
+    "_%n Zeile_::_%n Zeilen_" : ["%n рядок", "%n рядки", "%n рядків"],
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

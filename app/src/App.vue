@@ -542,6 +542,7 @@ import { useOptionalCourseStore } from './stores/courseStore.js';
 import { defineAsyncComponent } from 'vue';
 import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
 import { useOptionalA11yStore } from './stores/a11yStore.js';
+import { useOptionalQuestionMediaPrefsStore } from './stores/questionMediaPrefsStore.js';
 import { setCelebrationGate } from './confetti.js';
 import { moveTablistFocus } from './utils/tablistKeydown.js';
 
@@ -913,6 +914,8 @@ export default {
         // does this too, but renders only on the settings route — without this line the avatars
         // animated again after each reload until Settings was opened.
         useOptionalA11yStore()?.loadFromServerPayload(response.data);
+        // #66: "Automatisch abspielen" and "Töne" of the question player, from the same payload
+        useOptionalQuestionMediaPrefsStore()?.loadFromServerPayload(response.data);
       } catch (err) {
         this.contentLanguage = '';
         this.fsrsDetailedStats = false;

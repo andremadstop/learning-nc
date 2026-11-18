@@ -70,200 +70,206 @@
       <div v-if="currentItem" class="review-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentItem" />
         <div class="review-box-indicator">{{ reviewBoxIndicator }}</div>
-        <QuestionScenario :question="currentItem" />
-        <div class="question-text">{{ currentItem.text }}</div>
-        <div v-if="leitnerMetaHint" class="leitner-meta-hint">{{ leitnerMetaHint }}</div>
-        <div v-if="fsrsIntervalNoticeVisible && fsrsIntervalNotice" class="fsrs-interval-notice">
-          {{ fsrsIntervalNotice }}
-        </div>
-        <div v-if="fsrsStabilityVisible" class="fsrs-stability">
-          <div class="fsrs-stability__header">
-            <span class="fsrs-stability__label">{{ t('learning', 'Stability') }}</span>
-            <strong class="fsrs-stability__value">{{ fsrsStabilityLabel }}</strong>
-          </div>
-          <div class="fsrs-stability__track">
-            <div class="fsrs-stability__fill" :style="{ width: fsrsStabilityPercent + '%' }"></div>
-          </div>
-        </div>
-        <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
-        <!-- #66: the hint, only while the card is still open -->
-        <QuestionHint v-if="!answered" :question="currentItem" />
-        <!-- #66: intro before answering, dialog with keywords after it (one player, same place) -->
+        <!-- #66: intro before answering, then the voice of the chosen option and the dialog after
+             it — first in the card, one player, one place (Andre 18.11.: "Mini-Slideshow"). -->
         <QuestionMediaPlayer :question-id="currentItem.question_id || currentItem.id"
                              :answered="answered"
                              :reveal="questionMedia"
-                             :content-language="effectiveContentLanguage" />
-
-        <!-- PBQ block -->
-        <div v-if="!answered && isPbq" class="pbq-answer-area">
-          <PbqRenderer
-            :question="currentItem"
-            :disabled="submitting"
-            @submit="submitPbqAnswer"
-            @skip="nextQuestion"
-          />
-        </div>
-        <div v-else-if="answered && isPbq" class="answer-feedback">
-          <NcNoteCard :type="lastAnswer ? 'success' : 'error'">
-            {{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
-            — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
-          </NcNoteCard>
-          <NcNoteCard v-if="currentItem.explanation" type="info">
-            <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentItem.explanation }}</span>
-          </NcNoteCard>
-          <RichFeedbackPanel :rich="richFeedback" />
-          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
-            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
-          </NcNoteCard>
-          <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
-            <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
-            <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
-              <button
-                v-for="option in fsrsRatingOptions"
-                :key="option.id"
-                class="fsrs-btn"
-                :class="'fsrs-btn--' + option.tone"
-                :disabled="submitting"
-                :aria-keyshortcuts="option.keyHint"
-                :aria-label="fsrsOptionAriaLabel(option)"
-                @click="rateCard(option.rating)">
-                <span class="fsrs-btn-top">
-                  <span class="fsrs-key">{{ option.keyHint }}</span>
-                  <span class="fsrs-label">{{ option.label }}</span>
-                </span>
-                <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
-              </button>
+                             :content-language="effectiveContentLanguage"
+                             :answer-correct="answered ? !!lastAnswer : null"
+                             :selected-answer-ids="mediaSelectedIds"
+                             @conceal="questionConcealed = $event" />
+        <QuestionConceal :conceal="questionConcealed" :question-key="currentItem.question_id || currentItem.id">
+          <QuestionScenario :question="currentItem" />
+          <div class="question-text">{{ currentItem.text }}</div>
+          <div v-if="leitnerMetaHint" class="leitner-meta-hint">{{ leitnerMetaHint }}</div>
+          <div v-if="fsrsIntervalNoticeVisible && fsrsIntervalNotice" class="fsrs-interval-notice">
+            {{ fsrsIntervalNotice }}
+          </div>
+          <div v-if="fsrsStabilityVisible" class="fsrs-stability">
+            <div class="fsrs-stability__header">
+              <span class="fsrs-stability__label">{{ t('learning', 'Stability') }}</span>
+              <strong class="fsrs-stability__value">{{ fsrsStabilityLabel }}</strong>
+            </div>
+            <div class="fsrs-stability__track">
+              <div class="fsrs-stability__fill" :style="{ width: fsrsStabilityPercent + '%' }"></div>
             </div>
           </div>
-          <NcButton v-else variant="primary" wide @click="nextQuestion" class="next-btn">
-            {{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
-          </NcButton>
-        </div>
+          <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+          <!-- #66: the hint, only while the card is still open -->
+          <QuestionHint v-if="!answered" :question="currentItem" />
 
-        <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
-          <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
-          <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
-            {{ t('learning', 'Submit Answer') }}
-          </NcButton>
-        </div>
-        <div v-else-if="!answered" class="answer-options">
-          <template v-if="isCurrentMulti">
-            <button
-              v-for="answer in currentItem.answers"
-              :key="answer.id"
-              @click="toggleMultiAnswer(answer.id)"
-              class="answer-btn"
-              :class="{ 'answer-selected': selectedAnswerIds.includes(answer.id) }"
+          <!-- PBQ block -->
+          <div v-if="!answered && isPbq" class="pbq-answer-area">
+            <PbqRenderer
+              :question="currentItem"
               :disabled="submitting"
-            >{{ answer.text }}</button>
-            <div class="multi-submit-area">
-              <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
-                {{ t('learning', 'Submit Answer') }}
-              </NcButton>
-            </div>
-          </template>
-          <template v-else>
-            <button v-for="answer in currentItem.answers" :key="answer.id" @click="submitAnswer(answer)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
-          </template>
-        </div>
-        <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
-          <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
-          <div class="open-answer-review">
-            <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
-            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
+              @submit="submitPbqAnswer"
+              @skip="nextQuestion"
+            />
           </div>
-          <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
-          <RichFeedbackPanel :rich="richFeedback"
-                             :answers="isOpenQuestion ? [] : (currentItem.answers || [])"
-                             :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
-          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
-            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
-          </NcNoteCard>
-          <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
-            <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
-            <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
-              <button
-                v-for="option in fsrsRatingOptions"
-                :key="option.id"
-                class="fsrs-btn"
-                :class="'fsrs-btn--' + option.tone"
-                :disabled="submitting"
-                :aria-keyshortcuts="option.keyHint"
-                :aria-label="fsrsOptionAriaLabel(option)"
-                @click="rateCard(option.rating)">
-                <span class="fsrs-btn-top">
-                  <span class="fsrs-key">{{ option.keyHint }}</span>
-                  <span class="fsrs-label">{{ option.label }}</span>
-                </span>
-                <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
-              </button>
+          <div v-else-if="answered && isPbq" class="answer-feedback">
+            <NcNoteCard :type="lastAnswer ? 'success' : 'error'">
+              {{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
+              — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
+            </NcNoteCard>
+            <NcNoteCard v-if="currentItem.explanation" type="info">
+              <strong>{{ t('learning', 'Explanation:') }}</strong> <span class="question-explanation">{{ currentItem.explanation }}</span>
+            </NcNoteCard>
+            <RichFeedbackPanel :rich="richFeedback" />
+            <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+              <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+            </NcNoteCard>
+            <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
+              <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
+              <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
+                <button
+                  v-for="option in fsrsRatingOptions"
+                  :key="option.id"
+                  class="fsrs-btn"
+                  :class="'fsrs-btn--' + option.tone"
+                  :disabled="submitting"
+                  :aria-keyshortcuts="option.keyHint"
+                  :aria-label="fsrsOptionAriaLabel(option)"
+                  @click="rateCard(option.rating)">
+                  <span class="fsrs-btn-top">
+                    <span class="fsrs-key">{{ option.keyHint }}</span>
+                    <span class="fsrs-label">{{ option.label }}</span>
+                  </span>
+                  <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
+                </button>
+              </div>
             </div>
-          </div>
-          <div v-else-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
-              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+            <NcButton v-else variant="primary" wide @click="nextQuestion" class="next-btn">
+              {{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
             </NcButton>
-            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
-            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
           </div>
-          <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
-        </div>
-        <div v-else class="answer-feedback">
-          <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
-          <div class="answer-buttons-review">
-            <div v-for="answer in currentItem.answers" :key="'fb-' + answer.id"
-                 class="answer-btn-review"
-                 :class="{
-                   'answer-user-selected': isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
-                   'answer-correct': answer.is_correct,
-                   'answer-wrong-selected': (isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
-                 }">
-              {{ answer.text }}
-            </div>
+
+          <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
+            <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
+            <NcButton variant="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+              {{ t('learning', 'Submit Answer') }}
+            </NcButton>
           </div>
-          <div class="correct-answer-display">
-            <template v-if="getCorrectAnswer()">
-              <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
-              {{ getCorrectAnswer() }}
+          <div v-else-if="!answered" class="answer-options">
+            <template v-if="isCurrentMulti">
+              <button
+                v-for="answer in currentItem.answers"
+                :key="answer.id"
+                @click="toggleMultiAnswer(answer.id)"
+                class="answer-btn"
+                :class="{ 'answer-selected': selectedAnswerIds.includes(answer.id) }"
+                :disabled="submitting"
+              >{{ answer.text }}</button>
+              <div class="multi-submit-area">
+                <NcButton variant="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
+                  {{ t('learning', 'Submit Answer') }}
+                </NcButton>
+              </div>
             </template>
-            <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
+            <template v-else>
+              <button v-for="answer in currentItem.answers" :key="answer.id" @click="submitAnswer(answer)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
+            </template>
           </div>
-          <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
-          <RichFeedbackPanel :rich="richFeedback"
-                             :answers="isOpenQuestion ? [] : (currentItem.answers || [])"
-                             :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
-          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
-            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
-          </NcNoteCard>
-          <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
-            <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
-            <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
-              <button
-                v-for="option in fsrsRatingOptions"
-                :key="option.id"
-                class="fsrs-btn"
-                :class="'fsrs-btn--' + option.tone"
-                :disabled="submitting"
-                :aria-keyshortcuts="option.keyHint"
-                :aria-label="fsrsOptionAriaLabel(option)"
-                @click="rateCard(option.rating)">
-                <span class="fsrs-btn-top">
-                  <span class="fsrs-key">{{ option.keyHint }}</span>
-                  <span class="fsrs-label">{{ option.label }}</span>
-                </span>
-                <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
-              </button>
+          <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
+            <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
+            <div class="open-answer-review">
+              <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
+              <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
             </div>
+            <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+            <RichFeedbackPanel :rich="richFeedback"
+                               :answers="isOpenQuestion ? [] : (currentItem.answers || [])"
+                               :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
+            <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+              <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+            </NcNoteCard>
+            <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
+              <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
+              <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
+                <button
+                  v-for="option in fsrsRatingOptions"
+                  :key="option.id"
+                  class="fsrs-btn"
+                  :class="'fsrs-btn--' + option.tone"
+                  :disabled="submitting"
+                  :aria-keyshortcuts="option.keyHint"
+                  :aria-label="fsrsOptionAriaLabel(option)"
+                  @click="rateCard(option.rating)">
+                  <span class="fsrs-btn-top">
+                    <span class="fsrs-key">{{ option.keyHint }}</span>
+                    <span class="fsrs-label">{{ option.label }}</span>
+                  </span>
+                  <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
+                </button>
+              </div>
+            </div>
+            <div v-else-if="aiAvailable" class="ai-explain-row">
+              <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
+                {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+              </NcButton>
+              <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+              <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
+            </div>
+            <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
           </div>
-          <div v-else-if="aiAvailable" class="ai-explain-row">
-            <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
-              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
-            </NcButton>
-            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
-            <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
+          <div v-else class="answer-feedback">
+            <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
+            <div class="answer-buttons-review">
+              <div v-for="answer in currentItem.answers" :key="'fb-' + answer.id"
+                   class="answer-btn-review"
+                   :class="{
+                     'answer-user-selected': isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
+                     'answer-correct': answer.is_correct,
+                     'answer-wrong-selected': (isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
+                   }">
+                {{ answer.text }}
+              </div>
+            </div>
+            <div class="correct-answer-display">
+              <template v-if="getCorrectAnswer()">
+                <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
+                {{ getCorrectAnswer() }}
+              </template>
+              <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
+            </div>
+            <NcNoteCard v-if="currentItem.explanation" type="info"><span class="question-explanation">{{ currentItem.explanation }}</span></NcNoteCard>
+            <RichFeedbackPanel :rich="richFeedback"
+                               :answers="isOpenQuestion ? [] : (currentItem.answers || [])"
+                               :selected-ids="isCurrentMulti ? lastSelectedAnswerIds : (lastSelectedAnswerId !== null ? [lastSelectedAnswerId] : [])" />
+            <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+              <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+            </NcNoteCard>
+            <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
+              <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
+              <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
+                <button
+                  v-for="option in fsrsRatingOptions"
+                  :key="option.id"
+                  class="fsrs-btn"
+                  :class="'fsrs-btn--' + option.tone"
+                  :disabled="submitting"
+                  :aria-keyshortcuts="option.keyHint"
+                  :aria-label="fsrsOptionAriaLabel(option)"
+                  @click="rateCard(option.rating)">
+                  <span class="fsrs-btn-top">
+                    <span class="fsrs-key">{{ option.keyHint }}</span>
+                    <span class="fsrs-label">{{ option.label }}</span>
+                  </span>
+                  <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
+                </button>
+              </div>
+            </div>
+            <div v-else-if="aiAvailable" class="ai-explain-row">
+              <NcButton v-if="!explainTaskId && !explainText" variant="tertiary" :disabled="explainLoading" @click="requestExplain">
+                {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+              </NcButton>
+              <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+              <AiConsentHint v-if="aiConsentRequired" @granted="aiConsentRequired = false; requestExplain()" />
+            </div>
+            <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
           </div>
-          <NcButton v-if="!awaitingFsrsRating" variant="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
-        </div>
+        </QuestionConceal>
       </div>
     </div>
 
@@ -299,6 +305,7 @@ import QuestionScenario from './QuestionScenario.vue';
 import QuestionHint from './QuestionHint.vue';
 import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import QuestionMediaPlayer from './QuestionMediaPlayer.vue';
+import QuestionConceal from './QuestionConceal.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -311,7 +318,7 @@ import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsSchedule
 
 export default {
   name: 'LeitnerMode',
-  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
+  components: { AiConsentHint, QuestionScenario, QuestionHint, RichFeedbackPanel, QuestionMediaPlayer, QuestionConceal, NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     poolId: { type: Number, required: true },
@@ -337,6 +344,8 @@ export default {
       richFeedback: null,
       // #66: question_media of the answer response (dialog tracks with grant, cues)
       questionMedia: null,
+      // #66: the player asks to keep the question hidden until its spoken intro has been heard
+      questionConcealed: false,
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
       openAnswer: '',
@@ -360,6 +369,11 @@ export default {
   computed: {
     currentItem() { return this.dueQuestions[this.currentIndex] || null; },
     isCurrentMulti() { return this.currentItem && this.currentItem.question_type === 'multi'; },
+    // #66: the chosen answers, for the spoken explanation of each
+    mediaSelectedIds() {
+      if (this.isCurrentMulti) return this.lastSelectedAnswerIds;
+      return this.lastSelectedAnswerId !== null ? [this.lastSelectedAnswerId] : [];
+    },
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     isPbq() { return this.currentItem && this.currentItem.question_type === 'pbq'; },
     reviewProgress() { return this.dueQuestions.length === 0 ? 0 : ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },

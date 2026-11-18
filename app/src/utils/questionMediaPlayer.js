@@ -39,6 +39,26 @@ export function tracksOfKind(tracks, kind) {
 		&& typeof track.lang === 'string' && track.lang !== '')
 }
 
+/**
+ * #66: the spoken explanations of the chosen options, from `question_media.option_tracks`
+ * ([{answer_id, position, tracks}], answer order) — one list of well-formed tracks (kind opt<n>)
+ * per chosen option that has a voice, in answer order. Nothing for options not chosen: their
+ * voices stay unplayed (the learner can read every option's explanation below).
+ */
+export function optionSegments(optionTracks, selectedIds) {
+	if (!Array.isArray(optionTracks) || !Array.isArray(selectedIds) || selectedIds.length === 0) {
+		return []
+	}
+	const chosen = new Set(selectedIds.map((id) => String(id)))
+	return optionTracks
+		.filter((entry) => isObject(entry) && chosen.has(String(entry.answer_id)))
+		.map((entry) => (Array.isArray(entry.tracks) ? entry.tracks : []).filter((track) => isObject(track)
+			&& typeof track.kind === 'string' && /^opt\d+$/.test(track.kind)
+			&& typeof track.url === 'string' && track.url !== ''
+			&& typeof track.lang === 'string' && track.lang !== ''))
+		.filter((tracks) => tracks.length > 0)
+}
+
 /** Languages of the tracks, in first-seen order, without duplicates. */
 export function trackLanguages(tracks) {
 	return [...new Set((tracks || []).map((track) => track.lang))]

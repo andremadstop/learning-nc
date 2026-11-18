@@ -1,13 +1,25 @@
 <template>
   <section v-if="visible"
            class="qmedia"
-           :class="{ 'qmedia--still': reducedMotion }"
-           :aria-label="phase === 'dialog' ? t('learning', 'Nachbesprechung mit Ton und Untertiteln') : t('learning', 'Einstieg mit Ton und Untertiteln')"
+           :class="{ 'qmedia--still': still }"
+           :aria-label="sectionLabel"
            @keydown="onKeydown">
     <div class="qmedia__bar">
       <h3 class="qmedia__title">
-        {{ phase === 'dialog' ? t('learning', 'Nachbesprechung') : t('learning', 'Einstieg') }}
+        {{ phaseTitle }}
       </h3>
+      <!-- #66 (Andre 18.11.): per user on the server. Native checkboxes with role="switch": a
+           label to click, Space to toggle, state read out by every screen reader. -->
+      <div class="qmedia__switches">
+        <label class="qmedia__switch">
+          <input type="checkbox" role="switch" :checked="autoplay" @change="setAutoplay($event.target.checked)">
+          <span>{{ t('learning', 'Automatisch abspielen') }}</span>
+        </label>
+        <label class="qmedia__switch">
+          <input type="checkbox" role="switch" :checked="soundsEnabled" @change="setSounds($event.target.checked)">
+          <span>{{ t('learning', 'Töne') }}</span>
+        </label>
+      </div>
       <div v-if="languages.length > 1" class="qmedia__langs" role="group" :aria-label="t('learning', 'Sprache von Ton und Untertiteln')">
         <button v-for="code in languages"
                 :key="code"
@@ -22,44 +34,66 @@
       </div>
     </div>
 
-    <!-- Fresh-eyes C4: the intro never carries cues, so before the first "play" or "next line"
-         its 190 px stage was a large empty grey box. In the intro it is a strip of one caption
-         line, there from the start so that the controls below do not move on "play". -->
+    <!-- Fresh-eyes C4: the intro never carries cues, so its 190 px stage was a large empty grey
+         box before the first "play". The slide stage is compact and shows a cover until then. -->
+    <!-- #66 (Andre 18.11., "Mini-Slideshow"): the intro and the spoken explanation of the chosen
+         option are shown as slides, one per line, in time with the sound, with a row of dots for
+         the progress. Their height is reserved from the start, so nothing below moves on "play".
+         The intro has no keywords: the cues explain the answer and come only after it. -->
     <div class="qmedia__stage"
-         :class="{ 'qmedia__stage--intro': phase === 'intro' }"
+         :class="{ 'qmedia__stage--intro': slides }"
          :lang="lang || null">
-      <span v-if="cues.scene" class="qmedia__scene">{{ cues.scene }}</span>
-      <span v-if="phase === 'dialog' && cues.icon" class="qmedia__icon" aria-hidden="true">{{ cues.icon }}</span>
-      <div v-if="stage.trail.length" class="qmedia__trail" aria-hidden="true">
-        <i v-for="(word, index) in stage.trail" :key="'trail-' + index">{{ word }}</i>
-      </div>
-      <div class="qmedia__keywords" aria-hidden="true">
-        <b v-for="keyword in stage.keywords"
-           :key="keyword.key"
-           :class="{ 'qmedia__keyword--doubt': keyword.doubt }"
-           :style="{ '--qmedia-role': roleColour(keyword.role) }">{{ keyword.text }}</b>
-      </div>
-      <div v-if="stage.wrong || stage.right" class="qmedia__contrast">
-        <span v-if="stage.wrong" class="qmedia__wrong" :class="{ 'qmedia__wrong--struck': stage.struck }">
-          <span aria-hidden="true">✗ </span><span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Häufiger Denkfehler:') }} </span>{{ cues.wrong }}
-        </span>
-        <span v-if="stage.right" class="qmedia__right">
-          <span aria-hidden="true">✓ </span><span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Richtig:') }} </span>{{ cues.right }}
-        </span>
-      </div>
-      <div v-if="stage.merksatz" class="qmedia__merksatz">
-        <p>
-          <span v-if="cues.icon" aria-hidden="true">{{ cues.icon }} </span>
-          <span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Merksatz:') }} </span>{{ cues.merksatz }}
+      <template v-if="slides">
+        <transition :name="still ? '' : 'qmedia-slide'">
+          <p v-if="stage.line" :key="'slide-' + track?.id + '-' + stage.lineIndex" class="qmedia__slide">
+            <span v-if="stage.line.role" class="qmedia__speaker">
+              <span class="qmedia__dot" :style="{ background: roleColour(stage.line.role) }" aria-hidden="true">{{ roleInitial(stage.line.role) }}</span>
+              <span class="qmedia__who">{{ roleName(stage.line.role) }}:</span>
+            </span>
+            <span class="qmedia__line">{{ stage.line.text }}</span>
+          </p>
+          <p v-else-if="timeline.length" key="cover" class="qmedia__cover" :lang="uiLang">{{ coverText }}</p>
+        </transition>
+        <ol v-if="timeline.length > 1" class="qmedia__progress" aria-hidden="true">
+          <li v-for="(line, index) in timeline"
+              :key="'dot-' + index"
+              :class="{ 'qmedia__progress--done': index < stage.lineIndex || ended, 'qmedia__progress--now': index === stage.lineIndex && !ended }" />
+        </ol>
+      </template>
+      <template v-else>
+        <span v-if="cues.scene" class="qmedia__scene">{{ cues.scene }}</span>
+        <span v-if="phase === 'dialog' && cues.icon" class="qmedia__icon" aria-hidden="true">{{ cues.icon }}</span>
+        <div v-if="stage.trail.length" class="qmedia__trail" aria-hidden="true">
+          <i v-for="(word, index) in stage.trail" :key="'trail-' + index">{{ word }}</i>
+        </div>
+        <div class="qmedia__keywords" aria-hidden="true">
+          <b v-for="keyword in stage.keywords"
+             :key="keyword.key"
+             :class="{ 'qmedia__keyword--doubt': keyword.doubt }"
+             :style="{ '--qmedia-role': roleColour(keyword.role) }">{{ keyword.text }}</b>
+        </div>
+        <div v-if="stage.wrong || stage.right" class="qmedia__contrast">
+          <span v-if="stage.wrong" class="qmedia__wrong" :class="{ 'qmedia__wrong--struck': stage.struck }">
+            <span aria-hidden="true">✗ </span><span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Häufiger Denkfehler:') }} </span>{{ cues.wrong }}
+          </span>
+          <span v-if="stage.right" class="qmedia__right">
+            <span aria-hidden="true">✓ </span><span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Richtig:') }} </span>{{ cues.right }}
+          </span>
+        </div>
+        <div v-if="stage.merksatz" class="qmedia__merksatz">
+          <p>
+            <span v-if="cues.icon" aria-hidden="true">{{ cues.icon }} </span>
+            <span class="qmedia__sr" :lang="uiLang">{{ t('learning', 'Merksatz:') }} </span>{{ cues.merksatz }}
+          </p>
+        </div>
+        <p v-if="stage.line" class="qmedia__caption">
+          <span v-if="stage.line.role" class="qmedia__speaker">
+            <span class="qmedia__dot" :style="{ background: roleColour(stage.line.role) }" aria-hidden="true">{{ roleInitial(stage.line.role) }}</span>
+            <span class="qmedia__who">{{ roleName(stage.line.role) }}:</span>
+          </span>
+          <span class="qmedia__line">{{ stage.line.text }}</span>
         </p>
-      </div>
-      <p v-if="stage.line" class="qmedia__caption">
-        <span v-if="stage.line.role" class="qmedia__speaker">
-          <span class="qmedia__dot" :style="{ background: roleColour(stage.line.role) }" aria-hidden="true">{{ roleInitial(stage.line.role) }}</span>
-          <span class="qmedia__who">{{ roleName(stage.line.role) }}:</span>
-        </span>
-        <span class="qmedia__line">{{ stage.line.text }}</span>
-      </p>
+      </template>
     </div>
 
     <div v-if="timeline.length" class="qmedia__controls">
@@ -122,8 +156,11 @@
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { getLanguage, isRTL } from '@nextcloud/l10n';
+import { soundsOn, saveQuestionMediaPrefs, useOptionalQuestionMediaPrefsStore } from '../stores/questionMediaPrefsStore.js';
+import { useOptionalA11yStore } from '../stores/a11yStore.js';
+import { playAnswerSound } from '../utils/answerSounds.js';
 import {
-  tracksOfKind, trackLanguages, pickLanguage, trackFor, timelineOf, cuesFor, stageAt, lastStartedIndex,
+  tracksOfKind, trackLanguages, optionSegments, pickLanguage, trackFor, timelineOf, cuesFor, stageAt, lastStartedIndex,
   roleName, roleColour, formatSeconds, languageLabel,
 } from '../utils/questionMediaPlayer.js';
 
@@ -141,6 +178,19 @@ import {
  * Without sound it is fully usable: every line can be stepped through and the whole text read.
  * The audio loads only on "play". No AI is involved, so it does not depend on the AI settings.
  * Renders nothing for a question without media (every pool without imported media).
+ *
+ * The question as a mini slideshow (Andre 18.11.):
+ * - The intro and the spoken explanation of the chosen option play as slides, one per line.
+ * - `conceal` (event): true while a question with a spoken intro should keep its text and answers
+ *   hidden (QuestionConceal.vue) — until the intro ends. Released for good, for this question, by
+ *   the end, a stepped-through intro, an audio error or a refused autoplay.
+ * - After answering, the segments play in order: the voice of each chosen option that has one
+ *   (`question_media.option_tracks`), then the dialog. One "play" runs through all of them.
+ * - "Automatisch abspielen" (per user, off by default) starts the intro when the question is
+ *   shown and the segments right after answering. A refused play() (Safari/iOS) falls back
+ *   silently to the play button, and the question shows.
+ * - "Töne": "Pling"/"Zonk" right after a fresh answer (never for an answer restored on jumping
+ *   back), synthesised (answerSounds.js).
  */
 export default {
   name: 'QuestionMediaPlayer',
@@ -151,7 +201,12 @@ export default {
     reveal: { type: Object, default: null },
     // the content language the learner reads the question in
     contentLanguage: { type: String, default: '' },
+    // #66: whether the answer just given was right (null: not known, no tone)
+    answerCorrect: { type: Boolean, default: null },
+    // #66: the answers the learner chose, for the spoken explanation of each
+    selectedAnswerIds: { type: Array, default: () => [] },
   },
+  emits: ['conceal'],
   data() {
     return {
       introTracks: [],
@@ -170,14 +225,86 @@ export default {
       // id of the track whose audio is loaded: a new grant URL of the same track (the Leitner
       // rating response) must not restart it
       loadedTrackId: null,
+      // #66 mini slideshow
+      prefs: useOptionalQuestionMediaPrefsStore() || { autoplay: false, sounds: 'auto' },
+      a11y: useOptionalA11yStore(),
+      // play() refused without a gesture (autoplay policy): not a failure, the button stays
+      blocked: false,
+      // the intro has let the question go (ended, stepped through, failed, refused)
+      introReleased: false,
+      // this question was shown open in this player, so an answer to it is a fresh one
+      seenOpen: false,
+      // which post-answer segment is on: option voices first, then the dialog
+      segmentIndex: 0,
+      // play the next segment when this one ends (one "play" runs through all of them)
+      chain: false,
     };
   },
   computed: {
     phase() {
       if (this.answered) {
-        return this.dialogTracks.length || this.hasCues ? 'dialog' : '';
+        return this.segment ? this.segment.kind : '';
       }
       return this.introTracks.length ? 'intro' : '';
+    },
+    // After answering: the voices of the chosen options (answer order), then the dialog.
+    segments() {
+      if (!this.answered) {
+        return [];
+      }
+      const out = optionSegments(this.reveal?.option_tracks, this.selectedAnswerIds)
+        .map((tracks) => ({ kind: 'option', tracks }));
+      if (this.dialogTracks.length || this.hasCues) {
+        out.push({ kind: 'dialog', tracks: this.dialogTracks });
+      }
+      return out;
+    },
+    segment() {
+      return this.segments[Math.min(this.segmentIndex, this.segments.length - 1)] || null;
+    },
+    hasNextSegment() {
+      return this.answered && this.segmentIndex < this.segments.length - 1;
+    },
+    slides() {
+      return this.phase === 'intro' || this.phase === 'option';
+    },
+    phaseTitle() {
+      if (this.phase === 'dialog') {
+        return this.t('learning', 'Nachbesprechung');
+      }
+      return this.phase === 'option' ? this.t('learning', 'Zu deiner Antwort') : this.t('learning', 'Einstieg');
+    },
+    sectionLabel() {
+      if (this.phase === 'dialog') {
+        return this.t('learning', 'Nachbesprechung mit Ton und Untertiteln');
+      }
+      return this.phase === 'option'
+        ? this.t('learning', 'Erklärung zu deiner Antwort mit Ton und Untertiteln')
+        : this.t('learning', 'Einstieg mit Ton und Untertiteln');
+    },
+    coverText() {
+      const lines = this.n('learning', '%n Zeile', '%n Zeilen', this.timeline.length);
+      return this.duration > 0 ? lines + ' · ' + formatSeconds(this.duration) : lines;
+    },
+    autoplay() {
+      return !!this.prefs.autoplay;
+    },
+    soundsEnabled() {
+      return soundsOn(this.prefs);
+    },
+    still() {
+      return this.reducedMotion || this.a11y?.animationsEnabled === false;
+    },
+    // #66: keep the question hidden while a spoken intro is to be heard first.
+    concealQuestion() {
+      return !this.answered
+        && this.phase === 'intro'
+        && !!this.track
+        && this.timeline.length > 0
+        && !this.introReleased
+        && !this.ended
+        && !this.audioFailed
+        && !this.blocked;
     },
     visible() {
       return this.phase !== '';
@@ -191,7 +318,10 @@ export default {
       return cues.merksatz !== '' || cues.wrong !== '' || cues.right !== '';
     },
     tracks() {
-      return this.phase === 'dialog' ? this.dialogTracks : (this.phase === 'intro' ? this.introTracks : []);
+      if (this.phase === 'intro') {
+        return this.introTracks;
+      }
+      return this.segment ? this.segment.tracks : [];
     },
     languages() {
       const langs = trackLanguages(this.tracks);
@@ -290,10 +420,52 @@ export default {
       immediate: true,
       handler() {
         this.stop();
+        this.introReleased = false;
+        this.segmentIndex = 0;
+        this.chain = false;
+        this.seenOpen = !this.answered;
         this.loadIntro();
       },
     },
+    answered(now) {
+      this.segmentIndex = 0;
+      if (!now) {
+        this.seenOpen = true;
+        return;
+      }
+      // Only an answer given here and now: jumping back to an answered question is silent.
+      const fresh = this.seenOpen;
+      this.seenOpen = false;
+      if (!fresh) {
+        return;
+      }
+      if (this.soundsEnabled && this.answerCorrect !== null) {
+        playAnswerSound(this.answerCorrect);
+      }
+      if (this.autoplay) {
+        // after the phase watcher's stop() and the render of the first segment
+        this.$nextTick(() => this.autoStart());
+      }
+    },
+    introTracks(tracks) {
+      if (tracks.length && this.autoplay && !this.answered) {
+        this.$nextTick(() => this.autoStart());
+      }
+    },
+    concealQuestion: {
+      immediate: true,
+      handler(now, before) {
+        if (!now && before && !this.answered && this.phase === 'intro') {
+          // one way: starting the intro again does not hide the question again
+          this.introReleased = true;
+        }
+        this.$emit('conceal', now);
+      },
+    },
     phase() {
+      this.stop();
+    },
+    segmentIndex() {
       this.stop();
     },
     lang() {
@@ -364,8 +536,48 @@ export default {
       this.started = false;
       this.ended = false;
       this.audioFailed = false;
+      this.blocked = false;
       this.currentTime = 0;
       this.manualIndex = null;
+    },
+    /** Autoplay: start the current part if nothing plays yet and it is not already heard. */
+    autoStart() {
+      if (!this.autoplay || this.playing || this.started || !this.track || this.audioFailed) {
+        return;
+      }
+      this.chain = true;
+      this.togglePlay();
+    },
+    setAutoplay(on) {
+      this.save({ autoplay: !!on });
+      // switched on during an intro nobody has started: that click is the gesture to start it
+      if (on && !this.answered && this.phase === 'intro' && !this.started) {
+        this.autoStart();
+      }
+    },
+    setSounds(on) {
+      this.save({ sounds: on ? 'yes' : 'no' });
+    },
+    save(change) {
+      if (typeof this.prefs.save === 'function') {
+        return this.prefs.save(change);
+      }
+      return saveQuestionMediaPrefs(this.prefs, change);
+    },
+    /** On to the next post-answer part; it plays if the one before was playing through. */
+    advanceSegment(play) {
+      if (!this.hasNextSegment) {
+        return false;
+      }
+      this.segmentIndex++;
+      if (play) {
+        // after the watchers' stop() and the render of the new track
+        this.$nextTick(() => {
+          this.chain = true;
+          this.togglePlay();
+        });
+      }
+      return true;
     },
     togglePlay() {
       const audio = this.audioElement();
@@ -374,8 +586,11 @@ export default {
       }
       if (this.playing) {
         audio.pause();
+        this.chain = false;
         return;
       }
+      // a press on "play" runs through the remaining parts; autoStart() sets it as well
+      this.chain = true;
       if (!audio.getAttribute('src') || this.loadedTrackId !== this.track.id) {
         audio.setAttribute('src', this.track.url);
         this.loadedTrackId = this.track.id;
@@ -399,7 +614,10 @@ export default {
       if (result && typeof result.catch === 'function') {
         result.catch((e) => {
           // AbortError: a newer load/pause interrupted the play request — not a failure.
-          if (e && e.name !== 'AbortError') {
+          if (e && e.name === 'NotAllowedError') {
+            // #66: autoplay refused (Safari/iOS, no gesture yet): the play button as before.
+            this.onPlayRefused();
+          } else if (e && e.name !== 'AbortError') {
             this.onAudioError();
           }
         });
@@ -454,12 +672,18 @@ export default {
       if (this.playing && audio) {
         audio.pause();
       }
+      // stepping takes over: the parts after this one no longer follow by themselves
+      this.chain = false;
       const last = this.timeline.length - 1;
       let index = this.cursorIndex;
       if (this.ended && delta < 0) {
         this.ended = false;
         index = last;
       } else if (delta > 0 && index >= last) {
+        // #66: past the option voice's last line: on to the next part (the dialog).
+        if (this.advanceSegment(false)) {
+          return;
+        }
         // Past the last line: the end, with the key takeaway.
         this.manualIndex = last;
         this.ended = true;
@@ -488,6 +712,16 @@ export default {
     onEnded() {
       this.playing = false;
       this.ended = true;
+      if (this.chain) {
+        this.advanceSegment(true);
+      }
+    },
+    onPlayRefused() {
+      this.playing = false;
+      this.started = false;
+      this.chain = false;
+      this.blocked = true;
+      this.keepFocus(['play']);
     },
     onAudioError() {
       // An expired grant (403), a file the server cannot read (503), a format the browser does
@@ -570,11 +804,47 @@ export default {
   flex-direction: column;
   gap: 10px;
 }
+/* #66 slides (intro, option voice): two caption lines and the dots reserved from the start, so
+   neither "play" nor a longer line moves the question below. */
 .qmedia__stage--intro {
-  min-height: calc(1.5em + 24px);
+  min-height: calc(3em + 52px);
   padding: 12px 16px;
   justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
+.qmedia__slide {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px 8px;
+  font-size: 17px;
+  line-height: 1.5;
+  text-align: center;
+}
+.qmedia__cover { margin: 0; font-size: 13px; color: var(--color-text-maxcontrast); }
+.qmedia__progress { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.qmedia__progress li {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border-dark);
+  transition: background-color .3s, transform .3s;
+}
+.qmedia__progress li.qmedia__progress--done { background: var(--color-text-maxcontrast); }
+.qmedia__progress li.qmedia__progress--now { background: var(--color-primary-element); transform: scale(1.35); }
+.qmedia-slide-enter-active, .qmedia-slide-leave-active { transition: opacity .28s ease, transform .28s ease; }
+.qmedia-slide-enter-from { opacity: 0; transform: translateY(10px); }
+.qmedia-slide-leave-to { opacity: 0; transform: translateY(-6px); }
+/* the old slide fades out on top of the new one instead of holding it back */
+.qmedia-slide-leave-active { position: absolute; inset-inline: 16px; }
+
+.qmedia__switches { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-inline-start: auto; }
+.qmedia__switch { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-main-text); cursor: pointer; min-height: 34px; }
+.qmedia__switch input { width: 16px; height: 16px; margin: 0; accent-color: var(--color-primary-element); cursor: pointer; }
+.qmedia__switch input:focus-visible { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
 .qmedia__scene {
   position: absolute;
   inset-block-start: 10px;
@@ -676,6 +946,7 @@ export default {
 }
 @media (max-width: 480px) {
   .qmedia__button-label { display: none; }
+  .qmedia__switches { margin-inline-start: 0; width: 100%; }
   .qmedia__status { margin-inline-start: 0; width: 100%; }
 }
 </style>

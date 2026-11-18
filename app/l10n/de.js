@@ -4088,5 +4088,12 @@ OC.L10N.register(
     "Vor dem Archivieren erklären" : "Vor dem Archivieren erklären",
     "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort." : "Vor dem Archivieren eines Kurses erklären, was sich für die Lernenden ändert, und nachfragen. Aus: „Archivieren“ archiviert sofort.",
     "Dein bisheriges Zertifikat bleibt gültig." : "Dein bisheriges Zertifikat bleibt gültig.",
+    "Automatisch abspielen" : "Automatisch abspielen",
+    "Töne" : "Töne",
+    "Zu deiner Antwort" : "Zu deiner Antwort",
+    "Erklärung zu deiner Antwort mit Ton und Untertiteln" : "Erklärung zu deiner Antwort mit Ton und Untertiteln",
+    "Frage, ausgeblendet bis zum Ende des Einstiegs" : "Frage, ausgeblendet bis zum Ende des Einstiegs",
+    "Die Frage erscheint nach dem Einstieg." : "Die Frage erscheint nach dem Einstieg.",
+    "_%n Zeile_::_%n Zeilen_" : ["%n Zeile", "%n Zeilen"],
 },
 "nplurals=2; plural=(n != 1);");

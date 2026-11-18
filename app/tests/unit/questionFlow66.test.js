@@ -1,0 +1,592 @@
+/**
+ * GitHub #66, Andre's audio test of 18.11. (points 1–7): the question as a mini slideshow in the
+ * same card — intro first (slides in time with the sound), the question and its answers hidden
+ * until the intro ends (uncovered by hover, keyboard focus or a tap, no button), "Automatisch
+ * abspielen" and "Töne" per user, after answering the voice of the chosen option and then the
+ * dialog, a synthesised "Pling"/"Zonk". Exams are untouched; questions without media as before.
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApp, h, nextTick } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+vi.setConfig({ testTimeout: 20000 })
+
+vi.hoisted(() => {
+	globalThis.t = (_app, text, vars) => String(text).replace(/{(\w+)}/g, (m, k) => (vars && k in vars ? String(vars[k]) : m))
+	globalThis.n = (_app, s, p, c) => (c === 1 ? s : p).replace('%n', String(c))
+})
+vi.mock('@nextcloud/l10n', () => ({
+	translate: (_app, text) => text,
+	t: (_app, text, vars) => String(text).replace(/{(\w+)}/g, (m, k) => (vars && k in vars ? String(vars[k]) : m)),
+	getLanguage: () => 'de',
+	isRTL: () => false,
+}))
+vi.mock('@nextcloud/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }))
+vi.mock('@nextcloud/router', () => ({
+	generateUrl: vi.fn((url, params) => url.replace(/{(\w+)}/g, (m, k) => (params && k in params ? String(params[k]) : m))),
+}))
+vi.mock('@nextcloud/dialogs', () => ({ showSuccess: vi.fn(), showError: vi.fn() }))
+const { withProps } = vi.hoisted(() => ({
+	withProps: (name, props, template) => ({ default: { name, props, template } }),
+}))
+vi.mock('@nextcloud/vue/components/NcButton', () => withProps('NcButton', ['variant', 'disabled'], '<button type="button" :disabled="disabled"><slot /></button>'))
+vi.mock('@nextcloud/vue/components/NcNoteCard', () => withProps('NcNoteCard', ['type'], '<div class="nc-note" :data-type="type"><slot /></div>'))
+vi.mock('@nextcloud/vue/components/NcEmptyContent', () => withProps('NcEmptyContent', ['name', 'description'], '<div class="nc-empty">{{ description }}</div>'))
+vi.mock('@nextcloud/vue/components/NcProgressBar', () => withProps('NcProgressBar', ['value'], '<div />'))
+vi.mock('../../src/components/AccessibleDialog.vue', () => withProps('AccessibleDialog', ['name', 'size'], '<div class="dialog"><slot /><slot name="actions" /></div>'))
+
+import axios from '@nextcloud/axios'
+import QuestionMediaPlayer from '../../src/components/QuestionMediaPlayer.vue'
+import QuestionConceal from '../../src/components/QuestionConceal.vue'
+import { optionSegments } from '../../src/utils/questionMediaPlayer.js'
+import { answerSoundNotes, playAnswerSound, resetAnswerSoundsForTests, unlockAnswerSounds } from '../../src/utils/answerSounds.js'
+import { soundsOn, useQuestionMediaPrefsStore } from '../../src/stores/questionMediaPrefsStore.js'
+import { useA11yStore } from '../../src/stores/a11yStore.js'
+
+const here = dirname(fileURLToPath(import.meta.url))
+
+const INTRO = (lang = 'de') => ({
+	id: 10, kind: 'intro', lang, duration_ms: 4000,
+	timeline: [
+		{ role: 'NARRATOR', text: 'Ein Labor am Morgen.', start: 0, end: 2 },
+		{ role: 'NARRATOR', text: 'Zwei Farben stehen bereit.', start: 2, end: 4 },
+	],
+	url: '/index.php/apps/learning/api/question-media/intro-' + lang,
+})
+const DIALOG = { id: 20, kind: 'dialog', lang: 'de', duration_ms: 3000, timeline: [{ role: 'ANNA', text: 'Gemischt ergibt das Grün.', start: 0, end: 3 }], url: '/media/dialog-de?grant=g' }
+const OPT = (answerId, position) => ({
+	answer_id: answerId,
+	position,
+	tracks: [{ id: 30 + position, kind: 'opt' + position, lang: 'en', duration_ms: 1000, timeline: [{ role: 'MARA', text: 'Option ' + position + ' explained.', start: 0, end: 1 }], url: '/media/opt' + position + '-en?grant=g' }],
+})
+const REVEAL = { tracks: [DIALOG], cues: null, option_tracks: [OPT(1, 0), OPT(2, 1)] }
+
+let host, app, vm, playSpy, audioCtx
+
+async function flush() {
+	for (let i = 0; i < 6; i++) {
+		await Promise.resolve()
+		await nextTick()
+	}
+}
+
+async function mount(Component, props = {}, { pinia = null, listeners = {}, slot = null } = {}) {
+	host = document.createElement('div')
+	document.body.appendChild(host)
+	const state = { props }
+	app = createApp({ render: () => h(Component, { ...state.props, ...listeners, ref: 'c' }, slot ? { default: slot } : undefined) })
+	app.config.globalProperties.t = globalThis.t
+	app.config.globalProperties.n = globalThis.n
+	app.config.warnHandler = () => {}
+	if (pinia) {
+		app.use(pinia)
+	}
+	const root = app.mount(host)
+	vm = root.$refs.c
+	await flush()
+	return { root, state }
+}
+
+function buttonByText(text) {
+	return [...host.querySelectorAll('button')].find((b) => b.textContent.includes(text))
+}
+
+function fakeAudioContext() {
+	const created = []
+	class FakeContext {
+		constructor() {
+			this.state = 'running'
+			this.currentTime = 0
+			this.destination = {}
+			created.push(this)
+			this.oscillators = []
+		}
+
+		createOscillator() {
+			const osc = { type: '', frequency: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }, connect: vi.fn(), start: vi.fn(), stop: vi.fn() }
+			this.oscillators.push(osc)
+			return osc
+		}
+
+		createGain() {
+			return { gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }, connect: vi.fn() }
+		}
+
+		resume() { return Promise.resolve() }
+	}
+	return { FakeContext, created }
+}
+
+beforeEach(() => {
+	document.body.innerHTML = ''
+	vi.clearAllMocks()
+	setActivePinia(undefined)
+	resetAnswerSoundsForTests()
+	window.matchMedia = vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+	playSpy = vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function () { return Promise.resolve() })
+	vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {})
+	vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {})
+	audioCtx = fakeAudioContext()
+	window.AudioContext = audioCtx.FakeContext
+	axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [INTRO()] } })
+	axios.put.mockResolvedValue({ data: {} })
+})
+afterEach(() => {
+	app?.unmount()
+	app = null
+	delete window.AudioContext
+	vi.restoreAllMocks()
+})
+
+function piniaWith(prefs = {}) {
+	const pinia = createPinia()
+	setActivePinia(pinia)
+	const store = useQuestionMediaPrefsStore(pinia)
+	Object.assign(store, prefs)
+	return { pinia, store }
+}
+
+describe('preferences: autoplay off by default, tones follow it until chosen', () => {
+	it('soundsOn: auto follows autoplay, yes/no are explicit', () => {
+		expect(soundsOn({ autoplay: false, sounds: 'auto' })).toBe(false)
+		expect(soundsOn({ autoplay: true, sounds: 'auto' })).toBe(true)
+		expect(soundsOn({ autoplay: true, sounds: 'no' })).toBe(false)
+		expect(soundsOn({ autoplay: false, sounds: 'yes' })).toBe(true)
+	})
+
+	it('the store reads the personal settings and saves a switch on the server, back on failure', async () => {
+		const { store } = piniaWith()
+		expect(store.autoplay).toBe(false)
+		expect(store.sounds).toBe('auto')
+		store.loadFromServerPayload({ question_media_autoplay: 'yes', answer_sounds: 'no' })
+		expect(store.autoplay).toBe(true)
+		expect(store.sounds).toBe('no')
+
+		axios.put.mockResolvedValueOnce({ data: { question_media_autoplay: 'no', answer_sounds: 'no' } })
+		expect(await store.save({ autoplay: false })).toBe(true)
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/settings/personal/question-media', { autoplay: false })
+		expect(store.autoplay).toBe(false)
+
+		axios.put.mockRejectedValueOnce(new Error('500'))
+		expect(await store.save({ sounds: 'yes' })).toBe(false)
+		expect(store.sounds).toBe('no')
+	})
+
+	it('App.vue hydrates the store from the personal settings it loads anyway', () => {
+		const source = readFileSync(resolve(here, '../../src/App.vue'), 'utf-8')
+		expect(source).toContain('useOptionalQuestionMediaPrefsStore()?.loadFromServerPayload(response.data)')
+	})
+})
+
+describe('answer tones', () => {
+	it('"Pling" goes up, "Zonk" goes down', () => {
+		const pling = answerSoundNotes(true)
+		const zonk = answerSoundNotes(false)
+		expect(pling[1].from).toBeGreaterThan(pling[0].from)
+		expect(zonk.every((note) => note.to < note.from)).toBe(true)
+	})
+
+	it('are synthesised with Web Audio and fail silently without it', () => {
+		expect(unlockAnswerSounds()).not.toBeNull()
+		expect(playAnswerSound(true)).toBe(true)
+		expect(audioCtx.created).toHaveLength(1)
+		expect(audioCtx.created[0].oscillators).toHaveLength(2)
+		expect(audioCtx.created[0].oscillators[0].start).toHaveBeenCalled()
+
+		resetAnswerSoundsForTests()
+		delete window.AudioContext
+		expect(unlockAnswerSounds()).toBeNull()
+		expect(playAnswerSound(false)).toBe(false)
+	})
+})
+
+describe('option voices: only those of the chosen answers, in answer order', () => {
+	it('picks well-formed option tracks of chosen answers only', () => {
+		expect(optionSegments(REVEAL.option_tracks, [2]).map((tracks) => tracks[0].kind)).toEqual(['opt1'])
+		expect(optionSegments(REVEAL.option_tracks, [2, 1]).map((tracks) => tracks[0].kind)).toEqual(['opt0', 'opt1'])
+		expect(optionSegments(REVEAL.option_tracks, [])).toEqual([])
+		expect(optionSegments([{ answer_id: 1, tracks: [{ kind: 'dialog', lang: 'en', url: '/x' }] }], [1])).toEqual([])
+		expect(optionSegments(null, [1])).toEqual([])
+	})
+})
+
+describe('QuestionMediaPlayer: the intro keeps the question hidden until it ends', () => {
+	async function mountIntro(props = {}, options = {}) {
+		const events = []
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false, ...props }, { ...options, listeners: { onConceal: (value) => events.push(value) } })
+		return events
+	}
+
+	it('a spoken intro asks to conceal; its end lets the question go, for good', async () => {
+		const events = await mountIntro()
+		expect(events.at(-1)).toBe(true)
+		// the intro is shown as slides: a cover first, one slide per line with progress dots
+		expect(host.querySelector('.qmedia__cover').textContent).toContain('2 Zeilen')
+		expect(host.querySelectorAll('.qmedia__progress li')).toHaveLength(2)
+
+		buttonByText('Abspielen').click()
+		await flush()
+		expect(events.at(-1)).toBe(true)
+		host.querySelector('audio').dispatchEvent(new Event('ended'))
+		await flush()
+		expect(events.at(-1)).toBe(false)
+
+		buttonByText('Von vorn').click()
+		buttonByText('Abspielen').click()
+		await flush()
+		expect(events.at(-1)).toBe(false)
+	})
+
+	it('stepping through the intro to its end lets the question go as well', async () => {
+		const events = await mountIntro()
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		expect(host.querySelector('.qmedia__slide').textContent).toContain('Ein Labor am Morgen.')
+		expect(events.at(-1)).toBe(true)
+		buttonByText('Nächste Zeile').click()
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		expect(events.at(-1)).toBe(false)
+	})
+
+	it('an audio error shows the question at once', async () => {
+		const events = await mountIntro()
+		buttonByText('Abspielen').click()
+		await flush()
+		host.querySelector('audio').dispatchEvent(new Event('error'))
+		await flush()
+		expect(events.at(-1)).toBe(false)
+	})
+
+	it('no intro, or an intro without lines: nothing is concealed (questions without media as before)', async () => {
+		axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [] } })
+		let events = await mountIntro()
+		expect(events.includes(true)).toBe(false)
+		app.unmount()
+
+		axios.get.mockResolvedValue({ data: { question_id: 5, tracks: [{ ...INTRO(), timeline: [] }] } })
+		events = await mountIntro()
+		expect(events.includes(true)).toBe(false)
+	})
+
+	it('a new question with an intro conceals again', async () => {
+		const events = []
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { listeners: { onConceal: (value) => events.push(value) } })
+		buttonByText('Abspielen').click()
+		await flush()
+		host.querySelector('audio').dispatchEvent(new Event('ended'))
+		await flush()
+		expect(events.at(-1)).toBe(false)
+		state.props = { questionId: 6, answered: false }
+		root.$forceUpdate()
+		await flush()
+		expect(events.at(-1)).toBe(true)
+	})
+})
+
+describe('QuestionMediaPlayer: "Automatisch abspielen"', () => {
+	it('off (the default): nothing plays by itself', async () => {
+		piniaWith()
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia: piniaWith().pinia })
+		expect(playSpy).not.toHaveBeenCalled()
+		expect(host.querySelector('input[role="switch"]').checked).toBe(false)
+	})
+
+	it('on: the intro starts when the question is shown', async () => {
+		const { pinia } = piniaWith({ autoplay: true })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		expect(playSpy).toHaveBeenCalledTimes(1)
+		expect(host.querySelector('audio').getAttribute('src')).toBe('/index.php/apps/learning/api/question-media/intro-de')
+	})
+
+	it('a refused autoplay (Safari/iOS) falls back to the play button silently and shows the question', async () => {
+		playSpy.mockImplementation(() => Promise.reject(Object.assign(new Error('no gesture'), { name: 'NotAllowedError' })))
+		const { pinia } = piniaWith({ autoplay: true })
+		const events = []
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia, listeners: { onConceal: (value) => events.push(value) } })
+		expect(events.at(-1)).toBe(false)
+		expect(host.querySelector('.qmedia__note').textContent.trim()).toBe('')
+		expect(buttonByText('Abspielen').disabled).toBe(false)
+	})
+
+	it('switching it on stores it per user and starts the intro (the click is the gesture)', async () => {
+		const { pinia, store } = piniaWith()
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		const toggle = host.querySelector('input[role="switch"]')
+		toggle.checked = true
+		toggle.dispatchEvent(new Event('change'))
+		await flush()
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/settings/personal/question-media', { autoplay: true })
+		expect(store.autoplay).toBe(true)
+		expect(playSpy).toHaveBeenCalledTimes(1)
+	})
+
+	it('after answering: the voice of the chosen option, then the dialog', async () => {
+		const { pinia } = piniaWith({ autoplay: true })
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		playSpy.mockClear()
+		state.props = { questionId: 5, answered: true, reveal: REVEAL, answerCorrect: false, selectedAnswerIds: [2] }
+		root.$forceUpdate()
+		await flush()
+		const audio = host.querySelector('audio')
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Zu deiner Antwort')
+		expect(audio.getAttribute('src')).toBe('/media/opt1-en?grant=g')
+		expect(playSpy).toHaveBeenCalledTimes(1)
+
+		audio.dispatchEvent(new Event('ended'))
+		await flush()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Nachbesprechung')
+		expect(audio.getAttribute('src')).toBe('/media/dialog-de?grant=g')
+		expect(playSpy).toHaveBeenCalledTimes(2)
+	})
+
+	it('without autoplay the parts are there to play or step through: past the option voice comes the dialog', async () => {
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
+		state.props = { questionId: 5, answered: true, reveal: REVEAL, answerCorrect: true, selectedAnswerIds: [1] }
+		root.$forceUpdate()
+		await flush()
+		expect(playSpy).not.toHaveBeenCalled()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Zu deiner Antwort')
+		buttonByText('Nächste Zeile').click()
+		buttonByText('Nächste Zeile').click()
+		await flush()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Nachbesprechung')
+	})
+
+	it('the next question stops a running sound', async () => {
+		const pause = HTMLMediaElement.prototype.pause
+		const { pinia } = piniaWith({ autoplay: true })
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		pause.mockClear()
+		state.props = { questionId: 6, answered: false }
+		root.$forceUpdate()
+		await flush()
+		expect(pause).toHaveBeenCalled()
+	})
+})
+
+describe('QuestionMediaPlayer: "Töne"', () => {
+	async function answer(prefs, correct, { restore = false } = {}) {
+		const { pinia } = piniaWith(prefs)
+		const { state, root } = await mount(QuestionMediaPlayer, { questionId: 5, answered: restore }, { pinia })
+		state.props = { questionId: restore ? 6 : 5, answered: true, reveal: REVEAL, answerCorrect: correct, selectedAnswerIds: [1] }
+		root.$forceUpdate()
+		await flush()
+	}
+
+	it('off by default (autoplay off): no tone', async () => {
+		await answer({}, true)
+		expect(audioCtx.created).toHaveLength(0)
+	})
+
+	it('on with autoplay: "Pling" for a right answer', async () => {
+		await answer({ autoplay: true }, true)
+		expect(audioCtx.created).toHaveLength(1)
+		expect(audioCtx.created[0].oscillators[0].type).toBe('sine')
+	})
+
+	it('chosen explicitly without autoplay: "Zonk" for a wrong answer', async () => {
+		await answer({ sounds: 'yes' }, false)
+		expect(audioCtx.created[0].oscillators[0].type).toBe('square')
+	})
+
+	it('switched off explicitly: silent even with autoplay', async () => {
+		await answer({ autoplay: true, sounds: 'no' }, true)
+		expect(audioCtx.created).toHaveLength(0)
+	})
+
+	it('jumping back to an answered question is silent', async () => {
+		await answer({ sounds: 'yes', autoplay: true }, true, { restore: true })
+		expect(audioCtx.created).toHaveLength(0)
+		expect(playSpy).not.toHaveBeenCalled()
+	})
+
+	it('the tones switch stores an explicit choice', async () => {
+		const { pinia, store } = piniaWith({ autoplay: true })
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false }, { pinia })
+		const toggle = host.querySelectorAll('input[role="switch"]')[1]
+		expect(toggle.checked).toBe(true)
+		toggle.checked = false
+		toggle.dispatchEvent(new Event('change'))
+		await flush()
+		expect(axios.put).toHaveBeenCalledWith('/apps/learning/api/settings/personal/question-media', { sounds: 'no' })
+		expect(store.sounds).toBe('no')
+	})
+})
+
+describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap — no button', () => {
+	const slot = () => h('div', [h('p', { class: 'q' }, 'Welche Farbe?'), h('button', { class: 'answer' }, 'Grün')])
+
+	it('without an intro it is a plain wrapper', async () => {
+		await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot })
+		const el = host.querySelector('.qconceal')
+		expect(el.getAttribute('tabindex')).toBeNull()
+		expect(el.getAttribute('role')).toBeNull()
+		expect(host.querySelector('.qconceal__content').hasAttribute('inert')).toBe(false)
+		expect(host.querySelector('.qconceal__veil')).toBeNull()
+	})
+
+	it('while concealed: a named Tab stop, the answers inert and hidden from screen readers', async () => {
+		await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+		const el = host.querySelector('.qconceal')
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+		expect(el.getAttribute('tabindex')).toBe('0')
+		expect(el.getAttribute('aria-label')).toBe('Frage, ausgeblendet bis zum Ende des Einstiegs')
+		expect(el.getAttribute('aria-expanded')).toBe('false')
+		const content = host.querySelector('.qconceal__content')
+		expect(content.hasAttribute('inert')).toBe(true)
+		expect(content.getAttribute('aria-hidden')).toBe('true')
+		// the space stays: the content is rendered, only invisible
+		expect(content.querySelector('.answer')).not.toBeNull()
+		expect(host.querySelectorAll('button')).toHaveLength(1)
+	})
+
+	for (const [name, fire] of [
+		['hovering', (el) => el.dispatchEvent(new MouseEvent('mouseenter'))],
+		['keyboard focus', (el) => el.focus()],
+		['a tap', (el) => el.click()],
+		['Enter', (el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))],
+	]) {
+		it(`${name} uncovers it for good, and the focus stays where it was`, async () => {
+			const { state, root } = await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+			const el = host.querySelector('.qconceal')
+			// Vue drops an event stamped in the very millisecond its listener was attached (its
+			// guard against events that caused the render); a real key press is never that fast.
+			await new Promise((done) => setTimeout(done, 5))
+			fire(el)
+			await flush()
+			expect(el.classList.contains('qconceal--hidden')).toBe(false)
+			expect(el.classList.contains('qconceal--shown')).toBe(true)
+			expect(host.querySelector('.qconceal__content').hasAttribute('inert')).toBe(false)
+			// still focusable (-1): a focused area does not drop the focus to <body>
+			expect(el.getAttribute('tabindex')).toBe('-1')
+			if (name === 'keyboard focus') {
+				expect(document.activeElement).toBe(el)
+			}
+			// the intro ending later changes nothing; the next question starts covered again
+			state.props = { conceal: false, questionKey: 1 }
+			root.$forceUpdate()
+			await flush()
+			state.props = { conceal: true, questionKey: 2 }
+			root.$forceUpdate()
+			await flush()
+			expect(el.classList.contains('qconceal--hidden')).toBe(true)
+		})
+	}
+
+	it('the end of the intro uncovers it by itself', async () => {
+		const { state, root } = await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+		state.props = { conceal: false, questionKey: 1 }
+		root.$forceUpdate()
+		await flush()
+		expect(host.querySelector('.qconceal').classList.contains('qconceal--hidden')).toBe(false)
+	})
+
+	it('reduced motion and "Ruhige Darstellung" switch the gliding off', async () => {
+		window.matchMedia = vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+		await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+		expect(host.querySelector('.qconceal').classList.contains('qconceal--still')).toBe(true)
+		app.unmount()
+
+		window.matchMedia = vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+		const pinia = createPinia()
+		setActivePinia(pinia)
+		useA11yStore(pinia).setEnabled(false)
+		await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot, pinia })
+		expect(host.querySelector('.qconceal').classList.contains('qconceal--still')).toBe(true)
+		const css = readFileSync(resolve(here, '../../src/components/QuestionConceal.vue'), 'utf-8')
+		expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.qconceal--hidden \.qconceal__content \{ transform: none; \}/)
+	})
+
+	it('reduced motion also stills the player\'s slides', async () => {
+		window.matchMedia = vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+		await mount(QuestionMediaPlayer, { questionId: 5, answered: false })
+		expect(host.querySelector('.qmedia').classList.contains('qmedia--still')).toBe(true)
+	})
+
+	it('a press inside opens the audio output for the tone when tones are on (Safari needs the gesture)', async () => {
+		const { pinia } = piniaWith({ sounds: 'yes' })
+		await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot, pinia })
+		host.querySelector('.answer').dispatchEvent(new Event('pointerdown', { bubbles: true }))
+		expect(audioCtx.created).toHaveLength(1)
+	})
+
+	it('…and not when they are off', async () => {
+		const { pinia } = piniaWith()
+		await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot, pinia })
+		host.querySelector('.answer').dispatchEvent(new Event('pointerdown', { bubbles: true }))
+		expect(audioCtx.created).toHaveLength(0)
+	})
+})
+
+describe('the learning modes: player first, question hidden until the intro is heard', () => {
+	function trainingServer({ intro = true } = {}) {
+		axios.get.mockImplementation((url) => {
+			if (url === '/apps/learning/api/questions/101/media') {
+				return Promise.resolve({ data: { question_id: 101, tracks: intro ? [INTRO()] : [] } })
+			}
+			return Promise.resolve({ data: {} })
+		})
+		axios.post.mockImplementation((url) => {
+			if (url.endsWith('/training/start')) {
+				return Promise.resolve({ data: { session_id: 9, questions: [
+					{ id: 101, text: 'Blau + Gelb?', question_type: 'mc', answers: [{ id: 1, text: 'Grün' }, { id: 2, text: 'Lila' }] },
+				] } })
+			}
+			if (url.endsWith('/training/answer')) {
+				return Promise.resolve({ data: { is_correct: true, correct_answer_texts: ['Grün'], question_media: REVEAL } })
+			}
+			return Promise.resolve({ data: {} })
+		})
+	}
+
+	it('TrainingMode: the intro comes first, the question shows after it', async () => {
+		trainingServer()
+		const { default: TrainingMode } = await import('../../src/components/TrainingMode.vue')
+		await mount(TrainingMode, { poolId: 1, totalQuestions: 1 })
+		buttonByText('Start Training').click()
+		await flush()
+		const card = host.querySelector('.question-card')
+		// order in the card: player, then the (hidden) question
+		expect(card.querySelector('.qmedia').compareDocumentPosition(card.querySelector('.question-text')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+		const area = host.querySelector('.qconceal')
+		expect(area.classList.contains('qconceal--hidden')).toBe(true)
+		expect(area.querySelector('.question-text').closest('[inert]')).not.toBeNull()
+
+		buttonByText('Abspielen').click()
+		await flush()
+		host.querySelector('audio').dispatchEvent(new Event('ended'))
+		await flush()
+		expect(area.classList.contains('qconceal--hidden')).toBe(false)
+
+		buttonByText('Grün').click()
+		await flush()
+		expect(host.querySelector('.qmedia__title').textContent).toContain('Zu deiner Antwort')
+	})
+
+	it('TrainingMode: a question without media is never hidden', async () => {
+		trainingServer({ intro: false })
+		const { default: TrainingMode } = await import('../../src/components/TrainingMode.vue')
+		await mount(TrainingMode, { poolId: 1, totalQuestions: 1 })
+		buttonByText('Start Training').click()
+		await flush()
+		expect(host.querySelector('.qconceal').classList.contains('qconceal--hidden')).toBe(false)
+		expect(host.querySelector('.qconceal').getAttribute('tabindex')).toBeNull()
+	})
+
+	it('all three modes wire the player to the hidden area; the exam has neither', () => {
+		const source = (name) => readFileSync(resolve(here, '../../src/components', name), 'utf-8')
+		for (const name of ['TrainingMode.vue', 'LeitnerMode.vue', 'SmartQueue.vue']) {
+			const text = source(name)
+			expect(text).toContain('@conceal="questionConcealed = $event"')
+			expect(text).toMatch(/<QuestionConceal :conceal="questionConcealed"/)
+			expect(text).toContain(':selected-answer-ids="mediaSelectedIds"')
+			expect(text.indexOf('<QuestionMediaPlayer')).toBeLessThan(text.indexOf('<QuestionScenario'))
+		}
+		expect(source('ExamMode.vue')).not.toContain('QuestionConceal')
+		expect(source('ExamMode.vue')).not.toContain('QuestionMediaPlayer')
+	})
+})
