@@ -1383,7 +1383,23 @@ class CourseService {
             $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $memberId);
         }
 
-        $this->courseMemberMapper->delete($member);
+        // GitHub #86 (review): when the learner last opened the course's required documents is
+        // only a precondition for a new confirmation, without evidence value; once they leave the
+        // course nothing needs it. It goes with the membership, in one transaction, instead of
+        // staying until the retention period (or forever with retention switched off).
+        $this->db->beginTransaction();
+        try {
+            $this->courseMemberMapper->delete($member);
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete('learning_doc_opens')
+                ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter((string)$member->getUserId())));
+            $qb->executeStatement();
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     /**

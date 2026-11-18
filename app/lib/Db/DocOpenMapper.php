@@ -10,8 +10,9 @@ use OCP\IDBConnection;
  * GitHub #86: when a learner last opened a required document of a course (learning_doc_opens,
  * Version011300), with the version of the file that was served. One row per (user, course,
  * document); a later open overwrites it. Personal data without evidence value: never in the
- * compliance chain; RetentionService, UserDeletedListener, CourseService::delete() and the
- * uninstall command delete it, DataExportService exports it (each with its own query).
+ * compliance chain; RetentionService, UserDeletedListener, CourseService::delete(),
+ * CourseService::removeMember() (the learner's rows of that course) and the uninstall command
+ * delete it, DataExportService exports it (each with its own query).
  */
 class DocOpenMapper {
     public const TABLE = 'learning_doc_opens';
