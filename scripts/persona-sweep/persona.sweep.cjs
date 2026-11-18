@@ -1099,6 +1099,15 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 		await titleHasNoBlock(page.locator('.course-pool-card .pool-card-open').first(), 'Pools in my courses')
 		await page.screenshot({ path: path.join(SHOTS, 'pool-title-hover.png') })
 	})
+	// GitHub #79 (18.11. 11:19): the pool rows in a course's Pools tab carry the same title button.
+	await station(page, rec, 'Learning space › Pools: hover and focus on a pool title', async () => {
+		await openMegaTab(page, 'Learning space')
+		const poolsTab = page.locator('.lernraum-subnav button').filter({ hasText: /^\s*Pools\s*$/ }).first()
+		if (await poolsTab.isVisible().catch(() => false)) await poolsTab.click()
+		await settle(page, 300)
+		await titleHasNoBlock(page.locator('.pool-item .pool-item-open').first(), 'Course pools')
+		await page.screenshot({ path: path.join(SHOTS, 'course-pool-title-hover.png') })
+	})
 	// GitHub #88: in Pool rules the "Specific question IDs" field was 130px wide (Nextcloud's core
 	// textarea width); every field of the dialog must span the same column.
 	await station(page, rec, 'Learning space › Pools › Pool rules: field widths', async () => {

@@ -2068,6 +2068,15 @@ export default {
 	cursor: pointer;
 }
 
+/* GitHub #79: Nextcloud's core button rule (button:not(.button-vue):hover/:focus) painted a square
+   block behind the pool name; the whole row reacts to the pointer already, so the name has no
+   hover background of its own. */
+.pool-item-open:hover,
+.pool-item-open:focus,
+.pool-item-open:active {
+	background: none;
+}
+
 .pool-item:has(.pool-item-open:focus-visible) {
 	outline: 2px solid var(--color-primary-element);
 	outline-offset: 2px;

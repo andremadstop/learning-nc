@@ -9,7 +9,8 @@
  *
  * 5.14.0 fixed the course list only. The same title button sits on the cards of the instructor
  * Dashboard and of the pool lists (My pools, Shared with me, Pools in my courses — one rule in
- * PoolList.vue covers all three tabs); the reporter found the block there again (#79, 18.11.).
+ * PoolList.vue covers all three tabs); the reporter found the block there again (#79, 18.11.),
+ * and then on the pool rows inside a course (CourseTabLernraum.vue).
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
@@ -33,6 +34,8 @@ const CARDS = [
 	['CourseList.vue', '.course-card-open', '.course-card', /border-color:\s*var\(--color-primary-element\)/],
 	['InstructorDashboard.vue', '.card-open', '.dashboard-course-card', /border-color:\s*var\(--color-primary-element\)/],
 	['PoolList.vue', '.pool-card-open', '.pool-card', /box-shadow:/],
+	// #79 (18.11. 11:19): the pool rows of a course's Pools tab (instructor view).
+	['CourseTabLernraum.vue', '.pool-item-open', '.pool-item', /box-shadow:/],
 ]
 const CASES = CARDS.flatMap(([file, title]) => [':hover', ':focus', ':active'].map((state) => [file, title, state]))
 
