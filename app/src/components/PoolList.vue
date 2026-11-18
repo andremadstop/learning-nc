@@ -145,7 +145,7 @@
                 <!-- GitHub #98: "#304" read like a count; it is the question's ID (the one Pool rules take). -->
                 <span class="result-id">{{ t('learning', 'Frage-ID {id}', { id: question.id }) }}</span>
                 <span class="result-text">"{{ question.text }}"</span>
-                <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }) }}</span>
+                <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }, undefined, RAW) }}</span>
               </li>
             </ul>
           </div>
@@ -391,6 +391,9 @@ import PoolBulkImportDialog from './PoolBulkImportDialog.vue';
 import hintMixin from '../hintMixin.js';
 import { moveTablistFocus } from '../utils/tablistKeydown.js';
 
+// A pool name as typed: the {{ }} below escapes it once; the l10n default would escape it again (#98).
+const RAW = { escape: false, sanitize: false };
+
 // Simple debounce utility
 const debounce = (func, delay) => {
   let timeout;
@@ -418,6 +421,7 @@ export default {
   },
   data() {
     return {
+      RAW,
       pools: [],
       sharedPools: [],
       // GitHub #69: GET /api/my-course-pools, the pools of the courses the viewer leads.

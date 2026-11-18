@@ -9,6 +9,7 @@
  * Harness from poolListAiOff70.test.js.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { translate } from '@nextcloud/l10n'
 import { createApp, h, nextTick, ref } from 'vue'
 
 vi.hoisted(() => {
@@ -118,6 +119,22 @@ describe('PoolList search: question hits (GitHub #98)', () => {
 		expect(rows).toHaveLength(3)
 		expect(rows[0].querySelector('.result-id').textContent.trim()).toBe('Frage-ID 304')
 		expect(rows[0].querySelector('.result-subtext').textContent.trim()).toBe('in Brandschutz')
+	})
+
+	// The real @nextcloud/l10n escapes placeholder values unless told not to, and {{ }} escapes
+	// again: "Netzwerk & Sicherheit" read "in Netzwerk &amp; Sicherheit" (reviewer, #98).
+	it('writes a pool name with & and \' as typed (real l10n)', async () => {
+		const stubT = globalThis.t
+		globalThis.t = translate
+		try {
+			api.routes[SEARCH] = [{ id: 304, pool_id: 11, pool_name: 'Netzwerk & Sicherheit', text: 'Wo hängt der Feuerlöscher?' }, { id: 305, pool_id: 12, pool_name: "Andre's <Pool>", text: 'Wo hängt der Verbandskasten?' }]
+			const vm = await render({ userRole: 'instructor' })
+			await search(vm)
+			const names = [...host.querySelectorAll('.search-results-section .result-subtext')].map((el) => el.textContent.trim())
+			expect(names).toEqual(['in Netzwerk & Sicherheit', "in Andre's <Pool>"])
+		} finally {
+			globalThis.t = stubT
+		}
 	})
 
 	it.each([
