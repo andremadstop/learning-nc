@@ -83,6 +83,9 @@ import {
 export default {
 	name: 'DauBotDialog',
 
+	// GitHub #65: undeclared, AbenteuerMode's @submit would also sit on the root <div> as a native submit listener.
+	emits: ['submit', 'result-applied'],
+
 	components: {
 		CharacterAvatar,
 	},

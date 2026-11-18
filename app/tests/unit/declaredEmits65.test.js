@@ -15,6 +15,7 @@
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { createApp, h, nextTick, reactive } from 'vue'
+import { createPinia } from 'pinia'
 import { ESLint } from 'eslint'
 import { join } from 'path'
 
@@ -28,9 +29,23 @@ vi.mock('@nextcloud/vue/components/NcButton', () => ({
 	},
 }))
 
+vi.mock('@nextcloud/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }))
+vi.mock('../../src/utils/character-animations.js', async (importOriginal) => ({
+	...(await importOriginal()),
+	playWave: vi.fn(),
+}))
+
 globalThis.t = (app, text) => text
 
 import PbqRenderer from '../../src/components/PbqRenderer.vue'
+import KosmologeAvatar from '../../src/components/KosmologeAvatar.vue'
+import TheoretikerAvatar from '../../src/components/TheoretikerAvatar.vue'
+import ProfLernAvatar from '../../src/components/ProfLernAvatar.vue'
+import PopularisiererAvatar from '../../src/components/PopularisiererAvatar.vue'
+import NovaAvatar from '../../src/components/nova/NovaAvatar.vue'
+import NovaPanel from '../../src/components/nova/NovaPanel.vue'
+import DauBotDialog from '../../src/components/DauBotDialog.vue'
+import VideoPlayer from '../../src/components/VideoPlayer.vue'
 
 const APP = join(__dirname, '../..')
 const RULE = 'vue/require-explicit-emits'
@@ -51,7 +66,6 @@ const UNDECLARED_EMITS_BASELINE = {
 	'components/CourseTabTeilnehmer.vue': ['error', 'members-changed', 'selectStudent', 'tab-change'],
 	'components/CourseTabVerwaltung.vue': ['error', 'refresh-course-detail', 'tab-change'],
 	'components/CourseTabWettbewerb.vue': ['arena-sub-mode', 'error', 'preset-consumed', 'selectStudent', 'tab-change'],
-	'components/DauBotDialog.vue': ['result-applied', 'submit'],
 	'components/DnsResolver.vue': ['result'],
 	'components/DuelMode.vue': ['back', 'preset-consumed'],
 	'components/ExamMode.vue': ['back'],
@@ -61,7 +75,6 @@ const UNDECLARED_EMITS_BASELINE = {
 	'components/ImportDialog.vue': ['close', 'imported'],
 	'components/InstructorDashboard.vue': ['selectCourse'],
 	'components/KnowledgeModeration.vue': ['pending-count'],
-	'components/KosmologeAvatar.vue': ['click'],
 	'components/LeitnerMode.vue': ['back'],
 	'components/NatTable.vue': ['result'],
 	'components/OnboardingIntro.vue': ['done'],
@@ -76,9 +89,7 @@ const UNDECLARED_EMITS_BASELINE = {
 	'components/PbqRoutingConfig.vue': ['update'],
 	'components/PbqSwitchConfig.vue': ['update'],
 	'components/PoolList.vue': ['openRemediation', 'openSmartQueue', 'selectPool'],
-	'components/PopularisiererAvatar.vue': ['click'],
 	'components/PortScanner.vue': ['result'],
-	'components/ProfLernAvatar.vue': ['click'],
 	'components/QuestMap.vue': ['close', 'navigate'],
 	'components/QuestionForm.vue': ['close', 'save'],
 	'components/QuestionLanguageSwitcher.vue': ['input'],
@@ -91,15 +102,12 @@ const UNDECLARED_EMITS_BASELINE = {
 	'components/StudentDetail.vue': ['back'],
 	'components/SubnetCalculator.vue': ['result'],
 	'components/TerminalPuzzle.vue': ['result'],
-	'components/TheoretikerAvatar.vue': ['click'],
 	'components/TrainingMode.vue': ['back', 'manage'],
 	'components/TranslationDialog.vue': ['close', 'saved'],
 	'components/VirtuProf.vue': ['ai-enabled-change', 'close-fullscreen', 'enabled-change', 'open-duel', 'open-fullscreen', 'ready'],
 	'components/VirtuProfBubble.vue': ['action', 'chat-send', 'dismiss', 'next', 'open-fullscreen', 'report-error', 'update:ticketDraft', 'update:ticketSubject'],
 	'components/VirtuProfFullscreen.vue': ['close', 'report-error', 'send'],
 	'components/WiresharkLite.vue': ['result'],
-	'components/nova/NovaAvatar.vue': ['click'],
-	'components/nova/NovaPanel.vue': ['close', 'minimize', 'touchend', 'touchstart'],
 }
 
 async function undeclaredEmits() {
@@ -208,5 +216,98 @@ describe('PbqRenderer inside a parent listening to @change (GitHub #65)', () => 
 		expect(state.calls).toEqual([])
 		expect(state.submits).toEqual([])
 		expect(state.skips).toBe(0)
+	})
+})
+
+/**
+ * U9 (after C8): the same fall-through for components whose event names are native DOM events.
+ * Each test mounts the real component under a parent listener and fails against the undeclared
+ * version, where the parent's handler sits on the root element as a native listener as well.
+ */
+describe('components emitting native DOM event names (GitHub #65)', () => {
+	let app = null
+	let host = null
+
+	afterEach(() => {
+		app?.unmount()
+		host?.remove()
+		app = null
+		host = null
+	})
+
+	function mount(render) {
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({ render })
+		app.use(createPinia())
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = (a, s, p, c) => (c === 1 ? s : p)
+		app.mount(host)
+	}
+
+	const AVATARS = [
+		['KosmologeAvatar', KosmologeAvatar, '.kosmologe-avatar-wrapper'],
+		['TheoretikerAvatar', TheoretikerAvatar, '.theoretiker-avatar-wrapper'],
+		['ProfLernAvatar', ProfLernAvatar, '.virtuprof-avatar-wrapper'],
+		['PopularisiererAvatar', PopularisiererAvatar, '.popularisierer-avatar-wrapper'],
+		['NovaAvatar', NovaAvatar, '.nova-avatar-wrapper'],
+	]
+
+	it.each(AVATARS)('%s: a click reaches a parent @click once, without the DOM event', async (name, Avatar, rootSelector) => {
+		const calls = []
+		mount(() => h(Avatar, { onClick: (...args) => { calls.push(args) } }))
+		host.querySelector(rootSelector).dispatchEvent(new MouseEvent('click', { bubbles: true }))
+		await nextTick()
+
+		expect(Avatar.emits).toContain('click')
+		expect(calls).toHaveLength(1)
+		expect(calls[0][0]).not.toBeInstanceOf(Event)
+	})
+
+	it('NovaPanel: one touchstart/touchend runs VirtuProf\'s handler once each', async () => {
+		const starts = []
+		const ends = []
+		mount(() => h(NovaPanel, {
+			title: 'VirtuProf',
+			onTouchstart: (e) => { starts.push(e) },
+			onTouchend: (e) => { ends.push(e) },
+		}))
+		const root = host.querySelector('.virtuprof-panel')
+		root.dispatchEvent(new Event('touchstart', { bubbles: true }))
+		root.dispatchEvent(new Event('touchend', { bubbles: true }))
+		await nextTick()
+
+		expect(starts).toHaveLength(1)
+		expect(ends).toHaveLength(1)
+	})
+
+	it('DauBotDialog: a native submit on the root does not reach AbenteuerMode\'s @submit; a chosen fix does, once', async () => {
+		const submits = []
+		mount(() => h(DauBotDialog, {
+			scenario: {
+				bot_action: 'Klaus pulled the cable',
+				symptom: 'No network',
+				error_options: [{ id: 'e1', label: 'Cable unplugged' }],
+				fix_options: [{ id: 'f1', label: 'Plug it back in' }],
+			},
+			onSubmit: (payload) => { submits.push(payload) },
+		}))
+		const root = host.querySelector('.daubot-dialog')
+		root.dispatchEvent(new Event('submit', { bubbles: true }))
+		await nextTick()
+		expect(submits).toEqual([])
+
+		host.querySelector('.daubot-option').click()
+		await nextTick()
+		host.querySelector('.daubot-option').click()
+		await nextTick()
+		expect(submits).toEqual([{ errorId: 'e1', fixId: 'f1' }])
+		expect(DauBotDialog.emits).toEqual(expect.arrayContaining(['submit', 'result-applied']))
+	})
+
+	it('VideoPlayer declares the completed and progress events its heartbeat mixin emits', () => {
+		// vue/require-explicit-emits does not see $emit calls inside a mixin, so the baseline gate
+		// above cannot catch this component.
+		expect(VideoPlayer.emits).toEqual(expect.arrayContaining(['completed', 'progress']))
 	})
 })

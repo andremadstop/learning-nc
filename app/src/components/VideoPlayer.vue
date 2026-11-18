@@ -84,6 +84,10 @@ const SEEK_STEP_SECONDS = 5
 export default {
 	name: 'VideoPlayer',
 
+	// GitHub #65: emitted by videoHeartbeatMixin (which ESLint's emits rule cannot see); undeclared, the
+	// parent's @progress would also sit on the root <div> as a native listener.
+	emits: ['completed', 'progress'],
+
 	// Segment collection + heartbeats, shared with the Vimeo / YouTube player (VideoConsentOverlay).
 	mixins: [videoHeartbeatMixin],
 

@@ -44,6 +44,9 @@ import { translateVirtuProf } from '../../utils/virtuprof-i18n.js'
 
 export default {
 	name: 'NovaPanel',
+	// GitHub #65: undeclared, VirtuProf's @touchstart/@touchend also fell through to the root as a second,
+	// non-passive native listener, so each touch ran the handler twice and defeated .passive.
+	emits: ['touchstart', 'touchend', 'minimize', 'close'],
 	props: {
 		title: { type: String, default: '' },
 		metaText: { type: String, default: '' },

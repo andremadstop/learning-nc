@@ -177,6 +177,8 @@ import { playWave } from '../../utils/character-animations.js'
 
 export default {
 	name: 'NovaAvatar',
+	// GitHub #65: undeclared, a parent's @click would also land on the root <div> as a native listener and run twice.
+	emits: ['click'],
 	props: {
 		animation: { type: String, default: 'idle' },
 		hasMessage: { type: Boolean, default: false },
