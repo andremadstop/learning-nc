@@ -18,7 +18,7 @@ const { api } = vi.hoisted(() => ({ api: { videos: [] } }))
 vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn((url) => {
-			if (String(url).includes('/videos')) return Promise.resolve({ data: api.videos })
+			if (String(url).includes('/video-progress/course/')) return Promise.resolve({ data: { videos: api.videos } })
 			return Promise.resolve({ data: [] })
 		}),
 		post: vi.fn(),
@@ -52,6 +52,7 @@ vi.mock('../../src/components/CourseMaterials.vue', () => ({
 }))
 
 import CourseTabLernraum from '../../src/components/CourseTabLernraum.vue'
+import { lernraumTabIds } from '../../src/utils/courseView.js'
 
 let app = null
 let host = null
@@ -95,5 +96,19 @@ describe('CourseTabLernraum — learning materials wiring', () => {
 	it('and that it is on', async () => {
 		const [props] = await mountMaterials({ id: 7, material_folder: '/Kurs', video_gate_enabled: true }, true)
 		expect(props.examGateOff).toBe(false)
+	})
+
+	it('shows the optional files to a learner who only learns that a folder is linked (U2)', async () => {
+		api.videos = [{ id: 1, source_type: 'youtube-nocookie', video_ref: 'abcdefghijk', duration_seconds: 60 }]
+		const shown = await mountMaterials({ id: 7, has_material_folder: true }, false)
+		expect(shown).toEqual([{ isInstructor: false, optionalHint: true, examGateOff: false }])
+	})
+})
+
+describe('lernraumTabIds — learners without the folder path (GitHub #90, U2)', () => {
+	it('offers the materials tab to a learner whose course only says a folder is linked', () => {
+		const course = { mode_config: { training: true, leitner: false, exam: true }, has_material_folder: true }
+		expect(lernraumTabIds(course, {})).toEqual(['materials', 'training', 'exam'])
+		expect(lernraumTabIds({ ...course, has_material_folder: false }, {})).toEqual(['training', 'exam'])
 	})
 })

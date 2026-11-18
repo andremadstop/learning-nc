@@ -77,7 +77,8 @@ export function lernraumTabIds(course, { actsAsInstructor = false, hasCourseTool
 	// material comes before the learning modes. GitHub #75: one "Learning materials" tab holds
 	// the required content (to confirm or watch) and the optional files; the separate required
 	// content tab is gone.
-	if (course?.material_folder || hasVideos) tabs.push('materials')
+	// GitHub #90 (U2): learners get has_material_folder instead of the folder path
+	if (course?.material_folder || course?.has_material_folder || hasVideos) tabs.push('materials')
 	if (enabled('training')) tabs.push('training')
 	if (enabled('leitner')) tabs.push('leitner')
 	if (enabled('exam')) tabs.push('exam')

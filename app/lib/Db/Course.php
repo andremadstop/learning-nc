@@ -164,6 +164,9 @@ class Course extends Entity implements \JsonSerializable {
             'exam_attempts_per_day' => $this->examAttemptsPerDay,
             'exam_requires_training' => $this->examRequiresTraining ?? false,
             'material_folder' => $this->materialFolder,
+            // GitHub #90 (U2): learners get only this, not the path in the instructor's home
+            // (CourseService::projectForLearner()).
+            'has_material_folder' => $this->materialFolder !== null && $this->materialFolder !== '',
             'enabled_tools' => $this->enabledTools !== null ? (json_decode($this->enabledTools, true) ?: []) : null,
             'talk_room_token' => $this->talkRoomToken,
             'leitner_sprint' => $this->leitnerSprint ?? false,

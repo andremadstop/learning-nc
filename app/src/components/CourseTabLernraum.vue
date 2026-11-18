@@ -468,7 +468,8 @@
 					</li>
 				</ul>
 
-				<template v-if="course && course.material_folder">
+				<!-- GitHub #90 (U2): learners get has_material_folder, not the folder path -->
+				<template v-if="course && (course.material_folder || course.has_material_folder)">
 					<h4 class="materials-heading">
 						{{ t('learning', 'Weiteres Lernmaterial') }}
 					</h4>

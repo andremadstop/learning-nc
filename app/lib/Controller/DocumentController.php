@@ -87,13 +87,25 @@ class DocumentController extends Controller {
 
     /**
      * Get the material folder for a course.
+     *
+     * GitHub #90 (U2): the path lies in the course owner's home. Only the instructors of the
+     * course and admins receive it; a learner learns whether a folder is linked (folder null).
+     *
+     * @param int $courseId the course
+     * @return DataResponse<Http::STATUS_OK, array{folder: string|null, linked: bool}, array{}>|DataResponse<Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
     #[NoAdminRequired]
     public function getFolder(int $courseId): DataResponse {
         try {
+            if ($this->userId === null) {
+                throw new \RuntimeException('Not authenticated');
+            }
             $this->courseService->findById($courseId, $this->userId);
             $folder = $this->documentService->getMaterialFolder($courseId);
-            return new DataResponse(['folder' => $folder]);
+            $linked = $folder !== null && $folder !== '';
+            $full = $this->courseService->canManageCourse($courseId, $this->userId)
+                || $this->roleService->isAdmin($this->userId);
+            return new DataResponse(['folder' => $full && $linked ? $folder : null, 'linked' => $linked]);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         }

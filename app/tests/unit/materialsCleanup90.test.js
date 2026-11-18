@@ -171,3 +171,30 @@ describe('CourseMaterials — stale entries (GitHub #90)', () => {
 		expect(emitted.required).toEqual([[]])
 	})
 })
+
+describe('CourseMaterials — a learner gets no folder path (GitHub #90, U2)', () => {
+	let host, app
+
+	afterEach(() => {
+		app?.unmount()
+		host?.remove()
+	})
+
+	it('knows a folder is linked from "linked" alone and says nothing is shared yet', async () => {
+		const get = axios.get.getMockImplementation()
+		axios.get.mockImplementation((url) => {
+			if (url === '/apps/learning/api/courses/9/material-folder') return Promise.resolve({ data: { folder: null, linked: true } })
+			if (url === '/apps/learning/api/courses/9/documents') return Promise.resolve({ data: { documents: [], can_manage_files: false } })
+			return get(url)
+		})
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({ render: () => h(CourseMaterials, { courseId: 9, isInstructor: false }) })
+		app.mount(host)
+		await flush()
+		axios.get.mockImplementation(get)
+
+		expect(host.querySelector('.learner-empty-state')).not.toBeNull()
+		expect(host.textContent).not.toContain('Kein Materialordner verknüpft')
+	})
+})

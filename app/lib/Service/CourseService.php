@@ -841,6 +841,20 @@ class CourseService {
     }
 
     /**
+     * GitHub #90 (U2): the course as a learner receives it. The material folder is a path in the
+     * course owner's home and the course group an internal Nextcloud group id; a learner needs
+     * neither (has_material_folder says whether there is material). Instructors of the course
+     * and admins get the full course.
+     *
+     * @param array<string, mixed> $course Course::jsonSerialize()
+     * @return array<string, mixed>
+     */
+    public static function projectForLearner(array $course): array {
+        unset($course['material_folder'], $course['nc_group_id']);
+        return $course;
+    }
+
+    /**
      * List courses: own (as instructor) + enrolled (as student/co-instructor)
      */
     public function findAll(string $userId): array {
@@ -851,11 +865,19 @@ class CourseService {
         $ownIds = array_map(fn($c) => $c->getId(), $own);
 
         $enrolledCourses = [];
+        $isAdmin = null;
         foreach ($memberEntries as $member) {
             if (!in_array($member->getCourseId(), $ownIds)) {
                 try {
                     $course = $this->courseMapper->findById($member->getCourseId());
                     $courseData = $course->jsonSerialize();
+                    // GitHub #90 (U2): co-instructors keep the full course, as admins do
+                    if ($member->getRole() !== 'instructor') {
+                        $isAdmin ??= $this->roleService->isAdmin($userId);
+                        if (!$isAdmin) {
+                            $courseData = self::projectForLearner($courseData);
+                        }
+                    }
                     $courseData['member_role'] = $member->getRole();
                     $enrolledCourses[] = $courseData;
                 } catch (DoesNotExistException $e) {
@@ -1048,6 +1070,9 @@ class CourseService {
         }
 
         $result = $course->jsonSerialize();
+        if (!$isInstructor && !$this->roleService->isAdmin($userId)) {
+            $result = self::projectForLearner($result);
+        }
         $result['pools'] = $poolsData;
         $result['is_instructor'] = $isInstructor;
 

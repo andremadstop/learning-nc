@@ -131,7 +131,6 @@ Error: dataExport#myData: Missing @return annotation
 Error: document#download: Missing @return annotation
 Error: document#extract: Missing @return annotation
 Error: document#extractAll: Missing @return annotation
-Error: document#getFolder: Missing @return annotation
 Error: document#index: Missing @return annotation
 Error: document#scan: Missing @return annotation
 Error: document#setFolder: Missing @return annotation

@@ -292,7 +292,7 @@ export default {
 			try {
 				const [videos, docs] = await Promise.all([
 					axios.get(generateUrl('/apps/learning/api/courses/{courseId}/videos', { courseId: this.courseId })),
-					this.course?.material_folder
+					this.course?.material_folder || this.course?.has_material_folder
 						? axios.get(generateUrl('/apps/learning/api/courses/{courseId}/documents', { courseId: this.courseId }))
 						: Promise.resolve({ data: [] }),
 				])

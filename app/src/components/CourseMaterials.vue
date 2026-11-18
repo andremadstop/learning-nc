@@ -50,16 +50,16 @@
 		</div>
 
 		<!-- Empty States -->
-		<div v-else-if="!materialFolder && !loading && !hideEmpty" class="empty-state">
+		<div v-else-if="!folderLinked && !loading && !hideEmpty" class="empty-state">
 			<p>{{ t('learning', 'Kein Materialordner verknüpft. Bitte einen Nextcloud-Ordner auswählen.') }}</p>
 		</div>
 
-		<div v-else-if="managesFiles && materialFolder && documents.length === 0 && !loading" class="empty-state">
+		<div v-else-if="managesFiles && folderLinked && documents.length === 0 && !loading" class="empty-state">
 			<p>{{ t('learning', 'Keine Dokumente gefunden. Laden Sie PDF- oder Markdown-Dateien in den Ordner hoch und klicken Sie "Ordner scannen".') }}</p>
 		</div>
 
 		<!-- Learners can neither upload nor scan: no instruction meant for the course owner. -->
-		<div v-else-if="materialFolder && documents.length === 0 && !loading && !hideEmpty" class="empty-state learner-empty-state">
+		<div v-else-if="folderLinked && documents.length === 0 && !loading && !hideEmpty" class="empty-state learner-empty-state">
 			<p>{{ t('learning', 'Für diesen Kurs wurden noch keine Lernmaterialien freigegeben.') }}</p>
 		</div>
 
@@ -73,7 +73,7 @@
 			when this server cannot read PDFs at all. -->
 		<!-- Neither this nor the actions below while the load failed: managesFiles is still true
 			when the document list (which carries canManageFiles) could not be read. -->
-		<template v-if="canExtract && materialFolder && !loadError">
+		<template v-if="canExtract && folderLinked && !loadError">
 			<p class="extract-explanation">
 				{{ t('learning', 'Extrahieren liest den Text der Dateien, damit VirtuProf (KI-Assistent) das Material als Kurskontext nutzen kann. Zum Lesen brauchen Lernende das nicht.') }}
 			</p>
@@ -83,7 +83,7 @@
 		</template>
 
 		<!-- Action Buttons (course owner only) -->
-		<div v-if="managesFiles && materialFolder && !loadError" class="material-actions">
+		<div v-if="managesFiles && folderLinked && !loadError" class="material-actions">
 			<button
 				type="button"
 				class="material-btn scan-btn"
@@ -294,6 +294,8 @@ export default {
 			RAW,
 			documents: [],
 			materialFolder: null,
+			// GitHub #90 (U2): learners learn only whether a folder is linked, not its path
+			folderLinked: false,
 			folderInput: '',
 			loading: false,
 			scanning: false,
@@ -407,6 +409,7 @@ export default {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/material-folder', { courseId: this.courseId })
 				const response = await axios.get(url)
 				this.materialFolder = response.data.folder || null
+				this.folderLinked = !!this.materialFolder || response.data.linked === true
 				if (this.materialFolder) {
 					this.folderInput = this.materialFolder
 				}
@@ -414,6 +417,7 @@ export default {
 				console.error('Failed to load material folder', e)
 				// a retry that fails keeps no folder from an earlier read
 				this.materialFolder = null
+				this.folderLinked = false
 				this.loadError = true
 			}
 		},
@@ -672,6 +676,7 @@ export default {
 				const response = await axios.post(url, { folder: this.folderInput.trim() })
 				// the server stores one spelling of the path (GitHub #35)
 				this.materialFolder = response.data?.folder || this.folderInput.trim()
+				this.folderLinked = true
 				this.folderInput = this.materialFolder
 				await this.scanFolder()
 			} catch (e) {

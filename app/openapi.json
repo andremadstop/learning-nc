@@ -20279,6 +20279,7 @@
             "get": {
                 "operationId": "document-get-folder",
                 "summary": "Get the material folder for a course.",
+                "description": "GitHub #90 (U2): the path lies in the course owner's home. Only the instructors of the course and admins receive it; a learner learns whether a folder is linked (folder null).",
                 "tags": [
                     "document"
                 ],
@@ -20294,7 +20295,7 @@
                     {
                         "name": "courseId",
                         "in": "path",
-                        "description": "",
+                        "description": "the course",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -20313,6 +20314,47 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "folder",
+                                        "linked"
+                                    ],
+                                    "properties": {
+                                        "folder": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "linked": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "error"
+                                    ],
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "description": "Current user is not logged in",
                         "content": {

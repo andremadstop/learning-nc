@@ -599,8 +599,8 @@ class DocumentService {
      * a student received the full text of every extracted PDF and the extraction errors. The
      * extracted text is never part of a list now (nothing in the browser reads it; it is
      * VirtuProf's context). Learners get what they need to open a file; the processing details
-     * (status, error, path) stay with the instructors of the course. The folder name itself is
-     * not hidden by this: course members still receive material_folder with the course.
+     * (status, error, path) stay with the instructors of the course. Learners do not receive the
+     * folder path with the course either (GitHub #90, CourseService::projectForLearner()).
      *
      * "downloadable" says whether the download endpoint would serve the row, and
      * "unavailable_reason" why not (GitHub #90, availability()): the file is not in the current
