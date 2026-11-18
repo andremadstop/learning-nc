@@ -46,7 +46,7 @@ class CertificationTrigger {
      *   the pass status (PassResult::toArray()) plus course_id, pool_id, exam_score, exam_passed
      *   (this attempt reached the course pass mark), counts_for_requirement (this attempt's pool
      *   is one the certificate needs — always true without required pools), certificate_issued_now
- *   (the valid certificate was issued since this session started, GitHub #92) and the enforced
+     *   (the valid certificate was issued since this session started, GitHub #92) and the enforced
      *   retake rules. When the check itself failed: {course_id, error:'evaluation_failed'} plus
      *   threshold, exam_score and exam_passed, so the result screen still judges the attempt by
      *   the course pass mark. null when the session is not a counting exam of a certifying course.
