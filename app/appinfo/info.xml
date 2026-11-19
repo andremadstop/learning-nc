@@ -139,6 +139,7 @@ Optional: the admin connects Google Gemini (API key) or a local Ollama server. W
             <step>OCA\Learning\Repair\RemoveOrphanedAnnouncementFeedItems</step>
             <step>OCA\Learning\Repair\RemoveOrphanedQuestionMedia</step>
             <step>OCA\Learning\Repair\ClearStaleThemingIcons</step>
+            <step>OCA\Learning\Repair\RenameCampaignIds</step>
         </post-migration>
         <install>
             <step>OCA\Learning\Repair\EnsureAuditChainGenesis</step>

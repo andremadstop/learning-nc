@@ -1147,7 +1147,7 @@ PROMPT;
      *
      * Audit #24: the old list matched the word 'select' anywhere ("Select option B because ..."),
      * every XSS explanation ('<script') and every sentence about default passwords
-     * ('password:'), so ordinary English answers and core Security+ content were discarded.
+     * ('password:'), so ordinary English answers and core security-certification content were discarded.
      * Now:
      *  - SQL only as statements in upper-case keywords, and only outside code blocks and inline
      *    code (a tutor shows SQL injection in code, prose says "select");

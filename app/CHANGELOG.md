@@ -116,8 +116,11 @@ each step again.
   achievements"; the stored choice is kept.
 - **Bundled content no longer names third-party certification vendors.** The three vendor-branded
   starter pools are no longer shipped; pools you already imported stay as they are. Placeholders,
-  simulator headings, the app description and AI prompts use neutral examples, and the adventure
-  focus tag for security analysis is now `threat_analysis`. Saved adventure progress is not affected.
+  simulator headings, the app description and AI prompts use neutral examples. Two adventure
+  campaigns have new ids (`unsichtbare_bedrohung`, `erster_tag`); the upgrade moves saved games,
+  co-op sessions and course campaign selections to them, so no progress is lost. The adventure
+  focus tags are neutral too (`threat_analysis`, `it_fundamentals`, `network_fundamentals`,
+  `security_fundamentals`, `linux_fundamentals`); saved games do not store them.
 
 ### Fixed
 - **Right and wrong after answering** (since 2.7): after answering in Training, Leitner or Smart
@@ -2069,7 +2072,7 @@ Parity check (`scripts/check-i18n-parity.sh`) passes with 2202 keys per language
 - **Story Engine**: Full campaign-based RPG learning mode with branching narratives, skill checks, and character classes (Architect, Security, SysAdmin, Helpdesk). 20 campaigns across networking, security, security analysis, Linux and IT fundamentals.
 - **KI-Erzähler**: Gemini-powered dynamic narrator with freetext player actions, NPC dialog generation, and role-based prompts. Fallback to static text when AI unavailable.
 - **Skill Checks**: In-story quiz phases with 3 questions per check, batch submission, pass/fail branching to different scenes.
-- **20 Campaigns**: Real-world IT incident scenarios — SolarWinds, WannaCry, Log4Shell, Colonial Pipeline, Equifax, plus 6 Security+ exam-oriented campaigns (Phishing, Zero Trust, Crypto, Compliance, IR, Cloud) and an AI Security campaign.
+- **20 Campaigns**: Real-world IT incident scenarios — SolarWinds, WannaCry, Log4Shell, Colonial Pipeline, Equifax, plus 6 security-certification-oriented campaigns (Phishing, Zero Trust, Crypto, Compliance, IR, Cloud) and an AI Security campaign.
 - **Coop Mode**: Infrastructure for multiplayer campaign sessions (UI placeholder, backend ready).
 
 ### Added — "Zeitreise" Hack Through Time

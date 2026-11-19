@@ -5,8 +5,8 @@
   "duration_minutes": 60,
   "difficulty": "advanced",
   "focus_areas": [
-    "security_plus",
-    "network_plus"
+    "security_fundamentals",
+    "network_fundamentals"
   ],
   "character_recommendations": [
     "sysadmin",
@@ -69,7 +69,7 @@
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
-        "a_plus"
+        "it_fundamentals"
       ],
       "skill_penalty_pools": [
         "security",
@@ -168,7 +168,7 @@
           "text": "SMBv1 sofort auf allen Systemen deaktivieren",
           "icon": "&#9889;",
           "skill_check": {
-            "pool_filter": "network_plus",
+            "pool_filter": "network_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -236,7 +236,7 @@
           "text": "Netzwerksegmentierung verstärken um die Ausbreitung einzudämmen",
           "icon": "&#127760;",
           "skill_check": {
-            "pool_filter": "network_plus",
+            "pool_filter": "network_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -263,7 +263,7 @@
           "text": "SMBv1 global deaktivieren um den Verbreitungsweg zu kappen",
           "icon": "&#128683;",
           "skill_check": {
-            "pool_filter": "network_plus",
+            "pool_filter": "network_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {

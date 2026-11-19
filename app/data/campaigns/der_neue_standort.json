@@ -5,8 +5,8 @@
   "duration_minutes": 75,
   "difficulty": "intermediate",
   "focus_areas": [
-    "network_plus",
-    "security_plus"
+    "network_fundamentals",
+    "security_fundamentals"
   ],
   "character_recommendations": [
     "architect",

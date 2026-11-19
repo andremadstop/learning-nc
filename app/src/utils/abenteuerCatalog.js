@@ -43,7 +43,7 @@ export function buildAdventureCharacters() {
 			name: 'Mia "Helpdesk" Torres',
 			role: t('learning', 'First-Level-Support'),
 			description: t('learning', 'Troubleshooting-Talent. Kann Fachjargon in Alltagssprache übersetzen. Kennt das Drucker-Passwort.'),
-			strength: t('learning', 'Troubleshooting, Hardware, A+'),
+			strength: t('learning', 'Troubleshooting, Hardware, Support'),
 			weakness: t('learning', 'Tiefes Netzwerk-Wissen fehlt manchmal'),
 		},
 	]
@@ -70,18 +70,18 @@ export function buildStaticCampaigns() {
 	return [
 		campaign('grosser_ausfall', '📡', t('learning', 'Der große Ausfall (klassisch)'),
 			t('learning', 'Montagmorgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.'),
-			'intermediate', ['Network+'], 60, { is_graph: true }),
+			'intermediate', ['network_fundamentals'], 60, { is_graph: true }),
 		campaign('einbruch_im_netz', '🔐', t('learning', 'Einbruch im Netz'),
 			t('learning', 'Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag.'),
-			'advanced', ['Security+'], 60),
+			'advanced', ['security_fundamentals'], 60),
 		campaign('der_neue_standort', '🏢', t('learning', 'Der neue Standort'),
 			t('learning', 'NovaTech expandiert. Neues Büro, 40 Arbeitsplätze, 4 Wochen Deadline. Kein Fehler erlaubt.'),
-			'intermediate', ['Network+', 'Security+'], 75),
+			'intermediate', ['network_fundamentals', 'security_fundamentals'], 75),
 		campaign('ransomware', '💀', t('learning', 'Ransomware'),
 			t('learning', 'Freitag 16:30 Uhr: „YOUR FILES HAVE BEEN ENCRYPTED.“ 48 Stunden bis zur Deadline.'),
-			'advanced', ['Security+'], 60),
+			'advanced', ['security_fundamentals'], 60),
 		campaign('das_erbe', '💾', t('learning', 'Das Erbe'),
 			t('learning', 'NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123.'),
-			'beginner', ['A+', 'Network+', 'Linux+'], 75),
+			'beginner', ['it_fundamentals', 'network_fundamentals', 'linux_fundamentals'], 75),
 	]
 }

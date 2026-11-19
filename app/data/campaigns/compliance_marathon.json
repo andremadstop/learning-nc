@@ -5,7 +5,7 @@
   "duration_minutes": 50,
   "difficulty": "intermediate",
   "focus_areas": [
-    "security_plus"
+    "security_fundamentals"
   ],
   "character_recommendations": [
     "security",
@@ -27,7 +27,7 @@
       ],
       "skill_penalty_pools": [
         "hardware",
-        "a_plus"
+        "it_fundamentals"
       ]
     },
     "helpdesk": {
@@ -36,7 +36,7 @@
       "avatar": "👩‍🎧",
       "skill_bonus_pools": [
         "troubleshooting",
-        "a_plus"
+        "it_fundamentals"
       ],
       "skill_penalty_pools": [
         "security",

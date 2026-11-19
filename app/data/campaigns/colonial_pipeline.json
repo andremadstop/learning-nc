@@ -5,7 +5,7 @@
   "duration_minutes": 70,
   "difficulty": "expert",
   "focus_areas": [
-    "security_plus",
+    "security_fundamentals",
     "threat_analysis"
   ],
   "character_recommendations": [
@@ -71,7 +71,7 @@
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
-        "a_plus"
+        "it_fundamentals"
       ],
       "skill_penalty_pools": [
         "security",

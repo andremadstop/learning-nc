@@ -94,7 +94,7 @@
                 class="ticket-input"
                 type="text"
                 :value="telosForm.telos?.target_cert || ''"
-                :placeholder="vt('e.g. Network+, CCNA')"
+                :placeholder="vt('z. B. CCNA, AWS Cloud Practitioner')"
                 @input="$emit('action', { type: 'update-telos-field', field: 'telos.target_cert', value: $event.target.value })">
             </div>
             <div class="telos-field">
@@ -275,7 +275,7 @@
                 class="ticket-input"
                 type="text"
                 :value="telosForm.telos?.target_cert || ''"
-                :placeholder="vt('e.g. Network+, CCNA')"
+                :placeholder="vt('z. B. CCNA, AWS Cloud Practitioner')"
                 @input="$emit('action', { type: 'update-telos-field', field: 'telos.target_cert', value: $event.target.value })">
             </div>
 

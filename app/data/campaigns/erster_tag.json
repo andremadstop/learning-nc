@@ -1,11 +1,11 @@
 {
-  "campaign_id": "a_plus_erster_tag",
+  "campaign_id": "erster_tag",
   "title": "Der erste Tag — Willkommen in der IT",
   "description": "Dein erster Tag als IT-Support in einem mittelständischen Unternehmen. Fünf Tickets gleichzeitig, ein wütender Vertriebsleiter, eine Praktikantin mit Kaffee-Laptop und ein Serverraum der überhitzt. Alles was schiefgehen kann geht schief — aber mit Humor und Lerneffekt.",
   "duration_minutes": 50,
   "difficulty": "beginner",
   "focus_areas": [
-    "a_plus"
+    "it_fundamentals"
   ],
   "character_recommendations": [
     "helpdesk",
@@ -28,7 +28,7 @@
       ],
       "skill_penalty_pools": [
         "hardware",
-        "a_plus",
+        "it_fundamentals",
         "troubleshooting"
       ],
       "portrait_emoji": "🏗️"
@@ -43,7 +43,7 @@
       ],
       "skill_penalty_pools": [
         "hardware",
-        "a_plus"
+        "it_fundamentals"
       ],
       "portrait_emoji": "🛡️"
     },
@@ -68,7 +68,7 @@
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
-        "a_plus"
+        "it_fundamentals"
       ],
       "skill_penalty_pools": [
         "security",
@@ -172,7 +172,7 @@
           "text": "Systematische Bestandsaufnahme aller gemeldeten Probleme — erst verstehen, dann handeln",
           "icon": "🔍",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -268,7 +268,7 @@
           "text": "Netzwerkdrucker-Setup: IP-Konfiguration, Treiber installieren, Testseite drucken",
           "icon": "🖨️",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -295,7 +295,7 @@
           "text": "Systematische Hardware-Diagnose: POST-Codes, Device Manager, USB-Controller prüfen",
           "icon": "🔧",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -394,7 +394,7 @@
           "text": "Kabelverbindungen im Patchpanel prüfen und dokumentieren",
           "icon": "📝",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -489,7 +489,7 @@
           "text": "Standard-Vorgehensweise: Backup erstellen, Clean Install mit Firmen-Image",
           "icon": "💿",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -561,7 +561,7 @@
           "text": "Backup-Problem diagnostizieren: Speicherplatz freigeben, manuelles Backup starten",
           "icon": "💾",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -588,7 +588,7 @@
           "text": "Beides parallel: Temperatur stabilisieren, Backup reparieren und alles dokumentieren",
           "icon": "📋",
           "skill_check": {
-            "pool_filter": "a_plus",
+            "pool_filter": "it_fundamentals",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {

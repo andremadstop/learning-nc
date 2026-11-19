@@ -5,9 +5,9 @@
   "duration_minutes": 75,
   "difficulty": "intermediate",
   "focus_areas": [
-    "a_plus",
-    "network_plus",
-    "linux_plus"
+    "it_fundamentals",
+    "network_fundamentals",
+    "linux_fundamentals"
   ],
   "character_recommendations": [
     "sysadmin",
@@ -72,7 +72,7 @@
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
-        "a_plus",
+        "it_fundamentals",
         "legacy_systems"
       ],
       "skill_penalty_pools": [

@@ -283,12 +283,12 @@
           <div class="form-group">
             <label for="pool-handbook-key">{{ t('learning', 'Handbook Key') }}</label>
             <small class="field-help">{{ t('learning', 'Short identifier for the book, the same in every pool that comes from it. Used to group chapters together.') }}</small>
-            <input id="pool-handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'e.g., kammermann-network-plus')" class="nc-input" />
+            <input id="pool-handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'z. B. handbuch-netzwerktechnik')" class="nc-input" />
           </div>
           <div class="form-group">
             <label for="pool-handbook-title">{{ t('learning', 'Handbook Title') }}</label>
             <small class="field-help">{{ t('learning', 'Full book title as it should appear to learners, including edition and year.') }}</small>
-            <input id="pool-handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Kammermann Network+')" class="nc-input" />
+            <input id="pool-handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Handbuch Netzwerktechnik (9. Auflage, 2024)')" class="nc-input" />
           </div>
           <div class="form-group">
             <label for="pool-chapter-key">{{ t('learning', 'Chapter Key') }}</label>

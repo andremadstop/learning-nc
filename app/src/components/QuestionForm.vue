@@ -58,11 +58,11 @@
       <div class="metadata-grid">
         <div class="form-group">
           <label for="exam-key">{{ t('learning', 'Prüfungsschlüssel (optional)') }}</label>
-          <input id="exam-key" v-model.trim="form.examKey" type="text" :placeholder="t('learning', 'e.g., n10-009 or 220-1101')" class="nc-input" />
+          <input id="exam-key" v-model.trim="form.examKey" type="text" :placeholder="t('learning', 'z. B. netz-001 oder sec-2-14')" class="nc-input" />
         </div>
         <div class="form-group">
           <label for="handbook-key">{{ t('learning', 'Handbuch-Schlüssel (optional)') }}</label>
-          <input id="handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'e.g., kammermann-network-plus-9ed-2024')" class="nc-input" />
+          <input id="handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'z. B. handbuch-netzwerktechnik-9-auflage-2024')" class="nc-input" />
         </div>
       </div>
 

@@ -1,12 +1,12 @@
 {
-  "campaign_id": "cysa_zero_day",
+  "campaign_id": "unsichtbare_bedrohung",
   "title": "Zero Day — Die unsichtbare Bedrohung",
   "description": "Eine unbekannte APT-Gruppe hat dein Netzwerk infiltriert. Der Angreifer nutzt einen Zero Day in der VPN-Appliance, bewegt sich lateral mit Living-off-the-Land-Techniken und passt seine Taktiken an wenn er bemerkt wird. Du bist der SOC-Analyst der ihn jagen muss — aber der Angreifer weiß dass du ihn jagst.",
   "duration_minutes": 80,
   "difficulty": "expert",
   "focus_areas": [
     "threat_analysis",
-    "security_plus"
+    "security_fundamentals"
   ],
   "character_recommendations": [
     "security"
@@ -69,7 +69,7 @@
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
-        "a_plus"
+        "it_fundamentals"
       ],
       "skill_penalty_pools": [
         "threat_analysis",
