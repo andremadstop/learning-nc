@@ -4095,5 +4095,7 @@ OC.L10N.register(
     "Frage, ausgeblendet bis zum Ende des Einstiegs" : "Вопрос, скрыт до конца вступления",
     "Die Frage erscheint nach dem Einstieg." : "Вопрос появится после вступления.",
     "_%n Zeile_::_%n Zeilen_" : ["%n строка", "%n строки", "%n строк"],
+    "Suche leeren" : "Очистить поиск",
+    "Antwort {n} ist richtig" : "Ответ {n} правильный",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -4095,5 +4095,7 @@ OC.L10N.register(
     "Frage, ausgeblendet bis zum Ende des Einstiegs" : "Question, masquée jusqu’à la fin de l’introduction",
     "Die Frage erscheint nach dem Einstieg." : "La question apparaît après l’introduction.",
     "_%n Zeile_::_%n Zeilen_" : ["%n ligne", "%n lignes"],
+    "Suche leeren" : "Effacer la recherche",
+    "Antwort {n} ist richtig" : "La réponse {n} est correcte",
 },
 "nplurals=2; plural=(n > 1);");

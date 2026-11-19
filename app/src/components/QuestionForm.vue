@@ -105,12 +105,14 @@
               @update:model-value="correctAnswerIndex = index"
               type="radio"
               name="correct-answer"
+              :aria-label="t('learning', 'Antwort {n} ist richtig', { n: index + 1 })"
             />
             <NcCheckboxRadioSwitch
               v-else
               :model-value="correctAnswerIndices.has(index)"
               @update:model-value="toggleCorrectIndex(index)"
               type="checkbox"
+              :aria-label="t('learning', 'Antwort {n} ist richtig', { n: index + 1 })"
             />
             <input type="text" v-model="answer.text" :placeholder="t('learning', 'Antwort {n}', { n: index + 1 })" :aria-required="index < 2 ? 'true' : 'false'" :required="index < 2" class="nc-input" />
             <button v-if="form.answers.length > 2" type="button" class="remove-answer-btn" @click="removeAnswer(index)" :aria-label="t('learning', 'Antwort entfernen')">&#215;</button>

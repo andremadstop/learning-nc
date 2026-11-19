@@ -4127,6 +4127,8 @@
         "_%n Zeile_::_%n Zeilen_": [
             "%n line",
             "%n lines"
-        ]
+        ],
+        "Suche leeren": "Clear search",
+        "Antwort {n} ist richtig": "Answer {n} is correct"
     }
 }

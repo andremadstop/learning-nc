@@ -4095,5 +4095,7 @@ OC.L10N.register(
     "Frage, ausgeblendet bis zum Ende des Einstiegs" : "Frage, ausgeblendet bis zum Ende des Einstiegs",
     "Die Frage erscheint nach dem Einstieg." : "Die Frage erscheint nach dem Einstieg.",
     "_%n Zeile_::_%n Zeilen_" : ["%n Zeile", "%n Zeilen"],
+    "Suche leeren" : "Suche leeren",
+    "Antwort {n} ist richtig" : "Antwort {n} ist richtig",
 },
 "nplurals=2; plural=(n != 1);");

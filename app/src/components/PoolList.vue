@@ -114,7 +114,7 @@
           @focus="showSearchResults = true"
           @keydown.esc="clearSearch"
         />
-        <button v-if="searchTerm" class="clear-search-btn" @click="clearSearch">
+        <button v-if="searchTerm" type="button" class="clear-search-btn" :aria-label="t('learning', 'Suche leeren')" :title="t('learning', 'Suche leeren')" @click="clearSearch">
           <span class="icon-close" />
         </button>
       </div>
@@ -126,11 +126,12 @@
           <div v-if="poolSearchResults.length > 0" class="search-results-section">
             <h4 class="section-title">{{ t('learning', 'POOLS') }}</h4>
             <ul class="results-list">
-              <li v-for="pool in poolSearchResults" :key="`pool-res-${pool.id}`" @click="selectPool(pool)"
-                  tabindex="0" role="button"
-                  @keydown.enter="selectPool(pool)"
-                  @keydown.space.prevent="selectPool(pool)">
-                <span class="result-text">{{ pool.name }}</span>
+              <!-- Persona sweep C9b: a list item that is itself a button is no list item for a
+                   screen reader (axe "list"); the button sits inside it. -->
+              <li v-for="pool in poolSearchResults" :key="`pool-res-${pool.id}`">
+                <button type="button" class="result-btn" @click="selectPool(pool)">
+                  <span class="result-text">{{ pool.name }}</span>
+                </button>
               </li>
             </ul>
           </div>
@@ -138,14 +139,13 @@
           <div v-if="questionSearchResults.length > 0" class="search-results-section">
             <h4 class="section-title">{{ t('learning', 'QUESTIONS') }}</h4>
             <ul class="results-list">
-              <li v-for="question in questionSearchResults" :key="`ques-res-${question.id}`" @click="selectQuestion(question)"
-                  tabindex="0" role="button"
-                  @keydown.enter="selectQuestion(question)"
-                  @keydown.space.prevent="selectQuestion(question)">
-                <!-- GitHub #98: "#304" read like a count; it is the question's ID (the one Pool rules take). -->
-                <span class="result-id">{{ t('learning', 'Frage-ID {id}', { id: question.id }) }}</span>
-                <span class="result-text">"{{ question.text }}"</span>
-                <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }, undefined, RAW) }}</span>
+              <li v-for="question in questionSearchResults" :key="`ques-res-${question.id}`">
+                <button type="button" class="result-btn" @click="selectQuestion(question)">
+                  <!-- GitHub #98: "#304" read like a count; it is the question's ID (the one Pool rules take). -->
+                  <span class="result-id">{{ t('learning', 'Frage-ID {id}', { id: question.id }) }}</span>
+                  <span class="result-text">"{{ question.text }}"</span>
+                  <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }, undefined, RAW) }}</span>
+                </button>
               </li>
             </ul>
           </div>
@@ -993,14 +993,33 @@ export default {
   margin: 0;
 }
 .results-list li {
-  padding: 8px 20px;
-  cursor: pointer;
-  transition: background-color 0.15s;
+  margin: 0;
+}
+/* The hit is a plain button over the whole row: no Nextcloud button frame, the row's own hover. */
+.results-list .result-btn {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: auto;
+  margin: 0;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  font-weight: normal;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 0.15s;
 }
-.results-list li:hover {
+.results-list .result-btn:hover,
+.results-list .result-btn:focus {
   background-color: var(--color-background-hover);
+}
+.results-list .result-btn:focus-visible {
+  outline: 2px solid var(--color-primary-element);
+  outline-offset: -2px;
 }
 .result-id {
   color: var(--color-text-maxcontrast);

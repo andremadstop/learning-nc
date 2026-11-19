@@ -145,10 +145,44 @@ describe('PoolList search: question hits (GitHub #98)', () => {
 		const vm = await render({ userRole: 'instructor' })
 		await search(vm)
 		const rows = [...host.querySelectorAll('.search-results-section li')].filter((li) => li.querySelector('.result-id'))
-		rows[index].click()
+		rows[index].querySelector('button.result-btn').click()
 		await flush()
 		expect(selected).toHaveLength(1)
 		expect(selected[0].pool.id).toBe(poolId)
 		expect(selected[0].options).toEqual({ focusQuestionId: hits[index].id })
+	})
+})
+
+// Persona sweep C9b (axe, pre-existing): the hits were <li role="button"> (a list item that is no
+// list item, axe "list") and the × that clears the search had no name (axe "button-name").
+describe('PoolList search: hits and the clear button for screen readers', () => {
+	beforeEach(() => {
+		api.routes['/apps/learning/api/pools'] = { own: [{ id: 11, name: 'Brandschutz' }], shared: [] }
+		api.routes['/apps/learning/api/questions/search'] = [{ id: 304, pool_id: 11, pool_name: 'Brandschutz', text: 'Wo hängt der Feuerlöscher?' }]
+	})
+
+	it('every hit is a list item holding a button, never a list item that is a button', async () => {
+		const vm = await render({ userRole: 'instructor' })
+		vm.searchTerm = 'Brand'
+		vm.showSearchResults = true
+		vm.onSearchInput?.()
+		await vm.searchQuestions()
+		await flush()
+		const items = [...host.querySelectorAll('.results-list > li')]
+		expect(items.length).toBeGreaterThanOrEqual(1)
+		for (const li of items) {
+			expect(li.getAttribute('role')).toBeNull()
+			expect(li.getAttribute('tabindex')).toBeNull()
+			expect(li.querySelector(':scope > button[type="button"]')).not.toBeNull()
+		}
+	})
+
+	it('the × that clears the search has a name', async () => {
+		const vm = await render({ userRole: 'instructor' })
+		vm.searchTerm = 'Brand'
+		await flush()
+		const clear = host.querySelector('.clear-search-btn')
+		expect(clear).not.toBeNull()
+		expect(clear.getAttribute('aria-label')).toBe('Suche leeren')
 	})
 })

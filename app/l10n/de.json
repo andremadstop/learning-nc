@@ -4127,6 +4127,8 @@
         "_%n Zeile_::_%n Zeilen_": [
             "%n Zeile",
             "%n Zeilen"
-        ]
+        ],
+        "Suche leeren": "Suche leeren",
+        "Antwort {n} ist richtig": "Antwort {n} ist richtig"
     }
 }

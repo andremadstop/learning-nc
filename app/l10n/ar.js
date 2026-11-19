@@ -4095,5 +4095,7 @@ OC.L10N.register(
     "Frage, ausgeblendet bis zum Ende des Einstiegs" : "السؤال، مخفي حتى نهاية المقدمة",
     "Die Frage erscheint nach dem Einstieg." : "يظهر السؤال بعد المقدمة.",
     "_%n Zeile_::_%n Zeilen_" : ["%n سطر", "%n سطر", "%n سطران", "%n أسطر", "%n سطرًا", "%n سطر"],
+    "Suche leeren" : "مسح البحث",
+    "Antwort {n} ist richtig" : "الإجابة {n} صحيحة",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");
