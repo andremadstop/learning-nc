@@ -3507,7 +3507,7 @@ class CourseService {
             }
             $stats['hardest'][] = [
                 'question_id' => (int)$row['question_id'],
-                'question_text' => mb_substr((string)$row['question_text'], 0, 120),
+                'question_text' => self::shortQuestionText((string)$row['question_text']),
                 'total_answers' => $total,
                 'wrong_rate' => round((1 - $right / $total) * 100, 1),
             ];
@@ -3573,7 +3573,7 @@ class CourseService {
             $wrongRate = $total > 0 ? round((1 - $correct / $total) * 100, 1) : 0.0;
             $output[] = [
                 'question_id' => $qid,
-                'question_text' => mb_substr((string)$row['question_text'], 0, 120),
+                'question_text' => self::shortQuestionText((string)$row['question_text']),
                 'chapter_key' => $row['chapter_key'] ?? null,
                 'chapter_title' => $row['chapter_title'] ?? null,
                 'total_answers' => $total,
@@ -3583,6 +3583,18 @@ class CourseService {
         }
 
         return $output;
+    }
+
+    /**
+     * A question text for a list row, at most $max characters. A cut text ends with "…", so that
+     * nobody reads the cut-off end as the question (persona sweep C9b, weak questions, #96).
+     */
+    public static function shortQuestionText(string $text, int $max = 120): string {
+        $text = trim($text);
+        if (mb_strlen($text) <= $max) {
+            return $text;
+        }
+        return rtrim(mb_substr($text, 0, $max - 1)) . '…';
     }
 
     /**
