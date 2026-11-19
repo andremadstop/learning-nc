@@ -64,7 +64,7 @@ const presentation = {
 	logo_library: true,
 }
 
-async function openAndPrint(page, { query = '', revoked = false } = {}) {
+async function openAndPrint(page, { query = '', revoked = false, extra = {} } = {}) {
 	await page.addInitScript(() => {
 		window.__printed = 0
 		window.print = () => { window.__printed++ }
@@ -74,7 +74,7 @@ async function openAndPrint(page, { query = '', revoked = false } = {}) {
 		body: JSON.stringify({
 			verification_id: '11111111-2222-4333-8444-555555555555',
 			credential_json: b64url({ alg: 'EdDSA' }) + '.' + b64url(credential) + '.sig',
-			presentation,
+			presentation: { ...presentation, ...extra },
 			revoked,
 		}),
 	}))
@@ -165,4 +165,31 @@ test('the instructor copy of a revoked certificate still prints on one page, not
 	expect(m.pages).toBe(1)
 	expect(m.inkWidth).toBeGreaterThanOrEqual(0.85)
 	expect(m.text).toContain('widerrufen')
+})
+
+// GitHub #94: the sheet rules moved from the print root's id to the class .certificate-sheet, which the
+// PDF copy shares. They must still beat the card's own scoped rules on paper: measured, not assumed.
+test('on paper the sheet sizes win over the screen card: QR 22 mm, its plate 2 mm, logo and stamp in mm', async ({ page }) => {
+	await openAndPrint(page, { extra: { background_builtin: 'frame', background_intensity: 100 } })
+	const px = (mm) => mm * 96 / 25.4
+	const sizes = await page.evaluate(() => {
+		const root = document.getElementById('learning-certificate-print-root')
+		const style = (selector) => getComputedStyle(root.querySelector(selector))
+		const qr = root.querySelector('.certificate-qr').getBoundingClientRect()
+		return {
+			rootIsSheet: root.classList.contains('certificate-sheet'),
+			qrWidth: qr.width,
+			qrPadding: parseFloat(style('.certificate-qr').paddingTop),
+			logoMaxHeight: parseFloat(style('.certificate-logo').maxHeight),
+			stampMaxHeight: parseFloat(style('.certificate-stamp').maxHeight),
+			cardDisplay: style('.certificate-card').display,
+		}
+	})
+	expect(sizes.rootIsSheet).toBe(true)
+	expect(sizes.cardDisplay).toBe('grid')
+	// 22 mm of QR code plus 2 mm of white plate on each side (content-box)
+	expect(sizes.qrWidth).toBeCloseTo(px(22 + 4), 0)
+	expect(sizes.qrPadding).toBeCloseTo(px(2), 1)
+	expect(sizes.logoMaxHeight).toBeCloseTo(px(16), 1)
+	expect(sizes.stampMaxHeight).toBeCloseTo(px(18), 1)
 })

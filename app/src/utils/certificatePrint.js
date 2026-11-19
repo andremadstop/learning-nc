@@ -45,6 +45,8 @@ function buildCertificatePrintCopy(source, doc) {
 	removeCertificatePrintCopy(doc)
 	const root = doc.createElement('div')
 	root.id = PRINT_ROOT_ID
+	// GitHub #94: the sheet rules (A4 grid, paper colours) are shared with the PDF copy
+	root.className = 'certificate-sheet'
 	root.appendChild(source.cloneNode(true))
 	doc.body.appendChild(root)
 	doc.documentElement.classList.add(PRINTING_CLASS)

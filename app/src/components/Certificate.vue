@@ -349,6 +349,141 @@ export default {
 	display: none;
 }
 
+/* GitHub #94: the printed sheet and the PDF are the same sheet. Every rule that turns the card into
+   an A4 landscape certificate (grid, millimetre sizes, paper colours, the 22 mm QR code, the status
+   note on white) belongs to .certificate-sheet, which both the print copy and the PDF copy carry.
+   Only page and visibility rules stay in @media print. The PDF is drawn from screen media, so with
+   these rules inside @media print the PDF would show the stretched screen card instead.
+   Each rule starts with .certificate-sheet .certificate-printable: one class more than the card's
+   own scoped rules (class + attribute), so the sheet wins as the id selector did before. */
+.certificate-sheet {
+	--color-main-background: #fff;
+	--color-main-text: #000;
+	--color-text-maxcontrast: #555;
+	--color-border: #ccc;
+	color: #000;
+	background: #fff;
+	print-color-adjust: exact;
+	-webkit-print-color-adjust: exact;
+}
+
+.certificate-sheet .certificate-printable {
+	width: 100%;
+}
+
+/* The card fills the printable width; its height stays below the shortest landscape page
+	(A4: 210 mm − 2 × 12 mm = 186 mm), with room for the revoked/expired note above it, so it never
+	spills onto a second sheet by a few millimetres.
+	border-box keeps padding and border inside. */
+.certificate-sheet .certificate-printable .certificate-card {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: none;
+	min-height: 160mm;
+	margin: 0;
+	padding: 6mm 14mm;
+	/* a grid instead of the screen's column: the sign-off and the verification block share the
+	bottom row, as on a printed certificate, which keeps the fullest layout on one page */
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 10mm;
+	row-gap: 3mm;
+	align-content: center;
+	box-shadow: none;
+	/* the frame of the screen card, in the instance's primary colour */
+	border: 0.6mm solid var(--color-primary-element, #1a3a5c);
+	border-radius: 3mm;
+	break-inside: avoid;
+	page-break-inside: avoid;
+	font-size: 11pt;
+	line-height: 1.3;
+}
+
+.certificate-sheet .certificate-printable .certificate-card > * {
+	grid-column: 1 / -1;
+}
+
+/* GitHub #93: the background layer is no grid item: without this it would be placed in the
+	grid area of 1 / -1 and stop at the card's padding instead of filling the sheet */
+.certificate-sheet .certificate-printable .certificate-card > .certificate-bg {
+	grid-column: auto;
+	grid-row: auto;
+}
+
+.certificate-sheet .certificate-printable .certificate-card > .certificate-signoff {
+	grid-column: 1;
+	align-self: end;
+}
+
+.certificate-sheet .certificate-printable .certificate-card > .certificate-signoff + .certificate-verify {
+	grid-column: 2;
+	align-self: end;
+	justify-content: flex-end;
+}
+
+.certificate-sheet .certificate-printable .certificate-card p,
+.certificate-sheet .certificate-printable .certificate-card li {
+	line-height: 1.3;
+}
+
+.certificate-sheet .certificate-printable .certificate-logo {
+	max-height: 16mm;
+	max-width: 60mm;
+}
+
+.certificate-sheet .certificate-printable .certificate-issuer {
+	font-size: 13pt;
+}
+
+.certificate-sheet .certificate-printable .certificate-title {
+	font-size: 22pt;
+}
+
+.certificate-sheet .certificate-printable .certificate-meta {
+	gap: 10mm;
+	margin-top: 1mm;
+}
+
+.certificate-sheet .certificate-printable .certificate-signoff {
+	margin-top: 1mm;
+}
+
+.certificate-sheet .certificate-printable .certificate-stamp {
+	max-height: 18mm;
+	max-width: 34mm;
+}
+
+.certificate-sheet .certificate-printable .certificate-signature {
+	max-height: 15mm;
+	max-width: 55mm;
+}
+
+.certificate-sheet .certificate-printable .certificate-verify {
+	margin-top: 1mm;
+	padding-top: 3mm;
+}
+
+/* Guaranteed scannable QR at a fixed physical size (not pixel-dependent). */
+.certificate-sheet .certificate-printable .certificate-qr {
+	width: 22mm;
+	height: 22mm;
+}
+
+/* GitHub #93: the white plate around the QR code, in millimetres on paper (≥ two more modules) */
+.certificate-sheet .certificate-printable .certificate-card--background .certificate-qr {
+	padding: 2mm;
+}
+
+/* The revoked / expired note keeps its meaning on white paper in every theme. */
+.certificate-sheet .certificate-printable .certificate-status-note {
+	margin: 0 0 3mm;
+	padding: 1.5mm 3mm;
+	font-size: 10pt;
+	background: #fff;
+	color: #8b0000;
+	border: 2px solid #8b0000;
+}
+
 @media print {
 	html.learning-certificate-printing,
 	html.learning-certificate-printing body {
@@ -364,7 +499,7 @@ export default {
 		display: none !important;
 	}
 
-	/* Paper is white in every theme: a dark-mode card would print light text on no background. */
+	/* Paper is white in every theme (.certificate-sheet): a dark-mode card would print light text on no background. */
 	html.learning-certificate-printing #learning-certificate-print-root {
 		display: block !important;
 		page: learning-cert;
@@ -372,131 +507,6 @@ export default {
 		width: 100%;
 		margin: 0;
 		padding: 0;
-		--color-main-background: #fff;
-		--color-main-text: #000;
-		--color-text-maxcontrast: #555;
-		--color-border: #ccc;
-		color: #000;
-		background: #fff;
-		print-color-adjust: exact;
-		-webkit-print-color-adjust: exact;
-	}
-
-	#learning-certificate-print-root .certificate-printable {
-		width: 100%;
-	}
-
-	/* The card fills the printable width; its height stays below the shortest landscape page
-		(A4: 210 mm − 2 × 12 mm = 186 mm), with room for the revoked/expired note above it, so it never
-		spills onto a second sheet by a few millimetres.
-		border-box keeps padding and border inside. */
-	#learning-certificate-print-root .certificate-card {
-		box-sizing: border-box;
-		width: 100%;
-		max-width: none;
-		min-height: 160mm;
-		margin: 0;
-		padding: 6mm 14mm;
-		/* a grid instead of the screen's column: the sign-off and the verification block share the
-		bottom row, as on a printed certificate, which keeps the fullest layout on one page */
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		column-gap: 10mm;
-		row-gap: 3mm;
-		align-content: center;
-		box-shadow: none;
-		/* the frame of the screen card, in the instance's primary colour */
-		border: 0.6mm solid var(--color-primary-element, #1a3a5c);
-		border-radius: 3mm;
-		break-inside: avoid;
-		page-break-inside: avoid;
-		font-size: 11pt;
-		line-height: 1.3;
-	}
-
-	#learning-certificate-print-root .certificate-card > * {
-		grid-column: 1 / -1;
-	}
-
-	/* GitHub #93: the background layer is no grid item: without this it would be placed in the
-		grid area of 1 / -1 and stop at the card's padding instead of filling the sheet */
-	#learning-certificate-print-root .certificate-card > .certificate-bg {
-		grid-column: auto;
-		grid-row: auto;
-	}
-
-	#learning-certificate-print-root .certificate-card > .certificate-signoff {
-		grid-column: 1;
-		align-self: end;
-	}
-
-	#learning-certificate-print-root .certificate-card > .certificate-signoff + .certificate-verify {
-		grid-column: 2;
-		align-self: end;
-		justify-content: flex-end;
-	}
-
-	#learning-certificate-print-root .certificate-card p,
-	#learning-certificate-print-root .certificate-card li {
-		line-height: 1.3;
-	}
-
-	#learning-certificate-print-root .certificate-logo {
-		max-height: 16mm;
-		max-width: 60mm;
-	}
-
-	#learning-certificate-print-root .certificate-issuer {
-		font-size: 13pt;
-	}
-
-	#learning-certificate-print-root .certificate-title {
-		font-size: 22pt;
-	}
-
-	#learning-certificate-print-root .certificate-meta {
-		gap: 10mm;
-		margin-top: 1mm;
-	}
-
-	#learning-certificate-print-root .certificate-signoff {
-		margin-top: 1mm;
-	}
-
-	#learning-certificate-print-root .certificate-stamp {
-		max-height: 18mm;
-		max-width: 34mm;
-	}
-
-	#learning-certificate-print-root .certificate-signature {
-		max-height: 15mm;
-		max-width: 55mm;
-	}
-
-	#learning-certificate-print-root .certificate-verify {
-		margin-top: 1mm;
-		padding-top: 3mm;
-	}
-
-	/* Guaranteed scannable QR at a fixed physical size (not pixel-dependent). */
-	#learning-certificate-print-root .certificate-qr {
-		width: 22mm;
-		height: 22mm;
-	}
-
-	/* GitHub #93: the white plate around the QR code, in millimetres on paper (≥ two more modules) */
-	#learning-certificate-print-root .certificate-card--background .certificate-qr {
-		padding: 2mm;
-	}
-
-	/* The revoked / expired note keeps its meaning on white paper in every theme. */
-	#learning-certificate-print-root .certificate-status-note {
-		margin: 0 0 3mm;
-		padding: 1.5mm 3mm;
-		font-size: 10pt;
-		background: #fff;
-		color: #8b0000;
-		border: 2px solid #8b0000;
 	}
 
 	.no-print {
