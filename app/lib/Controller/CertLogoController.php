@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\CertImageLibrary;
 use OCA\Learning\Service\CertLayoutService;
 use OCA\Learning\Service\CertLogoLibrary;
 use OCP\AppFramework\Controller;
@@ -143,13 +144,13 @@ class CertLogoController extends Controller {
     }
 
     /**
-     * A library logo as an image response: the type checked from the content again, never sniffed
-     * by the browser, private and not cached beyond the session.
+     * A library image (logo, or background since GitHub #93) as an image response: the type checked
+     * from the content again, never sniffed by the browser, private and not cached beyond the session.
      *
      * @return DataDisplayResponse<Http::STATUS_OK, array{Content-Type: string}>|DataResponse<Http::STATUS_NOT_FOUND, array{error: string}, array{}>
      */
-    public static function imageResponse(CertLogoLibrary $library, string $id): DataDisplayResponse|DataResponse {
-        if (!CertLogoLibrary::isId($id)) {
+    public static function imageResponse(CertImageLibrary $library, string $id): DataDisplayResponse|DataResponse {
+        if (!CertImageLibrary::isId($id)) {
             return new DataResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         }
         try {
