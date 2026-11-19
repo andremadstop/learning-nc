@@ -4131,5 +4131,10 @@ OC.L10N.register(
     "Nachweis herunterladen (JSON)" : "تنزيل الشهادة الرقمية (JSON)",
     "Digitalen Nachweis (JSON) für Lernende anzeigen" : "عرض الشهادة الرقمية (JSON) للمتعلمين",
     "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "عند الإيقاف لا يرى المتعلمون قسم «تفاصيل تقنية» في شهادتهم. تبقى الشهادة الرقمية صالحة، ويمكن للمتعلمين الحصول عليها دائمًا عبر تصدير بياناتهم الشخصية؛ أما المدرّسون فيرونها دائمًا.",
+    "Als PDF herunterladen" : "تنزيل بصيغة PDF",
+    "PDF wird erstellt …" : "جارٍ إنشاء ملف PDF …",
+    "PDF heruntergeladen" : "تم تنزيل ملف PDF",
+    "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden." : "تعذّر إنشاء ملف PDF. يُرجى استخدام «طباعة».",
+    "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id})." : "نسخة للعرض، وليست إثباتًا قائمًا بذاته. للتحقق من صحتها: امسح رمز QR أو افتح {url} (معرّف الشهادة {id}).",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

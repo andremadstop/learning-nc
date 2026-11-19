@@ -4131,5 +4131,10 @@ OC.L10N.register(
     "Nachweis herunterladen (JSON)" : "Завантажити посвідчення (JSON)",
     "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Показувати учням цифрове посвідчення (JSON)",
     "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "Якщо вимкнено, учні не бачать у сертифікаті розділу «Технічні відомості». Посвідчення лишається чинним, і учні й далі можуть отримати його через експорт своїх персональних даних; викладачі бачать його завжди.",
+    "Als PDF herunterladen" : "Завантажити як PDF",
+    "PDF wird erstellt …" : "Створення PDF …",
+    "PDF heruntergeladen" : "PDF завантажено",
+    "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden." : "Не вдалося створити PDF. Скористайтеся кнопкою «Друк».",
+    "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id})." : "Копія для показу, сама по собі не є підтвердженням. Перевірити справжність: відскануйте QR-код або відкрийте {url} (ID сертифіката {id}).",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

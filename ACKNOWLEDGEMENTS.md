@@ -21,6 +21,7 @@ Learning is about 61,000 lines of PHP and 75,000 lines of Vue and JavaScript, an
 | [@nextcloud/axios](https://github.com/nextcloud-libraries/nextcloud-axios), [@nextcloud/router](https://github.com/nextcloud-libraries/nextcloud-router), [@nextcloud/l10n](https://github.com/nextcloud-libraries/nextcloud-l10n) | requests, routes and translations the Nextcloud way | GPL-3.0-or-later |
 | [D3](https://d3js.org/) (`d3-force`, `d3-selection`, `d3-shape`, `d3-transition`, `d3-zoom`) | the skill map and the quest map of the story campaigns | ISC |
 | [canvas-confetti](https://github.com/catdad/canvas-confetti) | the moment a learner earns a badge or finishes a session | ISC |
+| [modern-screenshot](https://github.com/qq15725/modern-screenshot) 4.7.0 | the certificate PDF: the browser draws the printed sheet into a picture (so every script and right-to-left text look as on screen); the one-page PDF around it is the app's own (`pdfSinglePage.js`) | MIT |
 | [linkifyjs](https://linkify.js.org/) | declared in `package.json`, not imported by the current source | MIT |
 
 ## The science and the standards
@@ -40,6 +41,7 @@ Learning is about 61,000 lines of PHP and 75,000 lines of Vue and JavaScript, an
 | [PHPStan](https://phpstan.org/) level 5 | static analysis of the backend | MIT |
 | [PHPUnit](https://phpunit.de/) 10 | backend tests | BSD-3-Clause |
 | [Playwright](https://playwright.dev/) | end-to-end smoke tests against a running Nextcloud (`docker-compose.e2e.yml`) | Apache-2.0 |
+| [poppler-utils](https://poppler.freedesktop.org/), [qpdf](https://qpdf.sourceforge.io/), [ZBar](https://github.com/mchehab/zbar) | the printed and downloaded certificate PDFs: page size and count, the picture inside, the file structure, and whether the QR code really gives the verification link (`npm run test:print`, `npm run test:pdf`) | GPL-2.0-only or GPL-3.0-or-later / Apache-2.0 or Artistic-2.0 / LGPL-2.1-or-later |
 | [ShellCheck](https://www.shellcheck.net/) | the hook scripts themselves | GPL-3.0 |
 | `.githooks/pre-push` with `scripts/check-*.py` and `check-*.sh` | the gates: i18n parity and placeholders, SQL column names, `v-html` safety, forbidden names, repo hygiene; a commit that fails a gate is not pushed | this repository |
 | [Git](https://git-scm.com/) | versions | GPL-2.0 |

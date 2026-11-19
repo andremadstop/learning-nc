@@ -4131,5 +4131,10 @@ OC.L10N.register(
     "Nachweis herunterladen (JSON)" : "Nachweis herunterladen (JSON)",
     "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Digitalen Nachweis (JSON) für Lernende anzeigen",
     "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer.",
+    "Als PDF herunterladen" : "Als PDF herunterladen",
+    "PDF wird erstellt …" : "PDF wird erstellt …",
+    "PDF heruntergeladen" : "PDF heruntergeladen",
+    "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden." : "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden.",
+    "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id})." : "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).",
 },
 "nplurals=2; plural=(n != 1);");

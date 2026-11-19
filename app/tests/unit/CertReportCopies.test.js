@@ -229,9 +229,11 @@ describe('Certificate.vue in instructor mode labels a certificate that no longer
 		expect(await note({ revoked: false, expired: false }, { courseId: 5 })).toBeNull()
 	})
 
-	it('learner view is unchanged: own endpoint, LinkedIn offered, no note', async () => {
-		expect(await note({ revoked: true }, {})).toBeNull()
+	// GitHub #94 (ZB5): the learner's own card carries the note too, so its PDF never looks valid.
+	it('learner view: own endpoint; a valid certificate has no note, a revoked one says so', async () => {
+		expect(await note({ revoked: false }, {})).toBeNull()
 		expect(axios.get).toHaveBeenCalledWith(`/apps/learning/api/certificates/${VID}`)
+		expect(await note({ revoked: true }, {})).toBe('Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.')
 	})
 
 	// GitHub #67: the course can switch "Add to LinkedIn" off; a missing field keeps it.

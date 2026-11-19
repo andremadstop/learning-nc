@@ -12,7 +12,7 @@
 		<template v-else-if="fields">
 			<!-- Printable card: signed (frozen) fields render as-is; only chrome is localized. -->
 			<div ref="printable" class="certificate-printable">
-				<!-- GitHub #42: the instructor's copy says when it no longer counts, on screen and on paper. -->
+				<!-- GitHub #42/#94: the card says when it no longer counts, on screen, on paper and in the PDF. -->
 				<p v-if="statusNote" class="certificate-status-note" role="status">
 					{{ statusNote }}
 				</p>
@@ -30,10 +30,29 @@
 				<NcButton variant="primary" @click="print">
 					{{ t('learning', 'Drucken') }}
 				</NcButton>
+				<!-- GitHub #94: a PDF of the printed sheet, made in the browser, with a presentation-copy line -->
+				<NcButton
+					variant="secondary"
+					:disabled="pdfBusy"
+					:aria-busy="pdfBusy ? 'true' : 'false'"
+					data-test="certificate-pdf-button"
+					@click="downloadPdf">
+					{{ t('learning', 'Als PDF herunterladen') }}
+				</NcButton>
 				<NcButton v-if="courseId === null && linkedinAllowed" variant="secondary" @click="openLinkedIn">
 					{{ t('learning', 'Zu LinkedIn hinzufügen (öffnet LinkedIn)') }}
 				</NcButton>
 			</div>
+
+			<!-- always rendered, only the text changes: a live region added later is not announced -->
+			<p class="certificate-pdf-status no-print" role="status" data-test="certificate-pdf-status">{{ pdfStatus }}</p>
+			<NcNoteCard
+				v-if="pdfError"
+				type="error"
+				class="no-print"
+				data-test="certificate-pdf-error">
+				{{ pdfError }}
+			</NcNoteCard>
 
 			<!-- GitHub #95: the signed credential file confused learners (a page of code, no next step).
 				It sits behind a closed native disclosure (keyboard and screen readers get the open/closed
@@ -79,6 +98,14 @@ import {
 } from '../utils/certificate-credential.js'
 import qrcode from '../utils/qrcode-generator.js'
 import { installCertificatePrintHook, printCertificate, removeCertificatePrintCopy } from '../utils/certificatePrint.js'
+import {
+	canDownloadByLink,
+	certificatePdfFileName,
+	noteParts,
+	removeCertificatePdfCopy,
+	renderCertificatePdf,
+	savePdf,
+} from '../utils/certificatePdf.js'
 
 export default {
 	name: 'Certificate',
@@ -117,10 +144,16 @@ export default {
 			qrDataUrl: '',
 			revoked: false,
 			expired: false,
+			// unix seconds (learner response); the instructor response says `expired` itself
+			expiresAt: null,
 			// GitHub #67: the course can switch "Add to LinkedIn" off; a missing field keeps it.
 			linkedinAllowed: true,
 			// GitHub #95: the course can hide the credential section for learners; a missing field shows it.
 			credentialDownloadAllowed: true,
+			// GitHub #94
+			pdfBusy: false,
+			pdfStatus: '',
+			pdfError: '',
 		}
 	},
 
@@ -142,17 +175,30 @@ export default {
 		credentialSectionShown() {
 			return this.courseId !== null || this.credentialDownloadAllowed
 		},
+		/**
+		 * GitHub #42: the instructor's copy says when it no longer counts. GitHub #94: the learner's
+		 * own card too, since learners keep opening expired certificates and the PDF of one must not
+		 * look like a valid certificate. Expired comes from the response, else from the expiry date.
+		 */
 		statusNote() {
-			if (this.courseId === null) {
-				return ''
-			}
 			if (this.revoked) {
 				return t('learning', 'Dieses Zertifikat wurde widerrufen und ist nicht mehr gültig.')
 			}
-			if (this.expired) {
+			if (this.isExpired) {
 				return t('learning', 'Dieses Zertifikat ist abgelaufen.')
 			}
 			return ''
+		},
+		isExpired() {
+			if (this.expired) {
+				return true
+			}
+			const now = Date.now()
+			if (typeof this.expiresAt === 'number' && this.expiresAt > 0) {
+				return this.expiresAt * 1000 < now
+			}
+			const until = this.fields?.validUntil ? new Date(this.fields.validUntil).getTime() : NaN
+			return !Number.isNaN(until) && until < now
 		},
 		issuedDate() {
 			return this.formatDate(this.fields?.validFrom)
@@ -171,6 +217,7 @@ export default {
 	unmounted() {
 		this.disposePrintHook?.()
 		removeCertificatePrintCopy()
+		removeCertificatePdfCopy()
 	},
 
 	methods: {
@@ -183,6 +230,7 @@ export default {
 					: await getCertificate(this.verificationId)
 				this.revoked = row?.revoked === true
 				this.expired = row?.expired === true
+				this.expiresAt = typeof row?.expires_at === 'number' ? row.expires_at : null
 				this.linkedinAllowed = row?.linkedin_allowed !== false
 				this.credentialDownloadAllowed = row?.credential_download_allowed !== false
 				const credential = decodeCredential(row.credential_json)
@@ -219,6 +267,47 @@ export default {
 
 		download() {
 			window.location.href = this.downloadHref
+		},
+
+		/**
+		 * GitHub #94: never silent. While the PDF is made the button is busy and the status says so;
+		 * a failure says what to do instead. Where links cannot save files (old iOS web views) the
+		 * tab for the PDF is opened now, inside the click: opened after the wait it would be blocked.
+		 */
+		async downloadPdf() {
+			if (this.pdfBusy) {
+				return
+			}
+			const source = this.$refs.printable || null
+			const pendingWindow = canDownloadByLink() ? null : window.open('', '_blank')
+			this.pdfBusy = true
+			this.pdfError = ''
+			this.pdfStatus = t('learning', 'PDF wird erstellt …')
+			try {
+				const root = document.documentElement
+				const blob = await renderCertificatePdf(source, {
+					note: noteParts(
+						t('learning', 'Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).'),
+						{ id: this.verificationId, url: this.verifyUrl },
+					),
+					title: this.fields?.courseTitle || '',
+					subject: this.verifyUrl,
+					dir: root.getAttribute('dir') || (typeof getComputedStyle === 'function' && source ? getComputedStyle(source).direction : ''),
+					lang: root.getAttribute('lang') || '',
+				})
+				savePdf(blob, certificatePdfFileName({
+					prefix: t('learning', 'Zertifikat'),
+					courseTitle: this.fields?.courseTitle || '',
+					validFrom: this.fields?.validFrom,
+				}), { pendingWindow })
+				this.pdfStatus = t('learning', 'PDF heruntergeladen')
+			} catch (e) {
+				pendingWindow?.close()
+				this.pdfStatus = ''
+				this.pdfError = t('learning', 'PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden.')
+			} finally {
+				this.pdfBusy = false
+			}
 		},
 
 		openLinkedIn() {
@@ -281,6 +370,19 @@ export default {
 	flex-wrap: wrap;
 	gap: 12px;
 	justify-content: center;
+}
+
+.certificate-pdf-status {
+	margin: -8px 0 0;
+	min-height: 1.4em;
+	text-align: center;
+	color: var(--color-text-maxcontrast);
+}
+
+.certificate-pdf-status:empty {
+	/* keeps the live region in the page without an empty gap */
+	min-height: 0;
+	margin: -20px 0 0;
 }
 
 .certificate-download-link {
@@ -482,6 +584,34 @@ export default {
 	background: #fff;
 	color: #8b0000;
 	border: 2px solid #8b0000;
+}
+
+/* GitHub #94: the PDF copy is the sheet itself, A4 landscape with the print margins, outside the
+   viewport (never display: none, or there is nothing to draw). certificatePdf.js resets the
+   position in the picture. The presentation-copy line sits in the bottom margin, below the card. */
+.certificate-sheet--pdf {
+	position: fixed;
+	top: 0;
+	left: 0;
+	transform: translateX(calc(-100% - 200px));
+	box-sizing: border-box;
+	width: 1123px;
+	height: 794px;
+	margin: 0;
+	padding: 12mm;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.certificate-sheet--pdf .certificate-pdf-note {
+	position: absolute;
+	inset-inline: 12mm;
+	bottom: 3.5mm;
+	margin: 0;
+	font-size: 8pt;
+	line-height: 1.3;
+	text-align: center;
+	color: #444;
 }
 
 @media print {

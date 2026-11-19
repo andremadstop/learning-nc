@@ -43,6 +43,10 @@ const UNRESOLVED_ALLOWED = {
 	// Downloads of content generated in the browser.
 	'components/InstructorDashboard.vue <el>.href(url)': 'URL.createObjectURL(blob)',
 	'utils/summary-export.js <el>.href(url)': 'URL.createObjectURL(blob)',
+	// GitHub #94: the certificate PDF, made in the browser.
+	'utils/certificatePdf.js <el>.href(url)': 'URL.createObjectURL(blob) of the certificate PDF',
+	'utils/certificatePdf.js pendingWindow.location.href(url)': 'URL.createObjectURL(blob) of the certificate PDF, in the tab opened at the click',
+	'components/Certificate.vue window.open(\'\')': 'an empty tab opened at the click where links cannot download; it gets the PDF blob URL',
 }
 
 describe('API contract (GitHub #65)', () => {
