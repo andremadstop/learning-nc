@@ -266,6 +266,54 @@ final class QuestionMediaServiceTest extends TestCase {
     }
 
     /**
+     * Review of #66: an "audio" of the wrong shape (a list) or a misspelt language key skipped the
+     * option before its slot counted as listed, so the re-import deleted the stored voice — while a
+     * bad path or an unreadable file keeps it. A typo in the bundle keeps the voice now too, and a
+     * stored voice the bundle really no longer lists is still removed.
+     */
+    public function testAMalformedOptionAudioKeepsTheStoredVoiceOfThatOption(): void {
+        foreach ([
+            'a list instead of {"<lang>": ...}' => ['opt-1-en.mp3'],
+            'a misspelt language key' => ['english' => 'opt-1-en.mp3'],
+            'a scalar' => 'opt-1-en.mp3',
+        ] as $case => $audio) {
+            $this->setUp();
+            $this->answers = $this->answerRows([0 => false, 1 => true, 2 => false, 3 => false]);
+            $this->tmp = sys_get_temp_dir() . '/qmedia-unit-' . bin2hex(random_bytes(4));
+            exec('cp -r ' . escapeshellarg(self::FIXTURE_V2) . ' ' . escapeshellarg($this->tmp));
+            $manifest = json_decode((string)file_get_contents($this->tmp . '/manifest.json'), true);
+            $manifest['questions'][0]['feedback_per_option'][1]['audio'] = $audio;
+            file_put_contents($this->tmp . '/manifest.json', json_encode($manifest));
+            $opt1en = $this->optionRow(1, 'opt1', 'q11-opt1-en.mp3', null, null);
+            $opt1de = $this->optionRow(2, 'opt1', 'q11-opt1-de.mp3', null, null);
+            $opt1de->setLang('de');
+            // opt7 belongs to no answer the bundle names an option for: still removed as before
+            $opt7 = $this->optionRow(3, 'opt7', 'q11-opt7-en.mp3', null, null);
+            $this->tracks->method('findByQuestion')->willReturn([$opt1en, $opt1de, $opt7]);
+            $this->storage->method('holds')->willReturn(false);
+            $deleted = [];
+            $this->tracks->method('delete')->willReturnCallback(function (QuestionTrack $t) use (&$deleted) {
+                $deleted[] = $t->getKind() . '-' . $t->getLang();
+                return $t;
+            });
+            $removedFiles = [];
+            $this->storage->method('remove')->willReturnCallback(function (int $pool, string $name) use (&$removedFiles) {
+                $removedFiles[] = $name;
+            });
+
+            $dry = $this->service()->importBundle(self::POOL, QuestionMediaBundle::open($this->tmp), true);
+            $this->assertSame(1, $dry['option_tracks_removed'], $case . ': the dry run removes only opt7: ' . $this->dump($dry));
+
+            $report = $this->service()->importBundle(self::POOL, QuestionMediaBundle::open($this->tmp), false);
+            $this->assertSame(['opt7-en'], $deleted, $case);
+            $this->assertSame(['q11-opt7-en.mp3'], $removedFiles, $case);
+            $this->assertNotSame([], $report['invalid_entries'], $case . ': the typo is still reported');
+            exec('rm -r -- ' . escapeshellarg($this->tmp));
+            $this->tmp = '';
+        }
+    }
+
+    /**
      * Delivery: before answering a learner learns nothing about the option voices (here only the
      * right answer has one — its presence alone would give it away); the answer response lists
      * them per answer with a grant; the audio endpoint refuses them without it. A question with

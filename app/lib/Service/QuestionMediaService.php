@@ -680,6 +680,9 @@ class QuestionMediaService {
         }
 
         $listed = [];
+        // stored slots an invalid "audio" of a known option protects (not "listed": a valid key of
+        // the same option may still name one of them, and that is no duplicate)
+        $kept = [];
         foreach (array_values($list) as $option) {
             if (!is_array($option) || !array_key_exists('audio', $option)) {
                 continue;
@@ -695,6 +698,8 @@ class QuestionMediaService {
             $audio = $option['audio'];
             if (!is_array($audio) || ($audio !== [] && array_is_list($audio)) || $position > 999) {
                 $report['invalid_entries'][] = $label . ': option ' . $optionIndex . ': "audio" must be {"<lang>": "<file>"}';
+                // A typo in the bundle keeps the stored voices of this option, as a bad path does.
+                $kept += $this->optionSlots($stored, $position);
                 continue;
             }
             $kind = QuestionMediaStorage::optionKind($position);
@@ -702,6 +707,9 @@ class QuestionMediaService {
                 $lang = strtolower((string)$langKey);
                 if (preg_match(self::LANG_PATTERN, $lang) !== 1) {
                     $report['invalid_entries'][] = $label . ': option ' . $optionIndex . ': "' . $langKey . '" is not a language code';
+                    // Which language was meant is unknown ("english" for en?): every stored voice of
+                    // this option stays, none is removed because of a misspelt key.
+                    $kept += $this->optionSlots($stored, $position);
                     continue;
                 }
                 $slot = $kind . '-' . $lang;
@@ -728,7 +736,23 @@ class QuestionMediaService {
             }
         }
 
-        $this->removeUnlisted($question, $stored, $listed, $dryRun, $label, 'option_tracks', $report);
+        $this->removeUnlisted($question, $stored, $listed + $kept, $dryRun, $label, 'option_tracks', $report);
+    }
+
+    /**
+     * The stored option slots (opt<position>-<lang>) of one answer position.
+     *
+     * @param array<string, QuestionTrack> $stored by slot
+     * @return array<string, true>
+     */
+    private function optionSlots(array $stored, int $position): array {
+        $slots = [];
+        foreach ($stored as $slot => $track) {
+            if (QuestionMediaStorage::optionPosition($track->getKind()) === $position) {
+                $slots[$slot] = true;
+            }
+        }
+        return $slots;
     }
 
     /**
