@@ -180,8 +180,10 @@ export default {
 .qconceal__content { transition: opacity .45s ease, transform .45s ease, filter .45s ease; }
 .qconceal--hidden { cursor: pointer; }
 /* Hidden but in place: the space is kept, so uncovering moves nothing. A faint dashed frame hints
-   at what is waiting. */
+   at what is waiting. Hiding is instant: the content already is the next question when it hides
+   ("Nächste Frage"), and a fade-out would show it for its duration. Only uncovering glides. */
 .qconceal--hidden .qconceal__content {
+  transition: none;
   opacity: 0;
   transform: translateY(14px);
   filter: blur(6px);
@@ -214,7 +216,7 @@ export default {
 @keyframes qconceal-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 .qconceal--still .qconceal__content { transition: opacity .2s linear; transform: none; }
-.qconceal--still.qconceal--hidden .qconceal__content { transform: none; }
+.qconceal--still.qconceal--hidden .qconceal__content { transform: none; transition: none; }
 .qconceal--still :deep(.answer-feedback) { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .qconceal__content { transition: opacity .2s linear; }

@@ -579,6 +579,16 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 		expect(el.classList.contains('qconceal--hidden')).toBe(false)
 	})
 
+	// Persona flow station (gamification on): after "Nächste Frage" the content already showed the
+	// next question while it faded out over .45 s — readable for that time. Hiding is instant now,
+	// also in the calm variants; only uncovering glides.
+	it('hiding is instant (no fade-out of the next question), uncovering still glides', () => {
+		const css = readFileSync(resolve(here, '../../src/components/QuestionConceal.vue'), 'utf-8')
+		expect(css).toMatch(/\.qconceal--hidden \.qconceal__content \{\s*transition: none;/)
+		expect(css).toMatch(/\.qconceal--still\.qconceal--hidden \.qconceal__content \{[^}]*transition: none;/)
+		expect(css).toMatch(/^\.qconceal__content \{ transition: opacity \.45s/m)
+	})
+
 	it('a mouse crossing the hidden question on its way to the player does not uncover it', async () => {
 		await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
 		const el = host.querySelector('.qconceal')
