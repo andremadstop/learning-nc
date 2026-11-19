@@ -2,7 +2,7 @@
 # lifecycle-probe.sh — fresh install and 5.5.1 -> working-state upgrade in throwaway containers.
 #
 # Usage: ENGINE=pgsql|mysql [PROBE_REF=<git-ref>] [PROBE_FAIL_AFTER=key_write] [LIFECYCLE_NC_IMAGE=<image>]
-#        [RECENT_BASES="5.13.0 5.14.0 5.14.1"] [RECENT_TARBALL_DIR=<dir>] [PROBE_BUMP_VERSION=<x.y.z>]
+#        [RECENT_BASES="5.13.0 5.14.0 5.14.1 5.15.0"] [RECENT_TARBALL_DIR=<dir>] [PROBE_BUMP_VERSION=<x.y.z>]
 #          scripts/lifecycle-probe.sh
 #
 # Per engine, three scenarios, each on its own Nextcloud + database pair. Nextcloud is 33 (pinned
@@ -14,7 +14,7 @@
 #            state, run `occ upgrade`, then `occ maintenance:repair` twice
 #   bare     install the 5.5.1 release tarball WITHOUT seeding (a fresh 5.5.1 has no audit chain
 #            head and only the legacy translation tables), then upgrade like `upgrade`
-#   recent-<v>  for each version in RECENT_BASES (default "5.13.0 5.14.0 5.14.1"): install that release,
+#   recent-<v>  for each version in RECENT_BASES (default "5.13.0 5.14.0 5.14.1 5.15.0"): install that release,
 #            seed course videos, document rows, progress and read confirmations
 #            (scripts/lifecycle-fixtures/recent-case.php), upgrade like `upgrade`, repair once, then
 #            read them back through the app's mappers and RequiredDocumentService. The upgraded
@@ -80,10 +80,11 @@ declare -A RECENT_SHA256=(
 	[5.13.0]=e3079cdfe9b97addd1a69fe0b05d3ee05a9900ea3d3eddabaa7647f02d8d181d
 	[5.14.0]=20a168539d6f40c6e674204a49f44b6b88f511d26240781961ab0b2a4937f032
 	[5.14.1]=559815b220a2d1702c77713484510b932baf05cae67295a1bbe5f514f1a3d71a
+	[5.15.0]=04a387805f2278a2d6eeb5bf1f6d133866228ae6cc5c82c08afc2e66cf6ba34f
 )
 # Default bases: add a release only in the commit that raises info.xml past it; while info.xml
 # still holds that version, recent_<v>_version_jump fails (see TESTING.md, "Before every release").
-RECENT_BASES="${RECENT_BASES-5.13.0 5.14.0 5.14.1}"
+RECENT_BASES="${RECENT_BASES-5.13.0 5.14.0 5.14.1 5.15.0}"
 RECENT_TARBALL_DIR="${RECENT_TARBALL_DIR:-}"
 PROBE_BUMP_VERSION="${PROBE_BUMP_VERSION:-}"
 for v in $RECENT_BASES; do

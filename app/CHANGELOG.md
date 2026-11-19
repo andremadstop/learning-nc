@@ -2,6 +2,155 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.16.0] - 2026-11-19 — Questions as a short slideshow, course and pool fixes
+
+Mandatory training in everyday use: a new certification cycle after a revoke, a limit on exam
+attempts, confirming a document only after opening it, Nextcloud activities with email, tidier
+learning materials and one clear next step through a course (#84–#92). Then the pool and course
+points that followed (#79, #96–#99), and questions with spoken media that play like a short
+slideshow (#66). Thanks to @alphalib-g for the reports (#79, #84–#92, #96–#99) and for testing
+each step again.
+
+> **Administrators, please read:**
+> - **Migrations.** `Version011200Date20261118090000` adds `exam_attempt_limit` to the courses and
+>   `reopen_reason` to the assignments. `Version011300Date20261118150000` adds the table
+>   `learning_doc_opens` (when a learner last opened a required document) and the course column
+>   `open_before_confirm`. `Version011400Date20261118170000` adds `removed_at` to the course
+>   documents. `Version011500Date20261118190000` adds `exam_attempt_limit_since` to the courses.
+>   No existing data is changed: existing courses keep unlimited exam attempts, confirming
+>   without opening and their exam lock as they are.
+> - **Activity emails** (#85) need what Nextcloud needs for any activity email: background jobs
+>   via cron, activity emails enabled by the administrator and an email address on the account.
+>   Emails come as a digest at each user's chosen interval.
+> - **New settings for new mandatory-training courses only.** The "Mandatory training with
+>   certificate" profile now starts a course with 3 exam attempts per pool and certification
+>   cycle, "Exam only after all required content is completed" on, and "Confirm required
+>   documents only after opening them" on. A profile is not applied to existing courses; set the
+>   switches there by hand if wanted.
+> - **API contract.** Learners no longer receive `material_folder` and `nc_group_id` with a course
+>   or from `GET /material-folder` (only `linked`); instructors and administrators keep them.
+>   `POST /api/courses/{id}/pools` answers with `pool_view_only` (403), `pool_not_found` (404),
+>   `no_permission` (403), `course_not_found` (404) or `already_added` (409) instead of a plain
+>   400. New routes: `GET /api/courses/{courseId}/certification-cycles`,
+>   `POST /api/courses/{courseId}/members/{memberId}/new-cycle`,
+>   `DELETE /api/courses/{courseId}/documents/{documentId}`,
+>   `PUT /api/settings/personal/archive-confirm` and `PUT /api/settings/personal/question-media`.
+> - **Media bundles** (#66): the format `learning-question-media/2` adds a spoken explanation per
+>   answer option. `/1` bundles import as before and leave option voices alone.
+>   `occ learning:export-pool <poolId> --media-dir=<new or empty dir>` writes a pool's media back
+>   out as a bundle.
+> - **Known issue:** `npm audit` reports 6 moderate findings, all from one advisory for
+>   `minimatch` pulled in by `webdav` through `@nextcloud/dialogs`. They were already in 5.15.0.
+>   The only fix npm offers is a breaking downgrade of `@nextcloud/dialogs`, so it waits for an
+>   upstream update.
+
+### Added
+- **A new certification cycle** (#84). After a revoke, the course's member list shows a
+  "Certificate revoked" badge and "Open a new certification cycle" next to it. The dialog says what
+  it resets: after a revoke, earlier exam passes stop counting, the attempts start again and the
+  required documents have to be confirmed again. Nothing is deleted; the revoked certificate,
+  earlier confirmations and exams stay as evidence, and the new cycle is recorded in the compliance
+  chain. The learner is notified on the revoke and when the new cycle opens.
+- **Exam attempts per pool and certification cycle** (#87), in Course rules of courses that issue
+  certificates. Empty means unlimited, as before. Every started attempt counts, also an abandoned
+  or timed-out one; counting starts when the limit is switched on or when the learner's current
+  cycle started, whichever is later. Instructors are not limited. When the attempts on a pool the
+  certificate needs are used up, further starts are refused, the learner is told why, and the
+  course's instructors get one notification. "Open a new certification cycle" in the member list
+  starts the count again; the failed attempts stay as evidence.
+- **Confirm only after opening** (#86): with "Confirm required documents only after opening them"
+  (Learning materials → Required content), "Confirm I have read this" stays disabled until the
+  learner has opened the current version of the document, and the server refuses a confirmation
+  without it. Only the last open per learner and document is kept, only while the switch is on, and
+  nobody in the course is shown it. It is deleted with the account, when the learner leaves the
+  course, when the switch is turned off and after the instance's retention period. The privacy
+  notice of the mandatory training names it.
+- **Nextcloud activities with email** (#85) for enrolment, certificates (issued, expiring,
+  expired, revoked, new cycle), the reminders a team lead sends, the course feed (new pool,
+  announcement) and unlocked achievements, each with its own row under Personal settings →
+  Notifications. Email is on by default for enrolment, certificates and reminders, off for the
+  feed and achievements. Every reminder a lead sends now reaches the learner's email.
+- **One clear next step** (#92) in certifying courses: after the required materials "Go to the
+  exam", after a pass "Go to my certificate", after a fail the attempts left, a countdown to the
+  next possible start and "Back to the learning materials", with no attempts left a question to
+  the instructors. Courses without a certificate look as before. An empty course offers "Add
+  pools" right under "No pools assigned" to instructors.
+- **Questions with spoken media play like a short slideshow** (#66). When a question has a spoken
+  intro, Training, Leitner and Smart Queue show the intro first – line by line, with the speaker and
+  progress dots – and keep the scenario, the question and the answers covered until the intro
+  ends. Tap the covered area, move the keyboard focus onto it, or rest the pointer on it for half a
+  second to see the question at once. After answering, a short tone says right or wrong, the right
+  option is marked, and the spoken explanation of the chosen option(s) plays before the dialog. Two
+  switches in the player, **"Play automatically"** and **"Sounds"**, are stored per user and are
+  off by default; tones follow autoplay unless set on their own. "Calm display" and reduced motion
+  are respected; exam mode is unchanged. For authors: the media bundle format
+  `learning-question-media/2` adds a spoken explanation per answer option
+  (`occ learning:import-question-media`), voices follow their answers when an editor reorders
+  them, and `occ learning:export-pool <poolId> --media-dir=<new or empty dir>` writes a pool's
+  media back out as a bundle.
+- **Archiving explained** (#99): "Archive" opens a short dialog that says what archiving changes
+  and what it does not: learners keep the course, training, materials, exams and certificates;
+  only the exam date reminder and the Dashboard countdown stop. An archived course shows the same
+  explanation to instructors, and learners get a short note. "Don't show again" skips the dialog;
+  "Explain before archiving" in Learning's personal settings brings it back.
+- The data export lists the read confirmations of required documents.
+
+### Changed
+- **Mandatory-training profile** (#89): new courses start with "Exam only after all required
+  content is completed" on. If documents are ticked Required while the switch is off, a note above
+  the materials table says so, with a button to the switch.
+- **Learning materials** (#90): "Scan folder" takes entries whose file was deleted or left the
+  linked folder out of the list, and instructors get a × to remove such an entry by hand. Read
+  confirmations are kept; if the file comes back, its entry and its confirmations count again, and
+  a required mark rests while the file is gone. Both steps are recorded in the compliance chain. A
+  file that cannot be opened (for example a view-only share) says why to instructors; learners see
+  a short "cannot be opened right now". Learners only see files that are actually in the folder.
+- **"Add pool to course"** (#97) shows pools you cannot add greyed out with the "View only" tag and
+  the reason, and a refusal names the pool and says why.
+- **Pools search** (#98): a question hit reads "Question ID 304" (the ID Pool rules expects), and
+  clicking it opens that question: in an editable pool in its editor, in a view-only pool under
+  View questions, also for pools reached through a course you lead. Inside a pool, a number finds
+  the question with that ID first, also IDs 1 to 9.
+- The member list shows each learner's display name, with the user ID beside it when it differs.
+- "Learning achievements" in the notification settings is now called "Gamification: unlocked
+  achievements"; the stored choice is kept.
+
+### Fixed
+- **Right and wrong after answering** (since 2.7): after answering in Training, Leitner or Smart
+  Queue, a right answer was shown red and the right option was never marked green. The review now
+  marks the right option.
+- **Search hits** show their pool's name again instead of `{pool}` (#98).
+- Course and pool titles on the Dashboard, in the pool lists and in a course's Pools tab show no
+  square block on hover or focus (#79).
+- The class summary CSV of a course without gamification leaves out the game columns (#79).
+- "Specific question IDs" and the selects in Pool rules span the full width (#88).
+- The public certificate verification page scrolls and keeps its contrast with any theme (#91).
+- **Weak questions** (#96): the question text wraps in its column, the table scrolls sideways on a
+  narrow screen, and a question cut at 120 characters ends with "…".
+- "Certificate issued" after an exam only for a certificate this exam issued; with a valid earlier
+  certificate the result says it stays valid.
+- The compliance reminder notification names its course again.
+- Pool names and area names with `&` or quotes are shown as written in the next-step texts, the
+  locked-pools note and the remove dialog.
+- Two instructors opening a new certification cycle for the same learner at the same moment get
+  one cycle; the second request is refused with 409 `concurrent_change` and writes nothing, also
+  on MySQL and MariaDB.
+- Starting an exam twice at the same moment, for example from two tabs, starts one exam; the
+  second start continues it. This also holds at the last allowed attempt.
+- Accessibility: Escape closes a dialog also from a checkbox or radio; dialogs put
+  `aria-describedby` on the element Nextcloud renders as the dialog (also the AI consent dialog);
+  the Pools search and the question editor name their controls; the question position in Training
+  and paused weak questions keep their contrast; the jump to a question honours "Calm display".
+- Arabic names the certification cycle جولة اعتماد, no longer like the course.
+
+### Tests
+- Integration tests for Nextcloud 33, 34 and 35 build the security middleware alike (#65).
+- Several processes start the same exam at once on a real database; two reopens of the same
+  certification cycle on PostgreSQL and MariaDB.
+- Persona stations for the new cycle, confirm after opening, used-up attempts, stale materials,
+  next steps, view-only pools, the pool search, archiving, long weak questions and the question
+  card with intro.
+
 ## [5.15.0] - 2026-11-18 — Dead links explained, calendar feed limits, build and API fixes
 
 Links that lead nowhere now say why and offer a way on (#82), the public calendar feeds have a
