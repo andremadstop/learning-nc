@@ -66,6 +66,17 @@ class CertificationCycleControllerTest extends TestCase {
         $this->assertSame(['error' => 'concurrent_change'], $response->getData());
     }
 
+    /** Review 5.16.0: the moved slot (MySQL path) is the same conflict, not a 500. */
+    public function testAReopenOnAMovedSlotIsAConflict(): void {
+        $cycles = $this->createMock(CertificationCycleService::class);
+        $cycles->method('open')->willThrowException(new \OCA\Learning\Service\ConcurrentChangeException());
+
+        $response = $this->controller($cycles)->open(7, 31);
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame(['error' => 'concurrent_change'], $response->getData());
+    }
+
     public function testStatesAreAListWithTheMemberId(): void {
         $cycles = $this->createMock(CertificationCycleService::class);
         $cycles->method('statesForCourse')->with(7, 'teacher')->willReturn([

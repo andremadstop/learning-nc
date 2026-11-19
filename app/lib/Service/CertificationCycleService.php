@@ -143,6 +143,7 @@ class CertificationCycleService {
      * @throws DoesNotExistException course or member not found, or the member is no student of it
      * @throws ForbiddenException    caller is not an instructor of the course
      * @throws NothingToResetException the learner is not stuck (see reasonFor())
+     * @throws ConcurrentChangeException another request opened a cycle for the learner meanwhile
      */
     public function open(int $courseId, int $memberId, string $instructorId): array {
         $course = $this->courseService->assertInstructorOfCourse($courseId, $instructorId);
@@ -154,6 +155,10 @@ class CertificationCycleService {
         if ((int)$member->getCourseId() !== $courseId || $member->getRole() !== 'student' || $uid === '' || $uid === (string)$course->getInstructorId()) {
             throw new DoesNotExistException('Member not found in this course');
         }
+        // The slot's row id first, then what the decision rests on: if another request reopens
+        // in between, the id no longer holds the slot and reopenPeriod() refuses (409) instead of
+        // opening a second cycle on a stale decision.
+        $expectedPeriodId = $this->assignmentService->activePeriodId($courseId, $uid);
         $newest = $this->certificateMapper->findByUserAndCourse($uid, $courseId);
         $state = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$uid])[$uid] ?? null;
         $reason = $this->reasonFor($newest, $state, $this->attemptLimit->exhaustedPools($uid, $course), $this->timeFactory->getTime());
@@ -164,7 +169,7 @@ class CertificationCycleService {
         // cleared only once the new cycle is committed — a refused reopen keeps them.
         $oldSince = $this->attemptLimit->attemptCountStart($uid, $course);
         $verificationId = $newest !== null && $reason !== self::REASON_ATTEMPTS ? (string)$newest->getVerificationId() : null;
-        $since = $this->assignmentService->reopenPeriod($courseId, $uid, $reason, $instructorId, $verificationId);
+        $since = $this->assignmentService->reopenPeriod($courseId, $uid, $reason, $instructorId, $verificationId, $expectedPeriodId);
         $this->attemptLimit->clearNotifications($uid, $courseId, $oldSince);
         $this->notifyLearner($uid, $course, 'certification_cycle_opened', 'certification_cycle', hash('sha1', $courseId . ':' . $uid . ':' . $since));
         return ['reason' => $reason, 'since' => $since];

@@ -357,7 +357,7 @@ class AssignmentServiceTest extends TestCase {
      * learner as subject and facts only — in one transaction. Nothing is deleted.
      */
     public function testReopenPeriodFreesTheSlotAndOpensAReasonedPeriodInOneTransaction(): void {
-        $free = new FakeQueryBuilder();
+        $free = new FakeQueryBuilder(null, 1);
         $insert = new FakeQueryBuilder();
         [$svc, $db, $audit] = $this->makeClosePeriodService([$free, $insert]);
         $context = null;
@@ -366,7 +366,7 @@ class AssignmentServiceTest extends TestCase {
             ->willReturnCallback(function (string $type, string $user, array $ctx) use (&$context): void { $context = $ctx; });
         $audit->expects($this->once())->method('logEvent')->with('certification.cycle.reopened', 'teacher', $this->anything());
 
-        $since = $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'revoked', 'teacher', 'vid-1');
+        $since = $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'revoked', 'teacher', 'vid-1', 77);
 
         $this->assertSame('update', $free->operation);
         $this->assertSame('learning_assignments', $free->table);
@@ -388,15 +388,51 @@ class AssignmentServiceTest extends TestCase {
     }
 
     public function testReopenPeriodRollsBackWhenTheAuditAppendFails(): void {
-        [$svc, $db, $audit] = $this->makeClosePeriodService([new FakeQueryBuilder(), new FakeQueryBuilder()]);
+        [$svc, $db, $audit] = $this->makeClosePeriodService([new FakeQueryBuilder(null, 1), new FakeQueryBuilder()]);
         $audit->method('logComplianceEvent')->willThrowException(new \OCA\Learning\Service\ComplianceAuditException('chain'));
         $audit->expects($this->never())->method('logEvent');
 
         try {
-            $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'attempts', 'teacher');
+            $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'attempts', 'teacher', null, 77);
             $this->fail('the audit failure must propagate');
         } catch (\OCA\Learning\Service\ComplianceAuditException $e) {
         }
         $this->assertSame([1, 0, 1], [$db->beginTransactionCalls, $db->commitCalls, $db->rollBackCalls]);
+    }
+
+    /**
+     * Review 5.16.0 (MySQL): the slot is freed only on the row the caller decided on. When another
+     * reopen moved the slot in between, the UPDATE matches nothing, and nothing is inserted,
+     * audited or committed; before, the second reopen freed the first one's new row and opened a
+     * second cycle.
+     */
+    public function testReopenPeriodRefusesWhenTheSlotMovedMeanwhile(): void {
+        $free = new FakeQueryBuilder(null, 0);
+        $insert = new FakeQueryBuilder();
+        [$svc, $db, $audit] = $this->makeClosePeriodService([$free, $insert]);
+        $audit->expects($this->never())->method('logComplianceEvent');
+        $audit->expects($this->never())->method('logEvent');
+
+        try {
+            $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'attempts', 'teacher', null, 77);
+            $this->fail('a moved slot must be refused');
+        } catch (\OCA\Learning\Service\ConcurrentChangeException $e) {
+        }
+        $this->assertSame('update', $free->operation);
+        $this->assertContains(77, array_column($free->namedParameters, 'value'), 'the UPDATE is pinned to the decided-on row');
+        $this->assertNull($insert->operation, 'no new period');
+        $this->assertSame([1, 0, 1], [$db->beginTransactionCalls, $db->commitCalls, $db->rollBackCalls]);
+    }
+
+    /** No row held the slot when the caller decided: nothing to free, the UNIQUE INSERT decides. */
+    public function testReopenPeriodWithoutASlotOnlyInserts(): void {
+        $insert = new FakeQueryBuilder();
+        [$svc, $db] = $this->makeClosePeriodService([$insert]);
+
+        $svc->reopenPeriod(self::CP_COURSE, self::CP_USER, 'attempts', 'teacher', null, null);
+
+        $this->assertSame('insert', $insert->operation);
+        $this->assertCount(1, $db->issuedBuilders);
+        $this->assertSame([1, 1, 0], [$db->beginTransactionCalls, $db->commitCalls, $db->rollBackCalls]);
     }
 }

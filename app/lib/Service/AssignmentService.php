@@ -266,9 +266,15 @@ class AssignmentService {
      * and inserts a fresh 'assigned' period with assigned_at = now, the reason and assigned_by =
      * 'instructor' (a marker, never a uid). Nothing is
      * deleted: the old period row stays as history with its status. Both writes and the
-     * PERIOD_REOPENED compliance event commit together or not at all; a concurrent writer that
-     * took the slot in between makes the INSERT fail, everything rolls back and the exception
-     * propagates (the caller answers 409).
+     * PERIOD_REOPENED compliance event commit together or not at all.
+     *
+     * $expectedPeriodId is the id of the row that held the slot when the caller decided
+     * (activePeriodId(), read before the state), null when no row held it. The slot is freed only
+     * on exactly that row: if another request reopened in between, the slot is held by its new row
+     * and the UPDATE matches nothing, so ConcurrentChangeException rolls everything back (the caller
+     * answers 409). Without that, MySQL's locking read lets the second reopen free the slot of the
+     * row the first one just inserted and open a second cycle. With null, a row that took the slot
+     * in between makes the INSERT fail on the UNIQUE index (also 409).
      *
      * The attempts are counted from assigned_at (ExamAttemptLimitService). Which exams count for
      * the certificate depends on the issuanceWindow() branch: after a revoke or an expiry
@@ -282,17 +288,22 @@ class AssignmentService {
      *
      * @return int assigned_at of the new period
      */
-    public function reopenPeriod(int $courseId, string $userId, string $reason, string $instructorId, ?string $verificationId = null): int {
+    public function reopenPeriod(int $courseId, string $userId, string $reason, string $instructorId, ?string $verificationId, ?int $expectedPeriodId): int {
         $periodKey = "{$courseId}:user:{$userId}";
         $now = time();
 
         $this->db->beginTransaction();
         try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->update('learning_assignments')
-                ->set('active_period_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
-                ->where($qb->expr()->eq('active_period_key', $qb->createNamedParameter($periodKey)));
-            $qb->executeStatement();
+            if ($expectedPeriodId !== null) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->update('learning_assignments')
+                    ->set('active_period_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($expectedPeriodId, IQueryBuilder::PARAM_INT)))
+                    ->andWhere($qb->expr()->eq('active_period_key', $qb->createNamedParameter($periodKey)));
+                if ($qb->executeStatement() !== 1) {
+                    throw new ConcurrentChangeException();
+                }
+            }
 
             $qb = $this->db->getQueryBuilder();
             $qb->insert('learning_assignments')
@@ -398,6 +409,22 @@ class AssignmentService {
             }
         }
         return $closed;
+    }
+
+    /**
+     * The id of the row that holds the learner's period slot in the course (active_period_key),
+     * or null when none does. The compare-and-swap anchor for reopenPeriod().
+     */
+    public function activePeriodId(int $courseId, string $userId): ?int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+            ->from('learning_assignments')
+            ->where($qb->expr()->eq('active_period_key', $qb->createNamedParameter("{$courseId}:user:{$userId}")))
+            ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $id = $result->fetchOne();
+        $result->closeCursor();
+        return $id === false || $id === null ? null : (int)$id;
     }
 
     /**

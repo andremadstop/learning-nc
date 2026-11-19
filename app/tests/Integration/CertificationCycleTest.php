@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Integration;
 
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Service\AssignmentService;
+use OCA\Learning\Service\ConcurrentChangeException;
 use OCA\Learning\Service\CertificationCycleService;
 use OCA\Learning\Service\ExamAttemptLimitException;
 use OCA\Learning\Service\KeyService;
@@ -165,6 +167,45 @@ final class CertificationCycleTest extends TestCase {
         $this->assertSame('attempts', $opened['reason']);
         $enforce->invoke($training, $this->poolId, self::USER, $this->courseId);
         $this->assertSame(2, $this->rows('learning_sessions', 'user_id'), 'the earlier attempts stay as evidence');
+    }
+
+    /**
+     * Review 5.16.0: two instructors open a cycle for the same learner at the same moment. The
+     * second request decided on the row that held the slot before the first one committed. On
+     * MySQL its locking read then found the first request's new row by the key and freed it,
+     * opening a second cycle; the decided-on row id now has to hold the slot, or nothing is
+     * written. Deterministic stand-in for that interleaving, on both engines.
+     */
+    public function testAReopenDecidedOnAnOldSlotIsRefusedAndWritesNothing(): void {
+        $assignments = Server::get(AssignmentService::class);
+        $this->insertPeriod('assigned', time() - 7200);
+        $old = $this->slotRowId();
+        $this->assertNotNull($old);
+
+        $assignments->reopenPeriod($this->courseId, self::USER, 'attempts', self::TEACHER, null, $old);
+        $new = $this->slotRowId();
+        $this->assertNotSame($old, $new, 'the first reopen moved the slot to its new row');
+
+        try {
+            $assignments->reopenPeriod($this->courseId, self::USER, 'attempts', self::TEACHER, null, $old);
+            $this->fail('a reopen decided on the old slot must be refused');
+        } catch (ConcurrentChangeException $e) {
+        }
+        $this->assertSame($new, $this->slotRowId(), 'the first reopen\'s cycle keeps the slot');
+        $this->assertSame(2, $this->rows('learning_assignments', 'subject_id'), 'no second cycle, no orphaned row');
+        $this->assertFalse($this->db->inTransaction());
+        $this->assertSame($new, $assignments->activePeriodId($this->courseId, self::USER));
+    }
+
+    /** Read directly, not through activePeriodId(), so the test also runs against the old code. */
+    private function slotRowId(): ?int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')->from('learning_assignments')
+            ->where($qb->expr()->eq('active_period_key', $qb->createNamedParameter($this->courseId . ':user:' . self::USER)));
+        $result = $qb->executeQuery();
+        $id = $result->fetchOne();
+        $result->closeCursor();
+        return $id === false ? null : (int)$id;
     }
 
     private function insertExam(int $completedAt, int $correct): void {

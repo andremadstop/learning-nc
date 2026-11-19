@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\CertificationCycleService;
+use OCA\Learning\Service\ConcurrentChangeException;
 use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\NothingToResetException;
 use OCP\AppFramework\Controller;
@@ -81,10 +82,13 @@ class CertificationCycleController extends Controller {
             return new DataResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         } catch (NothingToResetException $e) {
             return new DataResponse(['error' => NothingToResetException::CODE], Http::STATUS_CONFLICT);
+        } catch (ConcurrentChangeException $e) {
+            // another request opened a cycle for the same learner in between
+            return new DataResponse(['error' => ConcurrentChangeException::CODE], Http::STATUS_CONFLICT);
         } catch (\OCP\DB\Exception $e) {
             if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
                 // another request opened a cycle for the same learner at the same moment
-                return new DataResponse(['error' => 'concurrent_change'], Http::STATUS_CONFLICT);
+                return new DataResponse(['error' => ConcurrentChangeException::CODE], Http::STATUS_CONFLICT);
             }
             $this->logger->error('Opening a certification cycle failed', ['exception' => $e, 'app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);

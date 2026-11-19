@@ -137,20 +137,23 @@ class CertificationCycleServiceTest extends TestCase {
         $revoked = self::cert(true, null, self::NOW - 100);
         $this->members->method('findById')->with(31)->willReturn(self::member(31, self::COURSE, 'anna'));
         $this->certificates->method('findByUserAndCourse')->willReturn($revoked);
-        $this->assignments->method('getStatesForCourseAndUsers')->willReturn([]);
         $this->limits->method('exhaustedPools')->willReturn([]);
         // the same count start as the attempt count (cycle start, never before the limit was set)
         $this->limits->method('attemptCountStart')->with('anna', $this->anything())->willReturn(1234);
         $order = [];
         $this->limits->expects($this->once())->method('clearNotifications')->with('anna', self::COURSE, 1234)
             ->willReturnCallback(function () use (&$order): void { $order[] = 'clear'; });
+        $this->assignments->method('activePeriodId')->with(self::COURSE, 'anna')
+            ->willReturnCallback(function () use (&$order): int { $order[] = 'slot'; return 55; });
+        $this->assignments->method('getStatesForCourseAndUsers')
+            ->willReturnCallback(function () use (&$order): array { $order[] = 'state'; return []; });
         $this->assignments->expects($this->once())->method('reopenPeriod')
-            ->with(self::COURSE, 'anna', 'revoked', 'teacher', '11111111-1111-4111-8111-111111111111')
+            ->with(self::COURSE, 'anna', 'revoked', 'teacher', '11111111-1111-4111-8111-111111111111', 55)
             ->willReturnCallback(function () use (&$order): int { $order[] = 'reopen'; return self::NOW; });
         $sent = $this->captureNotifications();
 
         self::assertSame(['reason' => 'revoked', 'since' => self::NOW], $this->service()->open(self::COURSE, 31, 'teacher'));
-        self::assertSame(['reopen', 'clear'], $order, 'the old cycle\'s notifications go only once the new cycle is committed');
+        self::assertSame(['slot', 'state', 'reopen', 'clear'], $order, 'the slot row is read before the decision; the old cycle\'s notifications go only once the new cycle is committed');
         self::assertCount(1, $sent);
         self::assertSame('anna', $sent[0]->getUser());
         self::assertSame('certification_cycle_opened', $sent[0]->getSubject());
