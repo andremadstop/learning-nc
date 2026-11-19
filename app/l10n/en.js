@@ -4092,7 +4092,6 @@ OC.L10N.register(
     "Töne" : "Sounds",
     "Zu deiner Antwort" : "About your answer",
     "Erklärung zu deiner Antwort mit Ton und Untertiteln" : "Explanation of your answer with sound and subtitles",
-    "Frage, ausgeblendet bis zum Ende des Einstiegs – Antippen oder Daraufzeigen deckt sie auf" : "Question, hidden until the end of the intro – tap or point at it to show it",
     "Die Frage erscheint nach dem Einstieg – oder sofort, wenn du hierher zeigst oder tippst." : "The question appears after the intro – or right away when you point or tap here.",
     "_%n Zeile_::_%n Zeilen_" : ["%n line", "%n lines"],
     "Suche leeren" : "Clear search",

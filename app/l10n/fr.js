@@ -4092,7 +4092,6 @@ OC.L10N.register(
     "Töne" : "Sons",
     "Zu deiner Antwort" : "À propos de ta réponse",
     "Erklärung zu deiner Antwort mit Ton und Untertiteln" : "Explication de ta réponse avec son et sous-titres",
-    "Frage, ausgeblendet bis zum Ende des Einstiegs – Antippen oder Daraufzeigen deckt sie auf" : "Question, masquée jusqu’à la fin de l’introduction – touchez-la ou pointez dessus pour l’afficher",
     "Die Frage erscheint nach dem Einstieg – oder sofort, wenn du hierher zeigst oder tippst." : "La question apparaît après l’introduction – ou tout de suite en pointant ou en touchant ici.",
     "_%n Zeile_::_%n Zeilen_" : ["%n ligne", "%n lignes"],
     "Suche leeren" : "Effacer la recherche",

@@ -4,7 +4,7 @@
        :tabindex="hidden ? 0 : (uncovered ? -1 : null)"
        :role="hidden ? 'button' : null"
        :aria-expanded="hidden ? 'false' : null"
-       :aria-label="hidden ? t('learning', 'Frage, ausgeblendet bis zum Ende des Einstiegs – Antippen oder Daraufzeigen deckt sie auf') : null"
+       :aria-labelledby="hidden ? veilId : null"
        @pointermove="onPointerMove"
        @pointerleave="cancelHover"
        @focus="onFocus"
@@ -13,7 +13,7 @@
        @pointerdown.capture="primeSounds"
        @click.capture="primeSounds"
        @keydown.capture="primeSounds">
-    <p v-if="hidden" class="qconceal__veil" aria-hidden="true">
+    <p v-if="hidden" :id="veilId" class="qconceal__veil" aria-hidden="true">
       {{ t('learning', 'Die Frage erscheint nach dem Einstieg – oder sofort, wenn du hierher zeigst oder tippst.') }}
     </p>
     <div class="qconceal__content" :inert="hidden || null" :aria-hidden="hidden ? 'true' : null">
@@ -30,6 +30,10 @@ import { unlockAnswerSounds } from '../utils/answerSounds.js';
 // How long the pointer has to rest on the hidden area before it uncovers the question: a mouse on
 // its way to the player above crosses the area and must not uncover it in passing.
 export const HOVER_DWELL_MS = 500;
+
+// The hidden area is a button; its name is the visible text on it (WCAG 2.5.3 Label in Name:
+// a speech-input user says what they see). One id per instance, for aria-labelledby.
+let veilSeq = 0;
 
 /**
  * GitHub #66 (Andre 18.11.: "die Frage erst nach dem Intro einblenden", "kein Knopf, hovern
@@ -62,6 +66,7 @@ export default {
       prefs: useOptionalQuestionMediaPrefsStore(),
       a11y: useOptionalA11yStore(),
       hoverTimer: null,
+      veilId: 'qconceal-veil-' + (++veilSeq),
     };
   },
   computed: {
