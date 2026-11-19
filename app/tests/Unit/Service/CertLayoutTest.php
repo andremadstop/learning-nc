@@ -204,4 +204,82 @@ class CertLayoutTest extends TestCase {
         $this->assertNull(CertLayout::decode(CertLayout::snapshot(CertLayout::encode($layout)))['theming_logo_sha']);
         $this->assertNull(CertLayout::snapshot(null, '../not-a-sha'));
     }
+
+    // ---- GitHub #93: background --------------------------------------------------------------
+
+    /** Layouts as 5.16.0 stored them: decoding adds the background defaults, encoding gives the same bytes. */
+    public function testLayoutsOf5160EncodeByteForByteAsBefore(): void {
+        $stored = [
+            '{"intro":"x","show":{"logo":true,"issuer":true,"score":false,"threshold":true,"elements":true,"validity":true},"issuer_name":"","signer_name":"Maria Muster","signer_role":"","stamp_sha":null,"signature_sha":null,"logo_sha":null,"theming_logo_sha":null}',
+            '{"intro":"","show":{"logo":true,"issuer":false,"score":true,"threshold":true,"elements":true,"validity":true},"issuer_name":"Northwind Training","signer_name":"","signer_role":"","stamp_sha":null,"signature_sha":null,"logo_sha":"' . self::SHA . '","theming_logo_sha":null}',
+        ];
+        foreach ($stored as $json) {
+            $layout = CertLayout::decode($json);
+            $this->assertNull($layout['background_sha']);
+            $this->assertNull($layout['background_builtin']);
+            $this->assertSame(100, $layout['background_intensity']);
+            $this->assertSame($json, CertLayout::encode($layout));
+            $this->assertSame($json, CertLayout::snapshot($json));
+        }
+    }
+
+    public function testABackgroundIsStoredAndFrozenIntoTheSnapshot(): void {
+        $layout = CertLayout::defaults();
+        $layout['background_sha'] = self::SHA;
+        $layout['background_intensity'] = 40;
+        $json = CertLayout::encode($layout);
+
+        $this->assertNotNull($json);
+        $this->assertSame($layout, CertLayout::decode(CertLayout::snapshot($json)));
+        $view = CertLayout::forSettings($json);
+        $this->assertSame(self::SHA, $view['background_id']);
+        $this->assertNull($view['background_builtin']);
+        $this->assertSame(40, $view['background_intensity']);
+
+        $builtin = CertLayout::defaults();
+        $builtin['background_builtin'] = 'frame';
+        $this->assertSame('frame', CertLayout::decode(CertLayout::snapshot(CertLayout::encode($builtin)))['background_builtin']);
+    }
+
+    /** No background: the strength falls back to its standard value, the layout stays NULL. */
+    public function testAStrengthWithoutBackgroundIsNotStored(): void {
+        $layout = CertLayout::defaults();
+        $layout['background_intensity'] = 30;
+        $this->assertNull(CertLayout::encode($layout));
+        $this->assertSame(100, CertLayout::decode('{"intro":"x","background_intensity":30}')['background_intensity']);
+    }
+
+    public function testOnlyKnownBuiltInsAndValidStrengthsSurviveDecoding(): void {
+        foreach (['frame" onload="alert(1)', '../frame', 'FRAME', 'builtin:frame', 42, true] as $value) {
+            $this->assertNull(CertLayout::decode((string)json_encode(['background_builtin' => $value]))['background_builtin']);
+        }
+        foreach (['0', '5', '15', '110', '"50"', '50.5', 'null', '[50]'] as $value) {
+            $this->assertSame(100, CertLayout::decode('{"background_builtin":"lines","background_intensity":' . $value . '}')['background_intensity'], $value);
+        }
+        $this->assertSame(50, CertLayout::decode('{"background_builtin":"lines","background_intensity":50}')['background_intensity']);
+        // a library background wins over a built-in one: at most one of them
+        $both = CertLayout::decode((string)json_encode(['background_sha' => self::SHA, 'background_builtin' => 'frame']));
+        $this->assertSame(self::SHA, $both['background_sha']);
+        $this->assertNull($both['background_builtin']);
+    }
+
+    public function testTheBackgroundCannotBeSetThroughTheForm(): void {
+        $layout = CertLayout::apply([
+            'background_sha' => self::SHA,
+            'background_builtin' => 'frame',
+            'background_intensity' => 50,
+        ], CertLayout::defaults());
+
+        $this->assertNull($layout['background_sha']);
+        $this->assertNull($layout['background_builtin']);
+        $this->assertSame(100, $layout['background_intensity']);
+
+        // and saving the form keeps the background chosen through its own endpoint
+        $current = CertLayout::defaults();
+        $current['background_builtin'] = 'corners';
+        $current['background_intensity'] = 70;
+        $kept = CertLayout::apply(['intro' => 'x'], $current);
+        $this->assertSame('corners', $kept['background_builtin']);
+        $this->assertSame(70, $kept['background_intensity']);
+    }
 }

@@ -191,6 +191,86 @@ final class CertLayoutAssetsTest extends TestCase {
     }
 
     /**
+     * GitHub #93 on a real Nextcloud, both engines: a large library background (a noisy photo far
+     * over the 64 KB of a MySQL TEXT column, re-encoded on upload) chosen for the course and frozen
+     * into a certificate. Deleting it from the library leaves the course without background; the
+     * certificate keeps its copy, the cleanup sweep leaves that copy alone, and the public verify
+     * page shows no background (ZC6: not before the decision on it).
+     */
+    public function testIssuedCertificateKeepsItsLibraryBackground(): void {
+        $library = Server::get(\OCA\Learning\Service\CertBackgroundLibrary::class);
+        mt_srand(93);
+        $image = imagecreatetruecolor(1500, 1000);
+        for ($y = 0; $y < 1000; $y++) {
+            for ($x = 0; $x < 1500; $x++) {
+                imagesetpixel($image, $x, $y, mt_rand(0, 0xFFFFFF));
+            }
+        }
+        ob_start();
+        imagejpeg($image, null, 95);
+        $upload = (string)ob_get_clean();
+        $this->assertLessThan(\OCA\Learning\Service\CertBackgroundLibrary::MAX_BYTES, strlen($upload));
+
+        $background = $library->add('Northwind photo', $upload);
+        try {
+            $stored = $library->content($background['id'])['bytes'];
+            $this->assertGreaterThan(\OCA\Learning\Service\CertLogoLibrary::MAX_BYTES, strlen($stored), 'near the limit, over the logo limit');
+            $dataUrl = 'data:image/jpeg;base64,' . base64_encode($stored);
+
+            $this->layouts->selectBackground($this->course(), $background['id'], 60);
+            $this->assertSame(1, $this->layouts->countCoursesUsingBackground($background['id']));
+            $preview = $this->layouts->presentationForCourse($this->course());
+            $this->assertSame($dataUrl, $preview['background'], 'the whole image came back from the database');
+            $this->assertSame(60, $preview['background_intensity']);
+
+            $issued = Server::get(IssuanceService::class)
+                ->issueIfPassedResult(self::LEARNER, $this->courseId, new PassResult(true, 90, 80, true, time()));
+            $this->assertNotNull($issued);
+            $cert = $issued->certificate;
+
+            $library->delete($background['id']);
+            $this->assertSame(1, $this->layouts->resetBackground($background['id']));
+            $this->assertSame(0, $this->layouts->countCoursesUsingBackground($background['id']));
+            $this->assertNull($this->layouts->presentationForCourse($this->course())['background']);
+            $this->assertNull($this->course()->getCertLayout(), 'without background the course is on the standard layout again');
+
+            $presentation = $this->layouts->presentationForCertificate($cert);
+            $this->assertSame($dataUrl, $presentation['background'] ?? null);
+            $this->assertSame(60, $presentation['background_intensity'] ?? null);
+
+            $verify = Server::get(\OCA\Learning\Service\CertificateVerifyService::class)
+                ->verifyByVerificationId((string)$cert->getVerificationId());
+            $this->assertSame('valid', $verify['status']);
+            $this->assertStringNotContainsString(base64_encode(substr($stored, 0, 300)), (string)json_encode($verify), 'no background on the public verify page');
+
+            $this->backdateAssets();
+            $course = $this->course();
+            $course->setUpdatedAt(time() - 7200);
+            $this->courses->update($course);
+            $this->layouts->sweepUnreferencedAssets();
+            $this->assertSame($dataUrl, $this->layouts->presentationForCertificate($cert)['background'] ?? null, 'the certificate still uses the background');
+        } finally {
+            if ($library->find($background['id']) !== null) {
+                $library->delete($background['id']);
+            }
+        }
+    }
+
+    /** GitHub #93: a built-in background is only named in the layout and frozen like the rest. */
+    public function testIssuedCertificateKeepsItsBuiltInBackground(): void {
+        $this->layouts->selectBackground($this->course(), 'builtin:frame', 80);
+        $issued = Server::get(IssuanceService::class)
+            ->issueIfPassedResult(self::LEARNER, $this->courseId, new PassResult(true, 90, 80, true, time()));
+        $this->assertNotNull($issued);
+        $this->layouts->selectBackground($this->course(), 'builtin:lines', 30);
+
+        $presentation = $this->layouts->presentationForCertificate($issued->certificate);
+        $this->assertSame('frame', $presentation['background_builtin'] ?? null);
+        $this->assertSame(80, $presentation['background_intensity'] ?? null);
+        $this->assertSame('lines', $this->layouts->presentationForCourse($this->course())['background_builtin']);
+    }
+
+    /**
      * GitHub #78 (review) on a real Nextcloud: a course on the Theming logo. The certificate keeps
      * the Theming logo of its issuance on the card and the public verify page after an admin
      * replaces the Theming logo; the cleanup sweep leaves that copy alone.
@@ -305,6 +385,7 @@ final class CertLayoutAssetsTest extends TestCase {
             \OCA\Learning\Controller\CourseCertificateController::class,
             \OCA\Learning\Controller\CertLayoutController::class,
             \OCA\Learning\Controller\CertLogoController::class,
+            \OCA\Learning\Controller\CertBackgroundController::class,
         ] as $class) {
             $controller = $container->get($class);
             $property = new \ReflectionProperty($controller, 'layoutService');

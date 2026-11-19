@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\CertBackgroundLibrary;
 use OCA\Learning\Service\CertLayout;
 use OCA\Learning\Service\CertLayoutService;
 use OCA\Learning\Service\CertLogoLibrary;
@@ -39,6 +40,7 @@ class CertLayoutController extends Controller {
         private LoggerInterface $logger,
         private ?string $userId,
         private CertLogoLibrary $logoLibrary,
+        private CertBackgroundLibrary $backgroundLibrary,
     ) {
         parent::__construct($appName, $request);
     }
@@ -186,6 +188,86 @@ class CertLayoutController extends Controller {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Throwable $e) {
             $this->logger->error('cert layout logo selection failed: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * GitHub #93: the backgrounds the course can use (the library's and the built-in ones), the one it
+     * uses and its strength.
+     *
+     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string}>, builtins: list<string>, selected: string, intensity: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     */
+    #[NoAdminRequired]
+    #[UserRateLimit(limit: 120, period: 60)]
+    public function backgrounds(int $courseId): DataResponse {
+        try {
+            $course = $this->courseService->assertInstructorOfCourse($courseId, (string)$this->userId);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        $backgrounds = [];
+        foreach ($this->backgroundLibrary->list() as $entry) {
+            $backgrounds[] = ['id' => $entry['id'], 'name' => $entry['name']];
+        }
+        $layout = CertLayout::decode($course->getCertLayout());
+        $selected = $layout['background_sha'] ?? ($layout['background_builtin'] !== null ? 'builtin:' . $layout['background_builtin'] : '');
+        return new DataResponse([
+            'backgrounds' => $backgrounds,
+            'builtins' => CertLayout::BACKGROUND_BUILTINS,
+            'selected' => $selected,
+            'intensity' => $layout['background_intensity'],
+        ]);
+    }
+
+    /**
+     * GitHub #93: a library background's image, for the choice in the course settings. Only for the
+     * course's instructors.
+     *
+     * @return DataDisplayResponse<Http::STATUS_OK, array{Content-Type: string}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
+    #[UserRateLimit(limit: 300, period: 60)]
+    public function backgroundImage(int $courseId, string $backgroundId): DataDisplayResponse|DataResponse {
+        try {
+            $this->courseService->assertInstructorOfCourse($courseId, (string)$this->userId);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        return CertLogoController::imageResponse($this->backgroundLibrary, $backgroundId);
+    }
+
+    /**
+     * GitHub #93: use a background on the course's certificates and set its strength. Takes effect at
+     * once, like the logo; certificates already issued keep theirs.
+     *
+     * @param string $backgroundId a library background's id, 'builtin:<id>' for a built-in one, '' for none
+     * @param int $intensity how strongly the background shows, 10–100 in steps of 10
+     * @return DataResponse<Http::STATUS_OK, array<string, mixed>, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
+     */
+    #[NoAdminRequired]
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function selectBackground(int $courseId, string $backgroundId = '', int $intensity = CertLayout::BACKGROUND_INTENSITY_DEFAULT): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+        try {
+            $course = $this->courseService->assertInstructorOfCourse($courseId, $this->userId);
+            $course = $this->layoutService->selectBackground($course, $backgroundId, $intensity);
+            return new DataResponse($this->layoutService->presentationForCourse($course));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            $this->logger->error('cert layout background selection failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }

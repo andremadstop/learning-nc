@@ -164,6 +164,7 @@ class CertLogoControllerTest extends TestCase {
             $this->createMock(LoggerInterface::class),
             'teacher',
             $library,
+            $this->createMock(\OCA\Learning\Service\CertBackgroundLibrary::class),
         );
     }
 

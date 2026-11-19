@@ -146,6 +146,12 @@ return [
         ['name' => 'certLogo#rename', 'url' => '/api/settings/admin/cert-logos/{id}', 'verb' => 'PUT'],
         ['name' => 'certLogo#delete', 'url' => '/api/settings/admin/cert-logos/{id}', 'verb' => 'DELETE'],
         ['name' => 'certLogo#image', 'url' => '/api/settings/admin/cert-logos/{id}/image', 'verb' => 'GET'],
+        // GitHub #93: certificate background library (admin only)
+        ['name' => 'certBackground#index', 'url' => '/api/settings/admin/cert-backgrounds', 'verb' => 'GET'],
+        ['name' => 'certBackground#upload', 'url' => '/api/settings/admin/cert-backgrounds', 'verb' => 'POST'],
+        ['name' => 'certBackground#rename', 'url' => '/api/settings/admin/cert-backgrounds/{id}', 'verb' => 'PUT'],
+        ['name' => 'certBackground#delete', 'url' => '/api/settings/admin/cert-backgrounds/{id}', 'verb' => 'DELETE'],
+        ['name' => 'certBackground#image', 'url' => '/api/settings/admin/cert-backgrounds/{id}/image', 'verb' => 'GET'],
         ['name' => 'settings#getTools', 'url' => '/api/settings/tools', 'verb' => 'GET'],
         ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
@@ -320,6 +326,10 @@ return [
         ['name' => 'certLayout#logos', 'url' => '/api/courses/{courseId}/cert-layout/logos', 'verb' => 'GET'],
         ['name' => 'certLayout#logoImage', 'url' => '/api/courses/{courseId}/cert-layout/logos/{logoId}', 'verb' => 'GET'],
         ['name' => 'certLayout#selectLogo', 'url' => '/api/courses/{courseId}/cert-layout/logo', 'verb' => 'PUT'],
+        // GitHub #93: the course's certificate background
+        ['name' => 'certLayout#backgrounds', 'url' => '/api/courses/{courseId}/cert-layout/backgrounds', 'verb' => 'GET'],
+        ['name' => 'certLayout#backgroundImage', 'url' => '/api/courses/{courseId}/cert-layout/backgrounds/{backgroundId}', 'verb' => 'GET'],
+        ['name' => 'certLayout#selectBackground', 'url' => '/api/courses/{courseId}/cert-layout/background', 'verb' => 'PUT'],
         ['name' => 'course#updatePracticeConfig', 'url' => '/api/courses/{courseId}/practice-exam-config', 'verb' => 'PATCH'],
         ['name' => 'training#startPractice', 'url' => '/api/courses/{courseId}/practice-exam/start', 'verb' => 'POST'],
         ['name' => 'course#getPassStatus',    'url' => '/api/courses/{courseId}/pass-status',  'verb' => 'GET'],

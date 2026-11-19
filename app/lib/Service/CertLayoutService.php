@@ -39,6 +39,11 @@ use OCP\IDBConnection;
  * snapshot as theming_logo_sha, so replacing the Theming logo later does not redraw issued
  * certificates. Without such a copy (certificates issued before 5.14.0, an SVG logo without raster
  * copy) card and verify page show the live Theming logo.
+ *
+ * GitHub #93: the course's background works like the logo. A library background (CertBackgroundLibrary,
+ * re-encoded on upload) is copied into learning_cert_assets when the course picks it, and a
+ * certificate keeps the background it was issued with. The built-in backgrounds are drawn in CSS and
+ * only named in the layout. The public verify page does not show backgrounds.
  */
 class CertLayoutService {
     public const MAX_BYTES = 1048576;
@@ -53,6 +58,7 @@ class CertLayoutService {
         private CertIssuerName $issuerName,
         private CertLogoLibrary $logoLibrary,
         private ThemingLogoSource $themingLogo,
+        private CertBackgroundLibrary $backgroundLibrary,
     ) {
     }
 
@@ -172,7 +178,7 @@ class CertLayoutService {
      * GitHub #78: how many courses use the library logo for their next certificates.
      */
     public function countCoursesUsingLogo(string $logoId): int {
-        return count($this->coursesUsingLogo($logoId));
+        return count($this->coursesUsing('logo_sha', $logoId));
     }
 
     /**
@@ -183,7 +189,7 @@ class CertLayoutService {
      */
     public function resetLogo(string $logoId): int {
         $changed = 0;
-        foreach ($this->coursesUsingLogo($logoId) as $course) {
+        foreach ($this->coursesUsing('logo_sha', $logoId) as $course) {
             $layout = CertLayout::decode($course->getCertLayout());
             $layout['logo_sha'] = null;
             $course->setCertLayout(CertLayout::encode($layout));
@@ -195,19 +201,95 @@ class CertLayoutService {
     }
 
     /**
-     * Courses whose layout names the logo. The sha256 is 64 hex characters, so a LIKE on it cannot
-     * match anything else in the JSON; the decoded layout confirms it.
+     * GitHub #93: use a background on the course's certificates. $choice is the id of a library
+     * background, 'builtin:<id>' for one that ships with the app, or '' for none; $intensity how
+     * strongly it shows (10–100 in steps of 10). A library background is copied into the course's
+     * certificate images now, so a certificate issued with it keeps it whatever happens to the
+     * library afterwards.
      *
+     * The caller has checked that the user manages the course.
+     *
+     * @throws \InvalidArgumentException background_not_found, invalid_intensity
+     */
+    public function selectBackground(Course $course, string $choice, int $intensity): Course {
+        if (!CertLayout::isValidIntensity($intensity)) {
+            throw new \InvalidArgumentException('invalid_intensity');
+        }
+        $layout = CertLayout::decode($course->getCertLayout());
+        $layout['background_sha'] = null;
+        $layout['background_builtin'] = null;
+        if (str_starts_with($choice, 'builtin:')) {
+            $builtin = CertLayout::cleanBuiltin(substr($choice, 8));
+            if ($builtin === null) {
+                throw new \InvalidArgumentException('background_not_found');
+            }
+            $layout['background_builtin'] = $builtin;
+        } elseif ($choice !== '') {
+            if (!CertBackgroundLibrary::isId($choice)) {
+                throw new \InvalidArgumentException('background_not_found');
+            }
+            try {
+                $background = $this->backgroundLibrary->content($choice);
+            } catch (NotFoundException $e) {
+                throw new \InvalidArgumentException('background_not_found');
+            }
+            $this->storeAsset((int)$course->getId(), $choice, $background['bytes'], $background['mime']);
+            $layout['background_sha'] = $choice;
+        }
+        $layout['background_intensity'] = $intensity;
+        $encoded = CertLayout::encode($layout);
+        if ($encoded === $course->getCertLayout()) {
+            return $course;
+        }
+        $course->setCertLayout($encoded);
+        $course->setUpdatedAt($this->timeFactory->getTime());
+        /** @var Course $course */
+        $course = $this->courseMapper->update($course);
+        return $course;
+    }
+
+    /**
+     * GitHub #93: how many courses use the library background for their next certificates.
+     */
+    public function countCoursesUsingBackground(string $backgroundId): int {
+        return count($this->coursesUsing('background_sha', $backgroundId));
+    }
+
+    /**
+     * GitHub #93: a library background was deleted. Courses that used it issue their next
+     * certificates without background; certificates already issued keep their copy.
+     *
+     * @return int number of courses changed
+     */
+    public function resetBackground(string $backgroundId): int {
+        $changed = 0;
+        foreach ($this->coursesUsing('background_sha', $backgroundId) as $course) {
+            $layout = CertLayout::decode($course->getCertLayout());
+            $layout['background_sha'] = null;
+            $course->setCertLayout(CertLayout::encode($layout));
+            $course->setUpdatedAt($this->timeFactory->getTime());
+            $this->courseMapper->update($course);
+            $changed++;
+        }
+        return $changed;
+    }
+
+    /**
+     * Courses whose layout names the library image under $key (logo_sha, background_sha). The
+     * sha256 is 64 hex characters, so a LIKE on it cannot match anything else in the JSON; the
+     * decoded layout confirms it is the right key.
+     *
+     * @param 'logo_sha'|'background_sha' $key
      * @return list<Course>
      */
-    private function coursesUsingLogo(string $logoId): array {
-        if (!CertLogoLibrary::isId($logoId)) {
+    private function coursesUsing(string $key, string $sha): array {
+        if (!CertImageLibrary::isId($sha)) {
             return [];
         }
         $qb = $this->db->getQueryBuilder();
         $qb->select('id')
             ->from('learning_courses')
-            ->where($qb->expr()->like('cert_layout', $qb->createNamedParameter('%' . $this->db->escapeLikeParameter($logoId) . '%')));
+            ->where($qb->expr()->like('cert_layout', $qb->createNamedParameter('%' . $this->db->escapeLikeParameter($sha) . '%')));
         $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
@@ -218,7 +300,7 @@ class CertLayoutService {
             } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
                 continue;
             }
-            if (CertLayout::decode($course->getCertLayout())['logo_sha'] === $logoId) {
+            if (CertLayout::decode($course->getCertLayout())[$key] === $sha) {
                 $courses[] = $course;
             }
         }
@@ -327,6 +409,11 @@ class CertLayoutService {
             // a library logo on white (the Theming logo is made for the instance's themes).
             'logo' => $logo['logo'],
             'logo_library' => $logo['library'],
+            // GitHub #93: a library background as a data URL (its copy for this course), or the id of a
+            // built-in one; both null = none. A copy that is gone shows no background rather than failing.
+            'background' => $layout['background_sha'] !== null ? $this->dataUrl($courseId, $layout['background_sha']) : null,
+            'background_builtin' => $layout['background_builtin'],
+            'background_intensity' => $layout['background_intensity'],
         ];
     }
 
@@ -415,7 +502,8 @@ class CertLayoutService {
     }
 
     /**
-     * Delete the images nobody uses any more: not the course's stamp, signature or logo, and in no
+     * Delete the images nobody uses any more: not the course's stamp, signature, logo or background
+     * (GitHub #93), and in no
      * certificate of the course. Run by CertAssetCleanupJob, never inline on a change.
      *
      * Grace period: only courses whose last change (importImage/removeImage set updated_at) is at
@@ -449,7 +537,8 @@ class CertLayoutService {
             $sha = (string)$row['sha256'];
             $courseId = (int)$row['course_id'];
             $layout = CertLayout::decode(is_string($row['cert_layout'] ?? null) ? $row['cert_layout'] : null);
-            if ($layout['stamp_sha'] === $sha || $layout['signature_sha'] === $sha || $layout['logo_sha'] === $sha) {
+            if ($layout['stamp_sha'] === $sha || $layout['signature_sha'] === $sha || $layout['logo_sha'] === $sha
+                || $layout['background_sha'] === $sha) {
                 continue;
             }
             $qb = $this->db->getQueryBuilder();

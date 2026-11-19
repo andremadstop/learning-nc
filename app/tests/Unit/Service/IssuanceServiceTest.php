@@ -242,6 +242,7 @@ class IssuanceServiceTest extends TestCase {
             new CertIssuerName($this->operatorInfo(''), $theming),
             $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class),
             $source,
+            $this->createMock(\OCA\Learning\Service\CertBackgroundLibrary::class),
         );
     }
 

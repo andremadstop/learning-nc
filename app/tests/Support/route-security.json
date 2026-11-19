@@ -54,6 +54,47 @@
    "NoAdminRequired": true,
    "NoCSRFRequired": true
   },
+  "CertBackgroundController::delete": {
+   "userRateLimit": [
+    30,
+    60
+   ]
+  },
+  "CertBackgroundController::image": {
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "CertBackgroundController::index": [],
+  "CertBackgroundController::rename": {
+   "userRateLimit": [
+    60,
+    60
+   ]
+  },
+  "CertBackgroundController::upload": {
+   "userRateLimit": [
+    20,
+    60
+   ]
+  },
+  "CertLayoutController::backgroundImage": {
+   "NoAdminRequired": true,
+   "NoCSRFRequired": true,
+   "userRateLimit": [
+    300,
+    60
+   ]
+  },
+  "CertLayoutController::backgrounds": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    120,
+    60
+   ]
+  },
   "CertLayoutController::importImage": {
    "NoAdminRequired": true,
    "userRateLimit": [
@@ -80,6 +121,13 @@
    "NoAdminRequired": true,
    "userRateLimit": [
     30,
+    60
+   ]
+  },
+  "CertLayoutController::selectBackground": {
+   "NoAdminRequired": true,
+   "userRateLimit": [
+    60,
     60
    ]
   },

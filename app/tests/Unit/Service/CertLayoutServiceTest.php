@@ -47,7 +47,7 @@ class CertLayoutServiceTest extends TestCase {
     }
 
     /** @param array{mime: string, bytes: string}|null $themingLogo what ThemingLogoSource::current() gives */
-    private function service(?IRootFolder $root = null, ?FakeDbConnection $db = null, ?\OCA\Learning\Service\CertLogoLibrary $library = null, ?array $themingLogo = null): CertLayoutService {
+    private function service(?IRootFolder $root = null, ?FakeDbConnection $db = null, ?\OCA\Learning\Service\CertLogoLibrary $library = null, ?array $themingLogo = null, ?\OCA\Learning\Service\CertBackgroundLibrary $backgrounds = null): CertLayoutService {
         $theming = $this->createMock(\OCA\Learning\Service\ThemingLogoSource::class);
         $theming->method('current')->willReturn($themingLogo);
         $mapper = $this->createMock(CourseMapper::class);
@@ -65,6 +65,7 @@ class CertLayoutServiceTest extends TestCase {
             $this->issuerName(),
             $library ?? $this->createMock(\OCA\Learning\Service\CertLogoLibrary::class),
             $theming,
+            $backgrounds ?? $this->createMock(\OCA\Learning\Service\CertBackgroundLibrary::class),
         );
     }
 
@@ -567,5 +568,129 @@ class CertLayoutServiceTest extends TestCase {
         $this->assertFalse($presentation['logo_library']);
         $this->assertSame('data:image/png;base64,QUJD', $service->logoForCertificate($cert));
         $this->assertSame(str_repeat('f', 64), $db->issuedBuilders[0]->namedParameters[1]['value']);
+    }
+
+    // ---- GitHub #93: the course's background -------------------------------------------------
+
+    private function backgrounds(?string $id = null, string $mime = 'image/jpeg', string $bytes = 'BGBYTES'): \OCA\Learning\Service\CertBackgroundLibrary {
+        $library = $this->createMock(\OCA\Learning\Service\CertBackgroundLibrary::class);
+        $library->method('content')->willReturnCallback(function (string $asked) use ($id, $mime, $bytes): array {
+            if ($asked !== $id) {
+                throw new \OCP\Files\NotFoundException('no such background');
+            }
+            return ['mime' => $mime, 'bytes' => $bytes];
+        });
+        return $library;
+    }
+
+    public function testChoosingALibraryBackgroundCopiesItIntoTheCourseImages(): void {
+        $id = str_repeat('e', 64);
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(new FakeResult()),   // not stored for the course yet
+            new FakeQueryBuilder(null, 1),            // insert
+        ]);
+
+        $course = $this->service(null, $db, null, null, $this->backgrounds($id))->selectBackground($this->course(), $id, 60);
+
+        $layout = CertLayout::decode($course->getCertLayout());
+        $this->assertSame($id, $layout['background_sha']);
+        $this->assertNull($layout['background_builtin']);
+        $this->assertSame(60, $layout['background_intensity']);
+        $values = array_column($db->issuedBuilders[1]->namedParameters, 'value');
+        $this->assertSame('insert', $db->issuedBuilders[1]->operation);
+        $this->assertContains('image/jpeg', $values);
+        $this->assertContains(base64_encode('BGBYTES'), $values);
+        $this->assertSame(1760000000, $course->getUpdatedAt(), 'the change starts the grace period of the sweep');
+    }
+
+    public function testABuiltInBackgroundIsOnlyNamed(): void {
+        $db = new FakeDbConnection();
+        $course = $this->service(null, $db)->selectBackground($this->course(), 'builtin:corners', 100);
+
+        $layout = CertLayout::decode($course->getCertLayout());
+        $this->assertSame('corners', $layout['background_builtin']);
+        $this->assertNull($layout['background_sha']);
+        $this->assertCount(0, $db->issuedBuilders, 'nothing to copy');
+    }
+
+    public function testUnknownBackgroundsAndStrengthsAreRefused(): void {
+        $db = new FakeDbConnection();
+        $service = $this->service(null, $db, null, null, $this->backgrounds(str_repeat('e', 64)));
+        foreach ([str_repeat('f', 64), '../../etc/passwd', 'builtin:', 'builtin:../x', 'builtin:frame" onload="x', 'frame'] as $choice) {
+            try {
+                $service->selectBackground($this->course(), $choice, 100);
+                $this->fail('accepted ' . $choice);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame('background_not_found', $e->getMessage(), $choice);
+            }
+        }
+        foreach ([0, 5, 15, 110, -10] as $intensity) {
+            try {
+                $service->selectBackground($this->course(), 'builtin:frame', $intensity);
+                $this->fail('accepted strength ' . $intensity);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame('invalid_intensity', $e->getMessage());
+            }
+        }
+        $this->assertCount(0, $db->issuedBuilders);
+        $this->assertSame([], $this->updated);
+    }
+
+    /** Choosing "none" after moving the slider stores the standard layout: NULL, as in 5.16.0. */
+    public function testNoneAfterAStrengthChangeIsTheStandardLayoutAgain(): void {
+        $layout = CertLayout::defaults();
+        $layout['background_builtin'] = 'frame';
+        $layout['background_intensity'] = 40;
+
+        $course = $this->service()->selectBackground($this->course(CertLayout::encode($layout)), '', 40);
+
+        $this->assertNull($course->getCertLayout());
+    }
+
+    public function testTheSweepKeepsTheCoursesBackground(): void {
+        $background = str_repeat('e', 64);
+        $layout = CertLayout::defaults();
+        $layout['background_sha'] = $background;
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll([['id' => 1, 'course_id' => 7, 'sha256' => $background, 'cert_layout' => CertLayout::encode($layout)]])),
+        ]);
+
+        $this->assertSame(0, $this->service(null, $db)->sweepUnreferencedAssets());
+        $this->assertCount(1, $db->issuedBuilders, 'no certificate lookup, no delete');
+    }
+
+    public function testCertificatePresentationCarriesItsBackground(): void {
+        $background = str_repeat('e', 64);
+        $layout = CertLayout::defaults();
+        $layout['background_sha'] = $background;
+        $layout['background_intensity'] = 70;
+        $cert = new Certificate();
+        $cert->setCourseId(7);
+        $cert->setLayoutJson(CertLayout::encode($layout));
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetch(['mime' => 'image/jpeg', 'data_b64' => '/9j/'])),
+        ]);
+
+        $presentation = $this->service(null, $db)->presentationForCertificate($cert);
+
+        $this->assertSame('data:image/jpeg;base64,/9j/', $presentation['background'] ?? null);
+        $this->assertNull($presentation['background_builtin']);
+        $this->assertSame(70, $presentation['background_intensity']);
+        $this->assertSame($background, $db->issuedBuilders[0]->namedParameters[1]['value']);
+
+        $builtin = CertLayout::defaults();
+        $builtin['background_builtin'] = 'lines';
+        $cert->setLayoutJson(CertLayout::encode($builtin));
+        $presentation = $this->service()->presentationForCertificate($cert);
+        $this->assertNull($presentation['background']);
+        $this->assertSame('lines', $presentation['background_builtin']);
+        $this->assertSame(100, $presentation['background_intensity']);
+    }
+
+    public function testACourseWithoutBackgroundHasNone(): void {
+        $presentation = $this->service()->presentationForCourse($this->course(null));
+        $this->assertNull($presentation['background']);
+        $this->assertNull($presentation['background_builtin']);
+        $this->assertSame(100, $presentation['background_intensity']);
     }
 }

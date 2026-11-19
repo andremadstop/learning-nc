@@ -51,6 +51,24 @@
    "period": 60,
    "group": "live"
   },
+  "CertLayoutController::backgroundImage": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "media"
+  },
+  "CertLayoutController::backgrounds": {
+   "kind": "user",
+   "limit": 120,
+   "period": 60,
+   "group": "read"
+  },
+  "CertLayoutController::selectBackground": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
   "CertLayoutController::importImage": {
    "kind": "user",
    "limit": 20,
@@ -86,6 +104,30 @@
    "limit": 120,
    "period": 60,
    "group": "read"
+  },
+  "CertBackgroundController::delete": {
+   "kind": "user",
+   "limit": 30,
+   "period": 60,
+   "group": "destructive"
+  },
+  "CertBackgroundController::image": {
+   "kind": "user",
+   "limit": 300,
+   "period": 60,
+   "group": "media"
+  },
+  "CertBackgroundController::rename": {
+   "kind": "user",
+   "limit": 60,
+   "period": 60,
+   "group": "write"
+  },
+  "CertBackgroundController::upload": {
+   "kind": "user",
+   "limit": 20,
+   "period": 60,
+   "group": "costly"
   },
   "CertLogoController::delete": {
    "kind": "user",
