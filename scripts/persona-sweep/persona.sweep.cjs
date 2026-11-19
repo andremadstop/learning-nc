@@ -1034,11 +1034,16 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		await page.waitForTimeout(2500) // nothing plays by itself, so the question must still wait
 		if (!(await isHidden())) { rec.add('media', 'the question is shown before the intro was heard (autoplay off, no hover, no focus)'); return }
 		const el = conceal()
-		const attrs = await el.evaluate((n) => ({ role: n.getAttribute('role'), expanded: n.getAttribute('aria-expanded'), label: n.getAttribute('aria-label'), tabindex: n.getAttribute('tabindex') }))
+		// name: aria-label, else the text of the aria-labelledby targets (what a screen reader announces)
+		const attrs = await el.evaluate((n) => ({
+			role: n.getAttribute('role'), expanded: n.getAttribute('aria-expanded'), tabindex: n.getAttribute('tabindex'),
+			label: n.getAttribute('aria-label') ?? (n.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean).map((id) => document.getElementById(id)?.textContent.trim() || '').join(' '),
+		}))
 		if (attrs.role !== 'button' || attrs.expanded !== 'false' || attrs.tabindex !== '0') rec.add('a11y-flow', `the hidden question is not a named Tab stop: ${JSON.stringify(attrs)}`)
-		if (attrs.label !== 'Question, hidden until the end of the intro – tap or point at it to show it') rec.add('a11y-flow', `the hidden question is named "${attrs.label}"`)
 		const veil = (await el.locator('.qconceal__veil').textContent().catch(() => '')).trim()
 		if (veil !== 'The question appears after the intro – or right away when you point or tap here.') rec.add('media', `the hidden question says "${veil}"`)
+		// WCAG 2.5.3 (axe label-content-name-mismatch): the text on the area is part of its name
+		if (!veil || !attrs.label.includes(veil)) rec.add('a11y-flow', `the hidden question is named "${attrs.label}", which does not contain its visible text "${veil}"`)
 		const reach = await el.evaluate((n) => {
 			const content = n.querySelector('.qconceal__content')
 			const answers = [...n.querySelectorAll('.answer-btn')]
@@ -1271,11 +1276,17 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		await card().locator('.answer-btn').first().click()
 		await card().locator('.answer-feedback').first().waitFor({ timeout: 15000 })
 		await settle(page, 300)
-		// The pointer rests in the upper part of the question area (the same element holds the next
-		// question, which keeps at least 80 px; its top may move a few px) and "Next Question" is
-		// pressed by keyboard, so the pointer never leaves it.
+		// The pointer rests inside the question area (the same element holds the next question) and
+		// "Next Question" is pressed by keyboard, so the pointer never leaves it. Training shuffles the
+		// two flow questions, and their players differ (one has the language switches): the second
+		// question's area can start ~140 px lower or higher than the first one's. A fixed offset from
+		// the top therefore landed outside it in one order (autonom-c9b §17.5). The rest point is
+		// the middle of the first question's hidden area (same height class as the second's, ~400 px),
+		// which stays inside the second area as long as the shift is under half that height; it must
+		// also lie inside the answered area now (the feedback only adds height below).
 		const answeredBox = await conceal().boundingBox()
-		const rest = { x: answeredBox.x + answeredBox.width / 2, y: answeredBox.y + Math.min(60, answeredBox.height / 2) }
+		const rest = { x: answeredBox.x + answeredBox.width / 2, y: answeredBox.y + Math.min(firstBox.height / 2, answeredBox.height - 20) }
+		;(rec.current.notes ||= []).push(`flow: hidden area of the first question ${JSON.stringify(firstBox)}, answered ${JSON.stringify(answeredBox)}, pointer rests at ${JSON.stringify(rest)}`)
 		await page.mouse.move(rest.x, rest.y)
 		// the explanation after answering plays (a click is a gesture); "Next Question" follows at
 		// once, so its sound is still running when the next question comes
@@ -1324,6 +1335,7 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		}
 		const box = await conceal().boundingBox()
 		const inside = box && rest.x > box.x && rest.x < box.x + box.width && rest.y > box.y && rest.y < box.y + box.height
+		;(rec.current.notes ||= []).push(`flow: second question "${second.slice(0, 40)}", hidden area ${JSON.stringify(box)}`)
 		if (!inside) throw new Error(`flow: the resting pointer ${JSON.stringify(rest)} is not inside the second hidden question ${JSON.stringify(box)}`)
 		// the pointer moves a little where it already is: no mouseenter, only movement inside
 		await page.mouse.move(rest.x + 6, rest.y + 4, { steps: 2 })
