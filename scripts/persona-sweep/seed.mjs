@@ -104,6 +104,18 @@ const mediaImport = await asInstructor('POST', '/pools/import', {
 })
 const mediaPoolId = mediaImport.pools?.[0]?.id
 if (!mediaPoolId || mediaImport.imported_questions !== 1) throw new Error('media pool import incomplete: ' + JSON.stringify(mediaImport))
+// Review of #66: the step from one media question to the next (the second held hidden, hover with
+// the pointer already inside, the first one's sound stopped) needs two of them in one Training.
+// A pool of its own with both fixture questions, so the single-question stations above stay as they
+// are (Training shuffles); its name shares no words with the first, so a row filter finds one.
+const FLOW_POOL_NAME = 'Media flow: two questions'
+const flowImport = await asInstructor('POST', '/pools/import', {
+	jsonData: JSON.stringify({ pools: [{ name: FLOW_POOL_NAME, description: 'Two questions with a spoken intro each.', questions: fixturePool.questions }] }),
+	dry_run: false,
+	file_name: 'question-media-flow.json',
+})
+const flowPoolId = flowImport.pools?.[0]?.id
+if (!flowPoolId || flowImport.imported_questions !== fixturePool.questions.length || fixturePool.questions.length < 2) throw new Error('media flow pool import incomplete: ' + JSON.stringify(flowImport))
 
 const course = await asInstructor('POST', '/courses', {
 	title: 'Annual safety training',
@@ -118,6 +130,7 @@ for (const [i, poolId] of poolIds.entries()) {
 }
 // Optional: in the course, not among the certificate's required pools.
 await asInstructor('POST', `/courses/${course.id}/pools`, { poolId: mediaPoolId, sortOrder: poolIds.length })
+await asInstructor('POST', `/courses/${course.id}/pools`, { poolId: flowPoolId, sortOrder: poolIds.length + 1 })
 await asInstructor('PATCH', `/courses/${course.id}/cert-config`, {
 	certEnabled: true, certPassPercent: 75, certRequiredPoolIds: poolIds, certValidityDays: 365,
 })
@@ -248,7 +261,7 @@ const answers = {}
 for (const pool of JSON.parse(poolsDoc).pools) {
 	for (const q of pool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
 }
-answers[mediaQuestion.text] = mediaQuestion.answers.find((a) => a.is_correct).text
+for (const q of fixturePool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
 // poolOwner: the only persona whose pool list must show the pools (nothing is shared).
 writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.stringify({
 	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig, deadLinks,
@@ -256,11 +269,14 @@ writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.string
 	examAttemptLimit,
 	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },
 	sharedPool: { id: sharedPoolId, name: SHARED_POOL_NAME, owner: 'admin', permission: 'read', question: 'Where is the reference binder kept?' },
-	media: { poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text },
+	media: {
+		poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text,
+		flow: { poolId: flowPoolId, poolName: FLOW_POOL_NAME, questions: fixturePool.questions.map((q) => q.text) },
+	},
 	gamification: itCourse, ai: admin.ai_enabled === 'yes' ? `${admin.ai_provider} (no backend answers)` : 'off',
 	answers,
 }, null, 2))
-console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, media pool ${mediaPoolId}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)
+console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, media pool ${mediaPoolId}, media flow pool ${flowPoolId}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)
 
 /**
  * A w × h RGBA PNG: transparent ground with dark bars, roughly a wordmark (GitHub #78 seed logo).

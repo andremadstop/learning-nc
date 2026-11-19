@@ -189,7 +189,7 @@ up() {
 	PERSONA_STATE="$STATE" node "$HERE/seed.mjs"
 
 	# GitHub #66: hint, feedback, intro and dialog for the seeded media question. The fixture bundle
-	# also describes demo-q2, which the seed does not import; an unknown exam_key fails the import,
+	# also describes demo-q2, which this pool does not hold; an unknown exam_key fails the import,
 	# so the bundle goes in with demo-q1 only. From the same snapshot as the app ($REF), not the
 	# working copy.
 	echo "==> question media (fixture demo-q1) into the media pool"
@@ -198,7 +198,7 @@ up() {
 	qm="$(mktemp -d "${TMPDIR:-/tmp}/learning-persona-qm.XXXXXX")"
 	git -C "$REPO_ROOT" archive "$REF" app/tests/fixtures/question-media/bundle | tar -x -C "$qm"
 	mkdir -p "$qm/bundle"
-	mv "$qm/app/tests/fixtures/question-media/bundle/demo-q1" "$qm/bundle/"
+	cp -r "$qm/app/tests/fixtures/question-media/bundle/demo-q1" "$qm/bundle/"
 	node -e '
 		const fs = require("fs")
 		const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"))
@@ -210,7 +210,7 @@ up() {
 	# 0.2 s sine tones, invented texts); imported after the first bundle, it leaves intro and dialog alone.
 	git -C "$REPO_ROOT" archive "$REF" app/tests/fixtures/question-media/bundle-v2 | tar -x -C "$qm"
 	mkdir -p "$qm/bundle-v2"
-	mv "$qm/app/tests/fixtures/question-media/bundle-v2/demo-q1" "$qm/bundle-v2/"
+	cp -r "$qm/app/tests/fixtures/question-media/bundle-v2/demo-q1" "$qm/bundle-v2/"
 	node -e '
 		const fs = require("fs")
 		const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"))
@@ -220,10 +220,17 @@ up() {
 	' "$qm/app/tests/fixtures/question-media/bundle-v2/manifest.json" "$qm/bundle-v2/manifest.json"
 	docker cp "$qm/bundle/." "$NC:/tmp/persona-question-media"
 	docker cp "$qm/bundle-v2/." "$NC:/tmp/persona-question-media-v2"
+	# Review of #66: the flow pool holds both fixture questions; it takes the bundles whole.
+	local flow_pool
+	flow_pool="$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).media.flow.poolId))' "$OUT/seed.json")"
+	docker cp "$qm/app/tests/fixtures/question-media/bundle/." "$NC:/tmp/persona-question-media-flow"
+	docker cp "$qm/app/tests/fixtures/question-media/bundle-v2/." "$NC:/tmp/persona-question-media-flow-v2"
 	rm -r -- "$qm"
-	docker exec "$NC" chown -R www-data:www-data /tmp/persona-question-media /tmp/persona-question-media-v2
+	docker exec "$NC" chown -R www-data:www-data /tmp/persona-question-media /tmp/persona-question-media-v2 /tmp/persona-question-media-flow /tmp/persona-question-media-flow-v2
 	occ learning:import-question-media "$media_pool" /tmp/persona-question-media
 	occ learning:import-question-media "$media_pool" /tmp/persona-question-media-v2
+	occ learning:import-question-media "$flow_pool" /tmp/persona-question-media-flow
+	occ learning:import-question-media "$flow_pool" /tmp/persona-question-media-flow-v2
 	echo "persona-sweep: up at $url (state in $STATE)"
 }
 

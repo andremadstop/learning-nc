@@ -1036,7 +1036,7 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		const el = conceal()
 		const attrs = await el.evaluate((n) => ({ role: n.getAttribute('role'), expanded: n.getAttribute('aria-expanded'), label: n.getAttribute('aria-label'), tabindex: n.getAttribute('tabindex') }))
 		if (attrs.role !== 'button' || attrs.expanded !== 'false' || attrs.tabindex !== '0') rec.add('a11y-flow', `the hidden question is not a named Tab stop: ${JSON.stringify(attrs)}`)
-		if (attrs.label !== 'Question, hidden until the end of the intro') rec.add('a11y-flow', `the hidden question is named "${attrs.label}"`)
+		if (attrs.label !== 'Question, hidden until the end of the intro – tap or point at it to show it') rec.add('a11y-flow', `the hidden question is named "${attrs.label}"`)
 		const veil = (await el.locator('.qconceal__veil').textContent().catch(() => '')).trim()
 		if (veil !== 'The question appears after the intro – or right away when you point or tap here.') rec.add('media', `the hidden question says "${veil}"`)
 		const reach = await el.evaluate((n) => {
@@ -1236,6 +1236,96 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		} finally {
 			await page.emulateMedia({ colorScheme: null })
 		}
+	})
+	// Review of #66: every station above starts the media question afresh; nothing walked from one
+	// question to the next. The flow pool (seed) has two questions with a spoken intro, in shuffled
+	// order. After "Next Question" the second must be held hidden from the first frame (no flash),
+	// the first one's sound must have stopped, a mouse crossing the area on its way to the player
+	// must not uncover it, and a pointer resting inside it (it was there for "Next Question", so it
+	// never "enters" the area) uncovers it after a short rest.
+	await station(page, rec, 'Question card with intro: from the first media question to the second (#66)', async () => {
+		const flow = media.flow
+		if (!flow) throw new Error('seed has no media flow pool')
+		await prefsCall({ autoplay: false, sounds: 'auto' })
+		await openMegaTab(page, 'Learning space')
+		await page.locator('.lernraum-subnav button').filter({ hasText: 'Training' }).first().click()
+		await settle(page)
+		await page.locator('#app-content .pool-item').filter({ hasText: flow.poolName }).first().click()
+		await settle(page)
+		await page.getByRole('button', { name: 'Start Training' }).first().click()
+		await page.mouse.move(0, 0)
+		await card().locator('.question-text').first().waitFor({ state: 'attached', timeout: 15000 })
+		const first = (await card().locator('.question-text').first().textContent()).trim()
+		if (!flow.questions.includes(first)) throw new Error(`Training of the flow pool shows "${first}"`)
+		await player().waitFor({ timeout: 10000 })
+		if (!(await waitUntil(isHidden, 3000))) rec.add('media', 'flow: the first question is not held hidden for its intro')
+		// a quick pass over the hidden area towards the player above it must not uncover it
+		const firstBox = await conceal().boundingBox()
+		if (!firstBox) throw new Error('flow: no box for the hidden question')
+		await page.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y + firstBox.height + 30)
+		await page.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y - 30, { steps: 4 })
+		await page.waitForTimeout(900)
+		if (!(await isHidden())) rec.add('media', 'flow: a mouse crossing the hidden question uncovers it (no hover intent)')
+		await conceal().hover()
+		if (!(await waitUntil(async () => !(await isHidden()), 2000))) { rec.add('media', 'flow: hovering the first hidden question does not uncover it'); return }
+		await card().locator('.answer-btn').first().click()
+		await card().locator('.answer-feedback').first().waitFor({ timeout: 15000 })
+		await settle(page, 300)
+		// The pointer rests near the top of the question area (the same element holds the next
+		// question) and "Next Question" is pressed by keyboard, so the pointer never leaves it.
+		const answeredBox = await conceal().boundingBox()
+		const rest = { x: answeredBox.x + answeredBox.width / 2, y: answeredBox.y + 24 }
+		await page.mouse.move(rest.x, rest.y)
+		// the explanation after answering plays (a click is a gesture); "Next Question" follows at
+		// once, so its sound is still running when the next question comes
+		let played = false
+		const play = player().locator('.qmedia__button--primary')
+		if (!(await play.isDisabled().catch(() => true))) {
+			await play.click()
+			played = await waitUntil(() => page.evaluate(() => [...document.querySelectorAll('.training-active .qmedia audio')].some((a) => !a.paused)), 1500, 50)
+			;(rec.current.notes ||= []).push(`flow: sound of the first question playing at "Next Question": ${played}`)
+			await page.mouse.move(rest.x, rest.y)
+		}
+		// From here every change of the card is recorded: was the second question ever visible
+		// before it was uncovered?
+		await page.evaluate((firstText) => {
+			const log = window.__personaFlow = []
+			const look = () => {
+				const c = document.querySelector('.training-active .question-card')
+				const q = c?.querySelector('.qconceal')
+				const text = (c?.querySelector('.question-text')?.textContent || '').trim()
+				if (!q || !text || text === firstText) return
+				const content = q.querySelector('.qconceal__content')
+				log.push({ hidden: q.classList.contains('qconceal--hidden'), opacity: content ? Number(getComputedStyle(content).opacity) : 1 })
+			}
+			window.__personaFlowObserver = new MutationObserver(look)
+			window.__personaFlowObserver.observe(document.querySelector('.training-active') || document.body, { subtree: true, childList: true, attributes: true, characterData: true })
+		}, first)
+		await card().locator('.next-btn').first().focus()
+		await page.keyboard.press('Enter')
+		await card().locator('.question-text').filter({ hasNotText: first }).first().waitFor({ state: 'attached', timeout: 15000 })
+		await page.waitForTimeout(250)
+		const second = (await card().locator('.question-text').first().textContent()).trim()
+		if (second === first || !flow.questions.includes(second)) throw new Error(`after "Next Question" Training shows "${second}"`)
+		const flash = await page.evaluate(() => (window.__personaFlow || []).find((s) => !s.hidden && s.opacity > 0.05) || null)
+		await page.evaluate(() => window.__personaFlowObserver?.disconnect())
+		if (flash) rec.add('media', `flow: the second question shows before its intro (${JSON.stringify(flash)})`)
+		if (!(await isHidden())) { rec.add('media', 'flow: the second question is not held hidden for its intro'); return }
+		if (played) {
+			const still = await page.evaluate(() => [...document.querySelectorAll('.training-active audio')].filter((a) => !a.paused).length)
+			if (still) rec.add('media', `flow: the first question's sound plays on under the second (${still} playing)`)
+		}
+		const box = await conceal().boundingBox()
+		const inside = box && rest.x > box.x && rest.x < box.x + box.width && rest.y > box.y && rest.y < box.y + box.height
+		if (!inside) throw new Error(`flow: the resting pointer ${JSON.stringify(rest)} is not inside the second hidden question ${JSON.stringify(box)}`)
+		// the pointer moves a little where it already is: no mouseenter, only movement inside
+		await page.mouse.move(rest.x + 6, rest.y + 4, { steps: 2 })
+		await page.waitForTimeout(150)
+		if (!(await isHidden())) (rec.current.notes ||= []).push('flow: uncovered within 150 ms of moving (no rest)')
+		await page.mouse.move(rest.x + 2, rest.y + 6)
+		if (!(await waitUntil(async () => !(await isHidden()), 2500, 100))) rec.add('media', 'flow: a pointer resting inside the second hidden question does not uncover it (it never "enters")')
+		await page.mouse.move(0, 0)
+		await page.screenshot({ path: path.join(SHOTS, 'media-question-second.png') })
 	})
 	await prefsCall({ autoplay: false, sounds: 'auto' }).catch(() => {})
 	flush()
