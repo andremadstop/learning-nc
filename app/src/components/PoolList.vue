@@ -106,6 +106,7 @@
         </label>
         <input
           id="pool-search"
+          ref="searchInput"
           v-model="searchTerm"
           type="text"
           class="nc-input search-input"
@@ -114,8 +115,8 @@
           @focus="showSearchResults = true"
           @keydown.esc="clearSearch"
         />
-        <button v-if="searchTerm" type="button" class="clear-search-btn" :aria-label="t('learning', 'Suche leeren')" :title="t('learning', 'Suche leeren')" @click="clearSearch">
-          <span class="icon-close" />
+        <button v-if="searchTerm" type="button" class="clear-search-btn" :aria-label="t('learning', 'Suche leeren')" :title="t('learning', 'Suche leeren')" @click="clearSearchFromButton">
+          <span class="icon-close" aria-hidden="true" />
         </button>
       </div>
 
@@ -822,6 +823,13 @@ export default {
       this.questionSearchResults = [];
       this.showSearchResults = false;
     },
+    // #98: the × disappears with the search term it clears, so focus would fall to the page.
+    // It goes back to the field instead. Not in clearSearch(): picking a result clears too, and
+    // focus must not jump back to the search then.
+    clearSearchFromButton() {
+      this.clearSearch();
+      this.$nextTick(() => this.$refs.searchInput?.focus());
+    },
     handleClickOutside(event) {
       if (this.$refs.searchContainer && !this.$refs.searchContainer.contains(event.target)) {
         this.showSearchResults = false;
@@ -940,16 +948,35 @@ export default {
   padding-left: 40px; /* Make space for the search icon */
   padding-right: 40px; /* Make space for the clear button */
 }
+/* #98: Nextcloud gives every button a minimum height and width (the clickable area), taller than
+   this field, so the × stuck out above and below it. It is now a 28 px square (WCAG 2.5.8 asks
+   for 24), centred on the field and inside it. */
 .clear-search-btn {
   position: absolute;
-  right: 12px;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
+  border-radius: var(--border-radius, 3px);
   cursor: pointer;
   color: var(--color-text-maxcontrast);
   font-size: 16px;
   line-height: 1;
   padding: 0;
+}
+.clear-search-btn:focus-visible {
+  outline: 2px solid var(--color-primary-element);
+  outline-offset: 0;
 }
 .clear-search-btn:hover {
   color: var(--color-primary-element);

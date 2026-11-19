@@ -2551,6 +2551,44 @@ test('instructor: empty course, view-only pool, pool search, archive confirmatio
 		}
 		await page.screenshot({ path: path.join(SHOTS, 'pool-search-view-only-hit.png') })
 	})
+	// #98 follow-up: Nextcloud's minimum button height made the × taller than the field. Measured
+	// at desktop and phone width; the keyboard path (Tab reaches it, Enter clears, focus back on the
+	// field) at desktop width.
+	for (const width of [1400, 390]) {
+		await station(page, rec, `Pools search: the × sits inside the field, ${width} px (#98)`, async () => {
+			await page.setViewportSize({ width, height: width < 500 ? 844 : 900 })
+			try {
+				await openTopTab(page, 'Pools')
+				const input = page.locator('#pool-search')
+				await input.fill('fire')
+				const clear = page.locator('.clear-search-btn')
+				await clear.waitFor({ timeout: 5000 })
+				const box = await input.boundingBox()
+				const x = await clear.boundingBox()
+				;(rec.current.notes ||= []).push(`search field ${JSON.stringify(box)}, × ${JSON.stringify(x)} at ${width} px`)
+				if (!box || !x) { rec.add('search', `the search field or its × has no box at ${width} px (#98)`); return }
+				if (x.height > box.height + 0.5) rec.add('layout', `the × is ${Math.round(x.height)} px high, the search field ${Math.round(box.height)} px, at ${width} px (#98)`)
+				if (x.y < box.y - 0.5 || x.y + x.height > box.y + box.height + 0.5 || x.x < box.x - 0.5 || x.x + x.width > box.x + box.width + 0.5) rec.add('layout', `the × sticks out of the search field at ${width} px (× ${Math.round(x.y)}–${Math.round(x.y + x.height)}, field ${Math.round(box.y)}–${Math.round(box.y + box.height)}) (#98)`)
+				if (x.height < 24 || x.width < 24) rec.add('a11y-flow', `the × is ${Math.round(x.width)}×${Math.round(x.height)} px, under the 24 px target size at ${width} px (#98)`)
+				await page.screenshot({ path: path.join(SHOTS, `pool-search-clear-${width}.png`) })
+				if (width > 500) {
+					await input.focus()
+					await page.keyboard.press('Tab')
+					const onClear = await clear.evaluate((b) => document.activeElement === b).catch(() => false)
+					if (!onClear) rec.add('a11y-flow', 'Tab from the search field does not reach the × (#98)')
+					else {
+						await page.keyboard.press('Enter')
+						await settle(page, 300)
+						if ((await input.inputValue()) !== '') rec.add('search', 'Enter on the × does not clear the search (#98)')
+						if (!(await input.evaluate((el) => document.activeElement === el))) rec.add('a11y-flow', 'after the × cleared the search, the focus is not back on the field (#98)')
+					}
+				}
+				await input.fill('')
+			} finally {
+				await page.setViewportSize({ width: 1400, height: 900 })
+			}
+		})
+	}
 
 	// #99 on a course of its own, deleted afterwards
 	const made = await api('POST', '/courses', { title: 'Archive check', description: 'Made by the persona sweep for the archive confirmation.', profile: seed.gamification ? 'it' : 'mandatory' })

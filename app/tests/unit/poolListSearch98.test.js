@@ -11,6 +11,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { translate } from '@nextcloud/l10n'
 import { createApp, h, nextTick, ref } from 'vue'
+import fs from 'node:fs'
+import path from 'node:path'
 
 vi.hoisted(() => {
 	globalThis.t = (_app, text, vars = {}) => Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(String(v)), String(text))
@@ -184,5 +186,66 @@ describe('PoolList search: hits and the clear button for screen readers', () => 
 		const clear = host.querySelector('.clear-search-btn')
 		expect(clear).not.toBeNull()
 		expect(clear.getAttribute('aria-label')).toBe('Suche leeren')
+	})
+})
+
+// #98, follow-up: the × was taller than the search field (Nextcloud's minimum button height).
+// The size itself is measured in the browser (persona station "Pools search: the × sits inside
+// the field (#98)"); here the behaviour, and the CSS that keeps the minimum size off the button.
+describe('PoolList search: the × that clears the search (GitHub #98)', () => {
+	beforeEach(() => {
+		api.routes['/apps/learning/api/pools'] = { own: [{ id: 11, name: 'Brandschutz' }], shared: [] }
+		api.routes['/apps/learning/api/questions/search'] = []
+	})
+
+	it('clears the search and puts the focus back on the field', async () => {
+		const vm = await render({ userRole: 'instructor' })
+		vm.searchTerm = 'Brand'
+		vm.showSearchResults = true
+		await flush()
+		const clear = host.querySelector('.clear-search-btn')
+		clear.focus()
+		clear.click()
+		await flush()
+		expect(vm.searchTerm).toBe('')
+		expect(host.querySelector('.clear-search-btn')).toBeNull()
+		expect(document.activeElement).toBe(host.querySelector('#pool-search'))
+	})
+
+	it('picking a result clears the search without pulling the focus back to it', async () => {
+		api.routes['/apps/learning/api/questions/search'] = [{ id: 304, pool_id: 11, pool_name: 'Brandschutz', text: 'Wo hängt der Feuerlöscher?' }]
+		const vm = await render({ userRole: 'instructor' })
+		vm.searchTerm = 'hängt'
+		vm.showSearchResults = true
+		await vm.searchQuestions()
+		await flush()
+		const hit = [...host.querySelectorAll('.search-results-section li')].find((li) => li.querySelector('.result-id'))
+		const button = hit.querySelector('button.result-btn')
+		button.focus()
+		button.click()
+		await flush()
+		expect(vm.searchTerm).toBe('')
+		expect(selected).toHaveLength(1)
+		expect(document.activeElement).not.toBe(host.querySelector('#pool-search'))
+	})
+
+	it('Escape in the field clears it as before', async () => {
+		const vm = await render({ userRole: 'instructor' })
+		vm.searchTerm = 'Brand'
+		await flush()
+		host.querySelector('#pool-search').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+		await flush()
+		expect(vm.searchTerm).toBe('')
+	})
+
+	it('the × button overrides Nextcloud\'s minimum button size and has a visible focus ring', () => {
+		const css = fs.readFileSync(path.resolve(__dirname, '../../src/components/PoolList.vue'), 'utf8')
+		const rule = /\n\.clear-search-btn \{([^}]*)\}/.exec(css)?.[1] ?? ''
+		expect(rule).toMatch(/min-height:\s*0/)
+		expect(rule).toMatch(/min-width:\s*0/)
+		const px = (prop) => Number(new RegExp(`\\n\\s*${prop}:\\s*(\\d+)px`).exec(rule)?.[1])
+		expect(px('height')).toBeGreaterThanOrEqual(24)
+		expect(px('width')).toBeGreaterThanOrEqual(24)
+		expect(css).toMatch(/\.clear-search-btn:focus-visible \{[^}]*outline:\s*2px solid/)
 	})
 })
