@@ -838,7 +838,8 @@ export default {
 .filter-pill-icon { font-size: 16px; line-height: 1; }
 .start-actions { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
 .question-counter { text-align: center; font-size: 14px; color: var(--color-text-maxcontrast); margin: 12px 0 28px; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 8px; }
-.question-db-id { font-size: 11px; font-weight: 400; color: var(--color-text-maxcontrast); opacity: 0.6; font-family: monospace; background: var(--color-background-hover); padding: 1px 5px; border-radius: 4px; }
+/* Persona sweep C9b: opacity 0.6 took the position number to 2.3:1 (light) and 3.0:1 (dark); maxcontrast alone keeps 4.5:1. */
+.question-db-id { font-size: 11px; font-weight: 400; color: var(--color-text-maxcontrast); font-family: monospace; background: var(--color-background-hover); padding: 1px 5px; border-radius: 4px; }
 .search-toggle-btn { background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; color: var(--color-text-maxcontrast); transition: all 0.15s; }
 .search-toggle-btn:hover, .search-toggle-btn.active { color: var(--color-primary); background: var(--color-primary-element-light); }
 .training-search { max-width: 500px; margin: 0 auto 16px; position: relative; }
