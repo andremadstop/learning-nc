@@ -22,6 +22,8 @@ vi.mock('../../src/components/AccessibleDialog.vue', () => ({ default: { name: '
 vi.mock('../../src/components/QuestionScenario.vue', () => ({ default: { name: 'QuestionScenario', template: '<div />' } }))
 
 import axios from '@nextcloud/axios'
+import { createPinia, setActivePinia } from 'pinia'
+import { useA11yStore } from '../../src/stores/a11yStore.js'
 import QuestionList from '../../src/components/QuestionList.vue'
 
 globalThis.t = (_app, str, vars) => (vars ? str.replace(/\{(\w+)\}/g, (_, k) => vars[k]) : str)
@@ -45,13 +47,14 @@ let host, app, vm
 
 let focusDone = 0
 
-async function mount(props = {}) {
+async function mount(props = {}, pinia = null) {
 	host = document.createElement('div')
 	document.body.appendChild(host)
 	focusDone = 0
 	app = createApp(QuestionList, { poolId: 7, poolName: 'Netze', onFocusDone: () => { focusDone++ }, ...props })
 	app.config.globalProperties.t = globalThis.t
 	app.config.warnHandler = () => {}
+	if (pinia) app.use(pinia)
 	vm = app.mount(host)
 	await flush()
 }
@@ -135,6 +138,34 @@ describe('QuestionList opens the question from the pool search (GitHub #98)', ()
 		expect(vm.showDialog).toBe(false)
 		expect(host.querySelector('.question-item--focus')).toBeNull()
 		expect(focusDone).toBe(1)
+	})
+
+	// Review of #98: only prefers-reduced-motion was honoured; the app's own "Ruhige Darstellung"
+	// (QuestionConceal and the player respect it) still scrolled smoothly and pulsed twice.
+	it('"Ruhige Darstellung" on: jumped to without smooth scrolling, marked without the pulse', async () => {
+		window.matchMedia = vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+		const pinia = createPinia()
+		setActivePinia(pinia)
+		useA11yStore(pinia).setEnabled(false)
+		await mount({ focusQuestionId: 1004 }, pinia)
+		await flush()
+		const item = host.querySelector('.question-item[data-question-id="1004"]')
+		expect(item.scrollIntoView).toHaveBeenCalledWith({ behavior: 'auto', block: 'center' })
+		expect(item.classList.contains('question-item--focus')).toBe(true)
+		expect(item.classList.contains('question-item--still')).toBe(true)
+		setActivePinia(undefined)
+	})
+
+	it('animations on (and no reduced motion): smooth, with the pulse', async () => {
+		window.matchMedia = vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+		const pinia = createPinia()
+		setActivePinia(pinia)
+		await mount({ focusQuestionId: 1004 }, pinia)
+		await flush()
+		const item = host.querySelector('.question-item[data-question-id="1004"]')
+		expect(item.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
+		expect(item.classList.contains('question-item--still')).toBe(false)
+		setActivePinia(undefined)
 	})
 
 	it('without a question nothing is searched or opened', async () => {

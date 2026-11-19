@@ -53,7 +53,7 @@
     </NcEmptyContent>
 
     <div v-else class="question-items">
-      <div v-for="(question, index) in questions" :key="question.id" class="question-item" :class="{ 'question-item--focus': question.id === focusedId }" :data-question-id="question.id" tabindex="-1">
+      <div v-for="(question, index) in questions" :key="question.id" class="question-item" :class="{ 'question-item--focus': question.id === focusedId, 'question-item--still': question.id === focusedId && calm }" :data-question-id="question.id" tabindex="-1">
         <div class="question-header">
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
@@ -131,6 +131,7 @@ import TranslationDialog from './TranslationDialog.vue';
 import ImportDialog from './ImportDialog.vue';
 import AIGenerator from './AIGenerator.vue';
 import AccessibleDialog from './AccessibleDialog.vue';
+import { useOptionalA11yStore } from '../stores/a11yStore.js';
 
 export default {
   name: 'QuestionList',
@@ -145,7 +146,11 @@ export default {
   },
   emits: ['back', 'focus-done'],
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null, savingQuestion: false, focusedId: null, focusTimer: null };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null, savingQuestion: false, focusedId: null, focusTimer: null, a11y: useOptionalA11yStore() };
+  },
+  computed: {
+    // the app's own "Ruhige Darstellung" (personal settings), beside the system's reduced motion
+    calm() { return this.a11y?.animationsEnabled === false; },
   },
   watch: {
     async poolId() { this.currentPage = 0; await this.loadQuestions(); this.applyFocus(); },
@@ -242,7 +247,8 @@ export default {
       await this.$nextTick();
       const el = this.$el.querySelector('.question-item[data-question-id="' + id + '"]');
       if (el) {
-        const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // the system's reduced motion and the app's own "Ruhige Darstellung" alike
+        const reduce = this.calm || (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
         // The keyboard and the screen reader land on the question, not at the top of the list.
         el.focus({ preventScroll: true });
@@ -384,6 +390,8 @@ export default {
 
 /* GitHub #98: the question the pool search opened is marked for a moment. */
 .question-item--focus { outline: 2px solid var(--color-primary-element); outline-offset: 2px; animation: question-focus-pulse 1.2s ease-out 2; }
+/* "Ruhige Darstellung" (a11yStore): marked by the outline only, no pulse */
+.question-item--focus.question-item--still { animation: none; }
 .question-item:focus { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
 .question-item:focus:not(:focus-visible):not(.question-item--focus) { outline: none; }
 @keyframes question-focus-pulse {
