@@ -948,8 +948,8 @@ export default {
   padding-left: 40px; /* Make space for the search icon */
   padding-right: 40px; /* Make space for the clear button */
 }
-/* #98: Nextcloud gives every button a minimum height and width (the clickable area), taller than
-   this field, so the × stuck out above and below it. It is now a 28 px square (WCAG 2.5.8 asks
+/* #98: Nextcloud and the app give every button a minimum height and width (the clickable area),
+   taller than this field, so the × stuck out above and below it. It is now a 28 px square (WCAG 2.5.8 asks
    for 24), centred on the field and inside it. */
 .clear-search-btn {
   position: absolute;
@@ -973,6 +973,12 @@ export default {
   font-size: 16px;
   line-height: 1;
   padding: 0;
+}
+/* css/style.css gives every button in the app a 44 px minimum ("#app-learning button"); an id
+   selector outranks the class above, so the reset needs one too (persona station measured 44 px). */
+#app-learning .clear-search-btn {
+  min-width: 0;
+  min-height: 0;
 }
 .clear-search-btn:focus-visible {
   outline: 2px solid var(--color-primary-element);

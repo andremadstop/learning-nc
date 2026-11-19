@@ -247,5 +247,13 @@ describe('PoolList search: the × that clears the search (GitHub #98)', () => {
 		expect(px('height')).toBeGreaterThanOrEqual(24)
 		expect(px('width')).toBeGreaterThanOrEqual(24)
 		expect(css).toMatch(/\.clear-search-btn:focus-visible \{[^}]*outline:\s*2px solid/)
+		// css/style.css: "#app-learning button { min-height: 44px; min-width: 44px }" outranks a
+		// class; the reset must carry the id as well
+		const appCss = fs.readFileSync(path.resolve(__dirname, '../../css/style.css'), 'utf8')
+		if (/#app-learning button[^{]*\{[^}]*min-(height|width)/.test(appCss)) {
+			const idRule = /\n#app-learning \.clear-search-btn \{([^}]*)\}/.exec(css)?.[1] ?? ''
+			expect(idRule).toMatch(/min-height:\s*0/)
+			expect(idRule).toMatch(/min-width:\s*0/)
+		}
 	})
 })
