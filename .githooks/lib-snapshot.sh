@@ -116,6 +116,23 @@ gate_print() {
 	gate_fail "exit $rc"; echo "$out" | tail -15; return 1
 }
 
+# GitHub #94: the certificate PDF made in the browser (desktop and phone, Chromium and WebKit; WebKit
+# in Playwright's container, see scripts/pdf-gate.sh). Same proof as gate_print.
+gate_pdf() {
+	local dir="$1" out rc=0
+	echo -n "Certificate PDF (download)... "
+	if [ ! -f "$dir/scripts/pdf-gate.sh" ]; then
+		gate_fail "commit has no scripts/pdf-gate.sh"; return 1
+	fi
+	out=$(bash "$dir/scripts/pdf-gate.sh" 2>&1) || rc=$?
+	local plain
+	plain=$(printf '%s\n' "$out" | sed 's/\x1b\[[0-9;]*m//g')
+	if [ "$rc" -eq 0 ] && grep -qE '^ *[1-9][0-9]* passed' <<<"$plain" && ! grep -qE '^ *[0-9]+ (failed|flaky)' <<<"$plain"; then
+		gate_ok "$(grep -oE '[0-9]+ passed' <<<"$plain" | tail -1)"; return 0
+	fi
+	gate_fail "exit $rc"; echo "$out" | tail -15; return 1
+}
+
 gate_i18n() {
 	local dir="$1" out
 	echo -n "i18n (parity, js sync, placeholders, coverage, VirtuProf, consent text)... "

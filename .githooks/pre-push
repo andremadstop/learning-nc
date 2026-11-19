@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pre-push Quality Gate: Security + ESLint + Vitest + Zertifikatsdruck (PDF) + PHPStan + PHPUnit + OpenAPI-Spec + SQL-Spalten + i18n
+# Pre-push Quality Gate: Security + ESLint + Vitest + Zertifikatsdruck (PDF) + Zertifikat-PDF (Download) + PHPStan + PHPUnit + OpenAPI-Spec + SQL-Spalten + i18n
 # + Umlaute + Forbidden Names + Repo-Hygiene.
 #
 # Geprueft wird, was gepusht wird: fuer jeden lokalen Commit aus stdin
@@ -47,6 +47,7 @@ for SHA in $(echo "$PUSH_SHAS" | tr ' ' '\n' | sort -u); do
     gate_eslint "$SNAP"          || FAILED=1
     gate_vitest "$SNAP"          || FAILED=1
     gate_print "$SNAP"           || FAILED=1
+    gate_pdf "$SNAP"             || FAILED=1
     gate_php "$SNAP" --ref "$SHA" || FAILED=1
 
     # OpenAPI-Spec (GitHub #65): app/openapi.json muss zum Commit passen, jede Route aus

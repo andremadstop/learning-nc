@@ -119,6 +119,7 @@ scripts/*
 !scripts/check-i18n-untranslated.py
 !scripts/i18n-untranslated-baseline.json
 !scripts/openapi-spec.sh
+!scripts/pdf-gate.sh
 !scripts/openapi-error-baseline.txt
 !scripts/check-node-modules.py
 !scripts/check-sql-columns.py

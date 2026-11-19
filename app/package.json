@@ -13,9 +13,10 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ci": "playwright test --project=chromium",
-    "test:print": "playwright test -c tests/print/playwright.config.cjs",
+    "test:print": "playwright test -c tests/print/playwright.config.cjs --project chromium",
     "lint": "eslint src/ tests/",
-    "lint:fix": "eslint --fix src/ tests/"
+    "lint:fix": "eslint --fix src/ tests/",
+    "test:pdf": "bash ../scripts/pdf-gate.sh"
   },
   "dependencies": {
     "@nextcloud/auth": "^2.6.0",
