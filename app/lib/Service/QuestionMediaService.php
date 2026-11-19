@@ -311,10 +311,22 @@ class QuestionMediaService {
         if ($dir === '' || is_link($dir) || (file_exists($dir) && !is_dir($dir))) {
             throw new \InvalidArgumentException('Not a directory: ' . $dir);
         }
-        if (is_dir($dir) && (scandir($dir) ?: []) !== ['.', '..']) {
-            throw new \InvalidArgumentException('Directory is not empty: ' . $dir);
-        }
-        if (!is_dir($dir) && !@mkdir($dir, 0750, true)) {
+        // The bundle holds the answer key (verdict per option): only the process user may read it,
+        // and nobody else may plant a link in it between the checks below and the writes
+        // (writeBundleFile() refuses links as well). A new directory is created that way; an
+        // existing one must be ours, and is closed before it is checked for being empty.
+        if (is_dir($dir)) {
+            if (function_exists('posix_geteuid') && @fileowner($dir) !== posix_geteuid()) {
+                throw new \InvalidArgumentException('Directory belongs to another user: ' . $dir);
+            }
+            if (!@chmod($dir, 0700)) {
+                throw new \InvalidArgumentException('Cannot restrict directory: ' . $dir);
+            }
+            clearstatcache(true, $dir);
+            if ((scandir($dir) ?: []) !== ['.', '..']) {
+                throw new \InvalidArgumentException('Directory is not empty: ' . $dir);
+            }
+        } elseif (!@mkdir($dir, 0700, true)) {
             throw new \InvalidArgumentException('Cannot create directory: ' . $dir);
         }
 
@@ -481,14 +493,34 @@ class QuestionMediaService {
         return (string)json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION) . "\n";
     }
 
-    /** @throws \RuntimeException */
+    /**
+     * Write one new file of the bundle. Never through a link (the import refuses links too): no
+     * level between $dir and the file may be one, and the file is created exclusively, so an
+     * existing file or a link planted in its place makes the export fail instead of being written.
+     *
+     * @throws \RuntimeException
+     */
     private function writeBundleFile(string $dir, string $file, string $bytes): void {
-        $path = $dir . '/' . $file;
-        $parent = dirname($path);
-        if (!is_dir($parent) && !@mkdir($parent, 0750, true)) {
-            throw new \RuntimeException('Cannot create directory: ' . $parent);
+        $path = $dir;
+        $parts = explode('/', $file);
+        $name = array_pop($parts);
+        foreach ($parts as $part) {
+            $path .= '/' . $part;
+            if (is_link($path)) {
+                throw new \RuntimeException('Refusing to write through a link: ' . $path);
+            }
+            if (!is_dir($path) && !@mkdir($path, 0700)) {
+                throw new \RuntimeException('Cannot create directory: ' . $path);
+            }
         }
-        if (@file_put_contents($path, $bytes) !== strlen($bytes)) {
+        $path .= '/' . $name;
+        $handle = @fopen($path, 'x');
+        if ($handle === false) {
+            throw new \RuntimeException('Cannot write (exists or not writable): ' . $path);
+        }
+        $written = @fwrite($handle, $bytes);
+        fclose($handle);
+        if ($written !== strlen($bytes)) {
             throw new \RuntimeException('Cannot write: ' . $path);
         }
     }

@@ -427,6 +427,49 @@ final class QuestionMediaServiceTest extends TestCase {
     }
 
     /**
+     * Review of #66: the export checked only the target itself, then wrote with
+     * file_put_contents() and mkdir(), which follow a link planted in the target afterwards (the
+     * import refuses links, the export did not), into a directory others could write and read —
+     * the manifest names the right answer of every option. Now the target is the process user's
+     * alone (0700), and no file is written through a link or over an existing file.
+     */
+    public function testTheExportNeverWritesThroughALinkAndKeepsTheBundleToItself(): void {
+        $this->tracks->method('findByQuestion')->willReturn([]);
+        $this->cues->method('findByQuestion')->willReturn(null);
+        $this->tmp = sys_get_temp_dir() . '/qmedia-unit-' . bin2hex(random_bytes(4));
+        mkdir($this->tmp, 0700);
+
+        // a new target is created for the process user only
+        $this->service()->exportBundle(self::POOL, $this->tmp . '/new');
+        $this->assertSame(0700, fileperms($this->tmp . '/new') & 0777);
+        // an existing empty one shared with others is closed first
+        mkdir($this->tmp . '/shared');
+        chmod($this->tmp . '/shared', 0777);
+        $this->service()->exportBundle(self::POOL, $this->tmp . '/shared');
+        clearstatcache();
+        $this->assertSame(0700, fileperms($this->tmp . '/shared') & 0777);
+        $this->assertFileExists($this->tmp . '/shared/manifest.json');
+
+        $write = new \ReflectionMethod(QuestionMediaService::class, 'writeBundleFile');
+        $victim = $this->tmp . '/victim.php';
+        file_put_contents($victim, 'keep');
+        mkdir($this->tmp . '/elsewhere');
+        mkdir($this->tmp . '/out');
+        symlink($victim, $this->tmp . '/out/manifest.json');
+        symlink($this->tmp . '/elsewhere', $this->tmp . '/out/demo-q1');
+        foreach (['manifest.json', 'demo-q1/opt-0-en.mp3'] as $file) {
+            try {
+                $write->invoke($this->service(), $this->tmp . '/out', $file, 'planted');
+                $this->fail($file . ': written through a link');
+            } catch (\RuntimeException $e) {
+                $this->assertStringContainsString($this->tmp . '/out/', $e->getMessage());
+            }
+        }
+        $this->assertSame('keep', file_get_contents($victim));
+        $this->assertSame(['.', '..'], scandir($this->tmp . '/elsewhere'));
+    }
+
+    /**
      * After an editor swapped the first two answers, the voices moved with them
      * (QuestionMediaStorage::remapOptionTracks) and kept their files: opt0 now names
      * q11-opt1-en.mp3, opt1 names q11-opt0-en.mp3. A re-import that changes only opt0 wrote the
