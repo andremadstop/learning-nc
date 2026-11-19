@@ -2082,7 +2082,8 @@ class TrainingServiceTest extends TestCase {
         ?VideoProgressService $videoProgressService = null,
         ?LoggerInterface $logger = null,
         ?IConfig $config = null,
-        ?RichFeedbackService $richFeedbackService = null
+        ?RichFeedbackService $richFeedbackService = null,
+        ?\OCP\Lock\ILockingProvider $lockingProvider = null
     ): TrainingService {
         $questionMapper ??= $this->createMock(QuestionMapper::class);
         $answerMapper ??= $this->createMock(AnswerMapper::class);
@@ -2135,8 +2136,57 @@ class TrainingServiceTest extends TestCase {
             $noteGeneratorService,
             $videoProgressService,
             $telosService,
-            $richFeedbackService
+            $richFeedbackService,
+            null,
+            null,
+            $lockingProvider
         );
+    }
+
+    /**
+     * Review 5.16.0 (#87): an exam start is check-then-insert, so it runs under an exclusive lock
+     * per learner and pool, released also when the start fails. Before, parallel starts at the
+     * last attempt all passed the checks and each inserted a counting exam.
+     */
+    public function testAnExamStartRunsUnderTheLearnersPoolLockAndReleasesIt(): void {
+        $calls = [];
+        $locks = $this->createMock(\OCP\Lock\ILockingProvider::class);
+        $locks->method('acquireLock')->willReturnCallback(function (string $key, int $type) use (&$calls): void { $calls[] = ['acquire', $key, $type]; });
+        $locks->method('releaseLock')->willReturnCallback(function (string $key, int $type) use (&$calls): void { $calls[] = ['release', $key, $type]; });
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([]);
+        $service = $this->createService(db: new FakeDbConnection(), questionMapper: $questionMapper, poolMapper: $poolMapper, lockingProvider: $locks);
+
+        try {
+            $service->startSession(42, 'alice', null, 'exam');
+            $this->fail('an empty pool starts no exam');
+        } catch (\Exception $e) {
+            $this->assertSame('No questions in this pool', $e->getMessage());
+        }
+        $key = TrainingService::examStartLockKey('alice', 42);
+        $this->assertSame([
+            ['acquire', $key, \OCP\Lock\ILockingProvider::LOCK_EXCLUSIVE],
+            ['release', $key, \OCP\Lock\ILockingProvider::LOCK_EXCLUSIVE],
+        ], $calls);
+    }
+
+    /** Training never takes the exam-start lock; the key fits oc_file_locks.key for any uid. */
+    public function testTrainingTakesNoLockAndTheKeyFitsTheLockTable(): void {
+        $locks = $this->createMock(\OCP\Lock\ILockingProvider::class);
+        $locks->expects($this->never())->method('acquireLock');
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->willReturn(new \OCA\Learning\Db\Pool());
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByPoolId')->willReturn([]);
+        $service = $this->createService(db: new FakeDbConnection(), questionMapper: $questionMapper, poolMapper: $poolMapper, lockingProvider: $locks);
+        try {
+            $service->startSession(42, 'alice', null, 'training');
+        } catch (\Exception $e) {
+        }
+        $this->assertLessThanOrEqual(64, strlen(TrainingService::examStartLockKey(str_repeat('u', 64), PHP_INT_MAX)));
+        $this->assertNotSame(TrainingService::examStartLockKey('alice', 42), TrainingService::examStartLockKey('alice', 43));
     }
 
     private function makeQuestion(int $id, int $poolId, string $text): Question {

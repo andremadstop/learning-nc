@@ -17,6 +17,8 @@ use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCP\Lock\ILockingProvider;
+use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
 
 class TrainingService {
@@ -62,6 +64,7 @@ class TrainingService {
      * Error for an exam start while a counting exam on the pool runs in another course context
      * (another course, or outside any course). The client explains it to the learner.
      */
+    private const EXAM_START_LOCK_WAIT_MS = 5000;
     public const EXAM_ACTIVE_IN_OTHER_CONTEXT = 'An exam on this pool is already running in another course context';
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
     /**
@@ -99,6 +102,7 @@ class TrainingService {
         ?RichFeedbackService $richFeedbackService = null,
         private ?QuestionMediaService $questionMediaService = null,
         private ?ExamAttemptLimitService $examAttemptLimit = null,
+        private ?ILockingProvider $lockingProvider = null,
     ) {
         $this->richFeedbackService = $richFeedbackService ?? new RichFeedbackService($db, $translationService);
         $this->db = $db;
@@ -755,6 +759,56 @@ class TrainingService {
             throw new CourseModeClosedException($mode);
         }
 
+        if ($mode !== 'exam' || $this->lockingProvider === null) {
+            return $this->startSessionUnlocked($poolId, $userId, $limit, $mode, $timeLimitSeconds, $contentLanguage, $courseId, $questionType);
+        }
+        // Review 5.16.0: an exam start is check-then-insert (resume guard, total limit of the
+        // cycle, daily limit, cooldown, then the INSERT). Parallel starts at limit-1 all passed
+        // the checks before any insert landed. Serialised per learner and pool: a parallel start
+        // waits, then finds the exam the first one started and resumes it.
+        $lock = self::examStartLockKey($userId, $poolId);
+        $this->acquireExamStartLock($lock);
+        try {
+            return $this->startSessionUnlocked($poolId, $userId, $limit, $mode, $timeLimitSeconds, $contentLanguage, $courseId, $questionType);
+        } finally {
+            $this->lockingProvider->releaseLock($lock, ILockingProvider::LOCK_EXCLUSIVE);
+        }
+    }
+
+    /** At most 64 characters (oc_file_locks.key), whatever the length of the uid. */
+    public static function examStartLockKey(string $userId, int $poolId): string {
+        return 'learning/exam-start/' . sha1($userId . "\n" . $poolId);
+    }
+
+    /**
+     * The lock is held only for the start itself (well under a second); a request that still
+     * finds it taken after EXAM_START_LOCK_WAIT_MS gives up instead of queueing forever.
+     */
+    private function acquireExamStartLock(string $lock): void {
+        $deadline = microtime(true) + self::EXAM_START_LOCK_WAIT_MS / 1000;
+        while (true) {
+            try {
+                $this->lockingProvider?->acquireLock($lock, ILockingProvider::LOCK_EXCLUSIVE);
+                return;
+            } catch (LockedException $e) {
+                if (microtime(true) >= $deadline) {
+                    throw new \Exception('Another exam start on this pool is in progress', 0, $e);
+                }
+                usleep(50_000);
+            }
+        }
+    }
+
+    private function startSessionUnlocked(
+        int $poolId,
+        string $userId,
+        ?int $limit,
+        string $mode,
+        ?int $timeLimitSeconds,
+        ?string $contentLanguage,
+        ?int $courseId,
+        ?string $questionType
+    ): array {
         // Resume an active counting exam on this pool first — only in the course context it was
         // started in (checked below).
         $qb = $this->db->getQueryBuilder();
