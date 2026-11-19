@@ -15,13 +15,19 @@
 			<li>{{ t('learning', 'Zertifikate erhalten; bestehende Zertifikate laufen wie bisher ab, und an die Erneuerung wird weiter erinnert') }}</li>
 			<li>{{ t('learning', 'fällige Wiederholungen im Kalender-Abo sehen') }}</li>
 		</ul>
-		<p :id="stopId" class="course-archive-explanation__label">
-			{{ t('learning', 'Lernende bekommen nicht mehr:') }}
+		<!-- Both losses hang on the course's exam date: without one, learners lose nothing. -->
+		<template v-if="hasExamDate">
+			<p :id="stopId" class="course-archive-explanation__label">
+				{{ t('learning', 'Lernende bekommen nicht mehr:') }}
+			</p>
+			<ul :aria-labelledby="stopId">
+				<li>{{ t('learning', 'die Erinnerung an den Prüfungstermin des Kurses') }}</li>
+				<li>{{ t('learning', 'den Countdown zum Prüfungstermin im Nextcloud-Dashboard') }}</li>
+			</ul>
+		</template>
+		<p v-else data-test="course-archive-no-loss">
+			{{ t('learning', 'Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin.') }}
 		</p>
-		<ul :aria-labelledby="stopId">
-			<li>{{ t('learning', 'die Erinnerung an den Prüfungstermin des Kurses') }}</li>
-			<li>{{ t('learning', 'den Countdown zum Prüfungstermin im Nextcloud-Dashboard') }}</li>
-		</ul>
 		<p>{{ t('learning', 'Du kannst den Kurs weiter bearbeiten und Teilnehmende einschreiben.') }}</p>
 		<p data-test="course-archive-reactivate">
 			{{ canReactivate
@@ -39,6 +45,14 @@ export default {
 	props: {
 		/** The reactivation menu of the course list is only on the courses a person created. */
 		canReactivate: {
+			type: Boolean,
+			default: true,
+		},
+		/**
+		 * The exam-date reminder and the dashboard countdown are all learners lose: a course
+		 * without an exam date loses nothing. Defaults to the full list for a caller that does not say.
+		 */
+		hasExamDate: {
 			type: Boolean,
 			default: true,
 		},

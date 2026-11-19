@@ -167,6 +167,14 @@ describe('CourseDetail: a dead course link (GitHub #82)', () => {
 		// GitHub #99: instructors get what archiving changes, not just that it happened
 		expect(host.querySelector('[data-test="course-archive-explanation"]')).not.toBeNull()
 		expect(detail.loadState).toBe('')
+		// review #99: without an exam date nothing is lost, with one the reminder and the countdown
+		expect(host.querySelector('[data-test="course-archive-no-loss"]')).not.toBeNull()
+		expect(host.querySelector('[data-test="course-archive-explanation"]').textContent).not.toContain('Countdown')
+		app.unmount(); host.remove()
+		api.course = { ...api.course, exam_date: '2026-12-15' }
+		await mountDetail(5, 'instructor')
+		expect(host.querySelector('[data-test="course-archive-no-loss"]')).toBeNull()
+		expect(host.querySelector('[data-test="course-archive-explanation"]').textContent).toContain('Countdown')
 	})
 
 	// review #82: the menu with "Activate" exists only on the courses the person created

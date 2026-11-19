@@ -4075,6 +4075,7 @@ OC.L10N.register(
     "Zertifikate erhalten; bestehende Zertifikate laufen wie bisher ab, und an die Erneuerung wird weiter erinnert" : "Zertifikate erhalten; bestehende Zertifikate laufen wie bisher ab, und an die Erneuerung wird weiter erinnert",
     "fällige Wiederholungen im Kalender-Abo sehen" : "fällige Wiederholungen im Kalender-Abo sehen",
     "Lernende bekommen nicht mehr:" : "Lernende bekommen nicht mehr:",
+    "Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin." : "Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin.",
     "die Erinnerung an den Prüfungstermin des Kurses" : "die Erinnerung an den Prüfungstermin des Kurses",
     "den Countdown zum Prüfungstermin im Nextcloud-Dashboard" : "den Countdown zum Prüfungstermin im Nextcloud-Dashboard",
     "Du kannst den Kurs weiter bearbeiten und Teilnehmende einschreiben." : "Du kannst den Kurs weiter bearbeiten und Teilnehmende einschreiben.",

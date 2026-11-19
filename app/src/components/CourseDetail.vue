@@ -76,7 +76,7 @@
 				<p class="detail-archived__title">{{ t('learning', 'Dieser Kurs ist archiviert.') }}</p>
 				<!-- The reactivation menu of the course list (CourseList.vue) is only on the courses a
 					person created, and only in the instructor role; a co-instructor has none. -->
-				<CourseArchiveExplanation :can-reactivate="canReactivateCourse" />
+				<CourseArchiveExplanation :can-reactivate="canReactivateCourse" :has-exam-date="!!course.exam_date" />
 			</template>
 		</NcNoteCard>
 

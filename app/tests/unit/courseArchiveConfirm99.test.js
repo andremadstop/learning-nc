@@ -78,7 +78,7 @@ async function mountList() {
 	await flush()
 }
 
-const course = { id: 7, title: 'Brandschutz & Co', status: 'active', pool_count: 0, member_count: 0 }
+const course = { id: 7, title: 'Brandschutz & Co', status: 'active', pool_count: 0, member_count: 0, exam_date: '2026-12-15' }
 const archiveButton = () => [...host.querySelectorAll('[data-course-id="7"] button.action')].find((b) => b.textContent.includes('Archive'))
 const statusPuts = () => axios.put.mock.calls.filter(([url]) => url === '/apps/learning/api/courses/7')
 const settingPuts = () => axios.put.mock.calls.filter(([url]) => url === '/apps/learning/api/settings/personal/archive-confirm')
@@ -115,6 +115,30 @@ describe('Archive confirmation in the course list (GitHub #99)', () => {
 		// the checkbox is not inside the text, so the first focus does not land on it
 		expect(host.querySelector('#' + described + ' input[type="checkbox"]')).toBeNull()
 		expect(statusPuts()).toHaveLength(0)
+	})
+
+	// Review of #99: both losses hang on the exam date; a course without one lost nothing, yet the
+	// dialog listed the reminder and the countdown as gone.
+	it('a course without an exam date: the explanation says nothing changes for learners', async () => {
+		api.courses = [{ ...course, exam_date: null }]
+		await mountList()
+		archiveButton().click()
+		await flush()
+		const text = dialog().querySelector('[data-test="course-archive-explanation"]').textContent
+		expect(text).not.toContain('Lernende bekommen nicht mehr:')
+		expect(text).not.toContain('Countdown')
+		expect(text).toContain('Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin.')
+		expect(text).toContain('Prüfungen ablegen, die wie bisher zählen')
+	})
+
+	it('a course with an exam date: the reminder and the countdown are named as gone', async () => {
+		await mountList()
+		archiveButton().click()
+		await flush()
+		const text = dialog().querySelector('[data-test="course-archive-explanation"]').textContent
+		expect(text).toContain('die Erinnerung an den Prüfungstermin des Kurses')
+		expect(text).toContain('den Countdown zum Prüfungstermin im Nextcloud-Dashboard')
+		expect(dialog().querySelector('[data-test="course-archive-no-loss"]')).toBeNull()
 	})
 
 	it('"Abbrechen" and Escape archive nothing and give focus back to the course', async () => {

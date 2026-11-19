@@ -4075,6 +4075,7 @@ OC.L10N.register(
     "Zertifikate erhalten; bestehende Zertifikate laufen wie bisher ab, und an die Erneuerung wird weiter erinnert" : "отримувати сертифікати; строк дії наявних сертифікатів спливає як і раніше, а нагадування про поновлення надходять і далі",
     "fällige Wiederholungen im Kalender-Abo sehen" : "бачити заплановані повторення в підписці на календар",
     "Lernende bekommen nicht mehr:" : "Учні більше не отримують:",
+    "Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin." : "Для учнів нічого не змінюється, бо курс не має дати іспиту.",
     "die Erinnerung an den Prüfungstermin des Kurses" : "нагадування про дату іспиту курсу",
     "den Countdown zum Prüfungstermin im Nextcloud-Dashboard" : "зворотний відлік до дати іспиту на панелі Nextcloud",
     "Du kannst den Kurs weiter bearbeiten und Teilnehmende einschreiben." : "Ви й надалі можете редагувати курс і записувати учасників.",

@@ -240,7 +240,7 @@
 				first focus lands on the text (AccessibleDialog falls back to its content) and not on a
 				box that Space would tick before the explanation was heard. -->
 			<div id="archive-confirm-text">
-				<CourseArchiveExplanation :can-reactivate="true" />
+				<CourseArchiveExplanation :can-reactivate="true" :has-exam-date="!!archivingCourse.exam_date" />
 			</div>
 			<template #actions>
 				<NcCheckboxRadioSwitch :model-value="archiveDontShowAgain"

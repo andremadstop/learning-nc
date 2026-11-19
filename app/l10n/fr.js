@@ -4075,6 +4075,7 @@ OC.L10N.register(
     "Zertifikate erhalten; bestehende Zertifikate laufen wie bisher ab, und an die Erneuerung wird weiter erinnert" : "obtenir des certificats ; les certificats existants expirent comme avant et les rappels de renouvellement continuent",
     "fällige Wiederholungen im Kalender-Abo sehen" : "voir les révisions dues dans l’abonnement au calendrier",
     "Lernende bekommen nicht mehr:" : "Les apprenants ne reçoivent plus :",
+    "Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin." : "Rien ne change pour les apprenants, car le cours n’a pas de date d’examen.",
     "die Erinnerung an den Prüfungstermin des Kurses" : "le rappel de la date d’examen du cours",
     "den Countdown zum Prüfungstermin im Nextcloud-Dashboard" : "le compte à rebours jusqu’à la date d’examen dans le tableau de bord Nextcloud",
     "Du kannst den Kurs weiter bearbeiten und Teilnehmende einschreiben." : "Vous pouvez toujours modifier le cours et inscrire des participants.",

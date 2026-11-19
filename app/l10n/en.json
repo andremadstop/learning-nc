@@ -4105,6 +4105,7 @@
         "Zertifikate erhalten; bestehende Zertifikate laufen wie bisher ab, und an die Erneuerung wird weiter erinnert": "receive certificates; existing certificates expire as before, and renewal reminders keep coming",
         "fällige Wiederholungen im Kalender-Abo sehen": "see due reviews in the calendar subscription",
         "Lernende bekommen nicht mehr:": "Learners no longer get:",
+        "Für Lernende ändert sich nichts, denn der Kurs hat keinen Prüfungstermin.": "Nothing changes for learners, because the course has no exam date.",
         "die Erinnerung an den Prüfungstermin des Kurses": "the reminder of the course’s exam date",
         "den Countdown zum Prüfungstermin im Nextcloud-Dashboard": "the countdown to the exam date on the Nextcloud Dashboard",
         "Du kannst den Kurs weiter bearbeiten und Teilnehmende einschreiben.": "You can still edit the course and enrol participants.",
