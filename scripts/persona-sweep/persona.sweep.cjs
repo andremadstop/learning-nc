@@ -1271,10 +1271,11 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		await card().locator('.answer-btn').first().click()
 		await card().locator('.answer-feedback').first().waitFor({ timeout: 15000 })
 		await settle(page, 300)
-		// The pointer rests near the top of the question area (the same element holds the next
-		// question) and "Next Question" is pressed by keyboard, so the pointer never leaves it.
+		// The pointer rests in the upper part of the question area (the same element holds the next
+		// question, which keeps at least 80 px; its top may move a few px) and "Next Question" is
+		// pressed by keyboard, so the pointer never leaves it.
 		const answeredBox = await conceal().boundingBox()
-		const rest = { x: answeredBox.x + answeredBox.width / 2, y: answeredBox.y + 24 }
+		const rest = { x: answeredBox.x + answeredBox.width / 2, y: answeredBox.y + Math.min(60, answeredBox.height / 2) }
 		await page.mouse.move(rest.x, rest.y)
 		// the explanation after answering plays (a click is a gesture); "Next Question" follows at
 		// once, so its sound is still running when the next question comes
@@ -1286,10 +1287,15 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 			;(rec.current.notes ||= []).push(`flow: sound of the first question playing at "Next Question": ${played}`)
 			await page.mouse.move(rest.x, rest.y)
 		}
-		// From here every change of the card is recorded: was the second question ever visible
-		// before it was uncovered?
+		// From here every change of the card, and every frame for 900 ms after the press, is
+		// recorded: was the second question ever visible (also fading out) before it was uncovered?
 		await page.evaluate((firstText) => {
 			const log = window.__personaFlow = []
+			window.__personaFlowArm = () => {
+				const end = performance.now() + 900
+				const frame = () => { look(); if (performance.now() < end) requestAnimationFrame(frame) }
+				requestAnimationFrame(frame)
+			}
 			const look = () => {
 				const c = document.querySelector('.training-active .question-card')
 				const q = c?.querySelector('.qconceal')
@@ -1302,12 +1308,13 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 			window.__personaFlowObserver.observe(document.querySelector('.training-active') || document.body, { subtree: true, childList: true, attributes: true, characterData: true })
 		}, first)
 		await card().locator('.next-btn').first().focus()
+		await page.evaluate(() => window.__personaFlowArm())
 		await page.keyboard.press('Enter')
 		await card().locator('.question-text').filter({ hasNotText: first }).first().waitFor({ state: 'attached', timeout: 15000 })
-		await page.waitForTimeout(250)
+		await page.waitForTimeout(1000)
 		const second = (await card().locator('.question-text').first().textContent()).trim()
 		if (second === first || !flow.questions.includes(second)) throw new Error(`after "Next Question" Training shows "${second}"`)
-		const flash = await page.evaluate(() => (window.__personaFlow || []).find((s) => !s.hidden && s.opacity > 0.05) || null)
+		const flash = await page.evaluate(() => (window.__personaFlow || []).find((s) => s.opacity > 0.05) || null)
 		await page.evaluate(() => window.__personaFlowObserver?.disconnect())
 		if (flash) rec.add('media', `flow: the second question shows before its intro (${JSON.stringify(flash)})`)
 		if (!(await isHidden())) { rec.add('media', 'flow: the second question is not held hidden for its intro'); return }
