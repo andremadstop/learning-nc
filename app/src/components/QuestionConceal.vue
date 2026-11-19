@@ -8,7 +8,7 @@
        @pointermove="onPointerMove"
        @pointerleave="cancelHover"
        @focus="onFocus"
-       @click="reveal"
+       @click="onClick"
        @keydown.enter.space="onKey"
        @pointerdown.capture="primeSounds"
        @click.capture="primeSounds"
@@ -134,6 +134,17 @@ export default {
         this.hoverTimer = null;
       }
     },
+    /**
+     * Only a press on the hidden area itself. While hidden its content is inert, so a real tap
+     * there targets the area; a click that bubbles up from inside started on the question before
+     * (the "Nächste Frage" button, a rating button): the browser renders the next question between
+     * that button's listener and this one, so it arrives here hidden and would uncover it at once.
+     */
+    onClick(event) {
+      if (event?.target === this.$el) {
+        this.reveal();
+      }
+    },
     onFocus(event) {
       // only the area's own focus, not a focus that bubbles from inside (there is none while hidden)
       if (event.target === this.$el) {
@@ -141,7 +152,8 @@ export default {
       }
     },
     onKey(event) {
-      if (this.hidden) {
+      // the area's own key, not one bubbling from a control of the question before (see onClick)
+      if (this.hidden && event.target === this.$el) {
         event.preventDefault();
         this.reveal();
       }

@@ -555,6 +555,30 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 		expect(el.classList.contains('qconceal--hidden')).toBe(false)
 	})
 
+	/**
+	 * Persona flow station (review of #66): pressing "Nächste Frage" uncovered the next question at
+	 * once. The button sits inside the area; a real browser runs Vue's render between the button's
+	 * listener and the area's, so the same click reached the area with the next question already
+	 * hidden. Emulated here by a click and an Enter bubbling up from inside the hidden question.
+	 */
+	it('a click or Enter bubbling up from a control inside (the "Nächste Frage" press) does not uncover the next question', async () => {
+		const { state, root } = await mount(QuestionConceal, { conceal: false, questionKey: 1 }, { slot })
+		state.props = { conceal: true, questionKey: 2 }
+		root.$forceUpdate()
+		await flush()
+		await sleep(5)
+		const el = host.querySelector('.qconceal')
+		const inner = host.querySelector('.answer')
+		inner.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+		inner.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+		// a tap on the area itself still uncovers it
+		el.click()
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(false)
+	})
+
 	it('a mouse crossing the hidden question on its way to the player does not uncover it', async () => {
 		await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
 		const el = host.querySelector('.qconceal')
@@ -705,6 +729,56 @@ describe('the learning modes: player first, question hidden until the intro is h
 		buttonByText('Grün').click()
 		await flush()
 		expect(host.querySelector('.qmedia__title').textContent).toContain('Zu deiner Antwort')
+	})
+
+	// Review of #66 (persona flow station): after "Nächste Frage" the second media question was
+	// hidden for one render and then shown at once, its intro unheard.
+	for (const deferSecond of [true, false]) it(`TrainingMode: after "Nächste Frage" the next media question stays hidden for its intro (media ${deferSecond ? 'late' : 'at once'})`, async () => {
+		let release = () => {}
+		axios.get.mockImplementation((url) => {
+			const m = url.match(/questions\/(\d+)\/media$/)
+			if (m && m[1] === '102' && deferSecond) return new Promise((r) => { release = () => r({ data: { question_id: 102, tracks: [INTRO()] } }) })
+			if (m) return Promise.resolve({ data: { question_id: Number(m[1]), tracks: [INTRO()] } })
+			return Promise.resolve({ data: {} })
+		})
+		axios.post.mockImplementation((url) => {
+			if (url.endsWith('/training/start')) {
+				return Promise.resolve({ data: { session_id: 9, questions: [
+					{ id: 101, text: 'Blau + Gelb?', question_type: 'mc', answers: [{ id: 1, text: 'Grün' }, { id: 2, text: 'Lila' }] },
+					{ id: 102, text: 'Beine einer Spinne?', question_type: 'mc', answers: [{ id: 3, text: 'Acht' }, { id: 4, text: 'Sechs' }] },
+				] } })
+			}
+			if (url.endsWith('/training/answer')) {
+				return Promise.resolve({ data: { is_correct: true, correct_answer_texts: ['Grün'], question_media: REVEAL } })
+			}
+			return Promise.resolve({ data: {} })
+		})
+		const { default: TrainingMode } = await import('../../src/components/TrainingMode.vue')
+		await mount(TrainingMode, { poolId: 1, totalQuestions: 2 })
+		buttonByText('Start Training').click()
+		await flush()
+		const area = host.querySelector('.qconceal')
+		expect(area.classList.contains('qconceal--hidden')).toBe(true)
+		await sleep(5)
+		area.click()
+		await flush()
+		expect(area.classList.contains('qconceal--hidden')).toBe(false)
+		buttonByText('Grün').click()
+		for (let i = 0; i < 40 && !buttonByText('Next Question'); i++) await sleep(10)
+		await flush()
+		const classes = []
+		const watch = new MutationObserver(() => classes.push(host.querySelector('.qconceal')?.className))
+		watch.observe(host, { subtree: true, attributes: true, attributeFilter: ['class'] })
+		buttonByText('Next Question').click()
+		for (let i = 0; i < 40 && !host.querySelector('.question-text').textContent.includes('Beine'); i++) await sleep(10)
+		await flush()
+		expect(host.querySelector('.question-text').textContent).toContain('Beine einer Spinne?')
+		expect(host.querySelector('.qconceal').classList.contains('qconceal--hidden')).toBe(true)
+		release()
+		await flush()
+		watch.disconnect()
+		expect(host.querySelector('.qconceal').classList.contains('qconceal--hidden')).toBe(true)
+		expect(classes.filter((c) => c && c.includes('qconceal--shown'))).toEqual([])
 	})
 
 	it('TrainingMode: a question without media is never hidden', async () => {
