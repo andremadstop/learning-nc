@@ -205,6 +205,89 @@ export function libraryLogoImageUrl(id) {
 }
 
 /**
+ * GitHub #93: the backgrounds the course can use (library and built-in), the one it uses and its strength.
+ * @param {number} courseId — the course
+ * @return {Promise<{backgrounds: Array<{id: string, name: string}>, builtins: string[], selected: string, intensity: number}>}
+ */
+export async function getCertBackgrounds(courseId) {
+	const response = await axios.get(generateUrl('/apps/learning/api/courses/{courseId}/cert-layout/backgrounds', { courseId }))
+	return response.data
+}
+
+/**
+ * GitHub #93: a library background's image for the choice in the course settings (an img src).
+ * @param {number} courseId — the course
+ * @param {string} backgroundId — the background's id
+ * @return {string}
+ */
+export function certBackgroundImageUrl(courseId, backgroundId) {
+	return generateUrl('/apps/learning/api/courses/{courseId}/cert-layout/backgrounds/{backgroundId}', { courseId, backgroundId })
+}
+
+/**
+ * GitHub #93: use a background on the course's certificates.
+ * @param {number} courseId — the course
+ * @param {string} backgroundId — a library background's id, 'builtin:<id>', or '' for none
+ * @param {number} intensity — 10–100 in steps of 10
+ * @return {Promise<object>} the course's layout with images (same shape as getCertLayout)
+ */
+export async function selectCertBackground(courseId, backgroundId, intensity) {
+	const response = await axios.put(generateUrl('/apps/learning/api/courses/{courseId}/cert-layout/background', { courseId }), { backgroundId, intensity })
+	return response.data
+}
+
+/**
+ * GitHub #93: the certificate background library (administrators only).
+ * @return {Promise<{backgrounds: Array<{id: string, name: string, mime: string, size: number, courses: number}>, max: number}>}
+ */
+export async function listLibraryBackgrounds() {
+	const response = await axios.get(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds'))
+	return response.data
+}
+
+/**
+ * GitHub #93: upload a background into the library. The server checks the content and re-encodes it.
+ * @param {string} name — the name instructors choose it by
+ * @param {File} file — the chosen file
+ * @return {Promise<object>} the library, plus `added` (the new background's id)
+ */
+export async function uploadLibraryBackground(name, file) {
+	const form = new FormData()
+	form.append('name', name)
+	form.append('background', file)
+	const response = await axios.post(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds'), form)
+	return response.data
+}
+
+/**
+ * @param {string} id — the background's id
+ * @param {string} name — the new name
+ * @return {Promise<object>} the library
+ */
+export async function renameLibraryBackground(id, name) {
+	const response = await axios.put(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}', { id }), { name })
+	return response.data
+}
+
+/**
+ * GitHub #93: delete a library background. Courses that use it get no background.
+ * @param {string} id — the background's id
+ * @return {Promise<object>} the library, plus `courses_reset`
+ */
+export async function deleteLibraryBackground(id) {
+	const response = await axios.delete(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}', { id }))
+	return response.data
+}
+
+/**
+ * @param {string} id — the background's id
+ * @return {string} the img src of a library background in the admin list
+ */
+export function libraryBackgroundImageUrl(id) {
+	return generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}/image', { id })
+}
+
+/**
  * GitHub #84 / #87: for every student member of the course, whether the instructor can open a new
  * certification cycle and why. Instructors of the course only (404 otherwise).
  * @param {number} courseId — the course

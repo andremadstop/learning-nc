@@ -4128,6 +4128,41 @@
             "%n lignes"
         ],
         "Suche leeren": "Effacer la recherche",
-        "Antwort {n} ist richtig": "La réponse {n} est correcte"
+        "Antwort {n} ist richtig": "La réponse {n} est correcte",
+        "Hintergründe für Zertifikate": "Arrière-plans des certificats",
+        "Lehrende können diese Hintergründe in ihren Kursen unter „Gestaltung des Zertifikats“ wählen, etwa einen Rahmen oder Ornamente in den Farben der Organisation. PNG, JPEG oder WebP, höchstens 2 MB und 4000 Pixel je Seite. SVG wird nicht angenommen. Jedes Bild wird beim Hochladen neu gespeichert; eingebettete Angaben wie Kamera- oder Ortsdaten werden dabei entfernt.": "Les formateurs peuvent choisir ces arrière-plans dans leurs cours sous « Présentation du certificat », par exemple un cadre ou des ornements aux couleurs de l’organisation. PNG, JPEG ou WebP, 2 Mo et 4000 pixels par côté au maximum. Le format SVG n’est pas accepté. Chaque image est réenregistrée lors du téléversement ; les informations intégrées comme les données de l’appareil photo ou de localisation sont supprimées.",
+        "Noch keine Hintergründe hinterlegt. Lehrende können bis dahin einen der mitgelieferten Hintergründe wählen.": "Aucun arrière-plan pour l’instant. D’ici là, les formateurs peuvent choisir l’un des arrière-plans fournis.",
+        "Name des Hintergrunds": "Nom de l’arrière-plan",
+        "Hintergrund endgültig löschen": "Supprimer définitivement l’arrière-plan",
+        "Hintergrund hinzufügen": "Ajouter un arrière-plan",
+        "Name des Hintergrunds (z. B. Goldrahmen)": "Nom de l’arrière-plan (p. ex. cadre doré)",
+        "Hintergrund hochladen …": "Téléverser un arrière-plan …",
+        "Die Bibliothek ist voll (höchstens {max} Hintergründe). Lösche einen Hintergrund, um einen neuen hinzuzufügen.": "La bibliothèque est pleine ({max} arrière-plans au maximum). Supprimez un arrière-plan pour en ajouter un nouveau.",
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt der Hintergrund nur als SVG oder PDF vor, exportiere ihn in einem Grafikprogramm als PNG oder JPEG (für A4 quer etwa 3500 Pixel breit).": "Le fichier n’est pas une image PNG, JPEG ou WebP. Le format SVG n’est pas accepté. Si l’arrière-plan n’existe qu’en SVG ou PDF, exportez-le depuis un logiciel graphique en PNG ou JPEG (environ 3500 pixels de large pour un A4 paysage).",
+        "Die Datei ist zu groß (höchstens 2 MB und 4000 Pixel je Seite). Als JPEG gespeichert ist ein Foto meist deutlich kleiner.": "Le fichier est trop volumineux (2 Mo et 4000 pixels par côté au maximum). Enregistrée en JPEG, une photo est généralement bien plus légère.",
+        "Dieser Hintergrund ist schon in der Bibliothek.": "Cet arrière-plan est déjà dans la bibliothèque.",
+        "Der Hintergrund konnte nicht hochgeladen werden.": "L’arrière-plan n’a pas pu être téléversé.",
+        "Die Hintergründe konnten nicht geladen werden.": "Les arrière-plans n’ont pas pu être chargés.",
+        "Der Hintergrund wird aus der Bibliothek entfernt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "L’arrière-plan est retiré de la bibliothèque. Les certificats déjà délivrés conservent leur arrière-plan.",
+        "Bitte zuerst einen Namen für den Hintergrund eingeben.": "Veuillez d’abord saisir un nom pour l’arrière-plan.",
+        "Der Hintergrund konnte nicht gelöscht werden.": "L’arrière-plan n’a pas pu être supprimé.",
+        "Hintergrund": "Arrière-plan",
+        "Kein Hintergrund": "Aucun arrière-plan",
+        "Stärke des Hintergrunds": "Intensité de l’arrière-plan",
+        "Die Schrift steht immer auf einer hellen Fläche, damit sie in jeder Stärke lesbar bleibt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "Le texte repose toujours sur une zone claire afin de rester lisible quelle que soit l’intensité. Les certificats déjà délivrés conservent leur arrière-plan.",
+        "Eigene Hintergründe kann die Administration unter Verwaltung → Learning hinterlegen.": "Les administrateurs peuvent ajouter leurs propres arrière-plans dans Administration → Learning.",
+        "Doppelrahmen": "Double cadre",
+        "Eckornamente": "Ornements d’angle",
+        "Feines Linienmuster": "Motif de lignes fines",
+        "Diesen Hintergrund gibt es in der Bibliothek nicht mehr.": "Cet arrière-plan n’est plus dans la bibliothèque.",
+        "Der Hintergrund konnte nicht übernommen werden.": "L’arrière-plan n’a pas pu être appliqué.",
+        "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._": [
+            "Utilisé dans %n cours. Ce cours n’aura plus d’arrière-plan ; les certificats délivrés conservent le leur.",
+            "Utilisé dans %n cours. Ces cours n’auront plus d’arrière-plan ; les certificats délivrés conservent le leur."
+        ],
+        "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._": [
+            "« {title} » a été supprimé. %n cours n’a plus d’arrière-plan.",
+            "« {title} » a été supprimé. %n cours n’ont plus d’arrière-plan."
+        ]
     }
 }

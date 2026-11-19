@@ -4172,6 +4172,49 @@
             "%n سطر"
         ],
         "Suche leeren": "مسح البحث",
-        "Antwort {n} ist richtig": "الإجابة {n} صحيحة"
+        "Antwort {n} ist richtig": "الإجابة {n} صحيحة",
+        "Hintergründe für Zertifikate": "خلفيات الشهادات",
+        "Lehrende können diese Hintergründe in ihren Kursen unter „Gestaltung des Zertifikats“ wählen, etwa einen Rahmen oder Ornamente in den Farben der Organisation. PNG, JPEG oder WebP, höchstens 2 MB und 4000 Pixel je Seite. SVG wird nicht angenommen. Jedes Bild wird beim Hochladen neu gespeichert; eingebettete Angaben wie Kamera- oder Ortsdaten werden dabei entfernt.": "يمكن للمدرّسين اختيار هذه الخلفيات في مقرراتهم ضمن «تصميم الشهادة»، مثل إطار أو زخارف بألوان المؤسسة. بصيغة PNG أو JPEG أو WebP، بحد أقصى 2 ميغابايت و4000 بكسل لكل ضلع. لا تُقبل ملفات SVG. تُحفظ كل صورة من جديد عند رفعها، وتُزال منها البيانات المضمّنة مثل بيانات الكاميرا أو الموقع.",
+        "Noch keine Hintergründe hinterlegt. Lehrende können bis dahin einen der mitgelieferten Hintergründe wählen.": "لم تُضف أي خلفيات بعد. حتى ذلك الحين يمكن للمدرّسين اختيار إحدى الخلفيات المرفقة.",
+        "Name des Hintergrunds": "اسم الخلفية",
+        "Hintergrund endgültig löschen": "حذف الخلفية نهائيًا",
+        "Hintergrund hinzufügen": "إضافة خلفية",
+        "Name des Hintergrunds (z. B. Goldrahmen)": "اسم الخلفية (مثل: إطار ذهبي)",
+        "Hintergrund hochladen …": "رفع خلفية …",
+        "Die Bibliothek ist voll (höchstens {max} Hintergründe). Lösche einen Hintergrund, um einen neuen hinzuzufügen.": "المكتبة ممتلئة (بحد أقصى {max} خلفية). احذف خلفية لإضافة خلفية جديدة.",
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt der Hintergrund nur als SVG oder PDF vor, exportiere ihn in einem Grafikprogramm als PNG oder JPEG (für A4 quer etwa 3500 Pixel breit).": "الملف ليس صورة بصيغة PNG أو JPEG أو WebP. لا تُقبل ملفات SVG. إذا كانت الخلفية متوفرة بصيغة SVG أو PDF فقط، فصدّرها من برنامج رسوميات بصيغة PNG أو JPEG (بعرض 3500 بكسل تقريبًا لورقة A4 أفقية).",
+        "Die Datei ist zu groß (höchstens 2 MB und 4000 Pixel je Seite). Als JPEG gespeichert ist ein Foto meist deutlich kleiner.": "الملف كبير جدًا (بحد أقصى 2 ميغابايت و4000 بكسل لكل ضلع). عادةً ما تكون الصورة الفوتوغرافية أصغر بكثير عند حفظها بصيغة JPEG.",
+        "Dieser Hintergrund ist schon in der Bibliothek.": "هذه الخلفية موجودة في المكتبة بالفعل.",
+        "Der Hintergrund konnte nicht hochgeladen werden.": "تعذّر رفع الخلفية.",
+        "Die Hintergründe konnten nicht geladen werden.": "تعذّر تحميل الخلفيات.",
+        "Der Hintergrund wird aus der Bibliothek entfernt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "ستُزال الخلفية من المكتبة. تحتفظ الشهادات الصادرة بالفعل بخلفيتها.",
+        "Bitte zuerst einen Namen für den Hintergrund eingeben.": "يُرجى إدخال اسم للخلفية أولًا.",
+        "Der Hintergrund konnte nicht gelöscht werden.": "تعذّر حذف الخلفية.",
+        "Hintergrund": "الخلفية",
+        "Kein Hintergrund": "بدون خلفية",
+        "Stärke des Hintergrunds": "شدة الخلفية",
+        "Die Schrift steht immer auf einer hellen Fläche, damit sie in jeder Stärke lesbar bleibt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "يظهر النص دائمًا على مساحة فاتحة ليبقى مقروءًا بأي شدة. تحتفظ الشهادات الصادرة بالفعل بخلفيتها.",
+        "Eigene Hintergründe kann die Administration unter Verwaltung → Learning hinterlegen.": "يمكن للمشرفين إضافة خلفيات خاصة ضمن الإدارة ← Learning.",
+        "Doppelrahmen": "إطار مزدوج",
+        "Eckornamente": "زخارف الزوايا",
+        "Feines Linienmuster": "نقش خطوط رفيعة",
+        "Diesen Hintergrund gibt es in der Bibliothek nicht mehr.": "لم تعد هذه الخلفية موجودة في المكتبة.",
+        "Der Hintergrund konnte nicht übernommen werden.": "تعذّر تطبيق الخلفية.",
+        "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._": [
+            "مستخدمة في %n مقرر. لن تبقى لهذه المقررات خلفية؛ تحتفظ الشهادات الصادرة بخلفيتها.",
+            "مستخدمة في %n مقرر. لن تبقى لهذا المقرر خلفية؛ تحتفظ الشهادات الصادرة بخلفيتها.",
+            "مستخدمة في %n مقررين. لن تبقى لهذين المقررين خلفية؛ تحتفظ الشهادات الصادرة بخلفيتها.",
+            "مستخدمة في %n مقررات. لن تبقى لهذه المقررات خلفية؛ تحتفظ الشهادات الصادرة بخلفيتها.",
+            "مستخدمة في %n مقررًا. لن تبقى لهذه المقررات خلفية؛ تحتفظ الشهادات الصادرة بخلفيتها.",
+            "مستخدمة في %n مقرر. لن تبقى لهذه المقررات خلفية؛ تحتفظ الشهادات الصادرة بخلفيتها."
+        ],
+        "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._": [
+            "تم حذف «{title}». لم تعد لـ %n مقرر خلفية.",
+            "تم حذف «{title}». لم تعد لـ %n مقرر خلفية.",
+            "تم حذف «{title}». لم تعد لـ %n مقررين خلفية.",
+            "تم حذف «{title}». لم تعد لـ %n مقررات خلفية.",
+            "تم حذف «{title}». لم تعد لـ %n مقررًا خلفية.",
+            "تم حذف «{title}». لم تعد لـ %n مقرر خلفية."
+        ]
     }
 }

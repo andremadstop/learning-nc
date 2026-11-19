@@ -113,6 +113,81 @@
 			</NcCheckboxRadioSwitch>
 		</fieldset>
 
+		<!-- GitHub #93: background from the admin's library or one that ships with the app, and its
+			strength; taken over at once like the logo -->
+		<fieldset class="cert-config-field cert-layout-background" :aria-describedby="backgroundHintId + ' ' + backgroundErrorId" data-test="cert-layout-background">
+			<legend>{{ t('learning', 'Hintergrund') }}</legend>
+			<NcCheckboxRadioSwitch
+				type="radio"
+				:name="'cert-layout-background-' + courseId"
+				value="none"
+				:model-value="selectedBackground || 'none'"
+				data-test="cert-layout-background-none"
+				@update:model-value="chooseBackground('')">
+				{{ t('learning', 'Kein Hintergrund') }}
+			</NcCheckboxRadioSwitch>
+			<NcCheckboxRadioSwitch
+				v-for="builtin in builtinOptions"
+				:key="builtin.id"
+				type="radio"
+				:name="'cert-layout-background-' + courseId"
+				:value="builtin.id"
+				:model-value="selectedBackground || 'none'"
+				:data-test="'cert-layout-background-' + builtin.key"
+				@update:model-value="chooseBackground(builtin.id)">
+				{{ builtin.label }}
+			</NcCheckboxRadioSwitch>
+			<NcCheckboxRadioSwitch
+				v-for="background in backgrounds"
+				:key="background.id"
+				type="radio"
+				:name="'cert-layout-background-' + courseId"
+				:value="background.id"
+				:model-value="selectedBackground || 'none'"
+				:data-test="'cert-layout-background-' + background.id"
+				@update:model-value="chooseBackground(background.id)">
+				<span class="cert-layout-logo-option">
+					<img :src="backgroundImageUrl(background.id)" alt="" class="cert-layout-background-thumb">
+					<span>{{ background.name }}</span>
+				</span>
+			</NcCheckboxRadioSwitch>
+			<div v-if="selectedBackground" class="cert-config-field cert-layout-intensity">
+				<label :for="intensityId">{{ t('learning', 'Stärke des Hintergrunds') }}</label>
+				<div class="cert-layout-intensity-row">
+					<input
+						:id="intensityId"
+						:value="intensity"
+						type="range"
+						:min="intensityMin"
+						max="100"
+						:step="intensityStep"
+						:aria-valuetext="intensity + ' %'"
+						class="cert-layout-intensity-input"
+						data-test="cert-layout-background-intensity"
+						@input="intensity = Number($event.target.value)"
+						@change="saveBackground">
+					<output :for="intensityId" class="cert-layout-intensity-value">{{ intensity }} %</output>
+				</div>
+			</div>
+			<p :id="backgroundHintId" class="mode-config-hint">
+				{{ t('learning', 'Die Schrift steht immer auf einer hellen Fläche, damit sie in jeder Stärke lesbar bleibt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.') }}
+				<template v-if="!backgrounds.length">
+					{{ t('learning', 'Eigene Hintergründe kann die Administration unter Verwaltung → Learning hinterlegen.') }}
+				</template>
+			</p>
+			<!-- always in the DOM: a live region that appears together with its text is often not read -->
+			<p
+				:id="backgroundErrorId"
+				class="cert-layout-logo-error"
+				aria-live="polite"
+				aria-atomic="true"
+				data-test="cert-layout-background-error">
+				<template v-if="backgroundError">
+					{{ backgroundError }}
+				</template>
+			</p>
+		</fieldset>
+
 		<fieldset class="cert-config-field cert-layout-switches">
 			<legend>{{ t('learning', 'Elemente auf dem Zertifikat') }}</legend>
 			<NcCheckboxRadioSwitch
@@ -175,7 +250,12 @@
 			</div>
 		</fieldset>
 
-		<details class="cert-layout-preview" data-test="cert-layout-preview">
+		<!-- GitHub #93: open by itself once a background is chosen, so its effect is seen at once -->
+		<details
+			class="cert-layout-preview"
+			:open="previewOpen"
+			data-test="cert-layout-preview"
+			@toggle="previewOpen = $event.target.open">
 			<summary>{{ t('learning', 'Vorschau (Beispielwerte)') }}</summary>
 			<CertificateCard
 				:fields="previewFields"
@@ -193,8 +273,18 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import CertificateCard from './CertificateCard.vue'
 import ImageFileField from './ImageFileField.vue'
-import { PLACEHOLDERS } from '../utils/certificateLayout.js'
-import { certLogoImageUrl, getCertLayout, getCertLogos, importCertLayoutImage, removeCertLayoutImage, selectCertLogo } from '../services/CertificateService.js'
+import { BACKGROUND_BUILTINS, BACKGROUND_INTENSITY_DEFAULT, BACKGROUND_INTENSITY_MIN, BACKGROUND_INTENSITY_STEP, PLACEHOLDERS, isValidIntensity } from '../utils/certificateLayout.js'
+import {
+	certBackgroundImageUrl,
+	certLogoImageUrl,
+	getCertBackgrounds,
+	getCertLayout,
+	getCertLogos,
+	importCertLayoutImage,
+	removeCertLayoutImage,
+	selectCertBackground,
+	selectCertLogo,
+} from '../services/CertificateService.js'
 import { addValidity } from '../utils/certValidity.js'
 
 const INTRO_MAX = 2000
@@ -226,6 +316,18 @@ export function imageErrorMessage(error) {
 	return t('learning', 'Das Bild konnte nicht übernommen werden.')
 }
 
+/**
+ * GitHub #93: the background a course layout names, as the value of the choice.
+ * @param {object} layout - the course's cert_layout (CertLayout::forSettings)
+ * @return {string} '' = none, 'builtin:<id>' or a library background's id
+ */
+export function backgroundChoice(layout) {
+	if (typeof layout?.background_id === 'string' && /^[0-9a-f]{64}$/.test(layout.background_id)) {
+		return layout.background_id
+	}
+	return BACKGROUND_BUILTINS.includes(layout?.background_builtin) ? 'builtin:' + layout.background_builtin : ''
+}
+
 export default {
 	name: 'CertLayoutSettings',
 
@@ -250,8 +352,25 @@ export default {
 	emits: ['update:modelValue'],
 
 	data() {
+		const initialBackground = backgroundChoice(this.modelValue)
+		const initialIntensity = isValidIntensity(this.modelValue?.background_intensity) ? this.modelValue.background_intensity : BACKGROUND_INTENSITY_DEFAULT
 		return {
-			images: { stamp: '', signature: '', logo: '' },
+			images: { stamp: '', signature: '', logo: '', background: '' },
+			// GitHub #93: '' = none, 'builtin:<id>' or a library background's id
+			backgrounds: [],
+			selectedBackground: initialBackground,
+			savedBackground: initialBackground,
+			intensity: initialIntensity,
+			savedIntensity: initialIntensity,
+			backgroundQueued: false,
+			backgroundBusy: false,
+			backgroundError: '',
+			previewOpen: initialBackground !== '',
+			intensityMin: BACKGROUND_INTENSITY_MIN,
+			intensityStep: BACKGROUND_INTENSITY_STEP,
+			intensityId: `cert-layout-background-intensity-${this.courseId}`,
+			backgroundHintId: `cert-layout-background-hint-${this.courseId}`,
+			backgroundErrorId: `cert-layout-background-error-${this.courseId}`,
 			// GitHub #78: the library logos this course can use; '' = the Theming logo
 			logos: [],
 			selectedLogo: typeof this.modelValue?.logo_id === 'string' ? this.modelValue.logo_id : '',
@@ -298,6 +417,14 @@ export default {
 				{ key: 'signature', label: t('learning', 'Unterschrift') },
 			]
 		},
+		builtinOptions() {
+			const labels = {
+				frame: t('learning', 'Doppelrahmen'),
+				corners: t('learning', 'Eckornamente'),
+				lines: t('learning', 'Feines Linienmuster'),
+			}
+			return BACKGROUND_BUILTINS.map((key) => ({ key, id: 'builtin:' + key, label: labels[key] }))
+		},
 		fallbackIssuerName() {
 			return this.issuerNameFallback || (typeof window !== 'undefined' && window.OC?.theme?.name) || 'Nextcloud'
 		},
@@ -325,6 +452,10 @@ export default {
 				stamp: this.images.stamp || null,
 				signature: this.images.signature || null,
 				logo: this.images.logo || null,
+				// GitHub #93: the choice and strength as they are on screen, the library image once stored
+				background: this.selectedBackground && !this.selectedBackground.startsWith('builtin:') ? (this.images.background || null) : null,
+				background_builtin: this.selectedBackground.startsWith('builtin:') ? this.selectedBackground.slice(8) : null,
+				background_intensity: this.intensity,
 			}
 		},
 		previewIssued() {
@@ -339,6 +470,7 @@ export default {
 	mounted() {
 		this.loadImages()
 		this.loadLogos()
+		this.loadBackgrounds()
 	},
 
 	methods: {
@@ -374,6 +506,7 @@ export default {
 				stamp: typeof layout?.stamp === 'string' ? layout.stamp : '',
 				signature: typeof layout?.signature === 'string' ? layout.signature : '',
 				logo: typeof layout?.logo === 'string' ? layout.logo : '',
+				background: typeof layout?.background === 'string' ? layout.background : '',
 			}
 		},
 
@@ -458,6 +591,81 @@ export default {
 				}
 			} finally {
 				this.logoBusy = false
+			}
+		},
+
+		backgroundImageUrl(id) {
+			return certBackgroundImageUrl(this.courseId, id)
+		},
+
+		/** GitHub #93: the library, the built-in ids and the course's choice. Without it the built-in ones remain. */
+		async loadBackgrounds() {
+			try {
+				const data = await getCertBackgrounds(this.courseId)
+				this.backgrounds = Array.isArray(data?.backgrounds) ? data.backgrounds.filter((entry) => typeof entry?.id === 'string') : []
+				if (!this.backgroundBusy) {
+					this.selectedBackground = typeof data?.selected === 'string' ? data.selected : ''
+					this.savedBackground = this.selectedBackground
+					this.intensity = isValidIntensity(data?.intensity) ? data.intensity : BACKGROUND_INTENSITY_DEFAULT
+					this.savedIntensity = this.intensity
+				}
+			} catch (e) {
+				this.backgrounds = []
+			}
+		},
+
+		chooseBackground(id) {
+			this.selectedBackground = id
+			if (id) {
+				this.previewOpen = true
+			}
+			this.saveBackground()
+		},
+
+		/**
+		 * GitHub #93: takes effect at once, like the logo. The slider changes the preview while it
+		 * moves and saves when it is let go; whatever is chosen while a save runs is saved after it
+		 * (the last choice wins), so dragging never queues a request per step.
+		 */
+		async saveBackground() {
+			this.backgroundQueued = true
+			if (this.backgroundBusy) {
+				return
+			}
+			this.backgroundBusy = true
+			this.backgroundError = ''
+			try {
+				while (this.backgroundQueued) {
+					this.backgroundQueued = false
+					const choice = this.selectedBackground
+					const intensity = this.intensity
+					if (choice === this.savedBackground && (choice === '' || intensity === this.savedIntensity)) {
+						continue
+					}
+					this.imageSeq++
+					try {
+						const layout = await selectCertBackground(this.courseId, choice, intensity)
+						this.savedBackground = choice
+						this.savedIntensity = choice === '' ? BACKGROUND_INTENSITY_DEFAULT : intensity
+						this.applyImages(layout)
+						this.update({
+							background_id: choice && !choice.startsWith('builtin:') ? choice : null,
+							background_builtin: choice.startsWith('builtin:') ? choice.slice(8) : null,
+							background_intensity: this.savedIntensity,
+						})
+					} catch (e) {
+						this.backgroundQueued = false
+						this.selectedBackground = this.savedBackground
+						this.intensity = this.savedIntensity
+						this.backgroundError = e?.response?.data?.error === 'background_not_found'
+							? t('learning', 'Diesen Hintergrund gibt es in der Bibliothek nicht mehr.')
+							: t('learning', 'Der Hintergrund konnte nicht übernommen werden.')
+						this.loadBackgrounds()
+						this.loadImages()
+					}
+				}
+			} finally {
+				this.backgroundBusy = false
 			}
 		},
 
@@ -622,6 +830,46 @@ export default {
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius, 4px);
 	padding: 2px;
+}
+
+.cert-layout-background {
+	border: none;
+	padding: 0;
+	margin-inline: 0;
+}
+
+.cert-layout-background legend {
+	font-weight: 600;
+	font-size: 0.9em;
+	padding: 0;
+	margin-bottom: 6px;
+}
+
+.cert-layout-background-thumb {
+	width: 60px;
+	height: 40px;
+	object-fit: cover;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius, 4px);
+	background: #fff;
+}
+
+.cert-layout-intensity-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	max-width: 420px;
+}
+
+.cert-layout-intensity-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+}
+
+.cert-layout-intensity-value {
+	min-width: 3.5em;
+	font-variant-numeric: tabular-nums;
 }
 
 .cert-layout-logo-error {

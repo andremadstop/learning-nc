@@ -358,6 +358,13 @@ export default {
 		grid-column: 1 / -1;
 	}
 
+	/* GitHub #93: the background layer is no grid item: without this it would be placed in the
+		grid area of 1 / -1 and stop at the card's padding instead of filling the sheet */
+	#learning-certificate-print-root .certificate-card > .certificate-bg {
+		grid-column: auto;
+		grid-row: auto;
+	}
+
 	#learning-certificate-print-root .certificate-card > .certificate-signoff {
 		grid-column: 1;
 		align-self: end;
@@ -415,6 +422,11 @@ export default {
 	#learning-certificate-print-root .certificate-qr {
 		width: 22mm;
 		height: 22mm;
+	}
+
+	/* GitHub #93: the white plate around the QR code, in millimetres on paper (≥ two more modules) */
+	#learning-certificate-print-root .certificate-card--background .certificate-qr {
+		padding: 2mm;
 	}
 
 	/* The revoked / expired note keeps its meaning on white paper in every theme. */

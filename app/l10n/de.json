@@ -4128,6 +4128,41 @@
             "%n Zeilen"
         ],
         "Suche leeren": "Suche leeren",
-        "Antwort {n} ist richtig": "Antwort {n} ist richtig"
+        "Antwort {n} ist richtig": "Antwort {n} ist richtig",
+        "Hintergründe für Zertifikate": "Hintergründe für Zertifikate",
+        "Lehrende können diese Hintergründe in ihren Kursen unter „Gestaltung des Zertifikats“ wählen, etwa einen Rahmen oder Ornamente in den Farben der Organisation. PNG, JPEG oder WebP, höchstens 2 MB und 4000 Pixel je Seite. SVG wird nicht angenommen. Jedes Bild wird beim Hochladen neu gespeichert; eingebettete Angaben wie Kamera- oder Ortsdaten werden dabei entfernt.": "Lehrende können diese Hintergründe in ihren Kursen unter „Gestaltung des Zertifikats“ wählen, etwa einen Rahmen oder Ornamente in den Farben der Organisation. PNG, JPEG oder WebP, höchstens 2 MB und 4000 Pixel je Seite. SVG wird nicht angenommen. Jedes Bild wird beim Hochladen neu gespeichert; eingebettete Angaben wie Kamera- oder Ortsdaten werden dabei entfernt.",
+        "Noch keine Hintergründe hinterlegt. Lehrende können bis dahin einen der mitgelieferten Hintergründe wählen.": "Noch keine Hintergründe hinterlegt. Lehrende können bis dahin einen der mitgelieferten Hintergründe wählen.",
+        "Name des Hintergrunds": "Name des Hintergrunds",
+        "Hintergrund endgültig löschen": "Hintergrund endgültig löschen",
+        "Hintergrund hinzufügen": "Hintergrund hinzufügen",
+        "Name des Hintergrunds (z. B. Goldrahmen)": "Name des Hintergrunds (z. B. Goldrahmen)",
+        "Hintergrund hochladen …": "Hintergrund hochladen …",
+        "Die Bibliothek ist voll (höchstens {max} Hintergründe). Lösche einen Hintergrund, um einen neuen hinzuzufügen.": "Die Bibliothek ist voll (höchstens {max} Hintergründe). Lösche einen Hintergrund, um einen neuen hinzuzufügen.",
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt der Hintergrund nur als SVG oder PDF vor, exportiere ihn in einem Grafikprogramm als PNG oder JPEG (für A4 quer etwa 3500 Pixel breit).": "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt der Hintergrund nur als SVG oder PDF vor, exportiere ihn in einem Grafikprogramm als PNG oder JPEG (für A4 quer etwa 3500 Pixel breit).",
+        "Die Datei ist zu groß (höchstens 2 MB und 4000 Pixel je Seite). Als JPEG gespeichert ist ein Foto meist deutlich kleiner.": "Die Datei ist zu groß (höchstens 2 MB und 4000 Pixel je Seite). Als JPEG gespeichert ist ein Foto meist deutlich kleiner.",
+        "Dieser Hintergrund ist schon in der Bibliothek.": "Dieser Hintergrund ist schon in der Bibliothek.",
+        "Der Hintergrund konnte nicht hochgeladen werden.": "Der Hintergrund konnte nicht hochgeladen werden.",
+        "Die Hintergründe konnten nicht geladen werden.": "Die Hintergründe konnten nicht geladen werden.",
+        "Der Hintergrund wird aus der Bibliothek entfernt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "Der Hintergrund wird aus der Bibliothek entfernt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.",
+        "Bitte zuerst einen Namen für den Hintergrund eingeben.": "Bitte zuerst einen Namen für den Hintergrund eingeben.",
+        "Der Hintergrund konnte nicht gelöscht werden.": "Der Hintergrund konnte nicht gelöscht werden.",
+        "Hintergrund": "Hintergrund",
+        "Kein Hintergrund": "Kein Hintergrund",
+        "Stärke des Hintergrunds": "Stärke des Hintergrunds",
+        "Die Schrift steht immer auf einer hellen Fläche, damit sie in jeder Stärke lesbar bleibt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "Die Schrift steht immer auf einer hellen Fläche, damit sie in jeder Stärke lesbar bleibt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.",
+        "Eigene Hintergründe kann die Administration unter Verwaltung → Learning hinterlegen.": "Eigene Hintergründe kann die Administration unter Verwaltung → Learning hinterlegen.",
+        "Doppelrahmen": "Doppelrahmen",
+        "Eckornamente": "Eckornamente",
+        "Feines Linienmuster": "Feines Linienmuster",
+        "Diesen Hintergrund gibt es in der Bibliothek nicht mehr.": "Diesen Hintergrund gibt es in der Bibliothek nicht mehr.",
+        "Der Hintergrund konnte nicht übernommen werden.": "Der Hintergrund konnte nicht übernommen werden.",
+        "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._": [
+            "Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren.",
+            "Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren."
+        ],
+        "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._": [
+            "„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr.",
+            "„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr."
+        ]
     }
 }

@@ -25,6 +25,7 @@ const UNRESOLVED_ALLOWED = {
 	'components/CertificateCard.vue :src(logoSrc)': 'issuer logo: the certificate\'s own library logo (data URL, #78) or the Theming logo from the certificate data',
 	'components/CertificateCard.vue :src(layout.stamp)': 'stamp image from the layout (data URL)',
 	'components/CertificateCard.vue :src(layout.signature)': 'signature image from the layout (data URL)',
+	'components/CertificateCard.vue :src(layout.background)': 'background image from the layout (PNG/JPEG/WebP data URL, #93)',
 	'components/CertificateCard.vue :src(qrDataUrl)': 'QR code rendered locally as a data URL',
 	'components/PbqPlacement.vue :src(scenarioImage)': 'prop, the parent passes the question image',
 	'components/PbqReferenceGallery.vue :src(activeImage.src)': 'reference images from the PBQ config',

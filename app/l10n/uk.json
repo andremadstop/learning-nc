@@ -4139,6 +4139,43 @@
             "%n рядків"
         ],
         "Suche leeren": "Очистити пошук",
-        "Antwort {n} ist richtig": "Відповідь {n} правильна"
+        "Antwort {n} ist richtig": "Відповідь {n} правильна",
+        "Hintergründe für Zertifikate": "Фони сертифікатів",
+        "Lehrende können diese Hintergründe in ihren Kursen unter „Gestaltung des Zertifikats“ wählen, etwa einen Rahmen oder Ornamente in den Farben der Organisation. PNG, JPEG oder WebP, höchstens 2 MB und 4000 Pixel je Seite. SVG wird nicht angenommen. Jedes Bild wird beim Hochladen neu gespeichert; eingebettete Angaben wie Kamera- oder Ortsdaten werden dabei entfernt.": "Викладачі можуть вибрати ці фони у своїх курсах у розділі «Оформлення сертифіката», наприклад рамку чи орнаменти в кольорах організації. PNG, JPEG або WebP, не більше 2 МБ і 4000 пікселів з кожного боку. SVG не приймається. Під час завантаження кожне зображення зберігається заново; вбудовані відомості, як-от дані камери чи місцезнаходження, видаляються.",
+        "Noch keine Hintergründe hinterlegt. Lehrende können bis dahin einen der mitgelieferten Hintergründe wählen.": "Фони ще не додано. Доти викладачі можуть вибрати один із вбудованих фонів.",
+        "Name des Hintergrunds": "Назва фону",
+        "Hintergrund endgültig löschen": "Видалити фон остаточно",
+        "Hintergrund hinzufügen": "Додати фон",
+        "Name des Hintergrunds (z. B. Goldrahmen)": "Назва фону (наприклад, золота рамка)",
+        "Hintergrund hochladen …": "Завантажити фон …",
+        "Die Bibliothek ist voll (höchstens {max} Hintergründe). Lösche einen Hintergrund, um einen neuen hinzuzufügen.": "Бібліотека заповнена (не більше {max} фонів). Видаліть фон, щоб додати новий.",
+        "Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt der Hintergrund nur als SVG oder PDF vor, exportiere ihn in einem Grafikprogramm als PNG oder JPEG (für A4 quer etwa 3500 Pixel breit).": "Файл не є зображенням PNG, JPEG або WebP. SVG не приймається. Якщо фон є лише у форматі SVG чи PDF, експортуйте його в графічній програмі як PNG або JPEG (для альбомного A4 — близько 3500 пікселів завширшки).",
+        "Die Datei ist zu groß (höchstens 2 MB und 4000 Pixel je Seite). Als JPEG gespeichert ist ein Foto meist deutlich kleiner.": "Файл завеликий (не більше 2 МБ і 4000 пікселів з кожного боку). Збережене у JPEG фото зазвичай значно менше.",
+        "Dieser Hintergrund ist schon in der Bibliothek.": "Цей фон уже є в бібліотеці.",
+        "Der Hintergrund konnte nicht hochgeladen werden.": "Не вдалося завантажити фон.",
+        "Die Hintergründe konnten nicht geladen werden.": "Не вдалося завантажити фони.",
+        "Der Hintergrund wird aus der Bibliothek entfernt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "Фон буде вилучено з бібліотеки. Уже видані сертифікати збережуть свій фон.",
+        "Bitte zuerst einen Namen für den Hintergrund eingeben.": "Спершу введіть назву фону.",
+        "Der Hintergrund konnte nicht gelöscht werden.": "Не вдалося видалити фон.",
+        "Hintergrund": "Фон",
+        "Kein Hintergrund": "Без фону",
+        "Stärke des Hintergrunds": "Насиченість фону",
+        "Die Schrift steht immer auf einer hellen Fläche, damit sie in jeder Stärke lesbar bleibt. Bereits ausgestellte Zertifikate behalten ihren Hintergrund.": "Текст завжди розташований на світлій ділянці, щоб лишатися читабельним за будь-якої насиченості. Уже видані сертифікати збережуть свій фон.",
+        "Eigene Hintergründe kann die Administration unter Verwaltung → Learning hinterlegen.": "Адміністратори можуть додати власні фони в розділі «Адміністрування» → Learning.",
+        "Doppelrahmen": "Подвійна рамка",
+        "Eckornamente": "Кутові орнаменти",
+        "Feines Linienmuster": "Візерунок із тонких ліній",
+        "Diesen Hintergrund gibt es in der Bibliothek nicht mehr.": "Цього фону більше немає в бібліотеці.",
+        "Der Hintergrund konnte nicht übernommen werden.": "Не вдалося застосувати фон.",
+        "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._": [
+            "Використовується в %n курсі. Цей курс більше не матиме фону; видані сертифікати збережуть свій.",
+            "Використовується в %n курсах. Ці курси більше не матимуть фону; видані сертифікати збережуть свій.",
+            "Використовується в %n курсах. Ці курси більше не матимуть фону; видані сертифікати збережуть свій."
+        ],
+        "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._": [
+            "«{title}» видалено. %n курс тепер не має фону.",
+            "«{title}» видалено. %n курси тепер не мають фону.",
+            "«{title}» видалено. %n курсів тепер не мають фону."
+        ]
     }
 }

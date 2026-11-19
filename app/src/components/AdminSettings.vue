@@ -393,6 +393,7 @@
       <OperatorSettings />
 
       <CertLogoLibrary />
+      <CertBackgroundLibrary />
 
       <details class="audit-section">
         <summary class="audit-summary">
@@ -482,6 +483,7 @@ import axios from '@nextcloud/axios'
 import { nextTick } from 'vue'
 import AccessibleDialog from './AccessibleDialog.vue'
 import OperatorSettings from './OperatorSettings.vue'
+import CertBackgroundLibrary from './CertBackgroundLibrary.vue'
 import CertLogoLibrary from './CertLogoLibrary.vue'
 import InstructorPicker from './InstructorPicker.vue'
 import { generateUrl } from '@nextcloud/router'
@@ -494,7 +496,7 @@ import { toInstructorPayload, toOptions } from '../utils/member-picker.js'
 
 export default {
   name: 'AdminSettings',
-  components: { AccessibleDialog, CertLogoLibrary, InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
+  components: { AccessibleDialog, CertBackgroundLibrary, CertLogoLibrary, InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
   data() {
     return {
       loading: true,

@@ -35,11 +35,33 @@ const STRONG = new Set(['{student.name}', '{student.first_name}', '{student.last
 const ELEMENTS = '{course.elements}'
 
 /**
+ * GitHub #93: the backgrounds that ship with the app, drawn in CSS (CertLayout::BACKGROUND_BUILTINS).
+ * The id becomes part of a CSS class name, so only these ids are ever used.
+ */
+export const BACKGROUND_BUILTINS = ['frame', 'corners', 'lines']
+
+/** GitHub #93: how strongly a background shows, 10–100 in steps of 10; 100 = as drawn. */
+export const BACKGROUND_INTENSITY_DEFAULT = 100
+export const BACKGROUND_INTENSITY_MIN = 10
+export const BACKGROUND_INTENSITY_STEP = 10
+
+/**
+ * @param {*} value - candidate
+ * @return {boolean} whether it is a strength the settings offer
+ */
+export function isValidIntensity(value) {
+	return Number.isInteger(value)
+		&& value >= BACKGROUND_INTENSITY_MIN
+		&& value <= BACKGROUND_INTENSITY_DEFAULT
+		&& value % BACKGROUND_INTENSITY_STEP === 0
+}
+
+/**
  * The layout a certificate is drawn with. null / missing (every certificate issued before 5.13.0,
  * and courses with the standard layout) give the standard layout.
  *
  * @param {object|null} presentation - from the show response (or the settings preview)
- * @return {{intro: string, show: Object<string, boolean>, signerName: string, signerRole: string, stamp: string, signature: string, logo: string, logoLibrary: boolean}}
+ * @return {{intro: string, show: Object<string, boolean>, signerName: string, signerRole: string, stamp: string, signature: string, logo: string, logoLibrary: boolean, background: string, backgroundBuiltin: string, backgroundIntensity: number}}
  */
 export function normalizePresentation(presentation) {
 	const p = presentation && typeof presentation === 'object' ? presentation : {}
@@ -60,7 +82,23 @@ export function normalizePresentation(presentation) {
 		// only a library logo gets the white plate on the dark-mode card; the Theming logo keeps its look.
 		// Older responses (settings preview) have no flag: a logo there is always a library logo.
 		logoLibrary: isLogoDataUrl(p.logo) && p.logo_library !== false,
+		// GitHub #93: a library background as a PNG/JPEG/WebP data URL, else a built-in one by its
+		// whitelisted id; '' for both = no background (every certificate before 5.17.0)
+		...normalizeBackground(p),
 	}
+}
+
+/**
+ * @param {object} p - presentation
+ * @return {{background: string, backgroundBuiltin: string, backgroundIntensity: number}}
+ */
+function normalizeBackground(p) {
+	const background = isLogoDataUrl(p.background) ? p.background : ''
+	const backgroundBuiltin = !background && BACKGROUND_BUILTINS.includes(p.background_builtin) ? p.background_builtin : ''
+	const backgroundIntensity = (background || backgroundBuiltin) && isValidIntensity(p.background_intensity)
+		? p.background_intensity
+		: BACKGROUND_INTENSITY_DEFAULT
+	return { background, backgroundBuiltin, backgroundIntensity }
 }
 
 /**

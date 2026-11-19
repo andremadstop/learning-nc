@@ -123,6 +123,10 @@ describe('normalizePresentation', () => {
 			signature: '',
 			logo: '',
 			logoLibrary: false,
+			// GitHub #93: no background
+			background: '',
+			backgroundBuiltin: '',
+			backgroundIntensity: 100,
 		})
 	})
 

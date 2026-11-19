@@ -2,7 +2,29 @@
 	<!-- GitHub #43: the card alone, drawn from the signed fields and the certificate's layout.
 		Certificate.vue (learner, instructor copy, print) and the course settings preview share it,
 		so the preview is exactly what will be printed. Text goes into text nodes only. -->
-	<div class="certificate-card">
+	<div class="certificate-card" :class="backgroundClass">
+		<!-- GitHub #93: the background is decoration only, behind everything (z-index -1 inside the
+			card's own stacking context). Without one nothing here is rendered: the card stays as before.
+			The text sits on a paper plate of fixed strength, so its contrast never depends on the image. -->
+		<div v-if="hasBackground" class="certificate-bg" aria-hidden="true" data-test="certificate-background">
+			<img
+				v-if="layout.background"
+				:src="layout.background"
+				alt=""
+				class="certificate-bg-image"
+				data-test="certificate-background-image">
+			<div
+				v-else
+				class="certificate-bg-builtin"
+				:class="'certificate-bg--' + layout.backgroundBuiltin"
+				:data-test="'certificate-background-' + layout.backgroundBuiltin" />
+			<div
+				v-if="veilOpacity > 0"
+				class="certificate-bg-veil"
+				:style="{ opacity: veilOpacity }"
+				data-test="certificate-background-veil" />
+			<div class="certificate-bg-plate" />
+		</div>
 		<div class="certificate-brand">
 			<!-- GitHub #77: with the name hidden (a wordmark logo says it already) the logo is what names
 				the issuer, so it carries the name as its text alternative; beside the name it is decoration. -->
@@ -175,6 +197,17 @@ export default {
 		logoSrc() {
 			return this.layout.logo || this.fields.issuerLogo
 		},
+		/** GitHub #93 */
+		hasBackground() {
+			return !!(this.layout.background || this.layout.backgroundBuiltin)
+		},
+		backgroundClass() {
+			return this.hasBackground ? 'certificate-card--background' : null
+		},
+		/** a white veil over the background: strength 100 % = none, 10 % = 0.9 */
+		veilOpacity() {
+			return Math.round((100 - this.layout.backgroundIntensity)) / 100
+		},
 		hasSignatureBlock() {
 			return !!(this.layout.stamp || this.layout.signature || this.layout.signerName || this.layout.signerRole)
 		},
@@ -192,6 +225,117 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+/* GitHub #93: with a background the card is drawn in paper colours in every theme, like the printed
+   sheet (light text on a light paper plate would vanish in dark mode). Without a background none of
+   this applies. Sizes are in em so the same rules scale to the printed sheet. */
+.certificate-card--background {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	--color-main-background: #fff;
+	--color-main-text: #000;
+	--color-text-maxcontrast: #555;
+	--color-border: #ccc;
+	--color-border-dark: #999;
+	--certificate-bg-color: var(--color-primary-element, #1a3a5c);
+	color: #000;
+	background: #fff;
+	print-color-adjust: exact;
+	-webkit-print-color-adjust: exact;
+}
+
+.certificate-bg {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	print-color-adjust: exact;
+	-webkit-print-color-adjust: exact;
+}
+
+.certificate-bg > * {
+	position: absolute;
+	print-color-adjust: exact;
+	-webkit-print-color-adjust: exact;
+}
+
+.certificate-bg-image,
+.certificate-bg-builtin,
+.certificate-bg-veil {
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.certificate-bg-image {
+	object-fit: cover;
+	max-width: none;
+}
+
+.certificate-bg-veil {
+	background: #fff;
+}
+
+/* the paper the text stands on: 88 % white whatever lies below, the background shows at the edge */
+.certificate-bg-plate {
+	inset: 1.1em;
+	background: rgba(255, 255, 255, 0.88);
+	border-radius: 0.4em;
+}
+
+/* built-in backgrounds (CertLayout::BACKGROUND_BUILTINS); ids never change their look */
+.certificate-bg--frame {
+	box-sizing: border-box;
+	border: 0.25em solid var(--certificate-bg-color);
+}
+
+.certificate-bg--frame::after {
+	content: '';
+	position: absolute;
+	inset: 0.55em;
+	border: 1px solid var(--certificate-bg-color);
+}
+
+.certificate-bg--corners {
+	--l: 3.4em;
+	--t: 0.3em;
+	--o: 0.35em;
+	--l2: 2.2em;
+	--t2: 1px;
+	--o2: 0.85em;
+	background:
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o) top var(--o) / var(--l) var(--t) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o) top var(--o) / var(--t) var(--l) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o) top var(--o) / var(--l) var(--t) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o) top var(--o) / var(--t) var(--l) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o) bottom var(--o) / var(--l) var(--t) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o) bottom var(--o) / var(--t) var(--l) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o) bottom var(--o) / var(--l) var(--t) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o) bottom var(--o) / var(--t) var(--l) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o2) top var(--o2) / var(--l2) var(--t2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o2) top var(--o2) / var(--t2) var(--l2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o2) top var(--o2) / var(--l2) var(--t2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o2) top var(--o2) / var(--t2) var(--l2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o2) bottom var(--o2) / var(--l2) var(--t2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) left var(--o2) bottom var(--o2) / var(--t2) var(--l2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o2) bottom var(--o2) / var(--l2) var(--t2) no-repeat,
+		linear-gradient(var(--certificate-bg-color), var(--certificate-bg-color)) right var(--o2) bottom var(--o2) / var(--t2) var(--l2) no-repeat;
+}
+
+.certificate-bg--lines {
+	background:
+		repeating-linear-gradient(135deg, color-mix(in srgb, var(--certificate-bg-color) 45%, transparent) 0 1px, transparent 1px 0.55em),
+		repeating-linear-gradient(45deg, color-mix(in srgb, var(--certificate-bg-color) 25%, transparent) 0 1px, transparent 1px 0.55em);
+}
+
+/* the QR code on solid white with a quiet zone of at least four modules (it carries two itself) */
+.certificate-card--background .certificate-qr {
+	box-sizing: content-box;
+	background: #fff;
+	padding: 10px;
+	border-radius: 4px;
 }
 
 .certificate-brand {

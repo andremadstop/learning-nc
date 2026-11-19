@@ -518,7 +518,7 @@ function firstDuplicateChapterRef(payload) {
  * GitHub #43: the layout fields of Course::jsonSerialize()['cert_layout'] (or the cert-config
  * response's certLayout), with the standard layout for a missing value.
  * @param {object|null} value - server layout
- * @return {{intro: string, show: object, issuer_name: string, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean, logo_id: (string|null)}}
+ * @return {{intro: string, show: object, issuer_name: string, signer_name: string, signer_role: string, has_stamp: boolean, has_signature: boolean, logo_id: (string|null), background_id: (string|null), background_builtin: (string|null), background_intensity: number}}
  */
 export function certLayoutFromServer(value) {
 	const v = value && typeof value === 'object' ? value : {}
@@ -537,6 +537,10 @@ export function certLayoutFromServer(value) {
 		has_signature: v.has_signature === true,
 		// GitHub #78: the library logo the course uses (its own endpoint, not part of the payload)
 		logo_id: typeof v.logo_id === 'string' ? v.logo_id : null,
+		// GitHub #93: the background and its strength (own endpoint as well, not part of the payload)
+		background_id: typeof v.background_id === 'string' ? v.background_id : null,
+		background_builtin: typeof v.background_builtin === 'string' ? v.background_builtin : null,
+		background_intensity: Number.isInteger(v.background_intensity) ? v.background_intensity : 100,
 	}
 }
 
