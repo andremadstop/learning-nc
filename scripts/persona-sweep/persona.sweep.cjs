@@ -2757,6 +2757,43 @@ test('instructor: weak questions with a long question, phone width (#96)', async
 			await page.setViewportSize({ width: 1400, height: 900 })
 		}
 	})
+	// .rate-yellow was #e6a817, about 2.1:1 on white. The seed's weak questions are all failed
+	// three times (red), so each of the three classes is put on a real wrong-rate cell in turn and
+	// measured with the page's own CSS: text colour against the first opaque background behind it.
+	for (const scheme of ['light', 'dark']) {
+		await station(page, rec, `Participants › Weak questions: the wrong rates keep 4.5:1, ${scheme}`, async () => {
+			await page.emulateMedia({ colorScheme: scheme })
+			try {
+				await page.goto(`${APP}/courses/${seed.courseId}/weak-questions`)
+				await settle(page)
+				const cell = page.locator('.weak-questions-table td.wrong-rate').first()
+				if (!(await cell.isVisible({ timeout: 15000 }).catch(() => false))) { rec.add('participants', 'no wrong rate is shown among the weak questions'); return }
+				const measured = await cell.evaluate((td) => {
+					const rgb = (c) => (c.match(/[\d.]+/g) || []).map(Number)
+					const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0)
+					const back = (el) => { for (let e = el; e; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c.length >= 3 && (c[3] === undefined || c[3] === 1)) return c } return [255, 255, 255] }
+					const before = td.className
+					const out = {}
+					for (const cls of ['rate-red', 'rate-yellow', 'rate-ok']) {
+						td.className = `wrong-rate ${cls}`
+						const fg = rgb(getComputedStyle(td).color)
+						const bg = back(td)
+						const [hi, lo] = [lum(fg), lum(bg)].sort((a, b) => b - a)
+						out[cls] = { ratio: Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100, fg: getComputedStyle(td).color, bg: `rgb(${bg.slice(0, 3).join(', ')})` }
+					}
+					td.className = before
+					return out
+				})
+				;(rec.current.notes ||= []).push(`wrong rate contrast, ${scheme}: ${JSON.stringify(measured)}`)
+				for (const [cls, m] of Object.entries(measured)) {
+					if (m.ratio < 4.5) rec.add('contrast', `.${cls} in the weak questions is ${m.ratio}:1 (${m.fg} on ${m.bg}), ${scheme}`)
+				}
+				for (const f of await runAxe(page)) rec.add(f.kind, `weak questions, ${scheme}: ${f.detail}`)
+			} finally {
+				await page.emulateMedia({ colorScheme: null })
+			}
+		})
+	}
 	flush()
 	await context.close()
 })

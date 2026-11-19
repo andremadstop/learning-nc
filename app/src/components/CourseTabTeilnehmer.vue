@@ -1837,7 +1837,10 @@ td.mastery-low { background: var(--color-error); color: var(--color-error-text, 
    question, its wrong rate and the "Resume" button below 4.5:1 (persona sweep C9). */
 .paused-row .q-text { color: var(--color-text-maxcontrast); font-style: italic; }
 .rate-red { color: var(--color-error-text); font-weight: 700; }
-.rate-yellow { color: #e6a817; font-weight: 600; }
+/* The wrong rate between 50 and 69 %: #e6a817 reached about 2.1:1 on white (WCAG 1.4.3 asks for
+   4.5). Nextcloud's warning text colour is dark amber in the light theme and light amber in the
+   dark one; the rate itself carries the information, the colour only adds to it. */
+.rate-yellow { color: var(--color-warning-text, #8a5a00); font-weight: 600; }
 
 /* Class profile */
 .class-profile-note { margin-bottom: 16px; }
