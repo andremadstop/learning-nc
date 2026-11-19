@@ -4125,5 +4125,11 @@ OC.L10N.register(
     "Der Hintergrund konnte nicht übernommen werden." : "Der Hintergrund konnte nicht übernommen werden.",
     "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._" : ["Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren.", "Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren."],
     "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._" : ["„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr.", "„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr."],
+    "Technische Details" : "Technische Details",
+    "Digitaler Nachweis für IT-Systeme (JSON)" : "Digitaler Nachweis für IT-Systeme (JSON)",
+    "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF." : "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF.",
+    "Nachweis herunterladen (JSON)" : "Nachweis herunterladen (JSON)",
+    "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Digitalen Nachweis (JSON) für Lernende anzeigen",
+    "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer.",
 },
 "nplurals=2; plural=(n != 1);");

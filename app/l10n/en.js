@@ -4125,5 +4125,11 @@ OC.L10N.register(
     "Der Hintergrund konnte nicht übernommen werden." : "The background could not be applied.",
     "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._" : ["Used in %n course. That course gets no background any more; issued certificates keep theirs.", "Used in %n courses. These courses get no background any more; issued certificates keep theirs."],
     "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._" : ["“{title}” was deleted. %n course now has no background.", "“{title}” was deleted. %n courses now have no background."],
+    "Technische Details" : "Technical details",
+    "Digitaler Nachweis für IT-Systeme (JSON)" : "Digital credential for IT systems (JSON)",
+    "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF." : "A signed, machine-readable version of this certificate (W3C Verifiable Credential) for systems that check or import digital credentials. To show it to someone, the certificate or the PDF is enough.",
+    "Nachweis herunterladen (JSON)" : "Download credential (JSON)",
+    "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Show learners the digital credential (JSON)",
+    "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "When off, learners do not see the “Technical details” section on their certificate. The credential stays valid and learners can still get it through their personal data export; instructors always see it.",
 },
 "nplurals=2; plural=(n != 1);");

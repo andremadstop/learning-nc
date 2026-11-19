@@ -128,6 +128,9 @@ class CertificateController extends Controller {
         $data['presentation'] = $this->layoutService->presentationForCertificate($cert);
         // GitHub #67: the course can switch "Add to LinkedIn" off (e.g. internal mandatory training).
         $data['linkedin_allowed'] = $this->courseService->isLinkedInShareEnabled((int)$cert->getCourseId());
+        // GitHub #95: the course can hide "Technical details" (the JSON credential) for learners.
+        // Only the view: download(), the verification page and the data export are unchanged.
+        $data['credential_download_allowed'] = $this->courseService->isCredentialDownloadEnabled((int)$cert->getCourseId());
         return new JSONResponse($data);
     }
 

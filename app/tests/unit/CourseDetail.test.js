@@ -133,6 +133,7 @@ describe('CourseDetail navigation logic', () => {
 			classbook: true,
 			buddies: true,
 			linkedin: true,
+			credential_download: true,
 		})
 	})
 

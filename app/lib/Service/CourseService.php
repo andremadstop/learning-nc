@@ -48,6 +48,7 @@ class CourseService {
         'classbook' => true,
         'buddies' => true,
         'linkedin' => true,
+        'credential_download' => true,
     ];
 
     /** GitHub #67: the course profiles offered when a course is created. */
@@ -59,7 +60,8 @@ class CourseService {
      * GitHub #67: mode config of a course created with the profile "mandatory training with
      * certificate". Training and exam stay on (only exams started in the course certify); Leitner,
      * the simulator tools, the class register (and with it the kudos), the learning partners, the
-     * game modes and the LinkedIn button are off. Each switch can be changed afterwards.
+     * game modes and the LinkedIn button are off. The credential file (#95) stays on. Each switch
+     * can be changed afterwards.
      */
     private const MODE_CONFIG_MANDATORY = [
         'training' => true,
@@ -74,6 +76,9 @@ class CourseService {
         'classbook' => false,
         'buddies' => false,
         'linkedin' => false,
+        // GitHub #95: on here too, so a new mandatory training keeps the learners' own credential
+        // file on their certificate; the instructor can switch it off.
+        'credential_download' => true,
     ];
 
     private const AVAILABLE_TOOL_IDS = [
@@ -2872,6 +2877,22 @@ class CourseService {
     }
 
     /**
+     * GitHub #95: whether learners see "Technical details" with the signed credential file (JSON)
+     * on their certificates of this course. Only hides the section in the learner's view: the
+     * download route, the verification page and the data export stay as they are. Read for the
+     * owner of a certificate like isLinkedInShareEnabled, with the same fallback: a deleted course
+     * or an unreadable config shows the section (the behaviour before the switch existed).
+     */
+    public function isCredentialDownloadEnabled(int $courseId): bool {
+        try {
+            $course = $this->courseMapper->findById($courseId);
+        } catch (\Throwable $e) {
+            return true;
+        }
+        return self::isModeEnabledInConfig($course->getModeConfig(), 'credential_download');
+    }
+
+    /**
      * Whether a course's mode_config switches a mode on. A missing key, an empty or broken config
      * counts as on, like the frontend (normalizeModeConfig) and updateModeConfig's defaults.
      */
@@ -2977,7 +2998,8 @@ class CourseService {
     /**
      * Update the mode configuration for a course (instructor only).
      * $modeConfig keys: training, leitner, swipe, exam, duel, gameshow, league, oldschool,
-     * abenteuer, course_summary, tools, classbook, buddies, linkedin (bool each). A missing key gets its default.
+     * abenteuer, course_summary, tools, classbook, buddies, linkedin, credential_download (bool each).
+     * A missing key gets its default.
      *
      * classbook (GitHub #36) shows learners the class register in the participants area.
      * Default true, so a course saved before the switch existed keeps it.
@@ -2991,6 +3013,9 @@ class CourseService {
      *
      * linkedin (GitHub #67) offers learners "Add to LinkedIn" on their certificates of this course.
      * Default true, so a course saved before the switch existed keeps the button.
+     *
+     * credential_download (GitHub #95) shows learners "Technical details" with the signed
+     * credential file on their certificates of this course. Default true for the same reason.
      */
     public function updateModeConfig(int $courseId, string $userId, array $modeConfig, ?string $talkRoomToken = null, ?bool $leitnerSprint = null): array {
         $course = $this->courseMapper->findById($courseId);
@@ -2998,7 +3023,7 @@ class CourseService {
             throw new ForbiddenException('Only instructors can update course mode config');
         }
 
-        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools', 'classbook', 'buddies', 'linkedin'];
+        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary', 'tools', 'classbook', 'buddies', 'linkedin', 'credential_download'];
         $clean = [];
         foreach ($allowed as $key) {
             $defaultValue = $key === 'course_summary' ? false : true;

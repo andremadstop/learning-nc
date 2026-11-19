@@ -1013,6 +1013,7 @@ export default {
 				classbook: true,
 				buddies: true,
 				linkedin: true,
+				credential_download: true,
 			}, modeConfig || {})
 		},
 

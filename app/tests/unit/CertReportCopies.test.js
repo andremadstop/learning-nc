@@ -189,8 +189,10 @@ describe('compliance report: certificate copies for the instructor (GitHub #42)'
 		expect(axios.get).not.toHaveBeenCalledWith(`/apps/learning/api/certificates/${VID}`)
 		expect(modal.querySelector('.certificate-title').textContent).toContain('Compliance')
 		expect(buttonByText(modal, 'Drucken')).toBeTruthy()
-		// The instructor copy names the file type (the learner view below does too).
-		expect(buttonByText(modal, 'Herunterladen (JSON)')).toBeTruthy()
+		// The instructor copy names the file type (the learner view below does too). GitHub #95: behind
+		// "Technische Details", always shown in the instructor copy.
+		expect(modal.querySelector('details.certificate-credential')).not.toBeNull()
+		expect(buttonByText(modal, 'Nachweis herunterladen (JSON)')).toBeTruthy()
 		expect(modal.textContent).not.toContain('LinkedIn')
 	})
 })
@@ -253,8 +255,105 @@ describe('Certificate.vue in instructor mode labels a certificate that no longer
 		const view = mount(Certificate, { verificationId: VID })
 		await flush()
 		try {
-			expect(buttonByText(view.host, 'Herunterladen (JSON)')).toBeTruthy()
+			expect(buttonByText(view.host, 'Nachweis herunterladen (JSON)')).toBeTruthy()
 			expect(buttonByText(view.host, 'Herunterladen')).toBeUndefined()
+		} finally {
+			view.unmount()
+		}
+	})
+})
+
+// GitHub #95: the signed credential file sits behind a closed "Technische Details" disclosure with a
+// name and one sentence; the course can hide it for learners, the instructor copy always shows it.
+// Download route and file are unchanged.
+describe('Certificate.vue: credential behind "Technische Details" (GitHub #95)', () => {
+	let Certificate
+	let originalLocation
+
+	beforeEach(async () => {
+		Certificate = (await import('../../src/components/Certificate.vue')).default
+		axios.get.mockReset()
+		originalLocation = window.location
+		delete window.location
+		window.location = { href: '', origin: 'https://cloud.example' }
+	})
+
+	afterEach(() => {
+		window.location = originalLocation
+	})
+
+	async function render(row, props = {}) {
+		axios.get.mockResolvedValue({ data: { verification_id: VID, credential_json: makeJwt(CREDENTIAL), ...row } })
+		const view = mount(Certificate, { verificationId: VID, ...props })
+		await flush()
+		return view
+	}
+
+	it('learner, switch on: a closed disclosure with name, explanation and the old download', async () => {
+		const view = await render({ credential_download_allowed: true })
+		try {
+			const details = view.host.querySelector('details.certificate-credential')
+			expect(details).not.toBeNull()
+			expect(details.open).toBe(false)
+			expect(details.querySelector('summary').textContent.trim()).toBe('Technische Details')
+			expect(details.textContent).toContain('Digitaler Nachweis für IT-Systeme (JSON)')
+			expect(details.textContent).toContain('W3C Verifiable Credential')
+			// the actions row keeps Print and loses the JSON button
+			const actions = view.host.querySelector('.certificate-actions')
+			expect(buttonByText(actions, 'Drucken')).toBeTruthy()
+			expect(actions.textContent).not.toContain('JSON')
+			// outside the printed card, and never printed
+			expect(view.host.querySelector('.certificate-printable details')).toBeNull()
+			expect(details.classList.contains('no-print')).toBe(true)
+
+			const link = details.querySelector('a.certificate-download-link')
+			expect(link.getAttribute('href')).toBe(`/apps/learning/api/certificates/${VID}/download`)
+			expect(link.hasAttribute('download')).toBe(true)
+			buttonByText(details, 'Nachweis herunterladen (JSON)').click()
+			expect(window.location.href).toBe(`/apps/learning/api/certificates/${VID}/download`)
+		} finally {
+			view.unmount()
+		}
+	})
+
+	it('learner, switch off: no disclosure and no JSON button, Print stays', async () => {
+		const view = await render({ credential_download_allowed: false })
+		try {
+			expect(view.host.querySelector('details')).toBeNull()
+			expect(view.host.textContent).not.toContain('JSON')
+			expect(view.host.textContent).not.toContain('Technische Details')
+			expect(buttonByText(view.host, 'Drucken')).toBeTruthy()
+		} finally {
+			view.unmount()
+		}
+	})
+
+	it('learner, field missing (older server or failed read): the section is shown', async () => {
+		const view = await render({})
+		try {
+			expect(view.host.querySelector('details.certificate-credential')).not.toBeNull()
+		} finally {
+			view.unmount()
+		}
+	})
+
+	it('instructor copy shows it even when the course hides it for learners', async () => {
+		const view = await render({ credential_download_allowed: false }, { courseId: 5 })
+		try {
+			const details = view.host.querySelector('details.certificate-credential')
+			expect(details).not.toBeNull()
+			expect(details.querySelector('a.certificate-download-link').getAttribute('href'))
+				.toBe(`/apps/learning/api/courses/5/certificates/${VID}/download`)
+		} finally {
+			view.unmount()
+		}
+	})
+
+	it('the LinkedIn switch and the credential switch are independent', async () => {
+		const view = await render({ credential_download_allowed: false, linkedin_allowed: true })
+		try {
+			expect(view.host.textContent).toContain('LinkedIn')
+			expect(view.host.querySelector('details')).toBeNull()
 		} finally {
 			view.unmount()
 		}

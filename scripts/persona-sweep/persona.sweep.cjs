@@ -920,7 +920,12 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		if (pdfSize < 5000) rec.add('print', `printed PDF is only ${pdfSize} bytes`)
 	})
 	await station(page, rec, 'Certificate: download', async () => {
-		const dl = await download(page, () => page.locator('.certificate-actions').getByRole('button', { name: /download/i }).first().click(), 'learner-certificate')
+		// GitHub #95: the JSON file sits behind a closed "Technical details" disclosure
+		const details = page.locator('details.certificate-credential').first()
+		if (!(await details.count())) rec.add('download', 'certificate shows no "Technical details" section (course switch is on by default)')
+		else if (await details.evaluate((el) => el.open)) rec.add('download', '"Technical details" is open before the learner opens it')
+		await details.locator('summary').click()
+		const dl = await download(page, () => details.getByRole('button', { name: /download/i }).first().click(), 'learner-certificate')
 		if (dl.size < 200) rec.add('download', `certificate download is ${dl.size} bytes (${dl.suggested})`)
 		if (!/^\s*[{[]/.test(dl.head.toString('utf8')) && !/^%PDF/.test(dl.head.toString('latin1'))) rec.add('download', `certificate download is neither JSON nor PDF: ${dl.suggested}`)
 	})

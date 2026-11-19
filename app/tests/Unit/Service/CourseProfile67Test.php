@@ -104,6 +104,7 @@ class CourseProfile67Test extends TestCase {
                 'classbook' => false,
                 'buddies' => false,
                 'linkedin' => false,
+                'credential_download' => true,
             ], $config, 'gamification ' . ($gamification ? 'on' : 'off'));
             $this->assertTrue($course->getCertEnabled(), 'the certification is switched on');
             // GitHub #75: every renewal asks for the required documents again
@@ -136,6 +137,7 @@ class CourseProfile67Test extends TestCase {
             $this->assertTrue($off['classbook']);
             $this->assertTrue($off['buddies']);
             $this->assertTrue($off['linkedin']);
+            $this->assertTrue($off['credential_download']);
         }
     }
 
@@ -227,6 +229,65 @@ class CourseProfile67Test extends TestCase {
             );
             $data = $controller->show('11111111-1111-4111-8111-111111111111')->getData();
             $this->assertSame($allowed, $data['linkedin_allowed']);
+        }
+    }
+    // ── GitHub #95: the credential (JSON) switch ─────────────────────────────
+
+    public function testTheCredentialSwitchIsStoredAndNotTurnedBackOnByALaterSave(): void {
+        $service = $this->service($this->holding(null));
+
+        $off = $service->updateModeConfig(7, 'teacher', ['credential_download' => false, 'linkedin' => true]);
+        $this->assertFalse($off['credential_download'], 'the allowlist keeps the switch');
+        $this->assertTrue($off['linkedin']);
+
+        $this->assertTrue($service->updateModeConfig(7, 'teacher', [])['credential_download'], 'a course saved without the key keeps the section');
+        $this->assertTrue($service->updateModeConfig(7, 'teacher', ['credential_download' => 1])['credential_download'], 'stored as a bool');
+    }
+
+    public function testIsCredentialDownloadEnabledReadsTheCourseSwitch(): void {
+        $this->assertFalse($this->service($this->holding('{"credential_download":false}'))->isCredentialDownloadEnabled(7));
+        $this->assertTrue($this->service($this->holding('{"credential_download":true}'))->isCredentialDownloadEnabled(7));
+        $this->assertTrue($this->service($this->holding('{"linkedin":false}'))->isCredentialDownloadEnabled(7), 'a course saved before the switch existed shows the section');
+        $this->assertTrue($this->service($this->holding(null))->isCredentialDownloadEnabled(7));
+        $this->assertTrue($this->service($this->holding('not json'))->isCredentialDownloadEnabled(7), 'an unreadable config shows the section');
+        $this->assertTrue($this->service($this->holding('{"credential_download":false}'))->isLinkedInShareEnabled(7), 'the two switches are independent');
+
+        $gone = $this->createMock(CourseMapper::class);
+        $gone->method('findById')->willThrowException(new DoesNotExistException('gone'));
+        $this->assertTrue($this->service($gone)->isCredentialDownloadEnabled(7), 'a deleted course keeps the old behaviour');
+    }
+
+    public function testTheLearnersCertificateSaysWhetherTheCredentialSectionIsShown(): void {
+        foreach ([true, false] as $allowed) {
+            $cert = new Certificate();
+            $cert->setVerificationId('11111111-1111-4111-8111-111111111111');
+            $cert->setUserId('alice');
+            $cert->setCourseId(7);
+            $cert->setKeyId('key-1');
+            $cert->setCredentialJson('h.p.s');
+            $cert->setRevoked(false);
+            $cert->setIssuedAt(1700000000);
+            $mapper = $this->createMock(CertificateMapper::class);
+            $mapper->method('findByVerificationIdAndUserId')->willReturn($cert);
+            $courses = $this->createMock(CourseService::class);
+            $courses->method('isLinkedInShareEnabled')->willReturn(true);
+            $courses->expects($this->once())->method('isCredentialDownloadEnabled')->with(7)->willReturn($allowed);
+
+            $controller = new CertificateController(
+                'learning',
+                $this->createMock(IRequest::class),
+                $mapper,
+                $courses,
+                $this->createMock(ITimeFactory::class),
+                'alice',
+                $this->createMock(AuditService::class),
+                new FakeDbConnection(),
+                $this->createMock(CertLayoutService::class)
+            );
+            $data = $controller->show('11111111-1111-4111-8111-111111111111')->getData();
+            $this->assertSame($allowed, $data['credential_download_allowed']);
+            $this->assertTrue($data['linkedin_allowed'], 'the LinkedIn switch is read on its own');
+            $this->assertSame('h.p.s', $data['credential_json'], 'the credential itself still reaches the card');
         }
     }
 }

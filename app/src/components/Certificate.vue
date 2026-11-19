@@ -30,20 +30,36 @@
 				<NcButton variant="primary" @click="print">
 					{{ t('learning', 'Drucken') }}
 				</NcButton>
-				<a
-					:href="downloadHref"
-					class="certificate-download-link"
-					download>
-					<NcButton variant="primary" @click.prevent="download">
-						<!-- GitHub #42: the label says what the file is. Fresh-eyes C3 (#35): the learner's copy too,
-							a plain "Download" made learners expect a PDF. -->
-						{{ t('learning', 'Herunterladen (JSON)') }}
-					</NcButton>
-				</a>
 				<NcButton v-if="courseId === null && linkedinAllowed" variant="secondary" @click="openLinkedIn">
 					{{ t('learning', 'Zu LinkedIn hinzufügen (öffnet LinkedIn)') }}
 				</NcButton>
 			</div>
+
+			<!-- GitHub #95: the signed credential file confused learners (a page of code, no next step).
+				It sits behind a closed native disclosure (keyboard and screen readers get the open/closed
+				state for free) with a name and one sentence on what it is for. The course can hide it
+				for learners; the instructor's copy always shows it. Same URL and file as before. -->
+			<details v-if="credentialSectionShown" class="certificate-credential no-print">
+				<summary class="certificate-credential-summary">
+					{{ t('learning', 'Technische Details') }}
+				</summary>
+				<div class="certificate-credential-body">
+					<p class="certificate-credential-title">
+						{{ t('learning', 'Digitaler Nachweis für IT-Systeme (JSON)') }}
+					</p>
+					<p class="certificate-credential-text">
+						{{ t('learning', 'Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF.') }}
+					</p>
+					<a
+						:href="downloadHref"
+						class="certificate-download-link"
+						download>
+						<NcButton variant="secondary" @click.prevent="download">
+							{{ t('learning', 'Nachweis herunterladen (JSON)') }}
+						</NcButton>
+					</a>
+				</div>
+			</details>
 		</template>
 	</div>
 </template>
@@ -103,6 +119,8 @@ export default {
 			expired: false,
 			// GitHub #67: the course can switch "Add to LinkedIn" off; a missing field keeps it.
 			linkedinAllowed: true,
+			// GitHub #95: the course can hide the credential section for learners; a missing field shows it.
+			credentialDownloadAllowed: true,
 		}
 	},
 
@@ -119,6 +137,10 @@ export default {
 			return this.courseId !== null
 				? courseDownloadUrl(this.courseId, this.verificationId)
 				: downloadUrl(this.verificationId)
+		},
+		// GitHub #95: instructors and administrators (the course-scoped copy) always see it.
+		credentialSectionShown() {
+			return this.courseId !== null || this.credentialDownloadAllowed
 		},
 		statusNote() {
 			if (this.courseId === null) {
@@ -162,6 +184,7 @@ export default {
 				this.revoked = row?.revoked === true
 				this.expired = row?.expired === true
 				this.linkedinAllowed = row?.linkedin_allowed !== false
+				this.credentialDownloadAllowed = row?.credential_download_allowed !== false
 				const credential = decodeCredential(row.credential_json)
 				if (!credential) {
 					this.error = t('learning', 'Zertifikat konnte nicht gelesen werden.')
@@ -261,7 +284,44 @@ export default {
 }
 
 .certificate-download-link {
+	display: inline-block;
 	text-decoration: none;
+}
+
+.certificate-credential {
+	align-self: center;
+	width: 100%;
+	max-width: 640px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 8px);
+	padding: 0 12px;
+}
+
+.certificate-credential-summary {
+	/* the native marker shows the open/closed state; the padding makes the row a 44 px target */
+	cursor: pointer;
+	padding: 12px 0;
+	color: var(--color-main-text);
+	font-weight: 600;
+}
+
+.certificate-credential-summary:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+.certificate-credential-body {
+	padding: 0 0 12px;
+}
+
+.certificate-credential-title {
+	margin: 0 0 4px;
+	font-weight: 600;
+}
+
+.certificate-credential-text {
+	margin: 0 0 12px;
+	color: var(--color-text-maxcontrast);
 }
 </style>
 

@@ -53,6 +53,7 @@ const SAVED_MODE_CONFIG = {
 	classbook: true,
 	buddies: true,
 	linkedin: true,
+	credential_download: true,
 }
 
 async function flush() {
@@ -518,6 +519,85 @@ describe('CourseTabVerwaltung rendered (GitHub #35)', () => {
 			await toggle(linkedinInput(), false)
 
 			expect(linkedinInput().checked).toBe(true)
+		})
+	})
+
+	// GitHub #95: the learners' credential section can be hidden per course. The trap: every other
+	// save on this page sends a whole mode config, and the server fills a missing key with true, so
+	// any save that forgot the switch would silently show the section again.
+	describe('credential (JSON) switch (GitHub #95)', () => {
+		function credentialInput() {
+			return host.querySelector('[data-test="cert-credential-download"] input[type="checkbox"]')
+		}
+		function linkedinInput() {
+			return host.querySelector('[data-test="cert-linkedin"] input[type="checkbox"]')
+		}
+		function modeCalls() {
+			return axios.put.mock.calls.filter(([url]) => url === '/apps/learning/api/courses/5/mode-config')
+		}
+
+		it('is shown only while the certification is on, reflects the stored switch and explains it honestly', async () => {
+			await mountTab()
+			expect(credentialInput()).toBeNull()
+			app.unmount()
+			host.remove()
+
+			await mountTab({ courseExtra: { cert_enabled: true }, modeConfig: { credential_download: false } })
+			expect(credentialInput().checked).toBe(false)
+			expect(credentialInput().getAttribute('aria-describedby')).toBe('cert-credential-download-desc')
+			const desc = host.querySelector('#cert-credential-download-desc').textContent
+			expect(desc).toContain('Datenexport')
+			expect(desc).toContain('Lehrende sehen ihn immer')
+		})
+
+		it('a course from before the switch shows it on', async () => {
+			const { credential_download: _omitted, ...before } = SAVED_MODE_CONFIG
+			await mountTab({ courseExtra: { cert_enabled: true, mode_config: before } })
+			expect(credentialInput().checked).toBe(true)
+		})
+
+		it('saves only the switch, on the stored modes, not unsaved mode changes above', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true } })
+			await toggle(modeCheckbox('Leitner'), false)
+
+			await toggle(credentialInput(), false)
+
+			expect(modeCalls()).toHaveLength(1)
+			expect(modeCalls()[0][1]).toEqual({ modeConfig: { ...SAVED_MODE_CONFIG, credential_download: false } })
+			expect(credentialInput().checked).toBe(false)
+		})
+
+		it('toggling LinkedIn afterwards keeps credential_download:false in the request', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true }, modeConfig: { credential_download: false } })
+			await toggle(linkedinInput(), false)
+			expect(modeCalls()[0][1].modeConfig).toMatchObject({ linkedin: false, credential_download: false })
+		})
+
+		it('switching it off, then saving the mode switches, does not turn it back on', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true } })
+			await toggle(credentialInput(), false)
+			buttonByText('Save').click()
+			await flush()
+
+			const calls = modeCalls()
+			expect(calls).toHaveLength(2)
+			expect(calls[1][1].modeConfig.credential_download).toBe(false)
+			expect(credentialInput().checked).toBe(false)
+		})
+
+		it('the sprint save carries the stored switch', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true }, modeConfig: { credential_download: false } })
+			await toggle(host.querySelector('[data-test="leitner-sprint"] input[type="checkbox"]'), true)
+			expect(modeCalls()[0][1].modeConfig.credential_download).toBe(false)
+		})
+
+		it('puts the checkbox back when the save fails', async () => {
+			await mountTab({ courseExtra: { cert_enabled: true } })
+			axios.put.mockImplementationOnce(() => Promise.reject(new Error('500')))
+
+			await toggle(credentialInput(), false)
+
+			expect(credentialInput().checked).toBe(true)
 		})
 	})
 })

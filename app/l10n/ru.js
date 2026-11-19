@@ -4125,5 +4125,11 @@ OC.L10N.register(
     "Der Hintergrund konnte nicht übernommen werden." : "Не удалось применить фон.",
     "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._" : ["Используется в %n курсе. Этот курс больше не получит фон; выданные сертификаты сохранят свой.", "Используется в %n курсах. Эти курсы больше не получат фон; выданные сертификаты сохранят свой.", "Используется в %n курсах. Эти курсы больше не получат фон; выданные сертификаты сохранят свой."],
     "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._" : ["«{title}» удалён. У %n курса больше нет фона.", "«{title}» удалён. У %n курсов больше нет фона.", "«{title}» удалён. У %n курсов больше нет фона."],
+    "Technische Details" : "Технические сведения",
+    "Digitaler Nachweis für IT-Systeme (JSON)" : "Цифровое удостоверение для ИТ-систем (JSON)",
+    "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF." : "Подписанная машиночитаемая версия этого сертификата (W3C Verifiable Credential) для систем, которые проверяют или импортируют цифровые удостоверения. Чтобы предъявить сертификат, достаточно самого сертификата или PDF.",
+    "Nachweis herunterladen (JSON)" : "Скачать удостоверение (JSON)",
+    "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Показывать учащимся цифровое удостоверение (JSON)",
+    "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "Если выключено, учащиеся не видят у сертификата раздел «Технические сведения». Удостоверение остаётся действительным, и учащиеся по-прежнему могут получить его через выгрузку своих персональных данных; преподаватели видят его всегда.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

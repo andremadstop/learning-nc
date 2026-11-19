@@ -4215,6 +4215,12 @@
             "تم حذف «{title}». لم تعد لـ %n مقررات خلفية.",
             "تم حذف «{title}». لم تعد لـ %n مقررًا خلفية.",
             "تم حذف «{title}». لم تعد لـ %n مقرر خلفية."
-        ]
+        ],
+        "Technische Details": "تفاصيل تقنية",
+        "Digitaler Nachweis für IT-Systeme (JSON)": "شهادة رقمية لأنظمة تقنية المعلومات (JSON)",
+        "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF.": "نسخة موقّعة وقابلة للقراءة آليًا من هذه الشهادة (W3C Verifiable Credential) للأنظمة التي تتحقق من الشهادات الرقمية أو تستوردها. لعرضها على أحد تكفي الشهادة أو ملف PDF.",
+        "Nachweis herunterladen (JSON)": "تنزيل الشهادة الرقمية (JSON)",
+        "Digitalen Nachweis (JSON) für Lernende anzeigen": "عرض الشهادة الرقمية (JSON) للمتعلمين",
+        "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer.": "عند الإيقاف لا يرى المتعلمون قسم «تفاصيل تقنية» في شهادتهم. تبقى الشهادة الرقمية صالحة، ويمكن للمتعلمين الحصول عليها دائمًا عبر تصدير بياناتهم الشخصية؛ أما المدرّسون فيرونها دائمًا."
     }
 }

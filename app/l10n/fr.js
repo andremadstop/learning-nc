@@ -4125,5 +4125,11 @@ OC.L10N.register(
     "Der Hintergrund konnte nicht übernommen werden." : "L’arrière-plan n’a pas pu être appliqué.",
     "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._" : ["Utilisé dans %n cours. Ce cours n’aura plus d’arrière-plan ; les certificats délivrés conservent le leur.", "Utilisé dans %n cours. Ces cours n’auront plus d’arrière-plan ; les certificats délivrés conservent le leur."],
     "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._" : ["« {title} » a été supprimé. %n cours n’a plus d’arrière-plan.", "« {title} » a été supprimé. %n cours n’ont plus d’arrière-plan."],
+    "Technische Details" : "Détails techniques",
+    "Digitaler Nachweis für IT-Systeme (JSON)" : "Attestation numérique pour les systèmes informatiques (JSON)",
+    "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF." : "Une version signée et lisible par machine de ce certificat (W3C Verifiable Credential), destinée aux systèmes qui vérifient ou importent des attestations numériques. Pour le présenter, le certificat ou le PDF suffit.",
+    "Nachweis herunterladen (JSON)" : "Télécharger l’attestation (JSON)",
+    "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Afficher l’attestation numérique (JSON) aux apprenants",
+    "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "Désactivé, les apprenants ne voient pas la section « Détails techniques » de leur certificat. L’attestation reste valable et les apprenants peuvent toujours l’obtenir via leur export de données personnelles ; les enseignants la voient toujours.",
 },
 "nplurals=2; plural=(n > 1);");

@@ -252,6 +252,21 @@
 						<small id="cert-linkedin-desc" class="mode-config-note mode-description">{{ t('learning', 'Zeigt beim Zertifikat einen Knopf, mit dem Lernende es in ihrem LinkedIn-Profil eintragen. Bei internen Pflichtschulungen meist nicht gewünscht.') }}</small>
 					</div>
 
+					<!-- GitHub #95: "Technical details" with the signed credential file (JSON) on the
+						learners' certificates of this course. Saved at once, like the LinkedIn switch. -->
+					<div class="cert-config-field" data-test="cert-credential-download">
+						<label class="mode-toggle-label">
+							<input
+								type="checkbox"
+								:checked="credentialDownloadOn"
+								:disabled="savingCredentialDownload"
+								aria-describedby="cert-credential-download-desc"
+								@change="saveCredentialDownload($event.target.checked, $event.target)" />
+							{{ t('learning', 'Digitalen Nachweis (JSON) für Lernende anzeigen') }}
+						</label>
+						<small id="cert-credential-download-desc" class="mode-config-note mode-description">{{ t('learning', 'Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer.') }}</small>
+					</div>
+
 					<!-- GitHub #43: text, elements, stamp and signature of the course's certificates. -->
 					<CertLayoutSettings
 						v-model="certLayout"
@@ -609,6 +624,7 @@ export default {
 			// pressing their own Save are not stored with them (GitHub #35).
 			savedModeConfig: {},
 			savingLinkedin: false,
+			savingCredentialDownload: false,
 			savingModeConfig: false,
 			modeConfigSaved: false,
 			adminEnabledTools: [...ALL_TOOL_IDS],
@@ -721,6 +737,9 @@ export default {
 		linkedinOn() {
 			return this.savedModeConfig?.linkedin !== false
 		},
+		credentialDownloadOn() {
+			return this.savedModeConfig?.credential_download !== false
+		},
 		// CoursePool serialises `required` as an integer (0/1), hence the Number().
 		// GitHub #35: judged on the stored mode config, which is what learners get — an unsaved
 		// switch above changes nothing for them yet.
@@ -831,6 +850,7 @@ export default {
 				classbook: true,
 				buddies: true,
 				linkedin: true,
+				credential_download: true,
 			}, modeConfig || {})
 		},
 
@@ -986,6 +1006,29 @@ export default {
 				this.$emit('error', t('learning', 'Failed to save mode config'))
 			} finally {
 				this.savingLinkedin = false
+			}
+		},
+
+		// GitHub #95: only the credential switch is saved here, on the last stored mode config (like
+		// LinkedIn). modeConfigLocal follows, so a later Save of the mode switches above, which
+		// sends modeConfigLocal, does not turn it back.
+		async saveCredentialDownload(value, input = null) {
+			this.$emit('error', '') // GitHub #72: a new attempt voids the last message
+			this.savingCredentialDownload = true
+			const sent = { ...this.normalizeModeConfig(this.savedModeConfig), credential_download: value }
+			try {
+				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
+					modeConfig: sent,
+				})
+				this.savedModeConfig = this.normalizeModeConfig(res.data?.mode_config || sent)
+				this.modeConfigLocal.credential_download = this.savedModeConfig.credential_download
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				// The checkbox flipped before the request; put it back to the stored state.
+				if (input) input.checked = this.credentialDownloadOn
+				this.$emit('error', t('learning', 'Failed to save mode config'))
+			} finally {
+				this.savingCredentialDownload = false
 			}
 		},
 

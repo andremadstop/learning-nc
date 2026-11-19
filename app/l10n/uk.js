@@ -4125,5 +4125,11 @@ OC.L10N.register(
     "Der Hintergrund konnte nicht übernommen werden." : "Не вдалося застосувати фон.",
     "_Wird in %n Kurs verwendet. Dieser Kurs erhält keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._::_Wird in %n Kursen verwendet. Diese Kurse erhalten keinen Hintergrund mehr; ausgestellte Zertifikate behalten ihren._" : ["Використовується в %n курсі. Цей курс більше не матиме фону; видані сертифікати збережуть свій.", "Використовується в %n курсах. Ці курси більше не матимуть фону; видані сертифікати збережуть свій.", "Використовується в %n курсах. Ці курси більше не матимуть фону; видані сертифікати збережуть свій."],
     "_„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr._::_„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr._" : ["«{title}» видалено. %n курс тепер не має фону.", "«{title}» видалено. %n курси тепер не мають фону.", "«{title}» видалено. %n курсів тепер не мають фону."],
+    "Technische Details" : "Технічні відомості",
+    "Digitaler Nachweis für IT-Systeme (JSON)" : "Цифрове посвідчення для ІТ-систем (JSON)",
+    "Eine signierte, maschinenlesbare Fassung dieses Zertifikats (W3C Verifiable Credential) für Systeme, die digitale Nachweise prüfen oder importieren. Zum Vorzeigen genügt das Zertifikat oder das PDF." : "Підписана машинозчитувана версія цього сертифіката (W3C Verifiable Credential) для систем, які перевіряють або імпортують цифрові посвідчення. Щоб показати сертифікат, достатньо самого сертифіката або PDF.",
+    "Nachweis herunterladen (JSON)" : "Завантажити посвідчення (JSON)",
+    "Digitalen Nachweis (JSON) für Lernende anzeigen" : "Показувати учням цифрове посвідчення (JSON)",
+    "Ausgeschaltet sehen Lernende beim Zertifikat den Bereich „Technische Details“ nicht. Der Nachweis bleibt gültig und ist für Lernende weiter über den persönlichen Datenexport erhältlich; Lehrende sehen ihn immer." : "Якщо вимкнено, учні не бачать у сертифікаті розділу «Технічні відомості». Посвідчення лишається чинним, і учні й далі можуть отримати його через експорт своїх персональних даних; викладачі бачать його завжди.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
