@@ -32,7 +32,7 @@ final class QuestionMediaBundle {
     public const FORMAT = 'learning-question-media/1';
     public const FORMAT_V2 = 'learning-question-media/2';
     public const FORMATS = [self::FORMAT, self::FORMAT_V2];
-    public const MANIFEST_MAX_BYTES = 33554432;   // 32 MiB (the CySA+ bundle's manifest: 1.4 MB for 538 questions)
+    public const MANIFEST_MAX_BYTES = 33554432;   // 32 MiB (a real security-analyst bundle's manifest: 1.4 MB for 538 questions)
     public const MP3_MAX_BYTES = 8388608;         // 8 MiB per track (64 kbit/s ≈ 17 minutes)
     public const JSON_MAX_BYTES = 262144;         // 256 KiB per timeline or cues file
     public const TIMELINE_MAX_LINES = 500;

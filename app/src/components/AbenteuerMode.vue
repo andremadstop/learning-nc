@@ -1463,7 +1463,7 @@ export default {
 		makeStubQuestion() {
 			return {
 				id: 'stub_q1',
-				text: t('learning', 'Was ist der erste Schritt bei der CompTIA 7-Step Troubleshooting-Methodik?'),
+				text: t('learning', 'Was ist der erste Schritt der 7-Schritte-Methode zur Fehlersuche?'),
 				answers: [
 					{ id: 'a1', text: t('learning', 'Problem identifizieren'), is_correct: true },
 					{ id: 'a2', text: t('learning', 'Theorie aufstellen'), is_correct: false },

@@ -264,7 +264,7 @@
       <form @submit.prevent="savePool">
         <div class="form-group">
           <label for="pool-name">{{ t('learning', 'Pool Name *') }}</label>
-          <input id="pool-name" v-model="form.name" type="text" required :placeholder="t('learning', 'e.g., CompTIA A+ Core 1')" class="nc-input" />
+          <input id="pool-name" v-model="form.name" type="text" required :placeholder="t('learning', 'e.g., IT fundamentals, chapter 1')" class="nc-input" />
         </div>
         <div class="form-group">
           <label for="pool-description">{{ t('learning', 'Description') }}</label>

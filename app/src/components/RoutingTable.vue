@@ -2,7 +2,7 @@
   <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
-        <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
+        <p class="sim-tool__eyebrow">{{ t('learning', 'Network fundamentals') }}</p>
         <h2 class="sim-tool__title">{{ t('learning', 'Routing-Tabelle') }}</h2>
         <p class="sim-tool__subtitle">{{ t('learning', 'Prüfe Longest Prefix Match, Default-Routes und Metriken mit einer editierbaren Tabelle.') }}</p>
       </div>

@@ -1891,7 +1891,7 @@ class StoryEngineService {
             . "Charakter: {$characterClass}. "
             . "Bisherige Entscheidungen: {$choicesSummaryStr}. "
             . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
-            . "Halte dich an den CompTIA-Kontext. Max 150 Woerter. Sprache: {$language}. "
+            . "Halte dich an den Kontext von IT-Zertifizierungen. Max 150 Woerter. Sprache: {$language}. "
             . "Statischer Kontext als Basis: {$static}"
             . ($roleFragment !== '' ? "\n\n{$roleFragment}" : '');
 
@@ -1980,7 +1980,7 @@ class StoryEngineService {
             $roleHint = 'Die Optionen sollen erklaerungsorientiert sein (einfach erklaeren, nachfragen, visuell zeigen). ';
         }
 
-        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG (CompTIA-Kontext). "
+        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG (Kontext: IT-Zertifizierungen). "
             . "Szene: {$scene['title']}. Charakter: {$characterClass}. "
             . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
             . "Bisherige Entscheidungen: {$historyStr}. Sprache: {$language}. "
@@ -2102,7 +2102,7 @@ class StoryEngineService {
         $npcRole   = $npcMeta['role']        ?? '';
         $npcPersonality = $npcMeta['personality'] ?? "professionell und direkt";
 
-        $systemPrompt = "Du bist {$npcName} ({$npcRole}) in einem IT-Lern-RPG (CompTIA-Kontext). "
+        $systemPrompt = "Du bist {$npcName} ({$npcRole}) in einem IT-Lern-RPG (Kontext: IT-Zertifizierungen). "
             . "Deine Persönlichkeit: {$npcPersonality}. "
             . "Szene: {$scene['title']}. Spreche zu einem {$characterClass}-Charakter. "
             . "Der Spieler hat gerade entschieden: {$lastChoiceId}. "
@@ -2211,7 +2211,7 @@ class StoryEngineService {
             $roleEvalHint = "Bewerte ob der Spieler einfach genug fuer einen technisch unwissenden Endanwender erklaert hat. ";
         }
 
-        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG (CompTIA-Kontext). "
+        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG (Kontext: IT-Zertifizierungen). "
             . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
             . "Aktuelle Szene: {$scene['title']}. Szenenbeschreibung: " . mb_substr($scene['narrative'] ?? '', 0, 300) . ". "
             . "Bewerte ob die Spieleraktion relevant und sinnvoll fuer das Lernziel ist. "

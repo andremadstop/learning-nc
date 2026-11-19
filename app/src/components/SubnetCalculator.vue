@@ -2,7 +2,7 @@
 	<section class="subnet-tool">
 		<header v-if="!isEmbedded" class="subnet-tool__header">
 			<div>
-				<p class="subnet-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
+				<p class="subnet-tool__eyebrow">{{ t('learning', 'Network fundamentals') }}</p>
 				<h2 class="subnet-tool__title">{{ t('learning', 'Subnetzrechner') }}</h2>
 				<p class="subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.') }}</p>
 			</div>

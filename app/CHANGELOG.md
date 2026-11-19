@@ -114,6 +114,10 @@ each step again.
 - The member list shows each learner's display name, with the user ID beside it when it differs.
 - "Learning achievements" in the notification settings is now called "Gamification: unlocked
   achievements"; the stored choice is kept.
+- **Bundled content no longer names third-party certification vendors.** The three vendor-branded
+  starter pools are no longer shipped; pools you already imported stay as they are. Placeholders,
+  simulator headings, the app description and AI prompts use neutral examples, and the adventure
+  focus tag for security analysis is now `threat_analysis`. Saved adventure progress is not affected.
 
 ### Fixed
 - **Right and wrong after answering** (since 2.7): after answering in Training, Leitner or Smart
@@ -786,9 +790,9 @@ name could not see the course, and that learners could not open the course mater
 ### Exams
 - **Exam cards follow the pool and the course.** The exam has up to 90 questions from the pool
   (all of them if it has fewer), 1.5 minutes per question and at most 120 minutes; it is
-  disabled on an empty pool. Before, every course offered fixed CompTIA cards (90 questions,
+  disabled on an empty pool. Before, every course offered fixed certification-style cards (90 questions,
   90 minutes, 720 of 900) and a 45-question "Practice exam" that in fact counted.
-- **The CompTIA 720/900 scale is only used in courses without certification.** In a certifying
+- **The 720/900 scale is only used in courses without certification.** In a certifying
   course the result is a percentage against the course's **Minimum score (%)**, the same rule as
   the certificate.
 - **New "Practice run" card per pool,** shown only when the course offers practice exams. It
@@ -798,7 +802,7 @@ name could not see the course, and that learners could not open the course mater
   eligible ones if the pool has fewer), without a question-type filter. Before, a shortened
   request could turn a single correct answer into a pass.
 - The exam setup names the pass mark when the exam counts; texts no longer promise a
-  simulation of the real CompTIA exam in every course.
+  simulation of a real certification exam in every course.
 - **Exam slots are removed** (see the note above). The exam date only drives the learners'
   countdown and reminders, and its help text now says so.
 
@@ -1209,12 +1213,12 @@ aviation radio courses: until now the exam mode assumed an IT certification.
 ### Added
 - **Practice exams per course.** Requested on
   [#9](https://codeberg.org/andremadstop/learning-nc/issues/9) for training outside IT
-  certification: the exam mode only knew the fixed CompTIA presets (90 questions/90 minutes and
+  certification: the exam mode only knew the fixed certification presets (90 questions/90 minutes and
   45/45, pass at 720/900). Instructors can now offer a practice exam in a course's
   *Administration* tab and set the number of questions, a time limit or none, and the pass mark
   in percent. Learners start it themselves from its own tab — no pool to pick first — and every
   attempt draws a fresh random set from all of the course's pools. Afterwards they get a review
-  with the explanations. The CompTIA presets stay as they were; the practice exam tab shows even
+  with the explanations. The certification presets stay as they were; the practice exam tab shows even
   where the preset exam is switched off.
 
   Practice exams never count towards a certificate: they are marked separately, and the pass
@@ -1919,7 +1923,7 @@ Parity check (`scripts/check-i18n-parity.sh`) passes with 2202 keys per language
 - **PII filter for Schwarm contributions** — Automatic detection of email addresses, phone numbers, and name patterns during RAG moderation with non-blocking warnings
 - **Unified Search** — Flashcard questions and pools are now searchable via Nextcloud's global search bar
 - **Local-First AI (Ollama)** — VirtuProf and question generation can now use a local LLM via Ollama as alternative to Gemini API. Configurable in admin settings (gemini/ollama/disabled)
-- **Starter content pools** — 5 pre-built question pools (CompTIA A+, Network+, Security+, Cisco CCNA, AWS Cloud Practitioner) importable with one click
+- **Starter content pools** — 5 pre-built question pools (IT fundamentals, networking, security, Cisco CCNA, AWS Cloud Practitioner) importable with one click
 - **TypeScript** — Migrated 5 core utility files (fsrsScheduler, simulatorShellLogic, cliStateMachine, questMapEngine, subnetExplainer) to TypeScript with type definitions
 
 ### Fixed
@@ -2062,7 +2066,7 @@ Parity check (`scripts/check-i18n-parity.sh`) passes with 2202 keys per language
 ## [3.0.0] - 2026-03-24
 
 ### Added — Story RPG "Abenteuer" Mode
-- **Story Engine**: Full campaign-based RPG learning mode with branching narratives, skill checks, and character classes (Architect, Security, SysAdmin, Helpdesk). 20 campaigns across CompTIA Network+, Security+, CySA+, Linux+, and A+.
+- **Story Engine**: Full campaign-based RPG learning mode with branching narratives, skill checks, and character classes (Architect, Security, SysAdmin, Helpdesk). 20 campaigns across networking, security, security analysis, Linux and IT fundamentals.
 - **KI-Erzähler**: Gemini-powered dynamic narrator with freetext player actions, NPC dialog generation, and role-based prompts. Fallback to static text when AI unavailable.
 - **Skill Checks**: In-story quiz phases with 3 questions per check, batch submission, pass/fail branching to different scenes.
 - **20 Campaigns**: Real-world IT incident scenarios — SolarWinds, WannaCry, Log4Shell, Colonial Pipeline, Equifax, plus 6 Security+ exam-oriented campaigns (Phishing, Zero Trust, Crypto, Compliance, IR, Cloud) and an AI Security campaign.

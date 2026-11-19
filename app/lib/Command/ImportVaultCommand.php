@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * OCC command to import Obsidian Markdown vaults as RAG chunks.
  *
- * Usage: php occ learning:import-vault /data/comptia-vault --course-id=20 --dry-run
+ * Usage: php occ learning:import-vault /data/cert-vault --course-id=20 --dry-run
  */
 class ImportVaultCommand extends Command {
     private RagChunkMapper $chunkMapper;

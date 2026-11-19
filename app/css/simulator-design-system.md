@@ -26,7 +26,7 @@ scanner shows scan progress, but both use the same cards, buttons and tables.
 .sim-tool { }              /* wrapper */
 .sim-tool--embedded { }    /* embedded in a campaign */
 .sim-tool__header { }      /* header: eyebrow plus title */
-.sim-tool__eyebrow { }     /* "CompTIA Network+ N10-009" or "Tools" */
+.sim-tool__eyebrow { }     /* "Network fundamentals" or "Tools" */
 .sim-tool__title { }       /* "DNS-Resolver" */
 .sim-tool__subtitle { }    /* description */
 .sim-tool__tabs { }        /* Simulator | Practice tabs */
@@ -132,7 +132,7 @@ The existing markup stays stable while the appearance stays consistent with term
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  COMPTIA NETWORK+ N10-009        ← Eyebrow (cyan)   │
+│  NETWORK FUNDAMENTALS            ← Eyebrow (cyan)   │
 │  DNS-Resolver                    ← Title (mono)      │
 │  Follow the lookup chain...      ← Subtitle (muted)  │
 │                                                       │
@@ -140,7 +140,7 @@ The existing markup stays stable while the appearance stays consistent with term
 └──────────────────────────────────────────────────────┘
 ```
 
-- Eyebrow: always "CompTIA Network+ N10-009" or "CompTIA Security+ SY0-701"
+- Eyebrow: the subject area, e.g. "Network fundamentals" (translated)
 - No "Phase 64" badge — that is internal planning, of no interest to the user
 - No explain-mode toggle in the header; it is relevant only to the subnet calculator, where it stays
 

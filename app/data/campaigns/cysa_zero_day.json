@@ -5,7 +5,7 @@
   "duration_minutes": 80,
   "difficulty": "expert",
   "focus_areas": [
-    "cysa_plus",
+    "threat_analysis",
     "security_plus"
   ],
   "character_recommendations": [
@@ -27,7 +27,7 @@
         "topology"
       ],
       "skill_penalty_pools": [
-        "cysa_plus",
+        "threat_analysis",
         "forensics",
         "incident_response"
       ],
@@ -40,7 +40,7 @@
         "security",
         "incident_response",
         "forensics",
-        "cysa_plus"
+        "threat_analysis"
       ],
       "skill_penalty_pools": [
         "routing",
@@ -72,7 +72,7 @@
         "a_plus"
       ],
       "skill_penalty_pools": [
-        "cysa_plus",
+        "threat_analysis",
         "forensics",
         "incident_response",
         "security"
@@ -120,7 +120,7 @@
           "text": "PowerShell-Logs dekodieren und Execution Policy analysieren — was wurde ausgeführt?",
           "icon": "💻",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -215,7 +215,7 @@
           "text": "Volle IR-Eskalation: Alle verdächtigen Hosts identifizieren und Forensik starten",
           "icon": "⚡",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 2,
             "pass_threshold": 1,
             "character_adjustments": {}
@@ -243,7 +243,7 @@
           "text": "YARA-Regeln schreiben für die identifizierten IOCs — LOLBin-Aufrufmuster und DGA-Domains",
           "icon": "📋",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -297,7 +297,7 @@
           "text": "Network Traffic Analysis: C2-Kommunikation isolieren und Exfiltrations-Kanäle identifizieren",
           "icon": "🌐",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -342,7 +342,7 @@
           "text": "Deception: Honey Tokens in Active Directory und Canary Files auf Fileservern platzieren",
           "icon": "🎭",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -369,7 +369,7 @@
           "text": "EDR-Telemetrie korrelieren: Process Trees über alle Endpoints hinweg analysieren",
           "icon": "🔍",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -437,7 +437,7 @@
           "text": "Virtuellen Patch via WAF/IPS-Signatur erstellen — den Exploit-Vektor blockieren ohne die VPN abzuschalten",
           "icon": "🛠️",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 5,
             "pass_threshold": 4,
             "character_adjustments": {
@@ -536,7 +536,7 @@
           "text": "Vollständige Threat Hunting Iteration: IOC Sweep + YARA + Sigma Rules auf allen Endpoints",
           "icon": "🔍",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 5,
             "pass_threshold": 4,
             "character_adjustments": {
@@ -590,7 +590,7 @@
           "text": "Komplettpaket: Threat Hunt + System Rebuild + Detection Rules + Executive Report",
           "icon": "🛡️",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 5,
             "pass_threshold": 4,
             "character_adjustments": {

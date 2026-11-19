@@ -472,7 +472,7 @@ Return ONLY a JSON object with these exact keys (no markdown, no explanation):
   "experience_level": "beginner|intermediate|advanced",
   "strengths": ["string array — IT topics they know well"],
   "weaknesses": ["string array — IT topics they struggle with"],
-  "target_cert": "string — target certification (e.g. CompTIA Network+ N10-009)",
+  "target_cert": "string — target certification (e.g. a networking or security certification)",
   "target_date": "YYYY-MM-DD or empty string",
   "hours_per_week": number,
   "learning_style": "solo|group|mixed",

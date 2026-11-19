@@ -6,7 +6,7 @@
   "difficulty": "expert",
   "focus_areas": [
     "security_plus",
-    "cysa_plus"
+    "threat_analysis"
   ],
   "character_recommendations": [
     "security",
@@ -41,7 +41,7 @@
         "security",
         "incident_response",
         "forensics",
-        "cysa_plus"
+        "threat_analysis"
       ],
       "skill_penalty_pools": [
         "routing",
@@ -77,7 +77,7 @@
         "security",
         "incident_response",
         "forensics",
-        "cysa_plus"
+        "threat_analysis"
       ],
       "portrait_emoji": "🎧"
     }
@@ -497,7 +497,7 @@
           "text": "Umfassenden Remediation-Plan mit konkreter Timeline dem Kongress präsentieren",
           "icon": "📋",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -565,7 +565,7 @@
           "text": "Vulnerability Management Lifecycle mit Risk Scoring und kontinuierlichem Monitoring",
           "icon": "📊",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -592,7 +592,7 @@
           "text": "Komplettumbau: Asset Inventory + Vuln Management + Patch Automation + Certificate Monitoring",
           "icon": "🛡️",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 5,
             "pass_threshold": 4,
             "character_adjustments": {

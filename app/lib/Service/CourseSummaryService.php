@@ -312,7 +312,7 @@ class CourseSummaryService {
 
         // 4. Build prompt
         $systemPrompt = 'Du bist VirtuProf, ein erfahrener, empathischer und fachlich versierter '
-            . 'Mentor fuer IT-Zertifizierungen (CompTIA Security+, Network+, etc.).'
+            . 'Mentor fuer IT-Zertifizierungen (Netzwerk, Security, Cloud usw.).'
             . "\nDeine Aufgabe ist es, fuer einen Studenten am Ende eines intensiven 4-8 Wochen "
             . "Bootcamps eine persoenliche Reflexion (\"Narrative Portfolio\") zu verfassen."
             . "\nVERHALTENSREGELN:"

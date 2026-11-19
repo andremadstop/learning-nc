@@ -112,13 +112,13 @@ import { useSkinStore } from '../stores/skinStore.js'
 
 const ONBOARDING_PRESETS = [
   {
-    id: 'career_changer_comptia',
-    label: 'Career changer doing CompTIA',
+    id: 'career_changer',
+    label: 'Career changer heading for an IT certification',
     icon: '🔄',
     telos: {
       role: 'Quereinsteiger',
       experience_level: 'beginner',
-      target_cert: 'CompTIA Network+',
+      target_cert: 'Network certification',
       learning_style: 'solo',
       hours_per_week: 10,
     },
@@ -131,7 +131,7 @@ const ONBOARDING_PRESETS = [
     telos: {
       role: 'IT-Administrator',
       experience_level: 'intermediate',
-      target_cert: 'CompTIA Security+',
+      target_cert: 'Security certification',
       learning_style: 'mixed',
       hours_per_week: 5,
     },

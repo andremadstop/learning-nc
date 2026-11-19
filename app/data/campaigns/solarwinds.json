@@ -6,7 +6,7 @@
   "difficulty": "expert",
   "focus_areas": [
     "security_plus",
-    "cysa_plus"
+    "threat_analysis"
   ],
   "character_recommendations": [
     "security",
@@ -41,7 +41,7 @@
         "security",
         "incident_response",
         "forensics",
-        "cysa_plus"
+        "threat_analysis"
       ],
       "skill_penalty_pools": [
         "routing",
@@ -77,7 +77,7 @@
         "security",
         "incident_response",
         "forensics",
-        "cysa_plus"
+        "threat_analysis"
       ],
       "portrait_emoji": "🎧"
     }
@@ -439,7 +439,7 @@
           "text": "Vollständige Kill-Chain-Dokumentation erstellen — von Initial Access bis Exfiltration",
           "icon": "📋",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -592,7 +592,7 @@
           "text": "Komplettpaket: Zero Trust + SBOM-Pflicht + Vendor Audits + Build Verification",
           "icon": "🛡️",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 5,
             "pass_threshold": 4,
             "character_adjustments": {

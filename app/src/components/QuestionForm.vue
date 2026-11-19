@@ -68,7 +68,7 @@
 
       <div class="form-group">
         <label for="handbook-title">{{ t('learning', 'Handbuch-Titel (optional)') }}</label>
-        <input id="handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Kammermann CompTIA Network+ (9. Auflage, 2024)')" class="nc-input" />
+        <input id="handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Handbuch Netzwerktechnik (9. Auflage, 2024)')" class="nc-input" />
       </div>
 
       <div class="metadata-grid">

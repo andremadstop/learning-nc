@@ -90,7 +90,7 @@
               v-model="filePath"
               type="text"
               class="nc-input"
-              :placeholder="t('learning', 'e.g., Documents/CompTIA/chapter3.pdf')"
+              :placeholder="t('learning', 'e.g., Documents/Networking/chapter3.pdf')"
             />
             <p class="pg-file-hint">{{ t('learning', 'Enter the path to a PDF, Markdown, or text file in your Nextcloud files.') }}</p>
           </div>
@@ -126,7 +126,7 @@
               type="text"
               maxlength="200"
               class="nc-input"
-              :placeholder="t('learning', 'e.g., CompTIA A+ Core 1')"
+              :placeholder="t('learning', 'e.g., IT fundamentals, chapter 1')"
               @keydown.enter.prevent="createPoolForImport"
             />
           </div>
@@ -169,7 +169,7 @@
             v-model="poolTitle"
             type="text"
             class="nc-input"
-            :placeholder="t('learning', 'e.g., CompTIA Network+ Chapter 3')"
+            :placeholder="t('learning', 'e.g., Network fundamentals, chapter 3')"
           />
         </div>
 

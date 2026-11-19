@@ -6,7 +6,7 @@
   "difficulty": "expert",
   "focus_areas": [
     "security_plus",
-    "cysa_plus"
+    "threat_analysis"
   ],
   "character_recommendations": [
     "security",
@@ -168,7 +168,7 @@
           "text": "WAF-Logs nach JNDI-Exploitation-Versuchen durchsuchen",
           "icon": "&#128270;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -209,7 +209,7 @@
           "text": "Vollständigen Dependency-Tree-Scan aller Services ausführen",
           "icon": "&#127795;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -236,7 +236,7 @@
           "text": "SBOM (Software Bill of Materials) für alle Services prüfen",
           "icon": "&#128220;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -363,7 +363,7 @@
           "text": "Log4j direkt auf Version 2.17.0 patchen — die einzig sichere Version",
           "icon": "&#128296;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -431,7 +431,7 @@
           "text": "Alle Services zwangspatchen — Risiko von Breaking Changes akzeptieren",
           "icon": "&#128165;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
@@ -526,7 +526,7 @@
           "text": "SBOM-Pflicht: Jeder Service muss eine aktuelle Software Bill of Materials führen",
           "icon": "&#128220;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
@@ -553,7 +553,7 @@
           "text": "Automatisches Dependency-Scanning in CI/CD-Pipeline integrieren",
           "icon": "&#128269;",
           "skill_check": {
-            "pool_filter": "cysa_plus",
+            "pool_filter": "threat_analysis",
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {

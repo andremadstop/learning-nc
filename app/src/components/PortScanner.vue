@@ -2,7 +2,7 @@
   <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
-        <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
+        <p class="sim-tool__eyebrow">{{ t('learning', 'Network fundamentals') }}</p>
         <h2 class="sim-tool__title">{{ t('learning', 'Port-Scanner') }}</h2>
         <p class="sim-tool__subtitle">{{ t('learning', 'Simuliere Host-Scans, identifiziere Serverrollen und erkenne unsichere Dienste.') }}</p>
       </div>
