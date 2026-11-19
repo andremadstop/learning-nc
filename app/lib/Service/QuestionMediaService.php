@@ -314,16 +314,20 @@ class QuestionMediaService {
         // The bundle holds the answer key (verdict per option): only the process user may read it,
         // and nobody else may plant a link in it between the checks below and the writes
         // (writeBundleFile() refuses links as well). A new directory is created that way; an
-        // existing one must be ours, and is closed before it is checked for being empty.
+        // existing one must be ours and empty: a mistyped target (the webroot, config/) is refused
+        // untouched; only then is it closed, and checked again, so nothing lands in it meanwhile.
         if (is_dir($dir)) {
             if (function_exists('posix_geteuid') && @fileowner($dir) !== posix_geteuid()) {
                 throw new \InvalidArgumentException('Directory belongs to another user: ' . $dir);
+            }
+            if (!self::isEmptyDir($dir)) {
+                throw new \InvalidArgumentException('Directory is not empty: ' . $dir);
             }
             if (!@chmod($dir, 0700)) {
                 throw new \InvalidArgumentException('Cannot restrict directory: ' . $dir);
             }
             clearstatcache(true, $dir);
-            if ((scandir($dir) ?: []) !== ['.', '..']) {
+            if (!self::isEmptyDir($dir)) {
                 throw new \InvalidArgumentException('Directory is not empty: ' . $dir);
             }
         } elseif (!@mkdir($dir, 0700, true)) {
@@ -469,6 +473,15 @@ class QuestionMediaService {
         }
         $this->writeBundleFile($dir, self::MANIFEST, $this->exportJson(['format' => $report['format'], 'questions' => $entries]));
         return $report;
+    }
+
+    /**
+     * Read afresh on every call: the second check after chmod() must see what arrived meanwhile.
+     *
+     * @phpstan-impure
+     */
+    private static function isEmptyDir(string $dir): bool {
+        return (scandir($dir) ?: []) === ['.', '..'];
     }
 
     /** Whether an exam_key can be the folder of its question in a bundle (format /2 resolves option audio there). */

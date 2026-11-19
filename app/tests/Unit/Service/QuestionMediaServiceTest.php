@@ -450,6 +450,19 @@ final class QuestionMediaServiceTest extends TestCase {
         $this->assertSame(0700, fileperms($this->tmp . '/shared') & 0777);
         $this->assertFileExists($this->tmp . '/shared/manifest.json');
 
+        // a mistyped target that is not empty is refused untouched (its mode stays)
+        mkdir($this->tmp . '/full');
+        chmod($this->tmp . '/full', 0755);
+        file_put_contents($this->tmp . '/full/config.php', 'x');
+        try {
+            $this->service()->exportBundle(self::POOL, $this->tmp . '/full');
+            $this->fail('exported into a directory that is not empty');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('not empty', $e->getMessage());
+        }
+        clearstatcache();
+        $this->assertSame(0755, fileperms($this->tmp . '/full') & 0777, 'a refused target keeps its mode');
+
         $write = new \ReflectionMethod(QuestionMediaService::class, 'writeBundleFile');
         $victim = $this->tmp . '/victim.php';
         file_put_contents($victim, 'keep');
