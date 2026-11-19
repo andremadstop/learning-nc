@@ -1896,7 +1896,11 @@ for (const [persona, opts] of [['learner1', {}], ['instructor', {}], ['admin', {
 				for (const text of texts) {
 					if (/_/.test(text) || /^[a-z]+(-[a-z]+)+$/.test(text)) rec.add('adventure', `a focus tag is shown as its raw id: "${text}"`)
 				}
-				if (!texts.includes('Security fundamentals')) rec.add('german', `the English interface shows no "Security fundamentals" tag: ${texts.slice(0, 6).join(' | ')}`)
+				// the English interface: every tag is an English catalogue value (the server's campaign list
+				// decides which tags appear, so no particular one is expected)
+				const english = new Set(Object.values(JSON.parse(fs.readFileSync(path.join(__dirname, '../../app/l10n/en.json'), 'utf8')).translations))
+				const notEnglish = texts.filter((text) => !english.has(text))
+				if (notEnglish.length) rec.add('german', `focus tags that are no English label: ${notEnglish.join(' | ')}`)
 			})
 		}
 		flush()
