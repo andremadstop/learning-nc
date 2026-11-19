@@ -29,7 +29,7 @@
           {"text": "wedged open for air", "is_correct": false},
           {"text": "locked at all times", "is_correct": false},
           {"text": "covered with posters", "is_correct": false}]},
-        {"text": "How often is the fire alarm tested in this building?", "answers": [
+        {"text": "How often is the fire alarm tested? See https://intranet.example.org/facilities/fire-safety/alarm-testing-schedule-and-evacuation-drills-for-every-floor-and-wing for the schedule; the facilities team announces each test by email the day before, to everyone who works in the building, contractors and visitors included.", "answers": [
           {"text": "Every week", "is_correct": true},
           {"text": "Never", "is_correct": false},
           {"text": "Once every five years", "is_correct": false},

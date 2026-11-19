@@ -14,6 +14,8 @@
 // C5: three Markdown files as learning materials, two of them required (#75; the exam waits for
 // them in the mandatory-training run), one logo in the administrator's certificate logo library
 // chosen for the course (#78), and the organisation name on the course's certificates (#77).
+// C9b: one Fire safety question is long, with a 120-character URL in it (#96, weak questions at
+// phone width), and the administrator shares a pool "View only" with the instructor (#97, #98).
 // Basic auth plus `OCS-APIRequest: true` passes Nextcloud's CSRF check for app routes.
 // Writes seed.json (course and pool ids) for the sweep next to the state file (out/ by default;
 // scripts/screenshots runs its own instance in its own folder, PERSONA_OUT).
@@ -222,6 +224,26 @@ const deadLinks = {
 	unknownPoolId: 999999,
 }
 
+// GitHub #97 / #98: a pool the administrator owns and shares with the instructor "View only". In
+// "Add pool" it is greyed out with its reason, the server refuses it, and its question hit in the
+// Pools search opens "View questions", not the editor. The "&" checks that the hit names the pool
+// as typed (#98). Not added to any course: the course and the generic sweeps stay as they were.
+const SHARED_POOL_NAME = 'Q&A reference'
+const sharedImport = await asAdmin('POST', '/pools/import', {
+	jsonData: JSON.stringify({ pools: [{ name: SHARED_POOL_NAME, description: 'Read-only reference questions from the administrator.', questions: [
+		{ text: 'Which number do you call for the building security desk?', answers: [{ text: 'The number on the badge', is_correct: true }, { text: 'Any colleague', is_correct: false }] },
+		{ text: 'Where is the reference binder kept?', answers: [{ text: 'At reception', is_correct: true }, { text: 'In the car park', is_correct: false }] },
+	] }] }),
+	dry_run: false,
+	file_name: 'shared-reference.json',
+})
+const sharedPoolId = sharedImport.pools?.[0]?.id
+if (!sharedPoolId || sharedImport.imported_questions !== 2) throw new Error('shared pool import incomplete: ' + JSON.stringify(sharedImport))
+await asAdmin('POST', `/pools/${sharedPoolId}/shares`, { sharedWith: 'instructor', shareType: 'user', permission: 'read' })
+const sharedWithInstructor = await asInstructor('GET', '/shared')
+const sharedRow = (Array.isArray(sharedWithInstructor) ? sharedWithInstructor : sharedWithInstructor?.pools || []).find((p) => Number(p.poolId ?? p.pool_id) === sharedPoolId && p.permission === 'read')
+if (!sharedRow) throw new Error(`the view-only pool ${sharedPoolId} is not shared with the instructor: ${JSON.stringify(sharedWithInstructor).slice(0, 300)}`)
+
 const answers = {}
 for (const pool of JSON.parse(poolsDoc).pools) {
 	for (const q of pool.questions) answers[q.text] = q.answers.find((a) => a.is_correct).text
@@ -233,6 +255,7 @@ writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.string
 	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated, openFirst },
 	examAttemptLimit,
 	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },
+	sharedPool: { id: sharedPoolId, name: SHARED_POOL_NAME, owner: 'admin', permission: 'read', question: 'Where is the reference binder kept?' },
 	media: { poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text },
 	gamification: itCourse, ai: admin.ai_enabled === 'yes' ? `${admin.ai_provider} (no backend answers)` : 'off',
 	answers,

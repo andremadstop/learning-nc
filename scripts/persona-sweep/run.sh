@@ -206,10 +206,24 @@ up() {
 		if (m.questions.length !== 1) throw new Error("fixture manifest has no demo-q1")
 		fs.writeFileSync(process.argv[2], JSON.stringify(m))
 	' "$qm/app/tests/fixtures/question-media/bundle/manifest.json" "$qm/bundle/manifest.json"
+	# GitHub #66 (5.16.0): then the spoken explanation per option (format learning-question-media/2,
+	# 0.2 s sine tones, invented texts); imported after the first bundle, it leaves intro and dialog alone.
+	git -C "$REPO_ROOT" archive "$REF" app/tests/fixtures/question-media/bundle-v2 | tar -x -C "$qm"
+	mkdir -p "$qm/bundle-v2"
+	mv "$qm/app/tests/fixtures/question-media/bundle-v2/demo-q1" "$qm/bundle-v2/"
+	node -e '
+		const fs = require("fs")
+		const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"))
+		m.questions = m.questions.filter((q) => q.exam_key === "demo-q1")
+		if (m.questions.length !== 1) throw new Error("fixture manifest v2 has no demo-q1")
+		fs.writeFileSync(process.argv[2], JSON.stringify(m))
+	' "$qm/app/tests/fixtures/question-media/bundle-v2/manifest.json" "$qm/bundle-v2/manifest.json"
 	docker cp "$qm/bundle/." "$NC:/tmp/persona-question-media"
+	docker cp "$qm/bundle-v2/." "$NC:/tmp/persona-question-media-v2"
 	rm -r -- "$qm"
-	docker exec "$NC" chown -R www-data:www-data /tmp/persona-question-media
+	docker exec "$NC" chown -R www-data:www-data /tmp/persona-question-media /tmp/persona-question-media-v2
 	occ learning:import-question-media "$media_pool" /tmp/persona-question-media
+	occ learning:import-question-media "$media_pool" /tmp/persona-question-media-v2
 	echo "persona-sweep: up at $url (state in $STATE)"
 }
 

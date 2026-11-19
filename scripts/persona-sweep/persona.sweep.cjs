@@ -180,11 +180,13 @@ async function checkPage(page, rec) {
  * axe-core on the app's area: WCAG 2.x A/AA rules, violations plus the 1:1 contrast nodes axe only
  * calls incomplete (see lib.cjs: axeFindings, equalRatioContrast).
  */
-async function runAxe(page) {
+async function runAxe(page, rootSelector = null) {
 	const hasAxe = await page.evaluate(() => typeof window.axe === 'object').catch(() => false)
 	if (!hasAxe) await page.evaluate(AXE_SOURCE)
-	const results = await page.evaluate(async () => {
-		const root = document.querySelector('#app-content') || document.querySelector('#content') || document.body
+	const results = await page.evaluate(async (rootSelector) => {
+		// rootSelector: a dialog NcModal renders outside #app-content (C9b: archive, add pool)
+		const shown = rootSelector ? [...document.querySelectorAll(rootSelector)].find((el) => el.getClientRects().length) : null
+		const root = shown || document.querySelector('#app-content') || document.querySelector('#content') || document.body
 		const res = await window.axe.run(root, {
 			runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
 			// incomplete too: axe files 1:1 text (same colour as its background) there, not as a
@@ -196,7 +198,7 @@ async function runAxe(page) {
 			nodes: v.nodes.map((n) => ({ impact: n.impact, target: n.target, any: n.any.map((c) => ({ data: c.data })) })),
 		}))
 		return { violations: slim(res.violations), incomplete: slim(res.incomplete.filter((v) => v.id === 'color-contrast')) }
-	})
+	}, rootSelector)
 	return axeFindings(results.violations, { incomplete: results.incomplete })
 }
 
@@ -931,25 +933,151 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 })
 
 // GitHub #66: one question carries a hint, feedback per option, background, key takeaway, a spoken
-// intro and a dialog (seed: fixture demo-q1 in the optional pool "Question media demo"). learner3
-// answers it in Training, wrong on purpose, so that the feedback for the chosen option shows.
+// intro, a spoken explanation per option and a dialog (seed: fixture demo-q1 in the optional pool
+// "Question media demo", bundles v1 + v2: 0.2–0.8 s sine tones, invented texts). learner3 answers
+// it in Training, wrong on purpose, so that the feedback for the chosen option shows.
+// 5.16.0 (Andre 18.11., points 3–7): the question waits for the intro (hidden, no button: hover,
+// keyboard focus or a tap uncover it), "Play automatically" and "Sounds" per user, a tone right
+// after answering ("Pling" sine / "Zonk" square, Web Audio), and no gliding with reduced motion.
+// The tones are counted by a probe on OscillatorNode.start, nothing is heard.
 test('learner practises the media question: hint, intro, feedback, dialog', async ({ browser }) => {
 	test.setTimeout(10 * 60_000)
 	const media = seed.media
 	const rec = new Recorder('learner3')
 	const { context, page } = await login(browser, 'learner3')
 	rec.attach(page)
+	await context.addInitScript(() => {
+		window.__personaTones = []
+		const proto = window.OscillatorNode && window.OscillatorNode.prototype
+		if (proto && !proto.__personaProbe) {
+			const start = proto.start
+			proto.start = function (...args) { window.__personaTones.push(this.type); return start.apply(this, args) }
+			proto.__personaProbe = true
+		}
+	})
+	const prefsCall = async (body) => {
+		const res = await fetch(`${APP}/api/settings/personal/question-media`, {
+			method: 'PUT',
+			headers: { Authorization: basic('learner3'), 'OCS-APIRequest': 'true', Accept: 'application/json', 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		})
+		if (!res.ok) throw new Error(`PUT question-media → ${res.status}`)
+	}
+	const prefsNow = async () => {
+		const res = await fetch(`${APP}/api/settings/personal`, { headers: { Authorization: basic('learner3'), 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+		const body = await res.json().catch(() => ({}))
+		return { autoplay: body.question_media_autoplay, sounds: body.answer_sounds }
+	}
+	// the defaults (off, sounds follow autoplay), also after an earlier run on the same instance
+	await prefsCall({ autoplay: false, sounds: 'auto' })
 	const card = () => page.locator('.training-active .question-card').first()
-	await station(page, rec, 'Training: media question before answering (hint, intro)', async () => {
+	const conceal = () => card().locator('.qconceal').first()
+	const player = () => card().locator('.qmedia').first()
+	const switchFor = (label) => player().locator('.qmedia__switch').filter({ hasText: label }).locator('input[role=switch]').first()
+	const tones = () => page.evaluate(() => [...(window.__personaTones || [])]).catch(() => [])
+	const isHidden = () => conceal().evaluate((el) => el.classList.contains('qconceal--hidden')).catch(() => false)
+	const startMediaQuestion = async () => {
 		await openMegaTab(page, 'Learning space')
 		await page.locator('.lernraum-subnav button').filter({ hasText: 'Training' }).first().click()
 		await settle(page)
 		await page.locator('#app-content .pool-item').filter({ hasText: media.poolName }).first().click()
 		await settle(page)
 		await page.getByRole('button', { name: 'Start Training' }).first().click()
-		await page.locator('.question-text').first().waitFor({ timeout: 15000 })
-		const text = (await page.locator('.question-text').first().textContent()).trim()
+		// the pointer stays where "Start Training" was; hovering the card would uncover the question
+		await page.mouse.move(0, 0)
+		await card().locator('.question-text').first().waitFor({ state: 'attached', timeout: 15000 })
+		const text = (await card().locator('.question-text').first().textContent()).trim()
 		if (text !== media.question) throw new Error(`Training shows "${text}", not the media question`)
+		await player().waitFor({ timeout: 10000 })
+	}
+	const answerWrong = async () => {
+		const pick = pickAnswerIndex(await card().locator('.answer-btn').allTextContents(), media.wrongAnswer)
+		if (pick === -1) throw new Error(`no answer button "${media.wrongAnswer}"`)
+		await card().locator('.answer-btn').nth(pick).click()
+		await card().locator('.answer-feedback').first().waitFor({ timeout: 15000 })
+		await settle(page)
+	}
+	// GitHub #79: a learner's pool rows in the course are whole buttons; the name inside has no block.
+	await station(page, rec, 'Learning space › Training: hover and focus on a pool row (learner) (#79)', async () => {
+		await openMegaTab(page, 'Learning space')
+		await page.locator('.lernraum-subnav button').filter({ hasText: 'Training' }).first().click()
+		await settle(page)
+		const row = page.locator('#app-content .pool-item').filter({ hasText: media.poolName }).first()
+		const name = row.locator('.pool-name').first()
+		await row.hover()
+		await page.waitForTimeout(300)
+		const transparent = (c) => c === 'transparent' || /^rgba\(\d+, \d+, \d+, 0\)$/.test(c)
+		const hovered = await name.evaluate((el) => getComputedStyle(el).backgroundColor)
+		if (!transparent(hovered)) rec.add('hover', `Training pool row: the pool name has background ${hovered} on hover (square block, #79)`)
+		await page.mouse.move(0, 0)
+		await page.keyboard.press('Shift')
+		await row.focus()
+		const focused = await name.evaluate((el) => getComputedStyle(el).backgroundColor)
+		if (!transparent(focused)) rec.add('hover', `Training pool row: the pool name has background ${focused} on focus (square block, #79)`)
+		await axeStates(page, rec, row, 'the Training pool row')
+	})
+	await station(page, rec, 'Question card with intro: the question waits for the intro, autoplay off (#66)', async () => {
+		await startMediaQuestion()
+		const order = await page.evaluate(() => {
+			const c = document.querySelector('.training-active .question-card')
+			const p = c?.querySelector('.qmedia')
+			const q = c?.querySelector('.qconceal')
+			return p && q ? !!(p.compareDocumentPosition(q) & Node.DOCUMENT_POSITION_FOLLOWING) : null
+		})
+		if (order !== true) rec.add('media', 'the intro player does not come before the question in the card (Andre 18.11. point 2)')
+		const auto = switchFor('Play automatically')
+		const sounds = switchFor('Sounds')
+		if (!(await auto.isVisible().catch(() => false))) rec.add('media', 'no "Play automatically" switch in the player')
+		else if (await auto.isChecked()) rec.add('media', '"Play automatically" is on by default (WCAG 1.4.2: off)')
+		if (!(await sounds.isVisible().catch(() => false))) rec.add('media', 'no "Sounds" switch in the player')
+		else if (await sounds.isChecked()) rec.add('media', '"Sounds" is on although it follows "Play automatically", which is off')
+		await page.waitForTimeout(2500) // nothing plays by itself, so the question must still wait
+		if (!(await isHidden())) { rec.add('media', 'the question is shown before the intro was heard (autoplay off, no hover, no focus)'); return }
+		const el = conceal()
+		const attrs = await el.evaluate((n) => ({ role: n.getAttribute('role'), expanded: n.getAttribute('aria-expanded'), label: n.getAttribute('aria-label'), tabindex: n.getAttribute('tabindex') }))
+		if (attrs.role !== 'button' || attrs.expanded !== 'false' || attrs.tabindex !== '0') rec.add('a11y-flow', `the hidden question is not a named Tab stop: ${JSON.stringify(attrs)}`)
+		if (attrs.label !== 'Question, hidden until the end of the intro') rec.add('a11y-flow', `the hidden question is named "${attrs.label}"`)
+		const veil = (await el.locator('.qconceal__veil').textContent().catch(() => '')).trim()
+		if (veil !== 'The question appears after the intro.') rec.add('media', `the hidden question says "${veil}"`)
+		const reach = await el.evaluate((n) => {
+			const content = n.querySelector('.qconceal__content')
+			const answers = [...n.querySelectorAll('.answer-btn')]
+			return { inert: !!content?.inert, answers: answers.length, opacity: Number(getComputedStyle(content).opacity) }
+		})
+		if (!reach.inert) rec.add('a11y-flow', 'the hidden question and its answers are not inert (Tab or a screen reader reach them)')
+		if (!reach.answers) rec.add('media', 'no answers in the hidden question')
+		if (reach.opacity > 0.05) rec.add('media', `the hidden question is readable (opacity ${reach.opacity})`)
+		const layout = await page.evaluate(() => {
+			const q = document.querySelector('.training-active .qconceal')
+			return q ? q.getBoundingClientRect().height : 0
+		})
+		;(rec.current.notes ||= []).push(`hidden question area: ${Math.round(layout)} px high`)
+		if (layout < 80) rec.add('media', `the hidden question keeps no space (${Math.round(layout)} px), uncovering it moves the page`)
+		await page.screenshot({ path: path.join(SHOTS, 'media-question-hidden.png') })
+	})
+	await station(page, rec, 'Question card with intro: keyboard focus uncovers the question (#66)', async () => {
+		if (!(await isHidden())) throw new Error('the question is not hidden (previous station)')
+		await page.keyboard.press('Shift')
+		let reached = false
+		for (let i = 0; i < 40 && !reached; i++) {
+			await page.keyboard.press('Tab')
+			reached = await page.evaluate(() => !!document.activeElement?.classList?.contains('qconceal'))
+			if (!reached && !(await isHidden())) break // something else uncovered it
+		}
+		if (!reached) { rec.add('a11y-flow', 'Tab never reaches the hidden question (WCAG 2.1.1)'); return }
+		await page.waitForTimeout(700) // the glide in
+		if (await isHidden()) { rec.add('a11y-flow', 'the keyboard focus on the hidden question does not uncover it'); return }
+		const shown = await conceal().evaluate((n) => {
+			const content = n.querySelector('.qconceal__content')
+			return { inert: !!content?.inert, opacity: Number(getComputedStyle(content).opacity), expanded: n.getAttribute('aria-expanded'), role: n.getAttribute('role') }
+		})
+		if (shown.inert || shown.opacity < 0.95) rec.add('a11y-flow', `uncovered by focus, the question is still out of reach: ${JSON.stringify(shown)}`)
+		if (shown.role === 'button') rec.add('a11y-flow', 'the uncovered question is still announced as a button')
+		await page.keyboard.press('Tab')
+		const next = await page.evaluate(() => document.activeElement?.closest?.('.qconceal__content') ? (document.activeElement.className || document.activeElement.tagName) : null)
+		if (!next) rec.add('a11y-flow', 'the Tab after uncovering does not go into the question (hint or answers)')
+	})
+	await station(page, rec, 'Training: media question before answering (hint, intro)', async () => {
 		const hint = card().locator('.question-hint')
 		if (!(await hint.isVisible().catch(() => false))) rec.add('media', 'no hint before answering')
 		else {
@@ -957,28 +1085,25 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 			await page.waitForTimeout(300)
 			if (!(await hint.locator('.question-hint__text').isVisible().catch(() => false))) rec.add('media', 'the hint does not open')
 		}
-		const player = card().locator('.qmedia')
-		await player.waitFor({ timeout: 10000 }).catch(() => rec.add('media', 'no intro player before answering'))
-		if (await player.isVisible().catch(() => false)) {
-			const title = (await player.locator('.qmedia__title').textContent().catch(() => '')).trim()
+		if (await player().isVisible().catch(() => false)) {
+			const title = (await player().locator('.qmedia__title').textContent().catch(() => '')).trim()
 			if (title !== 'Intro') rec.add('media', `player title before answering is "${title}", not "Intro"`)
-			const play = player.locator('.qmedia__button--primary')
+			const play = player().locator('.qmedia__button--primary')
 			if (await play.isDisabled().catch(() => true)) rec.add('media', 'the intro cannot be played (Play disabled)')
 			else {
 				await play.click()
 				await page.waitForTimeout(1500)
-				const note = (await player.locator('.qmedia__note').textContent().catch(() => '')).trim()
+				const note = (await player().locator('.qmedia__note').textContent().catch(() => '')).trim()
 				if (note) rec.add('media', `intro audio: ${note}`)
-				await play.click().catch(() => {}) // pause
+				if (await player().locator('.qmedia__button--primary').getAttribute('aria-label') === 'Pause') await play.click().catch(() => {}) // pause
 			}
-		}
+		} else rec.add('media', 'no intro player before answering')
 	})
-	await station(page, rec, 'Training: media question answered wrong (feedback, dialog)', async () => {
-		const pick = pickAnswerIndex(await page.locator('.answer-btn').allTextContents(), media.wrongAnswer)
-		if (pick === -1) throw new Error(`no answer button "${media.wrongAnswer}"`)
-		await page.locator('.answer-btn').nth(pick).click()
-		await page.locator('.answer-feedback').first().waitFor({ timeout: 15000 })
-		await settle(page)
+	await station(page, rec, 'Training: media question answered wrong (feedback, option voice, dialog, no tone)', async () => {
+		await answerWrong()
+		const marked = await card().locator('.answer-btn-review.answer-wrong-selected').first().textContent().catch(() => '')
+		if (!marked.includes(media.wrongAnswer)) rec.add('media', `the chosen wrong option is not marked red ("${marked.trim()}")`)
+		if (!(await card().locator('.answer-btn-review.answer-correct').count())) rec.add('media', 'the right option is not marked green')
 		const feedback = card().locator('.rich-feedback')
 		if (!(await feedback.isVisible().catch(() => false))) rec.add('media', 'no feedback per option after answering')
 		else {
@@ -987,22 +1112,132 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 			if (!(await feedback.locator('.rich-feedback__takeaway').isVisible().catch(() => false))) rec.add('media', 'no key takeaway after answering')
 		}
 		if (await card().locator('.question-hint').isVisible().catch(() => false)) rec.add('media', 'the hint is still shown after answering')
-		const player = card().locator('.qmedia')
-		if (!(await player.isVisible().catch(() => false))) rec.add('media', 'no dialog player after answering')
+		const heard = await tones()
+		if (heard.length) rec.add('media', `a tone after answering although "Sounds" is off (${heard.join(', ')})`)
+		if (!(await player().isVisible().catch(() => false))) { rec.add('media', 'no player after answering'); return }
+		const title = async () => (await player().locator('.qmedia__title').textContent().catch(() => '')).trim()
+		if (await title() !== 'About your answer') rec.add('media', `player title after answering is "${await title()}", not "About your answer" (the chosen option has a voice, bundle v2)`)
+		const next = player().getByRole('button', { name: /Next line/ })
+		await next.click().catch(() => rec.add('media', 'no "Next line" for the option voice'))
+		await page.waitForTimeout(400)
+		const optionCaption = (await player().locator('.qmedia__slide, .qmedia__caption').first().textContent().catch(() => '')).trim()
+		if (!/Option A, red, is wrong/.test(optionCaption)) rec.add('media', `the option voice shows "${optionCaption.slice(0, 120)}", not the chosen option's explanation`)
+		await next.click().catch(() => {})
+		await page.waitForTimeout(400)
+		if (await title() !== 'Debrief') rec.add('media', `stepping past the option voice leads to "${await title()}", not "Debrief"`)
+		// Usable without sound: step to the second line and check a caption shows.
+		await next.click().catch(() => rec.add('media', 'no "Next line" in the dialog'))
+		await next.click().catch(() => {})
+		await page.waitForTimeout(400)
+		const caption = (await player().locator('.qmedia__caption').textContent().catch(() => '')).trim()
+		if (!caption) rec.add('media', 'stepping through the dialog shows no caption')
+		await player().locator('.qmedia__transcript summary').click().catch(() => {})
+		await page.waitForTimeout(300)
+	})
+	await station(page, rec, 'Question card with intro: autoplay and tones on, remembered (#66)', async () => {
+		const auto = switchFor('Play automatically')
+		const since = Date.now()
+		await auto.click()
+		if (!(await waitUntil(async () => rec.requests.some((r) => r.t >= since && r.method === 'PUT' && /question-media$/.test(r.url) && r.status < 400), 6000))) rec.add('media', '"Play automatically" switched on without a successful save')
+		if (!(await switchFor('Sounds').isChecked())) rec.add('media', '"Sounds" does not follow "Play automatically" (default "auto")')
+		const saved = await prefsNow()
+		if (saved.autoplay !== 'yes') rec.add('media', `the server keeps autoplay "${saved.autoplay}" after switching it on`)
+		await page.evaluate(() => { window.__personaTones = [] })
+		await startMediaQuestion() // a page load: the switch comes from the server
+		if (!(await switchFor('Play automatically').isChecked())) rec.add('media', '"Play automatically" is off again after reloading the page (not remembered)')
+		// the intro (0.6 s) plays by itself, or the browser refuses and the question shows at once
+		if (!(await waitUntil(async () => !(await isHidden()), 8000))) rec.add('media', 'with "Play automatically" on, the question is still hidden 8 s after it was shown')
+		const note = (await player().locator('.qmedia__note').textContent().catch(() => '')).trim()
+		if (note) rec.add('media', `autoplay: "${note}" (a refused autoplay must fall back silently)`)
+		await answerWrong()
+		if (!(await waitUntil(async () => (await tones()).length > 0, 3000))) rec.add('media', 'no tone after a wrong answer with "Sounds" on')
 		else {
-			const title = (await player.locator('.qmedia__title').textContent().catch(() => '')).trim()
-			if (title !== 'Debrief') rec.add('media', `player title after answering is "${title}", not "Debrief"`)
-			// Usable without sound: step to the second line and check a caption shows.
-			const next = player.getByRole('button', { name: /Next line/ })
-			await next.click().catch(() => rec.add('media', 'no "Next line" in the dialog'))
-			await next.click().catch(() => {})
+			const heard = await tones()
+			if (!heard.includes('square')) rec.add('media', `the tone after a wrong answer is not the "Zonk" (oscillators: ${heard.join(', ')})`)
+			if (heard.includes('sine')) rec.add('media', `the "Pling" sounds after a wrong answer (oscillators: ${heard.join(', ')})`)
+		}
+		if (!(await switchFor('Sounds').isChecked())) rec.add('media', 'after answering, "Sounds" no longer shows on')
+		await page.screenshot({ path: path.join(SHOTS, 'media-question-answered-sounds-on.png') })
+	})
+	await station(page, rec, 'Question card with intro: reduced motion, phone width, hover uncovers (#66)', async () => {
+		await page.emulateMedia({ reducedMotion: 'reduce' })
+		try {
+			await prefsCall({ autoplay: false, sounds: 'auto' })
+			await startMediaQuestion() // at desktop width: the course tabs collapse on a phone
+			await page.setViewportSize({ width: 390, height: 844 })
+			await page.mouse.move(0, 0)
 			await page.waitForTimeout(400)
-			const caption = (await player.locator('.qmedia__caption').textContent().catch(() => '')).trim()
-			if (!caption) rec.add('media', 'stepping through the dialog shows no caption')
-			await player.locator('.qmedia__transcript summary').click().catch(() => {})
-			await page.waitForTimeout(300)
+			if (!(await isHidden())) { rec.add('media', 'with autoplay off again, the question is not hidden'); return }
+			const still = await page.evaluate(() => ({
+				conceal: !!document.querySelector('.training-active .qconceal--still'),
+				player: !!document.querySelector('.training-active .qmedia--still'),
+				transform: getComputedStyle(document.querySelector('.training-active .qconceal__content')).transform,
+			}))
+			if (!still.conceal || !still.player) rec.add('media', `reduced motion: no calm mode (${JSON.stringify(still)})`)
+			if (still.transform && still.transform !== 'none') rec.add('media', `reduced motion: the hidden question is still moved (${still.transform})`)
+			const overflow = await page.evaluate(() => {
+				const c = document.querySelector('.training-active .question-card')
+				return { card: c ? c.scrollWidth - c.clientWidth : 0, page: document.documentElement.scrollWidth - window.innerWidth }
+			})
+			if (overflow.card > 1 || overflow.page > 1) rec.add('layout', `phone width: the question card runs over (${JSON.stringify(overflow)})`)
+			await conceal().hover()
+			if (!(await waitUntil(async () => !(await isHidden()), 2000))) rec.add('media', 'hovering the hidden question does not uncover it')
+			const duration = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.training-active .qconceal__content')).transitionDuration) || 0)
+			if (duration > 0.25) rec.add('media', `reduced motion: the question still glides in (${duration}s)`)
+			await page.mouse.move(0, 0)
+			await page.screenshot({ path: path.join(SHOTS, 'media-question-reduced-motion-phone.png') })
+		} finally {
+			await page.emulateMedia({ reducedMotion: null })
+			await page.setViewportSize({ width: 1400, height: 900 })
 		}
 	})
+	await station(page, rec, 'Question card with intro: "Sounds" on, right answer gives the "Pling" (#66)', async () => {
+		await prefsCall({ autoplay: false, sounds: 'yes' })
+		await startMediaQuestion()
+		if (!(await switchFor('Sounds').isChecked())) rec.add('media', '"Sounds" chosen on, the switch shows off')
+		if (await switchFor('Play automatically').isChecked()) rec.add('media', '"Play automatically" shows on although it is off')
+		await conceal().hover()
+		await waitUntil(async () => !(await isHidden()), 2000)
+		await page.evaluate(() => { window.__personaTones = [] })
+		const right = seed.answers[media.question]
+		const pick = pickAnswerIndex(await card().locator('.answer-btn').allTextContents(), right)
+		if (pick === -1) throw new Error(`no answer button "${right}"`)
+		await card().locator('.answer-btn').nth(pick).click()
+		await card().locator('.answer-feedback').first().waitFor({ timeout: 15000 })
+		if (!(await waitUntil(async () => (await tones()).length > 0, 3000))) rec.add('media', 'no tone after a right answer with "Sounds" on')
+		else {
+			const heard = await tones()
+			if (!heard.includes('sine')) rec.add('media', `the tone after a right answer is not the "Pling" (oscillators: ${heard.join(', ')})`)
+			if (heard.includes('square') || heard.includes('sawtooth')) rec.add('media', `the "Zonk" sounds after a right answer (oscillators: ${heard.join(', ')})`)
+		}
+		const marked = await card().locator('.answer-btn-review.answer-correct.answer-user-selected').count()
+		if (!marked) rec.add('media', 'the chosen right option is not marked green')
+		if (await card().locator('.answer-btn-review.answer-wrong-selected').count()) rec.add('media', 'a right answer marks an option red')
+	})
+	// Dark mode: the hidden area (dashed frame, faint veil text) and the answered card
+	await station(page, rec, 'Question card with intro: dark mode, hidden and answered (#66)', async () => {
+		await page.emulateMedia({ colorScheme: 'dark' })
+		try {
+			await prefsCall({ autoplay: false, sounds: 'auto' })
+			await startMediaQuestion()
+			await page.waitForTimeout(400)
+			if (!(await isHidden())) { rec.add('media', 'dark mode: the question is not hidden'); return }
+			// axe skips the veil's text only if it is invisible; measure it at rest
+			for (const f of await runAxe(page)) rec.add(f.kind, `dark, question hidden: ${f.detail}`)
+			await page.screenshot({ path: path.join(SHOTS, 'media-question-hidden-dark.png') })
+			await conceal().hover()
+			await waitUntil(async () => !(await isHidden()), 2000)
+			await page.mouse.move(0, 0)
+			await answerWrong()
+			const dark = await page.evaluate(() => window.matchMedia('(prefers-color-scheme: dark)').matches && getComputedStyle(document.body).backgroundColor)
+			;(rec.current.notes ||= []).push(`dark mode body background: ${dark}`)
+			for (const f of await runAxe(page)) rec.add(f.kind, `dark, answered: ${f.detail}`)
+			await page.screenshot({ path: path.join(SHOTS, 'media-question-answered-dark.png') })
+		} finally {
+			await page.emulateMedia({ colorScheme: null })
+		}
+	})
+	await prefsCall({ autoplay: false, sounds: 'auto' }).catch(() => {})
 	flush()
 	await context.close()
 })
@@ -1955,6 +2190,345 @@ test('learner1: certificate revoked, the instructor opens a new cycle (#84, #86,
 	})
 	flush()
 	await inst.context.close()
+	await context.close()
+})
+
+// C9b (5.16.0): the instructor's side of #92, #97, #98 and #99.
+// - #92: a course without pools (the seed's "Instructors only") offers "Add pools" under "No pools assigned".
+// - #97: in "Add pool" the administrator's pool shared "View only" (seed.sharedPool) is greyed out,
+//   names its reason and cannot be picked; the server refuses it with that reason; the tag also
+//   shows under Pools › Shared with me.
+// - #98: a question hit in the Pools search names its pool as typed and opens that question: the
+//   editor in one's own pool, "View questions" without an editor in the view-only pool.
+// - #99: "Archive" explains first; Escape archives nothing; "Don't show again" archives and is
+//   remembered; "Explain before archiving" in the personal settings brings the dialog back; an
+//   archived course explains itself to the instructor. A course made for this and deleted after.
+test('instructor: empty course, view-only pool, pool search, archive confirmation (#92, #97, #98, #99)', async ({ browser }) => {
+	test.setTimeout(15 * 60_000)
+	const rec = new Recorder('instructor')
+	const { context, page } = await login(browser, 'instructor')
+	rec.attach(page)
+	const shared = seed.sharedPool
+	const api = async (method, p, body) => {
+		const res = await fetch(`${APP}/api${p}`, {
+			method,
+			headers: { Authorization: basic('instructor'), 'OCS-APIRequest': 'true', Accept: 'application/json', ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+			body: body !== undefined ? JSON.stringify(body) : undefined,
+		})
+		return { status: res.status, body: await res.json().catch(() => null) }
+	}
+	const emptyCourseId = seed.deadLinks.privateCourseId
+	const visibleDialog = () => page.locator('[role=dialog]').filter({ visible: true }).first()
+	const openEmptyCoursePools = async () => {
+		await page.goto(`${APP}/courses/${emptyCourseId}/lernraum`)
+		await settle(page)
+		const poolsTab = page.locator('.lernraum-subnav button').filter({ hasText: /^\s*Pools\s*$/ }).first()
+		if (await poolsTab.isVisible().catch(() => false)) await poolsTab.click()
+		await settle(page, 300)
+	}
+	await station(page, rec, 'Empty course: "Add pools" under "No pools assigned" (#92)', async () => {
+		await openEmptyCoursePools()
+		const empty = page.locator('#app-content').getByText('No pools assigned', { exact: true }).first()
+		if (!(await empty.isVisible().catch(() => false))) { rec.add('guidance', 'the empty course does not say "No pools assigned" (#92)'); return }
+		const add = page.locator('.empty-add-pool-btn')
+		if (!(await add.isVisible().catch(() => false))) { rec.add('guidance', 'no "Add pools" under "No pools assigned" (#92)'); return }
+		if ((await add.textContent()).trim() !== 'Add pools') rec.add('guidance', `the empty course's button reads "${(await add.textContent()).trim()}"`)
+		if (!(await isPrimary(add))) rec.add('guidance', '"Add pools" on the empty course is not the primary button (#92)')
+		const below = await page.evaluate(() => {
+			const btn = document.querySelector('.empty-add-pool-btn')
+			const title = [...document.querySelectorAll('#app-content *')].find((el) => el.childElementCount === 0 && el.textContent.trim() === 'No pools assigned')
+			return btn && title ? btn.getBoundingClientRect().top >= title.getBoundingClientRect().bottom - 1 : null
+		})
+		if (below !== true) rec.add('guidance', '"Add pools" is not under "No pools assigned" (#92)')
+		await axeStates(page, rec, add, '"Add pools" (empty course)')
+		await add.click()
+		await settle(page, 300)
+		if (!(await visibleDialog().getByText('Add Pool to Course').isVisible().catch(() => false))) rec.add('guidance', '"Add pools" on the empty course opens no "Add Pool to Course" dialog (#92)')
+		await page.screenshot({ path: path.join(SHOTS, 'empty-course-add-pools.png') })
+	})
+	await station(page, rec, 'Add pool dialog: the view-only pool is greyed out, with its reason (#97)', async () => {
+		if (!(await visibleDialog().isVisible().catch(() => false))) {
+			await openEmptyCoursePools()
+			await page.locator('.empty-add-pool-btn, .add-pool-btn').first().click()
+			await settle(page, 300)
+		}
+		const dialog = visibleDialog()
+		await dialog.locator('.pool-select-item').first().waitFor({ timeout: 10000 })
+		const item = dialog.locator('.pool-select-item').filter({ has: page.locator('.pool-select-name', { hasText: new RegExp(`^${shared.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) }).first()
+		if (!(await item.isVisible().catch(() => false))) { rec.add('pools', `"${shared.name}" (shared with the instructor, view only) is not in "Add pool" (#97: listed, greyed out)`); return }
+		const state = await item.evaluate((el) => ({
+			viewOnly: el.classList.contains('view-only'),
+			disabled: el.getAttribute('aria-disabled'),
+			checked: el.getAttribute('aria-checked'),
+			describedBy: el.getAttribute('aria-describedby'),
+			reason: (document.getElementById(el.getAttribute('aria-describedby') || '-')?.textContent || '').trim(),
+			tag: (el.querySelector('.pool-view-only-badge')?.textContent || '').trim(),
+			cursor: getComputedStyle(el).cursor,
+		}))
+		if (!state.viewOnly || state.disabled !== 'true') rec.add('pools', `the view-only pool is not marked unavailable in "Add pool": ${JSON.stringify(state)} (#97)`)
+		if (state.tag !== 'View only') rec.add('pools', `the view-only pool carries the tag "${state.tag}", not "View only" (#97)`)
+		if (state.reason !== 'Only the owner or people who can edit this pool can add it to a course.') rec.add('pools', `the view-only pool's reason reads "${state.reason}" (#97)`)
+		await item.click({ force: true }) // aria-disabled: Playwright would wait for it to be enabled
+		await page.keyboard.press('Shift')
+		await item.focus()
+		await page.keyboard.press('Space')
+		await page.waitForTimeout(300)
+		if ((await item.getAttribute('aria-checked')) === 'true') rec.add('pools', 'the view-only pool can be picked in "Add pool" (#97)')
+		if (await dialog.locator('.pool-add-confirm').isVisible().catch(() => false)) rec.add('pools', 'picking the view-only pool offers "Add 1 pool(s)" (#97)')
+		const own = dialog.locator('.pool-select-item').filter({ hasText: 'Fire safety' }).first()
+		if (await own.isVisible().catch(() => false) && await own.evaluate((el) => el.classList.contains('view-only'))) rec.add('pools', 'the instructor\'s own pool "Fire safety" is marked view only')
+		for (const f of await runAxe(page, '[role=dialog]')) rec.add(f.kind, `"Add pool" dialog: ${f.detail}`)
+		await axeStates(page, rec, item, 'the view-only pool in "Add pool"')
+		await page.screenshot({ path: path.join(SHOTS, 'add-pool-view-only.png') })
+		await closeOverlays(page)
+	})
+	// Node fetch: the 403 is the point, it is no app request of the page
+	await station(page, rec, 'Add pool: the server refuses the view-only pool with its reason (#97)', async () => {
+		const res = await api('POST', `/courses/${emptyCourseId}/pools`, { poolId: shared.id, sortOrder: 0 })
+		;(rec.current.notes ||= []).push(`server: ${res.status} ${JSON.stringify(res.body).slice(0, 160)}`)
+		if (res.status < 400) {
+			rec.add('pools', `the server added the view-only pool to a course (${res.status}) (#97)`)
+			await api('DELETE', `/courses/${emptyCourseId}/pools/${shared.id}`).catch(() => {})
+		} else if (res.body?.code !== 'pool_view_only') rec.add('pools', `the server refuses the view-only pool with ${res.status} ${JSON.stringify(res.body).slice(0, 160)}, not code pool_view_only (#97)`)
+		await openEmptyCoursePools()
+	})
+	await station(page, rec, 'Pools › Shared with me: the view-only pool carries its tag (#97)', async () => {
+		await openTopTab(page, 'Pools')
+		await page.locator('.pool-tabs [role=tab]').filter({ hasText: 'Shared with me' }).first().click()
+		await settle(page, 300)
+		const card = page.locator('.pool-card.shared').filter({ has: page.locator('.pool-card-open', { hasText: shared.name }) }).first()
+		if (!(await card.isVisible().catch(() => false))) { rec.add('pools', `"${shared.name}" is not under Shared with me`); return }
+		const name = (await card.locator('.pool-card-open').textContent()).trim()
+		if (name !== shared.name) rec.add('pools', `the shared pool is named "${name}", not "${shared.name}" as typed`)
+		const tag = (await card.locator('.permission-badge').textContent().catch(() => '')).trim()
+		if (tag !== 'View only') rec.add('pools', `the view-only pool under Shared with me carries "${tag}" (#97)`)
+	})
+	const searchHit = async (term, questionText) => {
+		await openTopTab(page, 'Pools')
+		const input = page.locator('#pool-search')
+		await input.fill(term)
+		const hit = page.locator('.search-results-dropdown .results-list li').filter({ hasText: questionText }).first()
+		await hit.waitFor({ timeout: 10000 })
+		return hit
+	}
+	const fireQuestion = 'What do you do first when you discover a fire?'
+	let fireQuestionId = null
+	await station(page, rec, 'Pools search: a question hit names its pool and its ID (#98)', async () => {
+		const hit = await searchHit('discover a fire', fireQuestion)
+		const pool = (await hit.locator('.result-subtext').textContent().catch(() => '')).trim()
+		if (pool !== 'in Fire safety') rec.add('search', `the question hit says "${pool}", not "in Fire safety" (#98)`)
+		const id = (await hit.locator('.result-id').textContent().catch(() => '')).trim()
+		const m = /^Question ID (\d+)$/.exec(id)
+		if (!m) rec.add('search', `the number of the question hit reads "${id}", not "Question ID <n>" (#98)`)
+		else fireQuestionId = Number(m[1])
+		await axeStates(page, rec, hit, 'a question hit in the Pools search')
+		await page.screenshot({ path: path.join(SHOTS, 'pool-search-question-hit.png') })
+	})
+	await station(page, rec, 'Pools search: a hit in one\'s own pool opens the editor on that question (#98)', async () => {
+		const hit = await searchHit('discover a fire', fireQuestion)
+		await hit.click()
+		await settle(page)
+		const dialog = visibleDialog()
+		if (!(await waitUntil(() => dialog.isVisible(), 6000))) { rec.add('search', 'the question hit in one\'s own pool opens no editor (#98)'); return }
+		const edits = await dialog.evaluate((d, q) => [...d.querySelectorAll('textarea, input')].some((f) => (f.value || '').includes(q)), fireQuestion)
+		if (!edits) rec.add('search', 'the editor opened from the search does not hold the question that was picked (#98)')
+		for (const f of await runAxe(page, '[role=dialog]')) rec.add(f.kind, `question editor from the search: ${f.detail}`)
+		await page.keyboard.press('Escape')
+		await page.waitForTimeout(400)
+		await closeOverlays(page)
+		if (fireQuestionId) {
+			const item = page.locator(`.question-item[data-question-id="${fireQuestionId}"]`)
+			if (!(await item.isVisible().catch(() => false))) rec.add('search', `after the editor, question ${fireQuestionId} is not in the list it was opened from (#98)`)
+		}
+	})
+	await station(page, rec, 'Pools search: a hit in the view-only pool opens "View questions", no editor (#98)', async () => {
+		const hit = await searchHit('reference binder', shared.question)
+		const pool = (await hit.locator('.result-subtext').textContent().catch(() => '')).trim()
+		if (pool !== `in ${shared.name}`) rec.add('search', `the question hit says "${pool}", not "in ${shared.name}" as typed (#98)`)
+		const id = Number((/(\d+)$/.exec((await hit.locator('.result-id').textContent().catch(() => '')).trim()) || [])[1])
+		await hit.click()
+		await settle(page)
+		await page.waitForTimeout(800)
+		if (await visibleDialog().isVisible().catch(() => false)) rec.add('search', 'the question hit in a view-only pool opens an editor (#98)')
+		const tab = page.locator('[role=tab][aria-selected="true"]').filter({ hasText: 'View questions' })
+		if (!(await tab.count())) rec.add('search', `the view-only pool opens on "${(await page.locator('[role=tab][aria-selected="true"]').allTextContents()).map((s) => s.trim()).join(' / ')}", not "View questions" (#98)`)
+		const item = page.locator(`.question-item[data-question-id="${id}"]`)
+		if (!id || !(await item.isVisible().catch(() => false))) rec.add('search', `the picked question (${id || '?'}) is not shown in "View questions" (#98)`)
+		else {
+			const focused = await page.evaluate((qid) => document.activeElement?.closest?.('.question-item')?.getAttribute('data-question-id') === String(qid), id)
+			if (!focused) rec.add('search', 'the keyboard focus is not on the picked question (#98)')
+		}
+		await page.screenshot({ path: path.join(SHOTS, 'pool-search-view-only-hit.png') })
+	})
+
+	// #99 on a course of its own, deleted afterwards
+	const made = await api('POST', '/courses', { title: 'Archive check', description: 'Made by the persona sweep for the archive confirmation.', profile: seed.gamification ? 'it' : 'mandatory' })
+	const archiveId = made.body?.id
+	const status = async () => (await api('GET', `/courses/${archiveId}`)).body?.status
+	const skipNow = async () => (await api('GET', '/settings/personal')).body?.archive_confirm_skip
+	const courseCard = () => page.locator(`.course-card[data-course-id="${archiveId}"]`).first()
+	const courseMenu = async (label) => {
+		await openTopTab(page, 'Courses')
+		const card = courseCard()
+		await card.waitFor({ timeout: 10000 })
+		await card.locator('.course-card-actions button[aria-haspopup], .course-card-actions .action-item__menutoggle, .course-card-actions button').last().click()
+		await page.getByRole('menuitem', { name: label }).first().click()
+		await page.waitForTimeout(600)
+	}
+	const archiveDialog = () => page.getByRole('dialog', { name: 'Archive the course “Archive check”?' })
+	try {
+		if (!archiveId) throw new Error(`could not make the course for the archive check: ${made.status}`)
+		await api('PUT', '/settings/personal/archive-confirm', { skip: false })
+		await station(page, rec, 'Course list › Archive: the confirmation explains first (#99)', async () => {
+			await courseMenu('Archive')
+			const dialog = archiveDialog()
+			if (!(await dialog.isVisible().catch(() => false))) { rec.add('archive', '"Archive" archives without explaining first (#99)'); return }
+			const explained = await dialog.evaluate((d) => {
+				const ids = (d.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean)
+				return ids.map((i) => document.getElementById(i)?.textContent || '').join(' ').replace(/\s+/g, ' ').trim()
+			})
+			if (!/Archiving marks the course as finished/i.test(explained)) rec.add('a11y-flow', `the archive dialog's description (aria-describedby) reads "${explained.slice(0, 120)}", not the explanation (#99)`)
+			if (!(await dialog.locator('[data-test="course-archive-explanation"]').isVisible().catch(() => false))) rec.add('archive', 'the archive dialog does not say what archiving changes (#99)')
+			const text = (await dialog.innerText()).replace(/\s+/g, ' ')
+			if (!/activate the course again/i.test(text)) rec.add('archive', 'the archive dialog does not say the course can be activated again (#99)')
+			for (const f of await runAxe(page, '[role=dialog]')) rec.add(f.kind, `archive dialog: ${f.detail}`)
+			await page.screenshot({ path: path.join(SHOTS, 'archive-confirm.png') })
+			// Escape from "Don't show again" (NcModal ignores Escape on a focused input)
+			await page.keyboard.press('Shift')
+			await dialog.locator('.archive-confirm__skip input').first().focus()
+			await page.keyboard.press('Escape')
+			await page.waitForTimeout(600)
+			if (await dialog.isVisible().catch(() => false)) rec.add('archive', 'Escape does not close the archive dialog')
+			if ((await status()) !== 'active') rec.add('archive', `Escape in the archive dialog archived the course (status ${await status()}) (#99)`)
+		})
+		await station(page, rec, 'Archive confirmation: "Don\'t show again", then Archive (#99)', async () => {
+			await courseMenu('Archive')
+			const dialog = archiveDialog()
+			if (!(await dialog.isVisible().catch(() => false))) { rec.add('archive', 'the archive dialog does not come back after Escape (#99)'); return }
+			// NcCheckboxRadioSwitch does not pass data-test on; its class does
+			const skip = dialog.locator('.archive-confirm__skip')
+			await skip.getByText('Don’t show again').first().click()
+			await page.waitForTimeout(300)
+			const ticked = await skip.locator('input').first().isChecked().catch(() => null)
+			if (ticked !== true) rec.add('archive', `"Don't show again" does not tick (${ticked})`)
+			if (!(await dialog.isVisible().catch(() => false))) { rec.add('archive', 'ticking "Don\'t show again" closed the dialog (#99)'); return }
+			const since = Date.now()
+			await dialog.locator('[data-test="archive-confirm-ok"]').click()
+			await page.waitForTimeout(1500)
+			await checkToasts(page, rec, since, 'Archive (confirmation)')
+			if ((await status()) !== 'archived') rec.add('archive', `"Archive" in the dialog did not archive the course (status ${await status()})`)
+			if ((await skipNow()) !== 'yes') rec.add('archive', `"Don't show again" was not remembered (archive_confirm_skip ${await skipNow()}) (#99)`)
+		})
+		await station(page, rec, 'Course list › Archive after "Don\'t show again": no dialog (#99)', async () => {
+			await courseMenu('Activate')
+			if ((await status()) !== 'active') { rec.add('archive', `"Activate" did not reactivate the course (status ${await status()})`); return }
+			await page.reload()
+			await settle(page)
+			await courseMenu('Archive')
+			if (await archiveDialog().isVisible().catch(() => false)) rec.add('archive', 'the archive dialog comes back after "Don\'t show again" and a reload (#99)')
+			if ((await status()) !== 'archived') rec.add('archive', `"Archive" without the dialog did not archive (status ${await status()})`)
+		})
+		await station(page, rec, 'Personal settings: "Explain before archiving" brings the confirmation back (#99)', async () => {
+			// the app's Settings tab knows the role; Nextcloud's own personal settings page does not
+			await openTopTab(page, 'Settings')
+			await settle(page, 800)
+			const row = page.locator('.archive-confirm-setting').first()
+			if (!(await row.isVisible().catch(() => false))) { rec.add('archive', 'no "Explain before archiving" in the personal settings (#99)'); return }
+			const input = row.locator('input').first()
+			if (await input.isChecked()) rec.add('archive', '"Explain before archiving" shows on although "Don\'t show again" was chosen')
+			await row.getByText('Explain before archiving', { exact: true }).first().click()
+			await page.waitForTimeout(300)
+			const since = Date.now()
+			const save = page.getByRole('button', { name: 'Save', exact: true }).first()
+			if (await save.isVisible().catch(() => false)) await save.click()
+			await page.waitForTimeout(1500)
+			await checkToasts(page, rec, since, 'Save (personal settings)')
+			if ((await skipNow()) !== 'no') { rec.add('archive', `"Explain before archiving" saved, the server keeps archive_confirm_skip ${await skipNow()} (#99)`); return }
+			await courseMenu('Activate')
+			await courseMenu('Archive')
+			if (!(await archiveDialog().isVisible().catch(() => false))) rec.add('archive', 'with "Explain before archiving" on again, "Archive" archives without the dialog (#99)')
+			else {
+				await archiveDialog().locator('[data-test="archive-confirm-cancel"]').click()
+				await page.waitForTimeout(500)
+				if ((await status()) !== 'active') rec.add('archive', `"Cancel" in the archive dialog archived the course (status ${await status()})`)
+			}
+		})
+		await station(page, rec, 'Archived course (instructor): what archiving changes (#99)', async () => {
+			await page.goto(`${APP}/courses/${seed.deadLinks.archivedCourseId}`)
+			await settle(page)
+			const explanation = page.locator('#app-content [data-test="course-archive-explanation"]').first()
+			if (!(await explanation.isVisible().catch(() => false))) { rec.add('archive', 'the archived course does not explain to its instructor what archiving changes (#99)'); return }
+			const re = (await page.locator('#app-content [data-test="course-archive-reactivate"]').first().textContent().catch(() => '')).trim()
+			if (!/activate the course again at any time/i.test(re)) rec.add('archive', `the archived course's instructor (its creator) reads "${re}" about reactivating (#99)`)
+		})
+	} finally {
+		await api('PUT', '/settings/personal/archive-confirm', { skip: false }).catch(() => {})
+		if (archiveId) await api('DELETE', `/courses/${archiveId}`).catch(() => {})
+	}
+	flush()
+	await context.close()
+})
+
+// GitHub #96: after learner3's three failed attempts every Fire safety question is a weak question,
+// the long one (pools.json: a sentence with a 120-character URL) included. At phone width its text
+// wraps in the Question column and the table scrolls sideways in a region of its own.
+test('instructor: weak questions with a long question, phone width (#96)', async ({ browser }) => {
+	test.setTimeout(5 * 60_000)
+	const rec = new Recorder('instructor')
+	const { context, page } = await login(browser, 'instructor')
+	rec.attach(page)
+	await station(page, rec, 'Participants › Weak questions: a long question wraps in its column (#96)', async () => {
+		await page.setViewportSize({ width: 390, height: 844 })
+		try {
+			await page.goto(`${APP}/courses/${seed.courseId}/weak-questions`)
+			await settle(page)
+			const region = page.locator('.weak-questions-scroll')
+			await region.waitFor({ timeout: 15000 })
+			const row = page.locator('.weak-questions-table tbody tr').filter({ hasText: 'fire alarm tested' }).first()
+			if (!(await row.isVisible().catch(() => false))) { rec.add('participants', 'the long question is not among the weak questions after three failed attempts'); return }
+			// the server shortens the text to 120 characters; a cut text says so
+			const shown = (await row.locator('.q-text').textContent()).trim()
+			if (!shown.endsWith('…')) rec.add('participants', `the long question is cut without a mark: "…${shown.slice(-40)}"`)
+			const geo = await row.evaluate((tr) => {
+				const cells = [...tr.children].map((td) => td.getBoundingClientRect())
+				const q = tr.querySelector('.q-text')
+				const qi = [...tr.children].indexOf(q)
+				const range = document.createRange()
+				range.selectNodeContents(q)
+				const text = range.getBoundingClientRect()
+				const region = tr.closest('.weak-questions-scroll')
+				return {
+					textRight: text.right, textLeft: text.left, cellRight: cells[qi].right, cellLeft: cells[qi].left, nextLeft: cells[qi + 1]?.left,
+					lines: Math.round(text.height / parseFloat(getComputedStyle(q).lineHeight || '20')),
+					regionScroll: region.scrollWidth - region.clientWidth,
+					regionFits: region.getBoundingClientRect().right <= window.innerWidth + 1,
+					page: document.documentElement.scrollWidth - window.innerWidth,
+					rtl: getComputedStyle(tr).direction === 'rtl',
+				}
+			})
+			;(rec.current.notes ||= []).push(`weak questions at 390 px: ${JSON.stringify(geo)}`)
+			if (geo.textRight > geo.cellRight + 1 || geo.textLeft < geo.cellLeft - 1 || (geo.nextLeft !== undefined && geo.textRight > geo.nextLeft + 1)) rec.add('layout', `the long question runs out of its column into "Chapter" (text ${Math.round(geo.textLeft)}–${Math.round(geo.textRight)}, column ${Math.round(geo.cellLeft)}–${Math.round(geo.cellRight)}) (#96)`)
+			if (!geo.regionFits) rec.add('layout', 'the weak questions region is wider than the screen (#96)')
+			if (geo.page > 1) rec.add('layout', `the page scrolls sideways by ${geo.page} px at phone width (#96)`)
+			if (geo.regionScroll <= 0) rec.add('layout', 'at 390 px the weak questions table does not scroll sideways in its region (the columns are squeezed) (#96)')
+			const named = await region.evaluate((r) => ({ role: r.getAttribute('role'), tab: r.getAttribute('tabindex'), name: r.getAttribute('aria-label') }))
+			if (named.role !== 'region' || named.tab !== '0' || named.name !== 'Weak questions') rec.add('a11y-flow', `the scrolling weak questions region is not a named Tab stop: ${JSON.stringify(named)} (#96)`)
+			else {
+				await page.keyboard.press('Shift')
+				await region.focus()
+				const before = await region.evaluate((r) => r.scrollLeft)
+				await page.keyboard.press('ArrowRight')
+				await page.keyboard.press('ArrowRight')
+				await page.waitForTimeout(300)
+				const after = await region.evaluate((r) => r.scrollLeft)
+				if (geo.regionScroll > 0 && after === before) rec.add('a11y-flow', 'the arrow keys do not scroll the focused weak questions region (#96)')
+			}
+			await page.screenshot({ path: path.join(SHOTS, 'weak-questions-long-phone.png'), fullPage: true })
+		} finally {
+			await page.setViewportSize({ width: 1400, height: 900 })
+		}
+	})
+	flush()
 	await context.close()
 })
 
