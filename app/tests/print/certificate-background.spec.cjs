@@ -181,7 +181,7 @@ function decodeQr(pngBuffer) {
 	} catch (e) {
 		// no zbarimg (package zbar-tools) is a broken setup, not an unreadable code
 		if (e.code === 'ENOENT') {
-			throw new Error('zbarimg is not installed (zbar-tools): the QR code cannot be checked')
+			throw new Error('zbarimg is not installed (zbar-tools): the QR code cannot be checked', { cause: e })
 		}
 		return []
 	} finally {
