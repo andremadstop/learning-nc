@@ -175,8 +175,8 @@
                    class="answer-btn-review"
                    :class="{
                      'answer-user-selected': isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
-                     'answer-correct': answer.is_correct,
-                     'answer-wrong-selected': (isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
+                     'answer-correct': isRightOption(answer),
+                     'answer-wrong-selected': (isMultiSelect ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !isRightOption(answer)
                    }">
                 {{ answer.text }}
               </div>
@@ -265,6 +265,7 @@ import QuestionHint from './QuestionHint.vue';
 import RichFeedbackPanel from './RichFeedbackPanel.vue';
 import QuestionMediaPlayer from './QuestionMediaPlayer.vue';
 import QuestionConceal from './QuestionConceal.vue';
+import { correctIdsFrom, isRightOption } from '../utils/answerReview.js';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -291,7 +292,7 @@ export default {
   data() {
     return {
       session: null, questions: [], currentIndex: 0, answered: false, submitting: false,
-      isCorrect: false, correctAnswerText: '', correctAnswerTexts: [],
+      isCorrect: false, correctAnswerText: '', correctAnswerTexts: [], correctAnswerIds: [],
       pbqPoints: 0, pbqMaxPoints: 1,
       selectedAnswerId: null,
       selectedAnswerIds: [],
@@ -413,6 +414,10 @@ export default {
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
   },
   methods: {
+    // The review marks the right options from the answer response: is_correct never reaches a learner.
+    isRightOption(answer) {
+      return isRightOption(answer, this.correctAnswerIds);
+    },
     getCorrectAnswerIndex(q) {
       if (!q || !q.answers) return null;
       const idx = q.answers.findIndex(a => a.is_correct || a.correct);
@@ -447,6 +452,7 @@ export default {
       this.answered = false;
       this.isCorrect = false;
       this.correctAnswerTexts = [];
+      this.correctAnswerIds = [];
       this.selectedAnswerIds = [];
       this.selectedAnswerId = null;
       this.lastSelectedAnswerId = null;
@@ -464,6 +470,7 @@ export default {
         [this.currentQuestion.id]: {
           isCorrect: this.isCorrect,
           correctAnswerTexts: this.correctAnswerTexts.slice(),
+          correctAnswerIds: this.correctAnswerIds.slice(),
           pbqPoints: this.pbqPoints,
           pbqMaxPoints: this.pbqMaxPoints,
           selectedAnswerId: this.selectedAnswerId,
@@ -482,6 +489,7 @@ export default {
       if (stored) {
         this.isCorrect = stored.isCorrect;
         this.correctAnswerTexts = stored.correctAnswerTexts.slice();
+        this.correctAnswerIds = (stored.correctAnswerIds || []).slice();
         this.pbqPoints = stored.pbqPoints;
         this.pbqMaxPoints = stored.pbqMaxPoints;
         this.selectedAnswerId = stored.selectedAnswerId;
@@ -637,6 +645,7 @@ export default {
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
+        this.correctAnswerIds = correctIdsFrom(response.data);
         this.richFeedback = response.data.rich_feedback ?? null;
         this.questionMedia = response.data.question_media ?? null;
         this.answered = true;
@@ -657,6 +666,7 @@ export default {
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
+        this.correctAnswerIds = correctIdsFrom(response.data);
         this.richFeedback = response.data.rich_feedback ?? null;
         this.questionMedia = response.data.question_media ?? null;
         this.answered = true;

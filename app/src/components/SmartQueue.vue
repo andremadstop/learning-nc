@@ -109,8 +109,8 @@
                    class="answer-btn-review"
                    :class="{
                      'answer-user-selected': isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
-                     'answer-correct': answer.is_correct,
-                     'answer-wrong-selected': (isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
+                     'answer-correct': isRightOption(answer),
+                     'answer-wrong-selected': (isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !isRightOption(answer)
                    }">
                 {{ answer.text }}
               </div>
@@ -178,6 +178,7 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import hintMixin from '../hintMixin.js';
+import { correctIdsFrom, isRightOption } from '../utils/answerReview.js';
 
 export default {
   name: 'SmartQueue',
@@ -197,6 +198,7 @@ export default {
       submitting: false,
       lastCorrect: false,
       lastCorrectAnswerTexts: [],
+      lastCorrectAnswerIds: [],
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
@@ -384,9 +386,14 @@ export default {
         this.submitting = false;
       }
     },
+    // The review marks the right options from the answer response: is_correct never reaches a learner.
+    isRightOption(answer) {
+      return isRightOption(answer, this.lastCorrectAnswerIds);
+    },
     handleAnswerResponse(data) {
       this.lastCorrect = data.correct;
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [data.correct_answer_text || ''];
+      this.lastCorrectAnswerIds = correctIdsFrom(data);
       this.richFeedback = data.rich_feedback ?? null;
       this.questionMedia = data.question_media ?? null;
       this.answered = true;

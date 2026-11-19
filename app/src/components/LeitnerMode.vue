@@ -220,8 +220,8 @@
                    class="answer-btn-review"
                    :class="{
                      'answer-user-selected': isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id,
-                     'answer-correct': answer.is_correct,
-                     'answer-wrong-selected': (isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !answer.is_correct
+                     'answer-correct': isRightOption(answer),
+                     'answer-wrong-selected': (isCurrentMulti ? lastSelectedAnswerIds.includes(answer.id) : lastSelectedAnswerId === answer.id) && !isRightOption(answer)
                    }">
                 {{ answer.text }}
               </div>
@@ -310,6 +310,7 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { modeClosedMessage } from '../utils/modeGate.js';
+import { correctIdsFrom, isRightOption } from '../utils/answerReview.js';
 import hintMixin from '../hintMixin.js';
 import AiConsentHint from './AiConsentHint.vue';
 import { isConsentRefusal } from '../utils/aiConsent.js';
@@ -331,7 +332,7 @@ export default {
       initialized: false, initializing: false, initError: null,
       stats: { total: 0, due_count: 0, accuracy: 0, mastery_percentage: 0, total_answered: 0 },
       dueQuestions: [], started: false, currentIndex: 0, answered: false, submitting: false,
-      lastAnswer: false, lastMoveTarget: 0, lastCorrectAnswerText: '', lastCorrectAnswerTexts: [], showResults: false, sessionCorrect: 0, sessionIncorrect: 0,
+      lastAnswer: false, lastMoveTarget: 0, lastCorrectAnswerText: '', lastCorrectAnswerTexts: [], lastCorrectAnswerIds: [], showResults: false, sessionCorrect: 0, sessionIncorrect: 0,
       awaitingFsrsRating: false,
       pendingAnswerPayload: null,
       lastSubmittedRating: null,
@@ -708,6 +709,10 @@ export default {
         ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
       }
     },
+    // The review marks the right options from the answer response: is_correct never reaches a learner.
+    isRightOption(answer) {
+      return isRightOption(answer, this.lastCorrectAnswerIds)
+    },
     applyAnswerPreview(payload, data) {
       this.pendingAnswerPayload = { ...payload }
       this.awaitingFsrsRating = true
@@ -720,6 +725,7 @@ export default {
       this.pbqMaxPoints = data.pbq_max_points ?? 1
       this.lastCorrectAnswerText = data.correct_answer_text || ''
       this.lastCorrectAnswerTexts = data.correct_answer_texts || [this.lastCorrectAnswerText]
+      this.lastCorrectAnswerIds = correctIdsFrom(data)
       this.richFeedback = data.rich_feedback ?? null
       this.questionMedia = data.question_media ?? null
       if (data.correct) this.sessionCorrect++
@@ -735,6 +741,8 @@ export default {
       this.pbqMaxPoints = data.pbq_max_points ?? this.pbqMaxPoints
       this.lastCorrectAnswerText = data.correct_answer_text || this.lastCorrectAnswerText
       this.lastCorrectAnswerTexts = data.correct_answer_texts || this.lastCorrectAnswerTexts
+      const finalIds = correctIdsFrom(data)
+      if (finalIds.length) this.lastCorrectAnswerIds = finalIds
       this.richFeedback = data.rich_feedback ?? this.richFeedback
       this.questionMedia = data.question_media ?? this.questionMedia
       if (this.currentItem) {
