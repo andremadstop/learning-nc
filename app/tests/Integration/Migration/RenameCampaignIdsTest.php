@@ -19,7 +19,8 @@ use PHPUnit\Framework\TestCase;
  * - every learner's row is renamed and read back through the app's own mappers under the new id;
  * - a learner who already has a row under the new id keeps it, the old row stays (no unique-key
  *   violation on learning_campaign_state, which on PostgreSQL would poison the transaction);
- * - course lists are rewritten without duplicates, other courses keep their exact JSON;
+ * - course lists are rewritten without duplicates, a list stored as a JSON object stays one,
+ *   other courses keep their exact JSON;
  * - a second run changes nothing.
  */
 final class RenameCampaignIdsTest extends TestCase {
@@ -63,6 +64,7 @@ final class RenameCampaignIdsTest extends TestCase {
         $courseOld = $this->insert('learning_courses', $this->course(json_encode(['wannacry', $this->old(0), $this->old(1), $this->new(1)])));
         $courseOther = $this->insert('learning_courses', $this->course('["wannacry", "log4shell"]'));
         $courseAll = $this->insert('learning_courses', $this->course(null));
+        $courseObject = $this->insert('learning_courses', $this->course('{"1":"' . $this->old(0) . '","3":"wannacry"}'));
 
         $output = new RecordingOutput();
         Server::get(RenameCampaignIds::class)->run($output);
@@ -85,6 +87,8 @@ final class RenameCampaignIdsTest extends TestCase {
         $this->assertSame(['wannacry', $this->new(0), $this->new(1)], json_decode((string)$this->value('learning_courses', 'allowed_campaigns', $courseOld), true));
         $this->assertSame('["wannacry", "log4shell"]', $this->value('learning_courses', 'allowed_campaigns', $courseOther));
         $this->assertNull($this->value('learning_courses', 'allowed_campaigns', $courseAll));
+        // a list stored as an object (the frontend reads it as "all campaigns") stays an object
+        $this->assertSame('{"1":"' . $this->new(0) . '","3":"wannacry"}', $this->value('learning_courses', 'allowed_campaigns', $courseObject));
 
         // second run: nothing left to move, nothing said, nothing changed
         $before = $this->snapshot();

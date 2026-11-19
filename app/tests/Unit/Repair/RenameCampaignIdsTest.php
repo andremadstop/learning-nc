@@ -26,6 +26,9 @@ class RenameCampaignIdsTest extends TestCase {
     /** @var array<string, array<int, array<string, mixed>>> table => id => row */
     private array $tables = [];
 
+    /** @var array<string, list<int>> table => row ids whose UPDATE fails like a database error */
+    private array $failing = [];
+
     private function oldId(int $n): string {
         return array_keys(RenameCampaignIds::RENAMED)[$n];
     }
@@ -73,6 +76,9 @@ class RenameCampaignIdsTest extends TestCase {
             foreach ($this->tables[$table] ?? [] as $id => $row) {
                 if (!$this->rowMatches($row, $q['where'])) {
                     continue;
+                }
+                if (in_array($id, $this->failing[$table] ?? [], true)) {
+                    throw new \OCP\DB\Exception(0, 'simulated database error');
                 }
                 $new = array_merge($row, $q['set']);
                 if ($table === 'learning_campaign_state') {
@@ -187,6 +193,84 @@ class RenameCampaignIdsTest extends TestCase {
         $this->step()->run($output);
 
         $this->assertSame($after, $this->tables);
+    }
+
+    /** @return array{0: IOutput, 1: \ArrayObject<int, string>} output and the warnings it received */
+    private function warningOutput(): array {
+        $warnings = new \ArrayObject();
+        $output = $this->createMock(IOutput::class);
+        $output->method('warning')->willReturnCallback(function (string $m) use ($warnings) { $warnings[] = $m; });
+        return [$output, $warnings];
+    }
+
+    public function testACourseListStoredAsAJsonObjectStaysAnObject(): void {
+        // The app writes a list; an object (hand-edited, or an old export) reaches the frontend
+        // as a non-array and means "all campaigns". Rewriting it as a list would restrict the course.
+        $this->tables['learning_courses'] = [
+            1 => ['id' => 1, 'allowed_campaigns' => json_encode(['1' => $this->oldId(0), '3' => 'wannacry'])],
+            2 => ['id' => 2, 'allowed_campaigns' => '{"0":"' . $this->oldId(1) . '","1":"log4shell"}'],
+        ];
+
+        $this->step()->run($this->createMock(IOutput::class));
+
+        $first = $this->tables['learning_courses'][1]['allowed_campaigns'];
+        $this->assertStringStartsWith('{', $first);
+        $this->assertEquals((object)['1' => $this->newId(0), '3' => 'wannacry'], json_decode($first));
+        $second = $this->tables['learning_courses'][2]['allowed_campaigns'];
+        $this->assertStringStartsWith('{', $second);
+        $this->assertEquals((object)['0' => $this->newId(1), '1' => 'log4shell'], json_decode($second));
+    }
+
+    public function testAFailingRowIsReportedAndEverythingElseStillMoves(): void {
+        foreach (RenameCampaignIds::PER_LEARNER_TABLES as $table) {
+            $this->perLearner($table, [[1, 'alice', $this->oldId(0)], [2, 'bob', $this->oldId(0)]]);
+        }
+        $this->tables['learning_coop_sessions'][1] = ['id' => 1, 'campaign_id' => $this->oldId(0)];
+        $this->tables['learning_courses'][1] = ['id' => 1, 'allowed_campaigns' => json_encode([$this->oldId(0)])];
+        $this->failing = ['learning_story_progress' => [1]];
+        [$output, $warnings] = $this->warningOutput();
+
+        $this->step()->run($output);
+
+        // the broken row keeps its old id (nothing lost), the step goes on with the next row and table
+        $this->assertSame([1 => 'alice:' . $this->oldId(0), 2 => 'bob:' . $this->newId(0)], $this->keys('learning_story_progress'));
+        $this->assertSame([1 => 'alice:' . $this->newId(0), 2 => 'bob:' . $this->newId(0)], $this->keys('learning_campaign_state'));
+        $this->assertSame($this->newId(0), $this->tables['learning_coop_sessions'][1]['campaign_id']);
+        $this->assertSame([$this->newId(0)], json_decode($this->tables['learning_courses'][1]['allowed_campaigns'], true));
+        $this->assertCount(1, $warnings);
+        $this->assertStringContainsString('learning_story_progress', $warnings[0]);
+        $this->assertStringContainsString('id 1', $warnings[0]);
+    }
+
+    public function testAFailingCoopOrCourseUpdateIsReportedAndTheStepGoesOn(): void {
+        $this->tables['learning_coop_sessions'][1] = ['id' => 1, 'campaign_id' => $this->oldId(0)];
+        $this->tables['learning_coop_sessions'][2] = ['id' => 2, 'campaign_id' => $this->oldId(1)];
+        $this->tables['learning_courses'][1] = ['id' => 1, 'allowed_campaigns' => json_encode([$this->oldId(0)])];
+        $this->tables['learning_courses'][2] = ['id' => 2, 'allowed_campaigns' => json_encode([$this->oldId(1)])];
+        $this->failing = ['learning_coop_sessions' => [1], 'learning_courses' => [1]];
+        [$output, $warnings] = $this->warningOutput();
+
+        $this->step()->run($output);
+
+        $this->assertSame([1 => $this->oldId(0), 2 => $this->newId(1)], array_column($this->tables['learning_coop_sessions'], 'campaign_id', 'id'));
+        $this->assertSame([$this->oldId(0)], json_decode($this->tables['learning_courses'][1]['allowed_campaigns'], true));
+        $this->assertSame([$this->newId(1)], json_decode($this->tables['learning_courses'][2]['allowed_campaigns'], true));
+        $this->assertCount(2, $warnings);
+    }
+
+    public function testAnUnreadableCourseListNamingAnOldIdIsLeftAloneButReported(): void {
+        $this->tables['learning_courses'] = [
+            1 => ['id' => 1, 'allowed_campaigns' => '["wannacry", "' . $this->oldId(0) . '"'],
+            2 => ['id' => 2, 'allowed_campaigns' => 'not json'],
+        ];
+        [$output, $warnings] = $this->warningOutput();
+
+        $this->step()->run($output);
+
+        $this->assertSame('["wannacry", "' . $this->oldId(0) . '"', $this->tables['learning_courses'][1]['allowed_campaigns']);
+        $this->assertSame('not json', $this->tables['learning_courses'][2]['allowed_campaigns']);
+        $this->assertCount(1, $warnings);
+        $this->assertStringContainsString('id 1', $warnings[0]);
     }
 
     public function testEveryNewIdIsAShippedCampaignAndNoOldIdIsOne(): void {

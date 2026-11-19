@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Repair;
 
+use OCP\DB\Exception as DbException;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
@@ -36,6 +37,14 @@ use OCP\Migration\IRepairStep;
  * Rows are changed by primary key, values are bound parameters, no quoting of identifiers:
  * the same on PostgreSQL and MySQL/MariaDB. Running the step again changes nothing.
  * Post-migration only: a fresh install has no saved games and no course selections.
+ *
+ * One row that cannot be changed does not stop the others: its UPDATE error is caught, the row
+ * keeps its old value (nothing is lost) and a warning names table and id; the next
+ * `occ maintenance:repair` or upgrade tries it again. Nextcloud runs repair steps without a
+ * transaction (OC_App::executeRepairSteps, Repair::run), so a caught failure cannot poison later
+ * statements on PostgreSQL. A course list that is not readable JSON but names an old id is left
+ * as it is and reported. A list stored as a JSON object (the app writes a list; the frontend
+ * reads an object as "all campaigns") stays an object with its keys.
  */
 class RenameCampaignIds implements IRepairStep {
     /** old id => new id */
@@ -61,7 +70,7 @@ class RenameCampaignIds implements IRepairStep {
 
     public function run(IOutput $output): void {
         foreach (self::PER_LEARNER_TABLES as $table) {
-            [$renamed, $kept] = $this->renamePerLearner($table);
+            [$renamed, $kept] = $this->renamePerLearner($table, $output);
             if ($renamed > 0) {
                 $output->info(sprintf('%s: %d row(s) moved to the new campaign id.', $table, $renamed));
             }
@@ -70,12 +79,12 @@ class RenameCampaignIds implements IRepairStep {
             }
         }
 
-        $coop = $this->renameCoopSessions();
+        $coop = $this->renameCoopSessions($output);
         if ($coop > 0) {
             $output->info(sprintf('%s: %d session(s) moved to the new campaign id.', self::COOP_TABLE, $coop));
         }
 
-        $courses = $this->renameInCourseSelections();
+        $courses = $this->renameInCourseSelections($output);
         if ($courses > 0) {
             $output->info(sprintf('%s: campaign selection of %d course(s) updated.', self::COURSE_TABLE, $courses));
         }
@@ -84,7 +93,7 @@ class RenameCampaignIds implements IRepairStep {
     /**
      * @return array{0: int, 1: int} renamed, left unchanged because of an existing new row
      */
-    private function renamePerLearner(string $table): array {
+    private function renamePerLearner(string $table, IOutput $output): array {
         $ids = array_merge(array_keys(self::RENAMED), array_values(self::RENAMED));
         $select = $this->db->getQueryBuilder();
         $select->select('id', 'user_id', 'campaign_id')
@@ -121,7 +130,9 @@ class RenameCampaignIds implements IRepairStep {
             $update->update($table)
                 ->set('campaign_id', $update->createNamedParameter($new))
                 ->where($update->expr()->eq('id', $update->createNamedParameter((int)$row['id'], IQueryBuilder::PARAM_INT)));
-            $update->executeStatement();
+            if (!$this->execute($update, $output, $table, 'id ' . (int)$row['id'])) {
+                continue;
+            }
             $present[$user][$new] = true;
             $renamed++;
         }
@@ -129,19 +140,37 @@ class RenameCampaignIds implements IRepairStep {
         return [$renamed, $kept];
     }
 
-    private function renameCoopSessions(): int {
+    private function renameCoopSessions(IOutput $output): int {
+        $select = $this->db->getQueryBuilder();
+        $select->select('id', 'campaign_id')
+            ->from(self::COOP_TABLE)
+            ->where($select->expr()->in('campaign_id', $select->createNamedParameter(array_keys(self::RENAMED), IQueryBuilder::PARAM_STR_ARRAY)))
+            ->orderBy('id', 'ASC');
+        $result = $select->executeQuery();
+        $rows = [];
+        while (($row = $result->fetch()) !== false) {
+            $rows[] = $row;
+        }
+        $result->closeCursor();
+
         $changed = 0;
-        foreach (self::RENAMED as $old => $new) {
+        foreach ($rows as $row) {
+            $new = self::RENAMED[(string)$row['campaign_id']] ?? null;
+            if ($new === null) {
+                continue;
+            }
             $update = $this->db->getQueryBuilder();
             $update->update(self::COOP_TABLE)
                 ->set('campaign_id', $update->createNamedParameter($new))
-                ->where($update->expr()->eq('campaign_id', $update->createNamedParameter($old)));
-            $changed += $update->executeStatement();
+                ->where($update->expr()->eq('id', $update->createNamedParameter((int)$row['id'], IQueryBuilder::PARAM_INT)));
+            if ($this->execute($update, $output, self::COOP_TABLE, 'id ' . (int)$row['id'])) {
+                $changed++;
+            }
         }
         return $changed;
     }
 
-    private function renameInCourseSelections(): int {
+    private function renameInCourseSelections(IOutput $output): int {
         $select = $this->db->getQueryBuilder();
         $select->select('id', 'allowed_campaigns')
             ->from(self::COURSE_TABLE)
@@ -156,24 +185,61 @@ class RenameCampaignIds implements IRepairStep {
 
         $changed = 0;
         foreach ($rows as $row) {
-            $list = json_decode((string)$row['allowed_campaigns'], true);
-            if (!is_array($list) || !array_intersect(array_keys(self::RENAMED), array_filter($list, 'is_string'))) {
+            $raw = (string)$row['allowed_campaigns'];
+            // objects stay objects: decoded without $associative, an object is a stdClass
+            $decoded = json_decode($raw);
+            $isObject = $decoded instanceof \stdClass;
+            $list = $isObject ? get_object_vars($decoded) : (is_array($decoded) ? json_decode($raw, true) : null);
+            if (!is_array($list)) {
+                foreach (array_keys(self::RENAMED) as $old) {
+                    if (str_contains($raw, $old)) {
+                        $output->warning(sprintf('%s: campaign selection of course id %d is not a readable JSON list and names an old campaign id; left unchanged.', self::COURSE_TABLE, (int)$row['id']));
+                        break;
+                    }
+                }
+                continue;
+            }
+            if (!array_intersect(array_keys(self::RENAMED), array_filter($list, 'is_string'))) {
                 continue;
             }
             $mapped = [];
-            foreach ($list as $id) {
+            foreach ($list as $key => $id) {
                 $id = is_string($id) ? (self::RENAMED[$id] ?? $id) : $id;
-                if (!in_array($id, $mapped, true)) {
+                if (in_array($id, $mapped, true)) {
+                    continue;
+                }
+                if ($isObject) {
+                    $mapped[$key] = $id;
+                } else {
                     $mapped[] = $id;
                 }
             }
+            $json = json_encode($isObject ? (object)$mapped : $mapped);
+            if ($json === false) {
+                $output->warning(sprintf('%s: campaign selection of course id %d could not be written back; left unchanged.', self::COURSE_TABLE, (int)$row['id']));
+                continue;
+            }
             $update = $this->db->getQueryBuilder();
             $update->update(self::COURSE_TABLE)
-                ->set('allowed_campaigns', $update->createNamedParameter(json_encode($mapped)))
+                ->set('allowed_campaigns', $update->createNamedParameter($json))
                 ->where($update->expr()->eq('id', $update->createNamedParameter((int)$row['id'], IQueryBuilder::PARAM_INT)));
-            $update->executeStatement();
-            $changed++;
+            if ($this->execute($update, $output, self::COURSE_TABLE, 'course id ' . (int)$row['id'])) {
+                $changed++;
+            }
         }
         return $changed;
+    }
+
+    /**
+     * Runs one UPDATE; a database error is reported and the row keeps its old value.
+     */
+    private function execute(IQueryBuilder $update, IOutput $output, string $table, string $row): bool {
+        try {
+            $update->executeStatement();
+            return true;
+        } catch (DbException $e) {
+            $output->warning(sprintf('%s: %s could not be moved to the new campaign id and keeps the old one (%s). The next "occ maintenance:repair" tries again.', $table, $row, $e->getMessage()));
+            return false;
+        }
     }
 }
