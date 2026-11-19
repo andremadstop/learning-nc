@@ -42,7 +42,7 @@
                   <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
                     {{ difficultyLabel(campaign.difficulty) }}
                   </span>
-                  <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ area }}</span>
+                  <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ focusAreaLabel(area) }}</span>
                 </div>
               </div>
               <div class="ab-campaign-progress">
@@ -86,7 +86,7 @@
                   <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
                     {{ difficultyLabel(campaign.difficulty) }}
                   </span>
-                  <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ area }}</span>
+                  <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ focusAreaLabel(area) }}</span>
                 </div>
               </div>
               <div class="ab-campaign-progress">
@@ -568,7 +568,7 @@ import CoopVoteOverlay from './CoopVoteOverlay.vue'
 import CoopWaiting from './CoopWaiting.vue'
 import { getCharacter } from '../data/characters.js'
 import { getLanguage } from '@nextcloud/l10n'
-import { buildAdventureCharacters, buildStaticCampaigns } from '../utils/abenteuerCatalog.js'
+import { buildAdventureCharacters, buildStaticCampaigns, focusAreaLabel } from '../utils/abenteuerCatalog.js'
 import { computeScoreDelta, computeReputationDeltas } from '../utils/hudEngine.js'
 import {
 	createCoopSession,
@@ -903,6 +903,9 @@ export default {
 	},
 
 	methods: {
+		// The campaign's focus ids (network_fundamentals, incident-response …) as readable,
+		// translated tags.
+		focusAreaLabel,
 		handleGlobalKeydown(event) {
 			if (event.key === 'Escape' && this.showAbortConfirm) {
 				event.preventDefault()

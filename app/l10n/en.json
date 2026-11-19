@@ -4174,6 +4174,24 @@
         "PDF wird erstellt …": "Creating PDF …",
         "PDF heruntergeladen": "PDF downloaded",
         "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden.": "The PDF could not be created. Please use “Print”.",
-        "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).": "Presentation copy, not a credential in its own right. To check it: scan the QR code or open {url} (certificate ID {id})."
+        "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).": "Presentation copy, not a credential in its own right. To check it: scan the QR code or open {url} (certificate ID {id}).",
+        "Sicherheitsgrundlagen": "Security fundamentals",
+        "Bedrohungsanalyse": "Threat analysis",
+        "Netzwerkgrundlagen": "Networking fundamentals",
+        "IT-Grundlagen": "IT fundamentals",
+        "Linux-Grundlagen": "Linux fundamentals",
+        "Paketanalyse": "Packet analysis",
+        "Vorfallbehandlung": "Incident response",
+        "Fehlersuche": "Troubleshooting",
+        "Forensik": "Forensics",
+        "Phishing": "Phishing",
+        "Portscans": "Port scanning",
+        "Zugangsdatenverwaltung": "Credential management",
+        "Schwachstellenmanagement": "Vulnerability management",
+        "Netzsegmentierung": "Network segmentation",
+        "Web Application Firewall (WAF)": "Web application firewall (WAF)",
+        "Zugriffskontrolle": "Access control",
+        "Patch-Management": "Patch management",
+        "Sichere Architektur": "Secure architecture"
     }
 }

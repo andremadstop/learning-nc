@@ -4174,6 +4174,24 @@
         "PDF wird erstellt …": "Création du PDF …",
         "PDF heruntergeladen": "PDF téléchargé",
         "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden.": "Le PDF n’a pas pu être créé. Veuillez utiliser « Imprimer ».",
-        "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).": "Copie de présentation, qui ne constitue pas une preuve à elle seule. Pour vérifier son authenticité : scannez le code QR ou ouvrez {url} (identifiant du certificat {id})."
+        "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).": "Copie de présentation, qui ne constitue pas une preuve à elle seule. Pour vérifier son authenticité : scannez le code QR ou ouvrez {url} (identifiant du certificat {id}).",
+        "Sicherheitsgrundlagen": "Fondamentaux de la sécurité",
+        "Bedrohungsanalyse": "Analyse des menaces",
+        "Netzwerkgrundlagen": "Fondamentaux des réseaux",
+        "IT-Grundlagen": "Fondamentaux de l'informatique",
+        "Linux-Grundlagen": "Fondamentaux de Linux",
+        "Paketanalyse": "Analyse de paquets",
+        "Vorfallbehandlung": "Réponse aux incidents",
+        "Fehlersuche": "Dépannage",
+        "Forensik": "Investigation numérique",
+        "Phishing": "Hameçonnage",
+        "Portscans": "Analyse de ports",
+        "Zugangsdatenverwaltung": "Gestion des identifiants",
+        "Schwachstellenmanagement": "Gestion des vulnérabilités",
+        "Netzsegmentierung": "Segmentation réseau",
+        "Web Application Firewall (WAF)": "Pare-feu applicatif web (WAF)",
+        "Zugriffskontrolle": "Contrôle d'accès",
+        "Patch-Management": "Gestion des correctifs",
+        "Sichere Architektur": "Architecture sécurisée"
     }
 }

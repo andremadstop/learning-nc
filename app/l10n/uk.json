@@ -4187,6 +4187,24 @@
         "PDF wird erstellt …": "Створення PDF …",
         "PDF heruntergeladen": "PDF завантажено",
         "PDF konnte nicht erstellt werden. Bitte „Drucken“ verwenden.": "Не вдалося створити PDF. Скористайтеся кнопкою «Друк».",
-        "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).": "Копія для показу, сама по собі не є підтвердженням. Перевірити справжність: відскануйте QR-код або відкрийте {url} (ID сертифіката {id})."
+        "Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).": "Копія для показу, сама по собі не є підтвердженням. Перевірити справжність: відскануйте QR-код або відкрийте {url} (ID сертифіката {id}).",
+        "Sicherheitsgrundlagen": "Основи безпеки",
+        "Bedrohungsanalyse": "Аналіз загроз",
+        "Netzwerkgrundlagen": "Основи мереж",
+        "IT-Grundlagen": "Основи ІТ",
+        "Linux-Grundlagen": "Основи Linux",
+        "Paketanalyse": "Аналіз пакетів",
+        "Vorfallbehandlung": "Реагування на інциденти",
+        "Fehlersuche": "Усунення несправностей",
+        "Forensik": "Цифрова криміналістика",
+        "Phishing": "Фішинг",
+        "Portscans": "Сканування портів",
+        "Zugangsdatenverwaltung": "Керування обліковими даними",
+        "Schwachstellenmanagement": "Керування вразливостями",
+        "Netzsegmentierung": "Сегментація мережі",
+        "Web Application Firewall (WAF)": "Брандмауер вебзастосунків (WAF)",
+        "Zugriffskontrolle": "Керування доступом",
+        "Patch-Management": "Керування оновленнями",
+        "Sichere Architektur": "Безпечна архітектура"
     }
 }

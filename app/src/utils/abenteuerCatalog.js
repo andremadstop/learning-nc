@@ -85,3 +85,68 @@ export function buildStaticCampaigns() {
 			'beginner', ['it_fundamentals', 'network_fundamentals', 'linux_fundamentals'], 75),
 	]
 }
+
+/**
+ * The focus tags of a campaign (`focus_areas`) as the reader sees them. The campaign files carry
+ * ids such as `network_fundamentals` or `incident-response` (both separators occur); the Adventure
+ * cards showed those raw. Every id the shipped campaigns use has a label here; the map is built on
+ * call, so the translations are registered by then. The raw ids stay in the files and in the story
+ * prompts.
+ *
+ * @return {Object<string, string>} normalised id (lower case, "_") → label
+ */
+function focusAreaLabels() {
+	return {
+		security_fundamentals: t('learning', 'Sicherheitsgrundlagen'),
+		threat_analysis: t('learning', 'Bedrohungsanalyse'),
+		network_fundamentals: t('learning', 'Netzwerkgrundlagen'),
+		it_fundamentals: t('learning', 'IT-Grundlagen'),
+		linux_fundamentals: t('learning', 'Linux-Grundlagen'),
+		firewall: t('learning', 'Firewall'),
+		dns: t('learning', 'DNS'),
+		routing: t('learning', 'Routing'),
+		// named after the skill, not after the tool the campaign uses
+		wireshark: t('learning', 'Paketanalyse'),
+		incident_response: t('learning', 'Vorfallbehandlung'),
+		troubleshooting: t('learning', 'Fehlersuche'),
+		security: t('learning', 'Sicherheit'),
+		forensics: t('learning', 'Forensik'),
+		phishing: t('learning', 'Phishing'),
+		port_scanning: t('learning', 'Portscans'),
+		credential_management: t('learning', 'Zugangsdatenverwaltung'),
+		vulnerability_management: t('learning', 'Schwachstellenmanagement'),
+		network_segmentation: t('learning', 'Netzsegmentierung'),
+		waf: t('learning', 'Web Application Firewall (WAF)'),
+		access_control: t('learning', 'Zugriffskontrolle'),
+		patch_management: t('learning', 'Patch-Management'),
+		secure_architecture: t('learning', 'Sichere Architektur'),
+	}
+}
+
+/**
+ * @param {string} tag a focus id as in the campaign file
+ * @return {string} lower case, "-" and spaces as "_"
+ */
+export function normalizeFocusArea(tag) {
+	return String(tag ?? '').trim().toLowerCase().replace(/[-\s]+/g, '_')
+}
+
+/** @return {string[]} the normalised focus ids that have a label */
+export function knownFocusAreas() {
+	return Object.keys(focusAreaLabels())
+}
+
+/**
+ * A focus tag for display. An id without a label (a campaign added later) is never shown raw:
+ * separators become spaces and the first letter is capitalised ("cloud_security" → "Cloud security").
+ *
+ * @param {string} tag a focus id as in the campaign file
+ * @return {string}
+ */
+export function focusAreaLabel(tag) {
+	const key = normalizeFocusArea(tag)
+	const label = focusAreaLabels()[key]
+	if (label) return label
+	const words = key.replace(/_+/g, ' ').trim()
+	return words ? words.charAt(0).toUpperCase() + words.slice(1) : ''
+}

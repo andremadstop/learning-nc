@@ -1883,6 +1883,22 @@ for (const [persona, opts] of [['learner1', {}], ['instructor', {}], ['admin', {
 				await expectDeadLinkNotice(page, rec, { title: 'The adventure is switched off here', button: 'Back to the pools', landsOn: /\/pools$/ })
 			}
 		})
+		// The focus tags on the campaign cards showed the raw ids of the campaign files
+		// (network_fundamentals, incident-response); now readable labels in the reader's language.
+		if (seed.gamification) {
+			await station(page, rec, 'Adventure: the focus tags are readable labels', async () => {
+				await page.goto(`${APP}/?learningView=abenteuer`)
+				await settle(page)
+				const tags = page.locator('.ab-focus-tag')
+				if (!(await tags.first().isVisible({ timeout: 15000 }).catch(() => false))) { rec.add('adventure', 'no campaign card with focus tags is shown'); return }
+				const texts = [...new Set((await tags.allTextContents()).map((s) => s.trim()))]
+				;(rec.current.notes ||= []).push(`focus tags: ${texts.join(' | ')}`)
+				for (const text of texts) {
+					if (/_/.test(text) || /^[a-z]+(-[a-z]+)+$/.test(text)) rec.add('adventure', `a focus tag is shown as its raw id: "${text}"`)
+				}
+				if (!texts.includes('Security fundamentals')) rec.add('german', `the English interface shows no "Security fundamentals" tag: ${texts.slice(0, 6).join(' | ')}`)
+			})
+		}
 		flush()
 		await context.close()
 	})
