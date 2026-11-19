@@ -53,7 +53,33 @@ export default {
       }
     },
     handleKeydown(event) {
+      if (this.closeOnEscapeFromToggle(event)) {
+        return
+      }
       trapTabKey(event, this.trapRoot(event), this.$refs.content)
+    },
+    /**
+     * Persona sweep C9b (#99): NcModal ignores Escape while an input has the focus (useHotKey,
+     * so that typing is not cut off). That also holds for a checkbox or radio button, which takes
+     * no typing: in the archive confirmation, Escape on "Nicht mehr anzeigen" closed nothing. For
+     * those, Escape takes the dialog's own close button, the same way as a click on its ×, so
+     * every @closing / @close of the caller runs. Text fields keep NcModal's behaviour.
+     */
+    closeOnEscapeFromToggle(event) {
+      if (event?.key !== 'Escape' || event.defaultPrevented) {
+        return false
+      }
+      const target = event.target
+      if (!target || target.tagName !== 'INPUT' || !['checkbox', 'radio'].includes(String(target.type).toLowerCase())) {
+        return false
+      }
+      const close = this.trapRoot(event)?.querySelector?.('.modal-container__close')
+      if (!close) {
+        return false
+      }
+      event.preventDefault()
+      close.click()
+      return true
     },
     // The dialog element in the DOM. NcDialog's root is NcModal, whose root is a Teleport, so
     // `$refs.dialog.$el` is only the teleport anchor. The capture listener sits on the modal mask
