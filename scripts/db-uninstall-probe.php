@@ -143,6 +143,8 @@ final class StaticConfig implements \OCP\IConfig {
         return $default;
     }
     public function setAppValue(string $appName, string $key, string $value) {}
+    public function deleteAppValue(string $appName, string $key) {}
+    public function deleteUserValue(string $userId, string $appName, string $key) {}
 
     public function getSystemValue(string $key, $default = '') {
         return match ($key) {
