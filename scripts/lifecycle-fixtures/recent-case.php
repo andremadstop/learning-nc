@@ -23,6 +23,9 @@
  *                     u1 R4 done t4 | u2 R5 done t5 | u3 R4 open (40 %)
  *   current confirms: u1 R1 t1 | u2 R1 t2 | u2 R3 t3 (document_id set, doc_version NULL)
  *           progress: u1 R4 done t4 | u3 R4 open (40 %)
+ * Saved adventure games (5.16.0 renamed two campaign ids, Repair\RenameCampaignIds): u1 has a
+ * story_progress row and a campaign_state row under the old ids, a coop session runs one, and
+ * course C allows ["wannacry", <old id>]; after the upgrade all of them carry the new ids.
  * The check reads through the app's own mappers and RequiredDocumentService — the SELECT * path
  * that broke in 5.11.0 on a legacy column — and only uses raw SQL to compare exact row sets.
  * Prints `CHECK <name>=ok|fail` per check and `CHECK result=ok|fail`; exit 0 only if all passed.
@@ -36,6 +39,8 @@ use OCP\IDBConnection;
 use OCP\Server;
 
 const IDS = '/tmp/recent-case.json';
+// the two campaign ids renamed in 5.16.0 (old => new, as in lib/Repair/RenameCampaignIds.php)
+const OLD_CAMPAIGNS = ['cysa_zero_day', 'a_plus_erster_tag'];
 $mode = $argv[1] ?? '';
 $fail = 0;
 function ck(string $n, bool $ok, string $info = ''): void {
@@ -70,7 +75,10 @@ try {
 	if ($mode === 'seed') {
 		$kind = $db->tableExists('learning_doc_confirms') ? 'current' : 'legacy';
 		$now = time();
-		$c = $ins('learning_courses', ['title' => 'Recent case course', 'instructor_id' => 'lc-user3', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now]);
+		$c = $ins('learning_courses', ['title' => 'Recent case course', 'instructor_id' => 'lc-user3', 'status' => 'active', 'allowed_campaigns' => json_encode(['wannacry', OLD_CAMPAIGNS[0]]), 'created_at' => $now, 'updated_at' => $now]);
+		$sp = $ins('learning_story_progress', ['user_id' => 'lc-user1', 'campaign_id' => OLD_CAMPAIGNS[0], 'current_scene_id' => 'recent-scene', 'score' => 7, 'created_at' => $now, 'updated_at' => $now]);
+		$cs = $ins('learning_campaign_state', ['user_id' => 'lc-user1', 'campaign_id' => OLD_CAMPAIGNS[1], 'graph_position' => 'recent-node', 'state_bag' => '{"flags":{"recent":true}}', 'score' => 3, 'created_at' => $now, 'updated_at' => $now]);
+		$co = $ins('learning_coop_sessions', ['campaign_id' => OLD_CAMPAIGNS[0], 'host_user_id' => 'lc-user2', 'session_code' => 'RCNT01', 'status' => 'lobby', 'current_node_id' => 'start', 'state_bag' => '{}', 'created_at' => $now, 'last_heartbeat' => $now, 'max_players' => 4]);
 		$doc = fn (string $name) => $ins('learning_course_documents', ['course_id' => $c, 'file_path' => "/Docs/$name", 'file_name' => $name, 'file_type' => 'pdf', 'status' => 'ready', 'created_at' => $now, 'updated_at' => $now]);
 		$d1 = $doc('policy.pdf');
 		$d2 = $doc('safety.pdf');
@@ -99,7 +107,7 @@ try {
 		}
 		$p('lc-user1', $r4, $t4);
 		$p('lc-user3', $r4, null, 40.0);
-		file_put_contents(IDS, json_encode(compact('kind', 'c', 'd1', 'd2', 'r1', 'r2', 'r3', 'r4', 'r5', 't1', 't2', 't3', 't4', 't5')));
+		file_put_contents(IDS, json_encode(compact('kind', 'c', 'd1', 'd2', 'r1', 'r2', 'r3', 'r4', 'r5', 't1', 't2', 't3', 't4', 't5', 'sp', 'cs', 'co')));
 		echo "SEED kind=$kind course=$c\n";
 		exit(0);
 	}
@@ -109,7 +117,7 @@ try {
 
 	$ids = json_decode((string)file_get_contents(IDS), true, 4, JSON_THROW_ON_ERROR);
 	['kind' => $kind, 'c' => $c, 'd1' => $d1, 'd2' => $d2, 'r1' => $r1, 'r2' => $r2, 'r3' => $r3, 'r4' => $r4, 'r5' => $r5,
-		't1' => $t1, 't2' => $t2, 't3' => $t3, 't4' => $t4, 't5' => $t5] = $ids;
+		't1' => $t1, 't2' => $t2, 't3' => $t3, 't4' => $t4, 't5' => $t5, 'sp' => $sp, 'cs' => $cs, 'co' => $co] = $ids;
 	echo "CHECK kind=$kind\n";
 
 	// Exact rows (raw SQL only for the comparison).
@@ -158,6 +166,22 @@ try {
 	$is = fn (int $rid, string $u) => $svc->isConfirmed($course, $byId[$rid], $u);
 	$st = ['u1R1' => $is($r1, 'lc-user1'), 'u2R1' => $is($r1, 'lc-user2'), 'u2R3' => $is($r3, 'lc-user2'), 'u1R3' => $is($r3, 'lc-user1'), 'u3R3' => $is($r3, 'lc-user3')];
 	ck('is_confirmed', $st === ['u1R1' => true, 'u2R1' => true, 'u2R3' => true, 'u1R3' => false, 'u3R3' => false], json_encode($st));
+
+	// saved adventure games moved to the renamed campaigns (Repair\RenameCampaignIds)
+	$renamed = \OCA\Learning\Repair\RenameCampaignIds::RENAMED;
+	ck('campaign_map', array_keys($renamed) === OLD_CAMPAIGNS, implode(',', array_keys($renamed)));
+	[$new0, $new1] = [$renamed[OLD_CAMPAIGNS[0]] ?? '', $renamed[OLD_CAMPAIGNS[1]] ?? ''];
+	$story = Server::get(\OCA\Learning\Db\StoryProgressMapper::class);
+	$moved = $story->findByUserAndCampaign('lc-user1', $new0);
+	ck('campaign_story_progress', $moved !== null && (int)$moved->getId() === $sp && $moved->getCurrentSceneId() === 'recent-scene'
+		&& (int)$moved->getScore() === 7 && $story->findByUserAndCampaign('lc-user1', OLD_CAMPAIGNS[0]) === null);
+	$states = Server::get(\OCA\Learning\Db\CampaignStateMapper::class);
+	$state = $states->findByUserAndCampaign('lc-user1', $new1);
+	ck('campaign_state', $state !== null && (int)$state->getId() === $cs && $state->getGraphPosition() === 'recent-node'
+		&& $state->getStateBag() === '{"flags":{"recent":true}}' && $states->findByUserAndCampaign('lc-user1', OLD_CAMPAIGNS[1]) === null);
+	$coop = $all("SELECT campaign_id FROM *PREFIX*learning_coop_sessions WHERE id = $co");
+	ck('campaign_coop_session', ($coop[0]['campaign_id'] ?? null) === $new0, (string)($coop[0]['campaign_id'] ?? 'missing'));
+	ck('campaign_course_list', $course->jsonSerialize()['allowed_campaigns'] === ['wannacry', $new0], json_encode($course->jsonSerialize()['allowed_campaigns']));
 
 	$again = \OCA\Learning\Migration\Version011100Date20261116150000::migrateDocumentRows($db);
 	$n = $all("SELECT count(*) AS n FROM *PREFIX*learning_doc_confirms WHERE course_id = $c");
