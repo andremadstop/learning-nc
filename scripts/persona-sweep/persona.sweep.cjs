@@ -1038,7 +1038,7 @@ test('learner practises the media question: hint, intro, feedback, dialog', asyn
 		if (attrs.role !== 'button' || attrs.expanded !== 'false' || attrs.tabindex !== '0') rec.add('a11y-flow', `the hidden question is not a named Tab stop: ${JSON.stringify(attrs)}`)
 		if (attrs.label !== 'Question, hidden until the end of the intro') rec.add('a11y-flow', `the hidden question is named "${attrs.label}"`)
 		const veil = (await el.locator('.qconceal__veil').textContent().catch(() => '')).trim()
-		if (veil !== 'The question appears after the intro.') rec.add('media', `the hidden question says "${veil}"`)
+		if (veil !== 'The question appears after the intro – or right away when you point or tap here.') rec.add('media', `the hidden question says "${veil}"`)
 		const reach = await el.evaluate((n) => {
 			const content = n.querySelector('.qconceal__content')
 			const answers = [...n.querySelectorAll('.answer-btn')]

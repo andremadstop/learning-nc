@@ -40,7 +40,7 @@ vi.mock('../../src/components/AccessibleDialog.vue', () => withProps('Accessible
 
 import axios from '@nextcloud/axios'
 import QuestionMediaPlayer from '../../src/components/QuestionMediaPlayer.vue'
-import QuestionConceal from '../../src/components/QuestionConceal.vue'
+import QuestionConceal, { HOVER_DWELL_MS } from '../../src/components/QuestionConceal.vue'
 import { optionSegments } from '../../src/utils/questionMediaPlayer.js'
 import { answerSoundNotes, playAnswerSound, resetAnswerSoundsForTests, unlockAnswerSounds } from '../../src/utils/answerSounds.js'
 import { soundsOn, useQuestionMediaPrefsStore } from '../../src/stores/questionMediaPrefsStore.js'
@@ -88,6 +88,17 @@ async function mount(Component, props = {}, { pinia = null, listeners = {}, slot
 	vm = root.$refs.c
 	await flush()
 	return { root, state }
+}
+
+function sleep(ms) {
+	return new Promise((done) => setTimeout(done, ms))
+}
+
+// jsdom has no PointerEvent: a plain event with the pointer type set
+function pointer(type, pointerType = 'mouse') {
+	const event = new Event(type, { bubbles: type === 'pointermove' })
+	Object.defineProperty(event, 'pointerType', { value: pointerType })
+	return event
 }
 
 function buttonByText(text) {
@@ -470,7 +481,9 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 		const el = host.querySelector('.qconceal')
 		expect(el.classList.contains('qconceal--hidden')).toBe(true)
 		expect(el.getAttribute('tabindex')).toBe('0')
-		expect(el.getAttribute('aria-label')).toBe('Frage, ausgeblendet bis zum Ende des Einstiegs')
+		// the name and the visible text say how to uncover it now, not only to wait (autoplay is off by default)
+		expect(el.getAttribute('aria-label')).toBe('Frage, ausgeblendet bis zum Ende des Einstiegs – Antippen oder Daraufzeigen deckt sie auf')
+		expect(host.querySelector('.qconceal__veil').textContent.trim()).toBe('Die Frage erscheint nach dem Einstieg – oder sofort, wenn du hierher zeigst oder tippst.')
 		expect(el.getAttribute('aria-expanded')).toBe('false')
 		const content = host.querySelector('.qconceal__content')
 		expect(content.hasAttribute('inert')).toBe(true)
@@ -481,7 +494,7 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 	})
 
 	for (const [name, fire] of [
-		['hovering', (el) => el.dispatchEvent(new MouseEvent('mouseenter'))],
+		['hovering', async (el) => { el.dispatchEvent(pointer('pointermove')); await sleep(HOVER_DWELL_MS + 60) }],
 		['keyboard focus', (el) => el.focus()],
 		['a tap', (el) => el.click()],
 		['Enter', (el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))],
@@ -492,7 +505,7 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 			// Vue drops an event stamped in the very millisecond its listener was attached (its
 			// guard against events that caused the render); a real key press is never that fast.
 			await new Promise((done) => setTimeout(done, 5))
-			fire(el)
+			await fire(el)
 			await flush()
 			expect(el.classList.contains('qconceal--hidden')).toBe(false)
 			expect(el.classList.contains('qconceal--shown')).toBe(true)
@@ -512,6 +525,65 @@ describe('QuestionConceal: hidden in place, uncovered by hover, focus or tap —
 			expect(el.classList.contains('qconceal--hidden')).toBe(true)
 		})
 	}
+
+	/**
+	 * Review of #66: the area stays in place from one question to the next (no :key), and
+	 * "Nächste Frage" sits inside it. Uncovering only on mouseenter meant a pointer already inside
+	 * the next hidden question could move as it liked — no enter, no uncovering; and a mouse
+	 * crossing the area on its way to the player above uncovered the question before the intro.
+	 */
+	it('after "Nächste Frage" a pointer resting inside the next hidden question uncovers it', async () => {
+		const { state, root } = await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+		const el = host.querySelector('.qconceal')
+		// Vue drops an event stamped in the millisecond its listener was attached (see above)
+		await sleep(5)
+		el.dispatchEvent(new MouseEvent('mouseenter'))
+		el.click()
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(false)
+		// the next question, the pointer still inside the same element: no new mouseenter
+		state.props = { conceal: true, questionKey: 2 }
+		root.$forceUpdate()
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+		el.dispatchEvent(pointer('pointermove'))
+		el.dispatchEvent(pointer('pointermove'))
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+		await sleep(HOVER_DWELL_MS + 60)
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(false)
+	})
+
+	it('a mouse crossing the hidden question on its way to the player does not uncover it', async () => {
+		await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+		const el = host.querySelector('.qconceal')
+		await new Promise((done) => setTimeout(done, 5))
+		el.dispatchEvent(new MouseEvent('mouseenter'))
+		el.dispatchEvent(pointer('pointermove'))
+		await sleep(HOVER_DWELL_MS / 3)
+		el.dispatchEvent(new MouseEvent('mouseleave'))
+		el.dispatchEvent(pointer('pointerleave'))
+		await sleep(HOVER_DWELL_MS + 60)
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+	})
+
+	it('a finger moving over it (scrolling) is no hover; a question change drops a started dwell', async () => {
+		const { state, root } = await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })
+		const el = host.querySelector('.qconceal')
+		el.dispatchEvent(pointer('pointermove', 'touch'))
+		await sleep(HOVER_DWELL_MS + 60)
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+		el.dispatchEvent(pointer('pointermove'))
+		state.props = { conceal: true, questionKey: 2 }
+		root.$forceUpdate()
+		await flush()
+		await sleep(HOVER_DWELL_MS + 60)
+		await flush()
+		expect(el.classList.contains('qconceal--hidden')).toBe(true)
+	})
 
 	it('the end of the intro uncovers it by itself', async () => {
 		const { state, root } = await mount(QuestionConceal, { conceal: true, questionKey: 1 }, { slot })

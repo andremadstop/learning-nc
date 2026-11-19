@@ -4,8 +4,9 @@
        :tabindex="hidden ? 0 : (uncovered ? -1 : null)"
        :role="hidden ? 'button' : null"
        :aria-expanded="hidden ? 'false' : null"
-       :aria-label="hidden ? t('learning', 'Frage, ausgeblendet bis zum Ende des Einstiegs') : null"
-       @mouseenter="reveal"
+       :aria-label="hidden ? t('learning', 'Frage, ausgeblendet bis zum Ende des Einstiegs – Antippen oder Daraufzeigen deckt sie auf') : null"
+       @pointermove="onPointerMove"
+       @pointerleave="cancelHover"
        @focus="onFocus"
        @click="reveal"
        @keydown.enter.space="onKey"
@@ -13,7 +14,7 @@
        @click.capture="primeSounds"
        @keydown.capture="primeSounds">
     <p v-if="hidden" class="qconceal__veil" aria-hidden="true">
-      {{ t('learning', 'Die Frage erscheint nach dem Einstieg.') }}
+      {{ t('learning', 'Die Frage erscheint nach dem Einstieg – oder sofort, wenn du hierher zeigst oder tippst.') }}
     </p>
     <div class="qconceal__content" :inert="hidden || null" :aria-hidden="hidden ? 'true' : null">
       <slot />
@@ -26,12 +27,18 @@ import { soundsOn, useOptionalQuestionMediaPrefsStore } from '../stores/question
 import { useOptionalA11yStore } from '../stores/a11yStore.js';
 import { unlockAnswerSounds } from '../utils/answerSounds.js';
 
+// How long the pointer has to rest on the hidden area before it uncovers the question: a mouse on
+// its way to the player above crosses the area and must not uncover it in passing.
+export const HOVER_DWELL_MS = 500;
+
 /**
  * GitHub #66 (Andre 18.11.: "die Frage erst nach dem Intro einblenden", "kein Knopf, hovern
  * muss reichen"). While the player says a spoken intro should be heard first (`conceal`), the
  * question and its answers keep their place but are invisible and out of reach (`inert`: no
  * Tab stop, no screen-reader text, no tap on a hidden answer). The area itself uncovers them:
- * hovering it, focusing it with the keyboard (it is a Tab stop with a name) or tapping it.
+ * hovering it (resting on it for HOVER_DWELL_MS, so crossing it on the way to the player does not
+ * count; any movement inside counts, so a pointer already inside after "Nächste Frage" works too),
+ * focusing it with the keyboard (it is a Tab stop with a name) or tapping it.
  * No visible button. Once uncovered, the question stays for good. Without an intro this is a
  * plain wrapper, so every question without media looks and behaves as before.
  */
@@ -54,6 +61,7 @@ export default {
       motionQuery: null,
       prefs: useOptionalQuestionMediaPrefsStore(),
       a11y: useOptionalA11yStore(),
+      hoverTimer: null,
     };
   },
   computed: {
@@ -66,6 +74,7 @@ export default {
   },
   watch: {
     questionKey() {
+      this.cancelHover();
       this.userRevealed = false;
       this.uncovered = false;
       this.hadIntro = this.conceal;
@@ -92,6 +101,7 @@ export default {
     }
   },
   beforeUnmount() {
+    this.cancelHover();
     this.motionQuery?.removeEventListener?.('change', this.onMotionChange);
   },
   methods: {
@@ -99,8 +109,29 @@ export default {
       this.reducedMotion = !!event.matches;
     },
     reveal() {
+      this.cancelHover();
       if (this.hidden) {
         this.userRevealed = true;
+      }
+    },
+    /**
+     * Hover intent instead of mouseenter: the area stays in place from one question to the next,
+     * so a pointer resting inside it after "Nächste Frage" never "enters" it again. Touch is the
+     * tap's (a finger scrolling over the area is no hover, and no leave follows it).
+     */
+    onPointerMove(event) {
+      if (!this.hidden || this.hoverTimer !== null || event?.pointerType === 'touch') {
+        return;
+      }
+      this.hoverTimer = setTimeout(() => {
+        this.hoverTimer = null;
+        this.reveal();
+      }, HOVER_DWELL_MS);
+    },
+    cancelHover() {
+      if (this.hoverTimer !== null) {
+        clearTimeout(this.hoverTimer);
+        this.hoverTimer = null;
       }
     },
     onFocus(event) {
