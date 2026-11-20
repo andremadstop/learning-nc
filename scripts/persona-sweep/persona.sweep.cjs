@@ -3327,6 +3327,11 @@ test('instructor: empty course, view-only pool, pool search, archive confirmatio
 			await input.fill('fire')
 			const clear = page.locator('.question-search-bar .clear-search-btn').first()
 			await clear.waitFor({ timeout: 5000 })
+			// the search is debounced: wait for its answer (hits or "no hits"), so axe sees the hits in both modes
+			const hits = page.locator('.question-search-results')
+			await hits.or(page.locator('.question-search-empty')).first().waitFor({ timeout: 8000 }).catch(() => {})
+			;(rec.current.notes ||= []).push(`ar: ${await page.locator('.question-search-hit').count()} hits for "fire"`)
+			if (!(await hits.isVisible().catch(() => false))) rec.add('search', 'ar: the question search finds nothing for "fire" in Fire safety')
 			const box = await input.boundingBox()
 			const x = await clear.boundingBox()
 			const pad = await input.evaluate((el) => ({ left: parseFloat(getComputedStyle(el).paddingLeft), right: parseFloat(getComputedStyle(el).paddingRight) }))
