@@ -155,6 +155,92 @@ class CertBackgroundLibraryTest extends TestCase {
         $this->assertStringNotContainsString("PK\x03\x04", $stored);
     }
 
+    /**
+     * A 30 × 10 JPEG, blue with a red 6 × 6 block in the top-left corner, with an APP1 Exif segment
+     * whose IFD0 holds only the orientation tag (0x0112). GD cannot write EXIF, so it is spliced in.
+     */
+    private static function jpegWithOrientation(int $orientation, bool $littleEndian = false): string {
+        $image = imagecreatetruecolor(30, 10);
+        imagefilledrectangle($image, 0, 0, 29, 9, (int)imagecolorallocate($image, 20, 40, 220));
+        imagefilledrectangle($image, 0, 0, 5, 5, (int)imagecolorallocate($image, 230, 20, 20));
+        ob_start();
+        imagejpeg($image, null, 95);
+        $jpeg = (string)ob_get_clean();
+        $s = $littleEndian ? 'v' : 'n';
+        $l = $littleEndian ? 'V' : 'N';
+        $tiff = ($littleEndian ? 'II' : 'MM') . pack($s, 42) . pack($l, 8)
+            . pack($s, 1) . pack($s, 0x0112) . pack($s, 3) . pack($l, 1) . pack($s, $orientation) . "\0\0"
+            . pack($l, 0);
+        $payload = "Exif\0\0" . $tiff;
+        return "\xFF\xD8" . "\xFF\xE1" . pack('n', strlen($payload) + 2) . $payload . substr($jpeg, 2);
+    }
+
+    /** Whether the pixel is the red of the corner block (JPEG is lossy: a range, not a value). */
+    private static function isRed(\GdImage $image, int $x, int $y): bool {
+        $rgb = imagecolorat($image, $x, $y);
+        return (($rgb >> 16) & 0xFF) > 150 && ($rgb & 0xFF) < 110;
+    }
+
+    /** @return array<string, array{int, bool, int, int, int, int}> orientation, little endian, width, height, red x, red y */
+    public static function orientations(): array {
+        return [
+            '1 as stored' => [1, false, 30, 10, 2, 2],
+            '3 upside down' => [3, false, 30, 10, 27, 7],
+            '6 turned right (phone held upright)' => [6, false, 10, 30, 7, 2],
+            '6 little endian' => [6, true, 10, 30, 7, 2],
+            '8 turned left' => [8, false, 10, 30, 2, 27],
+            '2 mirrored' => [2, false, 30, 10, 27, 2],
+        ];
+    }
+
+    /**
+     * The stored copy has no EXIF any more, so it must already be the right way up: a photo taken
+     * with the phone held upright (orientation 6) came out lying on its side before (C10 review).
+     */
+    #[DataProvider('orientations')]
+    public function testTheExifOrientationIsAppliedToThePixels(int $orientation, bool $littleEndian, int $width, int $height, int $redX, int $redY): void {
+        $upload = self::jpegWithOrientation($orientation, $littleEndian);
+        $this->assertNotFalse(getimagesizefromstring($upload), 'the test file is a valid JPEG');
+
+        $entry = $this->library()->add('Photo', $upload);
+        $stored = $this->files[$entry['id']];
+        $image = imagecreatefromstring($stored);
+        $this->assertNotFalse($image);
+
+        $this->assertSame([$width, $height], [imagesx($image), imagesy($image)]);
+        $this->assertTrue(self::isRed($image, $redX, $redY), 'the red corner is where the photo shows it');
+        $this->assertStringNotContainsString('Exif', $stored);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function brokenExif(): array {
+        $cut = static fn(string $tiff): string => "Exif\0\0" . $tiff;
+        return [
+            'IFD offset beyond the segment' => [$cut('MM' . pack('n', 42) . pack('N', 4000))],
+            'entry count beyond the segment' => [$cut('II' . pack('v', 42) . pack('V', 8) . pack('v', 500))],
+            'no TIFF header' => [$cut('XX' . str_repeat("\0", 10))],
+            'orientation out of range' => [$cut('MM' . pack('n', 42) . pack('N', 8) . pack('n', 1)
+                . pack('n', 0x0112) . pack('n', 3) . pack('N', 1) . pack('n', 99) . "\0\0" . pack('N', 0))],
+            'orientation with the wrong type' => [$cut('MM' . pack('n', 42) . pack('N', 8) . pack('n', 1)
+                . pack('n', 0x0112) . pack('n', 4) . pack('N', 1) . pack('N', 6) . pack('N', 0))],
+        ];
+    }
+
+    /** A broken Exif segment never costs the upload: it is stored as drawn, without warnings. */
+    #[DataProvider('brokenExif')]
+    public function testABrokenExifSegmentStoresTheImageAsItIs(string $payload): void {
+        $plain = self::jpegWithOrientation(1);
+        $jpeg = "\xFF\xD8" . "\xFF\xE1" . pack('n', strlen($payload) + 2) . $payload . substr($plain, 2);
+        $this->assertNotFalse(getimagesizefromstring($jpeg), 'the test file is a valid JPEG');
+
+        $entry = $this->library()->add('Photo', $jpeg);
+        $image = imagecreatefromstring($this->files[$entry['id']]);
+        $this->assertNotFalse($image);
+
+        $this->assertSame([30, 10], [imagesx($image), imagesy($image)]);
+        $this->assertTrue(self::isRed($image, 2, 2));
+    }
+
     public function testTransparencyIsKept(): void {
         foreach (['image/png', 'image/webp'] as $mime) {
             $stored = CertBackgroundLibrary::reencode(self::image($mime, 6, 4, true), $mime);
