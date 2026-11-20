@@ -13,7 +13,7 @@ const { test, expect } = require('@playwright/test')
 const { execFileSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, REFUSED_BACKGROUND_STATION, DEAD_LINK_STATION_PREFIX } = require('./lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, REFUSED_BACKGROUND_STATION, ACHIEVEMENT_LINK_STATION, DEAD_LINK_STATION_PREFIX } = require('./lib.cjs')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
@@ -3625,7 +3625,7 @@ test('learner: search hit from an enrolled course, RTL search field, activity li
 		})
 
 		if (state.GAMIFICATION === 'on') {
-			await station(page, rec, 'Activity app: an achievement links to the achievements on the dashboard (#85)', async () => {
+			await station(page, rec, ACHIEVEMENT_LINK_STATION, async () => {
 				const entries = await streamLinks()
 				const badges = entries.filter((e) => /Achievement unlocked/i.test(e.text))
 				;(rec.current.notes ||= []).push(`achievements in the stream: ${badges.map((e) => e.text).join(' | ') || 'none'}`)

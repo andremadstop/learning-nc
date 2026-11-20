@@ -68,7 +68,9 @@ class Provider implements IProvider {
             case ActivityPublisher::SUBJECT_BADGE_EARNED:
                 $badgeName = (string)($params['badge_name'] ?? '');
                 $badgeEmoji = (string)($params['badge_emoji'] ?? '');
-                // The achievements are listed on the dashboard (only with gamification on, like the badge).
+                // Opens Today (/dashboard: streak, level). No page lists the achievements app-wide
+                // (only a pool's statistics and a course summary), and the event names no pool or
+                // course; where it should lead is an open decision.
                 $dashboard = rtrim($this->appUrl(), '/') . '/dashboard';
                 $badge = ['badge' => $this->highlight((string)$event->getObjectName(), $badgeName, $dashboard)];
                 if ($badgeEmoji !== '') {
