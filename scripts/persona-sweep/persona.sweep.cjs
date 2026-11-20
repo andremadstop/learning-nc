@@ -1628,7 +1628,8 @@ test('instructor: create-course dialog, certification, compliance report, CSV an
 			// radios and switches (logo choice, #78) have their label beside them by design
 			if (control.matches('input[type=checkbox], input[type=radio]')) return null
 			const l = label.getBoundingClientRect()
-			const c = control.getBoundingClientRect()
+			// a slider shares its row with the value it shows (#93 "Background strength"): the row counts
+			const c = (control.matches('input[type=range]') ? control.parentElement : control).getBoundingClientRect()
 			const field = label.parentElement.getBoundingClientRect()
 			return { label: label.textContent.trim(), above: l.bottom <= c.top + 1, width: c.width, fieldWidth: field.width }
 		}).filter(Boolean))
