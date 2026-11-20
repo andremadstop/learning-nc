@@ -956,9 +956,10 @@ export default {
   display: flex;
   align-items: center;
 }
+/* Logical sides (RTL): the magnifier at the start of the field, the × at its end. */
 .icon-search-label {
   position: absolute;
-  left: 12px;
+  inset-inline-start: 12px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -978,15 +979,15 @@ export default {
   opacity: 0.7;
 }
 .search-input {
-  padding-left: 40px; /* Make space for the search icon */
-  padding-right: 40px; /* Make space for the clear button */
+  padding-inline-start: 40px; /* Make space for the search icon */
+  padding-inline-end: 40px; /* Make space for the clear button */
 }
 /* #98: Nextcloud and the app give every button a minimum height and width (the clickable area),
    taller than this field, so the × stuck out above and below it. It is now a 28 px square (WCAG 2.5.8 asks
    for 24), centred on the field and inside it. */
 .clear-search-btn {
   position: absolute;
-  right: 6px;
+  inset-inline-end: 6px;
   top: 50%;
   transform: translateY(-50%);
   box-sizing: border-box;

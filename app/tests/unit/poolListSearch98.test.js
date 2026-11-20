@@ -328,3 +328,25 @@ describe('PoolList search: the × that clears the search (GitHub #98)', () => {
 		expect(Number(/\n\s*height:\s*(\d+)px/.exec(rule)?.[1])).toBeGreaterThanOrEqual(12)
 	})
 })
+
+// RTL (Arabic): the magnifier and the × sat physically left and right, so in a right-to-left
+// interface the magnifier covered the end of the typed text and the × its start. They now take
+// logical sides (start/end), like the text itself; measured in ar by the persona station
+// "Pools search: magnifier and × follow the reading direction (ar)".
+describe('PoolList search: magnifier and × follow the reading direction', () => {
+	const css = fs.readFileSync(path.resolve(__dirname, '../../src/components/PoolList.vue'), 'utf8')
+	const rule = (selector) => new RegExp(`\\n${selector.replace(/[.#]/g, (c) => `\\${c}`)} \\{([^}]*)\\}`).exec(css)?.[1] ?? ''
+
+	it.each(['.icon-search-label', '.search-input', '.clear-search-btn'])('%s has no physical left/right', (selector) => {
+		const body = rule(selector)
+		expect(body).not.toBe('')
+		expect(body).not.toMatch(/(^|[\s;])(left|right|padding-left|padding-right|margin-left|margin-right)\s*:/)
+	})
+
+	it('the magnifier sits at the start, the × at the end, the text between them', () => {
+		expect(rule('.icon-search-label')).toMatch(/inset-inline-start:\s*12px/)
+		expect(rule('.clear-search-btn')).toMatch(/inset-inline-end:\s*6px/)
+		expect(rule('.search-input')).toMatch(/padding-inline-start:\s*40px/)
+		expect(rule('.search-input')).toMatch(/padding-inline-end:\s*40px/)
+	})
+})
