@@ -3398,6 +3398,122 @@ test('instructor: weak questions with a long question, phone width (#96)', async
 	await context.close()
 })
 
+// 5.17.0 follow-up: #98 (reported on 5.16.0) a learner's question hit from a pool of a course they
+// are enrolled in said "Could not find the pool for the selected question"; it lands on Training
+// now (never "View questions", the deliberate limit). RTL: magnifier and × of the Pools search
+// follow the reading direction (ar). #85: the names in Learning's activities are links (the
+// activity API hands the web UI and the digest email the same rich subject).
+test('learner: search hit from an enrolled course, RTL search field, activity links (#85, #98)', async ({ browser }) => {
+	test.setTimeout(10 * 60_000)
+	const occ = (...args) => execFileSync('docker', ['exec', '-u', 'www-data', '-w', '/var/www/html', state.NC, 'php', 'occ', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+	const fireQuestion = 'What do you do first when you discover a fire?'
+	const hitOpensTraining = async (page, rec, who) => {
+		await openTopTab(page, 'Pools')
+		const input = page.locator('#pool-search')
+		if (!(await input.isVisible().catch(() => false))) { rec.add('search', `${who}: the Pools page has no search field`); return }
+		await input.fill('discover a fire')
+		const hit = page.locator('.search-results-dropdown .results-list li').filter({ hasText: fireQuestion }).first()
+		// isVisible() does not wait; the hits come from a debounced request
+		if (!(await hit.waitFor({ timeout: 10000 }).then(() => true).catch(() => false))) { rec.add('search', `${who}: the question of the course pool is not found`); return }
+		await hit.locator('button.result-btn').click()
+		await settle(page)
+		await page.waitForTimeout(800)
+		const toasts = await page.locator('.toastify').allTextContents().catch(() => [])
+		if (toasts.some((t) => /Could not find the pool/i.test(t))) rec.add('search', `${who}: "Could not find the pool for the selected question" after the hit from the enrolled course (#98)`)
+		const selectedTabs = (await page.locator('[role=tab][aria-selected="true"]').allTextContents()).map((t) => t.trim())
+		if (!selectedTabs.some((t) => /^Training$/.test(t))) rec.add('search', `${who}: the hit opens on "${selectedTabs.join(' / ')}", not Training (#98)`)
+		if (await page.locator('[role=tab]').filter({ hasText: /^\s*(View questions|Manage)\s*$/ }).count()) rec.add('search', `${who}: the pool from the course offers "View questions"/"Manage" (answer key, #98)`)
+		if (await page.locator('[role=dialog]').filter({ visible: true }).count()) rec.add('search', `${who}: the hit opens a dialog (#98)`)
+		await page.screenshot({ path: path.join(SHOTS, `pool-search-course-hit-${slug(who)}.png`) })
+	}
+
+	{
+		const rec = new Recorder('learner2')
+		const { context, page } = await login(browser, 'learner2')
+		rec.attach(page)
+		await station(page, rec, 'Pools search: a learner\'s hit from the enrolled course opens Training (#98)', async () => {
+			await hitOpensTraining(page, rec, 'learner2')
+		})
+		// RTL: the magnifier at the start (right), the × at the end (left), both inside the field
+		await station(page, rec, 'Pools search: magnifier and × follow the reading direction (ar)', async () => {
+			occ('user:setting', 'learner2', 'core', 'lang', 'ar')
+			try {
+				// the tab label is Arabic now: straight to the Pools route
+				await page.goto(`${APP}/pools`)
+				await settle(page)
+				const dir = await page.evaluate(() => getComputedStyle(document.querySelector('#pool-search') || document.body).direction)
+				if (dir !== 'rtl') { rec.add('layout', `the Pools search is "${dir}" in Arabic, not rtl`); return }
+				const input = page.locator('#pool-search')
+				await input.fill('fire')
+				const clear = page.locator('.clear-search-btn')
+				await clear.waitFor({ timeout: 5000 })
+				const box = await input.boundingBox()
+				const x = await clear.boundingBox()
+				const lens = await page.locator('.icon-search-label .icon-search').boundingBox()
+				;(rec.current.notes ||= []).push(`ar: field ${JSON.stringify(box)}, × ${JSON.stringify(x)}, magnifier ${JSON.stringify(lens)}`)
+				if (!box || !x || !lens) { rec.add('layout', 'ar: the search field, its × or the magnifier has no box'); return }
+				const mid = box.x + box.width / 2
+				if (lens.x + lens.width / 2 <= mid) rec.add('layout', 'ar: the magnifier sits at the end (left) of the search field, not at its start (right)')
+				if (x.x + x.width / 2 >= mid) rec.add('layout', 'ar: the × sits at the start (right) of the search field, over the typed text, not at its end (left)')
+				if (x.x < box.x - 0.5 || x.x + x.width > box.x + box.width + 0.5 || lens.x < box.x - 0.5 || lens.x + lens.width > box.x + box.width + 0.5) rec.add('layout', 'ar: the × or the magnifier sticks out of the search field')
+				// the typed text starts after the magnifier and ends before the ×
+				const pad = await input.evaluate((el) => ({ right: parseFloat(getComputedStyle(el).paddingRight), left: parseFloat(getComputedStyle(el).paddingLeft) }))
+				if (pad.right < 32 || pad.left < 32) rec.add('layout', `ar: the text of the search field runs under the magnifier or the × (padding ${JSON.stringify(pad)})`)
+				await page.screenshot({ path: path.join(SHOTS, 'pool-search-ar.png') })
+				await input.fill('')
+			} finally {
+				occ('user:setting', 'learner2', 'core', 'lang', 'en')
+			}
+		})
+		flush()
+		await context.close()
+	}
+
+	{
+		const rec = new Recorder('instructor-studentview', { studentView: true })
+		const { context, page } = await login(browser, 'instructor', { studentView: true })
+		rec.attach(page)
+		await station(page, rec, 'Pools search: in the student view a hit opens Training, no answer key (#98)', async () => {
+			await hitOpensTraining(page, rec, 'instructor in the student view')
+		})
+		flush()
+		await context.close()
+	}
+
+	{
+		const rec = new Recorder('learner1')
+		const { context, page } = await login(browser, 'learner1')
+		rec.attach(page)
+		await station(page, rec, 'Activities: the course and the certificate are links (#85)', async () => {
+			await openApp(page)
+			const res = await fetch(`${BASE}/ocs/v2.php/apps/activity/api/v2/activity/all?format=json&limit=100`, { headers: { Authorization: basic('learner1'), 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+			if (!res.ok) { rec.add('activity', `the activity API answers ${res.status}`); return }
+			const entries = ((await res.json())?.ocs?.data || []).filter((a) => a.app === 'learning')
+			;(rec.current.notes ||= []).push(`learning activities: ${entries.map((a) => a.subject).join(' | ').slice(0, 900)}`)
+			if (!entries.length) { rec.add('activity', 'learner1 has no Learning activities'); return }
+			const course = `/apps/learning/courses/${seed.courseId}`
+			const links = entries.flatMap((a) => Object.values(a.subject_rich?.[1] || {}).map((p) => ({ subject: a.subject, name: p.name, link: p.link || '' })))
+			for (const a of entries) {
+				if (!a.subject_rich?.[0]) rec.add('activity', `"${a.subject}" has no rich subject, so its names are no links (#85)`)
+			}
+			if (!links.some((l) => l.name === COURSE_TITLE && l.link.endsWith(course))) rec.add('activity', `no Learning activity links the course name to ${course} (#85)`)
+			if (!links.some((l) => /certificate/i.test(l.subject) && l.name === COURSE_TITLE && l.link.endsWith(`${course}/summary`))) rec.add('activity', 'no certificate activity links to the course\'s "Completion and certificate" tab (#85)')
+			for (const l of links) {
+				if (l.link && !/^https?:\/\//.test(l.link)) rec.add('activity', `"${l.subject}": the link ${l.link} is not absolute (an email needs one)`)
+			}
+			// the links lead somewhere: the course opens for learner1
+			const target = links.find((l) => l.link.endsWith(course))
+			if (target) {
+				await page.goto(target.link)
+				await settle(page)
+				if (await page.getByText('This course is not available').isVisible().catch(() => false)) rec.add('activity', 'the course link of the activity opens "This course is not available" (#85)')
+			}
+		})
+		flush()
+		await context.close()
+	}
+})
+
 for (const [persona, opts] of [['admin', {}], ['instructor', {}], ['learner2', {}], ['admin-studentview', { studentView: true }]]) {
 	test(`sweep: ${persona}`, async ({ browser }) => {
 		test.setTimeout(45 * 60_000)
