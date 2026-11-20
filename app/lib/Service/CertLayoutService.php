@@ -31,8 +31,10 @@ use OCP\IDBConnection;
  *
  * GitHub #78: the course's logo works the same way. It comes from the admin's logo library
  * (CertLogoLibrary) instead of the instructor's files, is copied into learning_cert_assets under its
- * sha256 when the course picks it, and a certificate keeps the logo it was issued with, also when
- * the library logo is deleted later. The public verify page shows that copy as well.
+ * library id (the sha256 of the library file) when the course picks it, and a certificate keeps the
+ * logo it was issued with, also when the library logo is deleted later. The public verify page shows
+ * that copy as well. For a logo stored before 5.17.0 the copy is re-encoded (ZC9), so its bytes no
+ * longer hash to the id; nothing compares them.
  *
  * A course on the Theming logo: issuance copies the Theming logo of that moment into
  * learning_cert_assets (ThemingLogoSource; PNG, JPEG or WebP only) and names it in the certificate's
@@ -146,7 +148,8 @@ class CertLayoutService {
      *
      * The caller has checked that the user manages the course.
      *
-     * @throws \InvalidArgumentException logo_not_found (not, or no longer, in the library)
+     * @throws \InvalidArgumentException logo_not_found (not, or no longer, in the library); too_large,
+     *         unsupported_type (a logo stored before 5.17.0 that cannot be re-encoded within the limits)
      */
     public function selectLogo(Course $course, ?string $logoId): Course {
         $layout = CertLayout::decode($course->getCertLayout());
@@ -160,7 +163,11 @@ class CertLayoutService {
                 throw new \InvalidArgumentException('logo_not_found');
             }
             try {
-                $logo = $this->logoLibrary->content($logoId);
+                // ZC9: a logo stored before 5.17.0 is re-encoded for the course (no EXIF/GPS on
+                // the certificates and the verify page). Kept under the library id, which the
+                // layout, the choice in the settings, the course count and the reset on deletion
+                // all use; a course's existing copy is left as it is (storeAsset()).
+                $logo = $this->logoLibrary->courseCopy($logoId);
             } catch (NotFoundException $e) {
                 throw new \InvalidArgumentException('logo_not_found');
             }

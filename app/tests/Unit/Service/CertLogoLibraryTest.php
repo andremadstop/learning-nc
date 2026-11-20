@@ -17,6 +17,11 @@ use PHPUnit\Framework\TestCase;
 /**
  * GitHub #78: the certificate logo library. PNG, JPEG and WebP by content; SVG, other files, files
  * dressed up as images and files over the limits are refused.
+ *
+ * ZC9 (pre-existing until 5.17.0): a logo was stored as uploaded, so the EXIF and GPS data of a
+ * JPEG logo went with it onto every certificate and the public verification page. Like a
+ * background, a logo is now decoded and encoded again before it is stored, and a course choosing a
+ * logo stored before that gets a re-encoded copy.
  */
 #[AllowMockObjectsWithoutExpectations]
 class CertLogoLibraryTest extends TestCase {
@@ -93,12 +98,155 @@ class CertLogoLibraryTest extends TestCase {
     #[DataProvider('acceptedImages')]
     public function testAcceptsTheThreeTypesByContent(string $b64, string $mime): void {
         $library = $this->library();
-        $entry = $library->add('Primary logo', (string)base64_decode($b64));
+        $upload = (string)base64_decode($b64);
+        $entry = $library->add('Primary logo', $upload);
 
         $this->assertSame($mime, $entry['mime']);
-        $this->assertSame(hash('sha256', (string)base64_decode($b64)), $entry['id']);
+        $stored = $this->files[$entry['id']] ?? null;
+        $this->assertIsString($stored);
+        // ZC9: a re-encoded copy, in the type of the upload; the id is the sha256 of what is stored
+        $this->assertSame(CertLogoLibrary::reencode($upload, $mime), $stored);
+        $this->assertSame(hash('sha256', $stored), $entry['id']);
+        $this->assertTrue($entry['reencoded']);
         $this->assertSame([$entry], $library->list());
-        $this->assertSame(['mime' => $mime, 'bytes' => base64_decode($b64)], $library->content($entry['id']));
+        $this->assertSame(['mime' => $mime, 'bytes' => $stored], $library->content($entry['id']));
+    }
+
+    /** A small image drawn with GD in the given type; with $alpha a half-transparent pixel at 0,0. */
+    private static function image(string $mime, int $width = 6, int $height = 4, bool $alpha = false): string {
+        $image = imagecreatetruecolor($width, $height);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, (int)imagecolorallocate($image, 30, 90, 160));
+        if ($alpha) {
+            imagesetpixel($image, 0, 0, (int)imagecolorallocatealpha($image, 200, 10, 10, 64));
+        }
+        ob_start();
+        match ($mime) {
+            'image/png' => imagepng($image),
+            'image/jpeg' => imagejpeg($image, null, 95),
+            default => imagewebp($image, null, 95),
+        };
+        return (string)ob_get_clean();
+    }
+
+    /** A JPEG with an APP1 Exif segment right after SOI, carrying a GPS marker. */
+    private static function jpegWithGps(): string {
+        $jpeg = self::image('image/jpeg');
+        $payload = "Exif\0\0" . 'MM' . "\0\x2a" . 'GPSLatitude=52.5200N;GPSLongitude=13.4050E;Camera=Example';
+        return "\xFF\xD8" . "\xFF\xE1" . pack('n', strlen($payload) + 2) . $payload . substr($jpeg, 2);
+    }
+
+    /** ZC9: before 5.17.0 the logo was stored as uploaded, GPS position included. */
+    public function testExifAndGpsDataDoNotSurvive(): void {
+        $withExif = self::jpegWithGps();
+        $this->assertNotFalse(getimagesizefromstring($withExif), 'the test file is a valid JPEG');
+
+        $entry = $this->library()->add('Photo logo', $withExif);
+        $stored = $this->files[$entry['id']];
+
+        $this->assertSame('image/jpeg', $entry['mime']);
+        $this->assertStringNotContainsString('GPSLatitude', $stored);
+        $this->assertStringNotContainsString('Exif', $stored);
+        $this->assertStringNotContainsString('Example', $stored);
+    }
+
+    public function testAnythingAppendedToTheFileIsDropped(): void {
+        $polyglot = self::image('image/png') . "PK\x03\x04" . '<?php echo "polyglot"; ?><script>alert(1)</script>';
+        $entry = $this->library()->add('Polyglot', $polyglot);
+        $stored = $this->files[$entry['id']];
+
+        $this->assertSame('image/png', $entry['mime'], 'a PNG stays a PNG');
+        $this->assertStringStartsWith("\x89PNG\r\n\x1a\n", $stored);
+        $this->assertStringNotContainsString('polyglot', $stored);
+        $this->assertStringNotContainsString('<script', $stored);
+        $this->assertStringNotContainsString("PK\x03\x04", $stored);
+    }
+
+    /** The copy has no EXIF, so a logo photographed upright (orientation 6) must already stand upright. */
+    public function testTheExifOrientationIsAppliedToThePixels(): void {
+        $image = imagecreatetruecolor(30, 10);
+        imagefilledrectangle($image, 0, 0, 29, 9, (int)imagecolorallocate($image, 20, 40, 220));
+        imagefilledrectangle($image, 0, 0, 5, 5, (int)imagecolorallocate($image, 230, 20, 20));
+        ob_start();
+        imagejpeg($image, null, 95);
+        $jpeg = (string)ob_get_clean();
+        $tiff = 'MM' . pack('n', 42) . pack('N', 8) . pack('n', 1) . pack('n', 0x0112) . pack('n', 3) . pack('N', 1) . pack('n', 6) . "\0\0" . pack('N', 0);
+        $payload = "Exif\0\0" . $tiff;
+        $upload = "\xFF\xD8" . "\xFF\xE1" . pack('n', strlen($payload) + 2) . $payload . substr($jpeg, 2);
+
+        $entry = $this->library()->add('Upright', $upload);
+        $stored = imagecreatefromstring($this->files[$entry['id']]);
+        $this->assertNotFalse($stored);
+
+        $this->assertSame([10, 30], [imagesx($stored), imagesy($stored)]);
+        $rgb = imagecolorat($stored, 7, 2);
+        $this->assertTrue((($rgb >> 16) & 0xFF) > 150 && ($rgb & 0xFF) < 110, 'the red corner is where the photo shows it');
+    }
+
+    public function testTransparencyIsKept(): void {
+        foreach (['image/png', 'image/webp'] as $mime) {
+            $this->files = null;
+            $this->config = [];
+            $entry = $this->library()->add('Transparent', self::image($mime, 6, 4, true));
+            $this->assertSame($mime, $entry['mime']);
+            $image = imagecreatefromstring($this->files[$entry['id']]);
+            $this->assertNotFalse($image);
+            $this->assertGreaterThan(30, (imagecolorat($image, 0, 0) >> 24) & 0x7F, $mime . ': the half-transparent pixel stayed transparent');
+            $this->assertSame(0, (imagecolorat($image, 3, 2) >> 24) & 0x7F, $mime . ': the opaque pixels stayed opaque');
+        }
+    }
+
+    /** The limit holds for what is stored: a re-encoded copy over 1 MB is refused like an upload over it. */
+    public function testAReencodedCopyOverTheLimitIsTooLarge(): void {
+        mt_srand(7);
+        $image = imagecreatetruecolor(1400, 1400);
+        for ($y = 0; $y < 1400; $y++) {
+            for ($x = 0; $x < 1400; $x++) {
+                imagesetpixel($image, $x, $y, mt_rand(0, 0xFFFFFF));
+            }
+        }
+        ob_start();
+        imagejpeg($image, null, 30);
+        $upload = (string)ob_get_clean();
+        $this->assertLessThan(CertLogoLibrary::MAX_BYTES, strlen($upload), 'the upload itself is within the limit');
+
+        try {
+            $this->library()->add('Noise', $upload);
+            $this->fail('accepted');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('too_large', $e->getMessage());
+        }
+        $this->assertSame([], $this->library()->list());
+    }
+
+    /**
+     * ZC9: a logo stored before 5.17.0 stays as it is in the library (no migration), but a course
+     * that chooses it gets a re-encoded copy; a logo stored since is copied as it is.
+     */
+    public function testACourseGetsAReencodedCopyOfALogoStoredBefore(): void {
+        $old = self::jpegWithGps();
+        $id = hash('sha256', $old);
+        $this->files = [$id => $old];
+        $this->config['cert_logo_library'] = (string)json_encode([['id' => $id, 'name' => 'Old', 'mime' => 'image/jpeg', 'size' => strlen($old), 'created_at' => 1]]);
+        $library = $this->library();
+
+        $this->assertFalse($library->find($id)['reencoded'] ?? null);
+        $copy = $library->courseCopy($id);
+        $this->assertSame('image/jpeg', $copy['mime']);
+        $this->assertStringNotContainsString('GPSLatitude', $copy['bytes']);
+        $this->assertStringNotContainsString('Exif', $copy['bytes']);
+        $this->assertSame($old, $this->files[$id], 'the library keeps the logo as it was stored');
+
+        $new = $library->add('New', self::image('image/png'));
+        $this->assertSame(['mime' => 'image/png', 'bytes' => $this->files[$new['id']]], $library->courseCopy($new['id']), 'stored since: copied as it is');
+
+        // the flag survives a rename (rename and delete write the list back)
+        $library->rename($new['id'], 'Renamed');
+        $this->assertTrue($library->find($new['id'])['reencoded'] ?? null);
+
+        $this->expectException(NotFoundException::class);
+        $library->courseCopy(str_repeat('f', 64));
     }
 
     /** @return array<string, array{string}> */

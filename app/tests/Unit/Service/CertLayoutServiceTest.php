@@ -376,6 +376,13 @@ class CertLayoutServiceTest extends TestCase {
             }
             return ['mime' => $mime, 'bytes' => $bytes];
         });
+        // ZC9: what the course gets (re-encoded for a logo stored before 5.17.0)
+        $library->method('courseCopy')->willReturnCallback(function (string $asked) use ($id, $mime): array {
+            if ($asked !== $id) {
+                throw new \OCP\Files\NotFoundException('no such logo');
+            }
+            return ['mime' => $mime, 'bytes' => 'CLEANBYTES'];
+        });
         return $library;
     }
 
@@ -393,7 +400,11 @@ class CertLayoutServiceTest extends TestCase {
         $this->assertSame('insert', $insert->operation);
         $values = array_column($insert->namedParameters, 'value');
         $this->assertContains('image/jpeg', $values, 'the type of the logo, not image/png');
-        $this->assertContains(base64_encode('JPEGBYTES'), $values);
+        // ZC9: the course's copy (CertLogoLibrary::courseCopy()), under the library id, so the
+        // choice, the course count and the reset on deletion still find it
+        $this->assertContains(base64_encode('CLEANBYTES'), $values);
+        $this->assertNotContains(base64_encode('JPEGBYTES'), $values, 'never the library bytes as they are');
+        $this->assertContains($id, $values);
         $this->assertContains(7, $values);
         $this->assertSame(1760000000, $course->getUpdatedAt(), 'the change starts the grace period of the sweep');
     }
