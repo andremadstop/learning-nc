@@ -14,6 +14,7 @@ use OCP\App\IAppManager;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\IUserSession;
@@ -173,6 +174,74 @@ final class LearningActivitiesTest extends TestCase {
         $this->assertContains('Dein Zertifikat für den Kurs Brandschutz 2026 wurde widerrufen', $subjects);
         $this->assertContains('Neue Ankündigung im Kurs Brandschutz 2026: Übung am Freitag', $subjects);
         $this->assertSame([], $this->stream($this->uid('stranger')));
+
+        // GitHub #85 (links): the names are links, in the stream (rich subject, as the web UI
+        // renders it) and in the digest email (built from the mail queue as the activity app does).
+        $app = rtrim(Server::get(IURLGenerator::class)->linkToRouteAbsolute('learning.page.index'), '/');
+        $course = $app . '/courses/' . $this->courseId;
+        $links = [];
+        foreach ($this->streamEntries($learner) as $entry) {
+            foreach ($entry['subject_rich'][1] as $key => $parameter) {
+                $links[$entry['subject'] . ' | ' . $key] = $parameter['link'] ?? null;
+            }
+        }
+        $this->assertSame($course, $links['Du wurdest in den Kurs Brandschutz 2026 eingeschrieben | course'] ?? 'missing');
+        $this->assertSame($course . '/summary', $links['Dein Zertifikat für den Kurs Brandschutz 2026 wurde widerrufen | course'] ?? 'missing');
+        $this->assertSame($course . '/feed', $links['Neue Ankündigung im Kurs Brandschutz 2026: Übung am Freitag | announcement'] ?? 'missing');
+
+        $html = $this->digestItems($learner);
+        $this->assertContains('Du wurdest in den Kurs <a href="' . $course . '">Brandschutz 2026</a> eingeschrieben', $html);
+        $this->assertContains('Dein Zertifikat für den Kurs <a href="' . $course . '/summary">Brandschutz 2026</a> wurde widerrufen', $html);
+        $badge = array_values(array_filter($html, static fn (string $item): bool => str_contains($item, $app . '/dashboard')));
+        $this->assertCount(1, $badge, 'the achievement links to the dashboard: ' . implode(' / ', $html));
+
+        // The learner leaves the course: the names stay, the links go (no dead course page).
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete('learning_course_members')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($this->courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($learner)))
+            ->executeStatement();
+        $html = $this->digestItems($learner);
+        $this->assertContains('Du wurdest in den Kurs <strong>Brandschutz 2026</strong> eingeschrieben', $html);
+        foreach ($html as $item) {
+            $this->assertStringNotContainsString('/courses/', $item);
+        }
+    }
+
+    /**
+     * The HTML of each item of the learner's next activity email: the events are built from the
+     * mail queue the way MailQueueHandler::sendEmailToUser() builds them, parsed by a fresh
+     * provider (it caches access per request), and turned into HTML by the activity app's own
+     * MailQueueHandler::getHTMLSubject(). An event the rich validator rejects fails here.
+     *
+     * @return list<string>
+     */
+    private function digestItems(string $uid): array {
+        $provider = new \OCA\Learning\Activity\Provider(
+            Server::get(IFactory::class),
+            Server::get(IURLGenerator::class),
+            $this->db,
+            Server::get(\OCA\Learning\Db\CourseMapper::class),
+            Server::get(\OCA\Learning\Db\CourseMemberMapper::class),
+            Server::get(\OCA\Learning\Db\CoursePoolMapper::class),
+        );
+        $handler = (new \ReflectionClass(\OCA\Activity\MailQueueHandler::class))->newInstanceWithoutConstructor();
+        $toHtml = new \ReflectionMethod(\OCA\Activity\MailQueueHandler::class, 'getHTMLSubject');
+        $items = [];
+        foreach ($this->rows('activity_mq', 'amq_affecteduser', $uid) as $row) {
+            $event = Server::get(IActivityManager::class)->generateEvent();
+            $event->setApp((string)$row['amq_appid'])
+                ->setType((string)$row['amq_type'])
+                ->setAffectedUser((string)$row['amq_affecteduser'])
+                ->setTimestamp((int)$row['amq_timestamp'])
+                ->setSubject((string)$row['amq_subject'], (array)json_decode((string)$row['amq_subjectparams'], true))
+                ->setObject((string)$row['object_type'], (int)$row['object_id']);
+            $provider->parse('de', $event);
+            $this->assertTrue($event->isValidParsed(), 'valid for the activity app: ' . $row['amq_subject']);
+            $this->assertNotSame('', $event->getRichSubject(), 'a rich subject: ' . $row['amq_subject']);
+            $items[] = (string)$toHtml->invoke($handler, $event);
+        }
+        return $items;
     }
 
     /**
@@ -220,15 +289,20 @@ final class LearningActivitiesTest extends TestCase {
 
     /** @return list<string> the parsed subjects of the user's Learning stream */
     private function stream(string $uid): array {
+        return array_map(static fn (array $activity): string => (string)$activity['subject'], $this->streamEntries($uid));
+    }
+
+    /** @return list<array<string, mixed>> the user's Learning stream entries, as the activity app builds them */
+    private function streamEntries(string $uid): array {
         $l = Server::get(IFactory::class)->get('activity', 'de');
         $groupHelper = new \OCA\Activity\GroupHelper($l, Server::get(IActivityManager::class), Server::get(IValidator::class), Server::get(LoggerInterface::class));
         $data = Server::get(\OCA\Activity\Data::class)->get($groupHelper, Server::get(\OCA\Activity\UserSettings::class), $uid, 0, 50, 'desc', 'all');
-        $subjects = [];
+        $entries = [];
         foreach ($data['data'] as $activity) {
             if ($activity['app'] === 'learning') {
-                $subjects[] = (string)$activity['subject'];
+                $entries[] = $activity;
             }
         }
-        return $subjects;
+        return $entries;
     }
 }

@@ -2,6 +2,9 @@
 declare(strict_types=1);
 namespace OCA\Learning\Activity;
 
+use OCA\Learning\Db\CourseMapper;
+use OCA\Learning\Db\CourseMemberMapper;
+use OCA\Learning\Db\CoursePoolMapper;
 use OCP\Activity\Exceptions\UnknownActivityException;
 use OCP\Activity\IEvent;
 use OCP\Activity\IProvider;
@@ -14,18 +17,38 @@ use OCP\L10N\IFactory;
  * Renders every Learning activity (GitHub #85) in the reader's language, for the stream and for
  * the activity email. Texts are built from the stored ids and titles only (see ActivityPublisher);
  * an announcement's title is read when it is rendered (announcementTitle()).
+ *
+ * Every subject is also a rich subject (setSubjects()): the names in it (course, pool,
+ * announcement, achievement) are links to what they name, in the stream and in the activity email.
  */
 class Provider implements IProvider {
     private IFactory $l10nFactory;
     private IURLGenerator $urlGenerator;
     private IDBConnection $db;
+    private CourseMapper $courseMapper;
+    private CourseMemberMapper $memberMapper;
+    private CoursePoolMapper $coursePoolMapper;
     /** @var array<string, string|null> per request: "<course>:<announcement>" => current title */
     private array $announcementTitles = [];
+    /** @var array<string, bool> per request: "<course>:<reader>" => the reader reaches the course */
+    private array $reachable = [];
+    /** @var array<string, bool> per request: "<course>:<pool>" => the pool is in the course */
+    private array $poolsInCourse = [];
 
-    public function __construct(IFactory $l10nFactory, IURLGenerator $urlGenerator, IDBConnection $db) {
+    public function __construct(
+        IFactory $l10nFactory,
+        IURLGenerator $urlGenerator,
+        IDBConnection $db,
+        CourseMapper $courseMapper,
+        CourseMemberMapper $memberMapper,
+        CoursePoolMapper $coursePoolMapper,
+    ) {
         $this->l10nFactory = $l10nFactory;
         $this->urlGenerator = $urlGenerator;
         $this->db = $db;
+        $this->courseMapper = $courseMapper;
+        $this->memberMapper = $memberMapper;
+        $this->coursePoolMapper = $coursePoolMapper;
     }
 
     public function parse(mixed $language, IEvent $event, ?IEvent $previousEvent = null): IEvent {
@@ -37,72 +60,88 @@ class Provider implements IProvider {
         $params = $event->getSubjectParameters();
         $courseTitle = (string)($params['course_title'] ?? '');
         $courseId = (int)($params['course_id'] ?? 0);
+        // GitHub #85 (links): only a course the reader still reaches gets links; a deleted one, or
+        // one they left, keeps its name as before and opens the app instead of a dead course page.
+        $reachable = $this->courseReachable($courseId, (string)$event->getAffectedUser());
 
         switch ($event->getSubject()) {
             case ActivityPublisher::SUBJECT_BADGE_EARNED:
-                $badgeName = $params['badge_name'] ?? '';
-                $badgeEmoji = $params['badge_emoji'] ?? '';
-                $event->setParsedSubject(
-                    $l->t('Achievement unlocked: %s %s', [$badgeEmoji, $badgeName])
-                );
-                $event->setLink($this->appUrl());
+                $badgeName = (string)($params['badge_name'] ?? '');
+                $badgeEmoji = (string)($params['badge_emoji'] ?? '');
+                // The achievements are listed on the dashboard (only with gamification on, like the badge).
+                $dashboard = rtrim($this->appUrl(), '/') . '/dashboard';
+                $badge = ['badge' => $this->highlight((string)$event->getObjectName(), $badgeName, $dashboard)];
+                if ($badgeEmoji !== '') {
+                    $badge = ['emoji' => $this->highlight('emoji', $badgeEmoji, null)] + $badge;
+                }
+                $this->setSubjects($event, $l->t('Achievement unlocked: %s %s', [$badgeEmoji !== '' ? '{emoji}' : '', '{badge}']), $badge);
+                $event->setLink($dashboard);
                 break;
 
             case ActivityPublisher::SUBJECT_ENROLLED:
-                $event->setParsedSubject($l->t('Du wurdest in den Kurs %s eingeschrieben', [$courseTitle]));
-                $event->setLink($this->courseUrl($courseId, ''));
+                $this->courseSubject($event, $l->t('Du wurdest in den Kurs %s eingeschrieben', ['{course}']), $courseId, $courseTitle, $reachable, '');
                 break;
 
             case ActivityPublisher::SUBJECT_CERT_ISSUED:
-                $event->setParsedSubject($l->t('Dein Zertifikat für den Kurs %s wurde ausgestellt', [$courseTitle]));
-                $event->setLink($this->courseUrl($courseId, 'summary'));
+                $this->courseSubject($event, $l->t('Dein Zertifikat für den Kurs %s wurde ausgestellt', ['{course}']), $courseId, $courseTitle, $reachable, 'summary');
                 break;
 
             case ActivityPublisher::SUBJECT_CERT_EXPIRING:
                 $days = max(1, (int)($params['days_left'] ?? 0));
-                $event->setParsedSubject($l->n(
+                $this->courseSubject($event, $l->n(
                     'Dein Zertifikat für den Kurs %s läuft in %n Tag ab',
                     'Dein Zertifikat für den Kurs %s läuft in %n Tagen ab',
                     $days,
-                    [$courseTitle]
-                ));
-                $event->setLink($this->courseUrl($courseId, 'summary'));
+                    ['{course}']
+                ), $courseId, $courseTitle, $reachable, 'summary');
                 break;
 
             case ActivityPublisher::SUBJECT_CERT_EXPIRED:
-                $event->setParsedSubject($l->t('Dein Zertifikat für den Kurs %s ist abgelaufen', [$courseTitle]));
-                $event->setLink($this->courseUrl($courseId, 'summary'));
+                $this->courseSubject($event, $l->t('Dein Zertifikat für den Kurs %s ist abgelaufen', ['{course}']), $courseId, $courseTitle, $reachable, 'summary');
                 break;
 
             case ActivityPublisher::SUBJECT_CERT_REVOKED:
-                $event->setParsedSubject($l->t('Dein Zertifikat für den Kurs %s wurde widerrufen', [$courseTitle]));
-                $event->setLink($this->courseUrl($courseId, 'summary'));
+                $this->courseSubject($event, $l->t('Dein Zertifikat für den Kurs %s wurde widerrufen', ['{course}']), $courseId, $courseTitle, $reachable, 'summary');
                 break;
 
             case ActivityPublisher::SUBJECT_CYCLE_OPENED:
-                $event->setParsedSubject($l->t('Im Kurs %s ist ein neuer Zertifizierungszyklus offen', [$courseTitle]));
-                $event->setLink($this->courseUrl($courseId, 'summary'));
+                $this->courseSubject($event, $l->t('Im Kurs %s ist ein neuer Zertifizierungszyklus offen', ['{course}']), $courseId, $courseTitle, $reachable, 'summary');
                 break;
 
             case ActivityPublisher::SUBJECT_COMPLIANCE_REMINDER:
-                $event->setParsedSubject($l->t('Erinnerung an die Pflichtschulung im Kurs %s', [$courseTitle]));
-                $event->setLink($this->courseUrl($courseId, ''));
+                // The course itself: a learner lands on its first learning area, which is the
+                // learning material wherever the course has any (lernraumTabIds()).
+                $this->courseSubject($event, $l->t('Erinnerung an die Pflichtschulung im Kurs %s', ['{course}']), $courseId, $courseTitle, $reachable, '');
                 break;
 
             case ActivityPublisher::SUBJECT_FEED_POOL_ADDED:
-                $event->setParsedSubject($l->t('Neuer Fragenpool im Kurs %1$s: %2$s', [$courseTitle, (string)($params['pool_name'] ?? '')]));
-                $event->setLink($this->courseUrl($courseId, 'feed'));
+                $poolId = (int)($params['pool_id'] ?? 0);
+                // The pool itself (the pool link of the search, ?poolId=): learners have no pools
+                // tab in a course. Only while the pool still belongs to the course.
+                $poolLink = $reachable && $this->poolInCourse($courseId, $poolId)
+                    ? rtrim($this->appUrl(), '/') . '/pools?poolId=' . $poolId
+                    : null;
+                $this->courseSubject($event, $l->t('Neuer Fragenpool im Kurs %1$s: %2$s', ['{course}', '{pool}']), $courseId, $courseTitle, $reachable, '', [
+                    'pool' => $this->highlight((string)$poolId, (string)($params['pool_name'] ?? ''), $poolLink),
+                ]);
+                $event->setLink($this->courseLink($courseId, 'feed', $reachable));
                 break;
 
             case ActivityPublisher::SUBJECT_FEED_ANNOUNCEMENT:
                 // GitHub #85 (review): the current title, or none once the announcement is gone.
-                $title = $this->announcementTitle($courseId, (int)($params['announcement_id'] ?? 0));
-                $event->setParsedSubject($title !== null && $title !== ''
-                    ? $l->t('Neue Ankündigung im Kurs %1$s: %2$s', [$courseTitle, $title])
-                    : $l->t('Neue Ankündigung im Kurs %s', [$courseTitle]));
+                $announcementId = (int)($params['announcement_id'] ?? 0);
+                $title = $this->announcementTitle($courseId, $announcementId);
                 // The feed, not the announcements tab: learners (the main recipients) only have
                 // the feed, which shows the announcement; the announcements tab is instructor-only.
-                $event->setLink($this->courseUrl($courseId, 'feed'));
+                $feed = $this->courseLink($courseId, 'feed', $reachable);
+                if ($title !== null && $title !== '') {
+                    $this->courseSubject($event, $l->t('Neue Ankündigung im Kurs %1$s: %2$s', ['{course}', '{announcement}']), $courseId, $courseTitle, $reachable, '', [
+                        'announcement' => $this->highlight((string)$announcementId, $title, $reachable ? $feed : null),
+                    ]);
+                } else {
+                    $this->courseSubject($event, $l->t('Neue Ankündigung im Kurs %s', ['{course}']), $courseId, $courseTitle, $reachable, '');
+                }
+                $event->setLink($feed);
                 break;
 
             default:
@@ -114,6 +153,112 @@ class Provider implements IProvider {
         $event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
 
         return $event;
+    }
+
+    /**
+     * A subject naming the course: the course name links to $tab of the course (stream and the
+     * activity email), and so does the activity itself.
+     *
+     * @param array<string, array<string, string>> $more further rich parameters of the subject
+     */
+    private function courseSubject(IEvent $event, string $template, int $courseId, string $courseTitle, bool $reachable, string $tab, array $more = []): void {
+        $link = $this->courseLink($courseId, $tab, $reachable);
+        $this->setSubjects($event, $template, [
+            'course' => $this->highlight((string)$courseId, $courseTitle, $reachable ? $link : null),
+        ] + $more);
+        $event->setLink($link);
+    }
+
+    /**
+     * GitHub #85 (links): the plain subject and the rich one. The template is the translated
+     * sentence with {placeholders} in place of every name: the activity email puts the rich
+     * subject into its HTML as it is and escapes only the parameters' names, so no title, no pool
+     * name and no announcement title may ever be part of the template itself.
+     *
+     * @param array<string, array<string, string>> $parameters
+     */
+    private function setSubjects(IEvent $event, string $template, array $parameters): void {
+        $names = [];
+        foreach ($parameters as $key => $parameter) {
+            $names['{' . $key . '}'] = $parameter['name'];
+        }
+        // strtr, not str_replace: a name that itself reads "{pool}" is not replaced a second time.
+        $event->setParsedSubject(strtr($template, $names));
+        foreach ($parameters as $parameter) {
+            // An event without a name (written before the title was stored) keeps the plain text.
+            if ($parameter['name'] === '') {
+                return;
+            }
+        }
+        try {
+            $event->setRichSubject($template, $parameters);
+        } catch (\Throwable $e) {
+            // The plain subject is set; one entry must not break the stream or the email.
+        }
+    }
+
+    /**
+     * A rich object of the core type "highlight" (id, name, optional link). Every value is a
+     * string: the rich object validator drops an event whose parameters hold anything else, and
+     * with it the entry in the stream and in the email.
+     *
+     * @return array<string, string>
+     */
+    private function highlight(string $id, string $name, ?string $link): array {
+        $parameter = ['type' => 'highlight', 'id' => $id !== '' ? $id : '0', 'name' => $name];
+        if ($link !== null) {
+            $parameter['link'] = $link;
+        }
+        return $parameter;
+    }
+
+    /** The course tab for a course the reader reaches; the app for any other. */
+    private function courseLink(int $courseId, string $tab, bool $reachable): string {
+        return $reachable ? $this->courseUrl($courseId, $tab) : $this->appUrl();
+    }
+
+    /**
+     * Whether $userId still reaches the course: it exists and they lead it or are a member (the
+     * same rule as CourseService::hasAccess(), which answers 404 for both other cases). Per
+     * request, once per course and reader; any failure counts as "no".
+     */
+    private function courseReachable(int $courseId, string $userId): bool {
+        if ($courseId <= 0 || $userId === '') {
+            return false;
+        }
+        $key = $courseId . ':' . $userId;
+        if (array_key_exists($key, $this->reachable)) {
+            return $this->reachable[$key];
+        }
+        $reachable = false;
+        try {
+            $course = $this->courseMapper->findById($courseId);
+            if ((string)$course->getInstructorId() === $userId) {
+                $reachable = true;
+            } else {
+                $this->memberMapper->findByCourseAndUser($courseId, $userId);
+                $reachable = true;
+            }
+        } catch (\Throwable $e) {
+            $reachable = false;
+        }
+        return $this->reachable[$key] = $reachable;
+    }
+
+    private function poolInCourse(int $courseId, int $poolId): bool {
+        if ($courseId <= 0 || $poolId <= 0) {
+            return false;
+        }
+        $key = $courseId . ':' . $poolId;
+        if (!array_key_exists($key, $this->poolsInCourse)) {
+            try {
+                $this->coursePoolMapper->findByCourseAndPool($courseId, $poolId);
+                $this->poolsInCourse[$key] = true;
+            } catch (\Throwable $e) {
+                $this->poolsInCourse[$key] = false;
+            }
+        }
+        return $this->poolsInCourse[$key];
     }
 
     /**

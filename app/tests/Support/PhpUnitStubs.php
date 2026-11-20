@@ -641,6 +641,9 @@ namespace OCP\Activity {
             public function setTimestamp(int $timestamp): self;
             public function setSubject(string $subject, array $parameters = []): self;
             public function setParsedSubject(string $subject): self;
+            public function setRichSubject(string $subject, array $parameters = []): self;
+            public function getRichSubject(): string;
+            public function getRichSubjectParameters(): array;
             public function setParsedMessage(string $message): self;
             public function setObject(string $objectType, string|int $objectId, string $objectName = ''): self;
             public function setIcon(string $icon): self;
@@ -651,6 +654,7 @@ namespace OCP\Activity {
             public function getAuthor(): string;
             public function getSubject(): string;
             public function getSubjectParameters(): array;
+            public function getObjectName(): string;
         }
     }
 
