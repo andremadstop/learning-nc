@@ -140,6 +140,20 @@ test('the certificate prints on one A4 landscape page and fills its width', asyn
 	expect(m.text).not.toContain('Drucken')
 })
 
+// Persona sweep C10 (real Nextcloud 33): Nextcloud's core styles put <html> at position: absolute and
+// <body> at position: fixed. Out of normal flow, the print root no longer started the document's
+// first page, Chrome ignored the named page and the certificate came out on its default paper
+// (Letter portrait) — while this harness, without those rules, kept printing A4 landscape.
+test('inside Nextcloud (html absolute, body fixed) the certificate still prints on A4 landscape', async ({ page }) => {
+	await openAndPrint(page)
+	await page.addStyleTag({ content: 'html { position: absolute; width: 100%; height: 100%; } body { position: fixed; top: 0; bottom: 0; width: 100%; }' })
+	const m = measure(await page.pdf({ preferCSSPageSize: true, printBackground: true }))
+	expect(Math.round(m.widthPt)).toBe(Math.round(297 * PT_PER_MM))
+	expect(Math.round(m.heightPt)).toBe(Math.round(210 * PT_PER_MM))
+	expect(m.pages).toBe(1)
+	expect(m.inkWidth).toBeGreaterThanOrEqual(0.85)
+})
+
 test('a printer set to Letter portrait still gets the full width on one page', async ({ page }) => {
 	await openAndPrint(page)
 	// Chrome keeps the stylesheet's orientation; Firefox lets the print dialog's paper and

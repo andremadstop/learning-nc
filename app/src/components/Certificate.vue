@@ -623,6 +623,10 @@ export default {
 		padding: 0 !important;
 		overflow: visible !important;
 		background: #fff !important;
+		/* Nextcloud's core puts <html> at position: absolute and <body> at position: fixed. Out of normal
+		flow, the print root no longer starts the first page, Chrome drops the named page and prints on
+		its default paper (Letter portrait) instead of A4 landscape (persona sweep C10). */
+		position: static !important;
 	}
 
 	html.learning-certificate-printing body > *:not(#learning-certificate-print-root) {
