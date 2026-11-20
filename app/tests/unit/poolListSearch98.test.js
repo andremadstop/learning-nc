@@ -24,6 +24,7 @@ vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn((url) => {
 			api.calls.push(url)
+			if (api.rejects?.[url]) return Promise.reject(api.rejects[url])
 			return Promise.resolve({ data: api.routes[url] ?? {} })
 		}),
 		post: vi.fn(() => Promise.resolve({ data: {} })),
@@ -81,6 +82,7 @@ beforeEach(() => {
 		'/apps/learning/api/my-course-pools': { pools: [] },
 	}
 	api.calls = []
+	api.rejects = {}
 })
 
 afterEach(() => {
@@ -152,6 +154,66 @@ describe('PoolList search: question hits (GitHub #98)', () => {
 		expect(selected).toHaveLength(1)
 		expect(selected[0].pool.id).toBe(poolId)
 		expect(selected[0].options).toEqual({ focusQuestionId: hits[index].id })
+	})
+})
+
+// #98, reported on 5.16.0: a learner who clicks a question hit from a pool of a course they are
+// enrolled in got "Could not find the pool for the selected question". The search finds those
+// questions (course membership), but the lookup only knew own, shared and led-course pools; the
+// student view empties the led-course list, too. Such a hit now opens the pool the server hands
+// out (GET /api/pools/<id>), on Training: no question is handed on, so nothing opens "View
+// questions" with its answer key (the deliberate limit of #98).
+describe('PoolList search: a question from a course one is enrolled in (GitHub #98)', () => {
+	const SEARCH = '/apps/learning/api/questions/search'
+
+	async function clickHit(vm) {
+		vm.searchTerm = 'hängt'
+		vm.showSearchResults = true
+		await vm.searchQuestions()
+		await flush()
+		const hit = [...host.querySelectorAll('.search-results-section li')].find((li) => li.querySelector('.result-id'))
+		hit.querySelector('button.result-btn').click()
+		await flush()
+	}
+
+	beforeEach(async () => {
+		const { showError } = await import('@nextcloud/dialogs')
+		showError.mockClear()
+		api.routes[SEARCH] = [{ id: 501, pool_id: 21, pool_name: 'Kurs-Pool', text: 'Wo hängt der Feuerlöscher?' }]
+		api.routes['/apps/learning/api/pools/21'] = { id: 21, name: 'Kurs-Pool', is_shared: true, permission: 'read' }
+	})
+
+	it.each([
+		['a learner', { userRole: 'student' }],
+		['the student view', { userRole: 'instructor', studentViewActive: true }],
+	])('%s lands on that pool, without the question handed on', async (_who, props) => {
+		const { showError } = await import('@nextcloud/dialogs')
+		const vm = await render(props)
+		await clickHit(vm)
+		expect(showError).not.toHaveBeenCalled()
+		expect(api.calls).toContain('/apps/learning/api/pools/21')
+		expect(selected).toHaveLength(1)
+		expect(selected[0].pool).toEqual({ id: 21, name: 'Kurs-Pool', is_shared: true, permission: 'read' })
+		expect(selected[0].options).toBeUndefined()
+		expect(vm.searchTerm).toBe('')
+	})
+
+	it('a pool the server does not hand out still says so', async () => {
+		const { showError } = await import('@nextcloud/dialogs')
+		api.rejects['/apps/learning/api/pools/21'] = Object.assign(new Error('404'), { response: { status: 404 } })
+		const vm = await render({ userRole: 'student' })
+		await clickHit(vm)
+		expect(selected).toHaveLength(0)
+		expect(showError).toHaveBeenCalledWith('Could not find the pool for the selected question.')
+	})
+
+	it('an answer without a pool id is no pool', async () => {
+		const { showError } = await import('@nextcloud/dialogs')
+		api.routes['/apps/learning/api/pools/21'] = {}
+		const vm = await render({ userRole: 'student' })
+		await clickHit(vm)
+		expect(selected).toHaveLength(0)
+		expect(showError).toHaveBeenCalled()
 	})
 })
 

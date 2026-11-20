@@ -669,9 +669,28 @@ export default {
       if (targetPool) {
         this.$emit('selectPool', targetPool, { focusQuestionId: question.id });
         this.clearSearch(); // Clear search and close results after selecting a question
-      } else {
-        showError(t('learning', 'Could not find the pool for the selected question.'));
+        return;
       }
+      return this.selectQuestionFromServer(question);
+    },
+    // GitHub #98 (reported on 5.16.0): the search also finds the questions of the pools of the
+    // courses one is enrolled in, which none of the lists above holds (and the student view
+    // empties the led-course list). The server says whether and how the pool may be opened.
+    // No question is handed on: whoever reaches a pool only through a course lands on Training,
+    // never on "View questions" with its answer key (the deliberate limit of #98).
+    async selectQuestionFromServer(question) {
+      let pool;
+      try {
+        pool = (await axios.get(generateUrl('/apps/learning/api/pools/' + Number(question.pool_id)))).data;
+      } catch (error) {
+        pool = null;
+      }
+      if (!pool || !Number.isInteger(pool.id) || pool.id <= 0) {
+        showError(t('learning', 'Could not find the pool for the selected question.'));
+        return;
+      }
+      this.$emit('selectPool', { id: pool.id, name: pool.name || question.pool_name || '', is_shared: !!pool.is_shared, permission: pool.permission || 'read' });
+      this.clearSearch();
     },
     showCreateDialog() {
       this.editingPool = null;
