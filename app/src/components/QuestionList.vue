@@ -339,8 +339,8 @@ export default {
 .header-actions { display: flex; gap: 10px; }
 .question-search-bar { margin-bottom: 16px; position: relative; max-width: 500px; }
 .question-search-wrapper { position: relative; display: flex; align-items: center; }
-.question-search-input { width: 100%; padding: 8px 32px 8px 12px; border-radius: 8px; font-size: 14px; }
-.question-search-bar .clear-search-btn { position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: var(--color-text-maxcontrast); padding: 4px; }
+.question-search-input { width: 100%; padding-block: 8px; padding-inline: 12px 32px; border-radius: 8px; font-size: 14px; }
+.question-search-bar .clear-search-btn { position: absolute; inset-inline-end: 8px; background: none; border: none; cursor: pointer; color: var(--color-text-maxcontrast); padding: 4px; }
 .question-search-results { list-style: none; margin: 4px 0 0; padding: 0; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 8px; max-height: 280px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: absolute; z-index: 10; width: 100%; }
 .question-search-results li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-border-dark); }
 .question-search-results li:last-child { border-bottom: none; }
