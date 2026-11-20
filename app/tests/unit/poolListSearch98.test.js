@@ -256,4 +256,13 @@ describe('PoolList search: the × that clears the search (GitHub #98)', () => {
 			expect(idRule).toMatch(/min-width:\s*0/)
 		}
 	})
+
+	// Persona sweep C10: the magnifier is a background-image icon in an empty span; without a size it is invisible
+	it('the magnifier in the field has a size, so its icon shows', () => {
+		const css = fs.readFileSync(path.resolve(__dirname, '../../src/components/PoolList.vue'), 'utf8')
+		const rule = /\n\.icon-search-label \.icon-search \{([^}]*)\}/.exec(css)?.[1] ?? ''
+		expect(rule).toMatch(/display:\s*block/)
+		expect(Number(/\n\s*width:\s*(\d+)px/.exec(rule)?.[1])).toBeGreaterThanOrEqual(12)
+		expect(Number(/\n\s*height:\s*(\d+)px/.exec(rule)?.[1])).toBeGreaterThanOrEqual(12)
+	})
 })

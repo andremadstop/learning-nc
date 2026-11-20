@@ -940,9 +940,23 @@ export default {
 .icon-search-label {
   position: absolute;
   left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
   color: var(--color-text-maxcontrast);
   pointer-events: none;
   line-height: 1; /* Ensure icon doesn't affect input height */
+}
+/* The magnifier is Nextcloud's background-image icon; an empty inline span has no size, so it never
+   showed and the field kept an empty 40 px gap on the left (persona sweep C10). */
+.icon-search-label .icon-search {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.7;
 }
 .search-input {
   padding-left: 40px; /* Make space for the search icon */
