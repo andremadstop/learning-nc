@@ -858,7 +858,8 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	max-width: 420px;
+	/* as wide as the other fields of the certificate design (#73) */
+	max-width: 640px;
 }
 
 .cert-layout-intensity-input {
