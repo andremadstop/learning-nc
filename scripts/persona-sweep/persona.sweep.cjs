@@ -1726,6 +1726,54 @@ test('admin: certificate logo library, ticket recipients, the notice of a techni
 		if (after !== before) rec.add('logo-library', `the library had ${before} logos and has ${after} after a refused upload`)
 		await page.screenshot({ path: path.join(SHOTS, 'admin-logo-refused.png') })
 	})
+	// ZC9: a phone photo as logo. A 30 × 10 JPEG (red corner top left) with an EXIF segment that says
+	// "rotate 90°" (orientation 6) and carries a GPS position. The library keeps a re-encoded copy:
+	// no EXIF, no GPS, the pixels already upright (10 × 30). GD in the Nextcloud container draws it
+	// and reads the stored copy back, so the sweep needs no image library of its own.
+	await station(page, rec, 'Admin settings › Logos: a photo with EXIF is stored upright, without EXIF and GPS (ZC9)', async () => {
+		const php = (code, input) => execFileSync('docker', ['exec', '-i', state.NC, 'php', '-r', code], { input, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+		const jpeg = Buffer.from(php('$i=imagecreatetruecolor(30,10);imagefilledrectangle($i,0,0,29,9,imagecolorallocate($i,20,40,220));imagefilledrectangle($i,0,0,5,5,imagecolorallocate($i,230,20,20));ob_start();imagejpeg($i,null,95);echo base64_encode(ob_get_clean());', ''), 'base64')
+		const u16 = (n) => Buffer.from([n >> 8, n & 0xff])
+		const u32 = (n) => Buffer.from([n >>> 24, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff])
+		const tiff = Buffer.concat([Buffer.from('MM'), u16(42), u32(8), u16(1), u16(0x0112), u16(3), u32(1), u16(6), u16(0), u32(0), Buffer.from('GPSLatitude=52.5200N;GPSLongitude=13.4050E;Camera=PersonaPhone')])
+		const payload = Buffer.concat([Buffer.from('Exif\0\0', 'binary'), tiff])
+		const upload = Buffer.concat([jpeg.subarray(0, 2), Buffer.from([0xff, 0xe1]), u16(payload.length + 2), payload, jpeg.subarray(2)])
+		const NAME = 'Phone photo logo'
+		const adminApi = (method, p) => fetch(`${APP}/api/settings/admin/cert-logos${p}`, { method, headers: { Authorization: basic('admin'), 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+		await enterAdmin()
+		await library().scrollIntoViewIfNeeded()
+		await page.locator('[data-test="cert-logo-new-name"]').fill(NAME)
+		const since = Date.now()
+		await page.locator('[data-test="cert-logo-file"]').setInputFiles({ name: 'IMG_0001.jpg', mimeType: 'image/jpeg', buffer: upload })
+		await page.waitForTimeout(1500)
+		await checkToasts(page, rec, since, 'upload a JPEG photo with EXIF')
+		const error = (await page.locator('[data-test="cert-logo-new-error"]').textContent().catch(() => '')).trim()
+		if (error) { rec.add('logo-library', `the photo with EXIF was refused: "${error}"`); return }
+		const list = await (await adminApi('GET', '')).json().catch(() => null)
+		const entry = (list?.ocs?.data?.logos || list?.logos || []).find((l) => l.name === NAME)
+		if (!entry) { rec.add('logo-library', `the uploaded photo "${NAME}" is not in the library`); return }
+		try {
+			const res = await adminApi('GET', `/${entry.id}/image`)
+			const stored = Buffer.from(await res.arrayBuffer())
+			if (!res.ok) { rec.add('logo-library', `the stored photo answers ${res.status}`); return }
+			if (stored.includes(Buffer.from('Exif')) || stored.includes(Buffer.from('GPSLatitude')) || stored.includes(Buffer.from('PersonaPhone'))) rec.add('logo-library', 'the stored logo still carries the EXIF segment or the GPS position (ZC9)')
+			const facts = JSON.parse(php('$b=stream_get_contents(STDIN);$i=@imagecreatefromstring($b);if(!$i){echo "{}";exit;}$c=imagecolorat($i,7,2);echo json_encode(["w"=>imagesx($i),"h"=>imagesy($i),"r"=>($c>>16)&255,"b"=>$c&255]);', stored) || '{}')
+			;(rec.current.notes ||= []).push(`upload ${upload.length} B, stored ${stored.length} B ${res.headers.get('content-type')}, ${JSON.stringify(facts)}`)
+			if (!facts.w) rec.add('logo-library', 'the stored logo is no readable image')
+			else if (facts.w !== 10 || facts.h !== 30) rec.add('logo-library', `the stored logo is ${facts.w} × ${facts.h}, not upright (10 × 30): the EXIF rotation was not applied (ZC9)`)
+			else if (!(facts.r > 150 && facts.b < 110)) rec.add('logo-library', 'the stored logo is upright, but the red corner is not where the photo shows it (ZC9)')
+			// what the administrator sees: the thumbnail stands upright too
+			const thumb = page.locator(`[data-test="cert-logo-${entry.id}"] img`).first()
+			await thumb.scrollIntoViewIfNeeded().catch(() => {})
+			await waitUntil(() => thumb.evaluate((img) => img.complete && img.naturalWidth > 0).catch(() => false), 6000)
+			const natural = await thumb.evaluate((img) => (img.complete ? { w: img.naturalWidth, h: img.naturalHeight } : null)).catch(() => null)
+			if (!natural || !natural.w) rec.add('logo-library', 'the thumbnail of the uploaded photo does not load')
+			else if (natural.w >= natural.h) rec.add('logo-library', `the thumbnail of the uploaded photo lies on its side (${natural.w} × ${natural.h})`)
+			await page.screenshot({ path: path.join(SHOTS, 'admin-logo-photo-exif.png') })
+		} finally {
+			await adminApi('DELETE', `/${entry.id}`).catch(() => {})
+		}
+	})
 	const recipients = () => page.locator('.ticket-recipients')
 	await station(page, rec, 'Admin settings › Ticket recipients: choose an administrator', async () => {
 		await enterAdmin()
@@ -2856,6 +2904,81 @@ test('learner3: exam attempts used up, the instructor opens a new cycle (#87, #8
 			if (res.ok) rec.add('attempts', `the server started a fourth exam on Fire safety (${res.status}) (#87)`)
 			else if (!JSON.stringify(body || {}).includes('exam_attempts_exhausted')) rec.add('attempts', `the server refuses the fourth start with ${res.status} ${JSON.stringify(body).slice(0, 120)}, not exam_attempts_exhausted`)
 		})
+		// #87 follow-up: "attempts used up" is an activity too, for the course's owner (instructor)
+		// and its co-instructor (admin), never for the learner; the learner's name and the course
+		// name link to the course's member list.
+		const USED_UP = /used up all exam attempts for “Fire safety”/
+		const members = `/apps/learning/courses/${seed.courseId}/members`
+		const usedUpActivities = async (user) => {
+			const res = await fetch(`${BASE}/ocs/v2.php/apps/activity/api/v2/activity/all?format=json&limit=100`, { headers: { Authorization: basic(user), 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+			if (res.status === 304) return []
+			if (!res.ok) return null
+			return ((await res.json())?.ocs?.data || []).filter((a) => a.app === 'learning' && USED_UP.test(a.subject || ''))
+		}
+		await station(page, rec, 'Activities (learner3): no "attempts used up" for the learner (#87)', async () => {
+			const mine = await usedUpActivities('learner3')
+			if (mine === null) { rec.add('activity', 'the activity API of learner3 could not be read'); return }
+			if (mine.length) rec.add('activity', `learner3 sees ${mine.length} "attempts used up" activities, meant for the instructors only (#87)`)
+		})
+		await station(inst.page, instRec, 'Activities (instructor, co-instructor): "attempts used up" links the member list (#87)', async () => {
+			for (const user of ['instructor', 'admin']) {
+				const hits = await usedUpActivities(user)
+				if (hits === null) { instRec.add('activity', `the activity API of ${user} could not be read`); continue }
+				;(instRec.current.notes ||= []).push(`${user}: ${hits.map((a) => a.subject).join(' | ') || 'none'}`)
+				if (hits.length !== 1) { instRec.add('activity', `${user} has ${hits.length} "attempts used up" activities for learner3, expected 1 (#87)`); continue }
+				const a = hits[0]
+				if (!a.subject.startsWith('Learner 3 ')) instRec.add('activity', `${user}: the activity says "${a.subject}", not the learner's name (#87)`)
+				if (GERMAN.test(a.subject)) instRec.add('german', `activity: ${a.subject}`)
+				if (/\blearner3\b/.test(JSON.stringify(a.subject_rich || ''))) instRec.add('activity', `${user}: the activity carries the uid learner3 (#87)`)
+				const params = Object.values(a.subject_rich?.[1] || {})
+				const linked = params.filter((p) => p.link && new URL(p.link).pathname.endsWith(members)).map((p) => p.name)
+				if (!linked.includes('Learner 3') || !linked.includes(COURSE_TITLE)) instRec.add('activity', `${user}: the learner's name and the course name do not both link to ${members} (linked: ${linked.join(', ') || 'nothing'}) (#87)`)
+				for (const p of params) if (p.link && !p.link.startsWith(BASE)) instRec.add('activity', `${user}: the link ${p.link} is not absolute to this cloud (an email needs one)`)
+			}
+			// The instructor's Activity app: the entry shows the links, the learner's name opens the member list
+			await inst.page.goto(`${BASE}/apps/activity/`)
+			await settle(inst.page)
+			let entry = null
+			for (let i = 0; i < 15 && !entry; i++) {
+				entry = await inst.page.evaluate((src) => {
+					const re = new RegExp(src)
+					for (const li of document.querySelectorAll('li.activity-entry')) {
+						const subject = li.querySelector('.activity-entry__content__subject')
+						const text = (subject?.textContent || '').replace(/\s+/g, ' ').trim()
+						if (!re.test(text)) continue
+						const anchors = [...(subject?.querySelectorAll('a[href]') || [])]
+						const learner = anchors.find((a) => a.textContent.trim() === 'Learner 3')
+						if (learner) learner.setAttribute('data-persona-pick', '1')
+						return { text, anchors: anchors.map((a) => ({ name: a.textContent.trim(), href: a.href })) }
+					}
+					return null
+				}, USED_UP.source)
+				if (!entry) {
+					await inst.page.evaluate(() => [...document.querySelectorAll('li.activity-entry')].pop()?.scrollIntoView())
+					await inst.page.waitForTimeout(1000)
+				}
+			}
+			;(instRec.current.notes ||= []).push(`stream: ${entry ? `${entry.text} → ${entry.anchors.map((x) => `${x.name} ${x.href.replace(BASE, '')}`).join(', ')}` : 'no entry'}`)
+			if (!entry) { instRec.add('activity', 'the instructor\'s Activity app shows no "attempts used up" entry (#87)'); return }
+			for (const name of ['Learner 3', COURSE_TITLE]) {
+				if (!entry.anchors.some((x) => x.name === name && new URL(x.href).pathname.endsWith(members))) instRec.add('activity', `stream: "${name}" in "${entry.text}" is no link to the member list (#87)`)
+			}
+			await inst.page.screenshot({ path: path.join(SHOTS, 'activity-stream-attempts-used-up.png') })
+			const link = inst.page.locator('a[data-persona-pick="1"]').first()
+			if (!(await link.count())) return
+			await link.scrollIntoViewIfNeeded()
+			const popup = inst.page.context().waitForEvent('page', { timeout: 3000 }).catch(() => null)
+			await link.click()
+			const opened = await popup
+			if (opened) { instRec.add('activity', 'stream: the learner link opens a new tab'); await opened.close(); return }
+			await inst.page.waitForLoadState('domcontentloaded').catch(() => {})
+			await settle(inst.page, 1200)
+			if (!new URL(inst.page.url()).pathname.endsWith(members)) instRec.add('activity', `stream: the learner link lands on ${shortUrl(inst.page.url())}, not the member list (#87)`)
+			const row = memberRow(inst.page, 'learner3')
+			await row.waitFor({ timeout: 15000 }).catch(() => {})
+			if (!(await row.isVisible().catch(() => false))) instRec.add('activity', 'stream: the member list the learner link opens does not show learner3 (#87)')
+			else if ((await memberBadge(inst.page, 'learner3')) !== 'Exam attempts used up') instRec.add('activity', 'stream: in the member list the link opens, learner3 is not marked "Exam attempts used up" (#87)')
+		})
 		await station(inst.page, instRec, 'Members: attempts used up, open a new cycle (#87, #84)', async () => {
 			await expectNotification(instRec, 'instructor', /used up all exam attempts for “Fire safety”/, 'that learner3 used up the attempts', 1)
 			await enterMembers(inst.page)
@@ -3189,6 +3312,38 @@ test('instructor: empty course, view-only pool, pool search, archive confirmatio
 			}
 		})
 	}
+
+	// RTL (follow-up to #98): the search in "Manage" of one's own pool. The × sits at the end of the
+	// field (left in Arabic), the typed text keeps clear of it (padding at the inline end).
+	await station(page, rec, 'Pool window › Manage: the question search follows the reading direction (ar)', async () => {
+		occRun('user:setting', 'instructor', 'core', 'lang', 'ar')
+		try {
+			await page.goto(`${APP}/pools?poolId=${seed.poolIds[0]}`)
+			await settle(page, 1000)
+			const input = page.locator('.question-search-input').first()
+			await input.waitFor({ timeout: 15000 })
+			const dir = await input.evaluate((el) => getComputedStyle(el).direction)
+			if (dir !== 'rtl') { rec.add('layout', `the question search is "${dir}" in Arabic, not rtl`); return }
+			await input.fill('fire')
+			const clear = page.locator('.question-search-bar .clear-search-btn').first()
+			await clear.waitFor({ timeout: 5000 })
+			const box = await input.boundingBox()
+			const x = await clear.boundingBox()
+			const pad = await input.evaluate((el) => ({ left: parseFloat(getComputedStyle(el).paddingLeft), right: parseFloat(getComputedStyle(el).paddingRight) }))
+			;(rec.current.notes ||= []).push(`ar: field ${JSON.stringify(box)}, × ${JSON.stringify(x)}, padding ${JSON.stringify(pad)}`)
+			if (!box || !x) { rec.add('layout', 'ar: the question search or its × has no box'); return }
+			if (x.x + x.width / 2 >= box.x + box.width / 2) rec.add('layout', 'ar: the × of the question search sits at the start (right), over the typed text, not at its end (left)')
+			if (x.x < box.x - 0.5 || x.x + x.width > box.x + box.width + 0.5 || x.y < box.y - 0.5 || x.y + x.height > box.y + box.height + 0.5) rec.add('layout', 'ar: the × sticks out of the question search field')
+			if (pad.left < 32) rec.add('layout', `ar: the typed text of the question search runs under the × (padding ${JSON.stringify(pad)})`)
+			if (x.height < 24 || x.width < 24) rec.add('a11y-flow', `ar: the × of the question search is ${Math.round(x.width)}×${Math.round(x.height)} px, under the 24 px target size`)
+			// axe while the × is there (the station's own check runs after the field is emptied again)
+			for (const f of await runAxe(page, '.question-search-bar')) rec.add(f.kind, `question search with its ×: ${f.detail}`)
+			await page.screenshot({ path: path.join(SHOTS, 'question-search-ar.png') })
+			await input.fill('')
+		} finally {
+			occRun('user:setting', 'instructor', 'core', 'lang', 'en')
+		}
+	})
 
 	// #99 on a course of its own, deleted afterwards
 	const made = await api('POST', '/courses', { title: 'Archive check', description: 'Made by the persona sweep for the archive confirmation.', profile: seed.gamification ? 'it' : 'mandatory' })
