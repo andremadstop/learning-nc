@@ -3160,6 +3160,13 @@ test('instructor: empty course, view-only pool, pool search, archive confirmatio
 				const x = await clear.boundingBox()
 				;(rec.current.notes ||= []).push(`search field ${JSON.stringify(box)}, × ${JSON.stringify(x)} at ${width} px`)
 				if (!box || !x) { rec.add('search', `the search field or its × has no box at ${width} px (#98)`); return }
+				// C10: the magnifier on the left was an empty span without a size, so it never showed
+				const lens = await page.locator('.icon-search-label .icon-search').evaluate((el) => {
+					const r = el.getBoundingClientRect()
+					return { x: r.x, y: r.y, width: r.width, height: r.height, image: getComputedStyle(el).backgroundImage }
+				}).catch(() => null)
+				if (!lens || lens.width < 12 || lens.height < 12 || lens.image === 'none') rec.add('layout', `the magnifier in the search field is not visible at ${width} px (${JSON.stringify(lens)})`)
+				else if (lens.y < box.y || lens.y + lens.height > box.y + box.height || lens.x < box.x) rec.add('layout', `the magnifier sits outside the search field at ${width} px`)
 				if (x.height > box.height + 0.5) rec.add('layout', `the × is ${Math.round(x.height)} px high, the search field ${Math.round(box.height)} px, at ${width} px (#98)`)
 				if (x.y < box.y - 0.5 || x.y + x.height > box.y + box.height + 0.5 || x.x < box.x - 0.5 || x.x + x.width > box.x + box.width + 0.5) rec.add('layout', `the × sticks out of the search field at ${width} px (× ${Math.round(x.y)}–${Math.round(x.y + x.height)}, field ${Math.round(box.y)}–${Math.round(box.y + box.height)}) (#98)`)
 				if (x.height < 24 || x.width < 24) rec.add('a11y-flow', `the × is ${Math.round(x.width)}×${Math.round(x.height)} px, under the 24 px target size at ${width} px (#98)`)
