@@ -3509,6 +3509,142 @@ test('learner: search hit from an enrolled course, RTL search field, activity li
 				if (await page.getByText('This course is not available').isVisible().catch(() => false)) rec.add('activity', 'the course link of the activity opens "This course is not available" (#85)')
 			}
 		})
+
+		// The same in the Activity app as a person sees it: the names are clickable links in the
+		// stream, and clicking them lands on the course, its "Completion & certificate" tab, the pool
+		// and (gamification on) the achievements on the dashboard. The stream pages lazily: scroll
+		// until Learning's entries are loaded.
+		const course = `/apps/learning/courses/${seed.courseId}`
+		const streamLinks = async () => {
+			await page.goto(`${BASE}/apps/activity/`)
+			await settle(page)
+			let found = []
+			for (let i = 0; i < 25; i++) {
+				found = await page.evaluate(() => [...document.querySelectorAll('li.activity-entry')].map((li) => {
+					const subject = li.querySelector('.activity-entry__content__subject')
+					return {
+						text: (subject?.textContent || '').replace(/\s+/g, ' ').trim(),
+						anchors: [...(subject?.querySelectorAll('a[href]') || [])].map((a) => ({ name: a.textContent.trim(), href: a.href })),
+						strong: [...(subject?.querySelectorAll('strong') || [])].filter((s) => !s.closest('a')).map((s) => s.textContent.trim()),
+					}
+				}))
+				const learning = found.filter((e) => e.anchors.some((a) => a.href.includes('/apps/learning/')) || e.text.includes(COURSE_TITLE))
+				if (learning.some((e) => /certificate/i.test(e.text)) && learning.some((e) => /enrolled/i.test(e.text))) break
+				await page.evaluate(() => [...document.querySelectorAll('li.activity-entry')].pop()?.scrollIntoView())
+				await page.waitForTimeout(1200)
+			}
+			return found.filter((e) => e.anchors.some((a) => a.href.includes('/apps/learning/')) || e.text.includes(COURSE_TITLE))
+		}
+		// pick: the first link whose entry text matches `text` and whose href matches `href` (regex sources)
+		const clickStreamLink = async (pick) => {
+			const href = await page.evaluate(({ textSrc, hrefSrc }) => {
+				const textRe = new RegExp(textSrc, 'i')
+				const hrefRe = new RegExp(hrefSrc)
+				for (const li of document.querySelectorAll('li.activity-entry')) {
+					const subject = li.querySelector('.activity-entry__content__subject')
+					const text = (subject?.textContent || '').replace(/\s+/g, ' ').trim()
+					if (!textRe.test(text)) continue
+					for (const a of subject?.querySelectorAll('a[href]') || []) {
+						if (hrefRe.test(a.href)) { a.setAttribute('data-persona-pick', '1'); return a.href }
+					}
+				}
+				return null
+			}, { textSrc: pick.text.source, hrefSrc: pick.href.source })
+			if (!href) return null
+			const link = page.locator('a[data-persona-pick="1"]').first()
+			await link.scrollIntoViewIfNeeded()
+			const popup = page.context().waitForEvent('page', { timeout: 3000 }).catch(() => null)
+			await link.click()
+			const opened = await popup
+			const target = opened || page
+			await target.waitForLoadState('domcontentloaded').catch(() => {})
+			await settle(target, 1200)
+			return { href, target, opened }
+		}
+
+		await station(page, rec, 'Activity app: Learning\'s entries show the course and certificate as links (#85)', async () => {
+			const entries = await streamLinks()
+			;(rec.current.notes ||= []).push(`stream: ${entries.map((e) => `${e.text} → ${e.anchors.map((a) => a.href.replace(BASE, '')).join(', ') || '(no link)'}`).join(' | ').slice(0, 1400)}`)
+			if (!entries.length) { rec.add('activity', 'the Activity app shows learner1 no Learning entry'); return }
+			for (const e of entries) {
+				if (e.text.includes(COURSE_TITLE) && !e.anchors.some((a) => a.name === COURSE_TITLE)) rec.add('activity', `stream: "${e.text}" shows the course name as text, not as a link (#85)`)
+				for (const a of e.anchors) {
+					if (!/^https?:\/\//.test(a.href) || !a.href.startsWith(BASE)) rec.add('activity', `stream: "${e.text}" links ${a.href}, not this cloud (#85)`)
+				}
+			}
+			const enrolled = entries.find((e) => /enrolled in the course/i.test(e.text) && e.text.includes(COURSE_TITLE))
+			if (!enrolled) rec.add('activity', 'stream: no "You were enrolled in the course" entry for the course')
+			else if (!enrolled.anchors.some((a) => a.name === COURSE_TITLE && new URL(a.href).pathname.endsWith(course))) rec.add('activity', `stream: the enrolment links the course name to ${enrolled.anchors.map((a) => a.href).join(', ') || 'nothing'}, not ${course} (#85)`)
+			const certs = entries.filter((e) => /certificate/i.test(e.text) && e.text.includes(COURSE_TITLE))
+			if (!certs.length) rec.add('activity', 'stream: no certificate entry for learner1 (passed the exam, so one was issued)')
+			for (const e of certs) {
+				if (!e.anchors.some((a) => a.name === COURSE_TITLE && new URL(a.href).pathname.endsWith(`${course}/summary`))) rec.add('activity', `stream: "${e.text}" does not link to the course's "Completion & certificate" tab (#85)`)
+			}
+			const cycle = entries.find((e) => /certification cycle/i.test(e.text))
+			if (cycle && !cycle.anchors.some((a) => new URL(a.href).pathname.endsWith(`${course}/summary`))) rec.add('activity', `stream: "${cycle.text}" does not link to the "Completion & certificate" tab (#85)`)
+			for (const e of entries.filter((x) => /New question pool/i.test(x.text))) {
+				if (!e.anchors.some((a) => /\/apps\/learning\/pools\?poolId=\d+$/.test(new URL(a.href).pathname + new URL(a.href).search))) rec.add('activity', `stream: "${e.text}" does not link the pool (#85)`)
+			}
+			await page.screenshot({ path: path.join(SHOTS, 'activity-stream-learning.png'), fullPage: false })
+			// Click the course name of the enrolment: the course opens
+			const hit = await clickStreamLink({ text: new RegExp(`enrolled in the course ${COURSE_TITLE}`), href: /\/courses\/\d+$/ })
+			if (!hit) { rec.add('activity', 'stream: no clickable course name in the enrolment'); return }
+			if (hit.opened) { rec.add('activity', 'stream: the course link opens a new tab'); await hit.opened.close() }
+			{
+				// learners land on the course's first Lernraum tab (/courses/<id>/<tab>), never on the certificate
+				const landed = new URL(page.url()).pathname
+				if (!(landed.endsWith(course) || landed.includes(`${course}/`)) || landed.endsWith('/summary')) rec.add('activity', `stream: clicking the course name lands on ${shortUrl(page.url())}, not the course (#85)`)
+			}
+			if (await page.getByText('This course is not available').isVisible().catch(() => false)) rec.add('activity', 'stream: the course link opens "This course is not available" (#85)')
+			if (!(await page.locator('#app-content').getByText(COURSE_TITLE).filter({ visible: true }).count().catch(() => 0))) rec.add('activity', 'stream: the course link does not show the course')
+		})
+
+		await station(page, rec, 'Activity app: the certificate link opens "Completion & certificate" (#85)', async () => {
+			await streamLinks()
+			const hit = await clickStreamLink({ text: /certificate/, href: /\/summary$/ })
+			if (!hit) { rec.add('activity', 'stream: no clickable certificate entry'); return }
+			if (hit.opened) { rec.add('activity', 'stream: the certificate link opens a new tab'); await hit.opened.close() }
+			if (!new URL(page.url()).pathname.endsWith(`${course}/summary`)) rec.add('activity', `stream: the certificate link lands on ${shortUrl(page.url())} (#85)`)
+			const selected = (await page.locator('[role=tab][aria-selected="true"]').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim())
+			;(rec.current.notes ||= []).push(`selected tabs: ${selected.join(' / ')}`)
+			if (!selected.some((t) => /^Completion( & certificate)?$/.test(t))) rec.add('activity', `stream: the certificate link opens "${selected.join(' / ')}", not "Completion & certificate" (#85)`)
+			if (await page.getByText('This course is not available').isVisible().catch(() => false)) rec.add('activity', 'stream: the certificate link opens "This course is not available" (#85)')
+			if (!(await page.locator('#app-content').getByText(/certificate/i).filter({ visible: true }).count().catch(() => 0))) rec.add('activity', 'stream: the "Completion & certificate" tab shows no certificate text')
+		})
+
+		await station(page, rec, 'Activity app: a new pool\'s link opens that pool (#85)', async () => {
+			await streamLinks()
+			const hit = await clickStreamLink({ text: /New question pool/, href: /\/pools\?poolId=\d+$/ })
+			if (!hit) { rec.add('activity', 'stream: no clickable pool name in "New question pool"'); return }
+			if (hit.opened) { rec.add('activity', 'stream: the pool link opens a new tab'); await hit.opened.close() }
+			const toasts = await page.locator('.toastify').allTextContents().catch(() => [])
+			if (toasts.some((t) => /Could not|not found|not available/i.test(t))) rec.add('activity', `stream: the pool link shows "${toasts.join(' / ')}" (#85)`)
+			const selected = (await page.locator('[role=tab][aria-selected="true"]').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim())
+			;(rec.current.notes ||= []).push(`pool link ${hit.href.replace(BASE, '')}: selected tabs ${selected.join(' / ')}`)
+			if (!selected.some((t) => /^Training$/.test(t))) rec.add('activity', `stream: the pool link opens "${selected.join(' / ') || 'no pool'}", not the pool on Training (#85)`)
+		})
+
+		if (state.GAMIFICATION === 'on') {
+			await station(page, rec, 'Activity app: an achievement links to the achievements on the dashboard (#85)', async () => {
+				const entries = await streamLinks()
+				const badges = entries.filter((e) => /Achievement unlocked/i.test(e.text))
+				;(rec.current.notes ||= []).push(`achievements in the stream: ${badges.map((e) => e.text).join(' | ') || 'none'}`)
+				if (!badges.length) {
+					// learner1 may unlock nothing in this run; then the API station's rich-subject check is the evidence
+					const res = await fetch(`${BASE}/ocs/v2.php/apps/activity/api/v2/activity/all?format=json&limit=200`, { headers: { Authorization: basic('learner1'), 'OCS-APIRequest': 'true', Accept: 'application/json' } })
+					const all = res.ok ? ((await res.json())?.ocs?.data || []).filter((a) => a.app === 'learning' && /Achievement/i.test(a.subject)) : []
+					if (all.length) rec.add('activity', `the API lists ${all.length} achievement(s), the stream shows none`)
+					return
+				}
+				for (const e of badges) {
+					if (!e.anchors.some((a) => new URL(a.href).pathname.endsWith('/apps/learning/dashboard'))) rec.add('activity', `stream: "${e.text}" does not link to the dashboard (#85)`)
+				}
+				const hit = await clickStreamLink({ text: /Achievement unlocked/, href: /\/dashboard$/ })
+				if (!hit) { rec.add('activity', 'stream: no clickable achievement'); return }
+				if (hit.opened) { rec.add('activity', 'stream: the achievement link opens a new tab'); await hit.opened.close() }
+				if (!(await page.getByRole('heading', { name: 'Achievements' }).first().isVisible().catch(() => false))) rec.add('activity', 'stream: the achievement link opens the dashboard without its achievements (#85)')
+			})
+		}
 		flush()
 		await context.close()
 	}
