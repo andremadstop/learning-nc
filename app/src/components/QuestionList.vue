@@ -28,13 +28,13 @@
           <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <ul v-if="searchResults.length > 0" class="question-search-results">
-        <li v-for="r in searchResults" :key="r.id" @click="jumpToSearchResult(r)" tabindex="0" role="button" @keydown.enter="jumpToSearchResult(r)">
+      <div v-if="searchResults.length > 0" class="question-search-results">
+        <div v-for="r in searchResults" :key="r.id" class="question-search-hit" @click="jumpToSearchResult(r)" tabindex="0" role="button" @keydown.enter="jumpToSearchResult(r)">
           <span class="sr-id">#{{ r.id }}</span>
           <span class="sr-text">{{ r.text.substring(0, 100) }}{{ r.text.length > 100 ? '...' : '' }}</span>
           <span class="sr-pool">{{ r.pool_name }}</span>
-        </li>
-      </ul>
+        </div>
+      </div>
       <div v-else-if="searchTerm.length >= 2 && !searchLoading && searchDone" class="question-search-empty">
         {{ t('learning', 'Keine Treffer') }}
       </div>
@@ -343,9 +343,9 @@ export default {
 .question-search-bar .clear-search-btn { position: absolute; inset-inline-end: 8px; background: none; border: none; cursor: pointer; color: var(--color-text-maxcontrast); padding: 4px; }
 #app-learning .question-search-bar .clear-search-btn { min-width: 24px; min-height: 24px; display: inline-flex; align-items: center; justify-content: center; }
 .question-search-results { list-style: none; margin: 4px 0 0; padding: 0; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 8px; max-height: 280px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: absolute; z-index: 10; width: 100%; }
-.question-search-results li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-border-dark); }
-.question-search-results li:last-child { border-bottom: none; }
-.question-search-results li:hover { background: var(--color-background-hover); }
+.question-search-results .question-search-hit { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-border-dark); }
+.question-search-results .question-search-hit:last-child { border-bottom: none; }
+.question-search-results .question-search-hit:hover { background: var(--color-background-hover); }
 .question-search-results .sr-id { font-family: monospace; font-size: 12px; color: var(--color-text-maxcontrast); flex-shrink: 0; }
 .question-search-results .sr-text { font-size: 13px; color: var(--color-main-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .question-search-results .sr-pool { display: none; }

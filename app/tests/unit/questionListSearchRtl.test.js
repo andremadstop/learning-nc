@@ -48,3 +48,18 @@ describe('QuestionList search: the × fits the field and has a name', () => {
 		expect(reset).toMatch(/min-width:\s*24px/)
 	})
 })
+
+// Persona sweep (axe "list"): the hits were <li role="button"> in a <ul>. The role takes the list
+// item away, so the list held no items for a screen reader. The hits are buttons in a plain box now.
+describe('QuestionList search: the hits are no list of buttons in disguise', () => {
+	const template = css.slice(0, css.indexOf('</template>'))
+	it('has no list item that pretends to be a button', () => {
+		expect(template).not.toMatch(/<li[^>]*role="button"/)
+	})
+	it('each hit is a keyboard-reachable button', () => {
+		const hit = /<div[^>]*class="question-search-hit"[^>]*>/.exec(template)?.[0] ?? ''
+		expect(hit).toMatch(/role="button"/)
+		expect(hit).toMatch(/tabindex="0"/)
+		expect(hit).toMatch(/@keydown\.enter/)
+	})
+})
