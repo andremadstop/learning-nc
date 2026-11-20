@@ -43,7 +43,8 @@ describe('screenshots lib (#74)', () => {
 		expect(new Set(SHOTS.map((s) => s.id)).size).toBe(SHOTS.length)
 		expect(new Set(SHOTS.map((s) => s.dest)).size).toBe(SHOTS.length)
 		for (const s of SHOTS) expect(s.dest).toMatch(/^(screenshots|docs\/guides\/img)\/[a-z0-9-]+\.png$/)
-		// the App Store links four existing files from main; the run must never overwrite them
+		// 08–11 were the App Store pictures up to 5.13.0. 10 stays (README); 08, 09 and 11 are gone
+		// from the repository (one showed a real certificate id). The run must never bring these names back.
 		for (const s of SHOTS) expect(s.dest).not.toMatch(/screenshots\/(08|09|10|11)-/)
 		expect(BUDGET_BYTES).toBe(400 * 1024)
 		expect(VIEWPORT.width * DEVICE_SCALE_FACTOR).toBe(2880)
