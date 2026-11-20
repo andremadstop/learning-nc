@@ -154,9 +154,14 @@ final class CertLayoutAssetsTest extends TestCase {
      */
     public function testIssuedCertificateKeepsItsLibraryLogo(): void {
         $library = Server::get(\OCA\Learning\Service\CertLogoLibrary::class);
-        $bytes = self::png(120, 40, 78);
-        $logo = $library->add('Primary (wordmark)', $bytes);
-        $dataUrl = 'data:image/png;base64,' . base64_encode($bytes);
+        // A PNG GD can decode: a library logo is re-encoded since 5.17.0 (ZC9), so the certificate
+        // carries the stored copy, not the upload.
+        $image = imagecreatetruecolor(120, 40);
+        imagefilledrectangle($image, 0, 0, 119, 39, (int)imagecolorallocate($image, 20, 70, 140));
+        ob_start();
+        imagepng($image);
+        $logo = $library->add('Primary (wordmark)', (string)ob_get_clean());
+        $dataUrl = 'data:image/png;base64,' . base64_encode($library->content($logo['id'])['bytes']);
         try {
             $this->layouts->selectLogo($this->course(), $logo['id']);
             $this->assertSame($dataUrl, $this->layouts->presentationForCourse($this->course())['logo']);
