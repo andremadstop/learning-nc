@@ -505,8 +505,7 @@
   "Übung wählen",
   "— Pool auswählen —",
   "← Zurück",
-  "← Zurück zu Kursen",
-  "← Zurück zu Pools"
+  "← Zurück zu Kursen"
  ],
  "fr": [
   "\"{name}\" aus diesem Kurs entfernen?",
@@ -2160,8 +2159,7 @@
   "← Back to Pools",
   "← Previous",
   "← Zurück",
-  "← Zurück zu Kursen",
-  "← Zurück zu Pools"
+  "← Zurück zu Kursen"
  ],
  "ru": [
   "\"{name}\" aus diesem Kurs entfernen?",
@@ -2675,8 +2673,7 @@
   "Übung wählen",
   "— Pool auswählen —",
   "← Zurück",
-  "← Zurück zu Kursen",
-  "← Zurück zu Pools"
+  "← Zurück zu Kursen"
  ],
  "uk": [
   "Access VLAN {id}",

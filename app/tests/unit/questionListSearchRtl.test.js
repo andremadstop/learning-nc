@@ -29,3 +29,22 @@ describe('QuestionList search: the × follows the reading direction', () => {
 		expect(rule('.question-search-input')).toMatch(/padding-inline:\s*12px 32px/)
 	})
 })
+
+// Persona sweep (Arabic, Manage): the × was a 44 px button (Nextcloud's minimum button size) in a
+// 34 px field and had no name for a screen reader. The Pools search resets the minimum (#98).
+describe('QuestionList search: the × fits the field and has a name', () => {
+	const template = css.slice(0, css.indexOf('</template>'))
+	const button = /<button[^>]*class="clear-search-btn"[^>]*>/.exec(template)?.[0] ?? ''
+
+	it('is a plain button named "Suche leeren"', () => {
+		expect(button).not.toBe('')
+		expect(button).toMatch(/type="button"/)
+		expect(button).toMatch(/:aria-label="t\('learning', 'Suche leeren'\)"/)
+	})
+
+	it('replaces Nextcloud\'s 44 px minimum by the 24 px target size inside the field', () => {
+		const reset = rule('#app-learning .question-search-bar .clear-search-btn')
+		expect(reset).toMatch(/min-height:\s*24px/)
+		expect(reset).toMatch(/min-width:\s*24px/)
+	})
+})

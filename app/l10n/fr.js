@@ -2273,7 +2273,7 @@ OC.L10N.register(
     "← Previous" : "← Previous",
     "← Zurück" : "← Back",
     "← Zurück zu Kursen" : "← Back to courses",
-    "← Zurück zu Pools" : "← Back to pools",
+    "← Zurück zu Pools" : "← Retour aux pools",
     "← Zurück zum Kurs" : "← Retour au cours",
     "Signatur echt – Zertifikat nicht mehr gültig" : "Signature authentique – certificat plus valide",
     "Was diese Prüfung bestätigt – und was nicht" : "Ce que cette vérification confirme – et ce qu’elle ne confirme pas",

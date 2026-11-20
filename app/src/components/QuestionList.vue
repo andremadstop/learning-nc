@@ -24,8 +24,8 @@
           @keydown.esc="clearSearch"
           @keydown.enter="jumpToFirstSearchResult"
         />
-        <button v-if="searchTerm" class="clear-search-btn" @click="clearSearch">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <button v-if="searchTerm" type="button" class="clear-search-btn" :aria-label="t('learning', 'Suche leeren')" :title="t('learning', 'Suche leeren')" @click="clearSearch">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <ul v-if="searchResults.length > 0" class="question-search-results">
@@ -341,6 +341,7 @@ export default {
 .question-search-wrapper { position: relative; display: flex; align-items: center; }
 .question-search-input { width: 100%; padding-block: 8px; padding-inline: 12px 32px; border-radius: 8px; font-size: 14px; }
 .question-search-bar .clear-search-btn { position: absolute; inset-inline-end: 8px; background: none; border: none; cursor: pointer; color: var(--color-text-maxcontrast); padding: 4px; }
+#app-learning .question-search-bar .clear-search-btn { min-width: 24px; min-height: 24px; display: inline-flex; align-items: center; justify-content: center; }
 .question-search-results { list-style: none; margin: 4px 0 0; padding: 0; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 8px; max-height: 280px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: absolute; z-index: 10; width: 100%; }
 .question-search-results li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-border-dark); }
 .question-search-results li:last-child { border-bottom: none; }
