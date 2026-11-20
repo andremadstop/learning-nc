@@ -13,7 +13,7 @@ const { test, expect } = require('@playwright/test')
 const { execFileSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, DEAD_LINK_STATION_PREFIX } = require('./lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, REFUSED_BACKGROUND_STATION, DEAD_LINK_STATION_PREFIX } = require('./lib.cjs')
 
 const state = {}
 for (const line of fs.readFileSync(process.env.PERSONA_STATE, 'utf8').split('\n')) {
@@ -353,9 +353,9 @@ async function clickAll(page, rec, reenter) {
 }
 
 // ---------------------------------------------------------------- navigation
-async function login(browser, persona, { studentView = false } = {}) {
+async function login(browser, persona, { studentView = false, contextOptions = {} } = {}) {
 	const user = persona.replace(/-.*/, '')
-	const context = await browser.newContext({ acceptDownloads: true, locale: 'en-GB', timezoneId: 'Europe/London', viewport: { width: 1400, height: 900 } })
+	const context = await browser.newContext({ acceptDownloads: true, locale: 'en-GB', timezoneId: 'Europe/London', viewport: { width: 1400, height: 900 }, ...contextOptions })
 	await context.addInitScript(({ studentView }) => {
 		try {
 			if (studentView) localStorage.setItem('learning:view-as-student', 'yes')
@@ -895,6 +895,8 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		const verifyUrl = (await page.locator('.certificate-printable .certificate-verify-url').first().textContent().catch(() => '')).trim()
 		if (verifyUrl) fs.writeFileSync(VERIFY_URL_FILE, verifyUrl)
 		else rec.add('certificate', 'certificate card shows no verification address')
+		// GitHub #93: issued while the course had the library background, so the card carries it
+		await expectBackground(page, rec, 'certificate from the exam result')
 		const logo = page.locator('.certificate-printable .certificate-logo').first()
 		if (!(await logo.isVisible().catch(() => false))) rec.add('certificate', 'certificate card shows no logo')
 		else {
@@ -918,6 +920,9 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		await page.emulateMedia({ media: 'screen' })
 		const pdfSize = fs.statSync(path.join(DOWNLOADS, 'certificate-print.pdf')).size
 		if (pdfSize < 5000) rec.add('print', `printed PDF is only ${pdfSize} bytes`)
+		// C10: in Nextcloud (html absolute, body fixed) the named A4-landscape page was dropped (Letter portrait)
+		const paper = (execFileSync('pdfinfo', [path.join(DOWNLOADS, 'certificate-print.pdf')], { encoding: 'utf8' }).match(/Page size:\s+([\d.]+) x ([\d.]+)/) || []).slice(1).map((v) => Math.round(Number(v)))
+		if (paper[0] !== 842 || paper[1] !== 595) rec.add('print', `the printed certificate is ${paper.join(' × ')} pt, not A4 landscape (842 × 595) (#80)`)
 	})
 	await station(page, rec, 'Certificate: download', async () => {
 		// GitHub #95: the JSON file sits behind a closed "Technical details" disclosure
@@ -930,7 +935,8 @@ test('learner passes both exams, opens, prints and downloads the certificate', a
 		else await details.locator('summary').click()
 		const dl = await download(page, () => details.getByRole('button', { name: /download/i }).first().click(), 'learner-certificate')
 		if (dl.size < 200) rec.add('download', `certificate download is ${dl.size} bytes (${dl.suggested})`)
-		if (!/^\s*[{[]/.test(dl.head.toString('utf8')) && !/^%PDF/.test(dl.head.toString('latin1'))) rec.add('download', `certificate download is neither JSON nor PDF: ${dl.suggested}`)
+		// GitHub #94: the PDF has its own button now; this one must give the signed JSON credential
+		if (!/^\s*\{/.test(dl.head.toString('utf8'))) rec.add('download', `"Download credential (JSON)" gave something else than JSON: ${dl.suggested} (${JSON.stringify(dl.head.subarray(0, 12).toString('latin1'))})`)
 	})
 	await closeOverlays(page)
 	await station(page, rec, 'Course › Completion & certificate (after passing)', async () => {
@@ -2084,6 +2090,572 @@ async function openNewCycle(page, rec, uid) {
 	if ((await memberBadge(page, uid)) !== 'New cycle open') rec.add('cycle', `${uid}: after a reload the badge reads "${await memberBadge(page, uid)}", not "New cycle open"`)
 	if (await memberRow(page, uid).locator('[data-test="member-new-cycle"]').isVisible().catch(() => false)) rec.add('cycle', `${uid}: "Open a new certification cycle" is still offered with a cycle open`)
 }
+
+// ---------------------------------------------------------------- 5.17.0: certificate presentation (C10)
+// GitHub #93 (backgrounds), #94 (PDF made in the browser), #95 (JSON credential behind "Technical
+// details", hideable per course). Runs after the public verification test and before the C9
+// scenarios (learner1's certificate is revoked there). The seed gave the course the dark library
+// background "Night grid" at full strength before learner1 passed, so learner1's certificate carries
+// it: the worst case for the text and the QR code. The PDF is one picture (no text layer), so "it
+// holds the ID" is proven by the QR code: it must decode to exactly the card's verification address,
+// and that address ends in the card's certificate ID. The presentation-copy line is proven by ink in
+// the bottom margin (as app/tests/print/certificate-pdf.spec.cjs); its words are not read (no OCR).
+// WebKit is not clicked here: scripts/pdf-gate.sh runs the PDF in WebKit at phone width.
+const PDF_TMP = () => fs.mkdtempSync(path.join(process.env.TMPDIR || require('os').tmpdir(), 'persona-pdf-'))
+const { PNG } = require('pngjs')
+
+/** A w × h RGBA PNG drawn by pixel(x, y) → [r, g, b, a] (no image files in the sweep). */
+function makeTestPng(w, h, pixel) {
+	const zlib = require('zlib')
+	const table = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0 })
+	const crc = (buf) => { let c = 0xffffffff; for (const x of buf) c = table[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0 }
+	const chunk = (type, data) => {
+		const len = Buffer.alloc(4); len.writeUInt32BE(data.length)
+		const td = Buffer.concat([Buffer.from(type, 'ascii'), data])
+		const c = Buffer.alloc(4); c.writeUInt32BE(crc(td))
+		return Buffer.concat([len, td, c])
+	}
+	const ihdr = Buffer.alloc(13)
+	ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6
+	const raw = Buffer.alloc((w * 4 + 1) * h)
+	for (let y = 0; y < h; y++) {
+		for (let x = 0; x < w; x++) {
+			const o = y * (w * 4 + 1) + 1 + x * 4
+			const [r, g, b, a] = pixel(x, y)
+			raw[o] = r; raw[o + 1] = g; raw[o + 2] = b; raw[o + 3] = a
+		}
+	}
+	return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))])
+}
+
+/** QR codes zbarimg reads in a PNG file ([] when none). */
+function qrCodes(pngFile) {
+	try {
+		return execFileSync('zbarimg', ['-q', '--raw', pngFile], { encoding: 'utf8' }).trim().split('\n').filter(Boolean)
+	} catch (e) {
+		if (e.code === 'ENOENT') throw new Error('zbarimg is not installed (zbar-tools): the QR code cannot be checked', { cause: e })
+		return [] // exit 4: no code found
+	}
+}
+
+/** Pixels close to a colour in a decoded PNG. */
+function pixelsNear(png, [r, g, b], tolerance = 40) {
+	let count = 0
+	for (let i = 0; i < png.data.length; i += 4) {
+		if (Math.abs(png.data[i] - r) < tolerance && Math.abs(png.data[i + 1] - g) < tolerance && Math.abs(png.data[i + 2] - b) < tolerance) count++
+	}
+	return count
+}
+
+/** Non-white pixels between two heights (fractions of the page). */
+function inkCount(png, top, bottom) {
+	let count = 0
+	for (let y = Math.floor(top * png.height); y < Math.floor(bottom * png.height); y++) {
+		for (let x = 0; x < png.width; x++) {
+			const i = (png.width * y + x) << 2
+			if (png.data[i] < 200 || png.data[i + 1] < 200 || png.data[i + 2] < 200) count++
+		}
+	}
+	return count
+}
+
+/** One PDF file: pages, size, pictures, QR codes and the raster at 200 dpi. */
+function pdfFacts(file) {
+	const dir = PDF_TMP()
+	try {
+		const info = execFileSync('pdfinfo', [file], { encoding: 'utf8' })
+		const size = info.match(/Page size:\s+([\d.]+) x ([\d.]+) pts/) || []
+		const images = execFileSync('pdfimages', ['-list', file], { encoding: 'utf8' }).trim().split('\n').slice(2).map((l) => l.trim().split(/\s+/))
+		execFileSync('pdftoppm', ['-r', '200', '-png', '-singlefile', file, path.join(dir, 'page')])
+		const pagePng = path.join(dir, 'page.png')
+		return {
+			pages: Number((info.match(/Pages:\s+(\d+)/) || [])[1]),
+			widthPt: Math.round(Number(size[1])), heightPt: Math.round(Number(size[2])),
+			images, qr: qrCodes(pagePng), png: PNG.sync.read(fs.readFileSync(pagePng)),
+		}
+	} finally {
+		fs.rmSync(dir, { recursive: true, force: true })
+	}
+}
+
+/** The QR codes in a screenshot of one element (on screen, with whatever lies behind it). */
+async function qrOnScreen(locator) {
+	const dir = PDF_TMP()
+	try {
+		const file = path.join(dir, 'qr.png')
+		await locator.screenshot({ path: file })
+		return qrCodes(file)
+	} finally {
+		fs.rmSync(dir, { recursive: true, force: true })
+	}
+}
+
+/**
+ * GitHub #93: axe files text over a background picture as "incomplete" (it cannot know the
+ * picture), so its silence proves nothing here. This measures it: every text on the card against
+ * what is really behind it — the plate (88 % white) laid over the darkest and the lightest colour
+ * of the background picture, or the picture itself where the text is outside the plate. The lower
+ * of the two ratios counts; 4.5:1, or 3:1 for large text (WCAG 1.4.3).
+ */
+async function cardContrast(page, cardSelector) {
+	return page.evaluate(async (cardSelector) => {
+		const card = [...document.querySelectorAll(cardSelector)].find((el) => el.getClientRects().length)
+		if (!card) return { error: `no visible ${cardSelector}` }
+		const rgba = (s) => { const m = String(s).match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1] }
+		const over = (top, below) => [0, 1, 2].map((i) => top[i] * top[3] + below[i] * (1 - top[3]))
+		const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]) }
+		const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05) }
+		// the darkest and lightest colour of the background picture (or of the built-in's layer)
+		let extremes = null
+		const img = card.querySelector('.certificate-bg-image')
+		if (img) {
+			if (!img.complete || !img.naturalWidth) await img.decode().catch(() => {})
+			if (!img.naturalWidth) return { error: 'the background picture did not load' }
+			const canvas = document.createElement('canvas')
+			canvas.width = 160; canvas.height = Math.max(1, Math.round(160 * img.naturalHeight / img.naturalWidth))
+			const ctx = canvas.getContext('2d')
+			ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+			const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+			let dark = null; let light = null
+			for (let i = 0; i < d.length; i += 4) {
+				const c = [d[i], d[i + 1], d[i + 2]]
+				if (!dark || lum(c) < lum(dark)) dark = c
+				if (!light || lum(c) > lum(light)) light = c
+			}
+			extremes = [dark, light]
+		}
+		const veil = card.querySelector('.certificate-bg-veil')
+		const veilOpacity = veil ? Number(getComputedStyle(veil).opacity) : 0
+		const cardBg = rgba(getComputedStyle(card).backgroundColor) || [255, 255, 255, 1]
+		const ground = extremes
+			? extremes.map((c) => (veilOpacity ? over([255, 255, 255, veilOpacity], c) : c))
+			: [over(cardBg, [255, 255, 255])]
+		const plateEl = card.querySelector('.certificate-bg-plate')
+		const plateColour = plateEl ? rgba(getComputedStyle(plateEl).backgroundColor) : null
+		const plateRect = plateEl ? plateEl.getBoundingClientRect() : null
+		const failures = []
+		let min = Infinity; let measured = 0
+		const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT)
+		let node
+		while ((node = walker.nextNode())) {
+			if (!node.textContent.trim()) continue
+			const el = node.parentElement
+			if (!el || el.closest('[aria-hidden="true"]') || !el.getClientRects().length) continue
+			const s = getComputedStyle(el)
+			if (s.visibility === 'hidden' || Number(s.opacity) < 0.05) continue
+			const r = el.getBoundingClientRect()
+			const onPlate = plateRect && r.left >= plateRect.left - 1 && r.right <= plateRect.right + 1 && r.top >= plateRect.top - 1 && r.bottom <= plateRect.bottom + 1
+			// what is behind the text: its own opaque box if it has one, else plate or picture
+			let behind = ground
+			for (let a = el; a && a !== card; a = a.parentElement) {
+				const bg = rgba(getComputedStyle(a).backgroundColor)
+				if (bg && bg[3] >= 0.99) { behind = [bg]; break }
+			}
+			if (behind === ground && onPlate && plateColour) behind = ground.map((g) => over(plateColour, g))
+			const fg = rgba(s.color)
+			const worst = Math.min(...behind.map((b) => ratio(fg[3] < 1 ? over(fg, b) : fg, b)))
+			const size = parseFloat(s.fontSize); const bold = Number(s.fontWeight) >= 700
+			const need = size >= 24 || (bold && size >= 18.66) ? 3 : 4.5
+			measured++
+			min = Math.min(min, worst)
+			if (worst < need) failures.push(`"${node.textContent.trim().slice(0, 40)}" ${worst.toFixed(2)}:1 (needs ${need}:1, ${s.color}${onPlate ? ' on the plate' : ' over the background'})`)
+		}
+		return { measured, min: Number.isFinite(min) ? Math.round(min * 100) / 100 : null, failures: failures.slice(0, 8), picture: !!img, plate: plateColour, extremes }
+	}, cardSelector)
+}
+
+/** Open learner1's own certificate from Completion › "View certificate" (a dialog). */
+async function openOwnCertificate(page) {
+	await openMegaTab(page, 'Completion')
+	await page.locator('.zeugnis-cert-action').first().click()
+	await page.locator('.certificate-printable .certificate-card').first().waitFor({ timeout: 15000 })
+	await page.evaluate(() => Promise.all([document.fonts.ready, ...Array.from(document.images).map((img) => img.decode().catch(() => {}))]))
+	await settle(page, 400)
+}
+
+/** The card's verification address and certificate ID as shown. */
+async function cardIdentity(page) {
+	const text = async (sel) => (await page.locator(`.certificate-printable ${sel}`).first().textContent().catch(() => '')).trim()
+	return { url: await text('.certificate-verify-url'), id: await text('.certificate-verify-id') }
+}
+
+/** GitHub #93: the background layer of the card is there and is the picture the course chose. */
+async function expectBackground(page, rec, where) {
+	const layer = page.locator('.certificate-printable [data-test="certificate-background"]').first()
+	if (!(await layer.count())) { rec.add('background', `${where}: the certificate shows no background, the course chose "${seed.certificate.backgroundName}"`); return null }
+	if ((await layer.getAttribute('aria-hidden')) !== 'true') rec.add('a11y', `${where}: the background layer is not aria-hidden (it is decoration)`)
+	const img = page.locator('.certificate-printable [data-test="certificate-background-image"]').first()
+	if (!(await img.count())) { rec.add('background', `${where}: the background is not the library picture`); return null }
+	const loaded = await img.evaluate((el) => el.complete && el.naturalWidth > 0)
+	if (!loaded) rec.add('background', `${where}: the background picture did not load`)
+	return img.getAttribute('src')
+}
+
+/** GitHub #93: contrast of the card and a scannable QR code, plus a self-test of the measurement. */
+async function expectReadableCard(page, rec, where) {
+	const res = await cardContrast(page, '.certificate-printable .certificate-card')
+	if (res.error) { rec.add('contrast', `${where}: ${res.error}`); return }
+	if (!res.picture) rec.add('background', `${where}: the contrast was measured without a background picture`)
+	if (res.measured < 6) rec.add('detector', `${where}: only ${res.measured} texts measured on the card`)
+	for (const f of res.failures) rec.add('contrast', `${where}: ${f}`)
+	;(rec.current.notes ||= []).push(`${where}: ${res.measured} texts, lowest ${res.min}:1, plate ${JSON.stringify(res.plate)}, picture extremes ${JSON.stringify(res.extremes)}`)
+	// self-test: without the plate the dark picture must make the measurement fail
+	await page.evaluate(() => document.querySelectorAll('.certificate-printable .certificate-bg-plate').forEach((p) => { p.dataset.personaPlate = p.style.background; p.style.background = 'transparent' }))
+	const bare = await cardContrast(page, '.certificate-printable .certificate-card')
+	await page.evaluate(() => document.querySelectorAll('.certificate-printable .certificate-bg-plate').forEach((p) => { p.style.background = p.dataset.personaPlate || ''; delete p.dataset.personaPlate }))
+	if (!bare.failures?.length) rec.add('detector', `${where}: CONTRAST MEASUREMENT BROKEN: without the plate nothing failed (lowest ${bare.min}:1)`)
+	const { url } = await cardIdentity(page)
+	const qr = await qrOnScreen(page.locator('.certificate-printable .certificate-qr').first())
+	if (qr.length !== 1 || qr[0] !== url) rec.add('qr', `${where}: the QR code on the card decodes to ${JSON.stringify(qr)}, the card says ${url}`)
+}
+
+/** GitHub #94: click "Download as PDF" and check the file: one A4 landscape page, its QR, its ID, the note. */
+async function expectCertificatePdf(page, rec, where, name) {
+	const button = page.locator('[data-test="certificate-pdf-button"]').first()
+	if (!(await button.isVisible().catch(() => false))) { rec.add('pdf', `${where}: no "Download as PDF"`); return }
+	const label = (await button.textContent()).trim()
+	if (label !== 'Download as PDF') rec.add('pdf', `${where}: the PDF button reads "${label}"`)
+	const box = await button.boundingBox()
+	const vp = page.viewportSize()
+	if (box && (box.x < 0 || box.x + box.width > vp.width + 1)) rec.add('layout', `${where}: "Download as PDF" sticks out of the ${vp.width} px screen (x ${Math.round(box.x)}, width ${Math.round(box.width)})`)
+	const { url, id } = await cardIdentity(page)
+	const dl = await download(page, () => button.click(), name)
+	const status = page.locator('[data-test="certificate-pdf-status"]').first()
+	await waitUntil(async () => (await status.textContent()).trim() === 'PDF downloaded', 10000)
+	const said = (await status.textContent().catch(() => '')).trim()
+	if (said !== 'PDF downloaded') rec.add('pdf', `${where}: after the download the status says "${said}"`)
+	if (await page.locator('[data-test="certificate-pdf-error"]').count()) rec.add('pdf', `${where}: an error is shown after a successful PDF: ${(await page.locator('[data-test="certificate-pdf-error"]').first().textContent()).trim()}`)
+	if ((await button.getAttribute('aria-busy')) !== 'false') rec.add('a11y', `${where}: the PDF button stays aria-busy after the download`)
+	if (await page.locator('#learning-certificate-pdf-root').count()) rec.add('pdf', `${where}: the hidden sheet the PDF was drawn from is still in the page`)
+	if (!/\.pdf$/i.test(dl.suggested)) rec.add('pdf', `${where}: the file is called "${dl.suggested}", not *.pdf`)
+	if (dl.head.subarray(0, 5).toString('latin1') !== '%PDF-') { rec.add('pdf', `${where}: "${dl.suggested}" is not a PDF (starts with ${JSON.stringify(dl.head.subarray(0, 8).toString('latin1'))})`); return }
+	const m = pdfFacts(dl.file)
+	if (m.pages !== 1) rec.add('pdf', `${where}: the PDF has ${m.pages} pages`)
+	if (m.widthPt !== 842 || m.heightPt !== 595) rec.add('pdf', `${where}: the PDF page is ${m.widthPt} × ${m.heightPt} pt, not A4 landscape (842 × 595)`)
+	if (m.images.length !== 1 || Number(m.images[0][3]) < 2000) rec.add('pdf', `${where}: the PDF holds ${m.images.length} pictures (${m.images.map((i) => `${i[3]}×${i[4]}`).join(', ')}), expected one ≥ 2000 px wide`)
+	if (m.qr.length !== 1 || m.qr[0] !== url) rec.add('pdf', `${where}: the QR code in the PDF decodes to ${JSON.stringify(m.qr)}, the card says ${url}`)
+	if (!id || !url.endsWith(`/verify/${id}`)) rec.add('pdf', `${where}: the verification address ${url} does not end in the certificate ID "${id}"`)
+	// the presentation-copy line sits in the bottom margin, below the card
+	const note = inkCount(m.png, 0.955, 0.995)
+	if (note < 200) rec.add('pdf', `${where}: no presentation-copy line in the bottom margin of the PDF (${note} ink pixels)`)
+	// the dark library background is in the PDF too, not only on screen (navy of the seed picture)
+	const navy = pixelsNear(m.png, [0x0b, 0x18, 0x30], 30)
+	if (navy < 20000) rec.add('pdf', `${where}: the PDF does not show the certificate's background (${navy} background pixels)`)
+	;(rec.current.notes ||= []).push(`${where}: ${dl.suggested}, ${dl.size} bytes, ${m.widthPt}×${m.heightPt} pt, picture ${m.images[0]?.[3]}×${m.images[0]?.[4]}, QR ${m.qr[0]}, note ink ${note}, background pixels ${navy}`)
+}
+
+test('certificate presentation: backgrounds, PDF, technical details (#93, #94, #95)', async ({ browser }) => {
+	test.setTimeout(15 * 60_000)
+	const cert = seed.certificate
+	// ------------------------------------------------ admin: the background library (#93)
+	const admin = await login(browser, 'admin')
+	const adminRec = new Recorder('admin')
+	adminRec.attach(admin.page)
+	const ap = admin.page
+	const enterAdmin = async () => {
+		await ap.goto(`${BASE}/index.php/settings/admin/learning`)
+		await settle(ap, 1200)
+		await ap.locator('[data-test="cert-background-library"]').scrollIntoViewIfNeeded()
+	}
+	const entries = () => ap.locator('[data-test="cert-background-library"] [data-test^="cert-background-name-"]')
+	const usageIds = () => ap.locator('[data-test^="cert-background-usage-"]').evaluateAll((list) => list.map((el) => el.dataset.test.replace('cert-background-usage-', '')))
+	await station(ap, adminRec, 'Admin settings › Backgrounds for certificates (#93)', async () => {
+		await enterAdmin()
+		if (!(await ap.locator(`[data-test="cert-background-${cert.backgroundId}"]`).isVisible().catch(() => false))) adminRec.add('background-library', `the seeded background "${cert.backgroundName}" is not in the library`)
+		const usage = (await ap.locator(`[data-test="cert-background-usage-${cert.backgroundId}"]`).textContent().catch(() => '')).trim()
+		if (usage !== 'Used by 1 course') adminRec.add('background-library', `the background the course uses says "${usage}" (expected "Used by 1 course")`)
+		await ap.screenshot({ path: path.join(SHOTS, 'guide-admin-background-library.png') })
+		await axeStates(ap, adminRec, ap.locator('[data-test="cert-background-pick"]'), '"Upload background …"')
+	})
+	await station(ap, adminRec, 'Admin settings › Backgrounds: upload a PNG, then delete it while unused (#93)', async () => {
+		await enterAdmin()
+		const before = await entries().count()
+		const idsBefore = await usageIds()
+		await ap.locator('[data-test="cert-background-new-name"]').fill('Soft paper')
+		const since = Date.now()
+		await ap.locator('[data-test="cert-background-file"]').setInputFiles({ name: 'soft-paper.png', mimeType: 'image/png', buffer: makeTestPng(800, 566, (x, y) => [0xf4 - ((x + y) % 40 < 2 ? 30 : 0), 0xee, 0xe0, 255]) })
+		await waitUntil(async () => (await entries().count()) === before + 1, 10000)
+		await checkToasts(ap, adminRec, since, 'upload a background')
+		if ((await entries().count()) !== before + 1) { adminRec.add('background-library', `the library had ${before} backgrounds and has ${await entries().count()} after uploading a PNG`); return }
+		const status = (await ap.locator('[data-test="cert-background-library-status"]').textContent()).trim()
+		if (!/Soft paper/.test(status)) adminRec.add('background-library', `after the upload the status says "${status}"`)
+		const newId = (await usageIds()).find((id) => !idsBefore.includes(id)) || ''
+		const usage = (await ap.locator(`[data-test="cert-background-usage-${newId}"]`).textContent().catch(() => '')).trim()
+		if (usage !== 'Used by no course') adminRec.add('background-library', `a new background says "${usage}" (expected "Used by no course")`)
+		await enterAdmin() // read back
+		if ((await entries().count()) !== before + 1) adminRec.add('background-library', 'the uploaded background is gone after a reload')
+		await ap.locator(`[data-test="cert-background-delete-${newId}"]`).click()
+		const warn = (await ap.locator(`[data-test="cert-background-confirm-${newId}"]`).textContent().catch(() => '')).replace(/\s+/g, ' ').trim()
+		if (!/removed from the library/i.test(warn)) adminRec.add('background-library', `the delete dialog of an unused background says "${warn.slice(0, 160)}"`)
+		const delSince = Date.now()
+		await ap.locator(`[data-test="cert-background-confirm-delete-${newId}"]`).click()
+		await waitUntil(async () => (await entries().count()) === before, 8000)
+		await checkToasts(ap, adminRec, delSince, 'delete an unused background')
+		await enterAdmin()
+		if ((await entries().count()) !== before) adminRec.add('background-library', `after deleting the unused background the library has ${await entries().count()} entries, expected ${before}`)
+	})
+	await station(ap, adminRec, REFUSED_BACKGROUND_STATION, async () => {
+		await enterAdmin()
+		const before = await entries().count()
+		const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>')
+		const tries = [
+			{ what: 'an SVG', file: { name: 'frame.svg', mimeType: 'image/svg+xml', buffer: svg }, says: /SVG is not accepted/i },
+			{ what: 'an SVG named .png', file: { name: 'frame.png', mimeType: 'image/png', buffer: svg }, says: /SVG is not accepted/i },
+			{ what: 'a PNG 4100 px wide', file: { name: 'wide.png', mimeType: 'image/png', buffer: makeTestPng(4100, 20, () => [0x20, 0x40, 0x80, 255]) }, says: /4000 pixels per side/i },
+		]
+		for (const t of tries) {
+			await ap.locator('[data-test="cert-background-new-name"]').fill(`Refused ${t.what}`)
+			const since = Date.now()
+			await ap.locator('[data-test="cert-background-file"]').setInputFiles(t.file)
+			const error = ap.locator('[data-test="cert-background-new-error"]')
+			await waitUntil(async () => (await error.textContent()).trim().length > 0, 8000)
+			await checkToasts(ap, adminRec, since, `upload ${t.what}`)
+			const said = (await error.textContent().catch(() => '')).replace(/\s+/g, ' ').trim()
+			if (!said) adminRec.add('background-library', `${t.what} was not refused next to the file field`)
+			else if (!t.says.test(said)) adminRec.add('background-library', `${t.what} is refused with "${said.slice(0, 160)}", which does not explain why`)
+			;(adminRec.current.notes ||= []).push(`${t.what}: ${said}`)
+			if ((await entries().count()) !== before) adminRec.add('background-library', `the library had ${before} backgrounds and has ${await entries().count()} after refusing ${t.what}`)
+		}
+		await ap.screenshot({ path: path.join(SHOTS, 'admin-background-refused.png') })
+	})
+	await station(ap, adminRec, 'Admin settings › Backgrounds: deleting one in use names the courses first (#93)', async () => {
+		await enterAdmin()
+		const before = await entries().count()
+		let deletes = 0
+		const count = (r) => { if (r.request().method() === 'DELETE' && /cert-backgrounds\//.test(r.url())) deletes++ }
+		ap.on('response', count)
+		await ap.locator(`[data-test="cert-background-delete-${cert.backgroundId}"]`).click()
+		const box = ap.locator(`[data-test="cert-background-confirm-${cert.backgroundId}"]`)
+		const warn = (await box.textContent().catch(() => '')).replace(/\s+/g, ' ').trim()
+		if (!/Used in 1 course/.test(warn)) adminRec.add('background-library', `deleting a background a course uses warns "${warn.slice(0, 160)}" (expected it to name 1 course)`)
+		await ap.screenshot({ path: path.join(SHOTS, 'guide-admin-background-delete-in-use.png') })
+		await axeStates(ap, adminRec, box.getByRole('button', { name: 'Cancel' }), '"Cancel" (delete a background)')
+		await box.getByRole('button', { name: 'Cancel' }).click()
+		await ap.waitForTimeout(400)
+		ap.off('response', count)
+		if (await box.count()) adminRec.add('background-library', '"Cancel" does not close the delete dialog')
+		if (deletes) adminRec.add('background-library', `"Cancel" sent ${deletes} DELETE requests`)
+		await enterAdmin()
+		if ((await entries().count()) !== before) adminRec.add('background-library', `after "Cancel" the library has ${await entries().count()} entries, expected ${before}`)
+	})
+	flush()
+	await admin.context.close()
+
+	// ------------------------------------------------ instructor: the course's background and the JSON switch
+	const inst = await login(browser, 'instructor')
+	const instRec = new Recorder('instructor')
+	instRec.attach(inst.page)
+	const ip = inst.page
+	const layoutNow = async () => (await ip.request.get(`${APP}/api/courses/${seed.courseId}/cert-layout/backgrounds`, { headers: { 'OCS-APIRequest': 'true', Accept: 'application/json' } })).json()
+	const enterDesign = async () => {
+		await openMegaTab(ip, 'Administration')
+		await ip.locator('[data-test="cert-layout-background"]').scrollIntoViewIfNeeded()
+		await settle(ip, 300)
+	}
+	// the clickable label is the text, not the whole row (NcCheckboxRadioSwitch: a click right of the text does nothing)
+	const bgOption = (label) => ip.locator('[data-test="cert-layout-background"] .checkbox-radio-switch').filter({ hasText: label }).first().locator('.checkbox-content')
+	const putBackground = () => ip.waitForResponse((r) => r.request().method() === 'PUT' && /\/cert-layout\/background$/.test(new URL(r.url()).pathname), { timeout: 15000 })
+	await station(ip, instRec, 'Administration › Certificate design: background and strength (#93)', async () => {
+		await enterDesign()
+		const library = ip.locator(`input[data-test="cert-layout-background-${cert.backgroundId}"]`)
+		await library.waitFor({ state: 'attached', timeout: 10000 }).catch(() => {})
+		if (!(await library.isChecked().catch(() => false))) instRec.add('certificate-design', `the course's background "${cert.backgroundName}" is not the selected one`)
+		const slider = ip.locator('[data-test="cert-layout-background-intensity"]')
+		if ((await slider.inputValue().catch(() => null)) !== String(cert.backgroundIntensity)) instRec.add('certificate-design', `the strength shows ${await slider.inputValue().catch(() => 'nothing')}, the course has ${cert.backgroundIntensity}`)
+		for (const builtin of ['No background', 'Double frame', 'Corner ornaments', 'Fine line pattern']) {
+			if (!(await bgOption(builtin).isVisible().catch(() => false))) instRec.add('certificate-design', `no "${builtin}" among the backgrounds`)
+		}
+		// a built-in background: saved at once, the preview opens by itself and shows it
+		let since = Date.now()
+		let answer = putBackground()
+		await bgOption('Corner ornaments').click()
+		let res = await answer.catch(() => null)
+		if (!res || !res.ok()) instRec.add('certificate-design', `choosing "Corner ornaments" was not saved (${res ? res.status() : 'no request'})`)
+		await checkToasts(ip, instRec, since, 'choose Corner ornaments')
+		const preview = ip.locator('[data-test="cert-layout-preview"]')
+		await waitUntil(() => preview.evaluate((el) => el.open), 4000)
+		if (!(await preview.evaluate((el) => el.open).catch(() => false))) instRec.add('certificate-design', 'the preview does not open after choosing a background')
+		else if (!(await preview.locator('[data-test="certificate-background-corners"]').isVisible().catch(() => false))) instRec.add('certificate-design', 'the preview does not show the corner ornaments')
+		await preview.scrollIntoViewIfNeeded().catch(() => {})
+		await ip.screenshot({ path: path.join(SHOTS, 'guide-certificate-design-background.png') })
+		// the strength: the preview follows while dragging, saved on release
+		since = Date.now()
+		answer = putBackground()
+		await slider.fill('40')
+		res = await answer.catch(() => null)
+		if (!res || !res.ok()) instRec.add('certificate-design', `strength 40 % was not saved (${res ? res.status() : 'no request'})`)
+		else if (res.request().postDataJSON()?.intensity !== 40) instRec.add('certificate-design', `strength 40 % sent ${JSON.stringify(res.request().postDataJSON())}`)
+		await checkToasts(ip, instRec, since, 'strength 40 %')
+		const shown = (await ip.locator('.cert-layout-intensity-value').textContent().catch(() => '')).trim()
+		if (shown !== '40 %') instRec.add('certificate-design', `the strength reads "${shown}" after moving it to 40`)
+		let back = await layoutNow()
+		if (back.selected !== 'builtin:corners' || back.intensity !== 40) instRec.add('certificate-design', `read back: background ${back.selected}, strength ${back.intensity} (expected builtin:corners, 40)`)
+		await enterDesign()
+		if (!(await ip.locator('input[data-test="cert-layout-background-corners"]').isChecked().catch(() => false))) instRec.add('certificate-design', '"Corner ornaments" is not selected after a reload')
+		await axeStates(ip, instRec, slider, '"Background strength"')
+		await axeStates(ip, instRec, bgOption('Corner ornaments'), '"Corner ornaments"', ip.locator('input[data-test="cert-layout-background-corners"]'))
+		// back to the seeded library background at full strength (later stations build on it)
+		answer = putBackground()
+		await bgOption(cert.backgroundName).click()
+		await answer.catch(() => null)
+		answer = putBackground()
+		await ip.locator('[data-test="cert-layout-background-intensity"]').fill(String(cert.backgroundIntensity))
+		await answer.catch(() => null)
+		back = await layoutNow()
+		if (back.selected !== cert.backgroundId || back.intensity !== cert.backgroundIntensity) instRec.add('certificate-design', `could not restore the library background: ${back.selected}, ${back.intensity}`)
+	})
+	const credentialSwitch = () => ip.locator('[data-test="cert-credential-download"] input[type=checkbox]')
+	const setCredential = async (on) => {
+		await openMegaTab(ip, 'Administration')
+		await credentialSwitch().scrollIntoViewIfNeeded()
+		if ((await credentialSwitch().isChecked()) === on) return true
+		const since = Date.now()
+		const answer = ip.waitForResponse((r) => r.request().method() !== 'GET' && /\/api\/courses\/\d+/.test(r.url()), { timeout: 15000 })
+		await credentialSwitch().click()
+		const res = await answer.catch(() => null)
+		await checkToasts(ip, instRec, since, `credential switch ${on ? 'on' : 'off'}`)
+		if (!res || !res.ok()) instRec.add('credential', `turning the JSON credential ${on ? 'on' : 'off'} was not saved (${res ? res.status() : 'no request'})`)
+		await openMegaTab(ip, 'Administration') // read back
+		await credentialSwitch().scrollIntoViewIfNeeded()
+		const now = await credentialSwitch().isChecked()
+		if (now !== on) instRec.add('credential', `the JSON credential switch is ${now ? 'on' : 'off'} after a reload, expected ${on ? 'on' : 'off'}`)
+		return now === on
+	}
+	await station(ip, instRec, 'Administration › Course rules: JSON credential for learners off (#95)', async () => {
+		await openMegaTab(ip, 'Administration')
+		await credentialSwitch().scrollIntoViewIfNeeded()
+		if (!(await credentialSwitch().isChecked())) instRec.add('credential', 'the JSON credential switch is off before anyone turned it off (default is on)')
+		await setCredential(false)
+		await ip.locator('[data-test="cert-credential-download"]').scrollIntoViewIfNeeded()
+		await ip.screenshot({ path: path.join(SHOTS, 'guide-course-rules-credential-switch.png') })
+		await axeStates(ip, instRec, credentialSwitch(), '"Show learners the digital credential (JSON)"')
+	})
+
+	// ------------------------------------------------ learner1: background, contrast, QR, print, PDF; switch off
+	const learner = await login(browser, 'learner1')
+	const rec = new Recorder('learner1')
+	rec.attach(learner.page)
+	const page = learner.page
+	let backgroundSrc = null
+	await station(page, rec, 'Certificate with background: contrast and QR, light (#93)', async () => {
+		await openOwnCertificate(page)
+		backgroundSrc = await expectBackground(page, rec, 'light')
+		await expectReadableCard(page, rec, 'light')
+		await page.screenshot({ path: path.join(SHOTS, 'guide-certificate-background.png') })
+	})
+	await station(page, rec, 'Certificate with background: print (#93)', async () => {
+		await openOwnCertificate(page)
+		const { url } = await cardIdentity(page)
+		await page.locator('.certificate-actions').getByRole('button', { name: 'Print' }).first().click()
+		await page.waitForTimeout(600)
+		if (!(await page.locator('#learning-certificate-print-root .certificate-bg-image').count())) rec.add('print', 'the print copy has no background picture')
+		await page.emulateMedia({ media: 'print' })
+		const look = await page.evaluate(() => {
+			const layer = document.querySelector('#learning-certificate-print-root .certificate-bg')
+			if (!layer) return null
+			const s = getComputedStyle(layer)
+			const r = layer.getBoundingClientRect()
+			return { display: s.display, adjust: s.printColorAdjust || s.webkitPrintColorAdjust, w: r.width, h: r.height }
+		})
+		if (!look) rec.add('print', 'no background layer in the print copy')
+		else {
+			if (look.display === 'none' || look.w < 100 || look.h < 100) rec.add('print', `the background layer is not printed (${JSON.stringify(look)})`)
+			if (look.adjust !== 'exact') rec.add('print', `the background layer prints with print-color-adjust "${look.adjust}" (browsers drop it unless "exact")`)
+		}
+		const file = path.join(DOWNLOADS, 'certificate-background-print.pdf')
+		await page.pdf({ path: file, preferCSSPageSize: true, printBackground: true })
+		await page.emulateMedia({ media: 'screen' })
+		const m = pdfFacts(file)
+		if (m.pages !== 1) rec.add('print', `the printed certificate has ${m.pages} pages`)
+		if (m.widthPt !== 842 || m.heightPt !== 595) rec.add('print', `the printed certificate is ${m.widthPt} × ${m.heightPt} pt, not A4 landscape (842 × 595)`)
+		if (m.qr.length !== 1 || m.qr[0] !== url) rec.add('qr', `the QR code on the printed sheet decodes to ${JSON.stringify(m.qr)}, the card says ${url}`)
+		const navy = pixelsNear(m.png, [0x0b, 0x18, 0x30], 30)
+		if (navy < 20000) rec.add('print', `the printed sheet does not show the background (${navy} background pixels)`)
+		;(rec.current.notes ||= []).push(`print: ${m.pages} page(s), ${m.widthPt}×${m.heightPt} pt, QR ${m.qr[0]}, background pixels ${navy}`)
+		await page.evaluate(() => { document.getElementById('learning-certificate-print-root')?.remove(); document.documentElement.classList.remove('learning-certificate-printing') })
+	})
+	await station(page, rec, 'Certificate: download as PDF, desktop (#94)', async () => {
+		await openOwnCertificate(page)
+		await expectCertificatePdf(page, rec, 'desktop 1400 px', 'learner-certificate-desktop')
+	})
+	await station(page, rec, 'Certificate: course switch off ⇒ no "Technical details" (#95)', async () => {
+		await openOwnCertificate(page)
+		if (await page.locator('details.certificate-credential').count()) rec.add('credential', 'the course turned the JSON credential off, but the learner still sees "Technical details"')
+		if (await page.getByText('Technical details', { exact: true }).count()) rec.add('credential', '"Technical details" is still on the page with the switch off')
+		for (const button of ['Print', 'Download as PDF']) {
+			if (!(await page.locator('.certificate-actions').getByRole('button', { name: button }).isVisible().catch(() => false))) rec.add('credential', `with the JSON credential off, "${button}" is gone too`)
+		}
+		const { url, id } = await cardIdentity(page)
+		// the credential stays valid and reachable for the learner by its route (data export), unchanged
+		const json = await fetch(`${APP}/api/certificates/${encodeURIComponent(id)}/download`, { headers: { Authorization: basic('learner1'), 'OCS-APIRequest': 'true' } })
+		const body = await json.text()
+		if (json.status !== 200 || !/^\s*\{/.test(body)) rec.add('credential', `the credential route answers ${json.status} (${body.slice(0, 60)}) with the switch off; the plan keeps it unchanged`)
+		// the public verification page is unchanged and still reachable (and shows no background, ZC6)
+		const verify = await fetch(url)
+		const html = await verify.text()
+		if (verify.status !== 200) rec.add('verify', `the verification page answers ${verify.status} with the switch off`)
+		if (!html.includes('lrn-verify__banner')) rec.add('verify', 'the verification page has no result banner')
+		if (/revoked|expired|not found|unknown/i.test((html.match(/<h1>([^<]*)<\/h1>/) || [])[1] || '')) rec.add('verify', `the verification page says "${(html.match(/<h1>([^<]*)<\/h1>/) || [])[1]}" for a valid certificate`)
+		const payload = (backgroundSrc || '').split(',')[1] || ''
+		if (payload && html.includes(payload.slice(100, 300))) rec.add('verify', 'the public verification page carries the certificate background (ZC6: not until decided)')
+		;(rec.current.notes ||= []).push(`credential route ${json.status}, verification page ${verify.status}: ${(html.match(/<h1>([^<]*)<\/h1>/) || [])[1]}`)
+	})
+	flush()
+	await learner.context.close()
+
+	// learner1 in the dark theme: the card keeps its paper colours, the background and the plate
+	const dark = await login(browser, 'learner1', { contextOptions: { colorScheme: 'dark' } })
+	const darkRec = new Recorder('learner1-dark')
+	darkRec.attach(dark.page)
+	await station(dark.page, darkRec, 'Certificate with background: contrast and QR, dark (#93)', async () => {
+		await openOwnCertificate(dark.page)
+		const main = await dark.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--color-main-background').trim())
+		if (!/^#(1|2)/.test(main) && !/^rgb\((\d|[1-4]\d),/.test(main)) darkRec.add('detector', `the dark theme did not reach the page (main background "${main}")`)
+		await expectBackground(dark.page, darkRec, 'dark')
+		await expectReadableCard(dark.page, darkRec, 'dark')
+		await dark.page.screenshot({ path: path.join(SHOTS, 'guide-certificate-background-dark.png') })
+	})
+	flush()
+	await dark.context.close()
+
+	// learner1 on a phone (Chromium, 390 × 844 at 3×): the card, the QR code and the PDF
+	const phone = await login(browser, 'learner1', { contextOptions: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } })
+	const phoneRec = new Recorder('learner1-phone')
+	phoneRec.attach(phone.page)
+	await station(phone.page, phoneRec, 'Certificate on a phone: background, QR and PDF, 390 px (#93, #94)', async () => {
+		await openOwnCertificate(phone.page)
+		await expectBackground(phone.page, phoneRec, 'phone')
+		await expectReadableCard(phone.page, phoneRec, 'phone')
+		const wide = await phone.page.evaluate(() => document.documentElement.scrollWidth)
+		if (wide > 391) phoneRec.add('layout', `the page is ${wide} px wide on a 390 px phone (sideways scrolling)`)
+		await expectCertificatePdf(phone.page, phoneRec, 'phone 390 px', 'learner-certificate-phone')
+		await phone.page.screenshot({ path: path.join(SHOTS, 'guide-certificate-phone.png') })
+	})
+	flush()
+	await phone.context.close()
+
+	// ------------------------------------------------ instructor: their copy keeps "Technical details"; switch back on
+	await station(ip, instRec, 'Compliance report: the instructor\'s copy keeps "Technical details" with the switch off (#95)', async () => {
+		await openMegaTab(ip, 'Participants')
+		for (const sub of await subTabLabels(ip)) {
+			await clickSubTab(ip, sub)
+			if (await ip.locator('.cert-report-section').isVisible().catch(() => false)) break
+		}
+		const view = ip.locator('.cert-report-section .cert-view').first()
+		if (!(await view.isVisible().catch(() => false))) { instRec.add('credential', 'no "View" for Learner 1\'s certificate in the compliance report'); return }
+		await view.click()
+		await ip.locator('.certificate-printable .certificate-card').first().waitFor({ timeout: 15000 })
+		await settle(ip, 400)
+		const details = ip.locator('details.certificate-credential')
+		if (!(await details.count())) instRec.add('credential', 'the instructor\'s copy hides "Technical details" when the course turned it off for learners (it must always show)')
+		await closeOverlays(ip)
+	})
+	await station(ip, instRec, 'Administration › Course rules: JSON credential for learners back on (#95)', async () => {
+		await setCredential(true)
+	})
+	flush()
+	await inst.context.close()
+})
 
 // GitHub #90: material entries whose file was deleted or moved out of the material folder. The
 // instructor sees them with the reason and a ×, learners never see them, the × and "Scan folder"

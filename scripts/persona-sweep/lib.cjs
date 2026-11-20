@@ -25,6 +25,12 @@ function expectedReason(finding, ctx) {
 		&& /^POST 400 (\/index\.php)?\/apps\/learning\/api\/settings\/admin\/cert-logos$/.test(finding.detail)) {
 		return 'the logo library refuses an SVG named .png (the station tests exactly that)'
 	}
+	// GitHub #93: the station that offers the background library an SVG named .png and a picture
+	// over 4000 px expects the server to refuse both (400). Only there, only that request, only as admin.
+	if (finding.kind === 'http' && ctx.user === 'admin' && ctx.station === REFUSED_BACKGROUND_STATION
+		&& /^POST 400 (\/index\.php)?\/apps\/learning\/api\/settings\/admin\/cert-backgrounds$/.test(finding.detail)) {
+		return 'the background library refuses an SVG and an oversized picture (the station tests exactly that)'
+	}
 	// GitHub #82: a dead-link station opens a link whose target is gone or not this persona's; the
 	// app asks the server once and gets 404, which is the point of the station. Only at those
 	// stations, only GET 404, only for the ids the seed made dead (ctx.deadLinks).
@@ -46,6 +52,9 @@ const DEAD_LINK_STATION_PREFIX = 'Dead link: '
 
 /** The station name of the refused-logo upload (persona.sweep.cjs uses the same constant). */
 const REFUSED_LOGO_STATION = 'Admin settings › Logos: an SVG named .png is refused'
+
+/** The station name of the refused background uploads (GitHub #93; persona.sweep.cjs uses it too). */
+const REFUSED_BACKGROUND_STATION = 'Admin settings › Backgrounds: an SVG and a picture over 4000 px are refused (#93)'
 
 /** axe impacts that count, besides every colour-contrast violation. */
 const AXE_IMPACTS = ['critical', 'serious']
@@ -136,4 +145,4 @@ function pickAnswerIndex(buttonTexts, answer) {
 	return best
 }
 
-module.exports = { DEAD_LINK_STATION_PREFIX, REFUSED_LOGO_STATION, expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }
+module.exports = { DEAD_LINK_STATION_PREFIX, REFUSED_LOGO_STATION, REFUSED_BACKGROUND_STATION, expectedReason, axeFindings, equalRatioContrast, stationText, pickAnswerIndex, AXE_IMPACTS }

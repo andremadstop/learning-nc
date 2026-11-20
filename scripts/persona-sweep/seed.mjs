@@ -218,6 +218,29 @@ await asInstructor('PATCH', `/courses/${course.id}/cert-config`, { certLayout: {
 const layout = await asInstructor('GET', `/courses/${course.id}/cert-layout`)
 if (layout?.issuer_name !== ISSUER_NAME) throw new Error(`issuer_name did not stick: ${JSON.stringify(layout).slice(0, 300)}`)
 
+// GitHub #93: one background in the administrator's library, chosen for the course at full
+// strength before anyone passes, so that learner1's certificate is issued with it (a certificate
+// keeps the background it was issued with). Deliberately dark and busy, the worst case for the
+// text and the QR code: navy ground with a lighter diagonal grid, opaque, 1200 × 850.
+const BACKGROUND_NAME = 'Night grid'
+const backgroundPng = makePng(1200, 850, (x, y) => ((x + y) % 60 < 6 || (x - y + 6000) % 60 < 6 ? [0x3a, 0x6e, 0xa5, 255] : [0x0b, 0x18, 0x30, 255]))
+const backgroundForm = new FormData()
+backgroundForm.append('name', BACKGROUND_NAME)
+backgroundForm.append('background', new Blob([backgroundPng], { type: 'image/png' }), 'night-grid.png')
+const backgroundRes = await fetch(`${api}/settings/admin/cert-backgrounds`, {
+	method: 'POST',
+	headers: { Authorization: 'Basic ' + Buffer.from(`admin:${state.ADMIN_PASS}`).toString('base64'), 'OCS-APIRequest': 'true', Accept: 'application/json' },
+	body: backgroundForm,
+})
+const backgroundJson = await backgroundRes.json().catch(() => null)
+if (!backgroundRes.ok || !backgroundJson?.added) throw new Error(`background upload → ${backgroundRes.status}: ${JSON.stringify(backgroundJson).slice(0, 300)}`)
+const backgroundId = backgroundJson.added
+const BACKGROUND_INTENSITY = 100
+const withBackground = await asInstructor('PUT', `/courses/${course.id}/cert-layout/background`, { backgroundId, intensity: BACKGROUND_INTENSITY })
+if (!/^data:image\//.test(withBackground?.background || '') || withBackground?.background_intensity !== BACKGROUND_INTENSITY) throw new Error(`the course did not take the background: ${JSON.stringify(withBackground).slice(0, 200)}`)
+const backgroundChoice = await asInstructor('GET', `/courses/${course.id}/cert-layout/backgrounds`)
+if (backgroundChoice?.selected !== backgroundId || backgroundChoice?.intensity !== BACKGROUND_INTENSITY) throw new Error(`the course's background choice reads ${JSON.stringify(backgroundChoice?.selected)} at ${backgroundChoice?.intensity}, not ${backgroundId} at ${BACKGROUND_INTENSITY}`)
+
 // GitHub #82: targets for the dead-link stations. An archived course with learner1 in it, a
 // course with nobody but its instructor, a course that was created and deleted again (its id is a
 // link that outlived its target) and a pool id that was never handed out. Only the instructor's and
@@ -267,7 +290,7 @@ writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.string
 	courseId: course.id, poolIds, poolOwner: 'instructor', modeConfig, deadLinks,
 	materials: { folder: MATERIAL_FOLDER, required: MATERIALS.filter((m) => m.required).map((m) => m.file), optional: MATERIALS.filter((m) => !m.required).map((m) => m.file), examGated, openFirst },
 	examAttemptLimit,
-	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME },
+	certificate: { issuerName: ISSUER_NAME, logoId, logoName: LOGO_NAME, backgroundId, backgroundName: BACKGROUND_NAME, backgroundIntensity: BACKGROUND_INTENSITY },
 	sharedPool: { id: sharedPoolId, name: SHARED_POOL_NAME, owner: 'admin', permission: 'read', question: 'Where is the reference binder kept?' },
 	media: {
 		poolId: mediaPoolId, poolName: fixturePool.name, examKey: MEDIA_KEY, question: mediaQuestion.text, wrongAnswer: mediaQuestion.answers.find((a) => !a.is_correct).text,
@@ -279,10 +302,11 @@ writeFileSync(join(dirname(process.env.PERSONA_STATE), 'seed.json'), JSON.string
 console.log(`seed: course ${course.id}, pools ${poolIds.join(', ')}, media pool ${mediaPoolId}, media flow pool ${flowPoolId}, AI ${admin.ai_enabled}, mode_config ${JSON.stringify(modeConfig)}`)
 
 /**
- * A w × h RGBA PNG: transparent ground with dark bars, roughly a wordmark (GitHub #78 seed logo).
+ * A w × h RGBA PNG: by default transparent ground with dark bars, roughly a wordmark (GitHub #78
+ * seed logo); pixel(x, y) → [r, g, b, a] draws anything else (GitHub #93 background).
  * Built here so that the seed needs no image file; zlib and a CRC-32 are all a PNG needs.
  */
-function makePng(w, h) {
+function makePng(w, h, pixel = null) {
 	const crcTable = Array.from({ length: 256 }, (_, n) => {
 		let c = n
 		for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
@@ -307,8 +331,13 @@ function makePng(w, h) {
 		const row = y * (w * 4 + 1)
 		raw[row] = 0
 		for (let x = 0; x < w; x++) {
-			const ink = y > 30 && y < 130 && (Math.floor(x / 22) % 3 !== 2) && x > 20 && x < w - 20
 			const o = row + 1 + x * 4
+			if (pixel) {
+				const [r, g, b, a] = pixel(x, y)
+				raw[o] = r; raw[o + 1] = g; raw[o + 2] = b; raw[o + 3] = a
+				continue
+			}
+			const ink = y > 30 && y < 130 && (Math.floor(x / 22) % 3 !== 2) && x > 20 && x < w - 20
 			raw[o] = 0x1a; raw[o + 1] = 0x3a; raw[o + 2] = 0x5c; raw[o + 3] = ink ? 255 : 0
 		}
 	}

@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
-const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, DEAD_LINK_STATION_PREFIX } = require('../../../scripts/persona-sweep/lib.cjs')
+const { expectedReason, axeFindings, stationText, pickAnswerIndex, REFUSED_LOGO_STATION, REFUSED_BACKGROUND_STATION, DEAD_LINK_STATION_PREFIX } = require('../../../scripts/persona-sweep/lib.cjs')
 
 describe('persona sweep: expectedReason', () => {
 	const http = (detail) => ({ kind: 'http', detail })
@@ -49,6 +49,20 @@ describe('persona sweep: expectedReason', () => {
 		expect(expectedReason(http('POST 500 /apps/learning/api/settings/admin/cert-logos'), at)).toBeNull()
 		expect(expectedReason(http('DELETE 400 /apps/learning/api/settings/admin/cert-logos/abc'), at)).toBeNull()
 		expect(expectedReason({ kind: 'console', detail: 'POST 400 /apps/learning/api/settings/admin/cert-logos' }, at)).toBeNull()
+	})
+
+	// GitHub #93: the station that offers the background library an SVG and an oversized picture wants the 400s.
+	it('the refused background uploads are expected only at their own station, as admin, for that request', () => {
+		const refused = http('POST 400 /apps/learning/api/settings/admin/cert-backgrounds')
+		const at = { user: 'admin', station: REFUSED_BACKGROUND_STATION }
+		expect(expectedReason(refused, at)).toMatch(/refuses an SVG and an oversized picture/)
+		expect(expectedReason(http('POST 400 /index.php/apps/learning/api/settings/admin/cert-backgrounds'), at)).toBeTruthy()
+		expect(expectedReason(refused, { ...at, station: REFUSED_LOGO_STATION })).toBeNull()
+		expect(expectedReason(refused, { ...at, user: 'instructor' })).toBeNull()
+		expect(expectedReason(http('POST 500 /apps/learning/api/settings/admin/cert-backgrounds'), at)).toBeNull()
+		expect(expectedReason(http('POST 400 /apps/learning/api/settings/admin/cert-logos'), at)).toBeNull()
+		expect(expectedReason(http('DELETE 400 /apps/learning/api/settings/admin/cert-backgrounds/abc'), at)).toBeNull()
+		expect(expectedReason({ kind: 'console', detail: 'POST 400 /apps/learning/api/settings/admin/cert-backgrounds' }, at)).toBeNull()
 	})
 
 	// GitHub #82: a dead-link station opens a link to a deleted course, a course without access or a
