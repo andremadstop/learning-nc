@@ -7,6 +7,7 @@ use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Activity\CertificateSetting;
 use OCA\Learning\Activity\CourseFeedSetting;
 use OCA\Learning\Activity\EnrollmentSetting;
+use OCA\Learning\Activity\ExamAttemptsSetting;
 use OCA\Learning\Activity\MandatoryReminderSetting;
 use OCA\Learning\Activity\Setting;
 use OCA\Learning\Db\Course;
@@ -115,6 +116,7 @@ final class ActivityPublisherTest extends TestCase {
             'feed_pool_added' => CourseFeedSetting::ID,
             'feed_announcement' => CourseFeedSetting::ID,
             'badge_earned' => Setting::ID,
+            'exam_attempts_exhausted' => ExamAttemptsSetting::ID,
         ], ActivityPublisher::TYPES);
     }
 

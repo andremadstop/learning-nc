@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMember;
@@ -40,6 +41,9 @@ class ExamAttemptLimitServiceTest extends TestCase {
     private \ArrayObject $sent;
     /** @var \ArrayObject<string, string> learner preferences (the "already notified" markers) */
     private \ArrayObject $prefs;
+    /** @var \ArrayObject<int, array{subject: string, user: string, course: int, title: string|null, extra: array<string, int|string>}> GitHub #87: activities */
+    private \ArrayObject $activities;
+    private ActivityPublisher $publisher;
 
     protected function setUp(): void {
         $this->course = new Course();
@@ -66,6 +70,11 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $this->notifications = $this->createMock(INotificationManager::class);
         $this->notifications->method('createNotification')->willReturnCallback(fn () => CertificationCycleServiceTest::fakeNotification($this));
         $this->notifications->method('notify')->willReturnCallback(function (INotification $n): void { $this->sent[] = $n; });
+        $this->activities = new \ArrayObject();
+        $this->publisher = $this->createMock(ActivityPublisher::class);
+        $this->publisher->method('toUser')->willReturnCallback(function (string $subject, string $user, int $course, ?string $title = null, array $extra = []): void {
+            $this->activities[] = ['subject' => $subject, 'user' => $user, 'course' => $course, 'title' => $title, 'extra' => $extra];
+        });
     }
 
     private static function member(string $uid, string $role, int $id = 0): CourseMember {
@@ -92,7 +101,7 @@ class ExamAttemptLimitServiceTest extends TestCase {
         $config->method('getUserValue')->willReturnCallback(fn (string $u, string $a, string $k, $d = '') => $prefs[$u . '/' . $k] ?? $d);
         $config->method('setUserValue')->willReturnCallback(function (string $u, string $a, string $k, $v) use ($prefs): void { $prefs[$u . '/' . $k] = (string)$v; });
         $config->method('deleteUserValue')->willReturnCallback(function (string $u, string $a, string $k) use ($prefs): void { unset($prefs[$u . '/' . $k]); });
-        return new ExamAttemptLimitService($db, $courses, $this->members, $this->pass, $summary, $this->notifications, $time, $this->createMock(LoggerInterface::class), $config);
+        return new ExamAttemptLimitService($db, $courses, $this->members, $this->pass, $summary, $this->notifications, $time, $this->createMock(LoggerInterface::class), $config, $this->publisher);
     }
 
     private static function usedOn(int $poolId, int $n): FakeQueryBuilder {
@@ -275,9 +284,38 @@ class ExamAttemptLimitServiceTest extends TestCase {
         } catch (ExamAttemptLimitException $e) {
         }
         self::assertCount(2, $this->sent, 'one per instructor, the refused start adds none');
+        // GitHub #87: and one activity per instructor, never for the learner, also only once
+        self::assertSame(['teacher', 'co'], array_column($this->activities->getArrayCopy(), 'user'));
 
         $this->service([])->clearNotifications('anna', self::COURSE, 1500);
         self::assertCount(0, $this->prefs, 'the new cycle removes the marker');
+    }
+
+    /**
+     * GitHub #87: besides the bell, an activity for every instructor of the course (stream and,
+     * by default, email). Only ids and titles: the learner travels as their member row, never as uid.
+     */
+    public function testTheInstructorsAlsoGetAnActivity(): void {
+        $this->pass->method('examStandings')->willReturn(['users' => ['anna' => ['passed' => false, 'pools' => []]]]);
+        $this->notifications->method('getCount')->willReturn(0);
+        $this->service([self::used(3)])->afterExamCompleted('anna', self::COURSE, self::POOL);
+
+        self::assertCount(2, $this->activities);
+        foreach ($this->activities as $activity) {
+            self::assertSame(ActivityPublisher::SUBJECT_EXAM_ATTEMPTS_EXHAUSTED, $activity['subject']);
+            self::assertSame(self::COURSE, $activity['course']);
+            self::assertSame('Safety', $activity['title']);
+            self::assertSame(['pool_id' => self::POOL, 'pool_title' => 'Fire safety', 'member_id' => 31], $activity['extra']);
+            self::assertStringNotContainsString('anna', (string)json_encode($activity));
+        }
+    }
+
+    /** No activity where no bell rings: requirement met, or no limit reached. */
+    public function testNoActivityWithoutTheNotification(): void {
+        $this->pass->method('examStandings')->willReturn(['users' => ['anna' => ['passed' => true, 'pools' => []]]]);
+        $this->service([self::used(3)])->afterExamCompleted('anna', self::COURSE, self::POOL);
+        $this->service([self::used(2)])->afterExamCompleted('anna', self::COURSE, self::POOL);
+        self::assertCount(0, $this->activities);
     }
 
     public function testThePolicyShowsTheLimitAndTheUsedAttempts(): void {

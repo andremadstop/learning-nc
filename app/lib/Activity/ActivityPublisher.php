@@ -42,6 +42,8 @@ class ActivityPublisher {
     public const SUBJECT_FEED_POOL_ADDED = 'feed_pool_added';
     public const SUBJECT_FEED_ANNOUNCEMENT = 'feed_announcement';
     public const SUBJECT_BADGE_EARNED = 'badge_earned';
+    /** GitHub #87: to the course's instructors; the same subject as their bell notification. */
+    public const SUBJECT_EXAM_ATTEMPTS_EXHAUSTED = 'exam_attempts_exhausted';
 
     /** Subject → activity type (= the setting's identifier). */
     public const TYPES = [
@@ -55,6 +57,7 @@ class ActivityPublisher {
         self::SUBJECT_FEED_POOL_ADDED => CourseFeedSetting::ID,
         self::SUBJECT_FEED_ANNOUNCEMENT => CourseFeedSetting::ID,
         self::SUBJECT_BADGE_EARNED => Setting::ID,
+        self::SUBJECT_EXAM_ATTEMPTS_EXHAUSTED => ExamAttemptsSetting::ID,
     ];
 
     public function __construct(

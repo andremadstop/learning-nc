@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
@@ -37,6 +38,8 @@ use Psr\Log\LoggerInterface;
  * course's instructors get one notification per learner, pool and cycle (exam_attempts_exhausted).
  * Sent after the last attempt is completed, and — for an attempt that never reached the complete
  * call (abandoned, timed out) — when the next start is refused. Deduplicated, so both paths are safe.
+ * Each of them also gets an activity (5.17.0, stream and by default email, ExamAttemptsSetting)
+ * together with the notification, so exactly as often.
  */
 class ExamAttemptLimitService {
     public const MAX_LIMIT = 50;
@@ -55,6 +58,7 @@ class ExamAttemptLimitService {
         private readonly ITimeFactory $timeFactory,
         private readonly LoggerInterface $logger,
         private readonly IConfig $config,
+        private readonly ActivityPublisher $activities,
     ) {}
 
     /** The limit that applies in this course, null = unlimited. */
@@ -425,6 +429,13 @@ class ExamAttemptLimitService {
                     if ($this->notificationManager->getCount($notification) === 0) {
                         $notification->setDateTime($this->timeFactory->getDateTime());
                         $this->notificationManager->notify($notification);
+                        // GitHub #87: the same event as an activity, once with the bell. Ids and
+                        // titles only, the learner as member row (Provider reads the name).
+                        $this->activities->toUser(ActivityPublisher::SUBJECT_EXAM_ATTEMPTS_EXHAUSTED, $recipient, $courseId, (string)$course->getTitle(), [
+                            'pool_id' => $poolId,
+                            'pool_title' => $poolTitle,
+                            'member_id' => $memberId,
+                        ]);
                     }
                 } catch (\Throwable $e) {
                     $this->logger->warning('Exam attempt notification failed for one recipient: {msg}', ['msg' => $e->getMessage(), 'app' => 'learning']);

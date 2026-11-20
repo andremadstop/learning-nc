@@ -4154,5 +4154,6 @@ OC.L10N.register(
     "Zugriffskontrolle" : "Contrôle d'accès",
     "Patch-Management" : "Gestion des correctifs",
     "Sichere Architektur" : "Architecture sécurisée",
+    "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Tentatives d’examen épuisées (pour les formateurs du cours)",
 },
 "nplurals=2; plural=(n > 1);");

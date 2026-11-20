@@ -18,6 +18,8 @@ use OCA\Learning\Tests\Support\FakeResult;
 use OCP\Activity\Exceptions\UnknownActivityException;
 use OCP\Activity\IEvent;
 use OCP\IL10N;
+use OCP\IUser;
+use OCP\IUserManager;
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 use PHPUnit\Framework\TestCase;
@@ -39,8 +41,13 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class ProviderTest extends TestCase {
 
-    /** Course 7 exists, led by "teacher"; "learner" is a member; pool 3 belongs to it. */
+    /**
+     * Course 7 exists, led by "teacher"; "learner" is a member, "co" a co-instructor; pool 3 belongs
+     * to it. Member row 31 is the learner "anna" of course 7 (GitHub #87), row 32 one of course 8.
+     */
     private ?CourseMapper $courseMapper = null;
+    private ?IUserManager $userManager = null;
+    private string $annaName = 'Anna Muster';
     private ?CourseMemberMapper $memberMapper = null;
     private ?CoursePoolMapper $coursePoolMapper = null;
 
@@ -57,10 +64,32 @@ class ProviderTest extends TestCase {
         });
         $this->memberMapper = $this->createMock(CourseMemberMapper::class);
         $this->memberMapper->method('findByCourseAndUser')->willReturnCallback(static function (int $courseId, string $uid): CourseMember {
-            if ($courseId !== 7 || $uid !== 'learner') {
+            if ($courseId !== 7 || !in_array($uid, ['learner', 'co'], true)) {
                 throw new DoesNotExistException('no member');
             }
-            return new CourseMember();
+            $member = new CourseMember();
+            $member->setRole($uid === 'co' ? 'instructor' : 'student');
+            return $member;
+        });
+        $this->memberMapper->method('findById')->willReturnCallback(static function (int $id): CourseMember {
+            if (!in_array($id, [31, 32], true)) {
+                throw new DoesNotExistException('no member row');
+            }
+            $member = new CourseMember();
+            $member->setId($id);
+            $member->setCourseId($id === 31 ? 7 : 8);
+            $member->setUserId('anna');
+            $member->setRole('student');
+            return $member;
+        });
+        $this->userManager = $this->createMock(IUserManager::class);
+        $this->userManager->method('get')->willReturnCallback(function (string $uid): ?IUser {
+            if ($uid !== 'anna') {
+                return null;
+            }
+            $user = $this->createMock(IUser::class);
+            $user->method('getDisplayName')->willReturnCallback(fn (): string => $this->annaName);
+            return $user;
         });
         $this->coursePoolMapper = $this->createMock(CoursePoolMapper::class);
         $this->coursePoolMapper->method('findByCourseAndPool')->willReturnCallback(static function (int $courseId, int $poolId): CoursePool {
@@ -87,7 +116,7 @@ class ProviderTest extends TestCase {
         $urlGenerator->method('linkToRouteAbsolute')->willReturn('https://nc.example/apps/learning');
 
         $db = new FakeDbConnection(array_map(static fn ($row) => new FakeQueryBuilder(FakeResult::fromFetch($row)), $announcementRows));
-        return new Provider($l10nFactory, $urlGenerator, $db, $this->courseMapper, $this->memberMapper, $this->coursePoolMapper);
+        return new Provider($l10nFactory, $urlGenerator, $db, $this->courseMapper, $this->memberMapper, $this->coursePoolMapper, $this->userManager);
     }
 
     private function makeEvent(string $app, string $subject, array $params = [], bool $stubSetters = true, string $reader = 'learner'): IEvent {
@@ -190,14 +219,22 @@ class ProviderTest extends TestCase {
             'pool' => ['feed_pool_added', $course + ['pool_id' => 3, 'pool_name' => 'Pool A'], 'Neuer Fragenpool im Kurs Brandschutz: Pool A', '/courses/7/feed'],
             'announcement' => ['feed_announcement', $course + ['announcement_id' => 4], 'Neue Ankündigung im Kurs Brandschutz: Termin', '/courses/7/feed'],
             'badge' => ['badge_earned', ['badge_name' => 'Wochenserie', 'badge_emoji' => '*'], 'Achievement unlocked: * Wochenserie', ''],
+            // GitHub #87: to the course's instructors (rendered for "teacher", see readerOf())
+            'attempts' => ['exam_attempts_exhausted', $course + ['pool_id' => 3, 'pool_title' => 'Pool A', 'member_id' => 31],
+                'Anna Muster hat alle Prüfungsversuche für „Pool A“ im Kurs Brandschutz aufgebraucht', '/courses/7/members'],
         ];
+    }
+
+    /** Who reads the activity in the per-subject tests: the instructors' one goes to an instructor. */
+    private static function readerOf(string $subject): string {
+        return $subject === 'exam_attempts_exhausted' ? 'teacher' : 'learner';
     }
 
     /** @param array<string, int|string> $params */
     #[\PHPUnit\Framework\Attributes\DataProvider('subjects')]
     public function testEveryPublishedSubjectIsRendered(string $subject, array $params, string $text, string $path): void {
         $this->assertArrayHasKey($subject, ActivityPublisher::TYPES, 'a subject the publisher knows');
-        $parsed = $this->render($subject, $params);
+        $parsed = $this->render($subject, $params, self::readerOf($subject));
 
         $this->assertSame($text, $parsed['subject'] ?? null);
         $this->assertSame('https://nc.example/apps/learning' . ($subject === 'badge_earned' ? '/dashboard' : $path), $parsed['link'] ?? null);
@@ -284,6 +321,13 @@ class ProviderTest extends TestCase {
                 'emoji' => ['type' => 'highlight', 'id' => 'emoji', 'name' => '*'],
                 'badge' => ['type' => 'highlight', 'id' => 'week_streak', 'name' => 'Wochenserie', 'link' => $base . '/dashboard'],
             ]],
+            // GitHub #87: the learner's name and the course open the course's member list
+            'attempts' => ['exam_attempts_exhausted', $course + ['pool_id' => 3, 'pool_title' => 'Pool A', 'member_id' => 31],
+                '{learner} hat alle Prüfungsversuche für „{pool}“ im Kurs {course} aufgebraucht', [
+                    'learner' => ['type' => 'highlight', 'id' => '31', 'name' => 'Anna Muster', 'link' => $base . '/courses/7/members'],
+                    'pool' => ['type' => 'highlight', 'id' => '3', 'name' => 'Pool A'],
+                    'course' => ['type' => 'highlight', 'id' => '7', 'name' => 'Brandschutz', 'link' => $base . '/courses/7/members'],
+                ]],
         ];
     }
 
@@ -293,7 +337,7 @@ class ProviderTest extends TestCase {
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('richSubjects')]
     public function testEverySubjectNamesItsObjectsAsLinks(string $subject, array $params, string $template, array $expected): void {
-        $parsed = $this->render($subject, $params);
+        $parsed = $this->render($subject, $params, self::readerOf($subject));
         $this->assertSame($template, $parsed['rich'] ?? null);
         $this->assertSame($expected, $parsed['richParams'] ?? null);
         // Nextcloud's rich object validator drops an event with a non-string value, and with it
@@ -403,5 +447,58 @@ class ProviderTest extends TestCase {
         $this->render('course_enrolled', ['course_id' => 7, 'course_title' => 'A'], 'learner', $provider);
         $this->render('certificate_issued', ['course_id' => 7, 'course_title' => 'A'], 'learner', $provider);
         $this->render('certificate_issued', ['course_id' => 7, 'course_title' => 'A'], 'teacher', $provider);
+    }
+
+    // ---- GitHub #87: "all exam attempts used up", for the course's instructors ----------------
+
+    private const ATTEMPTS = ['course_id' => 7, 'course_title' => 'Brandschutz', 'pool_id' => 3, 'pool_title' => 'Pool A', 'member_id' => 31];
+
+    /** A co-instructor (member with the instructor role) gets the same links as the owner. */
+    public function testACoInstructorGetsTheMemberListLinks(): void {
+        $parsed = $this->render('exam_attempts_exhausted', self::ATTEMPTS, 'co');
+        $this->assertSame('https://nc.example/apps/learning/courses/7/members', $parsed['richParams']['learner']['link'] ?? null);
+        $this->assertSame('https://nc.example/apps/learning/courses/7/members', $parsed['richParams']['course']['link'] ?? null);
+        $this->assertSame('https://nc.example/apps/learning/courses/7/members', $parsed['link']);
+    }
+
+    /**
+     * The member list is the instructors' tab. A reader who no longer leads the course (only a
+     * member now, or gone) gets no link and no name: the name is read when the activity is shown,
+     * and they may no longer see who is in the course. The course keeps its name, as in #85.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function noLongerLeading(): array {
+        return ['now only a member' => ['learner'], 'no longer in the course' => ['someone-else']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('noLongerLeading')]
+    public function testAReaderWhoNoLongerLeadsTheCourseGetsNoNameAndNoLink(string $reader): void {
+        $parsed = $this->render('exam_attempts_exhausted', self::ATTEMPTS, $reader);
+        $this->assertSame('Eine lernende Person hat alle Prüfungsversuche für „Pool A“ im Kurs Brandschutz aufgebraucht', $parsed['subject']);
+        foreach ($parsed['richParams'] as $key => $parameter) {
+            $this->assertArrayNotHasKey('link', $parameter, $key);
+        }
+        $this->assertStringNotContainsString('Anna', (string)json_encode($parsed));
+        $this->assertSame('https://nc.example/apps/learning', $parsed['link']);
+    }
+
+    /** A member row of another course, or one that is gone, names nobody (as the bell does). */
+    public function testAMemberRowThatIsNotThisCoursesNamesNobody(): void {
+        foreach ([32, 99, 0] as $memberId) {
+            $parsed = $this->render('exam_attempts_exhausted', ['member_id' => $memberId] + self::ATTEMPTS, 'teacher');
+            $this->assertSame('Eine lernende Person', $parsed['richParams']['learner']['name'], (string)$memberId);
+            $this->assertArrayNotHasKey('link', $parsed['richParams']['learner'], (string)$memberId);
+            $this->assertSame('https://nc.example/apps/learning/courses/7/members', $parsed['richParams']['course']['link'], (string)$memberId);
+        }
+    }
+
+    /** The display name is the learner's own choice: it never becomes part of the template. */
+    public function testTheLearnersNameNeverBecomesPartOfTheTemplate(): void {
+        $this->annaName = '<img src=x onerror=alert(1)>{course}';
+        $parsed = $this->render('exam_attempts_exhausted', self::ATTEMPTS, 'teacher');
+        $this->assertStringNotContainsString('<img', $parsed['rich']);
+        $this->assertSame($this->annaName, $parsed['richParams']['learner']['name']);
+        $this->assertSame('<img src=x onerror=alert(1)>{course} hat alle Prüfungsversuche für „Pool A“ im Kurs Brandschutz aufgebraucht', $parsed['subject']);
     }
 }

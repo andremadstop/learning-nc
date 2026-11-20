@@ -4154,5 +4154,6 @@ OC.L10N.register(
     "Zugriffskontrolle" : "Zugriffskontrolle",
     "Patch-Management" : "Patch-Management",
     "Sichere Architektur" : "Sichere Architektur",
+    "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)",
 },
 "nplurals=2; plural=(n != 1);");

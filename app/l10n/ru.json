@@ -4205,6 +4205,7 @@
         "Web Application Firewall (WAF)": "Межсетевой экран веб-приложений (WAF)",
         "Zugriffskontrolle": "Управление доступом",
         "Patch-Management": "Управление обновлениями",
-        "Sichere Architektur": "Безопасная архитектура"
+        "Sichere Architektur": "Безопасная архитектура",
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)"
     }
 }

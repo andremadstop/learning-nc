@@ -7,6 +7,7 @@ use OCA\Learning\Activity\ActivityPublisher;
 use OCA\Learning\Activity\CertificateSetting;
 use OCA\Learning\Activity\CourseFeedSetting;
 use OCA\Learning\Activity\EnrollmentSetting;
+use OCA\Learning\Activity\ExamAttemptsSetting;
 use OCA\Learning\Activity\LearningActivitySetting;
 use OCA\Learning\Activity\MandatoryReminderSetting;
 use OCA\Learning\Activity\Setting;
@@ -28,7 +29,7 @@ final class ActivitySettingsTest extends TestCase {
         $l10n = $this->createMock(IL10N::class);
         $l10n->method('t')->willReturnArgument(0);
         $all = [];
-        foreach ([EnrollmentSetting::class, CertificateSetting::class, MandatoryReminderSetting::class, CourseFeedSetting::class, Setting::class] as $class) {
+        foreach ([EnrollmentSetting::class, CertificateSetting::class, MandatoryReminderSetting::class, CourseFeedSetting::class, Setting::class, ExamAttemptsSetting::class] as $class) {
             $setting = new $class($l10n);
             $all[$setting->getIdentifier()] = $setting;
         }
@@ -44,6 +45,8 @@ final class ActivitySettingsTest extends TestCase {
             'learning_mandatory_reminder' => true,
             'learning_course_feed' => false,
             'learning_badge_earned' => false,
+            // GitHub #87: the instructors' "attempts used up", like the certificates
+            'learning_exam_attempts' => true,
         ], $defaults);
     }
 

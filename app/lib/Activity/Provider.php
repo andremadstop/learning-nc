@@ -11,6 +11,7 @@ use OCP\Activity\IProvider;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use OCP\IURLGenerator;
+use OCP\IUserManager;
 use OCP\L10N\IFactory;
 
 /**
@@ -20,6 +21,10 @@ use OCP\L10N\IFactory;
  *
  * Every subject is also a rich subject (setSubjects()): the names in it (course, pool,
  * announcement, achievement) are links to what they name, in the stream and in the activity email.
+ *
+ * GitHub #87: "all exam attempts used up" goes to the course's instructors. The learner's name is
+ * read when it is rendered, from the member row the event carries (never a uid), and only for a
+ * reader who still leads the course; name and course then open the course's member list.
  */
 class Provider implements IProvider {
     private IFactory $l10nFactory;
@@ -34,6 +39,9 @@ class Provider implements IProvider {
     private array $reachable = [];
     /** @var array<string, bool> per request: "<course>:<pool>" => the pool is in the course */
     private array $poolsInCourse = [];
+    /** @var array<string, bool> per request: "<course>:<reader>" => the reader leads the course */
+    private array $leads = [];
+    private IUserManager $userManager;
 
     public function __construct(
         IFactory $l10nFactory,
@@ -42,6 +50,7 @@ class Provider implements IProvider {
         CourseMapper $courseMapper,
         CourseMemberMapper $memberMapper,
         CoursePoolMapper $coursePoolMapper,
+        IUserManager $userManager,
     ) {
         $this->l10nFactory = $l10nFactory;
         $this->urlGenerator = $urlGenerator;
@@ -49,6 +58,7 @@ class Provider implements IProvider {
         $this->courseMapper = $courseMapper;
         $this->memberMapper = $memberMapper;
         $this->coursePoolMapper = $coursePoolMapper;
+        $this->userManager = $userManager;
     }
 
     public function parse(mixed $language, IEvent $event, ?IEvent $previousEvent = null): IEvent {
@@ -144,6 +154,21 @@ class Provider implements IProvider {
                     $this->courseSubject($event, $l->t('Neue Ankündigung im Kurs %s', ['{course}']), $courseId, $courseTitle, $reachable, '');
                 }
                 $event->setLink($feed);
+                break;
+
+            case ActivityPublisher::SUBJECT_EXAM_ATTEMPTS_EXHAUSTED:
+                // GitHub #87: the member list is the instructors' tab. A reader who no longer leads
+                // the course gets neither a link nor the learner's name (read now, like the bell's).
+                $leads = $this->leadsCourse($courseId, (string)$event->getAffectedUser());
+                $memberId = (int)($params['member_id'] ?? 0);
+                $name = $leads ? $this->learnerName($memberId, $courseId) : null;
+                $members = $leads ? $this->courseUrl($courseId, 'members') : null;
+                $this->setSubjects($event, $l->t('%1$s hat alle Prüfungsversuche für „%2$s“ im Kurs %3$s aufgebraucht', ['{learner}', '{pool}', '{course}']), [
+                    'learner' => $this->highlight((string)$memberId, $name ?? $l->t('Eine lernende Person'), $name !== null ? $members : null),
+                    'pool' => $this->highlight((string)(int)($params['pool_id'] ?? 0), (string)($params['pool_title'] ?? ''), null),
+                    'course' => $this->highlight((string)$courseId, $courseTitle, $members),
+                ]);
+                $event->setLink($members ?? $this->appUrl());
                 break;
 
             default:
@@ -245,6 +270,49 @@ class Provider implements IProvider {
             $reachable = false;
         }
         return $this->reachable[$key] = $reachable;
+    }
+
+    /**
+     * GitHub #87: whether $userId leads the course now: its owner or a member with the instructor
+     * role (who see the member list). Per request; any failure counts as "no".
+     */
+    private function leadsCourse(int $courseId, string $userId): bool {
+        if ($courseId <= 0 || $userId === '') {
+            return false;
+        }
+        $key = $courseId . ':' . $userId;
+        if (!array_key_exists($key, $this->leads)) {
+            try {
+                $this->leads[$key] = (string)$this->courseMapper->findById($courseId)->getInstructorId() === $userId
+                    || $this->memberMapper->findByCourseAndUser($courseId, $userId)->getRole() === 'instructor';
+            } catch (\Throwable $e) {
+                $this->leads[$key] = false;
+            }
+        }
+        return $this->leads[$key];
+    }
+
+    /**
+     * The current display name behind a member row of this course (as Notifier::learnerName()):
+     * null for a row of another course, a row that is gone (the learner left the course or the
+     * account was deleted) or an unknown account.
+     */
+    private function learnerName(int $memberId, int $courseId): ?string {
+        if ($memberId <= 0) {
+            return null;
+        }
+        try {
+            $member = $this->memberMapper->findById($memberId);
+            $uid = (string)$member->getUserId();
+            if ((int)$member->getCourseId() !== $courseId || $uid === '') {
+                return null;
+            }
+            $user = $this->userManager->get($uid);
+            $name = $user !== null ? (string)$user->getDisplayName() : '';
+            return $name !== '' ? $name : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function poolInCourse(int $courseId, int $poolId): bool {

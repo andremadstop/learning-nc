@@ -5,6 +5,7 @@ namespace OCA\Learning\AppInfo;
 use OCA\Learning\Activity\CertificateSetting;
 use OCA\Learning\Activity\CourseFeedSetting;
 use OCA\Learning\Activity\EnrollmentSetting;
+use OCA\Learning\Activity\ExamAttemptsSetting;
 use OCA\Learning\Activity\MandatoryReminderSetting;
 use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\AuditVerifyCommand;
@@ -50,6 +51,7 @@ class Application extends App implements IBootstrap {
         CertificateSetting::class,
         MandatoryReminderSetting::class,
         CourseFeedSetting::class,
+        ExamAttemptsSetting::class,
     ];
 
     public function __construct() {

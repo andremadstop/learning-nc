@@ -224,6 +224,7 @@ final class LearningActivitiesTest extends TestCase {
             Server::get(\OCA\Learning\Db\CourseMapper::class),
             Server::get(\OCA\Learning\Db\CourseMemberMapper::class),
             Server::get(\OCA\Learning\Db\CoursePoolMapper::class),
+            Server::get(IUserManager::class),
         );
         $handler = (new \ReflectionClass(\OCA\Activity\MailQueueHandler::class))->newInstanceWithoutConstructor();
         $toHtml = new \ReflectionMethod(\OCA\Activity\MailQueueHandler::class, 'getHTMLSubject');
