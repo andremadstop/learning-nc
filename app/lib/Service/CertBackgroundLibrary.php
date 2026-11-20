@@ -18,8 +18,9 @@ namespace OCA\Learning\Service;
  * Every upload is decoded and encoded again with GD before it is stored. A background is a full
  * photo or scan more often than a logo is, and the copy drops whatever rode along with the pixels:
  * EXIF and GPS data, comments, colour profiles, and anything appended to the file (a "polyglot" that
- * is also an archive or a script). The id is the sha256 of the re-encoded bytes. A re-encoded file
- * that comes out larger than the limit is refused as too large, the limit holds for what is stored.
+ * is also an archive or a script). The id is the sha256 of the re-encoded bytes. A JPEG or WebP copy
+ * larger than the limit is written again at a lower quality (release review 5.17.0); one still larger
+ * is refused as too large, the limit holds for what is stored.
  * A JPEG's EXIF orientation is applied to the pixels first (C10 review): the copy has no EXIF, and
  * a phone photo taken upright would otherwise lie on its side.
  * Without GD support for the type the upload is refused, never stored unchecked.

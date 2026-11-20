@@ -148,8 +148,7 @@ class CertLayoutService {
      *
      * The caller has checked that the user manages the course.
      *
-     * @throws \InvalidArgumentException logo_not_found (not, or no longer, in the library); too_large,
-     *         unsupported_type (a logo stored before 5.17.0 that cannot be re-encoded within the limits)
+     * @throws \InvalidArgumentException logo_not_found (not, or no longer, in the library)
      */
     public function selectLogo(Course $course, ?string $logoId): Course {
         $layout = CertLayout::decode($course->getCertLayout());

@@ -16,8 +16,10 @@ use OCP\Files\NotFoundException;
  * anything appended to the file stay behind, a JPEG's EXIF orientation is applied to the pixels,
  * transparency is kept, a PNG stays a PNG. Before, a logo was stored as uploaded, and the EXIF data
  * of a JPEG logo reached every certificate and the public verification page. Its id is the sha256
- * of the stored bytes. A copy that comes out over the limit is refused as too large. Logos stored
- * before stay as they are in the library; a course choosing one gets a re-encoded copy (courseCopy()).
+ * of the stored bytes. A JPEG or WebP copy over the limit is written again at a lower quality
+ * (release review 5.17.0); a copy still over it is refused as too large. Logos stored
+ * before stay as they are in the library; a course choosing one gets a re-encoded copy (courseCopy()),
+ * or the stored bytes when that copy cannot be made within the limits (as in 5.16).
  *
  * Only PNG, JPEG and WebP, recognised by their content (signature bytes and the image header), never
  * by the file name or the type the browser claims. No SVG: an SVG can carry scripts, and the
@@ -58,16 +60,23 @@ class CertLogoLibrary extends CertImageLibrary {
      * (CertLayoutService::selectLogo()): the stored bytes of a logo re-encoded on upload, a
      * re-encoded copy of one stored before 5.17.0 (ZC9). The library itself is not changed.
      *
+     * An old logo that GD cannot re-encode within the limits (it grows past 1 MB as a PNG, GD cannot
+     * read it) is copied as it is stored, which is what 5.16 did (release review 5.17.0): it passed
+     * content()'s check, and a logo courses could choose before the update stays choosable.
+     *
      * @return array{mime: string, bytes: string}
      * @throws NotFoundException no such logo, or its file is gone or changed
-     * @throws \InvalidArgumentException too_large, unsupported_type (the old logo cannot be re-encoded within the limits)
      */
     public function courseCopy(string $id): array {
         $logo = $this->content($id);
         if ($this->find($id)['reencoded'] ?? false) {
             return $logo;
         }
-        return self::reencodedCopy($logo['bytes'], self::MAX_BYTES, self::MAX_DIMENSION);
+        try {
+            return self::reencodedCopy($logo['bytes'], self::MAX_BYTES, self::MAX_DIMENSION);
+        } catch (\InvalidArgumentException $e) {
+            return $logo;
+        }
     }
 
     /**

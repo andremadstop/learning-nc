@@ -197,18 +197,13 @@ class CertLogoLibraryTest extends TestCase {
         }
     }
 
-    /** The limit holds for what is stored: a re-encoded copy over 1 MB is refused like an upload over it. */
+    /**
+     * The limit holds for what is stored: a re-encoded copy over 1 MB is refused like an upload over
+     * it. A grey PNG with alpha comes back from GD as RGBA, twice the bytes, and a PNG has no lower
+     * quality to fall back to.
+     */
     public function testAReencodedCopyOverTheLimitIsTooLarge(): void {
-        mt_srand(7);
-        $image = imagecreatetruecolor(1400, 1400);
-        for ($y = 0; $y < 1400; $y++) {
-            for ($x = 0; $x < 1400; $x++) {
-                imagesetpixel($image, $x, $y, mt_rand(0, 0xFFFFFF));
-            }
-        }
-        ob_start();
-        imagejpeg($image, null, 30);
-        $upload = (string)ob_get_clean();
+        $upload = self::greyAlphaNoisePng(650, 650);
         $this->assertLessThan(CertLogoLibrary::MAX_BYTES, strlen($upload), 'the upload itself is within the limit');
 
         try {
@@ -218,6 +213,69 @@ class CertLogoLibraryTest extends TestCase {
             $this->assertSame('too_large', $e->getMessage());
         }
         $this->assertSame([], $this->library()->list());
+    }
+
+    /**
+     * Release review 5.17.0: a JPEG saved at a lower quality than the re-encoding's grows when it is
+     * written again at QUALITY. Within the limit as uploaded, it is stored at a lower quality rather
+     * than refused as too large.
+     */
+    public function testAJpegThatGrowsWhenReencodedIsStoredAtALowerQuality(): void {
+        $upload = self::noiseJpeg(1350, 60);
+        $this->assertLessThan(CertLogoLibrary::MAX_BYTES, strlen($upload), 'the upload itself is within the limit');
+        $atQuality = imagecreatefromstring($upload);
+        ob_start();
+        imagejpeg($atQuality, null, CertLogoLibrary::QUALITY);
+        $this->assertGreaterThan(CertLogoLibrary::MAX_BYTES, strlen((string)ob_get_clean()), 'precondition: at QUALITY the copy is over the limit');
+
+        $entry = $this->library()->add('Photo', $upload);
+        $stored = $this->files[$entry['id']];
+        $this->assertSame('image/jpeg', $entry['mime']);
+        $this->assertLessThanOrEqual(CertLogoLibrary::MAX_BYTES, strlen($stored));
+        $this->assertSame(hash('sha256', $stored), $entry['id']);
+        $this->assertSame([1350, 1350], array_slice((array)getimagesizefromstring($stored), 0, 2));
+    }
+
+    /**
+     * Release review 5.17.0: a logo stored before 5.17.0 that GD cannot re-encode within the limits
+     * stays choosable, as it was in 5.16: the course gets the stored bytes (checked again by
+     * content()) instead of an error on every attempt.
+     */
+    public function testALogoStoredBeforeThatCannotBeReencodedIsCopiedAsItIs(): void {
+        $old = self::greyAlphaNoisePng(650, 650);
+        $id = hash('sha256', $old);
+        $this->files = [$id => $old];
+        $this->config['cert_logo_library'] = (string)json_encode([['id' => $id, 'name' => 'Old', 'mime' => 'image/png', 'size' => strlen($old), 'created_at' => 1]]);
+
+        $this->assertSame(['mime' => 'image/png', 'bytes' => $old], $this->library()->courseCopy($id));
+    }
+
+    private static function noiseJpeg(int $size, int $quality): string {
+        mt_srand(7);
+        $image = imagecreatetruecolor($size, $size);
+        for ($y = 0; $y < $size; $y++) {
+            for ($x = 0; $x < $size; $x++) {
+                imagesetpixel($image, $x, $y, mt_rand(0, 0xFFFFFF));
+            }
+        }
+        ob_start();
+        imagejpeg($image, null, $quality);
+        return (string)ob_get_clean();
+    }
+
+    /** A PNG of colour type 4 (grey with alpha) full of noise, written by hand (GD cannot write the type). */
+    private static function greyAlphaNoisePng(int $width, int $height): string {
+        mt_srand(7);
+        $raw = '';
+        for ($y = 0; $y < $height; $y++) {
+            $raw .= "\0";
+            for ($x = 0; $x < $width; $x++) {
+                $raw .= chr(mt_rand(0, 255)) . chr(mt_rand(0, 255));
+            }
+        }
+        $chunk = static fn(string $type, string $data): string => pack('N', strlen($data)) . $type . $data . pack('N', crc32($type . $data));
+        return "\x89PNG\r\n\x1a\n" . $chunk('IHDR', pack('NNCCCCC', $width, $height, 8, 4, 0, 0, 0))
+            . $chunk('IDAT', (string)gzcompress($raw, 9)) . $chunk('IEND', '');
     }
 
     /**

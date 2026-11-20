@@ -31,6 +31,8 @@ abstract class CertImageLibrary {
     public const MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
     /** JPEG and WebP quality of a re-encoded copy */
     public const QUALITY = 88;
+    /** lower JPEG and WebP qualities tried in turn while a re-encoded copy is over the limit */
+    public const FALLBACK_QUALITIES = [80, 70];
 
     public function __construct(
         private IAppData $appData,
@@ -258,7 +260,7 @@ abstract class CertImageLibrary {
      */
     protected static function reencodedCopy(string $bytes, int $maxBytes, int $maxDimension): array {
         $mime = self::inspect($bytes, $maxBytes, $maxDimension)['mime'];
-        $clean = self::reencode($bytes, $mime);
+        $clean = self::reencode($bytes, $mime, $maxBytes);
         if (strlen($clean) > $maxBytes) {
             throw new \InvalidArgumentException('too_large');
         }
@@ -272,9 +274,14 @@ abstract class CertImageLibrary {
     /**
      * Decode and encode the image again in its own type: only the pixels survive.
      *
+     * With $maxBytes, a JPEG or WebP copy over that size is written again at the lower qualities of
+     * FALLBACK_QUALITIES (release review 5.17.0): a JPEG saved at quality 60–75 grows when written
+     * at QUALITY, and a file within the limit as uploaded would otherwise be refused as too large.
+     * The smallest copy is returned; the caller checks the limit. A PNG is lossless and stays as is.
+     *
      * @throws \InvalidArgumentException unsupported_type (GD cannot read or write it, e.g. an animated WebP)
      */
-    public static function reencode(string $bytes, string $mime): string {
+    public static function reencode(string $bytes, string $mime, ?int $maxBytes = null): string {
         $writer = match ($mime) {
             'image/png' => 'imagepng',
             'image/jpeg' => 'imagejpeg',
@@ -297,12 +304,28 @@ abstract class CertImageLibrary {
             imagesavealpha($image, true);
         }
         // (no imagedestroy(): a no-op since PHP 8.0, deprecated in 8.5; the image is freed with $image)
+        $out = self::encode($image, $mime, self::QUALITY);
+        if ($maxBytes !== null && $mime !== 'image/png') {
+            foreach (self::FALLBACK_QUALITIES as $quality) {
+                if (strlen($out) <= $maxBytes) {
+                    break;
+                }
+                $out = self::encode($image, $mime, $quality);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @throws \InvalidArgumentException unsupported_type (GD could not write it)
+     */
+    private static function encode(\GdImage $image, string $mime, int $quality): string {
         ob_start();
         try {
             $ok = match ($mime) {
                 'image/png' => imagepng($image, null, 9),
-                'image/jpeg' => imagejpeg($image, null, self::QUALITY),
-                default => imagewebp($image, null, self::QUALITY),
+                'image/jpeg' => imagejpeg($image, null, $quality),
+                default => imagewebp($image, null, $quality),
             };
         } finally {
             $out = (string)ob_get_clean();
