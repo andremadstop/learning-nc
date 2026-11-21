@@ -278,6 +278,17 @@ describe('importPreview: the metadata defaults of the pool file', () => {
 		expect(r.items[1].question).toMatchObject({ difficulty: 'easy', chapter_key: 'x', exam_key: 'ccna-1.1-q2' })
 	})
 
+	it('a learning-pool/2 export fills no pool or _meta defaults (ImportController::importJson, PoolBulkImportService)', () => {
+		const r = ok(run({
+			_meta: { format: 'learning-pool/2', default_difficulty: 'hard', handbook_key: 'meta-hb' },
+			pools: [{ name: 'File pool', handbook_key: 'pool-hb', handbook_title: 'Pool handbook', chapter_key: 'ch-7', chapter_title: 'Chapter seven', chapter_order: 7, exam_key_prefix: 'EX', questions: [
+				{ text: 'Which port does HTTPS use?', type: 'single', answers: [{ text: '80', is_correct: false }, { text: '443', is_correct: true }] },
+			] }],
+		}), 1)
+		expect(r.items[0].question).toMatchObject({ handbook_key: null, handbook_title: null, chapter_key: null, chapter_title: null, chapter_order: null, exam_key: null })
+		expect(r.items[0].question.difficulty).not.toBe('hard')
+	})
+
 	it('default_question_type pbq routes items without a type to the PBQ path; ranking is a subtype', () => {
 		const r = ok(run({ _meta: { default_question_type: 'pbq' }, questions: [
 			{ question_text: 'Order the layers', pbq_subtype: 'ranking', pbq_config: { items: ['a', 'b'] } },

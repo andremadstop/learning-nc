@@ -245,6 +245,14 @@ function defaultQuestionType(meta) {
 	return hasOwn(TYPE_ALIASES, type) ? TYPE_ALIASES[type] : type
 }
 
+/** PoolJsonFormat::EXPORT_FORMAT, `_meta.format` of a pool export. */
+const EXPORT_FORMAT = 'learning-pool/2'
+
+/** PoolJsonFormat::isExport(): whether a file's `_meta` marks it as a learning-pool/2 export. */
+function isExportMeta(meta) {
+	return pick(meta, 'format') === EXPORT_FORMAT
+}
+
 /**
  * PoolJsonFormat::applyPoolDefaults(): fill a question's missing metadata from its pool and from
  * the file's `_meta`, in the order question > pool > _meta. A value the question carries itself
@@ -592,6 +600,7 @@ export function analyzeJsonImport(text) {
 	}
 	const fileMeta = isArr(pick(data, '_meta')) ? data._meta : {}
 	const defaultType = defaultQuestionType(fileMeta)
+	const exportFile = isExportMeta(fileMeta)
 
 	const shape = questionListFrom(data)
 	if (shape.error) {
@@ -639,7 +648,9 @@ export function analyzeJsonImport(text) {
 			fail(importMessages.notAnObject(num))
 			return
 		}
-		const raw = applyPoolDefaults(original, shape.pool, fileMeta, index)
+		// A learning-pool/2 question carries its own values: no pool or _meta defaults
+		// (ImportController::importJson, PoolBulkImportService).
+		const raw = exportFile ? original : applyPoolDefaults(original, shape.pool, fileMeta, index)
 
 		// A pbq default, like any default type, does not apply when several answers are correct.
 		const pbqByDefault = defaultType === 'pbq' && !marksSeveralCorrect(raw)

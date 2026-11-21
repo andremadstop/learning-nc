@@ -1083,7 +1083,8 @@ class ImportController extends Controller {
         $imported = 0;
         $errors = [];
         $warnings = [];
-        $ignoredPoolFields = PoolJsonFormat::isExport($fileMeta) ? self::poolFieldsIn($poolObject) : [];
+        $isExport = PoolJsonFormat::isExport($fileMeta);
+        $ignoredPoolFields = $isExport ? self::poolFieldsIn($poolObject) : [];
         if ($ignoredPoolFields !== []) {
             $warnings[] = $this->l10n->t('The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use "Import pools" in the Pools tab.', [implode(', ', $ignoredPoolFields)]);
         }
@@ -1100,8 +1101,12 @@ class ImportController extends Controller {
                 }
 
                 // Pool chapter fields and _meta defaults, where the question has no own value —
-                // the same rule as occ learning:import-pool-json.
-                $rawItem = PoolJsonFormat::applyPoolDefaults($rawItem, $sourcePool, $fileMeta, $index);
+                // the same rule as occ learning:import-pool-json. A learning-pool/2 question
+                // carries its own values: no defaults (as PoolBulkImportService), and the warning
+                // above says the pool fields are not applied.
+                if (!$isExport) {
+                    $rawItem = PoolJsonFormat::applyPoolDefaults($rawItem, $sourcePool, $fileMeta, $index);
+                }
 
                 // PBQ items have their own import path. A pbq default, like any default type,
                 // does not apply to an item that marks several answers correct.

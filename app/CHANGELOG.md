@@ -51,6 +51,9 @@ All notable changes to this project will be documented in this file.
   and stored as in **Import pools** (a translation that cannot be stored is a warning, the
   question stays imported). The pool's own name, description and chapter fields are not applied
   to the open pool — the result says so and names them, instead of dropping them without a word.
+  Nor are they filled into the questions: a question of such a file keeps exactly its own
+  chapter, handbook, exam key and difficulty, as in **Import pools**, and the preview shows the
+  same.
 - **Translations in French and Ukrainian.** Questions and answers could be translated into
   German, English, Russian and Arabic only, although the app speaks six languages: the
   translation dialog, the personal content language and the pool languages in a course now
@@ -121,6 +124,9 @@ All notable changes to this project will be documented in this file.
 - An integration test brings the 50th Leitner card to box 5 for a learner who already has
   "Mastermind" and checks on PostgreSQL and MySQL that box, XP and mastered count are stored; a
   unit test models PostgreSQL's aborted transaction and fails on the old failing insert.
+- **Manage** → **Import** and its preview are tested with a `learning-pool/2` file in the
+  `pools` wrapper whose pool has chapter, handbook and exam-key prefix: none of them reaches the
+  question; without the format marker they still do.
 
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 

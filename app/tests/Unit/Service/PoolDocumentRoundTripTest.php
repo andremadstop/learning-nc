@@ -399,6 +399,69 @@ class PoolDocumentRoundTripTest extends TestCase {
     }
 
     /**
+     * A learning-pool/2 file in the pools[] wrapper (one pool) imported into an existing pool:
+     * the pool's chapter, handbook and exam-key prefix and the `_meta` default difficulty are not
+     * filled into its questions. The result says the pool fields are not applied, and
+     * PoolBulkImportService skips applyPoolDefaults() for this format too; before, the questions
+     * silently took the file pool's chapter and handbook.
+     */
+    public function testTheQuestionImportInAPoolFillsNoPoolDefaultsFromAnExport(): void {
+        $document = [
+            '_meta' => ['format' => PoolJsonFormat::EXPORT_FORMAT, 'default_difficulty' => 'hard', 'handbook_key' => 'meta-hb'],
+            'pools' => [[
+                'name' => 'File pool',
+                'handbook_key' => 'pool-hb',
+                'handbook_title' => 'Pool handbook',
+                'chapter_key' => 'ch-7',
+                'chapter_title' => 'Chapter seven',
+                'chapter_order' => 7,
+                'exam_key_prefix' => 'EX',
+                'questions' => [[
+                    'text' => 'Which port does HTTPS use?',
+                    'type' => 'single',
+                    'answers' => [['text' => '80', 'is_correct' => false], ['text' => '443', 'is_correct' => true]],
+                ]],
+            ]],
+        ];
+
+        $r = $this->importController()->importJson(9, json_encode($document, JSON_THROW_ON_ERROR));
+
+        $this->assertSame(201, $r->getStatus(), json_encode($r->getData()));
+        $this->assertSame(1, $r->getData()['imported'], json_encode($r->getData()));
+        $q = $this->questions[0];
+        $this->assertSame(
+            [null, null, null, null, null, null],
+            [$q->getHandbookKey(), $q->getHandbookTitle(), $q->getChapterKey(), $q->getChapterTitle(), $q->getChapterOrder(), $q->getExamKey()],
+            'a learning-pool/2 question carries its own values; the file pool\'s fields are not applied'
+        );
+        $this->assertNotSame('hard', $q->getDifficulty(), 'no _meta default difficulty for an export');
+    }
+
+    /** Control: the same file without the format marker still fills the pool defaults, as before. */
+    public function testTheQuestionImportInAPoolFillsPoolDefaultsWithoutTheMarker(): void {
+        $document = [
+            '_meta' => ['default_difficulty' => 'hard'],
+            'pools' => [[
+                'name' => 'File pool',
+                'chapter_key' => 'ch-7',
+                'chapter_title' => 'Chapter seven',
+                'exam_key_prefix' => 'EX',
+                'questions' => [[
+                    'text' => 'Which port does HTTPS use?',
+                    'type' => 'single',
+                    'answers' => [['text' => '80', 'is_correct' => false], ['text' => '443', 'is_correct' => true]],
+                ]],
+            ]],
+        ];
+
+        $r = $this->importController()->importJson(9, json_encode($document, JSON_THROW_ON_ERROR));
+
+        $this->assertSame(1, $r->getData()['imported'], json_encode($r->getData()));
+        $q = $this->questions[0];
+        $this->assertSame(['ch-7', 'Chapter seven', 'EX-q1', 'hard'], [$q->getChapterKey(), $q->getChapterTitle(), $q->getExamKey(), $q->getDifficulty()]);
+    }
+
+    /**
      * The import into an existing pool (Manage → Import, ImportController::importJson) keeps
      * what it can keep of an export: instructor notes with their visibility and every question
      * and answer translation (PBQ included), stored through the same checks as the pool import.
