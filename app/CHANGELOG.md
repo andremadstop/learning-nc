@@ -2,6 +2,143 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
+
+Certificates get a presentation layer: a background library with three built-in backgrounds and a
+strength per course (#93), a PDF download made in the browser (#94), and the JSON credential
+behind "Technical details" (#95). Learning's activities now link the course, pool and
+announcement, also in the digest email (#85); "exam attempts used up" reaches the course's
+instructors as an activity (#87); and the Pools search follows up on the last points from #98.
+Thanks to @alphalib-g for the reports and follow-ups in #85, #87 and #98 and for testing each
+step again.
+
+> **Administrators, please read:**
+> - **No migrations, no repair step.** The database schema is unchanged (65 tables, 660 columns).
+>   New certificate design keys are stored in the existing course layout; a course without a
+>   background keeps exactly the layout it had.
+> - **Background library:** uploaded backgrounds are stored in the app data folder
+>   `cert-backgrounds/` (at most 20, PNG, JPEG or WebP, up to 2 MB and 4000 pixels per side,
+>   re-encoded on upload). `occ learning:uninstall` names the folder among those it leaves in
+>   place.
+> - **Logo uploads are re-encoded too.** A logo added to the certificate logo library from now on
+>   is decoded and encoded again before it is stored, like a background: EXIF and GPS data,
+>   comments and anything appended to the file are removed. A file the server's image library
+>   cannot decode (for example an animated WebP) is now refused with `unsupported_type`. Logos
+>   already in the library stay as they are; a course that picks one of them gets a re-encoded
+>   copy. Copies a course already has and certificates already issued are not changed.
+> - **New activity setting** "Exam attempts used up (for the course’s instructors)" under
+>   Personal settings → Notifications, with stream and email on by default. Activity emails
+>   need what Nextcloud needs for any activity email (background jobs via cron, activity emails
+>   enabled, an email address on the account).
+> - **API contract.** New routes: `GET`/`POST /api/settings/admin/cert-backgrounds`,
+>   `PUT`/`DELETE /api/settings/admin/cert-backgrounds/{id}`,
+>   `GET /api/settings/admin/cert-backgrounds/{id}/image` (administrators only),
+>   `GET /api/courses/{courseId}/cert-layout/backgrounds`,
+>   `GET /api/courses/{courseId}/cert-layout/backgrounds/{backgroundId}` and
+>   `PUT /api/courses/{courseId}/cert-layout/background` (the course's instructors). The
+>   learner's certificate response adds `credential_download_allowed`; the certificate
+>   presentation adds `background`, `background_builtin` and `background_intensity`; the
+>   course's mode configuration accepts `credential_download`. Existing routes and fields are
+>   unchanged.
+> - **Known issue:** `npm audit` reports 6 moderate findings, all from one advisory for
+>   `minimatch` pulled in by `webdav` through `@nextcloud/dialogs`. They were already in 5.15.0
+>   and 5.16.0. The only fix npm offers is a breaking downgrade of `@nextcloud/dialogs`, so it
+>   waits for an upstream update. The new dependency `modern-screenshot` 4.7.0 (MIT, exact
+>   version, no dependencies of its own) adds no finding.
+
+### Added
+- **Certificate backgrounds** (#93). Administration → Learning has a background library below
+  the logo library: upload PNG, JPEG or WebP (the type is checked by content; SVG is refused,
+  also when renamed to `.png`), name, rename and delete them; the list says how many courses use
+  each one, and before a background in use is deleted the dialog says how many courses will lose
+  it. Every upload is re-encoded on the server: camera and location metadata are removed, a
+  photo taken upright on a phone stays upright, and a JPEG or WebP that would grow past the limit
+  is written at a lower quality instead of being refused. Three backgrounds ship with the app,
+  drawn in the instance's primary colour: **Double frame**, **Corner ornaments** and **Fine line
+  pattern**; **No background** stays the default. Under Course rules → Certificate design each
+  course picks a background and its strength (10–100 %) with a live preview. The text always sits
+  on a light paper area and the QR code on white, so both keep their contrast in light and dark
+  mode. Issued certificates keep the background they were issued with, also after it is deleted
+  from the library. The background is printed and is part of the PDF. The public verification
+  page does not show it (#100).
+- **Download a certificate as PDF** (#94). "Download as PDF" sits next to "Print" wherever a
+  certificate is shown: for learners in Completion & certificate and after the exam, for
+  instructors on the copy in the compliance report. The PDF is made in the browser, without any
+  server-side tool or external service: one A4 landscape page that looks like the printed
+  certificate, with background, logo, stamp, signature and a QR code that opens the verification
+  page; right-to-left and Cyrillic text come out as on screen. A line in the bottom margin marks
+  it as a presentation copy and says how to check it; the paper print does not carry it. The file
+  is named after the course and the issue date. If the browser cannot make the PDF, the page says
+  so and points to "Print". The PDF is an image: its text cannot be searched or selected; the
+  certificate on screen and the verification page are the accessible versions.
+- **"Technical details" for the JSON credential** (#95). The JSON button moved into a closed
+  "Technical details" section below the actions, with "Digital credential for IT systems (JSON)",
+  one sentence on what it is for and "Download credential (JSON)". Under Course rules →
+  Certification a new switch, "Show learners the digital credential (JSON)", is on by default
+  (also for new mandatory-training courses) and saves at once; switched off, learners no longer
+  see the section. Instructors always see it on their copy. The download itself, the verification
+  page and the personal data export are unchanged.
+- **Links in Learning's activities** (#85), in the activity stream and in the digest email. The
+  course name opens the course; in the certificate activities (issued, expiring, expired,
+  revoked) and in "new certification cycle" it opens the course's Completion & certificate
+  tab. A new pool's name opens the pool, an announcement's title the course feed, an achievement
+  the Today page. Activities from before the update get the links too, because they are added
+  when an activity is shown or mailed. A course that was deleted, or that the reader no longer
+  leads or belongs to, keeps its name without a link.
+- **"Exam attempts used up" as an activity** (#87) for the course's owner and co-instructors,
+  not the learner, with its own row in the notification settings (email on by default). The
+  learner's name and the course name link to the course's member list, where "Open a new
+  certification cycle" resets the attempts. It comes together with the bell notification, once
+  per learner, pool and certification cycle, and only for attempts used up after the update.
+  Someone who no longer leads the course sees it without the learner's name and without links.
+- An expired or revoked certificate now says so on the learner's own card too, on screen, on
+  paper and in the PDF.
+
+### Changed
+- **Pools search** (#98): a learner, or an instructor in the student view, who clicks a question
+  hit from a course they are enrolled in now lands on that pool's Training instead of "Could not
+  find the pool for the selected question". As before, learners do not get "View questions" with
+  its answer key. The × that clears the search is a 28 px square inside the field (it was taller
+  than the field) and gives the keyboard focus back to the field.
+- **Right-to-left** (#98): the magnifier and the × of the Pools search, and the × of the question
+  search in a pool's View questions and Manage, follow the reading direction.
+- The topic tags on the Adventure campaign cards read as words in the user's language instead of
+  internal ids.
+- The three App Store pictures `screenshots/08-en-dashboard.png`, `09-en-certificate.png` and
+  `11-en-pools.png` (referenced by no `info.xml` since 5.14.0) were removed from the repository.
+  They were never part of the app package.
+
+### Fixed
+- **Printing inside Nextcloud** gives one A4 landscape page again. Two of Nextcloud's own page
+  rules took the printed certificate out of the page flow, so the browser printed on its default
+  paper in portrait; this was the case since certificates got their own print layout, up to and
+  including 5.16.0.
+- An announcement activity no longer shows the announcement's current title to a reader who has
+  left the course or whose course was deleted; the activity is shown without the title (since
+  5.16.0).
+- The magnifier icon in the Pools search field is visible; it had no size and never showed
+  (since 2.7.0).
+- In Weak questions, a wrong rate between 50 and 69 % uses the theme's warning colour, readable
+  in light and dark mode (the old yellow had 2.1 : 1 on white).
+- Accessibility: the hits of the question search in a pool are buttons in a plain box instead of
+  list items that screen readers announced as an empty list (#98); the × of that search has a
+  name and fits the field (#98); "Back to pools" is translated in French, Russian and Arabic, so
+  its visible text matches its name.
+
+### Tests
+- A print gate for certificates with backgrounds (contrast measured behind every text box, QR code
+  decoded from screen and paper) and a print test that reproduces Nextcloud's page rules.
+- A PDF gate (`npm run test:pdf`, also run before every push): one page 842 × 595 pt, one image at
+  about 200 dpi, the QR code decoded back to the verification address, no request to another
+  host, Arabic and Russian compared with the browser's own rendering; on desktop Chromium and in
+  the phone layout in Chromium and WebKit.
+- Integration tests on PostgreSQL and MariaDB for a large library background through issue,
+  deletion and the asset sweep, the JSON switch (download unchanged), the activity links in the
+  stream and in the digest HTML, and the "exam attempts used up" activity.
+- Persona stations for backgrounds, the PDF, technical details, activity links, the learner search
+  hit, right-to-left search fields, "exam attempts used up" and a photo logo with EXIF.
+- The uninstall probe runs again against the current configuration stub.
+
 ## [5.16.0] - 2026-11-19 — Questions as a short slideshow, course and pool fixes
 
 Mandatory training in everyday use: a new certification cycle after a revoke, a limit on exam
