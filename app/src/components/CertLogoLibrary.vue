@@ -153,9 +153,10 @@ export const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp']
  * The message for a refused logo (CertLogoController error codes).
  * @param {string} code - the error code of the answer
  * @param {number} max - the library's limit
+ * @param {boolean} reloaded - for a conflict: whether loading the list again worked (GitHub #102)
  * @return {string}
  */
-export function logoErrorMessage(code, max = 20) {
+export function logoErrorMessage(code, max = 20, reloaded = true) {
 	switch (code) {
 	case 'unsupported_type':
 		return t('learning', 'Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt das Logo nur als SVG vor, exportiere es in einem Grafikprogramm als PNG (etwa 1000 Pixel breit) oder frag die Person, die es gestaltet hat, nach einer PNG-Datei.')
@@ -170,9 +171,13 @@ export function logoErrorMessage(code, max = 20) {
 	case 'no_file':
 		return t('learning', 'Es ist keine Datei angekommen. Bitte erneut versuchen.')
 	case 'library_changed':
-		return t('learning', 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut.')
+		return reloaded
+			? t('learning', 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut.')
+			: t('learning', 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.')
 	case 'library_busy':
-		return t('learning', 'Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.')
+		return reloaded
+			? t('learning', 'Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.')
+			: t('learning', 'Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.')
 	default:
 		return t('learning', 'Das Logo konnte nicht hochgeladen werden.')
 	}
@@ -243,13 +248,18 @@ export default {
 			this.names = names
 		},
 
+		/**
+		 * @return {Promise<boolean>} whether the list could be loaded
+		 */
 		async load() {
 			this.loadError = ''
 			try {
 				this.apply(await listLibraryLogos())
 				this.loaded = true
+				return true
 			} catch (e) {
 				this.loadError = t('learning', 'Die Logos konnten nicht geladen werden.')
+				return false
 			}
 		},
 
@@ -322,9 +332,11 @@ export default {
 				this.status = t('learning', '„{title}“ wurde hinzugefügt.', { title: name }, undefined, RAW)
 			} catch (e) {
 				const code = e?.response?.data?.error
-				this.uploadError = logoErrorMessage(code, this.max)
 				if (isLibraryConflict(code)) {
-					await this.load()
+					// said only once it is known whether the list shown is the one stored now
+					this.uploadError = logoErrorMessage(code, this.max, await this.load())
+				} else {
+					this.uploadError = logoErrorMessage(code, this.max)
 				}
 			} finally {
 				this.busy = false
@@ -339,10 +351,11 @@ export default {
 				this.status = t('learning', 'Name gespeichert.')
 			} catch (e) {
 				const code = e?.response?.data?.error
-				this.status = logoErrorMessage(code, this.max)
 				if (isLibraryConflict(code)) {
 					// shown as stored now; the name typed belonged to the list that is gone
-					await this.load()
+					this.status = logoErrorMessage(code, this.max, await this.load())
+				} else {
+					this.status = logoErrorMessage(code, this.max)
 				}
 			} finally {
 				this.busy = false
@@ -364,9 +377,11 @@ export default {
 				const code = e?.response?.data?.error
 				if (isLibraryConflict(code)) {
 					this.confirming = ''
+					this.status = logoErrorMessage(code, this.max, await this.load())
+				} else {
+					this.status = t('learning', 'Das Logo konnte nicht gelöscht werden.')
+					this.load()
 				}
-				this.status = isLibraryConflict(code) ? logoErrorMessage(code, this.max) : t('learning', 'Das Logo konnte nicht gelöscht werden.')
-				this.load()
 			} finally {
 				this.busy = false
 			}

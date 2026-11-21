@@ -4157,5 +4157,7 @@ OC.L10N.register(
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Спроби іспиту вичерпано (для викладачів курсу)",
     "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut." : "Список тим часом змінився, наприклад його змінив інший адміністратор. Його завантажено знову. Перевір його й спробуй ще раз.",
     "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "Список зараз змінюється в іншому місці. Його завантажено знову. Спробуй ще раз за хвилину.",
+    "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "Список тим часом змінився, наприклад його змінив інший адміністратор. Завантажити його знову не вдалося. Онови сторінку й спробуй ще раз.",
+    "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "Список зараз змінюється в іншому місці. Завантажити його знову не вдалося. Онови сторінку й спробуй ще раз.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

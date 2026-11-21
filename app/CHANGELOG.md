@@ -11,7 +11,8 @@ All notable changes to this project will be documented in this file.
   another one was in progress could write back an old list, so an image vanished from the list
   while its file stayed in the app data. Two images added at the same moment now both stay. A
   rename or delete on a list that has changed since the page loaded it is refused with HTTP 409
-  `library_changed` and changes nothing; the page says so and shows the list as it is now. A
+  `library_changed` and changes nothing; the page shows the list as it is now and says so only
+  once the list has been loaded again (if that fails too, it asks to reload the page instead). A
   change that finds another one still running after 5 seconds is refused with 409
   `library_busy`. If the list cannot be saved after an upload, the file just written is deleted
   again. Without Nextcloud's file locking (`'filelocking.enabled' => false`) the lock does not

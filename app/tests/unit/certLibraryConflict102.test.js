@@ -38,6 +38,8 @@ const SEEN = '1'.repeat(64)
 const NOW = '2'.repeat(64)
 const CHANGED = 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut.'
 const BUSY = 'Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.'
+const CHANGED_NOT_RELOADED = 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.'
+const BUSY_NOT_RELOADED = 'Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.'
 
 let host, app, axios
 
@@ -112,6 +114,7 @@ describe.each(LIBRARIES)('the $what library against changes by another administr
 	}
 
 	const status = () => host.querySelector(`[data-test="${prefix}-library-status"]`).textContent.trim()
+	const alert = () => host.querySelector('[role="alert"]')?.textContent.trim() ?? ''
 
 	it('a rename sends the name and the revision of the list shown in the body', async () => {
 		const vm = await library()
@@ -217,6 +220,56 @@ describe.each(LIBRARIES)('the $what library against changes by another administr
 		expect(axios.post).toHaveBeenCalledTimes(1)
 		expect(vm.revision).toBe(NOW)
 		expect(vm.newName).toBe('Third')
+	})
+
+	it('a rename on a list changed since, whose reload fails, does not claim the list was loaded again', async () => {
+		const vm = await library()
+		axios.put.mockRejectedValueOnce(conflict('library_changed'))
+		axios.get.mockRejectedValue(new Error('offline'))
+		await vm.rename(vm[key][0])
+		await flush()
+
+		expect(status()).toBe(CHANGED_NOT_RELOADED)
+		expect(alert()).not.toBe('')
+		expect(vm.revision).toBe(SEEN)
+	})
+
+	it('a delete on a list changed since, whose reload fails, does not claim the list was loaded again', async () => {
+		const vm = await library()
+		vm.confirming = B
+		axios.delete.mockRejectedValueOnce(conflict('library_changed'))
+		axios.get.mockRejectedValue(new Error('offline'))
+		await vm.remove(vm[key][1])
+		await flush()
+
+		expect(status()).toBe(CHANGED_NOT_RELOADED)
+		expect(vm.confirming).toBe('')
+	})
+
+	it('an upload while the library is busy, whose reload fails, does not claim the list was loaded again', async () => {
+		const vm = await library()
+		axios.post.mockRejectedValueOnce(conflict('library_busy'))
+		axios.get.mockRejectedValue(new Error('offline'))
+		vm.newName = 'Third'
+		await vm.upload(new File(['png'], 'x.png', { type: 'image/png' }))
+		await flush()
+
+		expect(host.querySelector(`[data-test="${prefix}-new-error"]`).textContent.trim()).toBe(BUSY_NOT_RELOADED)
+	})
+
+	it('the conflict message waits for the reload: nothing says "loaded again" while it is still running', async () => {
+		const vm = await library()
+		axios.put.mockRejectedValueOnce(conflict('library_changed'))
+		let finish
+		axios.get.mockImplementation(() => new Promise((r) => { finish = r }))
+		const pending = vm.rename(vm[key][0])
+		await flush()
+
+		expect(status()).toBe('')
+		finish({ data: now })
+		await pending
+		await flush()
+		expect(status()).toBe(CHANGED)
 	})
 
 	it('another failure of a delete keeps its own message', async () => {
