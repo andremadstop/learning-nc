@@ -90,6 +90,13 @@ All notable changes to this project will be documented in this file.
   in its preview alike. The readers used PHP `empty()`, which treats `"0"` as empty: a question
   `0` was refused with "Empty question text" and an explanation `0` was dropped. Only an empty or
   blank field is empty now.
+- **A card reaching box 5 is saved again once "Mastermind" is earned** (Pre-existing). On
+  PostgreSQL, every further Leitner card that reached box 5 after the "Mastermind" achievement
+  failed with an error: the achievement check found "already earned" by a failing insert inside
+  the answer's transaction, which PostgreSQL then refuses to continue, so the box change and the
+  XP of that answer were rolled back. The achievement is now inserted with
+  `IDBConnection::insertIgnoreConflict()` (`ON CONFLICT DO NOTHING` on PostgreSQL, `INSERT IGNORE`
+  on MySQL/MariaDB), which reports an existing row without an error.
 
 ### Tests
 - A round-trip test checks every column of pools, questions, answers and both translation
@@ -103,6 +110,9 @@ All notable changes to this project will be documented in this file.
   files before the fix; the preview and `ImportController::importCsv` read all of them as
   before. The three `it.fails` pins became normal tests, the property test no longer excludes
   the header and separator cases and asserts the ambiguity warning instead of skipping that case, and PHPUnit covers each finding on the server. A differential run against the 5.17.0 preview reader (120,000 generated files without a header, a `;` or the header words, about 216,000 records) found no record that imported before and is read differently now; the only records that import now and did not are rows with eight answers and a numeric explanation.
+- An integration test brings the 50th Leitner card to box 5 for a learner who already has
+  "Mastermind" and checks on PostgreSQL and MySQL that box, XP and mastered count are stored; a
+  unit test models PostgreSQL's aborted transaction and fails on the old failing insert.
 
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 

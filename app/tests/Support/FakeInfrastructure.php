@@ -362,6 +362,16 @@ final class FakeDbConnection implements IDBConnection {
     public function inTransaction(): bool {
         return $this->inTx;
     }
+
+    /** @var list<array{table: string, values: array<string, mixed>}> */
+    public array $ignoreConflictInserts = [];
+    /** @var list<int> what insertIgnoreConflict() answers, in order; 1 (inserted) once empty */
+    public array $ignoreConflictResults = [];
+
+    public function insertIgnoreConflict(string $table, array $values): int {
+        $this->ignoreConflictInserts[] = ['table' => $table, 'values' => $values];
+        return array_shift($this->ignoreConflictResults) ?? 1;
+    }
 }
 
 final class FakeCache {

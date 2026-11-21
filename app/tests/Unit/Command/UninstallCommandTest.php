@@ -84,6 +84,10 @@ final class PartialDbConnection implements \OCP\IDBConnection {
     public function inTransaction(): bool {
         return false;
     }
+
+    public function insertIgnoreConflict(string $table, array $values): int {
+        return 1;
+    }
 }
 
 /**
@@ -181,6 +185,10 @@ final class PostgresLikeDbConnection implements \OCP\IDBConnection {
 
     public function inTransaction(): bool {
         return $this->inTx;
+    }
+
+    public function insertIgnoreConflict(string $table, array $values): int {
+        return 1;
     }
 }
 

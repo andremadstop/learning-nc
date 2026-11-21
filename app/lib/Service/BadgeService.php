@@ -414,21 +414,18 @@ class BadgeService {
 
         $earnedAt = time();
 
-        // Atomic insert — UNIQUE(user_id, badge_id) prevents duplicates
-        try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->insert('learning_user_badges')
-               ->values([
-                   'user_id' => $qb->createNamedParameter($userId),
-                   'badge_id' => $qb->createNamedParameter($badgeId),
-                   'earned_at' => $qb->createNamedParameter($earnedAt),
-               ]);
-            $qb->executeStatement();
-        } catch (\OCP\DB\Exception $e) {
-            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                return []; // Already earned — race condition safe
-            }
-            throw $e;
+        // UNIQUE(user_id, badge_id) decides, race-safe, without a failing statement: 0 = already
+        // earned. A failed INSERT inside the caller's transaction (LeitnerService::answerQuestion
+        // awards the mastery badge in its write transaction) aborts it on PostgreSQL (25P02): the
+        // box update and XP after it were rolled back. PostgreSQL runs ON CONFLICT DO NOTHING,
+        // MySQL/MariaDB INSERT IGNORE, SQLite ON CONFLICT DO NOTHING (OCP since NC 16).
+        $inserted = $this->db->insertIgnoreConflict('learning_user_badges', [
+            'user_id' => $userId,
+            'badge_id' => $badgeId,
+            'earned_at' => $earnedAt,
+        ]);
+        if ($inserted === 0) {
+            return [];
         }
 
         // GitHub #101: Today and the profile read the badges from the 30-s user-state cache. A badge

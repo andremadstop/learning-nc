@@ -121,6 +121,10 @@ class KeyServiceTest extends TestCase {
                 return $this->snapshot !== null;
             }
 
+            public function insertIgnoreConflict(string $table, array $values): int {
+                return 1;
+            }
+
             // Stub-interface members (unused by KeyService) — present so the anon class is concrete.
             public function getQueryBuilder() {
             }

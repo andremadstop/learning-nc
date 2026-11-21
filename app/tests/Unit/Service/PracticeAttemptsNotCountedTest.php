@@ -66,7 +66,7 @@ final class PracticeAttemptsNotCountedTest extends TestCase {
     ];
 
     /**
-     * Badge ids inserted by one session_complete check. Read from the issued insert builders,
+     * Badge ids inserted by one session_complete check. Read from the recorded badge inserts,
      * not from the query order: the weekend check adds two queries on Saturday and Sunday only.
      *
      * @return list<string>
@@ -90,9 +90,9 @@ final class PracticeAttemptsNotCountedTest extends TestCase {
         $service->checkAndAward('alice', 'session_complete', $sessionData, false);
 
         $awarded = [];
-        foreach ($db->issuedBuilders as $builder) {
-            if ($builder->operation === 'insert' && $builder->table === 'learning_user_badges') {
-                $awarded[] = $builder->insertValues['badge_id']['value'];
+        foreach ($db->ignoreConflictInserts as $insert) {
+            if ($insert['table'] === 'learning_user_badges') {
+                $awarded[] = $insert['values']['badge_id'];
             }
         }
         return $awarded;

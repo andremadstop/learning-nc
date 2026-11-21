@@ -185,6 +185,10 @@ namespace OCP {
             public function rollBack(): void;
 
             public function inTransaction(): bool;
+
+            // BadgeService::awardIfNew (Pre-existing 25P02 fix): INSERT … ON CONFLICT DO NOTHING
+            // on PostgreSQL, INSERT IGNORE on MySQL; 0 = the row exists. Since NC 16.
+            public function insertIgnoreConflict(string $table, array $values): int;
         }
     }
 

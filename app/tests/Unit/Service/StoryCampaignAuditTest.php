@@ -116,6 +116,10 @@ final class StoryCampaignAuditTest extends TestCase {
             public function inTransaction(): bool {
                 return false;
             }
+
+            public function insertIgnoreConflict(string $table, array $values): int {
+                return 1;
+            }
         };
     }
 
