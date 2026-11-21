@@ -18,8 +18,15 @@ class TranslationService {
     private PoolShareMapper $shareMapper;
     private IDBConnection $db;
 
-    /** Languages a question or answer translation may have; public for the pool import's checks. */
-    public const ALLOWED_LANGS = ['de', 'en', 'ru', 'ar'];
+    /**
+     * Languages a question or answer translation may have — the app's six interface languages.
+     * The one list for every place that accepts a content language (translation endpoints, the
+     * pool imports, the personal content-language setting, the languages a pool is offered in);
+     * the frontend's copy is src/utils/contentLanguages.js (a test compares the two). fr and uk
+     * were missing until 5.18.0, together with the CHECK constraint on the translation tables of
+     * PostgreSQL instances upgraded through 3.2 (widened by Version011600Date20261121140000).
+     */
+    public const ALLOWED_LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk'];
 
     public function __construct(
         QuestionTranslationMapper $questionTransMapper,

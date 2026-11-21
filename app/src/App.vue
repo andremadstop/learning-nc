@@ -512,6 +512,7 @@ import { getCurrentUser } from '@nextcloud/auth';
 import AdminSettings from './components/AdminSettings.vue';
 import PersonalSettings from './components/PersonalSettings.vue';
 import { LEARNING_PROFILE_SECTION } from './utils/telosProfile.js';
+import { contentLanguageOrEmpty } from './utils/contentLanguages.js';
 import GameshowMode from './components/GameshowMode.vue';
 import DuelMode from './components/DuelMode.vue';
 import ArenaSelector from './components/ArenaSelector.vue';
@@ -905,7 +906,7 @@ export default {
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/settings/personal'));
         const lang = response.data?.content_language || '';
-        this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
+        this.contentLanguage = contentLanguageOrEmpty(lang);
         this.fsrsDetailedStats = (response.data?.fsrs_detailed_stats || 'no') === 'yes';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
         this.onboardingAcknowledged = response.data?.onboarding_acknowledged === 'yes';
@@ -928,7 +929,7 @@ export default {
     },
 
     updateContentLanguage(lang) {
-      this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
+      this.contentLanguage = contentLanguageOrEmpty(lang);
     },
     updateVirtuProfEnabled(enabled) {
       this.virtuProfEnabled = enabled !== false;

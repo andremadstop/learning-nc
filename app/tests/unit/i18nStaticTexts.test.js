@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
 
 vi.mock('@nextcloud/l10n', async () => (await import('./support/l10nCatalog.js')).l10nMock())
-vi.mock('@nextcloud/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }))
+vi.mock('@nextcloud/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), put: vi.fn(async () => ({ data: {} })), delete: vi.fn(async () => ({ data: {} })) } }))
 vi.mock('@nextcloud/router', () => ({ generateUrl: vi.fn((url) => url) }))
 vi.mock('@nextcloud/dialogs', () => ({ showError: vi.fn(), showSuccess: vi.fn() }))
 vi.mock('../../src/confetti.js', () => ({ celebrateBadge: vi.fn() }))
@@ -119,13 +119,32 @@ describe('translation dialog (audit #190)', () => {
 		return instance
 	}
 
-	it('offers Arabic, right to left, next to de/en/ru', () => {
+	it('offers all six content languages, Arabic right to left (fr/uk since 5.18.0)', () => {
 		globalThis.t = translate
 		const instance = dialog()
-		expect(instance.languages.map((l) => l.key)).toEqual(['de', 'en', 'ru', 'ar'])
+		expect(instance.languages.map((l) => l.key)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk'])
 		expect(instance.languages.find((l) => l.key === 'ar').dir).toBe('rtl')
+		expect(Object.keys(instance.questionTranslations)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk'])
 		instance.initializeAnswerState()
-		expect(instance.answerTranslations[11]).toEqual({ de: '', en: '', ru: '', ar: '' })
+		expect(instance.answerTranslations[11]).toEqual({ de: '', en: '', fr: '', ru: '', ar: '', uk: '' })
+	})
+
+	it('loads and saves a stored Ukrainian translation (5.18.0)', async () => {
+		globalThis.t = translate
+		const instance = dialog()
+		instance.initializeAnswerState()
+		axios.get.mockImplementation(async (url) => (url.includes('/questions/')
+			? { data: [{ lang: 'uk', text: 'Що таке DNS?', explanation: '', scenario: '' }] }
+			: { data: [{ lang: 'uk', text: 'Розпізнавання імен' }] }))
+		await instance.loadTranslations()
+
+		expect(instance.questionTranslations.uk.text).toBe('Що таке DNS?')
+		expect(instance.answerTranslations[11].uk).toBe('Розпізнавання імен')
+		axios.put.mockClear()
+		await instance.save()
+		const urls = axios.put.mock.calls.map(([url]) => url)
+		expect(urls).toContain('/apps/learning/api/questions/4/translations/uk')
+		expect(urls).toContain('/apps/learning/api/answers/11/translations/uk')
 	})
 
 	it('loads stored Arabic translations instead of skipping them', async () => {

@@ -190,13 +190,13 @@ class CourseService {
             return [];
         }
 
-        $languageOrder = ['de', 'en', 'ru', 'ar'];
+        $languageOrder = TranslationService::ALLOWED_LANGS;
         $available = [];
         foreach ($poolIds as $poolId) {
             try {
                 $totalQuestions = $this->countQuestionsInPool($poolId);
                 $langs = ['de'];
-                foreach (['en', 'ru', 'ar'] as $lang) {
+                foreach (array_diff(TranslationService::ALLOWED_LANGS, ['de']) as $lang) {
                     if ($this->hasPoolQuestionTranslations($poolId, $lang, $totalQuestions)) {
                         $langs[] = $lang;
                     }

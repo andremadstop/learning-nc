@@ -9,6 +9,7 @@ use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
 use OCA\Learning\Service\RoleService;
+use OCA\Learning\Service\TranslationService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -389,13 +390,10 @@ class SettingsController extends Controller {
         }
 
         $this->config->setUserValue($this->userId, 'learning', 'daily_challenge', $daily_challenge === 'yes' ? 'yes' : 'no');
-        // Codeberg #6: 'ar' was missing here while the dropdown has offered Arabic for
-        // months — the PUT answered 200 and stored '' instead. The set must match the
-        // <option> values in PersonalSettings.vue AND TranslationService::ALLOWED_LANGS,
-        // which is also what the CHECK constraint on learning_q_translations permits.
-        // 'uk'/'fr' therefore stay out until that constraint is widened by a migration
-        // tested on PostgreSQL and MariaDB.
-        $this->config->setUserValue($this->userId, 'learning', 'content_language', in_array($content_language, ['de', 'en', 'ru', 'ar', ''], true) ? $content_language : '');
+        // Codeberg #6: 'ar' was missing here while the dropdown offered Arabic — the PUT
+        // answered 200 and stored '' instead. The set is TranslationService::ALLOWED_LANGS, the
+        // languages a translation can be stored in (fr and uk since 5.18.0), plus '' (original).
+        $this->config->setUserValue($this->userId, 'learning', 'content_language', in_array($content_language, TranslationService::ALLOWED_LANGS, true) ? $content_language : '');
         $this->config->setUserValue($this->userId, 'learning', 'virtuprof_enabled', $virtuprof_enabled === 'no' ? 'no' : 'yes');
         $this->config->setUserValue($this->userId, 'learning', 'notifications_enabled', $notifications_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setUserValue($this->userId, 'learning', 'fsrs_detailed_stats', $fsrs_detailed_stats === 'yes' ? 'yes' : 'no');

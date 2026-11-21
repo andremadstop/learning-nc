@@ -21,11 +21,10 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  * Same class as [[feedback_request_payload_contracts]]: no gate can see a payload value
  * that the controller quietly drops; only a test at the request boundary catches it.
  *
- * NOTE on the deliberate gap: 'uk' and 'fr' stay OUT of this whitelist. Content language
- * drives lookups in learning_q_translations / learning_a_translations, whose CHECK
- * constraint and TranslationService::ALLOWED_LANGS both permit de/en/ru/ar only. Widening
- * it needs a migration tested on PostgreSQL AND MariaDB. Offering a language whose
- * translations can never be stored would trade a silent drop for a silent no-op.
+ * 5.18.0: French and Ukrainian, too. They were left out on purpose while the CHECK constraint on
+ * the translation tables (PostgreSQL instances upgraded through 3.2) allowed de/en/ru/ar only;
+ * Version011600Date20261121140000 widens it, and the whitelist is now
+ * TranslationService::ALLOWED_LANGS — the six interface languages.
  */
 #[AllowMockObjectsWithoutExpectations]
 class SettingsControllerLanguageTest extends TestCase {
@@ -73,7 +72,7 @@ class SettingsControllerLanguageTest extends TestCase {
 
     public static function offeredLanguages(): array {
         // Exactly the <option value="…"> set of the content-language select.
-        return [['de'], ['en'], ['ru'], ['ar']];
+        return [['de'], ['en'], ['fr'], ['ru'], ['ar'], ['uk']];
     }
 
     public function testEmptyMeansOriginalContentAndStaysEmpty(): void {
@@ -84,10 +83,11 @@ class SettingsControllerLanguageTest extends TestCase {
         $this->assertSame('', $this->save('klingon'));
     }
 
-    public function testUkrainianIsStillRejectedUntilTheTranslationTablesAllowIt(): void {
-        // Guards the deliberate gap above: if someone widens the whitelist without the
-        // migration, this turns red and points at the reason.
-        $this->assertSame('', $this->save('uk'));
+    /** The whitelist is the translation languages, which are the app's interface languages. */
+    public function testTheContentLanguagesAreTheInterfaceLanguages(): void {
+        $interface = (new \ReflectionClassConstant(\OCA\Learning\Controller\VirtuProfController::class, 'ALLOWED_INTERFACE_LANGUAGES'))->getValue();
+        $this->assertSame(array_values(array_diff($interface, [''])), \OCA\Learning\Service\TranslationService::ALLOWED_LANGS);
+        $this->assertSame(array_map(static fn (array $row): string => $row[0], self::offeredLanguages()), \OCA\Learning\Service\TranslationService::ALLOWED_LANGS);
     }
 
     /**

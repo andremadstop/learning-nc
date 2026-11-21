@@ -4158,5 +4158,7 @@ OC.L10N.register(
     "Q%1$s: translation %2$s was not imported — %3$s" : "П%1$s: переклад %2$s не імпортовано — %3$s",
     "Translation text missing" : "Відсутній текст перекладу",
     "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "П%1$s: переклади мовою %2$s не імпортовано — підтримувані мови: %3$s",
+    "French" : "Французька",
+    "Ukrainian" : "Українська",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

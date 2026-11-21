@@ -166,6 +166,7 @@ class PoolDocumentRoundTripTest extends TestCase {
                 '[{"position":3,"why":"Plain HTTP (en).","misconception":null},{"position":7,"why":null,"misconception":"None (en)"}]'),
             self::questionTranslation(21, 'ru', 'Какой порт использует HTTPS?'),
             self::questionTranslation(22, 'de', 'Wähle alle passenden'),
+            self::questionTranslation(22, 'fr', 'Choisis toutes les bonnes réponses'),
             self::questionTranslation(23, 'ar', 'ما البروتوكول على المنفذ 22؟', 'SSH.'),
             self::questionTranslation(24, 'de', 'Ordne die PDCA-Schritte', null, 'Eine Teambesprechung.', null, null, 'Erst planen.'),
         ];
@@ -174,6 +175,7 @@ class PoolDocumentRoundTripTest extends TestCase {
             self::answerTranslation(212, 'en', '443 (en)'),
             self::answerTranslation(212, 'ru', '443 (ru)'),
             self::answerTranslation(231, 'ar', 'إس إس إتش'),
+            self::answerTranslation(221, 'uk', 'а (uk)'),
         ];
 
         return ['pool' => $pool, 'questions' => [$single, $multi, $open, $ranking, $dropdown], 'answers' => $answers, 'qt' => $qt, 'at' => $at];
@@ -462,13 +464,13 @@ class PoolDocumentRoundTripTest extends TestCase {
         $document = ['_meta' => ['format' => PoolJsonFormat::EXPORT_FORMAT], 'name' => 'P', 'questions' => [[
             'text' => 'Q', 'type' => 'single',
             'translations' => [
-                'fr' => ['text' => 'Q (fr)'],
+                'es' => ['text' => 'Q (es)'],
                 'en' => ['explanation' => 'no text'],
                 'de' => ['text' => 'Q (de)', 'scenario' => str_repeat('x', QuestionService::SCENARIO_MAX_LENGTH + 1)],
                 'ru' => ['text' => 'Q (ru)'],
             ],
             'answers' => [
-                ['text' => 'a', 'is_correct' => true, 'translations' => ['uk' => 'a (uk)', 'ru' => 'a (ru)']],
+                ['text' => 'a', 'is_correct' => true, 'translations' => ['pl' => 'a (pl)', 'ru' => 'a (ru)']],
                 ['text' => 'b', 'is_correct' => false, 'translations' => ['ru' => '']],
             ],
         ]]];
@@ -480,7 +482,7 @@ class PoolDocumentRoundTripTest extends TestCase {
             'Q1: translation en was not imported — Translation text missing',
             'Q1: translation de was not imported — Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters',
             'Q1: translation ru was not imported — Translation text missing',
-            'Q1: translations into fr, uk were not imported — supported languages: de, en, ru, ar',
+            'Q1: translations into es, pl were not imported — supported languages: de, en, fr, ru, ar, uk',
         ], $results[0]['warnings']);
         $this->assertSame(['ru'], array_map(static fn (QuestionTranslation $t): string => (string)$t->getLang(), $copy['qt']));
         $this->assertSame([['ru', 'a (ru)']], array_map(static fn (AnswerTranslation $t): array => [$t->getLang(), $t->getText()], $copy['at']));

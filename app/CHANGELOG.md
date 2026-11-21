@@ -14,8 +14,14 @@ All notable changes to this project will be documented in this file.
   instructor notes were lost, and a question without difficulty came back as `medium`. Older exports (a plain list of questions) import as
   before. Not part of a pool export, as documented in `docs/import-pool-workflow.md` (Round trip):
   attached images, the audio bundle (`--media-dir`), review state and course settings.
-  A translation the app cannot store (another language than de, en, ru, ar, or no text) is
-  reported in the import and left out; the question is imported.
+  A translation the app cannot store (another language than de, en, fr, ru, ar, uk, or no
+  text) is reported in the import and left out; the question is imported.
+- **Translations in French and Ukrainian.** Questions and answers could be translated into
+  German, English, Russian and Arabic only, although the app speaks six languages: the
+  translation dialog, the personal content language and the pool languages in a course now
+  offer French and Ukrainian as well. On PostgreSQL instances that were upgraded through 3.2,
+  the database's language check on the translation tables is widened to the six languages by
+  the update.
 
 ### Tests
 - A round-trip test checks every column of pools, questions, answers and both translation

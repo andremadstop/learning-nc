@@ -100,6 +100,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import AccessibleDialog from './AccessibleDialog.vue'
 import { SCENARIO_MAX_LENGTH, questionScenario } from '../utils/questionScenario.js'
+import { CONTENT_LANGUAGES, contentLanguageOptions } from '../utils/contentLanguages.js'
 
 export default {
   name: 'TranslationDialog',
@@ -116,19 +117,10 @@ export default {
       saving: false,
       error: '',
       // The content languages TranslationService::ALLOWED_LANGS accepts. Arabic was missing, so
-      // its translations were loaded and skipped, and nobody could see or correct them (audit #190).
-      languages: [
-        { key: 'de', label: t('learning', 'German (Deutsch)') },
-        { key: 'en', label: t('learning', 'English') },
-        { key: 'ru', label: t('learning', 'Russian') },
-        { key: 'ar', label: t('learning', 'Arabic'), dir: 'rtl' },
-      ],
-      questionTranslations: {
-        de: { text: '', explanation: '', scenario: '' },
-        en: { text: '', explanation: '', scenario: '' },
-        ru: { text: '', explanation: '', scenario: '' },
-        ar: { text: '', explanation: '', scenario: '' },
-      },
+      // its translations were loaded and skipped, and nobody could see or correct them (audit
+      // #190); French and Ukrainian the same until 5.18.0.
+      languages: contentLanguageOptions(),
+      questionTranslations: Object.fromEntries(CONTENT_LANGUAGES.map((lang) => [lang, { text: '', explanation: '', scenario: '' }])),
       answerTranslations: {},
       existingQuestionTranslations: {},
       existingAnswerTranslations: {},

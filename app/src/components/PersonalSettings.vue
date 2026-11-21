@@ -48,10 +48,9 @@
         <label for="content-language">{{ t('learning', 'Content Language') }}</label>
         <select id="content-language" v-model="form.contentLanguage" class="nc-input">
           <option value="">{{ t('learning', 'Original content') }}</option>
-          <option value="de">{{ t('learning', 'German (Deutsch)') }}</option>
-          <option value="en">{{ t('learning', 'English') }}</option>
-          <option value="ru">{{ t('learning', 'Russian') }}</option>
-          <option value="ar">{{ t('learning', 'Arabic') }}</option>
+          <option v-for="language in contentLanguageOptions" :key="language.key" :value="language.key">
+            {{ language.label }}
+          </option>
         </select>
       </div>
 
@@ -510,6 +509,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import PrivacyInfo from './PrivacyInfo.vue'
 import { parseOperator } from '../utils/operatorInfo.js'
+import { contentLanguageOptions, contentLanguageOrEmpty } from '../utils/contentLanguages.js'
 import SkinOptionPreview from './SkinOptionPreview.vue'
 import hintMixin from '../hintMixin.js'
 import { novaAudio } from '../utils/nova-audio-manager.js'
@@ -632,6 +632,10 @@ export default {
     }
   },
   computed: {
+    // The content languages with their labels (TranslationService::ALLOWED_LANGS), fr/uk since 5.18.0.
+    contentLanguageOptions() {
+      return contentLanguageOptions()
+    },
     // 'valid' | 'stored' (on record, not counting right now) | 'unknown' (status read failed) | 'none'
     consentState() {
       if (this.consentStatusFailed) return 'unknown'
@@ -843,7 +847,7 @@ export default {
         const virtuProfData = virtuProfResponse.data || {}
         this.gamificationEnabled = data.gamification_enabled !== false
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
-        this.form.contentLanguage = ['de', 'en', 'ru', 'ar', ''].includes(data.content_language) ? data.content_language : ''
+        this.form.contentLanguage = contentLanguageOrEmpty(data.content_language)
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
         this.virtuProfAiEnabled = virtuProfData.ai_enabled !== false
         this.form.virtuProfTtsEnabled = virtuProfData.tts_enabled === true
@@ -958,7 +962,7 @@ export default {
         await Promise.all([
           axios.put(generateUrl('/apps/learning/api/settings/personal'), {
             daily_challenge: this.form.dailyChallengeEnabled ? 'yes' : 'no',
-            content_language: ['de', 'en', 'ru', 'ar'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
+            content_language: contentLanguageOrEmpty(this.form.contentLanguage),
             virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
             notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',
             fsrs_detailed_stats: this.form.fsrsDetailedStats ? 'yes' : 'no',

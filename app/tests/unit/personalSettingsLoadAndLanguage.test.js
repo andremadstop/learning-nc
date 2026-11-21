@@ -12,14 +12,14 @@ vi.hoisted(() => {
 	globalThis.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 })
 
-const { api } = vi.hoisted(() => ({ api: { failSettings: false } }))
+const { api } = vi.hoisted(() => ({ api: { failSettings: false, contentLanguage: undefined } }))
 vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn((url) => {
 			if (url.endsWith('/api/settings/personal')) {
 				return api.failSettings
 					? Promise.reject(Object.assign(new Error('429'), { response: { status: 429 } }))
-					: Promise.resolve({ data: { daily_challenge: 'no', ui_language: 'en' } })
+					: Promise.resolve({ data: { daily_challenge: 'no', ui_language: 'en', content_language: api.contentLanguage } })
 			}
 			return Promise.resolve({ data: {} })
 		}),
@@ -83,6 +83,7 @@ function saveButton() {
 
 beforeEach(() => {
 	api.failSettings = false
+	api.contentLanguage = undefined
 	vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -127,5 +128,34 @@ describe('PersonalSettings: no UI language field (audit #12, #61, #218)', () => 
 		expect(call).toBeTruthy()
 		expect(call[1]).not.toHaveProperty('ui_language')
 		expect(call[1].daily_challenge).toBe('no')
+	})
+})
+
+describe('PersonalSettings: content language in all six languages (5.18.0)', () => {
+	it('offers original content plus de, en, fr, ru, ar, uk', async () => {
+		await mountSettings()
+
+		const values = [...host.querySelectorAll('#content-language option')].map((o) => o.value)
+		expect(values).toEqual(['', 'de', 'en', 'fr', 'ru', 'ar', 'uk'])
+		expect(host.querySelector('#content-language option[value="uk"]').textContent.trim()).toBe('Ukrainian')
+		expect(host.querySelector('#content-language option[value="fr"]').textContent.trim()).toBe('French')
+	})
+
+	it.each(['fr', 'uk'])('keeps a stored %s and sends it back on save', async (lang) => {
+		api.contentLanguage = lang
+		const vm = await mountSettings()
+
+		expect(vm.form.contentLanguage).toBe(lang)
+		axios.put.mockClear()
+		await vm.save()
+		const call = axios.put.mock.calls.find(([url]) => url.endsWith('/api/settings/personal'))
+		expect(call[1].content_language).toBe(lang)
+	})
+
+	it('still turns an unknown code into original content', async () => {
+		api.contentLanguage = 'klingon'
+		const vm = await mountSettings()
+
+		expect(vm.form.contentLanguage).toBe('')
 	})
 })
