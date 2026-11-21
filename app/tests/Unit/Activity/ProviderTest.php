@@ -237,7 +237,7 @@ class ProviderTest extends TestCase {
         $parsed = $this->render($subject, $params, self::readerOf($subject));
 
         $this->assertSame($text, $parsed['subject'] ?? null);
-        $this->assertSame('https://nc.example/apps/learning' . ($subject === 'badge_earned' ? '/dashboard' : $path), $parsed['link'] ?? null);
+        $this->assertSame('https://nc.example/apps/learning' . ($subject === 'badge_earned' ? '/dashboard?section=achievements' : $path), $parsed['link'] ?? null);
         $this->assertSame('https://nc.example/apps/learning/img/app.svg', $parsed['icon'] ?? null);
     }
 
@@ -319,7 +319,7 @@ class ProviderTest extends TestCase {
                 $c('/courses/7') + ['announcement' => ['type' => 'highlight', 'id' => '4', 'name' => 'Termin', 'link' => $base . '/courses/7/feed']]],
             'badge' => ['badge_earned', ['badge_name' => 'Wochenserie', 'badge_emoji' => '*'], 'Achievement unlocked: {emoji} {badge}', [
                 'emoji' => ['type' => 'highlight', 'id' => 'emoji', 'name' => '*'],
-                'badge' => ['type' => 'highlight', 'id' => 'week_streak', 'name' => 'Wochenserie', 'link' => $base . '/dashboard'],
+                'badge' => ['type' => 'highlight', 'id' => 'week_streak', 'name' => 'Wochenserie', 'link' => $base . '/dashboard?section=achievements'],
             ]],
             // GitHub #87: the learner's name and the course open the course's member list
             'attempts' => ['exam_attempts_exhausted', $course + ['pool_id' => 3, 'pool_title' => 'Pool A', 'member_id' => 31],

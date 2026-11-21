@@ -108,6 +108,7 @@
               v-if="appInitialized"
               :tools-available="enabledTools.length > 0"
               :gamification-enabled="gamificationEnabled"
+              :focus-section="String(route.query?.section || '')"
               @openSmartQueue="openSmartQueue"
               @openRemediation="openRemediation"
               @switchView="switchMainView"

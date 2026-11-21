@@ -42,6 +42,7 @@ final class PracticeAttemptsNotCountedTest extends TestCase {
             $this->createMock(INotificationManager::class),
             $this->createMock(IConfig::class),
             $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
+            new FakeCacheFactory(),
         );
 
         $method = new \ReflectionMethod(BadgeService::class, 'getSuccessfulExamRunCount');
@@ -83,6 +84,7 @@ final class PracticeAttemptsNotCountedTest extends TestCase {
             $this->createMock(INotificationManager::class),
             $config,
             $this->createMock(\OCA\Learning\Activity\ActivityPublisher::class),
+            new FakeCacheFactory(),
         );
 
         $service->checkAndAward('alice', 'session_complete', $sessionData, false);

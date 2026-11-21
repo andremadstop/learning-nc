@@ -4165,5 +4165,9 @@ OC.L10N.register(
     "French" : "French",
     "Ukrainian" : "Ukrainian",
     "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab.",
+    "Alle Erfolge anzeigen ({n})" : "Show all achievements ({n})",
+    "Weniger anzeigen" : "Show less",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "No achievements unlocked yet. Keep learning, the first one is coming soon.",
+    "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Your achievements could not be loaded. Reload the page to try again.",
 },
 "nplurals=2; plural=(n != 1);");

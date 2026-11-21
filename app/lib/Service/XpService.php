@@ -8,10 +8,11 @@ use OCP\IDBConnection;
 use OCP\IConfig;
 
 class XpService {
-    private const CACHE_NAMESPACE = 'learning';
-    private const USER_STATE_CACHE_PREFIX = 'user_state_';
-    private const PROFILE_CACHE_PREFIX = 'profile_';
-    private const LEGACY_PROFILE_CACHE_PREFIX = 'lernprofil_';
+    // Public for BadgeService (GitHub #101): a badge can come without XP and must clear the same keys.
+    public const CACHE_NAMESPACE = 'learning';
+    public const USER_STATE_CACHE_PREFIX = 'user_state_';
+    public const PROFILE_CACHE_PREFIX = 'profile_';
+    public const LEGACY_PROFILE_CACHE_PREFIX = 'lernprofil_';
 
     private IDBConnection $db;
     private IConfig $config;

@@ -106,6 +106,53 @@
         </div>
       </div>
 
+      <!-- Achievements (GitHub #101): the unlocked ones, most recent first. The activity
+           "Achievement unlocked" links here (?section=achievements). Gamification only. -->
+      <section
+        v-if="gamificationEnabled"
+        ref="achievementsSection"
+        class="widget-card widget-achievements"
+        aria-labelledby="dashboard-achievements-heading">
+        <div class="achievements-header">
+          <h4
+            id="dashboard-achievements-heading"
+            ref="achievementsHeading"
+            class="section-label achievements-heading"
+            tabindex="-1">
+            {{ t('learning', 'Achievements') }}
+          </h4>
+          <button
+            v-if="earnedBadges.length > recentBadgeLimit"
+            type="button"
+            class="achievements-toggle"
+            aria-controls="dashboard-achievements-list"
+            :aria-expanded="showAllBadges ? 'true' : 'false'"
+            @click="showAllBadges = !showAllBadges">
+            {{ showAllBadges
+              ? t('learning', 'Weniger anzeigen')
+              : t('learning', 'Alle Erfolge anzeigen ({n})', { n: earnedBadges.length }) }}
+          </button>
+        </div>
+        <ul v-if="visibleBadges.length > 0" id="dashboard-achievements-list" class="achievements-list">
+          <li
+            v-for="badge in visibleBadges"
+            :key="badge.badge_id"
+            class="achievement-item"
+            :title="badgeDescription(badge)">
+            <span class="achievement-emoji" aria-hidden="true">{{ badge.emoji }}</span>
+            <span class="achievement-name">{{ badgeLabel(badge) }}</span>
+            <span class="achievement-date">{{ badgeDate(badge) }}</span>
+          </li>
+        </ul>
+        <!-- A failed user-state request is not "no achievements yet": say so instead. -->
+        <p v-else-if="badgesLoadFailed" class="achievements-error" role="status">
+          {{ t('learning', 'Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.') }}
+        </p>
+        <p v-else class="achievements-empty">
+          {{ t('learning', 'Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.') }}
+        </p>
+      </section>
+
       <!-- Timeline Widget -->
       <div v-if="showTimeline" class="dashboard-timeline-section">
         <div class="widget-card widget-timeline">
@@ -149,6 +196,10 @@ import DailyChallengeCard from './DailyChallengeCard.vue'
 import GlobalFeed from './GlobalFeed.vue'
 import CourseTimeline from './CourseTimeline.vue'
 import CheatSheetExport from './CheatSheetExport.vue'
+import { RECENT_BADGE_LIMIT, earnedAtSeconds, recentEarnedBadges } from '../utils/recentBadges.js'
+
+/** GitHub #101: the ?section= of /dashboard that opens the achievements. */
+export const ACHIEVEMENTS_SECTION = 'achievements'
 
 export default {
   name: 'StudentDashboard',
@@ -167,6 +218,9 @@ export default {
     // GitHub #36: the admin's global gamification switch (App.vue). Off hides the daily
     // challenge, the streak and the level; due cards, the schedule and the feed stay.
     gamificationEnabled: { type: Boolean, default: true },
+    // GitHub #101: the section the route names (?section=achievements); Today scrolls there and
+    // moves the focus to its heading once it is loaded.
+    focusSection: { type: String, default: '' },
   },
   data() {
     return {
@@ -176,6 +230,10 @@ export default {
       maintenanceStats: null,
       enrolledCourses: [],
       selectedTimelineCourse: null,
+      badges: [],
+      badgesLoadFailed: false,
+      showAllBadges: false,
+      recentBadgeLimit: RECENT_BADGE_LIMIT,
       userState: {
         streak: {
           current_streak: 0,
@@ -229,10 +287,26 @@ export default {
     userLevel() {
       return this.userState.xp?.level || 1
     },
+    earnedBadges() {
+      return recentEarnedBadges(this.badges, null)
+    },
+    visibleBadges() {
+      return this.showAllBadges ? this.earnedBadges : this.earnedBadges.slice(0, RECENT_BADGE_LIMIT)
+    },
   },
 
-  mounted() {
-    this.loadAll()
+  watch: {
+    // An in-app link to Today while Today is open changes only the query.
+    focusSection() {
+      if (!this.loading) {
+        this.focusRequestedSection()
+      }
+    },
+  },
+
+  async mounted() {
+    await this.loadAll()
+    this.focusRequestedSection()
   },
 
   methods: {
@@ -285,7 +359,14 @@ export default {
         if (r.data.daily_progress) {
           this.userState.daily_progress = r.data.daily_progress
         }
-      } catch (e) { /* optional */ }
+        // GitHub #101: the badges are part of the same answer; no request of their own.
+        this.badges = this.gamificationEnabled && Array.isArray(r.data.badges) ? r.data.badges : []
+        this.badgesLoadFailed = false
+      } catch (e) {
+        // Streak, level and progress stay optional (their defaults); only the achievements
+        // section says the list is missing, instead of claiming there are none yet.
+        this.badgesLoadFailed = true
+      }
     },
 
     async loadMaintenanceStats() {
@@ -301,6 +382,43 @@ export default {
 
     goToView(view) {
       this.$emit('switchView', view)
+    },
+
+    badgeLabel(badge) {
+      const key = badge?.name_key || badge?.name || ''
+      return key ? t('learning', key) : ''
+    },
+
+    badgeDescription(badge) {
+      const key = badge?.description_key || badge?.description || ''
+      return key ? t('learning', key) : ''
+    },
+
+    badgeDate(badge) {
+      const seconds = earnedAtSeconds(badge?.earned_at)
+      return seconds > 0 ? new Date(seconds * 1000).toLocaleDateString() : t('learning', 'Freigeschaltet')
+    },
+
+    /** GitHub #101: scroll to the section the route names and put the focus on its heading. */
+    focusRequestedSection() {
+      if (this.focusSection !== ACHIEVEMENTS_SECTION || !this.gamificationEnabled) {
+        return
+      }
+      this.$nextTick(() => {
+        const section = this.$refs.achievementsSection
+        const heading = this.$refs.achievementsHeading
+        if (!section || !heading) {
+          return
+        }
+        const reduce = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+          && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        if (typeof section.scrollIntoView === 'function') {
+          section.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+        }
+        if (typeof heading.focus === 'function') {
+          heading.focus({ preventScroll: true })
+        }
+      })
     },
   },
 }
@@ -642,6 +760,95 @@ export default {
 }
 
 /* Timeline Section */
+/* Achievements (GitHub #101). Logical properties only, so Arabic mirrors. */
+.widget-achievements {
+  margin-top: 24px;
+  border-inline-start: 3px solid var(--color-warning, #e9a700);
+  scroll-margin-top: 16px;
+}
+
+.achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-end: 12px;
+}
+
+.achievements-heading {
+  margin: 0;
+}
+
+.achievements-heading:focus-visible {
+  outline: 2px solid var(--color-primary-element);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.achievements-toggle {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-pill, 20px);
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.achievements-toggle:hover,
+.achievements-toggle:focus-visible {
+  border-color: var(--color-primary-element);
+}
+
+.achievements-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.achievement-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-large, 12px);
+  background: var(--color-background-hover);
+  text-align: start;
+}
+
+.achievement-emoji {
+  grid-row: 1 / span 2;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.achievement-name {
+  font-weight: 600;
+  color: var(--color-main-text);
+  overflow-wrap: anywhere;
+}
+
+.achievement-date {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+}
+
+.achievements-empty {
+  margin: 0;
+  color: var(--color-text-maxcontrast);
+}
+
+.achievements-error {
+  margin: 0;
+  color: var(--color-error-text, var(--color-error));
+}
+
 .dashboard-timeline-section {
   margin-top: 24px;
   padding-top: 24px;
