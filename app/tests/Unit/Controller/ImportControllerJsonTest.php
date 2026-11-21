@@ -87,7 +87,13 @@ class ImportControllerJsonTest extends TestCase {
             $config,
             $this->db,
             'teacher',
-            $l10n
+            $l10n,
+            new \OCA\Learning\Service\PoolBulkImportService(
+                $this->createMock(\OCA\Learning\Service\PoolService::class),
+                $this->createMock(\OCA\Learning\Service\QuestionService::class),
+                $this->db,
+                $this->createMock(\Psr\Log\LoggerInterface::class)
+            )
         );
     }
 

@@ -109,7 +109,7 @@ One file may contain any number of pools. Minimal example:
 | `pools[].questions[].feedback_per_option` | no | array | Feedback per answer option, shown after answering next to the chosen option: `[{"option_index": 0, "letter": "A", "verdict": "wrong", "why": "…", "misconception": "…"}]`. `option_index` counts from 0 in the order of `answers` (else `letter`, A = first, else the list order). `why` max 5 000, `misconception` max 1 000 characters. `verdict` is not stored — the answer's `is_correct` decides, and a contradicting verdict is reported. Instead of the list, an answer object may carry `why` (or `feedback`) and `misconception` (or `trap`) itself |
 | `pools[].questions[].instructor_note` | no | string | Note for the pool's editors and the course's instructors |
 | `pools[].questions[].note_visible` | no | bool | `true` shows the instructor note to learners too; default `false` |
-| `pools[].questions[].translations` | no | object | Translations of the question: `{"en": {"text": "…", "explanation": "…", "scenario": "…", "hint": "…", "background_fact": "…", "key_takeaway": "…", "feedback_per_option": [{"option_index": 0, "why": "…", "misconception": "…"}]}}`; `text` is required, the rest optional, same limits as the untranslated fields. Languages: `de`, `en`, `ru`, `ar` (what the app can store); another language, or an entry without `text`, is reported and left out, the question is imported. Read by occ and **Import pools**; the question import (**Manage** → **Import**) ignores it |
+| `pools[].questions[].translations` | no | object | Translations of the question: `{"en": {"text": "…", "explanation": "…", "scenario": "…", "hint": "…", "background_fact": "…", "key_takeaway": "…", "feedback_per_option": [{"option_index": 0, "why": "…", "misconception": "…"}]}}`; `text` is required, the rest optional, same limits as the untranslated fields. Languages: `de`, `en`, `fr`, `ru`, `ar`, `uk` (what the app can store); another language, or an entry without `text`, is reported and left out, the question is imported. Read by all three importers (occ, **Import pools**, and since 5.18.0 the question import **Manage** → **Import**) |
 | `pools[].questions[].answers[].translations` | no | object | Translations of an answer text: `{"en": "…", "ru": "…"}`, same languages and route as above |
 | `pools[].questions[].original_number` | no | int/string | Original number from the PDF — for traceability |
 | `pools[].questions[].chapter_key`, `chapter_title`, `chapter_order`, `handbook_key`, `handbook_title`, `exam_key` | no | string / int | Per-question values; they win over the pool and `_meta`. An export writes them per question. `chapter_order` follows the pool rule: 1 to 9999, a value outside is dropped |
@@ -338,8 +338,10 @@ It goes back in by any of three routes:
   pool from it, named as in the file unless `--pool-name="…"` says otherwise; delete the old
   one by hand if you no longer need it.
 - **Into an existing pool:** **Manage** → **Import** in any pool you can edit; the questions
-  are added to that pool, which keeps its own name and description. This route does not read
-  `translations`, `instructor_note` and `note_visible`.
+  are added to that pool, which keeps its own name and description. Since 5.18.0 this route
+  also reads `translations`, `instructor_note` and `note_visible`; the pool fields of the file
+  (`name`, `description`, handbook and chapter fields) are not applied to the existing pool, and
+  the result names them in a warning.
 
 That also makes an export the best template for your own files. CSV
 (`--format=csv`) is not a round trip: it carries only the text, the answers with one correct

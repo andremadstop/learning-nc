@@ -399,6 +399,121 @@ class PoolDocumentRoundTripTest extends TestCase {
     }
 
     /**
+     * The import into an existing pool (Manage → Import, ImportController::importJson) keeps
+     * what it can keep of an export: instructor notes with their visibility and every question
+     * and answer translation (PBQ included), stored through the same checks as the pool import.
+     * The pool's own fields cannot go into an existing pool; the answer names them instead of
+     * dropping them silently.
+     */
+    public function testTheQuestionImportInAPoolKeepsNotesAndTranslations(): void {
+        $source = $this->source();
+        $r = $this->importController()->importJson(9, json_encode($this->export($source), JSON_THROW_ON_ERROR));
+
+        $this->assertSame(201, $r->getStatus(), json_encode($r->getData()));
+        $this->assertSame(5, $r->getData()['imported'], json_encode($r->getData()));
+        $this->assertSame(
+            ['The pool fields of the file (name, description, handbook_key, handbook_title, chapter_key, chapter_title, chapter_order) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use "Import pools" in the Pools tab.'],
+            $r->getData()['warnings'] ?? [],
+            json_encode($r->getData())
+        );
+
+        $this->assertSame(
+            array_map(static fn (Question $q): array => [$q->getInstructorNote(), (bool)$q->getNoteVisible()], $source['questions']),
+            array_map(static fn (Question $q): array => [$q->getInstructorNote(), (bool)$q->getNoteVisible()], $this->questions)
+        );
+
+        // Question translations: [question index, lang, text, explanation, scenario], as in the source.
+        $index = [];
+        foreach ($source['questions'] as $i => $q) {
+            $index[(int)$q->getId()] = $i;
+        }
+        $expected = array_map(static fn (QuestionTranslation $t): array => [$index[(int)$t->getQuestionId()], $t->getLang(), $t->getText(), $t->getExplanation(), $t->getScenario()], $source['qt']);
+        $stored = [];
+        $rich = [];
+        foreach ($this->translationCalls as [$kind, $args]) {
+            if ($kind === 'question') {
+                $i = array_search($args[0], array_map(static fn (Question $q): int => (int)$q->getId(), $this->questions), true);
+                $stored[] = [$i, $args[1], $args[2], $args[3], ($args[4] ?? '') === '' ? null : $args[4]];
+                $rich[$i . ':' . $args[1]] = RichFeedbackFormat::normalize($args[5] ?? []);
+            }
+        }
+        sort($expected);
+        sort($stored);
+        $this->assertSame($expected, $stored);
+        // Feedback per option of a translation lands on the stored answer positions (0, 1).
+        $this->assertSame([
+            ['position' => 0, 'why' => 'Plain HTTP (en).', 'misconception' => null],
+            ['position' => 1, 'why' => null, 'misconception' => 'None (en)'],
+        ], $rich['0:en']['option_feedback']);
+        $this->assertSame(['TLS (en)', 'Registered 1994 (en).', '443 (en).'], [$rich['0:en']['hint'], $rich['0:en']['background_fact'], $rich['0:en']['key_takeaway']]);
+        $this->assertSame('Erst planen.', $rich['3:de']['key_takeaway'], 'a PBQ keeps its translated takeaway');
+
+        // Answer translations: [question index, answer index, lang, text], as in the source.
+        $expected = [];
+        foreach ($source['at'] as $t) {
+            foreach ($source['answers'] as $qid => $answers) {
+                foreach ($answers as $k => $a) {
+                    if ((int)$a->getId() === (int)$t->getAnswerId()) {
+                        $expected[] = [$index[$qid], $k, $t->getLang(), $t->getText()];
+                    }
+                }
+            }
+        }
+        $stored = [];
+        foreach ($this->translationCalls as [$kind, $args]) {
+            if ($kind !== 'answer') {
+                continue;
+            }
+            foreach ($this->questions as $i => $q) {
+                foreach ($this->answers[(int)$q->getId()] ?? [] as $k => $a) {
+                    if ((int)$a->getId() === $args[0]) {
+                        $stored[] = [$i, $k, $args[1], $args[2]];
+                    }
+                }
+            }
+        }
+        sort($expected);
+        sort($stored);
+        $this->assertSame($expected, $stored);
+    }
+
+    /**
+     * Answer translations follow the answers that were stored: a blank answer in the file is
+     * dropped, so the translations after it move up; a language the app cannot store is a
+     * warning, not a lost question.
+     */
+    public function testTheQuestionImportInAPoolMapsAnswerTranslationsToStoredAnswers(): void {
+        $r = $this->importController()->importJson(9, json_encode([
+            'text' => 'Q', 'type' => 'single',
+            'translations' => ['de' => ['text' => 'F'], 'es' => ['text' => 'P']],
+            'answers' => [
+                ['text' => '', 'is_correct' => false, 'translations' => ['de' => 'leer']],
+                ['text' => 'a', 'is_correct' => true, 'translations' => ['de' => 'a (de)']],
+                ['text' => 'b', 'is_correct' => false, 'translations' => ['uk' => 'b (uk)']],
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        $this->assertSame(201, $r->getStatus(), json_encode($r->getData()));
+        $this->assertSame(['Q1: translations into es were not imported — supported languages: de, en, fr, ru, ar, uk'], $r->getData()['warnings'] ?? []);
+        $answers = $this->answers[(int)$this->questions[0]->getId()];
+        $this->assertSame([
+            ['question', (int)$this->questions[0]->getId(), 'de', 'F'],
+            ['answer', (int)$answers[0]->getId(), 'de', 'a (de)'],
+            ['answer', (int)$answers[1]->getId(), 'uk', 'b (uk)'],
+        ], array_map(static fn (array $c): array => [$c[0], $c[1][0], $c[1][1], $c[1][2]], $this->translationCalls));
+    }
+
+    /** A file that is not an export (no learning-pool/2 marker) gets no pool-field warning, as before. */
+    public function testNoPoolFieldWarningWithoutTheExportMarker(): void {
+        $r = $this->importController()->importJson(9, json_encode(['name' => 'P', 'questions' => [
+            ['text' => 'Q', 'type' => 'single', 'answers' => [['text' => 'a', 'is_correct' => true], ['text' => 'b', 'is_correct' => false]]],
+        ]], JSON_THROW_ON_ERROR));
+
+        $this->assertSame(201, $r->getStatus());
+        $this->assertArrayNotHasKey('warnings', $r->getData());
+    }
+
+    /**
      * Only a learning-pool/2 file skips the defaults: the same pool without the marker still gets
      * the pool's chapter and `medium` for a question without them (format 1 as before).
      */

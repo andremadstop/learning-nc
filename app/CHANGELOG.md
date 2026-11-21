@@ -16,6 +16,12 @@ All notable changes to this project will be documented in this file.
   attached images, the audio bundle (`--media-dir`), review state and course settings.
   A translation the app cannot store (another language than de, en, fr, ru, ar, uk, or no
   text) is reported in the import and left out; the question is imported.
+- **Importing an export into an existing pool keeps notes and translations.** **Manage** →
+  **Import** read a `learning-pool/2` export but silently dropped the instructor notes (with
+  "visible to learners") and all question and answer translations; it now stores them, checked
+  and stored as in **Import pools** (a translation that cannot be stored is a warning, the
+  question stays imported). The pool's own name, description and chapter fields are not applied
+  to the open pool — the result says so and names them, instead of dropping them without a word.
 - **Translations in French and Ukrainian.** Questions and answers could be translated into
   German, English, Russian and Arabic only, although the app speaks six languages: the
   translation dialog, the personal content language and the pool languages in a course now

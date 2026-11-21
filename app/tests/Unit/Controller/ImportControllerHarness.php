@@ -11,10 +11,17 @@ use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Db\Question;
 use OCA\Learning\Db\QuestionMapper;
+use OCA\Learning\Db\AnswerTranslation;
+use OCA\Learning\Db\QuestionTranslation;
+use OCA\Learning\Service\PoolBulkImportService;
+use OCA\Learning\Service\PoolService;
+use OCA\Learning\Service\QuestionService;
+use OCA\Learning\Service\TranslationService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 /**
  * The real ImportController with mapper mocks that record what would be written.
@@ -28,10 +35,13 @@ trait ImportControllerHarness {
     private array $answers = [];
     private int $nextId = 1000;
     private FakeDbConnection $db;
+    /** @var list<array{0: string, 1: list<mixed>}> TranslationService calls: [method, args] */
+    private array $translationCalls = [];
 
     private function importController(?IRequest $request = null, string $translationMarker = ''): ImportController {
         $this->questions = [];
         $this->answers = [];
+        $this->translationCalls = [];
         $this->db = new FakeDbConnection();
 
         $questionMapper = $this->createMock(QuestionMapper::class);
@@ -45,9 +55,34 @@ trait ImportControllerHarness {
 
         $answerMapper = $this->createMock(AnswerMapper::class);
         $answerMapper->method('createOrUpdate')->willReturnCallback(function (Answer $a): Answer {
+            if ($a->getId() === null) {
+                $a->setId($this->nextId++);
+            }
             $this->answers[(int)$a->getQuestionId()][] = $a;
             return $a;
         });
+
+        // The translations go through the real checks of PoolBulkImportService into a recording
+        // TranslationService (which validates the language as the real one does).
+        $translations = $this->createMock(TranslationService::class);
+        $translations->method('setQuestionTranslation')->willReturnCallback(function (...$args): QuestionTranslation {
+            if (!in_array($args[1], TranslationService::ALLOWED_LANGS, true)) {
+                throw new \InvalidArgumentException('Language must be one of: ' . implode(', ', TranslationService::ALLOWED_LANGS));
+            }
+            $this->translationCalls[] = ['question', $args];
+            return new QuestionTranslation();
+        });
+        $translations->method('setAnswerTranslation')->willReturnCallback(function (...$args): AnswerTranslation {
+            $this->translationCalls[] = ['answer', $args];
+            return new AnswerTranslation();
+        });
+        $poolImport = new PoolBulkImportService(
+            $this->createMock(PoolService::class),
+            $this->createMock(QuestionService::class),
+            $this->db,
+            $this->createMock(LoggerInterface::class),
+            $translations
+        );
 
         $poolMapper = $this->createMock(PoolMapper::class);
         $poolMapper->method('find')->willReturn(new Pool());
@@ -65,7 +100,8 @@ trait ImportControllerHarness {
             $config,
             $this->db,
             'teacher',
-            $this->l10nStub($translationMarker)
+            $this->l10nStub($translationMarker),
+            $poolImport
         );
     }
 

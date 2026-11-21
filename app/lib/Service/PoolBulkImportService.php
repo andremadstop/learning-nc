@@ -405,7 +405,8 @@ class PoolBulkImportService {
     /**
      * The translations of a question item, checked as TranslationService would check them, so the
      * dry run and the import agree. A translation that would be refused is left out with a
-     * warning; the question is imported all the same.
+     * warning; the question is imported all the same. Public for ImportController, whose
+     * import into an existing pool reads the same item format (5.18.0).
      *
      * Item format (written by DataMobilityService::exportPoolJson()):
      *  - "translations": {lang: {text, explanation?, scenario?, hint?, background_fact?,
@@ -418,7 +419,7 @@ class PoolBulkImportService {
      * @param list<string> $warnings
      * @return array{question: array<string, array{text: string, explanation: ?string, scenario: ?string, rich: array<string, mixed>}>, answers: array<int, array<string, string>>}
      */
-    private function translationsFrom(array $q, bool $noOptionFeedback, array $positions, array $isCorrect, string $number, IL10N $l, array &$warnings): array {
+    public function translationsFrom(array $q, bool $noOptionFeedback, array $positions, array $isCorrect, string $number, IL10N $l, array &$warnings): array {
         $out = ['question' => [], 'answers' => []];
         $unsupported = [];
 
@@ -481,13 +482,14 @@ class PoolBulkImportService {
 
     /**
      * Store the checked translations of a question create() just saved. $created is what
-     * create() returned: the question's id and its answers in stored order.
+     * create() returned: the question's id and its answers in stored order. Also used by
+     * ImportController after it saved a question itself.
      *
      * @param array<mixed> $created
      * @param array{question: array<string, array{text: string, explanation: ?string, scenario: ?string, rich: array<string, mixed>}>, answers: array<int, array<string, string>>} $translations
      * @param list<string> $warnings
      */
-    private function storeTranslations(mixed $created, array $translations, string $number, IL10N $l, array &$warnings): void {
+    public function storeTranslations(mixed $created, array $translations, string $number, IL10N $l, array &$warnings): void {
         if ($this->translations === null || ($translations['question'] === [] && $translations['answers'] === [])) {
             return;
         }

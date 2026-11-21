@@ -4160,5 +4160,6 @@ OC.L10N.register(
     "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "П%1$s: переклади мовою %2$s не імпортовано — підтримувані мови: %3$s",
     "French" : "Французька",
     "Ukrainian" : "Українська",
+    "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "Поля пулу з файлу (%s) не застосовано: цей імпорт додає питання до відкритого пулу й не змінює його назву та налаштування. Щоб створити пул із файлу, скористайтеся «Імпортувати пули» на вкладці «Пули».",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

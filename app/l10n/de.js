@@ -4160,5 +4160,6 @@ OC.L10N.register(
     "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "F%1$s: Übersetzungen in %2$s wurden nicht importiert — unterstützte Sprachen: %3$s",
     "French" : "Französisch",
     "Ukrainian" : "Ukrainisch",
+    "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "Die Pool-Felder der Datei (%s) wurden nicht übernommen: Dieser Import fügt die Fragen dem geöffneten Pool hinzu und lässt seinen Namen und seine Einstellungen unverändert. Um aus der Datei einen Pool anzulegen, nutze „Pools importieren“ im Tab Pools.",
 },
 "nplurals=2; plural=(n != 1);");
