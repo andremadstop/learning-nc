@@ -326,28 +326,23 @@ class XpService {
         $affected = $this->updateRecalculatedStats($userId, $xpData, $totalSessions, $totalMastered);
 
         if ($affected === 0) {
-            try {
-                $qb = $this->db->getQueryBuilder();
-                $qb->insert('learning_user_stats')
-                   ->values([
-                       'user_id' => $qb->createNamedParameter($userId),
-                       'total_xp' => $qb->createNamedParameter($xpData['total_xp']),
-                       'current_level' => $qb->createNamedParameter($xpData['level']),
-                       'current_streak' => $qb->createNamedParameter(0),
-                       'longest_streak' => $qb->createNamedParameter(0),
-                       'last_activity_date' => $qb->createNamedParameter($today),
-                       'total_sessions' => $qb->createNamedParameter($totalSessions),
-                       'total_mastered' => $qb->createNamedParameter($totalMastered),
-                       'updated_at' => $qb->createNamedParameter(time()),
-                   ]);
-                $qb->executeStatement();
-            } catch (\OCP\DB\Exception $e) {
-                if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                    // Race condition: retry as UPDATE
-                    $this->updateRecalculatedStats($userId, $xpData, $totalSessions, $totalMastered);
-                } else {
-                    throw $e;
-                }
+            // A parallel request may create the row first. That must not be a failing INSERT:
+            // this runs inside the write transactions of LeitnerService::answerQuestion and
+            // MissionService::claimMission, and on PostgreSQL a failed statement aborts them
+            // (25P02), the retry UPDATE included. 0 = the row exists now: update it instead.
+            $inserted = $this->db->insertIgnoreConflict('learning_user_stats', [
+                'user_id' => $userId,
+                'total_xp' => $xpData['total_xp'],
+                'current_level' => $xpData['level'],
+                'current_streak' => 0,
+                'longest_streak' => 0,
+                'last_activity_date' => $today,
+                'total_sessions' => $totalSessions,
+                'total_mastered' => $totalMastered,
+                'updated_at' => time(),
+            ]);
+            if ($inserted === 0) {
+                $this->updateRecalculatedStats($userId, $xpData, $totalSessions, $totalMastered);
             }
         }
 

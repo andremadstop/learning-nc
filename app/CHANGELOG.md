@@ -97,6 +97,10 @@ All notable changes to this project will be documented in this file.
   XP of that answer were rolled back. The achievement is now inserted with
   `IDBConnection::insertIgnoreConflict()` (`ON CONFLICT DO NOTHING` on PostgreSQL, `INSERT IGNORE`
   on MySQL/MariaDB), which reports an existing row without an error.
+- **The same for a learner's first stats row** (Pre-existing). When two requests of a learner
+  without a stats row ran at once (a Leitner answer, a claimed daily mission), the second one
+  failed on PostgreSQL in the same way, because the row was created by a failing insert inside
+  its transaction. It is now created the same way as an achievement.
 
 ### Tests
 - A round-trip test checks every column of pools, questions, answers and both translation
