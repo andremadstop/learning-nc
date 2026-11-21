@@ -7,7 +7,10 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
 use OCP\Files\SimpleFS\ISimpleFolder;
+use OCP\IAppConfig;
 use OCP\IConfig;
+use OCP\Lock\ILockingProvider;
+use OCP\Lock\LockedException;
 
 /**
  * An image library administrators keep for the certificates: the logo library (GitHub #78,
@@ -25,6 +28,24 @@ use OCP\IConfig;
  * A certificate never points into a library: choosing an image for a course copies it into the
  * course's certificate images (learning_cert_assets), and a certificate keeps the copy it was
  * issued with. Deleting a library image therefore never changes an issued certificate.
+ *
+ * Changes from several administrators at once (GitHub #102): every change is a read-modify-write of
+ * the list in the app config, and two at the same time used to lose one of them (its file stayed in
+ * the app data, its entry was gone from the list). Now
+ * - each change runs under an exclusive lock per library (ILockingProvider; without a memory cache
+ *   Nextcloud keeps the lock in the database, on PostgreSQL and MariaDB alike). A change that finds
+ *   the lock taken waits up to LOCK_WAIT_MS, then gives up with library_busy.
+ * - under the lock the list is read again from the database: the app config is cached per request
+ *   (and in the local memory cache), so a request that started before another one saved would still
+ *   see the old list and write it back.
+ * - rename() and delete() carry the revision of the list the administrator saw (revisionOf(), part
+ *   of every answer); a list that has changed since refuses the change with library_changed instead
+ *   of applying it to a list nobody saw. add() checks no revision: two additions do not contradict
+ *   each other, both stay (the duplicate and limit checks run on the list read under the lock).
+ * - a file written by add() whose list entry could not be saved is deleted again.
+ * With file locking switched off ('filelocking.enabled' => false) Nextcloud gives a lock that never
+ * holds; then only the revision check stands between two changes, and two additions at the very
+ * same moment can still lose one.
  */
 abstract class CertImageLibrary {
     public const NAME_MAX = 80;
@@ -33,11 +54,15 @@ abstract class CertImageLibrary {
     public const QUALITY = 88;
     /** lower JPEG and WebP qualities tried in turn while a re-encoded copy is over the limit */
     public const FALLBACK_QUALITIES = [80, 70];
+    /** how long a change waits for another change to the same library (GitHub #102) */
+    public const LOCK_WAIT_MS = 5000;
 
     public function __construct(
         private IAppData $appData,
         private IConfig $config,
         private ITimeFactory $timeFactory,
+        private IAppConfig $appConfig,
+        private ILockingProvider $lockingProvider,
     ) {
     }
 
@@ -105,82 +130,121 @@ abstract class CertImageLibrary {
     }
 
     /**
-     * Add an image.
+     * The revision of a list as list() returns it: what an administrator saw, sent back with a
+     * rename or delete (GitHub #102).
      *
-     * @return array{id: string, name: string, mime: string, size: int, created_at: int, reencoded: bool}
-     * @throws \InvalidArgumentException invalid_name, too_large, unsupported_type, duplicate, limit_reached
+     * @param list<array{id: string, name: string, mime: string, size: int, created_at: int, reencoded: bool}> $list
      */
-    public function add(string $name, string $bytes): array {
-        $name = self::cleanName($name);
-        $prepared = $this->prepare($bytes);
-        $bytes = $prepared['bytes'];
-        $id = hash('sha256', $bytes);
-        $list = $this->list();
-        foreach ($list as $entry) {
-            if ($entry['id'] === $id) {
-                throw new \InvalidArgumentException('duplicate');
-            }
-        }
-        if (count($list) >= $this->maxEntries()) {
-            throw new \InvalidArgumentException('limit_reached');
-        }
-        $folder = $this->folder(true);
-        if ($folder->fileExists($id)) {
-            $folder->getFile($id)->putContent($bytes);
-        } else {
-            $folder->newFile($id, $bytes);
-        }
-        $entry = [
-            'id' => $id,
-            'name' => $name,
-            'mime' => $prepared['mime'],
-            'size' => strlen($bytes),
-            'created_at' => $this->timeFactory->getTime(),
-            'reencoded' => true,
-        ];
-        $list[] = $entry;
-        $this->save($list);
-        return $entry;
+    public static function revisionOf(array $list): string {
+        return hash('sha256', (string)json_encode($list, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**
+     * Add an image. No revision: an addition does not contradict another change, and the list read
+     * under the lock decides about duplicates and the limit.
+     *
+     * @return array{id: string, name: string, mime: string, size: int, created_at: int, reencoded: bool}
+     * @throws \InvalidArgumentException invalid_name, too_large, unsupported_type, duplicate, limit_reached
+     * @throws CertLibraryConflictException library_busy
+     */
+    public function add(string $name, string $bytes): array {
+        $name = self::cleanName($name);
+        // the re-encoding takes the longest: done before the lock, which covers only the list
+        $prepared = $this->prepare($bytes);
+        $bytes = $prepared['bytes'];
+        $id = hash('sha256', $bytes);
+        return $this->locked(function () use ($id, $name, $bytes, $prepared): array {
+            $list = $this->freshList();
+            foreach ($list as $entry) {
+                if ($entry['id'] === $id) {
+                    throw new \InvalidArgumentException('duplicate');
+                }
+            }
+            if (count($list) >= $this->maxEntries()) {
+                throw new \InvalidArgumentException('limit_reached');
+            }
+            $folder = $this->folder(true);
+            // a file without list entry (left over from before #102) is written again and kept
+            $existed = $folder->fileExists($id);
+            if ($existed) {
+                $folder->getFile($id)->putContent($bytes);
+            } else {
+                $folder->newFile($id, $bytes);
+            }
+            $entry = [
+                'id' => $id,
+                'name' => $name,
+                'mime' => $prepared['mime'],
+                'size' => strlen($bytes),
+                'created_at' => $this->timeFactory->getTime(),
+                'reencoded' => true,
+            ];
+            $list[] = $entry;
+            try {
+                $this->save($list);
+            } catch (\Throwable $e) {
+                // no file without list entry
+                if (!$existed) {
+                    try {
+                        $folder->getFile($id)->delete();
+                    } catch (\Throwable $ignored) {
+                        // the save error is the one to report
+                    }
+                }
+                throw $e;
+            }
+            return $entry;
+        });
+    }
+
+    /**
+     * @param string $revision the revision of the list the administrator saw (revisionOf())
      * @throws NotFoundException no such image
      * @throws \InvalidArgumentException invalid_name
+     * @throws CertLibraryConflictException library_changed, library_busy
      */
-    public function rename(string $id, string $name): void {
+    public function rename(string $id, string $name, string $revision): void {
         $name = self::cleanName($name);
-        $list = $this->list();
-        foreach ($list as $i => $entry) {
-            if ($entry['id'] === $id) {
-                $list[$i]['name'] = $name;
-                $this->save($list);
-                return;
+        $this->locked(function () use ($id, $name, $revision): void {
+            $list = $this->freshList();
+            self::expectRevision($list, $revision);
+            foreach ($list as $i => $entry) {
+                if ($entry['id'] === $id) {
+                    $list[$i]['name'] = $name;
+                    $this->save($list);
+                    return;
+                }
             }
-        }
-        throw new NotFoundException('no such image');
+            throw new NotFoundException('no such image');
+        });
     }
 
     /**
      * Remove an image from the library. The caller resets the courses that use it; issued
      * certificates keep their own copy.
      *
+     * @param string $revision the revision of the list the administrator saw (revisionOf())
      * @throws NotFoundException no such image
+     * @throws CertLibraryConflictException library_changed, library_busy
      */
-    public function delete(string $id): void {
-        $list = $this->list();
-        $kept = array_values(array_filter($list, static fn(array $entry): bool => $entry['id'] !== $id));
-        if (count($kept) === count($list)) {
-            throw new NotFoundException('no such image');
-        }
-        $this->save($kept);
-        try {
-            $folder = $this->folder(false);
-            if ($folder->fileExists($id)) {
-                $folder->getFile($id)->delete();
+    public function delete(string $id, string $revision): void {
+        $this->locked(function () use ($id, $revision): void {
+            $list = $this->freshList();
+            self::expectRevision($list, $revision);
+            $kept = array_values(array_filter($list, static fn(array $entry): bool => $entry['id'] !== $id));
+            if (count($kept) === count($list)) {
+                throw new NotFoundException('no such image');
             }
-        } catch (NotFoundException $e) {
-            // no folder, nothing to delete
-        }
+            $this->save($kept);
+            try {
+                $folder = $this->folder(false);
+                if ($folder->fileExists($id)) {
+                    $folder->getFile($id)->delete();
+                }
+            } catch (NotFoundException $e) {
+                // no folder, nothing to delete
+            }
+        });
     }
 
     /**
@@ -472,6 +536,62 @@ abstract class CertImageLibrary {
             throw new \InvalidArgumentException('invalid_name');
         }
         return $name;
+    }
+
+    /** How long a change waits for the lock, in milliseconds. */
+    protected function lockWaitMs(): int {
+        return self::LOCK_WAIT_MS;
+    }
+
+    /**
+     * Run a change of the list under the library's exclusive lock (GitHub #102). Nextcloud's
+     * database lock does not wait: a taken lock is asked again every 50 ms until lockWaitMs().
+     *
+     * @template T
+     * @param callable(): T $change
+     * @return T
+     * @throws CertLibraryConflictException library_busy
+     */
+    private function locked(callable $change): mixed {
+        $key = 'learning/cert-library/' . $this->configKey();
+        $deadline = microtime(true) + $this->lockWaitMs() / 1000;
+        while (true) {
+            try {
+                $this->lockingProvider->acquireLock($key, ILockingProvider::LOCK_EXCLUSIVE);
+                break;
+            } catch (LockedException $e) {
+                if (microtime(true) >= $deadline) {
+                    throw new CertLibraryConflictException(CertLibraryConflictException::BUSY, 0, $e);
+                }
+                usleep(50_000);
+            }
+        }
+        try {
+            return $change();
+        } finally {
+            $this->lockingProvider->releaseLock($key, ILockingProvider::LOCK_EXCLUSIVE);
+        }
+    }
+
+    /**
+     * The list as stored now, not as this request first read it: the app config is cached per
+     * request and in the local memory cache.
+     *
+     * @return list<array{id: string, name: string, mime: string, size: int, created_at: int, reencoded: bool}>
+     */
+    private function freshList(): array {
+        $this->appConfig->clearCache();
+        return $this->list();
+    }
+
+    /**
+     * @param list<array{id: string, name: string, mime: string, size: int, created_at: int, reencoded: bool}> $list
+     * @throws CertLibraryConflictException library_changed
+     */
+    private static function expectRevision(array $list, string $revision): void {
+        if (!hash_equals(self::revisionOf($list), $revision)) {
+            throw new CertLibraryConflictException(CertLibraryConflictException::CHANGED);
+        }
     }
 
     /** @param list<array{id: string, name: string, mime: string, size: int, created_at: int, reencoded: bool}> $list */

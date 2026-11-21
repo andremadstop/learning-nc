@@ -4,13 +4,16 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Service\CertBackgroundLibrary;
+use OCA\Learning\Service\CertImageLibrary;
 use OCA\Learning\Service\CertLogoLibrary;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
 use OCP\Files\SimpleFS\ISimpleFile;
 use OCP\Files\SimpleFS\ISimpleFolder;
+use OCP\IAppConfig;
 use OCP\IConfig;
+use OCP\Lock\ILockingProvider;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -66,7 +69,7 @@ class CertBackgroundLibraryTest extends TestCase {
 
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(1760000000);
-        return new CertBackgroundLibrary($appData, $config, $time);
+        return new CertBackgroundLibrary($appData, $config, $time, $this->createMock(IAppConfig::class), $this->createMock(ILockingProvider::class));
     }
 
     private function file(string $name): ISimpleFile {
@@ -331,16 +334,16 @@ class CertBackgroundLibraryTest extends TestCase {
         $library = $this->library();
         $entry = $library->add('Frame', self::image('image/png'));
 
-        $library->rename($entry['id'], '  Gold frame ');
+        $library->rename($entry['id'], '  Gold frame ', CertImageLibrary::revisionOf($library->list()));
         $this->assertSame('Gold frame', $library->find($entry['id'])['name'] ?? null);
 
-        $library->delete($entry['id']);
+        $library->delete($entry['id'], CertImageLibrary::revisionOf($library->list()));
         $this->assertSame([], $library->list());
         $this->assertArrayNotHasKey($entry['id'], $this->files ?? []);
         $this->assertArrayNotHasKey('cert_background_library', $this->config);
 
         $this->expectException(NotFoundException::class);
-        $library->delete($entry['id']);
+        $library->delete($entry['id'], CertImageLibrary::revisionOf($library->list()));
     }
 
     public function testAFileChangedOnDiskIsNotServed(): void {

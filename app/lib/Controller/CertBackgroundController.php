@@ -5,6 +5,8 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\CertLayoutService;
 use OCA\Learning\Service\CertBackgroundLibrary;
+use OCA\Learning\Service\CertImageLibrary;
+use OCA\Learning\Service\CertLibraryConflictException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
@@ -42,7 +44,7 @@ class CertBackgroundController extends Controller {
     /**
      * The library with the number of courses that use each background.
      *
-     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
     public function index(): DataResponse {
         if (!$this->isAdmin()) {
@@ -55,7 +57,7 @@ class CertBackgroundController extends Controller {
      * Add a background: multipart field `background` (the file) and `name`.
      *
      * @param string $name the name instructors choose the background by
-     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, added: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string, added: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_CONFLICT|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function upload(string $name = ''): DataResponse {
@@ -80,6 +82,8 @@ class CertBackgroundController extends Controller {
             $entry = $this->library->add($name, $bytes);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (CertLibraryConflictException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
         } catch (\Throwable $e) {
             $this->logger->error('certificate background upload failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'internal_error'], Http::STATUS_INTERNAL_SERVER_ERROR);
@@ -90,15 +94,18 @@ class CertBackgroundController extends Controller {
     /**
      * @param string $id the background's id (sha256 of its stored bytes)
      * @param string $name the new name
-     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @param string $revision the revision of the list the name was changed in (GitHub #102); a list changed since answers 409 library_changed
+     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_CONFLICT, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 60, period: 60)]
-    public function rename(string $id, string $name = ''): DataResponse {
+    public function rename(string $id, string $name = '', string $revision = ''): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();
         }
         try {
-            $this->library->rename($id, $name);
+            $this->library->rename($id, $name, $revision);
+        } catch (CertLibraryConflictException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         } catch (\InvalidArgumentException $e) {
@@ -112,15 +119,18 @@ class CertBackgroundController extends Controller {
      * (courses_reset says how many).
      *
      * @param string $id the background's id
-     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, courses_reset: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @param string $revision the revision of the list the background was deleted from (GitHub #102); a list changed since answers 409 library_changed
+     * @return DataResponse<Http::STATUS_OK, array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string, courses_reset: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_CONFLICT, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function delete(string $id): DataResponse {
+    public function delete(string $id, string $revision = ''): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();
         }
         try {
-            $this->library->delete($id);
+            $this->library->delete($id, $revision);
+        } catch (CertLibraryConflictException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         }
@@ -143,10 +153,11 @@ class CertBackgroundController extends Controller {
         return CertLogoController::imageResponse($this->library, $id);
     }
 
-    /** @return array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int} */
+    /** @return array{backgrounds: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string} */
     private function describe(): array {
+        $list = $this->library->list();
         $backgrounds = [];
-        foreach ($this->library->list() as $entry) {
+        foreach ($list as $entry) {
             $backgrounds[] = [
                 'id' => $entry['id'],
                 'name' => $entry['name'],
@@ -155,7 +166,7 @@ class CertBackgroundController extends Controller {
                 'courses' => $this->layoutService->countCoursesUsingBackground($entry['id']),
             ];
         }
-        return ['backgrounds' => $backgrounds, 'max' => CertBackgroundLibrary::MAX_BACKGROUNDS];
+        return ['backgrounds' => $backgrounds, 'max' => CertBackgroundLibrary::MAX_BACKGROUNDS, 'revision' => CertImageLibrary::revisionOf($list)];
     }
 
     private function isAdmin(): bool {

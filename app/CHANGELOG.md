@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## 5.18.0 – unreleased
+
+### Fixed
+- **Certificate logo and background libraries keep every change when several administrators work
+  at once** (#102). Adding, renaming or deleting an image is now done under a lock per library,
+  and the list is read again from the database under that lock: before, a change made while
+  another one was in progress could write back an old list, so an image vanished from the list
+  while its file stayed in the app data. Two images added at the same moment now both stay. A
+  rename or delete on a list that has changed since the page loaded it is refused with HTTP 409
+  `library_changed` and changes nothing; the page says so and shows the list as it is now. A
+  change that finds another one still running after 5 seconds is refused with 409
+  `library_busy`. If the list cannot be saved after an upload, the file just written is deleted
+  again. Without Nextcloud's file locking (`'filelocking.enabled' => false`) the lock does not
+  hold; then only the revision check guards renames and deletes.
+  API: the library answers (`GET`/`POST /api/settings/admin/cert-logos` and
+  `/cert-backgrounds`, and their `PUT`/`DELETE` on `{id}`) add `revision`; `PUT …/{id}` reads
+  `revision` from the body and `DELETE …/{id}` from the query string, and both answer 409 without
+  it or with an outdated one. Uploads take no revision.
+
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 
 Certificates get a presentation layer: a background library with three built-in backgrounds and a

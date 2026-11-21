@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\CertImageLibrary;
+use OCA\Learning\Service\CertLibraryConflictException;
 use OCA\Learning\Service\CertLayoutService;
 use OCA\Learning\Service\CertLogoLibrary;
 use OCP\AppFramework\Controller;
@@ -43,7 +44,7 @@ class CertLogoController extends Controller {
     /**
      * The library with the number of courses that use each logo.
      *
-     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string}, array{}>|DataResponse<Http::STATUS_FORBIDDEN, array{error: string}, array{}>
      */
     public function index(): DataResponse {
         if (!$this->isAdmin()) {
@@ -56,7 +57,7 @@ class CertLogoController extends Controller {
      * Add a logo: multipart field `logo` (the file) and `name`.
      *
      * @param string $name the name instructors choose the logo by
-     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, added: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
+     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string, added: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_CONFLICT|Http::STATUS_INTERNAL_SERVER_ERROR, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function upload(string $name = ''): DataResponse {
@@ -81,6 +82,8 @@ class CertLogoController extends Controller {
             $entry = $this->library->add($name, $bytes);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (CertLibraryConflictException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
         } catch (\Throwable $e) {
             $this->logger->error('certificate logo upload failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'internal_error'], Http::STATUS_INTERNAL_SERVER_ERROR);
@@ -91,15 +94,18 @@ class CertLogoController extends Controller {
     /**
      * @param string $id the logo's id (sha256 of its bytes)
      * @param string $name the new name
-     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @param string $revision the revision of the list the name was changed in (GitHub #102); a list changed since answers 409 library_changed
+     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_CONFLICT, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 60, period: 60)]
-    public function rename(string $id, string $name = ''): DataResponse {
+    public function rename(string $id, string $name = '', string $revision = ''): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();
         }
         try {
-            $this->library->rename($id, $name);
+            $this->library->rename($id, $name, $revision);
+        } catch (CertLibraryConflictException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         } catch (\InvalidArgumentException $e) {
@@ -112,15 +118,18 @@ class CertLogoController extends Controller {
      * Delete a logo. Courses that use it go back to the Theming logo (courses_reset says how many).
      *
      * @param string $id the logo's id
-     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, courses_reset: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND, array{error: string}, array{}>
+     * @param string $revision the revision of the list the logo was deleted from (GitHub #102); a list changed since answers 409 library_changed
+     * @return DataResponse<Http::STATUS_OK, array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string, courses_reset: int}, array{}>|DataResponse<Http::STATUS_FORBIDDEN|Http::STATUS_NOT_FOUND|Http::STATUS_CONFLICT, array{error: string}, array{}>
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function delete(string $id): DataResponse {
+    public function delete(string $id, string $revision = ''): DataResponse {
         if (!$this->isAdmin()) {
             return $this->forbidden();
         }
         try {
-            $this->library->delete($id);
+            $this->library->delete($id, $revision);
+        } catch (CertLibraryConflictException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_CONFLICT);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => 'not_found'], Http::STATUS_NOT_FOUND);
         }
@@ -166,10 +175,11 @@ class CertLogoController extends Controller {
         ]);
     }
 
-    /** @return array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int} */
+    /** @return array{logos: list<array{id: string, name: string, mime: string, size: int, courses: int}>, max: int, revision: string} */
     private function describe(): array {
+        $list = $this->library->list();
         $logos = [];
-        foreach ($this->library->list() as $entry) {
+        foreach ($list as $entry) {
             $logos[] = [
                 'id' => $entry['id'],
                 'name' => $entry['name'],
@@ -178,7 +188,7 @@ class CertLogoController extends Controller {
                 'courses' => $this->layoutService->countCoursesUsingLogo($entry['id']),
             ];
         }
-        return ['logos' => $logos, 'max' => CertLogoLibrary::MAX_LOGOS];
+        return ['logos' => $logos, 'max' => CertLogoLibrary::MAX_LOGOS, 'revision' => CertImageLibrary::revisionOf($list)];
     }
 
     private function isAdmin(): bool {
