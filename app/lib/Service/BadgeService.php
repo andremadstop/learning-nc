@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Activity\ActivityPublisher;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
@@ -12,6 +13,7 @@ class BadgeService {
     private INotificationManager $notificationManager;
     private IConfig $config;
     private ActivityPublisher $activityPublisher;
+    private ICacheFactory $cacheFactory;
 
     private const BADGES = [
         'first_session' => ['name' => 'First Steps', 'emoji' => "\u{2B50}", 'description' => 'Complete your first session', 'category' => 'sessions', 'legacy' => true],
@@ -160,11 +162,12 @@ class BadgeService {
         ],
     ];
 
-    public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, ActivityPublisher $activityPublisher) {
+    public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, ActivityPublisher $activityPublisher, ICacheFactory $cacheFactory) {
         $this->db = $db;
         $this->notificationManager = $notificationManager;
         $this->config = $config;
         $this->activityPublisher = $activityPublisher;
+        $this->cacheFactory = $cacheFactory;
     }
 
     /**
@@ -428,6 +431,10 @@ class BadgeService {
             throw $e;
         }
 
+        // GitHub #101: Today and the profile read the badges from the 30-s user-state cache. A badge
+        // can come without XP (RAG contribution, coop simulator), so XpService does not clear it.
+        $this->invalidateUserCaches($userId);
+
         $badgeData = $this->buildBadgeData($badgeId, null);
         $badgeData['earned'] = true;
         $badgeData['earned_at'] = $earnedAt;
@@ -438,6 +445,14 @@ class BadgeService {
         }
 
         return [$badgeData];
+    }
+
+    /** The same keys as XpService::invalidateUserCaches(). */
+    private function invalidateUserCaches(string $userId): void {
+        $cache = $this->cacheFactory->createDistributed(XpService::CACHE_NAMESPACE);
+        $cache->remove(XpService::USER_STATE_CACHE_PREFIX . $userId);
+        $cache->remove(XpService::PROFILE_CACHE_PREFIX . $userId . '_all');
+        $cache->remove(XpService::LEGACY_PROFILE_CACHE_PREFIX . $userId . '_all');
     }
 
     private function dispatchSingleNotification(string $userId, string $badgeId, array $def): void {

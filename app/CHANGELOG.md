@@ -14,6 +14,13 @@ All notable changes to this project will be documented in this file.
   not shown. Section heading and list are announced as such, the layout follows the reading
   direction in Arabic, and the texts are in all six languages.
 
+### Fixed
+- **A new achievement shows at once** (Pre-existing). The user state behind Today and the
+  achievement gallery is cached for 30 seconds and was only cleared when XP changed. An
+  achievement that comes without XP (a RAG contribution, a finished coop simulator) stayed
+  invisible until the cache ran out, so the activity link could open Today without it. Awarding
+  an achievement now clears the same cache entries as an XP change.
+
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 
 Certificates get a presentation layer: a background library with three built-in backgrounds and a

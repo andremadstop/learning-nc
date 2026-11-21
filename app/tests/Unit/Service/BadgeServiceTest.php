@@ -5,6 +5,10 @@ namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Activity\ActivityPublisher;
+use OCA\Learning\Tests\Support\FakeCacheFactory;
+use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
+use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
@@ -18,18 +22,21 @@ class BadgeServiceTest extends TestCase {
     private IConfig $config;
     private ActivityPublisher $activityManager;
     private BadgeService $service;
+    private FakeCacheFactory $cacheFactory;
 
     protected function setUp(): void {
         $this->db = $this->createMock(IDBConnection::class);
         $this->notificationManager = $this->createMock(INotificationManager::class);
         $this->config = $this->createMock(IConfig::class);
         $this->activityManager = $this->createMock(ActivityPublisher::class);
+        $this->cacheFactory = new FakeCacheFactory();
 
         $this->service = new BadgeService(
             $this->db,
             $this->notificationManager,
             $this->config,
-            $this->activityManager
+            $this->activityManager,
+            $this->cacheFactory
         );
     }
 
@@ -90,5 +97,39 @@ class BadgeServiceTest extends TestCase {
             ->with('alice', 'first_session', 'First Steps', "\u{2B50}");
 
         $this->service->dispatchNotifications('alice', [['badge_id' => 'first_session']]);
+    }
+
+    /**
+     * GitHub #101: Today lists the achievements from /api/v1/user/state, which is cached for 30 s.
+     * A badge can come without any XP (a RAG contribution, a finished coop simulator), so XpService
+     * never cleared that cache and the activity link opened Today without the new achievement.
+     * Awarding a badge clears the same keys XpService clears.
+     */
+    public function testAwardingABadgeClearsTheCachedUserStateAndProfile(): void {
+        $insert = new FakeQueryBuilder(FakeResult::fromFetch([]));
+        $service = new BadgeService(
+            new FakeDbConnection([$insert]),
+            $this->notificationManager,
+            $this->config,
+            $this->activityManager,
+            $this->cacheFactory
+        );
+
+        $method = new \ReflectionMethod(BadgeService::class, 'awardIfNew');
+        $awarded = $method->invoke($service, 'alice', 'swarm', false);
+
+        $this->assertSame('swarm', $awarded[0]['badge_id'] ?? null);
+        $this->assertSame('learning_user_badges', $insert->table);
+        $this->assertEqualsCanonicalizing(
+            ['user_state_alice', 'profile_alice_all', 'lernprofil_alice_all'],
+            $this->cacheFactory->cache->removedKeys
+        );
+    }
+
+    public function testALegacyBadgeThatIsNotAwardedLeavesTheCacheAlone(): void {
+        $method = new \ReflectionMethod(BadgeService::class, 'awardIfNew');
+        $method->invoke($this->service, 'alice', 'first_session', true);
+
+        $this->assertSame([], $this->cacheFactory->cache->removedKeys);
     }
 }
