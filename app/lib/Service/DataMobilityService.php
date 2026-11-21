@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\AnswerMapper;
+use OCA\Learning\Db\AnswerTranslationMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\QuestionMapper;
+use OCA\Learning\Db\QuestionTranslationMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use OCP\IUserManager;
@@ -36,7 +38,9 @@ class DataMobilityService {
         CoursePoolMapper $coursePoolMapper,
         CourseMemberMapper $courseMemberMapper,
         IDBConnection $db,
-        IUserManager $userManager
+        IUserManager $userManager,
+        private ?QuestionTranslationMapper $questionTranslationMapper = null,
+        private ?AnswerTranslationMapper $answerTranslationMapper = null,
     ) {
         $this->poolMapper = $poolMapper;
         $this->questionMapper = $questionMapper;
@@ -46,6 +50,37 @@ class DataMobilityService {
         $this->courseMemberMapper = $courseMemberMapper;
         $this->db = $db;
         $this->userManager = $userManager;
+    }
+
+    /**
+     * A pool as one pool JSON document, format PoolJsonFormat::EXPORT_FORMAT (learning-pool/2):
+     * {"_meta": {"format"}, "name", "description", handbook/chapter fields of the pool,
+     * "questions": exportPoolJson()}. What `occ learning:export-pool` and the export in the
+     * interface write; both importers read it back (docs/import-pool-workflow.md, "Round trip").
+     * Empty pool fields are left out.
+     *
+     * @return array<string, mixed>
+     */
+    public function exportPoolDocument(int $poolId): array {
+        $pool = $this->poolMapper->findById($poolId);
+        $document = ['_meta' => ['format' => PoolJsonFormat::EXPORT_FORMAT], 'name' => (string)$pool->getName()];
+        $fields = [
+            'description' => $pool->getDescription(),
+            'handbook_key' => $pool->getHandbookKey(),
+            'handbook_title' => $pool->getHandbookTitle(),
+            'chapter_key' => $pool->getChapterKey(),
+            'chapter_title' => $pool->getChapterTitle(),
+        ];
+        foreach ($fields as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $document[$key] = $value;
+            }
+        }
+        if ($pool->getChapterOrder() !== null) {
+            $document['chapter_order'] = (int)$pool->getChapterOrder();
+        }
+        $document['questions'] = $this->exportPoolJson($poolId);
+        return $document;
     }
 
     /**
@@ -59,6 +94,7 @@ class DataMobilityService {
 
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
+        [$questionTranslations, $answerTranslations] = $this->translationsOf($questionIds, $answersGrouped);
 
         $export = [];
         foreach ($questions as $question) {
@@ -85,6 +121,7 @@ class DataMobilityService {
                 'exam_key' => $question->getExamKey(),
                 'chapter_key' => $question->getChapterKey(),
                 'chapter_title' => $question->getChapterTitle(),
+                'instructor_note' => $question->getInstructorNote(),
             ];
             foreach ($optional as $key => $value) {
                 if ($value !== null && $value !== '') {
@@ -94,12 +131,20 @@ class DataMobilityService {
             if ($question->getChapterOrder() !== null) {
                 $item['chapter_order'] = (int)$question->getChapterOrder();
             }
+            // Only when set: the importers store a missing note_visible as false.
+            if ($question->getNoteVisible()) {
+                $item['note_visible'] = true;
+            }
             $answers = $answersGrouped[$question->getId()] ?? [];
-            $item['answers'] = array_map(function ($a) {
-                return [
+            $item['answers'] = array_map(function ($a) use ($answerTranslations) {
+                $answer = [
                     'text' => $a->getText(),
                     'is_correct' => (bool)$a->getIsCorrect(),
                 ];
+                if (isset($answerTranslations[$a->getId()])) {
+                    $answer['translations'] = $answerTranslations[$a->getId()];
+                }
+                return $answer;
             }, $answers);
             // GitHub #66: hint, background_fact, key_takeaway, feedback_per_option (option_index =
             // index in "answers" above), in the import format's names (RichFeedbackFormat).
@@ -113,10 +158,77 @@ class DataMobilityService {
                     'is_correct' => (bool)$a->getIsCorrect(),
                 ], array_values($answers))
             );
+            $translations = $this->exportQuestionTranslations($questionTranslations[$question->getId()] ?? [], $answers);
+            if ($translations !== []) {
+                $item['translations'] = $translations;
+            }
             $export[] = $item;
         }
 
         return $export;
+    }
+
+    /**
+     * Translations of the questions (by question id, then language) and of their answers (by
+     * answer id: language → text). Empty without the translation mappers.
+     *
+     * @param list<int> $questionIds
+     * @param array<int, list<\OCA\Learning\Db\Answer>> $answersGrouped
+     * @return array{0: array<int, list<\OCA\Learning\Db\QuestionTranslation>>, 1: array<int, array<string, string>>}
+     */
+    private function translationsOf(array $questionIds, array $answersGrouped): array {
+        $byQuestion = [];
+        if ($this->questionTranslationMapper !== null && $questionIds !== []) {
+            foreach ($this->questionTranslationMapper->findByQuestions($questionIds) as $t) {
+                $byQuestion[(int)$t->getQuestionId()][] = $t;
+            }
+        }
+        $byAnswer = [];
+        $answerIds = [];
+        foreach ($answersGrouped as $answers) {
+            foreach ($answers as $a) {
+                $answerIds[] = (int)$a->getId();
+            }
+        }
+        if ($this->answerTranslationMapper !== null && $answerIds !== []) {
+            foreach ($this->answerTranslationMapper->findByAnswers($answerIds) as $t) {
+                $byAnswer[(int)$t->getAnswerId()][(string)$t->getLang()] = (string)$t->getText();
+            }
+            foreach ($byAnswer as &$langs) {
+                ksort($langs);
+            }
+            unset($langs);
+        }
+        return [$byQuestion, $byAnswer];
+    }
+
+    /**
+     * One question's translations as {lang: {text, explanation?, scenario?, hint?,
+     * background_fact?, key_takeaway?, feedback_per_option?}}, empty fields left out, the
+     * option feedback with option_index into the exported "answers" (RichFeedbackFormat::toExport()).
+     *
+     * @param list<\OCA\Learning\Db\QuestionTranslation> $translations
+     * @param list<\OCA\Learning\Db\Answer> $answers in export order
+     * @return array<string, array<string, mixed>>
+     */
+    private function exportQuestionTranslations(array $translations, array $answers): array {
+        $answerKeys = array_map(static fn ($a): array => [
+            'position' => $a->getPosition() !== null ? (int)$a->getPosition() : null,
+            'is_correct' => (bool)$a->getIsCorrect(),
+        ], array_values($answers));
+        $out = [];
+        foreach ($translations as $t) {
+            $entry = ['text' => (string)$t->getText()];
+            foreach (['explanation' => $t->getExplanation(), 'scenario' => $t->getScenario()] as $key => $value) {
+                if ($value !== null && $value !== '') {
+                    $entry[$key] = $value;
+                }
+            }
+            $entry += RichFeedbackFormat::toExport($t->getHint(), $t->getBackgroundFact(), $t->getKeyTakeaway(), $t->getOptionFeedback(), $answerKeys);
+            $out[(string)$t->getLang()] = $entry;
+        }
+        ksort($out);
+        return $out;
     }
 
     /**

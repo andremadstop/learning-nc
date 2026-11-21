@@ -4159,5 +4159,11 @@ OC.L10N.register(
     "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "يجري تعديل القائمة في مكان آخر الآن. تمت إعادة تحميلها. يُرجى المحاولة مرة أخرى بعد قليل.",
     "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "تغيّرت القائمة في هذه الأثناء، مثلًا من قِبل شخص آخر لديه صلاحيات الإدارة. تعذّرت إعادة تحميلها. يُرجى إعادة تحميل الصفحة ثم المحاولة مرة أخرى.",
     "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "يجري تعديل القائمة في مكان آخر الآن. تعذّرت إعادة تحميلها. يُرجى إعادة تحميل الصفحة ثم المحاولة مرة أخرى.",
+    "Q%1$s: translation %2$s was not imported — %3$s" : "س%1$s: لم يتم استيراد الترجمة %2$s — %3$s",
+    "Translation text missing" : "نص الترجمة مفقود",
+    "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "س%1$s: لم يتم استيراد الترجمات إلى %2$s — اللغات المدعومة: %3$s",
+    "French" : "الفرنسية",
+    "Ukrainian" : "الأوكرانية",
+    "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "لم تُطبَّق حقول المجموعة الواردة في الملف (%s): يضيف هذا الاستيراد الأسئلة إلى المجموعة المفتوحة ويترك اسمها وإعداداتها كما هي. لإنشاء مجموعة من الملف، استخدم «استيراد مجموعات» في تبويب المجموعات.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

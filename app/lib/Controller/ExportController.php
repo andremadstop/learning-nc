@@ -71,7 +71,8 @@ class ExportController extends Controller {
             return new DataResponse(['error' => 'Pool not found or no export access'], Http::STATUS_FORBIDDEN);
         }
 
-        $export = $this->dataMobilityService->exportPoolJson($poolId);
+        // learning-pool/2, the same document as occ learning:export-pool writes.
+        $export = $this->dataMobilityService->exportPoolDocument($poolId);
         // invalid UTF-8 in imported content becomes U+FFFD instead of failing the whole export;
         // anything json_encode still refuses is a 500 with a message, not a TypeError (audit #199)
         $json = json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);

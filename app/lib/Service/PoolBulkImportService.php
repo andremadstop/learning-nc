@@ -39,6 +39,7 @@ class PoolBulkImportService {
         private QuestionService $questionService,
         private IDBConnection $db,
         private LoggerInterface $logger,
+        private ?TranslationService $translations = null,
     ) {
     }
 
@@ -62,6 +63,15 @@ class PoolBulkImportService {
             $pool = ['name' => $poolName ?? ($name !== '' ? $name : $fallbackName), 'questions' => $data['questions']];
             if (isset($data['description']) && is_string($data['description'])) {
                 $pool['description'] = $data['description'];
+            }
+            $meta = is_array($data['_meta'] ?? null) ? $data['_meta'] : [];
+            // A learning-pool/2 export carries the pool's own handbook and chapter fields.
+            if (PoolJsonFormat::isExport($meta)) {
+                foreach (['handbook_key', 'handbook_title', 'chapter_key', 'chapter_title', 'chapter_order'] as $key) {
+                    if (array_key_exists($key, $data)) {
+                        $pool[$key] = $data[$key];
+                    }
+                }
             }
             return ['_meta' => $data['_meta'] ?? [], 'pools' => [$pool]];
         }
@@ -112,6 +122,8 @@ class PoolBulkImportService {
     public function import(array $document, string $userId, bool $dryRun, IL10N $l): array {
         $meta = isset($document['_meta']) && is_array($document['_meta']) ? $document['_meta'] : [];
         $defaultType = PoolJsonFormat::defaultQuestionType($meta) ?? 'single';
+        // learning-pool/2 (an export): each question carries its own values, nothing is filled in.
+        $isExport = PoolJsonFormat::isExport($meta);
         $defaultHandbookKey = PoolJsonFormat::fieldText($meta, 'handbook_key');
         $defaultHandbookTitle = PoolJsonFormat::fieldText($meta, 'handbook_title');
 
@@ -171,7 +183,7 @@ class PoolBulkImportService {
             // Each question once through every check; the real import stores what passes.
             $prepared = [];
             foreach ($questions as $qIndex => $q) {
-                $args = $this->prepareQuestion($q, $qIndex, $poolData, $meta, $defaultType, $l, $result['question_errors'], $result['warnings']);
+                $args = $this->prepareQuestion($q, $qIndex, $poolData, $meta, $defaultType, $l, $result['question_errors'], $result['warnings'], $isExport);
                 if ($args !== null) {
                     $prepared[] = $args;
                 }
@@ -200,7 +212,7 @@ class PoolBulkImportService {
                 $imported = 0;
                 foreach ($prepared as [$number, $q]) {
                     try {
-                        $this->questionService->create(
+                        $created = $this->questionService->create(
                             $poolId,
                             $userId,
                             $q['text'],
@@ -210,8 +222,8 @@ class PoolBulkImportService {
                             $q['type'],
                             $q['pbq_subtype'],
                             $q['pbq_config'],
-                            null, // instructorNote
-                            false, // noteVisible
+                            $q['instructor_note'],
+                            $q['note_visible'],
                             $q['handbook_key'],
                             $q['handbook_title'],
                             $q['exam_key'],
@@ -229,7 +241,11 @@ class PoolBulkImportService {
                         // on PostgreSQL a COMMIT would then roll back silently — so it fails the
                         // whole pool in the catch below.
                         $questionErrors[] = $l->t('Q%1$s: %2$s', [$number, self::localizedReason($e->getMessage(), $l) ?? $e->getMessage()]);
+                        continue;
                     }
+                    // Outside the try above: the question is stored, a refused translation must
+                    // not report it as skipped.
+                    $this->storeTranslations($created, $q['translations'], $number, $l, $result['warnings']);
                 }
                 $this->db->commit();
                 $result['id'] = $poolId;
@@ -261,7 +277,7 @@ class PoolBulkImportService {
      * @param list<string> $warnings imported, but something of the item was left out (GitHub #66)
      * @return array{0: string, 1: array<string, mixed>}|null
      */
-    private function prepareQuestion(mixed $q, int $qIndex, array $poolData, array $meta, string $defaultType, IL10N $l, array &$errors, array &$warnings = []): ?array {
+    private function prepareQuestion(mixed $q, int $qIndex, array $poolData, array $meta, string $defaultType, IL10N $l, array &$errors, array &$warnings = [], bool $isExport = false): ?array {
         $number = is_array($q) ? PoolJsonFormat::scalarText($q['original_number'] ?? null) : '';
         $number = $number !== '' ? $number : (string)($qIndex + 1);
 
@@ -273,7 +289,9 @@ class PoolBulkImportService {
             return null;
         }
 
-        $q = PoolJsonFormat::applyPoolDefaults($q, $poolData, $meta, $qIndex);
+        if (!$isExport) {
+            $q = PoolJsonFormat::applyPoolDefaults($q, $poolData, $meta, $qIndex);
+        }
 
         $pbqSubtype = null;
         $pbqConfig = null;
@@ -318,7 +336,8 @@ class PoolBulkImportService {
         $args = [
             'text' => PoolJsonFormat::scalarText($q['text']),
             'explanation' => isset($q['explanation']) && is_scalar($q['explanation']) ? (string)$q['explanation'] : null,
-            'difficulty' => PoolJsonFormat::difficulty($q) ?? 'medium',
+            // An export keeps a question without difficulty as it is.
+            'difficulty' => PoolJsonFormat::difficulty($q) ?? ($isExport ? null : 'medium'),
             'answers' => $answers,
             'type' => $questionType,
             'pbq_subtype' => $pbqSubtype,
@@ -330,6 +349,8 @@ class PoolBulkImportService {
             'chapter_title' => PoolJsonFormat::fieldText($q, 'chapter_title'),
             'chapter_order' => PoolJsonFormat::chapterOrder($q),
             'scenario' => isset($q['scenario']) && is_string($q['scenario']) ? $q['scenario'] : null,
+            'instructor_note' => isset($q['instructor_note']) && is_string($q['instructor_note']) && trim($q['instructor_note']) !== '' ? $q['instructor_note'] : null,
+            'note_visible' => filter_var($q['note_visible'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ];
 
         // GitHub #66: rich feedback, feedback per option keyed by the stored answer position.
@@ -358,6 +379,16 @@ class PoolBulkImportService {
             return null;
         }
 
+        $args['translations'] = $this->translationsFrom(
+            $q,
+            $questionType === 'pbq' || $questionType === 'open',
+            $isPbq ? [] : self::answerPositions($q),
+            array_map(static fn (array $a): bool => $a['is_correct'], $answers),
+            $number,
+            $l,
+            $warnings
+        );
+
         if ($rich['dropped_languages'] !== []) {
             $warnings[] = $l->t('Q%1$s: feedback texts in %2$s were not imported — one language per question', [$number, implode(', ', $rich['dropped_languages'])]);
         }
@@ -369,6 +400,124 @@ class PoolBulkImportService {
         }
 
         return [$number, $args];
+    }
+
+    /**
+     * The translations of a question item, checked as TranslationService would check them, so the
+     * dry run and the import agree. A translation that would be refused is left out with a
+     * warning; the question is imported all the same. Public for ImportController, whose
+     * import into an existing pool reads the same item format (5.18.0).
+     *
+     * Item format (written by DataMobilityService::exportPoolJson()):
+     *  - "translations": {lang: {text, explanation?, scenario?, hint?, background_fact?,
+     *    key_takeaway?, feedback_per_option?}} on the question, option_index as in "answers"
+     *  - "translations": {lang: text} on an answer object
+     *
+     * @param array<mixed> $q
+     * @param array<int, int> $positions item answer index → stored position (answerPositions())
+     * @param list<bool> $isCorrect by stored position
+     * @param list<string> $warnings
+     * @return array{question: array<string, array{text: string, explanation: ?string, scenario: ?string, rich: array<string, mixed>}>, answers: array<int, array<string, string>>}
+     */
+    public function translationsFrom(array $q, bool $noOptionFeedback, array $positions, array $isCorrect, string $number, IL10N $l, array &$warnings): array {
+        $out = ['question' => [], 'answers' => []];
+        $unsupported = [];
+
+        $raw = is_array($q['translations'] ?? null) ? $q['translations'] : [];
+        foreach ($raw as $lang => $entry) {
+            $lang = (string)$lang;
+            if (!in_array($lang, TranslationService::ALLOWED_LANGS, true)) {
+                $unsupported[$lang] = true;
+                continue;
+            }
+            if (!is_array($entry) || !is_string($entry['text'] ?? null) || trim($entry['text']) === '') {
+                $warnings[] = $l->t('Q%1$s: translation %2$s was not imported — %3$s', [$number, $lang, $l->t('Translation text missing')]);
+                continue;
+            }
+            $scenario = is_string($entry['scenario'] ?? null) && trim($entry['scenario']) !== '' ? $entry['scenario'] : null;
+            $explanation = is_string($entry['explanation'] ?? null) && $entry['explanation'] !== '' ? $entry['explanation'] : null;
+            try {
+                if ($scenario !== null && mb_strlen($scenario) > QuestionService::SCENARIO_MAX_LENGTH) {
+                    throw new \InvalidArgumentException('Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters');
+                }
+                $fromItem = RichFeedbackFormat::fromItem($entry, $positions, $isCorrect);
+                $rich = RichFeedbackFormat::normalize([
+                    'hint' => $fromItem['hint'],
+                    'background_fact' => $fromItem['background_fact'],
+                    'key_takeaway' => $fromItem['key_takeaway'],
+                    'option_feedback' => $noOptionFeedback ? [] : $fromItem['option_feedback'],
+                ]);
+            } catch (\InvalidArgumentException $e) {
+                $warnings[] = $l->t('Q%1$s: translation %2$s was not imported — %3$s', [$number, $lang, self::localizedReason($e->getMessage(), $l) ?? $e->getMessage()]);
+                continue;
+            }
+            $out['question'][$lang] = ['text' => $entry['text'], 'explanation' => $explanation, 'scenario' => $scenario, 'rich' => $rich];
+        }
+
+        foreach (array_values(is_array($q['answers'] ?? null) ? $q['answers'] : []) as $index => $answer) {
+            if (!isset($positions[$index]) || !is_array($answer) || !is_array($answer['translations'] ?? null)) {
+                continue;
+            }
+            foreach ($answer['translations'] as $lang => $text) {
+                $lang = (string)$lang;
+                if (!in_array($lang, TranslationService::ALLOWED_LANGS, true)) {
+                    $unsupported[$lang] = true;
+                    continue;
+                }
+                if (!is_string($text) || trim($text) === '') {
+                    $warnings[] = $l->t('Q%1$s: translation %2$s was not imported — %3$s', [$number, $lang, $l->t('Translation text missing')]);
+                    continue;
+                }
+                $out['answers'][$positions[$index]][$lang] = $text;
+            }
+        }
+
+        if ($unsupported !== []) {
+            $warnings[] = $l->t('Q%1$s: translations into %2$s were not imported — supported languages: %3$s', [
+                $number, implode(', ', array_map(static fn (string $lang): string => mb_substr($lang, 0, 16), array_keys($unsupported))), implode(', ', TranslationService::ALLOWED_LANGS),
+            ]);
+        }
+        return $out;
+    }
+
+    /**
+     * Store the checked translations of a question create() just saved. $created is what
+     * create() returned: the question's id and its answers in stored order. Also used by
+     * ImportController after it saved a question itself.
+     *
+     * @param array<mixed> $created
+     * @param array{question: array<string, array{text: string, explanation: ?string, scenario: ?string, rich: array<string, mixed>}>, answers: array<int, array<string, string>>} $translations
+     * @param list<string> $warnings
+     */
+    public function storeTranslations(mixed $created, array $translations, string $number, IL10N $l, array &$warnings): void {
+        if ($this->translations === null || ($translations['question'] === [] && $translations['answers'] === [])) {
+            return;
+        }
+        $questionId = is_array($created) ? (int)($created['id'] ?? 0) : 0;
+        if ($questionId <= 0) {
+            return;
+        }
+        foreach ($translations['question'] as $lang => $t) {
+            try {
+                $this->translations->setQuestionTranslation($questionId, $lang, $t['text'], $t['explanation'], $t['scenario'] ?? '', $t['rich']);
+            } catch (\InvalidArgumentException $e) {
+                $warnings[] = $l->t('Q%1$s: translation %2$s was not imported — %3$s', [$number, $lang, self::localizedReason($e->getMessage(), $l) ?? $e->getMessage()]);
+            }
+        }
+        $answers = is_array($created['answers'] ?? null) ? array_values($created['answers']) : [];
+        foreach ($translations['answers'] as $position => $langs) {
+            $answerId = (int)($answers[$position]['id'] ?? 0);
+            if ($answerId <= 0) {
+                continue;
+            }
+            foreach ($langs as $lang => $text) {
+                try {
+                    $this->translations->setAnswerTranslation($answerId, $lang, $text);
+                } catch (\InvalidArgumentException $e) {
+                    $warnings[] = $l->t('Q%1$s: translation %2$s was not imported — %3$s', [$number, $lang, self::localizedReason($e->getMessage(), $l) ?? $e->getMessage()]);
+                }
+            }
+        }
     }
 
     /**

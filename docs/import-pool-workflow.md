@@ -88,6 +88,7 @@ One file may contain any number of pools. Minimal example:
 | `_meta.source` | no | string | Free-text provenance; not shown to learners |
 | `_meta.handbook_key` / `_meta.handbook_title` | no | string | Default handbook for every question that has none and whose pool has none |
 | `_meta.default_difficulty` | no | string | Difficulty for every question without its own `difficulty` |
+| `_meta.format` | no | string | `learning-pool/2` marks an export (see [Round trip](#round-trip)): nothing is filled into its questions from the pool or `_meta`, and a question without `difficulty` stays without one |
 | `_meta.default_question_type` | no | string | One of `single`, `multi`, `open`, `pbq` (or the old `true_false`, `multiple`, or `multiple_choice`, read as `single`). Type for every question without its own type — but not when several answers are marked correct (that stays `multi`, also under `pbq`). `pbq` makes the other questions without a type interactive questions |
 | `pools[].name` | ✅ | string | Pool name as it appears in the interface; `pool_name` is read as well |
 | `pools[].description` | no | string | Multi-line allowed |
@@ -106,6 +107,10 @@ One file may contain any number of pools. Minimal example:
 | `pools[].questions[].hint` | no | string or object | Hint the learner can open **before** answering (training, Leitner, Smart Queue; never in an exam). Max 2 000 characters. Also read as `hinweis` |
 | `pools[].questions[].background_fact`, `key_takeaway` | no | string or object | Shown **after** answering, and in the review of a practice exam (never in or after a counting exam). Max 5 000 / 500 characters. Also read as `background` / `hintergrund` and `takeaway` / `merksatz` |
 | `pools[].questions[].feedback_per_option` | no | array | Feedback per answer option, shown after answering next to the chosen option: `[{"option_index": 0, "letter": "A", "verdict": "wrong", "why": "…", "misconception": "…"}]`. `option_index` counts from 0 in the order of `answers` (else `letter`, A = first, else the list order). `why` max 5 000, `misconception` max 1 000 characters. `verdict` is not stored — the answer's `is_correct` decides, and a contradicting verdict is reported. Instead of the list, an answer object may carry `why` (or `feedback`) and `misconception` (or `trap`) itself |
+| `pools[].questions[].instructor_note` | no | string | Note for the pool's editors and the course's instructors |
+| `pools[].questions[].note_visible` | no | bool | `true` shows the instructor note to learners too; default `false` |
+| `pools[].questions[].translations` | no | object | Translations of the question: `{"en": {"text": "…", "explanation": "…", "scenario": "…", "hint": "…", "background_fact": "…", "key_takeaway": "…", "feedback_per_option": [{"option_index": 0, "why": "…", "misconception": "…"}]}}`; `text` is required, the rest optional, same limits as the untranslated fields. Languages: `de`, `en`, `fr`, `ru`, `ar`, `uk` (what the app can store); another language, or an entry without `text`, is reported and left out, the question is imported. Read by all three importers (occ, **Import pools**, and since 5.18.0 the question import **Manage** → **Import**) |
+| `pools[].questions[].answers[].translations` | no | object | Translations of an answer text: `{"en": "…", "ru": "…"}`, same languages and route as above |
 | `pools[].questions[].original_number` | no | int/string | Original number from the PDF — for traceability |
 | `pools[].questions[].chapter_key`, `chapter_title`, `chapter_order`, `handbook_key`, `handbook_title`, `exam_key` | no | string / int | Per-question values; they win over the pool and `_meta`. An export writes them per question. `chapter_order` follows the pool rule: 1 to 9999, a value outside is dropped |
 | `pools[].questions[].subtype` | for `pbq` | string | Interactive question (`question_type: "pbq"`, no `answers`): `dropdown`, `placement`, `cli`, `cable`, `multi_panel`, `switch_config`, `routing_config`, `diagnostic` or `ranking` |
@@ -203,8 +208,9 @@ them in the interface (**Manage** tab) even without the instructor role. Afterwa
 attach the pools to courses or share them with other users from the interface.
 
 Besides the `pools` format above, the command reads a file with **one** pool and no
-`pools` wrapper: a plain list of questions (what an export writes), or
-`{"name": …, "description": …, "_meta": {…}, "questions": [ … ]}`. The new pool is named by
+`pools` wrapper: a plain list of questions (what an export wrote up to 5.17), or
+`{"name": …, "description": …, "_meta": {…}, "questions": [ … ]}` (what an export writes
+since 5.18, see [Round trip](#round-trip)). The new pool is named by
 `--pool-name`, else by the file's `"name"` (or `"pool_name"`, as in `app/examples/pools/`), else by
 the file name without extension:
 
@@ -279,25 +285,67 @@ missing, or ask for the output in batches. Context windows differ — Claude off
 
 ## Round trip
 
-`learning:export-pool --format=json` (and **Export JSON** in a pool's **Manage** tab) emits a
-plain **list of questions**, not the `pools` wrapper above. Per question it carries `text`,
-`type`, `scenario`, `explanation`, `difficulty`, `chapter_key`, `chapter_title`,
-`chapter_order`, `handbook_key`, `handbook_title`, `exam_key`, `hint`, `background_fact`,
-`key_takeaway`, `feedback_per_option` (with `option_index`, `letter` and the `verdict` from the
-answer key) and the `answers` with `is_correct`; an interactive question carries `subtype` and `pbq_config` instead of answers.
-Empty fields are left out. Translations of questions, instructor notes and attached images
-are not exported.
+`learning:export-pool --format=json` (and **Export JSON** in a pool's **Manage** tab) write
+one pool as a **pool document in format `learning-pool/2`** (since 5.18):
 
-That makes an export the best template for your own files, and it goes back in by any of
-the three routes without changes:
+```json
+{
+  "_meta": {"format": "learning-pool/2"},
+  "name": "Network basics",
+  "description": "…",
+  "handbook_key": "ccna", "handbook_title": "…",
+  "chapter_key": "3", "chapter_title": "…", "chapter_order": 4,
+  "questions": [ … ]
+}
+```
 
-- **Into an existing pool:** **Manage** → **Import** in any pool you can edit; the questions
-  are added to that pool.
+Per question it carries `text`, `type`, `scenario`, `explanation`, `difficulty`,
+`chapter_key`, `chapter_title`, `chapter_order`, `handbook_key`, `handbook_title`,
+`exam_key`, `instructor_note`, `note_visible` (only when `true`), `hint`, `background_fact`,
+`key_takeaway`, `feedback_per_option` (with `option_index`, `letter` and the `verdict` from
+the answer key), `translations` and the `answers` with `is_correct` and their own
+`translations`; an interactive question carries `subtype` and `pbq_config` instead of
+answers. Empty fields are left out.
+
+**Without losses** — through occ or **Import pools**, the export comes back as the same pool:
+the pool's name, description and chapter fields, and every question field listed above.
+What a pool export does not carry, on purpose:
+
+- **Attached images** (`image_path`): the path points into the app data of the instance that
+  exported it; an import never takes a path from a file. Attach images again by hand.
+- **Audio, subtitles and cues** (GitHub #66): they travel in their own media bundle, see
+  below (`--media-dir`).
+- **Review state** (published or draft, reviewer): an imported question is published.
+- **Owner, shares, course assignments** and course settings of the pool such as its exam
+  scope (number of exam questions, exam time, required pool) — those belong to the course
+  (**Courses** → the course → pools), not to the pool.
+- **Learner data**: progress, answers, Leitner boxes.
+
+The answers keep their order; their internal positions are renumbered from 0, and
+`option_index` follows them.
+
+**Format 1** — the plain list of questions that exports up to 5.17 wrote — is still read by
+every route, with the rules of a hand-written file (pool and `_meta` defaults, `medium` for a
+question without difficulty). In a `learning-pool/2` file every question carries its own
+values: a question without chapter stays without chapter even when the pool has one.
+
+It goes back in by any of three routes:
+
 - **As a new pool in the interface:** **Pools** tab → **Import pools** (instructors). The new
-  pool is named after the uploaded file (`pool-12.json` becomes `pool-12`) — pasted text
-  gives *Imported pool* — and can be renamed afterwards; there is no `--pool-name` here.
-- **Through occ:** `occ learning:import-pool-json pool-12.json --user=<uid> --pool-name="…"`
-  creates a **new** pool from it; delete the old one by hand if you no longer need it.
+  pool takes the name in the file (an older export: the uploaded file's name, `pool-12.json`
+  becomes `pool-12`; pasted text gives *Imported pool*).
+- **Through occ:** `occ learning:import-pool-json pool-12.json --user=<uid>` creates a **new**
+  pool from it, named as in the file unless `--pool-name="…"` says otherwise; delete the old
+  one by hand if you no longer need it.
+- **Into an existing pool:** **Manage** → **Import** in any pool you can edit; the questions
+  are added to that pool, which keeps its own name and description. Since 5.18.0 this route
+  also reads `translations`, `instructor_note` and `note_visible`; the pool fields of the file
+  (`name`, `description`, handbook and chapter fields) are not applied to the existing pool, and
+  the result names them in a warning.
+
+That also makes an export the best template for your own files. CSV
+(`--format=csv`) is not a round trip: it carries only the text, the answers with one correct
+answer (or the model answer of an open question) and the explanation.
 
 A typical edit cycle:
 

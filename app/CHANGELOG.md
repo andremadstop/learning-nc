@@ -21,6 +21,38 @@ All notable changes to this project will be documented in this file.
   `/cert-backgrounds`, and their `PUT`/`DELETE` on `{id}`) add `revision`; `PUT …/{id}` reads
   `revision` from the body and `DELETE …/{id}` from the query string, and both answer 409 without
   it or with an outdated one. Uploads take no revision.
+- **A pool export comes back without losses.** `occ learning:export-pool --format=json` and
+  **Export JSON** now write one pool document in format `learning-pool/2` (`_meta.format`) with
+  the pool's name, description and chapter fields, and per question also the instructor note
+  (with "visible to learners"), the translations of question, explanation, scenario and
+  feedback texts, and the translations of the answers. Imported through occ or **Import pools**,
+  it is the same pool field for field; before, the pool's metadata, all translations and the
+  instructor notes were lost, and a question without difficulty came back as `medium`. Older exports (a plain list of questions) import as
+  before. Not part of a pool export, as documented in `docs/import-pool-workflow.md` (Round trip):
+  attached images, the audio bundle (`--media-dir`), review state and course settings.
+  A translation the app cannot store (another language than de, en, fr, ru, ar, uk, or no
+  text) is reported in the import and left out; the question is imported.
+- **Importing an export into an existing pool keeps notes and translations.** **Manage** →
+  **Import** read a `learning-pool/2` export but silently dropped the instructor notes (with
+  "visible to learners") and all question and answer translations; it now stores them, checked
+  and stored as in **Import pools** (a translation that cannot be stored is a warning, the
+  question stays imported). The pool's own name, description and chapter fields are not applied
+  to the open pool — the result says so and names them, instead of dropping them without a word.
+- **Translations in French and Ukrainian.** Questions and answers could be translated into
+  German, English, Russian and Arabic only, although the app speaks six languages: the
+  translation dialog, the personal content language and the pool languages in a course now
+  offer French and Ukrainian as well. On PostgreSQL instances that were upgraded through 3.2,
+  the database's language check on the translation tables is widened to the six languages by
+  the update.
+
+### Tests
+- A round-trip test checks every column of pools, questions, answers and both translation
+  tables: carried by the export or excluded with a reason, so a new column cannot go missing
+  silently; one question per type including two interactive subtypes. The same round trip runs
+  against a real Nextcloud in the integration suite, where it compares not only the two exports
+  but the rows stored for the copy with the rows stored for the source, column by column — a
+  field the export never writes would be missing from both exports alike. Both tests also fail
+  when a compared column is empty everywhere in the source.
 
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 

@@ -471,8 +471,10 @@ PROMPT;
         $map = [
             'de' => 'Deutsch',
             'en' => 'English',
+            'fr' => 'Français',
             'ru' => 'Русский',
             'ar' => 'Arabic',
+            'uk' => 'Українська',
         ];
         return $map[$code] ?? 'Deutsch';
     }

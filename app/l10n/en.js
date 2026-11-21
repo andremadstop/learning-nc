@@ -4159,5 +4159,11 @@ OC.L10N.register(
     "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "The list is being changed elsewhere right now. It has now been reloaded. Please try again in a moment.",
     "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "The list has changed in the meantime, for example by another administrator. It could not be reloaded. Please reload the page and then try again.",
     "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "The list is being changed elsewhere right now. It could not be reloaded. Please reload the page and then try again.",
+    "Q%1$s: translation %2$s was not imported — %3$s" : "Q%1$s: translation %2$s was not imported — %3$s",
+    "Translation text missing" : "Translation text missing",
+    "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "Q%1$s: translations into %2$s were not imported — supported languages: %3$s",
+    "French" : "French",
+    "Ukrainian" : "Ukrainian",
+    "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab.",
 },
 "nplurals=2; plural=(n != 1);");

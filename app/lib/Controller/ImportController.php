@@ -8,6 +8,7 @@ use OCA\Learning\Db\Answer;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
+use OCA\Learning\Service\PoolBulkImportService;
 use OCA\Learning\Service\PoolJsonFormat;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\RichFeedbackFormat;
@@ -43,6 +44,7 @@ class ImportController extends Controller {
     private IDBConnection $db;
     private ?string $userId;
     private IL10N $l10n;
+    private PoolBulkImportService $poolImport;
 
     public function __construct(
         string $appName,
@@ -54,7 +56,8 @@ class ImportController extends Controller {
         IConfig $config,
         IDBConnection $db,
         ?string $userId,
-        IL10N $l10n
+        IL10N $l10n,
+        PoolBulkImportService $poolImport
     ) {
         parent::__construct($appName, $request);
         $this->questionMapper = $questionMapper;
@@ -65,6 +68,9 @@ class ImportController extends Controller {
         $this->db = $db;
         $this->userId = $userId;
         $this->l10n = $l10n;
+        // Translations of question and answers: checked and stored by the same code as in
+        // occ learning:import-pool-json / Import pools (5.18.0).
+        $this->poolImport = $poolImport;
     }
 
     private function getMaxImportBytes(): int {
@@ -364,6 +370,8 @@ class ImportController extends Controller {
             'difficulty' => $difficulty,
             'type' => $type,
             'rich' => $rich,
+            // file answer index → index in 'answers', for the answer translations
+            'positions' => $positions,
         ] + self::metadataFrom($item);
     }
 
@@ -428,6 +436,9 @@ class ImportController extends Controller {
             'chapter_title' => PoolJsonFormat::fieldText($item, 'chapter_title'),
             'chapter_order' => PoolJsonFormat::chapterOrder($item),
             'scenario' => self::scenarioFrom($item),
+            // 5.18.0: written by the export; the same rule as PoolBulkImportService::prepareQuestion().
+            'instructor_note' => is_string($item['instructor_note'] ?? null) && trim($item['instructor_note']) !== '' ? $item['instructor_note'] : null,
+            'note_visible' => filter_var($item['note_visible'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ];
     }
 
@@ -627,6 +638,8 @@ class ImportController extends Controller {
         // Valid only from 1 to 9999; outside it is dropped, not a failed insert (one rule for all importers).
         $question->setChapterOrder(PoolJsonFormat::chapterOrder($item));
         $question->setScenario(self::scenarioFrom($item));
+        $question->setInstructorNote($item['instructor_note'] ?? null);
+        $question->setNoteVisible((bool)($item['note_visible'] ?? false));
     }
 
     /**
@@ -872,6 +885,7 @@ class ImportController extends Controller {
         if (is_string($shape)) {
             return new DataResponse(['error' => $shape], Http::STATUS_BAD_REQUEST);
         }
+        $poolObject = $shape[1] !== [] ? $shape[1] : $data;
         [$data, $sourcePool] = $shape;
 
         if (count($data) > self::MAX_ITEMS) {
@@ -881,6 +895,10 @@ class ImportController extends Controller {
         $imported = 0;
         $errors = [];
         $warnings = [];
+        $ignoredPoolFields = PoolJsonFormat::isExport($fileMeta) ? self::poolFieldsIn($poolObject) : [];
+        if ($ignoredPoolFields !== []) {
+            $warnings[] = $this->l10n->t('The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use "Import pools" in the Pools tab.', [implode(', ', $ignoredPoolFields)]);
+        }
 
         $this->db->beginTransaction();
         try {
@@ -950,8 +968,9 @@ class ImportController extends Controller {
                     $answer->setText($modelText);
                     $answer->setIsCorrect(true);
                     $answer->setPosition(0);
-                    $this->answerMapper->createOrUpdate($answer);
+                    $answer = $this->answerMapper->createOrUpdate($answer);
 
+                    $this->storeTranslations($rawItem, true, $item['positions'], [$answer], $question, $num, $warnings);
                     $imported++;
                     continue;
                 }
@@ -1029,15 +1048,17 @@ class ImportController extends Controller {
                 self::applyRichFeedback($question, $item['rich_feedback']);
                 $question = $this->questionMapper->createOrUpdate($question);
 
+                $storedAnswers = [];
                 foreach ($validatedAnswers as $va) {
                     $answer = new Answer();
                     $answer->setQuestionId($question->getId());
                     $answer->setText($va['text']);
                     $answer->setIsCorrect($va['is_correct']);
                     $answer->setPosition($va['position']);
-                    $this->answerMapper->createOrUpdate($answer);
+                    $storedAnswers[] = $this->answerMapper->createOrUpdate($answer);
                 }
 
+                $this->storeTranslations($rawItem, false, $item['positions'], $storedAnswers, $question, $num, $warnings);
                 $imported++;
             }
 
@@ -1102,8 +1123,62 @@ class ImportController extends Controller {
         $this->applyQuestionMetadata($question, self::metadataFrom($item));
         self::applyRichFeedback($question, $richItem['rich_feedback']);
 
-        $this->questionMapper->createOrUpdate($question);
+        $question = $this->questionMapper->createOrUpdate($question);
+        // A PBQ has no answers: text, explanation, scenario, hint, background and takeaway only.
+        $this->storeTranslations($item, true, [], [], $question, $num, $warnings);
         return 1;
+    }
+
+    /**
+     * Store the translations of a question just saved (format of the pool export:
+     * "translations" on the question and on each answer), checked and stored as
+     * PoolBulkImportService does it. One that cannot be stored becomes a warning; the question
+     * stays imported.
+     *
+     * @param array<mixed> $rawItem the item as read from the file
+     * @param array<int, int> $positions file answer index → index in the normalized answers
+     * @param list<Answer> $storedAnswers the answers just saved, in stored order
+     * @param list<string> $warnings
+     */
+    private function storeTranslations(array $rawItem, bool $noOptionFeedback, array $positions, array $storedAnswers, Question $question, int $num, array &$warnings): void {
+        if (!is_array($rawItem['translations'] ?? null) && !self::anyAnswerTranslation($rawItem)) {
+            return;
+        }
+        // Only answers that were stored: cut to MAX_ANSWERS, or the model answer of an open question.
+        $positions = array_filter($positions, static fn (int $index): bool => $index < count($storedAnswers));
+        $isCorrect = array_map(static fn (Answer $a): bool => (bool)$a->getIsCorrect(), $storedAnswers);
+        $checked = $this->poolImport->translationsFrom($rawItem, $noOptionFeedback, $positions, $isCorrect, (string)$num, $this->l10n, $warnings);
+        $this->poolImport->storeTranslations([
+            'id' => $question->getId(),
+            'answers' => array_map(static fn (Answer $a): array => ['id' => $a->getId()], $storedAnswers),
+        ], $checked, (string)$num, $this->l10n, $warnings);
+    }
+
+    /** @param array<mixed> $rawItem */
+    private static function anyAnswerTranslation(array $rawItem): bool {
+        foreach (is_array($rawItem['answers'] ?? null) ? $rawItem['answers'] : [] as $answer) {
+            if (is_array($answer) && is_array($answer['translations'] ?? null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The pool fields of a learning-pool/2 document (or of its one pool object) that hold a
+     * value — what this dialog does not apply, since it imports into an existing pool.
+     *
+     * @param array<mixed> $pool
+     * @return list<string>
+     */
+    private static function poolFieldsIn(array $pool): array {
+        $fields = [];
+        foreach (['name', 'pool_name', 'description', 'handbook_key', 'handbook_title', 'chapter_key', 'chapter_title', 'chapter_order'] as $key) {
+            if (self::scalarText($pool[$key] ?? null) !== '') {
+                $fields[] = $key;
+            }
+        }
+        return $fields;
     }
 
     /**

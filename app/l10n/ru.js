@@ -4159,5 +4159,11 @@ OC.L10N.register(
     "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "Список сейчас изменяется в другом месте. Он загружен заново. Попробуй ещё раз через минуту.",
     "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "Список тем временем изменился, например его изменил другой администратор. Загрузить его заново не удалось. Обнови страницу и попробуй ещё раз.",
     "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "Список сейчас изменяется в другом месте. Загрузить его заново не удалось. Обнови страницу и попробуй ещё раз.",
+    "Q%1$s: translation %2$s was not imported — %3$s" : "В%1$s: перевод %2$s не импортирован — %3$s",
+    "Translation text missing" : "Отсутствует текст перевода",
+    "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "В%1$s: переводы на %2$s не импортированы — поддерживаемые языки: %3$s",
+    "French" : "Французский",
+    "Ukrainian" : "Украинский",
+    "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "Поля пула из файла (%s) не применены: этот импорт добавляет вопросы в открытый пул и не меняет его название и настройки. Чтобы создать пул из файла, используйте «Импортировать пулы» на вкладке «Пулы».",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

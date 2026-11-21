@@ -770,6 +770,7 @@ import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { abschlussTabIds, kommunikationTabIds, lernraumTabIds, materialsNextStep, previewsCourseAsStudent } from '../utils/courseView.js'
 import { getPassStatus } from '../services/CourseService.js'
 import { attemptsLeft } from '../utils/certificationCycle.js'
+import { CONTENT_LANGUAGES } from '../utils/contentLanguages.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
 // Placeholder values are shown as written: Vue escapes {{ }} and attributes itself; the default
@@ -1528,7 +1529,7 @@ export default {
 		poolLanguageCodes(pool) {
 			const langs = Array.isArray(pool.available_content_languages) ? pool.available_content_languages : ['de']
 			return langs
-				.filter((code) => ['de', 'en', 'ru', 'ar'].includes(code))
+				.filter((code) => CONTENT_LANGUAGES.includes(code))
 				.map((code) => code.toUpperCase())
 		},
 		poolLanguageSummary(pool) {

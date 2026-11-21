@@ -4159,5 +4159,11 @@ OC.L10N.register(
     "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.",
     "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.",
     "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.",
+    "Q%1$s: translation %2$s was not imported — %3$s" : "F%1$s: Übersetzung %2$s wurde nicht importiert — %3$s",
+    "Translation text missing" : "Übersetzungstext fehlt",
+    "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "F%1$s: Übersetzungen in %2$s wurden nicht importiert — unterstützte Sprachen: %3$s",
+    "French" : "Französisch",
+    "Ukrainian" : "Ukrainisch",
+    "The pool fields of the file (%s) were not applied: this import adds the questions to the open pool and leaves its name and settings as they are. To create a pool from the file, use \"Import pools\" in the Pools tab." : "Die Pool-Felder der Datei (%s) wurden nicht übernommen: Dieser Import fügt die Fragen dem geöffneten Pool hinzu und lässt seinen Namen und seine Einstellungen unverändert. Um aus der Datei einen Pool anzulegen, nutze „Pools importieren“ im Tab Pools.",
 },
 "nplurals=2; plural=(n != 1);");

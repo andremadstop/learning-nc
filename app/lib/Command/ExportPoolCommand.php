@@ -72,7 +72,8 @@ class ExportPoolCommand extends Command {
             if ($format === 'csv') {
                 $content = $this->dataMobilityService->exportPoolCsv($poolId);
             } else {
-                $data = $this->dataMobilityService->exportPoolJson($poolId);
+                // learning-pool/2: the pool's own fields plus its questions (docs/import-pool-workflow.md).
+                $data = $this->dataMobilityService->exportPoolDocument($poolId);
                 $content = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                 if ($content === false) {
                     $output->writeln('<error>Failed to encode JSON</error>');
