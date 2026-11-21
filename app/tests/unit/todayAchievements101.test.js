@@ -146,6 +146,22 @@ describe('Today shows the achievements (GitHub #101)', () => {
 		expect(requestedUrls()).toEqual(LOAD_URLS)
 	})
 
+	it('shows each description as text under the name, not only in a tooltip', async () => {
+		state.badges = [
+			badge('desc', 1800000000, { name_key: 'badge_mastermind_name', description_key: 'Master 50 cards in Box 5' }),
+			badge('nodesc', 1700000000),
+		]
+		await render({})
+		const [withDescription, without] = host.querySelectorAll('ul.achievements-list > li')
+		const description = withDescription.querySelector('.achievement-description')
+		expect(description).not.toBeNull()
+		expect(description.textContent.trim()).toBe('Master 50 cards in Box 5')
+		// Read in order: emoji (hidden), name, description, date.
+		const order = Array.from(withDescription.children).map((el) => el.className)
+		expect(order.indexOf('achievement-description')).toBe(order.indexOf('achievement-name') + 1)
+		expect(without.querySelector('.achievement-description')).toBeNull()
+	})
+
 	it('shows six until "show all", which expands and collapses again', async () => {
 		state.badges = Array.from({ length: 8 }, (_, i) => badge(`b${i}`, 1000 + i))
 		await render({})

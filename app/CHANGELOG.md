@@ -15,7 +15,9 @@ All notable changes to this project will be documented in this file.
   Today scrolls there and moves the keyboard focus to its heading. The list comes from the user
   state Today already loads, so the section costs no extra request; with gamification off it is
   not shown. Section heading and list are announced as such, the layout follows the reading
-  direction in Arabic, and the texts are in all six languages.
+  direction in Arabic, and the texts are in all six languages. Each achievement shows what it
+  was for in small text under its name, readable with keyboard, touch and screen reader alike
+  (it was only a tooltip before).
 
 ### Fixed
 - **Certificate logo and background libraries keep every change when several administrators work

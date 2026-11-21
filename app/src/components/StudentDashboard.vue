@@ -141,6 +141,9 @@
             :title="badgeDescription(badge)">
             <span class="achievement-emoji" aria-hidden="true">{{ badge.emoji }}</span>
             <span class="achievement-name">{{ badgeLabel(badge) }}</span>
+            <!-- Visible text: the title tooltip of a non-focusable item reaches neither keyboard
+                 nor touch users, and screen readers rarely read it. -->
+            <span v-if="badgeDescription(badge)" class="achievement-description">{{ badgeDescription(badge) }}</span>
             <span class="achievement-date">{{ badgeDate(badge) }}</span>
           </li>
         </ul>
@@ -813,7 +816,7 @@ export default {
 .achievement-item {
   display: grid;
   grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
+  grid-auto-rows: auto;
   column-gap: 10px;
   align-items: center;
   padding: 10px 12px;
@@ -823,18 +826,28 @@ export default {
 }
 
 .achievement-emoji {
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
+  align-self: start;
   font-size: 26px;
   line-height: 1;
 }
 
 .achievement-name {
+  grid-column: 2;
   font-weight: 600;
   color: var(--color-main-text);
   overflow-wrap: anywhere;
 }
 
+.achievement-description {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--color-main-text);
+  overflow-wrap: anywhere;
+}
+
 .achievement-date {
+  grid-column: 2;
   font-size: 12px;
   color: var(--color-text-maxcontrast);
 }
