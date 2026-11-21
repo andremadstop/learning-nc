@@ -64,6 +64,8 @@ All notable changes to this project will be documented in this file.
   an achievement now clears the same cache entries as an XP change. An achievement awarded inside
   a Leitner answer (Mastermind) clears them again after that answer is saved, so a page loaded
   in between cannot keep the old state for 30 seconds.
+- **The notification "Achievement unlocked" opens the achievements on Today** (Pre-existing), like
+  the activity for the same event; before, it opened the start page of the app.
 - **CSV import: three misreadings found by the property tests** (#65), in the import and in its
   preview alike. (1) A first question that mentions "question" and "answer" (or "Frage" and
   "Antwort") is no longer dropped as a header: a header is a first row that names the columns

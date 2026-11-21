@@ -106,6 +106,19 @@ class NotifierTest extends TestCase {
         $notifier->prepare($notification, 'de');
     }
 
+    /**
+     * (Pre-existing) The notification for an unlocked achievement opened the app root, while the
+     * activity for the same event (GitHub #101) opens the achievements section on Today.
+     */
+    public function testBadgeEarnedLinksToTheAchievementsSection(): void {
+        $notifier = $this->makeNotifier();
+        $notification = $this->makeNotification('learning', 'badge_earned', ['badge_name' => 'Mastermind', 'badge_emoji' => '*']);
+        $notification->expects($this->once())->method('setLink')
+            ->with('https://nc.example/apps/learning/dashboard?section=achievements')->willReturnSelf();
+
+        $notifier->prepare($notification, 'de');
+    }
+
     public function testCertificateIssuedWithoutCourseIdLinksToAppRoot(): void {
         $notifier = $this->makeNotifier();
         $notification = $this->makeNotification('learning', 'certificate_issued', ['course_title' => 'Alt']);

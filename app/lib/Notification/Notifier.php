@@ -77,7 +77,8 @@ class Notifier implements INotifier {
                 $notification->setParsedSubject(
                     $l->t('Achievement unlocked: %s %s', [$badgeEmoji, $badgeName])
                 );
-                $notification->setLink($appUrl);
+                // The same target as the activity for this event (Activity\Provider, GitHub #101).
+                $notification->setLink(rtrim($appUrl, '/') . '/dashboard?section=achievements');
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app-dark.svg')));
                 break;
 
