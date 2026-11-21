@@ -1,5 +1,5 @@
 {
-	"_doc": "GitHub #65: how the CSV readers read these files, recorded from the readers before the three CSV findings were fixed (5.18.0). The fix must read every one of them exactly as before. `files` are the shipped examples (app/examples), `cases` hand-written CSV texts. Per case: importable questions, number of errors and warnings, and per record whether it imports and what is stored (text, type, answers with their correct flag, explanation). Error texts are not compared (they are translated). Read by importCsvRegression.test.js (import preview) and ImportCsvRegressionTest.php (ImportController::importCsv).",
+	"_doc": "GitHub #65: how the CSV readers read these files, recorded from the readers before the three CSV findings were fixed (5.18.0). The fix must read every one of them exactly as before. `files` are the shipped examples (app/examples), `cases` hand-written CSV texts and the CSV example of docs/MANUAL.md. Per case: importable questions, number of errors and warnings, and per record whether it imports and what is stored (text, type, answers with their correct flag, explanation). Error texts are not compared (they are translated). Read by importCsvRegression.test.js (import preview) and ImportCsvRegressionTest.php (ImportController::importCsv).",
 	"files": {
 		"general-knowledge.csv": {
 			"importable": 8,
@@ -1477,6 +1477,152 @@
 								}
 							],
 							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "the manual example (docs/MANUAL.md, CSV)",
+			"csv": "question,answer1,answer2,...,answerN,correct_number,explanation\nWhat is 2+2?,3,4,5,6,2,Because math\nWhat is H2O?,Water,open\n\"Which command lists files?\n(Linux shell)\",ls,cd,pwd,1,\"ls lists the directory.\nIt takes options such as -l.\"\n",
+			"expect": {
+				"importable": 3,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "What is 2+2?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "3",
+									"correct": false
+								},
+								{
+									"text": "4",
+									"correct": true
+								},
+								{
+									"text": "5",
+									"correct": false
+								},
+								{
+									"text": "6",
+									"correct": false
+								}
+							],
+							"explanation": "Because math"
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "What is H2O?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Water",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Which command lists files?\n(Linux shell)",
+							"type": "single",
+							"answers": [
+								{
+									"text": "ls",
+									"correct": true
+								},
+								{
+									"text": "cd",
+									"correct": false
+								},
+								{
+									"text": "pwd",
+									"correct": false
+								}
+							],
+							"explanation": "ls lists the directory.\nIt takes options such as -l."
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "the manual example without its header line",
+			"csv": "What is 2+2?,3,4,5,6,2,Because math\nWhat is H2O?,Water,open\n\"Which command lists files?\n(Linux shell)\",ls,cd,pwd,1,\"ls lists the directory.\nIt takes options such as -l.\"\n",
+			"expect": {
+				"importable": 3,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "What is 2+2?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "3",
+									"correct": false
+								},
+								{
+									"text": "4",
+									"correct": true
+								},
+								{
+									"text": "5",
+									"correct": false
+								},
+								{
+									"text": "6",
+									"correct": false
+								}
+							],
+							"explanation": "Because math"
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "What is H2O?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Water",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Which command lists files?\n(Linux shell)",
+							"type": "single",
+							"answers": [
+								{
+									"text": "ls",
+									"correct": true
+								},
+								{
+									"text": "cd",
+									"correct": false
+								},
+								{
+									"text": "pwd",
+									"correct": false
+								}
+							],
+							"explanation": "ls lists the directory.\nIt takes options such as -l."
 						}
 					}
 				]
