@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Integration;
 
 use OCA\Learning\Service\LeitnerService;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
@@ -26,12 +27,18 @@ final class LeitnerMasteryBadgeEarnedTest extends TestCase {
 	private const XP_BEFORE = 1000;
 
 	private IDBConnection $db;
+	private IConfig $config;
+	private string $gamificationBefore = '';
 	private int $poolId = 0;
 	private int $itemId = 0;
 	private int $rightAnswerId = 0;
 
 	protected function setUp(): void {
 		$this->db = Server::get(IDBConnection::class);
+		// Gamification on: off, the badge check and the XP are skipped and the test proves nothing.
+		$this->config = Server::get(IConfig::class);
+		$this->gamificationBefore = $this->config->getAppValue('learning', 'gamification_enabled', '');
+		$this->config->setAppValue('learning', 'gamification_enabled', 'yes');
 		$this->cleanUp();
 		$now = time();
 		// The learner owns the pool: Leitner is open for the owner (no course switch applies).
@@ -66,6 +73,11 @@ final class LeitnerMasteryBadgeEarnedTest extends TestCase {
 
 	protected function tearDown(): void {
 		$this->cleanUp();
+		if ($this->gamificationBefore === '') {
+			$this->config->deleteAppValue('learning', 'gamification_enabled');
+		} else {
+			$this->config->setAppValue('learning', 'gamification_enabled', $this->gamificationBefore);
+		}
 	}
 
 	public function testThePromotionToBoxFiveIsSavedWhenMastermindWasEarnedBefore(): void {
