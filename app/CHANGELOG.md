@@ -2,7 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
-## 5.18.0 – unreleased
+## [5.18.0] - 2026-11-21 — Achievements on Today, lossless pool export, safe certificate libraries
+
+Today lists a learner's achievements, and the activity and notification "Achievement unlocked"
+open exactly that section (#101). A pool export now comes back field for field, with the pool's
+metadata, instructor notes and all translations, and French and Ukrainian join the translation
+languages. The certificate logo and background libraries keep every change when several
+administrators work at once (#102). The CSV import no longer misreads three kinds of files
+(#65), and on PostgreSQL a Leitner answer is no longer lost once "Mastermind" is earned.
+
+> **Administrators, please read:**
+> - **One migration, PostgreSQL only.** `Version011600Date20261121140000` widens the language
+>   check of the translation tables to de, en, fr, ru, ar, uk on instances that still carry it
+>   from 3.2; anywhere else it does nothing. No tables or columns are added (65 tables, 660
+>   columns).
+> - **Pool export format.** `occ learning:export-pool --format=json` and **Export JSON** write one
+>   pool document (`_meta.format` `learning-pool/2`) instead of a plain list of questions. Scripts
+>   that read the old list need to read `questions` from it. Older exports still import.
+> - **Certificate libraries.** Changes now take Nextcloud's file lock per library; without file
+>   locking (`'filelocking.enabled' => false`) only the revision check below guards renames and
+>   deletes.
+> - **API contract.** The library answers of `/api/settings/admin/cert-logos` and
+>   `/cert-backgrounds` add `revision`; `PUT …/{id}` needs it in the body and `DELETE …/{id}` in
+>   the query string, otherwise HTTP 409 `library_changed`; a change waiting longer than 5
+>   seconds answers 409 `library_busy`. Other routes and fields are unchanged.
+> - **Known issue:** `npm audit` still reports 6 moderate findings from one advisory for
+>   `minimatch` under `webdav` through `@nextcloud/dialogs` (since 5.15.0); the only fix npm
+>   offers is a breaking downgrade.
 
 ### Added
 - **Achievements on Today** (#101). With gamification on, Today has an achievements section: the
