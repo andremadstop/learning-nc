@@ -28,7 +28,7 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 class ImportController extends Controller {
     /** Questions per import (CSV records after the header, JSON items). */
     private const MAX_ITEMS = 500;
-    /** Records parseCsv() reads at most: a header plus MAX_ITEMS, plus one to see "too many". */
+    /** Records readCsv() reads at most per delimiter: a header plus MAX_ITEMS, plus one to see "too many". */
     private const CSV_MAX_RECORDS = self::MAX_ITEMS + 2;
     /** Answers a question keeps; more are cut off (JSON) or refused (CSV). */
     private const MAX_ANSWERS = 8;
@@ -139,29 +139,289 @@ class ImportController extends Controller {
         return $records;
     }
 
-    /** First record that names the columns (question/answer or Frage/Antwort), not a question. */
-    private static function isCsvHeader(array $fields): bool {
+    /** The record names the columns: it mentions question and answer, or Frage and Antwort. */
+    private static function mentionsCsvColumns(array $fields): bool {
         $line = strtolower(implode(' ', $fields));
         return (str_contains($line, 'question') && str_contains($line, 'answer'))
             || (str_contains($line, 'frage') && str_contains($line, 'antwort'));
     }
 
     /**
-     * Parse CSV with semicolon or comma, whichever splits the first data record into more fields
-     * (a tie means comma) — the old rule "more ; than , in the first data line", but counted
-     * outside quotes, so commas inside a quoted question no longer decide.
-     *
-     * The delimiter is decided on the first two records only, and the text is then parsed once,
-     * up to CSV_MAX_RECORDS records: more than that is refused anyway (importCsv()).
-     *
-     * @return list<list<string>>
+     * The first field of an open-form record reads as a column name, not as a question: at most
+     * four words (split at spaces and tabs) and no sentence mark (? . ! :). "Question text",
+     * "Fragen", "question_text" are labels; "Explain question and answer." is a question.
      */
-    private static function parseCsv(string $text): array {
-        $comma = self::csvRecords($text, ',', 2);
-        $semicolon = self::csvRecords($text, ';', 2);
-        $first = isset($comma[0]) && self::isCsvHeader($comma[0]) ? 1 : 0;
-        $delimiter = count($semicolon[$first] ?? []) > count($comma[$first] ?? []) ? ';' : ',';
-        return self::csvRecords($text, $delimiter, self::CSV_MAX_RECORDS);
+    private static function isCsvColumnLabel(string $text): bool {
+        return strpbrk($text, '?.!:') === false && count(preg_split('/[ \t]+/', $text) ?: [$text]) <= 4;
+    }
+
+    /**
+     * A first record that names the columns and does not itself import as a question. A question
+     * that mentions "question" and "answer" (or "Frage" and "Antwort") has a correct-answer number
+     * or is an open question, so it is read, not dropped (GitHub #65). Exception: every record in
+     * the open-question form imports, so there the first field decides — a column name
+     * (`question,model_answer,open`, `Question text,Model answer,open`, `Fragen,Antworten,open`)
+     * keeps the record a header, as before #65.
+     */
+    private static function isCsvHeader(array $fields): bool {
+        if (!self::mentionsCsvColumns($fields)) {
+            return false;
+        }
+        $record = self::csvRecord($fields);
+        return isset($record['error'])
+            || ($record['type'] === 'open' && self::isCsvColumnLabel($record['text']));
+    }
+
+    /**
+     * Names of a header column that holds the number of the correct answer, compared after
+     * isCorrectColumn() lower-cases the name and turns runs of spaces, tabs, "_" and "-" into one
+     * space. Whole names only: "Lösungsweg" or "Solution notes" is an explanation column.
+     */
+    private const CORRECT_COLUMN = '/^(?:correct(?: answer| number)?|right answer|richtig|richtige antwort|korrekt|korrekte antwort|solution|l(?:ö|oe)sung)$/u';
+
+    /** The header field names the correct-answer column (CORRECT_COLUMN). */
+    private static function isCorrectColumn(string $field): bool {
+        $name = (string)preg_replace('/[ \t_-]+/', ' ', mb_strtolower(trim($field)));
+        return preg_match(self::CORRECT_COLUMN, $name) === 1;
+    }
+
+    /**
+     * Where a header puts the number of the correct answer (CORRECT_COLUMN: correct,
+     * correct_answer, correct_number, richtig, korrekt, solution, Lösung, ...). Only the format's
+     * own shape counts: question, at least two answer columns, then the correct column as the
+     * last or second-last column (an explanation after it).
+     *
+     * @param list<string> $header
+     * @return array{width: int, correct: int}|null
+     */
+    private static function csvColumns(array $header): ?array {
+        foreach ($header as $i => $field) {
+            if ($i >= 3 && self::isCorrectColumn($field)) {
+                return $i < count($header) - 2 ? null : ['width' => count($header), 'correct' => $i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * One delimiter's reading: header, the header's columns, the data records, how many import.
+     *
+     * @return array{header: list<string>|null, columns: array{width: int, correct: int}|null, records: list<list<string>>, importable: int}
+     */
+    private static function csvReading(string $text, string $delimiter): array {
+        $all = self::csvRecords($text, $delimiter, self::CSV_MAX_RECORDS);
+        $header = isset($all[0]) && self::isCsvHeader($all[0]) ? $all[0] : null;
+        $columns = $header === null ? null : self::csvColumns($header);
+        $records = $header === null ? $all : array_slice($all, 1);
+        $importable = 0;
+        foreach ($records as $record) {
+            if (!isset(self::csvRecord($record, $columns)['error'])) {
+                $importable++;
+            }
+        }
+        return ['header' => $header, 'columns' => $columns, 'records' => $records, 'importable' => $importable];
+    }
+
+    /**
+     * Read CSV with semicolon or comma, whichever reads more records as questions. Only when both
+     * read the same number (also none) the old rule decides: the delimiter that splits the first
+     * data record into more fields, a tie means comma. The first ';' no longer decides on its own:
+     * an export writes "cd;ls;pwd" unquoted, and that file must stay a comma file (GitHub #65).
+     * Each delimiter reads at most CSV_MAX_RECORDS records: more is refused anyway (importCsv()).
+     *
+     * @return array{header: list<string>|null, columns: array{width: int, correct: int}|null, records: list<list<string>>, importable: int}
+     */
+    private static function readCsv(string $text): array {
+        $comma = self::csvReading($text, ',');
+        $semicolon = self::csvReading($text, ';');
+        if ($comma['importable'] !== $semicolon['importable']) {
+            return $comma['importable'] > $semicolon['importable'] ? $comma : $semicolon;
+        }
+        return count($semicolon['records'][0] ?? []) > count($comma['records'][0] ?? []) ? $semicolon : $comma;
+    }
+
+    /** A number from 1 to 8 that names one of $answerCount answers (is_numeric, then (int)). */
+    private static function isCorrectNumber(string $value, int $answerCount): bool {
+        return is_numeric($value) && (int)$value >= 1 && (int)$value <= 8 && (int)$value <= $answerCount;
+    }
+
+    /**
+     * Answers (trimmed, empty ones dropped), correct index and explanation of a multiple-choice record.
+     *
+     *  1. With a header that names the correct column, and a record as wide as the header: the
+     *     number in that column, when it is one (GitHub #65).
+     *  2. Otherwise the reading of every version before 5.18.0 (csvChoiceAsBefore()), when it
+     *     imports: the last field as the number, so "Q,1,3,2,3" is answers 1,3,2 with number 3.
+     *     When "answers, number, explanation" would import too (answers 1,3, number 2,
+     *     explanation "3"), the record is ambiguous: it is read the old way and flagged, so the
+     *     import warns.
+     *  3. Otherwise "answers, number, explanation", when that reading imports: a numeric
+     *     explanation is no longer read as the number of the correct answer when that reading
+     *     cannot import (GitHub #65, eight answers and an explanation "2").
+     *  4. Otherwise the old reading, so a record that imports neither way is refused as before.
+     *
+     * @param list<string> $fields
+     * @param array{width: int, correct: int}|null $columns
+     * @return array{answers: list<string>, correctIndex: int|null, explanation: string|null, ambiguous?: true}
+     */
+    private static function csvChoice(array $fields, ?array $columns): array {
+        if ($columns !== null && count($fields) === $columns['width']) {
+            $c = $columns['correct'];
+            if (self::isCorrectNumber(trim($fields[$c]), $c - 1)) {
+                return [
+                    'answers' => self::cleanAnswers(array_slice($fields, 1, $c - 1)),
+                    'correctIndex' => (int)trim($fields[$c]) - 1,
+                    'explanation' => $c < count($fields) - 1 ? self::optionalCsvText($fields[count($fields) - 1]) : null,
+                ];
+            }
+        }
+
+        $asBefore = self::csvChoiceAsBefore($fields);
+        $withExplanation = self::csvChoiceWithExplanation($fields);
+        if (self::choiceImports($asBefore)) {
+            // ambiguous only when the old reading took the last field as the number
+            $lastIdx = count($fields) - 1;
+            if ($lastIdx >= 2 && self::isCorrectNumber(trim($fields[$lastIdx]), $lastIdx - 1)
+                && $withExplanation !== null && self::choiceImports($withExplanation)) {
+                $asBefore['ambiguous'] = true;
+            }
+            return $asBefore;
+        }
+        if ($withExplanation !== null && self::choiceImports($withExplanation)) {
+            return $withExplanation;
+        }
+        return $asBefore;
+    }
+
+    /** Answer texts trimmed, empty ones dropped. */
+    private static function cleanAnswers(array $texts): array {
+        return array_values(array_filter(array_map('trim', $texts), static fn (string $t): bool => $t !== ''));
+    }
+
+    /** An optional text field: trimmed, null when empty. */
+    private static function optionalCsvText(string $value): ?string {
+        $text = trim($value);
+        return $text === '' ? null : $text;
+    }
+
+    /** The reading imports: 2 to MAX_ANSWERS answers and a correct index among them. */
+    private static function choiceImports(array $choice): bool {
+        $count = count($choice['answers']);
+        return $count >= 2 && $count <= self::MAX_ANSWERS
+            && $choice['correctIndex'] !== null && $choice['correctIndex'] < $count;
+    }
+
+    /**
+     * "answers, number, explanation": the second-last field as the number of the correct answer,
+     * the last field as the explanation; null when the second-last field is no such number.
+     *
+     * @param list<string> $fields
+     * @return array{answers: list<string>, correctIndex: int, explanation: string|null}|null
+     */
+    private static function csvChoiceWithExplanation(array $fields): ?array {
+        $secondLastIdx = count($fields) - 2;
+        if ($secondLastIdx < 2 || !self::isCorrectNumber(trim($fields[$secondLastIdx]), $secondLastIdx - 1)) {
+            return null;
+        }
+        return [
+            'answers' => self::cleanAnswers(array_slice($fields, 1, $secondLastIdx - 1)),
+            'correctIndex' => (int)trim($fields[$secondLastIdx]) - 1,
+            'explanation' => self::optionalCsvText($fields[$secondLastIdx + 1]),
+        ];
+    }
+
+    /**
+     * The reading of every version before 5.18.0: the last field as the number, then the
+     * second-last (the last field is the explanation), then the last field as the text of one
+     * of the answers.
+     *
+     * @param list<string> $fields
+     * @return array{answers: list<string>, correctIndex: int|null, explanation: string|null}
+     */
+    private static function csvChoiceAsBefore(array $fields): array {
+        $lastIdx = count($fields) - 1;
+        $secondLastIdx = $lastIdx - 1;
+        $answerTexts = [];
+        $correctIndex = null;
+        $explanation = null;
+        if ($lastIdx >= 2) {
+            $possibleCorrect = trim($fields[$lastIdx]);
+            if (self::isCorrectNumber($possibleCorrect, $lastIdx - 1)) {
+                $correctIndex = (int)$possibleCorrect - 1;
+                $answerTexts = array_slice($fields, 1, $lastIdx - 1);
+            } elseif ($secondLastIdx >= 2) {
+                $possibleCorrect2 = trim($fields[$secondLastIdx]);
+                if (self::isCorrectNumber($possibleCorrect2, $secondLastIdx - 1)) {
+                    $correctIndex = (int)$possibleCorrect2 - 1;
+                    $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
+                    $explanation = self::optionalCsvText($fields[$lastIdx]);
+                } else {
+                    $answerTexts = array_slice($fields, 1, $lastIdx);
+                    $correctText = strtolower($possibleCorrect);
+                    foreach ($answerTexts as $i => $at) {
+                        if (strtolower(trim($at)) === $correctText) {
+                            $correctIndex = $i;
+                            break;
+                        }
+                    }
+                    if ($correctIndex !== null) {
+                        array_pop($answerTexts);
+                    }
+                }
+            }
+        }
+        return ['answers' => self::cleanAnswers($answerTexts), 'correctIndex' => $correctIndex, 'explanation' => $explanation];
+    }
+
+    /**
+     * What one CSV record is: an open question, a single-choice question, or the reason it is
+     * refused (an error code, see importCsv()). Answer texts are not cut here.
+     *
+     * @param list<string> $fields
+     * @param array{width: int, correct: int}|null $columns
+     * @return array{error: string}|array{type: 'open', text: string, model: string}|array{type: 'single', text: string, answers: list<string>, correctIndex: int, explanation: string|null, ambiguous: bool}
+     */
+    private static function csvRecord(array $fields, ?array $columns = null): array {
+        $text = trim($fields[0] ?? '');
+        if ($text === '') {
+            return ['error' => 'emptyText'];
+        }
+        if (mb_strlen($text) > 5000) {
+            return ['error' => 'textTooLong'];
+        }
+        // Open-question format: question,model_answer,open (3 fields)
+        if (count($fields) === 3 && mb_strtolower(trim($fields[2])) === 'open') {
+            $model = trim($fields[1]);
+            return $model === '' ? ['error' => 'emptyModel'] : ['type' => 'open', 'text' => $text, 'model' => $model];
+        }
+        // MC format: minimum question + 2 answers + correct index
+        if (count($fields) < 4) {
+            return ['error' => 'notEnoughFields'];
+        }
+        $choice = self::csvChoice($fields, $columns);
+        if (count($choice['answers']) < 2) {
+            return ['error' => 'needTwoAnswers'];
+        }
+        if (count($choice['answers']) > self::MAX_ANSWERS) {
+            return ['error' => 'maxAnswers'];
+        }
+        if ($choice['correctIndex'] === null || $choice['correctIndex'] >= count($choice['answers'])) {
+            return ['error' => 'noCorrect'];
+        }
+        return ['type' => 'single', 'text' => $text, 'answers' => $choice['answers'], 'correctIndex' => $choice['correctIndex'], 'explanation' => $choice['explanation'], 'ambiguous' => isset($choice['ambiguous'])];
+    }
+
+    /** The translated message of a csvRecord() error code. */
+    private function csvRecordError(string $code, int $line): string {
+        return match ($code) {
+            'emptyText' => $this->l10n->t('Line %s: Empty question text', [$line]),
+            'textTooLong' => $this->l10n->t('Line %s: Question text too long (max 5000)', [$line]),
+            'emptyModel' => $this->l10n->t('Line %s: Empty model answer for open question', [$line]),
+            'notEnoughFields' => $this->l10n->t('Line %s: Not enough fields (need: question, answers, correct number)', [$line]),
+            'needTwoAnswers' => $this->l10n->t('Line %s: Need at least 2 answers', [$line]),
+            'maxAnswers' => $this->l10n->t('Line %s: Maximum 8 answers', [$line]),
+            default => $this->l10n->t('Line %s: Could not determine correct answer — use a number (1-N) to indicate which answer is correct', [$line]),
+        };
     }
 
     /**
@@ -680,14 +940,11 @@ class ImportController extends Controller {
         }
 
         // Records, not physical lines: "Line N" in the messages and the 500 limit count questions.
-        $lines = self::parseCsv($csvData);
-        if (empty($lines)) {
+        // The header is not a question and does not count toward the limit; readCsv() leaves it out.
+        $csv = self::readCsv($csvData);
+        $lines = $csv['records'];
+        if ($csv['header'] === null && empty($lines)) {
             return new DataResponse(['error' => $this->l10n->t('No data to import')], Http::STATUS_BAD_REQUEST);
-        }
-
-        // The header is not a question and does not count toward the limit.
-        if (self::isCsvHeader($lines[0])) {
-            array_shift($lines);
         }
 
         if (count($lines) > self::MAX_ITEMS) {
@@ -702,25 +959,15 @@ class ImportController extends Controller {
         try {
             foreach ($lines as $lineNum => $fields) {
                 $line = $lineNum + 1;
-
-                $questionText = trim($fields[0] ?? '');
-                if (empty($questionText)) {
-                    $errors[] = $this->l10n->t('Line %s: Empty question text', [$line]);
+                $record = self::csvRecord($fields, $csv['columns']);
+                if (isset($record['error'])) {
+                    $errors[] = $this->csvRecordError($record['error'], $line);
                     continue;
                 }
+                $questionText = $record['text'];
 
-                if (mb_strlen($questionText) > 5000) {
-                    $errors[] = $this->l10n->t('Line %s: Question text too long (max 5000)', [$line]);
-                    continue;
-                }
-
-                // Open-question format: question,model_answer,open (3 fields)
-                if (count($fields) === 3 && mb_strtolower(trim($fields[2])) === 'open') {
-                    $modelAnswer = trim($fields[1]);
-                    if ($modelAnswer === '') {
-                        $errors[] = $this->l10n->t('Line %s: Empty model answer for open question', [$line]);
-                        continue;
-                    }
+                if ($record['type'] === 'open') {
+                    $modelAnswer = $record['model'];
                     if (mb_strlen($modelAnswer) > self::MAX_ANSWER_LENGTH) {
                         $modelAnswer = mb_substr($modelAnswer, 0, self::MAX_ANSWER_LENGTH);
                         $warnings[] = $this->l10n->t('Line %s: Answer text truncated to 2000 chars', [$line]);
@@ -743,72 +990,13 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                // MC format: minimum question + 2 answers + correct index
-                if (count($fields) < 4) {
-                    $errors[] = $this->l10n->t('Line %s: Not enough fields (need: question, answers, correct number)', [$line]);
-                    continue;
+                $answerTexts = $record['answers'];
+                $explanation = $record['explanation'];
+                if ($record['ambiguous']) {
+                    $warnings[] = $this->l10n->t('Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a "correct" column', [$line, $record['correctIndex'] + 1]);
                 }
-
-                $answerTexts = [];
-                $correctIndex = null;
-                $explanation = null;
-
-                $lastIdx = count($fields) - 1;
-                $secondLastIdx = $lastIdx - 1;
-
-                if ($lastIdx >= 2) {
-                    $possibleCorrect = trim($fields[$lastIdx]);
-                    $answerCount = $lastIdx - 1; // fields between question and last field
-
-                    if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 8 && (int)$possibleCorrect <= $answerCount) {
-                        $correctIndex = (int)$possibleCorrect - 1;
-                        $answerTexts = array_slice($fields, 1, $lastIdx - 1);
-                    } else if ($secondLastIdx >= 2) {
-                        $possibleCorrect2 = trim($fields[$secondLastIdx]);
-                        $answerCount2 = $secondLastIdx - 1;
-                        if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 8 && (int)$possibleCorrect2 <= $answerCount2) {
-                            $correctIndex = (int)$possibleCorrect2 - 1;
-                            $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
-                            $explanation = trim($fields[$lastIdx]);
-                            if (empty($explanation)) $explanation = null;
-                        } else {
-                            $answerTexts = array_slice($fields, 1, $lastIdx);
-                            $correctText = strtolower(trim($possibleCorrect));
-                            foreach ($answerTexts as $i => $at) {
-                                if (strtolower(trim($at)) === $correctText) {
-                                    $correctIndex = $i;
-                                    break;
-                                }
-                            }
-                            if ($correctIndex !== null) {
-                                array_pop($answerTexts);
-                            }
-                        }
-                    }
-                }
-
-                $answerTexts = array_map('trim', $answerTexts);
-                $answerTexts = array_filter($answerTexts, function($t) { return $t !== ''; });
-                $answerTexts = array_values($answerTexts);
-
-                if (count($answerTexts) < 2) {
-                    $errors[] = $this->l10n->t('Line %s: Need at least 2 answers', [$line]);
-                    continue;
-                }
-
-                if (count($answerTexts) > 8) {
-                    $errors[] = $this->l10n->t('Line %s: Maximum 8 answers', [$line]);
-                    continue;
-                }
-
-                if ($correctIndex === null || $correctIndex >= count($answerTexts)) {
-                    $errors[] = $this->l10n->t('Line %s: Could not determine correct answer — use a number (1-N) to indicate which answer is correct', [$line]);
-                    continue;
-                }
-
-                // Determine question type based on correct index
                 $csvQuestionType = 'single';
-                $correctIndices = [$correctIndex];
+                $correctIndices = [$record['correctIndex']];
 
                 $question = new Question();
                 $question->setPoolId($poolId);

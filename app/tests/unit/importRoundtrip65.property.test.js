@@ -77,26 +77,40 @@ function exportCsv(questions) {
 }
 
 /*
- * KNOWN FINDINGS (GitHub #65, open). The CSV format has no column names, so the reader guesses,
- * and for these exports it guesses wrong. Each is excluded from the property by exactly its
- * condition and pinned by an example test below (it.fails: it turns red once the reader is fixed,
- * then the exclusion and the example go).
+ * The three findings the property found (GitHub #65) are fixed: a first question that mentions
+ * question+answer is read, not dropped as a header; an unquoted ';' in an answer no longer makes
+ * the reader switch delimiters; a numeric explanation is no longer read as the number of the
+ * correct answer when that reading cannot import. Each is pinned by an example below.
+ *
+ * AMBIGUITY, WARNED. Without a header the format cannot tell "answers …, 1, number" from
+ * "answers …, number, explanation": the export of {answers: [a, b, "1"], correct: 2} and of
+ * {answers: [a, b], correct: 1, explanation: "2"} is the same line "Q,a,b,1,2". The reader keeps
+ * the reading of every version before 5.18.0 (the last field is the number) whenever it imports,
+ * and warns when the other reading would import too. So:
+ *  - lastAnswerReadsAsNumber: no explanation, the last answer is a number that could be the
+ *    number of the correct answer among the answers before it. Comes back unchanged, with a
+ *    warning for its line.
+ *  - explanationReadsAsNumber: the explanation is a number that names one of the answers plus
+ *    the correct-number field, and those still fit (at most 8). Read the old way (one answer
+ *    more, no explanation) with a warning for its line; it is the one case that does not come
+ *    back, so the round trip leaves it out.
+ *  - every other question comes back unchanged and without that warning.
+ * A header that names the correct column removes the ambiguity (example below).
  */
-/** 1. The first record is taken for a header when it mentions question+answer (or Frage+Antwort). */
-const looksLikeHeader = (q) => {
-	const line = [q.text, ...q.answers.map((a) => a.text), q.explanation ?? ''].join(' ').replace(/[A-Z]/g, (c) => c.toLowerCase())
-	return (line.includes('question') && line.includes('answer')) || (line.includes('frage') && line.includes('antwort'))
-}
-/** 2. ';' wins when the first record splits into more fields at ';' (fputcsv does not quote a ';'). */
-const semicolonWins = (csv) => (csvRecords(csv, ';', 1)[0]?.length ?? 0) > (csvRecords(csv, ',', 1)[0]?.length ?? 0)
-/** 3. A numeric explanation is read as the number of the correct answer. */
-const numericExplanation = (q) => {
-	if (q.explanation === null || !/^[ \t\n\r\v\f]*[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?[ \t\n\r\v\f]*$/.test(q.explanation)) {
+const IS_NUMERIC = /^[ \t\n\r\v\f]*[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?[ \t\n\r\v\f]*$/
+/** is_numeric() and (int), then a number from 1 to 8 and at most answerCount, as csvChoice() checks it. */
+const namesAnswer = (value, answerCount) => {
+	if (!IS_NUMERIC.test(value)) {
 		return false
 	}
-	const n = Math.trunc(Number(q.explanation.trim())) // is_numeric() and (int), as csvChoice() checks it
-	return n >= 1 && n <= 8 && n <= q.answers.length + 1
+	const n = Math.trunc(Number(value.trim()))
+	return n >= 1 && n <= 8 && n <= answerCount
 }
+const lastAnswerReadsAsNumber = (q) => q.explanation === null && q.answers.length >= 3
+	&& namesAnswer(q.answers[q.answers.length - 1].text, q.answers.length - 1)
+// the old reading takes the answers plus the correct-number field as answers: there must be at most 8
+const explanationReadsAsNumber = (q) => q.explanation !== null && q.answers.length + 1 <= 8
+	&& namesAnswer(q.explanation, q.answers.length + 1)
 
 const singleChoice = fc.integer({ min: 2, max: 8 }).chain((n) => fc.record({
 	text: storedText,
@@ -111,13 +125,17 @@ describe('CSV export -> import (property)', () => {
 			const csv = exportCsv(questions)
 			// Accepted: a leading U+FEFF is read as the file's byte order mark and dropped (both readers).
 			fc.pre(!csv.startsWith('\uFEFF'))
-			fc.pre(!looksLikeHeader(questions[0]) && !semicolonWins(csv) && !questions.some(numericExplanation))
 			const result = analyzeCsvImport(csv)
 			expect(result.error).toBeUndefined()
 			expect(result.errors).toEqual([])
+			// Both readings import: read the old way, never silently.
+			const warned = result.items.map((item, i) => item.warnings.some((w) => w.startsWith(`Line ${i + 1}: Ambiguous numbers`)))
+			expect(warned).toEqual(questions.map((q) => lastAnswerReadsAsNumber(q) || explanationReadsAsNumber(q)))
 			// Line breaks come back as "\n" (the reader normalizes \r\n and \r first, as the server does).
 			const nl = (s) => (s === null ? null : s.replace(/\r\n|\r/g, '\n'))
-			expect(result.items.map((i) => i.question)).toEqual(questions.map((q) => ({
+			const lost = questions.map(explanationReadsAsNumber)
+			const kept = (list) => list.filter((_, i) => !lost[i])
+			expect(kept(result.items.map((i) => i.question))).toEqual(kept(questions).map((q) => ({
 				text: nl(q.text),
 				type: 'single',
 				answers: q.answers.map((a, i) => ({ text: nl(a.text), correct: i === q.correct })),
@@ -127,19 +145,90 @@ describe('CSV export -> import (property)', () => {
 	})
 })
 
-describe('CSV export -> import: known findings (GitHub #65, open)', () => {
-	const exported = (q) => analyzeCsvImport(exportCsv([q, { text: 'Second', answers: [{ text: 'x' }, { text: 'y' }], correct: 1, explanation: null }]))
-	it.fails('1. a first question that mentions "Frage" and "Antwort" is not dropped as a header', () => {
+describe('CSV export -> import: the three findings of the property (GitHub #65)', () => {
+	const second = { text: 'Second', answers: [{ text: 'x' }, { text: 'y' }], correct: 1, explanation: null }
+	const exported = (q) => analyzeCsvImport(exportCsv([q, second]))
+	it('1. a first question that mentions "Frage" and "Antwort" is not dropped as a header', () => {
 		const r = exported({ text: 'Welche Antwort passt zur Frage?', answers: [{ text: 'A' }, { text: 'B' }], correct: 0, explanation: null })
 		expect(r.items).toHaveLength(2)
+		expect(r.items[0].question).toEqual({ text: 'Welche Antwort passt zur Frage?', type: 'single', answers: [{ text: 'A', correct: true }, { text: 'B', correct: false }], explanation: null })
 	})
-	it.fails('2. answers with an unquoted ";" do not switch the reader to the ";" delimiter', () => {
+	it('1. ... also "question" and "answer", also in a semicolon file, also an open question', () => {
+		expect(exported({ text: 'Which answer fits the question?', answers: [{ text: 'A' }, { text: 'B' }], correct: 1, explanation: null }).items).toHaveLength(2)
+		expect(analyzeCsvImport('Welche Antwort passt zur Frage?;A;B;1\nZweite;x;y;2\n').items.map((i) => i.question.text)).toEqual(['Welche Antwort passt zur Frage?', 'Zweite'])
+		expect(analyzeCsvImport('Explain question and answer.,A model answer,open\nSecond,x,y,2\n').items).toHaveLength(2)
+		// a header in the open-question form (the manual's `question,model_answer,open`) is still a header
+		expect(analyzeCsvImport('question,model_answer,open\nExplain DNS.,Name resolution,open\n').items.map((i) => i.question.text)).toEqual(['Explain DNS.'])
+		expect(analyzeCsvImport('Fragetext;Musterantwort;OPEN\nErkläre DNS.;Namensauflösung;open\n').items.map((i) => i.question.text)).toEqual(['Erkläre DNS.'])
+		// ... also with column names that are not bare (spaces, plural): a label is short and has no sentence mark
+		for (const header of ['Question text,Model answer,open', 'Questions,Answers,open', 'Fragen,Antworten,open']) {
+			expect(analyzeCsvImport(header + '\nWas ist DNS?,Namensauflösung,open\n').items.map((i) => i.question.text)).toEqual(['Was ist DNS?'])
+		}
+		expect(analyzeCsvImport('Describe the question and the answer,A model answer,open\nSecond,x,y,2\n').items).toHaveLength(2)
+	})
+	it('2. answers with an unquoted ";" do not switch the reader to the ";" delimiter', () => {
 		const r = exported({ text: 'Which command lists /tmp?', answers: [{ text: 'cd;ls;pwd' }, { text: 'id;w;who' }], correct: 0, explanation: null })
 		expect(r.items[0].question?.answers.map((a) => a.text)).toEqual(['cd;ls;pwd', 'id;w;who'])
+		expect(r.importable).toBe(2)
 	})
-	it.fails('3. a numeric explanation stays the explanation', () => {
-		const r = exported({ text: 'How many usable hosts has a /30 network?', answers: [{ text: '2' }, { text: '4' }], correct: 0, explanation: '2' })
-		expect(r.items[0].question).toEqual({ text: 'How many usable hosts has a /30 network?', type: 'single', answers: [{ text: '2', correct: true }, { text: '4', correct: false }], explanation: '2' })
+	it('3. a numeric explanation is not read as the number of the correct answer when that reading cannot import', () => {
+		// eight answers: the old reading would take nine answers (the number field "1" among them), more than 8
+		const q = { text: 'How many usable hosts has a /30 network?', answers: ['2', '4', '6', '8', '14', '30', '62', '126'].map((t) => ({ text: t })), correct: 0, explanation: '2' }
+		expect(exportCsv([q])).toBe('"How many usable hosts has a /30 network?",2,4,6,8,14,30,62,126,1,2')
+		const r = exported(q)
+		expect(r.items[0].question).toEqual({ text: q.text, type: 'single', answers: q.answers.map((a, i) => ({ text: a.text, correct: i === 0 })), explanation: '2' })
+		expect(r.warnings).toEqual([])
+	})
+	it('ambiguity, warned: without a header "Q,a,b,1,2" is read as before 5.18.0 — three answers, number 2 — with a warning', () => {
+		const q = { text: 'Q', answers: [{ text: 'a' }, { text: 'b' }, { text: '1' }], correct: 1, explanation: null }
+		expect(lastAnswerReadsAsNumber(q)).toBe(true)
+		expect(exportCsv([q])).toBe(exportCsv([{ text: 'Q', answers: [{ text: 'a' }, { text: 'b' }], correct: 0, explanation: '2' }]))
+		const r = analyzeCsvImport(exportCsv([q]))
+		expect(r.items[0].question).toEqual({ text: 'Q', type: 'single', answers: [{ text: 'a', correct: false }, { text: 'b', correct: true }, { text: '1', correct: false }], explanation: null })
+		const warning = 'Line 1: Ambiguous numbers — read as correct answer 2 without explanation; if the last number is an explanation, add a header row with a "correct" column'
+		expect(r.warnings).toEqual([warning])
+		expect(r.items[0].warnings).toEqual([warning])
+	})
+	it('ambiguity, warned: numeric answers ("Wie viel ist 3-1?,1,3,2,3") are read as before; a short numeric explanation is read as the number', () => {
+		const r = analyzeCsvImport('Wie viel ist 3-1?,1,3,2,3\n')
+		expect(r.items[0].question.answers).toEqual([{ text: '1', correct: false }, { text: '3', correct: false }, { text: '2', correct: true }])
+		expect(r.warnings).toEqual(['Line 1: Ambiguous numbers — read as correct answer 3 without explanation; if the last number is an explanation, add a header row with a "correct" column'])
+		const hosts = analyzeCsvImport('How many usable hosts has a /30 network?,2,4,1,2\n')
+		expect(hosts.items[0].question).toEqual({ text: 'How many usable hosts has a /30 network?', type: 'single', answers: [{ text: '2', correct: false }, { text: '4', correct: true }, { text: '1', correct: false }], explanation: null })
+		expect(hosts.warnings).toHaveLength(1)
+	})
+	it('no ambiguity warning when only one reading imports or a header decides', () => {
+		for (const [csv, warns] of [
+			['Q,a,b,1,2\n', 1],
+			['Q,a,b,1,4\n', 0], // there is no 4th answer among a, b, 1: one reading
+			['Q,a,b,2,Weil.\n', 0],
+			['Q,a,b,2\n', 0],
+			['question,answer1,answer2,answer3,correct\nQ,a,b,1,2\n', 0],
+			['Frage,Antwort 1,Antwort 2,Richtig,Erklärung\nQ,a,b,1,2\n', 0],
+		]) {
+			expect(analyzeCsvImport(csv).warnings, csv).toHaveLength(warns)
+		}
+	})
+	it('a header that names the correct column decides: the number is read from that column only', () => {
+		const withHeader = (header) => analyzeCsvImport(header + '\nQ,a,b,1,2\n').items[0].question
+		expect(withHeader('question,answer1,answer2,answer3,correct')).toEqual({ text: 'Q', type: 'single', answers: [{ text: 'a', correct: false }, { text: 'b', correct: true }, { text: '1', correct: false }], explanation: null })
+		expect(withHeader('Frage,Antwort 1,Antwort 2,Richtig,Erklärung')).toEqual({ text: 'Q', type: 'single', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }], explanation: '2' })
+		// a record narrower or wider than the header is read without it
+		expect(analyzeCsvImport('question,answer1,answer2,answer3,correct\nQ,a,b,c,d,2\n').items[0].question.answers.map((a) => a.correct)).toEqual([false, true, false, false])
+	})
+	it('only a whole column name names the correct column: "Lösungsweg" or "Solution notes" is an explanation', () => {
+		const read = (name) => analyzeCsvImport(`Frage,Antwort 1,Antwort 2,${name},Erklärung\nQ,a,b,1,2\n`)
+		const byColumn = { text: 'Q', type: 'single', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }], explanation: '2' }
+		for (const name of ['correct', 'Correct', ' correct ', 'correct_answer', 'Correct answer', 'CORRECT-ANSWER', 'correct_number', 'right answer',
+			'Richtig', 'richtige Antwort', 'Korrekt', 'korrekte_antwort', 'solution', 'Lösung', 'LÖSUNG', 'Loesung']) {
+			expect(read(name).items[0].question, name).toEqual(byColumn)
+			expect(read(name).warnings, name).toEqual([])
+		}
+		// not a correct column: the row is read without the header (as before 5.18.0), with the ambiguity warning
+		for (const name of ['Lösungsweg', 'Solution notes', 'solutions', 'incorrect', 'correctness', 'Korrektur', 'Richtigkeit', 'correct answer explanation']) {
+			expect(read(name).items[0].question.answers, name).toEqual([{ text: 'a', correct: false }, { text: 'b', correct: true }, { text: '1', correct: false }])
+			expect(read(name).warnings, name).toHaveLength(1)
+		}
 	})
 })
 

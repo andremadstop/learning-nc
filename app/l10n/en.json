@@ -4207,6 +4207,8 @@
         "Alle Erfolge anzeigen ({n})": "Show all achievements ({n})",
         "Weniger anzeigen": "Show less",
         "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "No achievements unlocked yet. Keep learning, the first one is coming soon.",
-        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Your achievements could not be loaded. Reload the page to try again."
+        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Your achievements could not be loaded. Reload the page to try again.",
+        "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column",
+        "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column"
     }
 }

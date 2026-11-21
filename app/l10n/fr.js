@@ -4169,5 +4169,7 @@ OC.L10N.register(
     "Weniger anzeigen" : "Afficher moins",
     "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Aucune réussite débloquée pour l’instant. Continue d’apprendre, la première arrive bientôt.",
     "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Impossible de charger tes réussites. Recharge la page pour réessayer.",
+    "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Ligne {line} : nombres ambigus — lu comme bonne réponse {number} sans explication ; si le dernier nombre est une explication, ajoutez une ligne d’en-tête avec une colonne « correct »",
+    "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Ligne %1$s : nombres ambigus — lu comme bonne réponse %2$s sans explication ; si le dernier nombre est une explication, ajoutez une ligne d’en-tête avec une colonne « correct »",
 },
 "nplurals=2; plural=(n > 1);");

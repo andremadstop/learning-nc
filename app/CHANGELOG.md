@@ -72,6 +72,40 @@ All notable changes to this project will be documented in this file.
   achievement that comes without XP (a RAG contribution, a finished coop simulator) stayed
   invisible until the cache ran out, so the activity link could open Today without it. Awarding
   an achievement now clears the same cache entries as an XP change.
+- **CSV import: three misreadings found by the property tests** (#65), in the import and in its
+  preview alike. (1) A first question that mentions "question" and "answer" (or "Frage" and
+  "Antwort") is no longer dropped as a header: a header is a first row that names the columns
+  and does not itself import as a question. Real header rows, English and German, are still
+  skipped, also one in the open-question form whose first field is a column name (at most four
+  words, no `?` `.` `!` `:`): `question,model_answer,open`, `Question text,Model answer,open`,
+  `Fragen,Antworten,open`. (2) An unquoted `;` in an answer (`cd;ls;pwd`, as the CSV export writes it) no longer
+  switches the file to the `;` separator: the separator is the one under which more rows import
+  as questions; only on a tie does the old rule decide (more fields in the first question, comma
+  on a tie). (3) An explanation that is a number is no longer read as the number of the correct
+  answer when that reading cannot import (eight answers and an explanation `2`: the old reading
+  made nine answers and refused the row); then the row is read as answers, number, explanation.
+  Without a header that names the correct column, every row that imported before is read
+  exactly as before: when the last field can be the number of the correct answer and that
+  reading imports, it wins, as in every earlier version.
+  When the other reading would import too (`Q,a,b,1,2`: answers a, b, 1 with number 2, or
+  answers a, b with number 1 and explanation `2`), the import and its preview now **warn**
+  ("Ambiguous numbers — read as correct answer … without explanation"); a header row with a
+  correct column decides. With a header that names the correct column (whole names only:
+  `correct`, `correct_answer`, `correct_number`, `right answer`, `richtig`, `richtige Antwort`,
+  `korrekt`, `korrekte Antwort`, `solution`, `Lösung`; not `Lösungsweg` or `Solution notes`)
+  as its last or second-last column, the number is read from that column for every row as wide
+  as the header; that is the one deliberate change for rows that imported before (`correct` as
+  the second-last column and a numeric explanation used to be read as one answer more). The shipped examples have a header and are read as before.
+- **CSV import: a question text or an explanation `0` is text** (pre-existing), in the import and
+  in its preview alike. The readers used PHP `empty()`, which treats `"0"` as empty: a question
+  `0` was refused with "Empty question text" and an explanation `0` was dropped. Only an empty or
+  blank field is empty now.
+
+### Tests
+- A shared fixture records how both CSV readers read the shipped examples and 31 hand-written
+  files before the fix; the preview and `ImportController::importCsv` read all of them as
+  before. The three `it.fails` pins became normal tests, the property test no longer excludes
+  the header and separator cases and asserts the ambiguity warning instead of skipping that case, and PHPUnit covers each finding on the server. A differential run against the 5.17.0 preview reader (120,000 generated files without a header, a `;` or the header words, about 216,000 records) found no record that imported before and is read differently now; the only records that import now and did not are rows with eight answers and a numeric explanation.
 
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 

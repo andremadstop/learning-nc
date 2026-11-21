@@ -1,0 +1,1877 @@
+{
+	"_doc": "GitHub #65: how the CSV readers read these files, recorded from the readers before the three CSV findings were fixed (5.18.0). The fix must read every one of them exactly as before. `files` are the shipped examples (app/examples), `cases` hand-written CSV texts and the CSV example of docs/MANUAL.md. The last case was recorded from the pre-#65 reader (5.17.0) later; only its ambiguity warnings are new. Per case: importable questions, number of errors and warnings, and per record whether it imports and what is stored (text, type, answers with their correct flag, explanation). Error texts are not compared (they are translated). Read by importCsvRegression.test.js (import preview) and ImportCsvRegressionTest.php (ImportController::importCsv).",
+	"files": {
+		"general-knowledge.csv": {
+			"importable": 8,
+			"errors": 0,
+			"warnings": 0,
+			"items": [
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the largest planet in our solar system?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Mars",
+								"correct": false
+							},
+							{
+								"text": "Jupiter",
+								"correct": true
+							},
+							{
+								"text": "Saturn",
+								"correct": false
+							},
+							{
+								"text": "Neptune",
+								"correct": false
+							}
+						],
+						"explanation": "Jupiter is the largest planet with a diameter of about 139820 km \u2014 more than 11 times that of Earth."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the chemical symbol for gold?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Go",
+								"correct": false
+							},
+							{
+								"text": "Gd",
+								"correct": false
+							},
+							{
+								"text": "Au",
+								"correct": true
+							},
+							{
+								"text": "Ag",
+								"correct": false
+							}
+						],
+						"explanation": "Au comes from the Latin word aurum. Ag is silver (argentum)."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "In what year did the Berlin Wall fall?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "1987",
+								"correct": false
+							},
+							{
+								"text": "1988",
+								"correct": false
+							},
+							{
+								"text": "1989",
+								"correct": true
+							},
+							{
+								"text": "1990",
+								"correct": false
+							}
+						],
+						"explanation": "The Berlin Wall fell on November 9 1989 leading to German reunification on October 3 1990."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the speed of light in vacuum?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "300000 km/s",
+								"correct": true
+							},
+							{
+								"text": "150000 km/s",
+								"correct": false
+							},
+							{
+								"text": "500000 km/s",
+								"correct": false
+							},
+							{
+								"text": "1000000 km/s",
+								"correct": false
+							}
+						],
+						"explanation": "The speed of light is approximately 299792 km/s or about 300000 km/s."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "How many bones does an adult human body have?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "186",
+								"correct": false
+							},
+							{
+								"text": "206",
+								"correct": true
+							},
+							{
+								"text": "226",
+								"correct": false
+							},
+							{
+								"text": "246",
+								"correct": false
+							}
+						],
+						"explanation": "An adult human has 206 bones. Babies are born with about 270 which fuse together as they grow."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the smallest country in the world by area?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Monaco",
+								"correct": false
+							},
+							{
+								"text": "San Marino",
+								"correct": false
+							},
+							{
+								"text": "Vatican City",
+								"correct": true
+							},
+							{
+								"text": "Liechtenstein",
+								"correct": false
+							}
+						],
+						"explanation": "Vatican City is the smallest country at only 0.44 square kilometers."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What programming language was created by Guido van Rossum?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Java",
+								"correct": false
+							},
+							{
+								"text": "Ruby",
+								"correct": false
+							},
+							{
+								"text": "Python",
+								"correct": true
+							},
+							{
+								"text": "Perl",
+								"correct": false
+							}
+						],
+						"explanation": "Python was created by Guido van Rossum and first released in 1991. Named after Monty Python."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the powerhouse of the cell?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Nucleus",
+								"correct": false
+							},
+							{
+								"text": "Ribosome",
+								"correct": false
+							},
+							{
+								"text": "Mitochondria",
+								"correct": true
+							},
+							{
+								"text": "Golgi apparatus",
+								"correct": false
+							}
+						],
+						"explanation": "Mitochondria generate most of the cell energy supply of ATP through oxidative phosphorylation."
+					}
+				}
+			]
+		},
+		"comptia-security-plus.csv": {
+			"importable": 10,
+			"errors": 0,
+			"warnings": 0,
+			"items": [
+				{
+					"ok": true,
+					"question": {
+						"text": "What does CIA stand for in information security?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Confidentiality Integrity Availability",
+								"correct": true
+							},
+							{
+								"text": "Central Intelligence Agency",
+								"correct": false
+							},
+							{
+								"text": "Certified Information Auditor",
+								"correct": false
+							},
+							{
+								"text": "Computer Incident Analysis",
+								"correct": false
+							}
+						],
+						"explanation": "The CIA triad is the foundation of information security: Confidentiality (data is private) Integrity (data is accurate) and Availability (data is accessible)."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "Which encryption type uses the same key for encryption and decryption?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Symmetric",
+								"correct": true
+							},
+							{
+								"text": "Asymmetric",
+								"correct": false
+							},
+							{
+								"text": "Hashing",
+								"correct": false
+							},
+							{
+								"text": "Digital Signature",
+								"correct": false
+							}
+						],
+						"explanation": "Symmetric encryption (e.g. AES) uses one shared key. Asymmetric uses a key pair (public/private)."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What port does HTTPS use by default?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "80",
+								"correct": false
+							},
+							{
+								"text": "443",
+								"correct": true
+							},
+							{
+								"text": "8080",
+								"correct": false
+							},
+							{
+								"text": "22",
+								"correct": false
+							}
+						],
+						"explanation": "HTTPS uses port 443. HTTP uses port 80. SSH uses port 22."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is phishing?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "A social engineering attack using fake emails",
+								"correct": true
+							},
+							{
+								"text": "A network scanning technique",
+								"correct": false
+							},
+							{
+								"text": "A type of malware",
+								"correct": false
+							},
+							{
+								"text": "A firewall bypass method",
+								"correct": false
+							}
+						],
+						"explanation": "Phishing tricks users into revealing credentials or clicking malicious links through deceptive emails or websites."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "Which protocol provides secure remote access?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Telnet",
+								"correct": false
+							},
+							{
+								"text": "SSH",
+								"correct": true
+							},
+							{
+								"text": "FTP",
+								"correct": false
+							},
+							{
+								"text": "HTTP",
+								"correct": false
+							}
+						],
+						"explanation": "SSH (Secure Shell port 22) encrypts the entire session. Telnet transmits in plaintext."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the purpose of a DMZ?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Isolate public-facing servers from internal network",
+								"correct": true
+							},
+							{
+								"text": "Encrypt data at rest",
+								"correct": false
+							},
+							{
+								"text": "Monitor network traffic",
+								"correct": false
+							},
+							{
+								"text": "Back up critical data",
+								"correct": false
+							}
+						],
+						"explanation": "A DMZ (Demilitarized Zone) places public servers between two firewalls to protect the internal network."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What type of attack exploits a buffer overflow?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Code injection",
+								"correct": false
+							},
+							{
+								"text": "SQL injection",
+								"correct": false
+							},
+							{
+								"text": "Cross-site scripting",
+								"correct": false
+							},
+							{
+								"text": "Stack smashing",
+								"correct": true
+							}
+						],
+						"explanation": "Buffer overflow / stack smashing overwrites memory beyond allocated buffers to execute arbitrary code."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What does SIEM stand for?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Security Information and Event Management",
+								"correct": true
+							},
+							{
+								"text": "Secure Internet Email Management",
+								"correct": false
+							},
+							{
+								"text": "System Integration and Error Monitoring",
+								"correct": false
+							},
+							{
+								"text": "Server Infrastructure Event Monitoring",
+								"correct": false
+							}
+						],
+						"explanation": "SIEM systems collect and analyze security logs from multiple sources for threat detection."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "Which authentication factor is something you are?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Password",
+								"correct": false
+							},
+							{
+								"text": "Smart card",
+								"correct": false
+							},
+							{
+								"text": "Fingerprint",
+								"correct": true
+							},
+							{
+								"text": "PIN",
+								"correct": false
+							}
+						],
+						"explanation": "Biometrics (fingerprint iris face) are something you are. Passwords/PINs are something you know. Smart cards are something you have."
+					}
+				},
+				{
+					"ok": true,
+					"question": {
+						"text": "What is the principle of least privilege?",
+						"type": "single",
+						"answers": [
+							{
+								"text": "Users get minimum access needed for their job",
+								"correct": true
+							},
+							{
+								"text": "All users get admin access",
+								"correct": false
+							},
+							{
+								"text": "Access is granted based on seniority",
+								"correct": false
+							},
+							{
+								"text": "Privileges are assigned alphabetically",
+								"correct": false
+							}
+						],
+						"explanation": "Least privilege limits user permissions to only what is necessary reducing the attack surface."
+					}
+				}
+			]
+		}
+	},
+	"cases": [
+		{
+			"name": "header en, comma, explanation, multi-line",
+			"csv": "question,answer1,answer2,answer3,correct,explanation\n\"Look at this:\nPING\nWhat?\",\"Cable\",\"DNS, probably\",\"Nothing\",1,\"Line one\r\nline two\"\nPlain one,a,b,2\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Look at this:\nPING\nWhat?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "Cable",
+									"correct": true
+								},
+								{
+									"text": "DNS, probably",
+									"correct": false
+								},
+								{
+									"text": "Nothing",
+									"correct": false
+								}
+							],
+							"explanation": "Line one\nline two"
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Plain one",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header de, semicolon, BOM, doubled quotes",
+			"csv": "\ufeffFrage;Antwort1;Antwort2;Korrekt\r\n\"Er sagte \"\"Hallo\"\";\nwas nun?\";\"C:\\\";\"D:\\\";2\r\n\r\nZweite; ja ; nein ;1\r\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Er sagte \"Hallo\";\nwas nun?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "C:\\",
+									"correct": false
+								},
+								{
+									"text": "D:\\",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Zweite",
+							"type": "single",
+							"answers": [
+								{
+									"text": "ja",
+									"correct": true
+								},
+								{
+									"text": "nein",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header de with spaces and capitals",
+			"csv": "Frage ; Antwort A ; Antwort B ; Antwort C ; Richtig ; Erkl\u00e4rung\nHauptstadt?;Berlin;Paris;Rom;1;Weil.\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Hauptstadt?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "Berlin",
+									"correct": true
+								},
+								{
+									"text": "Paris",
+									"correct": false
+								},
+								{
+									"text": "Rom",
+									"correct": false
+								}
+							],
+							"explanation": "Weil."
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header en capitalised, no explanation column",
+			"csv": "Question,Answer 1,Answer 2,Answer 3,Correct\nQ1,a,b,c,3\nQ2,x,y,z,1\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Q1",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": false
+								},
+								{
+									"text": "c",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q2",
+							"type": "single",
+							"answers": [
+								{
+									"text": "x",
+									"correct": true
+								},
+								{
+									"text": "y",
+									"correct": false
+								},
+								{
+									"text": "z",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header question_text answer_a",
+			"csv": "question_text;answer_a;answer_b;correct_answer\nWas?;ja;nein;2\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "ja",
+									"correct": false
+								},
+								{
+									"text": "nein",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header only",
+			"csv": "question,answer1,answer2,correct\n",
+			"expect": {
+				"importable": 0,
+				"errors": 0,
+				"warnings": 0,
+				"items": []
+			}
+		},
+		{
+			"name": "open question and too few fields",
+			"csv": "\"Explain TCP.\",\"Reliable,\nordered\",open\nBroken line without enough fields,a\n",
+			"expect": {
+				"importable": 1,
+				"errors": 1,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Explain TCP.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Reliable,\nordered",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": false,
+						"question": null
+					}
+				]
+			}
+		},
+		{
+			"name": "open question OPEN upper case; semicolon",
+			"csv": "Erkl\u00e4re DNS;Namensaufl\u00f6sung;OPEN\nZweite;a;b;2\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Erkl\u00e4re DNS",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Zweite",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "text-matched correct answer, explanation after number, refusals",
+			"csv": "Capital?,Berlin,Paris,paris\nWith explanation,a,b,c,3,Because c.\nOut of range,a,b,5\nNine answers,1,2,3,4,5,6,7,8,9,1\n,a,b,1\n",
+			"expect": {
+				"importable": 2,
+				"errors": 3,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Capital?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "Berlin",
+									"correct": false
+								},
+								{
+									"text": "Paris",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "With explanation",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": false
+								},
+								{
+									"text": "c",
+									"correct": true
+								}
+							],
+							"explanation": "Because c."
+						}
+					},
+					{
+						"ok": false,
+						"question": null
+					},
+					{
+						"ok": false,
+						"question": null
+					},
+					{
+						"ok": false,
+						"question": null
+					}
+				]
+			}
+		},
+		{
+			"name": "numeric answers with number as last field",
+			"csv": "What port does HTTPS use?,80,443,8080,22,2\nIn what year?,1987,1988,1989,1990,3,The wall fell in 1989.\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "What port does HTTPS use?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "80",
+									"correct": false
+								},
+								{
+									"text": "443",
+									"correct": true
+								},
+								{
+									"text": "8080",
+									"correct": false
+								},
+								{
+									"text": "22",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "In what year?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "1987",
+									"correct": false
+								},
+								{
+									"text": "1988",
+									"correct": false
+								},
+								{
+									"text": "1989",
+									"correct": true
+								},
+								{
+									"text": "1990",
+									"correct": false
+								}
+							],
+							"explanation": "The wall fell in 1989."
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "empty explanation field",
+			"csv": "Q,a,b,c,2,\nQ2,a,b,1,  \n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Q",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": true
+								},
+								{
+									"text": "c",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q2",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": true
+								},
+								{
+									"text": "b",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "comma inside quoted question, semicolon file",
+			"csv": "\"Was ist 1,5 + 1,5?\";3;2;1\n\"Zweite, mit Komma\";a;b;2\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist 1,5 + 1,5?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "3",
+									"correct": true
+								},
+								{
+									"text": "2",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Zweite, mit Komma",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "comma file with semicolons inside quotes",
+			"csv": "\"a;b;c;d\",x,y,1\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "a;b;c;d",
+							"type": "single",
+							"answers": [
+								{
+									"text": "x",
+									"correct": true
+								},
+								{
+									"text": "y",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "tie in field counts",
+			"csv": "a;b,c;d,e\n",
+			"expect": {
+				"importable": 0,
+				"errors": 1,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": false,
+						"question": null
+					}
+				]
+			}
+		},
+		{
+			"name": "semicolon splits more",
+			"csv": "a;b;c,d\n",
+			"expect": {
+				"importable": 0,
+				"errors": 1,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": false,
+						"question": null
+					}
+				]
+			}
+		},
+		{
+			"name": "empty answers are dropped",
+			"csv": "Q,a,,b,3\nQ2,,a,b,c,4\n",
+			"expect": {
+				"importable": 0,
+				"errors": 2,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": false,
+						"question": null
+					},
+					{
+						"ok": false,
+						"question": null
+					}
+				]
+			}
+		},
+		{
+			"name": "formula guard tab prefix",
+			"csv": "\"\t=SUM(1)\",\t+a,\t-b,1\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "=SUM(1)",
+							"type": "single",
+							"answers": [
+								{
+									"text": "+a",
+									"correct": true
+								},
+								{
+									"text": "-b",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "blank lines and whitespace-only records",
+			"csv": "\n  \nQ,a,b,1\n\n\t\nQ2,c,d,2\n",
+			"expect": {
+				"importable": 2,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Q",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": true
+								},
+								{
+									"text": "b",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q2",
+							"type": "single",
+							"answers": [
+								{
+									"text": "c",
+									"correct": false
+								},
+								{
+									"text": "d",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "answer truncation warning",
+			"csv": "Q,yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy,b,1\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 1,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Q",
+							"type": "single",
+							"answers": [
+								{
+									"text": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+									"correct": true
+								},
+								{
+									"text": "b",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "ten questions semicolon",
+			"csv": "Frage 0;A;B;C;1\nFrage 1;A;B;C;2\nFrage 2;A;B;C;3\nFrage 3;A;B;C;1\nFrage 4;A;B;C;2\nFrage 5;A;B;C;3\nFrage 6;A;B;C;1\nFrage 7;A;B;C;2\nFrage 8;A;B;C;3\nFrage 9;A;B;C;1",
+			"expect": {
+				"importable": 10,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 0",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": true
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 1",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": false
+								},
+								{
+									"text": "B",
+									"correct": true
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 2",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": false
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 3",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": true
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 4",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": false
+								},
+								{
+									"text": "B",
+									"correct": true
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 5",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": false
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 6",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": true
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 7",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": false
+								},
+								{
+									"text": "B",
+									"correct": true
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 8",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": false
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Frage 9",
+							"type": "single",
+							"answers": [
+								{
+									"text": "A",
+									"correct": true
+								},
+								{
+									"text": "B",
+									"correct": false
+								},
+								{
+									"text": "C",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "explanation text equals an answer",
+			"csv": "Q,a,b,c,1,b\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Q",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": true
+								},
+								{
+									"text": "b",
+									"correct": false
+								},
+								{
+									"text": "c",
+									"correct": false
+								}
+							],
+							"explanation": "b"
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "correct as text with header",
+			"csv": "question,answer1,answer2,correct\nCapital?,Berlin,Paris,Berlin\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Capital?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "Berlin",
+									"correct": true
+								},
+								{
+									"text": "Paris",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "the manual example (docs/MANUAL.md, CSV)",
+			"csv": "question,answer1,answer2,...,answerN,correct_number,explanation\nWhat is 2+2?,3,4,5,6,2,Because math\nWhat is H2O?,Water,open\n\"Which command lists files?\n(Linux shell)\",ls,cd,pwd,1,\"ls lists the directory.\nIt takes options such as -l.\"\n",
+			"expect": {
+				"importable": 3,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "What is 2+2?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "3",
+									"correct": false
+								},
+								{
+									"text": "4",
+									"correct": true
+								},
+								{
+									"text": "5",
+									"correct": false
+								},
+								{
+									"text": "6",
+									"correct": false
+								}
+							],
+							"explanation": "Because math"
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "What is H2O?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Water",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Which command lists files?\n(Linux shell)",
+							"type": "single",
+							"answers": [
+								{
+									"text": "ls",
+									"correct": true
+								},
+								{
+									"text": "cd",
+									"correct": false
+								},
+								{
+									"text": "pwd",
+									"correct": false
+								}
+							],
+							"explanation": "ls lists the directory.\nIt takes options such as -l."
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "the manual example without its header line",
+			"csv": "What is 2+2?,3,4,5,6,2,Because math\nWhat is H2O?,Water,open\n\"Which command lists files?\n(Linux shell)\",ls,cd,pwd,1,\"ls lists the directory.\nIt takes options such as -l.\"\n",
+			"expect": {
+				"importable": 3,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "What is 2+2?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "3",
+									"correct": false
+								},
+								{
+									"text": "4",
+									"correct": true
+								},
+								{
+									"text": "5",
+									"correct": false
+								},
+								{
+									"text": "6",
+									"correct": false
+								}
+							],
+							"explanation": "Because math"
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "What is H2O?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Water",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Which command lists files?\n(Linux shell)",
+							"type": "single",
+							"answers": [
+								{
+									"text": "ls",
+									"correct": true
+								},
+								{
+									"text": "cd",
+									"correct": false
+								},
+								{
+									"text": "pwd",
+									"correct": false
+								}
+							],
+							"explanation": "ls lists the directory.\nIt takes options such as -l."
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, comma",
+			"csv": "question,model_answer,open\nExplain DNS.,Name resolution,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Explain DNS.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Name resolution",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, German, semicolon",
+			"csv": "Frage;Musterantwort;open\nErkl\u00e4re DNS.;Namensaufl\u00f6sung;open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Erkl\u00e4re DNS.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form with spaces in the column names",
+			"csv": "Question text,Model answer,open\nWas ist DNS?,Namensaufl\u00f6sung,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist DNS?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, plural column names",
+			"csv": "Questions,Answers,open\nWas ist DNS?,Namensaufl\u00f6sung,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist DNS?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, German plural",
+			"csv": "Fragen,Antworten,open\nWas ist DNS?,Namensaufl\u00f6sung,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist DNS?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, semicolon, two-word labels",
+			"csv": "Question text;Sample answer;open\nExplain DNS.;Name resolution;open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Explain DNS.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Name resolution",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "numeric answers without a header: both readings import (items recorded from the pre-#65 reader; the 3 warnings are new)",
+			"csv": "Wie viel ist 3-1?,1,3,2,3\nHow many usable hosts has a /30 network?,2,4,1,2\nQ,a,b,1,2\nQ2,a,b,1,4\n",
+			"expect": {
+				"importable": 4,
+				"errors": 0,
+				"warnings": 3,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Wie viel ist 3-1?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "1",
+									"correct": false
+								},
+								{
+									"text": "3",
+									"correct": false
+								},
+								{
+									"text": "2",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "How many usable hosts has a /30 network?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "2",
+									"correct": false
+								},
+								{
+									"text": "4",
+									"correct": true
+								},
+								{
+									"text": "1",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": true
+								},
+								{
+									"text": "1",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q2",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": true
+								},
+								{
+									"text": "b",
+									"correct": false
+								}
+							],
+							"explanation": "4"
+						}
+					}
+				]
+			}
+		}
+	]
+}

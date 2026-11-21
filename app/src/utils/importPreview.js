@@ -103,6 +103,7 @@ export const importMessages = {
 	csvMaxAnswers: (line) => t('learning', 'Line {line}: Maximum 8 answers', { line }, undefined, RAW),
 	csvNoCorrect: (line) => t('learning', 'Line {line}: Could not determine correct answer — use a number (1-N) to indicate which answer is correct', { line }, undefined, RAW),
 	csvAnswerTruncated: (line) => t('learning', 'Line {line}: Answer text truncated to 2000 chars', { line }, undefined, RAW),
+	csvAmbiguousNumbers: (line, number) => t('learning', 'Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a "correct" column', { line, number }, undefined, RAW),
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -145,8 +146,6 @@ const phpTrim = (s) => s.replace(/^[ \t\n\r\0\v]+|[ \t\n\r\0\v]+$/g, '')
 const mbLength = (s) => Array.from(s).length
 const mbCut = (s, max) => Array.from(s).slice(0, max).join('')
 const asciiLower = (s) => s.replace(/[A-Z]/g, (c) => c.toLowerCase())
-/** PHP empty() on a string: '' and '0'. */
-const phpEmpty = (s) => s === '' || s === '0'
 const isScalar = (v) => typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v))
 
 /** PHP 8 is_numeric(): numbers, and numeric strings (leading/trailing whitespace allowed). */
@@ -751,7 +750,7 @@ export function analyzeJsonImport(text) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// The CSV reader (ImportController::csvRecords / parseCsv / importCsv)
+// The CSV reader (ImportController::csvRecords / readCsv / csvRecord / importCsv)
 // ---------------------------------------------------------------------------------------------
 
 /**
@@ -818,51 +817,159 @@ export function csvRecords(text, delimiter, limit = Infinity) {
 	return records
 }
 
-/** isCsvHeader(): a first record that names the columns (question/answer or Frage/Antwort). */
-function isCsvHeader(fields) {
+/**
+ * csvMentionsColumns(): the record names the columns — it mentions question and answer, or
+ * Frage and Antwort (ASCII case-insensitive, as strtolower()).
+ */
+function csvMentionsColumns(fields) {
 	const line = asciiLower(fields.join(' '))
 	return (line.includes('question') && line.includes('answer'))
 		|| (line.includes('frage') && line.includes('antwort'))
 }
 
 /**
- * parseCsv(): ';' or ',', whichever splits the first data record into more fields (tie: ',').
- * Decided on the first two records; the text is then parsed once, up to CSV_MAX_RECORDS.
+ * csvColumnLabel(): the first field of an open-form record reads as a column name, not as a
+ * question — at most four words (split at spaces and tabs only, as the PHP reader does) and no
+ * sentence mark (? . ! :). "Question text", "Fragen", "question_text" are labels;
+ * "Explain question and answer." is a question.
  */
-export function parseCsv(text) {
-	const comma = csvRecords(text, ',', 2)
-	const semicolon = csvRecords(text, ';', 2)
-	const first = comma.length > 0 && isCsvHeader(comma[0]) ? 1 : 0
-	const delimiter = (semicolon[first]?.length ?? 0) > (comma[first]?.length ?? 0) ? ';' : ','
-	return csvRecords(text, delimiter, CSV_MAX_RECORDS)
+function csvColumnLabel(text) {
+	return !/[?.!:]/.test(text) && text.split(/[ \t]+/).length <= 4
 }
 
-/** importCsv(): the correct index and answers of a multiple-choice record, PHP rule for rule. */
-function csvChoice(fields) {
+/**
+ * isCsvHeader(): a first record that names the columns and does not itself import as a
+ * question. A question that mentions "question" and "answer" (or "Frage" and "Antwort") has a
+ * correct-answer number or is an open question, so it is read, not dropped (GitHub #65).
+ * Exception: every record in the open-question form imports, so there the first field decides —
+ * a column name (`question,model_answer,open`, `Question text,Model answer,open`, `Fragen,Antworten,open`)
+ * keeps the record a header, as before #65.
+ */
+function isCsvHeader(fields) {
+	if (!csvMentionsColumns(fields)) {
+		return false
+	}
+	const record = csvRecord(fields)
+	return record.error !== undefined
+		|| (record.type === 'open' && csvColumnLabel(record.text))
+}
+
+/**
+ * Names of a header column that holds the number of the correct answer
+ * (ImportController::CORRECT_COLUMN), compared after isCorrectColumn() lower-cases the name and
+ * turns runs of spaces, tabs, "_" and "-" into one space. Whole names only: "Lösungsweg" or
+ * "Solution notes" is an explanation column.
+ */
+const CORRECT_COLUMN = /^(?:correct(?: answer| number)?|right answer|richtig|richtige antwort|korrekt|korrekte antwort|solution|l(?:ö|oe)sung)$/u
+
+/** The header field names the correct-answer column (CORRECT_COLUMN). */
+const isCorrectColumn = (field) => CORRECT_COLUMN.test(phpTrim(field).toLowerCase().replace(/[ \t_-]+/g, ' '))
+
+/**
+ * csvColumns(): where a header puts the number of the correct answer. Only the format's own
+ * shape counts: question, at least two answer columns, then the correct column as the last or
+ * second-last column (an explanation after it). Otherwise null, and the records are read
+ * without it.
+ *
+ * @return {{width: number, correct: number}|null}
+ */
+function csvColumns(header) {
+	const correct = header.findIndex((f, i) => i >= 3 && isCorrectColumn(f))
+	if (correct === -1 || correct < header.length - 2) {
+		return null
+	}
+	return { width: header.length, correct }
+}
+
+/** Both delimiters read the same way: header, the header's columns, the data records. */
+function csvReading(text, delimiter) {
+	const all = csvRecords(text, delimiter, CSV_MAX_RECORDS)
+	const header = all.length > 0 && isCsvHeader(all[0]) ? all[0] : null
+	const columns = header === null ? null : csvColumns(header)
+	const records = header === null ? all : all.slice(1)
+	const importable = records.filter((r) => csvRecord(r, columns).error === undefined).length
+	return { delimiter, header, columns, records, importable }
+}
+
+/**
+ * readCsv(): ';' or ',', whichever reads more records as questions. Only when both read the same
+ * number (also none), the old rule decides: the delimiter that splits the first data record into
+ * more fields, a tie means ','. The first occurrence of a ';' no longer decides on its own: an
+ * export writes "cd;ls;pwd" unquoted, and that file must stay a comma file (GitHub #65).
+ * Each delimiter reads at most CSV_MAX_RECORDS records.
+ *
+ * @return {{delimiter: string, header: string[]|null, columns: object|null, records: string[][]}}
+ */
+export function readCsv(text) {
+	const comma = csvReading(text, ',')
+	const semicolon = csvReading(text, ';')
+	if (comma.importable !== semicolon.importable) {
+		return comma.importable > semicolon.importable ? comma : semicolon
+	}
+	return (semicolon.records[0]?.length ?? 0) > (comma.records[0]?.length ?? 0) ? semicolon : comma
+}
+
+/** parseCsv(): the records readCsv() reads, the header (if any) first. */
+export function parseCsv(text) {
+	const { header, records } = readCsv(text)
+	return header === null ? records : [header, ...records]
+}
+
+/** Answer texts trimmed, empty ones dropped. */
+const cleanAnswers = (texts) => texts.map(phpTrim).filter((a) => a !== '')
+/** An optional text field: trimmed, null when empty. */
+const optionalCsvText = (value) => {
+	const text = phpTrim(value)
+	return text === '' ? null : text
+}
+/** A number from 1 to 8 that names one of answerCount answers (is_numeric, then (int)). */
+const isCorrectNumber = (value, answerCount) => phpIsNumeric(value) && phpInt(value) >= 1 && phpInt(value) <= 8 && phpInt(value) <= answerCount
+/** The reading imports: 2 to MAX_ANSWERS answers and a correct index among them. */
+const choiceImports = ({ answerTexts, correctIndex }) => answerTexts.length >= 2 && answerTexts.length <= MAX_ANSWERS
+	&& correctIndex !== null && correctIndex < answerTexts.length
+
+/**
+ * csvChoiceWithExplanation(): "answers, number, explanation" — the second-last field as the
+ * number of the correct answer, the last field as the explanation; null when the second-last
+ * field is no such number.
+ */
+function csvChoiceWithExplanation(fields) {
+	const secondLastIdx = fields.length - 2
+	if (secondLastIdx < 2 || !isCorrectNumber(phpTrim(fields[secondLastIdx]), secondLastIdx - 1)) {
+		return null
+	}
+	return {
+		answerTexts: cleanAnswers(fields.slice(1, secondLastIdx)),
+		correctIndex: phpInt(phpTrim(fields[secondLastIdx])) - 1,
+		explanation: optionalCsvText(fields[secondLastIdx + 1]),
+	}
+}
+
+/**
+ * csvChoiceAsBefore(): the reading of every version before 5.18.0 — the last field as the
+ * number, then the second-last (the last field is the explanation), then the last field as the
+ * text of one of the answers.
+ */
+function csvChoiceAsBefore(fields) {
+	const lastIdx = fields.length - 1
+	const secondLastIdx = lastIdx - 1
 	let answerTexts = []
 	let correctIndex = null
 	let explanation = null
-	const lastIdx = fields.length - 1
-	const secondLastIdx = lastIdx - 1
-	const validNumber = (value, answerCount) => phpIsNumeric(value) && phpInt(value) >= 1 && phpInt(value) <= 8 && phpInt(value) <= answerCount
-
 	if (lastIdx >= 2) {
 		const possibleCorrect = phpTrim(fields[lastIdx])
-		if (validNumber(possibleCorrect, lastIdx - 1)) {
+		if (isCorrectNumber(possibleCorrect, lastIdx - 1)) {
 			correctIndex = phpInt(possibleCorrect) - 1
 			answerTexts = fields.slice(1, lastIdx)
 		} else if (secondLastIdx >= 2) {
 			const possibleCorrect2 = phpTrim(fields[secondLastIdx])
-			if (validNumber(possibleCorrect2, secondLastIdx - 1)) {
+			if (isCorrectNumber(possibleCorrect2, secondLastIdx - 1)) {
 				correctIndex = phpInt(possibleCorrect2) - 1
 				answerTexts = fields.slice(1, secondLastIdx)
-				explanation = phpTrim(fields[lastIdx])
-				if (phpEmpty(explanation)) {
-					explanation = null
-				}
+				explanation = optionalCsvText(fields[lastIdx])
 			} else {
 				answerTexts = fields.slice(1, lastIdx + 1)
-				const correctText = asciiLower(phpTrim(possibleCorrect))
+				const correctText = asciiLower(possibleCorrect)
 				const found = answerTexts.findIndex((at) => asciiLower(phpTrim(at)) === correctText)
 				if (found !== -1) {
 					correctIndex = found
@@ -871,8 +978,91 @@ function csvChoice(fields) {
 			}
 		}
 	}
-	answerTexts = answerTexts.map(phpTrim).filter((a) => a !== '')
-	return { answerTexts, correctIndex, explanation }
+	return { answerTexts: cleanAnswers(answerTexts), correctIndex, explanation }
+}
+
+/**
+ * csvChoice(): answers, correct index and explanation of a multiple-choice record, PHP rule
+ * for rule (ImportController::csvChoice).
+ *
+ *  1. With a header that names the correct column, and a record as wide as the header: the
+ *     number in that column, when it is one (GitHub #65).
+ *  2. Otherwise the reading of every version before 5.18.0 (csvChoiceAsBefore()), when it
+ *     imports: the last field as the number, so "Q,1,3,2,3" is answers 1,3,2 with number 3.
+ *     When "answers, number, explanation" would import too (answers 1,3, number 2,
+ *     explanation "3"), the record is ambiguous: it is read the old way and flagged, so the
+ *     import warns.
+ *  3. Otherwise "answers, number, explanation", when that reading imports: a numeric
+ *     explanation is no longer read as the number of the correct answer when that reading
+ *     cannot import (GitHub #65, eight answers and an explanation "2").
+ *  4. Otherwise the old reading, so a record that imports neither way is refused as before.
+ */
+function csvChoice(fields, columns = null) {
+	const lastIdx = fields.length - 1
+	if (columns !== null && fields.length === columns.width) {
+		const c = columns.correct
+		if (isCorrectNumber(phpTrim(fields[c]), c - 1)) {
+			return { answerTexts: cleanAnswers(fields.slice(1, c)), correctIndex: phpInt(phpTrim(fields[c])) - 1, explanation: c < lastIdx ? optionalCsvText(fields[lastIdx]) : null }
+		}
+	}
+
+	const asBefore = csvChoiceAsBefore(fields)
+	const withExplanation = csvChoiceWithExplanation(fields)
+	if (choiceImports(asBefore)) {
+		// ambiguous only when the old reading took the last field as the number
+		const ambiguous = lastIdx >= 2 && isCorrectNumber(phpTrim(fields[lastIdx]), lastIdx - 1)
+			&& withExplanation !== null && choiceImports(withExplanation)
+		return { ...asBefore, ambiguous }
+	}
+	if (withExplanation !== null && choiceImports(withExplanation)) {
+		return withExplanation
+	}
+	return asBefore
+}
+
+/**
+ * csvRecord(): what one CSV record is (ImportController::csvRecord) — an open question, a
+ * single-choice question, or the reason it is refused. Answer texts are not cut here.
+ *
+ * @return {{error: string}|{type: 'open', text: string, model: string}|{type: 'single', text: string, answers: string[], correctIndex: number, explanation: string|null, ambiguous: boolean}}
+ */
+function csvRecord(fields, columns = null) {
+	const text = phpTrim(fields[0] ?? '')
+	if (text === '') {
+		return { error: 'emptyText' }
+	}
+	if (mbLength(text) > MAX_TEXT_LENGTH) {
+		return { error: 'textTooLong' }
+	}
+	if (fields.length === 3 && phpTrim(fields[2]).toLowerCase() === 'open') {
+		const model = phpTrim(fields[1])
+		return model === '' ? { error: 'emptyModel' } : { type: 'open', text, model }
+	}
+	if (fields.length < 4) {
+		return { error: 'notEnoughFields' }
+	}
+	const { answerTexts, correctIndex, explanation, ambiguous = false } = csvChoice(fields, columns)
+	if (answerTexts.length < 2) {
+		return { error: 'needTwoAnswers' }
+	}
+	if (answerTexts.length > MAX_ANSWERS) {
+		return { error: 'maxAnswers' }
+	}
+	if (correctIndex === null || correctIndex >= answerTexts.length) {
+		return { error: 'noCorrect' }
+	}
+	return { type: 'single', text, answers: answerTexts, correctIndex, explanation, ambiguous }
+}
+
+/** The message of a csvRecord() error. */
+const CSV_RECORD_ERRORS = {
+	emptyText: (line) => importMessages.csvEmptyText(line),
+	textTooLong: (line) => importMessages.csvTextTooLong(line),
+	emptyModel: (line) => importMessages.csvEmptyModelAnswer(line),
+	notEnoughFields: (line) => importMessages.csvNotEnoughFields(line),
+	needTwoAnswers: (line) => importMessages.csvNeedTwoAnswers(line),
+	maxAnswers: (line) => importMessages.csvMaxAnswers(line),
+	noCorrect: (line) => importMessages.csvNoCorrect(line),
 }
 
 /**
@@ -884,13 +1074,10 @@ function csvChoice(fields) {
  * @return {{error: string}|{total: number, importable: number, items: Array<object>, errors: string[], warnings: string[]}}
  */
 export function analyzeCsvImport(text) {
-	let records = parseCsv(String(text ?? '').replace(/^\uFEFF/, ''))
-	if (records.length === 0) {
+	// The header is not a question and does not count toward the limit; readCsv() leaves it out.
+	const { header, columns, records } = readCsv(String(text ?? '').replace(/^\uFEFF/, ''))
+	if (header === null && records.length === 0) {
 		return { error: importMessages.noData() }
-	}
-	// The header is not a question and does not count toward the limit.
-	if (isCsvHeader(records[0])) {
-		records = records.slice(1)
 	}
 	if (records.length > MAX_IMPORT_ITEMS) {
 		return { error: importMessages.tooManyItems() }
@@ -903,10 +1090,6 @@ export function analyzeCsvImport(text) {
 		const line = index + 1
 		const entry = newEntry(line)
 		items.push(entry)
-		const fail = (message) => {
-			entry.error = message
-			errors.push(message)
-		}
 		const warnTruncated = (texts) => {
 			if (texts.some((a) => mbLength(a) > MAX_ANSWER_LENGTH)) {
 				const message = importMessages.csvAnswerTruncated(line)
@@ -915,57 +1098,37 @@ export function analyzeCsvImport(text) {
 			}
 		}
 
-		const questionText = phpTrim(fields[0] ?? '')
-		entry.text = questionText
-		if (phpEmpty(questionText)) {
-			fail(importMessages.csvEmptyText(line))
-			return
-		}
-		if (mbLength(questionText) > MAX_TEXT_LENGTH) {
-			fail(importMessages.csvTextTooLong(line))
-			return
-		}
-
-		if (fields.length === 3 && phpTrim(fields[2]).toLowerCase() === 'open') {
+		entry.text = phpTrim(fields[0] ?? '')
+		const record = csvRecord(fields, columns)
+		if (record.type === 'open' || record.error === 'emptyModel') {
 			entry.kind = 'open'
-			const model = phpTrim(fields[1])
-			if (model === '') {
-				fail(importMessages.csvEmptyModelAnswer(line))
-				return
-			}
+		}
+		if (record.error !== undefined) {
+			entry.error = CSV_RECORD_ERRORS[record.error](line)
+			errors.push(entry.error)
+			return
+		}
+		if (record.type === 'open') {
 			entry.answerCount = 1
 			entry.correctCount = 1
-			warnTruncated([model])
-			entry.question = { text: questionText, type: 'open', answers: [{ text: mbCut(model, MAX_ANSWER_LENGTH), correct: true }], explanation: null }
-			return
-		}
-
-		if (fields.length < 4) {
-			fail(importMessages.csvNotEnoughFields(line))
-			return
-		}
-		const { answerTexts, correctIndex, explanation } = csvChoice(fields)
-		if (answerTexts.length < 2) {
-			fail(importMessages.csvNeedTwoAnswers(line))
-			return
-		}
-		if (answerTexts.length > MAX_ANSWERS) {
-			fail(importMessages.csvMaxAnswers(line))
-			return
-		}
-		if (correctIndex === null || correctIndex >= answerTexts.length) {
-			fail(importMessages.csvNoCorrect(line))
+			warnTruncated([record.model])
+			entry.question = { text: record.text, type: 'open', answers: [{ text: mbCut(record.model, MAX_ANSWER_LENGTH), correct: true }], explanation: null }
 			return
 		}
 		entry.kind = 'single'
-		entry.answerCount = answerTexts.length
+		entry.answerCount = record.answers.length
 		entry.correctCount = 1
-		warnTruncated(answerTexts)
+		if (record.ambiguous) {
+			const message = importMessages.csvAmbiguousNumbers(line, record.correctIndex + 1)
+			entry.warnings.push(message)
+			warnings.push(message)
+		}
+		warnTruncated(record.answers)
 		entry.question = {
-			text: questionText,
+			text: record.text,
 			type: 'single',
-			answers: answerTexts.map((a, i) => ({ text: mbCut(a, MAX_ANSWER_LENGTH), correct: i === correctIndex })),
-			explanation,
+			answers: record.answers.map((a, i) => ({ text: mbCut(a, MAX_ANSWER_LENGTH), correct: i === record.correctIndex })),
+			explanation: record.explanation,
 		}
 	})
 

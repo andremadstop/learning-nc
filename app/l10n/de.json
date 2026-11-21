@@ -4207,6 +4207,8 @@
         "Alle Erfolge anzeigen ({n})": "Alle Erfolge anzeigen ({n})",
         "Weniger anzeigen": "Weniger anzeigen",
         "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.",
-        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen."
+        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.",
+        "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Zeile {line}: Mehrdeutige Zahlen — gelesen als richtige Antwort {number} ohne Erklärung; ist die letzte Zahl eine Erklärung, eine Kopfzeile mit einer Spalte „correct“ ergänzen",
+        "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Zeile %1$s: Mehrdeutige Zahlen — gelesen als richtige Antwort %2$s ohne Erklärung; ist die letzte Zahl eine Erklärung, eine Kopfzeile mit einer Spalte „correct“ ergänzen"
     }
 }

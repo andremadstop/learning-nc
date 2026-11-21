@@ -4220,6 +4220,8 @@
         "Alle Erfolge anzeigen ({n})": "Показать все достижения ({n})",
         "Weniger anzeigen": "Показать меньше",
         "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "Пока нет открытых достижений. Продолжай учиться, первое скоро появится.",
-        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Не удалось загрузить достижения. Обнови страницу, чтобы попробовать ещё раз."
+        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Не удалось загрузить достижения. Обнови страницу, чтобы попробовать ещё раз.",
+        "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Строка {line}: неоднозначные числа — прочитано как правильный ответ {number} без пояснения; если последнее число — пояснение, добавьте строку заголовков со столбцом «correct»",
+        "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Строка %1$s: неоднозначные числа — прочитано как правильный ответ %2$s без пояснения; если последнее число — пояснение, добавьте строку заголовков со столбцом «correct»"
     }
 }
