@@ -82,13 +82,14 @@ function exportCsv(questions) {
  * the reader switch delimiters; a numeric explanation stays the explanation. Each is pinned by an
  * example below.
  *
- * ACCEPTED AMBIGUITY. Without a header the format cannot tell "answers …, 1, number" from
+ * AMBIGUITY, WARNED. Without a header the format cannot tell "answers …, 1, number" from
  * "answers …, number, explanation": the export of {answers: [a, b, "1"], correct: 2} and of
  * {answers: [a, b], correct: 1, explanation: "2"} is the same line "Q,a,b,1,2". The reader takes
- * the second reading, so an explanation that is a number survives; the first loses. That is the
- * condition excluded here: no explanation, and the last answer is a number that could be the
- * number of a correct answer among the answers before it. A header that names the correct column
- * removes the ambiguity (example below).
+ * the second reading, so an explanation that is a number survives; the first loses, and the
+ * reader warns for that line. That is the condition below: no explanation, and the last answer
+ * is a number that could be the number of a correct answer among the answers before it. Such a
+ * question must come with a warning for its line; every other question must come back as it was.
+ * A header that names the correct column removes the ambiguity (example below).
  */
 const lastAnswerReadsAsNumber = (q) => {
 	const last = q.answers[q.answers.length - 1].text
@@ -112,13 +113,20 @@ describe('CSV export -> import (property)', () => {
 			const csv = exportCsv(questions)
 			// Accepted: a leading U+FEFF is read as the file's byte order mark and dropped (both readers).
 			fc.pre(!csv.startsWith('\uFEFF'))
-			fc.pre(!questions.some(lastAnswerReadsAsNumber))
 			const result = analyzeCsvImport(csv)
 			expect(result.error).toBeUndefined()
 			expect(result.errors).toEqual([])
+			// The mirror case of a numeric explanation is read the other way, never silently.
+			const ambiguous = questions.map(lastAnswerReadsAsNumber)
+			ambiguous.forEach((a, i) => {
+				if (a) {
+					expect(result.items[i].warnings.some((w) => w.startsWith(`Line ${i + 1}: Ambiguous numbers`))).toBe(true)
+				}
+			})
 			// Line breaks come back as "\n" (the reader normalizes \r\n and \r first, as the server does).
 			const nl = (s) => (s === null ? null : s.replace(/\r\n|\r/g, '\n'))
-			expect(result.items.map((i) => i.question)).toEqual(questions.map((q) => ({
+			const unambiguous = (list) => list.filter((_, i) => !ambiguous[i])
+			expect(unambiguous(result.items.map((i) => i.question))).toEqual(unambiguous(questions).map((q) => ({
 				text: nl(q.text),
 				type: 'single',
 				answers: q.answers.map((a, i) => ({ text: nl(a.text), correct: i === q.correct })),
@@ -158,11 +166,31 @@ describe('CSV export -> import: the three findings of the property (GitHub #65)'
 		const r = exported({ text: 'How many usable hosts has a /30 network?', answers: [{ text: '2' }, { text: '4' }], correct: 0, explanation: '2' })
 		expect(r.items[0].question).toEqual({ text: 'How many usable hosts has a /30 network?', type: 'single', answers: [{ text: '2', correct: true }, { text: '4', correct: false }], explanation: '2' })
 	})
-	it('accepted ambiguity: without a header "Q,a,b,1,2" is two answers, number 1, explanation "2"', () => {
+	it('ambiguity, warned: without a header "Q,a,b,1,2" is two answers, number 1, explanation "2" — with a warning', () => {
 		const q = { text: 'Q', answers: [{ text: 'a' }, { text: 'b' }, { text: '1' }], correct: 1, explanation: null }
 		expect(lastAnswerReadsAsNumber(q)).toBe(true)
 		expect(exportCsv([q])).toBe(exportCsv([{ text: 'Q', answers: [{ text: 'a' }, { text: 'b' }], correct: 0, explanation: '2' }]))
-		expect(analyzeCsvImport(exportCsv([q])).items[0].question).toEqual({ text: 'Q', type: 'single', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }], explanation: '2' })
+		const r = analyzeCsvImport(exportCsv([q]))
+		expect(r.items[0].question).toEqual({ text: 'Q', type: 'single', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }], explanation: '2' })
+		const warning = 'Line 1: Ambiguous numbers — read as correct answer 1 with explanation "2"; if the last field is the number of the correct answer, add a header row with a "correct" column'
+		expect(r.warnings).toEqual([warning])
+		expect(r.items[0].warnings).toEqual([warning])
+	})
+	it('ambiguity, warned: numeric answers ("Wie viel ist 3-1?,1,3,2,3") and the numeric explanation (finding 3) both warn', () => {
+		expect(analyzeCsvImport('Wie viel ist 3-1?,1,3,2,3\n').warnings).toEqual(['Line 1: Ambiguous numbers — read as correct answer 2 with explanation "3"; if the last field is the number of the correct answer, add a header row with a "correct" column'])
+		expect(analyzeCsvImport('How many usable hosts has a /30 network?,2,4,1,2\n').warnings).toHaveLength(1)
+	})
+	it('no ambiguity warning when only one reading imports or a header decides', () => {
+		for (const [csv, warns] of [
+			['Q,a,b,1,2\n', 1],
+			['Q,a,b,1,4\n', 0], // there is no 4th answer among a, b, 1: one reading
+			['Q,a,b,2,Weil.\n', 0],
+			['Q,a,b,2\n', 0],
+			['question,answer1,answer2,answer3,correct\nQ,a,b,1,2\n', 0],
+			['Frage,Antwort 1,Antwort 2,Richtig,Erklärung\nQ,a,b,1,2\n', 0],
+		]) {
+			expect(analyzeCsvImport(csv).warnings, csv).toHaveLength(warns)
+		}
 	})
 	it('a header that names the correct column decides: the number is read from that column only', () => {
 		const withHeader = (header) => analyzeCsvImport(header + '\nQ,a,b,1,2\n').items[0].question

@@ -103,6 +103,7 @@ export const importMessages = {
 	csvMaxAnswers: (line) => t('learning', 'Line {line}: Maximum 8 answers', { line }, undefined, RAW),
 	csvNoCorrect: (line) => t('learning', 'Line {line}: Could not determine correct answer — use a number (1-N) to indicate which answer is correct', { line }, undefined, RAW),
 	csvAnswerTruncated: (line) => t('learning', 'Line {line}: Answer text truncated to 2000 chars', { line }, undefined, RAW),
+	csvAmbiguousNumbers: (line, number, explanation) => t('learning', 'Line {line}: Ambiguous numbers — read as correct answer {number} with explanation "{explanation}"; if the last field is the number of the correct answer, add a header row with a "correct" column', { line, number, explanation }, undefined, RAW),
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -915,7 +916,9 @@ export function parseCsv(text) {
  *  1. With a header that names the correct column, and a record as wide as the header: the
  *     number in that column, when it is one (GitHub #65).
  *  2. Otherwise "answers, number, explanation", when that reading imports: an explanation that
- *     is a number ("2") stays the explanation (GitHub #65).
+ *     is a number ("2") stays the explanation (GitHub #65). When the last field would also
+ *     import as the number of the correct answer ("Q,1,3,2,3": answers 1,3,2, number 3), the
+ *     record is ambiguous: it is read this way and flagged, so the import warns.
  *  3. Otherwise as before: the last field as the number, then the second-last, then the last
  *     field as the text of one of the answers.
  */
@@ -940,7 +943,10 @@ function csvChoice(fields, columns = null) {
 		const answerTexts = clean(fields.slice(1, secondLastIdx))
 		const correctIndex = phpInt(phpTrim(fields[secondLastIdx])) - 1
 		if (answerTexts.length >= 2 && answerTexts.length <= MAX_ANSWERS && correctIndex < answerTexts.length) {
-			return { answerTexts, correctIndex, explanation: optional(fields[lastIdx]) }
+			const lastAsNumber = clean(fields.slice(1, lastIdx))
+			const ambiguous = validNumber(phpTrim(fields[lastIdx]), lastIdx - 1)
+				&& lastAsNumber.length <= MAX_ANSWERS && phpInt(phpTrim(fields[lastIdx])) - 1 < lastAsNumber.length
+			return { answerTexts, correctIndex, explanation: optional(fields[lastIdx]), ambiguous }
 		}
 	}
 
@@ -976,7 +982,7 @@ function csvChoice(fields, columns = null) {
  * csvRecord(): what one CSV record is (ImportController::csvRecord) — an open question, a
  * single-choice question, or the reason it is refused. Answer texts are not cut here.
  *
- * @return {{error: string}|{type: 'open', text: string, model: string}|{type: 'single', text: string, answers: string[], correctIndex: number, explanation: string|null}}
+ * @return {{error: string}|{type: 'open', text: string, model: string}|{type: 'single', text: string, answers: string[], correctIndex: number, explanation: string|null, ambiguous: boolean}}
  */
 function csvRecord(fields, columns = null) {
 	const text = phpTrim(fields[0] ?? '')
@@ -993,7 +999,7 @@ function csvRecord(fields, columns = null) {
 	if (fields.length < 4) {
 		return { error: 'notEnoughFields' }
 	}
-	const { answerTexts, correctIndex, explanation } = csvChoice(fields, columns)
+	const { answerTexts, correctIndex, explanation, ambiguous = false } = csvChoice(fields, columns)
 	if (answerTexts.length < 2) {
 		return { error: 'needTwoAnswers' }
 	}
@@ -1003,7 +1009,7 @@ function csvRecord(fields, columns = null) {
 	if (correctIndex === null || correctIndex >= answerTexts.length) {
 		return { error: 'noCorrect' }
 	}
-	return { type: 'single', text, answers: answerTexts, correctIndex, explanation }
+	return { type: 'single', text, answers: answerTexts, correctIndex, explanation, ambiguous }
 }
 
 /** The message of a csvRecord() error. */
@@ -1070,6 +1076,11 @@ export function analyzeCsvImport(text) {
 		entry.kind = 'single'
 		entry.answerCount = record.answers.length
 		entry.correctCount = 1
+		if (record.ambiguous) {
+			const message = importMessages.csvAmbiguousNumbers(line, record.correctIndex + 1, record.explanation ?? '')
+			entry.warnings.push(message)
+			warnings.push(message)
+		}
 		warnTruncated(record.answers)
 		entry.question = {
 			text: record.text,

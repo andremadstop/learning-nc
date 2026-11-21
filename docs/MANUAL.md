@@ -401,7 +401,9 @@ correct column (`correct`, `richtig`, `korrekt`, `solution`, `Lösung`) as its l
 second-last column, the number is read from that column. Without a header, a row whose
 second-last field is a valid answer number is read as answers, number, explanation, so an
 explanation may be a number; a row like `Q,a,b,1,2` (last answer `1`, no explanation) is
-therefore read as two answers with explanation "2" — give such a file a header row. Comma or
+therefore read as two answers with explanation "2". Because the last field could also be the
+number of the correct answer, the import warns for such a row ("Ambiguous numbers") and names
+the reading it took — give such a file a header row with a correct column. Comma or
 semicolon as separator: the one under which more rows can be imported; on a tie, the one that
 splits the first question into more fields. A field in double quotes may contain the separator and line
 breaks, and `""` stands for one quote character — the format spreadsheet programs write.

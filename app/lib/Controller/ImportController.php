@@ -231,13 +231,15 @@ class ImportController extends Controller {
      *  1. With a header that names the correct column, and a record as wide as the header: the
      *     number in that column, when it is one (GitHub #65).
      *  2. Otherwise "answers, number, explanation", when that reading imports: an explanation that
-     *     is a number ("2") stays the explanation (GitHub #65).
+     *     is a number ("2") stays the explanation (GitHub #65). When the last field would also
+     *     import as the number of the correct answer ("Q,1,3,2,3": answers 1,3,2, number 3), the
+     *     record is ambiguous: it is read this way and flagged, so the import warns.
      *  3. Otherwise as before: the last field as the number, then the second-last, then the last
      *     field as the text of one of the answers.
      *
      * @param list<string> $fields
      * @param array{width: int, correct: int}|null $columns
-     * @return array{answers: list<string>, correctIndex: int|null, explanation: string|null}
+     * @return array{answers: list<string>, correctIndex: int|null, explanation: string|null, ambiguous?: true}
      */
     private static function csvChoice(array $fields, ?array $columns): array {
         $clean = static fn (array $texts): array => array_values(array_filter(array_map('trim', $texts), static fn (string $t): bool => $t !== ''));
@@ -263,7 +265,13 @@ class ImportController extends Controller {
             $answers = $clean(array_slice($fields, 1, $secondLastIdx - 1));
             $correctIndex = (int)trim($fields[$secondLastIdx]) - 1;
             if (count($answers) >= 2 && count($answers) <= self::MAX_ANSWERS && $correctIndex < count($answers)) {
-                return ['answers' => $answers, 'correctIndex' => $correctIndex, 'explanation' => $optional($fields[$lastIdx])];
+                $choice = ['answers' => $answers, 'correctIndex' => $correctIndex, 'explanation' => $optional($fields[$lastIdx])];
+                $lastAsNumber = $clean(array_slice($fields, 1, $lastIdx - 1));
+                if (self::isCorrectNumber(trim($fields[$lastIdx]), $lastIdx - 1)
+                    && count($lastAsNumber) <= self::MAX_ANSWERS && (int)trim($fields[$lastIdx]) - 1 < count($lastAsNumber)) {
+                    $choice['ambiguous'] = true;
+                }
+                return $choice;
             }
         }
 
@@ -305,7 +313,7 @@ class ImportController extends Controller {
      *
      * @param list<string> $fields
      * @param array{width: int, correct: int}|null $columns
-     * @return array{error: string}|array{type: 'open', text: string, model: string}|array{type: 'single', text: string, answers: list<string>, correctIndex: int, explanation: string|null}
+     * @return array{error: string}|array{type: 'open', text: string, model: string}|array{type: 'single', text: string, answers: list<string>, correctIndex: int, explanation: string|null, ambiguous: bool}
      */
     private static function csvRecord(array $fields, ?array $columns = null): array {
         $text = trim($fields[0] ?? '');
@@ -334,7 +342,7 @@ class ImportController extends Controller {
         if ($choice['correctIndex'] === null || $choice['correctIndex'] >= count($choice['answers'])) {
             return ['error' => 'noCorrect'];
         }
-        return ['type' => 'single', 'text' => $text, 'answers' => $choice['answers'], 'correctIndex' => $choice['correctIndex'], 'explanation' => $choice['explanation']];
+        return ['type' => 'single', 'text' => $text, 'answers' => $choice['answers'], 'correctIndex' => $choice['correctIndex'], 'explanation' => $choice['explanation'], 'ambiguous' => isset($choice['ambiguous'])];
     }
 
     /** The translated message of a csvRecord() error code. */
@@ -911,6 +919,9 @@ class ImportController extends Controller {
 
                 $answerTexts = $record['answers'];
                 $explanation = $record['explanation'];
+                if ($record['ambiguous']) {
+                    $warnings[] = $this->l10n->t('Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation "%3$s"; if the last field is the number of the correct answer, add a header row with a "correct" column', [$line, $record['correctIndex'] + 1, (string)$explanation]);
+                }
                 $csvQuestionType = 'single';
                 $correctIndices = [$record['correctIndex']];
 

@@ -4206,6 +4206,8 @@
         "Zugriffskontrolle": "Управление доступом",
         "Patch-Management": "Управление обновлениями",
         "Sichere Architektur": "Безопасная архитектура",
-        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)"
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)",
+        "Line {line}: Ambiguous numbers — read as correct answer {number} with explanation \"{explanation}\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column": "Строка {line}: неоднозначные числа — прочитано как правильный ответ {number} с пояснением «{explanation}»; если последнее поле — номер правильного ответа, добавьте строку заголовков со столбцом «correct»",
+        "Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation \"%3$s\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column": "Строка %1$s: неоднозначные числа — прочитано как правильный ответ %2$s с пояснением «%3$s»; если последнее поле — номер правильного ответа, добавьте строку заголовков со столбцом «correct»"
     }
 }

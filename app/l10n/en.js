@@ -4155,5 +4155,7 @@ OC.L10N.register(
     "Patch-Management" : "Patch management",
     "Sichere Architektur" : "Secure architecture",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Exam attempts used up (for the course’s instructors)",
+    "Line {line}: Ambiguous numbers — read as correct answer {number} with explanation \"{explanation}\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column" : "Line {line}: Ambiguous numbers — read as correct answer {number} with explanation \"{explanation}\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column",
+    "Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation \"%3$s\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column" : "Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation \"%3$s\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column",
 },
 "nplurals=2; plural=(n != 1);");

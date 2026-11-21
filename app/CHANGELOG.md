@@ -19,15 +19,17 @@ All notable changes to this project will be documented in this file.
   that names the correct column (`correct`, `richtig`, `korrekt`, `solution`, `Lösung`) as its
   last or second-last column, the number is read from that column for every row as wide as the
   header. One reading changes on purpose: a file **without** a header whose last answer is a small
-  number and that has no explanation (`Q,a,b,1,2`) is now read as two answers, number 1,
-  explanation "2". Such a file needs a header row; the shipped examples have one and are read as
-  before.
+  number and that has no explanation (`Q,a,b,1,2`, or `Wie viel ist 3-1?,1,3,2,3`) is now read as
+  answers, number, explanation. That row is ambiguous, so the import and its preview now **warn**
+  for it ("Ambiguous numbers — read as correct answer … with explanation …"), naming the reading
+  taken; a header row with a correct column decides. The shipped examples have a header and are
+  read as before.
 
 ### Tests
 - A shared fixture records how both CSV readers read the shipped examples and 22 hand-written
   files before the fix; the preview and `ImportController::importCsv` read all of them as
   before. The three `it.fails` pins became normal tests, the property test no longer excludes
-  the header and separator cases, and PHPUnit covers each finding on the server.
+  the header and separator cases and asserts the ambiguity warning instead of skipping that case, and PHPUnit covers each finding on the server.
 
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 

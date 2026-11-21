@@ -154,6 +154,35 @@ class ImportControllerCsvTest extends TestCase {
         $this->assertSame(['text' => 'How many usable hosts has a /30 network?', 'answers' => [['text' => '2', 'correct' => true], ['text' => '4', 'correct' => false]], 'explanation' => '2'], $this->stored()[0]);
     }
 
+    public function testARecordWhoseLastFieldCouldAlsoBeTheCorrectNumberWarns(): void {
+        // "Q,1,3,2,3" is answers 1,3,2 with number 3 as well as answers 1,3 with number 2 and explanation "3"
+        $r = $this->importController()->importCsv(7, "Wie viel ist 3-1?,1,3,2,3
+How many usable hosts has a /30 network?,2,4,1,2
+Second,x,y,2
+Third,x,y,1,Weil.
+");
+
+        $this->assertSame(4, $r->getData()['imported'] ?? null, json_encode($r->getData()));
+        $this->assertSame([
+            'Line 1: Ambiguous numbers — read as correct answer 2 with explanation "3"; if the last field is the number of the correct answer, add a header row with a "correct" column',
+            'Line 2: Ambiguous numbers — read as correct answer 1 with explanation "2"; if the last field is the number of the correct answer, add a header row with a "correct" column',
+        ], $r->getData()['warnings'] ?? null);
+    }
+
+    public function testNoAmbiguityWarningWhenOnlyOneReadingImportsOrAHeaderDecides(): void {
+        foreach ([
+            "Q,a,b,1,2\n" => true,           // the last field 2 names one of the answers a, b, 1: ambiguous
+            "Q,a,b,1,4\n" => false,          // there is no 4th answer among a, b, 1: one reading
+            "Q,a,b,2,Weil.\n" => false,      // the explanation is no number
+            "Q,a,b,2\n" => false,            // no explanation
+            "question,answer1,answer2,answer3,correct\nQ,a,b,1,2\n" => false,
+            "Frage,Antwort 1,Antwort 2,Richtig,Erklärung\nQ,a,b,1,2\n" => false,
+        ] as $csv => $warns) {
+            $r = $this->importController()->importCsv(7, $csv);
+            $this->assertSame($warns, isset($r->getData()['warnings']), $csv . json_encode($r->getData()));
+        }
+    }
+
     public function testAHeaderThatNamesTheCorrectColumnDecides(): void {
         $this->importController()->importCsv(7, "question,answer1,answer2,answer3,correct\nQ,a,b,1,2\n");
         $this->assertSame([['text' => 'Q', 'answers' => [['text' => 'a', 'correct' => false], ['text' => 'b', 'correct' => true], ['text' => '1', 'correct' => false]], 'explanation' => null]], $this->stored());
