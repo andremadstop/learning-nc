@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 5.18.0 – unreleased
+
+### Added
+- **Achievements on Today** (#101). With gamification on, Today has an achievements section: the
+  unlocked achievements, most recently unlocked first, six at a time with "Show all achievements"
+  to unfold the rest, and a friendly line while there are none yet. The activity "Achievement
+  unlocked" (stream and email) now opens exactly this section (`/dashboard?section=achievements`):
+  Today scrolls there and moves the keyboard focus to its heading. The list comes from the user
+  state Today already loads, so the section costs no extra request; with gamification off it is
+  not shown. Section heading and list are announced as such, the layout follows the reading
+  direction in Arabic, and the texts are in all six languages.
+
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 
 Certificates get a presentation layer: a background library with three built-in backgrounds and a

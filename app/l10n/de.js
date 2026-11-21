@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "Patch-Management",
     "Sichere Architektur" : "Sichere Architektur",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)",
+    "Alle Erfolge anzeigen ({n})" : "Alle Erfolge anzeigen ({n})",
+    "Weniger anzeigen" : "Weniger anzeigen",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.",
 },
 "nplurals=2; plural=(n != 1);");

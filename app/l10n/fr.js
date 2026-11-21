@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "Gestion des correctifs",
     "Sichere Architektur" : "Architecture sécurisée",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Tentatives d’examen épuisées (pour les formateurs du cours)",
+    "Alle Erfolge anzeigen ({n})" : "Afficher toutes les réussites ({n})",
+    "Weniger anzeigen" : "Afficher moins",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Aucune réussite débloquée pour l’instant. Continue d’apprendre, la première arrive bientôt.",
 },
 "nplurals=2; plural=(n > 1);");

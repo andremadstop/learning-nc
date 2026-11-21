@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "Керування оновленнями",
     "Sichere Architektur" : "Безпечна архітектура",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Спроби іспиту вичерпано (для викладачів курсу)",
+    "Alle Erfolge anzeigen ({n})" : "Показати всі досягнення ({n})",
+    "Weniger anzeigen" : "Показати менше",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Ще немає відкритих досягнень. Продовжуй навчатися, перше вже скоро.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -4206,6 +4206,9 @@
         "Zugriffskontrolle": "Управление доступом",
         "Patch-Management": "Управление обновлениями",
         "Sichere Architektur": "Безопасная архитектура",
-        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)"
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)",
+        "Alle Erfolge anzeigen ({n})": "Показать все достижения ({n})",
+        "Weniger anzeigen": "Показать меньше",
+        "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "Пока нет открытых достижений. Продолжай учиться, первое скоро появится."
     }
 }

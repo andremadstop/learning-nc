@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "إدارة التحديثات الأمنية",
     "Sichere Architektur" : "البنية الآمنة",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "استُنفدت محاولات الاختبار (لمعلمي الدورة)",
+    "Alle Erfolge anzeigen ({n})" : "عرض كل الإنجازات ({n})",
+    "Weniger anzeigen" : "عرض أقل",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "لم تُفتح أي إنجازات بعد. واصل التعلّم، فالإنجاز الأول قادم قريبًا.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

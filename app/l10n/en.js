@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "Patch management",
     "Sichere Architektur" : "Secure architecture",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Exam attempts used up (for the course’s instructors)",
+    "Alle Erfolge anzeigen ({n})" : "Show all achievements ({n})",
+    "Weniger anzeigen" : "Show less",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "No achievements unlocked yet. Keep learning, the first one is coming soon.",
 },
 "nplurals=2; plural=(n != 1);");

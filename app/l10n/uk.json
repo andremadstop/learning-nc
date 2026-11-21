@@ -4206,6 +4206,9 @@
         "Zugriffskontrolle": "Керування доступом",
         "Patch-Management": "Керування оновленнями",
         "Sichere Architektur": "Безпечна архітектура",
-        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)"
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)",
+        "Alle Erfolge anzeigen ({n})": "Показати всі досягнення ({n})",
+        "Weniger anzeigen": "Показати менше",
+        "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "Ще немає відкритих досягнень. Продовжуй навчатися, перше вже скоро."
     }
 }

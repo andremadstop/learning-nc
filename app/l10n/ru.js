@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "Управление обновлениями",
     "Sichere Architektur" : "Безопасная архитектура",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Попытки экзамена исчерпаны (для преподавателей курса)",
+    "Alle Erfolge anzeigen ({n})" : "Показать все достижения ({n})",
+    "Weniger anzeigen" : "Показать меньше",
+    "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Пока нет открытых достижений. Продолжай учиться, первое скоро появится.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
