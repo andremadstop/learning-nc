@@ -9,6 +9,8 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 vi.hoisted(() => {
 	const fill = (text, vars) => (vars ? text.replace(/{(\w+)}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : text)
@@ -72,6 +74,10 @@ async function mount(component) {
 	await flush()
 	return vm
 }
+
+/** the spec generated from the controller signatures (scripts/openapi-spec.sh --check keeps it in sync) */
+const SPEC = JSON.parse(readFileSync(resolve(__dirname, '../../openapi.json'), 'utf8'))
+const operation = (path, verb) => SPEC.paths[`/index.php${path}`]?.[verb]
 
 const conflict = (error) => ({ response: { status: 409, data: { error } } })
 
@@ -137,6 +143,36 @@ describe.each(LIBRARIES)('the $what library against changes by another administr
 
 		const [, form] = axios.post.mock.calls.at(-1)
 		expect([...form.keys()].sort()).toEqual([file, 'name'].sort())
+	})
+
+	it('the keys sent are the ones the controller reads: body for the rename, query for the delete, none for the upload', async () => {
+		const vm = await library()
+		axios.put.mockResolvedValueOnce({ data: now })
+		await vm.rename(vm[key][0])
+		axios.delete.mockResolvedValueOnce({ data: { ...now, courses_reset: 0 } })
+		await vm.remove(vm[key][0])
+		await flush()
+
+		const renameBody = Object.keys(axios.put.mock.calls.at(-1)[1])
+		const renameSpec = operation(`${path}/{id}`, 'put')
+		const bodyKeys = Object.keys(renameSpec.requestBody.content['application/json'].schema.properties)
+		expect(renameBody).toContain('revision')
+		for (const sent of renameBody) {
+			expect(bodyKeys).toContain(sent)
+		}
+
+		const deleteParams = Object.keys(axios.delete.mock.calls.at(-1)[1].params)
+		const deleteSpec = operation(`${path}/{id}`, 'delete')
+		const queryKeys = deleteSpec.parameters.filter((p) => p.in === 'query').map((p) => p.name)
+		expect(deleteParams).toEqual(['revision'])
+		expect(queryKeys).toContain('revision')
+
+		const uploadSpec = operation(path, 'post')
+		const uploadKeys = [
+			...(uploadSpec.parameters || []).map((p) => p.name),
+			...Object.keys(uploadSpec.requestBody?.content?.['application/json']?.schema?.properties || {}),
+		]
+		expect(uploadKeys).not.toContain('revision')
 	})
 
 	it('a rename on a list changed since says so and shows the list as stored now', async () => {
