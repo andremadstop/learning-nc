@@ -62,8 +62,8 @@ All notable changes to this project will be documented in this file.
   offer French and Ukrainian as well. On PostgreSQL instances that were upgraded through 3.2,
   the database's language check on the translation tables is widened to the six languages by
   the update. The new messages of this release address the user informally in French, Russian
-  and Ukrainian as the rest of the app does (the note on pool fields not applied, the CSV
-  ambiguity warning).
+  and Ukrainian, like the certificate library messages of this release (the note on pool fields
+  not applied, the CSV ambiguity warning); older messages are unchanged.
 - **A new achievement shows at once** (Pre-existing). The user state behind Today and the
   achievement gallery is cached for 30 seconds and was only cleared when XP changed. An
   achievement that comes without XP (a RAG contribution, a finished coop simulator) stayed
