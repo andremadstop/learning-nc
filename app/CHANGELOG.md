@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## 5.18.0 – unreleased
+
+### Fixed
+- **CSV import: three misreadings found by the property tests** (#65), in the import and in its
+  preview alike. (1) A first question that mentions "question" and "answer" (or "Frage" and
+  "Antwort") is no longer dropped as a header: a header is a first row that names the columns
+  and does not itself import as a question. Real header rows, English and German, are still
+  skipped. (2) An unquoted `;` in an answer (`cd;ls;pwd`, as the CSV export writes it) no longer
+  switches the file to the `;` separator: the separator is the one under which more rows import
+  as questions; only on a tie does the old rule decide (more fields in the first question, comma
+  on a tie). (3) An explanation that is a number (`…,1,2`) stays the explanation: when the
+  second-last field is a valid answer number and that reading imports, it wins. With a header
+  that names the correct column (`correct`, `richtig`, `korrekt`, `solution`, `Lösung`) as its
+  last or second-last column, the number is read from that column for every row as wide as the
+  header. One reading changes on purpose: a file **without** a header whose last answer is a small
+  number and that has no explanation (`Q,a,b,1,2`) is now read as two answers, number 1,
+  explanation "2". Such a file needs a header row; the shipped examples have one and are read as
+  before.
+
+### Tests
+- A shared fixture records how both CSV readers read the shipped examples and 22 hand-written
+  files before the fix; the preview and `ImportController::importCsv` read all of them as
+  before. The three `it.fails` pins became normal tests, the property test no longer excludes
+  the header and separator cases, and PHPUnit covers each finding on the server.
+
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 
 Certificates get a presentation layer: a background library with three built-in backgrounds and a

@@ -1,17 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Comparison operation \"\\>\\=\" between int\\<2, max\\> and 2 is always true\\.$#"
-			count: 1
-			path: lib/Controller/ImportController.php
-
-		-
-			message: "#^Comparison operation \"\\>\\=\" between int\\<3, max\\> and 2 is always true\\.$#"
-			count: 1
-			path: lib/Controller/ImportController.php
-
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnswerMapper\\:\\:createOrUpdate\\(\\) should return OCA\\\\Learning\\\\Db\\\\Answer but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 2
 			path: lib/Db/AnswerMapper.php

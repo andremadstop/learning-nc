@@ -89,6 +89,76 @@ class ImportControllerCsvTest extends TestCase {
         $this->assertCount(502, $records);
     }
 
+    // ---------------------------------------------------------------------------------------
+    // GitHub #65: the three misreadings the property test found (importRoundtrip65.property.test.js)
+    // ---------------------------------------------------------------------------------------
+
+    /** @return list<array{text: string, answers: list<array{text: string, correct: bool}>, explanation: ?string}> */
+    private function stored(): array {
+        return array_map(fn ($q): array => ['text' => (string)$q->getText(), 'answers' => $this->storedAnswers($q), 'explanation' => $q->getExplanation()], $this->questions);
+    }
+
+    public function testAFirstQuestionThatMentionsQuestionAndAnswerIsNotDroppedAsAHeader(): void {
+        foreach ([
+            "Welche Antwort passt zur Frage?,A,B,1\nSecond,x,y,2\n",
+            "Which answer fits the question?,A,B,1\nSecond,x,y,2\n",
+            "Welche Antwort passt zur Frage?;A;B;1\nZweite;x;y;2\n",
+            "Explain question and answer.,A model answer,open\nSecond,x,y,2\n",
+        ] as $csv) {
+            $r = $this->importController()->importCsv(7, $csv);
+            $this->assertSame(2, $r->getData()['imported'] ?? null, $csv . json_encode($r->getData()));
+        }
+        $this->assertSame('Explain question and answer.', $this->questions[0]->getText());
+    }
+
+    public function testRealHeadersAreStillSkipped(): void {
+        foreach ([
+            "question,answer1,answer2,correct\nQ,a,b,1\n",
+            "Question,Answer 1,Answer 2,Answer 3,Correct\nQ,a,b,c,1\n",
+            "\xEF\xBB\xBFFrage;Antwort1;Antwort2;Korrekt\nQ;a;b;1\n",
+            "question_text;answer_a;answer_b;correct_answer\nQ;a;b;1\n",
+            "Frage ; Antwort A ; Antwort B ; Richtig ; Erklärung\nQ;a;b;1;Weil.\n",
+        ] as $csv) {
+            $r = $this->importController()->importCsv(7, $csv);
+            $this->assertSame(1, $r->getData()['imported'] ?? null, $csv . json_encode($r->getData()));
+            $this->assertSame([], $r->getData()['errors']);
+            $this->assertSame('Q', $this->questions[0]->getText());
+        }
+    }
+
+    public function testAnswersWithAnUnquotedSemicolonDoNotSwitchTheDelimiter(): void {
+        $r = $this->importController()->importCsv(7, "Which command lists /tmp?,cd;ls;pwd,id;w;who,1\nSecond,x,y,2\n");
+
+        $this->assertSame(2, $r->getData()['imported'] ?? null, json_encode($r->getData()));
+        $this->assertSame([['text' => 'cd;ls;pwd', 'correct' => true], ['text' => 'id;w;who', 'correct' => false]], $this->storedAnswers($this->questions[0]));
+    }
+
+    public function testTheDelimiterThatReadsMoreQuestionsWins(): void {
+        $r = $this->importController()->importCsv(7, "Was ist 1,2,3,4,5?;ja;nein;1\nZweite;a;b;2\n");
+
+        $this->assertSame(2, $r->getData()['imported'] ?? null, json_encode($r->getData()));
+        $this->assertSame('Was ist 1,2,3,4,5?', $this->questions[0]->getText());
+    }
+
+    public function testANumericExplanationStaysTheExplanation(): void {
+        $r = $this->importController()->importCsv(7, "How many usable hosts has a /30 network?,2,4,1,2\nSecond,x,y,2\n");
+
+        $this->assertSame(2, $r->getData()['imported'] ?? null, json_encode($r->getData()));
+        $this->assertSame(['text' => 'How many usable hosts has a /30 network?', 'answers' => [['text' => '2', 'correct' => true], ['text' => '4', 'correct' => false]], 'explanation' => '2'], $this->stored()[0]);
+    }
+
+    public function testAHeaderThatNamesTheCorrectColumnDecides(): void {
+        $this->importController()->importCsv(7, "question,answer1,answer2,answer3,correct\nQ,a,b,1,2\n");
+        $this->assertSame([['text' => 'Q', 'answers' => [['text' => 'a', 'correct' => false], ['text' => 'b', 'correct' => true], ['text' => '1', 'correct' => false]], 'explanation' => null]], $this->stored());
+
+        $this->importController()->importCsv(7, "Frage,Antwort 1,Antwort 2,Richtig,Erklärung\nQ,a,b,1,2\n");
+        $this->assertSame([['text' => 'Q', 'answers' => [['text' => 'a', 'correct' => true], ['text' => 'b', 'correct' => false]], 'explanation' => '2']], $this->stored());
+
+        // a record narrower or wider than the header is read without it
+        $this->importController()->importCsv(7, "question,answer1,answer2,answer3,correct\nQ,a,b,c,d,2\n");
+        $this->assertSame([false, true, false, false], array_column($this->storedAnswers($this->questions[0]), 'correct'));
+    }
+
     public function testATruncatedAnswerIsReportedAsAWarning(): void {
         $long = str_repeat('y', 2001);
         $r = $this->importController()->importCsv(7, "Q,{$long},b,1\nOpen?,{$long},open\n");

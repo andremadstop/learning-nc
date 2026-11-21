@@ -241,13 +241,17 @@ CI runs a fixed seed (`FC_SEED`, default 65065), so a red run can be reproduced.
 FC_SEED=<seed> FC_RUNS=5000 npx --prefix app vitest run tests/unit/importRoundtrip65.property.test.js
 ```
 
-**Known findings (open).** The CSV format has no column names, so the reader has to guess. The property found three cases where it guesses wrong on an export:
+**Findings (fixed in 5.18.0).** The CSV format needs no column names, so the reader has to guess. The property found three cases where it guessed wrong on an export:
 
-- A first question that mentions "question" and "answer" (or "Frage" and "Antwort") is dropped as a header.
-- Answers with an unquoted `;` (for example `cd;ls;pwd`) switch the reader to the `;` delimiter.
-- A numeric explanation (for example `2`) is read as the number of the correct answer.
+- A first question that mentions "question" and "answer" (or "Frage" and "Antwort") was dropped as a header. Now a header is a first record that names the columns **and does not itself import as a question**.
+- Answers with an unquoted `;` (for example `cd;ls;pwd`) switched the reader to the `;` delimiter. Now the delimiter is the one under which **more records import as questions**; only on a tie does the old rule decide (more fields in the first data record, comma on a tie).
+- A numeric explanation (for example `2`) was read as the number of the correct answer. Now "answers, number, explanation" wins when the second-last field is a valid number and that reading imports; with a header that names the correct column, the number comes from that column.
 
-Each case is excluded from the property by exactly its condition. Each is also pinned by an `it.fails` example, which turns red once the reader is fixed; then the exclusion and the example are removed.
+Each finding is a normal example test in the property file and in `ImportControllerCsvTest.php` (red on the old readers, verified). The property no longer excludes the header and delimiter cases.
+
+**Accepted ambiguity.** Without a header, "answers …, 1, number" and "answers …, number, explanation" are the same text: the export of `{answers: [a, b, "1"], correct: 2}` and of `{answers: [a, b], correct: 1, explanation: "2"}` are both `Q,a,b,1,2`. No reader can return both. The reader keeps the explanation, so the property excludes exactly the mirror case (no explanation, and the last answer is a number from 1 to the number of answers before it), and an example test pins that reading. The cure is on the writing side: an export with a header row that names the correct column (not done yet).
+
+**Regression fixture.** `app/tests/Fixtures/import-csv-regression.json` records how the readers read the shipped examples (`app/examples/*.csv`) and 22 hand-written CSV texts before the fix. `importCsvRegression.test.js` (preview) and `ImportCsvRegressionTest.php` (`ImportController::importCsv`) must read every one of them exactly as recorded. A deliberate change of a reading means changing the fixture in the same commit, with the reason in the commit message.
 
 ## Coverage reports
 

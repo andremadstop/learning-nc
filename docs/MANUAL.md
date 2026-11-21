@@ -392,9 +392,16 @@ What is H2O?,Water,open
 It takes options such as -l."
 ```
 
-`correct_number` is **1-based** (1 = first answer); the explanation is optional; a header
-row is detected and skipped; comma or semicolon as separator (whichever splits the first
-question into more fields). A field in double quotes may contain the separator and line
+`correct_number` is **1-based** (1 = first answer); the explanation is optional. A header
+row (a first row that names the columns, such as `question,answer1,…,correct,explanation` or
+`Frage;Antwort1;…;Richtig`, and is not itself a question) is skipped. If the header names the
+correct column (`correct`, `richtig`, `korrekt`, `solution`, `Lösung`) as its last or
+second-last column, the number is read from that column. Without a header, a row whose
+second-last field is a valid answer number is read as answers, number, explanation, so an
+explanation may be a number; a row like `Q,a,b,1,2` (last answer `1`, no explanation) is
+therefore read as two answers with explanation "2" — give such a file a header row. Comma or
+semicolon as separator: the one under which more rows can be imported; on a tie, the one that
+splits the first question into more fields. A field in double quotes may contain the separator and line
 breaks, and `""` stands for one quote character — the format spreadsheet programs write.
 A backslash is an ordinary character, also in front of a quote. "Line N" in the import
 report and the 500-question limit count questions, not physical lines; a header row does
