@@ -4155,5 +4155,7 @@ OC.L10N.register(
     "Patch-Management" : "Управление обновлениями",
     "Sichere Architektur" : "Безопасная архитектура",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Попытки экзамена исчерпаны (для преподавателей курса)",
+    "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut." : "Список тем временем изменился, например его изменил другой администратор. Он загружен заново. Проверь его и попробуй ещё раз.",
+    "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "Список сейчас изменяется в другом месте. Он загружен заново. Попробуй ещё раз через минуту.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

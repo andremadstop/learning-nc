@@ -4155,5 +4155,7 @@ OC.L10N.register(
     "Patch-Management" : "إدارة التحديثات الأمنية",
     "Sichere Architektur" : "البنية الآمنة",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "استُنفدت محاولات الاختبار (لمعلمي الدورة)",
+    "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut." : "تغيّرت القائمة في هذه الأثناء، مثلًا من قِبل شخص آخر لديه صلاحيات الإدارة. تمت إعادة تحميلها الآن. يُرجى مراجعتها ثم المحاولة مرة أخرى.",
+    "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "يجري تعديل القائمة في مكان آخر الآن. تمت إعادة تحميلها. يُرجى المحاولة مرة أخرى بعد قليل.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

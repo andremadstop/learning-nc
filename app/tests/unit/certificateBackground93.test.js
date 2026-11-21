@@ -347,7 +347,7 @@ describe('admin: the background library (GitHub #93)', () => {
 		host.querySelector(`[data-test="cert-background-confirm-delete-${A}"]`).click()
 		await flush()
 
-		expect(axios.delete).toHaveBeenCalledWith(`/apps/learning/api/settings/admin/cert-backgrounds/${A}`)
+		expect(axios.delete).toHaveBeenCalledWith(`/apps/learning/api/settings/admin/cert-backgrounds/${A}`, { params: { revision: '' } })
 		expect(host.querySelector(`[data-test="cert-background-${A}"]`)).toBeNull()
 		expect(host.querySelector('[data-test="cert-background-library-status"]').textContent.trim()).toBe('„Gold frame“ wurde gelöscht. 3 Kurse haben jetzt keinen Hintergrund mehr.')
 	})

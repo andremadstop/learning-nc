@@ -169,9 +169,23 @@ export function logoErrorMessage(code, max = 20) {
 		return t('learning', 'Bitte einen Namen mit höchstens 80 Zeichen eingeben.')
 	case 'no_file':
 		return t('learning', 'Es ist keine Datei angekommen. Bitte erneut versuchen.')
+	case 'library_changed':
+		return t('learning', 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut.')
+	case 'library_busy':
+		return t('learning', 'Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.')
 	default:
 		return t('learning', 'Das Logo konnte nicht hochgeladen werden.')
 	}
+}
+
+/**
+ * GitHub #102: the answers (409) to a change made on a list that is no longer the one stored:
+ * the list is loaded again, nothing is retried or overwritten.
+ * @param {string} code - the error code of the answer
+ * @return {boolean}
+ */
+export function isLibraryConflict(code) {
+	return code === 'library_changed' || code === 'library_busy'
 }
 
 export default {
@@ -196,6 +210,8 @@ export default {
 			newName: '',
 			uploadError: '',
 			status: '',
+			/** GitHub #102: the revision of the list shown, sent back with a rename or delete */
+			revision: '',
 			nameMax: NAME_MAX,
 			limitsId: 'cert-logo-library-limits',
 		}
@@ -219,6 +235,7 @@ export default {
 		apply(data) {
 			this.logos = Array.isArray(data?.logos) ? data.logos.filter((logo) => typeof logo?.id === 'string') : []
 			this.max = Number.isInteger(data?.max) ? data.max : this.max
+			this.revision = typeof data?.revision === 'string' ? data.revision : ''
 			const names = {}
 			for (const logo of this.logos) {
 				names[logo.id] = logo.name
@@ -304,7 +321,11 @@ export default {
 				this.newName = ''
 				this.status = t('learning', '„{title}“ wurde hinzugefügt.', { title: name }, undefined, RAW)
 			} catch (e) {
-				this.uploadError = logoErrorMessage(e?.response?.data?.error, this.max)
+				const code = e?.response?.data?.error
+				this.uploadError = logoErrorMessage(code, this.max)
+				if (isLibraryConflict(code)) {
+					await this.load()
+				}
 			} finally {
 				this.busy = false
 			}
@@ -314,10 +335,15 @@ export default {
 			this.busy = true
 			this.status = ''
 			try {
-				this.apply(await renameLibraryLogo(logo.id, (this.names[logo.id] || '').trim()))
+				this.apply(await renameLibraryLogo(logo.id, (this.names[logo.id] || '').trim(), this.revision))
 				this.status = t('learning', 'Name gespeichert.')
 			} catch (e) {
-				this.status = logoErrorMessage(e?.response?.data?.error, this.max)
+				const code = e?.response?.data?.error
+				this.status = logoErrorMessage(code, this.max)
+				if (isLibraryConflict(code)) {
+					// shown as stored now; the name typed belonged to the list that is gone
+					await this.load()
+				}
 			} finally {
 				this.busy = false
 			}
@@ -327,7 +353,7 @@ export default {
 			this.busy = true
 			this.status = ''
 			try {
-				const data = await deleteLibraryLogo(logo.id)
+				const data = await deleteLibraryLogo(logo.id, this.revision)
 				this.apply(data)
 				this.confirming = ''
 				const reset = Number(data?.courses_reset) || 0
@@ -335,7 +361,11 @@ export default {
 					? n('learning', '„{title}“ wurde gelöscht. %n Kurs trägt jetzt wieder das Logo dieser Nextcloud.', '„{title}“ wurde gelöscht. %n Kurse tragen jetzt wieder das Logo dieser Nextcloud.', reset, { title: logo.name }, RAW)
 					: t('learning', '„{title}“ wurde gelöscht.', { title: logo.name }, undefined, RAW)
 			} catch (e) {
-				this.status = t('learning', 'Das Logo konnte nicht gelöscht werden.')
+				const code = e?.response?.data?.error
+				if (isLibraryConflict(code)) {
+					this.confirming = ''
+				}
+				this.status = isLibraryConflict(code) ? logoErrorMessage(code, this.max) : t('learning', 'Das Logo konnte nicht gelöscht werden.')
 				this.load()
 			} finally {
 				this.busy = false

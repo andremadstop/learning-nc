@@ -4155,5 +4155,7 @@ OC.L10N.register(
     "Patch-Management" : "Patch management",
     "Sichere Architektur" : "Secure architecture",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Exam attempts used up (for the course’s instructors)",
+    "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut." : "The list has changed in the meantime, for example by another administrator. It has now been reloaded. Please check it and then try again.",
+    "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "The list is being changed elsewhere right now. It has now been reloaded. Please try again in a moment.",
 },
 "nplurals=2; plural=(n != 1);");

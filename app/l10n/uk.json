@@ -4206,6 +4206,8 @@
         "Zugriffskontrolle": "Керування доступом",
         "Patch-Management": "Керування оновленнями",
         "Sichere Architektur": "Безпечна архітектура",
-        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)"
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)",
+        "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut.": "Список тим часом змінився, наприклад його змінив інший адміністратор. Його завантажено знову. Перевір його й спробуй ще раз.",
+        "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.": "Список зараз змінюється в іншому місці. Його завантажено знову. Спробуй ще раз за хвилину."
     }
 }
