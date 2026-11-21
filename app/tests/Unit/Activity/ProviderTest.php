@@ -407,6 +407,22 @@ class ProviderTest extends TestCase {
         }
     }
 
+    /**
+     * Pre-existing (security review 5.17.0): a former member must not see an announcement's title
+     * as it is now. It is read when rendered, so a title given after they left would leak; for a
+     * course the reader no longer reaches the title is not read at all.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('unreachable')]
+    public function testAnAnnouncementOfACourseTheReaderNoLongerReachesShowsNoTitle(string $reader, string $which): void {
+        $courseId = (int)substr($which, strlen('course_id '));
+        $db = null;
+        $parsed = $this->render('feed_announcement', ['course_id' => $courseId, 'course_title' => 'Brandschutz', 'announcement_id' => 4], $reader, $this->makeProvider([['title' => 'Neuer Titel nach dem Austritt']], $db));
+        $this->assertSame('Neue Ankündigung im Kurs Brandschutz', $parsed['subject']);
+        $this->assertArrayNotHasKey('announcement', $parsed['richParams'] ?? []);
+        $reads = array_filter($db->issuedBuilders, fn ($qb) => ($qb->from['table'] ?? null) === 'learning_course_announcements');
+        $this->assertSame([], array_values($reads), 'the title is not read for a reader outside the course');
+    }
+
     public function testTheCourseLeaderReachesTheCourseWithoutAMembership(): void {
         $parsed = $this->render('certificate_issued', ['course_id' => 7, 'course_title' => 'Brandschutz'], 'teacher');
         $this->assertSame('https://nc.example/apps/learning/courses/7/summary', $parsed['richParams']['course']['link']);

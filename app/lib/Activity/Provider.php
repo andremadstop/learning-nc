@@ -142,7 +142,9 @@ class Provider implements IProvider {
             case ActivityPublisher::SUBJECT_FEED_ANNOUNCEMENT:
                 // GitHub #85 (review): the current title, or none once the announcement is gone.
                 $announcementId = (int)($params['announcement_id'] ?? 0);
-                $title = $this->announcementTitle($courseId, $announcementId);
+                // Read now, so only for a reader still in the course: a former member must not
+                // see a title given after they left (security review 5.17.0).
+                $title = $reachable ? $this->announcementTitle($courseId, $announcementId) : null;
                 // The feed, not the announcements tab: learners (the main recipients) only have
                 // the feed, which shows the announcement; the announcements tab is instructor-only.
                 $feed = $this->courseLink($courseId, 'feed', $reachable);
