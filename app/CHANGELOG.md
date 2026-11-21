@@ -26,7 +26,7 @@ All notable changes to this project will be documented in this file.
   read as before.
 
 ### Tests
-- A shared fixture records how both CSV readers read the shipped examples and 22 hand-written
+- A shared fixture records how both CSV readers read the shipped examples and 30 hand-written
   files before the fix; the preview and `ImportController::importCsv` read all of them as
   before. The three `it.fails` pins became normal tests, the property test no longer excludes
   the header and separator cases and asserts the ambiguity warning instead of skipping that case, and PHPUnit covers each finding on the server.
