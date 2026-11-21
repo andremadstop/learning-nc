@@ -982,7 +982,7 @@ Two independent language layers exist — this distinction matters:
 | Layer | What it covers | Where it lives |
 |-------|----------------|----------------|
 | **Interface language** | buttons, labels, menus | `app/l10n/<lang>.json` + `.js` |
-| **Content language** | optional parallel translations *of your questions* | database, currently `de`, `en`, `ru`, `ar` |
+| **Content language** | optional parallel translations *of your questions* | database, `de`, `en`, `fr`, `ru`, `ar`, `uk` |
 
 **You can write questions in any language, including Ukrainian, right now.** The content
 language layer is only for maintaining *parallel translations* of the same question. A
