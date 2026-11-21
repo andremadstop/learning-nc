@@ -4209,6 +4209,7 @@
         "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)",
         "Alle Erfolge anzeigen ({n})": "Показати всі досягнення ({n})",
         "Weniger anzeigen": "Показати менше",
-        "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "Ще немає відкритих досягнень. Продовжуй навчатися, перше вже скоро."
+        "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.": "Ще немає відкритих досягнень. Продовжуй навчатися, перше вже скоро.",
+        "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.": "Не вдалося завантажити досягнення. Онови сторінку, щоб спробувати ще раз."
     }
 }

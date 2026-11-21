@@ -14,15 +14,20 @@ vi.hoisted(() => {
 	globalThis.t = (_app, text, vars = {}) => Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(String(v)), String(text))
 })
 
-const state = vi.hoisted(() => ({ badges: [] }))
+const state = vi.hoisted(() => ({ badges: [], failing: [] }))
 
 vi.mock('@nextcloud/axios', () => ({
 	default: {
-		get: vi.fn((url) => Promise.resolve({
-			data: url.includes('user/state')
-				? { streak: { current_streak: 2 }, xp: { level: 3 }, daily_progress: {}, badges: state.badges }
-				: {},
-		})),
+		get: vi.fn((url) => {
+			if (state.failing.some((part) => url.includes(part))) {
+				return Promise.reject(new Error('Request failed with status code 500'))
+			}
+			return Promise.resolve({
+				data: url.includes('user/state')
+					? { streak: { current_streak: 2 }, xp: { level: 3 }, daily_progress: {}, badges: state.badges }
+					: {},
+			})
+		}),
 		post: vi.fn(() => Promise.resolve({ data: {} })),
 	},
 }))
@@ -59,13 +64,14 @@ async function flush() {
 	}
 }
 
-let host, app
+let host, app, dashboard
 
 async function render(props) {
 	host = document.createElement('div')
 	document.body.appendChild(host)
 	const reactiveProps = reactive({ ...props })
-	app = createApp({ render: () => h(StudentDashboard, reactiveProps) })
+	dashboard = null
+	app = createApp({ render: () => h(StudentDashboard, { ...reactiveProps, ref: (vm) => { dashboard = vm } }) })
 	app.config.globalProperties.t = globalThis.t
 	app.config.warnHandler = () => {}
 	app.mount(host)
@@ -75,7 +81,9 @@ async function render(props) {
 
 beforeEach(() => {
 	state.badges = []
+	state.failing = []
 	axios.get.mockClear()
+	document.activeElement?.blur?.()
 })
 
 afterEach(() => {
@@ -84,6 +92,16 @@ afterEach(() => {
 	app = null
 	host = null
 })
+
+/** Every GET Today makes on mount; the achievements add none of their own. */
+const LOAD_URLS = [
+	'/apps/learning/api/courses',
+	'/apps/learning/api/leitner/queue/count',
+	'/apps/learning/api/leitner/remediation/count',
+	'/apps/learning/api/maintenance/stats',
+	'/apps/learning/api/v1/user/state',
+]
+const requestedUrls = () => axios.get.mock.calls.map(([url]) => url).sort()
 
 const names = () => Array.from(host.querySelectorAll('.achievement-name')).map((el) => el.textContent.trim())
 
@@ -122,8 +140,10 @@ describe('Today shows the achievements (GitHub #101)', () => {
 		expect(section.querySelectorAll('ul.achievements-list > li')).toHaveLength(2)
 		expect(names()).toEqual(['Badge newest', 'Badge first'])
 		expect(section.querySelector('.achievement-date').textContent.trim()).toBe(new Date(1800000000 * 1000).toLocaleDateString())
-		const urls = axios.get.mock.calls.map(([url]) => url)
-		expect(urls.filter((url) => url.includes('/api/badges'))).toEqual([])
+		expect(section.querySelector('.achievements-empty')).toBeNull()
+		expect(section.querySelector('.achievements-error')).toBeNull()
+		// No request of its own: exactly the loads Today made before, user state once.
+		expect(requestedUrls()).toEqual(LOAD_URLS)
 	})
 
 	it('shows six until "show all", which expands and collapses again', async () => {
@@ -149,17 +169,64 @@ describe('Today shows the achievements (GitHub #101)', () => {
 		await render({})
 		expect(host.querySelector('.achievements-toggle')).toBeNull()
 		expect(host.querySelector('.achievements-list')).toBeNull()
-		expect(host.querySelector('.achievements-empty').textContent).toMatch(/Noch keine Erfolge/)
+		expect(host.querySelector('.achievements-error')).toBeNull()
+		expect(host.querySelector('.achievements-empty').textContent.trim())
+			.toBe('Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.')
 	})
 
-	it('shows nothing and asks for no badges with gamification off', async () => {
+	it('shows nothing, keeps no badges and adds no request with gamification off', async () => {
 		state.badges = [badge('newest', 1800000000)]
 		await render({ gamificationEnabled: false, focusSection: ACHIEVEMENTS_SECTION })
+		// The other widgets are there, so an empty page cannot pass this test.
+		expect(host.querySelector('.widget-progress')).not.toBeNull()
 		expect(host.querySelector('.widget-achievements')).toBeNull()
 		expect(host.querySelector('#dashboard-achievements-heading')).toBeNull()
-		const urls = axios.get.mock.calls.map(([url]) => url)
-		expect(urls.filter((url) => url.includes('/api/badges'))).toEqual([])
-		expect(document.activeElement === document.body || document.activeElement === null).toBe(true)
+		expect(host.textContent).not.toContain('Badge newest')
+		// The user state is still loaded (daily progress needs it), but its badges are dropped.
+		expect(requestedUrls()).toEqual(LOAD_URLS)
+		expect(dashboard.badges).toEqual([])
+		expect(document.activeElement).toBe(document.body)
+	})
+})
+
+describe('a failed user state is not "no achievements" (GitHub #101)', () => {
+	it('says the achievements could not be loaded instead of the friendly empty state', async () => {
+		state.badges = [badge('newest', 1800000000)]
+		state.failing = ['user/state']
+		await render({})
+		const section = host.querySelector('section.widget-achievements')
+		expect(section).not.toBeNull()
+		const error = section.querySelector('.achievements-error')
+		expect(error).not.toBeNull()
+		expect(error.getAttribute('role')).toBe('status')
+		expect(error.textContent.trim())
+			.toBe('Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.')
+		expect(section.querySelector('.achievements-empty')).toBeNull()
+		expect(section.querySelector('.achievements-list')).toBeNull()
+		expect(section.querySelector('.achievements-toggle')).toBeNull()
+	})
+
+	it('leaves the other widgets as optional as before: they render with their defaults', async () => {
+		state.failing = ['user/state']
+		await render({})
+		expect(host.querySelector('.loading-container')).toBeNull()
+		expect(host.querySelector('.streak-number').textContent.trim()).toBe('0')
+		expect(host.querySelector('.widget-progress')).not.toBeNull()
+		expect(host.querySelector('.widget-smartqueue')).not.toBeNull()
+	})
+
+	it('another failing widget request does not turn the achievements into an error', async () => {
+		state.failing = ['queue/count', 'remediation/count', 'courses', 'maintenance/stats']
+		await render({})
+		expect(host.querySelector('.achievements-error')).toBeNull()
+		expect(host.querySelector('.achievements-empty')).not.toBeNull()
+	})
+
+	it('with gamification off a failed user state shows no achievements error either', async () => {
+		state.failing = ['user/state']
+		await render({ gamificationEnabled: false })
+		expect(host.querySelector('.widget-achievements')).toBeNull()
+		expect(host.querySelector('.achievements-error')).toBeNull()
 	})
 })
 
@@ -185,7 +252,7 @@ describe('the activity link lands on the section (GitHub #101)', () => {
 		state.badges = [badge('newest', 1800000000)]
 		const props = await render({})
 		const heading = host.querySelector('#dashboard-achievements-heading')
-		expect(document.activeElement).not.toBe(heading)
+		expect(document.activeElement).toBe(document.body)
 		props.focusSection = ACHIEVEMENTS_SECTION
 		await flush()
 		expect(document.activeElement).toBe(heading)

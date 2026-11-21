@@ -4158,5 +4158,6 @@ OC.L10N.register(
     "Alle Erfolge anzeigen ({n})" : "Afficher toutes les réussites ({n})",
     "Weniger anzeigen" : "Afficher moins",
     "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Aucune réussite débloquée pour l’instant. Continue d’apprendre, la première arrive bientôt.",
+    "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Impossible de charger tes réussites. Recharge la page pour réessayer.",
 },
 "nplurals=2; plural=(n > 1);");

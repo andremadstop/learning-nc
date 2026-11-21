@@ -7,7 +7,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **Achievements on Today** (#101). With gamification on, Today has an achievements section: the
   unlocked achievements, most recently unlocked first, six at a time with "Show all achievements"
-  to unfold the rest, and a friendly line while there are none yet. The activity "Achievement
+  to unfold the rest right there (there is no app-wide achievement gallery to link to; the one in
+  a pool's statistics belongs to that pool), and a friendly line while there are none yet. If the
+  user state cannot be loaded, the section says so instead of claiming there are no achievements;
+  the other widgets of Today stay optional as before. The activity "Achievement
   unlocked" (stream and email) now opens exactly this section (`/dashboard?section=achievements`):
   Today scrolls there and moves the keyboard focus to its heading. The list comes from the user
   state Today already loads, so the section costs no extra request; with gamification off it is

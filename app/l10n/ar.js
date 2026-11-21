@@ -4158,5 +4158,6 @@ OC.L10N.register(
     "Alle Erfolge anzeigen ({n})" : "عرض كل الإنجازات ({n})",
     "Weniger anzeigen" : "عرض أقل",
     "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "لم تُفتح أي إنجازات بعد. واصل التعلّم، فالإنجاز الأول قادم قريبًا.",
+    "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "تعذّر تحميل الإنجازات. أعد تحميل الصفحة للمحاولة مرة أخرى.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

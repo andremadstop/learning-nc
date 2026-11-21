@@ -4158,5 +4158,6 @@ OC.L10N.register(
     "Alle Erfolge anzeigen ({n})" : "Показати всі досягнення ({n})",
     "Weniger anzeigen" : "Показати менше",
     "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Ще немає відкритих досягнень. Продовжуй навчатися, перше вже скоро.",
+    "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Не вдалося завантажити досягнення. Онови сторінку, щоб спробувати ще раз.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

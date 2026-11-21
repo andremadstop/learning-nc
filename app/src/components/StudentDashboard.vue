@@ -144,6 +144,10 @@
             <span class="achievement-date">{{ badgeDate(badge) }}</span>
           </li>
         </ul>
+        <!-- A failed user-state request is not "no achievements yet": say so instead. -->
+        <p v-else-if="badgesLoadFailed" class="achievements-error" role="status">
+          {{ t('learning', 'Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.') }}
+        </p>
         <p v-else class="achievements-empty">
           {{ t('learning', 'Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.') }}
         </p>
@@ -227,6 +231,7 @@ export default {
       enrolledCourses: [],
       selectedTimelineCourse: null,
       badges: [],
+      badgesLoadFailed: false,
       showAllBadges: false,
       recentBadgeLimit: RECENT_BADGE_LIMIT,
       userState: {
@@ -356,7 +361,12 @@ export default {
         }
         // GitHub #101: the badges are part of the same answer; no request of their own.
         this.badges = this.gamificationEnabled && Array.isArray(r.data.badges) ? r.data.badges : []
-      } catch (e) { /* optional */ }
+        this.badgesLoadFailed = false
+      } catch (e) {
+        // Streak, level and progress stay optional (their defaults); only the achievements
+        // section says the list is missing, instead of claiming there are none yet.
+        this.badgesLoadFailed = true
+      }
     },
 
     async loadMaintenanceStats() {
@@ -832,6 +842,11 @@ export default {
 .achievements-empty {
   margin: 0;
   color: var(--color-text-maxcontrast);
+}
+
+.achievements-error {
+  margin: 0;
+  color: var(--color-error-text, var(--color-error));
 }
 
 .dashboard-timeline-section {

@@ -4158,5 +4158,6 @@ OC.L10N.register(
     "Alle Erfolge anzeigen ({n})" : "Show all achievements ({n})",
     "Weniger anzeigen" : "Show less",
     "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "No achievements unlocked yet. Keep learning, the first one is coming soon.",
+    "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Your achievements could not be loaded. Reload the page to try again.",
 },
 "nplurals=2; plural=(n != 1);");

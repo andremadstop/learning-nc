@@ -4158,5 +4158,6 @@ OC.L10N.register(
     "Alle Erfolge anzeigen ({n})" : "Alle Erfolge anzeigen ({n})",
     "Weniger anzeigen" : "Weniger anzeigen",
     "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald." : "Noch keine Erfolge freigeschaltet. Lern einfach weiter, der erste kommt bald.",
+    "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen.",
 },
 "nplurals=2; plural=(n != 1);");
