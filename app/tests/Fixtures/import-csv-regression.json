@@ -1627,6 +1627,56 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "header in the open-question form, comma",
+			"csv": "question,model_answer,open\nExplain DNS.,Name resolution,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Explain DNS.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Name resolution",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, German, semicolon",
+			"csv": "Frage;Musterantwort;open\nErkl\u00e4re DNS.;Namensaufl\u00f6sung;open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Erkl\u00e4re DNS.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
 		}
 	]
 }

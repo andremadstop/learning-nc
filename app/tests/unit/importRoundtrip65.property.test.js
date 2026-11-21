@@ -140,6 +140,9 @@ describe('CSV export -> import: the three findings of the property (GitHub #65)'
 		expect(exported({ text: 'Which answer fits the question?', answers: [{ text: 'A' }, { text: 'B' }], correct: 1, explanation: null }).items).toHaveLength(2)
 		expect(analyzeCsvImport('Welche Antwort passt zur Frage?;A;B;1\nZweite;x;y;2\n').items.map((i) => i.question.text)).toEqual(['Welche Antwort passt zur Frage?', 'Zweite'])
 		expect(analyzeCsvImport('Explain question and answer.,A model answer,open\nSecond,x,y,2\n').items).toHaveLength(2)
+		// a header in the open-question form (the manual's `question,model_answer,open`) is still a header
+		expect(analyzeCsvImport('question,model_answer,open\nExplain DNS.,Name resolution,open\n').items.map((i) => i.question.text)).toEqual(['Explain DNS.'])
+		expect(analyzeCsvImport('Fragetext;Musterantwort;OPEN\nErkläre DNS.;Namensauflösung;open\n').items.map((i) => i.question.text)).toEqual(['Erkläre DNS.'])
 	})
 	it('2. answers with an unquoted ";" do not switch the reader to the ";" delimiter', () => {
 		const r = exported({ text: 'Which command lists /tmp?', answers: [{ text: 'cd;ls;pwd' }, { text: 'id;w;who' }], correct: 0, explanation: null })

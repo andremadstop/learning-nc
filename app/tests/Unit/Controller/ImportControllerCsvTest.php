@@ -118,6 +118,8 @@ class ImportControllerCsvTest extends TestCase {
             "\xEF\xBB\xBFFrage;Antwort1;Antwort2;Korrekt\nQ;a;b;1\n",
             "question_text;answer_a;answer_b;correct_answer\nQ;a;b;1\n",
             "Frage ; Antwort A ; Antwort B ; Richtig ; Erklärung\nQ;a;b;1;Weil.\n",
+            "question,model_answer,open\nQ,A model answer,open\n",
+            "Fragetext;Musterantwort;OPEN\nQ;Eine Musterantwort;open\n",
         ] as $csv) {
             $r = $this->importController()->importCsv(7, $csv);
             $this->assertSame(1, $r->getData()['imported'] ?? null, $csv . json_encode($r->getData()));

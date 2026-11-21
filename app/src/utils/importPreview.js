@@ -828,13 +828,23 @@ function csvMentionsColumns(fields) {
 		|| (line.includes('frage') && line.includes('antwort'))
 }
 
+/** First-column names of a header in the open-question form (`question,model_answer,open`). */
+const OPEN_HEADER_FIRST_COLUMNS = ['question', 'question_text', 'frage', 'fragetext']
+
 /**
  * isCsvHeader(): a first record that names the columns and does not itself import as a
  * question. A question that mentions "question" and "answer" (or "Frage" and "Antwort") has a
  * correct-answer number or is an open question, so it is read, not dropped (GitHub #65).
+ * Exception: the open-question form with a bare column name in front
+ * (`question,model_answer,open`, as the manual writes it) stays a header.
  */
 function isCsvHeader(fields) {
-	return csvMentionsColumns(fields) && csvRecord(fields).error !== undefined
+	if (!csvMentionsColumns(fields)) {
+		return false
+	}
+	const record = csvRecord(fields)
+	return record.error !== undefined
+		|| (record.type === 'open' && OPEN_HEADER_FIRST_COLUMNS.includes(asciiLower(record.text)))
 }
 
 /** A header column that holds the number of the correct answer (correct, richtig, korrekt, solution, Lösung). */
