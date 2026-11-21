@@ -78,10 +78,9 @@ class Provider implements IProvider {
             case ActivityPublisher::SUBJECT_BADGE_EARNED:
                 $badgeName = (string)($params['badge_name'] ?? '');
                 $badgeEmoji = (string)($params['badge_emoji'] ?? '');
-                // Opens Today (/dashboard: streak, level). No page lists the achievements app-wide
-                // (only a pool's statistics and a course summary), and the event names no pool or
-                // course; where it should lead is an open decision.
-                $dashboard = rtrim($this->appUrl(), '/') . '/dashboard';
+                // GitHub #101: opens the achievements section on Today, which lists the reader's
+                // unlocked achievements (most recent first) and moves the focus to it.
+                $dashboard = rtrim($this->appUrl(), '/') . '/dashboard?section=achievements';
                 $badge = ['badge' => $this->highlight((string)$event->getObjectName(), $badgeName, $dashboard)];
                 if ($badgeEmoji !== '') {
                     $badge = ['emoji' => $this->highlight('emoji', $badgeEmoji, null)] + $badge;
