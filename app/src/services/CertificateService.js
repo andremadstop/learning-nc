@@ -179,20 +179,24 @@ export async function uploadLibraryLogo(name, file) {
 /**
  * @param {string} id — the logo's id
  * @param {string} name — the new name
+ * @param {string} revision — the `revision` of the list the name was changed in (GitHub #102);
+ *   a list changed since is refused with 409 library_changed
  * @return {Promise<object>} the library
  */
-export async function renameLibraryLogo(id, name) {
-	const response = await axios.put(generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}', { id }), { name })
+export async function renameLibraryLogo(id, name, revision) {
+	const response = await axios.put(generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}', { id }), { name, revision })
 	return response.data
 }
 
 /**
  * GitHub #78: delete a library logo. Courses that use it go back to the Theming logo.
  * @param {string} id — the logo's id
+ * @param {string} revision — the `revision` of the list the logo was deleted from (GitHub #102),
+ *   as a query parameter; a list changed since is refused with 409 library_changed
  * @return {Promise<object>} the library, plus `courses_reset`
  */
-export async function deleteLibraryLogo(id) {
-	const response = await axios.delete(generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}', { id }))
+export async function deleteLibraryLogo(id, revision) {
+	const response = await axios.delete(generateUrl('/apps/learning/api/settings/admin/cert-logos/{id}', { id }), { params: { revision } })
 	return response.data
 }
 
@@ -262,20 +266,24 @@ export async function uploadLibraryBackground(name, file) {
 /**
  * @param {string} id — the background's id
  * @param {string} name — the new name
+ * @param {string} revision — the `revision` of the list the name was changed in (GitHub #102);
+ *   a list changed since is refused with 409 library_changed
  * @return {Promise<object>} the library
  */
-export async function renameLibraryBackground(id, name) {
-	const response = await axios.put(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}', { id }), { name })
+export async function renameLibraryBackground(id, name, revision) {
+	const response = await axios.put(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}', { id }), { name, revision })
 	return response.data
 }
 
 /**
  * GitHub #93: delete a library background. Courses that use it get no background.
  * @param {string} id — the background's id
+ * @param {string} revision — the `revision` of the list the background was deleted from (GitHub #102),
+ *   as a query parameter; a list changed since is refused with 409 library_changed
  * @return {Promise<object>} the library, plus `courses_reset`
  */
-export async function deleteLibraryBackground(id) {
-	const response = await axios.delete(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}', { id }))
+export async function deleteLibraryBackground(id, revision) {
+	const response = await axios.delete(generateUrl('/apps/learning/api/settings/admin/cert-backgrounds/{id}', { id }), { params: { revision } })
 	return response.data
 }
 

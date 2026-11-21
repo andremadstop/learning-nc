@@ -270,7 +270,7 @@ describe('admin: the logo library (GitHub #78)', () => {
 		host.querySelector(`[data-test="cert-logo-confirm-delete-${A}"]`).click()
 		await flush()
 
-		expect(axios.delete).toHaveBeenCalledWith(`/apps/learning/api/settings/admin/cert-logos/${A}`)
+		expect(axios.delete).toHaveBeenCalledWith(`/apps/learning/api/settings/admin/cert-logos/${A}`, { params: { revision: '' } })
 		expect(host.querySelector(`[data-test="cert-logo-${A}"]`)).toBeNull()
 		expect(host.querySelector('[data-test="cert-logo-library-status"]').textContent.trim()).toBe('„Primary“ wurde gelöscht. 2 Kurse tragen jetzt wieder das Logo dieser Nextcloud.')
 	})

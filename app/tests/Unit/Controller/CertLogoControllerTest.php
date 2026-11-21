@@ -6,7 +6,9 @@ namespace OCA\Learning\Tests\Unit\Controller;
 use OCA\Learning\Controller\CertLayoutController;
 use OCA\Learning\Controller\CertLogoController;
 use OCA\Learning\Db\Course;
+use OCA\Learning\Service\CertImageLibrary;
 use OCA\Learning\Service\CertLayoutService;
+use OCA\Learning\Service\CertLibraryConflictException;
 use OCA\Learning\Service\CertLogoLibrary;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
@@ -123,12 +125,12 @@ class CertLogoControllerTest extends TestCase {
 
     public function testDeletingAUsedLogoResetsItsCourses(): void {
         $library = $this->createMock(CertLogoLibrary::class);
-        $library->expects($this->once())->method('delete')->with(self::ID);
+        $library->expects($this->once())->method('delete')->with(self::ID, 'seen-revision');
         $library->method('list')->willReturn([]);
         $layouts = $this->createMock(CertLayoutService::class);
         $layouts->expects($this->once())->method('resetLogo')->with(self::ID)->willReturn(3);
 
-        $response = $this->controller(true, $library, $layouts)->delete(self::ID);
+        $response = $this->controller(true, $library, $layouts)->delete(self::ID, 'seen-revision');
 
         $this->assertSame(3, $response->getData()['courses_reset']);
     }
@@ -199,5 +201,48 @@ class CertLogoControllerTest extends TestCase {
 
         $this->assertSame(400, $response->getStatus());
         $this->assertSame(['error' => 'logo_not_found'], $response->getData());
+    }
+
+    /** GitHub #102: the revision the page saw reaches the library; the answer carries the new one. */
+    public function testRenameHandsTheSeenRevisionToTheLibrary(): void {
+        $entry = ['id' => self::ID, 'name' => 'New name', 'mime' => 'image/png', 'size' => 9, 'created_at' => 1, 'reencoded' => true];
+        $library = $this->createMock(CertLogoLibrary::class);
+        $library->expects($this->once())->method('rename')->with(self::ID, 'New name', 'seen-revision');
+        $library->method('list')->willReturn([$entry]);
+
+        $response = $this->controller(true, $library)->rename(self::ID, 'New name', 'seen-revision');
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(CertImageLibrary::revisionOf([$entry]), $response->getData()['revision']);
+    }
+
+    /** GitHub #102: a change to a list changed since is a 409 with its own code, nothing is changed. */
+    public function testAChangeOnAChangedListIsAConflict(): void {
+        $library = $this->createMock(CertLogoLibrary::class);
+        $library->method('rename')->willThrowException(new CertLibraryConflictException(CertLibraryConflictException::CHANGED));
+        $library->method('delete')->willThrowException(new CertLibraryConflictException(CertLibraryConflictException::CHANGED));
+        $layouts = $this->createMock(CertLayoutService::class);
+        $layouts->expects($this->never())->method('resetLogo');
+        $controller = $this->controller(true, $library, $layouts);
+
+        $rename = $controller->rename(self::ID, 'Other', 'old-revision');
+        $this->assertSame(409, $rename->getStatus());
+        $this->assertSame(['error' => 'library_changed'], $rename->getData());
+
+        $delete = $controller->delete(self::ID, 'old-revision');
+        $this->assertSame(409, $delete->getStatus());
+        $this->assertSame(['error' => 'library_changed'], $delete->getData());
+    }
+
+    /** GitHub #102: an upload that waited too long for another change is a 409, not an internal error. */
+    public function testABusyLibraryRefusesAnUploadWithAConflict(): void {
+        $library = $this->createMock(CertLogoLibrary::class);
+        $library->method('add')->willThrowException(new CertLibraryConflictException(CertLibraryConflictException::BUSY));
+        $png = (string)base64_decode(CertLogoLibraryTest::PNG);
+
+        $response = $this->controller(true, $library, null, $this->upload($png))->upload('Name');
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame(['error' => 'library_busy'], $response->getData());
     }
 }

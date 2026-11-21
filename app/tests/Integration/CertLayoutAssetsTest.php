@@ -171,7 +171,7 @@ final class CertLayoutAssetsTest extends TestCase {
             $this->assertNotNull($issued);
             $cert = $issued->certificate;
 
-            $library->delete($logo['id']);
+            $library->delete($logo['id'], \OCA\Learning\Service\CertImageLibrary::revisionOf($library->list()));
             $this->assertSame(1, $this->layouts->resetLogo($logo['id']));
             $this->assertNull(CertLayout::decode($this->course()->getCertLayout())['logo_sha'], 'the course is back on the Theming logo');
             $this->assertNull($this->layouts->presentationForCourse($this->course())['logo']);
@@ -190,7 +190,7 @@ final class CertLayoutAssetsTest extends TestCase {
             $this->assertSame($dataUrl, $this->layouts->presentationForCertificate($cert)['logo']);
         } finally {
             if ($library->find($logo['id']) !== null) {
-                $library->delete($logo['id']);
+                $library->delete($logo['id'], \OCA\Learning\Service\CertImageLibrary::revisionOf($library->list()));
             }
         }
     }
@@ -233,7 +233,7 @@ final class CertLayoutAssetsTest extends TestCase {
             $this->assertNotNull($issued);
             $cert = $issued->certificate;
 
-            $library->delete($background['id']);
+            $library->delete($background['id'], \OCA\Learning\Service\CertImageLibrary::revisionOf($library->list()));
             $this->assertSame(1, $this->layouts->resetBackground($background['id']));
             $this->assertSame(0, $this->layouts->countCoursesUsingBackground($background['id']));
             $this->assertNull($this->layouts->presentationForCourse($this->course())['background']);
@@ -256,7 +256,7 @@ final class CertLayoutAssetsTest extends TestCase {
             $this->assertSame($dataUrl, $this->layouts->presentationForCertificate($cert)['background'] ?? null, 'the certificate still uses the background');
         } finally {
             if ($library->find($background['id']) !== null) {
-                $library->delete($background['id']);
+                $library->delete($background['id'], \OCA\Learning\Service\CertImageLibrary::revisionOf($library->list()));
             }
         }
     }

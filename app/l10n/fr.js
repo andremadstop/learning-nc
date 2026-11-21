@@ -4155,5 +4155,9 @@ OC.L10N.register(
     "Patch-Management" : "Gestion des correctifs",
     "Sichere Architektur" : "Architecture sécurisée",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Tentatives d’examen épuisées (pour les formateurs du cours)",
+    "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut." : "La liste a été modifiée entre-temps, par exemple par une autre personne disposant des droits d’administration. Elle vient d’être rechargée. Vérifie-la, puis réessaie.",
+    "Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal." : "La liste est en cours de modification ailleurs. Elle vient d’être rechargée. Réessaie dans un instant.",
+    "Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "La liste a été modifiée entre-temps, par exemple par une autre personne disposant des droits d’administration. Elle n’a pas pu être rechargée. Recharge la page, puis réessaie.",
+    "Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut." : "La liste est en cours de modification ailleurs. Elle n’a pas pu être rechargée. Recharge la page, puis réessaie.",
 },
 "nplurals=2; plural=(n > 1);");

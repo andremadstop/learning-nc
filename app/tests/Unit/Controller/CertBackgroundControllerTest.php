@@ -8,7 +8,9 @@ use OCA\Learning\Controller\CertLayoutController;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Service\CertBackgroundLibrary;
 use OCA\Learning\Service\CertLayout;
+use OCA\Learning\Service\CertImageLibrary;
 use OCA\Learning\Service\CertLayoutService;
+use OCA\Learning\Service\CertLibraryConflictException;
 use OCA\Learning\Service\CertLogoLibrary;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
@@ -130,18 +132,19 @@ class CertBackgroundControllerTest extends TestCase {
         $this->assertSame([
             'backgrounds' => [['id' => self::ID, 'name' => 'Gold frame', 'mime' => 'image/jpeg', 'size' => 9, 'courses' => 2]],
             'max' => CertBackgroundLibrary::MAX_BACKGROUNDS,
+            'revision' => CertImageLibrary::revisionOf([['id' => self::ID, 'name' => 'Gold frame', 'mime' => 'image/jpeg', 'size' => 9, 'created_at' => 1]]),
         ], $this->controller(true, $library, $layouts)->index()->getData());
     }
 
     public function testDeletingAUsedBackgroundResetsItsCourses(): void {
         $library = $this->createMock(CertBackgroundLibrary::class);
-        $library->expects($this->once())->method('delete')->with(self::ID);
+        $library->expects($this->once())->method('delete')->with(self::ID, 'seen-revision');
         $library->method('list')->willReturn([]);
         $layouts = $this->createMock(CertLayoutService::class);
         $layouts->expects($this->once())->method('resetBackground')->with(self::ID)->willReturn(3);
         $layouts->expects($this->never())->method('resetLogo');
 
-        $this->assertSame(3, $this->controller(true, $library, $layouts)->delete(self::ID)->getData()['courses_reset']);
+        $this->assertSame(3, $this->controller(true, $library, $layouts)->delete(self::ID, 'seen-revision')->getData()['courses_reset']);
     }
 
     public function testTheImageIsServedWithItsCheckedTypeAndNoSniffing(): void {
@@ -249,5 +252,48 @@ class CertBackgroundControllerTest extends TestCase {
 
         $this->assertSame(200, $response->getStatus());
         $this->assertSame(['background_builtin' => 'frame', 'background_intensity' => 50], $response->getData());
+    }
+
+    /** GitHub #102: the revision the page saw reaches the library; the answer carries the new one. */
+    public function testRenameHandsTheSeenRevisionToTheLibrary(): void {
+        $entry = ['id' => self::ID, 'name' => 'New name', 'mime' => 'image/png', 'size' => 9, 'created_at' => 1, 'reencoded' => true];
+        $library = $this->createMock(CertBackgroundLibrary::class);
+        $library->expects($this->once())->method('rename')->with(self::ID, 'New name', 'seen-revision');
+        $library->method('list')->willReturn([$entry]);
+
+        $response = $this->controller(true, $library)->rename(self::ID, 'New name', 'seen-revision');
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(CertImageLibrary::revisionOf([$entry]), $response->getData()['revision']);
+    }
+
+    /** GitHub #102: a change to a list changed since is a 409 with its own code, nothing is changed. */
+    public function testAChangeOnAChangedListIsAConflict(): void {
+        $library = $this->createMock(CertBackgroundLibrary::class);
+        $library->method('rename')->willThrowException(new CertLibraryConflictException(CertLibraryConflictException::CHANGED));
+        $library->method('delete')->willThrowException(new CertLibraryConflictException(CertLibraryConflictException::CHANGED));
+        $layouts = $this->createMock(CertLayoutService::class);
+        $layouts->expects($this->never())->method('resetBackground');
+        $controller = $this->controller(true, $library, $layouts);
+
+        $rename = $controller->rename(self::ID, 'Other', 'old-revision');
+        $this->assertSame(409, $rename->getStatus());
+        $this->assertSame(['error' => 'library_changed'], $rename->getData());
+
+        $delete = $controller->delete(self::ID, 'old-revision');
+        $this->assertSame(409, $delete->getStatus());
+        $this->assertSame(['error' => 'library_changed'], $delete->getData());
+    }
+
+    /** GitHub #102: an upload that waited too long for another change is a 409, not an internal error. */
+    public function testABusyLibraryRefusesAnUploadWithAConflict(): void {
+        $library = $this->createMock(CertBackgroundLibrary::class);
+        $library->method('add')->willThrowException(new CertLibraryConflictException(CertLibraryConflictException::BUSY));
+        $png = (string)base64_decode(CertLogoLibraryTest::PNG);
+
+        $response = $this->controller(true, $library, null, $this->upload($png))->upload('Name');
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame(['error' => 'library_busy'], $response->getData());
     }
 }

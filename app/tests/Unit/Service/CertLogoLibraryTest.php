@@ -4,12 +4,15 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Service\CertLogoLibrary;
+use OCA\Learning\Service\CertImageLibrary;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
 use OCP\Files\SimpleFS\ISimpleFile;
 use OCP\Files\SimpleFS\ISimpleFolder;
+use OCP\IAppConfig;
 use OCP\IConfig;
+use OCP\Lock\ILockingProvider;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -71,7 +74,7 @@ class CertLogoLibraryTest extends TestCase {
 
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(1760000000);
-        return new CertLogoLibrary($appData, $config, $time);
+        return new CertLogoLibrary($appData, $config, $time, $this->createMock(IAppConfig::class), $this->createMock(ILockingProvider::class));
     }
 
     private function file(string $name): ISimpleFile {
@@ -300,7 +303,7 @@ class CertLogoLibraryTest extends TestCase {
         $this->assertSame(['mime' => 'image/png', 'bytes' => $this->files[$new['id']]], $library->courseCopy($new['id']), 'stored since: copied as it is');
 
         // the flag survives a rename (rename and delete write the list back)
-        $library->rename($new['id'], 'Renamed');
+        $library->rename($new['id'], 'Renamed', CertImageLibrary::revisionOf($library->list()));
         $this->assertTrue($library->find($new['id'])['reencoded'] ?? null);
 
         $this->expectException(NotFoundException::class);
@@ -397,18 +400,18 @@ class CertLogoLibraryTest extends TestCase {
         $a = $library->add('Primary', (string)base64_decode(self::PNG));
         $b = $library->add('Wordmark', (string)base64_decode(self::WEBP));
 
-        $library->rename($a['id'], 'Primary (horizontal)');
+        $library->rename($a['id'], 'Primary (horizontal)', CertImageLibrary::revisionOf($library->list()));
         $this->assertSame('Primary (horizontal)', $library->find($a['id'])['name'] ?? null);
 
-        $library->delete($a['id']);
+        $library->delete($a['id'], CertImageLibrary::revisionOf($library->list()));
         $this->assertSame([$b['id']], array_column($library->list(), 'id'));
         $this->assertArrayNotHasKey($a['id'], $this->files ?? []);
 
-        $library->delete($b['id']);
+        $library->delete($b['id'], CertImageLibrary::revisionOf($library->list()));
         $this->assertArrayNotHasKey('cert_logo_library', $this->config, 'an empty library leaves no config behind');
 
         $this->expectException(NotFoundException::class);
-        $library->delete($a['id']);
+        $library->delete($a['id'], CertImageLibrary::revisionOf($library->list()));
     }
 
     public function testAFileChangedOnDiskIsNotServed(): void {

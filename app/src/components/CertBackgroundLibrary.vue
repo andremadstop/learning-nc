@@ -161,9 +161,10 @@ function fullMessage(max) {
  * The message for a refused background (CertBackgroundController error codes).
  * @param {string} code - the error code of the answer
  * @param {number} max - the library's limit
+ * @param {boolean} reloaded - for a conflict: whether loading the list again worked (GitHub #102)
  * @return {string}
  */
-export function backgroundErrorMessage(code, max = 20) {
+export function backgroundErrorMessage(code, max = 20, reloaded = true) {
 	switch (code) {
 	case 'unsupported_type':
 		return t('learning', 'Die Datei ist kein PNG-, JPEG- oder WebP-Bild. SVG wird nicht angenommen. Liegt der Hintergrund nur als SVG oder PDF vor, exportiere ihn in einem Grafikprogramm als PNG oder JPEG (für A4 quer etwa 3500 Pixel breit).')
@@ -177,9 +178,27 @@ export function backgroundErrorMessage(code, max = 20) {
 		return t('learning', 'Bitte einen Namen mit höchstens 80 Zeichen eingeben.')
 	case 'no_file':
 		return t('learning', 'Es ist keine Datei angekommen. Bitte erneut versuchen.')
+	case 'library_changed':
+		return reloaded
+			? t('learning', 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie ist jetzt neu geladen. Bitte prüfe sie und versuche es dann erneut.')
+			: t('learning', 'Die Liste wurde inzwischen geändert, etwa von einer anderen Person mit Administrationsrechten. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.')
+	case 'library_busy':
+		return reloaded
+			? t('learning', 'Die Liste wird gerade an anderer Stelle geändert. Sie ist jetzt neu geladen. Bitte versuche es gleich noch einmal.')
+			: t('learning', 'Die Liste wird gerade an anderer Stelle geändert. Sie konnte nicht neu geladen werden. Bitte lade die Seite neu und versuche es dann erneut.')
 	default:
 		return t('learning', 'Der Hintergrund konnte nicht hochgeladen werden.')
 	}
+}
+
+/**
+ * GitHub #102: the answers (409) to a change made on a list that is no longer the one stored:
+ * the list is loaded again, nothing is retried or overwritten.
+ * @param {string} code - the error code of the answer
+ * @return {boolean}
+ */
+export function isLibraryConflict(code) {
+	return code === 'library_changed' || code === 'library_busy'
 }
 
 export default {
@@ -204,6 +223,8 @@ export default {
 			newName: '',
 			uploadError: '',
 			status: '',
+			/** GitHub #102: the revision of the list shown, sent back with a rename or delete */
+			revision: '',
 			nameMax: NAME_MAX,
 			limitsId: 'cert-background-library-limits',
 		}
@@ -230,6 +251,7 @@ export default {
 		apply(data) {
 			this.backgrounds = Array.isArray(data?.backgrounds) ? data.backgrounds.filter((entry) => typeof entry?.id === 'string') : []
 			this.max = Number.isInteger(data?.max) ? data.max : this.max
+			this.revision = typeof data?.revision === 'string' ? data.revision : ''
 			const names = {}
 			for (const entry of this.backgrounds) {
 				names[entry.id] = entry.name
@@ -237,13 +259,18 @@ export default {
 			this.names = names
 		},
 
+		/**
+		 * @return {Promise<boolean>} whether the list could be loaded
+		 */
 		async load() {
 			this.loadError = ''
 			try {
 				this.apply(await listLibraryBackgrounds())
 				this.loaded = true
+				return true
 			} catch (e) {
 				this.loadError = t('learning', 'Die Hintergründe konnten nicht geladen werden.')
+				return false
 			}
 		},
 
@@ -316,7 +343,13 @@ export default {
 				this.newName = ''
 				this.status = t('learning', '„{title}“ wurde hinzugefügt.', { title: name }, undefined, RAW)
 			} catch (e) {
-				this.uploadError = backgroundErrorMessage(e?.response?.data?.error, this.max)
+				const code = e?.response?.data?.error
+				if (isLibraryConflict(code)) {
+					// said only once it is known whether the list shown is the one stored now
+					this.uploadError = backgroundErrorMessage(code, this.max, await this.load())
+				} else {
+					this.uploadError = backgroundErrorMessage(code, this.max)
+				}
 			} finally {
 				this.busy = false
 			}
@@ -326,10 +359,16 @@ export default {
 			this.busy = true
 			this.status = ''
 			try {
-				this.apply(await renameLibraryBackground(background.id, (this.names[background.id] || '').trim()))
+				this.apply(await renameLibraryBackground(background.id, (this.names[background.id] || '').trim(), this.revision))
 				this.status = t('learning', 'Name gespeichert.')
 			} catch (e) {
-				this.status = backgroundErrorMessage(e?.response?.data?.error, this.max)
+				const code = e?.response?.data?.error
+				if (isLibraryConflict(code)) {
+					// shown as stored now; the name typed belonged to the list that is gone
+					this.status = backgroundErrorMessage(code, this.max, await this.load())
+				} else {
+					this.status = backgroundErrorMessage(code, this.max)
+				}
 			} finally {
 				this.busy = false
 			}
@@ -339,7 +378,7 @@ export default {
 			this.busy = true
 			this.status = ''
 			try {
-				const data = await deleteLibraryBackground(background.id)
+				const data = await deleteLibraryBackground(background.id, this.revision)
 				this.apply(data)
 				this.confirming = ''
 				const reset = Number(data?.courses_reset) || 0
@@ -347,8 +386,14 @@ export default {
 					? n('learning', '„{title}“ wurde gelöscht. %n Kurs hat jetzt keinen Hintergrund mehr.', '„{title}“ wurde gelöscht. %n Kurse haben jetzt keinen Hintergrund mehr.', reset, { title: background.name }, RAW)
 					: t('learning', '„{title}“ wurde gelöscht.', { title: background.name }, undefined, RAW)
 			} catch (e) {
-				this.status = t('learning', 'Der Hintergrund konnte nicht gelöscht werden.')
-				this.load()
+				const code = e?.response?.data?.error
+				if (isLibraryConflict(code)) {
+					this.confirming = ''
+					this.status = backgroundErrorMessage(code, this.max, await this.load())
+				} else {
+					this.status = t('learning', 'Der Hintergrund konnte nicht gelöscht werden.')
+					this.load()
+				}
 			} finally {
 				this.busy = false
 			}
