@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## 5.18.0 – unreleased
 
+### Added
+- **Achievements on Today** (#101). With gamification on, Today has an achievements section: the
+  unlocked achievements, most recently unlocked first, six at a time with "Show all achievements"
+  to unfold the rest right there (there is no app-wide achievement gallery to link to; the one in
+  a pool's statistics belongs to that pool), and a friendly line while there are none yet. If the
+  user state cannot be loaded, the section says so instead of claiming there are no achievements;
+  the other widgets of Today stay optional as before. The activity "Achievement
+  unlocked" (stream and email) now opens exactly this section (`/dashboard?section=achievements`):
+  Today scrolls there and moves the keyboard focus to its heading. The list comes from the user
+  state Today already loads, so the section costs no extra request; with gamification off it is
+  not shown. Section heading and list are announced as such, the layout follows the reading
+  direction in Arabic, and the texts are in all six languages.
+
 ### Fixed
 - **Certificate logo and background libraries keep every change when several administrators work
   at once** (#102). Adding, renaming or deleting an image is now done under a lock per library,
@@ -44,29 +57,6 @@ All notable changes to this project will be documented in this file.
   offer French and Ukrainian as well. On PostgreSQL instances that were upgraded through 3.2,
   the database's language check on the translation tables is widened to the six languages by
   the update.
-
-### Tests
-- A round-trip test checks every column of pools, questions, answers and both translation
-  tables: carried by the export or excluded with a reason, so a new column cannot go missing
-  silently; one question per type including two interactive subtypes. The same round trip runs
-  against a real Nextcloud in the integration suite, where it compares not only the two exports
-  but the rows stored for the copy with the rows stored for the source, column by column — a
-  field the export never writes would be missing from both exports alike. Both tests also fail
-  when a compared column is empty everywhere in the source.
-### Added
-- **Achievements on Today** (#101). With gamification on, Today has an achievements section: the
-  unlocked achievements, most recently unlocked first, six at a time with "Show all achievements"
-  to unfold the rest right there (there is no app-wide achievement gallery to link to; the one in
-  a pool's statistics belongs to that pool), and a friendly line while there are none yet. If the
-  user state cannot be loaded, the section says so instead of claiming there are no achievements;
-  the other widgets of Today stay optional as before. The activity "Achievement
-  unlocked" (stream and email) now opens exactly this section (`/dashboard?section=achievements`):
-  Today scrolls there and moves the keyboard focus to its heading. The list comes from the user
-  state Today already loads, so the section costs no extra request; with gamification off it is
-  not shown. Section heading and list are announced as such, the layout follows the reading
-  direction in Arabic, and the texts are in all six languages.
-
-### Fixed
 - **A new achievement shows at once** (Pre-existing). The user state behind Today and the
   achievement gallery is cached for 30 seconds and was only cleared when XP changed. An
   achievement that comes without XP (a RAG contribution, a finished coop simulator) stayed
@@ -102,6 +92,13 @@ All notable changes to this project will be documented in this file.
   blank field is empty now.
 
 ### Tests
+- A round-trip test checks every column of pools, questions, answers and both translation
+  tables: carried by the export or excluded with a reason, so a new column cannot go missing
+  silently; one question per type including two interactive subtypes. The same round trip runs
+  against a real Nextcloud in the integration suite, where it compares not only the two exports
+  but the rows stored for the copy with the rows stored for the source, column by column — a
+  field the export never writes would be missing from both exports alike. Both tests also fail
+  when a compared column is empty everywhere in the source.
 - A shared fixture records how both CSV readers read the shipped examples and 31 hand-written
   files before the fix; the preview and `ImportController::importCsv` read all of them as
   before. The three `it.fails` pins became normal tests, the property test no longer excludes
