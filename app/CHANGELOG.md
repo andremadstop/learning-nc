@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## 5.18.0 – unreleased
+
+### Fixed
+- **A pool export comes back without losses.** `occ learning:export-pool --format=json` and
+  **Export JSON** now write one pool document in format `learning-pool/2` (`_meta.format`) with
+  the pool's name, description and chapter fields, and per question also the instructor note
+  (with "visible to learners"), the translations of question, explanation, scenario and
+  feedback texts, and the translations of the answers. Imported through occ or **Import pools**,
+  it is the same pool field for field; before, the pool's metadata, all translations and the
+  instructor notes were lost, a question without chapter took the pool's chapter, and a question
+  without difficulty came back as `medium`. Older exports (a plain list of questions) import as
+  before. Not part of a pool export, as documented in `docs/import-pool-workflow.md` (Round trip):
+  attached images, the audio bundle (`--media-dir`), review state and course settings.
+  A translation the app cannot store (another language than de, en, ru, ar, or no text) is
+  reported in the import and left out; the question is imported.
+
+### Tests
+- A round-trip test checks every column of pools, questions, answers and both translation
+  tables: carried by the export or excluded with a reason, so a new column cannot go missing
+  silently; one question per type including two interactive subtypes. The same round trip runs
+  against a real Nextcloud in the integration suite.
+
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 
 Certificates get a presentation layer: a background library with three built-in backgrounds and a

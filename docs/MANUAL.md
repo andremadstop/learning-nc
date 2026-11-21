@@ -407,8 +407,8 @@ CSV question always has exactly one correct answer.
 
 | Shape | Example |
 |-------|---------|
-| A list of questions — also what **Export JSON** writes | `[{…}, {…}]` |
-| An object with a question list (`questions`, also `fragen` or `items`) | `{"questions": [{…}, {…}]}` |
+| A list of questions — what **Export JSON** wrote up to 5.17 | `[{…}, {…}]` |
+| An object with a question list (`questions`, also `fragen` or `items`) — also what **Export JSON** writes since 5.18 | `{"questions": [{…}, {…}]}` |
 | The `occ import-pool-json` format with **one** pool | `{"_meta": {…}, "pools": [{"name": …, "questions": [{…}]}]}` |
 | A single question | `{"text": …, "answers": […]}` |
 
@@ -505,15 +505,19 @@ questions with the reason.
 
 **Template:** create two or three questions by hand, then open the **⋯** menu next to
 **Import** and choose **Export JSON** (or run
-`occ learning:export-pool <pool-id> --format=json`). The exported file is a plain list of
-questions — the best model for your own files. Per question it carries text, type,
+`occ learning:export-pool <pool-id> --format=json`). Since 5.18 the exported file is a pool
+document in format `learning-pool/2`: the pool's name, description and chapter fields plus
+its `questions` — the best model for your own files. Per question it carries text, type,
 scenario, explanation, difficulty, chapter (`chapter_key`, `chapter_title`,
-`chapter_order`), `handbook_key`, `handbook_title`, `exam_key` and the answers with
-`is_correct`; an interactive question carries its `subtype` and `pbq_config` instead of
-answers. Empty fields are left out. The file goes back in unchanged, through
-**Manage → Import** into any pool you can edit, or as a new pool with **Import pools** in the
-**Pools** tab or the occ command below.
-Not exported: translations of questions, instructor notes and attached images.
+`chapter_order`), `handbook_key`, `handbook_title`, `exam_key`, the instructor note, the
+feedback fields and the answers with `is_correct`; an interactive question carries its
+`subtype` and `pbq_config` instead of answers. Translations of questions and answers come
+along. Empty fields are left out. As a new pool (**Import pools** in the **Pools** tab, or the
+occ command below) the file comes back without losses. Through **Manage → Import** into a pool
+you can edit, the questions are added without their translations and instructor notes, and the
+pool keeps its own name and description.
+Not exported: attached images and audio (the audio has its own bundle,
+[`docs/import-pool-workflow.md`](import-pool-workflow.md#audio-and-cues-per-question-media-bundle)).
 
 #### Importing whole pools in the Pools tab
 
@@ -529,10 +533,10 @@ format of `occ learning:import-pool-json`, described in
 - `{"_meta": {…}, "pools": [ {"name": …, "questions": [ … ]}, … ]}` — every entry under
   `pools` becomes a new pool, named by its own `name`, with its description, chapter fields
   and questions;
-- a plain list of questions, such as an export, or `{"name": …, "questions": [ … ]}` — one
-  new pool. It takes the file's `name` if it has one, else the name of the uploaded file
-  without extension (an export `pool-12.json` becomes the pool `pool-12`; rename it
-  afterwards), else *Imported pool*.
+- an export, a plain list of questions, or `{"name": …, "questions": [ … ]}` — one
+  new pool. It takes the file's `name` if it has one (an export since 5.18 carries the pool's
+  name), else the name of the uploaded file without extension (an older export
+  `pool-12.json` becomes the pool `pool-12`; rename it afterwards), else *Imported pool*.
 
 The import is one step for all pools in the file, and it reads the file by the same rules as
 the occ command — the same code runs in both. That means answers only as objects with
@@ -601,11 +605,11 @@ It reads:
 
 - the pool format `{"_meta": {…}, "pools": [ … ]}` — any number of pools, each named by its
   own `name`;
-- a plain list of questions, such as an export, or `{"name": …, "description": …,
+- an export, a plain list of questions, or `{"name": …, "description": …,
   "_meta": {…}, "questions": [ … ]}` — one pool, named by `--pool-name`, else the file's
-  `name`, else the file name without extension (an export is called `pool-<id>.json`, so
-  pass `--pool-name` for a readable name). `--pool-name` together with a `pools` file is
-  refused.
+  `name` (an export since 5.18 carries the pool's name), else the file name without
+  extension (an older export is called `pool-<id>.json`, so pass `--pool-name` for a
+  readable name). `--pool-name` together with a `pools` file is refused.
 
 `--dry-run` runs every check of the real import — of the file, of each pool and of each
 question — and lists the pools with their question counts and every pool or question that
