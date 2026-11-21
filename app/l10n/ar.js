@@ -4155,7 +4155,7 @@ OC.L10N.register(
     "Patch-Management" : "إدارة التحديثات الأمنية",
     "Sichere Architektur" : "البنية الآمنة",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "استُنفدت محاولات الاختبار (لمعلمي الدورة)",
-    "Line {line}: Ambiguous numbers — read as correct answer {number} with explanation \"{explanation}\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column" : "السطر {line}: أرقام ملتبسة — قُرئت كإجابة صحيحة رقم {number} مع الشرح «{explanation}»؛ إذا كان الحقل الأخير هو رقم الإجابة الصحيحة، فأضف سطر عناوين يحتوي على عمود «correct»",
-    "Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation \"%3$s\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column" : "السطر %1$s: أرقام ملتبسة — قُرئت كإجابة صحيحة رقم %2$s مع الشرح «%3$s»؛ إذا كان الحقل الأخير هو رقم الإجابة الصحيحة، فأضف سطر عناوين يحتوي على عمود «correct»",
+    "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "السطر {line}: أرقام ملتبسة — قُرئت كإجابة صحيحة رقم {number} دون شرح؛ إذا كان الرقم الأخير شرحًا، فأضف سطر عناوين يحتوي على عمود «correct»",
+    "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "السطر %1$s: أرقام ملتبسة — قُرئت كإجابة صحيحة رقم %2$s دون شرح؛ إذا كان الرقم الأخير شرحًا، فأضف سطر عناوين يحتوي على عمود «correct»",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

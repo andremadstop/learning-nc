@@ -397,13 +397,18 @@ row (a first row that names the columns, such as `question,answer1,…,correct,e
 `Frage;Antwort1;…;Richtig`, and is not itself a question; in the open-question form, such as `question,model_answer,open`
 or `Question text,Model answer,open`, a first field of at most four words without `?`, `.`,
 `!` or `:` counts as a column name, so the row is a header) is skipped. If the header names the
-correct column (`correct`, `richtig`, `korrekt`, `solution`, `Lösung`) as its last or
-second-last column, the number is read from that column. Without a header, a row whose
-second-last field is a valid answer number is read as answers, number, explanation, so an
-explanation may be a number; a row like `Q,a,b,1,2` (last answer `1`, no explanation) is
-therefore read as two answers with explanation "2". Because the last field could also be the
-number of the correct answer, the import warns for such a row ("Ambiguous numbers") and names
-the reading it took — give such a file a header row with a correct column. Comma or
+correct column (the whole column name: `correct`, `correct_answer`, `correct_number`,
+`right answer`, `richtig`, `richtige Antwort`, `korrekt`, `korrekte Antwort`, `solution`,
+`Lösung`; `Lösungsweg` or `Solution notes` does not count) as its last or second-last column,
+the number is read from that column. Without such a header, the last field is the number of the
+correct answer whenever that reading can be imported, as in every earlier version: a row like
+`Q,a,b,1,2` is three answers `a`, `b`, `1` with `b` correct and no explanation. Only when that
+reading cannot be imported is the second-last field the number and the last field the
+explanation (`Q,a,b,1,Because` or eight answers followed by `1,2`). Because `Q,a,b,1,2` could
+also mean two answers with explanation "2", the import warns for such a row ("Ambiguous
+numbers — read as correct answer 2 without explanation"): if the last number is an
+explanation, give the file a header row with a `correct` column before it, such as
+`question,answer1,answer2,correct,explanation`. Comma or
 semicolon as separator: the one under which more rows can be imported; on a tie, the one that
 splits the first question into more fields. A field in double quotes may contain the separator and line
 breaks, and `""` stands for one quote character — the format spreadsheet programs write.

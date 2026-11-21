@@ -103,7 +103,7 @@ export const importMessages = {
 	csvMaxAnswers: (line) => t('learning', 'Line {line}: Maximum 8 answers', { line }, undefined, RAW),
 	csvNoCorrect: (line) => t('learning', 'Line {line}: Could not determine correct answer — use a number (1-N) to indicate which answer is correct', { line }, undefined, RAW),
 	csvAnswerTruncated: (line) => t('learning', 'Line {line}: Answer text truncated to 2000 chars', { line }, undefined, RAW),
-	csvAmbiguousNumbers: (line, number, explanation) => t('learning', 'Line {line}: Ambiguous numbers — read as correct answer {number} with explanation "{explanation}"; if the last field is the number of the correct answer, add a header row with a "correct" column', { line, number, explanation }, undefined, RAW),
+	csvAmbiguousNumbers: (line, number) => t('learning', 'Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a "correct" column', { line, number }, undefined, RAW),
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -854,8 +854,16 @@ function isCsvHeader(fields) {
 		|| (record.type === 'open' && csvColumnLabel(record.text))
 }
 
-/** A header column that holds the number of the correct answer (correct, richtig, korrekt, solution, Lösung). */
-const CORRECT_COLUMN = /correct|richtig|korrekt|solution|l(ö|oe)sung/i
+/**
+ * Names of a header column that holds the number of the correct answer
+ * (ImportController::CORRECT_COLUMN), compared after isCorrectColumn() lower-cases the name and
+ * turns runs of spaces, tabs, "_" and "-" into one space. Whole names only: "Lösungsweg" or
+ * "Solution notes" is an explanation column.
+ */
+const CORRECT_COLUMN = /^(?:correct(?: answer| number)?|right answer|richtig|richtige antwort|korrekt|korrekte antwort|solution|l(?:ö|oe)sung)$/u
+
+/** The header field names the correct-answer column (CORRECT_COLUMN). */
+const isCorrectColumn = (field) => CORRECT_COLUMN.test(phpTrim(field).toLowerCase().replace(/[ \t_-]+/g, ' '))
 
 /**
  * csvColumns(): where a header puts the number of the correct answer. Only the format's own
@@ -866,7 +874,7 @@ const CORRECT_COLUMN = /correct|richtig|korrekt|solution|l(ö|oe)sung/i
  * @return {{width: number, correct: number}|null}
  */
 function csvColumns(header) {
-	const correct = header.findIndex((f, i) => i >= 3 && CORRECT_COLUMN.test(phpTrim(f)))
+	const correct = header.findIndex((f, i) => i >= 3 && isCorrectColumn(f))
 	if (correct === -1 || correct < header.length - 2) {
 		return null
 	}
@@ -907,61 +915,58 @@ export function parseCsv(text) {
 	return header === null ? records : [header, ...records]
 }
 
+/** Answer texts trimmed, empty ones dropped. */
+const cleanAnswers = (texts) => texts.map(phpTrim).filter((a) => a !== '')
+/** An optional text field: trimmed, null when empty. */
+const optionalCsvText = (value) => {
+	const text = phpTrim(value)
+	return text === '' ? null : text
+}
+/** A number from 1 to 8 that names one of answerCount answers (is_numeric, then (int)). */
+const isCorrectNumber = (value, answerCount) => phpIsNumeric(value) && phpInt(value) >= 1 && phpInt(value) <= 8 && phpInt(value) <= answerCount
+/** The reading imports: 2 to MAX_ANSWERS answers and a correct index among them. */
+const choiceImports = ({ answerTexts, correctIndex }) => answerTexts.length >= 2 && answerTexts.length <= MAX_ANSWERS
+	&& correctIndex !== null && correctIndex < answerTexts.length
+
 /**
- * csvChoice(): answers, correct index and explanation of a multiple-choice record, PHP rule
- * for rule (ImportController::csvChoice).
- *
- *  1. With a header that names the correct column, and a record as wide as the header: the
- *     number in that column, when it is one (GitHub #65).
- *  2. Otherwise "answers, number, explanation", when that reading imports: an explanation that
- *     is a number ("2") stays the explanation (GitHub #65). When the last field would also
- *     import as the number of the correct answer ("Q,1,3,2,3": answers 1,3,2, number 3), the
- *     record is ambiguous: it is read this way and flagged, so the import warns.
- *  3. Otherwise as before: the last field as the number, then the second-last, then the last
- *     field as the text of one of the answers.
+ * csvChoiceWithExplanation(): "answers, number, explanation" — the second-last field as the
+ * number of the correct answer, the last field as the explanation; null when the second-last
+ * field is no such number.
  */
-function csvChoice(fields, columns = null) {
-	const validNumber = (value, answerCount) => phpIsNumeric(value) && phpInt(value) >= 1 && phpInt(value) <= 8 && phpInt(value) <= answerCount
-	const clean = (texts) => texts.map(phpTrim).filter((a) => a !== '')
-	const optional = (value) => {
-		const text = phpTrim(value)
-		return text === '' ? null : text
+function csvChoiceWithExplanation(fields) {
+	const secondLastIdx = fields.length - 2
+	if (secondLastIdx < 2 || !isCorrectNumber(phpTrim(fields[secondLastIdx]), secondLastIdx - 1)) {
+		return null
 	}
+	return {
+		answerTexts: cleanAnswers(fields.slice(1, secondLastIdx)),
+		correctIndex: phpInt(phpTrim(fields[secondLastIdx])) - 1,
+		explanation: optionalCsvText(fields[secondLastIdx + 1]),
+	}
+}
+
+/**
+ * csvChoiceAsBefore(): the reading of every version before 5.18.0 — the last field as the
+ * number, then the second-last (the last field is the explanation), then the last field as the
+ * text of one of the answers.
+ */
+function csvChoiceAsBefore(fields) {
 	const lastIdx = fields.length - 1
 	const secondLastIdx = lastIdx - 1
-
-	if (columns !== null && fields.length === columns.width) {
-		const c = columns.correct
-		if (validNumber(phpTrim(fields[c]), c - 1)) {
-			return { answerTexts: clean(fields.slice(1, c)), correctIndex: phpInt(phpTrim(fields[c])) - 1, explanation: c < lastIdx ? optional(fields[lastIdx]) : null }
-		}
-	}
-
-	if (secondLastIdx >= 2 && validNumber(phpTrim(fields[secondLastIdx]), secondLastIdx - 1)) {
-		const answerTexts = clean(fields.slice(1, secondLastIdx))
-		const correctIndex = phpInt(phpTrim(fields[secondLastIdx])) - 1
-		if (answerTexts.length >= 2 && answerTexts.length <= MAX_ANSWERS && correctIndex < answerTexts.length) {
-			const lastAsNumber = clean(fields.slice(1, lastIdx))
-			const ambiguous = validNumber(phpTrim(fields[lastIdx]), lastIdx - 1)
-				&& lastAsNumber.length <= MAX_ANSWERS && phpInt(phpTrim(fields[lastIdx])) - 1 < lastAsNumber.length
-			return { answerTexts, correctIndex, explanation: optional(fields[lastIdx]), ambiguous }
-		}
-	}
-
 	let answerTexts = []
 	let correctIndex = null
 	let explanation = null
 	if (lastIdx >= 2) {
 		const possibleCorrect = phpTrim(fields[lastIdx])
-		if (validNumber(possibleCorrect, lastIdx - 1)) {
+		if (isCorrectNumber(possibleCorrect, lastIdx - 1)) {
 			correctIndex = phpInt(possibleCorrect) - 1
 			answerTexts = fields.slice(1, lastIdx)
 		} else if (secondLastIdx >= 2) {
 			const possibleCorrect2 = phpTrim(fields[secondLastIdx])
-			if (validNumber(possibleCorrect2, secondLastIdx - 1)) {
+			if (isCorrectNumber(possibleCorrect2, secondLastIdx - 1)) {
 				correctIndex = phpInt(possibleCorrect2) - 1
 				answerTexts = fields.slice(1, secondLastIdx)
-				explanation = optional(fields[lastIdx])
+				explanation = optionalCsvText(fields[lastIdx])
 			} else {
 				answerTexts = fields.slice(1, lastIdx + 1)
 				const correctText = asciiLower(possibleCorrect)
@@ -973,7 +978,46 @@ function csvChoice(fields, columns = null) {
 			}
 		}
 	}
-	return { answerTexts: clean(answerTexts), correctIndex, explanation }
+	return { answerTexts: cleanAnswers(answerTexts), correctIndex, explanation }
+}
+
+/**
+ * csvChoice(): answers, correct index and explanation of a multiple-choice record, PHP rule
+ * for rule (ImportController::csvChoice).
+ *
+ *  1. With a header that names the correct column, and a record as wide as the header: the
+ *     number in that column, when it is one (GitHub #65).
+ *  2. Otherwise the reading of every version before 5.18.0 (csvChoiceAsBefore()), when it
+ *     imports: the last field as the number, so "Q,1,3,2,3" is answers 1,3,2 with number 3.
+ *     When "answers, number, explanation" would import too (answers 1,3, number 2,
+ *     explanation "3"), the record is ambiguous: it is read the old way and flagged, so the
+ *     import warns.
+ *  3. Otherwise "answers, number, explanation", when that reading imports: a numeric
+ *     explanation is no longer read as the number of the correct answer when that reading
+ *     cannot import (GitHub #65, eight answers and an explanation "2").
+ *  4. Otherwise the old reading, so a record that imports neither way is refused as before.
+ */
+function csvChoice(fields, columns = null) {
+	const lastIdx = fields.length - 1
+	if (columns !== null && fields.length === columns.width) {
+		const c = columns.correct
+		if (isCorrectNumber(phpTrim(fields[c]), c - 1)) {
+			return { answerTexts: cleanAnswers(fields.slice(1, c)), correctIndex: phpInt(phpTrim(fields[c])) - 1, explanation: c < lastIdx ? optionalCsvText(fields[lastIdx]) : null }
+		}
+	}
+
+	const asBefore = csvChoiceAsBefore(fields)
+	const withExplanation = csvChoiceWithExplanation(fields)
+	if (choiceImports(asBefore)) {
+		// ambiguous only when the old reading took the last field as the number
+		const ambiguous = lastIdx >= 2 && isCorrectNumber(phpTrim(fields[lastIdx]), lastIdx - 1)
+			&& withExplanation !== null && choiceImports(withExplanation)
+		return { ...asBefore, ambiguous }
+	}
+	if (withExplanation !== null && choiceImports(withExplanation)) {
+		return withExplanation
+	}
+	return asBefore
 }
 
 /**
@@ -1075,7 +1119,7 @@ export function analyzeCsvImport(text) {
 		entry.answerCount = record.answers.length
 		entry.correctCount = 1
 		if (record.ambiguous) {
-			const message = importMessages.csvAmbiguousNumbers(line, record.correctIndex + 1, record.explanation ?? '')
+			const message = importMessages.csvAmbiguousNumbers(line, record.correctIndex + 1)
 			entry.warnings.push(message)
 			warnings.push(message)
 		}

@@ -167,16 +167,30 @@ class ImportController extends Controller {
     }
 
     /**
-     * Where a header puts the number of the correct answer (correct, richtig, korrekt, solution,
-     * Lösung). Only the format's own shape counts: question, at least two answer columns, then the
-     * correct column as the last or second-last column (an explanation after it).
+     * Names of a header column that holds the number of the correct answer, compared after
+     * isCorrectColumn() lower-cases the name and turns runs of spaces, tabs, "_" and "-" into one
+     * space. Whole names only: "Lösungsweg" or "Solution notes" is an explanation column.
+     */
+    private const CORRECT_COLUMN = '/^(?:correct(?: answer| number)?|right answer|richtig|richtige antwort|korrekt|korrekte antwort|solution|l(?:ö|oe)sung)$/u';
+
+    /** The header field names the correct-answer column (CORRECT_COLUMN). */
+    private static function isCorrectColumn(string $field): bool {
+        $name = (string)preg_replace('/[ \t_-]+/', ' ', mb_strtolower(trim($field)));
+        return preg_match(self::CORRECT_COLUMN, $name) === 1;
+    }
+
+    /**
+     * Where a header puts the number of the correct answer (CORRECT_COLUMN: correct,
+     * correct_answer, correct_number, richtig, korrekt, solution, Lösung, ...). Only the format's
+     * own shape counts: question, at least two answer columns, then the correct column as the
+     * last or second-last column (an explanation after it).
      *
      * @param list<string> $header
      * @return array{width: int, correct: int}|null
      */
     private static function csvColumns(array $header): ?array {
         foreach ($header as $i => $field) {
-            if ($i >= 3 && preg_match('/correct|richtig|korrekt|solution|l(ö|oe)sung/iu', trim($field)) === 1) {
+            if ($i >= 3 && self::isCorrectColumn($field)) {
                 return $i < count($header) - 2 ? null : ['width' => count($header), 'correct' => $i];
             }
         }
@@ -230,51 +244,97 @@ class ImportController extends Controller {
      *
      *  1. With a header that names the correct column, and a record as wide as the header: the
      *     number in that column, when it is one (GitHub #65).
-     *  2. Otherwise "answers, number, explanation", when that reading imports: an explanation that
-     *     is a number ("2") stays the explanation (GitHub #65). When the last field would also
-     *     import as the number of the correct answer ("Q,1,3,2,3": answers 1,3,2, number 3), the
-     *     record is ambiguous: it is read this way and flagged, so the import warns.
-     *  3. Otherwise as before: the last field as the number, then the second-last, then the last
-     *     field as the text of one of the answers.
+     *  2. Otherwise the reading of every version before 5.18.0 (csvChoiceAsBefore()), when it
+     *     imports: the last field as the number, so "Q,1,3,2,3" is answers 1,3,2 with number 3.
+     *     When "answers, number, explanation" would import too (answers 1,3, number 2,
+     *     explanation "3"), the record is ambiguous: it is read the old way and flagged, so the
+     *     import warns.
+     *  3. Otherwise "answers, number, explanation", when that reading imports: a numeric
+     *     explanation is no longer read as the number of the correct answer when that reading
+     *     cannot import (GitHub #65, eight answers and an explanation "2").
+     *  4. Otherwise the old reading, so a record that imports neither way is refused as before.
      *
      * @param list<string> $fields
      * @param array{width: int, correct: int}|null $columns
      * @return array{answers: list<string>, correctIndex: int|null, explanation: string|null, ambiguous?: true}
      */
     private static function csvChoice(array $fields, ?array $columns): array {
-        $clean = static fn (array $texts): array => array_values(array_filter(array_map('trim', $texts), static fn (string $t): bool => $t !== ''));
-        $optional = static function (string $value): ?string {
-            $text = trim($value);
-            return $text === '' ? null : $text;
-        };
-        $lastIdx = count($fields) - 1;
-        $secondLastIdx = $lastIdx - 1;
-
         if ($columns !== null && count($fields) === $columns['width']) {
             $c = $columns['correct'];
             if (self::isCorrectNumber(trim($fields[$c]), $c - 1)) {
                 return [
-                    'answers' => $clean(array_slice($fields, 1, $c - 1)),
+                    'answers' => self::cleanAnswers(array_slice($fields, 1, $c - 1)),
                     'correctIndex' => (int)trim($fields[$c]) - 1,
-                    'explanation' => $c < $lastIdx ? $optional($fields[$lastIdx]) : null,
+                    'explanation' => $c < count($fields) - 1 ? self::optionalCsvText($fields[count($fields) - 1]) : null,
                 ];
             }
         }
 
-        if ($secondLastIdx >= 2 && self::isCorrectNumber(trim($fields[$secondLastIdx]), $secondLastIdx - 1)) {
-            $answers = $clean(array_slice($fields, 1, $secondLastIdx - 1));
-            $correctIndex = (int)trim($fields[$secondLastIdx]) - 1;
-            if (count($answers) >= 2 && count($answers) <= self::MAX_ANSWERS && $correctIndex < count($answers)) {
-                $choice = ['answers' => $answers, 'correctIndex' => $correctIndex, 'explanation' => $optional($fields[$lastIdx])];
-                $lastAsNumber = $clean(array_slice($fields, 1, $lastIdx - 1));
-                if (self::isCorrectNumber(trim($fields[$lastIdx]), $lastIdx - 1)
-                    && count($lastAsNumber) <= self::MAX_ANSWERS && (int)trim($fields[$lastIdx]) - 1 < count($lastAsNumber)) {
-                    $choice['ambiguous'] = true;
-                }
-                return $choice;
+        $asBefore = self::csvChoiceAsBefore($fields);
+        $withExplanation = self::csvChoiceWithExplanation($fields);
+        if (self::choiceImports($asBefore)) {
+            // ambiguous only when the old reading took the last field as the number
+            $lastIdx = count($fields) - 1;
+            if ($lastIdx >= 2 && self::isCorrectNumber(trim($fields[$lastIdx]), $lastIdx - 1)
+                && $withExplanation !== null && self::choiceImports($withExplanation)) {
+                $asBefore['ambiguous'] = true;
             }
+            return $asBefore;
         }
+        if ($withExplanation !== null && self::choiceImports($withExplanation)) {
+            return $withExplanation;
+        }
+        return $asBefore;
+    }
 
+    /** Answer texts trimmed, empty ones dropped. */
+    private static function cleanAnswers(array $texts): array {
+        return array_values(array_filter(array_map('trim', $texts), static fn (string $t): bool => $t !== ''));
+    }
+
+    /** An optional text field: trimmed, null when empty. */
+    private static function optionalCsvText(string $value): ?string {
+        $text = trim($value);
+        return $text === '' ? null : $text;
+    }
+
+    /** The reading imports: 2 to MAX_ANSWERS answers and a correct index among them. */
+    private static function choiceImports(array $choice): bool {
+        $count = count($choice['answers']);
+        return $count >= 2 && $count <= self::MAX_ANSWERS
+            && $choice['correctIndex'] !== null && $choice['correctIndex'] < $count;
+    }
+
+    /**
+     * "answers, number, explanation": the second-last field as the number of the correct answer,
+     * the last field as the explanation; null when the second-last field is no such number.
+     *
+     * @param list<string> $fields
+     * @return array{answers: list<string>, correctIndex: int, explanation: string|null}|null
+     */
+    private static function csvChoiceWithExplanation(array $fields): ?array {
+        $secondLastIdx = count($fields) - 2;
+        if ($secondLastIdx < 2 || !self::isCorrectNumber(trim($fields[$secondLastIdx]), $secondLastIdx - 1)) {
+            return null;
+        }
+        return [
+            'answers' => self::cleanAnswers(array_slice($fields, 1, $secondLastIdx - 1)),
+            'correctIndex' => (int)trim($fields[$secondLastIdx]) - 1,
+            'explanation' => self::optionalCsvText($fields[$secondLastIdx + 1]),
+        ];
+    }
+
+    /**
+     * The reading of every version before 5.18.0: the last field as the number, then the
+     * second-last (the last field is the explanation), then the last field as the text of one
+     * of the answers.
+     *
+     * @param list<string> $fields
+     * @return array{answers: list<string>, correctIndex: int|null, explanation: string|null}
+     */
+    private static function csvChoiceAsBefore(array $fields): array {
+        $lastIdx = count($fields) - 1;
+        $secondLastIdx = $lastIdx - 1;
         $answerTexts = [];
         $correctIndex = null;
         $explanation = null;
@@ -288,7 +348,7 @@ class ImportController extends Controller {
                 if (self::isCorrectNumber($possibleCorrect2, $secondLastIdx - 1)) {
                     $correctIndex = (int)$possibleCorrect2 - 1;
                     $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
-                    $explanation = $optional($fields[$lastIdx]);
+                    $explanation = self::optionalCsvText($fields[$lastIdx]);
                 } else {
                     $answerTexts = array_slice($fields, 1, $lastIdx);
                     $correctText = strtolower($possibleCorrect);
@@ -304,7 +364,7 @@ class ImportController extends Controller {
                 }
             }
         }
-        return ['answers' => $clean($answerTexts), 'correctIndex' => $correctIndex, 'explanation' => $explanation];
+        return ['answers' => self::cleanAnswers($answerTexts), 'correctIndex' => $correctIndex, 'explanation' => $explanation];
     }
 
     /**
@@ -920,7 +980,7 @@ class ImportController extends Controller {
                 $answerTexts = $record['answers'];
                 $explanation = $record['explanation'];
                 if ($record['ambiguous']) {
-                    $warnings[] = $this->l10n->t('Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation "%3$s"; if the last field is the number of the correct answer, add a header row with a "correct" column', [$line, $record['correctIndex'] + 1, (string)$explanation]);
+                    $warnings[] = $this->l10n->t('Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a "correct" column', [$line, $record['correctIndex'] + 1]);
                 }
                 $csvQuestionType = 'single';
                 $correctIndices = [$record['correctIndex']];

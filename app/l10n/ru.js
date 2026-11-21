@@ -4155,7 +4155,7 @@ OC.L10N.register(
     "Patch-Management" : "Управление обновлениями",
     "Sichere Architektur" : "Безопасная архитектура",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Попытки экзамена исчерпаны (для преподавателей курса)",
-    "Line {line}: Ambiguous numbers — read as correct answer {number} with explanation \"{explanation}\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column" : "Строка {line}: неоднозначные числа — прочитано как правильный ответ {number} с пояснением «{explanation}»; если последнее поле — номер правильного ответа, добавьте строку заголовков со столбцом «correct»",
-    "Line %1$s: Ambiguous numbers — read as correct answer %2$s with explanation \"%3$s\"; if the last field is the number of the correct answer, add a header row with a \"correct\" column" : "Строка %1$s: неоднозначные числа — прочитано как правильный ответ %2$s с пояснением «%3$s»; если последнее поле — номер правильного ответа, добавьте строку заголовков со столбцом «correct»",
+    "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Строка {line}: неоднозначные числа — прочитано как правильный ответ {number} без пояснения; если последнее число — пояснение, добавьте строку заголовков со столбцом «correct»",
+    "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Строка %1$s: неоднозначные числа — прочитано как правильный ответ %2$s без пояснения; если последнее число — пояснение, добавьте строку заголовков со столбцом «correct»",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

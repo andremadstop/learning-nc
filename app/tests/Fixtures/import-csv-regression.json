@@ -1,5 +1,5 @@
 {
-	"_doc": "GitHub #65: how the CSV readers read these files, recorded from the readers before the three CSV findings were fixed (5.18.0). The fix must read every one of them exactly as before. `files` are the shipped examples (app/examples), `cases` hand-written CSV texts and the CSV example of docs/MANUAL.md. Per case: importable questions, number of errors and warnings, and per record whether it imports and what is stored (text, type, answers with their correct flag, explanation). Error texts are not compared (they are translated). Read by importCsvRegression.test.js (import preview) and ImportCsvRegressionTest.php (ImportController::importCsv).",
+	"_doc": "GitHub #65: how the CSV readers read these files, recorded from the readers before the three CSV findings were fixed (5.18.0). The fix must read every one of them exactly as before. `files` are the shipped examples (app/examples), `cases` hand-written CSV texts and the CSV example of docs/MANUAL.md. The last case was recorded from the pre-#65 reader (5.17.0) later; only its ambiguity warnings are new. Per case: importable questions, number of errors and warnings, and per record whether it imports and what is stored (text, type, answers with their correct flag, explanation). Error texts are not compared (they are translated). Read by importCsvRegression.test.js (import preview) and ImportCsvRegressionTest.php (ImportController::importCsv).",
 	"files": {
 		"general-knowledge.csv": {
 			"importable": 8,
@@ -1773,6 +1773,101 @@
 								}
 							],
 							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "numeric answers without a header: both readings import (items recorded from the pre-#65 reader; the 3 warnings are new)",
+			"csv": "Wie viel ist 3-1?,1,3,2,3\nHow many usable hosts has a /30 network?,2,4,1,2\nQ,a,b,1,2\nQ2,a,b,1,4\n",
+			"expect": {
+				"importable": 4,
+				"errors": 0,
+				"warnings": 3,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Wie viel ist 3-1?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "1",
+									"correct": false
+								},
+								{
+									"text": "3",
+									"correct": false
+								},
+								{
+									"text": "2",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "How many usable hosts has a /30 network?",
+							"type": "single",
+							"answers": [
+								{
+									"text": "2",
+									"correct": false
+								},
+								{
+									"text": "4",
+									"correct": true
+								},
+								{
+									"text": "1",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": false
+								},
+								{
+									"text": "b",
+									"correct": true
+								},
+								{
+									"text": "1",
+									"correct": false
+								}
+							],
+							"explanation": null
+						}
+					},
+					{
+						"ok": true,
+						"question": {
+							"text": "Q2",
+							"type": "single",
+							"answers": [
+								{
+									"text": "a",
+									"correct": true
+								},
+								{
+									"text": "b",
+									"correct": false
+								}
+							],
+							"explanation": "4"
 						}
 					}
 				]
