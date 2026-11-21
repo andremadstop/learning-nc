@@ -3797,12 +3797,16 @@ test('learner: search hit from an enrolled course, RTL search field, activity li
 					return
 				}
 				for (const e of badges) {
-					if (!e.anchors.some((a) => new URL(a.href).pathname.endsWith('/apps/learning/dashboard'))) rec.add('activity', `stream: "${e.text}" does not link to the dashboard (#85)`)
+					// GitHub #101: the link opens Today's achievements section, not just Today
+					if (!e.anchors.some((a) => { const u = new URL(a.href); return u.pathname.endsWith('/apps/learning/dashboard') && u.searchParams.get('section') === 'achievements' })) rec.add('activity', `stream: "${e.text}" does not link to the dashboard's achievements (#85, #101)`)
 				}
-				const hit = await clickStreamLink({ text: /Achievement unlocked/, href: /\/dashboard$/ })
+				const hit = await clickStreamLink({ text: /Achievement unlocked/, href: /\/dashboard\?section=achievements$/ })
 				if (!hit) { rec.add('activity', 'stream: no clickable achievement'); return }
 				if (hit.opened) { rec.add('activity', 'stream: the achievement link opens a new tab'); await hit.opened.close() }
-				if (!(await page.getByRole('heading', { name: 'Achievements' }).first().isVisible().catch(() => false))) rec.add('activity', 'stream: the achievement link opens the dashboard without its achievements (#85)')
+				const heading = page.locator('#dashboard-achievements-heading')
+				if (!(await heading.isVisible().catch(() => false))) { rec.add('activity', 'stream: the achievement link opens the dashboard without its achievements (#85)'); return }
+				const inView = await heading.evaluate((el) => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < window.innerHeight }).catch(() => false)
+				if (!inView) rec.add('activity', 'stream: the achievement link opens the dashboard, but its achievements are scrolled out of view (#101)')
 			})
 		}
 		flush()

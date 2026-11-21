@@ -65,18 +65,14 @@ describe('persona sweep: expectedReason', () => {
 		expect(expectedReason({ kind: 'console', detail: 'POST 400 /apps/learning/api/settings/admin/cert-backgrounds' }, at)).toBeNull()
 	})
 
-	// GitHub #85: no page lists a user's achievements app-wide (only a pool's statistics and a
-	// course summary); until that is decided, the achievement link's landing is listed, not counted.
-	it('the achievement link without achievements is expected only at its own station, as learner1', () => {
+	// GitHub #85/#101: Today lists the achievements now and the activity links there, so a link that
+	// lands without them is a real finding again (the ZC15 exception is gone).
+	it('the achievement link without achievements is counted again (#101)', () => {
 		const gap = { kind: 'activity', detail: 'stream: the achievement link opens the dashboard without its achievements (#85)' }
 		const at = { user: 'learner1', station: ACHIEVEMENT_LINK_STATION }
 		expect(typeof ACHIEVEMENT_LINK_STATION).toBe('string')
-		expect(expectedReason(gap, at)).toMatch(/open decision/)
-		expect(expectedReason(gap, { ...at, station: 'Activity app: the certificate link opens "Completion & certificate" (#85)' })).toBeNull()
-		expect(expectedReason(gap, { ...at, user: 'learner2' })).toBeNull()
+		expect(expectedReason(gap, at)).toBeNull()
 		expect(expectedReason({ kind: 'activity', detail: 'stream: no clickable achievement' }, at)).toBeNull()
-		expect(expectedReason({ kind: 'activity', detail: 'stream: "Achievement unlocked: x" does not link to the dashboard (#85)' }, at)).toBeNull()
-		expect(expectedReason({ ...gap, kind: 'http' }, at)).toBeNull()
 	})
 
 	// GitHub #82: a dead-link station opens a link to a deleted course, a course without access or a

@@ -31,13 +31,6 @@ function expectedReason(finding, ctx) {
 		&& /^POST 400 (\/index\.php)?\/apps\/learning\/api\/settings\/admin\/cert-backgrounds$/.test(finding.detail)) {
 		return 'the background library refuses an SVG and an oversized picture (the station tests exactly that)'
 	}
-	// GitHub #85: the achievement activity links to /dashboard (Today), but no page lists a user's
-	// achievements app-wide (only a pool's statistics and a course summary), and the event names no
-	// pool or course. Open decision for Andre (ZC15); until then the gap is listed, not counted.
-	if (finding.kind === 'activity' && ctx.user === 'learner1' && ctx.station === ACHIEVEMENT_LINK_STATION
-		&& finding.detail === 'stream: the achievement link opens the dashboard without its achievements (#85)') {
-		return 'open decision ZC15: no page lists the achievements app-wide; the link opens Today'
-	}
 	// GitHub #82: a dead-link station opens a link whose target is gone or not this persona's; the
 	// app asks the server once and gets 404, which is the point of the station. Only at those
 	// stations, only GET 404, only for the ids the seed made dead (ctx.deadLinks).
