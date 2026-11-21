@@ -212,6 +212,11 @@ class BadgeService {
      * Call this AFTER commit.
      */
     public function dispatchNotifications(string $userId, array $badges): void {
+        // GitHub #101: awardIfNew() cleared the cache before the caller's commit; a /user/state
+        // request in between cached the state without these badges for 30 s. Clear it again now.
+        if ($badges !== []) {
+            $this->invalidateUserCaches($userId);
+        }
         if ($this->config->getAppValue('learning', 'gamification_enabled', 'yes') !== 'yes') {
             return;
         }
@@ -430,6 +435,8 @@ class BadgeService {
 
         // GitHub #101: Today and the profile read the badges from the 30-s user-state cache. A badge
         // can come without XP (RAG contribution, coop simulator), so XpService does not clear it.
+        // Inside a caller's transaction this runs before the commit; dispatchNotifications(),
+        // called after the commit, clears the cache again.
         $this->invalidateUserCaches($userId);
 
         $badgeData = $this->buildBadgeData($badgeId, null);

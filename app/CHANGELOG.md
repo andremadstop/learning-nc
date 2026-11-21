@@ -61,7 +61,9 @@ All notable changes to this project will be documented in this file.
   achievement gallery is cached for 30 seconds and was only cleared when XP changed. An
   achievement that comes without XP (a RAG contribution, a finished coop simulator) stayed
   invisible until the cache ran out, so the activity link could open Today without it. Awarding
-  an achievement now clears the same cache entries as an XP change.
+  an achievement now clears the same cache entries as an XP change. An achievement awarded inside
+  a Leitner answer (Mastermind) clears them again after that answer is saved, so a page loaded
+  in between cannot keep the old state for 30 seconds.
 - **CSV import: three misreadings found by the property tests** (#65), in the import and in its
   preview alike. (1) A first question that mentions "question" and "answer" (or "Frage" and
   "Antwort") is no longer dropped as a header: a header is a first row that names the columns

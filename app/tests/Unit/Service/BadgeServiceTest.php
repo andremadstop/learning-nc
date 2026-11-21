@@ -166,6 +166,45 @@ class BadgeServiceTest extends TestCase {
         }
     }
 
+    /**
+     * GitHub #101 follow-up: LeitnerService awards the mastery badge inside its write transaction,
+     * so the cache invalidation in awardIfNew() runs before the commit. A /user/state request in
+     * between caches the old state for 30 s. dispatchNotifications() is the documented post-commit
+     * step for such badges and clears the same keys again.
+     */
+    public function testBadgesAwardedInATransactionClearTheCacheAgainAfterTheCommit(): void {
+        $this->config->method('getAppValue')->willReturn('yes');
+        $notification = $this->createMock(\OCP\Notification\INotification::class);
+        foreach (['setApp', 'setUser', 'setDateTime', 'setObject', 'setSubject'] as $m) {
+            $notification->method($m)->willReturnSelf();
+        }
+        $this->notificationManager->method('createNotification')->willReturn($notification);
+        $db = new FakeDbConnection();
+        $service = new BadgeService($db, $this->notificationManager, $this->config, $this->activityManager, $this->cacheFactory);
+        $method = new \ReflectionMethod(BadgeService::class, 'awardIfNew');
+
+        $db->beginTransaction();
+        $awarded = $method->invoke($service, 'alice', 'mastermind', false);
+        // A /user/state request before the commit caches the state without the badge.
+        $this->cacheFactory->cache->removedKeys = [];
+        $db->commit();
+        $service->dispatchNotifications('alice', $awarded);
+
+        $this->assertEqualsCanonicalizing(
+            ['user_state_alice', 'profile_alice_all', 'lernprofil_alice_all'],
+            $this->cacheFactory->cache->removedKeys,
+            'the state cached between award and commit must be cleared after the commit'
+        );
+    }
+
+    public function testDispatchingNoBadgesLeavesTheCacheAlone(): void {
+        $this->config->method('getAppValue')->willReturn('yes');
+
+        $this->service->dispatchNotifications('alice', []);
+
+        $this->assertSame([], $this->cacheFactory->cache->removedKeys);
+    }
+
     public function testALegacyBadgeThatIsNotAwardedLeavesTheCacheAlone(): void {
         $method = new \ReflectionMethod(BadgeService::class, 'awardIfNew');
         $method->invoke($this->service, 'alice', 'first_session', true);
