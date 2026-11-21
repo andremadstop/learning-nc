@@ -11,8 +11,7 @@ All notable changes to this project will be documented in this file.
   (with "visible to learners"), the translations of question, explanation, scenario and
   feedback texts, and the translations of the answers. Imported through occ or **Import pools**,
   it is the same pool field for field; before, the pool's metadata, all translations and the
-  instructor notes were lost, a question without chapter took the pool's chapter, and a question
-  without difficulty came back as `medium`. Older exports (a plain list of questions) import as
+  instructor notes were lost, and a question without difficulty came back as `medium`. Older exports (a plain list of questions) import as
   before. Not part of a pool export, as documented in `docs/import-pool-workflow.md` (Round trip):
   attached images, the audio bundle (`--media-dir`), review state and course settings.
   A translation the app cannot store (another language than de, en, ru, ar, or no text) is
