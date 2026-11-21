@@ -245,7 +245,7 @@ class ImportController extends Controller {
         $clean = static fn (array $texts): array => array_values(array_filter(array_map('trim', $texts), static fn (string $t): bool => $t !== ''));
         $optional = static function (string $value): ?string {
             $text = trim($value);
-            return empty($text) ? null : $text;
+            return $text === '' ? null : $text;
         };
         $lastIdx = count($fields) - 1;
         $secondLastIdx = $lastIdx - 1;
@@ -317,7 +317,7 @@ class ImportController extends Controller {
      */
     private static function csvRecord(array $fields, ?array $columns = null): array {
         $text = trim($fields[0] ?? '');
-        if (empty($text)) {
+        if ($text === '') {
             return ['error' => 'emptyText'];
         }
         if (mb_strlen($text) > 5000) {

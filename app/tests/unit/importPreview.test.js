@@ -402,6 +402,14 @@ describe('importPreview: CSV, the same records the server reads (ImportControlle
 		expect(parseCsv('question;answer1;answer2;correct\nQ;a,b;c;1\n')).toEqual([['question', 'answer1', 'answer2', 'correct'], ['Q', 'a,b', 'c', '1']])
 	})
 
+	it('a question text "0" and an explanation "0" are text, not empty (PHP empty() treated "0" as empty)', () => {
+		const r = analyzeCsvImport('0,a,b,1\nQ,a,b,1,0\n  ,a,b,1\n')
+		expect(r.items[0].question).toEqual({ text: '0', type: 'single', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }], explanation: null })
+		expect(r.items[1].question).toEqual({ text: 'Q', type: 'single', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }], explanation: '0' })
+		// only an empty or blank text is empty
+		expect(r.errors).toEqual(['Line 3: Empty question text'])
+	})
+
 	it('empty input is "No data to import"; a tie in field counts means comma', () => {
 		expect(analyzeCsvImport('\n\n  \n').error).toBe('No data to import')
 		expect(parseCsv('a;b,c;d,e\n')[0]).toEqual(['a;b', 'c;d', 'e'])

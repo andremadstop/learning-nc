@@ -195,6 +195,18 @@ Third,x,y,1,Weil.
         $this->assertSame([false, true, false, false], array_column($this->storedAnswers($this->questions[0]), 'correct'));
     }
 
+    public function testAQuestionTextAndAnExplanationOf0AreNotEmpty(): void {
+        // PHP empty() treats "0" as empty: the question "0" was refused, the explanation "0" dropped
+        $r = $this->importController()->importCsv(7, "0,a,b,1\nQ,a,b,1,0\n  ,a,b,1\n");
+
+        $this->assertSame(2, $r->getData()['imported'] ?? null, json_encode($r->getData()));
+        $this->assertSame([
+            ['text' => '0', 'answers' => [['text' => 'a', 'correct' => true], ['text' => 'b', 'correct' => false]], 'explanation' => null],
+            ['text' => 'Q', 'answers' => [['text' => 'a', 'correct' => true], ['text' => 'b', 'correct' => false]], 'explanation' => '0'],
+        ], $this->stored());
+        $this->assertSame(['Line 3: Empty question text'], $r->getData()['errors']);
+    }
+
     public function testATruncatedAnswerIsReportedAsAWarning(): void {
         $long = str_repeat('y', 2001);
         $r = $this->importController()->importCsv(7, "Q,{$long},b,1\nOpen?,{$long},open\n");

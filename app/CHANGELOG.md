@@ -24,6 +24,10 @@ All notable changes to this project will be documented in this file.
   for it ("Ambiguous numbers — read as correct answer … with explanation …"), naming the reading
   taken; a header row with a correct column decides. The shipped examples have a header and are
   read as before.
+- **CSV import: a question text or an explanation `0` is text** (pre-existing), in the import and
+  in its preview alike. The readers used PHP `empty()`, which treats `"0"` as empty: a question
+  `0` was refused with "Empty question text" and an explanation `0` was dropped. Only an empty or
+  blank field is empty now.
 
 ### Tests
 - A shared fixture records how both CSV readers read the shipped examples and 30 hand-written

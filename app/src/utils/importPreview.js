@@ -146,8 +146,6 @@ const phpTrim = (s) => s.replace(/^[ \t\n\r\0\v]+|[ \t\n\r\0\v]+$/g, '')
 const mbLength = (s) => Array.from(s).length
 const mbCut = (s, max) => Array.from(s).slice(0, max).join('')
 const asciiLower = (s) => s.replace(/[A-Z]/g, (c) => c.toLowerCase())
-/** PHP empty() on a string: '' and '0'. */
-const phpEmpty = (s) => s === '' || s === '0'
 const isScalar = (v) => typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v))
 
 /** PHP 8 is_numeric(): numbers, and numeric strings (leading/trailing whitespace allowed). */
@@ -927,7 +925,7 @@ function csvChoice(fields, columns = null) {
 	const clean = (texts) => texts.map(phpTrim).filter((a) => a !== '')
 	const optional = (value) => {
 		const text = phpTrim(value)
-		return phpEmpty(text) ? null : text
+		return text === '' ? null : text
 	}
 	const lastIdx = fields.length - 1
 	const secondLastIdx = lastIdx - 1
@@ -986,7 +984,7 @@ function csvChoice(fields, columns = null) {
  */
 function csvRecord(fields, columns = null) {
 	const text = phpTrim(fields[0] ?? '')
-	if (phpEmpty(text)) {
+	if (text === '') {
 		return { error: 'emptyText' }
 	}
 	if (mbLength(text) > MAX_TEXT_LENGTH) {
