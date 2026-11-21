@@ -58,7 +58,7 @@ class AnswerTranslationMapper extends QBMapper {
 
     /**
      * Every translation of the given answers, all languages (the pool export), ordered by
-     * question and language.
+     * answer id and language; [] for an empty list.
      *
      * @param int[] $answerIds
      * @return AnswerTranslation[]
