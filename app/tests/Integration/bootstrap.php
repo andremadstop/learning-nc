@@ -22,6 +22,7 @@ if ($appManager->isEnabledForAnyone('learning')) {
 require_once __DIR__ . '/Support/MockLlmServer.php';
 require_once __DIR__ . '/Support/ContainerObjects.php';
 require_once __DIR__ . '/Support/RecordingOutput.php';
+require_once __DIR__ . '/Support/PoolColumns.php';
 
 // The run script creates the mock's request log; abort now if it is missing or unreadable.
 \OCA\Learning\Tests\Integration\Support\MockLlmServer::requests();

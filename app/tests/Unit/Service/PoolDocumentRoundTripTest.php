@@ -24,6 +24,7 @@ use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\RichFeedbackFormat;
 use OCA\Learning\Service\TranslationService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Integration\Support\PoolColumns;
 use OCA\Learning\Tests\Unit\Controller\ImportControllerHarness;
 use OCA\Learning\Tests\Unit\Support\PoolImportHarness;
 use OCP\IUserManager;
@@ -39,7 +40,9 @@ use Psr\Log\LoggerInterface;
  *
  * The check is against the entities, not export against import: every property of Pool,
  * Question, Answer, QuestionTranslation and AnswerTranslation is either compared or listed in
- * NOT_CARRIED with the reason. A new column without either fails testEveryColumnIsCarriedOrExcluded.
+ * PoolColumns::NOT_CARRIED with the reason (tests/Integration/Support/PoolColumns.php, shared with
+ * the integration test). A new column without either fails testEveryColumnIsCarriedOrExcluded;
+ * a compared column the source fixture leaves empty fails testTheSourceSetsEveryComparedField.
  *
  * The importer runs on recording mocks; the stored entities are rebuilt from the calls as
  * QuestionService::create() and TranslationService store them. The same round trip against a real
@@ -49,36 +52,6 @@ use Psr\Log\LoggerInterface;
 class PoolDocumentRoundTripTest extends TestCase {
     use ImportControllerHarness;
     use PoolImportHarness;
-
-    /** Columns an export does not carry, and why. Everything else must come back unchanged. */
-    private const NOT_CARRIED = [
-        Pool::class => [
-            'id' => 'new id', 'userId' => 'the importing user owns the new pool',
-            'createdAt' => 'set on import', 'updatedAt' => 'set on import',
-            'reviewStatus' => 'review state of this instance, an import is published',
-            'reviewerId' => 'review state', 'reviewedAt' => 'review state',
-            'visibility' => 'legacy column, read and ignored',
-        ],
-        Question::class => [
-            'id' => 'new id', 'poolId' => 'the new pool', 'userId' => 'the importing user',
-            'createdAt' => 'set on import', 'updatedAt' => 'set on import',
-            'reviewStatus' => 'review state of this instance, an import is published',
-            'reviewerId' => 'review state', 'reviewedAt' => 'review state',
-            'imagePath' => 'a path into this instance\'s app data; never taken from a file (docs: Round trip)',
-            'lang' => 'no code path writes it (QuestionService::create() has no parameter); always null for app-created questions',
-        ],
-        Answer::class => [
-            'id' => 'new id', 'questionId' => 'the new question',
-            // position: compared as the order of the answers (positionsInOrder), not as numbers
-        ],
-        QuestionTranslation::class => [
-            'id' => 'new id', 'questionId' => 'the new question', 'createdAt' => 'set on import',
-            // optionFeedback: compared with positions as answer order
-        ],
-        AnswerTranslation::class => [
-            'id' => 'new id', 'answerId' => 'the new answer', 'createdAt' => 'set on import',
-        ],
-    ];
 
     private const RANKING = ['intro_note' => 'Order them', 'items' => [['id' => 'a', 'label' => 'Plan', 'correct_position' => 1], ['id' => 'b', 'label' => 'Do', 'correct_position' => 2]]];
     private const DROPDOWN = ['questions' => [['id' => 'q1', 'prompt' => 'HTTPS', 'options' => ['22', '443'], 'correct' => '443']]];
@@ -391,22 +364,26 @@ class PoolDocumentRoundTripTest extends TestCase {
      * column cannot silently go missing from the export.
      */
     public function testEveryColumnIsCarriedOrExcluded(): void {
-        $compared = [
-            Pool::class => ['name', 'description', 'handbookKey', 'handbookTitle', 'chapterKey', 'chapterTitle', 'chapterOrder'],
-            Question::class => ['text', 'explanation', 'difficulty', 'questionType', 'pbqSubtype', 'pbqConfig', 'instructorNote', 'noteVisible',
-                'handbookKey', 'handbookTitle', 'examKey', 'chapterKey', 'chapterTitle', 'chapterOrder', 'scenario',
-                'hint', 'backgroundFact', 'keyTakeaway', 'optionFeedback'],
-            Answer::class => ['text', 'isCorrect', 'position'],
-            QuestionTranslation::class => ['lang', 'text', 'explanation', 'scenario', 'hint', 'backgroundFact', 'keyTakeaway', 'optionFeedback'],
-            AnswerTranslation::class => ['lang', 'text'],
+        foreach (array_keys(PoolColumns::COMPARED) as $class) {
+            $this->assertSame(['missing' => [], 'unknown' => []], PoolColumns::missingFromBothLists($class), $class . ': a property is neither carried by the export nor excluded with a reason');
+        }
+    }
+
+    /**
+     * Every compared column holds a value somewhere in the source, so a field the export or the
+     * import drops cannot hide behind null on both sides.
+     */
+    public function testTheSourceSetsEveryComparedField(): void {
+        $source = $this->source();
+        $byClass = [
+            Pool::class => [$source['pool']],
+            Question::class => $source['questions'],
+            Answer::class => array_merge(...array_values($source['answers'])),
+            QuestionTranslation::class => $source['qt'],
+            AnswerTranslation::class => $source['at'],
         ];
-        foreach ($compared as $class => $fields) {
-            // id is declared on OCP\AppFramework\Db\Entity, the rest on the class itself.
-            $all = array_merge(['id'], self::properties($class));
-            $listed = array_merge($fields, array_keys(self::NOT_CARRIED[$class]));
-            sort($all);
-            sort($listed);
-            $this->assertSame($all, $listed, $class . ': a property is neither carried by the export nor excluded with a reason');
+        foreach ($byClass as $class => $entities) {
+            $this->assertSame([], PoolColumns::unexercised($class, $entities), $class . ': compared but never set in the source');
         }
     }
 
@@ -498,24 +475,13 @@ class PoolDocumentRoundTripTest extends TestCase {
      */
     private function assertSameEntity(object $expected, object $actual, array $special = []): void {
         $class = get_class($expected);
-        foreach (self::properties($class) as $property) {
-            if (isset(self::NOT_CARRIED[$class][$property])) {
+        foreach (PoolColumns::properties($class) as $property) {
+            if (isset(PoolColumns::NOT_CARRIED[$class][$property])) {
                 continue;
             }
             [$want, $got] = $special[$property] ?? [$expected->{'get' . ucfirst($property)}(), $actual->{'get' . ucfirst($property)}()];
             $this->assertSame($want, $got, sprintf('%s::%s', $class, $property));
         }
-    }
-
-    /** @return list<string> */
-    private static function properties(string $class): array {
-        $out = [];
-        foreach ((new \ReflectionClass($class))->getProperties(\ReflectionProperty::IS_PROTECTED) as $p) {
-            if ($p->getDeclaringClass()->getName() === $class) {
-                $out[] = $p->getName();
-            }
-        }
-        return $out;
     }
 
     /**

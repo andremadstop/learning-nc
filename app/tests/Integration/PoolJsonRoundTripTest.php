@@ -5,11 +5,21 @@ namespace OCA\Learning\Tests\Integration;
 
 use OCA\Learning\Command\ExportPoolCommand;
 use OCA\Learning\Command\ImportPoolJsonCommand;
+use OCA\Learning\Db\Answer;
+use OCA\Learning\Db\AnswerMapper;
+use OCA\Learning\Db\AnswerTranslation;
+use OCA\Learning\Db\AnswerTranslationMapper;
+use OCA\Learning\Db\Pool;
+use OCA\Learning\Db\PoolMapper;
+use OCA\Learning\Db\Question;
 use OCA\Learning\Db\QuestionMapper;
+use OCA\Learning\Db\QuestionTranslation;
+use OCA\Learning\Db\QuestionTranslationMapper;
 use OCA\Learning\Service\DataMobilityService;
 use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\TranslationService;
+use OCA\Learning\Tests\Integration\Support\PoolColumns;
 use OCP\Server;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -19,9 +29,11 @@ use Symfony\Component\Console\Output\BufferedOutput;
  * A pool exported with `occ learning:export-pool` and imported again with
  * `occ learning:import-pool-json` keeps every question and its type — and, since 5.18.0 (format
  * learning-pool/2), every field: pool metadata, translations, instructor notes, rich feedback.
- * The field-by-field check against the entities is the unit test
- * tests/Unit/Service/PoolDocumentRoundTripTest.php; this one runs the same round trip on a real
- * database and compares the export of the copy with the export of the source.
+ * The same round trip as the unit test tests/Unit/Service/PoolDocumentRoundTripTest.php, on a real
+ * database: the export of the copy equals the export of the source, and — because a field the
+ * export never writes would be missing from both exports alike — the rows stored for the copy
+ * equal the rows stored for the source, column by column (PoolColumns lists what is compared and
+ * what is left out with a reason), with every compared column set somewhere in the source.
  */
 final class PoolJsonRoundTripTest extends TestCase {
 	private const USER = 'roundtrip-it';
@@ -93,7 +105,7 @@ final class PoolJsonRoundTripTest extends TestCase {
 			'option_feedback' => [['position' => 0, 'why' => '80 is plain HTTP.', 'misconception' => 'Forgetting the S'], ['position' => 1, 'why' => 'Registered for HTTPS.', 'misconception' => null]],
 		]);
 		$translations->setQuestionTranslation((int)$single['id'], 'en', 'Which port? (en)', 'Port 443.', 'A web server (en).', [
-			'hint' => 'TLS (en)', 'background_fact' => null, 'key_takeaway' => '443 (en).',
+			'hint' => 'TLS (en)', 'background_fact' => 'Registered 1994 (en).', 'key_takeaway' => '443 (en).',
 			'option_feedback' => [['position' => 0, 'why' => 'Plain HTTP (en).', 'misconception' => null]],
 		]);
 		$translations->setQuestionTranslation((int)$single['id'], 'ru', 'Какой порт?');
@@ -108,6 +120,8 @@ final class PoolJsonRoundTripTest extends TestCase {
 			['text' => 'SSH', 'is_correct' => true],
 		], 'open', null, null, 'Hidden note.', false, null, null, 'ccna-q9');
 		$translations->setAnswerTranslation((int)$open['answers'][0]['id'], 'ar', 'إس إس إتش');
+		$translations->setAnswerTranslation((int)$open['answers'][0]['id'], 'uk', 'SSH (uk)');
+		$translations->setQuestionTranslation((int)$open['id'], 'fr', 'Nommez le protocole du port 22.');
 		$questions->create($source->getId(), self::USER, 'Order the PDCA steps', null, 'medium', [], 'pbq', 'ranking',
 			(string)json_encode(['items' => [['id' => 'a', 'label' => 'Plan', 'correct_position' => 1], ['id' => 'b', 'label' => 'Do', 'correct_position' => 2]]]),
 			null, false, null, null, null, '1.0', null, null, 'A team meeting.', ['key_takeaway' => 'Plan first.']);
@@ -133,6 +147,8 @@ final class PoolJsonRoundTripTest extends TestCase {
 		$this->assertSame('Round trip full', $expected['name']);
 		$this->assertArrayHasKey('translations', $expected['questions'][0]);
 		$this->assertSame($expected, $mobility->exportPoolDocument((int)$m[1]), $log);
+
+		$this->assertStoredLikeSource($source->getId(), (int)$m[1]);
 	}
 
 	public function testSeveralCorrectAnswersWithoutTypeImportAsMulti(): void {
@@ -142,6 +158,102 @@ final class PoolJsonRoundTripTest extends TestCase {
 		]));
 		$this->assertSame('single', ImportPoolJsonCommand::resolveQuestionType(['type' => 'true_false'], 'single', []));
 		$this->assertSame('open', ImportPoolJsonCommand::resolveQuestionType(['question_type' => 'open', 'type' => 'multi'], 'single', []));
+	}
+
+	/**
+	 * The rows stored for the copy equal the rows stored for the source in every column of
+	 * PoolColumns::COMPARED, read back through the mappers — not through the export, which would
+	 * miss a field it never writes on both sides. Questions are matched by text (unique in the
+	 * fixture), answers by stored order, translations by language.
+	 */
+	private function assertStoredLikeSource(int $sourceId, int $copyId): void {
+		$source = $this->stored($sourceId);
+		$copy = $this->stored($copyId);
+
+		foreach ($source['byClass'] as $class => $entities) {
+			$this->assertSame(['missing' => [], 'unknown' => []], PoolColumns::missingFromBothLists($class), $class . ': a property is neither compared nor excluded with a reason');
+			$this->assertSame([], PoolColumns::unexercised($class, $entities), $class . ': compared but never stored for the source — the fixture or the code that stores it drops the field');
+		}
+
+		$this->assertSameColumns($source['pool'], $copy['pool']);
+		$this->assertSame(array_keys($source['questions']), array_keys($copy['questions']), 'the same questions');
+		foreach ($source['questions'] as $text => $q) {
+			$c = $copy['questions'][$text];
+			$this->assertSameColumns($q['question'], $c['question']);
+			$this->assertCount(count($q['answers']), $c['answers'], (string)$text);
+			foreach ($q['answers'] as $i => $answer) {
+				$this->assertSameColumns($answer['answer'], $c['answers'][$i]['answer']);
+				$this->assertSame(array_keys($answer['translations']), array_keys($c['answers'][$i]['translations']), 'answer translation languages of ' . $answer['answer']->getText());
+				foreach ($answer['translations'] as $lang => $t) {
+					$this->assertSameColumns($t, $c['answers'][$i]['translations'][$lang]);
+				}
+			}
+			$this->assertSame(array_keys($q['translations']), array_keys($c['translations']), 'translation languages of ' . $text);
+			foreach ($q['translations'] as $lang => $t) {
+				$this->assertSameColumns($t, $c['translations'][$lang]);
+			}
+		}
+	}
+
+	private function assertSameColumns(object $expected, object $actual): void {
+		$class = get_class($expected);
+		foreach (PoolColumns::COMPARED[$class] as $property) {
+			$getter = 'get' . ucfirst($property);
+			$this->assertSame($expected->$getter(), $actual->$getter(), sprintf('%s::%s', $class, $property));
+		}
+	}
+
+	/**
+	 * A pool as stored: the pool row, its questions by text with their answers (stored order) and
+	 * the translations of both by language, plus every entity per class.
+	 *
+	 * @return array{pool: Pool, questions: array<string, array{question: Question, answers: list<array{answer: Answer, translations: array<string, AnswerTranslation>}>, translations: array<string, QuestionTranslation>}>, byClass: array<class-string, list<object>>}
+	 */
+	private function stored(int $poolId): array {
+		$pool = Server::get(PoolMapper::class)->findById($poolId);
+		$questions = Server::get(QuestionMapper::class)->findByPoolId($poolId);
+		$questionIds = array_map(static fn (Question $q): int => (int)$q->getId(), $questions);
+		$answers = Server::get(AnswerMapper::class)->findByQuestions($questionIds);
+		$answerIds = [];
+		foreach ($answers as $list) {
+			foreach ($list as $a) {
+				$answerIds[] = (int)$a->getId();
+			}
+		}
+		$qt = Server::get(QuestionTranslationMapper::class)->findByQuestions($questionIds);
+		$at = Server::get(AnswerTranslationMapper::class)->findByAnswers($answerIds);
+
+		$out = [];
+		$allAnswers = [];
+		foreach ($questions as $q) {
+			$entry = ['question' => $q, 'answers' => [], 'translations' => []];
+			foreach ($answers[(int)$q->getId()] ?? [] as $a) {
+				$allAnswers[] = $a;
+				$translations = [];
+				foreach ($at as $t) {
+					if ((int)$t->getAnswerId() === (int)$a->getId()) {
+						$translations[(string)$t->getLang()] = $t;
+					}
+				}
+				ksort($translations);
+				$entry['answers'][] = ['answer' => $a, 'translations' => $translations];
+			}
+			foreach ($qt as $t) {
+				if ((int)$t->getQuestionId() === (int)$q->getId()) {
+					$entry['translations'][(string)$t->getLang()] = $t;
+				}
+			}
+			ksort($entry['translations']);
+			$out[(string)$q->getText()] = $entry;
+		}
+		ksort($out);
+		return ['pool' => $pool, 'questions' => $out, 'byClass' => [
+			Pool::class => [$pool],
+			Question::class => $questions,
+			Answer::class => $allAnswers,
+			QuestionTranslation::class => $qt,
+			AnswerTranslation::class => $at,
+		]];
 	}
 
 	/** @return array<string, string> */

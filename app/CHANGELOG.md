@@ -27,7 +27,10 @@ All notable changes to this project will be documented in this file.
 - A round-trip test checks every column of pools, questions, answers and both translation
   tables: carried by the export or excluded with a reason, so a new column cannot go missing
   silently; one question per type including two interactive subtypes. The same round trip runs
-  against a real Nextcloud in the integration suite.
+  against a real Nextcloud in the integration suite, where it compares not only the two exports
+  but the rows stored for the copy with the rows stored for the source, column by column — a
+  field the export never writes would be missing from both exports alike. Both tests also fail
+  when a compared column is empty everywhere in the source.
 
 ## [5.17.0] - 2026-11-21 — Certificate presentation: backgrounds, PDF download, links in activities
 
