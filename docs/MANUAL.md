@@ -394,8 +394,9 @@ It takes options such as -l."
 
 `correct_number` is **1-based** (1 = first answer); the explanation is optional. A header
 row (a first row that names the columns, such as `question,answer1,…,correct,explanation` or
-`Frage;Antwort1;…;Richtig`, and is not itself a question; `question,model_answer,open` also
-counts as a header) is skipped. If the header names the
+`Frage;Antwort1;…;Richtig`, and is not itself a question; in the open-question form, such as `question,model_answer,open`
+or `Question text,Model answer,open`, a first field of at most four words without `?`, `.`,
+`!` or `:` counts as a column name, so the row is a header) is skipped. If the header names the
 correct column (`correct`, `richtig`, `korrekt`, `solution`, `Lösung`) as its last or
 second-last column, the number is read from that column. Without a header, a row whose
 second-last field is a valid answer number is read as answers, number, explanation, so an

@@ -1677,6 +1677,106 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "header in the open-question form with spaces in the column names",
+			"csv": "Question text,Model answer,open\nWas ist DNS?,Namensaufl\u00f6sung,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist DNS?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, plural column names",
+			"csv": "Questions,Answers,open\nWas ist DNS?,Namensaufl\u00f6sung,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist DNS?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, German plural",
+			"csv": "Fragen,Antworten,open\nWas ist DNS?,Namensaufl\u00f6sung,open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Was ist DNS?",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Namensaufl\u00f6sung",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "header in the open-question form, semicolon, two-word labels",
+			"csv": "Question text;Sample answer;open\nExplain DNS.;Name resolution;open\n",
+			"expect": {
+				"importable": 1,
+				"errors": 0,
+				"warnings": 0,
+				"items": [
+					{
+						"ok": true,
+						"question": {
+							"text": "Explain DNS.",
+							"type": "open",
+							"answers": [
+								{
+									"text": "Name resolution",
+									"correct": true
+								}
+							],
+							"explanation": null
+						}
+					}
+				]
+			}
 		}
 	]
 }

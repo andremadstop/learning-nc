@@ -243,7 +243,7 @@ FC_SEED=<seed> FC_RUNS=5000 npx --prefix app vitest run tests/unit/importRoundtr
 
 **Findings (fixed in 5.18.0).** The CSV format needs no column names, so the reader has to guess. The property found three cases where it guessed wrong on an export:
 
-- A first question that mentions "question" and "answer" (or "Frage" and "Antwort") was dropped as a header. Now a header is a first record that names the columns **and does not itself import as a question** (one exception keeps the manual's open-form header `question,model_answer,open` a header: an open record whose question is a bare column name).
+- A first question that mentions "question" and "answer" (or "Frage" and "Antwort") was dropped as a header. Now a header is a first record that names the columns **and does not itself import as a question** (every open-form record imports, so there the first field decides: a column name — at most four words, no `?` `.` `!` `:` — keeps `question,model_answer,open`, `Question text,Model answer,open` or `Fragen,Antworten,open` a header, as before).
 - Answers with an unquoted `;` (for example `cd;ls;pwd`) switched the reader to the `;` delimiter. Now the delimiter is the one under which **more records import as questions**; only on a tie does the old rule decide (more fields in the first data record, comma on a tie).
 - A numeric explanation (for example `2`) was read as the number of the correct answer. Now "answers, number, explanation" wins when the second-last field is a valid number and that reading imports; with a header that names the correct column, the number comes from that column.
 

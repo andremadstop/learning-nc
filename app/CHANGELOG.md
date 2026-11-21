@@ -9,8 +9,9 @@ All notable changes to this project will be documented in this file.
   preview alike. (1) A first question that mentions "question" and "answer" (or "Frage" and
   "Antwort") is no longer dropped as a header: a header is a first row that names the columns
   and does not itself import as a question. Real header rows, English and German, are still
-  skipped, also one in the open-question form with a bare column name in front
-  (`question,model_answer,open`). (2) An unquoted `;` in an answer (`cd;ls;pwd`, as the CSV export writes it) no longer
+  skipped, also one in the open-question form whose first field is a column name (at most four
+  words, no `?` `.` `!` `:`): `question,model_answer,open`, `Question text,Model answer,open`,
+  `Fragen,Antworten,open`. (2) An unquoted `;` in an answer (`cd;ls;pwd`, as the CSV export writes it) no longer
   switches the file to the `;` separator: the separator is the one under which more rows import
   as questions; only on a tie does the old rule decide (more fields in the first question, comma
   on a tie). (3) An explanation that is a number (`…,1,2`) stays the explanation: when the

@@ -34,8 +34,6 @@ class ImportController extends Controller {
     /** Answers a JSON item may list at all before it is refused instead of cut to MAX_ANSWERS. */
     private const MAX_RAW_ANSWERS = 50;
     private const MAX_ANSWER_LENGTH = 2000;
-    /** First-column names of a CSV header in the open-question form (`question,model_answer,open`). */
-    private const OPEN_HEADER_FIRST_COLUMNS = ['question', 'question_text', 'frage', 'fragetext'];
 
     private QuestionMapper $questionMapper;
     private AnswerMapper $answerMapper;
@@ -143,11 +141,21 @@ class ImportController extends Controller {
     }
 
     /**
+     * The first field of an open-form record reads as a column name, not as a question: at most
+     * four words (split at spaces and tabs) and no sentence mark (? . ! :). "Question text",
+     * "Fragen", "question_text" are labels; "Explain question and answer." is a question.
+     */
+    private static function isCsvColumnLabel(string $text): bool {
+        return strpbrk($text, '?.!:') === false && count(preg_split('/[ \t]+/', $text) ?: [$text]) <= 4;
+    }
+
+    /**
      * A first record that names the columns and does not itself import as a question. A question
      * that mentions "question" and "answer" (or "Frage" and "Antwort") has a correct-answer number
-     * or is an open question, so it is read, not dropped (GitHub #65). Exception: the
-     * open-question form with a bare column name in front (`question,model_answer,open`, as the
-     * manual writes it) stays a header.
+     * or is an open question, so it is read, not dropped (GitHub #65). Exception: every record in
+     * the open-question form imports, so there the first field decides — a column name
+     * (`question,model_answer,open`, `Question text,Model answer,open`, `Fragen,Antworten,open`)
+     * keeps the record a header, as before #65.
      */
     private static function isCsvHeader(array $fields): bool {
         if (!self::mentionsCsvColumns($fields)) {
@@ -155,7 +163,7 @@ class ImportController extends Controller {
         }
         $record = self::csvRecord($fields);
         return isset($record['error'])
-            || ($record['type'] === 'open' && in_array(strtolower($record['text']), self::OPEN_HEADER_FIRST_COLUMNS, true));
+            || ($record['type'] === 'open' && self::isCsvColumnLabel($record['text']));
     }
 
     /**

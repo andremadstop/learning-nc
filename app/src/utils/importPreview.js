@@ -828,15 +828,23 @@ function csvMentionsColumns(fields) {
 		|| (line.includes('frage') && line.includes('antwort'))
 }
 
-/** First-column names of a header in the open-question form (`question,model_answer,open`). */
-const OPEN_HEADER_FIRST_COLUMNS = ['question', 'question_text', 'frage', 'fragetext']
+/**
+ * csvColumnLabel(): the first field of an open-form record reads as a column name, not as a
+ * question — at most four words (split at spaces and tabs only, as the PHP reader does) and no
+ * sentence mark (? . ! :). "Question text", "Fragen", "question_text" are labels;
+ * "Explain question and answer." is a question.
+ */
+function csvColumnLabel(text) {
+	return !/[?.!:]/.test(text) && text.split(/[ \t]+/).length <= 4
+}
 
 /**
  * isCsvHeader(): a first record that names the columns and does not itself import as a
  * question. A question that mentions "question" and "answer" (or "Frage" and "Antwort") has a
  * correct-answer number or is an open question, so it is read, not dropped (GitHub #65).
- * Exception: the open-question form with a bare column name in front
- * (`question,model_answer,open`, as the manual writes it) stays a header.
+ * Exception: every record in the open-question form imports, so there the first field decides —
+ * a column name (`question,model_answer,open`, `Question text,Model answer,open`, `Fragen,Antworten,open`)
+ * keeps the record a header, as before #65.
  */
 function isCsvHeader(fields) {
 	if (!csvMentionsColumns(fields)) {
@@ -844,7 +852,7 @@ function isCsvHeader(fields) {
 	}
 	const record = csvRecord(fields)
 	return record.error !== undefined
-		|| (record.type === 'open' && OPEN_HEADER_FIRST_COLUMNS.includes(asciiLower(record.text)))
+		|| (record.type === 'open' && csvColumnLabel(record.text))
 }
 
 /** A header column that holds the number of the correct answer (correct, richtig, korrekt, solution, Lösung). */

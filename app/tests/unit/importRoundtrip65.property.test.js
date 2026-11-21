@@ -143,6 +143,11 @@ describe('CSV export -> import: the three findings of the property (GitHub #65)'
 		// a header in the open-question form (the manual's `question,model_answer,open`) is still a header
 		expect(analyzeCsvImport('question,model_answer,open\nExplain DNS.,Name resolution,open\n').items.map((i) => i.question.text)).toEqual(['Explain DNS.'])
 		expect(analyzeCsvImport('Fragetext;Musterantwort;OPEN\nErkläre DNS.;Namensauflösung;open\n').items.map((i) => i.question.text)).toEqual(['Erkläre DNS.'])
+		// ... also with column names that are not bare (spaces, plural): a label is short and has no sentence mark
+		for (const header of ['Question text,Model answer,open', 'Questions,Answers,open', 'Fragen,Antworten,open']) {
+			expect(analyzeCsvImport(header + '\nWas ist DNS?,Namensauflösung,open\n').items.map((i) => i.question.text)).toEqual(['Was ist DNS?'])
+		}
+		expect(analyzeCsvImport('Describe the question and the answer,A model answer,open\nSecond,x,y,2\n').items).toHaveLength(2)
 	})
 	it('2. answers with an unquoted ";" do not switch the reader to the ";" delimiter', () => {
 		const r = exported({ text: 'Which command lists /tmp?', answers: [{ text: 'cd;ls;pwd' }, { text: 'id;w;who' }], correct: 0, explanation: null })
