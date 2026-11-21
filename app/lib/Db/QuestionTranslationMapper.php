@@ -56,6 +56,27 @@ class QuestionTranslationMapper extends QBMapper {
         return $results;
     }
 
+    /**
+     * Every translation of the given questions, all languages (the pool export), ordered by
+     * question and language.
+     *
+     * @param int[] $questionIds
+     * @return QuestionTranslation[]
+     */
+    public function findByQuestions(array $questionIds): array {
+        $results = [];
+        foreach (array_chunk($questionIds, 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+               ->from($this->getTableName())
+               ->where($qb->expr()->in('question_id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_INT_ARRAY)))
+               ->orderBy('question_id', 'ASC')
+               ->addOrderBy('lang', 'ASC');
+            $results = array_merge($results, $this->findEntities($qb));
+        }
+        return $results;
+    }
+
     public function deleteByQuestion(int $questionId): void {
         $qb = $this->db->getQueryBuilder();
         $qb->delete($this->getTableName())

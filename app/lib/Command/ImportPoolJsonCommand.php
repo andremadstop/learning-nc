@@ -19,8 +19,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * Also accepts a bare list of questions, or {"name"?, "description"?, "_meta"?, "questions": [...]},
  * as ONE pool — that is what `occ learning:export-pool` and the export in the interface write.
- * Its name comes from --pool-name, else the file's own "name" (or "pool_name"), else the file name without
- * extension (an export is called pool-<id>.json).
+ * Its name comes from --pool-name, else the file's own "name" (or "pool_name"; an export since
+ * 5.18 carries the pool's name), else the file name without extension (an older export, a bare
+ * list, is called pool-<id>.json).
  *
  * Usage:
  *   php occ learning:import-pool-json <file> --user=<uid> [--pool-name=<name>] [--dry-run]

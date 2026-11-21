@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "إدارة التحديثات الأمنية",
     "Sichere Architektur" : "البنية الآمنة",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "استُنفدت محاولات الاختبار (لمعلمي الدورة)",
+    "Q%1$s: translation %2$s was not imported — %3$s" : "س%1$s: لم يتم استيراد الترجمة %2$s — %3$s",
+    "Translation text missing" : "نص الترجمة مفقود",
+    "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "س%1$s: لم يتم استيراد الترجمات إلى %2$s — اللغات المدعومة: %3$s",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

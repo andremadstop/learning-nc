@@ -18,7 +18,8 @@ class TranslationService {
     private PoolShareMapper $shareMapper;
     private IDBConnection $db;
 
-    private const ALLOWED_LANGS = ['de', 'en', 'ru', 'ar'];
+    /** Languages a question or answer translation may have; public for the pool import's checks. */
+    public const ALLOWED_LANGS = ['de', 'en', 'ru', 'ar'];
 
     public function __construct(
         QuestionTranslationMapper $questionTransMapper,

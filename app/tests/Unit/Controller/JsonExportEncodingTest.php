@@ -37,7 +37,7 @@ class JsonExportEncodingTest extends TestCase {
 
     public function testPoolJsonExportSurvivesInvalidUtf8(): void {
         $mobility = $this->createStub(DataMobilityService::class);
-        $mobility->method('exportPoolJson')->willReturn(['questions' => [['text' => self::BROKEN_UTF8]]]);
+        $mobility->method('exportPoolDocument')->willReturn(['questions' => [['text' => self::BROKEN_UTF8]]]);
 
         $resp = $this->exportController($mobility)->exportJson(7);
 
@@ -48,7 +48,7 @@ class JsonExportEncodingTest extends TestCase {
 
     public function testPoolJsonExportThatCannotBeEncodedIsA500WithMessage(): void {
         $mobility = $this->createStub(DataMobilityService::class);
-        $mobility->method('exportPoolJson')->willReturn(['score' => NAN]);
+        $mobility->method('exportPoolDocument')->willReturn(['score' => NAN]);
 
         $resp = $this->exportController($mobility)->exportJson(7);
 

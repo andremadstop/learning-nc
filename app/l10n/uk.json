@@ -4206,6 +4206,9 @@
         "Zugriffskontrolle": "Керування доступом",
         "Patch-Management": "Керування оновленнями",
         "Sichere Architektur": "Безпечна архітектура",
-        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)"
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Спроби іспиту вичерпано (для викладачів курсу)",
+        "Q%1$s: translation %2$s was not imported — %3$s": "П%1$s: переклад %2$s не імпортовано — %3$s",
+        "Translation text missing": "Відсутній текст перекладу",
+        "Q%1$s: translations into %2$s were not imported — supported languages: %3$s": "П%1$s: переклади мовою %2$s не імпортовано — підтримувані мови: %3$s"
     }
 }

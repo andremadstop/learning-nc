@@ -4155,5 +4155,8 @@ OC.L10N.register(
     "Patch-Management" : "Patch management",
     "Sichere Architektur" : "Secure architecture",
     "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)" : "Exam attempts used up (for the course’s instructors)",
+    "Q%1$s: translation %2$s was not imported — %3$s" : "Q%1$s: translation %2$s was not imported — %3$s",
+    "Translation text missing" : "Translation text missing",
+    "Q%1$s: translations into %2$s were not imported — supported languages: %3$s" : "Q%1$s: translations into %2$s were not imported — supported languages: %3$s",
 },
 "nplurals=2; plural=(n != 1);");

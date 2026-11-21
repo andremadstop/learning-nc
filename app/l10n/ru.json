@@ -4206,6 +4206,9 @@
         "Zugriffskontrolle": "Управление доступом",
         "Patch-Management": "Управление обновлениями",
         "Sichere Architektur": "Безопасная архитектура",
-        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)"
+        "Prüfungsversuche aufgebraucht (für Lehrende des Kurses)": "Попытки экзамена исчерпаны (для преподавателей курса)",
+        "Q%1$s: translation %2$s was not imported — %3$s": "В%1$s: перевод %2$s не импортирован — %3$s",
+        "Translation text missing": "Отсутствует текст перевода",
+        "Q%1$s: translations into %2$s were not imported — supported languages: %3$s": "В%1$s: переводы на %2$s не импортированы — поддерживаемые языки: %3$s"
     }
 }

@@ -12,6 +12,22 @@ namespace OCA\Learning\Service;
  */
 final class PoolJsonFormat {
     /**
+     * `_meta.format` of a pool export (DataMobilityService::exportPoolDocument()). Format 1 is
+     * the bare question list that exports up to 5.17 wrote; it has no marker and is read as before.
+     *
+     * In a learning-pool/2 file every question carries its own values: the importers fill
+     * nothing in from the pool or `_meta` (applyPoolDefaults() is skipped, no difficulty
+     * `medium` for a question without one), and the pool fields of a one-pool object
+     * ({name, description, handbook_*, chapter_*, questions}) describe the new pool.
+     */
+    public const EXPORT_FORMAT = 'learning-pool/2';
+
+    /** Whether a file's `_meta` marks it as a learning-pool/2 export. */
+    public static function isExport(array $meta): bool {
+        return ($meta['format'] ?? null) === self::EXPORT_FORMAT;
+    }
+
+    /**
      * PBQ subtypes the app can render and score. One list for every place that accepts a subtype
      * from outside (both importers, the VirtuProf question context): `ranking` (PbqRanking.vue,
      * scored in TrainingService) was missing from all of them, so a ranking PBQ could be
