@@ -40,11 +40,13 @@ class MigrationAppClassesTest extends TestCase {
             }
             $stripped .= is_array($token) ? $token[1] : $token;
         }
-        preg_match_all('/OCA\\\\Learning\\\\(?!Migration\\\\)[A-Za-z_\\\\]+/', $stripped, $m);
-        $refs = array_values(array_filter(
-            array_unique($m[0]),
-            static fn (string $ref): bool => $ref !== 'OCA\\Learning\\Migration'
-        ));
+        // Single or doubled backslashes (a class name in a string literal), and group use
+        // (`use OCA\Learning\{Service\A, Db\B}`), all count.
+        preg_match_all('/OCA\\\\+Learning\\\\+[A-Za-z_{][A-Za-z_\\\\]*/', $stripped, $m);
+        $refs = array_values(array_unique(array_filter(
+            array_map(static fn (string $ref): string => (string)preg_replace('/\\\\+/', '\\', $ref), $m[0]),
+            static fn (string $ref): bool => $ref !== 'OCA\\Learning\\Migration' && !str_starts_with($ref, 'OCA\\Learning\\Migration\\')
+        )));
         $this->assertSame([], $refs, basename($file) . ' reads app classes that may be loaded from the previous version during an update');
     }
 
