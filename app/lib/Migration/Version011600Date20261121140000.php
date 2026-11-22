@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace OCA\Learning\Migration;
 
 use Closure;
-use OCA\Learning\Service\TranslationService;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
@@ -12,7 +11,7 @@ use OCP\Migration\SimpleMigrationStep;
 
 /**
  * Translations in French and Ukrainian (5.18.0): the CHECK constraint on the lang column of the
- * translation tables allows the languages of TranslationService::ALLOWED_LANGS.
+ * translation tables allows the languages of TranslationService::ALLOWED_LANGS (copied into LANGS).
  *
  * Version003200Date20260319193000 put a CHECK on learning_q_translations / learning_a_translations
  * that allows de/en/ru/ar only, in postSchemaChange(): it exists only on PostgreSQL instances
@@ -28,8 +27,19 @@ use OCP\Migration\SimpleMigrationStep;
  * database-side guard; where there is none (fresh installs, MySQL/MariaDB) none is added — the
  * app validates the language in TranslationService::validateLang(). The legacy table names are
  * covered too, for an instance where Version007900 found both. Idempotent.
+ *
+ * 5.18.1: the language list is a copy, not TranslationService::ALLOWED_LANGS. `occ app:update` and
+ * the app management page boot with the installed version, then replace the files and run the
+ * migrations in the same PHP process; on PHP 8.2/8.3 the console commands had already loaded
+ * 5.17.0's TranslationService, whose ALLOWED_LANGS was private, so 5.18.0 stopped here on
+ * PostgreSQL with "Cannot access private constant" before its first statement. A migration reads
+ * no app class that can change between releases (scripts/inprocess-update-probe.sh checks the
+ * path); MigrationAppClassesTest keeps LANGS equal to TranslationService::ALLOWED_LANGS.
  */
 class Version011600Date20261121140000 extends SimpleMigrationStep {
+    /** TranslationService::ALLOWED_LANGS as of 5.18.0 — a copy, see the class comment. */
+    public const LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk'];
+
     public function __construct(
         private IDBConnection $db,
         private IConfig $config,
@@ -43,7 +53,7 @@ class Version011600Date20261121140000 extends SimpleMigrationStep {
         $prefix = $this->config->getSystemValueString('dbtableprefix', 'oc_');
         $allowed = 'ARRAY[' . implode(', ', array_map(
             static fn (string $lang): string => "'" . $lang . "'::character varying",
-            TranslationService::ALLOWED_LANGS
+            self::LANGS
         )) . ']';
 
         foreach (['learning_qst_translations', 'learning_ans_translations', 'learning_q_translations', 'learning_a_translations'] as $table) {
@@ -58,7 +68,7 @@ class Version011600Date20261121140000 extends SimpleMigrationStep {
             $this->db->executeStatement(
                 'ALTER TABLE ' . $prefix . $table . ' ADD CONSTRAINT ' . self::quote($existing[0]) . " CHECK ((lang)::text = ANY (({$allowed})::text[]))"
             );
-            $output->info('Translation languages widened to ' . implode(', ', TranslationService::ALLOWED_LANGS) . ' on ' . $table);
+            $output->info('Translation languages widened to ' . implode(', ', self::LANGS) . ' on ' . $table);
         }
     }
 

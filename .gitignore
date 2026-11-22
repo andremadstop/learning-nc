@@ -132,6 +132,8 @@ scripts/*
 !scripts/gen-virtuprof-strings.mjs
 !scripts/l10n_js_sync.py
 !scripts/lifecycle-fixtures/
+!scripts/inprocess-update-harness.php
+!scripts/inprocess-update-probe.sh
 !scripts/lifecycle-probe.sh
 !scripts/nc-integration.sh
 !scripts/route-security-inventory.php
