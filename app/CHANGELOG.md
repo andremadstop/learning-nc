@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.18.1] - 2026-11-22 — Update to 5.18 completes on PostgreSQL
+
+The update to 5.18.0 from the app store or with `occ app:update` stopped on PostgreSQL with PHP 8.2
+or 8.3 with "Cannot access private constant OCA\Learning\Service\TranslationService::ALLOWED_LANGS",
+and Nextcloud then asked for an upgrade. 5.18.1 updates in one step. MySQL and MariaDB were not
+affected; with PHP 8.4 or later Nextcloud usually loads the class too late for the error to occur.
+
+> **Administrators, please read:**
+> - **If the update to 5.18.0 stopped with that message,** run `occ upgrade` or open Nextcloud in
+>   the browser and start the upgrade there. Nothing was lost: the migration stopped before its
+>   first statement, and the upgrade runs it again. Afterwards the instance runs 5.18.0 and
+>   updates to 5.18.1 as usual.
+> - No new migration. `Version011600Date20261121140000` keeps its name; instances that already
+>   recorded it skip it.
+
+### Fixed
+- **Update on PostgreSQL:** the migration of 5.18.0 read the translation languages from an app
+  class. The update loads the installed version of that class first, and in 5.17.0 the list was
+  private. The migration now carries its own copy of the list.
+
+### Tests
+- New release check `scripts/inprocess-update-probe.sh`: updates the way the app store does, in
+  one PHP process, on a throwaway Nextcloud with PostgreSQL or MariaDB. It fails on 5.17.0 → 5.18.0
+  with the reported error.
+- A unit test keeps migrations from reading app classes outside the migration namespace.
+
 ## [5.18.0] - 2026-11-21 — Achievements on Today, lossless pool export, safe certificate libraries
 
 Today lists a learner's achievements, and the activity and notification "Achievement unlocked"
