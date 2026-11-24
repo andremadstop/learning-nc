@@ -759,4 +759,41 @@ class VirtuProfControllerTest extends TestCase {
         );
         $this->assertSame(41, $resp->getData()['ticket_id']);
     }
+
+    /**
+     * #105: Simplified Chinese is an interface language. A language missing from
+     * ALLOWED_INTERFACE_LANGUAGES is coerced to '' and the choice is lost without an error,
+     * and a client that sends the Nextcloud spelling 'zh_CN' must land on the same code.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('chineseSpellings')]
+    public function testSetLanguageKeepsChinese(string $sent): void {
+        $this->configMock->expects($this->once())
+            ->method('setUserValue')
+            ->with('user-A', 'learning', 'virtuprof_language', 'zh');
+
+        $resp = $this->makeController('user-A')->setLanguage($sent);
+
+        $this->assertSame('zh', $resp->getData()['language']);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function chineseSpellings(): array {
+        return ['base code' => ['zh'], 'Nextcloud locale' => ['zh_CN'], 'BCP 47' => ['zh-CN']];
+    }
+
+    /**
+     * #105: the l10n catalogue file is l10n/zh_CN.json, so the factory must be asked for
+     * 'zh_CN'. Asked for 'zh' it finds no file and VirtuProf answers in English.
+     */
+    public function testChineseVirtuProfLanguageLoadsTheZhCnCatalogue(): void {
+        $this->enableAiForFileIntents('zh');
+        $ticket = new \OCA\Learning\Db\SupportTicket();
+        $ticket->setId(42);
+        $this->ticketMock->method('create')->willReturn($ticket);
+
+        $resp = $this->makeController('user-A')->chat('ich möchte einen fehler melden: der timer läuft rückwärts');
+
+        $this->assertSame(['zh_CN'], $this->l10nLanguages);
+        $this->assertStringStartsWith('[zh_CN] ', $resp->getData()['answer']);
+    }
 }

@@ -30,7 +30,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 L10N = os.path.join(ROOT, "app", "l10n")
 BASELINE = os.path.join(ROOT, "scripts", "i18n-untranslated-baseline.json")
-LANGS = ["fr", "ru", "ar", "uk"]
+LANGS = ["fr", "ru", "ar", "uk", "zh_CN"]
 
 # Values that are correctly the same as the English text. Per language: '*' applies
 # to all of them. Keep this to real names and cognates, never to sentences.

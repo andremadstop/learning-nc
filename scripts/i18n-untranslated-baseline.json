@@ -2691,5 +2691,24 @@
   "Wireshark Lite",
   "Wireshark-Lite",
   "vCard"
+ ],
+ "zh_CN": [
+  "/Kursmaterial",
+  "CIDR",
+  "Erklärbot",
+  "IPv6",
+  "Learning",
+  "NAT",
+  "NOVA",
+  "Ollama URL",
+  "Prof. Lern Classic",
+  "Q/min",
+  "VLAN {id}",
+  "VLAN-ID",
+  "VLSM",
+  "Wireshark",
+  "Wireshark Lite",
+  "Wireshark-Lite",
+  "vCard"
  ]
 }

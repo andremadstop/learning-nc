@@ -21,10 +21,10 @@ class GeminiService {
     private LlmGateway $gateway;
 
     /**
-     * Languages the assistant can be told to answer in. Mirrors the six l10n catalogues;
+     * Languages the assistant can be told to answer in. Mirrors the l10n catalogues;
      * keep in step with buildSystemPrompt()'s $langMap.
      */
-    private const SUPPORTED_LANGUAGES = ['de', 'en', 'fr', 'ru', 'ar', 'uk'];
+    private const SUPPORTED_LANGUAGES = ['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'];
 
     private const MAX_INPUT_CHARS = 500;
 
@@ -618,6 +618,7 @@ PROMPT;
             'ru' => 'Russian',
             'ar' => 'Arabic',
             'uk' => 'Ukrainian',
+            'zh' => 'Chinese',
         ];
 
         return $names[$code] ?? 'English';

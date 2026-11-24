@@ -35,7 +35,13 @@ class VirtuProfController extends Controller {
     // coerced to '' by normalizeInterfaceLanguage(), so the user's choice is discarded
     // without any error — 'fr' was in the frontend list but not here, which is exactly
     // that failure.
-    private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'fr', 'ru', 'ar', 'uk'];
+    private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'];
+    // Nextcloud locale spellings that mean an allowed code. The frontend sends the base code
+    // ('zh'), but a client passing the Nextcloud language ('zh_CN') must not be discarded.
+    private const INTERFACE_LANGUAGE_ALIASES = ['zh_cn' => 'zh', 'zh-cn' => 'zh'];
+    // The internal code is the base code; Nextcloud's catalogue file is named by locale
+    // (l10n/zh_CN.json), so the l10n factory needs the locale or it finds no file at all.
+    private const L10N_CATALOGUE_CODES = ['zh' => 'zh_CN'];
     private const ALLOWED_SKINS = [
         'nova',
         'prof_lern_classic',
@@ -302,6 +308,7 @@ class VirtuProfController extends Controller {
 
     private function normalizeInterfaceLanguage(string $language): string {
         $normalized = strtolower(trim($language));
+        $normalized = self::INTERFACE_LANGUAGE_ALIASES[$normalized] ?? $normalized;
         return in_array($normalized, self::ALLOWED_INTERFACE_LANGUAGES, true) ? $normalized : '';
     }
 
@@ -838,7 +845,10 @@ class VirtuProfController extends Controller {
                 $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', '')
             )
             : '';
-        return $this->l10nFactory->get('learning', $language !== '' ? $language : null);
+        return $this->l10nFactory->get(
+            'learning',
+            $language !== '' ? (self::L10N_CATALOGUE_CODES[$language] ?? $language) : null
+        );
     }
 
     /**

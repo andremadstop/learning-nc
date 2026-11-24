@@ -90,6 +90,17 @@ class AdminInstructorGroupTest extends TestCase {
         return $this->appValues['instructor_group'] ?? '__never_written__';
     }
 
+    /** #105: the default-language dropdown offers Chinese, so the server must store it. */
+    public function testDefaultLanguageAcceptsChineseAndStillRejectsTheRest(): void {
+        $this->appValues = [];
+        $this->makeController()->saveAdmin('yes', 'zh', 2, 'yes', 'teachers');
+        $this->assertSame('zh', $this->appValues['default_language'] ?? '__never_written__');
+
+        $this->appValues = [];
+        $this->makeController()->saveAdmin('yes', 'klingon', 2, 'yes', 'teachers');
+        $this->assertSame('de', $this->appValues['default_language'] ?? '__never_written__');
+    }
+
     public function testTheGroupNameSurvivesTheRoundTrip(): void {
         $this->assertSame('teachers', $this->saveWithGroup('teachers'));
     }

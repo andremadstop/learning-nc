@@ -107,8 +107,8 @@ deploy_php() {
   # CHANGELOG.md: the failure mode is identical for any signed file outside the four synced
   # directories.
   scp -q app/CHANGELOG.md app/README.md app/LICENSE "$HOST:~/learning-nc/app/"
-  # Sync all 6 supported language files (en/de/fr/ru/ar/uk) — parity-script enforces same key-set across all
-  for lang in de en fr ru ar uk; do
+  # Sync all 7 supported language files (en/de/fr/ru/ar/uk/zh_CN) — parity-script enforces same key-set across all
+  for lang in de en fr ru ar uk zh_CN; do
     for ext in json js; do
       f="app/l10n/${lang}.${ext}"
       [ -f "$f" ] && scp -q "$f" "$HOST:~/learning-nc/app/l10n/"

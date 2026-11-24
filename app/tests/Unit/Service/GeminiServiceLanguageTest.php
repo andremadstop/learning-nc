@@ -75,6 +75,12 @@ class GeminiServiceLanguageTest extends TestCase {
         $this->assertStringNotContainsString('default to English', $prompt);
     }
 
+    public function testSystemPromptNamesChineseForZh(): void {
+        $prompt = $this->invoke('buildSystemPrompt', ['zh']);
+        $this->assertStringContainsString('default to Chinese', $prompt);
+        $this->assertStringNotContainsString('default to English', $prompt);
+    }
+
     public function testSystemPromptNamesFrenchForFr(): void {
         $prompt = $this->invoke('buildSystemPrompt', ['fr']);
         $this->assertStringContainsString('default to French', $prompt);
@@ -101,6 +107,18 @@ class GeminiServiceLanguageTest extends TestCase {
         // Nextcloud stores locales like "uk_UA" / "fr_CA" in core/lang.
         $this->stubUserValues(['learning/content_language' => '', 'core/lang' => 'uk_UA']);
         $this->assertSame('uk', $this->invoke('resolveResponseLanguage', ['andrii']));
+    }
+
+    /**
+     * #105: Nextcloud's Chinese interface language is 'zh_CN'; the assistant must answer in
+     * Chinese, not fall back to English. 'zh_TW' reduces to the same base code — there is no
+     * Traditional Chinese catalogue, so this is the closest instruction we can give.
+     */
+    public function testChineseInterfaceLanguageIsReducedToZh(): void {
+        $this->stubUserValues(['learning/content_language' => '', 'core/lang' => 'zh_CN']);
+        $this->assertSame('zh', $this->invoke('resolveResponseLanguage', ['li']));
+        $this->stubUserValues(['learning/content_language' => '', 'core/lang' => 'zh_TW']);
+        $this->assertSame('zh', $this->invoke('resolveResponseLanguage', ['li']));
     }
 
     public function testUnsupportedInterfaceLanguageFallsThroughToAppDefault(): void {
@@ -147,6 +165,7 @@ class GeminiServiceLanguageTest extends TestCase {
             ['ru', 'Russian'],
             ['ar', 'Arabic'],
             ['uk', 'Ukrainian'],
+            ['zh', 'Chinese'],
             ['zz', 'English'],
         ];
     }

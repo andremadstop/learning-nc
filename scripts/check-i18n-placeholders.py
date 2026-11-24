@@ -27,7 +27,7 @@ import unicodedata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 L10N = os.path.join(ROOT, "app", "l10n")
-LANGS = ["de", "en", "fr", "ru", "ar", "uk"]
+LANGS = ["de", "en", "fr", "ru", "ar", "uk", "zh_CN"]
 
 # {name} / %s / %d / %n / %1$s
 PLACEHOLDER = re.compile(r"\{[a-zA-Z_]\w*\}|%[nsd]|%\d+\$s")
@@ -35,7 +35,7 @@ PLACEHOLDER = re.compile(r"\{[a-zA-Z_]\w*\}|%[nsd]|%\d+\$s")
 # Script a language's prose is expected to be written in.
 EXPECTED_SCRIPT = {
     "de": "LATIN", "en": "LATIN", "fr": "LATIN",
-    "ru": "CYRILLIC", "ar": "ARABIC", "uk": "CYRILLIC",
+    "ru": "CYRILLIC", "ar": "ARABIC", "uk": "CYRILLIC", "zh_CN": "HAN",
 }
 FOREIGN = {"CYRILLIC", "ARABIC"}
 

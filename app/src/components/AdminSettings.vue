@@ -195,6 +195,7 @@
         <select id="default-language" v-model="form.defaultLanguage" class="nc-input">
           <option value="de">{{ t('learning', 'German (Deutsch)') }}</option>
           <option value="en">{{ t('learning', 'English') }}</option>
+          <option value="zh">{{ t('learning', 'Chinese (Simplified)') }}</option>
         </select>
       </div>
 
@@ -638,7 +639,7 @@ export default {
         ])
         const data = adminResponse.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge_enabled || 'yes') === 'yes'
-        this.form.defaultLanguage = data.default_language === 'en' ? 'en' : 'de'
+        this.form.defaultLanguage = ['en', 'zh'].includes(data.default_language) ? data.default_language : 'de'
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
         this.form.enabledTools = this.normalizeEnabledTools(toolsResponse.data?.enabled_tools)
@@ -712,7 +713,7 @@ export default {
         await Promise.all([
           axios.put(generateUrl('/apps/learning/api/settings/admin'), {
             daily_challenge_enabled: this.form.dailyChallengeEnabled ? 'yes' : 'no',
-            default_language: this.form.defaultLanguage === 'en' ? 'en' : 'de',
+            default_language: ['en', 'zh'].includes(this.form.defaultLanguage) ? this.form.defaultLanguage : 'de',
             max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
             gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
             allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',

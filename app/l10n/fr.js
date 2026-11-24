@@ -605,6 +605,7 @@ OC.L10N.register(
     "Ends: {date}" : "Ends: {date}",
     "Enforced" : "Enforced",
     "English" : "Anglais",
+    "Chinese (Simplified)" : "Chinois (simplifié)",
     "Enrolled Courses ({n})" : "Enrolled Courses ({n})",
     "Enrolled {date}" : "Enrolled {date}",
     "Enter your question..." : "Enter your question...",

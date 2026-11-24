@@ -83,10 +83,19 @@ class SettingsControllerLanguageTest extends TestCase {
         $this->assertSame('', $this->save('klingon'));
     }
 
-    /** The whitelist is the translation languages, which are the app's interface languages. */
+    /**
+     * The whitelist is the translation languages. Every one of them must also be an interface
+     * language, because the interview and voice paths run the content language through
+     * VirtuProfController::normalizeInterfaceLanguage(). The reverse holds with one named
+     * exception: Simplified Chinese is an interface language only (#105) — Chinese instances
+     * author questions in Chinese, and a content language would need a CHECK-constraint
+     * migration. Any other interface language without a content translation fails here.
+     */
     public function testTheContentLanguagesAreTheInterfaceLanguages(): void {
         $interface = (new \ReflectionClassConstant(\OCA\Learning\Controller\VirtuProfController::class, 'ALLOWED_INTERFACE_LANGUAGES'))->getValue();
-        $this->assertSame(array_values(array_diff($interface, [''])), \OCA\Learning\Service\TranslationService::ALLOWED_LANGS);
+        $interfaceOnly = ['zh'];
+        $this->assertSame(array_values(array_diff($interface, [''], $interfaceOnly)), \OCA\Learning\Service\TranslationService::ALLOWED_LANGS);
+        $this->assertSame([], array_values(array_diff($interfaceOnly, $interface)), 'an interface-only language that is no longer an interface language');
         $this->assertSame(array_map(static fn (array $row): string => $row[0], self::offeredLanguages()), \OCA\Learning\Service\TranslationService::ALLOWED_LANGS);
     }
 
