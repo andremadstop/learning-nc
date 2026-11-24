@@ -32,7 +32,40 @@ class ChunkSearchServiceKeywordTest extends TestCase {
             'Ukrainian stopwords' => ['Чому для маршрутизації потрібен шлюз або маска?', ['маршрутизації', 'потрібен', 'шлюз', 'маска']],
             'Arabic stopwords' => ['لماذا نحتاج إلى بوابة في الشبكة؟', ['نحتاج', 'بوابة', 'الشبكة']],
             'German umlaut stopwords' => ['Tipps für Subnetting über VLANs', ['tipps', 'subnetting', 'vlans']],
+            // #105: Han text has no spaces. Overlapping pairs; 怎么 is a stop pair. Pairs across a
+            // word boundary (码怎, 么计) are kept on purpose — no dictionary, and they rarely match.
+            'Chinese question' => ['子网掩码怎么计算？', ['子网', '网掩', '掩码', '码怎', '么计', '计算']],
+            'Chinese two-character term' => ['子网', ['子网']],
+            'Chinese with Latin term' => ['什么是VLAN中继？', ['中继', 'vlan']],
+            'Chinese stop pairs only plus Latin' => ['VLAN是什么？', ['vlan']],
+            'Chinese punctuation splits runs' => ['网关，掩码', ['网关', '掩码']],
+            'Chinese repeated pair counted once' => ['网络网络', ['网络', '络网']],
         ];
+    }
+
+    private function keywordsFor(string $query): ?array {
+        $seen = null;
+        $mapper = $this->createMock(RagChunkMapper::class);
+        $mapper->method('searchByKeywords')->willReturnCallback(function (int $courseId, array $keywords) use (&$seen) {
+            $seen = $keywords;
+            return [];
+        });
+        (new ChunkSearchService($mapper, $this->createMock(LoggerInterface::class)))->search(7, $query);
+        return $seen;
+    }
+
+    /** A single Han character alone would match almost every chunk: no search at all. */
+    public function testASingleHanCharacterIsNoKeyword(): void {
+        $this->assertNull($this->keywordsFor('网'));
+    }
+
+    /** Each pair adds two LIKE terms; a pasted paragraph must not build an unbounded query. */
+    public function testHanPairsAreCapped(): void {
+        $long = '';
+        for ($c = 0x4E00; $c < 0x4E00 + 80; $c++) {
+            $long .= mb_chr($c);
+        }
+        $this->assertCount(24, $this->keywordsFor($long) ?? []);
     }
 
     /** @param list<string> $expected */

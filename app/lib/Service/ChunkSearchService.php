@@ -8,6 +8,20 @@ use Psr\Log\LoggerInterface;
 
 class ChunkSearchService {
 
+    /** Upper bound of Han pairs per query: each one adds two LIKE terms to the search SQL. */
+    private const MAX_HAN_PAIRS = 24;
+    /**
+     * Question words and particles that occur in almost every Chinese sentence; as pairs they
+     * would rank any chunk that happens to contain them.
+     */
+    private const HAN_STOP_PAIRS = [
+        '什么' => true, '怎么' => true, '如何' => true, '为什' => true, '么是' => true,
+        '是什' => true, '怎样' => true, '哪些' => true, '一个' => true, '这个' => true,
+        '那个' => true, '我们' => true, '你们' => true, '可以' => true, '能够' => true,
+        '需要' => true, '应该' => true, '之间' => true, '的是' => true, '是一' => true,
+        '请问' => true, '解释' => true, '一下' => true, '告诉' => true,
+    ];
+
     private const STOPWORDS = [
         // German
         'der', 'die', 'das', 'ein', 'eine', 'und', 'oder', 'ist', 'sind',
@@ -94,6 +108,13 @@ class ChunkSearchService {
      * Lowercases, splits on whitespace, removes stopwords and short words,
      * deduplicates.
      *
+     * Chinese (and any Han text) has no spaces between words, so a whole question used to
+     * become one keyword that never occurs in the course material, and two-character terms
+     * like 子网 were dropped as too short (#105). Han runs are split into overlapping
+     * character pairs instead (子网掩码 -> 子网, 网掩, 掩码): no dictionary needed, and a chunk
+     * that shares more pairs with the question scores higher in searchByKeywords(). Text
+     * without Han characters takes exactly the old path.
+     *
      * @param string $query Raw user query
      * @return string[] Unique keywords
      */
@@ -107,8 +128,40 @@ class ChunkSearchService {
         $stopwords = array_flip(self::STOPWORDS);
         $keywords = [];
         $seen = [];
+        $hanPairs = 0;
 
+        // A token that mixes Han with other letters ("vlan是什么") is split into its Han runs
+        // and the rest; the rest goes through the word rules below unchanged.
+        $parts = [];
         foreach ($words as $word) {
+            if (preg_match('/\p{Han}/u', $word) !== 1) {
+                $parts[] = $word;
+                continue;
+            }
+            $split = preg_split('/(\p{Han}+)/u', $word, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            if ($split === false) {
+                continue;
+            }
+            foreach ($split as $segment) {
+                if (preg_match('/^\p{Han}+$/u', $segment) !== 1) {
+                    $parts[] = $segment;
+                    continue;
+                }
+                // One character alone matches far too much to rank anything.
+                $length = mb_strlen($segment);
+                for ($i = 0; $i + 1 < $length && $hanPairs < self::MAX_HAN_PAIRS; $i++) {
+                    $pair = mb_substr($segment, $i, 2);
+                    if (isset(self::HAN_STOP_PAIRS[$pair]) || isset($seen[$pair])) {
+                        continue;
+                    }
+                    $seen[$pair] = true;
+                    $keywords[] = $pair;
+                    $hanPairs++;
+                }
+            }
+        }
+
+        foreach ($parts as $word) {
             // Remove punctuation at the edges. Unicode classes, so Cyrillic, Arabic and accented
             // words survive (de/en/fr/ru/ar/uk); \p{M} keeps combining marks (2026-11 audit).
             $clean = preg_replace('/^[^\p{L}\p{N}\p{M}]+|[^\p{L}\p{N}\p{M}]+$/u', '', $word);
