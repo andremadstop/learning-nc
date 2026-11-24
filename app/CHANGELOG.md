@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.19.0] - 2026-11-24 — Simplified Chinese
+
+Learning now speaks Simplified Chinese. On a Nextcloud whose interface language is `zh_CN`, the app,
+VirtuProf and the AI consent text are shown in Chinese. Thanks to @justemu for the catalogue
+(4,171 strings, #106) and the request (#105).
+
+> **Administrators:** no migration. Existing AI consents stay valid: the consent text gained a
+> language, its version did not change.
+
+### Added
+- **Simplified Chinese (`zh_CN`)** as the seventh interface language (#105, #106). The admin
+  setting *Default language* offers Chinese, and with AI on the assistant answers in Chinese.
+- **AI consent text in Chinese:** the consent dialog and the AI notice on the privacy page no
+  longer fall back to English for Chinese readers.
+
+### Fixed
+- **VirtuProf language:** a stored Chinese VirtuProf language was silently discarded on the server.
+  `zh`, `zh_CN` and `zh-CN` are accepted and load the `zh_CN` catalogue.
+- **Course-material search for Chinese questions:** the AI context search split questions at spaces
+  and dropped words shorter than three characters, so a Chinese question found almost no course
+  material. Han text is now searched as overlapping character pairs. Other languages are searched
+  exactly as before.
+
+### Not included
+- Chinese is an interface language only. Questions are not offered for translation into Chinese;
+  Chinese courses are written in Chinese directly.
+
 ## [5.18.1] - 2026-11-22 — Update to 5.18 completes on PostgreSQL
 
 The update to 5.18.0 from the app store or with `occ app:update` stopped on PostgreSQL with PHP 8.2
