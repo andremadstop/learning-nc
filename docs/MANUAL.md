@@ -12,7 +12,7 @@ If you are evaluating Learning for a company, read [1. Concepts](#1-concepts) an
 build your first working course.
 
 > **A note on interface language.** Learning's source language is German; the interface
-> ships in English, French, Russian, Arabic and Ukrainian. This manual quotes the English
+> ships in English, French, Russian, Arabic, Ukrainian and Simplified Chinese. This manual quotes the English
 > labels. If you run the interface in another language, the position of each control is
 > the same. See [7. Languages and translations](#7-languages-and-translations).
 
@@ -984,12 +984,12 @@ learner's IP address and may collect its own data; the privacy page lists this u
 
 ### 7.1 Current state
 
-Learning ships six interface languages: **German** (source), **English**, **French**,
-**Russian**, **Arabic** and **Ukrainian**.
+Learning ships seven interface languages: **German** (source), **English**, **French**,
+**Russian**, **Arabic**, **Ukrainian** and **Simplified Chinese**.
 
 > **None of the translations have been reviewed by a native speaker** — English included.
-> All five non-German catalogues were produced with machine assistance from the German
-> source, and Ukrainian is the newest of them, added in response to a user request.
+> All six non-German catalogues were produced with machine assistance from the German
+> source; Ukrainian and Simplified Chinese were added in response to user requests.
 > Corrections are very welcome — see 7.3. If you spot a wrong or awkward string, an issue
 > naming the English text and your correction is enough; you do not need to touch the code.
 
@@ -1011,7 +1011,7 @@ entirely. Those fell back to the German source text and appeared **in German in 
 language**, including English — the course materials tab, parts of the course
 administration tab and the answer-type selector in the question form were all affected.
 
-Those strings have now been added to the catalogue and translated into all six languages.
+Those strings have now been added to the catalogue and translated into all seven languages.
 If you still find German text in a non-German interface, that is a bug worth reporting:
 name the screen and the text you see.
 

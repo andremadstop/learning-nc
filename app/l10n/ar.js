@@ -605,6 +605,7 @@ OC.L10N.register(
     "Ends: {date}" : "ينتهي: {date}",
     "Enforced" : "مُفرض",
     "English" : "الإنجليزية",
+    "Chinese (Simplified)" : "الصينية (المبسطة)",
     "Enrolled Courses ({n})" : "المقررات المسجّل بها ({n})",
     "Enrolled {date}" : "سُجّل في {date}",
     "Enter your question..." : "أدخل سؤالك...",

@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/check-i18n-parity.sh
-# Asserts all 6 supported language JSONs have the same key-set as de.json.
+# Asserts all 7 supported language JSONs have the same key-set as de.json.
 #
 # 164-07: comparison moved from line-based `comm` into python set arithmetic —
 # a translation KEY containing an embedded newline (the VirtuProf intro) broke
@@ -15,7 +15,7 @@ import json, sys
 
 l10n = sys.argv[1]
 canonical = 'de'
-langs = ['en', 'fr', 'ru', 'ar', 'uk']
+langs = ['en', 'fr', 'ru', 'ar', 'uk', 'zh_CN']
 
 de_keys = set(json.load(open(f'{l10n}/{canonical}.json', encoding='utf-8'))['translations'])
 
@@ -38,10 +38,10 @@ for lang in langs:
 
 if fail:
     print('')
-    print('Fix: add missing keys (or remove extras) so all 6 langs share the same key-set.')
+    print('Fix: add missing keys (or remove extras) so all 7 langs share the same key-set.')
     sys.exit(1)
 
-print(f'i18n key-parity OK across DE/EN/FR/RU/AR/UK ({len(de_keys)} keys each)')
+print(f'i18n key-parity OK across DE/EN/FR/RU/AR/UK/ZH_CN ({len(de_keys)} keys each)')
 PYEOF
 
 # Gate 2: .js<->.json value-sync.

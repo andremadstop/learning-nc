@@ -1,6 +1,6 @@
-import { ar, de, en, fr, ru, uk } from '../l10n/virtuprof-strings.js'
+import { ar, de, en, fr, ru, uk, zh_CN } from '../l10n/virtuprof-strings.js'
 
-const ALLOWED = ['de', 'en', 'fr', 'ru', 'ar', 'uk']
+const ALLOWED = ['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh', 'zh_cn']
 
 const DICTS = {
   de,
@@ -9,6 +9,8 @@ const DICTS = {
   ru,
   ar,
   uk,
+  zh: zh_CN,
+  zh_cn: zh_CN,
 }
 
 function normalizeVirtuProfLanguage(lang) {

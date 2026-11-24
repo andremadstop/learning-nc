@@ -75,6 +75,12 @@ class GeminiServiceLanguageTest extends TestCase {
         $this->assertStringNotContainsString('default to English', $prompt);
     }
 
+    public function testSystemPromptNamesChineseForZh(): void {
+        $prompt = $this->invoke('buildSystemPrompt', ['zh']);
+        $this->assertStringContainsString('default to Chinese', $prompt);
+        $this->assertStringNotContainsString('default to English', $prompt);
+    }
+
     public function testSystemPromptNamesFrenchForFr(): void {
         $prompt = $this->invoke('buildSystemPrompt', ['fr']);
         $this->assertStringContainsString('default to French', $prompt);
@@ -147,6 +153,7 @@ class GeminiServiceLanguageTest extends TestCase {
             ['ru', 'Russian'],
             ['ar', 'Arabic'],
             ['uk', 'Ukrainian'],
+            ['zh', 'Chinese'],
             ['zz', 'English'],
         ];
     }

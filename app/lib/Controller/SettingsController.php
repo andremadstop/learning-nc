@@ -229,7 +229,7 @@ class SettingsController extends Controller {
         }
 
         $this->config->setAppValue('learning', 'daily_challenge_enabled', $daily_challenge_enabled === 'yes' ? 'yes' : 'no');
-        $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en'], true) ? $default_language : 'de');
+        $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en', 'zh'], true) ? $default_language : 'de');
         $this->config->setAppValue('learning', 'max_import_size_mb', (string)max(1, min(10, $max_import_size_mb)));
         $this->config->setAppValue('learning', 'gamification_enabled', $gamification_enabled === 'yes' ? 'yes' : 'no');
         // Codeberg #6: the group that grants global instructor rights (create courses and
