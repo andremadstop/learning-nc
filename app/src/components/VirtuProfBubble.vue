@@ -1085,7 +1085,7 @@ export default {
         return ''
       }
       try {
-        // audit #193: all six interface languages (fr/uk used to fall back to 'en')
+        // audit #193: every interface language (fr/uk used to fall back to 'en')
         return new Date(Number(value) * 1000).toLocaleString(this.effectiveLanguage || 'en')
       } catch (e) {
         return String(value)

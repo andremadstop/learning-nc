@@ -3,7 +3,7 @@
  *
  * CourseFeed and GlobalFeed each carried a German copy of this ('gerade eben', 'vor 3 Stunden',
  * a fixed TT.MM.JJJJ date), which no catalogue could translate. Intl knows the words and the
- * plural forms of all six app languages (ar has six, ru/uk three), so no catalogue keys are needed.
+ * plural forms of every app language (ar has six, ru/uk three, zh one), so no catalogue keys are needed.
  */
 import { getCanonicalLocale, getLanguage } from '@nextcloud/l10n'
 

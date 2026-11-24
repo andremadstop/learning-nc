@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guard: the AI consent text (app/data/ai-consent.json) is complete in all six languages.
+"""Guard: the AI consent text (app/data/ai-consent.json) is complete in all seven languages.
 
 The consent dialog renders the text for the user's language. A missing locale, a missing
 paragraph or a dropped placeholder does not fail anywhere at runtime: the dialog falls back
@@ -9,14 +9,15 @@ its own gate.
 
 Checks, against the German source (`locales.de`):
   - top-level `version` is a non-empty string (ConsentService compares it as a string)
-  - the locale set is exactly de/en/fr/ru/ar/uk
+  - the locale set is exactly de/en/fr/ru/ar/uk/zh (zh: the dialog reduces zh_CN to zh)
   - every locale has exactly the same key paths as de (missing and extra both fail)
   - no value is empty
   - per key path, the placeholder set ({provider}, {previous}, ...) equals de
   - placeholders only in plain-text fields, never in `*_html` (the recipient name contains an
     admin-entered host and would be substituted into v-html)
   - `*_html` fields carry the same tag sequence as de
-  - prose is written in the expected script (ru/uk Cyrillic, ar Arabic); uk is not Russian
+  - prose is written in the expected script (ru/uk Cyrillic, ar Arabic, zh Han); uk is not
+    Russian, zh is not Japanese (no kana)
   - no provider that 5.7.0 does not offer is named (OpenAI, Anthropic, ...)
 
 Usage:
@@ -30,7 +31,7 @@ import unicodedata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_PATH = os.path.join(ROOT, "app", "data", "ai-consent.json")
-LANGS = ["de", "en", "fr", "ru", "ar", "uk"]
+LANGS = ["de", "en", "fr", "ru", "ar", "uk", "zh"]
 SOURCE = "de"
 
 PLACEHOLDER = re.compile(r"\{[a-zA-Z_]\w*\}")
@@ -80,8 +81,10 @@ FORBIDDEN_NAMES = re.compile(r"openai|anthropic|claude|openrouter|mistral|ionos|
 
 EXPECTED_SCRIPT = {
     "de": "LATIN", "en": "LATIN", "fr": "LATIN",
-    "ru": "CYRILLIC", "ar": "ARABIC", "uk": "CYRILLIC",
+    "ru": "CYRILLIC", "ar": "ARABIC", "uk": "CYRILLIC", "zh": "CJK",
 }
+# Hiragana and katakana: Japanese, never Simplified Chinese.
+KANA = re.compile("[\u3040-\u30ff]")
 UKRAINIAN_ONLY = set("іїєґІЇЄҐ")
 RUSSIAN_ONLY = set("ыэъЫЭЪ")
 
@@ -97,7 +100,7 @@ def flatten(node, prefix=""):
 
 
 def letters_by_script(text):
-    counts = {"LATIN": 0, "CYRILLIC": 0, "ARABIC": 0}
+    counts = {"LATIN": 0, "CYRILLIC": 0, "ARABIC": 0, "CJK": 0}
     for ch in PLACEHOLDER.sub("", TAG.sub("", text)):
         if not ch.isalpha():
             continue
@@ -182,8 +185,12 @@ def check(path):
                 findings.append(f"{where}: mostly not in {expected_script} script ({counts})")
             if lang != "ar" and counts["ARABIC"]:
                 findings.append(f"{where}: Arabic letters in a non-Arabic locale")
-            if lang in ("de", "en", "fr", "ar") and counts["CYRILLIC"]:
+            if lang in ("de", "en", "fr", "ar", "zh") and counts["CYRILLIC"]:
                 findings.append(f"{where}: Cyrillic letters in a non-Cyrillic locale")
+            if lang != "zh" and counts["CJK"]:
+                findings.append(f"{where}: Han characters in a non-Chinese locale")
+            if lang == "zh" and KANA.search(value):
+                findings.append(f"{where}: Japanese kana in the Chinese locale")
 
         if lang == "uk":
             prose = " ".join(v for v in flat.values() if isinstance(v, str))
@@ -209,7 +216,7 @@ def main(argv):
         return 1
     with open(path, encoding="utf-8") as fh:
         n = len(flatten(json.load(fh)["locales"][SOURCE]))
-    print(f"consent text OK across DE/EN/FR/RU/AR/UK ({n} fields each, placeholders identical)")
+    print(f"consent text OK across {'/'.join(l.upper() for l in LANGS)} ({n} fields each, placeholders identical)")
     return 0
 
 

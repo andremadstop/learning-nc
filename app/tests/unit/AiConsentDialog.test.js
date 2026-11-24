@@ -17,7 +17,7 @@ vi.mock('../../src/components/AccessibleDialog.vue', () => ({
 import consent from '../../data/ai-consent.json'
 import AiConsentDialog from '../../src/components/AiConsentDialog.vue'
 
-const LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk']
+const LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh']
 const GEMINI = { name: 'Google Gemini', region: 'us', processing_local: false, intermediary: false, fingerprint: 'fp1' }
 
 let host, app, events
@@ -113,6 +113,21 @@ describe('AiConsentDialog', () => {
 		expect(text).toContain(uk.decline_label)
 		expect(text).not.toMatch(/\{\w+\}/)
 		expect(el.querySelector('[dir="ltr"]').getAttribute('lang')).toBe('uk')
+	})
+
+	it('renders the Chinese text for the Nextcloud language zh_CN, not the English fallback (#105)', () => {
+		const el = mountDialog({ locale: 'zh_CN', recipient: { ...GEMINI, intermediary: true } })
+		const zh = consent.locales.zh
+		const text = el.textContent
+		expect(text).toContain(zh.title)
+		expect(text).toContain(zh.identity_note)
+		expect(text).toContain(zh.revocation_note)
+		expect(text).toContain(zh.region_paragraphs.us.replace('{provider}', 'Google Gemini'))
+		expect(text).toContain(zh.intermediary_paragraph.replace('{provider}', 'Google Gemini'))
+		expect(text).toContain(zh.accept_label)
+		expect(text).not.toContain(consent.locales.en.revocation_note)
+		expect(text).not.toMatch(/\{\w+\}/)
+		expect(el.querySelector('[dir="ltr"]').getAttribute('lang')).toBe('zh')
 	})
 
 	it('renders every language without leftover placeholders', () => {

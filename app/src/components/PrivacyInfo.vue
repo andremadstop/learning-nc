@@ -151,7 +151,7 @@ export default {
 			type: Object,
 			default: null,
 		},
-		/** The reader's language; the AI notice is shown in it (consent catalog, six languages). */
+		/** The reader's language; the AI notice is shown in it (consent catalog, seven languages). */
 		locale: {
 			type: String,
 			default: () => getLanguage(),

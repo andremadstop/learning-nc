@@ -163,7 +163,7 @@ function listItems(html) {
 
 /**
  * The AI notice as the page shows it, for the recipient in force, in the reader's language. The
- * text is the consent text (ai-consent.json, six languages, guarded by check-consent-locales.py):
+ * text is the consent text (ai-consent.json, seven languages, guarded by check-consent-locales.py):
  * the privacy page says what the dialog says, and nobody reads the disclosure in a language they
  * did not choose.
  *

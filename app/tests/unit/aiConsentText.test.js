@@ -4,7 +4,8 @@ import consent from '../../data/ai-consent.json'
 // Task D1 (5.7.0): the consent text is one template per language. The dialog (D2) fills in
 // the recipient; the text itself must say truthfully what is sent (spec 3.6).
 
-const LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk']
+// zh (#105): the dialog reduces the Nextcloud language zh_CN to zh.
+const LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh']
 
 function allStrings(node) {
 	if (typeof node === 'string') return [node]
@@ -16,13 +17,13 @@ describe('ai-consent.json', () => {
 		expect(consent.version).toBe('3.0')
 	})
 
-	it('has the text in all six languages', () => {
+	it('has the text in all seven languages', () => {
 		expect(Object.keys(consent.locales).sort()).toEqual([...LANGS].sort())
 	})
 
 	it('carries the text only per language, no stale top-level copy (audit #250)', () => {
 		// The German top-level fields served the old VirtuProf dialog until 5.7.0 D3; nothing reads
-		// them since, and a seventh copy of the text would drift from the six real ones.
+		// them since, and an extra copy of the text would drift from the per-language ones.
 		for (const key of ['title', 'body_html', 'accept_label', 'decline_label']) {
 			expect(consent).not.toHaveProperty(key)
 		}

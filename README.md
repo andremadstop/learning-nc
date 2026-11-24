@@ -194,7 +194,7 @@ The admin settings page shows a reminder until the key exists. Rotate later with
 
 **Not sent automatically:** name, email address, account data and passwords. What a learner types into a message is sent as written.
 
-The full list the learner sees (in six languages) is `app/data/ai-consent.json`; the privacy page (`/privacy`) shows the same list with the recipient in force.
+The full list the learner sees (in seven languages) is `app/data/ai-consent.json`; the privacy page (`/privacy`) shows the same list with the recipient in force.
 
 ### Admin controls
 - Global AI switch and recipient (Google Gemini or a local Ollama server) in the admin settings
