@@ -97,7 +97,10 @@ export default {
   overflow-wrap: anywhere;
   max-width: 75ch;
 }
-.material-reader__body :deep(h1) { font-size: 1.6em; margin: 0.6em 0 0.4em; }
+.material-reader__body :deep(h1) { font-size: 1.6em; font-weight: 700; margin: 0.6em 0 0.4em; }
+/* the theme gives h1 a lighter weight than h2; one heading scale, heaviest first */
+.material-reader__body :deep(h2),
+.material-reader__body :deep(h3) { font-weight: 700; }
 .material-reader__body :deep(h2) { font-size: 1.35em; margin: 1em 0 0.4em; }
 .material-reader__body :deep(h3) { font-size: 1.15em; margin: 1em 0 0.3em; }
 .material-reader__body :deep(p),
