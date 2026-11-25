@@ -74,6 +74,21 @@ describe('MaterialReader', () => {
 	})
 })
 
+describe('MaterialReader closing', () => {
+	it('reports "close" only when NcDialog has finished closing (update:open false)', () => {
+		const r = readerInstance()
+		r.onOpenChange(true)
+		expect(r.$emit).not.toHaveBeenCalled()
+		r.onOpenChange(false)
+		expect(r.$emit).toHaveBeenCalledWith('close')
+	})
+
+	it('closes through the dialog\'s own button, not through an unmount from outside', () => {
+		expect(MaterialReader.data().buttons).toEqual([{ label: 'Close', variant: 'primary' }])
+		expect(MaterialReader.emits).toContain('close')
+	})
+})
+
 describe('isPlainLeftClick', () => {
 	it('is true only for an unmodified left click', () => {
 		expect(isPlainLeftClick(click())).toBe(true)

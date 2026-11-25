@@ -3,7 +3,8 @@
     :name="fileName"
     size="large"
     class="material-reader-dialog"
-    @closing="$emit('close')">
+    :buttons="buttons"
+    @update:open="onOpenChange">
     <p v-if="state === 'loading'" class="material-reader__status" role="status">
       {{ t('learning', 'Material wird geladen …') }}
     </p>
@@ -16,23 +17,19 @@
     <!-- GitHub #110: sanitized by renderMaterialMarkdown() (markdown-it html:false + DOMPurify) -->
     <!-- eslint-disable-next-line vue/no-v-html -->
     <article v-else class="material-reader__body" dir="auto" data-test="material-reader-body" v-html="html" />
-    <template #actions>
+    <p class="material-reader__raw-row">
       <a
         class="material-reader__raw"
         :href="url"
         target="_blank"
         rel="noopener noreferrer"
         data-test="material-reader-raw">{{ t('learning', 'Als Text öffnen') }}</a>
-      <NcButton variant="primary" @click="$emit('close')">
-        {{ t('learning', 'Close') }}
-      </NcButton>
-    </template>
+    </p>
   </AccessibleDialog>
 </template>
 
 <script>
 import axios from '@nextcloud/axios'
-import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import AccessibleDialog from './AccessibleDialog.vue'
 import { renderMaterialMarkdown, tooLargeToRender } from '../utils/materialMarkdown.js'
@@ -42,17 +39,25 @@ import { renderMaterialMarkdown, tooLargeToRender } from '../utils/materialMarkd
  * download route as before (text/plain + nosniff, and the route records the open of a required
  * document), forced to text so a file whose content happens to be JSON is not parsed. The
  * rendering is sanitized in renderMaterialMarkdown().
+ *
+ * Closing goes through NcDialog's own button and × (fade-out, then update:open false), never by
+ * unmounting from outside: NcModal activates its focus trap after the enter transition, and a
+ * reader removed before that threw "fallbackFocus was specified but was not a node".
  */
 export default {
   name: 'MaterialReader',
-  components: { AccessibleDialog, NcButton },
+  components: { AccessibleDialog },
   props: {
     url: { type: String, required: true },
     fileName: { type: String, default: '' },
   },
   emits: ['close', 'loaded'],
   data() {
-    return { state: 'loading', html: '' }
+    return {
+      state: 'loading',
+      html: '',
+      buttons: [{ label: t('learning', 'Close'), variant: 'primary' }],
+    }
   },
   watch: {
     url() {
@@ -64,6 +69,9 @@ export default {
   },
   methods: {
     t,
+    onOpenChange(open) {
+      if (!open) this.$emit('close')
+    },
     async load() {
       this.state = 'loading'
       this.html = ''
@@ -96,7 +104,8 @@ export default {
 <style scoped>
 .material-reader__status { margin: 12px 0; }
 .material-reader__status--error { color: var(--color-error-text, #b00020); font-weight: 600; }
-.material-reader__raw { margin-inline-end: auto; align-self: center; text-decoration: underline; }
+.material-reader__raw-row { margin: 16px 0 0; }
+.material-reader__raw { text-decoration: underline; }
 .material-reader__body {
   line-height: 1.6;
   overflow-wrap: anywhere;
