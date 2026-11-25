@@ -65,7 +65,7 @@ class ConnectionStore {
      *
      * @throws \InvalidArgumentException for an endpoint URL or model that is not a valid connection
      */
-    public static function fromLegacyValues(string $provider, bool $enabled, string $ollamaUrl, string $ollamaModel): LlmConnection {
+    public static function fromLegacyValues(string $provider, bool $enabled, string $ollamaUrl, string $ollamaModel, bool $allowInternalNetwork = false): LlmConnection {
         $provider = strtolower(trim($provider));
         if ($provider === 'gemini') {
             return self::legacyGemini($enabled);
@@ -87,17 +87,20 @@ class ConnectionStore {
         if ($provider === 'openai_compatible') {
             // The form's endpoint/model fields carry the OpenAI-compatible base URL and model.
             // preset 'custom' names any gateway (DeepSeek, MiMo, a self-hosted proxy) and keeps
-            // the consented recipient bound to exactly the host the admin entered. The endpoint
-            // is the admin's own configuration, like the Ollama URL: no internal-network gate
-            // (a gateway on the LAN must work) and no local-processing claim - the data leaves
-            // the instance unless the endpoint really is the admin's own server.
+            // the consented recipient bound to exactly the host the admin entered. Unlike the
+            // Ollama URL this is usually a cloud endpoint, so the internal network stays closed
+            // unless the admin opts in (spec 5.3): without the opt-in only https is accepted and
+            // TargetGuard refuses a host that resolves to a LAN address (DNS rebinding), so the
+            // API key and user data never go out in plain http or to an unexpected internal host.
+            // No local-processing claim: the data leaves the instance unless the endpoint really
+            // is the admin's own server.
             return LlmConnection::fromArray([
                 'enabled' => $enabled,
                 'provider' => 'openai_compatible',
                 'preset' => 'custom',
                 'baseUrl' => trim($ollamaUrl),
                 'model' => trim($ollamaModel),
-                'allowInternalNetwork' => true,
+                'allowInternalNetwork' => $allowInternalNetwork,
                 'processingLocal' => false,
             ]);
         }
@@ -112,7 +115,7 @@ class ConnectionStore {
     /**
      * The 5.5 admin form changed the legacy keys. Without a snapshot they stay the source and
      * nothing is written. With one, the snapshot follows whenever what the form can express
-     * (on/off, provider, endpoint, model) differs; otherwise it is kept as it is, including
+     * (on/off, provider, endpoint, model, internal-network opt-in) differs; otherwise it is kept as it is, including
      * settings the old form cannot show (processingLocal, rev).
      */
     public function adoptLegacySettings(LlmConnection $fromForm, string $adminUid): void {
@@ -126,12 +129,12 @@ class ConnectionStore {
         $this->save($fromForm, $adminUid);
     }
 
-    /** @return array{0: bool, 1: string, 2: string, 3: string} */
+    /** @return array{0: bool, 1: string, 2: string, 3: string, 4: bool} */
     private static function formView(LlmConnection $c): array {
         if ($c->provider === 'disabled') {
-            return [false, 'disabled', '', ''];
+            return [false, 'disabled', '', '', false];
         }
-        return [$c->enabled, $c->provider, rtrim($c->baseUrl, '/'), $c->model];
+        return [$c->enabled, $c->provider, rtrim($c->baseUrl, '/'), $c->model, $c->allowInternalNetwork];
     }
 
     public function load(): LlmConnection {
@@ -208,6 +211,7 @@ class ConnectionStore {
                 $this->appConfig->getValueString(self::APP, 'ai_enabled', 'no') === 'yes',
                 $this->appConfig->getValueString(self::APP, 'ai_ollama_url', ''),
                 $this->appConfig->getValueString(self::APP, 'ai_ollama_model', ''),
+                $this->appConfig->getValueString(self::APP, 'ai_allow_internal_network', 'no') === 'yes',
             );
         } catch (\InvalidArgumentException $e) {
             $this->logger->warning('Legacy Ollama configuration is invalid; AI is treated as disabled: ' . $e->getMessage(), ['app' => self::APP]);

@@ -393,6 +393,16 @@
               : t('learning', 'Model name passed to Ollama, for example llama3, mistral, or a custom local model tag.') }}
           </small>
         </div>
+
+        <div v-if="showOpenaiConfig" class="switch-row">
+          <NcCheckboxRadioSwitch
+            :model-value="form.aiAllowInternalNetwork"
+            type="switch"
+            :description="t('learning', 'Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted.')"
+            @update:model-value="form.aiAllowInternalNetwork = !!$event">
+            {{ t('learning', 'Endpoint is in the internal network (allow http and LAN addresses)') }}
+          </NcCheckboxRadioSwitch>
+        </div>
       </div>
 
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
@@ -572,6 +582,7 @@ export default {
         aiProvider: 'gemini',
         aiOllamaUrl: 'http://localhost:11434',
         aiOllamaModel: 'llama3',
+        aiAllowInternalNetwork: false,
         geminiApiKey: '',
         geminiApiKeySet: false,
       },
@@ -667,6 +678,7 @@ export default {
         this.form.aiProvider = this.normalizeAiProvider(data.ai_provider)
         this.form.aiOllamaUrl = (data.ai_ollama_url || 'http://localhost:11434').trim() || 'http://localhost:11434'
         this.form.aiOllamaModel = (data.ai_ollama_model || 'llama3').trim() || 'llama3'
+        this.form.aiAllowInternalNetwork = data.ai_allow_internal_network === 'yes'
         this.form.aiEnabled = this.form.aiProvider !== 'disabled' && (data.ai_enabled || 'no') === 'yes'
         this.form.geminiApiKeySet = data.gemini_api_key_set === true
         // GitHub #35: course materials feed the AI assistant only if PDFs can be read as text
@@ -740,6 +752,7 @@ export default {
             ai_ollama_url: (this.form.aiOllamaUrl || 'http://localhost:11434').trim() || 'http://localhost:11434',
             ai_ollama_model: (this.form.aiOllamaModel || 'llama3').trim() || 'llama3',
             ai_enabled: this.form.aiProvider !== 'disabled' && this.form.aiEnabled ? 'yes' : 'no',
+            ai_allow_internal_network: this.form.aiProvider === 'openai_compatible' && this.form.aiAllowInternalNetwork ? 'yes' : 'no',
             ...(this.form.geminiApiKey.trim() !== '' ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
           }),
           axios.put(generateUrl('/apps/learning/api/settings/tools'), {
@@ -752,7 +765,12 @@ export default {
         ])
         this.saved = true
       } catch (e) {
-        this.error = t('learning', 'Failed to save settings')
+        // GitHub #108: an http or LAN endpoint without the internal-network switch is refused by
+        // the server (400 "Invalid AI connection: …"); say what to fix instead of a bare failure.
+        const apiError = e?.response?.data?.error
+        this.error = typeof apiError === 'string' && apiError.startsWith('Invalid AI connection')
+          ? t('learning', 'Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on.')
+          : t('learning', 'Failed to save settings')
       } finally {
         this.saving = false
       }

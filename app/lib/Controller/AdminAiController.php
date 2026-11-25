@@ -38,9 +38,10 @@ class AdminAiController extends Controller {
      * @param string $ollama_url Ollama or OpenAI-compatible endpoint (ignored for Gemini)
      * @param string $ollama_model Ollama or OpenAI-compatible model (ignored for Gemini)
      * @param ?string $key a Gemini or OpenAI-compatible key to test before saving; empty = stored key
+     * @param string $allow_internal_network yes = http and LAN addresses for an OpenAI-compatible endpoint
      */
     #[UserRateLimit(limit: 5, period: 60)]
-    public function test(string $provider, string $ollama_url = '', string $ollama_model = '', ?string $key = null): DataResponse {
+    public function test(string $provider, string $ollama_url = '', string $ollama_model = '', ?string $key = null, string $allow_internal_network = 'no'): DataResponse {
         $provider = strtolower(trim($provider));
         // Check the whitelist first: fromLegacyValues() maps anything unknown to `disabled`, which
         // would answer 200 with a failed test instead of refusing the provider.
@@ -49,7 +50,7 @@ class AdminAiController extends Controller {
         }
 
         try {
-            $candidate = ConnectionStore::fromLegacyValues($provider, true, $ollama_url, $ollama_model);
+            $candidate = ConnectionStore::fromLegacyValues($provider, true, $ollama_url, $ollama_model, $allow_internal_network === 'yes');
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => 'Invalid AI connection: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }

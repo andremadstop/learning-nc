@@ -84,6 +84,28 @@ class AdminAiControllerTest extends TestCase {
         $this->assertTrue($resp->getData()['ok']);
     }
 
+    /** Spec 5.3: the candidate keeps the internal network closed unless the admin opts in. */
+    public function testOpenAiCompatibleCandidateKeepsTheInternalNetworkClosedByDefault(): void {
+        $this->gateway->expects($this->once())->method('testConnection')
+            ->with($this->callback(fn (LlmConnection $c) => $c->allowInternalNetwork === false), self::KEY)
+            ->willReturn(self::ok());
+
+        $this->assertSame(200, $this->controller()->test('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat', self::KEY)->getStatus());
+    }
+
+    public function testAnHttpOpenAiCompatibleCandidateNeedsTheOptIn(): void {
+        $this->gateway->expects($this->once())->method('testConnection')
+            ->with($this->callback(fn (LlmConnection $c) => $c->allowInternalNetwork === true
+                && $c->baseUrl === 'http://llm.lan:8080/v1'), self::KEY)
+            ->willReturn(self::ok());
+
+        $refused = $this->controller()->test('openai_compatible', 'http://llm.lan:8080/v1', 'm', self::KEY);
+        $this->assertSame(400, $refused->getStatus(), 'no request without the opt-in');
+
+        $allowed = $this->controller()->test('openai_compatible', 'http://llm.lan:8080/v1', 'm', self::KEY, 'yes');
+        $this->assertSame(200, $allowed->getStatus());
+    }
+
     /** @return array<string, array{string}> */
     public static function unavailableProviders(): array {
         return [

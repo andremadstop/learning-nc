@@ -80,9 +80,9 @@ class SettingsControllerAiConnectionTest extends TestCase {
             $this->createMock(AuditCheckpointService::class), $this->store(), $this->keys(), $this->createMock(\OCA\Learning\Service\RoleService::class), 'admin');
     }
 
-    private function saveAi(string $provider, string $url = 'http://localhost:11434', string $model = 'llama3', string $enabled = 'yes', ?string $key = null): int {
+    private function saveAi(string $provider, string $url = 'http://localhost:11434', string $model = 'llama3', string $enabled = 'yes', ?string $key = null, string $internal = 'no'): int {
         return $this->controller()->saveAdmin('yes', 'de', 2, 'yes', 'learning-instructors', 'no', 5, 10, $key,
-            $provider, $url, $model, $enabled)->getStatus();
+            $provider, $url, $model, $enabled, $internal)->getStatus();
     }
 
     private function geminiSlot(): string {
@@ -255,10 +255,71 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $this->assertFalse($c->processingLocal, 'a cloud gateway never claims local processing');
     }
 
-    /** Like the Ollama URL, the endpoint is the admin's own configuration: an http gateway on the LAN is accepted. */
-    public function testAnOpenAiCompatibleEndpointMayBeHttpLikeTheOllamaUrl(): void {
-        $this->assertSame(200, $this->saveAi('openai_compatible', 'http://llm.lan:8080/v1', 'local-model'));
-        $this->assertSame('http://llm.lan:8080/v1', $this->store()->load()->baseUrl);
+    /**
+     * Spec 5.3: unlike the Ollama URL, an OpenAI-compatible endpoint is usually a cloud host, so
+     * the internal network is an explicit opt-in. Without it the API key and user data would go
+     * out in plain http, and TargetGuard's LAN/DNS-rebinding refusal would be switched off for
+     * api.deepseek.com as well.
+     */
+    public function testAnOpenAiCompatibleCloudEndpointKeepsTheInternalNetworkClosed(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat'));
+        $this->assertFalse($this->store()->load()->allowInternalNetwork);
+        $this->assertSame('no', $this->adminView()['ai_allow_internal_network']);
+    }
+
+    public function testAnHttpOpenAiCompatibleEndpointIsRefusedWithoutTheOptIn(): void {
+        $this->assertSame(400, $this->saveAi('openai_compatible', 'http://api.deepseek.com', 'deepseek-chat'));
+        $this->assertFalse($this->values->has('learning', ConnectionStore::KEY));
+        $this->assertNotSame('openai_compatible', $this->store()->load()->provider, 'nothing half-saved');
+    }
+
+    public function testAnHttpGatewayOnTheLanIsAcceptedWithTheOptIn(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'http://llm.lan:8080/v1', 'local-model', internal: 'yes'));
+        $c = $this->store()->load();
+        $this->assertSame('http://llm.lan:8080/v1', $c->baseUrl);
+        $this->assertTrue($c->allowInternalNetwork);
+        $this->assertSame('yes', $this->adminView()['ai_allow_internal_network']);
+        $this->assertSame('http://llm.lan:8080/v1', $this->adminView()['ai_ollama_url']);
+    }
+
+    /** formView covers the opt-in: switching it off on an existing snapshot must reach the snapshot. */
+    public function testTurningTheOptInOffReachesAnExistingSnapshot(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://llm.lan/v1', 'm', internal: 'yes'));
+        $this->store()->save($this->store()->load(), 'admin');
+        $this->assertTrue($this->store()->load()->allowInternalNetwork);
+
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://llm.lan/v1', 'm', internal: 'no'));
+        $this->assertFalse($this->store()->load()->allowInternalNetwork);
+    }
+
+    /** The opt-in belongs to the OpenAI-compatible form only; the Ollama URL keeps its 5.5 trust model. */
+    public function testOllamaStillAcceptsAnHttpUrlWithoutTheOptIn(): void {
+        $this->assertSame(200, $this->saveAi('ollama', 'http://ollama.lan:11434', 'llama3'));
+        $this->assertTrue($this->store()->load()->allowInternalNetwork);
+    }
+
+    /**
+     * An OpenAI-compatible key is bound to its endpoint. A Gemini key in the legacy slot is never
+     * sent there, so the page must not claim "key saved" for it (the admin would leave the field
+     * empty and every request would fail with an auth error).
+     */
+    public function testAGeminiKeyDoesNotShowAsSavedForAnOpenAiCompatibleEndpoint(): void {
+        $this->values->set('learning', $this->geminiSlot(), 'enc:AIza-gemini');
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat'));
+        $this->assertFalse($this->adminView()['gemini_api_key_set']);
+
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat', key: 'sk-deepseek'));
+        $this->assertTrue($this->adminView()['gemini_api_key_set']);
+        $this->assertSame('sk-deepseek', $this->keys()->get($this->store()->load()));
+        $this->assertSame('AIza-gemini', $this->keys()->get(ConnectionStore::legacyGemini(true)), 'the Gemini key is untouched');
+    }
+
+    /** The key follows the endpoint, never the admin to another host. */
+    public function testAnOpenAiCompatibleKeyDoesNotFollowTheAdminToAnotherHost(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat', key: 'sk-deepseek'));
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://evil.example', 'deepseek-chat', key: '***'));
+        $this->assertNull($this->keys()->get($this->store()->load()));
+        $this->assertFalse($this->adminView()['gemini_api_key_set']);
     }
 
     private function adminView(): array {

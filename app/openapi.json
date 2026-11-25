@@ -5911,6 +5911,10 @@
                                     "ai_enabled": {
                                         "type": "string",
                                         "default": "no"
+                                    },
+                                    "ai_allow_internal_network": {
+                                        "type": "string",
+                                        "default": "no"
                                     }
                                 }
                             }
@@ -6400,6 +6404,11 @@
                                         "nullable": true,
                                         "default": null,
                                         "description": "a Gemini or OpenAI-compatible key to test before saving; empty = stored key"
+                                    },
+                                    "allow_internal_network": {
+                                        "type": "string",
+                                        "default": "no",
+                                        "description": "yes = http and LAN addresses for an OpenAI-compatible endpoint"
                                     }
                                 }
                             }

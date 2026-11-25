@@ -86,18 +86,26 @@ class SettingsController extends Controller {
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
             // The key the Gemini connection actually uses: after the upgrade it is in the encrypted
             // slot, and the plaintext `gemini_api_key` is gone.
-            'gemini_api_key_set' => $this->apiKeyStore->get($connection) !== null
-                || $this->apiKeyStore->get(ConnectionStore::legacyGemini(false)) !== null,
+            // An OpenAI-compatible key is bound to its endpoint (see saveAdmin()), so only that slot
+            // counts there: a Gemini key in the legacy slot is never sent to it and must not show
+            // as "key saved" for it.
+            'gemini_api_key_set' => $this->apiKeyStore->get($connection->provider === 'openai_compatible'
+                ? $connection
+                : ConnectionStore::legacyGemini(false)) !== null,
             // The connection in force (snapshot, or derived from the 5.5 keys), never the raw legacy
             // keys: a legacy ai_provider '' (AI off) used to show as Gemini and on, and saving any
             // unrelated setting then switched on an external recipient.
             'ai_provider' => $connection->provider,
-            'ai_ollama_url' => $connection->provider === 'ollama'
+            'ai_ollama_url' => in_array($connection->provider, ['ollama', 'openai_compatible'], true)
                 ? $connection->baseUrl
                 : $this->config->getAppValue('learning', 'ai_ollama_url', 'http://localhost:11434'),
-            'ai_ollama_model' => $connection->provider === 'ollama'
+            'ai_ollama_model' => in_array($connection->provider, ['ollama', 'openai_compatible'], true)
                 ? $connection->model
                 : $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
+            // OpenAI-compatible only: http and LAN addresses for the endpoint (spec 5.3, opt-in).
+            'ai_allow_internal_network' => $connection->provider === 'openai_compatible'
+                ? ($connection->allowInternalNetwork ? 'yes' : 'no')
+                : $this->config->getAppValue('learning', 'ai_allow_internal_network', 'no'),
             'ai_enabled' => $connection->enabled && $connection->provider !== 'disabled' ? 'yes' : 'no',
             // GitHub #35: course materials can only feed the AI assistant from PDFs with pdftotext
             'pdf_text_extraction_available' => DocumentService::detectPdfTextExtraction(),
@@ -195,7 +203,8 @@ class SettingsController extends Controller {
         string $ai_provider = 'gemini',
         string $ai_ollama_url = 'http://localhost:11434',
         string $ai_ollama_model = 'llama3',
-        string $ai_enabled = 'no'
+        string $ai_enabled = 'no',
+        string $ai_allow_internal_network = 'no'
     ): DataResponse {
         // Validate the AI connection before anything is written: an invalid one must not leave a
         // half-saved form behind.
@@ -208,8 +217,9 @@ class SettingsController extends Controller {
         $ollamaUrl = trim($ai_ollama_url) !== '' ? trim($ai_ollama_url) : 'http://localhost:11434';
         $ollamaModel = trim($ai_ollama_model) !== '' ? trim($ai_ollama_model) : 'llama3';
         $aiEnabled = $ai_enabled === 'yes' && $provider !== 'disabled';
+        $allowInternalNetwork = $ai_allow_internal_network === 'yes';
         try {
-            $connection = ConnectionStore::fromLegacyValues($provider, $aiEnabled, $ollamaUrl, $ollamaModel);
+            $connection = ConnectionStore::fromLegacyValues($provider, $aiEnabled, $ollamaUrl, $ollamaModel, $allowInternalNetwork);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => 'Invalid AI connection: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
@@ -265,6 +275,7 @@ class SettingsController extends Controller {
         $this->config->setAppValue('learning', 'ai_ollama_url', $ollamaUrl);
         $this->config->setAppValue('learning', 'ai_ollama_model', $ollamaModel);
         $this->config->setAppValue('learning', 'ai_enabled', $aiEnabled ? 'yes' : 'no');
+        $this->config->setAppValue('learning', 'ai_allow_internal_network', $allowInternalNetwork ? 'yes' : 'no');
         // Once a connection snapshot exists it is what consent and transport use: the form's AI
         // change must reach it, or the admin would see one recipient and users would send to
         // another. A changed recipient asks every user for consent again.

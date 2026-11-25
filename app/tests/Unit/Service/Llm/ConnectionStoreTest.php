@@ -281,4 +281,42 @@ class ConnectionStoreTest extends TestCase {
         $store->save(LlmConnection::fromArray(['provider' => 'disabled']), 'admin');
         $this->assertSame('disabled', $store->load()->provider);
     }
+
+    /**
+     * Spec 5.3: an OpenAI-compatible endpoint from the admin form keeps the internal network
+     * closed by default (https only, TargetGuard refuses LAN addresses); the legacy derivation
+     * reads the opt-in from its own key, so a fresh install without a snapshot sees the same.
+     */
+    public function testTheOpenAiCompatibleFormConnectionOpensTheInternalNetworkOnlyOnRequest(): void {
+        $cloud = ConnectionStore::fromLegacyValues('openai_compatible', true, 'https://api.deepseek.com', 'deepseek-chat');
+        $this->assertFalse($cloud->allowInternalNetwork);
+        $this->assertSame('custom', $cloud->preset);
+
+        try {
+            ConnectionStore::fromLegacyValues('openai_compatible', true, 'http://api.deepseek.com', 'deepseek-chat');
+            $this->fail('http without the opt-in must be refused');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('https', $e->getMessage());
+        }
+
+        $lan = ConnectionStore::fromLegacyValues('openai_compatible', true, 'http://llm.lan:8080/v1', 'm', true);
+        $this->assertTrue($lan->allowInternalNetwork);
+
+        $this->values->set('learning', 'ai_provider', 'openai_compatible');
+        $this->values->set('learning', 'ai_enabled', 'yes');
+        $this->values->set('learning', 'ai_ollama_url', 'http://llm.lan:8080/v1');
+        $this->values->set('learning', 'ai_ollama_model', 'm');
+        $this->assertSame('disabled', $this->store()->load()->provider, 'an http endpoint without the opt-in fails closed');
+        $this->values->set('learning', 'ai_allow_internal_network', 'yes');
+        $this->assertTrue($this->store()->load()->allowInternalNetwork);
+        $this->assertSame('openai_compatible', $this->store()->load()->provider);
+    }
+
+    /** The opt-in does not change who receives the data, so it must not re-ask every user for consent. */
+    public function testTheOptInIsNotPartOfTheRecipientFingerprint(): void {
+        $off = ConnectionStore::fromLegacyValues('openai_compatible', true, 'https://llm.example/v1', 'm');
+        $on = ConnectionStore::fromLegacyValues('openai_compatible', true, 'https://llm.example/v1', 'm', true);
+        $this->assertSame($off->recipientFingerprint(), $on->recipientFingerprint());
+        $this->assertSame($off->connectionFingerprint(), $on->connectionFingerprint(), 'the key stays bound');
+    }
 }
