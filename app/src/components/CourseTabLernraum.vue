@@ -736,11 +736,11 @@
 		</NcModal>
 		<!-- GitHub #110: a required Markdown document is read inside Learning -->
 		<MaterialReader
-			v-if="readerItem"
+			v-if="readerItem && documentUrl(readerItem)"
 			:url="documentUrl(readerItem)"
 			:file-name="readerItem.title || defaultVideoTitle(readerItem)"
 			@loaded="onReaderLoaded(readerItem)"
-			@close="readerItem = null" />
+			@close="onReaderClosed" />
 	</div>
 </template>
 
@@ -1392,9 +1392,19 @@ export default {
 			if (item.documentType === 'markdown' && isPlainLeftClick(event)) {
 				event.preventDefault()
 				this.readerItem = item
+				// closed before "loaded" arrives: the close (or the next focus) still reads it again
+				if (this.needsOpen(item) && !this.previewsAsStudent) {
+					this.documentOpenPending = true
+				}
 				return
 			}
 			this.onDocumentOpened(item)
+		},
+		onReaderClosed() {
+			this.readerItem = null
+			if (this.documentOpenPending) {
+				this.refreshDocumentStates()
+			}
 		},
 		onReaderLoaded(item) {
 			if (this.needsOpen(item) && !this.previewsAsStudent) {

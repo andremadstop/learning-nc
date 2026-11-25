@@ -34,7 +34,7 @@ for (const name of ['CourseKnowledgeImport', 'CourseMaterials', 'AuthFlowSimulat
 // GitHub #110: the reader's own request records the open; the stub reports "loaded" like it
 vi.doMock('../../src/components/MaterialReader.vue', () => ({
 	__esModule: true,
-	default: { name: 'MaterialReader', props: ['url', 'fileName'], emits: ['loaded', 'close'], mounted() { this.$emit('loaded') }, template: '<div data-test="material-reader" :data-url="url" />' },
+	default: { name: 'MaterialReader', props: ['url', 'fileName'], emits: ['loaded', 'close'], mounted() { if (!globalThis.__readerNoLoad) this.$emit('loaded') }, template: '<div data-test="material-reader" :data-url="url"><button data-test="reader-close" @click="$emit(\'close\')" /></div>' },
 }))
 
 const axios = (await import('@nextcloud/axios')).default
@@ -147,5 +147,22 @@ describe('GitHub #86: confirm only after opening', () => {
 		page.link().dispatchEvent(event)
 		await flush()
 		expect(host.querySelector('[data-test="material-reader"]')).toBeNull()
+	})
+
+	it('GitHub #110: closing the reader before it loaded still reads the state again', async () => {
+		globalThis.__readerNoLoad = true
+		try {
+			const page = await mountLernraum(() => [row({ open_required: true, opened: false, document_type: 'markdown' })])
+			page.setRows(() => [row({ open_required: true, opened: true, document_type: 'markdown' })])
+			page.link().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
+			await flush()
+			expect(page.button().disabled).toBe(true)
+			host.querySelector('[data-test="reader-close"]').click()
+			await flush()
+			expect(host.querySelector('[data-test="material-reader"]')).toBeNull()
+			expect(page.button().disabled).toBe(false)
+		} finally {
+			globalThis.__readerNoLoad = false
+		}
 	})
 })

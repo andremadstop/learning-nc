@@ -71,15 +71,20 @@ export default {
       try {
         const response = await axios.get(url, { responseType: 'text', transformResponse: [(data) => data] })
         if (url !== this.url) return
+        // the request recorded the open of a required document: the caller reads its state
+        // again, also when rendering fails below
+        this.$emit('loaded')
         const text = typeof response.data === 'string' ? response.data : ''
         if (tooLargeToRender(text)) {
           this.state = 'too_large'
-        } else {
+          return
+        }
+        try {
           this.html = renderMaterialMarkdown(text)
           this.state = 'ready'
+        } catch (e) {
+          this.state = 'error'
         }
-        // the request recorded the open of a required document: the caller reads its state again
-        this.$emit('loaded')
       } catch (e) {
         if (url === this.url) this.state = 'error'
       }

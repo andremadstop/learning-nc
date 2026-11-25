@@ -21,7 +21,7 @@ import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
 
 /** Above this size the text is offered as plain text instead of rendered (a frozen tab helps nobody). */
-export const MAX_RENDER_BYTES = 8 * 1024 * 1024
+export const MAX_RENDER_BYTES = 2 * 1024 * 1024
 
 const SAFE_IMAGE = /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i
 const SAFE_LINK = /^(?:https?:|mailto:)/i
@@ -89,7 +89,17 @@ function afterSanitizeAttributes(node) {
  * @return {string}
  */
 export function renderMaterialMarkdown(source) {
-	const html = parser().render(String(source ?? ''))
+	return sanitizeMaterialHtml(parser().render(String(source ?? '')))
+}
+
+/**
+ * The second layer on its own: HTML (from markdown-it) → allowlisted HTML. Exported so the tests
+ * pin it independently of markdown-it's own refusals.
+ *
+ * @param {string} html - rendered markdown
+ * @return {string}
+ */
+export function sanitizeMaterialHtml(html) {
 	DOMPurify.addHook('afterSanitizeAttributes', afterSanitizeAttributes)
 	try {
 		return DOMPurify.sanitize(html, {

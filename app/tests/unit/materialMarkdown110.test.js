@@ -9,7 +9,7 @@
  * not test what a browser does.
  */
 import { describe, it, expect } from 'vitest'
-import { renderMaterialMarkdown, tooLargeToRender, MAX_RENDER_BYTES } from '../../src/utils/materialMarkdown.js'
+import { renderMaterialMarkdown, sanitizeMaterialHtml, tooLargeToRender, MAX_RENDER_BYTES } from '../../src/utils/materialMarkdown.js'
 
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
@@ -108,6 +108,42 @@ describe('renderMaterialMarkdown: what never gets through', () => {
 	it('keeps a file whose content is JSON as text', () => {
 		const el = dom(renderMaterialMarkdown('{"a":1}'))
 		expect(el.querySelector('p').textContent).toBe('{"a":1}')
+	})
+})
+
+describe('sanitizeMaterialHtml: the second layer on its own', () => {
+	// What markdown-it never produces today, but a plugin or html:true would: DOMPurify must hold.
+	it.each([
+		['javascript link', '<a href="javascript:alert(1)">x</a>'],
+		['data link', '<a href="data:text/html,<script>alert(1)</script>">x</a>'],
+		['relative link', '<a href="other.md">x</a>'],
+		['img onerror', '<img src="x" onerror="alert(1)">'],
+		['remote img', '<img src="https://tracker.example/p.png" alt="p">'],
+		['svg data img', '<img src="data:image/svg+xml;base64,PHN2Zz4=" alt="s">'],
+		['script', '<script>alert(1)</script>'],
+		['iframe', '<iframe src="https://evil.example"></iframe>'],
+		['form', '<form action="https://evil.example"><input name="x"></form>'],
+		['svg', '<svg onload="alert(1)"></svg>'],
+		['id clobbering', '<p id="app">x</p>'],
+		['class', '<p class="modal-mask">x</p>'],
+		['style', '<p style="position:fixed;inset:0">x</p>'],
+		['style on a cell', '<table><tr><td style="background:url(https://t.example)">x</td></tr></table>'],
+	])('removes %s', (_name, html) => {
+		const el = dom(sanitizeMaterialHtml(html))
+		expect(el.querySelector('script, iframe, form, input, svg, [onerror], [onload], [id], [class]')).toBeNull()
+		for (const node of el.querySelectorAll('[href], [src]')) {
+			expect(node.getAttribute('href') ?? node.getAttribute('src')).toMatch(/^(https?:|mailto:|#|data:image\/(png|jpe?g|gif|webp);base64,)/)
+		}
+		for (const node of el.querySelectorAll('[style]')) {
+			expect(node.getAttribute('style')).toMatch(/^text-align:(left|right|center)$/)
+		}
+		expect(el.innerHTML).not.toMatch(/tracker\.example|evil\.example|t\.example|javascript:|svg\+xml/)
+	})
+
+	it('keeps a raster data image and adds noopener to an external link', () => {
+		const el = dom(sanitizeMaterialHtml(`<img src="${PNG}" alt="a"><a href="https://example.org">l</a>`))
+		expect(el.querySelector('img').getAttribute('src')).toBe(PNG)
+		expect(el.querySelector('a').getAttribute('rel')).toBe('noopener noreferrer')
 	})
 })
 
