@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Integration\Migration;
 use OCA\Learning\Db\AnswerTranslationMapper;
 use OCA\Learning\Db\QuestionTranslationMapper;
 use OCA\Learning\Migration\Version011600Date20261121140000;
+use OCA\Learning\Migration\Version011700Date20261125103000;
 use OCA\Learning\Service\PoolService;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\TranslationService;
@@ -111,6 +112,39 @@ final class TranslationLanguagesTest extends TestCase {
             }
             $this->assertTrue($refused, 'the widened constraint still refuses a language outside TranslationService::ALLOWED_LANGS');
         }
+    }
+
+    /**
+     * Simplified Chinese (the seventh content language): Version011700 widens the same guard.
+     * On MariaDB the step does nothing — the old constraint never applied there — and the zh
+     * translation is stored through the app-side whitelist (TranslationService::ALLOWED_LANGS).
+     */
+    public function testChineseIsStoredAfterTheChineseWideningStep(): void {
+        if ($this->isPostgres()) {
+            foreach (self::UPGRADED as $table => $constraint) {
+                $this->db->executeStatement("ALTER TABLE {$this->prefix}{$table} DROP CONSTRAINT IF EXISTS {$this->prefix}{$constraint}");
+                $this->db->executeStatement("ALTER TABLE {$this->prefix}{$table} ADD CONSTRAINT {$this->prefix}{$constraint} CHECK ((lang)::text = ANY ((" . self::OLD_LANGS . ")::text[]))");
+            }
+        }
+
+        (new Version011700Date20261125103000($this->db, Server::get(IConfig::class)))
+            ->postSchemaChange($this->createMock(IOutput::class), static fn () => null, []);
+
+        $pool = Server::get(PoolService::class)->create('Chinese translation', null, self::USER);
+        $this->poolId = (int)$pool->getId();
+        $question = Server::get(QuestionService::class)->create($this->poolId, self::USER, 'Which port does SSH use?', null, 'easy', [
+            ['text' => '22', 'is_correct' => true],
+            ['text' => '23', 'is_correct' => false],
+        ], 'single');
+        $translations = Server::get(TranslationService::class);
+        $translations->setQuestionTranslation((int)$question['id'], 'zh', 'SSH 使用哪个端口？');
+        $translations->setAnswerTranslation((int)$question['answers'][0]['id'], 'zh', '22（中文）');
+
+        $stored = [];
+        foreach (Server::get(QuestionTranslationMapper::class)->findByQuestions([(int)$question['id']]) as $t) {
+            $stored[(string)$t->getLang()] = (string)$t->getText();
+        }
+        $this->assertSame(['zh' => 'SSH 使用哪个端口？'], $stored);
     }
 
     public function testTheStepDoesNothingWithoutTheOldConstraint(): void {
