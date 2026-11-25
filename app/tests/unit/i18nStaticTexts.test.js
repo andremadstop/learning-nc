@@ -119,14 +119,14 @@ describe('translation dialog (audit #190)', () => {
 		return instance
 	}
 
-	it('offers all six content languages, Arabic right to left (fr/uk since 5.18.0)', () => {
+	it('offers all seven content languages, Arabic right to left (zh since the Chinese update)', () => {
 		globalThis.t = translate
 		const instance = dialog()
-		expect(instance.languages.map((l) => l.key)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk'])
+		expect(instance.languages.map((l) => l.key)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'])
 		expect(instance.languages.find((l) => l.key === 'ar').dir).toBe('rtl')
-		expect(Object.keys(instance.questionTranslations)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk'])
+		expect(Object.keys(instance.questionTranslations)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'])
 		instance.initializeAnswerState()
-		expect(instance.answerTranslations[11]).toEqual({ de: '', en: '', fr: '', ru: '', ar: '', uk: '' })
+		expect(instance.answerTranslations[11]).toEqual({ de: '', en: '', fr: '', ru: '', ar: '', uk: '', zh: '' })
 	})
 
 	it('loads and saves a stored Ukrainian translation (5.18.0)', async () => {

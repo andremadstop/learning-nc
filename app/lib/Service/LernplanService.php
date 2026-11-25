@@ -475,6 +475,7 @@ PROMPT;
             'ru' => 'Русский',
             'ar' => 'Arabic',
             'uk' => 'Українська',
+            'zh' => '中文',
         ];
         return $map[$code] ?? 'Deutsch';
     }
