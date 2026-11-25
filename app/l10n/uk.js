@@ -4172,5 +4172,9 @@ OC.L10N.register(
     "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Не вдалося завантажити досягнення. Онови сторінку, щоб спробувати ще раз.",
     "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Рядок {line}: неоднозначні числа — прочитано як правильну відповідь {number} без пояснення; якщо останнє число — пояснення, додай рядок заголовків зі стовпцем «correct»",
     "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Рядок %1$s: неоднозначні числа — прочитано як правильну відповідь %2$s без пояснення; якщо останнє число — пояснення, додай рядок заголовків зі стовпцем «correct»",
+    "Material wird geladen …" : "Матеріал завантажується …",
+    "Das Material konnte nicht geladen werden." : "Не вдалося завантажити матеріал.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Цей файл завеликий для режиму читання. Відкрий його як текст.",
+    "Als Text öffnen" : "Відкрити як текст",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

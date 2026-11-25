@@ -4172,5 +4172,9 @@ OC.L10N.register(
     "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "تعذّر تحميل الإنجازات. أعد تحميل الصفحة للمحاولة مرة أخرى.",
     "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "السطر {line}: أرقام ملتبسة — قُرئت كإجابة صحيحة رقم {number} دون شرح؛ إذا كان الرقم الأخير شرحًا، فأضف سطر عناوين يحتوي على عمود «correct»",
     "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "السطر %1$s: أرقام ملتبسة — قُرئت كإجابة صحيحة رقم %2$s دون شرح؛ إذا كان الرقم الأخير شرحًا، فأضف سطر عناوين يحتوي على عمود «correct»",
+    "Material wird geladen …" : "جارٍ تحميل المادة …",
+    "Das Material konnte nicht geladen werden." : "تعذّر تحميل المادة.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "هذا الملف كبير جدًا لعرض القراءة. افتحه كنص.",
+    "Als Text öffnen" : "فتح كنص",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

@@ -49,6 +49,7 @@ class VideoProgressThirdPartyTest extends TestCase {
         $doc->setCourseId($courseId);
         $doc->setFilePath($path);
         $doc->setFileName($name);
+        $doc->setFileType(str_ends_with($name, '.md') ? 'markdown' : 'pdf');
         return $doc;
     }
 
@@ -65,11 +66,14 @@ class VideoProgressThirdPartyTest extends TestCase {
             $this->video(6, 'document', '32'),
             // a material document of an earlier folder: download would not serve it
             $this->video(8, 'document', '33'),
+            // GitHub #110: a Markdown material
+            $this->video(9, 'document', '34'),
         ]);
         $docs = [
             31 => $this->document(31, 7, '/Kurs/policy.pdf', 'policy.pdf'),
             32 => $this->document(32, 9, '/Kurs/policy.pdf', 'policy.pdf'),
             33 => $this->document(33, 7, '/Alt/old.pdf', 'old.pdf'),
+            34 => $this->document(34, 7, '/Kurs/guide.md', 'guide.md'),
         ];
         $documentMapper = $this->createMock(CourseDocumentMapper::class);
         $documentMapper->method('findById')->willReturnCallback(static function (int $id) use ($docs): CourseDocument {
@@ -148,6 +152,20 @@ class VideoProgressThirdPartyTest extends TestCase {
         $required->method('fileInfo')->willReturn(['version' => str_repeat('a', 64), 'mtime' => 1]);
 
         $this->assertSame(31, $this->courseStatusRows($required)[5]['document_id']);
+    }
+
+    /** GitHub #110: the type decides between Learning's Markdown reader and the browser's PDF view. */
+    public function testARequiredDocumentNamesItsTypeOnlyWhenItHasALink(): void {
+        $rows = $this->courseStatusRows();
+        $this->assertSame('pdf', $rows[5]['document_type']);
+        $this->assertSame('markdown', $rows[9]['document_type']);
+        $this->assertNull($rows[4]['document_type'], 'no document, no type');
+        $this->assertNull($rows[6]['document_type'], 'another course\'s document says nothing about itself');
+        $this->assertArrayNotHasKey('document_type', $rows[1]);
+
+        $required = $this->createMock(\OCA\Learning\Service\RequiredDocumentService::class);
+        $required->method('fileInfo')->willReturn(null);
+        $this->assertNull($this->courseStatusRows($required)[9]['document_type'], 'a file that cannot be served has no link and no type');
     }
 
     public function testTheLearnerGetsTheProviderVideoIdOfAThirdPartyVideo(): void {

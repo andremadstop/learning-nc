@@ -456,7 +456,7 @@
 									rel="noopener noreferrer"
 									class="video-item__doc-link"
 									:data-test="'document-open-' + item.id"
-									@click="onDocumentOpened(item)"
+									@click="onDocumentLinkClick($event, item)"
 									@auxclick="onDocumentOpened(item)">
 									{{ t('learning', 'Dokument öffnen') }}
 								</a>
@@ -734,10 +734,18 @@
 				</div>
 			</div>
 		</NcModal>
+		<!-- GitHub #110: a required Markdown document is read inside Learning -->
+		<MaterialReader
+			v-if="readerItem"
+			:url="documentUrl(readerItem)"
+			:file-name="readerItem.title || defaultVideoTitle(readerItem)"
+			@loaded="onReaderLoaded(readerItem)"
+			@close="readerItem = null" />
 	</div>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -764,6 +772,7 @@ import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
 import VideoConsentOverlay from './VideoConsentOverlay.vue'
 import VideoPlayer from './VideoPlayer.vue'
 import { documentConfirmState, practiseModesOpen, requiredDocumentUrl } from '../utils/requiredContent.js'
+import { isPlainLeftClick } from '../utils/plainClick.js'
 import RequiredContentSettings from './RequiredContentSettings.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
@@ -784,6 +793,8 @@ export default {
 	emits: ['guide'],
 
 	components: {
+		// GitHub #110: created on first use (the build inlines it into the one bundle)
+		MaterialReader: defineAsyncComponent(() => import('./MaterialReader.vue')),
 		AuthFlowSimulator,
 		CertPoolResult,
 		DnsResolver,
@@ -873,6 +884,8 @@ export default {
 	data() {
 		return {
 			RAW,
+			// GitHub #110: the required Markdown document open in the reader
+			readerItem: null,
 			currentSubTab: '',
 			knowledgePendingCount: 0,
 			selectedLearningPool: null,
@@ -1324,6 +1337,8 @@ export default {
 				coveredPct: Number(row.covered_pct ?? row.coveredPct ?? 0) || 0,
 				documentId: row.document_id ?? null,
 				materialDocumentId: row.material_document_id ?? null,
+				// GitHub #110: 'markdown' opens in the reader, 'pdf' in a new tab
+				documentType: row.document_type ?? null,
 				updated: row.updated === true,
 				confirmAgain: row.confirm_again === true,
 				// GitHub #86: confirm only after opening (course option) and whether it was opened
@@ -1367,6 +1382,24 @@ export default {
 			this.documentOpenPending = true
 			clearTimeout(this.documentOpenTimer)
 			this.documentOpenTimer = setTimeout(() => this.refreshDocumentStates(), 1500)
+		},
+		/**
+		 * GitHub #110: a plain click on a required Markdown document opens Learning's reader; a PDF
+		 * (or a modified click) keeps the new tab. The reader's request records the open, so the
+		 * state is read again when it has loaded, not on a timer.
+		 */
+		onDocumentLinkClick(event, item) {
+			if (item.documentType === 'markdown' && isPlainLeftClick(event)) {
+				event.preventDefault()
+				this.readerItem = item
+				return
+			}
+			this.onDocumentOpened(item)
+		},
+		onReaderLoaded(item) {
+			if (this.needsOpen(item) && !this.previewsAsStudent) {
+				this.refreshDocumentStates()
+			}
 		},
 		onPageVisible() {
 			if (this.documentOpenPending && (typeof document === 'undefined' || document.visibilityState !== 'hidden')) {

@@ -4172,5 +4172,9 @@ OC.L10N.register(
     "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "Impossible de charger tes réussites. Recharge la page pour réessayer.",
     "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Ligne {line} : nombres ambigus — lu comme bonne réponse {number} sans explication ; si le dernier nombre est une explication, ajoute une ligne d’en-tête avec une colonne « correct »",
     "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "Ligne %1$s : nombres ambigus — lu comme bonne réponse %2$s sans explication ; si le dernier nombre est une explication, ajoute une ligne d’en-tête avec une colonne « correct »",
+    "Material wird geladen …" : "Chargement du support …",
+    "Das Material konnte nicht geladen werden." : "Impossible de charger le support.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Ce fichier est trop volumineux pour la vue de lecture. Ouvre-le en texte brut.",
+    "Als Text öffnen" : "Ouvrir en texte brut",
 },
 "nplurals=2; plural=(n > 1);");

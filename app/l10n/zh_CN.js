@@ -4172,5 +4172,9 @@ OC.L10N.register(
     "Die Erfolge konnten nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen." : "成就无法加载。请刷新页面重试。",
     "Line {line}: Ambiguous numbers — read as correct answer {number} without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "第 {line} 行：数字含义有歧义——按无解释的正确答案 {number} 解读；如果最后一个数字是解释，请添加带 \"correct\" 列的表头行",
     "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column" : "第 %1$s 行：数字含义有歧义——按无解释的正确答案 %2$s 解读；如果最后一个数字是解释，请添加带 \"correct\" 列的表头行",
+    "Material wird geladen …" : "正在加载资料 …",
+    "Das Material konnte nicht geladen werden." : "无法加载资料。",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "此文件太大，无法在阅读视图中显示。请以文本方式打开。",
+    "Als Text öffnen" : "以文本方式打开",
 },
 "nplurals=1; plural=0;");

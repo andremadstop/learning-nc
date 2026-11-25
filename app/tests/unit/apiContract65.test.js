@@ -42,6 +42,10 @@ const UNRESOLVED_ALLOWED = {
 	'utils/sse-client.js new window.EventSource(withRequestToken(url))': 'createSseClient(url) callers are checked',
 	// Downloads of content generated in the browser.
 	'components/InstructorDashboard.vue <el>.href(url)': 'URL.createObjectURL(blob)',
+	// GitHub #110: the reader gets the material's download URL as a prop from its two callers
+	// (CourseMaterials.downloadUrl(), requiredContent.requiredDocumentUrl()), both route-checked.
+	'components/MaterialReader.vue :href(url)': 'documents/{documentId}/download (prop)',
+	'components/MaterialReader.vue axios.get(url)': 'documents/{documentId}/download (prop)',
 	'utils/summary-export.js <el>.href(url)': 'URL.createObjectURL(blob)',
 	// GitHub #94: the certificate PDF, made in the browser.
 	'utils/certificatePdf.js <el>.href(url)': 'URL.createObjectURL(blob) of the certificate PDF',
