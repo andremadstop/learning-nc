@@ -72,7 +72,7 @@ class SettingsControllerLanguageTest extends TestCase {
 
     public static function offeredLanguages(): array {
         // Exactly the <option value="…"> set of the content-language select.
-        return [['de'], ['en'], ['fr'], ['ru'], ['ar'], ['uk']];
+        return [['de'], ['en'], ['fr'], ['ru'], ['ar'], ['uk'], ['zh']];
     }
 
     public function testEmptyMeansOriginalContentAndStaysEmpty(): void {

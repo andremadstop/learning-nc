@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Tests\Unit\Migration;
 
-use OCA\Learning\Migration\Version011600Date20261121140000;
+use OCA\Learning\Migration\Version011700Date20261125103000;
 use OCA\Learning\Service\TranslationService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -53,14 +53,15 @@ class MigrationAppClassesTest extends TestCase {
     public function testFixtureSeesTheMigrations(): void {
         $this->assertGreaterThan(50, count(self::migrationFiles()));
         $this->assertArrayHasKey('Version011600Date20261121140000.php', self::migrationFiles());
+        $this->assertArrayHasKey('Version011700Date20261125103000.php', self::migrationFiles());
     }
 
     public function testTranslationLanguageCopyMatchesTheService(): void {
         // When ALLOWED_LANGS grows, an upgraded PostgreSQL instance needs a NEW migration that widens
-        // the check again — this one already ran there. Do not edit the copy to make this pass.
+        // the check again — the previous ones already ran there. Do not edit an old copy to make this pass.
         $this->assertSame(
             TranslationService::ALLOWED_LANGS,
-            Version011600Date20261121140000::LANGS,
+            Version011700Date20261125103000::LANGS,
             'TranslationService::ALLOWED_LANGS changed: add a migration that widens the lang check'
         );
     }

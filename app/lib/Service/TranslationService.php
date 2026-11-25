@@ -26,7 +26,7 @@ class TranslationService {
      * were missing until 5.18.0, together with the CHECK constraint on the translation tables of
      * PostgreSQL instances upgraded through 3.2 (widened by Version011600Date20261121140000).
      */
-    public const ALLOWED_LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk'];
+    public const ALLOWED_LANGS = ['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'];
 
     public function __construct(
         QuestionTranslationMapper $questionTransMapper,

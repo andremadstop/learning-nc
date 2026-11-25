@@ -33,7 +33,7 @@ function sources(dir) {
 describe('content languages', () => {
 	it('are the server\'s translation languages, the six interface languages', () => {
 		expect([...CONTENT_LANGUAGES]).toEqual(serverList())
-		expect([...CONTENT_LANGUAGES]).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk'])
+		expect([...CONTENT_LANGUAGES]).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'])
 	})
 
 	it('have a label each, Arabic right to left', () => {
@@ -44,6 +44,7 @@ describe('content languages', () => {
 			{ key: 'ru', label: 'Russian' },
 			{ key: 'ar', label: 'Arabic', dir: 'rtl' },
 			{ key: 'uk', label: 'Ukrainian' },
+			{ key: 'zh', label: 'Chinese (Simplified)' },
 		])
 	})
 

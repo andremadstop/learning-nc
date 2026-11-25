@@ -136,7 +136,7 @@ describe('PersonalSettings: content language in all six languages (5.18.0)', () 
 		await mountSettings()
 
 		const values = [...host.querySelectorAll('#content-language option')].map((o) => o.value)
-		expect(values).toEqual(['', 'de', 'en', 'fr', 'ru', 'ar', 'uk'])
+		expect(values).toEqual(['', 'de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'])
 		expect(host.querySelector('#content-language option[value="uk"]').textContent.trim()).toBe('Ukrainian')
 		expect(host.querySelector('#content-language option[value="fr"]').textContent.trim()).toBe('French')
 	})
