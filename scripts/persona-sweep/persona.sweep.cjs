@@ -550,7 +550,11 @@ async function probeConfirmRefused(page, rec, user, who) {
 	;(rec.current.notes ||= []).push(`server, confirm before open: ${res.status} ${body?.code || ''}`)
 }
 
-/** Open every unconfirmed required document (new tab, as a learner would), then confirm it. */
+/**
+ * Open every unconfirmed required document as a learner would, then confirm it. A PDF opens in a
+ * new tab; a Markdown document opens in Learning's reader (GitHub #110), which must show the
+ * rendered text and close again.
+ */
 async function openAndConfirmAll(page, rec, who) {
 	const items = requiredItems(page)
 	const n = await items.count()
@@ -559,13 +563,27 @@ async function openAndConfirmAll(page, rec, who) {
 		const btn = itemConfirm(item)
 		const title = await itemTitle(item)
 		if ((await btn.textContent().catch(() => '')).trim() === 'Confirmed as read') continue
-		const opened = page.context().waitForEvent('page', { timeout: 10000 }).catch(() => null)
+		const markdown = /\.(md|markdown)$/i.test(title)
+		const opened = markdown ? Promise.resolve(null) : page.context().waitForEvent('page', { timeout: 10000 }).catch(() => null)
 		await item.locator('a[data-test^="document-open-"]').first().click()
-		const tab = await opened
-		if (!tab) rec.add('materials', `${who}: "Open document" of "${title}" opened nothing`)
-		else {
-			await tab.waitForLoadState().catch(() => {})
-			await tab.close().catch(() => {})
+		if (markdown) {
+			const body = page.locator('[data-test="material-reader-body"]')
+			await body.waitFor({ timeout: 10000 }).catch(() => {})
+			const text = (await body.textContent().catch(() => '')).trim()
+			if (!text) rec.add('materials', `${who}: the reader of "${title}" shows no text (#110)`)
+			else if (/^#\s|\n#\s/.test(text)) rec.add('materials', `${who}: the reader of "${title}" shows Markdown source, not rendered text (#110)`)
+			;(rec.current.notes ||= []).push(`reader "${title}": ${text.length} characters`)
+			await page.getByRole('button', { name: 'Close' }).last().click().catch(() => {})
+			if (!(await waitUntil(async () => !(await body.isVisible().catch(() => false)), 5000))) {
+				rec.add('materials', `${who}: the reader of "${title}" does not close (#110)`)
+			}
+		} else {
+			const tab = await opened
+			if (!tab) rec.add('materials', `${who}: "Open document" of "${title}" opened nothing`)
+			else {
+				await tab.waitForLoadState().catch(() => {})
+				await tab.close().catch(() => {})
+			}
 		}
 		// the page reads the state again 1.5 s after the click and on return to the tab
 		if (!(await waitUntil(async () => !(await btn.isDisabled()), 8000))) {
