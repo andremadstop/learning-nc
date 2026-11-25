@@ -4209,6 +4209,10 @@
         "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "第 %1$s 行：数字含义有歧义——按无解释的正确答案 %2$s 解读；如果最后一个数字是解释，请添加带 \"correct\" 列的表头行",
         "Endpoint is in the internal network (allow http and LAN addresses)": "端点位于内部网络（允许 http 和局域网地址）",
         "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted.": "仅适用于您自己网络中的网关。未开启时只接受 https，地址解析到内部网络的端点会被拒绝，因此 API 密钥和用户数据绝不会以明文发送。",
-        "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on.": "无法保存设置：AI 端点 URL 或模型无效。URL 必须使用 https，除非端点位于内部网络且已打开此开关。"
+        "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on.": "无法保存设置：AI 端点 URL 或模型无效。URL 必须使用 https，除非端点位于内部网络且已打开此开关。",
+        "Material wird geladen …": "正在加载资料 …",
+        "Das Material konnte nicht geladen werden.": "无法加载资料。",
+        "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text.": "此文件太大，无法在阅读视图中显示。请以文本方式打开。",
+        "Als Text öffnen": "以文本方式打开"
     }
 }

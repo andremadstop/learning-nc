@@ -4184,5 +4184,9 @@ OC.L10N.register(
     "Endpoint is in the internal network (allow http and LAN addresses)" : "Le point de terminaison est dans le réseau interne (autoriser http et les adresses LAN)",
     "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted." : "Uniquement pour une passerelle dans votre propre réseau. Sans ce réglage, seul https est accepté et un point de terminaison dont l’adresse se résout vers votre réseau interne est refusé : la clé API et les données des utilisateurs ne sont jamais envoyées en clair.",
     "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on." : "Impossible d’enregistrer les paramètres : l’URL du point de terminaison ou le modèle d’IA n’est pas valide. L’URL doit utiliser https, sauf si le point de terminaison est dans votre réseau interne et que ce réglage est activé.",
+    "Material wird geladen …" : "Chargement du support …",
+    "Das Material konnte nicht geladen werden." : "Impossible de charger le support.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Ce fichier est trop volumineux pour la vue de lecture. Ouvre-le en texte brut.",
+    "Als Text öffnen" : "Ouvrir en texte brut",
 },
 "nplurals=2; plural=(n > 1);");

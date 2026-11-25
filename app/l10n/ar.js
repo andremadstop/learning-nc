@@ -4184,5 +4184,9 @@ OC.L10N.register(
     "Endpoint is in the internal network (allow http and LAN addresses)" : "نقطة النهاية موجودة في الشبكة الداخلية (السماح بـ http وعناوين الشبكة المحلية)",
     "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted." : "فقط لبوابة داخل شبكتك الخاصة. بدون هذا الإعداد يُقبل https فقط، ويُرفض أي نقطة نهاية يشير عنوانها إلى شبكتك الداخلية، فلا يُرسل مفتاح API وبيانات المستخدمين دون تشفير أبدًا.",
     "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on." : "تعذّر حفظ الإعدادات: عنوان URL لنقطة نهاية الذكاء الاصطناعي أو النموذج غير صالح. يجب أن يستخدم العنوان https، إلا إذا كانت نقطة النهاية في شبكتك الداخلية وكان هذا المفتاح مفعّلًا.",
+    "Material wird geladen …" : "جارٍ تحميل المادة …",
+    "Das Material konnte nicht geladen werden." : "تعذّر تحميل المادة.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "هذا الملف كبير جدًا لعرض القراءة. افتحه كنص.",
+    "Als Text öffnen" : "فتح كنص",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

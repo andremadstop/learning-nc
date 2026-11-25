@@ -31,6 +31,12 @@ for (const name of ['CourseKnowledgeImport', 'CourseMaterials', 'AuthFlowSimulat
 	vi.doMock(`../../src/components/${name}.vue`, () => stub(name))
 }
 
+// GitHub #110: the reader's own request records the open; the stub reports "loaded" like it
+vi.doMock('../../src/components/MaterialReader.vue', () => ({
+	__esModule: true,
+	default: { name: 'MaterialReader', props: ['url', 'fileName'], emits: ['loaded', 'close'], mounted() { if (!globalThis.__readerNoLoad) this.$emit('loaded') }, template: '<div data-test="material-reader" :data-url="url"><button data-test="reader-close" @click="$emit(\'close\')" /></div>' },
+}))
+
 const axios = (await import('@nextcloud/axios')).default
 const CourseTabLernraum = (await import('../../src/components/CourseTabLernraum.vue')).default
 
@@ -118,5 +124,45 @@ describe('GitHub #86: confirm only after opening', () => {
 		await flush()
 		expect(page.errors).toEqual(['Öffne das Dokument zuerst. Danach kannst du es als gelesen bestätigen.'])
 		expect(axios.get.mock.calls.length).toBeGreaterThan(before)
+	})
+
+	it('GitHub #110: a required Markdown document opens in the reader and its open enables the button', async () => {
+		const page = await mountLernraum(() => [row({ open_required: true, opened: false, document_type: 'markdown' })])
+		page.setRows(() => [row({ open_required: true, opened: true, document_type: 'markdown' })])
+		const event = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
+		page.link().dispatchEvent(event)
+		await flush()
+		expect(event.defaultPrevented).toBe(true)
+		const reader = host.querySelector('[data-test="material-reader"]')
+		expect(reader).not.toBeNull()
+		expect(reader.getAttribute('data-url')).toBe('/apps/learning/api/courses/7/documents/12/download')
+		// no focus event: the reader's "loaded" alone reads the state again
+		expect(page.button().disabled).toBe(false)
+	})
+
+	it('GitHub #110: a required PDF still opens in a new tab', async () => {
+		const page = await mountLernraum(() => [row({ open_required: true, opened: false, document_type: 'pdf' })])
+		page.link().addEventListener('click', (e) => e.preventDefault())
+		const event = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
+		page.link().dispatchEvent(event)
+		await flush()
+		expect(host.querySelector('[data-test="material-reader"]')).toBeNull()
+	})
+
+	it('GitHub #110: closing the reader before it loaded still reads the state again', async () => {
+		globalThis.__readerNoLoad = true
+		try {
+			const page = await mountLernraum(() => [row({ open_required: true, opened: false, document_type: 'markdown' })])
+			page.setRows(() => [row({ open_required: true, opened: true, document_type: 'markdown' })])
+			page.link().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
+			await flush()
+			expect(page.button().disabled).toBe(true)
+			host.querySelector('[data-test="reader-close"]').click()
+			await flush()
+			expect(host.querySelector('[data-test="material-reader"]')).toBeNull()
+			expect(page.button().disabled).toBe(false)
+		} finally {
+			globalThis.__readerNoLoad = false
+		}
 	})
 })

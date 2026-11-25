@@ -4184,5 +4184,9 @@ OC.L10N.register(
     "Endpoint is in the internal network (allow http and LAN addresses)" : "Кінцева точка у внутрішній мережі (дозволити http і адреси LAN)",
     "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted." : "Лише для шлюзу у вашій власній мережі. Без цього налаштування приймається тільки https, а кінцева точка, адреса якої вказує у внутрішню мережу, відхиляється — тож API-ключ і дані користувачів ніколи не передаються незашифрованими.",
     "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on." : "Не вдалося зберегти налаштування: URL кінцевої точки або модель ШІ недійсні. URL має використовувати https, якщо тільки кінцева точка не у внутрішній мережі і цей перемикач не ввімкнено.",
+    "Material wird geladen …" : "Матеріал завантажується …",
+    "Das Material konnte nicht geladen werden." : "Не вдалося завантажити матеріал.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Цей файл завеликий для режиму читання. Відкрий його як текст.",
+    "Als Text öffnen" : "Відкрити як текст",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

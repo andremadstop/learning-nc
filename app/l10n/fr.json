@@ -4222,6 +4222,10 @@
         "Line %1$s: Ambiguous numbers — read as correct answer %2$s without explanation; if the last number is an explanation, add a header row with a \"correct\" column": "Ligne %1$s : nombres ambigus — lu comme bonne réponse %2$s sans explication ; si le dernier nombre est une explication, ajoute une ligne d’en-tête avec une colonne « correct »",
         "Endpoint is in the internal network (allow http and LAN addresses)": "Le point de terminaison est dans le réseau interne (autoriser http et les adresses LAN)",
         "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted.": "Uniquement pour une passerelle dans votre propre réseau. Sans ce réglage, seul https est accepté et un point de terminaison dont l’adresse se résout vers votre réseau interne est refusé : la clé API et les données des utilisateurs ne sont jamais envoyées en clair.",
-        "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on.": "Impossible d’enregistrer les paramètres : l’URL du point de terminaison ou le modèle d’IA n’est pas valide. L’URL doit utiliser https, sauf si le point de terminaison est dans votre réseau interne et que ce réglage est activé."
+        "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on.": "Impossible d’enregistrer les paramètres : l’URL du point de terminaison ou le modèle d’IA n’est pas valide. L’URL doit utiliser https, sauf si le point de terminaison est dans votre réseau interne et que ce réglage est activé.",
+        "Material wird geladen …": "Chargement du support …",
+        "Das Material konnte nicht geladen werden.": "Impossible de charger le support.",
+        "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text.": "Ce fichier est trop volumineux pour la vue de lecture. Ouvre-le en texte brut.",
+        "Als Text öffnen": "Ouvrir en texte brut"
     }
 }

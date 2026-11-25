@@ -179,7 +179,9 @@
 								class="material-file-link"
 								:href="downloadUrl(doc)"
 								target="_blank"
-								rel="noopener noreferrer">{{ doc.file_name }}</a>
+								rel="noopener noreferrer"
+								:data-test="'material-link-' + doc.id"
+								@click="openMaterial($event, doc)">{{ doc.file_name }}</a>
 							<span
 								v-else
 								class="material-file-unavailable">{{ doc.file_name }}</span>
@@ -233,13 +235,21 @@
 				</tbody>
 			</table>
 		</div>
+		<!-- GitHub #110: Markdown materials are read inside Learning -->
+		<MaterialReader
+			v-if="readerDoc"
+			:url="downloadUrl(readerDoc)"
+			:file-name="readerDoc.file_name"
+			@close="readerDoc = null" />
 	</div>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t, translatePlural as n } from '@nextcloud/l10n'
+import { isPlainLeftClick } from '../utils/plainClick.js'
 import { formatLocalDate } from '../utils/relativeTime.js'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import { isStaleDocument, parseDocumentsResponse } from '../utils/courseMaterials.js'
@@ -250,6 +260,11 @@ const RAW = { escape: false, sanitize: false }
 
 export default {
 	name: 'CourseMaterials',
+
+	components: {
+		// GitHub #110: created on first use (the build inlines it into the one bundle)
+		MaterialReader: defineAsyncComponent(() => import('./MaterialReader.vue')),
+	},
 
 	props: {
 		courseId: {
@@ -293,6 +308,8 @@ export default {
 		return {
 			RAW,
 			documents: [],
+			// GitHub #110: the Markdown material open in the reader
+			readerDoc: null,
 			materialFolder: null,
 			// GitHub #90 (U2): learners learn only whether a folder is linked, not its path
 			folderLinked: false,
@@ -617,6 +634,14 @@ export default {
 			}
 		},
 
+		/** GitHub #110: a plain click on a Markdown material opens the reader instead of raw text. */
+		openMaterial(event, doc) {
+			if (doc?.file_type !== 'markdown' || !isPlainLeftClick(event)) {
+				return
+			}
+			event.preventDefault()
+			this.readerDoc = doc
+		},
 		downloadUrl(doc) {
 			return generateUrl('/apps/learning/api/courses/{courseId}/documents/{documentId}/download', {
 				courseId: this.courseId,

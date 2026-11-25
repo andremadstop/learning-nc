@@ -4184,5 +4184,9 @@ OC.L10N.register(
     "Endpoint is in the internal network (allow http and LAN addresses)" : "Endpoint is in the internal network (allow http and LAN addresses)",
     "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted." : "Only for a gateway in your own network. Without this, only https is accepted and an endpoint whose address resolves to your internal network is refused, so the API key and user data are never sent unencrypted.",
     "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on." : "Failed to save settings: the AI endpoint URL or model is not valid. The URL must use https, unless the endpoint is in your internal network and that switch is on.",
+    "Material wird geladen …" : "Loading material …",
+    "Das Material konnte nicht geladen werden." : "The material could not be loaded.",
+    "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "This file is too large for the reading view. Open it as text.",
+    "Als Text öffnen" : "Open as text",
 },
 "nplurals=2; plural=(n != 1);");

@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseDocument;
 use OCA\Learning\Db\CourseDocumentMapper;
 use OCA\Learning\Db\CourseVideo;
 use OCA\Learning\Db\CourseVideoMapper;
@@ -219,11 +220,11 @@ class VideoProgressController extends Controller {
     }
 
     /**
-     * The course_documents id of a document row of $course whose path lies in the current
+     * The course_documents row of a document row of $course whose path lies in the current
      * material folder, else null. It is the entry the learner's list of further material shows,
      * whether or not its file can be handed out right now (GitHub #90 review).
      */
-    private function folderDocumentId(Course $course, CourseVideo $video): ?int {
+    private function folderDocument(Course $course, CourseVideo $video): ?CourseDocument {
         $documentId = CourseVideoController::documentIdFromRef($video->getVideoRef());
         if ($documentId === null) {
             return null;
@@ -237,12 +238,12 @@ class VideoProgressController extends Controller {
             || !DocumentService::isInMaterialFolder($doc, $course->getMaterialFolder())) {
             return null;
         }
-        return $documentId;
+        return $doc;
     }
 
     /**
      * The course_documents id of a document row when document#download would serve it to a
-     * member of $course (folderDocumentId() and a file that exists and may be handed out), else null.
+     * member of $course (folderDocument() and a file that exists and may be handed out), else null.
      */
     private function servableDocumentId(Course $course, CourseVideo $video, ?int $folderDocumentId): ?int {
         if ($folderDocumentId === null) {
@@ -330,8 +331,14 @@ class VideoProgressController extends Controller {
             // material-folder document id is sent, and only while that download would serve it;
             // a path never leaves the server.
             if ($video->getSourceType() === CourseVideoController::DOCUMENT_SOURCE_TYPE) {
-                $folderDocumentId = $this->folderDocumentId($course, $video);
+                $folderDocument = $this->folderDocument($course, $video);
+                $folderDocumentId = $folderDocument !== null ? (int)$folderDocument->getId() : null;
                 $row['document_id'] = $this->servableDocumentId($course, $video, $folderDocumentId);
+                // GitHub #110: Markdown opens in Learning's reader, PDF in the browser. The type
+                // is the registered one, the same whitelist document#download serves by.
+                $row['document_type'] = $row['document_id'] !== null && $folderDocument !== null
+                    ? ($folderDocument->getFileType() === 'pdf' ? 'pdf' : 'markdown')
+                    : null;
                 // GitHub #90 (review): the entry of the material list this requirement is, also
                 // when its file cannot be handed out right now (view-only share, unreadable). The
                 // optional list leaves it out by this id; document_id only decides on the link.
