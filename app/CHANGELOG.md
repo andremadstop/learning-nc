@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.20.0] - 2026-11-25 — OpenAI-compatible AI and readable Markdown materials
+
+Two requests from @justemu: VirtuProf can answer through any OpenAI-compatible endpoint, and
+Markdown course materials are shown formatted instead of as raw text.
+
+> **Administrators:** no migration, existing AI consents stay valid. An OpenAI-compatible endpoint
+> must use https. For a gateway in your own network, or one that only speaks http, turn on
+> *Endpoint is in the internal network* below the model field.
+
+### Added
+- **OpenAI-compatible AI provider** (#108, implementation by @justemu in #109): DeepSeek, MiMo,
+  OpenAI or a self-hosted gateway can be selected in the admin settings, with endpoint, model and
+  API key, and tested from there. Users consent to that endpoint before their first message; the
+  consent dialog names its host. The API key is bound to the endpoint and never follows a changed
+  URL.
+- **Markdown materials are readable** (#110): a click on a Markdown material opens it formatted
+  inside Learning, with headings, tables, lists, code, links and embedded screenshots
+  (`data:image/png|jpeg|gif|webp;base64`). Raw HTML in a file stays text. Remote and relative
+  images are shown as their description, so opening a material contacts no other server. A middle
+  click or "open in new tab" still shows the plain text, and opening a required document still
+  counts as opened.
+
+### Fixed
+- **Admin AI settings:** the shared key field is cleared when the provider changes, so a key typed
+  for one provider is never saved for another. "Key saved" is only shown for the endpoint the key
+  belongs to. A refused AI connection no longer leaves the instructor and tool lists saved without
+  the rest of the page, and the error says what to fix.
+
 ## [5.19.0] - 2026-11-24 — Simplified Chinese
 
 Learning now speaks Simplified Chinese. On a Nextcloud whose interface language is `zh_CN`, the app,
