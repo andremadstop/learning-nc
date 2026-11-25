@@ -214,8 +214,12 @@ class SettingsController extends Controller {
         if (!in_array($provider, self::AVAILABLE_AI_PROVIDERS, true)) {
             return new DataResponse(['error' => 'AI provider is not available in this release'], Http::STATUS_BAD_REQUEST);
         }
-        $ollamaUrl = trim($ai_ollama_url) !== '' ? trim($ai_ollama_url) : 'http://localhost:11434';
-        $ollamaModel = trim($ai_ollama_model) !== '' ? trim($ai_ollama_model) : 'llama3';
+        // The Ollama defaults only stand in for an empty Ollama field. For an OpenAI-compatible
+        // endpoint an empty URL or model is an error: with the internal-network switch on, it would
+        // otherwise silently become http://localhost:11434 with llama3.
+        $isOpenAi = $provider === 'openai_compatible';
+        $ollamaUrl = trim($ai_ollama_url) !== '' || $isOpenAi ? trim($ai_ollama_url) : 'http://localhost:11434';
+        $ollamaModel = trim($ai_ollama_model) !== '' || $isOpenAi ? trim($ai_ollama_model) : 'llama3';
         $aiEnabled = $ai_enabled === 'yes' && $provider !== 'disabled';
         $allowInternalNetwork = $ai_allow_internal_network === 'yes';
         try {

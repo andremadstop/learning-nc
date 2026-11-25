@@ -410,7 +410,16 @@ final class ConsentMatrixTest extends TestCase {
         $this->assertCount(1, $requests);
         $this->assertStringContainsString('connection test', $requests[0]['body'], 'only the fixed test message');
 
+        // Spec 5.3: an OpenAI-compatible endpoint keeps the internal network closed unless the
+        // admin opts in. Plain http is refused before anything is sent, and an https URL to a
+        // loopback address is refused by TargetGuard, so the mock is never contacted.
         $resp = $controller->test('openai_compatible', MockLlmServer::baseUrl(), 'mock-model');
+        $this->assertSame(400, $resp->getStatus(), (string)json_encode($resp->getData()));
+        $resp = $controller->test('openai_compatible', str_replace('http://', 'https://', MockLlmServer::baseUrl()), 'mock-model');
+        $this->assertFalse($resp->getData()['ok'] ?? false, (string)json_encode($resp->getData()));
+        $this->assertCount(1, MockLlmServer::requests(), 'no request without the internal-network opt-in');
+
+        $resp = $controller->test('openai_compatible', MockLlmServer::baseUrl(), 'mock-model', null, 'yes');
         $this->assertSame(200, $resp->getStatus(), (string)json_encode($resp->getData()));
         $this->assertTrue($resp->getData()['ok'], (string)json_encode($resp->getData()));
         $requests = MockLlmServer::requests();

@@ -292,6 +292,24 @@ class SettingsControllerAiConnectionTest extends TestCase {
         $this->assertFalse($this->store()->load()->allowInternalNetwork);
     }
 
+    /** An empty endpoint or model is an error for OpenAI-compatible, never the Ollama defaults. */
+    public function testAnEmptyOpenAiCompatibleEndpointOrModelIsRefused(): void {
+        $this->assertSame(400, $this->saveAi('openai_compatible', '', 'deepseek-chat', internal: 'yes'));
+        $this->assertSame(400, $this->saveAi('openai_compatible', 'https://api.deepseek.com', '', internal: 'yes'));
+        $this->assertFalse($this->values->has('learning', ConnectionStore::KEY));
+        $this->assertNotSame('openai_compatible', $this->store()->load()->provider);
+    }
+
+    /** A refused http endpoint leaves an existing snapshot exactly as it was. */
+    public function testAnHttpEndpointWithTheOptInOffLeavesTheSnapshotUntouched(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'http://llm.lan:8080/v1', 'm', internal: 'yes'));
+        $this->store()->save($this->store()->load(), 'admin');
+        $before = $this->values->get('learning', ConnectionStore::KEY);
+
+        $this->assertSame(400, $this->saveAi('openai_compatible', 'http://llm.lan:8080/v1', 'm', internal: 'no'));
+        $this->assertSame($before, $this->values->get('learning', ConnectionStore::KEY));
+    }
+
     /** The opt-in belongs to the OpenAI-compatible form only; the Ollama URL keeps its 5.5 trust model. */
     public function testOllamaStillAcceptsAnHttpUrlWithoutTheOptIn(): void {
         $this->assertSame(200, $this->saveAi('ollama', 'http://ollama.lan:11434', 'llama3'));

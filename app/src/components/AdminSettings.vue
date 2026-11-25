@@ -347,7 +347,7 @@
             class="nc-input"
             type="password"
             autocomplete="new-password"
-            :placeholder="form.geminiApiKeySet ? t('learning', '(key saved — enter new value to replace)') : (showOpenaiConfig ? t('learning', 'Enter API Key') : t('learning', 'Enter Gemini API Key'))" />
+            :placeholder="aiKeySaved ? t('learning', '(key saved — enter new value to replace)') : (showOpenaiConfig ? t('learning', 'Enter API Key') : t('learning', 'Enter Gemini API Key'))" />
           <small v-if="showGeminiConfig" class="field-help">
             {{ t('learning', 'Get your API key from') }}
             <a
@@ -518,6 +518,9 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 import { toInstructorPayload, toOptions } from '../utils/member-picker.js'
 
+const OLLAMA_DEFAULT_URL = 'http://localhost:11434'
+const OLLAMA_DEFAULT_MODEL = 'llama3'
+
 export default {
   name: 'AdminSettings',
   components: { AccessibleDialog, CertBackgroundLibrary, CertLogoLibrary, InstructorPicker, NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, OperatorSettings },
@@ -586,6 +589,9 @@ export default {
         geminiApiKey: '',
         geminiApiKeySet: false,
       },
+      // GitHub #108: provider and endpoint the saved key belongs to (an OpenAI-compatible key is
+      // bound to its endpoint), so "key saved" is only shown while the form still points there.
+      aiLoaded: { provider: '', url: '' },
     }
   },
   mounted() {
@@ -629,6 +635,10 @@ export default {
     showOpenaiConfig() {
       return this.form.aiProvider === 'openai_compatible'
     },
+    aiKeySaved() {
+      if (!this.form.geminiApiKeySet || this.form.aiProvider !== this.aiLoaded.provider) return false
+      return this.form.aiProvider !== 'openai_compatible' || (this.form.aiOllamaUrl || '').trim() === this.aiLoaded.url
+    },
   },
   methods: {
     normalizeEnabledTools(enabledTools) {
@@ -642,6 +652,18 @@ export default {
       this.form.aiProvider = this.normalizeAiProvider(this.form.aiProvider)
       if (this.form.aiProvider === 'disabled') {
         this.form.aiEnabled = false
+      }
+      // GitHub #108: Gemini and OpenAI-compatible share the key field. A key typed for one
+      // provider must never be saved for (and sent to) the other.
+      this.form.geminiApiKey = ''
+      // The Ollama defaults are no OpenAI-compatible endpoint: start empty (the placeholder shows
+      // an example) instead of a guaranteed refusal, and restore them when going back to Ollama.
+      if (this.form.aiProvider === 'openai_compatible') {
+        if (this.form.aiOllamaUrl === OLLAMA_DEFAULT_URL) this.form.aiOllamaUrl = ''
+        if (this.form.aiOllamaModel === OLLAMA_DEFAULT_MODEL) this.form.aiOllamaModel = ''
+      } else if (this.form.aiProvider === 'ollama') {
+        if (!this.form.aiOllamaUrl) this.form.aiOllamaUrl = OLLAMA_DEFAULT_URL
+        if (!this.form.aiOllamaModel) this.form.aiOllamaModel = OLLAMA_DEFAULT_MODEL
       }
     },
     /**
@@ -681,6 +703,7 @@ export default {
         this.form.aiAllowInternalNetwork = data.ai_allow_internal_network === 'yes'
         this.form.aiEnabled = this.form.aiProvider !== 'disabled' && (data.ai_enabled || 'no') === 'yes'
         this.form.geminiApiKeySet = data.gemini_api_key_set === true
+        this.aiLoaded = { provider: this.form.aiProvider, url: this.form.aiOllamaUrl }
         // GitHub #35: course materials feed the AI assistant only if PDFs can be read as text
         this.pdfTextExtractionAvailable = typeof data.pdf_text_extraction_available === 'boolean'
           ? data.pdf_text_extraction_available
@@ -738,23 +761,32 @@ export default {
       this.error = ''
       this.saved = false
       try {
+        const openai = this.form.aiProvider === 'openai_compatible'
+        const keyEntered = this.form.geminiApiKey.trim() !== ''
+        // The settings request first: it is the one the server can refuse (an invalid AI
+        // connection, 400 before anything is written). Sent in parallel with the others, a refusal
+        // left the tools and instructors saved and everything else not (GitHub #108 review).
+        await axios.put(generateUrl('/apps/learning/api/settings/admin'), {
+          daily_challenge_enabled: this.form.dailyChallengeEnabled ? 'yes' : 'no',
+          default_language: ['en', 'zh'].includes(this.form.defaultLanguage) ? this.form.defaultLanguage : 'de',
+          max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
+          gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
+          allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
+          exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
+          exam_attempt_cooldown_minutes: this.normalizeCooldownMinutes(this.form.examAttemptCooldownMinutes),
+          // PRIV-02 / PRIV-05: AI settings. No Ollama defaults for an OpenAI-compatible endpoint:
+          // an empty field is an error there, not localhost.
+          ai_provider: this.normalizeAiProvider(this.form.aiProvider),
+          ai_ollama_url: openai ? (this.form.aiOllamaUrl || '').trim() : ((this.form.aiOllamaUrl || OLLAMA_DEFAULT_URL).trim() || OLLAMA_DEFAULT_URL),
+          ai_ollama_model: openai ? (this.form.aiOllamaModel || '').trim() : ((this.form.aiOllamaModel || OLLAMA_DEFAULT_MODEL).trim() || OLLAMA_DEFAULT_MODEL),
+          ai_enabled: this.form.aiProvider !== 'disabled' && this.form.aiEnabled ? 'yes' : 'no',
+          ai_allow_internal_network: openai && this.form.aiAllowInternalNetwork ? 'yes' : 'no',
+          ...(keyEntered ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
+        })
+        this.form.geminiApiKeySet = keyEntered || this.aiKeySaved
+        this.form.geminiApiKey = ''
+        this.aiLoaded = { provider: this.form.aiProvider, url: (this.form.aiOllamaUrl || '').trim() }
         await Promise.all([
-          axios.put(generateUrl('/apps/learning/api/settings/admin'), {
-            daily_challenge_enabled: this.form.dailyChallengeEnabled ? 'yes' : 'no',
-            default_language: ['en', 'zh'].includes(this.form.defaultLanguage) ? this.form.defaultLanguage : 'de',
-            max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
-            gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
-            allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
-            exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
-            exam_attempt_cooldown_minutes: this.normalizeCooldownMinutes(this.form.examAttemptCooldownMinutes),
-            // PRIV-02 / PRIV-05: AI settings
-            ai_provider: this.normalizeAiProvider(this.form.aiProvider),
-            ai_ollama_url: (this.form.aiOllamaUrl || 'http://localhost:11434').trim() || 'http://localhost:11434',
-            ai_ollama_model: (this.form.aiOllamaModel || 'llama3').trim() || 'llama3',
-            ai_enabled: this.form.aiProvider !== 'disabled' && this.form.aiEnabled ? 'yes' : 'no',
-            ai_allow_internal_network: this.form.aiProvider === 'openai_compatible' && this.form.aiAllowInternalNetwork ? 'yes' : 'no',
-            ...(this.form.geminiApiKey.trim() !== '' ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
-          }),
           axios.put(generateUrl('/apps/learning/api/settings/tools'), {
             enabledTools: this.normalizeEnabledTools(this.form.enabledTools),
           }),
