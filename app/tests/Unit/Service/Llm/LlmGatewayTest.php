@@ -397,13 +397,9 @@ class LlmGatewayTest extends TestCase {
     }
 
     /** @return array<string, array{LlmConnection}> */
-    public static function notSelectableIn570(): array {
+    public static function notRoutedProviders(): array {
         return [
-            'openai_compatible' => [LlmConnection::fromArray([
-                'enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'openai',
-                'baseUrl' => 'https://api.openai.com/v1', 'model' => 'gpt-4o-mini',
-            ])],
-            'anthropic' => [LlmConnection::fromArray([
+            'anthropic (not released yet)' => [LlmConnection::fromArray([
                 'enabled' => true, 'provider' => 'anthropic',
                 'baseUrl' => 'https://api.anthropic.com/v1', 'model' => 'claude-sonnet-4-5',
             ])],
@@ -411,13 +407,13 @@ class LlmGatewayTest extends TestCase {
     }
 
     /**
-     * 5.7.0 scope: only Gemini and Ollama are routed. A snapshot naming another backend (built
-     * directly, since ConnectionStore::load() already reads it as disabled) fails as config —
-     * before any budget is used and without a request.
+     * Providers this release does not route fail as config — a snapshot naming one is built
+     * directly here, since ConnectionStore::load() already reads it as disabled — before any
+     * budget is used and without a request.
      *
      */
-    #[DataProvider('notSelectableIn570')]
-    public function testOnlyGeminiAndOllamaAreRouted(LlmConnection $c): void {
+    #[DataProvider('notRoutedProviders')]
+    public function testUnreleasedProvidersAreNotRouted(LlmConnection $c): void {
         $this->store->method('isEnabledNow')->willReturn(true);
         $this->consent->method('epoch')->willReturn(0);
         $this->consent->method('isValidFor')->willReturn(true);
@@ -568,7 +564,7 @@ class LlmGatewayTest extends TestCase {
         $this->assertStringNotContainsString(self::KEY_MARKER, $this->dump());
     }
 
-    #[DataProvider('notSelectableIn570')]
+    #[DataProvider('notRoutedProviders')]
     public function testConnectionRefusesBackendsThatAreNotSelectable(LlmConnection $c): void {
         $this->budget->expects($this->never())->method('reserve');
 

@@ -118,7 +118,7 @@ These settings apply to all users of Learning:
   [section 6](#6-data-protection-and-the-ai-features).
 - **Enabled simulator tools** — the interactive IT simulators, individually switchable.
   Disabled tools disappear for all users and cannot be re-enabled by an instructor.
-- **Default language** — German or English. This is the fallback for new users only; each
+- **Default language** — German, English or Chinese. This is the fallback for new users only; each
   user can still choose their own Nextcloud interface language.
 - **Instructors (groups and people)** — the Nextcloud groups whose members, and the
   individual people, who may create courses and pools. Picked by searching Nextcloud's own
@@ -640,7 +640,7 @@ convert an existing PDF question catalogue into it, are in
 #### Generating questions with AI
 
 Only available when an administrator has connected an AI provider — Google Gemini with an
-API key, or a local Ollama server ([2.2](#22-global-settings), [section 6](#6-data-protection-and-the-ai-features))
+API key, a local Ollama server or an OpenAI-compatible endpoint such as DeepSeek or MiMo ([2.2](#22-global-settings), [section 6](#6-data-protection-and-the-ai-features))
 — and the user has given AI consent. Two entry points:
 
 - **Manage** → **Generate with AI** (the button appears only when a provider is
@@ -930,7 +930,8 @@ Every command supports `--help`. Test destructive ones on a staging instance fir
 ## 6. Data protection and the AI features
 
 Learning works completely without AI. The AI features need a connection that the
-administrator sets up — Google Gemini (API key) or a local Ollama server — and are
+administrator sets up — Google Gemini (API key), a local Ollama server or an OpenAI-compatible
+endpoint such as DeepSeek or MiMo — and are
 **off by default**.
 
 When AI is switched on, two gates still apply:

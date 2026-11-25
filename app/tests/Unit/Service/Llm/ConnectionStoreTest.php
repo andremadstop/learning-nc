@@ -233,14 +233,11 @@ class ConnectionStoreTest extends TestCase {
         $this->assertStringNotContainsString($c->recipientFingerprint(), $encoded);
     }
 
-    // ---- 5.7.0 scope: only the backends 5.5 already had are selectable -----------------------
+    // ---- Providers still not selectable: the anthropic adapter ships later -------------------
 
     /** @return list<array<string, mixed>> */
     private function notYetSelectable(): array {
         return [
-            $this->mistral(),
-            ['enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'openai',
-                'baseUrl' => 'https://api.openai.com/v1', 'model' => 'gpt-x'],
             ['enabled' => true, 'provider' => 'anthropic',
                 'baseUrl' => 'https://api.anthropic.com/v1', 'model' => 'claude-x'],
         ];
@@ -251,7 +248,7 @@ class ConnectionStoreTest extends TestCase {
             $store = $this->store();
             try {
                 $store->save(LlmConnection::fromArray($a), 'admin');
-                $this->fail('saving ' . $a['provider'] . ' must be refused in 5.7.0');
+                $this->fail('saving ' . $a['provider'] . ' must be refused in this release');
             } catch (\InvalidArgumentException $e) {
                 $this->assertStringContainsString('not available', $e->getMessage());
             }
@@ -269,13 +266,18 @@ class ConnectionStoreTest extends TestCase {
         }
     }
 
-    public function testGeminiOllamaAndDisabledStaySelectable(): void {
-        $this->assertSame(['gemini', 'ollama', 'disabled'], ConnectionStore::SELECTABLE_PROVIDERS);
+    public function testTheSelectableProvidersRoundTrip(): void {
+        $this->assertSame(['gemini', 'ollama', 'openai_compatible', 'disabled'], ConnectionStore::SELECTABLE_PROVIDERS);
         $store = $this->store();
         $store->save(ConnectionStore::legacyGemini(true), 'admin');
         $this->assertSame('gemini', $store->load()->provider);
         $store->save(LlmConnection::fromArray($this->ollama()), 'admin');
         $this->assertSame('ollama', $store->load()->provider);
+        $store->save(LlmConnection::fromArray([
+            'enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'custom',
+            'baseUrl' => 'https://api.deepseek.com', 'model' => 'deepseek-chat',
+        ]), 'admin');
+        $this->assertSame('openai_compatible', $store->load()->provider);
         $store->save(LlmConnection::fromArray(['provider' => 'disabled']), 'admin');
         $this->assertSame('disabled', $store->load()->provider);
     }

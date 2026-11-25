@@ -291,6 +291,7 @@
             @change="handleAiProviderChange">
             <option value="gemini">{{ t('learning', 'Google Gemini (external)') }}</option>
             <option value="ollama">{{ t('learning', 'Ollama (local/self-hosted)') }}</option>
+            <option value="openai_compatible">{{ t('learning', 'OpenAI-compatible (OpenAI, DeepSeek, MiMo, …)') }}</option>
             <option value="disabled">{{ t('learning', 'Disabled') }}</option>
           </select>
           <small class="field-help">
@@ -311,6 +312,10 @@
 
         <NcNoteCard v-else-if="showOllamaConfig" type="info" class="dpa-hint">
           {{ t('learning', 'Local-first mode: VirtuProf requests stay on your configured Ollama host. Verify the URL, the installed model, and your internal access controls before enabling chat for users.') }}
+        </NcNoteCard>
+
+        <NcNoteCard v-else-if="showOpenaiConfig" type="info" class="dpa-hint">
+          {{ t('learning', 'OpenAI-compatible mode: VirtuProf sends every request to the endpoint URL you enter below, for example https://api.deepseek.com. Review the data-processing terms of the provider; each user consents to that recipient before their first message.') }}
         </NcNoteCard>
 
         <NcNoteCard v-else type="info" class="dpa-hint">
@@ -334,16 +339,16 @@
           {{ t('learning', 'PDF text extraction is not available on this server (pdftotext missing). VirtuProf can only use Markdown course materials; students can still open every file.') }}
         </NcNoteCard>
 
-        <div v-if="showGeminiConfig" class="field-row">
-          <label for="gemini-api-key">{{ t('learning', 'Gemini API Key') }}</label>
+        <div v-if="showGeminiConfig || showOpenaiConfig" class="field-row">
+          <label for="gemini-api-key">{{ showOpenaiConfig ? t('learning', 'API Key') : t('learning', 'Gemini API Key') }}</label>
           <input
             id="gemini-api-key"
             v-model="form.geminiApiKey"
             class="nc-input"
             type="password"
             autocomplete="new-password"
-            :placeholder="form.geminiApiKeySet ? t('learning', '(key saved — enter new value to replace)') : t('learning', 'Enter Gemini API Key')" />
-          <small class="field-help">
+            :placeholder="form.geminiApiKeySet ? t('learning', '(key saved — enter new value to replace)') : (showOpenaiConfig ? t('learning', 'Enter API Key') : t('learning', 'Enter Gemini API Key'))" />
+          <small v-if="showGeminiConfig" class="field-help">
             {{ t('learning', 'Get your API key from') }}
             <a
               href="https://aistudio.google.com/app/apikey"
@@ -351,33 +356,41 @@
               rel="noopener noreferrer">Google AI Studio</a>.
             {{ t('learning', 'Leave blank to keep the existing key.') }}
           </small>
+          <small v-else class="field-help">
+            {{ t('learning', 'Ask your provider for an API key.') }}
+            {{ t('learning', 'Leave blank to keep the existing key.') }}
+          </small>
         </div>
 
-        <div v-if="showOllamaConfig" class="field-row">
-          <label for="ai-ollama-url">{{ t('learning', 'Ollama URL') }}</label>
+        <div v-if="showOllamaConfig || showOpenaiConfig" class="field-row">
+          <label for="ai-ollama-url">{{ showOpenaiConfig ? t('learning', 'Endpoint base URL') : t('learning', 'Ollama URL') }}</label>
           <input
             id="ai-ollama-url"
             v-model.trim="form.aiOllamaUrl"
             class="nc-input"
             type="url"
             autocomplete="off"
-            placeholder="http://localhost:11434" />
+            :placeholder="showOpenaiConfig ? 'https://api.deepseek.com' : 'http://localhost:11434'" />
           <small class="field-help">
-            {{ t('learning', 'Base URL of the Ollama API that should answer VirtuProf requests.') }}
+            {{ showOpenaiConfig
+              ? t('learning', 'Base URL of the OpenAI-compatible API, for example https://api.deepseek.com.')
+              : t('learning', 'Base URL of the Ollama API that should answer VirtuProf requests.') }}
           </small>
         </div>
 
-        <div v-if="showOllamaConfig" class="field-row">
-          <label for="ai-ollama-model">{{ t('learning', 'Ollama model') }}</label>
+        <div v-if="showOllamaConfig || showOpenaiConfig" class="field-row">
+          <label for="ai-ollama-model">{{ showOpenaiConfig ? t('learning', 'Model ID') : t('learning', 'Ollama model') }}</label>
           <input
             id="ai-ollama-model"
             v-model.trim="form.aiOllamaModel"
             class="nc-input"
             type="text"
             autocomplete="off"
-            placeholder="llama3" />
+            :placeholder="showOpenaiConfig ? 'deepseek-chat' : 'llama3'" />
           <small class="field-help">
-            {{ t('learning', 'Model name passed to Ollama, for example llama3, mistral, or a custom local model tag.') }}
+            {{ showOpenaiConfig
+              ? t('learning', 'Model identifier passed to the endpoint, for example deepseek-chat.')
+              : t('learning', 'Model name passed to Ollama, for example llama3, mistral, or a custom local model tag.') }}
           </small>
         </div>
       </div>
@@ -602,6 +615,9 @@ export default {
     showOllamaConfig() {
       return this.form.aiProvider === 'ollama'
     },
+    showOpenaiConfig() {
+      return this.form.aiProvider === 'openai_compatible'
+    },
   },
   methods: {
     normalizeEnabledTools(enabledTools) {
@@ -609,7 +625,7 @@ export default {
       return ALL_TOOL_IDS.filter((toolId) => source.includes(toolId))
     },
     normalizeAiProvider(provider) {
-      return ['gemini', 'ollama', 'disabled'].includes(provider) ? provider : 'gemini'
+      return ['gemini', 'ollama', 'openai_compatible', 'disabled'].includes(provider) ? provider : 'gemini'
     },
     handleAiProviderChange() {
       this.form.aiProvider = this.normalizeAiProvider(this.form.aiProvider)

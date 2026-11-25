@@ -6383,23 +6383,23 @@
                                 "properties": {
                                     "provider": {
                                         "type": "string",
-                                        "description": "gemini | ollama"
+                                        "description": "gemini | ollama | openai_compatible"
                                     },
                                     "ollama_url": {
                                         "type": "string",
                                         "default": "",
-                                        "description": "Ollama endpoint (ignored for Gemini)"
+                                        "description": "Ollama or OpenAI-compatible endpoint (ignored for Gemini)"
                                     },
                                     "ollama_model": {
                                         "type": "string",
                                         "default": "",
-                                        "description": "Ollama model (ignored for Gemini)"
+                                        "description": "Ollama or OpenAI-compatible model (ignored for Gemini)"
                                     },
                                     "key": {
                                         "type": "string",
                                         "nullable": true,
                                         "default": null,
-                                        "description": "a Gemini key to test before saving it; empty = the stored key"
+                                        "description": "a Gemini or OpenAI-compatible key to test before saving; empty = stored key"
                                     }
                                 }
                             }
@@ -25237,7 +25237,7 @@
         },
         {
             "name": "admin_ai",
-            "description": "The admin's connection test (spec 2.4, 5.4; plan Task B5): POST /api/admin/ai/test. Sends the gateway's fixed test message to a candidate connection that may not be saved yet — no user content, no subject user. 5.7.0 tests exactly what the admin can select (Gemini, Ollama, see ConnectionStore::SELECTABLE_PROVIDERS); any other provider is refused with 400 before a request is made, so nothing a 5.8.0 adapter would reach can be contacted from here. Admin-only: no NoAdminRequired, so the App Framework refuses everyone else. The key the admin typed is used for this one request and never stored, and it never comes back in the answer."
+            "description": "The admin's connection test (spec 2.4, 5.4; plan Task B5): POST /api/admin/ai/test. Sends the gateway's fixed test message to a candidate connection that may not be saved yet — no user content, no subject user. The test covers exactly what the admin can select (Gemini, Ollama, OpenAI-compatible, see ConnectionStore::SELECTABLE_PROVIDERS); any other provider is refused with 400 before a request is made, so no unreleased adapter can be contacted from here. Admin-only: no NoAdminRequired, so the App Framework refuses everyone else. The key the admin typed is used for this one request and never stored, and it never comes back in the answer."
         },
         {
             "name": "legal_operator",

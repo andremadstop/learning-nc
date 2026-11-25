@@ -16,9 +16,9 @@ use OCP\AppFramework\Http\Attribute\OpenAPI;
  * The admin's connection test (spec 2.4, 5.4; plan Task B5): POST /api/admin/ai/test.
  *
  * Sends the gateway's fixed test message to a candidate connection that may not be saved yet —
- * no user content, no subject user. 5.7.0 tests exactly what the admin can select (Gemini,
- * Ollama, see ConnectionStore::SELECTABLE_PROVIDERS); any other provider is refused with 400
- * before a request is made, so nothing a 5.8.0 adapter would reach can be contacted from here.
+ * no user content, no subject user. The test covers exactly what the admin can select (Gemini,
+ * Ollama, OpenAI-compatible, see ConnectionStore::SELECTABLE_PROVIDERS); any other provider is
+ * refused with 400 before a request is made, so no unreleased adapter can be contacted from here.
  *
  * Admin-only: no NoAdminRequired, so the App Framework refuses everyone else. The key the admin
  * typed is used for this one request and never stored, and it never comes back in the answer.
@@ -34,10 +34,10 @@ class AdminAiController extends Controller {
     }
 
     /**
-     * @param string $provider gemini | ollama
-     * @param string $ollama_url Ollama endpoint (ignored for Gemini)
-     * @param string $ollama_model Ollama model (ignored for Gemini)
-     * @param ?string $key a Gemini key to test before saving it; empty = the stored key
+     * @param string $provider gemini | ollama | openai_compatible
+     * @param string $ollama_url Ollama or OpenAI-compatible endpoint (ignored for Gemini)
+     * @param string $ollama_model Ollama or OpenAI-compatible model (ignored for Gemini)
+     * @param ?string $key a Gemini or OpenAI-compatible key to test before saving; empty = stored key
      */
     #[UserRateLimit(limit: 5, period: 60)]
     public function test(string $provider, string $ollama_url = '', string $ollama_model = '', ?string $key = null): DataResponse {
@@ -57,7 +57,7 @@ class AdminAiController extends Controller {
             return new DataResponse(['error' => 'AI provider is not available in this release'], Http::STATUS_BAD_REQUEST);
         }
 
-        $candidateKey = $provider === 'gemini' && $key !== null && trim($key) !== '' ? trim($key) : null;
+        $candidateKey = in_array($provider, ['gemini', 'openai_compatible'], true) && $key !== null && trim($key) !== '' ? trim($key) : null;
         $result = $this->gateway->testConnection($candidate, $candidateKey);
 
         return new DataResponse([

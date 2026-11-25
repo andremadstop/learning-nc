@@ -68,10 +68,25 @@ class AdminAiControllerTest extends TestCase {
         $this->assertSame(200, $resp->getStatus());
     }
 
+    public function testOpenAiCompatibleCandidateUsesTheEndpointAndTheGivenKey(): void {
+        $this->gateway->expects($this->once())->method('testConnection')
+            ->with(
+                $this->callback(fn (LlmConnection $c) => $c->provider === 'openai_compatible'
+                    && $c->preset === 'custom'
+                    && $c->baseUrl === 'https://api.deepseek.com' && $c->model === 'deepseek-chat'),
+                self::KEY
+            )
+            ->willReturn(self::ok());
+
+        $resp = $this->controller()->test('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat', self::KEY);
+
+        $this->assertSame(200, $resp->getStatus());
+        $this->assertTrue($resp->getData()['ok']);
+    }
+
     /** @return array<string, array{string}> */
     public static function unavailableProviders(): array {
         return [
-            'openai_compatible (5.8.0)' => ['openai_compatible'],
             'anthropic (5.8.0)' => ['anthropic'],
             'unknown' => ['deepseek'],
             'disabled: nothing to test' => ['disabled'],

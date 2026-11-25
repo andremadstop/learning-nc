@@ -31,7 +31,7 @@ class SettingsController extends Controller {
         'wireshark',
         'authflow',
     ];
-    private const AVAILABLE_AI_PROVIDERS = ['gemini', 'ollama', 'disabled'];
+    private const AVAILABLE_AI_PROVIDERS = ['gemini', 'ollama', 'openai_compatible', 'disabled'];
 
     private IConfig $config;
     private IDBConnection $db;
@@ -86,7 +86,8 @@ class SettingsController extends Controller {
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
             // The key the Gemini connection actually uses: after the upgrade it is in the encrypted
             // slot, and the plaintext `gemini_api_key` is gone.
-            'gemini_api_key_set' => $this->apiKeyStore->get(ConnectionStore::legacyGemini(false)) !== null,
+            'gemini_api_key_set' => $this->apiKeyStore->get($connection) !== null
+                || $this->apiKeyStore->get(ConnectionStore::legacyGemini(false)) !== null,
             // The connection in force (snapshot, or derived from the 5.5 keys), never the raw legacy
             // keys: a legacy ai_provider '' (AI off) used to show as Gemini and on, and saving any
             // unrelated setting then switched on an external recipient.
@@ -213,14 +214,19 @@ class SettingsController extends Controller {
             return new DataResponse(['error' => 'Invalid AI connection: ' . $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
 
-        // API key: only update when a new non-masked value is provided. It is stored encrypted in
-        // the Gemini connection's slot (whichever provider is active, so a key entered for later
-        // is kept), never as plaintext `gemini_api_key`: ApiKeyStore::get() prefers the encrypted
-        // slot, so a plaintext write after the upgrade would be ignored and a later repair would
-        // delete it. Written first: a key that cannot be stored saves nothing else either.
+        // API key: only update when a new non-masked value is provided. It is stored encrypted,
+        // never as plaintext `gemini_api_key`: ApiKeyStore::get() prefers the encrypted slot, so
+        // a plaintext write after the upgrade would be ignored and a later repair would delete it.
+        // Gemini and Ollama keep writing the legacy Gemini slot (a key entered while Ollama is
+        // active is kept for later); an OpenAI-compatible key belongs to its own endpoint, bound
+        // to the connection fingerprint, so pointing the form at another host finds no key.
+        // Written first: a key that cannot be stored saves nothing else either.
         if ($gemini_api_key !== null && $gemini_api_key !== '***') {
             try {
-                $this->apiKeyStore->apply(ConnectionStore::legacyGemini(false), trim($gemini_api_key) === ''
+                $keySlot = $connection->provider === 'openai_compatible'
+                    ? $connection
+                    : ConnectionStore::legacyGemini(false);
+                $this->apiKeyStore->apply($keySlot, trim($gemini_api_key) === ''
                     ? ['action' => 'delete']
                     : ['action' => 'replace', 'value' => $gemini_api_key]);
             } catch (\RuntimeException $e) {

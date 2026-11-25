@@ -395,13 +395,13 @@ final class ConsentMatrixTest extends TestCase {
         $this->assertSame('explain', $this->lastAiCallPurpose());
     }
 
-    /** No subject, no consent: the admin's fixed test message, and only to what 5.7.0 offers. */
+    /** No subject, no consent: the admin's fixed test message, and only to what this release offers. */
     public function testAdminConnectionTest(): void {
         $controller = $this->controller(AdminAiController::class);
 
-        $resp = $controller->test('openai_compatible', MockLlmServer::baseUrl(), 'mock-model');
+        $resp = $controller->test('anthropic', MockLlmServer::baseUrl(), 'mock-model');
         $this->assertSame(400, $resp->getStatus());
-        $this->assertSame(0, self::sent(), 'a 5.8.0 provider is never contacted');
+        $this->assertSame(0, self::sent(), 'a provider this release still refuses is never contacted');
 
         $resp = $controller->test('ollama', MockLlmServer::ollamaBaseUrl(), 'mock-model');
         $this->assertSame(200, $resp->getStatus());
@@ -409,6 +409,14 @@ final class ConsentMatrixTest extends TestCase {
         $requests = MockLlmServer::requests();
         $this->assertCount(1, $requests);
         $this->assertStringContainsString('connection test', $requests[0]['body'], 'only the fixed test message');
+
+        $resp = $controller->test('openai_compatible', MockLlmServer::baseUrl(), 'mock-model');
+        $this->assertSame(200, $resp->getStatus(), (string)json_encode($resp->getData()));
+        $this->assertTrue($resp->getData()['ok'], (string)json_encode($resp->getData()));
+        $requests = MockLlmServer::requests();
+        $this->assertCount(2, $requests);
+        $this->assertStringEndsWith('/chat/completions', $requests[1]['path']);
+        $this->assertStringContainsString('connection test', $requests[1]['body'], 'only the fixed test message');
     }
 
     private function fillChatMemory(int $n): void {

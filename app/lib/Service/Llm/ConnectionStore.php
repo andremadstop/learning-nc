@@ -21,16 +21,16 @@ use Psr\Log\LoggerInterface;
  *   still hold a recipient the admin has replaced in another process.
  * - save(): one write of the whole snapshot, plus a copy per provider+preset so switching back
  *   restores the old settings; values are never inherited by another backend.
- * - 5.7.0 scope: only the backends 5.5 already had (Gemini, Ollama) can be selected. The
- *   openai_compatible and anthropic adapters stay in the code for 5.8.0, but save() refuses them
- *   and load() reads a stored one as disabled, so none of them can be switched on.
+ * - Provider scope: Gemini, Ollama and openai_compatible (any OpenAI-compatible gateway the
+ *   admin points the form at) can be selected; the anthropic adapter stays in the code for a
+ *   later release, and save() refuses it while load() reads a stored one as disabled.
  */
 class ConnectionStore {
     public const APP = 'learning';
     public const KEY = 'ai_connection';
     public const SAVED_PREFIX = 'ai_connection_saved_';
-    /** Providers an admin can switch on in this release (5.7.0); the rest arrive with 5.8.0. */
-    public const SELECTABLE_PROVIDERS = ['gemini', 'ollama', 'disabled'];
+    /** Providers an admin can switch on in this release; anthropic arrives later. */
+    public const SELECTABLE_PROVIDERS = ['gemini', 'ollama', 'openai_compatible', 'disabled'];
 
     /** The 5.5 GeminiProvider endpoint and model; the migrated key is bound to exactly this. */
     public const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
@@ -61,9 +61,9 @@ class ConnectionStore {
     /**
      * The connection the 5.5 keys describe (ai_provider, ai_enabled, ai_ollama_url,
      * ai_ollama_model). Single mapping for the legacy derivation and the 5.5 admin form, so both
-     * compute the same fingerprint. Anything but gemini/ollama is disabled.
+     * compute the same fingerprint. Anything but gemini/ollama/openai_compatible is disabled.
      *
-     * @throws \InvalidArgumentException for an Ollama URL or model that is not a valid connection
+     * @throws \InvalidArgumentException for an endpoint URL or model that is not a valid connection
      */
     public static function fromLegacyValues(string $provider, bool $enabled, string $ollamaUrl, string $ollamaModel): LlmConnection {
         $provider = strtolower(trim($provider));
@@ -81,6 +81,23 @@ class ConnectionStore {
                 // 5.5 connected to the configured host without an internal-network gate.
                 'allowInternalNetwork' => true,
                 // A URL does not prove local processing; the admin confirms it explicitly.
+                'processingLocal' => false,
+            ]);
+        }
+        if ($provider === 'openai_compatible') {
+            // The form's endpoint/model fields carry the OpenAI-compatible base URL and model.
+            // preset 'custom' names any gateway (DeepSeek, MiMo, a self-hosted proxy) and keeps
+            // the consented recipient bound to exactly the host the admin entered. The endpoint
+            // is the admin's own configuration, like the Ollama URL: no internal-network gate
+            // (a gateway on the LAN must work) and no local-processing claim - the data leaves
+            // the instance unless the endpoint really is the admin's own server.
+            return LlmConnection::fromArray([
+                'enabled' => $enabled,
+                'provider' => 'openai_compatible',
+                'preset' => 'custom',
+                'baseUrl' => trim($ollamaUrl),
+                'model' => trim($ollamaModel),
+                'allowInternalNetwork' => true,
                 'processingLocal' => false,
             ]);
         }

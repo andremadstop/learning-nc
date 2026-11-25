@@ -7,6 +7,7 @@ use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\Llm\Provider\GeminiProvider;
 use OCA\Learning\Service\Llm\Provider\LlmProviderInterface;
 use OCA\Learning\Service\Llm\Provider\OllamaProvider;
+use OCA\Learning\Service\Llm\Provider\OpenAiCompatibleProvider;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -20,16 +21,16 @@ use Psr\Log\LoggerInterface;
  *                            2. subject: consent epoch unchanged since begin() and consent still
  *                               valid for the snapshot recipient (fresh reads); without a
  *                               subject (admin_test) only the fixed test message is accepted
- *                            3. adapter for the snapshot provider (5.7.0: gemini, ollama)
+ *                            3. adapter for the snapshot provider (gemini, ollama, openai_compatible)
  *                            4. budget reserved — nothing that can fail on our side comes after it
  *                            5. exactly one adapter call, never a retry
  *                            6. budget slot released; metric + audit with metadata only
  *   testConnection(…)        the admin's connection test (Task B5): a fixed message to a candidate
  *                            connection that may not be saved yet, counted on the global budget.
  *
- * 5.7.0 scope: only Gemini and Ollama are routed. The openai_compatible and anthropic adapters stay
- * in the code for 5.8.0 but are unreachable from here; any other provider in a snapshot fails as
- * `config` before budget or network are touched.
+ * Scope: gemini, ollama and openai_compatible (every OpenAI-compatible gateway) are routed.
+ * The anthropic adapter stays in the code for a later release but is unreachable from here; any
+ * other provider in a snapshot fails as `config` before budget or network are touched.
  *
  * Nothing here logs or audits prompt, answer, key or the provider's error text: only purpose,
  * recipient, fingerprint prefix, model, token counts, latency and status/category.
@@ -178,7 +179,7 @@ class LlmGateway {
     }
 
     /**
-     * 5.7.0 routes only the backends 5.5 already had.
+     * Routes the providers this release offers; anything else fails as config.
      *
      * @throws LlmProviderException category config for any other provider
      */
@@ -186,6 +187,7 @@ class LlmGateway {
         return match ($connection->provider) {
             'gemini' => new GeminiProvider($this->http, $keys, $this->normalizer),
             'ollama' => new OllamaProvider($this->http, $this->normalizer),
+            'openai_compatible' => new OpenAiCompatibleProvider($this->http, $keys, $this->normalizer, new ModelCapabilities()),
             default => throw new LlmProviderException('config', '', 'Provider is not available in this release'),
         };
     }

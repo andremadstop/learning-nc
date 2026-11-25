@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  * text can neither hide nor fake a match):
  * - provider adapters' complete() is called only from LlmGateway;
  * - OCA\Learning\Service\Llm\Provider\LlmProviderInterface is implemented only in Llm/Provider/;
- * - the gateway does not know the adapters that are not selectable in 5.7.0.
+ * - the gateway routes only the providers this release offers; the anthropic adapter stays unknown.
  *
  * The 5.5 interface OCA\Learning\Service\LlmProviderInterface (generateText) is a different type
  * and is resolved as such. Task B4 removed it together with the 5.5 transport: no file under lib/
@@ -144,9 +144,9 @@ class ArchitectureTest extends TestCase {
         $this->assertSame([self::PROVIDER_INTERFACE], self::implementedInterfaces($qualified));
     }
 
-    public function testTheGatewayDoesNotKnowTheAdaptersOf580(): void {
+    public function testTheGatewayDoesNotKnowTheUnreleasedAdapter(): void {
         $gateway = self::libSources()[self::GATEWAY];
-        $this->assertDoesNotMatchRegularExpression('/OpenAiCompatibleProvider|AnthropicProvider/', $gateway);
+        $this->assertDoesNotMatchRegularExpression('/AnthropicProvider/', $gateway);
     }
 
     public function testThe55TransportIsGone(): void {

@@ -211,16 +211,17 @@ class SettingsControllerAiConnectionTest extends TestCase {
     public static function notSelectableProviders(): array {
         return [
             'anthropic' => ['anthropic'],
-            'openai_compatible' => ['openai_compatible'],
             'unknown' => ['deepseek'],
             'empty' => [''],
         ];
     }
 
     /**
-     * 5.7.0 scope cut (review finding): only Gemini and Ollama can be switched on. A provider the
-     * release does not offer is an error — it must not silently become Gemini (an external
-     * recipient), answer 200 and turn every user's consent into recipient_changed.
+     * Scope cut (review finding): a provider this release does not offer is an error — it must
+     * not silently become Gemini (an external recipient), answer 200 and turn every user's
+     * consent into recipient_changed. Anthropic ships later; a provider name the app has never
+     * known stays refused (`deepseek` is such a name — the service reaches that endpoint through
+     * openai_compatible instead).
      *
      */
     #[DataProvider('notSelectableProviders')]
@@ -240,6 +241,24 @@ class SettingsControllerAiConnectionTest extends TestCase {
     public function testDisabledIsStillAccepted(): void {
         $this->assertSame(200, $this->saveAi('disabled'));
         $this->assertFalse($this->store()->load()->enabled);
+    }
+
+    /** The form's endpoint/model fields carry any OpenAI-compatible gateway (DeepSeek, MiMo, ...). */
+    public function testOpenAiCompatibleCanBeSelectedAndSaved(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'https://api.deepseek.com', 'deepseek-chat'));
+
+        $c = $this->store()->load();
+        $this->assertSame('openai_compatible', $c->provider);
+        $this->assertSame('custom', $c->preset);
+        $this->assertSame('https://api.deepseek.com', $c->baseUrl);
+        $this->assertSame('deepseek-chat', $c->model);
+        $this->assertFalse($c->processingLocal, 'a cloud gateway never claims local processing');
+    }
+
+    /** Like the Ollama URL, the endpoint is the admin's own configuration: an http gateway on the LAN is accepted. */
+    public function testAnOpenAiCompatibleEndpointMayBeHttpLikeTheOllamaUrl(): void {
+        $this->assertSame(200, $this->saveAi('openai_compatible', 'http://llm.lan:8080/v1', 'local-model'));
+        $this->assertSame('http://llm.lan:8080/v1', $this->store()->load()->baseUrl);
     }
 
     private function adminView(): array {
