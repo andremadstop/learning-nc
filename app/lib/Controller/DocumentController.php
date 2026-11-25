@@ -6,6 +6,7 @@ use OCA\Learning\Db\CourseDocument;
 use OCA\Learning\Service\DocumentService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\MaterialShareService;
 use OCA\Learning\Service\RequiredDocumentService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
@@ -16,6 +17,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\ICallbackResponse;
 use OCP\AppFramework\Http\IOutput;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\Files\NotFoundException;
 use OCP\IRequest;
@@ -41,6 +43,8 @@ class DocumentController extends Controller {
         LoggerInterface $logger,
         ?string $userId,
         private ?RequiredDocumentService $requiredDocuments = null,
+        /** GitHub #110: optional so older tests keep building the controller without it. */
+        private ?MaterialShareService $materialShares = null,
     ) {
         parent::__construct($appName, $request);
         $this->documentService = $documentService;
@@ -70,7 +74,9 @@ class DocumentController extends Controller {
             }
 
             // the stored, normalized spelling (GitHub #35: picker and text field agree)
+            $previous = $this->documentService->getMaterialFolder($courseId);
             $stored = $this->documentService->setMaterialFolder($courseId, $folder, $this->userId);
+            $this->revokePreviousFolder($courseId, $previous, $stored);
 
             return new DataResponse(['status' => 'ok', 'folder' => $stored]);
         } catch (\InvalidArgumentException $e) {
@@ -212,6 +218,15 @@ class DocumentController extends Controller {
      * the registered file type, not from the file: PDF is shown inline, Markdown as plain text,
      * with nosniff, so an uploaded file cannot become an HTML page of this origin.
      *
+     * GitHub #110: Markdown is not served as plain text when the stock Text viewer can show it.
+     * After the same checks and after recordOpen(), a Markdown file redirects to the file page
+     * (/f/{fileid}), which opens Nextcloud's Text app in read-only mode for a member without
+     * write permission; the rendering and the sanitising are the Text app's, not ours. The
+     * member gets a read share of the material folder on the way (MaterialShareService), and
+     * $raw = '1' (?raw=1) asks for the old plain text response explicitly. Every reason the
+     * viewer is not there — Text app disabled for this user, sharing refused, no file id —
+     * falls back to the plain text response below, so the link never dead-ends.
+     *
      * #[NoCSRFRequired] is needed because the browser opens the file through a plain link, which
      * carries no request token. The endpoint reads the file; the only write is GitHub #86: in a
      * course with open_before_confirm, a learner's open of a required document is stored
@@ -221,7 +236,7 @@ class DocumentController extends Controller {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     #[UserRateLimit(limit: 600, period: 60)]
-    public function download(int $courseId, int $documentId): Response {
+    public function download(int $courseId, int $documentId, ?string $raw = null): Response {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
@@ -235,9 +250,24 @@ class DocumentController extends Controller {
 
         try {
             [$doc, $file] = $this->documentService->resolveMaterialFile($course, $documentId);
-            $stream = $file->fopen('r');
         } catch (NotFoundException $e) {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Throwable $e) {
+            $this->logger->error('DocumentController::download failed: ' . $e->getMessage(), ['app' => 'learning']);
+            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        // GitHub #110: Markdown through the Text viewer, plain text as the fallback
+        if ($doc->getFileType() === 'markdown' && ($raw === null || $raw === '')) {
+            $viewer = $this->materialShares?->textViewUrl($course, $this->userId, $file);
+            if ($viewer !== null) {
+                $this->recordOpen($course, $documentId, $file);
+                return new RedirectResponse($viewer);
+            }
+        }
+
+        try {
+            $stream = $file->fopen('r');
         } catch (\Throwable $e) {
             $this->logger->error('DocumentController::download failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
@@ -277,6 +307,22 @@ class DocumentController extends Controller {
             $this->requiredDocuments->recordOpen($course, $documentId, DocumentService::fileVersion($file), $this->userId);
         } catch (\Throwable $e) {
             $this->logger->warning('DocumentController::download could not record the open: ' . $e->getMessage(), ['app' => 'learning']);
+        }
+    }
+
+    /**
+     * GitHub #110: the shares this app made for the old material folder end with the link to
+     * it; a share the instructor made by hand carries no marker note and stays. A failure costs
+     * a log line, never the folder change that has already happened.
+     */
+    private function revokePreviousFolder(int $courseId, ?string $previous, string $stored): void {
+        if ($this->materialShares === null || $previous === null || $previous === '' || $previous === $stored) {
+            return;
+        }
+        try {
+            $this->materialShares->revokeCourseShares($courseId, $previous);
+        } catch (\Throwable $e) {
+            $this->logger->warning('DocumentController::setFolder could not revoke the old shares: ' . $e->getMessage(), ['app' => 'learning']);
         }
     }
 

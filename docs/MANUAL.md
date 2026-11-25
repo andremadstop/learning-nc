@@ -701,6 +701,14 @@ file names are links. Files in subfolders are not served, and neither are files 
 that was shared with you as view-only (download disabled). Link a folder that holds only
 course material.
 
+Markdown files open **read-only in the Nextcloud Text viewer**: headings, tables and embedded
+images are rendered by Nextcloud's own Text app instead of the raw Markdown source. To do
+that, the app gives the member a read-only share of the material folder the first time they
+open a Markdown file; it ends automatically when they are removed from the course or you link
+a different folder. Shares you created yourself are never touched. If the Text app is not
+available for a user, Markdown files open as plain text as before. PDFs open in the browser
+as before.
+
 Because it is a normal Nextcloud folder, all the usual mechanics apply: share it with a
 group, keep versions, sync it with the desktop client. A group folder works well when
 several instructors maintain the material together.

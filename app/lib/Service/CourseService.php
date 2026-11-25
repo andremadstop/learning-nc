@@ -107,6 +107,8 @@ class CourseService {
     /** GitHub #68: exam standings for courses without Leitner; optional so older tests keep building the service. */
     private ?PassCriteriaService $passCriteria;
     private ?AssignmentService $assignmentService;
+    /** GitHub #110: the read share of the material folder ends with the membership. */
+    private ?MaterialShareService $materialShares;
 
     public function __construct(
         CourseMapper $courseMapper,
@@ -122,7 +124,9 @@ class CourseService {
         CurriculumScopeMapper $curriculumScopeMapper,
         FeedService $feedService,
         ?PassCriteriaService $passCriteria = null,
-        ?AssignmentService $assignmentService = null
+        ?AssignmentService $assignmentService = null,
+        /** GitHub #110: optional so older tests keep building the service. */
+        ?MaterialShareService $materialShares = null
     ) {
         $this->courseMapper = $courseMapper;
         $this->coursePoolMapper = $coursePoolMapper;
@@ -138,6 +142,7 @@ class CourseService {
         $this->feedService = $feedService;
         $this->passCriteria = $passCriteria;
         $this->assignmentService = $assignmentService;
+        $this->materialShares = $materialShares;
     }
 
     /**
@@ -1435,6 +1440,11 @@ class CourseService {
             $this->db->rollBack();
             throw $e;
         }
+
+        // GitHub #110: the read share of the material folder exists for this membership and
+        // ends with it — after the commit, and only ever shares carrying this course's note
+        // (MaterialShareService::revokeLearnerAccess logs its own failures).
+        $this->materialShares?->revokeLearnerAccess($course, (string)$member->getUserId());
     }
 
     /**

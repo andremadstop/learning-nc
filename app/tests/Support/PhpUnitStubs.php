@@ -759,6 +759,8 @@ namespace OCP\AppFramework {
             public const STATUS_TOO_MANY_REQUESTS = 429;
             public const STATUS_INTERNAL_SERVER_ERROR = 500;
             public const STATUS_SERVICE_UNAVAILABLE = 503;
+            // GitHub #110: RedirectResponse's default status (NC 33 lib/public/AppFramework/Http.php).
+            public const STATUS_SEE_OTHER = 303;
         }
     }
 }
@@ -805,6 +807,26 @@ namespace OCP\AppFramework\Http {
                     $this->csp = new EmptyContentSecurityPolicy();
                 }
                 return $this->csp;
+            }
+        }
+    }
+
+    // GitHub #110: a Markdown material opens in the Text viewer through this redirect. Declared
+    // after Response, like the real class; signature of NC 33 lib/public/AppFramework/Http/
+    // RedirectResponse.php (default status STATUS_SEE_OTHER, Location via addHeader).
+    if (!class_exists(RedirectResponse::class)) {
+        class RedirectResponse extends Response {
+            private $redirectURL;
+
+            /** @param array<string, string> $headers */
+            public function __construct(string $redirectURL, int $status = \OCP\AppFramework\Http::STATUS_SEE_OTHER, array $headers = []) {
+                parent::__construct($status, $headers);
+                $this->redirectURL = $redirectURL;
+                $this->addHeader('Location', $redirectURL);
+            }
+
+            public function getRedirectURL() {
+                return $this->redirectURL;
             }
         }
     }
@@ -1411,6 +1433,8 @@ namespace OCP\App {
     if (!interface_exists(IAppManager::class)) {
         interface IAppManager {
             public function isEnabledForAnyone(string $appId): bool;
+            // GitHub #110: the Text viewer must be on for the member (NC 33 signature, no types).
+            public function isEnabledForUser($appId, $user = null);
         }
     }
 }
@@ -1598,6 +1622,17 @@ namespace OCP\Share {
 
             // GitHub #35: the "download" permission of a view-only share (NC 33 IShare.php).
             public function getAttributes(): ?IAttributes;
+
+            // GitHub #110: the read share of the material folder (NC 33 lib/public/Share/IShare.php,
+            // signatures there carry no types).
+            public function setNode(\OCP\Files\Node $node);
+            public function setShareType($shareType);
+            public function setSharedWith($sharedWith);
+            public function getSharedWith();
+            public function setPermissions($permissions);
+            public function setNote($note);
+            public function getNote();
+            public function setSharedBy($sharedBy);
         }
     }
     if (!interface_exists(IAttributes::class)) {
@@ -1615,6 +1650,11 @@ namespace OCP\Share {
             public function allowEnumeration(): bool;
             public function limitEnumerationToGroups(): bool;
             public function limitEnumerationToPhone(): bool;
+            // GitHub #110: the read share of the material folder (NC 33 lib/public/Share/IManager.php).
+            public function createShare(IShare $share): IShare;
+            public function deleteShare(IShare $share): void;
+            public function newShare(): IShare;
+            public function getSharesBy(string $userId, int $shareType, ?\OCP\Files\Node $path = null, bool $reshares = false, int $limit = 50, int $offset = 0, bool $onlyValid = true): array;
         }
     }
 }
@@ -1674,6 +1714,59 @@ namespace OCP\Dashboard\Model {
             public function getItems(): array { return $this->items; }
             public function getEmptyContentMessage(): string { return $this->emptyContentMessage; }
             public function getHalfEmptyContentMessage(): string { return $this->halfEmptyContentMessage; }
+        }
+    }
+}
+
+
+// GitHub #110: the read share of the material folder. Signatures of NC 33's
+// lib/public/{Constants,HintException}.php and lib/public/Share/Exceptions/.
+namespace OCP {
+    if (!class_exists(Constants::class)) {
+        class Constants {
+            public const PERMISSION_READ = 1;
+        }
+    }
+
+    if (!class_exists(HintException::class)) {
+        class HintException extends \Exception {
+            /** @var string */
+            private $hint = '';
+
+            public function __construct($message, $hint = '', $code = 0, ?\Exception $previous = null) {
+                parent::__construct((string)$message, (int)$code, $previous);
+                $this->hint = (string)$hint;
+            }
+
+            public function getHint(): string {
+                return $this->hint;
+            }
+        }
+    }
+}
+
+namespace OCP\Share\Exceptions {
+    if (!class_exists(GenericShareException::class)) {
+        class GenericShareException extends \OCP\HintException {
+            public function __construct($message = '', $hint = '', $code = 0, ?\Exception $previous = null) {
+                parent::__construct($message, $hint, $code, $previous);
+            }
+        }
+    }
+
+    if (!class_exists(AlreadySharedException::class)) {
+        class AlreadySharedException extends GenericShareException {
+            /** @var \OCP\Share\IShare */
+            private $existingShare;
+
+            public function __construct(string $message, \OCP\Share\IShare $existingShare) {
+                parent::__construct($message);
+                $this->existingShare = $existingShare;
+            }
+
+            public function getExistingShare(): \OCP\Share\IShare {
+                return $this->existingShare;
+            }
         }
     }
 }

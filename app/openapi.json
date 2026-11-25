@@ -22414,7 +22414,7 @@
             "get": {
                 "operationId": "document-download",
                 "summary": "Open a material file (GitHub #35): learners could see the file names but not open them.",
-                "description": "Security, in this order: logged in; member or instructor of THIS course (403 otherwise); the document belongs to this course; the file is a direct child of the course's current material folder, resolved by its plain name in the owner's home — never a path from the request (DocumentService::resolveMaterialFile; 404 otherwise). The Content-Type comes from the registered file type, not from the file: PDF is shown inline, Markdown as plain text, with nosniff, so an uploaded file cannot become an HTML page of this origin.\n#[NoCSRFRequired] is needed because the browser opens the file through a plain link, which carries no request token. The endpoint reads the file; the only write is GitHub #86: in a course with open_before_confirm, a learner's open of a required document is stored (RequiredDocumentService::recordOpen()) so he can confirm it afterwards. A cross-site link can at most mark a document as opened that the victim could open anyway.",
+                "description": "Security, in this order: logged in; member or instructor of THIS course (403 otherwise); the document belongs to this course; the file is a direct child of the course's current material folder, resolved by its plain name in the owner's home — never a path from the request (DocumentService::resolveMaterialFile; 404 otherwise). The Content-Type comes from the registered file type, not from the file: PDF is shown inline, Markdown as plain text, with nosniff, so an uploaded file cannot become an HTML page of this origin.\nGitHub #110: Markdown is not served as plain text when the stock Text viewer can show it. After the same checks and after recordOpen(), a Markdown file redirects to the file page (/f/{fileid}), which opens Nextcloud's Text app in read-only mode for a member without write permission; the rendering and the sanitising are the Text app's, not ours. The member gets a read share of the material folder on the way (MaterialShareService), and $raw = '1' (?raw=1) asks for the old plain text response explicitly. Every reason the viewer is not there — Text app disabled for this user, sharing refused, no file id — falls back to the plain text response below, so the link never dead-ends.\n#[NoCSRFRequired] is needed because the browser opens the file through a plain link, which carries no request token. The endpoint reads the file; the only write is GitHub #86: in a course with open_before_confirm, a learner's open of a required document is stored (RequiredDocumentService::recordOpen()) so he can confirm it afterwards. A cross-site link can at most mark a document as opened that the victim could open anyway.",
                 "tags": [
                     "document"
                 ],
@@ -22445,6 +22445,15 @@
                         "schema": {
                             "type": "integer",
                             "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "raw",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "nullable": true,
+                            "default": null
                         }
                     }
                 ],
