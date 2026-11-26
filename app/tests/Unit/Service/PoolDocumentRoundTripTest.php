@@ -557,7 +557,7 @@ class PoolDocumentRoundTripTest extends TestCase {
         ], JSON_THROW_ON_ERROR));
 
         $this->assertSame(201, $r->getStatus(), json_encode($r->getData()));
-        $this->assertSame(['Q1: translations into es were not imported — supported languages: de, en, fr, ru, ar, uk'], $r->getData()['warnings'] ?? []);
+        $this->assertSame(['Q1: translations into es were not imported — supported languages: de, en, fr, ru, ar, uk, zh'], $r->getData()['warnings'] ?? []);
         $answers = $this->answers[(int)$this->questions[0]->getId()];
         $this->assertSame([
             ['question', (int)$this->questions[0]->getId(), 'de', 'F'],
@@ -637,7 +637,7 @@ class PoolDocumentRoundTripTest extends TestCase {
             'Q1: translation en was not imported — Translation text missing',
             'Q1: translation de was not imported — Scenario must be max ' . QuestionService::SCENARIO_MAX_LENGTH . ' characters',
             'Q1: translation ru was not imported — Translation text missing',
-            'Q1: translations into es, pl were not imported — supported languages: de, en, fr, ru, ar, uk',
+            'Q1: translations into es, pl were not imported — supported languages: de, en, fr, ru, ar, uk, zh',
         ], $results[0]['warnings']);
         $this->assertSame(['ru'], array_map(static fn (QuestionTranslation $t): string => (string)$t->getLang(), $copy['qt']));
         $this->assertSame([['ru', 'a (ru)']], array_map(static fn (AnswerTranslation $t): array => [$t->getLang(), $t->getText()], $copy['at']));
