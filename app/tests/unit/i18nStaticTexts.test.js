@@ -119,7 +119,7 @@ describe('translation dialog (audit #190)', () => {
 		return instance
 	}
 
-	it('offers all seven content languages, Arabic right to left (zh since the Chinese update)', () => {
+	it('offers all seven content languages, Arabic right to left (zh with #111)', () => {
 		globalThis.t = translate
 		const instance = dialog()
 		expect(instance.languages.map((l) => l.key)).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'])
