@@ -121,7 +121,13 @@ final class TranslationLanguagesTest extends TestCase {
      */
     public function testChineseIsStoredAfterTheChineseWideningStep(): void {
         if ($this->isPostgres()) {
+            // As Version003200 + Version007900 left it on an instance upgraded through 3.2.
+            // The tables are shared with the rest of the suite, and the fr/uk test above stored
+            // rows a de/en/ru/ar-era instance could never hold. On a real upgraded instance the
+            // constraint itself guarantees their absence, so removing them here reproduces that
+            // state instead of fighting ADD CONSTRAINT on the existing rows.
             foreach (self::UPGRADED as $table => $constraint) {
+                $this->db->executeStatement("DELETE FROM {$this->prefix}{$table} WHERE lang NOT IN ('de', 'en', 'ru', 'ar')");
                 $this->db->executeStatement("ALTER TABLE {$this->prefix}{$table} DROP CONSTRAINT IF EXISTS {$this->prefix}{$constraint}");
                 $this->db->executeStatement("ALTER TABLE {$this->prefix}{$table} ADD CONSTRAINT {$this->prefix}{$constraint} CHECK ((lang)::text = ANY ((" . self::OLD_LANGS . ")::text[]))");
             }
