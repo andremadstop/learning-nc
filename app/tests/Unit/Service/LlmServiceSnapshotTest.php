@@ -14,6 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Task B4: LlmService no longer sends anything (LlmGateway does). It is the thin answer to "is AI
@@ -45,6 +46,34 @@ class LlmServiceSnapshotTest extends TestCase {
     /** @param array<string, mixed> $c */
     private function snapshot(array $c): void {
         $this->values->set('learning', ConnectionStore::KEY, json_encode($c, JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * A snapshot LlmConnection::fromArray accepts (https URL, model, openrouter with its fixed
+     * routing), so a false from isAvailable() comes from the rule, not from a snapshot the store
+     * swapped for 'disabled'.
+     *
+     * @param 'openai'|'mistral'|'ionos'|'openrouter'|'custom' $preset
+     */
+    private function openAiCompatible(string $preset, bool $enabled = true): void {
+        $a = ['rev' => 1, 'enabled' => $enabled, 'provider' => 'openai_compatible', 'preset' => $preset,
+            'baseUrl' => [
+                'openai' => 'https://api.openai.com/v1',
+                'mistral' => 'https://api.mistral.ai/v1',
+                'ionos' => 'https://openai.inference.de-txl.ionos.com/v1',
+                'openrouter' => 'https://openrouter.ai/api/v1',
+                'custom' => 'https://api.deepseek.com',
+            ][$preset],
+            'model' => 'm'];
+        if ($preset === 'openrouter') {
+            $a['openRouterRouting'] = ['order' => ['openai'], 'allowFallbacks' => false];
+        }
+        $this->snapshot($a);
+    }
+
+    /** @return array<string, array{'openai'|'mistral'|'ionos'|'openrouter'}> */
+    public static function keyedPresets(): array {
+        return ['openai' => ['openai'], 'mistral' => ['mistral'], 'ionos' => ['ionos'], 'openrouter' => ['openrouter']];
     }
 
     private function legacyOllama(string $url): void {
@@ -101,5 +130,56 @@ class LlmServiceSnapshotTest extends TestCase {
         $this->keys->method('get')->willReturn('k');
 
         $this->assertFalse($this->service()->isAvailable());
+    }
+
+    /** GitHub #115: a custom endpoint works without a key, so it must not hide the AI features. */
+    public function testAKeylessCustomEndpointIsAvailable(): void {
+        $this->openAiCompatible('custom');
+        $this->keys->method('get')->willReturnCallback(static fn (LlmConnection $c) => null);
+
+        $service = $this->service();
+        $this->assertSame('openai_compatible', $service->getProviderId());
+        $this->assertTrue($service->isAvailable());
+    }
+
+    /**
+     * GitHub #115: a preset with a key for exactly this endpoint is available.
+     *
+     * @param 'openai'|'mistral'|'ionos'|'openrouter' $preset
+     */
+    #[DataProvider('keyedPresets')]
+    public function testAKeyedPresetWithAKeyForThisEndpointIsAvailable(string $preset): void {
+        $this->openAiCompatible($preset);
+        $this->keys->method('get')->willReturnCallback(
+            static fn (LlmConnection $c) => $c->provider === 'openai_compatible' && $c->preset === $preset ? 'k' : null);
+
+        $service = $this->service();
+        $this->assertSame('openai_compatible', $service->getProviderId());
+        $this->assertTrue($service->isAvailable());
+    }
+
+    /**
+     * Only `custom` may go without a key; every other preset would fail with 401 on the first message.
+     *
+     * @param 'openai'|'mistral'|'ionos'|'openrouter' $preset
+     */
+    #[DataProvider('keyedPresets')]
+    public function testAKeyedPresetWithoutAKeyIsNotAvailable(string $preset): void {
+        $this->openAiCompatible($preset);
+        $this->keys->method('get')->willReturnCallback(static fn (LlmConnection $c) => null);
+
+        $service = $this->service();
+        $this->assertSame('openai_compatible', $service->getProviderId(), 'the snapshot is valid, not swapped for disabled');
+        $this->assertFalse($service->isAvailable());
+    }
+
+    /** The custom shortcut stays behind the switch. */
+    public function testASwitchedOffCustomEndpointIsNotAvailable(): void {
+        $this->openAiCompatible('custom', false);
+        $this->keys->method('get')->willReturn('k');
+
+        $service = $this->service();
+        $this->assertSame('openai_compatible', $service->getProviderId(), 'the snapshot is valid, not swapped for disabled');
+        $this->assertFalse($service->isAvailable());
     }
 }

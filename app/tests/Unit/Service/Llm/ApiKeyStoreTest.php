@@ -400,4 +400,11 @@ class ApiKeyStoreTest extends TestCase {
             $this->assertStringNotContainsString('broken', $line);
         }
     }
+
+    /** LlmService::isAvailable() only asks for a non-null key: a stored key of blanks must read as none. */
+    public function testAStoredKeyThatDecryptsToBlanksReadsAsNone(): void {
+        $this->values->set('learning', ApiKeyStore::keyName($this->conn()), 'enc:   ');
+
+        $this->assertNull($this->keys()->get($this->conn()));
+    }
 }
