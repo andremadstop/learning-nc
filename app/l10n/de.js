@@ -2675,7 +2675,7 @@ OC.L10N.register(
     "Neues Duell erstellen" : "Neues Duell erstellen",
     "Next challenge in {time}" : "Nächste Herausforderung in {time}",
     "Nextcloud File Path" : "Nextcloud-Dateipfad",
-    "No AI provider is configured. Ask your admin to set up Gemini or Ollama in the admin settings." : "Es ist kein KI-Anbieter konfiguriert. Bitte deinen Administrator, Gemini oder Ollama in den Admin-Einstellungen einzurichten.",
+    "No AI provider is configured. Ask your admin to set one up in the admin settings." : "Es ist kein KI-Anbieter konfiguriert. Bitte deinen Administrator, einen in den Admin-Einstellungen einzurichten.",
     "No Leitner data for this student in course pools." : "Keine Leitner-Daten für diese/n Studierende/n in den Kurs-Pools.",
     "No explanation available" : "Keine Erklärung verfügbar",
     "No matches" : "Keine Treffer",

@@ -2675,7 +2675,7 @@ OC.L10N.register(
     "Neues Duell erstellen" : "Створити нову дуель",
     "Next challenge in {time}" : "Наступний виклик через {time}",
     "Nextcloud File Path" : "Шлях до файлу Nextcloud",
-    "No AI provider is configured. Ask your admin to set up Gemini or Ollama in the admin settings." : "Постачальника ШІ не налаштовано. Попросіть адміністратора налаштувати Gemini або Ollama в налаштуваннях адміністратора.",
+    "No AI provider is configured. Ask your admin to set one up in the admin settings." : "Постачальника ШІ не налаштовано. Попросіть адміністратора налаштувати його в налаштуваннях адміністратора.",
     "No Leitner data for this student in course pools." : "Немає даних Лейтнера для цього студента в пулах курсу.",
     "No explanation available" : "Пояснення відсутнє",
     "No matches" : "Збігів немає",

@@ -2675,7 +2675,7 @@
         "Neues Duell erstellen": "Créer un nouveau duel",
         "Next challenge in {time}": "Prochain défi dans {time}",
         "Nextcloud File Path": "Chemin du fichier Nextcloud",
-        "No AI provider is configured. Ask your admin to set up Gemini or Ollama in the admin settings.": "Aucun fournisseur d'IA n'est configuré. Demandez à votre administrateur de configurer Gemini ou Ollama dans les paramètres d'administration.",
+        "No AI provider is configured. Ask your admin to set one up in the admin settings.": "Aucun fournisseur d'IA n'est configuré. Demandez à votre administrateur d'en configurer un dans les paramètres d'administration.",
         "No Leitner data for this student in course pools.": "Aucune donnée Leitner pour cet étudiant dans les pools du cours.",
         "No explanation available": "Aucune explication disponible",
         "No matches": "Aucun résultat",

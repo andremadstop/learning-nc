@@ -16,7 +16,7 @@
           {{ t('learning', 'Local AI generates simpler questions. For best results use the cloud variant.') }}
         </NcNoteCard>
         <NcNoteCard v-if="!providerInfo.available" type="error" class="pg-quality-hint">
-          {{ t('learning', 'No AI provider is configured. Ask your admin to set up Gemini or Ollama in the admin settings.') }}
+          {{ t('learning', 'No AI provider is configured. Ask your admin to set one up in the admin settings.') }}
         </NcNoteCard>
       </div>
 
@@ -247,6 +247,7 @@ export default {
       const labels = {
         gemini: 'Gemini Cloud',
         ollama: t('learning', 'Local (Ollama)'),
+        openai_compatible: t('learning', 'OpenAI-compatible (OpenAI, DeepSeek, MiMo, …)'),
         disabled: t('learning', 'Disabled'),
       };
       return labels[this.providerInfo.provider] || this.providerInfo.provider;

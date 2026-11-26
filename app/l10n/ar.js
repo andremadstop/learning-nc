@@ -2675,7 +2675,7 @@ OC.L10N.register(
     "Neues Duell erstellen" : "إنشاء مبارزة جديدة",
     "Next challenge in {time}" : "التحدي التالي خلال {time}",
     "Nextcloud File Path" : "مسار ملف Nextcloud",
-    "No AI provider is configured. Ask your admin to set up Gemini or Ollama in the admin settings." : "لم يتم تكوين مزود ذكاء اصطناعي. اطلب من المدير إعداد Gemini أو Ollama في إعدادات المدير.",
+    "No AI provider is configured. Ask your admin to set one up in the admin settings." : "لم يتم تكوين مزود ذكاء اصطناعي. اطلب من المدير إعداد واحد في إعدادات المدير.",
     "No Leitner data for this student in course pools." : "لا توجد بيانات ليتنر لهذا الطالب في مجموعات الدورة.",
     "No explanation available" : "لا يوجد شرح متاح",
     "No matches" : "لا توجد نتائج",

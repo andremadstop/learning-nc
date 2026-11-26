@@ -2675,7 +2675,7 @@
         "Neues Duell erstellen": "创建新对决",
         "Next challenge in {time}": "{time} 后开始下一场挑战",
         "Nextcloud File Path": "Nextcloud 文件路径",
-        "No AI provider is configured. Ask your admin to set up Gemini or Ollama in the admin settings.": "尚未配置 AI 提供商。请让管理员在管理设置中配置 Gemini 或 Ollama。",
+        "No AI provider is configured. Ask your admin to set one up in the admin settings.": "尚未配置 AI 提供商。请让管理员在管理设置中进行配置。",
         "No Leitner data for this student in course pools.": "课程题池中没有该学生的 Leitner 数据。",
         "No explanation available": "暂无解释",
         "No matches": "无匹配结果",
