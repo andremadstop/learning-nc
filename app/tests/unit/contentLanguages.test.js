@@ -31,7 +31,7 @@ function sources(dir) {
 }
 
 describe('content languages', () => {
-	it('are the server\'s translation languages, the six interface languages', () => {
+	it('are the server\'s translation languages, the seven interface languages', () => {
 		expect([...CONTENT_LANGUAGES]).toEqual(serverList())
 		expect([...CONTENT_LANGUAGES]).toEqual(['de', 'en', 'fr', 'ru', 'ar', 'uk', 'zh'])
 	})

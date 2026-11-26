@@ -24,7 +24,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  * 5.18.0: French and Ukrainian, too. They were left out on purpose while the CHECK constraint on
  * the translation tables (PostgreSQL instances upgraded through 3.2) allowed de/en/ru/ar only;
  * Version011600Date20261121140000 widens it, and the whitelist is now
- * TranslationService::ALLOWED_LANGS — the six interface languages.
+ * TranslationService::ALLOWED_LANGS — the seven interface languages.
  */
 #[AllowMockObjectsWithoutExpectations]
 class SettingsControllerLanguageTest extends TestCase {
