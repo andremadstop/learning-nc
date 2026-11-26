@@ -145,6 +145,23 @@ final class TranslationLanguagesTest extends TestCase {
             $stored[(string)$t->getLang()] = (string)$t->getText();
         }
         $this->assertSame(['zh' => 'SSH 使用哪个端口？'], $stored);
+
+        if ($this->isPostgres()) {
+            // The widened guard is replaced, not dropped: accepting zh must not loosen it to
+            // anything — a language outside the list is still refused (as asked in #111).
+            $this->assertTrue($this->hasLangCheck('learning_qst_translations'), 'question translations keep their guard');
+            $this->assertTrue($this->hasLangCheck('learning_ans_translations'), 'answer translations keep their guard');
+            $refused = false;
+            try {
+                $this->db->executeStatement(
+                    "INSERT INTO {$this->prefix}learning_ans_translations (answer_id, lang, text, created_at) VALUES (?, 'es', 'x', 0)",
+                    [(int)$question['answers'][1]['id']]
+                );
+            } catch (\Throwable $e) {
+                $refused = true;
+            }
+            $this->assertTrue($refused, 'the zh-widened constraint still refuses a language outside TranslationService::ALLOWED_LANGS');
+        }
     }
 
     public function testTheStepDoesNothingWithoutTheOldConstraint(): void {

@@ -131,8 +131,8 @@ describe('PersonalSettings: no UI language field (audit #12, #61, #218)', () => 
 	})
 })
 
-describe('PersonalSettings: content language in all six languages (5.18.0)', () => {
-	it('offers original content plus de, en, fr, ru, ar, uk', async () => {
+describe('PersonalSettings: content language in all seven languages (5.18.0, zh with #111)', () => {
+	it('offers original content plus de, en, fr, ru, ar, uk, zh', async () => {
 		await mountSettings()
 
 		const values = [...host.querySelectorAll('#content-language option')].map((o) => o.value)
