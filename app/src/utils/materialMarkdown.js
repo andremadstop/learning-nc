@@ -20,8 +20,16 @@
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
 
-/** Above this size the text is offered as plain text instead of rendered (a frozen tab helps nobody). */
-export const MAX_RENDER_BYTES = 2 * 1024 * 1024
+/**
+ * Above this size the text is offered as plain text instead of rendered (a frozen tab helps nobody).
+ *
+ * The check runs after MaterialReader has already downloaded the whole file, so it only bounds
+ * parse + sanitize + render, not the transfer. Measured on the suite's jsdom (browsers are faster):
+ * ~0.2 s per MiB — the 3.1 MiB manual of GitHub #119 renders in well under a second, 16 MiB at
+ * ~2.7 s. Manuals with embedded screenshots pass 2 MiB easily, so the cap sits at 16 MiB: still a
+ * bound, but above what real material reaches.
+ */
+export const MAX_RENDER_BYTES = 16 * 1024 * 1024
 
 const SAFE_IMAGE = /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i
 const SAFE_LINK = /^(?:https?:|mailto:)/i
