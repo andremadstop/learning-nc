@@ -152,4 +152,12 @@ describe('tooLargeToRender', () => {
 		expect(tooLargeToRender('# small')).toBe(false)
 		expect(tooLargeToRender('x'.repeat(MAX_RENDER_BYTES + 1))).toBe(true)
 	})
+
+	it('renders a 3.1 MiB manual with embedded screenshots (GitHub #119)', () => {
+		// The training manual that production refused under the old 2 MiB cap: 3,293,118 bytes,
+		// mostly base64 figures. Rendering it costs well under a second, so it must not be refused.
+		const manual = 'x'.repeat(3293118)
+		expect(tooLargeToRender(manual)).toBe(false)
+		expect(renderMaterialMarkdown(manual).length).toBeGreaterThan(0)
+	})
 })
