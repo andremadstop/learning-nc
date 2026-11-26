@@ -19,7 +19,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
  * Task B4: LlmService no longer sends anything (LlmGateway does). It is the thin answer to "is AI
  * usable right now" for the UI: provider from the connection snapshot (never from the legacy keys
  * ai_provider / ai_ollama_*), and available only for a backend 5.7.0 routes that has what it
- * needs — Gemini a key for exactly this endpoint, Ollama nothing.
+ * needs — Gemini a key for exactly this endpoint, Ollama nothing, openai_compatible a key for
+ * every preset except `custom` (a keyless custom gateway needs none, like Ollama).
  */
 #[AllowMockObjectsWithoutExpectations]
 class LlmServiceSnapshotTest extends TestCase {
