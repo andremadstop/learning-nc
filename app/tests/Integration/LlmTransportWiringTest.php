@@ -8,7 +8,9 @@ use OCA\Learning\Controller\TelosController;
 use OCA\Learning\Controller\VirtuProfController;
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\GeminiService;
+use OCA\Learning\Service\Llm\ApiKeyStore;
 use OCA\Learning\Service\Llm\ConnectionStore;
+use OCA\Learning\Service\Llm\LlmConnection;
 use OCA\Learning\Service\Llm\LlmGateway;
 use OCA\Learning\Service\LlmService;
 use OCA\Learning\Service\PoolGeneratorService;
@@ -37,6 +39,11 @@ final class LlmTransportWiringTest extends TestCase {
         foreach ([ConnectionStore::KEY, 'ai_provider', 'ai_enabled'] as $key) {
             $this->appConfig->deleteKey('learning', $key);
         }
+        foreach ($this->appConfig->getKeys('learning') as $key) {
+            if (str_starts_with($key, ConnectionStore::SAVED_PREFIX) || str_starts_with($key, ApiKeyStore::KEY_PREFIX)) {
+                $this->appConfig->deleteKey('learning', $key);
+            }
+        }
     }
 
     public function testTheContainerBuildsTheTransport(): void {
@@ -64,5 +71,38 @@ final class LlmTransportWiringTest extends TestCase {
         ], JSON_THROW_ON_ERROR));
 
         $this->assertSame('ollama', Server::get(LlmService::class)->getProviderId());
+    }
+
+    /**
+     * GitHub #115: through the real container, a saved keyless custom endpoint makes AI available
+     * for the VirtuProf state (GeminiService::isAvailable() -> ai_enabled), not only for LlmService.
+     */
+    public function testAKeylessCustomEndpointIsAvailableThroughTheRealChain(): void {
+        $container = (new App('learning'))->getContainer();
+        $container->get(ConnectionStore::class)->save(LlmConnection::fromArray([
+            'enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'custom',
+            'baseUrl' => 'https://api.deepseek.com', 'model' => 'deepseek-chat',
+        ]), 'admin');
+
+        $this->assertSame('openai_compatible', $container->get(LlmService::class)->getProviderId());
+        $this->assertTrue($container->get(LlmService::class)->isAvailable());
+        $this->assertTrue($container->get(GeminiService::class)->isAvailable(), 'VirtuProf state reads this');
+    }
+
+    /** A cloud preset becomes available only once the real ApiKeyStore holds a key for it. */
+    public function testACloudPresetIsAvailableOnlyWithAStoredKey(): void {
+        $container = (new App('learning'))->getContainer();
+        $connection = LlmConnection::fromArray([
+            'enabled' => true, 'provider' => 'openai_compatible', 'preset' => 'mistral',
+            'baseUrl' => 'https://api.mistral.ai/v1', 'model' => 'mistral-small-latest',
+        ]);
+        $container->get(ConnectionStore::class)->save($connection, 'admin');
+        $this->assertSame('openai_compatible', $container->get(LlmService::class)->getProviderId());
+        $this->assertFalse($container->get(LlmService::class)->isAvailable());
+
+        $container->get(ApiKeyStore::class)->apply($connection, ['action' => 'replace', 'value' => 'k']);
+
+        $this->assertTrue($container->get(LlmService::class)->isAvailable());
+        $this->assertTrue($container->get(GeminiService::class)->isAvailable(), 'VirtuProf state reads this');
     }
 }
