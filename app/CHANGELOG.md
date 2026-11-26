@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.20.1] - 2026-11-26 — OpenAI-compatible AI is usable
+
+> **Administrators:** no migration, existing AI consents stay valid.
+
+### Fixed
+- **OpenAI-compatible AI stayed switched off** (#115, fix by @justemu in #116): with an
+  OpenAI-compatible endpoint configured, Learning still reported AI as unavailable, so VirtuProf
+  showed no chat input and the consent dialog could never open. A `custom` endpoint now counts as
+  available without a key; every other preset needs a key for its endpoint, as when sending.
+- **Pool generator:** names an OpenAI-compatible provider instead of showing its internal id, and
+  no longer tells users to ask for "Gemini or Ollama".
+
 ## [5.20.0] - 2026-11-25 — OpenAI-compatible AI and readable Markdown materials
 
 Two requests from @justemu: VirtuProf can answer through any OpenAI-compatible endpoint, and
