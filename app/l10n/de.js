@@ -4188,5 +4188,6 @@ OC.L10N.register(
     "Das Material konnte nicht geladen werden." : "Das Material konnte nicht geladen werden.",
     "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text.",
     "Als Text öffnen" : "Als Text öffnen",
+    "Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang." : "Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang.",
 },
 "nplurals=2; plural=(n != 1);");

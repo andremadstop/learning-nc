@@ -4188,5 +4188,6 @@ OC.L10N.register(
     "Das Material konnte nicht geladen werden." : "Не вдалося завантажити матеріал.",
     "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Цей файл завеликий для режиму читання. Відкрий його як текст.",
     "Als Text öffnen" : "Відкрити як текст",
+    "Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang." : "Цей PDF-файл містить підписане посвідчення (JSON) як вкладення.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

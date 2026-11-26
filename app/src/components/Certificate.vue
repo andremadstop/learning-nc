@@ -89,7 +89,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import CertificateCard from './CertificateCard.vue'
-import { getCertificate, downloadUrl, getCourseCertificate, courseDownloadUrl } from '../services/CertificateService.js'
+import { getCertificate, downloadUrl, getCourseCertificate, courseDownloadUrl, fetchCredentialFile } from '../services/CertificateService.js'
 import {
 	decodeCredential,
 	extractCertificateFields,
@@ -270,6 +270,26 @@ export default {
 		},
 
 		/**
+		 * GitHub #103: the signed credential goes into the PDF as an attachment, the same file the
+		 * "Download credential" button serves, whenever that button is shown here. If it cannot be
+		 * read, the PDF is made without it (and without the sentence that names it). On the instructor
+		 * copy the course-scoped route records its usual instructor-access 'download' in the audit
+		 * log: the credential does leave the server for this PDF, also when drawing it fails later.
+		 * @return {Promise<Array<object>>}
+		 */
+		async credentialAttachments() {
+			if (!this.credentialSectionShown || !this.verificationId) {
+				return []
+			}
+			try {
+				const file = await fetchCredentialFile(this.verificationId, this.courseId)
+				return [{ ...file, description: t('learning', 'Digitaler Nachweis für IT-Systeme (JSON)') }]
+			} catch (e) {
+				return []
+			}
+		},
+
+		/**
 		 * GitHub #94: never silent. While the PDF is made the button is busy and the status says so;
 		 * a failure says what to do instead. Where links cannot save files (old iOS web views) the
 		 * tab for the PDF is opened now, inside the click: opened after the wait it would be blocked.
@@ -285,11 +305,17 @@ export default {
 			this.pdfStatus = t('learning', 'PDF wird erstellt …')
 			try {
 				const root = document.documentElement
+				const attachments = await this.credentialAttachments()
+				const note = noteParts(
+					t('learning', 'Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).'),
+					{ id: this.verificationId, url: this.verifyUrl },
+				)
+				if (attachments.length > 0) {
+					note.push({ text: ' ' + t('learning', 'Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang.'), ltr: false })
+				}
 				const blob = await renderCertificatePdf(source, {
-					note: noteParts(
-						t('learning', 'Präsentationskopie, kein eigenständiger Nachweis. Echtheit prüfen: QR-Code scannen oder {url} öffnen (Zertifikat-ID {id}).'),
-						{ id: this.verificationId, url: this.verifyUrl },
-					),
+					note,
+					attachments,
 					title: this.fields?.courseTitle || '',
 					subject: this.verifyUrl,
 					dir: root.getAttribute('dir') || (typeof getComputedStyle === 'function' && source ? getComputedStyle(source).direction : ''),

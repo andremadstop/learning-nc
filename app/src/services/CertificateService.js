@@ -60,6 +60,65 @@ export async function getCourseCertificate(courseId, verificationId) {
 }
 
 /**
+ * The file name from a Content-Disposition header (filename*= UTF-8 first, then filename=).
+ * @param {string|undefined} header the header value
+ * @return {string} the name, or '' when there is none
+ */
+export function fileNameFromDisposition(header) {
+	const value = String(header ?? '')
+	// never a path: the name goes into the PDF as an attachment name
+	const base = (name) => String(name).split(/[\\/]/).pop().trim()
+	const star = value.match(/filename\*\s*=\s*utf-8''([^;]+)/i)
+	if (star) {
+		try {
+			const decoded = base(decodeURIComponent(star[1].trim().replace(/^"|"$/g, '')))
+			if (decoded) {
+				return decoded
+			}
+		} catch (e) {
+			// fall through to the plain name
+		}
+	}
+	const plain = value.match(/filename\s*=\s*"([^"]*)"|filename\s*=\s*([^;]+)/i)
+	return plain ? base(plain[1] ?? plain[2] ?? '') : ''
+}
+
+/**
+ * GitHub #103: the credential file exactly as the "Download credential" button serves it (the
+ * learner's own route, or the course-scoped one for the instructor copy), so it can go into the
+ * certificate PDF unchanged (its signature must still verify).
+ * @param {string} verificationId the certificate's verification id
+ * @param {?number} courseId the course for the instructor copy, null for the learner's own
+ * @return {Promise<{name: string, bytes: Uint8Array, mimeType: string}>}
+ */
+export async function fetchCredentialFile(verificationId, courseId = null) {
+	// a stalled request must not keep the PDF button busy: without the file the PDF is made anyway
+	const options = { responseType: 'arraybuffer', timeout: 15000 }
+	const response = courseId !== null
+		? await axios.get(generateUrl('/apps/learning/api/courses/{courseId}/certificates/{verificationId}/download', { courseId, verificationId }), options)
+		: await axios.get(generateUrl('/apps/learning/api/certificates/{verificationId}/download', { verificationId }), options)
+	const bytes = new Uint8Array(response.data)
+	if (bytes.length === 0) {
+		throw new Error('empty credential file')
+	}
+	const headers = response.headers || {}
+	const disposition = typeof headers.get === 'function' ? headers.get('content-disposition') : headers['content-disposition']
+	const type = typeof headers.get === 'function' ? headers.get('content-type') : headers['content-type']
+	const mimeType = String(type || '').split(';')[0].trim().toLowerCase()
+	// Only what the download route serves (JSON-LD, JSON): a login page or proxy error with 200 must
+	// never be attached as "the signed credential".
+	if (mimeType !== 'application/ld+json' && mimeType !== 'application/json') {
+		throw new Error('not a credential file: ' + mimeType)
+	}
+	JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+	return {
+		name: fileNameFromDisposition(disposition) || `certificate-${verificationId}.json`,
+		bytes,
+		mimeType,
+	}
+}
+
+/**
  * GitHub #42: the learner's certificate file for the course instructor (same file as downloadUrl()).
  * @param {number} courseId — the course whose report lists the certificate
  * @param {string} verificationId — the certificate's public verification id
