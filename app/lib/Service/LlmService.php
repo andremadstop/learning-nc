@@ -28,8 +28,9 @@ class LlmService {
 
     /**
      * Switched on, a backend 5.7.0 routes, and what that backend needs: Gemini a key for exactly
-     * this endpoint, Ollama nothing, openai_compatible a key for every preset except `custom`
-     * (which talks to the endpoint without an Authorization header — a keyless LAN gateway).
+     * this endpoint, Ollama nothing, openai_compatible a key for every preset except `custom`,
+     * which also works without one (then no Authorization header is sent; a stored key is still
+     * sent as Bearer), as OpenAiCompatibleProvider does.
      */
     public function isAvailable(): bool {
         $c = $this->connectionStore->load();
