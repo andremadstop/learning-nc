@@ -110,6 +110,14 @@ async function open(page, { presentation = FULL, cred = credential(), row = {}, 
 			foreign.push(url.href)
 			return route.abort()
 		}
+		// GitHub #103: the credential file the PDF attaches, as the download route serves it
+		if (url.pathname.endsWith('/download')) {
+			return route.fulfill({
+				contentType: 'application/ld+json',
+				headers: { 'Content-Disposition': `attachment; filename="certificate-${ID}.json"` },
+				body: JSON.stringify({ '@context': ['https://www.w3.org/ns/credentials/v2'], type: 'EnvelopedVerifiableCredential', id: 'data:application/vc+jwt,' + b64url({ alg: 'EdDSA' }) + '.' + b64url(cred) + '.sig' }),
+			})
+		}
 		if (url.pathname.includes('/certificates/')) {
 			return route.fulfill({
 				contentType: 'application/json',
@@ -336,6 +344,8 @@ test.describe('certificate PDF', () => {
 				id: document.querySelector('.certificate-verify-id').textContent,
 				url: document.querySelector('.certificate-verify-url').textContent,
 			})
+			// GitHub #103: the PDF of these tests carries the credential, and its line says so
+			note.push({ text: ' ' + window.t('learning', 'Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang.'), ltr: false })
 			const root = buildCertificateSheet(document.querySelector('.certificate-printable'), { note, dir: direction, lang: document.documentElement.lang })
 			root.style.transform = 'none'
 			root.style.zIndex = '10000'
@@ -427,6 +437,8 @@ test.describe('certificate PDF', () => {
 				expect(m.pages).toBe(1)
 				expect(m.qr).toEqual([VERIFY_URL])
 				expect(m.title).toBe(title)
+				// GitHub #103: the credential is attached
+				expect(fs.readFileSync(file, 'latin1')).toContain(`/EmbeddedFiles << /Names [(certificate-${ID}.json) 8 0 R] >>`)
 
 				const screen = await sheetOnScreen(page, lang === 'ar' ? 'rtl' : 'ltr')
 				const width = Math.min(screen.width, Number(m.images[0][3]))
