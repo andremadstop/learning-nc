@@ -250,9 +250,10 @@ function qrBox(root, scale) {
  * @param {string} [options.lang] language of the interface
  * @param {Document} [options.doc] the document
  * @param {Function} [options.rasterize] (sheet, options) => canvas; modern-screenshot by default
+ * @param {Array<object>} [options.attachments] files embedded unchanged (GitHub #103, see buildSinglePagePdf)
  * @return {Promise<Blob>} the PDF
  */
-export async function renderCertificatePdf(source, { note = [], title = '', subject = '', dir = '', lang = '', doc = document, rasterize = null } = {}) {
+export async function renderCertificatePdf(source, { note = [], title = '', subject = '', dir = '', lang = '', doc = document, rasterize = null, attachments = [] } = {}) {
 	if (!source) {
 		throw new Error('no certificate to render')
 	}
@@ -296,6 +297,7 @@ export async function renderCertificatePdf(source, { note = [], title = '', subj
 					title,
 					subject,
 					lang,
+					attachments,
 				})
 				return new Blob([pdf], { type: 'application/pdf' })
 			} catch (e) {

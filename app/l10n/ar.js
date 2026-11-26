@@ -4188,5 +4188,6 @@ OC.L10N.register(
     "Das Material konnte nicht geladen werden." : "تعذّر تحميل المادة.",
     "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "هذا الملف كبير جدًا لعرض القراءة. افتحه كنص.",
     "Als Text öffnen" : "فتح كنص",
+    "Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang." : "يتضمن ملف PDF هذا الشهادة الرقمية الموقّعة (JSON) كمرفق.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

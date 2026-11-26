@@ -4188,5 +4188,6 @@ OC.L10N.register(
     "Das Material konnte nicht geladen werden." : "Impossible de charger le support.",
     "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text." : "Ce fichier est trop volumineux pour la vue de lecture. Ouvre-le en texte brut.",
     "Als Text öffnen" : "Ouvrir en texte brut",
+    "Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang." : "Ce fichier PDF contient l’attestation signée (JSON) en pièce jointe.",
 },
 "nplurals=2; plural=(n > 1);");

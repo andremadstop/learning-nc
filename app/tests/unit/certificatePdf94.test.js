@@ -431,8 +431,9 @@ describe('Certificate.vue: "Als PDF herunterladen"', () => {
 		expect(button(host).getAttribute('aria-busy')).toBe('true')
 		expect(button(host).disabled).toBe(true)
 		expect(status(host).textContent).toBe('PDF wird erstellt …')
-		// a second click while busy starts nothing
+		// a second click while busy starts nothing (#103: the credential is read before rendering)
 		button(host).click()
+		await flush()
 		expect(pdfMock.render).toHaveBeenCalledTimes(1)
 
 		const [source, options] = pdfMock.render.mock.calls[0]
@@ -481,6 +482,7 @@ describe('Certificate.vue: "Als PDF herunterladen"', () => {
 		button(host).click()
 		// synchronously, before the PDF exists (afterwards a pop-up blocker would stop it)
 		expect(openSpy).toHaveBeenCalledWith('', '_blank')
+		await flush()
 		fail(new Error('x'))
 		await flush()
 		expect(tab.close).toHaveBeenCalled()

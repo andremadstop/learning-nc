@@ -4278,6 +4278,7 @@
         "Material wird geladen …": "جارٍ تحميل المادة …",
         "Das Material konnte nicht geladen werden.": "تعذّر تحميل المادة.",
         "Diese Datei ist zu groß für die Leseansicht. Öffne sie als Text.": "هذا الملف كبير جدًا لعرض القراءة. افتحه كنص.",
-        "Als Text öffnen": "فتح كنص"
+        "Als Text öffnen": "فتح كنص",
+        "Diese PDF-Datei enthält den signierten Nachweis (JSON) als Anhang.": "يتضمن ملف PDF هذا الشهادة الرقمية الموقّعة (JSON) كمرفق."
     }
 }

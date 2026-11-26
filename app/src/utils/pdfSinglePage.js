@@ -6,6 +6,10 @@
  * MediaBox is the paper size, the JPEG as an image XObject (DCTDecode, the JPEG bytes unchanged)
  * drawn over the whole page, and an /Info dictionary. Byte offsets are counted on the bytes that are
  * written, so the cross-reference table is exact (pdfinfo and qpdf --check read it without a warning).
+ *
+ * GitHub #103: files can be attached (embedded file streams in the catalog's /EmbeddedFiles name
+ * tree, also listed in /AF), so the PDF carries the signed credential next to the picture. Without
+ * attachments the output is exactly what it was before (PDF 1.4, seven objects).
  */
 
 /** A4 landscape in PostScript points (297 × 210 mm). */
@@ -66,6 +70,31 @@ function pdfDate(date) {
 		+ pad(date.getUTCHours()) + pad(date.getUTCMinutes()) + pad(date.getUTCSeconds()) + 'Z'
 }
 
+/**
+ * A PDF name from free text: bytes outside the regular characters become #XX (PDF 1.2+).
+ * @param {string} text e.g. "application/ld+json"
+ * @return {string} without the leading slash, e.g. "application#2Fld#2Bjson"
+ */
+export function pdfNameToken(text) {
+	let out = ''
+	for (const byte of encoder.encode(String(text ?? ''))) {
+		const c = String.fromCharCode(byte)
+		out += /[A-Za-z0-9._-]/.test(c) ? c : '#' + byte.toString(16).toUpperCase().padStart(2, '0')
+	}
+	return out
+}
+
+/**
+ * A file name as a PDF literal string for /F: printable ASCII only (other characters become "_"),
+ * with the three characters a literal string must escape escaped. /UF carries the full name.
+ * @param {string} name the file name
+ * @return {string} `(…)`
+ */
+export function pdfAsciiFileName(name) {
+	const ascii = String(name ?? '').replace(/[^\x20-\x7E]/g, '_')
+	return '(' + ascii.replace(/[\\()]/g, (c) => '\\' + c) + ')'
+}
+
 function num(value) {
 	return String(Math.round(value * 100) / 100)
 }
@@ -81,6 +110,8 @@ function num(value) {
  * @param {string} [options.lang] language tag of the document (/Lang in the catalog)
  * @param {string} [options.producer] /Info /Producer
  * @param {Date} [options.date] creation date
+ * @param {Array<{name: string, bytes: Uint8Array, mimeType?: string, description?: string}>} [options.attachments]
+ *   files to embed, unchanged (GitHub #103)
  * @return {Uint8Array} the PDF file
  */
 export function buildSinglePagePdf({
@@ -92,6 +123,7 @@ export function buildSinglePagePdf({
 	lang = '',
 	producer = 'Nextcloud Learning',
 	date = new Date(),
+	attachments = [],
 }) {
 	const { width, height, components } = jpegInfo(jpeg)
 	const colorSpace = components === 1 ? '/DeviceGray' : components === 4 ? '/DeviceCMYK' : '/DeviceRGB'
@@ -112,10 +144,35 @@ export function buildSinglePagePdf({
 	}
 
 	// the comment line with four bytes above 127 marks the file as binary for transfer tools
-	push('%PDF-1.4\n')
+	for (const file of attachments) {
+		if (!(file?.bytes instanceof Uint8Array) || !file.name) {
+			throw new Error('attachment needs a name and bytes')
+		}
+	}
+	// Name tree keys must be unique and sorted by their bytes: the key is the ASCII form of the name
+	// (two names can share it, "ä.json" and "ö.json" are both "_.json"), so a clash gets " (2)".
+	const used = new Set()
+	const files = attachments.map((file) => {
+		const ascii = String(file.name).replace(/[^\x20-\x7E]/g, '_')
+		let key = ascii
+		for (let n = 2; used.has(key); n++) {
+			const dot = ascii.lastIndexOf('.')
+			key = dot > 0 ? ascii.slice(0, dot) + ' (' + n + ')' + ascii.slice(dot) : ascii + ' (' + n + ')'
+		}
+		used.add(key)
+		return { ...file, key }
+	}).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+	// /EmbeddedFiles exists since 1.3, /UF since 1.7, /AF and /AFRelationship are PDF 2.0 (PDF/A-3)
+	push(files.length > 0 ? '%PDF-1.7\n' : '%PDF-1.4\n')
 	push(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]))
 
-	object(1, '<< /Type /Catalog /Pages 2 0 R' + (lang ? ' /Lang ' + pdfTextString(lang) : '') + ' >>')
+	// objects 7, 8 (then 9, 10 …): each attachment's embedded file stream and its file specification
+	const specRefs = files.map((_, i) => (8 + 2 * i) + ' 0 R')
+	const names = files.length > 0
+		? ' /Names << /EmbeddedFiles << /Names [' + files.map((file, i) => pdfAsciiFileName(file.key) + ' ' + specRefs[i]).join(' ') + '] >> >>'
+			+ ' /AF [' + specRefs.join(' ') + ']'
+		: ''
+	object(1, '<< /Type /Catalog /Pages 2 0 R' + (lang ? ' /Lang ' + pdfTextString(lang) : '') + names + ' >>')
 	object(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>')
 	object(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + num(widthPt) + ' ' + num(heightPt) + ']'
 		+ ' /Resources << /XObject << /Im0 4 0 R >> /ProcSet [/PDF /ImageC] >> /Contents 5 0 R >>')
@@ -131,13 +188,28 @@ export function buildSinglePagePdf({
 	object(6, '<< /Title ' + pdfTextString(title) + ' /Subject ' + pdfTextString(subject)
 		+ ' /Producer ' + pdfTextString(producer) + ' /CreationDate (' + pdfDate(date) + ') >>')
 
+	files.forEach((file, i) => {
+		const streamNo = 7 + 2 * i
+		offsets[streamNo] = length
+		push(streamNo + ' 0 obj\n<< /Type /EmbeddedFile'
+			+ (file.mimeType ? ' /Subtype /' + pdfNameToken(file.mimeType) : '')
+			+ ' /Params << /Size ' + file.bytes.length + ' /ModDate (' + pdfDate(date) + ') >>'
+			+ ' /Length ' + file.bytes.length + ' >>\nstream\n')
+		push(file.bytes)
+		push('\nendstream\nendobj\n')
+		object(streamNo + 1, '<< /Type /Filespec /F ' + pdfAsciiFileName(file.name) + ' /UF ' + pdfTextString(file.name)
+			+ (file.description ? ' /Desc ' + pdfTextString(file.description) : '')
+			+ ' /AFRelationship /Data /EF << /F ' + streamNo + ' 0 R /UF ' + streamNo + ' 0 R >> >>')
+	})
+
+	const size = 7 + 2 * files.length
 	const xref = length
-	let table = 'xref\n0 7\n0000000000 65535 f \n'
-	for (let n = 1; n <= 6; n++) {
+	let table = 'xref\n0 ' + size + '\n0000000000 65535 f \n'
+	for (let n = 1; n < size; n++) {
 		table += String(offsets[n]).padStart(10, '0') + ' 00000 n \n'
 	}
 	push(table)
-	push('trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n' + xref + '\n%%EOF\n')
+	push('trailer\n<< /Size ' + size + ' /Root 1 0 R /Info 6 0 R >>\nstartxref\n' + xref + '\n%%EOF\n')
 
 	const out = new Uint8Array(length)
 	let at = 0
