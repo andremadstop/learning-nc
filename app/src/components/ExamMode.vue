@@ -20,6 +20,10 @@
             <h4 class="preset-title">{{ preset.title }}</h4>
             <p class="preset-meta">{{ preset.meta }}</p>
             <p v-if="preset.note" class="preset-note">{{ preset.note }}</p>
+            <p v-if="preset.kind === 'exam' && setupWaitSeconds > 0" class="preset-note setup-wait" data-test="setup-wait">
+              <span aria-hidden="true">{{ setupWaitText }}</span>
+              <span class="hidden-visually">{{ setupNextStartText }}</span>
+            </p>
             <NcButton
               variant="primary"
               wide
@@ -378,8 +382,7 @@ import NcModal from '@nextcloud/vue/components/NcModal';
 import Certificate from './Certificate.vue';
 import { shouldShowNote } from '../utils/instructorNoteUtils.js';
 import { attemptsLeft } from '../utils/certificationCycle.js';
-import { getCanonicalLocale } from '@nextcloud/l10n';
-import { intlLocale } from '../utils/relativeTime.js';
+import { nextStartText as formatNextStart, waitClock as formatWaitClock, waitCountdownText, waitSecondsUntil } from '../utils/examWait.js';
 
 // Seconds before the deadline at which the countdown submits the exam. The server accepts the
 // final batch for TrainingService::EXAM_SUBMIT_GRACE_SECONDS after the deadline.
@@ -416,6 +419,10 @@ export default {
     // — or null when the course does not certify (or there is no course). A certifying course
     // judges every counting exam by its pass mark instead of the 720/900 scale.
     courseCertification: { type: Object, default: null },
+    // GitHub #92: next possible start of a counting exam on this pool (server seconds, from the
+    // pass status) and the server's clock minus the browser's; null/0 = no wait known.
+    nextStartAt: { type: Number, default: null },
+    serverClockOffset: { type: Number, default: 0 },
     // GitHub #35: the course's practice rules — { questions, minutes, passPercent } — when the course
     // offers practice exams; null hides the "Practice run" card. A practice run never counts.
     poolPractice: { type: Object, default: null },
@@ -458,6 +465,10 @@ export default {
       clockOffsetSeconds: 0,
       // GitHub #92: the clock of the countdown to the next possible start (server seconds)
       guideNowSeconds: 0,
+      setupNowSeconds: 0,
+      setupTimer: null,
+      retakeNextStartAt: null,
+      retakeClockOffset: 0,
       guideTimer: null,
       retryReadyAnnouncement: '',
       lastLockedStatusPollAt: 0,
@@ -620,7 +631,7 @@ export default {
         buttonLabel: t('learning', 'Start Exam'),
         questionCount: count,
         timeLimitSeconds: this.examTimeLimitSeconds,
-        disabled: count === 0,
+        disabled: count === 0 || this.setupWaitSeconds > 0,
       }]
       const practiceCfg = this.poolPractice
       if (practiceCfg && this.courseId) {
@@ -886,30 +897,37 @@ export default {
       return this.resultGuidance?.kind === 'retry' && Number.isFinite(at) && at > 0 ? at : null
     },
     waitSeconds() {
-      if (this.guideNextStartAt === null) return 0
-      return Math.max(0, Math.ceil(this.guideNextStartAt - this.guideNowSeconds))
+      return waitSecondsUntil(this.guideNextStartAt, this.guideNowSeconds)
     },
     waitClock() {
-      const total = this.waitSeconds
-      const h = Math.floor(total / 3600)
-      const m = Math.floor((total % 3600) / 60)
-      const sec = String(total % 60).padStart(2, '0')
-      return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
+      return formatWaitClock(this.waitSeconds)
     },
-    // GitHub #92 (review): the screen-reader text for the next start, in the Nextcloud locale (not
-    // the browser's), and with the day when it is not today — the 24-hour limit moves it to
-    // tomorrow, while sighted users see the countdown.
     nextStartText() {
-      if (this.guideNextStartAt === null) return ''
-      const at = new Date((this.guideNextStartAt - (this.clockOffsetSeconds || 0)) * 1000)
-      const locale = intlLocale(getCanonicalLocale())
-      const time = at.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
-      const now = this.guideNowSeconds > 0 ? (this.guideNowSeconds - (this.clockOffsetSeconds || 0)) * 1000 : Date.now()
-      if (at.toDateString() === new Date(now).toDateString()) {
-        return t('learning', 'Nächster Versuch möglich ab {time} Uhr', { time }, undefined, RAW)
-      }
-      const date = at.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })
-      return t('learning', 'Nächster Versuch möglich am {date} ab {time} Uhr', { date, time }, undefined, RAW)
+      return formatNextStart(this.guideNextStartAt, this.guideNowSeconds, this.clockOffsetSeconds)
+    },
+    // GitHub #92: the wait the Exam tab knew when this pool was opened (pass status), so the setup
+    // screen does not offer a start the server refuses. The server stays the authority.
+    // The later of the wait the Exam tab knew and the one the last result here named (a retake
+    // from the result page: the parent's pass status predates that attempt).
+    setupNextStartAt() {
+      const known = [this.nextStartAt, this.retakeNextStartAt].map(Number).filter((at) => Number.isFinite(at) && at > 0)
+      return known.length > 0 ? Math.max(...known) : null
+    },
+    // server minus browser clock for the setup countdown: the exam's own once it ran, else the parent's
+    setupClockOffset() {
+      return this.retakeNextStartAt !== null ? this.retakeClockOffset : (this.serverClockOffset || 0)
+    },
+    setupWaitKey() {
+      return `${this.setupNextStartAt}|${this.setupClockOffset}`
+    },
+    setupWaitSeconds() {
+      return waitSecondsUntil(this.setupNextStartAt, this.setupNowSeconds)
+    },
+    setupWaitText() {
+      return waitCountdownText(this.setupWaitSeconds)
+    },
+    setupNextStartText() {
+      return this.setupWaitSeconds > 0 ? formatNextStart(this.setupNextStartAt, this.setupNowSeconds, this.setupClockOffset) : ''
     },
     resultBannerClass() {
       if (this.scoreOnlyResult) return 'result-banner--neutral';
@@ -932,6 +950,23 @@ export default {
     }
   },
   watch: {
+    // GitHub #92: the setup screen counts down a wait known from the pass status and enables the
+    // start locally when it is over; no re-fetch (pass status is rate-limited and evaluates).
+    setupWaitKey: {
+      immediate: true,
+      handler() {
+        this.stopSetupTimer()
+        if (this.setupNextStartAt === null) return
+        this.setupNowSeconds = Date.now() / 1000 + this.setupClockOffset
+        if (this.setupWaitSeconds <= 0) return
+        this.setupTimer = setInterval(() => {
+          this.setupNowSeconds = Date.now() / 1000 + this.setupClockOffset
+          if (this.setupWaitSeconds <= 0) {
+            this.stopSetupTimer()
+          }
+        }, 1000)
+      },
+    },
     // GitHub #92: the countdown runs only while there is something to wait for
     guideNextStartAt: {
       immediate: true,
@@ -1682,6 +1717,12 @@ export default {
       }
       return t('learning', 'You can retake the exam. Attempts per pool in this course in 24 hours: at most {limit}.', { limit: policy.limit_per_day });
     },
+    stopSetupTimer() {
+      if (this.setupTimer) {
+        clearInterval(this.setupTimer);
+        this.setupTimer = null;
+      }
+    },
     stopGuideTimer() {
       if (this.guideTimer) {
         clearInterval(this.guideTimer);
@@ -1689,6 +1730,11 @@ export default {
       }
     },
     retakeExam() {
+      // GitHub #92 (review): the setup screen keeps the wait this result named (also after a
+      // pass: the cooldown applies to every counting attempt), with this exam's clock offset.
+      const resultNext = Number(this.certification?.attempt_policy?.next_start_at);
+      this.retakeClockOffset = this.clockOffsetSeconds || 0;
+      this.retakeNextStartAt = Number.isFinite(resultNext) && resultNext > 0 ? resultNext : null;
       this.certificateModalOpen = false;
       this.stopGuideTimer();
       this.cleanupSnake();
@@ -1730,6 +1776,7 @@ export default {
     window.removeEventListener('pointerdown', this.markPointerFocus, true);
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.stopGuideTimer();
+    this.stopSetupTimer();
     this.stopStatusPolling();
     this.releaseExamLock();
     this.cleanupSnake();
@@ -1744,6 +1791,7 @@ export default {
 .result-guidance__attempts,
 .result-guidance__wait { text-align: center; margin: 4px 0; color: var(--color-main-text); }
 .result-guidance__wait { font-variant-numeric: tabular-nums; color: var(--color-text-maxcontrast); }
+.setup-wait { font-variant-numeric: tabular-nums; }
 .timer-display.timer-untimed { font-size: 18px; font-weight: 600; color: var(--color-text-maxcontrast); }
 .review-explanation { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
 

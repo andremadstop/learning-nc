@@ -190,6 +190,11 @@
 									{{ poolLanguageSummary(pool) }}
 								</span>
 							</div>
+							<!-- GitHub #92: the wait after a failed attempt, also when the learner comes back later -->
+							<span v-if="examPoolWaitSeconds(pool) > 0" class="pool-exam-wait" data-test="exam-pool-wait">
+								<span aria-hidden="true">{{ examPoolWaitText(pool) }}</span>
+								<span class="hidden-visually">{{ examPoolNextStartText(pool) }}</span>
+							</span>
 						</div>
 						<div class="pool-badges">
 							<!-- GitHub #39: the learning-path "Required" says nothing about the certificate; a certified course's Exam tab shows the certificate state instead. -->
@@ -250,6 +255,8 @@
 				:totalQuestions="selectedLearningPoolExamQuestionCount"
 				:contentLanguage="contentLanguage"
 				:courseCertification="examCertification"
+				:next-start-at="examPoolNextStart(selectedLearningPool)"
+				:server-clock-offset="examClockOffset"
 				:poolPractice="poolPracticeConfig"
 				:examScope="selectedLearningPool.exam_scope || null"
 				:pool-name="selectedLearningPool.pool_name || ''"
@@ -779,6 +786,7 @@ import { TOOL_CATALOG, courseToolIds } from '../utils/toolCatalog.js'
 import { abschlussTabIds, kommunikationTabIds, lernraumTabIds, materialsNextStep, previewsCourseAsStudent } from '../utils/courseView.js'
 import { getPassStatus } from '../services/CourseService.js'
 import { attemptsLeft } from '../utils/certificationCycle.js'
+import { nextStartFor, nextStartText, waitCountdownText, waitSecondsUntil } from '../utils/examWait.js'
 import { CONTENT_LANGUAGES } from '../utils/contentLanguages.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
 
@@ -892,6 +900,11 @@ export default {
 			// GitHub #39: /pass-status for a certified course's Exam tab (null = none / not loaded).
 			examPassStatus: null,
 			examPassStatusLoading: false,
+			// GitHub #92: server minus browser clock from the pass status, and the ticking server time
+			// for the waits on the pool list
+			examClockOffset: 0,
+			examNowSeconds: 0,
+			examWaitTimer: null,
 			poolQuestionCounts: {},
 			loadingLearningPoolId: null,
 			showAddPoolModal: false,
@@ -1093,6 +1106,31 @@ export default {
 				.filter((pool) => !this.examCertRequiresPools || (this.examCertPool(pool) && this.examCertPool(pool).passed !== true))
 				.map((pool) => pool.pool_name)
 		},
+		// GitHub #92: pool_id => next possible start (server seconds) of a counting exam, for the
+		// pools that still have attempts left; a pool without attempts shows the warning above.
+		examPoolNextStarts() {
+			const status = this.examCertStatus
+			const out = {}
+			if (!status) {
+				return out
+			}
+			for (const pool of this.coursePools) {
+				const at = nextStartFor(status.attempt_policy, pool.pool_id)
+				if (at !== null && attemptsLeft(status.attempt_policy, pool.pool_id) !== 0) {
+					out[pool.pool_id] = at
+				}
+			}
+			return out
+		},
+		// The timer runs for the list, or for the opened pool only: an exam on pool B must not
+		// re-render the Lernraum every second because pool A waits for its daily limit.
+		examLatestNextStart() {
+			if (this.selectedLearningPool) {
+				return this.examPoolNextStarts[this.selectedLearningPool.pool_id] ?? null
+			}
+			const values = Object.values(this.examPoolNextStarts)
+			return values.length > 0 ? Math.max(...values) : null
+		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)
 		},
@@ -1195,6 +1233,7 @@ export default {
 		window.removeEventListener('focus', this.onPageVisible)
 		document.removeEventListener('visibilitychange', this.onPageVisible)
 		clearTimeout(this.documentOpenTimer)
+		this.stopExamWaitTimer()
 		// CourseDetail keeps its own copy of "required content exists" to route the Pflichtinhalte
 		// leaf. A remounted Lernraum starts without the list, so a stale true would make CourseDetail
 		// pick a leaf this component cannot show yet — the two would disagree until a reload.
@@ -1202,6 +1241,27 @@ export default {
 	},
 
 	watch: {
+		// GitHub #92: tick only while some pool on the list still has to wait; the button opens the
+		// pool anyway, and the start stays the server's decision.
+		examLatestNextStart: {
+			immediate: true,
+			handler(latest) {
+				this.stopExamWaitTimer()
+				if (latest === null) {
+					return
+				}
+				const tick = () => {
+					this.examNowSeconds = Date.now() / 1000 + (this.examClockOffset || 0)
+					if (this.examNowSeconds >= latest) {
+						this.stopExamWaitTimer()
+					}
+				}
+				tick()
+				if (this.examNowSeconds < latest) {
+					this.examWaitTimer = setInterval(tick, 1000)
+				}
+			},
+		},
 		allPools: {
 			immediate: true,
 			handler(pools) {
@@ -1266,11 +1326,32 @@ export default {
 			this.examPassStatusLoading = true
 			try {
 				const status = await getPassStatus(this.courseId)
+				const serverTime = Number(status?.server_time)
+				this.examClockOffset = Number.isFinite(serverTime) && serverTime > 0 ? serverTime - Date.now() / 1000 : 0
 				this.examPassStatus = status && typeof status === 'object' ? status : null
 			} catch (e) {
 				this.examPassStatus = null
 			} finally {
 				this.examPassStatusLoading = false
+			}
+		},
+		examPoolWaitSeconds(pool) {
+			return waitSecondsUntil(this.examPoolNextStarts[pool.pool_id] ?? null, this.examNowSeconds)
+		},
+		examPoolWaitText(pool) {
+			return waitCountdownText(this.examPoolWaitSeconds(pool))
+		},
+		examPoolNextStartText(pool) {
+			return nextStartText(this.examPoolNextStarts[pool.pool_id] ?? null, this.examNowSeconds, this.examClockOffset)
+		},
+		// The wait handed to the exam setup screen; null once it is over or unknown.
+		examPoolNextStart(pool) {
+			return pool && this.examPoolWaitSeconds(pool) > 0 ? this.examPoolNextStarts[pool.pool_id] : null
+		},
+		stopExamWaitTimer() {
+			if (this.examWaitTimer) {
+				clearInterval(this.examWaitTimer)
+				this.examWaitTimer = null
 			}
 		},
 		examCertPool(pool) {
@@ -2200,6 +2281,15 @@ export default {
 	align-items: center;
 	gap: 8px;
 	flex-wrap: wrap;
+}
+
+/* GitHub #92 */
+.pool-exam-wait {
+	display: block;
+	margin-top: 2px;
+	font-size: 0.9em;
+	font-variant-numeric: tabular-nums;
+	color: var(--color-text-maxcontrast);
 }
 
 .pool-language-summary {

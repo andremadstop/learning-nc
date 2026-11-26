@@ -39,6 +39,7 @@ class CertificationTrigger {
         private readonly ExamAttemptPolicy $examAttemptPolicy,
         private readonly LoggerInterface $logger,
         private readonly ?ExamAttemptLimitService $examAttemptLimit = null,
+        private readonly ?ExamStartWindow $examStartWindow = null,
     ) {}
 
     /**
@@ -123,33 +124,12 @@ class CertificationTrigger {
     }
 
     /**
-     * GitHub #92: the earliest start of the next counting exam on this pool in this course
-     * (ExamAttemptPolicy::nextStartAt over the same attempts TrainingService counts), or null
-     * when one may start now. The course's total limit is not part of it: attempt_policy carries
-     * that separately (used_by_pool, total_limit).
+     * GitHub #92: the earliest start of the next counting exam on this pool in this course, or
+     * null when one may start now (ExamStartWindow, shared with the pass status).
      */
     private function nextStartAt(string $userId, int $courseId, int $poolId): ?int {
-        $now = time();
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('started_at')
-            ->from('learning_sessions')
-            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-            ->andWhere($qb->expr()->isNull('exam_kind'))
-            ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($now - 86400, IQueryBuilder::PARAM_INT)))
-            ->orderBy('started_at', 'DESC')
-            ->setMaxResults(max($this->examAttemptPolicy->limitPerDay(), 1));
-        $result = $qb->executeQuery();
-        $starts = [];
-        while (($row = $result->fetch()) !== false) {
-            if (is_array($row) && isset($row['started_at'])) {
-                $starts[] = (int)$row['started_at'];
-            }
-        }
-        $result->closeCursor();
-        return $this->examAttemptPolicy->nextStartAt($starts, $now);
+        return ($this->examStartWindow ?? new ExamStartWindow($this->db, $this->examAttemptPolicy))
+            ->nextStartAt($userId, $courseId, $poolId);
     }
 
     /**

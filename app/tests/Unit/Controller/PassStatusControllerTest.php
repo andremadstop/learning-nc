@@ -35,7 +35,7 @@ use Psr\Log\LoggerInterface;
 #[AllowMockObjectsWithoutExpectations]
 class PassStatusControllerTest extends TestCase {
 
-    private function makeCourseController(PassCriteriaService $pass, bool $member, ?string $userId = 'alice', ?IConfig $config = null, bool $courseExists = true): CourseController {
+    private function makeCourseController(PassCriteriaService $pass, bool $member, ?string $userId = 'alice', ?IConfig $config = null, bool $courseExists = true, ?\OCA\Learning\Service\ExamStartWindow $window = null): CourseController {
         $course = new Course();
         $course->setId(7);
         $course->setInstructorId('teacher');
@@ -69,7 +69,8 @@ class PassStatusControllerTest extends TestCase {
             new ExamAttemptPolicy($config),
             $this->createMock(\OCA\Learning\Service\CourseEnrollmentService::class),
             $this->createMock(LoggerInterface::class),
-            $userId
+            $userId,
+            examStartWindow: $window,
         );
     }
 
@@ -91,6 +92,64 @@ class PassStatusControllerTest extends TestCase {
         $this->assertFalse($data['certificate_issued']);
         $this->assertSame('signing_unavailable', $data['issuance_error']);
         $this->assertSame(['limit_per_day' => 5, 'cooldown_minutes' => 10, 'scope' => 'pool_context'], $data['attempt_policy']);
+    }
+
+    /**
+     * GitHub #92: coming back to the Exam tab during the wait, the learner sees the countdown too.
+     * The pass status names the next possible start per pool (from the same ExamStartWindow the
+     * exam result uses) and the server time, so the browser can correct for its own clock.
+     */
+    public function testPassStatusNamesTheWaitPerPoolAndTheServerTime(): void {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('evaluate')->willReturn(new PassResult(false, 40, 80, false, null, true, PassResult::REQUIREMENT_ANY_EXAM, []));
+        $window = $this->createMock(\OCA\Learning\Service\ExamStartWindow::class);
+        $window->expects($this->once())->method('nextStartByPool')
+            ->with('alice', 7, $this->isInt())
+            ->willReturn([3 => 1700000600]);
+
+        $before = time();
+        $data = $this->makeCourseController($pass, true, window: $window)->getPassStatus(7)->getData();
+
+        $this->assertEquals((object)[3 => 1700000600], $data['attempt_policy']['next_start_by_pool']);
+        $this->assertGreaterThanOrEqual($before, $data['server_time']);
+        $this->assertLessThanOrEqual(time(), $data['server_time']);
+    }
+
+    // No wait anywhere is an empty JSON object, not a list, so the client reads it the same way.
+    public function testNoWaitIsAnEmptyObject(): void {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('evaluate')->willReturn(new PassResult(false, 40, 80, false, null, true, PassResult::REQUIREMENT_ANY_EXAM, []));
+        $window = $this->createMock(\OCA\Learning\Service\ExamStartWindow::class);
+        $window->method('nextStartByPool')->willReturn([]);
+
+        $data = $this->makeCourseController($pass, true, window: $window)->getPassStatus(7)->getData();
+
+        $this->assertSame('{}', json_encode($data['attempt_policy']['next_start_by_pool']));
+    }
+
+    // Read paths degrade: a failing wait query costs the countdown, not the certificate state.
+    public function testAFailingWaitQueryKeepsThePassStatus(): void {
+        $pass = $this->createMock(PassCriteriaService::class);
+        $pass->method('evaluate')->willReturn(new PassResult(false, 40, 80, false, null, true, PassResult::REQUIREMENT_ANY_EXAM, []));
+        $window = $this->createMock(\OCA\Learning\Service\ExamStartWindow::class);
+        $window->method('nextStartByPool')->willThrowException(new \RuntimeException('db gone'));
+
+        $response = $this->makeCourseController($pass, true, window: $window)->getPassStatus(7);
+        $data = $response->getData();
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(80, $data['threshold']);
+        $this->assertArrayNotHasKey('next_start_by_pool', $data['attempt_policy']);
+        $this->assertStringNotContainsString('db gone', json_encode($data));
+    }
+
+    public function testNonMemberLearnsNoWait(): void {
+        $window = $this->createMock(\OCA\Learning\Service\ExamStartWindow::class);
+        $window->expects($this->never())->method('nextStartByPool');
+
+        $response = $this->makeCourseController($this->createMock(PassCriteriaService::class), false, window: $window)->getPassStatus(7);
+
+        $this->assertSame(403, $response->getStatus());
     }
 
     // The shown retake rules are the enforced ones, including the clamp TrainingService applies.

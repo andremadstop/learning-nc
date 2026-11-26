@@ -66,6 +66,7 @@ class CourseController extends Controller {
         ?\OCA\Learning\Service\AuditService $auditService = null,
         ?\OCP\IDBConnection $db = null,
         private ?\OCA\Learning\Service\ExamAttemptLimitService $examAttemptLimit = null,
+        private ?\OCA\Learning\Service\ExamStartWindow $examStartWindow = null,
     ) {
         parent::__construct($appName, $request);
         $this->courseMapper = $courseMapper;
@@ -1021,6 +1022,20 @@ class CourseController extends Controller {
             if ($this->examAttemptLimit !== null) {
                 $payload['attempt_policy'] += $this->examAttemptLimit->policyFor($this->userId, $course);
             }
+            // GitHub #92: the Exam tab counts down to the next possible start on a pool also when
+            // the learner comes back to it, not only on the result page. server_time lets the
+            // client correct for its own clock, like the exam start does.
+            $now = time();
+            // A failing read costs the countdown, never the pass status: the client treats a missing
+            // field as "no wait known", and the start itself stays the server's decision.
+            if ($this->examStartWindow !== null) {
+                try {
+                    $payload['attempt_policy']['next_start_by_pool'] = (object)$this->examStartWindow->nextStartByPool($this->userId, $courseId, $now);
+                } catch (\Throwable $e) {
+                    $this->logger->warning('getPassStatus: next exam start unavailable: ' . $e->getMessage(), ['app' => 'learning']);
+                }
+            }
+            $payload['server_time'] = $now;
             return new DataResponse($payload);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

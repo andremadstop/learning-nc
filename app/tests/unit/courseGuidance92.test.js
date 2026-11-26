@@ -71,9 +71,9 @@ vi.mock('../../src/components/DnsResolver.vue', () => stub('DnsResolver'))
 vi.mock('../../src/components/ExamMode.vue', () => ({
 	default: {
 		name: 'ExamMode',
-		props: { guide: { type: Object, default: null } },
+		props: { guide: { type: Object, default: null }, nextStartAt: { type: Number, default: null }, serverClockOffset: { type: Number, default: 0 } },
 		emits: ['guide', 'back'],
-		template: '<div class="exam-stub" :data-guide="JSON.stringify(guide)"><button type="button" class="exam-ask" @click="$emit(\'guide\', \'my-questions\')">ask</button><button type="button" class="exam-cert" @click="$emit(\'guide\', \'summary\')">cert</button></div>',
+		template: '<div class="exam-stub" :data-guide="JSON.stringify(guide)" :data-next-start="String(nextStartAt)" :data-offset="String(serverClockOffset)"><button type="button" class="exam-ask" @click="$emit(\'guide\', \'my-questions\')">ask</button><button type="button" class="exam-cert" @click="$emit(\'guide\', \'summary\')">cert</button></div>',
 	},
 }))
 vi.mock('../../src/components/FirewallBuilder.vue', () => stub('FirewallBuilder'))
@@ -271,6 +271,78 @@ describe('CourseDetail guides the learner on (GitHub #92)', () => {
 		await flush()
 
 		expect(host.querySelector('[data-test="exam-tab-certificate"]')).toBeNull()
+	})
+
+	describe('the wait after a failed attempt, on coming back to the exam tab', () => {
+		const status = (extra = {}) => ({ applicable: true, passed: false, threshold: 80, requirement: 'any_exam', pools: [], certificate_issued: false, certificate: null, ...extra })
+		const policy = (extra = {}) => ({ limit_per_day: 5, cooldown_minutes: 10, total_limit: 3, used_by_pool: { 3: 1 }, ...extra })
+		const wait = () => host.querySelector('[data-test="exam-pool-wait"]')
+
+		it('the pool counts down to the next possible start and names it for screen readers', async () => {
+			const now = Math.floor(Date.now() / 1000)
+			api.passStatus = status({ server_time: now, attempt_policy: policy({ next_start_by_pool: { 3: now + 240 } }) })
+			await mountDetail()
+			nextStep().click()
+			await flush()
+
+			expect(wait().querySelector('[aria-hidden="true"]').textContent).toMatch(/^Nächster Versuch möglich in (4:00|3:5\d)$/)
+			expect(wait().querySelector('.hidden-visually').textContent).toMatch(/^Nächster Versuch möglich ab \S+ Uhr$/)
+		})
+
+		it('follows the server clock, not the browser\'s', async () => {
+			// The browser runs an hour behind: without the offset the wait would read 64 minutes.
+			const serverNow = Math.floor(Date.now() / 1000) + 3600
+			api.passStatus = status({ server_time: serverNow, attempt_policy: policy({ next_start_by_pool: { 3: serverNow + 240 } }) })
+			await mountDetail()
+			nextStep().click()
+			await flush()
+
+			expect(wait().textContent).toMatch(/Nächster Versuch möglich in (4:00|3:5\d)/)
+		})
+
+		it('no countdown once the wait is over, and none without the field (older server)', async () => {
+			const now = Math.floor(Date.now() / 1000)
+			api.passStatus = status({ server_time: now, attempt_policy: policy({ next_start_by_pool: { 3: now - 5 } }) })
+			await mountDetail()
+			nextStep().click()
+			await flush()
+			expect(wait()).toBeNull()
+
+			app.unmount()
+			host.remove()
+			api.passStatus = status({ attempt_policy: policy() })
+			await mountDetail()
+			nextStep().click()
+			await flush()
+			expect(wait()).toBeNull()
+		})
+
+		it('a pool without attempts left shows the warning, not a countdown', async () => {
+			const now = Math.floor(Date.now() / 1000)
+			api.passStatus = status({ server_time: now, attempt_policy: policy({ used_by_pool: { 3: 3 }, next_start_by_pool: { 3: now + 240 } }) })
+			await mountDetail()
+			nextStep().click()
+			await flush()
+
+			expect(host.querySelector('[data-test="exam-tab-exhausted"]')).not.toBeNull()
+			expect(wait()).toBeNull()
+		})
+
+		it('opening the pool hands the wait and the clock offset to the exam setup', async () => {
+			api.course = course({ mode_config: { training: false, leitner: false, exam: true }, pools: [{ pool_id: 3, pool_name: 'Brandschutz', question_count: 10 }] })
+			const serverNow = Math.floor(Date.now() / 1000) + 60
+			api.passStatus = status({ server_time: serverNow, attempt_policy: policy({ next_start_by_pool: { 3: serverNow + 240 } }) })
+			await mountDetail()
+			nextStep().click()
+			await flush()
+			host.querySelector('.pool-item').click()
+			await flush()
+
+			const exam = host.querySelector('.exam-stub')
+			expect(Number(exam.dataset.nextStart)).toBe(serverNow + 240)
+			expect(Number(exam.dataset.offset)).toBeGreaterThan(55)
+			expect(Number(exam.dataset.offset)).toBeLessThan(65)
+		})
 	})
 
 	it('instructors get no next-step buttons', async () => {

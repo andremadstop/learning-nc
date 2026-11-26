@@ -263,3 +263,117 @@ describe('ExamMode result guidance (GitHub #92)', () => {
 		expect(button('guide-certificate')).toBeNull()
 	})
 })
+
+/**
+ * GitHub #92 (gap from the 5.16.0 comment): a learner who comes back to the exam during the wait
+ * opened the setup screen with an active "Start Exam" and only learned of the wait from the
+ * refused start. The setup screen now counts down the wait the Exam tab knows from the pass
+ * status and enables the start when it is over, without asking the server again.
+ */
+describe('ExamMode setup screen during the wait (GitHub #92)', () => {
+	let host, app
+
+	async function showSetup(props = {}) {
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		app = createApp({ render: () => h(ExamMode, { poolId: 3, courseId: 7, totalQuestions: 20, guide: GUIDE, ...props }) })
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = globalThis.n
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await nextTick()
+		await nextTick()
+	}
+
+	const startButton = () => Array.from(host.querySelectorAll('.preset-card .nc-button')).find((b) => b.textContent.trim() === 'Start Exam')
+	const practiceButton = () => Array.from(host.querySelectorAll('.preset-card .nc-button')).find((b) => b.textContent.trim() === 'Start practice run')
+	const wait = () => host.querySelector('[data-test="setup-wait"]')
+
+	afterEach(() => {
+		app?.unmount()
+		host?.remove()
+		vi.useRealTimers()
+	})
+
+	it('counts down in the exam card, keeps the start disabled, and enables it when the wait is over', async () => {
+		vi.useFakeTimers()
+		const now = Math.floor(Date.now() / 1000)
+		await showSetup({ nextStartAt: now + 90, serverClockOffset: 0 })
+
+		expect(startButton().disabled).toBe(true)
+		expect(wait().querySelector('[aria-hidden="true"]').textContent).toBe('Nächster Versuch möglich in 1:30')
+		expect(wait().querySelector('.hidden-visually').textContent).toMatch(/^Nächster Versuch möglich ab \S+ Uhr$/)
+		expect(wait().closest('.preset-card').querySelector('.preset-title').textContent).toBe('Exam')
+
+		vi.advanceTimersByTime(91_000)
+		await nextTick()
+		expect(startButton().disabled).toBe(false)
+		expect(wait()).toBeNull()
+	})
+
+	it('uses the server clock: a browser an hour behind still waits 90 seconds', async () => {
+		vi.useFakeTimers()
+		const serverNow = Math.floor(Date.now() / 1000) + 3600
+		await showSetup({ nextStartAt: serverNow + 90, serverClockOffset: 3600 })
+
+		expect(wait().textContent).toContain('Nächster Versuch möglich in 1:30')
+	})
+
+	it('the practice run is not held back: it has its own limits', async () => {
+		const now = Math.floor(Date.now() / 1000)
+		await showSetup({ nextStartAt: now + 90, poolPractice: { questions: 10, minutes: 0, passPercent: 75 } })
+
+		expect(startButton().disabled).toBe(true)
+		expect(practiceButton().disabled).toBe(false)
+	})
+
+	it('without a known wait (pool window, older server, no pass status) the setup screen is as before', async () => {
+		await showSetup()
+
+		expect(startButton().disabled).toBe(false)
+		expect(wait()).toBeNull()
+	})
+})
+
+// Review of the #92 gap fix: "Retake" on the result page opens the setup screen before the Exam tab
+// has read the pass status again; the wait the result named must hold there too, also after a pass.
+describe('ExamMode retake keeps the wait the result named (GitHub #92)', () => {
+	let host, app
+
+	afterEach(() => {
+		app?.unmount()
+		host?.remove()
+		vi.useRealTimers()
+	})
+
+	it('after a pass, the quiet retake leads to a setup screen that waits', async () => {
+		vi.useFakeTimers()
+		host = document.createElement('div')
+		document.body.appendChild(host)
+		const exam = ref(null)
+		app = createApp({ render: () => h(ExamMode, { ref: exam, poolId: 3, courseId: 7, totalQuestions: 20, guide: GUIDE }) })
+		app.config.globalProperties.t = globalThis.t
+		app.config.globalProperties.n = globalThis.n
+		app.config.warnHandler = () => {}
+		app.mount(host)
+		await nextTick()
+		const now = Math.floor(Date.now() / 1000)
+		exam.value.resultsData = {
+			total_questions: 20,
+			correct_answers: 18,
+			score_percentage: 90,
+			certification: { applicable: true, passed: true, threshold: 70, exam_passed: true, requirement: 'any_exam', certificate_issued: true, certificate_issued_now: true, certificate: validCert, pool_id: 3, attempt_policy: policy({ next_start_at: now + 300 }) },
+		}
+		exam.value.detailedResults = []
+		exam.value.screen = 'results'
+		await nextTick()
+
+		exam.value.retakeExam()
+		await nextTick()
+		await nextTick()
+
+		const start = Array.from(host.querySelectorAll('.preset-card .nc-button')).find((b) => b.textContent.trim() === 'Start Exam')
+		expect(start.disabled).toBe(true)
+		expect(host.querySelector('[data-test="setup-wait"]').textContent).toContain('Nächster Versuch möglich in 5:00')
+	})
+})
