@@ -19,7 +19,7 @@ class TranslationService {
     private IDBConnection $db;
 
     /**
-     * Languages a question or answer translation may have — the app's six interface languages.
+     * Languages a question or answer translation may have — the app's seven interface languages.
      * The one list for every place that accepts a content language (translation endpoints, the
      * pool imports, the personal content-language setting, the languages a pool is offered in);
      * the frontend's copy is src/utils/contentLanguages.js (a test compares the two). fr and uk
