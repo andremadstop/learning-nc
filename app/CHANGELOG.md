@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.20.2] - 2026-11-26 — The wait after an exam attempt stays visible
+
+> **Administrators:** no migration.
+
+### Fixed
+- **Coming back during the wait** (#92): after a failed attempt the result page counted down to
+  the next possible start, but a learner who left and came back to the Exam tab saw nothing, and
+  the exam's setup screen offered an active "Start Exam" that the server then refused. Now the
+  pool list counts down per pool, and the setup screen shows the wait in the exam card and keeps
+  "Start Exam" disabled until it is over, also after "Retake" on the result page. The practice run
+  keeps its own limits. Applies to courses that issue certificates, like the result page.
+
 ## [5.20.1] - 2026-11-26 — OpenAI-compatible AI is usable
 
 > **Administrators:** no migration, existing AI consents stay valid.
