@@ -21,14 +21,15 @@ class LlmService {
     ) {
     }
 
-    /** gemini, ollama or disabled — as the snapshot says. */
+    /** gemini, ollama, openai_compatible or disabled — as the snapshot says. */
     public function getProviderId(): string {
         return $this->connectionStore->load()->provider;
     }
 
     /**
      * Switched on, a backend 5.7.0 routes, and what that backend needs: Gemini a key for exactly
-     * this endpoint, Ollama nothing.
+     * this endpoint, Ollama nothing, openai_compatible a key for every preset except `custom`
+     * (which talks to the endpoint without an Authorization header — a keyless LAN gateway).
      */
     public function isAvailable(): bool {
         $c = $this->connectionStore->load();
@@ -38,6 +39,7 @@ class LlmService {
         return match ($c->provider) {
             'gemini' => $this->keys->get($c) !== null,
             'ollama' => true,
+            'openai_compatible' => $c->preset === 'custom' || $this->keys->get($c) !== null,
             default => false,
         };
     }
