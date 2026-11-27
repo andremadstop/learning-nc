@@ -2676,7 +2676,7 @@ class CourseService {
             }
 
             if ($score >= 3) {
-                $riskLevel = $score >= 5 ? 'high' : ($score >= 3 ? 'medium' : 'low');
+                $riskLevel = $score >= 5 ? 'high' : 'medium';
                 $atRisk[] = [
                     'user_id' => $sid,
                     'display_name' => $this->getDisplayName($sid),
@@ -2807,7 +2807,6 @@ class CourseService {
         // 5. Recent sessions (course-scoped, last 10)
         $recentSessions = [];
         if (!empty($poolIds)) {
-            $poolNames = $poolNames ?? $this->getPoolNames($poolIds);
             $qb = $this->db->getQueryBuilder();
             $qb->select('pool_id', 'mode', 'total_questions', 'correct_answers', 'completed_at')
                 ->from('learning_sessions')

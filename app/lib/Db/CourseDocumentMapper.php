@@ -5,6 +5,7 @@ use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<CourseDocument> */
 class CourseDocumentMapper extends QBMapper {
 
     public function __construct(IDBConnection $db) {

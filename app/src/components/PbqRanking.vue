@@ -10,7 +10,7 @@
         :class="rowClasses(item, idx)"
         :draggable="!disabled"
         @dragstart="onDragStart($event, idx)"
-        @dragover.prevent="onDragOver($event, idx)"
+        @dragover.prevent="onDragOver($event)"
         @drop.prevent="onDrop($event, idx)"
         @dragend="onDragEnd"
       >
@@ -56,7 +56,7 @@ export default {
       if (!this.disabled) return ''
       const total = this.items.length
       let correct = 0
-      this.orderedItems.forEach((item, idx) => {
+      this.orderedItems.forEach((item) => {
         // Scored like the server: only the submitted position counts.
         if (this.value[item.id] === item.correct_position) correct++
       })
@@ -118,7 +118,7 @@ export default {
       ev.dataTransfer.effectAllowed = 'move'
       try { ev.dataTransfer.setData('text/plain', String(idx)) } catch (e) { /* Safari */ }
     },
-    onDragOver(ev, idx) {
+    onDragOver(ev) {
       if (this.disabled) return
       ev.dataTransfer.dropEffect = 'move'
     },

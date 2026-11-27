@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import axios from '@nextcloud/axios'
-import { showError, showSuccess } from '@nextcloud/dialogs'
 
 // GitHub #67: the course profile in the create dialog. "Pflichtschulung mit Zertifikat" is sent as
 // profile=mandatory (the server applies the switches); the IT profile is the server default and

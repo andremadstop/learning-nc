@@ -254,7 +254,7 @@ describe('renderCertificatePdf: never a blank PDF, never a stray copy', () => {
 	})
 
 	it('draws the sheet at about 200 dpi in fixed sheet size, white behind, as a JPEG in a PDF', async () => {
-		const rasterize = vi.fn(async (root, options) => {
+		const rasterize = vi.fn(async (root) => {
 			expect(root.id).toBe(PDF_ROOT_ID)
 			expect(root.isConnected).toBe(true)
 			return fakeCanvas()

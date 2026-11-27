@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import {
 	calculateFsrsIntervalDays,
 	calculateFsrsRetrievability,
-	initializeFsrsFromRating,
 	previewFsrsReview,
 	formatFsrsIntervalLabel,
 } from '../../src/utils/fsrsScheduler'

@@ -295,7 +295,7 @@ class LeagueService {
         }
         $season = $this->getSeasonForCourse($courseId, $seasonId);
         $this->applyForfeits($season);
-        return $this->buildChampionsLeague($season, $userId) ?? ['status' => 'not_available'];
+        return $this->buildChampionsLeague($season, $userId);
     }
 
     public function recordFinishedDuel(DuelSession $session): void {
@@ -666,7 +666,7 @@ class LeagueService {
         return $cards;
     }
 
-    private function buildChampionsLeague(LeagueSeason $season, string $viewerUid): ?array {
+    private function buildChampionsLeague(LeagueSeason $season, string $viewerUid): array {
         $clChallenges = array_values(array_filter(
             $this->challengeMapper->findBySeason($season->getId()),
             static fn (LeagueChallenge $challenge): bool => $challenge->getStage() === 'cl'

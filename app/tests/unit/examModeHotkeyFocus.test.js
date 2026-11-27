@@ -28,7 +28,6 @@ vi.mock('../../src/components/QuestionLanguageSwitcher.vue', () => stub('Questio
 
 globalThis.t = (app, text, vars = {}) => Object.entries(vars).reduce((acc, [k, v]) => acc.replace(`{${k}}`, String(v)), text)
 
-import axios from '@nextcloud/axios'
 import ExamMode from '../../src/components/ExamMode.vue'
 
 function createInstance(props = {}) {

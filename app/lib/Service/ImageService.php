@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException as FilesNotFoundException;
 
@@ -35,6 +36,10 @@ class ImageService {
         }
 
         $imageDir = $userFolder->get(self::IMAGE_DIR);
+        if (!$imageDir instanceof Folder) {
+            // a file of that name stands where the image folder belongs
+            throw new \RuntimeException('The image folder is not a folder');
+        }
         $ext = $this->getExtension($mimeType);
         $filename = uniqid('q_') . '.' . $ext;
 
