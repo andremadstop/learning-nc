@@ -365,9 +365,4 @@ const DOCK_LABEL_NAMES = Object.freeze([
 	'VirtuProf', 'Prof. Lern', 'Linux', 'Ghostline', 'Klaus DAU', 'Dr. Hartmann', 'Frau Weber', 'Uschi', 'Tim', 'Sven Berater',
 ])
 
-// Support both ESM and CJS consumption
-if (typeof module !== 'undefined' && module.exports) {
-	module.exports = { CHARACTERS, getCharacter, FALLBACK_CHARACTER, DOCK_LABEL_NAMES }
-}
-
 export { CHARACTERS, getCharacter, FALLBACK_CHARACTER, DOCK_LABEL_NAMES }
