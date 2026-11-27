@@ -31,7 +31,6 @@ const { stub } = vi.hoisted(() => ({ stub: (name) => ({ default: { name, templat
 vi.mock('@nextcloud/vue/components/NcButton', () => stub('NcButton'))
 vi.mock('@nextcloud/vue/components/NcNoteCard', () => stub('NcNoteCard'))
 vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => stub('NcLoadingIcon'))
-vi.mock('@nextcloud/vue', () => ({ NcLoadingIcon: stub('NcLoadingIcon').default, NcNoteCard: stub('NcNoteCard').default }))
 vi.mock('../../src/components/PoolDraftReview.vue', () => stub('PoolDraftReview'))
 vi.mock('../../src/components/AiConsentHint.vue', () => stub('AiConsentHint'))
 

@@ -28,6 +28,11 @@ describe('eslint flat config (#71)', () => {
 		expect(await lint("import de from '../l10n/de.json'\nconsole.log(de)\n", 'src/x.js')).toContain('no-restricted-imports:2')
 	})
 
+	it('forbids the @nextcloud/vue package entry, which bundles the whole library', async () => {
+		expect(await lint("import { NcButton } from '@nextcloud/vue'\nconsole.log(NcButton)\n", 'src/x.js')).toContain('no-restricted-imports:2')
+		expect(await lint("import NcButton from '@nextcloud/vue/components/NcButton'\nconsole.log(NcButton)\n", 'src/x.js')).toEqual([])
+	})
+
 	it('keeps the ESLint 8 settings that ESLint 9/10 loosened', async () => {
 		expect(await lint('while (true) { break }\n', 'src/x.js')).toContain('no-constant-condition:2')
 		expect(await lint('if (window.x) { function f() {} f() }\n', 'src/x.js')).toContain('no-inner-declarations:2')

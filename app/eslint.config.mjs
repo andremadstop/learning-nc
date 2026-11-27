@@ -57,6 +57,13 @@ export default [
 			'no-extra-semi': 'error',
 			'no-mixed-spaces-and-tabs': 'error',
 			'no-restricted-imports': ['error', {
+				// The package entry pulls in every component (emoji data, highlight.js, colour
+				// picker): one such import cost the main bundle 1.3 MB (27.11.2026). Import each
+				// component from its own path, as everywhere else.
+				paths: [{
+					name: '@nextcloud/vue',
+					message: "Import each component from '@nextcloud/vue/components/<Name>'; the package entry bundles the whole library.",
+				}],
 				patterns: [{
 					group: ['**/l10n/*.json'],
 					message: 'Keine direkten l10n JSON-Imports - Webpack crasht an pluralForm. Nutze @nextcloud/l10n t() oder app/src/l10n/virtuprof-strings.js',
