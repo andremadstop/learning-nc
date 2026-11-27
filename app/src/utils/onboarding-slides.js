@@ -6,7 +6,7 @@
  * 2. Each slide needs: id, icon (emoji or SVG path), titleKey, textKey
  * 3. Add German translations to l10n/de.json (keys = titleKey/textKey values)
  * 4. English fallback is the key itself (keep keys readable)
- * 5. Deploy: ./scripts/deploy-dev.sh --js-only
+ * 5. Build: cd app && npm run build
  *
  * Slide properties:
  *   id         — unique identifier (used as v-for key)
