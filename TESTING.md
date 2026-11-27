@@ -80,7 +80,7 @@ The first three compare the language files with each other. The fourth checks th
 
 ## Gate 2: retired
 
-Gate 2 was an API test suite (`scripts/test-api.sh`, plus a smoke test). It ran against a shared development instance that no longer exists. The scripts are still in the repository but have no target. Gate 4 replaces them: it installs a fresh Nextcloud for every run.
+Gate 2 was an API test suite (`scripts/test-api.sh`, plus a smoke test). It ran against a shared development instance that no longer exists, and the scripts were removed on 27.11.2026, together with `deploy-prod.sh` and `deploy-dev.sh`, which deployed to that instance. Gate 4 replaces them: it installs a fresh Nextcloud for every run.
 
 ## Gate 3: browser
 

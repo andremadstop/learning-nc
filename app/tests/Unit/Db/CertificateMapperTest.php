@@ -50,7 +50,7 @@ class CertificateMapperTest extends TestCase {
      *
      * Row-mapping ("returns only matching certs") is genuinely integration-level (a mocked
      * QueryBuilder cannot produce rows without tautology); that path is covered by Gate 2
-     * test-api.sh IDOR assertions (unauthorized group → 403). What we lock HERE at unit level
+     * former test-api.sh IDOR assertions (unauthorized group → 403). What we lock HERE at unit level
      * is that the mapper issues a query whose IN clause is on user_id with the member chunk —
      * i.e. the filter is at the DB layer, not applied post-fetch.
      */

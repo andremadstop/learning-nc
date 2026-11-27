@@ -1046,12 +1046,10 @@ python3 scripts/l10n_js_sync.py
    ```
    nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);
    ```
-3. Register the language code in five places — miss one and the translation silently
+3. Register the language code in these places — miss one and the translation silently
    never ships:
    - `scripts/l10n_js_sync.py` → `LANGS` (otherwise no `.js` is generated)
    - `scripts/check-i18n-parity.sh` → `langs` (otherwise it is not guarded)
-   - `scripts/deploy-prod.sh` → the `for lang in …` list (otherwise it never reaches the
-     server)
    - `app/src/utils/virtuprof-i18n.js` → the import, `ALLOWED` and `DICTS`
    - `app/lib/Controller/VirtuProfController.php` → `ALLOWED_INTERFACE_LANGUAGES`
      (an unlisted language is silently coerced to empty, with no error)
