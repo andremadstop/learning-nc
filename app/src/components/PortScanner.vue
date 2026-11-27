@@ -158,6 +158,7 @@ export default {
       default: null,
     },
   },
+  emits: ['result'],
   data() {
     const profiles = getHostProfiles()
     return {

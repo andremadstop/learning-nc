@@ -575,6 +575,7 @@ export default {
     initialSubtype: { type: String, default: '' },
     initialConfig: { type: [Object, String], default: null },
   },
+  emits: ['apply'],
   data() {
     return {
       selectedSubtype: 'cli',

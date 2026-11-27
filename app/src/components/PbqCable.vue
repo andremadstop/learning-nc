@@ -97,6 +97,7 @@ export default {
     value: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
   },
+  emits: ['update'],
   data() {
     const firstCable = (this.config.cables || [])[0]
     return { activeCableId: firstCable ? firstCable.id : null }

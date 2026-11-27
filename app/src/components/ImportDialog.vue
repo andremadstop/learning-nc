@@ -173,6 +173,7 @@ export default {
   name: 'ImportDialog',
   components: { AccessibleDialog, NcButton, NcNoteCard },
   props: { poolId: { type: Number, required: true } },
+  emits: ['close', 'imported'],
   data() {
     return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], previewError: '', previewSummary: null, dragging: false, formatChosen: false, poolFileCount: 0 };
   },

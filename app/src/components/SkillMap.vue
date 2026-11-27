@@ -113,6 +113,7 @@ import {
 export default {
 	name: 'SkillMap',
 
+	emits: ['openPool'],
 	data: function() {
 		return {
 			loading: true,

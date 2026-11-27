@@ -187,6 +187,7 @@ export default {
 		},
 	},
 
+	emits: ['back'],
 	data() {
 		return {
 			loading: false,

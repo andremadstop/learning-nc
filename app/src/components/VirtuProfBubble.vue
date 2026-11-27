@@ -990,6 +990,7 @@ export default {
       default: '',
     },
   },
+  emits: ['action', 'chat-send', 'dismiss', 'next', 'open-fullscreen', 'report-error', 'update:ticketDraft', 'update:ticketSubject'],
   data() {
     return {
       chatInput: '',

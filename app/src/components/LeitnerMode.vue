@@ -327,6 +327,7 @@ export default {
     contentLanguage: { type: String, default: '' },
     fsrsDetailedStats: { type: Boolean, default: false },
   },
+  emits: ['back'],
   data() {
     return {
       initialized: false, initializing: false, initError: null,

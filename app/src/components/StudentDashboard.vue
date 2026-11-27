@@ -225,6 +225,7 @@ export default {
     // moves the focus to its heading once it is loaded.
     focusSection: { type: String, default: '' },
   },
+  emits: ['openRemediation', 'openSmartQueue', 'switchView'],
   data() {
     return {
       loading: false,

@@ -25,6 +25,7 @@ export default {
 		scenarioOverride: { type: Object, default: null },
 		nodeId: { type: String, default: '' },
 	},
+	emits: ['complete'],
 	computed: {
 		activeComponent() {
 			return SIMULATOR_MAP[this.type] || null

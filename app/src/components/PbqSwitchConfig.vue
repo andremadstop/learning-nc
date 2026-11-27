@@ -89,6 +89,7 @@ export default {
     value: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
   },
+  emits: ['update'],
   data() {
     return {
       activePort: null,

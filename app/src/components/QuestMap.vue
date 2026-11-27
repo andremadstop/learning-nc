@@ -58,6 +58,7 @@ export default {
 		},
 	},
 
+	emits: ['close', 'navigate'],
 	data: function() {
 		return {
 			isOpen: false,

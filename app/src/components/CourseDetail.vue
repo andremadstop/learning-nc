@@ -344,6 +344,7 @@ export default {
 		},
 	},
 
+	emits: ['back', 'clearPresetDuel', 'open-tool', 'openPool', 'selectStudent'],
 	data() {
 		return {
 			loading: false,

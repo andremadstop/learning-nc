@@ -317,6 +317,7 @@ export default {
 		},
 	},
 
+	emits: ['selectCourse'],
 	data() {
 		return {
 			loading: false,

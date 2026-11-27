@@ -297,6 +297,7 @@ export default {
       default: null,
     },
   },
+  emits: ['result'],
   data() {
     return {
       view: 'simulator',

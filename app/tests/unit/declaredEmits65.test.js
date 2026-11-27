@@ -53,61 +53,10 @@ const RULE = 'vue/require-explicit-emits'
 
 /**
  * Components that emit events they do not declare, path relative to src/ → event names.
- * Pre-existing (single roots already before #65); may only shrink. Never add an entry: declare
- * the event in `emits` instead.
+ * Emptied on 27.11.2026 (50 components, 99 events declared); vue/require-explicit-emits is an
+ * ESLint error since. Never add an entry: declare the event in `emits` instead.
  */
-const UNDECLARED_EMITS_BASELINE = {
-	'components/AIGenerator.vue': ['close', 'imported'],
-	'components/AnalyticsDashboard.vue': ['back', 'basis'],
-	'components/AuthFlowSimulator.vue': ['result'],
-	'components/CampaignIntro.vue': ['done'],
-	'components/CourseDetail.vue': ['back', 'clearPresetDuel', 'open-tool', 'openPool', 'selectStudent'],
-	'components/CourseList.vue': ['selectCourse'],
-	'components/CourseTabLernraum.vue': ['all-pools-loaded', 'course-patched', 'error', 'gate-updated', 'knowledge-pending-count', 'mode-activated', 'openPool', 'pool-selected', 'refresh-course-detail', 'tab-change', 'videos-available'],
-	'components/CourseTabTeilnehmer.vue': ['error', 'members-changed', 'selectStudent', 'tab-change'],
-	'components/CourseTabVerwaltung.vue': ['error', 'refresh-course-detail', 'tab-change'],
-	'components/CourseTabWettbewerb.vue': ['arena-sub-mode', 'error', 'preset-consumed', 'selectStudent', 'tab-change'],
-	'components/DnsResolver.vue': ['result'],
-	'components/DuelMode.vue': ['back', 'preset-consumed'],
-	'components/FirewallBuilder.vue': ['result'],
-	'components/GameTimer.vue': ['expired'],
-	'components/GameshowMode.vue': ['back'],
-	'components/ImportDialog.vue': ['close', 'imported'],
-	'components/InstructorDashboard.vue': ['selectCourse'],
-	'components/KnowledgeModeration.vue': ['pending-count'],
-	'components/LeitnerMode.vue': ['back'],
-	'components/NatTable.vue': ['result'],
-	'components/OnboardingIntro.vue': ['done'],
-	'components/PbqAuthorTool.vue': ['apply'],
-	'components/PbqCable.vue': ['update'],
-	'components/PbqCli.vue': ['update'],
-	'components/PbqDiagnostic.vue': ['update'],
-	'components/PbqDropdown.vue': ['update'],
-	'components/PbqMultiPanel.vue': ['update'],
-	'components/PbqPlacement.vue': ['update'],
-	'components/PbqRanking.vue': ['update'],
-	'components/PbqRoutingConfig.vue': ['update'],
-	'components/PbqSwitchConfig.vue': ['update'],
-	'components/PoolList.vue': ['openRemediation', 'openSmartQueue', 'selectPool'],
-	'components/PortScanner.vue': ['result'],
-	'components/QuestMap.vue': ['close', 'navigate'],
-	'components/QuestionForm.vue': ['close', 'save'],
-	'components/RoutingTable.vue': ['result'],
-	'components/ShareDialog.vue': ['close'],
-	'components/SimulatorShell.vue': ['complete'],
-	'components/SkillMap.vue': ['openPool'],
-	'components/SmartQueue.vue': ['back'],
-	'components/StudentDashboard.vue': ['openRemediation', 'openSmartQueue', 'switchView'],
-	'components/StudentDetail.vue': ['back'],
-	'components/SubnetCalculator.vue': ['result'],
-	'components/TerminalPuzzle.vue': ['result'],
-	'components/TrainingMode.vue': ['back', 'manage'],
-	'components/TranslationDialog.vue': ['close', 'saved'],
-	'components/VirtuProf.vue': ['ai-enabled-change', 'close-fullscreen', 'enabled-change', 'open-duel', 'open-fullscreen', 'ready'],
-	'components/VirtuProfBubble.vue': ['action', 'chat-send', 'dismiss', 'next', 'open-fullscreen', 'report-error', 'update:ticketDraft', 'update:ticketSubject'],
-	'components/VirtuProfFullscreen.vue': ['close', 'report-error', 'send'],
-	'components/WiresharkLite.vue': ['result'],
-}
+const UNDECLARED_EMITS_BASELINE = {}
 
 async function undeclaredEmits() {
 	const eslint = new ESLint({

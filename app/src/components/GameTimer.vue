@@ -38,6 +38,7 @@ export default {
 		},
 	},
 
+	emits: ['expired'],
 	data() {
 		return {
 			timerState: computeTimerState(this.deadlineAt, this.totalSeconds),

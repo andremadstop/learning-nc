@@ -630,6 +630,7 @@ export default {
 		},
 	},
 
+	emits: ['result'],
 	data() {
 		return {
 			activeTab: 'calculator',

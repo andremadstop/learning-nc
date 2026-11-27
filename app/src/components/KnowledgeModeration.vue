@@ -74,6 +74,7 @@ export default {
 		},
 	},
 
+	emits: ['pending-count'],
 	data() {
 		return {
 			pending: [],

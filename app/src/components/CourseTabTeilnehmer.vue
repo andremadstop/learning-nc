@@ -737,6 +737,7 @@ export default {
 		gamificationEnabled: { type: Boolean, default: true },
 	},
 
+	emits: ['error', 'members-changed', 'selectStudent', 'tab-change'],
 	data() {
 		return {
 			RAW,

@@ -527,6 +527,7 @@ export default {
     },
   },
 
+  emits: ['back'],
   data() {
     return {
       phase: 'join',
