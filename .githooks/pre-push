@@ -6,7 +6,9 @@
 # (<local-ref> <local-sha> <remote-ref> <remote-sha>) ein sauberer Snapshot dieses Commits.
 # Jedes Gate laeuft gegen den Snapshot, keins gegen die Arbeitskopie — ein uncommitteter Fix
 # darf einen kaputten Commit nicht gruen aussehen lassen. Ohne stdin (direkt aufgerufen) gilt
-# HEAD. Loeschungen (sha 000…) haben keinen Inhalt und werden uebersprungen.
+# HEAD. Loeschungen (sha 000…) haben keinen Inhalt und werden uebersprungen; besteht der Push nur
+# aus Loeschungen, laeuft kein Gate (frueher fiel er auf HEAD zurueck und pruefte den gerade
+# ausgecheckten Branch, der mit dem Push nichts zu tun hatte).
 # PHP-Gates laufen lokal in Wegwerf-Containern (scripts/gate-container.sh, scripts/schema-dump.sh).
 # Bis 2026-09-25 liefen sie per ssh auf relais/devcloud und meldeten SKIP, wenn der Host weg
 # war. devcloud existiert nicht mehr; ein Gate, das nicht laufen kann, blockiert jetzt.
@@ -18,12 +20,20 @@ ROOT_DIR="$(git rev-parse --show-toplevel)" || exit 1
 
 FAILED=0
 PUSH_SHAS=""
+DELETIONS=0
 if [ ! -t 0 ]; then
     while read -r _local_ref local_sha _remote_ref _remote_sha; do
         [ -n "${local_sha:-}" ] || continue
-        [[ "$local_sha" =~ ^0+$ ]] && continue
+        if [[ "$local_sha" =~ ^0+$ ]]; then
+            DELETIONS=$((DELETIONS + 1))
+            continue
+        fi
         PUSH_SHAS="$PUSH_SHAS $local_sha"
     done
+fi
+if [ -z "$PUSH_SHAS" ] && [ "$DELETIONS" -gt 0 ]; then
+    echo "Pre-Push: nur Loeschungen ($DELETIONS Ref(s)), kein Inhalt zu pruefen."
+    exit 0
 fi
 if [ -z "$PUSH_SHAS" ]; then
     PUSH_SHAS="$(git rev-parse HEAD)" || exit 1
