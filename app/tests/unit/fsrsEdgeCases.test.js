@@ -5,7 +5,6 @@ import {
 	calculateFsrsRetrievability,
 	initializeFsrsFromRating,
 	previewFsrsReview,
-	formatFsrsIntervalLabel,
 } from '../../src/utils/fsrsScheduler'
 
 describe('fsrsScheduler edge cases', () => {
@@ -149,11 +148,6 @@ describe('fsrsScheduler edge cases', () => {
 			const result = calculateFsrsRetrievability(5, NaN)
 			expect(Number.isNaN(result)).toBe(false)
 			expect(Number.isFinite(result)).toBe(true)
-		})
-
-		it('formatFsrsIntervalLabel does not propagate NaN', () => {
-			const result = formatFsrsIntervalLabel(NaN)
-			expect(result).toBe('1 day')
 		})
 
 		it('previewFsrsReview with NaN stability falls back to initialization', () => {

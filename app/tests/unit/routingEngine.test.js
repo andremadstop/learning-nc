@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
 	buildRoutingDecision,
 	createDefaultRoute,
-	detectRoutingLoop,
 	findMatchingRoutes,
 	maskToPrefix,
 	normalizeRoute,
 	routeMatches,
-	selectBestRoute,
 } from '../../src/utils/routingEngine.js'
 
 describe('maskToPrefix', () => {
@@ -59,23 +57,6 @@ describe('findMatchingRoutes', () => {
 	})
 })
 
-describe('selectBestRoute', () => {
-	it('returns the best route when one exists', () => {
-		const result = selectBestRoute([
-			{ destination: '203.0.113.0', mask: '255.255.255.0', gateway: '172.16.0.1', metric: 5 },
-			createDefaultRoute({ gateway: '192.168.1.1' }),
-		], '203.0.113.10')
-		expect(result.bestRoute.gateway).toBe('172.16.0.1')
-	})
-
-	it('returns null when no route matches', () => {
-		const result = selectBestRoute([
-			{ destination: '10.0.0.0', mask: '255.255.255.0', gateway: 'direct', metric: 0 },
-		], '172.16.0.10')
-		expect(result.bestRoute).toBeNull()
-	})
-})
-
 describe('buildRoutingDecision', () => {
 	it('marks matching and non-matching routes', () => {
 		const result = buildRoutingDecision([
@@ -91,21 +72,5 @@ describe('buildRoutingDecision', () => {
 			{ destination: '10.0.0.0', mask: '255.255.255.0', gateway: 'direct', metric: 0, type: 'connected' },
 		], '172.20.0.4')
 		expect(result.status).toBe('unreachable')
-	})
-})
-
-describe('detectRoutingLoop', () => {
-	it('detects a simple two-route loop', () => {
-		expect(detectRoutingLoop([
-			{ destination: '10.0.20.0', mask: '255.255.255.0', gateway: '10.0.30.1', metric: 10 },
-			{ destination: '10.0.30.0', mask: '255.255.255.0', gateway: '10.0.20.1', metric: 10 },
-		])).toBe(true)
-	})
-
-	it('returns false for ordinary routes', () => {
-		expect(detectRoutingLoop([
-			{ destination: '10.0.20.0', mask: '255.255.255.0', gateway: '10.0.1.1', metric: 10 },
-			createDefaultRoute({ gateway: '192.168.1.1' }),
-		])).toBe(false)
 	})
 })

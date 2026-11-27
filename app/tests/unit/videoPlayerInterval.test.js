@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	addSegment,
-	consentGateDecision,
-	CONSENT_REQUIRED_SOURCES,
 	coveredFraction,
 	coveredSeconds,
 	EMPTY_VTT_DATA_URI,
@@ -113,30 +111,6 @@ describe('videoInterval — heartbeat throttle decision', () => {
 
 	it('does not flush on a non-finite clock', () => {
 		expect(shouldFlushHeartbeat(1000, NaN, 10000)).toBe(false)
-	})
-})
-
-describe('videoInterval — third-party consent gate (VIDEO-05)', () => {
-	it('nc-files never needs consent', () => {
-		expect(consentGateDecision('nc-files', false)).toBe('allowed')
-	})
-
-	it('documents never need consent', () => {
-		expect(consentGateDecision('document', false)).toBe('allowed')
-	})
-
-	it('blocks vimeo until consent is given', () => {
-		expect(consentGateDecision('vimeo', false)).toBe('blocked')
-		expect(consentGateDecision('vimeo', true)).toBe('allowed')
-	})
-
-	it('blocks youtube-nocookie until consent is given', () => {
-		expect(consentGateDecision('youtube-nocookie', false)).toBe('blocked')
-		expect(consentGateDecision('youtube-nocookie', true)).toBe('allowed')
-	})
-
-	it('exposes the consent-required source list', () => {
-		expect(CONSENT_REQUIRED_SOURCES).toEqual(['vimeo', 'youtube-nocookie'])
 	})
 })
 

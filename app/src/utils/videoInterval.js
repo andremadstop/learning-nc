@@ -128,31 +128,6 @@ export function shouldFlushHeartbeat(lastSentMs, nowMs, minGapMs = 10000) {
 }
 
 /**
- * Source types that require DSGVO Art.13 consent before ANY third-party asset loads.
- * nc-files streams from the app's own Nextcloud → no consent needed.
- */
-export const CONSENT_REQUIRED_SOURCES = ['vimeo', 'youtube-nocookie']
-
-/**
- * Consent-gate decision for the player. Returns:
- *   - 'allowed' for nc-files / document (no third party), always,
- *   - 'blocked' for vimeo / youtube-nocookie until the user has explicitly consented,
- *   - 'allowed' for vimeo / youtube-nocookie once consent is given.
- *
- * The player MUST NOT inject any SDK script or iframe while this returns 'blocked'.
- *
- * @param {string} sourceType
- * @param {boolean} consentGiven
- * @return {'allowed'|'blocked'}
- */
-export function consentGateDecision(sourceType, consentGiven) {
-	if (CONSENT_REQUIRED_SOURCES.includes(sourceType)) {
-		return consentGiven === true ? 'allowed' : 'blocked'
-	}
-	return 'allowed'
-}
-
-/**
  * A valid, empty WebVTT subtitle track as a data: URI. Browsers ignore a <track>
  * with an empty/absent src, so when a course video ships no captions we still
  * mount a *real* (empty) track — the element is present and WCAG-inspectable.

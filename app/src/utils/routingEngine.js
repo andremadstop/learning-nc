@@ -66,14 +66,6 @@ export function findMatchingRoutes(routes, destinationIp) {
 		})
 }
 
-export function selectBestRoute(routes, destinationIp) {
-	const matches = findMatchingRoutes(routes, destinationIp)
-	return {
-		matches,
-		bestRoute: matches[0] || null,
-	}
-}
-
 export function buildRoutingDecision(routes, destinationIp) {
 	const normalizedRoutes = (routes || []).map(normalizeRoute)
 	const matches = findMatchingRoutes(normalizedRoutes, destinationIp)
@@ -88,15 +80,4 @@ export function buildRoutingDecision(routes, destinationIp) {
 		bestRoute,
 		status: bestRoute ? 'forward' : 'unreachable',
 	}
-}
-
-export function detectRoutingLoop(routes) {
-	const normalizedRoutes = (routes || []).map(normalizeRoute)
-	return normalizedRoutes.some((route) => {
-		const nextHopRoute = normalizedRoutes.find((candidate) => candidate !== route && routeMatches(candidate, route.gateway))
-		if (!nextHopRoute) {
-			return false
-		}
-		return routeMatches(route, nextHopRoute.gateway)
-	})
 }

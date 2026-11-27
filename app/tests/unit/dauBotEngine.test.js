@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-	advanceBotPhase,
 	applyResult,
-	computeBotScoring,
 	computeBotSummary,
 	createBotSession,
 	getKlausAvatarState,
@@ -129,11 +127,6 @@ describe('dauBotEngine', () => {
 		expect(computeBotSummary(session)).toContain('ghost_fix')
 	})
 
-	it('keeps a summary session unchanged on invalid phase advance', () => {
-		const summary = applyResult(createBotSession(scenario), { passed: true })
-		expect(advanceBotPhase(summary, 'anything')).toEqual(summary)
-	})
-
 	it('uses the default reaction for unknown phases', () => {
 		expect(getKlausReaction('invalid-phase', false)).toContain('nichts mehr')
 	})
@@ -155,16 +148,6 @@ describe('dauBotEngine', () => {
 		const second = submitFix(first, 'restart_again')
 		expect(second.phase).toBe('awaiting_result')
 		expect(second.selectedFixId).toBe('restart_again')
-	})
-
-	it('reads scoring deltas from server responses', () => {
-		expect(computeBotScoring({
-			score_change: 25,
-			reputation_changes: { team: 1 },
-		})).toEqual({
-			scoreChange: 25,
-			reputationChanges: { team: 1 },
-		})
 	})
 
 	it('reads nested bot correction pass states', () => {

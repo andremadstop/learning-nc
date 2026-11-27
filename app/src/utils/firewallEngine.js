@@ -152,12 +152,3 @@ export function reorderRules(rules, fromIndex, toIndex) {
 	list.splice(toIndex, 0, movedRule)
 	return list
 }
-
-export function summarizePolicy(rules) {
-	return getRulesWithImplicitDeny(rules).map((rule, index) => ({
-		index,
-		id: rule.id,
-		summary: `${rule.action.toUpperCase()} ${rule.protocol.toUpperCase()} ${rule.srcIp}:${rule.srcPort} -> ${rule.dstIp}:${rule.dstPort}`,
-		implicit: Boolean(rule.implicit),
-	}))
-}

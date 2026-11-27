@@ -320,6 +320,7 @@ import { getPassStatus } from '../services/CourseService.js'
 import Certificate from './Certificate.vue'
 import CertPoolResult from './CertPoolResult.vue'
 import { exportMarkdown } from '../utils/summary-export.js'
+import { isSummaryReleased } from '../utils/cert-report.js'
 
 const MASTERY_RING_RADIUS = 54
 
@@ -456,7 +457,7 @@ export default {
 		// certification card is not. Without a course prop everything shows (old behaviour).
 		statsReleased() {
 			if (!this.course) return true
-			return this.course.mode_config?.course_summary === true
+			return isSummaryReleased(this.course)
 		},
 		certificate() {
 			return this.passStatus?.certificate || null

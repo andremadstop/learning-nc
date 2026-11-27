@@ -9,7 +9,6 @@ import {
 	protocolMatches,
 	reorderRules,
 	ruleMatches,
-	summarizePolicy,
 } from '../../src/utils/firewallEngine.js'
 
 describe('isIpInCidr', () => {
@@ -106,12 +105,5 @@ describe('rule set helpers', () => {
 		const reordered = reorderRules(rules, 0, 2)
 		expect(rules[0].id).toBe('r1')
 		expect(reordered.map((rule) => rule.id)).toEqual(['r2', 'r3', 'r1'])
-	})
-
-	it('summarizes the policy including implicit deny', () => {
-		const summary = summarizePolicy([createRule({ id: 'allow-web', action: 'allow', protocol: 'tcp', dstPort: '443' })])
-		expect(summary).toHaveLength(2)
-		expect(summary[0].summary).toContain('ALLOW TCP')
-		expect(summary[1].implicit).toBe(true)
 	})
 })
