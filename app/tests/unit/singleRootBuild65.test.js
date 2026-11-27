@@ -94,7 +94,7 @@ describe('every component has one root as the build compiles it (GitHub #65)', (
 			}
 		}
 		expect(offenders).toEqual({})
-	})
+	}, 60000) // compiles every component; CI with coverage took longer than the 5 s default
 
 	it('every exception still exists and is still a fragment', () => {
 		const compilerOptions = buildCompilerOptions()
