@@ -52,10 +52,11 @@ export function createLearningViteConfig(entryName = 'learning', { emptyOutDir =
 				cssFileName: entryConfig.fileName.replace(/\.js$/, ''),
 				formats: ['iife'],
 			},
-			rollupOptions: {
+			// Vite 8: Rolldown replaces Rollup. An iife library build never splits code, so the
+			// former inlineDynamicImports is implied (Rolldown warned that it ignores it).
+			rolldownOptions: {
 				output: {
 					assetFileNames: '[name][extname]',
-					inlineDynamicImports: true,
 				},
 			},
 		},
