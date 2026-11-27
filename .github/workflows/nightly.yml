@@ -154,6 +154,17 @@ jobs:
         working-directory: app
         run: npm ci --no-audit --no-fund
 
+      # run.sh clicks the bundle committed at REF (git archive). On main that is the build of the
+      # last release, so frontend changes since then were never clicked (found 27.11.2026). Build
+      # the bundle from this commit and commit it on the runner only; nothing is pushed.
+      - name: Build the bundle of this commit
+        working-directory: app
+        run: |
+          npm run build
+          git add js css
+          git -c user.name=ci -c user.email=ci@localhost commit -q -m "ci: bundle of ${GITHUB_SHA::10} for the persona sweep" || echo "bundle unchanged"
+          git log --oneline -1
+
       - name: Cache Playwright browsers
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -169,7 +180,7 @@ jobs:
           # at the browser that matches the Playwright version from the lockfile.
           echo "PERSONA_CHROMIUM=$(node -p "require('@playwright/test').chromium.executablePath()")" >> "$GITHUB_ENV"
 
-      # up (throwaway NC + seed) -> sweep -> report -> down; REF defaults to HEAD.
+      # up (throwaway NC + seed) -> sweep -> report -> down; REF defaults to HEAD (with the bundle above).
       - name: persona-sweep/run.sh
         run: |
           test -x "$PERSONA_CHROMIUM"
