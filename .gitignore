@@ -125,8 +125,6 @@ scripts/*
 !scripts/check-php-coverage.py
 !scripts/check-sql-columns.py
 !scripts/db-uninstall-probe.php
-!scripts/deploy-dev.sh
-!scripts/deploy-prod.sh
 !scripts/e2e/
 !scripts/gate-container.env.example
 !scripts/gate-container.sh
