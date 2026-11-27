@@ -197,7 +197,8 @@ describe('PoolBulkImportDialog: dry run → preview → import (GitHub #34)', ()
 		await mountDialog()
 		const file = new File(['[{"text":"Q?","answers":["a","b"]}]'], 'network-ports.json', { type: 'application/json' })
 		vm.loadFile(file)
-		await new Promise((r) => setTimeout(r, 20))
+		// FileReader reports back on its own schedule: wait for it instead of a fixed 20 ms
+		await vi.waitFor(() => expect(vm.fileName).toBe('network-ports.json'), { timeout: 5000 })
 		await flush()
 		expect(host.querySelector('.pool-import__file strong').textContent).toBe('network-ports.json')
 		expect(host.querySelector('textarea')).toBeNull() // file or paste, not both

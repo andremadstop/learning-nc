@@ -29,8 +29,9 @@ describe('AiConsentDialog layering', () => {
 		app.config.warnHandler = () => {}
 		app.mount(host)
 		await nextTick()
-		await new Promise((r) => setTimeout(r, 50))
-		const mask = document.body.querySelector('.modal-mask.ai-consent-modal')
-		expect(mask).not.toBeNull()
+		// The modal and its focus trap start on their own schedule. Waiting for the trap (instead of
+		// a fixed 50 ms) also keeps it from activating after afterEach has emptied the page.
+		await vi.waitFor(() => expect((window._nc_focus_trap ?? []).length).toBeGreaterThan(0), { timeout: 5000 })
+		expect(document.body.querySelector('.modal-mask.ai-consent-modal')).not.toBeNull()
 	})
 })

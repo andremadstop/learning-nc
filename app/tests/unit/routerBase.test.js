@@ -12,6 +12,9 @@ vi.mock('@nextcloud/router', () => ({
 
 describe('router history base', () => {
 	it('follows the Nextcloud webroot and index.php routing', async () => {
+		// its own module state: the later tests replace @nextcloud/router with doMock
+		vi.resetModules()
+		vi.doMock('@nextcloud/router', () => ({ generateUrl: vi.fn((url) => '/nextcloud/index.php' + url) }))
 		const { default: router } = await import('../../src/router/index.js')
 		expect(router.options.history.base).toBe('/nextcloud/index.php/apps/learning')
 	})

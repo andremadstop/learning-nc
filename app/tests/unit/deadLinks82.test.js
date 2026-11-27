@@ -315,13 +315,15 @@ describe('App.vue: dead pool, course and adventure links (GitHub #82)', () => {
 	const Shell = { render: () => h('div') }
 	let router
 
+	const STUBBED = ['PersonalSettings', 'PoolList', 'TrainingMode', 'QuestionList', 'LeitnerMode', 'ExamMode',
+		'AnalyticsDashboard', 'CourseList', 'StudentDetail', 'InstructorDashboard', 'SmartQueue',
+		'AdminSettings', 'GameshowMode', 'DuelMode', 'ArenaSelector', 'AbenteuerMode', 'SubnetCalculator', 'DnsResolver',
+		'FirewallBuilder', 'PortScanner', 'RoutingTable', 'NatTable', 'WiresharkLite', 'AuthFlowSimulator',
+		'OnboardingIntro', 'OnboardingRedesign', 'SkillMap', 'TeamLeadDashboard', 'StudentDashboard',
+	]
+
 	beforeEach(() => {
-		for (const name of ['PersonalSettings', 'PoolList', 'TrainingMode', 'QuestionList', 'LeitnerMode', 'ExamMode',
-			'AnalyticsDashboard', 'CourseList', 'StudentDetail', 'InstructorDashboard', 'SmartQueue',
-			'AdminSettings', 'GameshowMode', 'DuelMode', 'ArenaSelector', 'AbenteuerMode', 'SubnetCalculator', 'DnsResolver',
-			'FirewallBuilder', 'PortScanner', 'RoutingTable', 'NatTable', 'WiresharkLite', 'AuthFlowSimulator',
-			'OnboardingIntro', 'OnboardingRedesign', 'SkillMap', 'TeamLeadDashboard', 'StudentDashboard',
-		]) {
+		for (const name of STUBBED) {
 			vi.doMock(`../../src/components/${name}.vue`, () => plain(name))
 		}
 		// records the course id it is handed
@@ -329,6 +331,14 @@ describe('App.vue: dead pool, course and adventure links (GitHub #82)', () => {
 			default: { name: 'CourseDetail', props: { courseId: Number }, template: '<div class="stub-CourseDetail" :data-course="String(courseId)" />' },
 		}))
 		vi.doMock('../../src/components/VirtuProf.vue', () => ({ __esModule: true, ...plain('VirtuProf') }))
+	})
+
+	// The CourseDetail tests above need the real component, whichever block ran first.
+	afterEach(() => {
+		for (const name of [...STUBBED, 'CourseDetail', 'VirtuProf']) {
+			vi.doUnmock(`../../src/components/${name}.vue`)
+		}
+		vi.resetModules()
 	})
 
 	async function mountApp(path) {

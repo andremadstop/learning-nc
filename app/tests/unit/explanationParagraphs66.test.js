@@ -136,5 +136,5 @@ describe('explanations keep their paragraphs (#66)', () => {
 		// Sanity: the scan must actually find the known views (Training, Leitner, SmartQueue, ...).
 		expect(total).toBeGreaterThanOrEqual(15)
 		expect(folded).toEqual([])
-	})
+	}, 60000) // parses every component
 })

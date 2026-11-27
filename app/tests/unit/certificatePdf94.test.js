@@ -51,6 +51,14 @@ vi.mock('../../src/utils/certificatePdf.js', async (importOriginal) => {
 
 globalThis.t = (_app, text, vars = {}) => Object.entries(vars).reduce((acc, [k, v]) => acc.replace(`{${k}}`, String(v)), text)
 
+// The Certificate.vue tests replace render and save; the savePdf and renderCertificatePdf tests need
+// the real functions whatever ran before them.
+afterEach(() => {
+	pdfMock.render = null
+	pdfMock.save = null
+	pdfMock.canLink = true
+})
+
 const VID = '11111111-1111-4111-8111-111111111111'
 
 /** The smallest JPEG this reader accepts: SOI, an APP0 segment, SOF0 (w × h, n components), EOI. */

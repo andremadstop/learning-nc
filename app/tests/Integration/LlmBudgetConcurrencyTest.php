@@ -248,10 +248,6 @@ final class LlmBudgetConcurrencyTest extends TestCase {
      * @return array<string, int> outcome => number of workers
      */
     private function runWorkers(string $uid, LlmPurpose $purpose): array {
-        // the minute window must not roll over between the first and the last reservation
-        while (time() % 60 > 40) {
-            usleep(200_000);
-        }
         $script = __DIR__ . '/Support/llm_budget_worker.php';
         $procs = [];
         $pipes = [];
@@ -269,6 +265,12 @@ final class LlmBudgetConcurrencyTest extends TestCase {
                     // stderr only now: reading it earlier would block until the worker exits
                     $this->fail("worker {$i}: {$line} " . stream_get_contents($p[2]));
                 }
+            }
+            // The minute window (and with it the day) must not roll over between the first and
+            // the last reservation. Checked here, after every worker has booted: booting twenty
+            // Nextcloud processes can take longer than the 20 s a check before the start left.
+            while (time() % 60 > 40) {
+                usleep(200_000);
             }
             foreach ($pipes as $p) {
                 fwrite($p[0], "GO\n");

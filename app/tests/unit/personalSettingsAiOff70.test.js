@@ -108,10 +108,14 @@ beforeEach(() => {
 	vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
+// a test may replace axios.get; restoreAllMocks only undoes spyOn (Vitest 4), so put it back here
+const defaultGet = axios.get.getMockImplementation()
+
 afterEach(() => {
 	app?.unmount()
 	host?.remove()
 	vi.restoreAllMocks()
+	axios.get.mockImplementation(defaultGet)
 })
 
 describe('#70 VirtuProf voice and character with AI off', () => {
