@@ -779,13 +779,15 @@ describe('the learning modes: player first, question hidden until the intro is h
 		await flush()
 		expect(area.classList.contains('qconceal--hidden')).toBe(false)
 		buttonByText('Grün').click()
-		for (let i = 0; i < 200 && !buttonByText('Next Question'); i++) await sleep(10)
+		// up to 10 s: under a full parallel suite 2 s was not always enough (27.11.2026); the loop
+		// stops as soon as the button is there
+		for (let i = 0; i < 1000 && !buttonByText('Next Question'); i++) await sleep(10)
 		await flush()
 		const classes = []
 		const watch = new MutationObserver(() => classes.push(host.querySelector('.qconceal')?.className))
 		watch.observe(host, { subtree: true, attributes: true, attributeFilter: ['class'] })
 		buttonByText('Next Question').click()
-		for (let i = 0; i < 200 && !host.querySelector('.question-text').textContent.includes('Beine'); i++) await sleep(10)
+		for (let i = 0; i < 1000 && !host.querySelector('.question-text').textContent.includes('Beine'); i++) await sleep(10)
 		await flush()
 		expect(host.querySelector('.question-text').textContent).toContain('Beine einer Spinne?')
 		expect(host.querySelector('.qconceal').classList.contains('qconceal--hidden')).toBe(true)
