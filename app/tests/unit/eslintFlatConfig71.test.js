@@ -30,6 +30,7 @@ describe('eslint flat config (#71)', () => {
 
 	it('forbids the @nextcloud/vue package entry, which bundles the whole library', async () => {
 		expect(await lint("import { NcButton } from '@nextcloud/vue'\nconsole.log(NcButton)\n", 'src/x.js')).toContain('no-restricted-imports:2')
+		expect(await lint("import('@nextcloud/vue').then(console.log)\n", 'src/x.js')).toContain('no-restricted-syntax:2')
 		expect(await lint("import NcButton from '@nextcloud/vue/components/NcButton'\nconsole.log(NcButton)\n", 'src/x.js')).toEqual([])
 	})
 

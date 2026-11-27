@@ -5,7 +5,7 @@
 //    entry made the main bundle 1.3 MB larger, and nobody noticed for months (27.11.2026). A budget
 //    turns such a jump into a failed build. Raise a limit on purpose, with the reason in the commit,
 //    never to make a build pass.
-import { readFileSync, existsSync } from 'fs'
+import { readFileSync, existsSync, realpathSync } from 'fs'
 import { gzipSync } from 'zlib'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
@@ -20,6 +20,10 @@ export const BUDGETS = {
 	'js/learning-privacy-page.js': 170_000, // 155_932
 	'js/learning-imprint-page.js': 105_000, // 97_238
 	'css/learning.css': 635_000, // 585_860
+	'css/learning-admin-settings.css': 75_000, // 69_554
+	'css/learning-personal-settings.css': 80_000, // 74_403
+	'css/learning-privacy-page.css': 9_200, // 8_465
+	'css/learning-imprint-page.css': 2_200, // 1_952
 }
 
 export function checkBuild(root) {
@@ -51,7 +55,9 @@ export function checkBuild(root) {
 	return errors.length ? errors : { sizes }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+// realpath: Node resolves symlinks in import.meta.url but not in argv[1]; without it a call through a
+// symlinked path would skip the check and exit 0.
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
 	const result = checkBuild(process.cwd())
 	if (Array.isArray(result)) {
 		for (const e of result) console.error('BUILD CHECK FAILED: ' + e)

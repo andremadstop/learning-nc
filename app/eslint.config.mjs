@@ -56,6 +56,11 @@ export default [
 			// Deprecated in core, available until ESLint 11 — move them to @stylistic/eslint-plugin then.
 			'no-extra-semi': 'error',
 			'no-mixed-spaces-and-tabs': 'error',
+			// no-restricted-imports sees only static imports; the build inlines a dynamic one too.
+			'no-restricted-syntax': ['error', {
+				selector: "ImportExpression[source.value='@nextcloud/vue']",
+				message: "Import each component from '@nextcloud/vue/components/<Name>'; the package entry bundles the whole library.",
+			}],
 			'no-restricted-imports': ['error', {
 				// The package entry pulls in every component (emoji data, highlight.js, colour
 				// picker): one such import cost the main bundle 1.3 MB (27.11.2026). Import each
