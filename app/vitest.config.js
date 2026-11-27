@@ -8,6 +8,8 @@ export default defineConfig({
     exclude: ['tests/e2e/**'],
     css: false,
     environment: 'happy-dom',
+    // A fixed Nextcloud locale, so date and time formatting does not depend on the machine.
+    setupFiles: ['tests/unit/setup-locale.js'],
     // `npm run test:coverage` (GitHub #65): a report only, no threshold.
     coverage: {
       provider: 'v8',
