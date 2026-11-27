@@ -109,6 +109,8 @@ Thumbs.db
 /.tmpq/
 /.tmpq_upgrade2/
 app/coverage/
+app/reports/
+app/.stryker-tmp/
 scripts/*
 !scripts/check-consent-locales.py
 !scripts/check-forbidden-names.sh
