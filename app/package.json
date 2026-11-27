@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node ./build-vite.mjs --watch",
     "build": "node ./build-vite.mjs",
-    "postbuild": "node -e \"const fs=require('fs'); const js=fs.readFileSync('js/learning.js','utf8'); const checks={showVirtuProfDock:1,'app-shell':1,CourseDetail:1}; for (const [key,min] of Object.entries(checks)) { const count=(js.match(new RegExp(key,'g'))||[]).length; if (count < min) { console.error('BUILD CHECK FAILED: ' + key + ' expected >=' + min + ' got ' + count); process.exit(1); } } console.log('Build checks passed')\"",
+    "postbuild": "node ./build-check.mjs",
     "watch": "node ./build-vite.mjs --watch",
     "test": "vitest run",
     "test:watch": "vitest",
