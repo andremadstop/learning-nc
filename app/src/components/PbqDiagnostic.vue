@@ -43,6 +43,7 @@ export default {
     value: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
   },
+  emits: ['update'],
   methods: {
     stateFor(finding) {
       return this.value[finding.id] || { component: '', problem: '', solution: '' }

@@ -90,6 +90,7 @@ export default {
 		},
 	},
 
+	emits: ['done'],
 	data() {
 		return {
 			reducedMotion: false,

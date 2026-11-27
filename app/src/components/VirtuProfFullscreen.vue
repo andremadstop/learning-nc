@@ -221,6 +221,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['close', 'report-error', 'send'],
   data() {
     return {
       draft: '',

@@ -289,6 +289,7 @@ export default {
     // the "Simulators only" filter makes sense.
     hasSimulatorQuestions: { type: Boolean, default: false },
   },
+  emits: ['back', 'manage'],
   data() {
     return {
       session: null, questions: [], currentIndex: 0, answered: false, submitting: false,

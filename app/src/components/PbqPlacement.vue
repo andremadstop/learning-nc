@@ -119,6 +119,7 @@ export default {
     scenarioImage: { type: String, default: null },
     topologyConfig: { type: Object, default: null },
   },
+  emits: ['update'],
   data() {
     return {
       activePosId: null,

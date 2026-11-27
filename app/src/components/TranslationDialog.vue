@@ -111,6 +111,7 @@ export default {
       required: true,
     },
   },
+  emits: ['close', 'saved'],
   data() {
     return {
       loading: true,

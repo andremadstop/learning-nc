@@ -47,6 +47,7 @@ export default {
     value: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
   },
+  emits: ['update'],
   data() {
     // GitHub #64: label/select ids per instance (two PBQs on one page may share question ids)
     return { idPrefix: 'pbq-dd-' + Math.random().toString(36).slice(2, 8) }

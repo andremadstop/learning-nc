@@ -57,6 +57,7 @@ export default {
 		},
 	},
 
+	emits: ['result'],
 	data() {
 		return {
 			commandHistory: [],

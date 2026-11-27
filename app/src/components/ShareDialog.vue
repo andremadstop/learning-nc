@@ -54,6 +54,7 @@ export default {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true }
   },
+  emits: ['close'],
   data() {
     return { shares: [], newShareUser: '', newSharePermission: 'read', sharing: false, loading: false, loadError: null };
   },

@@ -41,6 +41,7 @@ export default {
     value:    { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
   },
+  emits: ['update'],
   methods: {
     onCliUpdate(termName, history) {
       const cliVal = { ...(this.value.cli || {}), [termName]: history }

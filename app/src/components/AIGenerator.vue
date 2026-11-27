@@ -126,6 +126,7 @@ export default {
   props: {
     poolId: { type: Number, required: true },
   },
+  emits: ['close', 'imported'],
   data() {
     return {
       step: 'input',

@@ -255,6 +255,7 @@ export default {
     // without this a double click sent two POSTs and created the question twice (audit #107).
     busy: { type: Boolean, default: false },
   },
+  emits: ['close', 'save'],
   data() {
     return {
       saving: false,

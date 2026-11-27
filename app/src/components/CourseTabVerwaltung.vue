@@ -615,6 +615,7 @@ export default {
 		},
 	},
 
+	emits: ['error', 'refresh-course-detail', 'tab-change'],
 	data() {
 		return {
 			currentSubTab: 'mode-config',

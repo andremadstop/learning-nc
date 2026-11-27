@@ -420,6 +420,7 @@ export default {
     // GitHub #36: the admin's global gamification switch (App.vue). Default on.
     gamificationEnabled: { type: Boolean, default: true },
   },
+  emits: ['openRemediation', 'openSmartQueue', 'selectPool'],
   data() {
     return {
       RAW,

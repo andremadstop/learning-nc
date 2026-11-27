@@ -238,6 +238,7 @@ export default {
       default: true,
     },
   },
+  emits: ['ai-enabled-change', 'close-fullscreen', 'enabled-change', 'open-duel', 'open-fullscreen', 'ready'],
   data() {
     return {
       visible: false,

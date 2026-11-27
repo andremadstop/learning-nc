@@ -109,6 +109,7 @@ export default {
 		NcNoteCard,
 	},
 
+	emits: ['selectCourse'],
 	data() {
 		return {
 			loading: false,

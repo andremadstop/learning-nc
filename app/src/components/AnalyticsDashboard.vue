@@ -309,6 +309,7 @@ export default {
       default: false,
     },
   },
+  emits: ['back', 'basis'],
   data() {
     return {
       loading: true,

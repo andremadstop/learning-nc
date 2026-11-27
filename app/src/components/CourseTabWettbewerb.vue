@@ -249,6 +249,7 @@ export default {
 		gamificationEnabled: { type: Boolean, default: true },
 	},
 
+	emits: ['arena-sub-mode', 'error', 'preset-consumed', 'selectStudent', 'tab-change'],
 	data() {
 		return {
 			currentSubTab: 'leaderboard',

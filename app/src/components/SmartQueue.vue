@@ -188,6 +188,7 @@ export default {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation', 'maintenance'].includes(v) },
     contentLanguage: { type: String, default: '' },
   },
+  emits: ['back'],
   data() {
     return {
       loading: false,

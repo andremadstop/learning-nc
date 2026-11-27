@@ -153,6 +153,7 @@ export default {
       default: null,
     },
   },
+  emits: ['result'],
   data() {
     return {
       view: this.mode === 'embedded' ? 'exercise' : 'simulator',

@@ -37,7 +37,9 @@ export default [
 		rules: {
 			'vue/no-v-html': 'error',
 			'vue/multi-word-component-names': 'off',
-			'vue/no-mutating-props': 'warn',
+			'vue/no-mutating-props': 'error',
+			// every emitted event is declared (GitHub #65; the last 50 components on 27.11.2026)
+			'vue/require-explicit-emits': 'error',
 			'no-console': 'off',
 			'no-debugger': 'error',
 			'no-eval': 'error',

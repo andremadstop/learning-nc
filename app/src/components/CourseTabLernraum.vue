@@ -798,7 +798,7 @@ export default {
 	name: 'CourseTabLernraum',
 
 	// GitHub #92: declared (the #65 ratchet); the older events are still in its baseline
-	emits: ['guide'],
+	emits: ['guide', 'all-pools-loaded', 'course-patched', 'error', 'gate-updated', 'knowledge-pending-count', 'mode-activated', 'openPool', 'pool-selected', 'refresh-course-detail', 'tab-change', 'videos-available'],
 
 	components: {
 		// GitHub #110: created on first use (the build inlines it into the one bundle)

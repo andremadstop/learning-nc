@@ -328,6 +328,7 @@ export default {
     },
   },
 
+  emits: ['back', 'preset-consumed'],
   data() {
     return {
       phase: 'join',
