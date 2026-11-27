@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.21.0] - 2026-11-27 — The certificate PDF carries its proof, and Chinese content
+
+> **Administrators:** one migration. On PostgreSQL instances upgraded through 3.2 it widens the
+> language check of the translation tables to include Chinese; elsewhere it does nothing.
+
+### Added
+- **Signed credential inside the certificate PDF** (#103): the downloaded PDF now carries the
+  signed credential (the same JSON file as "Download credential") as an attachment, so the
+  certificate and its machine-checkable proof travel as one file. A line on the sheet says so.
+  PDFs without a credential section are unchanged.
+- **Chinese as a content language** (#111, by @justemu in #122): questions and answers can be
+  translated into Chinese, learners can pick it as their content language, and the AI features
+  name it in their prompts.
+
+### Fixed
+- **Large Markdown materials** (#119, by @justemu in #120): manuals with embedded screenshots
+  above 2 MiB were refused by the reading view after downloading; the limit is now 16 MiB.
+- **French, Russian and Arabic** showed English for many texts since May (for example
+  "← Back to courses" in Arabic). About 2,500 strings are now translated. No native speaker has
+  read them yet; corrections are welcome (#83 for Russian).
+
 ## [5.20.2] - 2026-11-26 — The wait after an exam attempt stays visible
 
 > **Administrators:** no migration.
