@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException as FilesNotFoundException;
+use OCP\Files\NotPermittedException;
 
 class ImageService {
     private IRootFolder $rootFolder;
@@ -32,7 +33,16 @@ class ImageService {
         $userFolder = $this->rootFolder->getUserFolder($userId);
 
         if (!$userFolder->nodeExists(self::IMAGE_DIR)) {
-            $userFolder->newFolder(self::IMAGE_DIR);
+            try {
+                $userFolder->newFolder(self::IMAGE_DIR);
+            } catch (NotPermittedException $e) {
+                // a parallel upload created it a moment ago; anything else is a real error
+                try {
+                    $userFolder->get(self::IMAGE_DIR);
+                } catch (FilesNotFoundException) {
+                    throw $e;
+                }
+            }
         }
 
         $imageDir = $userFolder->get(self::IMAGE_DIR);

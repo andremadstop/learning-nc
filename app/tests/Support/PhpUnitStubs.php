@@ -1312,6 +1312,13 @@ namespace OCP\Files {
             public function get($path);
 
             public function getDirectoryListing();
+
+            // ImageService (NC 33 Folder.php)
+            public function nodeExists($path);
+
+            public function newFolder($path);
+
+            public function newFile($path, $content = null);
         }
     }
     // GitHub #35: the material download reads a file node (NC 33 lib/public/Files/File.php; the
