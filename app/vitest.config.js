@@ -21,9 +21,14 @@ export default defineConfig({
     testTimeout: 20000,
     hookTimeout: 30000,
     clearMocks: true,
-    // `npm run test:coverage` (GitHub #65): a report only, no threshold.
+    // `npm run test:coverage` (GitHub #65, CI on every push). The thresholds are a floor: the
+    // coverage of 27.11.2026, rounded down (lines 64.81, statements 63.82, functions 55.00,
+    // branches 54.17 %). Old code owes nothing; new code without tests shows up as a drop. Raise
+    // the floor when coverage has grown, lower it only with the reason in the commit. PHP:
+    // scripts/check-php-coverage.py.
     coverage: {
       provider: 'v8',
+      thresholds: { lines: 64, statements: 63, functions: 54, branches: 53 },
       include: ['src/**/*.{js,ts,vue}'],
       exclude: ['src/l10n/**'],
       reporter: ['text-summary', 'html', 'lcov', 'json-summary'],

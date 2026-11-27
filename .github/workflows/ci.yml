@@ -45,7 +45,7 @@ jobs:
         working-directory: app
         run: npx eslint src/ --quiet
 
-      # Vitest with the v8 coverage report (GitHub #65): a report, no threshold.
+      # Vitest with the v8 coverage report (GitHub #65) and its floor (vitest.config.js thresholds).
       - name: Vitest (with coverage)
         working-directory: app
         run: npm run test:coverage
@@ -98,9 +98,13 @@ jobs:
           persist-credentials: false
 
       # The phpunit gate with pcov (pinned PECL tarball, checksum-verified) built in the same
-      # throwaway container; writes app/coverage/php (clover.xml, summary.txt, html/). No threshold.
+      # throwaway container; writes app/coverage/php (clover.xml, summary.txt, html/).
       - name: gate-container.sh coverage --ref HEAD
         run: ./scripts/gate-container.sh coverage --ref HEAD
+
+      # The floor of 27.11.2026 (lines, methods); see the script header.
+      - name: PHP coverage floor
+        run: ./scripts/check-php-coverage.py app/coverage/php/clover.xml
 
       - name: Coverage summary
         if: always()

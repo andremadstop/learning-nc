@@ -19,8 +19,9 @@
 #
 # coverage (GitHub #65) is the phpunit gate with the pcov extension built in the container (pinned
 # tarball, checksum-verified) and a coverage report of app/lib copied to $GATE_COVERAGE_DIR
-# (default app/coverage/php: clover.xml, summary.txt, html/). A report only, no threshold; it
-# fails exactly when the phpunit gate fails. Not part of the hooks (it is slower).
+# (default app/coverage/php: clover.xml, summary.txt, html/). It fails exactly when the phpunit
+# gate fails; the coverage floor is checked by scripts/check-php-coverage.py (CI). Not part of the
+# hooks (it is slower).
 #
 # --self-test proves failures are actually caught: a PHPStan probe with a deliberate error
 # must fail and the clean snapshot must pass; a PHPUnit probe that skips, and one that calls
