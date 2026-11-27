@@ -83,6 +83,12 @@ async function flush() {
 		await Promise.resolve()
 		await nextTick()
 	}
+	// QuestionConceal listens to clicks in the capture phase. Vue then drops a click on a button
+	// inside it that was rendered in the same millisecond (its guard against the event that caused
+	// the render), and "Next Question" did nothing in some CI runs. Let the clock move past the
+	// last render. Date is never faked here, unlike setTimeout in one test.
+	const rendered = Date.now()
+	for (let n = 0; Date.now() === rendered && n < 1e8; n++) { /* at most about 1 ms */ }
 }
 
 async function mount(Component, props = {}) {

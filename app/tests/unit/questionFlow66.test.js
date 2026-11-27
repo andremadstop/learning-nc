@@ -71,6 +71,12 @@ async function flush() {
 		await Promise.resolve()
 		await nextTick()
 	}
+	// QuestionConceal listens to clicks in the capture phase. Vue then drops a click on a button
+	// inside it that was rendered in the same millisecond (its guard against the event that caused
+	// the render), and "Next Question" did nothing in some CI runs. Let the clock move past the
+	// last render. Date is never faked here, unlike setTimeout in one test.
+	const rendered = Date.now()
+	for (let n = 0; Date.now() === rendered && n < 1e8; n++) { /* at most about 1 ms */ }
 }
 
 async function mount(Component, props = {}, { pinia = null, listeners = {}, slot = null } = {}) {
@@ -779,15 +785,13 @@ describe('the learning modes: player first, question hidden until the intro is h
 		await flush()
 		expect(area.classList.contains('qconceal--hidden')).toBe(false)
 		buttonByText('Grün').click()
-		// up to 10 s: under a full parallel suite 2 s was not always enough (27.11.2026); the loop
-		// stops as soon as the button is there
-		for (let i = 0; i < 1000 && !buttonByText('Next Question'); i++) await sleep(10)
+		for (let i = 0; i < 200 && !buttonByText('Next Question'); i++) await sleep(10)
 		await flush()
 		const classes = []
 		const watch = new MutationObserver(() => classes.push(host.querySelector('.qconceal')?.className))
 		watch.observe(host, { subtree: true, attributes: true, attributeFilter: ['class'] })
 		buttonByText('Next Question').click()
-		for (let i = 0; i < 1000 && !host.querySelector('.question-text').textContent.includes('Beine'); i++) await sleep(10)
+		for (let i = 0; i < 200 && !host.querySelector('.question-text').textContent.includes('Beine'); i++) await sleep(10)
 		await flush()
 		expect(host.querySelector('.question-text').textContent).toContain('Beine einer Spinne?')
 		expect(host.querySelector('.qconceal').classList.contains('qconceal--hidden')).toBe(true)
