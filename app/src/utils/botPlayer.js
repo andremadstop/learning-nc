@@ -65,30 +65,6 @@ export const BOT_PROFILES = {
 };
 
 /**
- * Wählt eine zufällige Antwort basierend auf Schwierigkeit.
- *
- * @param {Array} answers  Array von Antwortobjekten mit { id, is_correct }
- * @param {string} difficulty  'easy' | 'medium' | 'hard'
- * @returns {object|null} Gewählte Antwort oder null wenn answers leer
- */
-export function botChooseAnswer(answers, difficulty = 'medium') {
-  if (!answers || answers.length === 0) return null;
-
-  const profile = BOT_PROFILES.klaus;
-  const rate = profile.correctRate[difficulty] ?? 0.55;
-  const isCorrect = Math.random() < rate;
-
-  if (isCorrect) {
-    const correct = answers.find(a => a.is_correct);
-    return correct || answers[0];
-  } else {
-    const wrong = answers.filter(a => !a.is_correct);
-    if (wrong.length === 0) return answers[0];
-    return wrong[Math.floor(Math.random() * wrong.length)];
-  }
-}
-
-/**
  * Würfelt, ob Klaus diese Frage richtig beantwortet — ohne die Lösung zu kennen.
  *
  * Lernende erhalten seit dem Audit 2026-11 kein answers[].is_correct mehr; Klaus braucht es nicht,
@@ -124,48 +100,4 @@ export function botPhrase(event) {
   const phrases = BOT_PROFILES.klaus.phrases[event] || [];
   if (phrases.length === 0) return '';
   return phrases[Math.floor(Math.random() * phrases.length)];
-}
-
-/**
- * Erstellt ein Bot-Spieler-Objekt, das wie ein echter Spieler aussieht.
- *
- * @param {string} id  Spieler-ID (default: 'bot-klaus')
- * @returns {object}
- */
-export function createBotPlayer(id = 'bot-klaus') {
-  return {
-    id,
-    user_id: id,
-    name: 'Klaus',
-    displayName: 'Klaus (Praktikant)',
-    display_name: 'Klaus (Praktikant)',
-    isBot: true,
-    is_bot: true,
-    avatar: '🤓',
-    score: 0,
-    streak: 0,
-    lives: 3,
-    slot: 1,          // Bot bekommt Slot 1 (User hat Slot 0)
-    is_ready: false,
-  };
-}
-
-/**
- * Wählt eine zufällige Kategorie aus einer Liste.
- *
- * @param {Array} categories  Array von Kategorie-Objekten { poolId, name }
- * @returns {object|null}
- */
-export function botChooseCategory(categories) {
-  if (!categories || categories.length === 0) return null;
-  return categories[Math.floor(Math.random() * categories.length)];
-}
-
-/**
- * Würfelt für den Bot (gibt eine Zahl 1–6 zurück).
- *
- * @returns {number}
- */
-export function botRollDice() {
-  return Math.floor(Math.random() * 6) + 1;
 }

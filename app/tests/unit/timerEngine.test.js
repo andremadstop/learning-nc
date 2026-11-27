@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-	computeTimerPhase,
 	computeTimerState,
 	formatTime,
-	getTimerConsequence,
-	isTimerExpired,
 } from '../../src/utils/timerEngine.js';
 
 describe('computeTimerState', () => {
@@ -96,10 +93,6 @@ describe('computeTimerState', () => {
 		expect(result.fraction).toBe(0);
 		expect(result.phase).toBe('danger');
 	});
-
-	it('accepts ISO timestamps and reports expiry', () => {
-		expect(isTimerExpired('2026-03-25T21:00:00Z', Date.parse('2026-03-25T21:00:01Z') / 1000)).toBe(true);
-	});
 });
 
 describe('formatTime', () => {
@@ -121,26 +114,5 @@ describe('formatTime', () => {
 
 	it('handles negative (clamps to 0)', () => {
 		expect(formatTime(-5)).toBe('0:00');
-	});
-});
-
-describe('timerEngine helpers', () => {
-	it('returns critical phase when total milliseconds are zero', () => {
-		const result = computeTimerPhase(500, 0);
-		expect(result.phase).toBe('critical');
-		expect(result.percent).toBe(0);
-	});
-
-	it('reads timer consequence from camelCase payloads', () => {
-		const result = getTimerConsequence({
-			timerConsequence: {
-				type: 'auto_edge',
-				targetEdgeId: 'edge-timeout',
-			},
-		});
-		expect(result).toEqual({
-			type: 'auto_edge',
-			targetEdgeId: 'edge-timeout',
-		});
 	});
 });

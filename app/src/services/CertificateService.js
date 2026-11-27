@@ -9,16 +9,6 @@ import { generateUrl } from '@nextcloud/router'
  */
 
 /**
- * List the current user's issued certificates (newest first).
- * Server enforces ownership — only the authenticated user's certificates are returned.
- * @return {Promise<Array<object>>} certificate rows (verification_id, course_id, issued_at, expires_at, revoked, …)
- */
-export async function listCertificates() {
-	const response = await axios.get(generateUrl('/apps/learning/api/certificates'))
-	return response.data
-}
-
-/**
  * Fetch a single owned certificate by its verification id.
  * Returns a uniform 404 if it does not exist OR belongs to another user (IDOR guard server-side).
  * @param {string} verificationId — the certificate's public verification id

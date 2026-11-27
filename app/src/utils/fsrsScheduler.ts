@@ -140,8 +140,3 @@ export function buildFsrsRatingOptions(
 		preview: previewFsrsReview(item, option.rating, nowSeconds),
 	}))
 }
-
-export function formatFsrsIntervalLabel(intervalDays: number): string {
-	const safeDays = Math.max(1, Number(intervalDays) || 1)
-	return safeDays === 1 ? '1 day' : `${safeDays} days`
-}

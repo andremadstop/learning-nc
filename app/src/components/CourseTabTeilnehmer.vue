@@ -691,7 +691,7 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
-import { buildCertReportQuery, buildCoverageQuery, COVERAGE_STATUSES, formatPoolProgress, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
+import { buildCertReportQuery, buildCoverageQuery, COVERAGE_STATUSES, formatPoolProgress, shouldShowCertReport, formatDate, formatScore, isSummaryReleased } from '../utils/cert-report.js'
 import { formatContentProgress } from '../utils/requiredContent.js'
 import { abschlussTabIds, buddiesEnabled, previewsCourseAsStudent, teilnehmerTabIds } from '../utils/courseView.js'
 import Klassenbuch from './Klassenbuch.vue'
@@ -851,7 +851,7 @@ export default {
 			return user ? user.uid : null
 		},
 		isCourseSummaryReleased() {
-			return this.course?.mode_config?.course_summary === true
+			return isSummaryReleased(this.course)
 		},
 		buddiesOn() {
 			return buddiesEnabled(this.course)

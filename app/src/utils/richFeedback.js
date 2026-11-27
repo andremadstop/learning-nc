@@ -193,15 +193,6 @@ export function questionHint(question) {
 	return question && typeof question.hint === 'string' ? question.hint.trim() : ''
 }
 
-/** Whether a `rich_feedback` payload has anything to show. */
-export function hasRichFeedback(rich) {
-	return isObject(rich) && (
-		(Array.isArray(rich.option_feedback) && rich.option_feedback.length > 0)
-		|| (typeof rich.background_fact === 'string' && rich.background_fact.trim() !== '')
-		|| (typeof rich.key_takeaway === 'string' && rich.key_takeaway.trim() !== '')
-	)
-}
-
 /**
  * The per-option feedback to show after an answer: every chosen option that has feedback, and —
  * when the answer was not right — the correct options as well, so a learner who chose wrong

@@ -265,6 +265,7 @@ import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { courseToolIds } from '../utils/toolCatalog.js'
 import { moveTablistFocus } from '../utils/tablistKeydown.js'
+import { isSummaryReleased } from '../utils/cert-report.js'
 import { abschlussTabIds, actsAsCourseInstructor, LEGACY_TAB_ALIASES, kommunikationTabIds, previewsCourseAsStudent, learnerHasProgressTab, lernraumTabIds, teilnehmerTabIds, wettbewerbTabIds } from '../utils/courseView.js'
 
 // Every leaf the Wettbewerb area can have; a deep link to one that is hidden for this viewer
@@ -421,7 +422,7 @@ export default {
 				&& String(this.course?.instructor_id || '') === String(this.myUserId)
 		},
 		isCourseSummaryReleased() {
-			return this.course?.mode_config?.course_summary === true
+			return isSummaryReleased(this.course)
 		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)

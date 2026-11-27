@@ -29,7 +29,7 @@ import QuestionHint from '../../src/components/QuestionHint.vue'
 import RichFeedbackPanel from '../../src/components/RichFeedbackPanel.vue'
 import { analyzeJsonImport } from '../../src/utils/importPreview.js'
 import {
-	richFeedbackFromItem, richFeedbackTooLong, optionFeedbackToShow, hasRichFeedback, questionHint,
+	richFeedbackFromItem, richFeedbackTooLong, optionFeedbackToShow, questionHint,
 	answersWithFeedback, optionFeedbackFromAnswers,
 	HINT_MAX_LENGTH, BACKGROUND_MAX_LENGTH, TAKEAWAY_MAX_LENGTH, WHY_MAX_LENGTH, MISCONCEPTION_MAX_LENGTH,
 } from '../../src/utils/richFeedback.js'
@@ -141,9 +141,6 @@ describe('what the learner sees after answering', () => {
 
 	it('nothing without rich feedback', () => {
 		expect(optionFeedbackToShow(null, answers, [11])).toEqual([])
-		expect(hasRichFeedback(null)).toBe(false)
-		expect(hasRichFeedback({ option_feedback: [], background_fact: ' ', key_takeaway: null })).toBe(false)
-		expect(hasRichFeedback({ option_feedback: [], background_fact: null, key_takeaway: 'K' })).toBe(true)
 	})
 
 	it('the panel renders feedback, misconception, background and takeaway as plain text', () => {

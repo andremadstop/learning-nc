@@ -140,33 +140,3 @@ export function computeBotSummary(session, serverResult) {
 
 	return `Der Ansatz "${fixLabel}" hat das Problem "${errorLabel}" nicht geloest. Klaus hat immerhin gelernt, diesmal erst zu fragen.`
 }
-
-/**
- * Compatibility helper for a generic phase advance API from early notes.
- *
- * @param {object} session
- * @param {string} selectedId
- * @returns {object}
- */
-export function advanceBotPhase(session, selectedId) {
-	if (session?.phase === 'diagnose') {
-		return submitDiagnosis(session, selectedId)
-	}
-	if (session?.phase === 'fix') {
-		return submitFix(session, selectedId)
-	}
-	return session || createBotSession({})
-}
-
-/**
- * Read score/reputation changes from a backend response if available.
- *
- * @param {object|null|undefined} serverResponse
- * @returns {{scoreChange: number, reputationChanges: Record<string, number>}}
- */
-export function computeBotScoring(serverResponse) {
-	return {
-		scoreChange: Number(serverResponse?.score_change) || 0,
-		reputationChanges: serverResponse?.reputation_changes || {},
-	}
-}

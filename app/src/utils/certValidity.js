@@ -5,8 +5,6 @@
  * 29 February falls back to 28 February — 365 days lose a day in every leap year.
  */
 
-export const VALIDITY_UNITS = ['days', 'months', 'years']
-
 /**
  * The form value of a course: years when the months are whole years.
  *
